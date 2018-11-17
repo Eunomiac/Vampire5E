@@ -6,6 +6,13 @@
 *.user
 *.userosscache
 *.sln.docstates
+*.PNG
+*.jpg
+*.otf
+*.ttf
+*.zip
+*.sln
+
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -240,3 +247,4 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+Reference/
