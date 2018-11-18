@@ -1,4 +1,6 @@
-﻿var VAMPWORKER = function () {
+﻿// eslint-disable-next-line no-implicit-globals
+// eslint-disable-next-line no-unused-vars
+var VAMPWORKER = (function () {
     //#region Constants Declarations
     const ATTRIBUTES = {
         physical: ["Strength", "Dexterity", "Stamina"],
@@ -1774,4 +1776,4 @@
             setAttrs(attrList);
         });
     };
-}();
+}());

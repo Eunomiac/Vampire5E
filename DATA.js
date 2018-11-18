@@ -1,7 +1,8 @@
 ﻿// DATA.js, "DATA".  Exposed as "D" in the API sandbox.
 //   >>> DATA is both a library of handy resources for other scripts to use, and a master configuration file for your game.  You can find a list of all of the available methods at the end of the script.  Configuration is a bit trickier, but is contained to the CONFIGURATION and DECLARATIONS #regions.
 
-var D = D || (function () {
+// eslint-disable-next-line no-unused-vars
+var D = (function () {
   'use strict'
 
   // #region CONFIGURATION: Game Name
@@ -93,7 +94,7 @@ var D = D || (function () {
   const JSONStringify = function (obj, isLogOnly) {
     try {
       if (_.isUndefined(obj)) { return isLogOnly ? '<UNDEFINED>' : '&gt;UNDEFINED&lt;' }
-      if (isLogOnly) { return JSON.stringify(obj).replace(/\"/g, '').replace(/\n/g, '').replace(/:/g, ': ').replace(/\[/g, ' [').replace(/\]/g, '] ').replace(/,/g, ', ').replace(/\{/g, ' {').replace(/\}/g, '} ') } else { return JSON.stringify(obj, null, '    ').replace(/\"/g, "'").replace(/ /g, '&nbsp;').replace(/\n/g, '<br/>').replace(/&nbsp;&nbsp;/g, '&nbsp;') }
+      if (isLogOnly) { return JSON.stringify(obj).replace(/"/g, '').replace(/\n/g, '').replace(/:/g, ': ').replace(/\[/g, ' [').replace(/\]/g, '] ').replace(/,/g, ', ').replace(/\{/g, ' {').replace(/\}/g, '} ') } else { return JSON.stringify(obj, null, '    ').replace(/"/g, "'").replace(/ /g, '&nbsp;').replace(/\n/g, '<br/>').replace(/&nbsp;&nbsp;/g, '&nbsp;') }
     } catch (err) {
       formatError('Bad Stringify: ' + err)
       return '&gt;ERR&lt;'
@@ -119,9 +120,10 @@ var D = D || (function () {
       return
     }
     var width = 0
+    // eslint-disable-next-line no-unused-vars
     var missingChars = ''
     _.each(chars, function (char) {
-      if (!charRef[char] && charRef[char] != ' ' && charRef[char] != 0) {
+      if (!charRef[char] && charRef[char] !== ' ' && charRef[char] !== 0) {
         missingChars += char
         formatLog("... MISSING '" + char + "' in '" + font + "' at size '" + size + "'")
       } else { width += parseInt(charRef[char]) }
@@ -132,17 +134,13 @@ var D = D || (function () {
   const ordinalize = function (num) {
     switch (num.toString().slice(-1)) {
       case '1':
-        return num + (num.toString().slice(-2) == '11' ? 'th' : 'st')
-        break
+        return num + (num.toString().slice(-2) === '11' ? 'th' : 'st')
       case '2':
-        return num + (num.toString().slice(-2) == '12' ? 'th' : 'nd')
-        break
+        return num + (num.toString().slice(-2) === '12' ? 'th' : 'nd')
       case '3':
-        return num + (num.toString().slice(-2) == '13' ? 'th' : 'rd')
-        break
+        return num + (num.toString().slice(-2) === '13' ? 'th' : 'rd')
       default:
         return num + 'th'
-        break
     };
   }
   // #endregion
@@ -156,12 +154,12 @@ var D = D || (function () {
       let index = _.findIndex(_.flatten(hay), function (s) {
         return s.match(new RegExp(ndl, 'i')) !== null || s.match(new RegExp(ndl.replace(/_/g), 'i')) !== null
       })
-      result = index == -1 ? false : _.flatten(hay)[index]
+      result = index === -1 ? false : _.flatten(hay)[index]
     } else if (_.isObject(hay)) {
       let index = _.findIndex(_.keys(hay), function (s) {
         return s.match(new RegExp(ndl, 'i')) !== null || s.match(new RegExp(ndl.replace(/_/g), 'i')) !== null
       })
-      result = index == -1 ? false : _.keys(hay)[index]
+      result = index === -1 ? false : _.keys(hay)[index]
     } else { result = hay.match(new RegExp(ndl, 'i')) !== null }
     return result || false
   }
@@ -191,7 +189,7 @@ var D = D || (function () {
     var name = ''
     if (obj && obj.get('name')) { name = obj.get('name') } else { name = getObj('player', id) ? getObj('player', id).get('_displayname') : null }
     if (name && isShort) {
-      if (name.includes('"')) { return name.replace(/.*?["]/i, '').replace(/["].*/i, '').replace(/_/g, ' ') } else { return str.replace(/.*\s/i, '').replace(/_/g, ' ') }
+      if (name.includes('"')) { return name.replace(/.*?["]/i, '').replace(/["].*/i, '').replace(/_/g, ' ') } else { return name.replace(/.*\s/i, '').replace(/_/g, ' ') }
     } else if (name) { return name }
     formatError('No name found for ID: ' + id, 'D.GETNAME')
     return false
@@ -215,15 +213,18 @@ var D = D || (function () {
     _.each(searchParams, function (v) {
       let theseCharObjs = []
       // If parameter is a CHARACTER ID:
-      if (_.isString(v) && getObj('character', v)) { theseCharObjs.push(getObj('character', v)) }
+      if (_.isString(v) && getObj('character', v)) {
+        theseCharObjs.push(getObj('character', v))
       // If parameters is a TOKEN OBJECT:
-      else if (_.isObject(v) && v.id && v.get('_type') === 'graphic' && v.get('_subtype') === 'token') {
-        if (getObj('character', v.get('represents'))) { theseCharIDs.push(getObj('character', v.get('represents'))) } else { formatError("Token '" + JSONStringify(v.id) + "' Does Not Represent a Character.", 'D.GETCHARS') }
-      }
+      } else if (_.isObject(v) && v.id && v.get('_type') === 'graphic' && v.get('_subtype') === 'token') {
+        if (getObj('character', v.get('represents'))) {
+          theseCharObjs.push(getObj('character', v.get('represents')))
+        } else { formatError("Token '" + JSONStringify(v.id) + "' Does Not Represent a Character.", 'D.GETCHARS') }
       // If parameter is "all":
-      else if (v === 'all') { theseCharObjs = findObjs({ _type: 'character' }) }
+      } else if (v === 'all') {
+        theseCharObjs = findObjs({ _type: 'character' })
       // If parameter is a CHARACTER NAME:
-      else if (_.isString(v)) { theseCharObjs = findObjs({ _type: 'character', name: v }) }
+      } else if (_.isString(v)) { theseCharObjs = findObjs({ _type: 'character', name: v }) }
       if (theseCharObjs.length === 0) { formatError("No Characters Found for Value '" + JSONStringify(v) + "' in '" + JSONStringify(value) + "'", 'D.GETCHARS') }
       charObjs = _.uniq(_.compact(charObjs.concat(theseCharObjs)))
     })
@@ -243,7 +244,7 @@ var D = D || (function () {
   const getCaseRepID = function (lowCaseID, value) {
     let charObj = getChar(value)
     let attrObjs = _.filter(findObjs(charObj ? { type: 'attribute', characterid: charObj.id } : { type: 'attribute' }), o => o.get('name').toLowerCase().includes(lowCaseID))
-    if (!attrObjs || attrObjs.length == 0) { return formatError("No attributes found with id '" + JSON.stringify(lowCaseID) + (charObj ? "' for char '" + getName(charObj) : '') + "'") }
+    if (!attrObjs || attrObjs.length === 0) { return formatError("No attributes found with id '" + JSON.stringify(lowCaseID) + (charObj ? "' for char '" + getName(charObj) : '') + "'") }
     formatLog('AttrObjs: ' + JSONStringifyLog(attrObjs), 'GETCASEREPID')
     return attrObjs[0].get('name').split('_')[2]
   }
@@ -253,7 +254,9 @@ var D = D || (function () {
     let charObj = getChar(value)
     if (!charObj) { return false }
     let attrObjs = findObjs({ type: 'attribute', characterid: charObj.id })
-    _.each(filterArray, f => attrObjs = _.filter(attrObjs, a => a.get('name').toLowerCase().includes(f.toLowerCase())))
+    _.each(filterArray, function (f) {
+      attrObjs = _.filter(attrObjs, a => a.get('name').toLowerCase().includes(f.toLowerCase()))
+    })
     return attrObjs
   }
 
@@ -275,7 +278,7 @@ var D = D || (function () {
       let playerID
       if (value.get('_type') === 'graphic' && value.get('_subtype') === 'token') { value = value.get('represents') }
       if (value.get('_type') === 'character') { playerID = value.get('controlledby').replace('all,', '').replace(',all', '').split(',', 1)[0] }
-      if (!playerID) throw 'No player ID found controlling ' + value.get('_type') + " with ID '" + value.id + "'"
+      if (!playerID) throw new Error('No player ID found controlling ' + value.get('_type') + " with ID '" + value.id + "'")
       return playerID
     } catch (err) {
       return formatError(err + " (for value '" + JSONStringify(value) + "'", 'D.GETPLAYERID')
