@@ -3,10 +3,10 @@
 
   // #region CONFIGURATION: Image Links, Color Schemes
   const POSITIONS = {
-    diceFrame:    { top: 103, left: 87.5 },
-    bloodCloudFX: { top: 92.5, left: 37.5 },
-    bloodBoltFX:  { top: 92.5, left: 37.5 },
-    smokeBomb:    { top: 150, left: 63 }
+    diceFrame: { top: 207, left: 175 },
+    bloodCloudFX: {top: 185, left: 74.75 },
+    bloodBoltFX: { top: 185, left: 74.75 },
+    smokeBomb: { top: 301, left: 126 }
   }
   const IMAGES = {
     dice: {
@@ -265,38 +265,38 @@
       IMAGES.frontFrame,
       POSITIONS.diceFrame.top,
       POSITIONS.diceFrame.left,
-      166,
-      150))
+      333,
+      300))
     for (var i = 0; i < 9; i++) {
       imageList.push(makeImg(
         'topMid' + i,
         IMAGES.topMids[i - 3 * Math.floor(i / 3)],
-        POSITIONS.diceFrame.top - 58,
-        POSITIONS.diceFrame.left + 37.5 + 37.5 * i,
-        50,
-        150))
+        POSITIONS.diceFrame.top - 116.5,
+        POSITIONS.diceFrame.left + 75 + 75 * i,
+        101,
+        300))
       imageList.push(makeImg(
         'bottomMid' + i,
         IMAGES.bottomMids[i - 3 * Math.floor(i / 3)],
-        POSITIONS.diceFrame.top + 22.5,
-        POSITIONS.diceFrame.left + 37.5 + 37.5 * i,
-        50,
-        150))
+        POSITIONS.diceFrame.top + 45,
+        POSITIONS.diceFrame.left + 75 + 75 * i,
+        101,
+        300))
     }
     imageList.push(makeImg(
       'topEnd',
       IMAGES.topEnd,
-      POSITIONS.diceFrame.top - 58,
-      POSITIONS.diceFrame.left + 37.5 + 37.5 * 9,
-      50,
-      150))
+      POSITIONS.diceFrame.top - 116.5,
+      POSITIONS.diceFrame.left + 75 + 75 * 9,
+      101,
+      300))
     imageList.push(makeImg(
       'bottomEnd',
       IMAGES.bottomEnd,
-      POSITIONS.diceFrame.top + 22.5,
-      POSITIONS.diceFrame.left + 37.5 + 37.5 * 9,
-      116.5,
-      150))
+      POSITIONS.diceFrame.top + 45,
+      POSITIONS.diceFrame.left + 75 + 75 * 9,
+      223,
+      300))
     imageList.reverse()
     // log(JSON.stringify(imageList));
     // return;
@@ -307,11 +307,11 @@
   }
 
   const scaleFrame = function (row, width) {
-    var stretchWidth = Math.max(width, 60)
+    var stretchWidth = Math.max(width, 120)
     var imgs = [getObj('graphic', state[D.GAMENAME].Roller.imgList[row + 'End'].id)]
     var blanks = []
     var midCount = 0
-    while (stretchWidth > 112.5 * (imgs.length - 1)) {
+    while (stretchWidth > 225 * (imgs.length - 1)) {
       imgs.push(getObj('graphic', state[D.GAMENAME].Roller.imgList[row + 'Mid' + midCount].id))
       midCount++
       if (midCount >= IMAGES[row + 'Mids'].length * 3) {
@@ -324,11 +324,11 @@
       midCount++
     }
     var stretchPer = stretchWidth / imgs.length
-    D.DB(row + ' stretchWidth: ' + stretchWidth + ', imgs Length: ' + imgs.length + ', x112.5 ' + imgs.length * 112.5 + ', stretch per: ' + stretchPer, 'SCALEFRAME()', 4)
+    D.DB(row + ' stretchWidth: ' + stretchWidth + ', imgs Length: ' + imgs.length + ', x225 ' + imgs.length * 225 + ', stretch per: ' + stretchPer, 'SCALEFRAME()', 4)
     D.DB(row + ' midCount: ' + midCount + ', blanks length: ' + blanks.length)
     var endImg = imgs.shift()
-    var left = POSITIONS.diceFrame.left + 60
-    D.DB(row + 'Start at ' + POSITIONS.diceFrame.left + ', + 60 to ' + left, 'SCALEFRAME()', 4)
+    var left = POSITIONS.diceFrame.left + 120
+    D.DB(row + 'Start at ' + POSITIONS.diceFrame.left + ', + 120 to ' + left, 'SCALEFRAME()', 4)
     for (var i = 0; i < imgs.length; i++) {
       D.DB('Setting ' + row + 'Mid' + i + ' to ' + left, 'SCALEFRAME()', 4)
       imgs[i].set({
@@ -399,7 +399,7 @@
       left:  obj.get('left'),
       width: obj.get('width')
     })
-    WigglePads.MakePad(obj, 'selectDie', 'height:-14 width:-21 x:0 y:0')
+    WigglePads.MakePad(obj, 'selectDie', 'height:-28 width:-42 x:0 y:0')
     D.Alert('Registered die #' + state[D.GAMENAME].Roller[category].length + ': ' + D.JS(state[D.GAMENAME].Roller[category]) + ', Added WigglePad #' + _.values(state[D.GAMENAME].WigglePads.byPad).length, 'ROLLER: registerDie()')
   }
 
