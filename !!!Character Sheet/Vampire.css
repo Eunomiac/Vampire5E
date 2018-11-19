@@ -2009,13 +2009,6 @@
 	left: -2%;
 }
 
-.charsheet div.sheet-flaws input.sheet-hoverpopup {
-
-}
-
-.charsheet div.sheet-flaws input.sheet-hoverpopup + span::before {
-
-}
 /*#endregion*/
 
 /*#region SECTION: Domain */
@@ -2619,13 +2612,6 @@
 .charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline div.sheet-multidot {
 	width: 10px;
 	margin-right: 2px;
-}
-
-.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline div.sheet-multidot input.sheet-whitedot:checked ~ input.sheet-superficialdot,
-.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline div.sheet-multidot input.sheet-superficialdot:checked ~ input.sheet-aggravateddot,
-.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline div.sheet-multidot input.sheet-whitedot:checked ~ input.sheet-humanitydot,
-.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline div.sheet-multidot input.sheet-humanitydot:checked ~ input.sheet-staindot {
-
 }
 
 .charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline input {
