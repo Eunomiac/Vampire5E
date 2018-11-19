@@ -1,4 +1,4 @@
-var Chars = (function () {
+const Chars = (function () {
 	// #region Constants and Declarations
 	const MVCVALS = [
 			[

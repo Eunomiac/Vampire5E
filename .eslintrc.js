@@ -143,7 +143,7 @@ module.exports = {
         "func-style": ["error", "expression", {"allowArrowFunctions" : true}],
         "function-paren-newline": ["error", "consistent"],
         "id-blacklist": ["error", "data", "err", "e", "cb", "callback"],
-        "id-length": ["error", { "min": 3, "max": 14, "properties": "never", "exceptions": ["v", "vv", "k", "kk", "i", "ii"] }],
+        "id-length": ["error", { "min": 3, "max": 14, "properties": "never", "exceptions": ["v", "vv", "k", "kk", "kv", "i", "ii", "gN"] }],
         "implicit-arrow-linebreak": ["error", "beside"],
         "indent": ["error", "tab"],
         "key-spacing": ["error", { "beforeColon": false }],
@@ -174,7 +174,21 @@ module.exports = {
         "no-bitwise": "error",
         "no-continue": "error",
         "no-lonely-if": "error",
-        "no-mixed-operators": "error",
+        "no-mixed-operators": [
+            "error",
+            {
+                "groups": [
+                    ["+", "-"],
+                    ["**"],
+                    ["*", "/", "%"],
+                    ["&", "|", "^", "~", "<<", ">>", ">>>"],
+                    ["==", "!=", "===", "!==", ">", ">=", "<", "<="],
+                    ["&&", "||"],
+                    ["in", "instanceof"]
+                ],
+                "allowSamePrecedence": true
+            }
+        ],
         "object-curly-newline": ["error", { "consistent": true }],
         "object-curly-spacing": ["error", "never", { "objectsInObjects": true }],
         "one-var": ["warn", "always"],
