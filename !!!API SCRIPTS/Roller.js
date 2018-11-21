@@ -355,7 +355,7 @@
 		},
 		// #endregion
 
-		// #region Graphic & Text Control */
+		// #region Graphic & Text Control
 		makeImg = function (name, imgsrc, top, left, height, width) {
 			const img = createObj("graphic", {
 				_pageid: D.PAGEID(),
@@ -454,7 +454,6 @@
 		},
 		// #endregion
 
-
 		// #region Build Dice Frame
 		initFrame = function () {
 			const imageList = []
@@ -545,9 +544,7 @@
 				blanks[ii].set("imgsrc", IMAGES.blank)
 			}
 		},
-
 		// #endregion
-
 
 		// #region Dice Graphic Control
 		setDie = function (dieNum, dieCat = "diceList", dieVal, params = {} ) {
@@ -596,31 +593,31 @@
 				rerollFX = null
 			}
 		},
-
 		// #endregion
 
+		// #region Getting Information (Specialty)
 
-		/* #region Getting Information (Specialty)
-		   Const getSpecialty = function (charObj, skillName) {
-		   Const attrTypeObjs = filterObjs(function (obj) {
-		   If (obj.get('_type') === 'attribute' &&
-		   Obj.get('_characterid') === charObj.id &&
-		   Obj.get('name').includes('spec') &&
-		   Obj.get('name').includes(skillName)) { return true } else return false
-		   })
-		   Let attrLabels = []
-		   If (attrTypeObjs.length === 0) { return false } else {
-		   _.each(attrTypeObjs, function (attrTypeObj) {
-		   AttrLabels.push(filterObjs(function (obj) {
-		   If (obj.get('_type') === 'attribute' &&
-		   Obj.get('_characterid') === charObj.id &&
-		   Obj.get('name').includes(attrTypeObj.get('name').replace('type', 'label'))) { return true } else return false
-		   })[0].get('current'))
-		   })
-		   }
-		   // D.DB("Spec AttrLabels = " + D.JSL(attrLabels) + ", Returning: '" + D.JSL(attrLabels.join("sss|").split("|")) + "'", "ROLLER: getSpecialty()", 3);
-		   Return attrLabels.join('sss|').split('|')
-		   } */
+		/* SPECIALTY GETTER:
+		Const getSpecialty = function (charObj, skillName) {
+		Const attrTypeObjs = filterObjs(function (obj) {
+		If (obj.get('_type') === 'attribute' &&
+		Obj.get('_characterid') === charObj.id &&
+		Obj.get('name').includes('spec') &&
+		Obj.get('name').includes(skillName)) { return true } else return false
+		})
+		Let attrLabels = []
+		If (attrTypeObjs.length === 0) { return false } else {
+		_.each(attrTypeObjs, function (attrTypeObj) {
+		AttrLabels.push(filterObjs(function (obj) {
+		If (obj.get('_type') === 'attribute' &&
+		Obj.get('_characterid') === charObj.id &&
+		Obj.get('name').includes(attrTypeObj.get('name').replace('type', 'label'))) { return true } else return false
+		})[0].get('current'))
+		})
+		}
+		// D.DB("Spec AttrLabels = " + D.JSL(attrLabels) + ", Returning: '" + D.JSL(attrLabels.join("sss|").split("|")) + "'", "ROLLER: getSpecialty()", 3);
+		Return attrLabels.join('sss|').split('|')
+		} */
 
 		parseFlags = function (charObj, rollType, params = {} ) {
 			params.args = params.args || []
@@ -747,9 +744,7 @@
 			return traitData
 		},
 
-		getRollData = function (charObj, rollType, params) {
-		// DUMMY RESULTS:
-		/*
+		/* DUMMY RESULTS:
 Return {
 groupNum: "",
 charID: "-LN4P73XRfqCcI8U6c-t",
@@ -775,6 +770,7 @@ charName: "Kingston \"King\" Black",
 mod: 0,
 diff: 3
 };         */
+		getRollData = function (charObj, rollType, params) {
 			if (!params)
 				return D.ThrowError("No parameters supplied!")
 			const flagData = parseFlags(charObj, rollType, params),
@@ -844,9 +840,7 @@ diff: 3
 [Rouse & Checks]        [Others]
 rollData = { type }      { type, mod, << traits: [], traitData: { value, display }, hunger >> }
 */
-
-		//  DUMMY RESULTS:
-		/*
+		/* DUMMY RESULTS:
 Return {
 groupNum: "",
 charID: "-LN4P73XRfqCcI8U6c-t",
@@ -1164,7 +1158,6 @@ rollResults = { diceVals = [], total, << margin >> } */
 
 			return logLine
 		},
-
 
 		/* MUST SUPPLY:
 [ALL]
@@ -1648,7 +1641,7 @@ rollData = { posFlagLines, negFlagLines }
 		// #endregion
 
 		// #region Getting Random Resonance Based On District/Site Parameters
-	 getResonance = function (posRes = "", negRes = "", isDoubleAcute) {
+		getResonance = function (posRes = "", negRes = "", isDoubleAcute) {
 			let resProbs = [],
 				randNum = null,
 				resonances = ["Choleric", "Melancholic", "Phlegmatic", "Sanguine"]
@@ -1713,7 +1706,6 @@ rollData = { posFlagLines, negFlagLines }
 			]
 		// Return ["Acute", "Choleric"];
 		},
-
 		// #endregion
 
 		// #region Secret Dice Rolling Macro
@@ -1957,6 +1949,7 @@ rollData = { posFlagLines, negFlagLines }
 			state[D.GAMENAME].Roller.selected = state[D.GAMENAME].Roller.selected || {diceList: [], bigDice: []}
 			state[D.GAMENAME].Roller.imgList = state[D.GAMENAME].Roller.imgList || {}
 		}
+		// #endregion
 
 	return {
 		RegisterEventHandlers: regHandlers,
@@ -1964,7 +1957,6 @@ rollData = { posFlagLines, negFlagLines }
 		Select: selectDie,
 		Reroll: wpReroll
 	}
-	// #endregion
 } )()
 
 on("ready", () => {

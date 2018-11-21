@@ -7,7 +7,9 @@ const WigglePads = (() => {
 		DICECATS = ["diceList", "bigDice"],
 		// #endregion
 
-		/* #region FUNCTIONS: Put functions linked by name to wiggle pads here.
+		// #region PERSONAL FUNCTION SETTINGS
+
+		/* CUSTOM PAD FUNCTIONS: Put functions linked by name to wiggle pads here.
 							Each will be passed an object of form:
        				{  id: <id of graphic object beneath> } */
 		FUNCTIONS = {
@@ -42,7 +44,7 @@ const WigglePads = (() => {
 		// #endregion
 
 		// #region Pad Management
-	 makePad = function (obj, name, params = "height:0 width:0 x:0 y:0") {
+		makePad = function (obj, name, params = "height:0 width:0 x:0 y:0") {
 			D.DB(`PARAMS: ${D.JSL(params)}`, "WIGGLEPADS: makePad()", 2)
 			const options = {}
 			let pad = null
@@ -94,8 +96,8 @@ const WigglePads = (() => {
 		},
 		// #endregion
 
-		// #region Event Handlers (handleInput)
-	 handleMove = function (obj) {
+		// #region Event Handlers
+		handleMove = function (obj) {
 			if (obj.get("layer") === "gmlayer" || !state[D.GAMENAME].WigglePads.byPad[obj.id] )
 				return false
 			obj.set( {layer: "gmlayer"} )
@@ -109,7 +111,7 @@ const WigglePads = (() => {
 			return true
 		},
 
-	 handleInput = function (msg) {
+		handleInput = function (msg) {
 			if (msg.type !== "api" || !playerIsGM(msg.playerid))
 				return
 			const args = msg.content.split(/\s+/u)
@@ -182,11 +184,10 @@ const WigglePads = (() => {
 				break
 			}
 		},
-
 		// #endregion
 
-		// #region Public Functions: regHandlers
-	 regHandlers = () => {
+		// #region Public Functions
+		regHandlers = () => {
 			on("chat:message", handleInput)
 			on("change:graphic", handleMove)
 		},
@@ -195,6 +196,7 @@ const WigglePads = (() => {
 			state[D.GAMENAME] = state[D.GAMENAME] || {}
 			state[D.GAMENAME].WigglePads = state[D.GAMENAME].WigglePads || {byPad: {}, byGraphic: {} }
 		}
+		// #endregion
 
 	return {
 		RegisterEventHandlers: regHandlers,
@@ -202,7 +204,6 @@ const WigglePads = (() => {
 		MakePad: makePad,
 		Set: setPad
 	}
-	// #endregion
 } )()
 
 on("ready", () => {

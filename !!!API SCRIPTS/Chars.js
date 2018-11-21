@@ -443,7 +443,7 @@ const Chars = (function Chars () {
 		},
 		// #endregion
 
-		// #region Public Functions: regHandlers, tapSpite
+		// #region Public Functions: regHandlers
 		regHandlers = function () {
 			on("chat:message", handleInput)
 		},
@@ -453,12 +453,12 @@ const Chars = (function Chars () {
 			state[D.GAMENAME] = state[D.GAMENAME] || {}
 			state[D.GAMENAME].Chars = state[D.GAMENAME].Chars || {}
 		}
+		// #endregion
 
 	return {
 		RegisterEventHandlers: regHandlers,
 		CheckInstall: checkInstall
 	}
-	// #endregion
 } )()
 
 on("ready", () => {

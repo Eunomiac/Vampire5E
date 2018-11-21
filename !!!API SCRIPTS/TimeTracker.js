@@ -13,9 +13,9 @@ const TimeTracker = (() => {
 			],
 			dawn: "https://s3.amazonaws.com/files.d20.io/images/66268397/qtmx8f4z8jcvK2sEGaxl5A/thumb.jpg?1541330279"
 		},
-	 DAYSOFWEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-	 MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-	 NIGHT = [
+		DAYSOFWEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+		MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+		NIGHT = [
 			["7:44", "17:12"],
 			["7:11", "17:51"],
 			["7:22", "19:28"],
@@ -29,7 +29,7 @@ const TimeTracker = (() => {
 			["7:11", "17:51"],
 			["7:44", "17:12"]
 		],
-	 HORIZONS = {
+		HORIZONS = {
 			latenight: "1:00",
 			predawn: [-90, -60, -30, -15, -5]
 		},
@@ -69,7 +69,7 @@ const TimeTracker = (() => {
 			}
 		},
 
-	 setCurrentDate = function (date, tracker, horizon) {
+		setCurrentDate = function (date, tracker, horizon) {
 			tracker.set("text", `${DAYSOFWEEK[date.getUTCDay()]}, ${
 				MONTHS[date.getMonth()]} ${
 				D.Ordinalize(date.getUTCDate())}, ${
@@ -80,8 +80,8 @@ const TimeTracker = (() => {
 			state[D.GAMENAME].TimeTracker.currentDate = date.getTime().toString()
 			if (
 				date.getUTCFullYear() !== lastDate.getUTCFullYear() ||
-      date.getMonth() !== lastDate.getMonth() ||
-      date.getUTCDate() !== lastDate.getUTCDate()
+					date.getMonth() !== lastDate.getMonth() ||
+					date.getUTCDate() !== lastDate.getUTCDate()
 			)
 				_.each(D.GetChars("registered"), char => setAttrs(char.id, {todaysdate: date.getTime().toString()} ))
 			setHorizon(date, horizon)
@@ -160,24 +160,23 @@ const TimeTracker = (() => {
 				break
 			}
 		},
-
 		// #endregion
 
 		// #region Public Functions: regHandlers, tapSpite
-	 regHandlers = function () {
+		regHandlers = function () {
 			on("chat:message", handleInput)
 		},
 
-	 checkInstall = function () {
+		checkInstall = function () {
 			state[D.GAMENAME] = state[D.GAMENAME] || {}
 			state[D.GAMENAME].TimeTracker = state[D.GAMENAME].TimeTracker || {}
 		}
+		// #endregion
 
 	return {
 		RegisterEventHandlers: regHandlers,
 		CheckInstall: checkInstall
 	}
-	// #endregion
 } )()
 
 on("ready", () => {

@@ -67,7 +67,7 @@ const ChatFuncs = (() => {
 			return true
 		},
 
-	 getImg = function (obj) {
+		getImg = function (obj) {
 			if (!obj || obj.get("_type") !== "graphic")
 				return false
 			D.Alert( [`<b>ID:</b> ${obj.id}`, `<b>SRC:</b> ${obj.get("imgsrc").replace("max", "thumb")}`], "Image Data")
@@ -75,7 +75,7 @@ const ChatFuncs = (() => {
 			return true
 		},
 
-	 getChar = function (obj) {
+		getChar = function (obj) {
 			D.Log(obj, "OBJ")
 			if (!obj || obj.get("_type") !== "graphic" || obj.get("_subtype") !== "token")
 				return false
@@ -94,7 +94,7 @@ const ChatFuncs = (() => {
 			return true
 		},
 
-	 getCharAttrs = function (obj) {
+		getCharAttrs = function (obj) {
 			if (!obj)
 				return false
 			const allAttrObjs = findObjs( {
@@ -128,7 +128,7 @@ const ChatFuncs = (() => {
 			return true
 		},
 
-	 getPos = function (obj) {
+		getPos = function (obj) {
 			if (!obj)
 				return false
 			const gridInfo = `<b>Center:</b> ${obj.get("left") / D.CELLSIZE()}, ${obj.get("top") / D.CELLSIZE()
@@ -144,7 +144,7 @@ const ChatFuncs = (() => {
 			return true
 		},
 
-	 getProperty = function (obj, property) {
+		getProperty = function (obj, property) {
 			if (!property || !obj)
 				return false
 			const propString = obj.get(property, function tellInfo (v) {
@@ -158,7 +158,7 @@ const ChatFuncs = (() => {
 			return true
 		},
 
-	 getStateData = function (namespace) {
+		getStateData = function (namespace) {
 			let stateInfo = state
 			const title = `state.${namespace.join(".")}`
 			// eslint-disable-next-line no-unmodified-loop-condition
@@ -170,7 +170,7 @@ const ChatFuncs = (() => {
 			return true
 		},
 
-	 clearStateData = function (namespace) {
+		clearStateData = function (namespace) {
 			let stateInfo = state
 			const title = `Clearing state.${namespace.join(".")}`
 			// eslint-disable-next-line no-unmodified-loop-condition
@@ -195,8 +195,8 @@ const ChatFuncs = (() => {
 			}
 		},
 
-	 resolveText = function (objIDs) {
-		 let [font, size] = ["Arial", 12]
+		resolveText = function (objIDs) {
+			let [font, size] = ["Arial", 12]
 			for (let i = 0; i < objIDs.length; i++) {
 				const obj = findObjs( {_id: objIDs[i]._id} )[0],
 					width = obj.get("width"),
@@ -213,10 +213,10 @@ const ChatFuncs = (() => {
 			D.Alert(`Current Widths of '${font}' at Size ${size}:   ${D.JS(state.DATA.CHARWIDTH[font][size] )}`)
 		},
 
-	 caseText = (objs, textCase) => {
-		 objs.forEach(obj => {
+		caseText = (objs, textCase) => {
+			objs.forEach(obj => {
 				obj.set("text", textCase === "upper" ? obj.get("text").toUpperCase() : obj.get("text").toLowerCase())
-		 } )
+			} )
 		},
 		// #endregion
 
@@ -392,11 +392,11 @@ const ChatFuncs = (() => {
 		regHandlers = function () {
 			on("chat:message", handleInput)
 		}
+		// #endregion
 
 	return {
 		RegisterEventHandlers: regHandlers
 	}
-	// #endregion
 } )()
 
 on("ready", () => {
