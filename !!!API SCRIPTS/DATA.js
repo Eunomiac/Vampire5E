@@ -4,8 +4,9 @@
    trickier, but is contained in the CONFIGURATION and DECLARATIONS #regions. */
 
 const D = (() => {
-	// #region CONFIGURATION: Game Name
+	// #region CONFIGURATION: Game Name, Character Registry
 	const GAMENAME = "VAMPIRE",
+		CHARREGISTRY = state[D.GAMENAME].Chars,
 		// #endregion
 
 		// #region DECLARATIONS: Reference Variables
@@ -212,6 +213,24 @@ const D = (() => {
 
 			return `${num}${["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"][num % 10]}`
 		},
+
+		isIn = function (needle, haypile) {
+			const hay = haypile || _.flatten( [_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS] ),
+				  ndl = `\\b${needle.replace(/^g[0-9]/u, "")}\\b`
+			let result = false
+			if (_.isArray(haypile)) {
+				const index = _.findIndex(_.flatten(hay), v => v.match(new RegExp(ndl, "iu")) !== null || v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null)
+				result = index === -1 ? false : _.flatten(hay)[index]
+			} else if (_.isObject(hay)) {
+				const index = _.findIndex(_.keys(hay), v => v.match(new RegExp(ndl, "iu")) !== null ||
+					v.match(new RegExp(ndl.replace(/_/gu), "iu"))) !== null
+				result = index === -1 ? false : _.keys(hay)[index]
+			} else {
+				result = hay.match(new RegExp(ndl, "iu")) !== null
+			}
+
+			return result || false
+		},
 		// #endregion
 
 		// #region DEBUGGING & ERROR MANAGEMENT
@@ -274,52 +293,12 @@ const D = (() => {
 				.replace(/.*\s/iu, "")
 				.replace(/_/gu, " ")
 		},
-		// #endregion
 
-		getTextWidth = function (obj, text) {
-			const font = obj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
-				  size = obj.get("font_size"),
-				 chars = text.split(""),
-			   fontRef = state.DATA.CHARWIDTH[font],
-			   charRef = fontRef && fontRef[size]
-			let width = 0
-			if (!fontRef)
-				return formatError(`No font reference for '${font}'`)
-			if (!charRef)
-				return formatError(`No character reference for '${font}' at size '${size}'`)
-			_.each(chars, char => {
-				if (!charRef[char] && charRef[char] !== " " && charRef[char] !== 0)
-					formatLog(`... MISSING '${char}' in '${font}' at size '${size}'`)
-				else
-					width += parseInt(charRef[char] )
-			} )
-
-			return width
-		},
-
-		// #region CHECKS
-		isIn = function (needle, haypile) {
-			const hay = haypile || _.flatten( [_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS] ),
-				  ndl = `\\b${needle.replace(/^g[0-9]/u, "")}\\b`
-			let result = false
-			if (_.isArray(haypile)) {
-				const index = _.findIndex(_.flatten(hay), v => v.match(new RegExp(ndl, "iu")) !== null || v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null)
-				result = index === -1 ? false : _.flatten(hay)[index]
-			} else if (_.isObject(hay)) {
-				const index = _.findIndex(_.keys(hay), v => v.match(new RegExp(ndl, "iu")) !== null ||
-					v.match(new RegExp(ndl.replace(/_/gu), "iu"))) !== null
-				result = index === -1 ? false : _.keys(hay)[index]
-			} else {
-				result = hay.match(new RegExp(ndl, "iu")) !== null
-			}
-
-			return result || false
-		},
-
-		/* Returns an ARRAY OF CHARACTERS given: "all", a character ID, a character Name, a token object, a message
-		   with selected tokens, OR an array of such parameters. */
+		/* Returns an ARRAY OF CHARACTERS given: "all", "registered", a character ID, a character Name,
+			a token object, a message with selected tokens, OR an array of such parameters. */
 		getChars = function (value) {
-			let [searchParams, charObjs] = [[], []]
+			const charObjs = new Set()
+			let searchParams = []
 			if (!value)
 				return formatError("No Value Given!", "D.GETCHARS")
 			if (value.who) {
@@ -341,34 +320,33 @@ const D = (() => {
 				return formatError(`Bad Value: '${jStr(value)}'`, "GETCHARS")
 			}
 			_.each(searchParams, v => {
-				let theseCharObjs = []
 				// If parameter is a CHARACTER ID:
 				if (_.isString(v) && getObj("character", v)) {
-					theseCharObjs.push(getObj("character", v))
+					charObjs.add(getObj("character", v))
 				// If parameters is a TOKEN OBJECT:
 				} else if (_.isObject(v) && v.id && v.get("_type") === "graphic" && v.get("_subtype") === "token") {
 					if (getObj("character", v.get("represents")))
-						theseCharObjs.push(getObj("character", v.get("represents")))
+						charObjs.add(getObj("character", v.get("represents")))
 					else
 						formatError(`Token '${jStr(v.id)}' Does Not Represent a Character.`, "D.GETCHARS")
 					// If parameter is "all":
 				} else if (v === "all") {
-					theseCharObjs = findObjs( {
-						_type: "character"
+					_.each(findObjs( {_type: "character"} ), char => charObjs.add(char))
+					// If parameter calls for REGISTERED CHARACTERS:
+				} else if (v === "registered") {
+					_.each(CHARREGISTRY, (vv, charID) => {
+						if (charID === vv.id)
+							charObjs.add(D.GetChar(charID))
 					} )
-				// If parameter is a CHARACTER NAME:
+					// If parameter is a CHARACTER NAME:
 				} else if (_.isString(v)) {
-					theseCharObjs = findObjs( {
-						_type: "character",
-						name: v
-					} )
+					_.each(findObjs( {_type: "character", name: v} ), char => charObjs.add(char))
 				}
-				if (theseCharObjs.length === 0)
+				if (charObjs.size === 0)
 					formatError(`No Characters Found for Value '${jStr(v)}' in '${jStr(value)}'`, "D.GETCHARS")
-				charObjs = _.uniq(_.compact(charObjs.concat(theseCharObjs)))
 			} )
 
-			return charObjs
+			return [...charObjs]
 		},
 
 		getChar = v => getChars(v)[0],
@@ -454,6 +432,27 @@ const D = (() => {
 				return formatError(`${errObj} (for value '${jStr(value)}'`, "D.GETPLAYERID")
 			}
 		},
+
+		getTextWidth = function (obj, text) {
+			const font = obj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
+				  size = obj.get("font_size"),
+				 chars = text.split(""),
+			   fontRef = state.DATA.CHARWIDTH[font],
+			   charRef = fontRef && fontRef[size]
+			let width = 0
+			if (!fontRef)
+				return formatError(`No font reference for '${font}'`)
+			if (!charRef)
+				return formatError(`No character reference for '${font}' at size '${size}'`)
+			_.each(chars, char => {
+				if (!charRef[char] && charRef[char] !== " " && charRef[char] !== 0)
+					formatLog(`... MISSING '${char}' in '${font}' at size '${size}'`)
+				else
+					width += parseInt(charRef[char] )
+			} )
+
+			return width
+		},
 		// #endregion
 
 		// #region SETTERS:  New Repeating Section Rows
@@ -532,9 +531,9 @@ generateUUID2 = (function generateUUID () {
 		// Runs one of the special effects defined above.
 		runFX = (name, pos) => spawnFxWithDefinition(pos.left, pos.top, FX[name] ),
 
-		// INITIALIZATION
+		// #region INITIALIZATION
 		checkInstall = () => { state[GAMENAME] = state[GAMENAME] || {} }
-	// #endregion
+		// #endregion
 
 	return {
 		CheckInstall: checkInstall,

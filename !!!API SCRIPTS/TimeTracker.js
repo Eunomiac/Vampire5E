@@ -83,7 +83,7 @@ const TimeTracker = (() => {
       date.getMonth() !== lastDate.getMonth() ||
       date.getUTCDate() !== lastDate.getUTCDate()
 			)
-				_.each(Chars.GetAll(), char => setAttrs(char.id, {todaysdate: date.getTime().toString()} ))
+				_.each(D.GetChars("registered"), char => setAttrs(char.id, {todaysdate: date.getTime().toString()} ))
 			setHorizon(date, horizon)
 		},
 		// #endregion

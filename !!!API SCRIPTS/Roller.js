@@ -1934,7 +1934,7 @@ rollData = { posFlagLines, negFlagLines }
 				isHidingTraits = rollString.includes("n")
 				let chars = null
 				if (!msg.selected || !msg.selected[0] )
-					chars = Chars.GetAll()
+					chars = D.GetChars("registered")
 				else
 					chars = D.GetChars(msg)
 				if (params.length < 1 || params.length > 3)
