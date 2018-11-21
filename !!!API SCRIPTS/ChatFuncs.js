@@ -6,7 +6,7 @@
    to the CONFIGURATION and DECLARATIONS #regions. Strictly a utility script: Doesn't set things or return information
    to other API objects --- use DATA and SET for that. */
 
-var ChatFuncs = (function ChatFuncs () {
+const ChatFuncs = (() => {
 	const HELPMESSAGE = [{
 			title: "Get Data",
 			message: "<p>" +
@@ -80,10 +80,10 @@ var ChatFuncs = (function ChatFuncs () {
 			if (!obj || obj.get("_type") !== "graphic" || obj.get("_subtype") !== "token")
 				return false
 			try {
-				const charObj = getObj("character", obj.get("represents"))
+				const charObj = getObj("character", obj.get("represents")),
+						 name = charObj.get("name"),
+					 playerID = charObj.get("controlledby").replace("all,", "")
 				D.Log(charObj, "CHAROBJ")
-				const name = charObj.get("name"),
-					playerID = charObj.get("controlledby").replace("all,", "")
 				D.Alert( [`<b>Name:</b> ${name}`, `<b>CharID:</b> ${charObj.id}`, `<b>PlayerID:</b> ${playerID}`], "Character Data")
 			} catch (errObj) {
 				D.ThrowError(errObj)
@@ -97,22 +97,30 @@ var ChatFuncs = (function ChatFuncs () {
 	 getCharAttrs = function (obj) {
 			if (!obj)
 				return false
-			const allAttrObjects = findObjs( {
+			const allAttrObjs = findObjs( {
 					_type: "attribute",
 					_characterid: obj.get("represents")
 				} ),
-				allAttrs = []
-			_.each(allAttrObjects, function screenAttrs (attrObj) {
+				     allAttrs = allAttrObjs.map(v => ( {
+					     name: D.JS(v.get("name")),
+					     current: D.JS(v.get("current"))
+						         .replace(/\[/gu, "\\[")
+						         .replace(/\{/gu, "\\{")
+				 } )),
+				  sortedAttrs = _.sortBy(allAttrs, "name"),
+				   attrsLines = []
+
+			/* _.each(allAttrObjs, function screenAttrs (attrObj) {
 				allAttrs.push( {
 					name: D.JS(attrObj.get("name")),
 					current: D.JS(attrObj.get("current")).replace(/\[/gu, "\\[")
 						.replace(/\{/gu, "\\{")
 				} )
-			} )
-			const sortedAttrs = _.sortBy(allAttrs, "name"),
-				attrsLines = []
+			} ) */
 			_.each(sortedAttrs, function parseAttrs (attrInfo) {
-				attrsLines.push(`<b>${D.JS(attrInfo.name).replace(/''/gu, "")}:</b> ${D.JS(attrInfo.current).replace(/\\\\/gu, "\\")
+				attrsLines.push(`<b>${D.JS(attrInfo.name)
+					.replace(/''/gu, "")}:</b> ${D.JS(attrInfo.current)
+					.replace(/\\\\/gu, "\\")
 					.replace(/''/gu, "")}`)
 			} )
 			D.Alert(attrsLines, `Attribute Data for ${D.GetName(obj.get("represents"))}`)
@@ -188,15 +196,13 @@ var ChatFuncs = (function ChatFuncs () {
 		},
 
 	 resolveText = function (objIDs) {
-			let [font, size] = ["Arial", 20]
+		 let [font, size] = ["Arial", 12]
 			for (let i = 0; i < objIDs.length; i++) {
-				const obj = findObjs( {
-						_id: objIDs[i]._id
-					} )[0],
-				 width = obj.get("width")
+				const obj = findObjs( {_id: objIDs[i]._id} )[0],
+					width = obj.get("width"),
+					 char = obj.get("text").charAt(0)
 				font = obj.get("font_family").split(" ")[0]
 				size = obj.get("font_size")
-				const char = obj.get("text").charAt(0)
 				state.DATA = state.DATA || {}
 				state.DATA.CHARWIDTH = state.DATA.CHARWIDTH || {}
 				state.DATA.CHARWIDTH[font] = state.DATA.CHARWIDTH[font] || {}
@@ -207,14 +213,10 @@ var ChatFuncs = (function ChatFuncs () {
 			D.Alert(`Current Widths of '${font}' at Size ${size}:   ${D.JS(state.DATA.CHARWIDTH[font][size] )}`)
 		},
 
-	 caseText = function (objIDs, textCase) {
-			_.each(objIDs, function (id) {
-				const obj = findObjs( {
-					_id: id._id
-				} )[0]
-				if (textCase === "upper") { obj.set("text", obj.get("text").toUpperCase()) } else if (textCase === "lower")
-					obj.set("text", obj.get("text").toLowerCase())
-			} )
+	 caseText = (objs, textCase) => {
+		 objs.forEach(obj => {
+				obj.set("text", textCase === "upper" ? obj.get("text").toUpperCase() : obj.get("text").toLowerCase())
+		 } )
 		},
 		// #endregion
 
@@ -223,8 +225,8 @@ var ChatFuncs = (function ChatFuncs () {
 			if (msg.type !== "api" || !playerIsGM(msg.playerid))
 				return
 
-			const args = msg.content.split(/\s+/)
-			let obj
+			const args = msg.content.split(/\s+/u)
+			let obj = null
 			switch (args.shift()) {
 			case "!get":
 				if (msg.selected && msg.selected[0] ) {
@@ -301,42 +303,44 @@ var ChatFuncs = (function ChatFuncs () {
 					}
 				}
 				switch (args.shift()) {
-				case "size":
-					const [deltaX, deltaY] = [args.shift(), args.shift()]
-					const [initX, initY] = [parseInt(obj.get("width")), parseInt(obj.get("height"))]
-					const attrList = {
-						width: deltaX.includes("x") ? initX * parseInt(deltaX.replace(/x/gu, "")) : parseInt(deltaX),
-						height: deltaY.includes("x") ? initY * parseInt(deltaY.replace(/x/gu, "")) : parseInt(deltaY)
-					}
+				case "size": {
+					const [deltaX, deltaY] = [args.shift(), args.shift()],
+					 [initX, initY] = [parseInt(obj.get("width")), parseInt(obj.get("height"))],
+					 attrList = {
+							width: deltaX.includes("x") ? initX * parseInt(deltaX.replace(/x/gu, "")) : parseInt(deltaX),
+							height: deltaY.includes("x") ? initY * parseInt(deltaY.replace(/x/gu, "")) : parseInt(deltaY)
+						}
 
 					D.Alert(`Changing ${D.JS(initX)}, ${D.JS(initY)} ---> ${D.JS(deltaX)}, ${D.JS(deltaY)}\nSetAttrs: ${D.JS(attrList)}`)
 					D.Alert(`Replacing X: ${D.JS(deltaX.replace(/x/gu, ""))}`)
 					D.Alert(`Parse Int: ${D.JS(parseInt(deltaX.replace(/x/gu, "")))}`)
 					D.Alert(`Multiplying: ${D.JS(initX * parseInt(deltaX.replace(/x/gu, "")))}`)
 					// Obj.set()
+					break }
+				default:
 					break
 				}
 				break
 			case "!find":
 				switch (args.shift()) {
 				case "obj":
-				case "object":
-					const type = args.shift()
-					const id = args.shift()
-					if (!type || !id) {
+				case "object": {
+					const type = args.shift(),
+					 objID = args.shift()
+					if (!type || !objID) {
 						D.Alert(HELPMESSAGE)
 						break
 					}
-					D.Alert(D.JS(getObj(type, id)), "Object(s) Found")
-					break
-				case "textWidth":
+					D.Alert(D.JS(getObj(type, objID)), "Object(s) Found")
+					break }
+				case "textWidth": {
 					if (!msg.selected || !msg.selected[0] )
 						break
 					const width = D.GetTextWidth(findObjs( {
 						_id: msg.selected[0]._id
 					} )[0], args.join(" "))
 					D.Alert(`The text you entered should be ${width} pixels wide.`)
-					break
+					break }
 				default:
 					D.Alert(HELPMESSAGE)
 					break
@@ -346,13 +350,13 @@ var ChatFuncs = (function ChatFuncs () {
 				if (!clearStateData(args))
 					D.Alert(HELPMESSAGE)
 				break
-			case "!prepText":
+			case "!prepText": {
 				const string = args.shift()
 				if (!msg.selected || !msg.selected[0] )
 					break
 				prepText(msg.selected, string)
 				D.Alert("Move the text object around, and type '!resText' when you have.")
-				break
+				break }
 			case "!resText":
 				if (!msg.selected || !msg.selected[0] )
 					break
@@ -368,16 +372,16 @@ var ChatFuncs = (function ChatFuncs () {
 					break
 				caseText(msg.selected, "lower")
 				break
-			case "!checkText":
+			case "!checkText": {
 				if (!msg.selected || !msg.selected[0] )
 					break
 				const thisObj = findObjs( {
-					_id: msg.selected[0]._id
-				} )[0]
-				const size = thisObj.get("font_size")
-				const font = thisObj.get("font_family").split(" ")[0]
+						_id: msg.selected[0]._id
+					} )[0],
+				 size = thisObj.get("font_size"),
+				 font = thisObj.get("font_family").split(" ")[0]
 				D.Alert(`There are ${_.values(state.DATA.CHARWIDTH[font][size] ).length} entries.`, `${D.JS(font).toUpperCase()} ${D.JS(size)}`)
-				break
+				break }
 			default:
 				break
 			}
@@ -385,17 +389,17 @@ var ChatFuncs = (function ChatFuncs () {
 		// #endregion
 
 		// #region Public Functions: RegisterEventHandlers
-		registerEventHandlers = function () {
+		regHandlers = function () {
 			on("chat:message", handleInput)
 		}
 
 	return {
-		RegisterEventHandlers: registerEventHandlers
+		RegisterEventHandlers: regHandlers
 	}
 	// #endregion
 } )()
 
-on("ready", function () {
+on("ready", () => {
 	ChatFuncs.RegisterEventHandlers()
-	log("ChatFuncs: Ready!")
+	D.Log("Ready!", "ChatFuncs")
 } )

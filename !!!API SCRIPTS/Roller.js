@@ -1,4 +1,6 @@
-﻿var Roller = (function Roller () {
+﻿const Roller = (() => {
+	let isRerollFXOn = false,
+		    rerollFX = null
 	// #region CONFIGURATION: Image Links, Color Schemes
 	const POSITIONS = {
 			diceFrame: {top: 207, left: 175},
@@ -250,15 +252,211 @@
 				greyPlus: "<span style=\"color: #A0A0A0; font-weight: bold; display: inline-block; text-align: right; margin: 0px 5px; vertical-align: top; line-height: 14px;\"> + </span>",
 				greyMinus: "<span style=\"color: #A0A0A0; font-weight: bold; display: inline-block; text-align: right; margin: 0px 5px; vertical-align: top; line-height: 14px;\"> - </span>"
 			}
-		}
-	let isRerollFXOn = false,
-		      rerollFX = null
-	// #endregion
+		},
+		// #endregion
 
-	
+		// #region Object Registration
+		registerDie = function (obj, category = "diceList", isResetting) {
+			state[D.GAMENAME].Roller[category] = isResetting ? [] : state[D.GAMENAME].Roller[category] || []
+			if (obj === null)
+				return
+			obj.set( {
+				imgsrc: IMAGES.dice.blank,
+				layer: "map",
+				isdrawing: true,
+				name: `rollerDie_${state[D.GAMENAME].Roller[category].length}_${category}`,
+				controlledby: ""
+			} )
+			state[D.GAMENAME].Roller[category].push( {
+				id: obj.id,
+				top: obj.get("top"),
+				left: obj.get("left"),
+				width: obj.get("width")
+			} )
+			WigglePads.MakePad(obj, "selectDie", "height:-28 width:-42 x:0 y:0")
+			D.Alert(`Registered die #${state[D.GAMENAME].Roller[category].length}: ${D.JS(state[D.GAMENAME].Roller[category] )}, Added WigglePad #${_.values(state[D.GAMENAME].WigglePads.byPad).length}`, "ROLLER: registerDie()")
+		},
 
-	// #region Build Dice Frame
-	const initFrame = function () {
+		registerText = function (obj, objName, params = {} ) {
+			state[D.GAMENAME].Roller.textList = params.isResetting ? {} : state[D.GAMENAME].Roller.textList || {}
+			if (obj === null)
+				return
+			obj.set( {
+				layer: "map",
+				name: `rollerText_${objName}`,
+				controlledby: ""
+			} )
+			state[D.GAMENAME].Roller.textList[objName] = {
+				id: obj.id,
+				top: obj.get("top"),
+				left: obj.get("left"),
+				height: obj.get("height"),
+				width: obj.get("width")
+			}
+			D.Alert(`Registered text box '${objName}: ${D.JS(state[D.GAMENAME].Roller.textList)}`, "ROLLER: registerText()")
+		},
+
+		registerImg = function (obj, objName, params) {
+			if (_.isString(params)) {
+				const kvpairs = params.split(","),
+					  imgInfo = {images: []}
+				_.each(kvpairs, kvp => {
+					if (kvp.includes("|")) {
+						const [k, v] = kvp.split("|")
+						imgInfo[k] = v
+					} else {
+						imgInfo.images.push(kvp)
+					}
+				} )
+			}
+			if (state[D.GAMENAME].Roller.imgList[objName] ) {
+				const remObj = getObj("graphic", state[D.GAMENAME].Roller.imgList[objName].id)
+				if (remObj)
+					remObj.remove()
+			}
+			if (obj === null)
+				return
+			obj.set( {
+				layer: "map",
+				name: `rollerImage_${objName}`,
+				controlledby: ""
+			} )
+			state[D.GAMENAME].Roller.imgList[objName] = {
+				id: obj.id,
+				top: obj.get("top"),
+				left: obj.get("left"),
+				height: obj.get("height"),
+				width: obj.get("width"),
+				imgsrc: (params.images && params.images[0] ) || obj.get("imgsrc"),
+				images: params.images || [obj.get("imgsrc")]
+			}
+			D.Alert(`Registered image '${objName}: ${D.JS(state[D.GAMENAME].Roller.imgList)}`, "ROLLER: registerImg()")
+		},
+
+		registerShape = function (obj, objName, params = {} ) {
+			state[D.GAMENAME].Roller.shapeList = params.isResetting ? {} : state[D.GAMENAME].Roller.shapeList || {}
+			if (obj === null)
+				return
+			obj.set( {
+				layer: "map",
+				name: `rollerShape_${objName}`,
+				controlledby: ""
+			} )
+			state[D.GAMENAME].Roller.shapeList[objName] = {
+				id: obj.id,
+				type: obj.get("_type"),
+				subType: params.subType || "line",
+				top: obj.get("top"),
+				left: obj.get("left"),
+				height: obj.get("height"),
+				width: obj.get("width")
+			}
+			D.Alert(`Registered shape '${objName}: ${D.JS(state[D.GAMENAME].Roller.shapeList)}`, "ROLLER: registerShape()")
+		},
+		// #endregion
+
+		// #region Graphic & Text Control */
+		makeImg = function (name, imgsrc, top, left, height, width) {
+			const img = createObj("graphic", {
+				_pageid: D.PAGEID(),
+				imgsrc,
+				top,
+				left,
+				width,
+				height,
+				layer: "map",
+				isdrawing: true
+			} )
+			registerImg(img, name)
+			toFront(img)
+
+			return img
+		},
+
+		setImg = function (objName, image) {
+			const obj = getObj("graphic", state[D.GAMENAME].Roller.imgList[objName].id)
+			if (!obj)
+				return D.ThrowError(`ROLLER: SETIMG(${objName}) >> No such image registered.`)
+			obj.set("imgsrc", IMAGES[image] )
+
+			return true
+		},
+
+		setText = function (objName, params) {
+			if (!state[D.GAMENAME].Roller.textList[objName] )
+				return D.ThrowError(`No text object registered with name '${D.JS(objName)}'.`, "ROLLER: setText()")
+			const obj = getObj("text", state[D.GAMENAME].Roller.textList[objName].id),
+				width = state[D.GAMENAME].Roller.textList[objName].width,
+				 left = state[D.GAMENAME].Roller.textList[objName].left
+			if (!obj)
+				return D.ThrowError(`Failure to recover object '${D.JS(objName)}': ${D.JS(state[D.GAMENAME].Roller.textList)}`, "ROLLER: setText()")
+			if (params.justified && params.justified === "left") {
+				params.width = D.GetTextWidth(obj, params.text)
+				params.left = left + params.width / 2 - width / 2
+			} else if (params.justified && params.justified === "center") { params.left = left }
+			if (params.shift) {
+				const anchorObj = getObj("text", state[D.GAMENAME].Roller.textList[params.shift.anchor].id),
+					anchorWidth = parseInt(anchorObj.get("width")),
+					 anchorLeft = parseInt(anchorObj.get("left"))
+				switch (params.shift.anchorSide) {
+				case "right":
+					params.left = anchorLeft +
+						(0.5 * anchorWidth) +
+						(0.5 * params.width) +
+						parseInt(params.shift.amount)
+					// D.DB("Shifting " + D.JSL(objName) + " right by " + D.JSL(params.shift.amount) + " from " + D.JSL(anchorLeft) + " to " + D.JSL(params.left), "ROLLER: setText()", 2);
+					break
+				default:
+					break
+				}
+			}
+			if (_.isNaN(params.left) || _.isNaN(params.width))
+				return D.ThrowError(`Bad left or width given for '${D.JS(objName)}': ${D.JS(params)}`, "ROLLER: setText()")
+			obj.set(_.omit(params, ["justified", "shift"] ))
+
+			return params
+		},
+
+		setColor = function (line, type, params, level) {
+			if (!COLORSCHEMES[type] )
+				D.ThrowError(`No Color Scheme for type '${D.JS(type)}'`)
+			else if (!COLORSCHEMES[type][line] )
+				D.ThrowError(`No Color Scheme for line '${D.JS(line)}' in '${D.JS(type)}'`)
+			else if (level && !COLORSCHEMES[type][line][level] )
+				D.ThrowError(`No Level '${D.JS(level)}' for '${D.JS(line)}' in '${D.JS(type)}'`)
+			else if (!level && !_.isString(COLORSCHEMES[type][line] ))
+				D.ThrowError(`Must provide Level for '${D.JS(line)}' in '${D.JS(type)}'`)
+			else
+				params.color = level ? COLORSCHEMES[type][line][level] : COLORSCHEMES[type][line]
+
+			return params
+		},
+
+		reposition = function (selObjs = [] ) {
+			for (const sel in selObjs) {
+				const obj = findObjs( {_id: sel._id} )[0]
+				_.find(_.pick(state[D.GAMENAME].Roller, STATECATS[obj.get("type")] ),
+					(v, k) => _.find(v,
+						(vv, kk) => {
+							if (vv.id === obj.id) {
+								state[D.GAMENAME].Roller[k][kk].left = obj.get("left")
+								state[D.GAMENAME].Roller[k][kk].top = obj.get("top")
+								state[D.GAMENAME].Roller[k][kk].height = obj.get("height")
+								state[D.GAMENAME].Roller[k][kk].width = obj.get("width")
+								D.Alert(`Repositioned '${obj.id}' at [${D.JS(k)}/${D.JS(kk)}] to: ${D.JS(state[D.GAMENAME].Roller[k][kk] )}`, "ROLLER: reposition()")
+
+								return true
+							}
+
+							return false
+						} ))
+			}
+		},
+		// #endregion
+
+
+		// #region Build Dice Frame
+		initFrame = function () {
 			const imageList = []
 			imageList.push(makeImg(
 				"frontFrame",
@@ -303,20 +501,18 @@
 				300
 			))
 			imageList.reverse()
-
-			/* Log(JSON.stringify(imageList));
-			   Return; */
-			for (let j = 0; j < imageList.length; j++)
-				toBack(imageList[j] )
+			for (const img in imageList)
+				toBack(img)
 
 			toBack(getObj("graphic", state[D.GAMENAME].Roller.imgList.Background.id))
 		},
 
 		scaleFrame = function (row, width) {
-			let stretchWidth = Math.max(width, 120),
+			const stretchWidth = Math.max(width, 120),
 				imgs = [getObj("graphic", state[D.GAMENAME].Roller.imgList[`${row}End`].id)],
-				blanks = [],
-				midCount = 0
+				stretchPer = stretchWidth / imgs.length,
+				blanks = []
+			let	[midCount, endImg, left] = [0, null, null]
 			while (stretchWidth > 225 * (imgs.length - 1)) {
 				imgs.push(getObj("graphic", state[D.GAMENAME].Roller.imgList[`${row}Mid${midCount}`].id))
 				midCount++
@@ -329,11 +525,10 @@
 				blanks.push(getObj("graphic", state[D.GAMENAME].Roller.imgList[`${row}Mid${midCount}`].id))
 				midCount++
 			}
-			const stretchPer = stretchWidth / imgs.length
 			D.DB(`${row} stretchWidth: ${stretchWidth}, imgs Length: ${imgs.length}, x225 ${imgs.length * 225}, stretch per: ${stretchPer}`, "SCALEFRAME()", 4)
 			D.DB(`${row} midCount: ${midCount}, blanks length: ${blanks.length}`)
-			let endImg = imgs.shift(),
-				left = POSITIONS.diceFrame.left + 120
+			endImg = imgs.shift()
+			left = POSITIONS.diceFrame.left + 120
 			D.DB(`${row}Start at ${POSITIONS.diceFrame.left}, + 120 to ${left}`, "SCALEFRAME()", 4)
 			for (let i = 0; i < imgs.length; i++) {
 				D.DB(`Setting ${row}Mid${i} to ${left}`, "SCALEFRAME()", 4)
@@ -345,11 +540,63 @@
 			}
 			D.DB(`Setting ${row}End to ${left}`, "SCALEFRAME()", 4)
 			endImg.set("left", left)
-			for (let j = 0; j < blanks.length; j++) {
-				D.DB(`Blanking Img #${imgs.length}${j}`, "SCALEFRAME()", 4)
-				blanks[j].set("imgsrc", IMAGES.blank)
+			for (let ii = 0; ii < blanks.length; ii++) {
+				D.DB(`Blanking Img #${imgs.length}${ii}`, "SCALEFRAME()", 4)
+				blanks[ii].set("imgsrc", IMAGES.blank)
 			}
 		},
+
+		// #endregion
+
+
+		// #region Dice Graphic Control
+		setDie = function (dieNum, dieCat = "diceList", dieVal, params = {} ) {
+			const dieRef = state[D.GAMENAME].Roller[dieCat][dieNum],
+				dieParams = {id: dieRef.id},
+				die = getObj("graphic", dieParams.id)
+			if (!die)
+				return D.ThrowError(`ROLLER: SETDIE(${dieNum}, ${dieCat}, ${dieVal}) >> No die registered.`)
+
+			if (dieVal !== "selected") {
+				dieRef.value = dieVal
+				state[D.GAMENAME].Roller.selected[dieCat] = _.without(state[D.GAMENAME].Roller.selected[dieCat], dieNum)
+			}
+			if (dieVal === "blank" || dieVal.includes("H"))
+				WigglePads.Set(dieParams.id, {layer: "map"} )
+			else
+				WigglePads.Set(dieParams.id, {layer: "objects"} )
+			dieParams.imgsrc = IMAGES.dice[dieVal]
+			_.each( ["top", "left", "width"], dir => {
+				if (die.get(dir) !== dieRef[dir] || (params.shift && params.shift[dir] ))
+					dieParams[dir] = dieRef[dir] + (params.shift && params.shift[dir] ? params.shift[dir] : 0)
+			} )
+			// D.DB("Setting '" + D.JSL(dieVal) + "' in " + D.JSL(dieCat) + " to '" + D.JSL(dieParams) + "'", "ROLLER: setDie()", 4);
+			die.set(dieParams)
+
+			return die
+		},
+
+		selectDie = function (dieNum, dieCat) {
+			if (state[D.GAMENAME].Roller.selected[dieCat].includes(dieNum)) {
+				setDie(dieNum, dieCat, state[D.GAMENAME].Roller[dieCat][dieNum].value)
+				state[D.GAMENAME].Roller.selected[dieCat] = _.without(state[D.GAMENAME].Roller.selected[dieCat], dieNum)
+			} else {
+				setDie(dieNum, dieCat, "selected")
+				state[D.GAMENAME].Roller.selected[dieCat].push(dieNum)
+				if (state[D.GAMENAME].Roller.selected[dieCat].length > 3)
+					selectDie(state[D.GAMENAME].Roller.selected[dieCat][0], dieCat)
+			}
+			if (state[D.GAMENAME].Roller.selected[dieCat].length > 0 && !isRerollFXOn) {
+				isRerollFXOn = true
+				D.RunFX("bloodCloud", POSITIONS.bloodCloudFX)
+				rerollFX = setInterval(D.RunFX, 1800, "bloodCloud", POSITIONS.bloodCloudFX)
+			} else if (state[D.GAMENAME].Roller.selected[dieCat].length === 0) {
+				isRerollFXOn = false
+				clearInterval(rerollFX)
+				rerollFX = null
+			}
+		},
+
 		// #endregion
 
 
@@ -366,7 +613,7 @@
 		   _.each(attrTypeObjs, function (attrTypeObj) {
 		   AttrLabels.push(filterObjs(function (obj) {
 		   If (obj.get('_type') === 'attribute' &&
-		   Obj.get('_characterid') == charObj.id &&
+		   Obj.get('_characterid') === charObj.id &&
 		   Obj.get('name').includes(attrTypeObj.get('name').replace('type', 'label'))) { return true } else return false
 		   })[0].get('current'))
 		   })
@@ -375,24 +622,21 @@
 		   Return attrLabels.join('sss|').split('|')
 		   } */
 
-		parseFlags = function (charObj, rollType, params) {
-			params = params || {}
-			params.data = params.data || []
+		parseFlags = function (charObj, rollType, params = {} ) {
+			params.args = params.args || []
 			const gN = params.groupNum || "",
-		 flagData = {
-					posFlagLines: [],
+				flagData = {
 					negFlagLines: [],
+					posFlagLines: [],
 					flagDiceMod: 0
-				}
+				},
+				traitList = _.map(params.groupNum ? params.args[1].split(",") : params[0].split(","), v => v
+					.replace(/:\d+/gu, "")
+					.replace(/_/gu, " ")),
+				 bloodPot = parseInt(getAttrByName(charObj.id, `${gN}BloodPotency`)) || 0
 			if ( ["rouse", "rouse2", "remorse", "check", "project", "secret"].includes(rollType))
 				return flagData
 			if (parseInt(getAttrByName(charObj.id, "applySpecialty")) > 0) {
-
-			/* If (traitData.flags.includes("S")) {
-			   _.each(getSpecialty(charObj, trt), function (spec) {
-			   Specialties.push(spec);
-			   });
-			   } */
 				flagData.posFlagLines.push("Specialty (●)")
 				flagData.flagDiceMod++
 			}
@@ -401,32 +645,28 @@
 				flagData.flagDiceMod++
 			}
 			if (parseInt(getAttrByName(charObj.id, `${gN}applyBloodSurge`)) > 0) {
-				const bonus = D.BLOODPOTENCY[parseInt(getAttrByName(charObj.id, `${gN}BloodPotency`)) || 0].bloodSurge
+				const bonus = D.BLOODPOTENCY[bloodPot].bloodSurge
 				flagData.posFlagLines.push(`Blood Surge (${bonus > 0 ? "●".repeat(bonus) : "~"})`)
 				flagData.flagDiceMod += bonus
 			}
 			if (parseInt(getAttrByName(charObj.id, `${gN}applyDiscipline`)) > 0) {
-				const bonus = D.BLOODPOTENCY[parseInt(getAttrByName(charObj.id, `${gN}BloodPotency`)) || 0].bloodDiscBonus
+				const bonus = D.BLOODPOTENCY[bloodPot].bloodDiscBonus
 				flagData.posFlagLines.push(`Discipline (${bonus > 0 ? "●".repeat(bonus) : "~"})`)
 				flagData.flagDiceMod += bonus
 			}
-			if (params.groupNum) {
-				params.data[5] = _.map(params.data[5].split(","), function (flag) {
-					return `${flag.split(":")[0]}:-${Math.abs(parseInt(flag.split(":")[1] ))}`
-				} ).join(",")
-			}
-			const traitList = _.map(params.groupNum ? params.data[1].split(",") : params[0].split(","), function (trt) { return trt.replace(/:\d+/g, "").replace(/_/g, " ") } )
+			if (params.groupNum)
+				params.args[5] = _.map(params.args[5].split(","), v => `${v.split(":")[0]}:-${Math.abs(parseInt(v.split(":")[1] ))}`).join(",")
 
 			/* D.Log(D.JSL(getAttrByName(charObj.id, gN + "incapacitation")), "INCAPACITATION");
 			   D.Log("PARAMS: " + D.JSL(params), "PARAMS");
-			   D.Log("PARAMS DATA: " + D.JSL(params.data), "PARAMS DATA");
+			   D.Log("PARAMS DATA: " + D.JSL(params.args), "PARAMS DATA");
 			   Return;
-			   D.Log(D.JSL(params.data[4]), "PARAMS DATA 4"); */
+			   D.Log(D.JSL(params.args[4]), "PARAMS DATA 4"); */
 			_.each(_.compact(_.flatten( [
 				getAttrByName(charObj.id, `${gN}incapacitation`) ? getAttrByName(charObj.id, `${gN}incapacitation`).split(",") : [],
-				params.data.length > 4 ? params.data[4].split(",") : "",
-				params.data.length > 4 ? params.data[5].split(",") : ""
-			] )), function (flag) {
+				params.args.length > 4 ? params.args[4].split(",") : "",
+				params.args.length > 4 ? params.args[5].split(",") : ""
+			] )), flag => {
 				if (flag === "Health" && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.physical, D.SKILLS.physical] )).length > 0) {
 					flagData.negFlagLines.push("Injured (●●)")
 					flagData.flagDiceMod -= 2
@@ -439,15 +679,17 @@
 				} else if (flag.includes(":")) { // Custom Flags of form Compulsion (Arrogance):psmd:-3 OR Compulsion (Arrogance):-3
 					const customFlag = _.compact(flag.split(":")),
 					 mod = parseInt(customFlag[customFlag.length - 1] )
-					if (customFlag.length === 2 || customFlag.length === 3 && (
-						customFlag[1].includes("p") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.physical, D.SKILLS.physical] )).length > 0 ||
-customFlag[1].includes("m") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.mental, D.SKILLS.mental] )).length > 0 ||
-customFlag[1].includes("s") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.social, D.SKILLS.social] )).length > 0 ||
-customFlag[1].includes("d") && _.intersection(traitList, D.DISCIPLINES).length > 0
+					if ((customFlag.length === 2 || customFlag.length === 3) && (
+						(customFlag[1].includes("p") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.physical, D.SKILLS.physical] )).length > 0) ||
+						(customFlag[1].includes("m") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.mental, D.SKILLS.mental] )).length > 0) ||
+						(customFlag[1].includes("s") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.social, D.SKILLS.social] )).length > 0) ||
+						(customFlag[1].includes("d") && _.intersection(traitList, D.DISCIPLINES).length > 0)
 					)
 
 					) {
-						if (mod >= 0) { flagData.posFlagLines.push(`${customFlag[0]} (${mod > 0 ? "●".repeat(mod) : "~"})`) } else if (mod < 0)
+						if (mod >= 0)
+							flagData.posFlagLines.push(`${customFlag[0]} (${mod > 0 ? "●".repeat(mod) : "~"})`)
+						else if (mod < 0)
 							flagData.negFlagLines.push(`${customFlag[0]} (${"●".repeat(Math.abs(mod))})`)
 						flagData.flagDiceMod += mod
 					}
@@ -458,8 +700,9 @@ customFlag[1].includes("d") && _.intersection(traitList, D.DISCIPLINES).length >
 		},
 
 		parseTraits = function (charObj, rollType, params) {
-			let traits = _.compact(params.groupNum ? params.data[1].split(",") : params[0].split(",")),
-				gN = params.groupNum || ""
+			const gN = params.groupNum || "",
+				traitData = {traitlist: null, traitData: {}, traitDiceMod: 0}
+			let traits = _.compact(params.groupNum ? params.args[1].split(",") : params[0].split(","))
 			if (!params.groupNum) {
 				if (rollType === "frenzy")
 					traits = ["Humanity", "Willpower"]
@@ -469,13 +712,9 @@ customFlag[1].includes("d") && _.intersection(traitList, D.DISCIPLINES).length >
 					traits = ["Willpower"]
 			}
 
-			const traitData = {
-				traitList: _.map(traits, function (trt) { return trt.replace(/:\d+/g, "") } ),
-				traitData: {},
-				traitDiceMod: 0
-			}
+			traitData.traitList = traits.map(v => v.replace(/:\d+/gu, ""))
 
-			_.each(traits, function (trt) {
+			_.each(traits, trt => {
 				if (trt.includes(":")) {
 					const tData = trt.split(":")
 					traitData.traitData[tData[0]] = {
@@ -496,11 +735,11 @@ customFlag[1].includes("d") && _.intersection(traitList, D.DISCIPLINES).length >
 						traitData.traitData.Humanity.value = Math.floor(traitData.traitData.Humanity.value / 3)
 					} else if (rollType === "remorse" && trt === "Humanity") {
 						traitData.traitData.Humanity.display = "Human Potential"
-						traitData.traitData.Humanity.value = 10 - traitData.traitData.Humanity.value - (parseInt(getAttrByName(charObj.id, `${gN}Stains`)) || 0)
+						traitData.traitData.Humanity.value = 10 -
+							traitData.traitData.Humanity.value -
+							(parseInt(getAttrByName(charObj.id, `${gN}Stains`)) || 0)
 					} else if (!traitData.traitData[trt].display) {
 						D.Chat(D.GetPlayerID(charObj), `Error determining NAME of trait '${D.JS(trt)}'.`, "ERROR: Dice Roller")
-
-						return false
 					}
 				}
 			} )
@@ -555,9 +794,9 @@ diff: 3
 					prefix: ""
 				}
 			if (params.groupNum) {
-				rollData.charName = params.data[0]
-				rollData.diff = parseInt(params.data[2] ) || 0
-				rollData.mod = parseInt(params.data[3] ) || 0
+				rollData.charName = params.args[0]
+				rollData.diff = parseInt(params.args[2] ) || 0
+				rollData.mod = parseInt(params.args[3] ) || 0
 			} else {
 				rollData.charName = D.GetName(charObj)
 				switch (rollType) {
@@ -591,6 +830,8 @@ diff: 3
 			case "willpower":
 				rollData.hunger = 0
 				break
+			default:
+				break
 			}
 
 			return rollData
@@ -598,30 +839,14 @@ diff: 3
 		// #endregion
 
 		// #region Rolling Dice & Formatting Result
-		makeSheetRoll = function (charObj, rollType, params) {
-			D.DB(`RECEIVED PARAMS: ${D.JSL(params)}`, "ROLLER: makeSheetRoll()", 2)
 
-			let rollData = getRollData(charObj, rollType, params)
-			D.DB(`ROLL DATA: ${D.JSL(rollData)}`, "ROLLER: makeSheetRoll()", 2)
-
-			rollData = buildDicePool(rollData)
-			D.DB(`BUILD POOL: ${D.JSL(rollData)}`, "ROLLER: makeSheetRoll()", 2)
-
-			const rollResults = rollDice(rollData)
-			D.DB(`ROLL RESULTS: ${D.JSL(rollResults)}`, "ROLLER: makeSheetRoll()", 2)
-
-			applyRoll(rollData, rollResults)
-		},
-
-		buildDicePool = function (rollData) {
-
-			/* MUST SUPPLY:
+		/* MUST SUPPLY:
 [Rouse & Checks]        [Others]
 rollData = { type }      { type, mod, << traits: [], traitData: { value, display }, hunger >> }
 */
 
-			//  DUMMY RESULTS:
-			/*
+		//  DUMMY RESULTS:
+		/*
 Return {
 groupNum: "",
 charID: "-LN4P73XRfqCcI8U6c-t",
@@ -648,7 +873,8 @@ mod: 0,
 diff: 3,
 basePool: 10,
 hungerPool: 0
-};         */
+}; */
+		buildDicePool = function (rollData) {
 			rollData.hunger = rollData.hunger || 0
 			rollData.basePool = 0
 			rollData.hungerPool = 0
@@ -668,9 +894,7 @@ hungerPool: 0
 
 				return rollData
 			default:
-				_.each(_.values(rollData.traitData), function (tData) {
-					rollData.dicePool += tData.value
-				} )
+				_.each(_.values(rollData.traitData), v => { rollData.dicePool += v.value } )
 				rollData.dicePool += rollData.mod
 				break
 			}
@@ -690,12 +914,13 @@ hungerPool: 0
 		   Display: D.IsIn(trt) || D.IsIn(getAttrByName(charObj.id, trt + "_name")),
 		   Value: parseInt(getAttrByName(charObj.id, trt)) || 0
 		   };
-		   If (rollData.type == "frenzy" && trt == "Humanity") {
+		   If (rollData.type === "frenzy" && trt === "Humanity") {
 		   RollData.traitData.Humanity.display = "⅓ Humanity";
 		   RollData.traitData.Humanity.value = Math.floor(rollData.traitData.Humanity.value / 3);
-		   } else if (rollData.type == "remorse" && trt == "Humanity") {
+		   } else if (rollData.type === "remorse" && trt === "Humanity") {
 		   RollData.traitData.Humanity.display = "Human Potential";
-		   RollData.traitData.Humanity.value = 10 - rollData.traitData.Humanity.value - (parseInt(getAttrByName(charObj.id, "Stains")) || 0);
+		   RollData.traitData.Humanity.value = 10 - rollData.traitData.Humanity.value
+		   - (parseInt(getAttrByName(charObj.id, "Stains")) || 0);
 		   } else {
 		   If (rollData.flags.includes("S")) {
 		   _.each(getSpecialty(charObj, trt), function (spec) {
@@ -719,13 +944,9 @@ hungerPool: 0
 		   RollData.dicePool = Math.max(0, rollData.dicePool); */
 		},
 
-		rollDice = function (rollData, addVals) {
-
-			/* MUST SUPPLY:
+		/* MUST SUPPLY:
 rollData = { type, diff, basePool, hungerPool, << diffmod >> }  OR  { type, diff, rerollAmt }  */
-
-			// DUMMY RESULTS:
-			/*
+		/* DUMMY RESULTS:
 Return {
 total: 10,
 critPairs: {
@@ -770,9 +991,8 @@ diceVals: [
 ],
 margin: 5,
 commit: 0
-};
-*/
-
+};*/
+		rollDice = function (rollData, addVals) {
 			// D.DB("RECEIVED ROLL DATA: " + D.JSL(rollData), "ROLLER: rollDice()", 3);
 			D.DB(`RECEIVED ADDED VALS: ${D.JSL(addVals)}`, "ROLLER: rollDice()", 3)
 			const rollResults = {
@@ -783,7 +1003,6 @@ commit: 0
 					rolls: [],
 					diceVals: []
 				},
-
 				roll = function (dtype) {
 					const d10 = randomInteger(10)
 					rollResults.rolls.push(dtype + d10)
@@ -813,22 +1032,27 @@ commit: 0
 						case "H":
 							rollResults.H.botches++
 							break
+						default:
+							break
 						}
 						break
+					default:
+						break
 					}
-				}
+				},
+				sortBins = []
 
 			if (rollData.rerollAmt) {
 				for (let i = 0; i < rollData.rerollAmt; i++)
 					roll("B")
 			} else {
-				_.each( {B: rollData.basePool, H: rollData.hungerPool}, function (val, dtype) {
-					for (let i = 0; i < parseInt(val); i++)
+				_.each( {B: rollData.basePool, H: rollData.hungerPool}, (v, dtype) => {
+					for (let i = 0; i < parseInt(v); i++)
 						roll(dtype)
 				} )
 			}
 
-			_.each(addVals, function (val) {
+			_.each(addVals, val => {
 				const dtype = val.slice(0, 1)
 				switch (val.slice(1, 2)) {
 				case "c":
@@ -845,13 +1069,13 @@ commit: 0
 				case "b":
 					rollResults[dtype].botches++
 					break
+				default:
+					break
 				}
 			} )
 
 			D.DB(`PRE-SORT RESULTS: ${D.JSL(rollResults)}`, "ROLLER: rollDice()", 3)
 			// D.Alert(rollResults, "PRESORT ROLL RESULTS");
-
-			const sortBins = []
 			switch (rollData.type) {
 			case "secret":
 			case "trait":
@@ -888,10 +1112,10 @@ commit: 0
 						rollResults.diceVals.push("BcR")
 					}
 				}
-				_.each( ["crits", "succs", "fails", "botches"], function (bin) {
-					_.each(sortBins, function (rType) {
-						for (let i = 0; i < rollResults[rType][bin]; i++)
-							rollResults.diceVals.push(rType + bin.slice(0, 1))
+				_.each( ["crits", "succs", "fails", "botches"], bin => {
+					_.each(sortBins, v => {
+						for (let i = 0; i < rollResults[v][bin]; i++)
+							rollResults.diceVals.push(v + bin.slice(0, 1))
 					} )
 				} )
 				if (rollData.diff !== 0 || rollData.diffMod > 0)
@@ -899,16 +1123,14 @@ commit: 0
 				break
 			case "rouse2":
 			case "rouse":
-				rollResults.diceVals = _.map(rollResults.rolls, function (roll) {
-					return parseInt(roll.slice(1)) < 6 ? "Hb" : "Bs"
-				} )
+				rollResults.diceVals = _.map(rollResults.rolls, rol => { parseInt(rol.slice(1)) < 6 ? "Hb" : "Bs" } )
 				if (rollResults.diceVals[1] && rollResults.diceVals[0] !== rollResults.diceVals[1] )
 					rollResults.diceVals = ["Hb", "Bs"]
 				break
 			case "check":
-				rollResults.diceVals = _.map(rollResults.rolls, function (roll) {
-					return parseInt(roll.slice(1)) < 6 ? "Hf" : "Bs"
-				} )
+				rollResults.diceVals = _.map(rollResults.rolls, rol => { parseInt(rol.slice(1)) < 6 ? "Hf" : "Bs" } )
+				break
+			default:
 				break
 			}
 			if (!(rollResults.commit && rollResults.commit === 0)) {
@@ -919,35 +1141,32 @@ commit: 0
 			return rollResults
 		},
 
-		formatDiceLine = function (rollData, rollResults, splitAt) {
-
-			/* MUST SUPPLY:
+		/* MUST SUPPLY:
 (rollData = { << isReroll, isGMMod >> })
-rollResults = { diceVals = [], total, << margin >> }
-*/
-			rollData = rollData || {}
-			splitAt = splitAt || 999
+rollResults = { diceVals = [], total, << margin >> } */
+		formatDiceLine = function (rollData = {}, rollResults, splitAt = 999) {
 			let logLine = "",
-		 counter = 0
-			if (rollData.isReroll) { _.each(rollResults) } else if (rollData.isGMMod) {
-
+		        counter = 0
+			if (rollData.isReroll) {
+				_.each(rollResults, roll => roll)
+			} else if (rollData.isGMMod) {
+				_.each(rollResults, roll => roll)
 			} else {
-				_.each(rollResults.diceVals, function (val) {
+				_.each(rollResults.diceVals, v => {
 					if (counter === splitAt) {
 						counter = 0
 						logLine += CHATSTYLES.resultDice.lineBreak
 					}
-					logLine += CHATSTYLES.resultDice[val]
+					logLine += CHATSTYLES.resultDice[v]
 					counter++
 				} )
-
-				return logLine
 			}
+
+			return logLine
 		},
 
-		applyRoll = function (rollData, rollResults) {
 
-			/* MUST SUPPLY:
+		/* MUST SUPPLY:
 [ALL]
 rollData = { type, charName, charID }
 rollResults = { total, diceVals: [] }
@@ -957,12 +1176,11 @@ rollResults = { H: { botches }, critPairs: {hh, hb, bb}, << margin >> }
 [TRAIT ONLY]
 rollData = { posFlagLines, negFlagLines }
 */
-			state[D.GAMENAME].Roller.lastRoll = {
-				data: rollData,
-				results: rollResults
-			}
+		applyRoll = function (rollData, rollResults) {
 			const gNum = rollData.groupNum || "",
-			 deltaAttrs = {},
+				[deltaAttrs, txtWidths] = [{}, {}],
+				[mainRollParts, mainRollLog, diceObjs] = [[], [], []],
+				yShift = 0,
 				rollLines = {
 					rollerName: {text: "", justified: "left"},
 					mainRoll: {text: "", justified: "left"},
@@ -979,8 +1197,13 @@ rollData = { posFlagLines, negFlagLines }
 					outcome: "",
 					subOutcome: ""
 				},
-				yShift = 0
+				blankLines = _.keys(_.omit(state[D.GAMENAME].Roller.textList, _.keys(rollLines))),
+				p = v => rollData.prefix + v
+			let [introPhrase, logPhrase, logString, stains, margin, total, bookends, spread] = new Array(8).fill(null),
+				maxHumanity = 10,
+				diceCats = _.clone(STATECATS.dice)
 
+			state[D.GAMENAME].Roller.lastRoll = {rollData, rollResults}
 			switch (rollData.type) {
 			case "project":
 				rollLines.subOutcome = {text: ""}
@@ -1027,35 +1250,21 @@ rollData = { posFlagLines, negFlagLines }
 				rollLines.resultCountShadow = {text: ""}
 				rollLines.outcome = {text: "", justified: "left"}
 				break
+			default:
+				return D.ThrowError("Unrecognized rollType.")
 			}
 
-			_.each(_.keys(rollLines), function (line) {
+			_.each(_.keys(rollLines), line => {
 				if (_.isString(COLORSCHEMES[rollData.type][line] ))
 					rollLines[line] = setColor(line, rollData.type, rollLines[line] )
 			} )
 
-			const blankLines = _.keys(_.omit(state[D.GAMENAME].Roller.textList, _.keys(rollLines)))
-
 			D.DB(`ROLL LINES: ${D.JSL(rollLines)}`, "ROLLER: applyRoll()", 3)
 			// D.DB("BLANKING LINES: " + D.JSL(blankLines), "ROLLER: applyRoll()", 3);
 
-			const p = s => rollData.prefix + s
-
-			_.each(rollLines, function (content, name) {
-
-			/* PlayerTop: { text: "", justified: "center" },
-			   PlayerMid: { text: "", justified: "center" },
-			   PlayerBot: { text: "", justified: "center" },
-			   MainRoll: { text: "", justified: "left" },
-			   MainRollSub: { text: "", justified: "center" },
-			   Summary: { text: "", justified: "center" },
-			   Outcome: { text: "", justified: "center" }
-			   D.DB("Parsing " + D.JSL(name) + " = '" + D.JSL(content) + "'", "ROLLER: applyRoll()", 4); */
+			_.each(rollLines, (content, name) => {
 				switch (name) {
 				case "mainRoll":
-					var [introPhrase, logPhrase] = [null, null]
-					var [mainRollParts, mainRollLog] = [[], []]
-					var total, margin
 					switch (rollData.type) {
 					case "remorse":
 						introPhrase = introPhrase || `Does ${rollData.charName} feel remorse?`
@@ -1066,29 +1275,32 @@ rollData = { posFlagLines, negFlagLines }
 						logPhrase = logPhrase || " resists frenzy:"
 					// Falls through
 					case "project":
-						introPhrase = introPhrase || `${rollData.charName} launches a Project (Scope ${rollData.diff - rollData.diffMod - 2}):`
-						logPhrase = logPhrase || ` launches a Project (Scope ${rollData.diff - rollData.diffMod - 2}):`
+						introPhrase = introPhrase ||
+							`${rollData.charName} launches a Project (Scope ${rollData.diff - rollData.diffMod - 2}):`
+						logPhrase = logPhrase ||
+							` launches a Project (Scope ${rollData.diff - rollData.diffMod - 2}):`
 					// Falls through
 					case "trait":
 					case "willpower":
 					case "humanity":
 						introPhrase = introPhrase || `${rollData.charName} rolls: `
 						logPhrase = logPhrase || " rolls:"
-						_.each(rollData.traits, function (trt) {
+						_.each(rollData.traits, trt => {
 							let dotline = "●".repeat(rollData.traitData[trt].value)
 							switch (trt) {
 							case "Stains":
 								dotline = ""
 							// Falls through
 							case "Humanity":
-								var stains = Math.max(parseInt(getAttrByName(rollData.charID, "Stains") || 0), 0)
-								var maximum = 10
+								stains = Math.max(parseInt(getAttrByName(rollData.charID, "Stains") || 0), 0)
 								if (rollData.type === "frenzy") {
 									stains = Math.max(stains === 0 ? 0 : 1, Math.floor(stains / 3))
-									maximum = 4
+									maxHumanity = 4
 								}
-								if (rollData.type === "remorse") { dotline = "◌".repeat(Math.max(maximum - dotline.length - stains, 0)) + dotline + "◌".repeat(stains) } else
-									dotline += "◌".repeat(Math.max(maximum - dotline.length - (stains || 0)), 0) + "‡".repeat(stains || 0)
+								if (rollData.type === "remorse")
+									dotline = "◌".repeat(Math.max(maxHumanity - dotline.length - stains, 0)) + dotline + "◌".repeat(stains)
+								else
+									dotline += "◌".repeat(Math.max(maxHumanity - dotline.length - (stains || 0)), 0) + "‡".repeat(stains || 0)
 								break
 							case "Willpower": // Stains
 								dotline += "◌".repeat(Math.max(0, parseInt(getAttrByName(rollData.charID, "willpower_max")) - parseInt(rollData.traitData[trt].value)))
@@ -1099,8 +1311,12 @@ rollData = { posFlagLines, negFlagLines }
 								break
 							}
 							if (trt !== "Stains") {
-								mainRollParts.push(`${rollData.traitData[trt].display} (${dotline})`)
-								mainRollLog.push(`${rollData.traitData[trt].display} (${rollData.traitData[trt].value})`)
+								mainRollParts.push(
+									`${rollData.traitData[trt].display} (${dotline})`
+								)
+								mainRollLog.push(
+									`${rollData.traitData[trt].display} (${rollData.traitData[trt].value})`
+								)
 							}
 						} )
 						// LogLines.rollerName += logPhrase;
@@ -1138,7 +1354,7 @@ rollData = { posFlagLines, negFlagLines }
 						logLines.mainRoll = `${CHATSTYLES.check}Simple Check`
 						rollLines.mainRoll.text = "Simple Check"
 						break
-					case "default":
+					default:
 						introPhrase = introPhrase || `${rollData.charName}:`
 						logPhrase = logPhrase || ":"
 					}
@@ -1276,7 +1492,8 @@ rollData = { posFlagLines, negFlagLines }
 						}
 						break
 					case "remorse":
-						deltaAttrs[`${gNum}deltaStains`] = -1 * parseInt(getAttrByName(rollData.charID, `${gNum}Stains`) || 0)
+						deltaAttrs[`${gNum}deltaStains`] =
+							-1 * parseInt(getAttrByName(rollData.charID, `${gNum}Stains`) || 0)
 						if (rollResults.total === 0) {
 							rollLines.outcome.text = "YOUR HUMANITY FADES..."
 							logLines.outcome = `${CHATSTYLES.outcomeRed}DEGENERATION</span></div>`
@@ -1312,16 +1529,19 @@ rollData = { posFlagLines, negFlagLines }
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "worst")
 						}
 						break
+					default:
+						D.ThrowError("Unrecognized rollType.")
 					}
 					break
+				default:
+					D.ThrowError("Unrecognized Dice Line Definition.")
 				}
 			} )
 
 			logLines.rollerName = `${CHATSTYLES.rollerName + rollData.charName + logLines.rollerName}</div>`
 			logLines.mainRoll = `${logLines.mainRoll + logLines.difficulty}</span>${logLines.mainRollSub}</div>`
 			logLines.resultDice = `${CHATSTYLES.resultDice.start + CHATSTYLES.resultCount + rollResults.total}:</span>${formatDiceLine(rollData, rollResults)}${CHATSTYLES.margin}${rollResults.margin ? ` (${rollResults.margin >= 0 ? "+" : "-"}${Math.abs(rollResults.margin)})` : " "}</span></div>`
-
-			const logString = `${logLines.fullBox + logLines.rollerName + logLines.mainRoll + logLines.resultDice + logLines.outcome + logLines.subOutcome}</div>`
+			logString = `${logLines.fullBox + logLines.rollerName + logLines.mainRoll + logLines.resultDice + logLines.outcome + logLines.subOutcome}</div>`
 			D.DB(`LOGLINES: ${D.JS(logLines)}`, "LOG LINES", 2)
 
 			D.SendMessage("Storyteller", logString, " ")
@@ -1329,39 +1549,35 @@ rollData = { posFlagLines, negFlagLines }
 
 			D.DB("... Complete.", "ROLLER: applyRolls()", 4)
 
-			_.each(blankLines, function (line) {
-				rollLines[line] = {text: " "}
-			} )
+			_.each(blankLines, line => { rollLines[line] = {text: " "} } )
 
-			let diceCats = _.clone(STATECATS.dice)
 			switch (rollData.type) {
 			case "rouse2":
 			case "rouse":
 			case "check":
 				diceCats = diceCats.reverse()
 				break
+			default:
+				D.ThrowError("Unrecognized rollType.")
 			}
-			const diceObjs = []
 			// D.DB("Processing '" + D.JSL(diceCats[0]) + "' (length = " + D.JSL(state[D.GAMENAME].Roller[diceCats[0]].length) + "): " + D.JSL(state[D.GAMENAME].Roller[diceCats[0]]), "ROLLER: applyRoll()", 2);
 			for (let i = 0; i < state[D.GAMENAME].Roller[diceCats[0]].length; i++)
 				diceObjs.push(setDie(i, diceCats[0], rollResults.diceVals[i] || "blank", {type: rollData.type, shift: {top: yShift} } ))
 			// D.DB("Dice Objects List: '" + D.JSL(diceObjs) + "'", "ROLLER: applyRoll()", 2);
 
-			const bookends = [diceObjs[0], diceObjs[rollResults.diceVals.length - 1]]
+			bookends = [diceObjs[0], diceObjs[rollResults.diceVals.length - 1]]
 
 			if (!bookends || bookends.length < 2 || _.isUndefined(bookends[0] ) || _.isUndefined(bookends[1] ))
 				return D.ThrowError(`Bookends Not Found.  DiceObjs.length is ${diceObjs.length}, rollResults.diceVals is ${rollResults.diceVals.length}: ${D.JSL(diceObjs)}`)
 
-			let spread = bookends[1].get("left") - bookends[0].get("left")
+			spread = bookends[1].get("left") - bookends[0].get("left")
 
 			scaleFrame("bottom", spread)
-			for (let j = 0; j < state[D.GAMENAME].Roller[diceCats[1]].length; j++)
-				setDie(j, diceCats[1], "blank")
+			for (let ii = 0; ii < state[D.GAMENAME].Roller[diceCats[1]].length; ii++)
+				setDie(ii, diceCats[1], "blank")
 
-
-			const txtWidths = {}
-			_.each(rollLines, function (params, name) {
-				const pars = setText(name, params)
+			_.each(rollLines, (args, name) => {
+				const pars = setText(name, args)
 				txtWidths[name] = pars.width
 			} )
 			spread = txtWidths.posMods || 0 + txtWidths.negMods || 0
@@ -1374,70 +1590,97 @@ rollData = { posFlagLines, negFlagLines }
 			// D.Alert(D.JS(deltaAttrs), "DELTA ATTRS");
 				setAttrs(rollData.charID, deltaAttrs)
 			}
+
+			return true
 		},
 
-		wpReroll = function (dieCat) {
-			isRerollFXOn = false
-			clearInterval(rerollFX)
-			rerollFX = null
-			const rollData = state[D.GAMENAME].Roller.lastRoll.data
-			rollData.rerollAmt = state[D.GAMENAME].Roller.selected[dieCat].length
-			const rolledDice = _.mapObject(_.omit(state[D.GAMENAME].Roller[dieCat], function (data, dieNum) {
-					return data.value === "blank" || state[D.GAMENAME].Roller.selected[dieCat].includes(parseInt(dieNum))
-				} ), function (data) { return data.value } ),
-				// D.DB("UNSELECTED VALUES: " + D.JSL(rolledDice), "ROLLER: wpReroll()", 3);
-				rollResults = rollDice(rollData, _.values(rolledDice))
+		makeSheetRoll = function (charObj, rollType, params) {
+			D.DB(`RECEIVED PARAMS: ${D.JSL(params)}`, "ROLLER: makeSheetRoll()", 2)
+
+			let rollData = getRollData(charObj, rollType, params)
+			D.DB(`ROLL DATA: ${D.JSL(rollData)}`, "ROLLER: makeSheetRoll()", 2)
+
+			rollData = buildDicePool(rollData)
+			D.DB(`BUILD POOL: ${D.JSL(rollData)}`, "ROLLER: makeSheetRoll()", 2)
+
+			const rollResults = rollDice(rollData)
+			D.DB(`ROLL RESULTS: ${D.JSL(rollResults)}`, "ROLLER: makeSheetRoll()", 2)
 
 			applyRoll(rollData, rollResults)
 		},
 
+		wpReroll = function (dieCat) {
+			clearInterval(rerollFX);
+			[isRerollFXOn, rerollFX] = [false, null]
+			const rollData = state[D.GAMENAME].Roller.lastRoll.rollData,
+				rolledDice = _.mapObject(
+					_.omit(
+						state[D.GAMENAME].Roller[dieCat],
+						(v, dNum) => v.value === "blank" ||
+							state[D.GAMENAME].Roller.selected[dieCat].includes(parseInt(dNum))
+					), v => v.value
+				),
+			   rollResults = rollDice(rollData, _.values(rolledDice))
+				// D.DB("UNSELECTED VALUES: " + D.JSL(rolledDice), "ROLLER: wpReroll()", 3);
+
+			rollData.rerollAmt = state[D.GAMENAME].Roller.selected[dieCat].length
+			applyRoll(rollData, rollResults)
+		},
+
 		changeRoll = function (deltaDice) {
-			let rollResults = state[D.GAMENAME].Roller.lastRoll.results,
-				rollData = state[D.GAMENAME].Roller.lastRoll.data
+			const rollData = state[D.GAMENAME].Roller.lastRoll.rollData
+			let rollResults = state[D.GAMENAME].Roller.lastRoll.rollResults
 			if (parseInt(deltaDice) < 0) {
 				_.shuffle(rollResults.diceVals)
 				for (let i = 0; i > deltaDice; i--) {
-					const cutIndex = _.findIndex(rollResults.diceVals, function (val) {
-						return val.slice(0, 1) === "B"
-					} )
+					const cutIndex = _.findIndex(rollResults.diceVals, v => { v.slice(0, 1) === "B" } )
 					if (cutIndex === -1)
 						return D.ThrowError(`Not enough base dice to remove in: ${D.JSL(rollResults.diceVals)}`, "ROLLER: changeRoll()")
 					rollResults.diceVals.splice(cutIndex, 1)
 				}
 			}
 			rollResults = rollDice( {type: "trait", rerollAmt: parseInt(deltaDice) > 0 ? parseInt(deltaDice) : 0, diff: rollData.diff}, rollResults.diceVals)
-			state[D.GAMENAME].Roller.lastRoll.data.dicePool += parseInt(deltaDice)
-			state[D.GAMENAME].Roller.lastRoll.data.basePool = Math.max(1, rollData.dicePool) - rollData.hungerPool
-			applyRoll(state[D.GAMENAME].Roller.lastRoll.data, rollResults)
+			state[D.GAMENAME].Roller.lastRoll.rollData.dicePool += parseInt(deltaDice)
+			state[D.GAMENAME].Roller.lastRoll.rollData.basePool = Math.max(1, rollData.dicePool) - rollData.hungerPool
+
+			return applyRoll(state[D.GAMENAME].Roller.lastRoll.rollData, rollResults)
 		},
 		// #endregion
 
 		// #region Getting Random Resonance Based On District/Site Parameters
-	 getResonance = function (posRes, negRes, isDoubleAcute) {
-			let resProbs
-			posRes = (posRes || "").toLowerCase()
-			negRes = (negRes || "").toLowerCase()
-			let resonances = ["Choleric", "Melancholic", "Phlegmatic", "Sanguine"]
-			_.each(resonances, function (res) {
-				if (posRes.includes(res.toLowerCase().charAt(0))) {
-					resonances = _.without(resonances, res)
-					resonances.unshift(res)
+	 getResonance = function (posRes = "", negRes = "", isDoubleAcute) {
+			let resProbs = [],
+				randNum = null,
+				resonances = ["Choleric", "Melancholic", "Phlegmatic", "Sanguine"]
+			_.each(resonances, v => {
+				if (posRes.includes(v.toLowerCase().charAt(0))) {
+					resonances = _.without(resonances, v)
+					resonances.unshift(v)
 				}
-				if (negRes.includes(res.toLowerCase().charAt(0))) {
-					resonances = _.without(resonances, res)
-					resonances.push(res)
+				if (negRes.includes(v.toLowerCase().charAt(0))) {
+					resonances = _.without(resonances, v)
+					resonances.push(v)
 				}
 			} )
 			switch (posRes.length + negRes.length) {
 			case 3:
-				if (posRes.length === 2)
-					if (posRes.charAt(0) === posRes.charAt(1)) { resProbs = D.RESPROBS.pos2neg } else { resProbs = D.RESPROBS.posposneg }
-				else
-				if (negRes.charAt(0) === negRes.charAt(1)) { resProbs = D.RESPROBS.neg2pos } else
+				if (posRes.length === 2) {
+					if (posRes.charAt(0) === posRes.charAt(1))
+						resProbs = D.RESPROBS.pos2neg
+					else
+						resProbs = D.RESPROBS.posposneg
+				} else if (negRes.charAt(0) === negRes.charAt(1)) {
+					resProbs = D.RESPROBS.neg2pos
+				} else {
 					resProbs = D.RESPROBS.posnegneg
+				}
 				break
 			case 2:
-				if (posRes.length === 2) { resProbs = D.RESPROBS.pospos } else if (negRes.length === 2) { resProbs = D.RESPROBS.negneg } else
+				if (posRes.length === 2)
+					resProbs = D.RESPROBS.pospos
+				else if (negRes.length === 2)
+					resProbs = D.RESPROBS.negneg
+				else
 					resProbs = D.RESPROBS.posneg
 				break
 			case 1:
@@ -1446,8 +1689,10 @@ rollData = { posFlagLines, negFlagLines }
 			case 0:
 				resProbs = D.RESPROBS.norm
 				break
+			default:
+				return D.ThrowError("Too many variables!")
 			}
-			resProbs = _.flatten(_.map(resProbs, function (ra) { return _.values(ra) } ))
+			resProbs = _.flatten(_.map(resProbs, v => _.values(v)))
 			if (isDoubleAcute) {
 				for (let i = 0; i < 4; i++) {
 					resProbs[i * 4 + 0] = resProbs[i * 4 + 0] - resProbs[i * 4 + 2] / 2 - resProbs[i * 4 + 3] / 2
@@ -1456,16 +1701,16 @@ rollData = { posFlagLines, negFlagLines }
 					resProbs[i * 4 + 3] = resProbs[i * 4 + 3] * 2
 				}
 			}
-			let randNum = Math.random()
+
+			randNum = Math.random()
 			do
 				randNum -= resProbs.shift()
 			while (randNum > 0)
 
-			const res = resonances.reverse()[Math.floor(resProbs.length / 4)],
-				// Let res = resonances[3 - Math.floor(resProbs.length / 4)];
-				temp = ["Negligible", "Fleeting", "Intense", "Acute"][3 - resProbs.length % 4]
-
-			return [temp, res]
+			return [
+				["Negligible", "Fleeting", "Intense", "Acute"][3 - resProbs.length % 4],
+				resonances.reverse()[Math.floor(resProbs.length / 4)]
+			]
 		// Return ["Acute", "Choleric"];
 		},
 
@@ -1474,9 +1719,10 @@ rollData = { posFlagLines, negFlagLines }
 		// #region Secret Dice Rolling Macro
 		makeSecretRoll = function (chars, params, isSilent, isHidingTraits) {
 			let rollData = buildDicePool(getRollData(chars[0], "secret", params)),
-				dicePool = rollData.dicePool,
-				traitLine, playerLine,
-				blocks = []
+				[traitLine, playerLine] = ["", ""],
+				resultLine = null
+			const dicePool = rollData.dicePool,
+				    blocks = []
 
 			if (isHidingTraits || rollData.traits.length === 0) { playerLine = `${CHATSTYLES.space30 + CHATSTYLES.secret.greyS}... rolling </span>${CHATSTYLES.secret.whiteB}${dicePool}</span>${CHATSTYLES.space10}${CHATSTYLES.secret.greyS}${dicePool === 1 ? " die " : " dice "}...</span>${CHATSTYLES.space40}` } else {
 				playerLine = `${CHATSTYLES.secret.greyS}rolling </span>${CHATSTYLES.secret.white}${_.map(_.keys(rollData.traitData), k => k.toLowerCase()).join(`</span><br>${CHATSTYLES.space30}${CHATSTYLES.secret.greyPlus}${CHATSTYLES.secret.white}`)}</span>`
@@ -1490,28 +1736,38 @@ rollData = { posFlagLines, negFlagLines }
 					traitLine += (dicePool > 0 ? " + " : "") + (dicePool < 0 ? " - " : "") + Math.abs(rollData.mod)
 			} else { traitLine = rollData.mod + (rollData.mod === 1 ? " Die" : " Dice") }
 
-			_.each(chars, function (char) {
+			_.each(chars, char => {
 				rollData = getRollData(char, "secret", params)
 				rollData.isSilent = isSilent || false
 				rollData.isHidingTraits = isHidingTraits || false
 				rollData = buildDicePool(rollData)
-				let rollResults = rollDice(rollData),
+				let outcomeLine = ""
+				const rollResults = rollDice(rollData),
 					total = rollResults.total,
-					margin = rollResults.margin,
-					outcomeLine = ""
-				if ((total === 0 || margin < 0) && rollResults.H.botches > 0) { outcomeLine = `${CHATSTYLES.outcomeRedSmall}BESTIAL FAIL!` } else if (margin >= 0 && rollResults.critPairs.hb + rollResults.critPairs.hh > 0) { outcomeLine = `${CHATSTYLES.outcomeWhiteSmall}MESSY CRIT! (${rollData.diff > 0 ? `+${margin}` : total})` } else if (total === 0) { outcomeLine = `${CHATSTYLES.outcomeRedSmall}TOTAL FAILURE!` } else if (margin < 0) { outcomeLine = `${CHATSTYLES.outcomeRedSmall}FAILURE${rollData.diff > 0 ? ` (${margin})` : ""}` } else if (rollResults.critPairs.bb > 0) { outcomeLine = `${CHATSTYLES.outcomeWhiteSmall}CRITICAL! (${rollData.diff > 0 ? `+${margin}` : total})` } else
+					margin = rollResults.margin
+				if ((total === 0 || margin < 0) && rollResults.H.botches > 0)
+					outcomeLine = `${CHATSTYLES.outcomeRedSmall}BESTIAL FAIL!`
+				else if (margin >= 0 && rollResults.critPairs.hb + rollResults.critPairs.hh > 0)
+					outcomeLine = `${CHATSTYLES.outcomeWhiteSmall}MESSY CRIT! (${rollData.diff > 0 ? `+${margin}` : total})`
+				else if (total === 0)
+					outcomeLine = `${CHATSTYLES.outcomeRedSmall}TOTAL FAILURE!`
+				else if (margin < 0)
+					outcomeLine = `${CHATSTYLES.outcomeRedSmall}FAILURE${rollData.diff > 0 ? ` (${margin})` : ""}`
+				else if (rollResults.critPairs.bb > 0)
+					outcomeLine = `${CHATSTYLES.outcomeWhiteSmall}CRITICAL! (${rollData.diff > 0 ? `+${margin}` : total})`
+				else
 					outcomeLine = `${CHATSTYLES.outcomeWhiteSmall}SUCCESS! (${rollData.diff > 0 ? `+${margin}` : total})`
 				blocks.push(`${CHATSTYLES.secret.startBlock + CHATSTYLES.secret.blockNameStart + rollData.charName}</div>${
-					CHATSTYLES.secret.diceStart}${formatDiceLine(rollData, rollResults, 9).replace(/text-align: center; height: 20px/g, "text-align: center; height: 20px; line-height: 25px")
-					.replace(/margin-bottom: 5px;/g, "margin-bottom: 0px;")
-					.replace(/color: black; height: 24px/g, "color: black; height: 18px")
-					.replace(/height: 24px/g, "height: 20px")
-					.replace(/height: 22px/g, "height: 18px")}</div>${
+					CHATSTYLES.secret.diceStart}${formatDiceLine(rollData, rollResults, 9).replace(/text-align: center; height: 20px/gu, "text-align: center; height: 20px; line-height: 25px")
+					.replace(/margin-bottom: 5px;/gu, "margin-bottom: 0px;")
+					.replace(/color: black; height: 24px/gu, "color: black; height: 18px")
+					.replace(/height: 24px/gu, "height: 20px")
+					.replace(/height: 22px/gu, "height: 18px")}</div>${
 					CHATSTYLES.secret.lineStart}${outcomeLine}</div></div></div>`)
 				if (!rollData.isSilent)
-					sendChat("Storyteller", `/w ${D.GetName(char).split(" ")[0]} ${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}you are being tested ...` + `</div>${CHATSTYLES.secret.playerBotLineStart}${playerLine}</div></div>`)
+					sendChat("Storyteller", `/w ${D.GetName(char).split(" ")[0]} ${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}you are being tested ...</div>${CHATSTYLES.secret.playerBotLineStart}${playerLine}</div></div>`)
 			} )
-			const resultLine = `${CHATSTYLES.fullBox + CHATSTYLES.secret.topLineStart + (rollData.isSilent ? "Silently Rolling" : "Secretly Rolling") + (rollData.isHidingTraits ? " (Traits Hidden)" : " ...")}</div>${CHATSTYLES.secret.traitLineStart}${traitLine}${rollData.diff > 0 ? ` vs. ${rollData.diff}` : ""}</div>${blocks.join("")}</div></div>`
+			resultLine = `${CHATSTYLES.fullBox + CHATSTYLES.secret.topLineStart + (rollData.isSilent ? "Silently Rolling" : "Secretly Rolling") + (rollData.isHidingTraits ? " (Traits Hidden)" : " ...")}</div>${CHATSTYLES.secret.traitLineStart}${traitLine}${rollData.diff > 0 ? ` vs. ${rollData.diff}` : ""}</div>${blocks.join("")}</div></div>`
 			sendChat("Storyteller", `/w Storyteller ${resultLine}`)
 		},
 		// #endregion
@@ -1520,30 +1776,21 @@ rollData = { posFlagLines, negFlagLines }
 		handleInput = function (msg) {
 			if (msg.type !== "api")
 				return
-			if (msg.content.includes("!gRoll")) {
-				const preArgs = msg.content.split(/\s+/)
-				preArgs.shift()
-				const newArgs = preArgs.join(" ").split("|"),
-					rollType = newArgs.shift(),
-					groupName = newArgs.shift(),
-					groupNum = newArgs.shift(),
-					params = {
-						groupNum,
-						groupName,
-						data: newArgs
-					},
-					charObj = D.GetChar(params.groupName)
-				makeSheetRoll(charObj, rollType, params)
-
-				return
-			}
-			let args = msg.content.split(/\s+/),
-			 rollType = null,
+			let args = msg.content.split(/\s+/u),
+				[rollType, groupName, groupNum, charObj] = [null, null, null, null],
 				name = "",
-		 isSilent, isHidingTraits
+				[isSilent, isHidingTraits] = [false, false]
 			const rollString = args.shift()
-			switch (rollString) { // ! traitroll @{character_name}|Strength,Resolve|3|5|0|ICompulsion:3,IPhysical:2
-			case "!frenzyroll": // ! projectroll @{character_name}|Politics:3,Resources:2|mod|diff;
+			switch (rollString) { 	// ! traitroll @{character_name}|Strength,Resolve|3|5|0|ICompulsion:3,IPhysical:2
+			case "!gRoll":			// ! projectroll @{character_name}|Politics:3,Resources:2|mod|diff;
+				args = args.join(" ").split("|")
+				rollType = args.shift()
+				groupName = args.shift()
+				groupNum = args.shift()
+				charObj = D.GetChar(groupName)
+				makeSheetRoll(charObj, rollType, {groupNum, groupName, args} )
+				break
+			case "!frenzyroll":
 				rollType = "frenzy"
 				args = `${state[D.GAMENAME].Roller.frenzyRoll}|${args[0]}`.split(" ")
 				D.DB(`NEW ARGS: ${D.JSL(args)}`, "!frenzyroll", 2)
@@ -1576,11 +1823,11 @@ rollData = { posFlagLines, negFlagLines }
 				rollType = rollType || "project"
 				D.Log(`Received Roll: ${D.JSL(rollString)} ${args.join(" ")}`)
 				const params = args.join(" ").split("|")
+				charObj = D.GetChars(params[0] )[0]
 				name = params.shift()
-				const charObj = D.GetChars(name)[0]
-				if (!charObj)
-					return D.ThrowError(`!${rollType}roll: No character found with name ${D.JS(name)}`)
-				if (rollType === "frenzyInit") {
+				if (!charObj) {
+					D.ThrowError(`!${rollType}roll: No character found with name ${D.JS(name)}`)
+				} else if (rollType === "frenzyInit") {
 					state[D.GAMENAME].Roller.frenzyRoll = `${name}|${params.join("|")}`
 					sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px crimson outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!&#13;#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: white; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: red; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${name}</span><br/></div>`)
 
@@ -1593,15 +1840,15 @@ rollData = { posFlagLines, negFlagLines }
 				initFrame()
 				break
 			case "!showDice":
-				_.each(state[D.GAMENAME].Roller.diceList, function (data, dieNum) {
-					const thisDie = setDie(dieNum, "diceList", "Hs")
+				_.each(state[D.GAMENAME].Roller.diceList, (v, dNum) => {
+					const thisDie = setDie(dNum, "diceList", "Hs")
 					if (_.isObject(thisDie)) {
 						thisDie.set("layer", "objects")
 						thisDie.set("isdrawing", false)
 					}
 				} )
-				_.each(state[D.GAMENAME].Roller.bigDice, function (data, dieNum) {
-					const thisDie = setDie(dieNum, "bigDice", "Bs")
+				_.each(state[D.GAMENAME].Roller.bigDice, (v, dNum) => {
+					const thisDie = setDie(dNum, "bigDice", "Bs")
 					if (_.isObject(thisDie)) {
 						thisDie.set("layer", "objects")
 						thisDie.set("isdrawing", false)
@@ -1609,42 +1856,37 @@ rollData = { posFlagLines, negFlagLines }
 				} )
 				break
 			case "!resetDice":
-				_.each(STATECATS.dice, function (dieCat) {
-					state[D.GAMENAME].Roller[dieCat] = []
-				} )
+				_.each(STATECATS.dice, dCat => { state[D.GAMENAME].Roller[dCat] = [] } )
 				break
 			case "!reg":
 			case "!register":
-				switch (args.shift()) {
-				case "die":
-					if (!msg.selected || !msg.selected[0] )
-						return D.ThrowError("!register die: Select a Graphic!")
-					registerDie(getObj("graphic", msg.selected[0]._id), args.shift())
-					break
-				case "text":
-					if (!msg.selected || !msg.selected[0] )
-						return D.ThrowError("register text: Select a Text Object!")
-					registerText(getObj("text", msg.selected[0]._id), args.shift())
-					break
-				case "shape":
-					if (!msg.selected || !msg.selected[0] )
-						return D.ThrowError("register text: Select a Path Object!")
-					name = args.shift()
-					registerShape(getObj("path", msg.selected[0]._id), name, args.shift())
-					break
-				case "image":
-				case "img":
-					if (!msg.selected || !msg.selected[0] )
-						return D.ThrowError("register img: Select an Image!")
-					name = args.shift()
-					registerImg(getObj("graphic", msg.selected[0]._id), name, args.join(","))
-					break
-				case "repo":
-				case "reposition":
-					if (!msg.selected || !msg.selected[0] )
-						return D.ThrowError("reposition: Select one or more objects to reposition!")
-					reposition(msg.selected)
-					break
+				if (!msg.selected || !msg.selected[0] ) {
+					D.ThrowError("!register die: Select a Graphic!")
+				} else {
+					switch (args.shift()) {
+					case "die":
+						registerDie(getObj("graphic", msg.selected[0]._id), args.shift())
+						break
+					case "text":
+						registerText(getObj("text", msg.selected[0]._id), args.shift())
+						break
+					case "shape":
+						name = args.shift()
+						registerShape(getObj("path", msg.selected[0]._id), name, args.shift())
+						break
+					case "image":
+					case "img":
+						name = args.shift()
+						registerImg(getObj("graphic", msg.selected[0]._id), name, args.join(","))
+						break
+					case "repo":
+					case "reposition":
+						reposition(msg.selected)
+						break
+					default:
+						D.ThrowError("Bad registration code.")
+						break
+					}
 				}
 				break
 			case "!changeRoll":
@@ -1655,8 +1897,27 @@ rollData = { posFlagLines, negFlagLines }
 					args[0] = ""
 				if (args[1] === "x")
 					args[1] = ""
-				const thisRes = getResonance(args[0], args[1], args[2] === "2")
-				sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px crimson outset;'><br/><span style='display: block; font-weight: bold; color: red; font-size: 16px; text-align: center; width: 100%'>${thisRes[0].toUpperCase()} ${thisRes[1].toUpperCase()}</span><br/></div>`)
+				sendChat("ROLLER", `/w Storyteller 
+					<br/>
+					<div style='
+						display: block; 
+						background: url(https://i.imgur.com/kBl8aTO.jpg);
+						text-align: center;
+						border: 4px crimson outset;
+					'>
+						<br/>
+						<span style='
+							display: block; 
+							font-weight: bold; 
+							color: red; 
+							font-size: 16px; 
+							text-align: 
+							center; width: 100%
+						'>
+							${_.map(getResonance(args[0], args[1], args[2] === "2"), v => v.toUpperCase()).join(" ")}
+						</span>
+						<br/>
+					</div>`)
 				break
 			case "!nxsroll":
 			case "!xnsroll":
@@ -1671,12 +1932,15 @@ rollData = { posFlagLines, negFlagLines }
 				const params = args.join(" ").split("|")
 				isSilent = rollString.includes("x")
 				isHidingTraits = rollString.includes("n")
-				let chars
-				if (!msg.selected || !msg.selected[0] ) { chars = Chars.GetAll() } else
+				let chars = null
+				if (!msg.selected || !msg.selected[0] )
+					chars = Chars.GetAll()
+				else
 					chars = D.GetChars(msg)
 				if (params.length < 1 || params.length > 3)
-					return D.ThrowError(`Syntax Error: ![x][n]sroll: <trait1>[,<trait2>]|[<mod>]|[<diff>] (${D.JSL(params)})`)
-				makeSecretRoll(chars, params, isSilent, isHidingTraits)
+					D.ThrowError(`Syntax Error: ![x][n]sroll: <trait1>[,<trait2>]|[<mod>]|[<diff>] (${D.JSL(params)})`)
+				else
+					makeSecretRoll(chars, params, isSilent, isHidingTraits)
 				break
 			} default:
 				break
@@ -1684,12 +1948,10 @@ rollData = { posFlagLines, negFlagLines }
 		},
 		// #endregion
 
-		// #region Public Functions: registerEventHandlers
-	 registerEventHandlers = function () {
-			on("chat:message", handleInput)
-		},
+		// #region Public Functions: regHandlers
+		regHandlers = () => on("chat:message", handleInput),
 
-		checkInstall = function () {
+		checkInstall = () => {
 			state[D.GAMENAME] = state[D.GAMENAME] || {}
 			state[D.GAMENAME].Roller = state[D.GAMENAME].Roller || {}
 			state[D.GAMENAME].Roller.selected = state[D.GAMENAME].Roller.selected || {diceList: [], bigDice: []}
@@ -1697,7 +1959,7 @@ rollData = { posFlagLines, negFlagLines }
 		}
 
 	return {
-		RegisterEventHandlers: registerEventHandlers,
+		RegisterEventHandlers: regHandlers,
 		CheckInstall: checkInstall,
 		Select: selectDie,
 		Reroll: wpReroll
@@ -1705,8 +1967,8 @@ rollData = { posFlagLines, negFlagLines }
 	// #endregion
 } )()
 
-on("ready", function () {
+on("ready", () => {
 	Roller.RegisterEventHandlers()
 	Roller.CheckInstall()
-	D.Log("Roller: Ready!")
+	D.Log("Ready!", "Roller")
 } )

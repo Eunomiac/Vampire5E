@@ -3,8 +3,7 @@
    game.  You can find a list of all of the available methods at the end of the script.  Configuration is a bit
    trickier, but is contained in the CONFIGURATION and DECLARATIONS #regions. */
 
-// eslint-disable-next-line id-length
-const D = (function D () {
+const D = (() => {
 	// #region CONFIGURATION: Game Name
 	const GAMENAME = "VAMPIRE",
 		// #endregion
@@ -26,7 +25,7 @@ const D = (function D () {
 			social: ["Animal Ken", "Animal_Ken", "Etiquette", "Insight", "Intimidation", "Leadership", "Performance", "Persuasion", "Streetwise", "Subterfuge"],
 			mental: ["Academics", "Awareness", "Finance", "Investigation", "Medicine", "Occult", "Politics", "Science", "Technology"]
 		},
-		DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Dominate", "Fortitude", "Obfuscate", "Potence", "Presence", "Protean", "Blood Sorcery", "Blood Sorcery", "Alchemy"],
+		DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Dominate", "Fortitude", "Obfuscate", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
 		TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"],
 		BLOODPOTENCY = [
 			{bloodSurge: 0, bloodDiscBonus: 0},
@@ -133,14 +132,14 @@ const D = (function D () {
      		Message can be an array of strings OR objects, of form: { message: <message>, title: <title> }. */
 		sendMessage = function (who, message = "", title = "") {
 			const msgSender = getObj("player", who),
-				parseChatLine = msg => {
-					let str = ""
-					_.each(_.flatten( [msg] ), v => {
-						str += `<div style="display: block;">
-											<span style="font-family:sans-serif; font-size: 10px; line-height: 10px;">
-												${v}
-											</span>
-										</div>`
+			  parseChatLine = msg => {
+				  let str = ""
+				  _.each(_.flatten( [msg] ), v => {
+					  str += `<div style="display: block;">
+							  	  <span style="font-family:sans-serif; font-size: 10px; line-height: 10px;">
+								  	  ${v}
+							  	  </span>
+						  	  </div>`
 					} )
 
 					return str
@@ -150,7 +149,7 @@ const D = (function D () {
 				return
 
 			if (_.isArray(message)) {
-				_.each(_.filter(message, v => _.isObject(v)), msg => sendMessage(who, msg, title))
+				_.each(message.filter(v => _.isObject(v)), msg => sendMessage(who, msg, title))
 			} else if (_.isObject(message)) {
 				sendMessage(who, message.message || "", message.title || title)
 			} else {
@@ -163,7 +162,6 @@ const D = (function D () {
 									</div>`)
 			}
 		},
-
 
 		escapeAll = v => v.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&/u"),
 
@@ -218,24 +216,37 @@ const D = (function D () {
 
 		// #region DEBUGGING & ERROR MANAGEMENT
 
+		// Returns a string of current Debug settings.
+		getDebugInfo = () => `Debug Level: ${state[GAMENAME].DEBUGLEVEL || 0},
+							  Alert At: ${state[GAMENAME].DEBUGALERT || 0}
+							  Active Categories: ${state[GAMENAME].DEBUGCATS.split("|").join(", ")}`,
+
 		// Sets debug and alert thresholds.
-		setDebugLvl = (lvl = 0, aLvl = 0) => {
-			[state[GAMENAME].DEBUGLEVEL, state[GAMENAME].DEBUGALERT] = [lvl, aLvl]
+		setDebugLvl = (lvl = 0, aLvl = 0) => { [state[GAMENAME].DEBUGLEVEL, state[GAMENAME].DEBUGALERT] = [lvl, aLvl] },
+
+		// Sets categories for which debug alerts are allowed, or clears them if no parameters given.
+		setDebugCats = (...cats) => {
+			const catSet = new Set(state[GAMENAME].DEBUGCATS.split("|"), ...cats)
+			state[GAMENAME].DEBUGCATS = cats.length === 0 ? "" : catSet.join("|")
+		},
+
+		/* Compares the priority level of the received bug report, and only logs it (or alerts it) if the
+		debug levels and categories (see setDebugLvl) are appropriate. */
+		formatDebug = (msg, title, category = "", level = state[GAMENAME].DEBUGLEVEL || 0) => {
+			if (state[GAMENAME].DEBUGCATS === "ALL" || state[GAMENAME].DEBUGCATS.includes(category)) {
+				if (state[GAMENAME].DEBUGLEVEL >= parseInt(level))
+					formatLog(msg, title)
+				if (state[GAMENAME].ALERTLEVEL >= parseInt(level))
+					formatAlert(msg, title)
+			}
 		},
 
 		// Sends specified error message to the GM.
 		formatError = (msg, title = "???") => {
 			sendMessage("Storyteller", msg, `[ERROR: ${title}]`)
 			log(`[ERROR: ${jStr(title, true)}] ${jStr(msg, true)}`)
-		},
 
-		/* Compares the priority level of the received bug report, and only logs it (or alerts it) if the
-		debug levels (see setDebugLvl) are appropriate. */
-		formatDebug = (msg, title, level = state[GAMENAME].DEBUGLEVEL || 0) => {
-			if (state[GAMENAME].DEBUGLEVEL >= parseInt(level))
-				formatLog(msg, title)
-			if (state[GAMENAME].DEBUGLEVEL >= state[GAMENAME].ALERTLEVEL)
-				formatAlert(msg, title)
+			return false
 		},
 		// #endregion
 
@@ -265,40 +276,31 @@ const D = (function D () {
 		},
 		// #endregion
 
-		/*
-		GetTextWidth = function (obj, text) {
+		getTextWidth = function (obj, text) {
 			const font = obj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
-				size = obj.get("font_size"),
-				chars = text.split(""),
-				fontRef = state.DATA.CHARWIDTH[font]
-			if (!fontRef) {
-				formatError(`No font reference for '${font}'`)
-
-				return
-			}
-			const charRef = fontRef[size]
-			if (!charRef) {
-				formatError(`No character reference for '${font}' at size '${size}'`)
-
-				return
-			}
-			let width = 0,
-				// eslint-disable-next-line no-unused-vars
-				missingChars = ""
-			_.each(chars, function (char) {
-				if (!charRef[char] && charRef[char] !== " " && charRef[char] !== 0) {
-					missingChars += char
+				  size = obj.get("font_size"),
+				 chars = text.split(""),
+			   fontRef = state.DATA.CHARWIDTH[font],
+			   charRef = fontRef && fontRef[size]
+			let width = 0
+			if (!fontRef)
+				return formatError(`No font reference for '${font}'`)
+			if (!charRef)
+				return formatError(`No character reference for '${font}' at size '${size}'`)
+			_.each(chars, char => {
+				if (!charRef[char] && charRef[char] !== " " && charRef[char] !== 0)
 					formatLog(`... MISSING '${char}' in '${font}' at size '${size}'`)
-				} else { width += parseInt(charRef[char] ) }
+				else
+					width += parseInt(charRef[char] )
 			} )
 
 			return width
 		},
-		*/
+
 		// #region CHECKS
 		isIn = function (needle, haypile) {
 			const hay = haypile || _.flatten( [_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS] ),
-				ndl = `\\b${needle.replace(/^g[0-9]/u, "")}\\b`
+				  ndl = `\\b${needle.replace(/^g[0-9]/u, "")}\\b`
 			let result = false
 			if (_.isArray(haypile)) {
 				const index = _.findIndex(_.flatten(hay), v => v.match(new RegExp(ndl, "iu")) !== null || v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null)
@@ -317,20 +319,16 @@ const D = (function D () {
 		/* Returns an ARRAY OF CHARACTERS given: "all", a character ID, a character Name, a token object, a message
 		   with selected tokens, OR an array of such parameters. */
 		getChars = function (value) {
-			let [searchParams, charObjs] = [
-				[],
-				[]
-			]
+			let [searchParams, charObjs] = [[], []]
 			if (!value)
 				return formatError("No Value Given!", "D.GETCHARS")
 			if (value.who) {
 				if (!value.selected || !value.selected[0] )
-					return formatError("Must Selected a Token!", "D.GETCHARS")
-				const tokens = _.filter(value.selected, function pickChars (selection) {
-					return getObj("graphic", selection._id) &&
+					return formatError("Must Select a Token!", "D.GETCHARS")
+				const tokens = _.filter(value.selected,
+					selection => getObj("graphic", selection._id) &&
 						_.isString(getObj("graphic", selection._id).get("represents")) &&
-						getObj("character", getObj("graphic", selection._id).get("represents"))
-				} )
+						getObj("character", getObj("graphic", selection._id).get("represents")))
 				if (!tokens)
 					return formatError(`No Valid Token Selected: ${jStr(value.selected)}`, "D.GETCHARS")
 
@@ -347,7 +345,7 @@ const D = (function D () {
 				// If parameter is a CHARACTER ID:
 				if (_.isString(v) && getObj("character", v)) {
 					theseCharObjs.push(getObj("character", v))
-					// If parameters is a TOKEN OBJECT:
+				// If parameters is a TOKEN OBJECT:
 				} else if (_.isObject(v) && v.id && v.get("_type") === "graphic" && v.get("_subtype") === "token") {
 					if (getObj("character", v.get("represents")))
 						theseCharObjs.push(getObj("character", v.get("represents")))
@@ -358,7 +356,7 @@ const D = (function D () {
 					theseCharObjs = findObjs( {
 						_type: "character"
 					} )
-					// If parameter is a CHARACTER NAME:
+				// If parameter is a CHARACTER NAME:
 				} else if (_.isString(v)) {
 					theseCharObjs = findObjs( {
 						_type: "character",
@@ -373,19 +371,13 @@ const D = (function D () {
 			return charObjs
 		},
 
-		getChar = function (value) {
-			return getChars(value)[0]
-		},
+		getChar = v => getChars(v)[0],
 
-		getStat = function (value, name) {
-			const charObj = getChar(value)
-
-			return findObjs( {
-				_type: "attribute",
-				_characterid: charObj.id,
-				_name: name
-			} )[0]
-		},
+		getStat = (v, name) => findObjs( {
+			_type: "attribute",
+			_characterid: getChar(v).id,
+			_name: name
+		} )[0],
 
 		// Given a lower-case row ID (from sheetworker), converts it to proper case.
 		getCaseRepID = function (lowCaseID, value) {
@@ -420,18 +412,18 @@ const D = (function D () {
 				type: "attribute",
 				characterid: charObj.id
 			} )
-			_.each(filterArray, v => {
-				attrObjs = _.filter(attrObjs, vv => vv.get("name").toLowerCase()
-					.includes(v.toLowerCase()))
-			} )
+			_.each(filterArray,
+				v => {
+					attrObjs = _.filter(attrObjs,
+						vv => vv.get("name").toLowerCase()
+							.includes(v.toLowerCase()))
+				} )
 
 			return attrObjs
 		},
 
 		// As getRepStats(), but only returns a single attribute object.
-		getRepStat = function (value, filterArray) {
-			return getRepStats(value, filterArray)[0]
-		},
+		getRepStat = (v, fArray) => getRepStats(v, fArray)[0],
 
 		// Returns a PLAYER ID given: display name, token object, character object.
 		getPlayerID = function (value) {
@@ -469,7 +461,34 @@ const D = (function D () {
 			const IDa = 0,
 				  IDb = [],
 		   characters = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz",
-		 generateUUID = (function generateUUID () {
+		   generateUUID = (() => () => {
+						  let IDc = (new Date()).getTime() + 0,
+							  IDf = 7
+						  const IDd = IDc === IDa,
+						IDe = new Array(8)
+						  for (IDf; IDf >= 0; IDf--) {
+							  IDe[IDf] = characters.charAt(IDc % 64)
+							  IDc = Math.floor(IDc / 64)
+						  }
+						  IDc = IDe.join("")
+						  if (IDd) {
+							  for (IDf = 11; IDf >= 0 && IDb[IDf] === 63; IDf--)
+								  IDb[IDf] = 0
+
+							  IDb[IDf]++
+						  } else {
+							  for (IDf = 0; IDf < 12; IDf++)
+								  IDb[IDf] = Math.floor(64 * Math.random())
+						  }
+						  for (IDf = 0; IDf < 12; IDf++)
+							  IDc += characters.charAt(IDb[IDf] )
+
+						  return IDc
+					  }
+				  )(),
+
+				/* PREVIOUS CODE:
+generateUUID2 = (function generateUUID () {
 			 return function uuidCrafter () {
 						let IDc = (new Date()).getTime() + 0,
 							IDf = 7
@@ -494,7 +513,7 @@ const D = (function D () {
 
 						return IDc
 					}
-				} )(),
+				} )(), */
 				makeRowID = () => generateUUID().replace(/_/gu, "Z"),
 				rowID = makeRowID(),
 				prefix = `repeating_${secName}_${rowID}_`
@@ -554,15 +573,21 @@ const D = (function D () {
 		GetRepStat: getRepStat,
 		GetPlayerID: getPlayerID, 		/* D.GetPlayerID(val):  Returns player ID given: display name, token
 		       									object, character object.*/
-		/* GetTextWidth: getTextWidth, 	/* D.GetTextWidth(obj, text):  Returns width of given text object if
+		GetTextWidth: getTextWidth, 	/* D.GetTextWidth(obj, text):  Returns width of given text object if
 			       								it held supplied text. */
 		MakeRow: makeRow, 				/* D.MakeRow(charID/obj, secName, attrs):  Creates repeating fieldset
 												row in secName with attrs for character given by object or ID.*/
 		RunFX: runFX, 					/* D.RunFX(name, {top: y, left: x}):  Runs a special effect at
 												the given location. */
 		ThrowError: formatError, 		// D.ThrowError(errObj, title): Logs an error and messages GM.
-		SetDebugLevel: setDebugLvl, 	// D.SetDebugLevel(lvl): Sets debug level to lvl.
-		DB: formatDebug, 				// D.DB(msg, title, lvl): Logs debug if DEBUGLEVEL equal to lvl or higher.
+		GetDebugInfo: getDebugInfo,		// D.GetDebugInfo(): Displays the debug level, alert level, and categories.
+		SetDebugLevel: setDebugLvl, 	/* D.SetDebugLevel(lvl, alertLevel): Sets debug level to lvl. D.DB calls with
+												levels lower than this will be muted; alertLevel is the same, but
+												will publish the message to Roll20 chat. */
+		SetDebugCats: setDebugCats,		/* D.SetDebugCats(cats): Adds given categories to debug list, or clears the list
+												if no categories are given */
+		DB: formatDebug, 				/* D.DB(msg, title, category, lvl): Logs debug if DEBUGLEVEL equal to lvl,
+												and if category has been set via SetDebugCats(). */
 		Alert: formatAlert, 			// D.Alert(msg, title): Sends alert message to GM.
 		SendMessage: sendMessage 		/* D.Chat(who, msg, title): Sends chat message as 'who' with
 												message and title. Message can be an array of strings OR
@@ -570,4 +595,4 @@ const D = (function D () {
 	}
 } )()
 
-on("ready", () => { D.Log("DATA Ready!") } )
+on("ready", () => D.Log("Ready!", "DATA"))

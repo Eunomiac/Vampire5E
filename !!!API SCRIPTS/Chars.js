@@ -1,4 +1,4 @@
-const Chars = (function () {
+const Chars = (function Chars () {
 	// #region Constants and Declarations
 	const MVCVALS = [
 			[
@@ -208,8 +208,8 @@ const Chars = (function () {
 		// #endregion
 
 		// #region Register Characters
-	 registerChars = function (chars) {
-			_.each(chars, function (char) {
+	 registerChars = function (chars, gN) {
+			_.each(chars, char => {
 				state[D.GAMENAME].Chars[char.id] = {
 					name: D.GetName(char),
 					id: char.id,
