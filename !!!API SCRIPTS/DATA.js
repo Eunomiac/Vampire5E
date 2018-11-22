@@ -6,7 +6,7 @@
 const D = (() => {
 	// #region CONFIGURATION: Game Name, Character Registry
 	const GAMENAME = "VAMPIRE",
-		CHARREGISTRY = state[D.GAMENAME].Chars,
+		CHARREGISTRY = state[GAMENAME].Chars,
 		// #endregion
 
 		// #region DECLARATIONS: Reference Variables
@@ -125,64 +125,50 @@ const D = (() => {
 		// #region BASE FUNCTIONALITY: Fundamental Functions & String Manipulation to Declare First
 
 		/* Finds the first player who is GM. */
-		getGMID = () => _.find(findObjs( {
-			_type: "player"
-		} ), v => playerIsGM(v._id)),
+		getGMID = () => _.find(findObjs( {_type: "player"} ), v => playerIsGM(v._id)),
 
 		/* Whispers formatted chat message to player given: display name OR player ID.
      		Message can be an array of strings OR objects, of form: { message: <message>, title: <title> }. */
-		sendMessage = function (who, message = "", title = "") {
-			const msgSender = getObj("player", who),
+		sendToPlayer = function (who, message = "", title = "") {
+			const player = getObj("player", who) ? getObj("player", who).get("_displayname") : who,
 			  parseChatLine = msg => {
 				  let str = ""
 				  _.each(_.flatten( [msg] ), v => {
-					  str += `<div style="display: block;">
-							  	  <span style="font-family:sans-serif; font-size: 10px; line-height: 10px;">
-								  	  ${v}
-							  	  </span>
-						  	  </div>`
+					  str += `<div style="display: block;"><span style="font-family:sans-serif; font-size: 10px; line-height: 10px;">${v}</span></div>`
 					} )
 
 					return str
 				}
-
-			if (!msgSender)
-				return
-
-			if (_.isArray(message)) {
-				_.each(message.filter(v => _.isObject(v)), msg => sendMessage(who, msg, title))
-			} else if (_.isObject(message)) {
-				sendMessage(who, message.message || "", message.title || title)
+			let mString = null
+			if (player && _.isArray(message)) {
+				_.each(message.filter(v => _.isObject(v)), msg => sendToPlayer(who, msg, title))
+			} else if (player && _.isObject(message)) {
+				sendToPlayer(who, message.message || "", message.title || title)
 			} else {
-				sendChat("", `/w "${msgSender.get("_displayname")} " 
-									<div style="border: 1px solid black; background-color: white; padding: 3px 3px;">
-										<div style="display: block; font-weight: bold; border-bottom: 1px solid black;">
-											${title}
-										</div>
-										${parseChatLine(message)}
-									</div>`)
+				mString = `<div style="border: 1px solid black; background-color: white; padding: 3px 3px;"><div style="display: block; font-weight: bold; border-bottom: 1px solid black;">${title}</div>${parseChatLine(message)}</div>`
+				if (player === "all")
+					sendChat("", mString)
+				else
+					sendChat("", `/w ${player} ${mString}`)
 			}
 		},
-
-		escapeAll = v => v.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&/u"),
 
 		/* Parses a value of any type via JSON.stringify, and then further styles it for display either
 		in Roll20 chat, in the API console log, or both. */
 		jStr = function (obj, isLogOnly) {
 			try {
-				if (_.isUndefined(obj))
+				if (_.isUndefined(obj)) {
 					return isLogOnly ? "<UNDEFINED>" : "&gt;UNDEFINED&lt;"
-
-				if (isLogOnly) {
+				} else if (isLogOnly) {
 					return JSON.stringify(obj)
-						.replace(/"/gu, escapeAll(""))
-						.replace(/\n/gu, escapeAll(""))
-						.replace(/:/gu, escapeAll(": "))
-						.replace(/\[/gu, escapeAll(" ["))
-						.replace(/\]/gu, escapeAll("] "))
-						.replace(/,/gu, escapeAll(", "))
-						.replace(/\{/gu, escapeAll(" {"))
-						.replace(/\}/gu, escapeAll("} "))
+						.replace(/[/"\n]/gu, "")
+						.replace(/:/gu, ": ")
+						.replace(/\[/gu, "[")
+						.replace(/\]/gu, "]")
+						.replace(/,/gu, ", ")
+						.replace(/\{/gu, "{")
+						.replace(/\}/gu, "}")
+						.replace(/\s+/gu, " ")
 				}
 
 				return JSON.stringify(obj, null, "    ")
@@ -191,7 +177,7 @@ const D = (() => {
 					.replace(/\n/gu, "<br/>")
 					.replace(/&nbsp;&nbsp;/gu, "&nbsp;")
 			} catch (errObj) {
-				sendMessage("Storyteller", JSON.stringify(errObj), "[ERROR: JSTRINGIFY()]")
+				sendToPlayer("Storyteller", JSON.stringify(errObj), "[ERROR: JSTRINGIFY()]")
 				log(`[ERROR: JSTRINGIFY()] ${JSON.stringify(errObj)}`)
 
 				return "&gt;ERR&lt;"
@@ -199,14 +185,14 @@ const D = (() => {
 		},
 
 		/* A shortcut to call jStr for a log entry. */
-		jStrLog = obj => jStr(obj, true),
+		jLog = obj => jStr(obj, true),
 
 		/* Styling and sending to the Storyteller via whisper (Alert) or to the API console (Log). */
-		formatLog = (msg, title = "") => log(`[${jStr(title, true)}]: ${jStr(msg, true)}`),
-		formatAlert = (msg, title = "[ALERT]") => sendMessage("Storyteller", `/w Storyteller ${jStr(msg)}`, title),
+		logEntry = (msg, title = "") => log(`[${jStr(title, true)}]: ${jStr(msg, true)}`),
+		alertGM = (msg, title = "[ALERT]") => sendToPlayer("Storyteller", `${jStr(msg)}`, title),
 
 		/* Converts any number by adding its appropriate ordinal ("2nd", "3rd", etc.) */
-		ordinalize = num => {
+		ordinal = num => {
 			const tNum = parseInt(num) - (100 * Math.floor(parseInt(num) / 100))
 			if ( [11, 12, 13].includes(tNum))
 				return `${num}th`
@@ -214,34 +200,62 @@ const D = (() => {
 			return `${num}${["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"][num % 10]}`
 		},
 
-		isIn = function (needle, haypile) {
-			const hay = haypile || _.flatten( [_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS] ),
-				  ndl = `\\b${needle.replace(/^g[0-9]/u, "")}\\b`
-			let result = false
-			if (_.isArray(haypile)) {
-				const index = _.findIndex(_.flatten(hay), v => v.match(new RegExp(ndl, "iu")) !== null || v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null)
-				result = index === -1 ? false : _.flatten(hay)[index]
-			} else if (_.isObject(hay)) {
-				const index = _.findIndex(_.keys(hay), v => v.match(new RegExp(ndl, "iu")) !== null ||
-					v.match(new RegExp(ndl.replace(/_/gu), "iu"))) !== null
-				result = index === -1 ? false : _.keys(hay)[index]
-			} else {
-				result = hay.match(new RegExp(ndl, "iu")) !== null
+		/* Converts string of form "key:val, key:val, key:val" into an object. */
+		parseToObj = val => {
+			const obj = {}
+			let args = null
+			if (_.isString(val))
+				args = val.split(/,\s*/u)
+			else if (_.isArray(val))
+				args = [...val]
+			else
+				return D.ThrowError(`Cannot parse value '${D.JSL(val)}' to object.`, "DATA: ParseToObj")
+
+			for (const keyVal of args) {
+				const kvp = keyVal.split(/\s*:\s*/u)
+				obj[kvp[0]] = parseInt(kvp[1] ) || kvp[1]
 			}
 
-			return result || false
+			return obj
+		},
+
+		/* When given a message object, will return all selected objects. */
+		getSelected = msg => { msg.selected && msg.selected[0] ? msg.selected : false },
+
+		/* Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. */
+		isIn = function (needle, haystack) {
+			let result = false
+			try {
+				const hay = haystack || _.flatten( [_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS] ),
+				  ndl = `\\b${needle.replace(/^g[0-9]/u, "")}\\b`
+				if (_.isArray(hay)) {
+					const index = _.findIndex(_.flatten(hay), v => v.match(new RegExp(ndl, "iu")) !== null || v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null)
+					result = index === -1 ? false : _.flatten(hay)[index]
+				} else if (_.isObject(hay)) {
+					const index = _.findIndex(_.keys(hay), v => v.match(new RegExp(ndl, "iu")) !== null ||
+					v.match(new RegExp(ndl.replace(/_/gu), "iu"))) !== null
+					result = index === -1 ? false : _.keys(hay)[index]
+				} else {
+					result = hay.match(new RegExp(ndl, "iu")) !== null
+				}
+
+				return result
+			} catch (errObj) {
+				return D.ThrowError(`Error locating stat '${D.JSL(needle)}' in ${D.JSL(haystack)}'`, "D.IsIn()")
+			}
 		},
 		// #endregion
 
 		// #region DEBUGGING & ERROR MANAGEMENT
 
-		// Returns a string of current Debug settings.
-		getDebugInfo = () => `Debug Level: ${state[GAMENAME].DEBUGLEVEL || 0},
-							  Alert At: ${state[GAMENAME].DEBUGALERT || 0}
-							  Active Categories: ${state[GAMENAME].DEBUGCATS.split("|").join(", ")}`,
-
 		// Sets debug and alert thresholds.
 		setDebugLvl = (lvl = 0, aLvl = 0) => { [state[GAMENAME].DEBUGLEVEL, state[GAMENAME].DEBUGALERT] = [lvl, aLvl] },
+
+		// Returns a string of current Debug settings.
+		getDebugInfo = () => `Debug Level: ${state[GAMENAME].DEBUGLEVEL || 0},
+						Alert At: ${state[GAMENAME].DEBUGALERT || 0}
+						Active Categories: ${state[GAMENAME].DEBUGCATS.split("|").join(", ")}`,
+
 
 		// Sets categories for which debug alerts are allowed, or clears them if no parameters given.
 		setDebugCats = (...cats) => {
@@ -251,18 +265,18 @@ const D = (() => {
 
 		/* Compares the priority level of the received bug report, and only logs it (or alerts it) if the
 		debug levels and categories (see setDebugLvl) are appropriate. */
-		formatDebug = (msg, title, category = "", level = state[GAMENAME].DEBUGLEVEL || 0) => {
+		formatDebug = (msg, title, level = state[GAMENAME].DEBUGLEVEL || 0, category = "") => {
 			if (state[GAMENAME].DEBUGCATS === "ALL" || state[GAMENAME].DEBUGCATS.includes(category)) {
 				if (state[GAMENAME].DEBUGLEVEL >= parseInt(level))
-					formatLog(msg, title)
+					logEntry(msg, title)
 				if (state[GAMENAME].ALERTLEVEL >= parseInt(level))
-					formatAlert(msg, title)
+					alertGM(msg, title)
 			}
 		},
 
 		// Sends specified error message to the GM.
-		formatError = (msg, title = "???") => {
-			sendMessage("Storyteller", msg, `[ERROR: ${title}]`)
+		throwError = (msg, title = "???") => {
+			sendToPlayer("Storyteller", msg, `[ERROR: ${title}]`)
 			log(`[ERROR: ${jStr(title, true)}] ${jStr(msg, true)}`)
 
 			return false
@@ -276,10 +290,10 @@ const D = (() => {
 			const objID = _.isString(value) ? value : value._id,
 				obj = _.isString(value) ? getObj("graphic", objID) || getObj("character", objID) : value,
 				name = (obj && obj.get("name")) ||
-				(getObj("player", objID) && getObj("player", objID).get("_displayname")) ||
-				null
+					(getObj("player", objID) && getObj("player", objID).get("_displayname")) ||
+					null
 			if (!name)
-				return formatError(`No name found for character ID: ${objID}`, "D.GETNAME")
+				return throwError(`No name found for character ID: ${objID}`, "D.GETNAME")
 			if (!isShort)
 				return name
 			if (name.includes("\"")) {
@@ -300,16 +314,16 @@ const D = (() => {
 			const charObjs = new Set()
 			let searchParams = []
 			if (!value)
-				return formatError("No Value Given!", "D.GETCHARS")
+				return throwError("No Value Given!", "D.GETCHARS")
 			if (value.who) {
 				if (!value.selected || !value.selected[0] )
-					return formatError("Must Select a Token!", "D.GETCHARS")
+					return throwError("Must Select a Token!", "D.GETCHARS")
 				const tokens = _.filter(value.selected,
 					selection => getObj("graphic", selection._id) &&
 						_.isString(getObj("graphic", selection._id).get("represents")) &&
 						getObj("character", getObj("graphic", selection._id).get("represents")))
 				if (!tokens)
-					return formatError(`No Valid Token Selected: ${jStr(value.selected)}`, "D.GETCHARS")
+					return throwError(`No Valid Token Selected: ${jStr(value.selected)}`, "D.GETCHARS")
 
 				return _.map(tokens, v => getObj("character", getObj("graphic", v._id).get("represents")))
 			} else if (_.isArray(value)) {
@@ -317,33 +331,34 @@ const D = (() => {
 			} else if (_.isString(value) || _.isObject(value)) {
 				searchParams.push(value)
 			} else {
-				return formatError(`Bad Value: '${jStr(value)}'`, "GETCHARS")
+				return throwError(`Bad Value: '${jStr(value)}'`, "GETCHARS")
 			}
 			_.each(searchParams, v => {
-				// If parameter is a CHARACTER ID:
+			// If parameter is a CHARACTER ID:
 				if (_.isString(v) && getObj("character", v)) {
 					charObjs.add(getObj("character", v))
 				// If parameters is a TOKEN OBJECT:
 				} else if (_.isObject(v) && v.id && v.get("_type") === "graphic" && v.get("_subtype") === "token") {
-					if (getObj("character", v.get("represents")))
-						charObjs.add(getObj("character", v.get("represents")))
+					const char = getObj("character", v.get("represents"))
+					if (char)
+						charObjs.add(char)
 					else
-						formatError(`Token '${jStr(v.id)}' Does Not Represent a Character.`, "D.GETCHARS")
-					// If parameter is "all":
+						throwError(`Token '${jStr(v.id)}' Does Not Represent a Character.`, "D.GETCHARS")
+				// If parameter is "all":
 				} else if (v === "all") {
 					_.each(findObjs( {_type: "character"} ), char => charObjs.add(char))
-					// If parameter calls for REGISTERED CHARACTERS:
+				// If parameter calls for REGISTERED CHARACTERS:
 				} else if (v === "registered") {
 					_.each(CHARREGISTRY, (vv, charID) => {
 						if (charID === vv.id)
-							charObjs.add(D.GetChar(charID))
+							charObjs.add(getObj("character", charID))
 					} )
-					// If parameter is a CHARACTER NAME:
+				// If parameter is a CHARACTER NAME:
 				} else if (_.isString(v)) {
 					_.each(findObjs( {_type: "character", name: v} ), char => charObjs.add(char))
 				}
 				if (charObjs.size === 0)
-					formatError(`No Characters Found for Value '${jStr(v)}' in '${jStr(value)}'`, "D.GETCHARS")
+					throwError(`No Characters Found for Value '${jStr(v)}' in '${jStr(value)}'`, "D.GETCHARS")
 			} )
 
 			return [...charObjs]
@@ -358,8 +373,8 @@ const D = (() => {
 		} )[0],
 
 		// Given a lower-case row ID (from sheetworker), converts it to proper case.
-		getCaseRepID = function (lowCaseID, value) {
-			const charObj = getChar(value),
+		getCaseRepID = function (lowCaseID, charRef) {
+			const charObj = getChar(charRef),
 				attrObjs = _.filter(
 					findObjs(charObj ?
 						{
@@ -374,8 +389,8 @@ const D = (() => {
 						.includes(lowCaseID)
 				)
 			if (!attrObjs || attrObjs.length === 0)
-				return formatError(`No attributes found with id '${JSON.stringify(lowCaseID)}${charObj ? `' for char '${getName(charObj)}` : ""}'`)
-			formatLog(`AttrObjs: ${jStrLog(attrObjs)}`, "GETCASEREPID")
+				return throwError(`No attributes found with id '${JSON.stringify(lowCaseID)}${charObj ? `' for char '${getName(charObj)}` : ""}'`)
+			logEntry(`AttrObjs: ${jLog(attrObjs)}`, "GETCASEREPID")
 
 			return attrObjs[0].get("name").split("_")[2]
 		},
@@ -385,13 +400,17 @@ const D = (() => {
 		getRepStats = function (value, filterArray) {
 			const charObj = getChar(value)
 			if (!charObj)
-				return false
+				return throwError(`No character at '${jStr(value)}'`)
 			let attrObjs = findObjs( {
 				type: "attribute",
 				characterid: charObj.id
 			} )
 			_.each(filterArray,
 				v => {
+					attrObjs = attrObjs.filter(
+						vv => vv.get("name").toLowerCase()
+							.includes(v.toLowerCase())
+					)
 					attrObjs = _.filter(attrObjs,
 						vv => vv.get("name").toLowerCase()
 							.includes(v.toLowerCase()))
@@ -412,7 +431,7 @@ const D = (() => {
 						_displayname: value
 					} )[0].id
 				} catch (errObj) {
-					return formatError(`No player found with value '${jStr(value)}'`, "D.GETPLAYERID")
+					return throwError(`No player found at '${jStr(value)}'`, "D.GETPLAYERID")
 				}
 			}
 			try {
@@ -429,24 +448,24 @@ const D = (() => {
 
 				return playerID
 			} catch (errObj) {
-				return formatError(`${errObj} (for value '${jStr(value)}'`, "D.GETPLAYERID")
+				return throwError(`No player ID found at '${jStr(value)}': ${errObj}`, "D.GETPLAYERID")
 			}
 		},
 
 		getTextWidth = function (obj, text) {
 			const font = obj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
-				  size = obj.get("font_size"),
-				 chars = text.split(""),
+				size = obj.get("font_size"),
+			     chars = text.split(""),
 			   fontRef = state.DATA.CHARWIDTH[font],
 			   charRef = fontRef && fontRef[size]
 			let width = 0
 			if (!fontRef)
-				return formatError(`No font reference for '${font}'`)
+				return throwError(`No font reference for '${font}'`)
 			if (!charRef)
-				return formatError(`No character reference for '${font}' at size '${size}'`)
+				return throwError(`No character reference for '${font}' at size '${size}'`)
 			_.each(chars, char => {
 				if (!charRef[char] && charRef[char] !== " " && charRef[char] !== 0)
-					formatLog(`... MISSING '${char}' in '${font}' at size '${size}'`)
+					logEntry(`... MISSING '${char}' in '${font}' at size '${size}'`)
 				else
 					width += parseInt(charRef[char] )
 			} )
@@ -458,31 +477,30 @@ const D = (() => {
 		// #region SETTERS:  New Repeating Section Rows
 		makeRow = function (char, secName, attrs) {
 			const IDa = 0,
-				  IDb = [],
-		   characters = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz",
+				IDb = [],
+		     characters = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz",
 		   generateUUID = (() => () => {
-						  let IDc = (new Date()).getTime() + 0,
-							  IDf = 7
-						  const IDd = IDc === IDa,
+					        let IDc = (new Date()).getTime() + 0,
+						      IDf = 7
+					const IDd = IDc === IDa,
 						IDe = new Array(8)
-						  for (IDf; IDf >= 0; IDf--) {
-							  IDe[IDf] = characters.charAt(IDc % 64)
-							  IDc = Math.floor(IDc / 64)
-						  }
-						  IDc = IDe.join("")
-						  if (IDd) {
-							  for (IDf = 11; IDf >= 0 && IDb[IDf] === 63; IDf--)
-								  IDb[IDf] = 0
+					for (IDf; IDf >= 0; IDf--) {
+						IDe[IDf] = characters.charAt(IDc % 64)
+						IDc = Math.floor(IDc / 64)
+					}
+					IDc = IDe.join("")
+					if (IDd) {
+						for (IDf = 11; IDf >= 0 && IDb[IDf] === 63; IDf--)
+							IDb[IDf] = 0
+						IDb[IDf]++
+					} else {
+						for (IDf = 0; IDf < 12; IDf++)
+							IDb[IDf] = Math.floor(64 * Math.random())
+					}
+					for (IDf = 0; IDf < 12; IDf++)
+						IDc += characters.charAt(IDb[IDf] )
 
-							  IDb[IDf]++
-						  } else {
-							  for (IDf = 0; IDf < 12; IDf++)
-								  IDb[IDf] = Math.floor(64 * Math.random())
-						  }
-						  for (IDf = 0; IDf < 12; IDf++)
-							  IDc += characters.charAt(IDb[IDf] )
-
-						  return IDc
+					return IDc
 					  }
 				  )(),
 
@@ -532,8 +550,11 @@ generateUUID2 = (function generateUUID () {
 		runFX = (name, pos) => spawnFxWithDefinition(pos.left, pos.top, FX[name] ),
 
 		// #region INITIALIZATION
-		checkInstall = () => { state[GAMENAME] = state[GAMENAME] || {} }
-		// #endregion
+		checkInstall = () => {
+			state[GAMENAME] = state[GAMENAME] || {}
+			state[GAMENAME].DEBUGCATS = state[GAMENAME].DEBUGCATS || ""
+		}
+	// #endregion
 
 	return {
 		CheckInstall: checkInstall,
@@ -552,46 +573,52 @@ generateUUID2 = (function generateUUID () {
 		CELLSIZE: VALS.CELLSIZE,
 
 		JS: jStr, 						// D.JS(obj, isLog): Parses a string. If isLog, will not use HTML.
-		JSL: jStrLog, 					// D.JSL(obj):  Parses a string, for output to the console log.
-		Ordinalize: ordinalize, 		// D.Ordinalize(num): Returns ordinalized number (e.g. 1 -> "1st")
-		Log: formatLog, 				// D.Log(msg, title): Formats log message, with title.
+		JSL: jLog, 						// D.JSL(obj):  Parses a string, for output to the console log.
+		Ordinal: ordinal, 				// D.Ordinal(num): Returns ordinalized number (e.g. 1 -> "1st")
+		ParseToObj: parseToObj,			/* D.ParseToObj(string): Returns object with parameters given by
+											a string of form 'key:val, key:val,' */
+		GetSelected: getSelected,		// D.GetSelected(msg): Returns selected objects in message.
+		Log: logEntry, 					// D.Log(msg, title): Formats log message, with title.
 		IsIn: isIn, 					/* D.IsIn(needle, [haystack]): Returns formatted needle if found in
-												haystack (= all traits by default) */
+											haystack (= all traits by default) */
 		GetName: getName, 				/* D.GetName(id): Returns name of graphic, character or player's
-												display name. If isShort, returns name without quoted parts
-       											OR only last name if no quotes. */
+											display name. If isShort, returns name without quoteparts
+       										OR only last name if no quotes. */
 		GetChars: getChars, 			/* D.GetChars(val): Returns array of matching characters, given
-												"all", a chat message with selected token(s), character ID,
-       											player ID, character name OR array of those params. */
+											"all", a chat message with selected token(s), character ID,
+       										player ID, character name OR array of those params. */
 		GetChar: getChar, 				/* D.GetChar(val): As above, but returns only the first character
-		       									object found.*/
+		       								object found.*/
 		GetStat: getStat, 				/* D.GetStat(char, name):  Given any valid character value, returns the
-												attribute object described by name. */
+											attribute object described by name. */
 		GetRepIDCase: getCaseRepID,
 		GetRepStats: getRepStats,
 		GetRepStat: getRepStat,
 		GetPlayerID: getPlayerID, 		/* D.GetPlayerID(val):  Returns player ID given: display name, token
-		       									object, character object.*/
+		       								object, character object.*/
 		GetTextWidth: getTextWidth, 	/* D.GetTextWidth(obj, text):  Returns width of given text object if
-			       								it held supplied text. */
+			       							it held supplied text. */
 		MakeRow: makeRow, 				/* D.MakeRow(charID/obj, secName, attrs):  Creates repeating fieldset
-												row in secName with attrs for character given by object or ID.*/
+											row in secName with attrs for character given by object or ID.*/
 		RunFX: runFX, 					/* D.RunFX(name, {top: y, left: x}):  Runs a special effect at
-												the given location. */
-		ThrowError: formatError, 		// D.ThrowError(errObj, title): Logs an error and messages GM.
+											the given location. */
+		ThrowError: throwError, 		// D.ThrowError(errObj, title): Logs an error and messages GM.
 		GetDebugInfo: getDebugInfo,		// D.GetDebugInfo(): Displays the debug level, alert level, and categories.
 		SetDebugLevel: setDebugLvl, 	/* D.SetDebugLevel(lvl, alertLevel): Sets debug level to lvl. D.DB calls with
-												levels lower than this will be muted; alertLevel is the same, but
-												will publish the message to Roll20 chat. */
+											levels lower than this will be muted; alertLevel is the same, but will
+											publish the message to Roll20 chat. */
 		SetDebugCats: setDebugCats,		/* D.SetDebugCats(cats): Adds given categories to debug list, or clears the list
-												if no categories are given */
+											if no categories are given */
 		DB: formatDebug, 				/* D.DB(msg, title, category, lvl): Logs debug if DEBUGLEVEL equal to lvl,
 												and if category has been set via SetDebugCats(). */
-		Alert: formatAlert, 			// D.Alert(msg, title): Sends alert message to GM.
-		SendMessage: sendMessage 		/* D.Chat(who, msg, title): Sends chat message as 'who' with
-												message and title. Message can be an array of strings OR
-       											objects, of form: { message: <message>, title: <title> } */
+		Alert: alertGM, 				// D.Alert(msg, title): Sends alert message to GM.
+		SendToPlayer: sendToPlayer 		/* D.SendToPlayer(who, msg, title): Sends chat message as 'who' with
+											message and title. Message can be an array of strings OR
+       										objects, of form: { message: <message>, title: <title> } */
 	}
 } )()
 
-on("ready", () => D.Log("Ready!", "DATA"))
+on("ready", () => {
+	D.CheckInstall()
+	D.Log("Ready!", "DATA")
+} )

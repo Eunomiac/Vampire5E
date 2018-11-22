@@ -418,14 +418,16 @@
 		},
 
 		setColor = function (line, type, params, level) {
-			if (!COLORSCHEMES[type] )
-				D.ThrowError(`No Color Scheme for type '${D.JS(type)}'`)
-			else if (!COLORSCHEMES[type][line] )
-				D.ThrowError(`No Color Scheme for line '${D.JS(line)}' in '${D.JS(type)}'`)
+			if (!type)
+				D.ThrowError(`Invalid type '${D.JSL(type)}' `, "ROLLER: setColor()")
+			else if (type && !COLORSCHEMES[type] )
+				D.ThrowError(`No Color Scheme for type '${D.JS(type)}'`, "ROLLER: setColor()")
+			else if (line && !COLORSCHEMES[type][line] )
+				D.ThrowError(`No Color Scheme for line '${D.JS(line)}' in '${D.JS(type)}'`, "ROLLER: setColor()")
 			else if (level && !COLORSCHEMES[type][line][level] )
-				D.ThrowError(`No Level '${D.JS(level)}' for '${D.JS(line)}' in '${D.JS(type)}'`)
+				D.ThrowError(`No Level '${D.JS(level)}' for '${D.JS(line)}' in '${D.JS(type)}'`, "ROLLER: setColor()")
 			else if (!level && !_.isString(COLORSCHEMES[type][line] ))
-				D.ThrowError(`Must provide Level for '${D.JS(line)}' in '${D.JS(type)}'`)
+				D.ThrowError(`Must provide Level for '${D.JS(line)}' in '${D.JS(type)}'`, "ROLLER: setColor()")
 			else
 				params.color = level ? COLORSCHEMES[type][line][level] : COLORSCHEMES[type][line]
 
@@ -508,10 +510,9 @@
 
 		scaleFrame = function (row, width) {
 			const stretchWidth = Math.max(width, 120),
-				imgs = [getObj("graphic", state[D.GAMENAME].Roller.imgList[`${row}End`].id)],
-				stretchPer = stretchWidth / imgs.length,
-				blanks = []
-			let	[midCount, endImg, left] = [0, null, null]
+						  imgs = [getObj("graphic", state[D.GAMENAME].Roller.imgList[`${row}End`].id)],
+					    blanks = []
+			let	[midCount, endImg, stretchPer, left] = [0, null, 0, null]
 			while (stretchWidth > 225 * (imgs.length - 1)) {
 				imgs.push(getObj("graphic", state[D.GAMENAME].Roller.imgList[`${row}Mid${midCount}`].id))
 				midCount++
@@ -524,6 +525,7 @@
 				blanks.push(getObj("graphic", state[D.GAMENAME].Roller.imgList[`${row}Mid${midCount}`].id))
 				midCount++
 			}
+			stretchPer = stretchWidth / imgs.length
 			D.DB(`${row} stretchWidth: ${stretchWidth}, imgs Length: ${imgs.length}, x225 ${imgs.length * 225}, stretch per: ${stretchPer}`, "SCALEFRAME()", 4)
 			D.DB(`${row} midCount: ${midCount}, blanks length: ${blanks.length}`)
 			endImg = imgs.shift()
@@ -671,7 +673,7 @@
 					flagData.negFlagLines.push("Exhausted (●●)")
 					flagData.flagDiceMod -= 2
 				} else if (flag === "Humanity") {
-					flagData.negFlagLines.push("Despairing (●●)")
+					flagData.negFlagLines.push("Uncaring (●●)")
 					flagData.flagDiceMod -= 2
 				} else if (flag.includes(":")) { // Custom Flags of form Compulsion (Arrogance):psmd:-3 OR Compulsion (Arrogance):-3
 					const customFlag = _.compact(flag.split(":")),
@@ -681,8 +683,7 @@
 						(customFlag[1].includes("m") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.mental, D.SKILLS.mental] )).length > 0) ||
 						(customFlag[1].includes("s") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.social, D.SKILLS.social] )).length > 0) ||
 						(customFlag[1].includes("d") && _.intersection(traitList, D.DISCIPLINES).length > 0)
-					)
-
+					      )
 					) {
 						if (mod >= 0)
 							flagData.posFlagLines.push(`${customFlag[0]} (${mod > 0 ? "●".repeat(mod) : "~"})`)
@@ -698,7 +699,7 @@
 
 		parseTraits = function (charObj, rollType, params) {
 			const gN = params.groupNum || "",
-				traitData = {traitlist: null, traitData: {}, traitDiceMod: 0}
+				tFull = {traitList: null, traitData: {}, traitDiceMod: 0}
 			let traits = _.compact(params.groupNum ? params.args[1].split(",") : params[0].split(","))
 			if (!params.groupNum) {
 				if (rollType === "frenzy")
@@ -709,39 +710,44 @@
 					traits = ["Willpower"]
 			}
 
-			traitData.traitList = traits.map(v => v.replace(/:\d+/gu, ""))
+			tFull.traitList = traits.map(v => v.replace(/:\d+/gu, ""))
 
 			_.each(traits, trt => {
 				if (trt.includes(":")) {
 					const tData = trt.split(":")
-					traitData.traitData[tData[0]] = {
+					tFull.traitData[tData[0]] = {
 						display: tData[0],
 						value: parseInt(tData[1] )
 					}
 					if (rollType === "frenzy" && tData[0] === "Humanity") {
-						traitData.traitData.Humanity.display = "⅓ Humanity"
-						traitData.traitData.Humanity.value = Math.floor(traitData.traitData.Humanity.value / 3)
-					} else if (rollType === "remorse" && tData[0] === "Humanity") { traitData.traitData.Humanity.display = "Human Potential" }
+						tFull.traitData.Humanity.display = "⅓ Humanity"
+						tFull.traitData.Humanity.value = Math.floor(tFull.traitData.Humanity.value / 3)
+					} else if (rollType === "remorse" && tData[0] === "Humanity") {
+						tFull.traitData.Humanity.display = "Human Potential"
+						tFull.traitData.Humanity.value += 10 -
+                                          tFull.traitData.Humanity.value -
+                                          (parseInt(getAttrByName(charObj.id, `${gN}Stains`)) || 0)
+					}
 				} else {
-					traitData.traitData[trt] = {
+					tFull.traitData[trt] = {
 						display: D.IsIn(trt) || D.IsIn(getAttrByName(charObj.id, `${gN + trt}_name`)),
 						value: parseInt(getAttrByName(charObj.id, gN + trt)) || 0
 					}
 					if (rollType === "frenzy" && trt === "Humanity") {
-						traitData.traitData.Humanity.display = "⅓ Humanity"
-						traitData.traitData.Humanity.value = Math.floor(traitData.traitData.Humanity.value / 3)
+						tFull.traitData.Humanity.display = "⅓ Humanity"
+						tFull.traitData.Humanity.value = Math.floor(tFull.traitData.Humanity.value / 3)
 					} else if (rollType === "remorse" && trt === "Humanity") {
-						traitData.traitData.Humanity.display = "Human Potential"
-						traitData.traitData.Humanity.value = 10 -
-							traitData.traitData.Humanity.value -
+						tFull.traitData.Humanity.display = "Human Potential"
+						tFull.traitData.Humanity.value = 10 -
+							tFull.traitData.Humanity.value -
 							(parseInt(getAttrByName(charObj.id, `${gN}Stains`)) || 0)
-					} else if (!traitData.traitData[trt].display) {
-						D.Chat(D.GetPlayerID(charObj), `Error determining NAME of trait '${D.JS(trt)}'.`, "ERROR: Dice Roller")
+					} else if (!tFull.traitData[trt].display) {
+						D.SendToPlayer(D.GetPlayerID(charObj), `Error determining NAME of trait '${D.JS(trt)}'.`, "ERROR: Dice Roller")
 					}
 				}
 			} )
 
-			return traitData
+			return tFull
 		},
 
 		/* DUMMY RESULTS:
@@ -771,8 +777,6 @@ mod: 0,
 diff: 3
 };         */
 		getRollData = function (charObj, rollType, params) {
-			if (!params)
-				return D.ThrowError("No parameters supplied!")
 			const flagData = parseFlags(charObj, rollType, params),
 				traitData = parseTraits(charObj, rollType, params),
 				gN = params.groupNum || "",
@@ -893,7 +897,7 @@ hungerPool: 0
 				break
 			}
 			if (rollData.traits.length === 0 && rollData.dicePool <= 0) {
-				D.Chat(D.GetPlayerID(D.GetChar(rollData.charID)), "You have no dice to roll!", "ERROR: Dice Roller")
+				D.SendToPlayer(D.GetPlayerID(D.GetChar(rollData.charID)), "You have no dice to roll!", "ERROR: Dice Roller")
 
 				return false
 			}
@@ -922,7 +926,8 @@ hungerPool: 0
 		   });
 		   }
 		   If (!rollData.traitData[trt].display) {
-		   D.Chat(D.GetPlayerID(charObj), "Error determining NAME of trait '" + D.JS(trt) + "'.", "ERROR: Dice Roller");
+		   D.SendToPlayer(D.GetPlayerID(charObj),
+		   "Error determining NAME of trait '" + D.JS(trt) + "'.", "ERROR: Dice Roller");
 		   Return false;
 		   };
 		   };
@@ -987,9 +992,10 @@ margin: 5,
 commit: 0
 };*/
 		rollDice = function (rollData, addVals) {
-			// D.DB("RECEIVED ROLL DATA: " + D.JSL(rollData), "ROLLER: rollDice()", 3);
+			D.DB(`RECEIVED ROLL DATA: ${D.JSL(rollData)}`, "ROLLER: rollDice()", 3)
 			D.DB(`RECEIVED ADDED VALS: ${D.JSL(addVals)}`, "ROLLER: rollDice()", 3)
-			const rollResults = {
+			const sortBins = [],
+				rollResults = {
 					total: 0,
 					critPairs: {bb: 0, hb: 0, hh: 0},
 					B: {crits: 0, succs: 0, fails: 0},
@@ -997,29 +1003,29 @@ commit: 0
 					rolls: [],
 					diceVals: []
 				},
-				roll = function (dtype) {
+				roll = dType => {
 					const d10 = randomInteger(10)
-					rollResults.rolls.push(dtype + d10)
+					rollResults.rolls.push(dType + d10)
 					switch (d10) {
 					case 10:
-						rollResults[dtype].crits++
+						rollResults[dType].crits++
 						rollResults.total++
 						break
 					case 9:
 					case 8:
 					case 7:
 					case 6:
-						rollResults[dtype].succs++
+						rollResults[dType].succs++
 						rollResults.total++
 						break
 					case 5:
 					case 4:
 					case 3:
 					case 2:
-						rollResults[dtype].fails++
+						rollResults[dType].fails++
 						break
 					case 1:
-						switch (dtype) {
+						switch (dType) {
 						case "B":
 							rollResults.B.fails++
 							break
@@ -1033,35 +1039,34 @@ commit: 0
 					default:
 						break
 					}
-				},
-				sortBins = []
+				}
 
 			if (rollData.rerollAmt) {
 				for (let i = 0; i < rollData.rerollAmt; i++)
 					roll("B")
 			} else {
-				_.each( {B: rollData.basePool, H: rollData.hungerPool}, (v, dtype) => {
+				_.each( {B: rollData.basePool, H: rollData.hungerPool}, (v, dType) => {
 					for (let i = 0; i < parseInt(v); i++)
-						roll(dtype)
+						roll(dType)
 				} )
 			}
 
 			_.each(addVals, val => {
-				const dtype = val.slice(0, 1)
+				const dType = val.slice(0, 1)
 				switch (val.slice(1, 2)) {
 				case "c":
-					rollResults[dtype].crits++
+					rollResults[dType].crits++
 					rollResults.total++
 					break
 				case "s":
-					rollResults[dtype].succs++
+					rollResults[dType].succs++
 					rollResults.total++
 					break
 				case "f":
-					rollResults[dtype].fails++
+					rollResults[dType].fails++
 					break
 				case "b":
-					rollResults[dtype].botches++
+					rollResults[dType].botches++
 					break
 				default:
 					break
@@ -1190,13 +1195,13 @@ rollData = { posFlagLines, negFlagLines }
 					outcome: "",
 					subOutcome: ""
 				},
-				blankLines = _.keys(_.omit(state[D.GAMENAME].Roller.textList, _.keys(rollLines))),
 				p = v => rollData.prefix + v
-			let [introPhrase, logPhrase, logString, stains, margin, total, bookends, spread] = new Array(8).fill(null),
+			let [blankLines, introPhrase, logPhrase, logString, stains, margin, total, bookends, spread] =
+					new Array(9).fill(null),
 				maxHumanity = 10,
 				diceCats = _.clone(STATECATS.dice)
 
-			state[D.GAMENAME].Roller.lastRoll = {rollData, rollResults}
+			state[D.GAMENAME].Roller.lastRoll = {rollData: _.clone(rollData), rollResults: _.clone(rollResults)}
 			switch (rollData.type) {
 			case "project":
 				rollLines.subOutcome = {text: ""}
@@ -1244,7 +1249,7 @@ rollData = { posFlagLines, negFlagLines }
 				rollLines.outcome = {text: "", justified: "left"}
 				break
 			default:
-				return D.ThrowError("Unrecognized rollType.")
+				return D.ThrowError(`Unrecognized rollType: ${D.JSL(rollData.rollType)}`, "APPLYROLL: START")
 			}
 
 			_.each(_.keys(rollLines), line => {
@@ -1252,8 +1257,10 @@ rollData = { posFlagLines, negFlagLines }
 					rollLines[line] = setColor(line, rollData.type, rollLines[line] )
 			} )
 
+			blankLines = _.keys(_.omit(state[D.GAMENAME].Roller.textList, _.keys(rollLines)))
+
 			D.DB(`ROLL LINES: ${D.JSL(rollLines)}`, "ROLLER: applyRoll()", 3)
-			// D.DB("BLANKING LINES: " + D.JSL(blankLines), "ROLLER: applyRoll()", 3);
+			D.DB(`BLANKING LINES: ${D.JSL(blankLines)}`, "ROLLER: applyRoll()", 3)
 
 			_.each(rollLines, (content, name) => {
 				switch (name) {
@@ -1523,21 +1530,22 @@ rollData = { posFlagLines, negFlagLines }
 						}
 						break
 					default:
-						D.ThrowError("Unrecognized rollType.")
+						D.ThrowError(`Unrecognized rollType: ${D.JSL(rollData.rollType)}`, "APPLYROLL: MID")
 					}
 					break
 				default:
-					D.ThrowError("Unrecognized Dice Line Definition.")
+					break
 				}
 			} )
 
 			logLines.rollerName = `${CHATSTYLES.rollerName + rollData.charName + logLines.rollerName}</div>`
 			logLines.mainRoll = `${logLines.mainRoll + logLines.difficulty}</span>${logLines.mainRollSub}</div>`
 			logLines.resultDice = `${CHATSTYLES.resultDice.start + CHATSTYLES.resultCount + rollResults.total}:</span>${formatDiceLine(rollData, rollResults)}${CHATSTYLES.margin}${rollResults.margin ? ` (${rollResults.margin >= 0 ? "+" : "-"}${Math.abs(rollResults.margin)})` : " "}</span></div>`
-			logString = `${logLines.fullBox + logLines.rollerName + logLines.mainRoll + logLines.resultDice + logLines.outcome + logLines.subOutcome}</div>`
+			logString = `${logLines.fullBox + logLines.rollerName + logLines.mainRoll + logLines.resultDice +
+                        logLines.outcome + logLines.subOutcome}</div>`
 			D.DB(`LOGLINES: ${D.JS(logLines)}`, "LOG LINES", 2)
 
-			D.SendMessage("Storyteller", logString, " ")
+			D.SendToPlayer("Storyteller", logString, " ")
 			// D.Alert(logString);
 
 			D.DB("... Complete.", "ROLLER: applyRolls()", 4)
@@ -1551,7 +1559,7 @@ rollData = { posFlagLines, negFlagLines }
 				diceCats = diceCats.reverse()
 				break
 			default:
-				D.ThrowError("Unrecognized rollType.")
+				break
 			}
 			// D.DB("Processing '" + D.JSL(diceCats[0]) + "' (length = " + D.JSL(state[D.GAMENAME].Roller[diceCats[0]].length) + "): " + D.JSL(state[D.GAMENAME].Roller[diceCats[0]]), "ROLLER: applyRoll()", 2);
 			for (let i = 0; i < state[D.GAMENAME].Roller[diceCats[0]].length; i++)
@@ -1566,12 +1574,12 @@ rollData = { posFlagLines, negFlagLines }
 			spread = bookends[1].get("left") - bookends[0].get("left")
 
 			scaleFrame("bottom", spread)
-			for (let ii = 0; ii < state[D.GAMENAME].Roller[diceCats[1]].length; ii++)
-				setDie(ii, diceCats[1], "blank")
+			for (let i = 0; i < state[D.GAMENAME].Roller[diceCats[1]].length; i++)
+				setDie(i, diceCats[1], "blank")
 
 			_.each(rollLines, (args, name) => {
-				const pars = setText(name, args)
-				txtWidths[name] = pars.width
+				const params = setText(name, args)
+				txtWidths[name] = params.width
 			} )
 			spread = txtWidths.posMods || 0 + txtWidths.negMods || 0
 			spread += txtWidths.posMods && txtWidths.negMods ? 50 : 0
@@ -1584,7 +1592,7 @@ rollData = { posFlagLines, negFlagLines }
 				setAttrs(rollData.charID, deltaAttrs)
 			}
 
-			return true
+			return deltaAttrs
 		},
 
 		makeSheetRoll = function (charObj, rollType, params) {
@@ -1605,19 +1613,18 @@ rollData = { posFlagLines, negFlagLines }
 		wpReroll = function (dieCat) {
 			clearInterval(rerollFX);
 			[isRerollFXOn, rerollFX] = [false, null]
-			const rollData = state[D.GAMENAME].Roller.lastRoll.rollData,
+			const rollData = _.clone(state[D.GAMENAME].Roller.lastRoll.rollData),
 				rolledDice = _.mapObject(
 					_.omit(
 						state[D.GAMENAME].Roller[dieCat],
 						(v, dNum) => v.value === "blank" ||
 							state[D.GAMENAME].Roller.selected[dieCat].includes(parseInt(dNum))
 					), v => v.value
-				),
-			   rollResults = rollDice(rollData, _.values(rolledDice))
+				)
 				// D.DB("UNSELECTED VALUES: " + D.JSL(rolledDice), "ROLLER: wpReroll()", 3);
 
 			rollData.rerollAmt = state[D.GAMENAME].Roller.selected[dieCat].length
-			applyRoll(rollData, rollResults)
+			applyRoll(rollData, rollDice(rollData, _.values(rolledDice)))
 		},
 
 		changeRoll = function (deltaDice) {
@@ -1626,7 +1633,7 @@ rollData = { posFlagLines, negFlagLines }
 			if (parseInt(deltaDice) < 0) {
 				_.shuffle(rollResults.diceVals)
 				for (let i = 0; i > deltaDice; i--) {
-					const cutIndex = _.findIndex(rollResults.diceVals, v => { v.slice(0, 1) === "B" } )
+					const cutIndex = rollResults.diceVals.findIndex(v => v.startsWith("B"))
 					if (cutIndex === -1)
 						return D.ThrowError(`Not enough base dice to remove in: ${D.JSL(rollResults.diceVals)}`, "ROLLER: changeRoll()")
 					rollResults.diceVals.splice(cutIndex, 1)

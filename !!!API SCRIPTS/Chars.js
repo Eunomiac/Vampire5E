@@ -237,7 +237,7 @@ const Chars = (function Chars () {
 			if (rowID)
 				return true
 
-			return false
+			return D.ThrowError(`Unable to make row for '${D.JSL(char)}'`, "AWARDXP")
 		},
 		// #endregion
 
@@ -255,27 +255,25 @@ const Chars = (function Chars () {
 		// #region Generating MVCs
 		MVC = function (params) {
 			const results = []
-			for (let i = 0; i < MVCVALS.length; i++) {
-				results.push(bHTML.div.title.start + MVCVALS[i][0] + bHTML.div.title.stop)
-				for (let ii = 1; ii < MVCVALS[i].length; ii++) {
-					const fType = MVCVALS[i][ii][0],
-						// D.Log("FTYPE: " + D.JSL(fType));
-						randItem = _.shuffle(MVCVALS[i][ii].slice(1))[0]
-					// D.Log("Random Item " + j + ": " + D.JSL(randItem) + " (Length MVC[j][i] = " + MVCVALS[i][j].length);
-					let result = null
+			for (const mvc of MVCVALS) {
+				results.push(bHTML.div.title.start + mvc[0] + bHTML.div.title.stop)
+				for (let i = 1; i < mvc.length; i++) {
+					let [fType, result] = ["", ""]
 					try {
+						const randItem = _.shuffle(mvc[i].slice(1))[0]
+						fType = mvc[i][0]
 						result = bHTML.div[fType].start + randItem + bHTML.div[fType].stop
 					} catch (errObj) {
-						D.Log(`ERRORED AT you:${i}, J:${ii}, fType: ${D.JSL(fType)}, MCVALS: ${D.JSL(MVCVALS)}`)
-
-						return
+						return D.ThrowError(`ERRORED returning '${D.JSL(fType)}' for '${i}' of '${mvc}', of '${D.JSL(MVCVALS)}`)
 					}
 					// D.Log("Result Code " + i + ": " + D.JSL(result));
 					results.push(result)
 				}
 			}
 			// D.Log("FINAL HTML: " + D.JS(finalCode));
-			D.SendMessage(params.name, HTML.start + results.join("") + HTML.stop, " ")
+			D.SendToPlayer(params.name, HTML.start + results.join("") + HTML.stop, " ")
+
+			return true
 		},
 		// #endregion
 
@@ -284,16 +282,16 @@ const Chars = (function Chars () {
 			if (msg.type !== "api")
 				return
 			const who = (getObj("player", msg.playerid) || {get: () => "API"} ).get("displayname"),
-				// D.Log("WHO: " + D.JSL(who));
 				args = msg.content.split(/\s+/u)
+			D.Log(`Input from '${D.JSL(who)}' with args '${D.JSL(args)}'`)
 			let [chars, params] = [[], []],
 				[amount, session, trait, dtype, dmg, incapString] = new Array(6).fill(null)
 			switch (args.shift()) {
 			case "!rChar":
 				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] )
-					D.Alert("Select character tokens first!")
-				else
 					registerChars(D.GetChars(msg))
+				else
+					D.ThrowError("Select character tokens first!", "CHARS")
 				break
 			case "!xp": // !xp Cost Session Message, with some character tokens selected.
 				chars = D.GetChars(msg)
@@ -307,7 +305,7 @@ const Chars = (function Chars () {
 							D.ThrowError(`FAILED to award ${JSON.stringify(amount)} XP to ${JSON.stringify(D.GetName(char))}`, "!XP")
 					} )
 				} else {
-					D.ThrowError("Select one or more character tokens!")
+					D.ThrowError("Select character tokens first!", "CHARS")
 				}
 				break
 			case "!dmg":
@@ -318,27 +316,27 @@ const Chars = (function Chars () {
 					dmg = parseInt(args.shift())
 					_.each(chars, char => {
 						if (adjustDamage(char, trait, dtype, dmg))
-							D.Alert(`Dealt ${D.JS(dmg)} ${D.JS(dtype)} ${D.JS(trait)} damage to ${D.GetName(char)}`)
+							D.Alert(`Dealt ${D.JS(dmg)} ${D.JS(dtype)} ${D.JS(trait)} damage to ${D.GetName(char)}`, "CHARS")
 						else
-							D.ThrowError(`FAILED to damage ${D.GetName(char)}`)
+							D.ThrowError(`FAILED to damage ${D.GetName(char)}`, "CHARS")
 					} )
 				} else {
-					D.ThrowError("Select one or more character tokens!")
+					D.ThrowError("Select character tokens first!", "CHARS")
 				}
 				break
 			case "!getIncap":
 				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] )
-					D.Alert(`Incapacitation String for '${D.GetName(D.GetChar(msg))}': <br/><br/>${D.GetStat(msg, "incapacitation").get("current")}<br/><br/>e.g. !setIncap Compulsion (Arrogance):a:-2<br/><br/>OR<br/><br/>!setIncap Compulsion (Arrogance):Strength,Dexterity,Animal Ken,Dominate:-2`)
+					D.Alert(`Incapacitation String for '${D.GetName(D.GetChar(msg))}': <br/><br/>${D.GetStat(msg, "incapacitation").get("current")}<br/><br/>e.g. !setIncap Compulsion (Arrogance):a:-2<br/><br/>OR<br/><br/>!setIncap Compulsion (Arrogance):Strength,Dexterity,Animal Ken,Dominate:-2`, "CHARS")
 				else
-					D.Alert("Select a character first!")
+					D.Alert("Select a character first!", "CHARS")
 				break
 			case "!setIncap":
 				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
 					incapString = args.join(" ")
 					setAttrs(D.GetChar(msg).id, {incapacitation: incapString} )
-					D.Alert(`Incapacitation String for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(incapString)}`, "!setIncap")
+					D.Alert(`Incapacitation String for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(incapString)}`, "CHARS !setIncap")
 				} else {
-					D.Alert("Select a character first!")
+					D.Alert("Select a character first!", "CHARS")
 				}
 				break
 			case "!setCompulsion":
@@ -350,11 +348,11 @@ const Chars = (function Chars () {
 							compulsiondisplay_toggle: 1,
 							compulsion: `${params[0].toUpperCase()} --- ${params[1]}`
 						} )
-						D.Alert(`Compulsion for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(`${params[0].toUpperCase()} --- ${params[1]}`)}`, "!setDys title|message")
+						D.Alert(`Compulsion for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(`${params[0].toUpperCase()} --- ${params[1]}`)}`, "CHARS !setDys")
 					} else {
-						D.Alert("Must supply a title and a message separated by a pipe '|'", "!setComp title|message")
+						D.Alert("Must supply a title and a message separated by a pipe '|'", "CHARS !setComp")
 					}
-				} else { D.Alert("Select a character first!") }
+				} else { D.Alert("Select a character first!", "CHARS") }
 				break
 			case "!setDys":
 			case "!setDyscrasias":
@@ -370,30 +368,30 @@ const Chars = (function Chars () {
 							dyscrasiasdisplay_toggle: 1,
 							dyscrasias: `${params[0].toUpperCase()} --- ${params[1]}`
 						} )
-						D.Alert(`Dyscrasias for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(`${params[0].toUpperCase()} --- ${params[1]}`)}`, "!setDys title|message")
+						D.Alert(`Dyscrasias for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(`${params[0].toUpperCase()} --- ${params[1]}`)}`, "CHARS !setDys")
 					} else {
-						D.Alert("Must supply a title and a message separated by a pipe '|'", "!setDys title|message")
+						D.Alert("Must supply a title and a message separated by a pipe '|'", "CHARS !setDys")
 					}
 				} else {
-					D.Alert("Select a character first!")
+					D.Alert("Select a character first!", "CHARS")
 				}
 				break
 			case "!clearCompulsion":
 			case "!clearComp":
 				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
 					setAttrs(D.GetChar(msg).id, {compulsiondisplay_toggle: 0} )
-					D.Alert(`Compulsion disabled for '${D.GetName(D.GetChar(msg))}'`, "!clearComp")
+					D.Alert(`Compulsion disabled for '${D.GetName(D.GetChar(msg))}'`, "CHARS !clearComp")
 				} else {
-					D.Alert("Select a character first!")
+					D.Alert("Select a character first!", "CHARS")
 				}
 				break
 			case "!clearDyscrasias":
 			case "!clearDys":
 				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
 					setAttrs(D.GetChar(msg).id, {dyscrasiasdisplay_toggle: 0} )
-					D.Alert(`Dyscrasias disabled for '${D.GetName(D.GetChar(msg))}'`, "!clearDys")
+					D.Alert(`Dyscrasias disabled for '${D.GetName(D.GetChar(msg))}'`, "CHARS !clearDys")
 				} else {
-					D.Alert("Select a character first!")
+					D.Alert("Select a character first!", "CHARS")
 				}
 				break
 			case "!getProj":
@@ -401,7 +399,7 @@ const Chars = (function Chars () {
 					const attrs = _.filter(findObjs( {_type: "attribute", _characterid: D.GetChar(msg).id} ),
 						v => v.get("name").toLowerCase()
 							.includes("repeating_project_"))
-					D.Alert(`Attributes List: ${D.JS(attrs)}`)
+					D.Alert(`Project Attributes List: ${D.JS(attrs)}`, "CHARS !getProj")
 				}
 				break
 			case "!delProj":
@@ -411,13 +409,12 @@ const Chars = (function Chars () {
 						attrs = attrs.concat(_.filter(findObjs( {_type: "attribute", _characterid: D.GetChar(msg).id} ),
 							vv => vv.get("name").toLowerCase()
 								.includes(v)))
-				        D.Log(`@@@ ATTR PASS: ${JSON.stringify(attrs)}`)
 				    } )
 					_.each(attrs, v => v.remove())
 					attrs = _.filter(findObjs( {_type: "attribute", _characterid: D.GetChar(msg).id} ),
 						v => v.get("name").toLowerCase()
 							.includes("repeating_project_"))
-					D.Alert(`New Attributes List: ${D.JS(attrs)}`)
+					D.Alert(`New Attributes List: ${D.JS(attrs)}`, "CHARS !delProj")
 				}
 				break
 			case "!MVC":
@@ -435,6 +432,8 @@ const Chars = (function Chars () {
 				if (playerIsGM(msg.playerid)) {
 					D.SetDebugLevel(parseInt(args.shift()))
 					D.Alert(`Debug Level set to ${state[D.GAMENAME].DEBUGLEVEL}`)
+				} else {
+					D.Alert("You must be a GM to use this command.")
 				}
 				break
 			default:
@@ -444,9 +443,7 @@ const Chars = (function Chars () {
 		// #endregion
 
 		// #region Public Functions: regHandlers
-		regHandlers = function () {
-			on("chat:message", handleInput)
-		},
+		regHandlers = () => on("chat:message", handleInput),
 
 		checkInstall = function () {
 		// Delete state[D.GAMENAME].Chars;

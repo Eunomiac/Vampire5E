@@ -52,7 +52,7 @@ const TimeTracker = (() => {
 				lateNight.setUTCDate(date.getUTCDate() + 1)
 			if (date.getUTCHours() < 14)
 				dusk.setUTCDate(date.getUTCDate() - 1)
-			// D.Log("DAWN: " + D.JSL(dawn) + "<br>DUSK: " + D.JSL(dusk) + "<br>LATE: " + D.JSL(lateNight) + "<br>PREDAWN[0]: " + D.JSL(new Date(new Date(dawn).setUTCMinutes(dawn.getUTCMinutes() + HORIZONS.predawn[0]))) + "<br><br>CURRENT: " + D.JSL(date), "TIMETRACKER: SETHORIZON()");
+			D.Alert(`DAWN: ${D.JSL(dawn)}<br>DUSK: ${D.JSL(dusk)}<br>LATE: ${D.JSL(lateNight)}<br>PREDAWN[0]: ${D.JSL(new Date(new Date(dawn).setUTCMinutes(dawn.getUTCMinutes() + HORIZONS.predawn[0] )))}<br><br>CURRENT: ${D.JSL(date)}`, "TIMETRACKER: SETHORIZON()")
 			if (date < dusk || date > dawn) {
 				horizon.set("imgsrc", IMAGES.day)
 			} else if (date < lateNight) {
@@ -68,12 +68,12 @@ const TimeTracker = (() => {
 				}
 			}
 		},
-
+		// .replace(/^00/gu, "12").replace(/^0/gu, "")
 		setCurrentDate = function (date, tracker, horizon) {
 			tracker.set("text", `${DAYSOFWEEK[date.getUTCDay()]}, ${
 				MONTHS[date.getMonth()]} ${
-				D.Ordinalize(date.getUTCDate())}, ${
-				(date.getUTCHours() % 12).toString().replace(/^0:/gu, "")}:${
+				D.Ordinal(date.getUTCDate())}, ${
+				(date.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
 				date.getUTCMinutes() < 10 ? "0" : ""}${date.getUTCMinutes().toString()} ${
 				Math.floor(date.getUTCHours() / 12) === 0 ? "AM" : "PM"}`)
 			const lastDate = new Date(parseInt(state[D.GAMENAME].TimeTracker.currentDate))

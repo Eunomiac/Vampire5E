@@ -14,20 +14,22 @@ const WigglePads = (() => {
        				{  id: <id of graphic object beneath> } */
 		FUNCTIONS = {
 			selectDie (args) {
+				const diceCats = [...DICECATS]
 				let dieCat = "",
 					dieId = 0
 				do {
-					dieCat = DICECATS.pop()
+					dieCat = diceCats.pop()
 					dieId = state[D.GAMENAME].Roller[dieCat].findIndex(v => v.id === args.id)
 				} while (dieId === -1)
 				Roller.Select(dieId, dieCat)   // (dieNum, dieCat, dieVal, params)
 			},
 			wpReroll () {
-				const stateVar = state[D.GAMENAME].Roller.selected
-				let dieCat = 0
+				const stateVar = state[D.GAMENAME].Roller.selected,
+					diceCats = [...DICECATS]
+				let dieCat = ""
 				do {
-					dieCat = DICECATS.pop()
-					dieCat = stateVar[dieCat] && stateVar.selected[dieCat].length > 0 ? dieCat : 0
+					dieCat = diceCats.pop()
+					dieCat = stateVar[dieCat] && stateVar[dieCat].length > 0 ? dieCat : 0
 				} while (dieCat === 0)
 				Roller.Reroll(dieCat)
 			},
