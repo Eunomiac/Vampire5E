@@ -37,9 +37,11 @@ module.exports = {
         "setInterval": false,
         "clearInterval": false,
         "getGMID": false,
-        "sendChatMessage": false
+        "sendChatMessage": false,
+        "arguments": true
     },
     "rules": {
+        "no-sparse-arrays": "off",
         "no-async-promise-executor": "error",
         "no-await-in-loop": "error",
         "no-extra-parens": ["error", "all", { "nestedBinaryExpressions": false }],
@@ -146,7 +148,7 @@ module.exports = {
         "func-style": ["error", "expression", {"allowArrowFunctions" : true}],
         "function-paren-newline": ["error", "consistent"],
         "id-blacklist": ["error", "data", "err", "e", "cb", "callback"],
-        "id-length": ["error", { "min": 3, "max": 14, "properties": "never", "exceptions": ["v", "vv", "k", "kk", "kv", "i", "ii", "gN", "p", "pI", "pV", "D"] }],
+        "id-length": ["error", { "min": 3, "max": 14, "properties": "never", "exceptions": ["v", "k", "kv", "i", "j", "gN", "p", "pI", "pV", "D"] }],
         "implicit-arrow-linebreak": ["error", "beside"],
         "indent": ["warn", "tab"],
         "key-spacing": ["error", { "beforeColon": false }],
@@ -234,7 +236,7 @@ module.exports = {
         "no-var": "error",
         "object-shorthand": "error",
         "prefer-const": "error",
-        //"prefer-destructuring": ["error", { "array": true, "object": true }],
+        "prefer-destructuring": ["error", { "array": true, "object": true }],
         "prefer-numeric-literals": "error",
         "prefer-rest-params": "error",
         "prefer-spread": "error",

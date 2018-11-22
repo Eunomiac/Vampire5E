@@ -386,8 +386,7 @@
 			if (!state[D.GAMENAME].Roller.textList[objName] )
 				return D.ThrowError(`No text object registered with name '${D.JS(objName)}'.`, "ROLLER: setText()")
 			const obj = getObj("text", state[D.GAMENAME].Roller.textList[objName].id),
-				width = state[D.GAMENAME].Roller.textList[objName].width,
-				 left = state[D.GAMENAME].Roller.textList[objName].left
+				{width, left} = state[D.GAMENAME].Roller.textList[objName]
 			if (!obj)
 				return D.ThrowError(`Failure to recover object '${D.JS(objName)}': ${D.JS(state[D.GAMENAME].Roller.textList)}`, "ROLLER: setText()")
 			if (params.justified && params.justified === "left") {
@@ -436,16 +435,16 @@
 
 		reposition = function (selObjs = [] ) {
 			for (const sel in selObjs) {
-				const obj = findObjs( {_id: sel._id} )[0]
+				const [obj] = findObjs( {_id: sel._id} )
 				_.find(_.pick(state[D.GAMENAME].Roller, STATECATS[obj.get("type")] ),
-					(v, k) => _.find(v,
-						(vv, kk) => {
-							if (vv.id === obj.id) {
-								state[D.GAMENAME].Roller[k][kk].left = obj.get("left")
-								state[D.GAMENAME].Roller[k][kk].top = obj.get("top")
-								state[D.GAMENAME].Roller[k][kk].height = obj.get("height")
-								state[D.GAMENAME].Roller[k][kk].width = obj.get("width")
-								D.Alert(`Repositioned '${obj.id}' at [${D.JS(k)}/${D.JS(kk)}] to: ${D.JS(state[D.GAMENAME].Roller[k][kk] )}`, "ROLLER: reposition()")
+					(val, key) => _.find(val,
+						(v, k) => {
+							if (v.id === obj.id) {
+								state[D.GAMENAME].Roller[key][k].left = obj.get("left")
+								state[D.GAMENAME].Roller[key][k].top = obj.get("top")
+								state[D.GAMENAME].Roller[key][k].height = obj.get("height")
+								state[D.GAMENAME].Roller[key][k].width = obj.get("width")
+								D.Alert(`Repositioned '${obj.id}' at [${D.JS(key)}/${D.JS(k)}] to: ${D.JS(state[D.GAMENAME].Roller[key][k] )}`, "ROLLER: reposition()")
 
 								return true
 							}
@@ -541,9 +540,9 @@
 			}
 			D.DB(`Setting ${row}End to ${left}`, "SCALEFRAME()", 4)
 			endImg.set("left", left)
-			for (let ii = 0; ii < blanks.length; ii++) {
-				D.DB(`Blanking Img #${imgs.length}${ii}`, "SCALEFRAME()", 4)
-				blanks[ii].set("imgsrc", IMAGES.blank)
+			for (let j = 0; j < blanks.length; j++) {
+				D.DB(`Blanking Img #${imgs.length}${j}`, "SCALEFRAME()", 4)
+				blanks[j].set("imgsrc", IMAGES.blank)
 			}
 		},
 		// #endregion
@@ -794,7 +793,7 @@ diff: 3
 					prefix: ""
 				}
 			if (params.groupNum) {
-				rollData.charName = params.args[0]
+				[rollData.charName] = params.args
 				rollData.diff = parseInt(params.args[2] ) || 0
 				rollData.mod = parseInt(params.args[3] ) || 0
 			} else {
@@ -1381,7 +1380,7 @@ rollData = { posFlagLines, negFlagLines }
 					rollLines.resultCountShadow.text = rollLines.resultCount.text
 					break
 				case "margin":
-					margin = rollResults.margin
+					( {margin} = rollResults)
 					if (!margin) {
 						rollLines.margin.text = " "
 						break
@@ -1391,8 +1390,7 @@ rollData = { posFlagLines, negFlagLines }
 					rollLines.margin = setColor("margin", rollData.type, rollLines.margin, margin >= 0 ? "good" : "bad")
 					break
 				case "outcome":
-					total = rollResults.total
-					margin = rollResults.margin
+					( {total, margin} = rollResults)
 					switch (rollData.type) {
 					case "project":
 						rollLines.outcome.shift = {top: -10}
@@ -1628,8 +1626,8 @@ rollData = { posFlagLines, negFlagLines }
 		},
 
 		changeRoll = function (deltaDice) {
-			const rollData = state[D.GAMENAME].Roller.lastRoll.rollData
-			let rollResults = state[D.GAMENAME].Roller.lastRoll.rollResults
+			const {rollData} = state[D.GAMENAME].Roller.lastRoll
+			let {rollResults} = state[D.GAMENAME].Roller.lastRoll
 			if (parseInt(deltaDice) < 0) {
 				_.shuffle(rollResults.diceVals)
 				for (let i = 0; i > deltaDice; i--) {
@@ -1720,7 +1718,7 @@ rollData = { posFlagLines, negFlagLines }
 			let rollData = buildDicePool(getRollData(chars[0], "secret", params)),
 				[traitLine, playerLine] = ["", ""],
 				resultLine = null
-			const dicePool = rollData.dicePool,
+			const {dicePool} = rollData,
 				    blocks = []
 
 			if (isHidingTraits || rollData.traits.length === 0) { playerLine = `${CHATSTYLES.space30 + CHATSTYLES.secret.greyS}... rolling </span>${CHATSTYLES.secret.whiteB}${dicePool}</span>${CHATSTYLES.space10}${CHATSTYLES.secret.greyS}${dicePool === 1 ? " die " : " dice "}...</span>${CHATSTYLES.space40}` } else {
@@ -1742,8 +1740,7 @@ rollData = { posFlagLines, negFlagLines }
 				rollData = buildDicePool(rollData)
 				let outcomeLine = ""
 				const rollResults = rollDice(rollData),
-					total = rollResults.total,
-					margin = rollResults.margin
+					{total, margin} = rollResults
 				if ((total === 0 || margin < 0) && rollResults.H.botches > 0)
 					outcomeLine = `${CHATSTYLES.outcomeRedSmall}BESTIAL FAIL!`
 				else if (margin >= 0 && rollResults.critPairs.hb + rollResults.critPairs.hh > 0)
@@ -1821,8 +1818,8 @@ rollData = { posFlagLines, negFlagLines }
 			case "!projectroll": {
 				rollType = rollType || "project"
 				D.Log(`Received Roll: ${D.JSL(rollString)} ${args.join(" ")}`)
-				const params = args.join(" ").split("|")
-				charObj = D.GetChars(params[0] )[0]
+				const params = args.join(" ").split("|");
+				[charObj] = D.GetChars(params[0] )
 				name = params.shift()
 				if (!charObj) {
 					D.ThrowError(`!${rollType}roll: No character found with name ${D.JS(name)}`)

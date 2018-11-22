@@ -188,29 +188,30 @@ const ChatFuncs = (() => {
 		prepText = function (objIDs, string) {
 			for (let i = 0; i < objIDs.length; i++) {
 				const char = string.charAt(i),
-					obj = findObjs( {
+					[obj] = findObjs( {
 						_id: objIDs[i]._id
-					} )[0]
+					} )
 				obj.set("text", char.repeat(20))
 			}
 		},
 
 		resolveText = function (objIDs) {
-			let [font, size] = ["Arial", 12]
-			for (let i = 0; i < objIDs.length; i++) {
-				const obj = findObjs( {_id: objIDs[i]._id} )[0],
+			let stateRef = null
+			for (const objID of objIDs) {
+				const [obj] = findObjs( {_id: objID._id} ),
 					width = obj.get("width"),
-					 char = obj.get("text").charAt(0)
-				font = obj.get("font_family").split(" ")[0]
-				size = obj.get("font_size")
+					 char = obj.get("text").charAt(0),
+					 [font] = obj.get("font_family").split(" "),
+					 size = obj.get("font_size")
 				state.DATA = state.DATA || {}
 				state.DATA.CHARWIDTH = state.DATA.CHARWIDTH || {}
 				state.DATA.CHARWIDTH[font] = state.DATA.CHARWIDTH[font] || {}
 				state.DATA.CHARWIDTH[font][size] = state.DATA.CHARWIDTH[font][size] || {}
 				state.DATA.CHARWIDTH[font][size][char] = width / 20
+				stateRef = state.DATA.CHARWIDTH[font][size]
 			// D.Alert("Total Width: " + width + ", Char Width: " + (width / 20), "Text Width of '" + character + "'");
 			}
-			D.Alert(`Current Widths of '${font}' at Size ${size}:   ${D.JS(state.DATA.CHARWIDTH[font][size] )}`)
+			D.Alert(`Current Widths:   ${D.JS(stateRef)}`)
 		},
 
 		caseText = (objs, textCase) => {
@@ -230,14 +231,14 @@ const ChatFuncs = (() => {
 			switch (args.shift()) {
 			case "!get":
 				if (msg.selected && msg.selected[0] ) {
-					obj = findObjs( {
+					[obj] = findObjs( {
 						_id: msg.selected[0]._id
-					} )[0]
+					} )
 				} else {
 					for (let i = 1; i < args.length; i++) {
-						obj = findObjs( {
+						[obj] = findObjs( {
 							_id: args[i]
-						} )[0]
+						} )
 						if (obj) {
 							args.splice(i, 1)
 							break
@@ -288,14 +289,14 @@ const ChatFuncs = (() => {
 				break
 			case "!set":
 				if (msg.selected && msg.selected[0] ) {
-					obj = findObjs( {
+					[obj] = findObjs( {
 						_id: msg.selected[0]._id
-					} )[0]
+					} )
 				} else {
 					for (let i = 1; i < args.length; i++) {
-						obj = findObjs( {
+						[obj] = findObjs( {
 							_id: args[i]
-						} )[0]
+						} )
 						if (obj) {
 							args.splice(i, 1)
 							break
@@ -375,11 +376,11 @@ const ChatFuncs = (() => {
 			case "!checkText": {
 				if (!msg.selected || !msg.selected[0] )
 					break
-				const thisObj = findObjs( {
+				const [thisObj] = findObjs( {
 						_id: msg.selected[0]._id
-					} )[0],
-				 size = thisObj.get("font_size"),
-				 font = thisObj.get("font_family").split(" ")[0]
+					} ),
+					[font] = thisObj.get("font_family").split(" "),
+					  size = thisObj.get("font_size")
 				D.Alert(`There are ${_.values(state.DATA.CHARWIDTH[font][size] ).length} entries.`, `${D.JS(font).toUpperCase()} ${D.JS(size)}`)
 				break }
 			default:

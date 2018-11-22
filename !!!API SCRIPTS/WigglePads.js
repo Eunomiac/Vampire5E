@@ -34,7 +34,7 @@ const WigglePads = (() => {
 				Roller.Reroll(dieCat)
 			},
 			signalLight (args) {
-				const light = findObjs( {_type: "graphic", _id: args.id} )[0]
+				const [light] = findObjs( {_type: "graphic", _id: args.id} )
 				if (!light)
 					D.ThrowError(`No signal light found with id ${JSON.stringify(args.id)}.`)
 				else if (light.get("imgsrc") === IMAGES.blank)
@@ -50,7 +50,7 @@ const WigglePads = (() => {
 			D.DB(`PARAMS: ${D.JSL(params)}`, "WIGGLEPADS: makePad()", 2)
 			const options = {}
 			let pad = null
-			_.each(params.split(" "), v => { options[v.split(":")[0]] = v.split(":")[1] } )
+			_.each(params.split(" "), v => { [, options[v.split(":")[0]]] = v.split(":") } )
 			D.DB(`DERIVED OPTIONS: ${D.JSL(options)}`, "WIGGLEPADS: makePad()", 2)
 			pad = createObj("graphic", {
 				name: `WP_${name}_${obj.id}`,
@@ -89,7 +89,7 @@ const WigglePads = (() => {
 		setPad = function (graphicId, params) {
 			if (!state[D.GAMENAME].WigglePads.byGraphic[graphicId] )
 				return D.ThrowError(`Bad graphic ID: '${D.JS(graphicId)}'; Can't set params: '${D.JS(params)}'`, "WIGGLEPADS: setPad()")
-			const pad = findObjs( {_id: state[D.GAMENAME].WigglePads.byGraphic[graphicId].id} )[0]
+			const [pad] = findObjs( {_id: state[D.GAMENAME].WigglePads.byGraphic[graphicId].id} )
 			if (!pad)
 				return D.ThrowError(`No pad found with ID: '${D.JS(graphicId)}'; Can't set params: '${D.JS(params)}'`, "WIGGLEPADS: setPad()")
 			pad.set(params)
@@ -123,7 +123,7 @@ const WigglePads = (() => {
 				if (!msg.selected || !msg.selected[0] ) {
 					D.ThrowError("Select a graphic or text object first!")
 				} else {
-					obj = findObjs( {_id: msg.selected[0]._id} )[0]
+					[obj] = findObjs( {_id: msg.selected[0]._id} )
 					makePad(obj, args.shift(), args.join(" "))  // Height:-28 width:-42 x:0 y:0
 				}
 				break

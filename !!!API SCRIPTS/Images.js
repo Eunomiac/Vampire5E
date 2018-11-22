@@ -1,33 +1,6 @@
-/*
-?{Name of Query|
-   Label 1, ?{value1&#124;
-      Label 1A&#44; ?{value1A&amp;#124;
-         Label 1Ai&amp;#44; value1Ai &amp;#124;
-         Label 1Aii&amp;#44; value1Aii
-      &amp;#125; &#124;
-      Label 1B&#44; ?{value1B&amp;#124;
-         Label 1Bi&amp;#44; value1Bi &amp;#124;
-         Label 1Bii&amp;#44; value1Bii
-      &amp;#125;
-   &#125; |
-
-   Label 2, ?{value2&#124;value2&#125;
-}
-*/
-/* ChatFuncs.js, "ChatFuncs".  No exposure to other scripts in the API.
-   >>> ChatFuncs is a library of commands that can be triggered from within roll20 chat.  You can view the properties
-   of selected objects and the state variable; run text-sizing tests to be used in scripts like Roller;   is both a
-   library of handy resources for other scripts to use, and a master configuration file for your game.  You can find
-   a list of all of the available methods at the end of the script.  Configuration is a bit trickier, but is contained
-   to the CONFIGURATION and DECLARATIONS #regions. Strictly a utility script: Doesn't set things or return information
-   to other API objects --- use DATA and SET for that. */
-
 const Images = (() => {
-	/* #region CONFIGURATION
-	   state[D.GAMENAME].Images = state[D.GAMENAME].Images || {registry: {} } */
-	const STATEREF = state[D.GAMENAME].Images,
-		  REGISTRY = STATEREF.registry,
-		   IMGDATA = {
+	// #region CONFIGURATION
+	const IMGDATA = {
 			   blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
 			district: {x: 100, y: 100, h: 400, w: 600},
 			    site: {x: 100, y: 100, h: 400, w: 600}
@@ -35,62 +8,105 @@ const Images = (() => {
 		// #endregion
 
 		// #region GETTERS: Image Object & Data Retrieval
-		getImageObj = v => {
+		getImageObj = (val, cat) => {
+			let [imgObj] = D.GetSelected(val)
 			try {
-				if (v.selected && D.GetSelected(v)[0].get("type") === "image")
-					return D.GetSelected(v)[0]
-
-				return getObj("image", REGISTRY[v].id)
+				if ((!imgObj || !imgObj.get("_type") === "graphic") && state[D.GAMENAME].Images.registry[cat] )
+					imgObj = getObj("graphic", state[D.GAMENAME].Images.registry[cat].id)
 			} catch (errObj) {
-				return D.ThrowError(`getImage(${D.JS(v)}) failed: No image registered.<br><br>${D.JS(errObj)}`, "IMAGES: Get")
+				return D.ThrowError(`${D.JSL(errObj)}`, "[ERROR] IMAGES: Get")
 			}
+
+			return imgObj
 		},
 
-		getImageData = v => {
-			if (_.isString(v) && REGISTRY[v] ) {
-				return REGISTRY[v]
-			} else if (v !== null && typeof v === "object") {
-				const imgObj = (v.selected && D.GetSelected(v)[0] ) || v
-				if (imgObj.get("type") !== "image")
-					return D.ThrowError(`Object '${imgObj}' is not an image object.`, "IMAGES: GetData")
-				for (const name of REGISTRY) {
-					if (REGISTRY[name].id === imgObj.id)
-						return REGISTRY[name]
+		getImageData = (val, cat) => {
+			let imgData = null
+			try {
+				if (_.isString(val) && state[D.GAMENAME].Images.registry[val] ) {
+					imgData = state[D.GAMENAME].Images.registry[val]
+				} else if (D.IsObj(val)) {
+					const imgObj = (val.selected && D.GetSelected(val)[0] ) || val
+					if (imgObj.get("type") !== "graphic")
+						return D.ThrowError(`Object '${imgObj}' is not an image object.`, "IMAGES: GetData")
+					for (const cats of state[D.GAMENAME].Images.registry[cat] ) {
+						if (state[D.GAMENAME].Images.registry[cats].id === imgObj.id)
+							imgData = state[D.GAMENAME].Images.registry[cats]
+					}
 				}
+			} catch (errObj) {
+				return D.ThrowError(`Cannot locate image with search value '${D.JS(val)}'`, "IMAGES: GetData")
 			}
 
-			return D.ThrowError(`Cannot locate image with search value '${D.JS(v)}'`, "IMAGES: GetData")
+			return imgData
 		},
 		// #endregion
 
-
 		// #region SETTERS: Registering & Manipulating Image Objects
-		regImage = (imgObj, name, params = {} ) => {
-			const cat = params.category || "",
-			  imgSrcs = _.pick(params, v => v.startsWith("http"))
-			REGISTRY[name] = {
-				id: imgObj.id || REGISTRY[name].id,
-				name,
+		regImage = (imgObj, cat, params = {} ) => {
+			const imgSrcs = (params.entries && _.pick(params, v => v.startsWith("http"))) || {}
+			state[D.GAMENAME].Images.registry[cat] = {
+				id: imgObj.id || state[D.GAMENAME].Images.registry[cat].id,
 				category: cat,
 				pos: {
-					x: params.x || imgObj.get("left") || REGISTRY[name].x || (IMGDATA[cat] && IMGDATA[cat].x) || 200,
-					y: params.y || imgObj.get("top") || REGISTRY[name].y || (IMGDATA[cat] && IMGDATA[cat].y) || 200,
-					h: params.h || imgObj.get("height") || REGISTRY[name].h || (IMGDATA[cat] && IMGDATA[cat].h) || 100,
-					w: params.w || imgObj.get("width") || REGISTRY[name].w || (IMGDATA[cat] && IMGDATA[cat].w) || 100
+					x: params.x || imgObj.get("left") || state[D.GAMENAME].Images.registry[cat].x || (IMGDATA[cat] && IMGDATA[cat].x) || 200,
+					y: params.y || imgObj.get("top") || state[D.GAMENAME].Images.registry[cat].y || (IMGDATA[cat] && IMGDATA[cat].y) || 200,
+					h: params.h || imgObj.get("height") || state[D.GAMENAME].Images.registry[cat].h || (IMGDATA[cat] && IMGDATA[cat].h) || 100,
+					w: params.w || imgObj.get("width") || state[D.GAMENAME].Images.registry[cat].w || (IMGDATA[cat] && IMGDATA[cat].w) || 100
 				},
-				srcs: imgSrcs.length > 0 ? imgSrcs : REGISTRY[name].srcs || {default: (imgObj && imgObj.get("imgsrc")) || IMGDATA.blank, blank: IMGDATA.blank}
+				srcs: (
+					imgSrcs.entries ?
+						imgSrcs :
+						state[D.GAMENAME].Images.registry[cat] && state[D.GAMENAME].Images.registry[cat].srcs
+				) || {}
 			}
-			D.Alert(`Image ${D.JS(name)} registered: ${D.JS(REGISTRY[name] )}`, "IMAGES: regImage")
+			D.Alert(`Host obj for image category '${D.JS(cat)}' registered: ${D.JS(state[D.GAMENAME].Images.registry[cat] )}`, "IMAGES: regImage")
 
 			return true
 		},
 
-		addSrcs = (val, params = {} ) => {
-			/* Version where you can select an object, have the image source extracted from
-			there, and then added to a different image object referenced by name */
-			const imgData = getImageData(val)
-			Object.assign(REGISTRY[imgData.name].srcs, _.pick(params, v => v.startsWith("http")))
-			D.Alert(`Image ${imgData.name} Sources:<br><br>${REGISTRY[imgData.name].srcs}`)
+		addSrc = (imgVal, cat, name) => {
+			try {
+				const imgObj = getImageObj(imgVal),
+					imgSrc = getImageObj(imgVal).get("imgsrc")
+						.replace(/\w*?(?=\.png)/u, "thumb")
+				// D.Alert(`Retrieved Image Object (${D.JSL(D.IsObj(imgObj))}): ${D.JSL(imgObj)}`, "IMAGES: addSrc")
+				if (imgObj && state[D.GAMENAME].Images.registry[cat] ) {
+					state[D.GAMENAME].Images.registry[cat].srcs[name] = imgSrc
+					D.Alert(`Image '${D.JS(name)}' added to category '${D.JS(cat)}'.<br><br>Source: ${D.JS(imgSrc)}`)
+				}
+			} catch (errObj) {
+				D.ThrowError(`Bad arguments: ${errObj}`, "IMAGES: addSrc")
+			}
+		},
+
+		setImage = (cat, imgsrc) => {
+			const imgObj = getImageObj( {}, cat)
+			imgObj.set("imgsrc", imgsrc)
+		},
+		// #endregion
+
+		// #region MACRO BUILDING: Building Selection Macros for Images
+		buildMacro = (gmID, name, cats) => {
+			let action = "!img set ?{Choose Image Category"
+			for (const cat of cats) {
+				if (state[D.GAMENAME].Images.registry[cat] ) {
+					action += `| ${D.Capitalize(cat)}, ?{Choose ${D.Capitalize(cat)}`
+					for (const imgName of _.sortBy(_.keys(state[D.GAMENAME].Images.registry[cat].srcs), k => k))
+						action += ` &amp;#124;${D.Capitalize(imgName)}&amp;#44; ${D.Capitalize(cat)} ${state[D.GAMENAME].Images.registry[cat].srcs[imgName]}`
+					action += ` &amp;#124;-- blank --&amp;#44; ${D.Capitalize(cat)} ${IMGDATA.blank} &amp;#125; `
+				} else {
+					D.Alert(`Bad Cat: ${D.JSL(cat)}`, "BUILDMACRO ITERATOR")
+				}
+			}
+			action += "}"
+
+			createObj("macro", {
+				_playerid: gmID,
+				name,
+				action,
+				visibleto: gmID
+			} )
 		},
 		// #endregion
 
@@ -100,7 +116,7 @@ const Images = (() => {
 				return
 
 			const args = msg.content.split(/\s+/u)
-			let [name, imgObj] = [null, null]
+			let [name, cat, imgObj] = [null, null, null]
 			if (args.shift() !== "!img")
 				return
 
@@ -109,28 +125,44 @@ const Images = (() => {
 			case "register":
 				imgObj = getImageObj(msg)
 				if (imgObj) {
-					name = args.shift()
-					if (name === null || args.length !== 1)
-						D.Alert("Syntax: !img reg <name> [category:category, imgName:imgSrc, imgName : imgSrc]", "IMAGES, !img reg")
+					cat = args.shift()
+					if (cat === null)
+						D.Alert("Syntax: !img reg <cat> [<params = imgName:imgSrc, imgName : imgSrc>]", "IMAGES, !img reg")
 					else
-						regImage(imgObj, name, D.ParseToObj(args.join(" ")))
+						regImage(imgObj, cat, D.ParseToObj(args.join(" ")))
 				} else {
 					D.Alert("Select an image object first!", "IMAGES, !img reg")
 				}
 				break
+			case "reset":
+				delete state[D.GAMENAME].Images
+				Images.CheckInstall()
+				break
 			case "add":
 			case "addsrc":
+				cat = args.shift()
+				name = args.shift()
+				addSrc(msg, cat, name)
 				break
-			case "get":
+			case "set":
+				cat = args.shift()
+				setImage(cat, args.shift())
+				break
+			case "macro":
+				name = args.shift()
+				cat = args.join(" ").split(/,\s*?/gu)
+				buildMacro(msg.playerid, name, cat)
+				break
+			case "getData":
 				imgObj = getImageObj(msg)
 				if (imgObj) {
-					D.Alert(getImageData(imgObj), "IMAGES, !img get")
+					D.Alert(getImageData(imgObj), "IMAGES, !img getData")
 				} else {
 					name = args.shift()
-					if (name && REGISTRY[name] )
-						D.Alert(D.JS(REGISTRY[name] ), `IMAGES: '${D.JS(name)}'`)
+					if (name && state[D.GAMENAME].Images.registry[name] )
+						D.Alert(D.JS(state[D.GAMENAME].Images.registry[name] ), `IMAGES: '${D.JS(name)}'`)
 					else
-						D.Alert("Syntax: !img get [<category> <name>] (or select an image object)", "IMAGES, !img get")
+						D.Alert("Syntax: !img get [<category> <name>] (or select an image object)", "IMAGES, !img getData")
 				}
 				break
 			default:

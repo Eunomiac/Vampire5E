@@ -11,35 +11,35 @@ const Chars = (function Chars () {
 				"Pivotal Event",
 				["para",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... you fell in love with the wrong person, who dragged you into an exciting world you never knew existed. You freaked out and left them.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... your best friend accused you of a crime you know you didn�t commit, but they have photos that prove otherwise.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... you ended up in a literal warzone, bullets flying all around you. If it weren�t for a dangerous psychopath you befriended you�d be a corpse.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... your best friend accused you of a crime you know you didn't commit, but they have photos that prove otherwise.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... you ended up in a literal warzone, bullets flying all around you. If it weren't for a dangerous psychopath you befriended you'd be a corpse.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... your parents were deranged on some basal level and you grew up in chaos. You escaped as soon as you could.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... somehow, through no fault of your own, you ended up with money and status. You don�t know what happened to it all.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... somehow, through no fault of your own, you ended up with money and status. You don't know what happened to it all.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... someone once took you out into some isolated place and showed you something that gives you weird dreams to this day.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... you had a talent that showed itself at an early age. Everyone told you you would be famous for it, but here you are.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... you look a job with no experience that no one thought you could do. After a few years, you quit and didn�t look back. You can�t say why.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... you look a job with no experience that no one thought you could do. After a few years, you quit and didn't look back. You can't say why.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... someone very close to you died. No one would tell you what happened, and the people around you refused to talk about it.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... Work. Sleep. Work. Sleep. Forever. One day you�d had enough, and in the middle of the day exploded in a rage. You left that life behind and never talk about it."],
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... Work. Sleep. Work. Sleep. Forever. One day you'd had enough, and in the middle of the day exploded in a rage. You left that life behind and never talk about it."],
 				["para",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Endless Regret</u>:</b></span><br>You didn�t comport yourself with any dignity or honesty. You thought you were better than that.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Endless Regret</u>:</b></span><br>You didn't comport yourself with any dignity or honesty. You thought you were better than that.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Simmering Rage</u>:</b></span><br>They know what they did, and they did it knowing what would happen.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel a <span style=\"font-size: 14px; margin-top: 10px;\"><u>Miasma of Confusion</u>:</b></span><br>You can�t square this circle. Nothing about this makes any sense and the more you think about it the worse it is.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Arrogant Certainty</u>:</b></span><br>You were there for the whole thing and it didn�t beat you. Nothing can stand in your way now.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Bleak Joy</u>:</b></span><br>It�s funny when you think about it. We�re all just stuck here on this planet and absurd things keep happening.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Numb Disbelief</u>:</b></span><br>Did that really happen? It can�t have happened. It doesn�t feel real.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel a <span style=\"font-size: 14px; margin-top: 10px;\"><u>Miasma of Confusion</u>:</b></span><br>You can't square this circle. Nothing about this makes any sense and the more you think about it the worse it is.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Arrogant Certainty</u>:</b></span><br>You were there for the whole thing and it didn't beat you. Nothing can stand in your way now.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Bleak Joy</u>:</b></span><br>It's funny when you think about it. We're all just stuck here on this planet and absurd things keep happening.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Numb Disbelief</u>:</b></span><br>Did that really happen? It can't have happened. It doesn't feel real.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Renewed Purpose</u>:</b></span><br>Everything is lined up for you. You know what you have to do with your life now.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Frail Hopelessness</u>:</b></span><br>Nothing matters, and the more you look at it the more you feel like the Universe is a great, crushing wave.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You're <i>still</i> driven to <span style=\"font-size: 14px; margin-top: 10px;\"><u>Hypervigilance</u>:</b></span><br>This could happen at any moment to anyone. You keep your head on a swivel for the next time it does.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Overwhelming Oneness</u>:</b></span><br>Have you laid in the grass and felt the Earth spinning around you? That�s how you feel when you reflect on this memory."],
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Overwhelming Oneness</u>:</b></span><br>Have you laid in the grass and felt the Earth spinning around you? That's how you feel when you reflect on this memory."],
 				["para",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... it never ended. You just move forward and try to put the past behind you. But when you can't help but look back, it's always there, right at your heels.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... the responsible parties died before they could be confronted about their part in it.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... things keep repeating, the same situations keep appearing in your periphery and reopening old wounds.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... some problems are too big.  Some problems are systemic things that won�t budge to one person�s will.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... forgiveness is earned, and the person or people responsible haven�t earned it.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... you can�t put it right, because what is done is done.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... some problems are too big.  Some problems are systemic things that won't budge to one person's will.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... forgiveness is earned, and the person or people responsible haven't earned it.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... you can't put it right, because what is done is done.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... the system stepped in, the state or family, and took it all out of your hands.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... you don�t understand how it happened, and because you don�t understand it, you can�t resolve it.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... you don't understand how it happened, and because you don't understand it, you can't resolve it.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... everything returned to normal on the outside, but just underneath that veneer of normalcy... it sits.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... other things took priority, so it remained an open loop, still in the back of your head."]
 			],
@@ -97,13 +97,13 @@ const Chars = (function Chars () {
 					"you react with <b>Hatred</b> (or) <b>Love:</b> You want to destroy them for existing, or to bask in their glory.",
 					"you react with <b>Disgust</b> (or) <b>Appreciation:</b> The smell of sour milk, or the sweet smell of opportunity.",
 					"you react with <b>Rage</b> (or) <b>Joy:</b> They cut in front of you and laugh about it, or fill you with elation.",
-					"you react with <b>Vigilant Distrust</b> (or) <b>Conviction:</b> You think you�re being lied to, or you're more certain than ever.",
-					"you react with <b>Admiration</b> (or) <b>Judgment:</b> One day you�ll do what they did, or one day they'll learn.",
+					"you react with <b>Vigilant Distrust</b> (or) <b>Conviction:</b> You think you're being lied to, or you're more certain than ever.",
+					"you react with <b>Admiration</b> (or) <b>Judgment:</b> One day you'll do what they did, or one day they'll learn.",
 					"you react with <b>Bravery</b> (or) <b>Cowardice:</b> You stood up to the bully, or ran like hell.",
 					"you react with <b>Amazement</b> (or) <b>Criticism:</b> Someone has to see this thing!",
 					"you react with <b>Acceptance</b> (or) <b>Denial:</b> All this is according to design, or a change must come, whatever the cost.",
 					"you react with <b>Attraction</b> (or) <b>Repulsion:</b> If you can just get a little closer... or farther away...",
-					"you react with <b>Zeal</b> (or) <b>Boredom:</b> You�re reminded of what is good in the world, or you grow impatient to find something more interesting."],
+					"you react with <b>Zeal</b> (or) <b>Boredom:</b> You're reminded of what is good in the world, or you grow impatient to find something more interesting."],
 				["paraStart",
 					"When you see or commit an <b>Abuse of Power</b>, ",
 					"When you see or show <b>Disrespect</b>, ",
@@ -120,13 +120,13 @@ const Chars = (function Chars () {
 					"you react with <b>Hatred</b> (or) <b>Love:</b> You want to destroy them for existing, or to bask in their glory.",
 					"you react with <b>Disgust</b> (or) <b>Appreciation:</b> The smell of sour milk, or the sweet smell of opportunity.",
 					"you react with <b>Rage</b> (or) <b>Joy:</b> They cut in front of you and laugh about it, or fill you with elation.",
-					"you react with <b>Vigilant Distrust</b> (or) <b>Conviction:</b> You think you�re being lied to, or you're more certain than ever.",
-					"you react with <b>Admiration</b> (or) <b>Judgment:</b> One day you�ll do what they did, or one day they'll learn.",
+					"you react with <b>Vigilant Distrust</b> (or) <b>Conviction:</b> You think you're being lied to, or you're more certain than ever.",
+					"you react with <b>Admiration</b> (or) <b>Judgment:</b> One day you'll do what they did, or one day they'll learn.",
 					"you react with <b>Bravery</b> (or) <b>Cowardice:</b> You stood up to the bully, or ran like hell.",
 					"you react with <b>Amazement</b> (or) <b>Criticism:</b> Someone has to see this thing!",
 					"you react with <b>Acceptance</b> (or) <b>Denial:</b> All this is according to design, or a change must come, whatever the cost.",
 					"you react with <b>Attraction</b> (or) <b>Repulsion:</b> If you can just get a little closer... or farther away...",
-					"you react with <b>Zeal</b> (or) <b>Boredom:</b> You�re reminded of what is good in the world, or you grow impatient to find something more interesting."]
+					"you react with <b>Zeal</b> (or) <b>Boredom:</b> You're reminded of what is good in the world, or you grow impatient to find something more interesting."]
 			]
 		],
 		HTML = {
@@ -229,7 +229,7 @@ const Chars = (function Chars () {
 		awardXP = function (char, award, session, reason) {
 			if (!state[D.GAMENAME].Chars[char.id] )
 				return D.ThrowError("You must register the character first.", "AWARDXP")
-			const rowID = D.MakeRow(char, "earnedxp", {
+			const rowID = D.MakeRow(char.id, "earnedxp", {
 				xp_award: award,
 				xp_session: session,
 				xp_reason: reason
@@ -245,7 +245,7 @@ const Chars = (function Chars () {
 		adjustDamage = function (charObj, trt, dtype, amount) {
 			const attrList = {},
 				trait = trt.slice(0, 1).toUpperCase() + trt.slice(1)
-			attrList[trait.toLowerCase() + ( ["superficial", "superficial+", "spent"].includes(dtype) ? " sDmg" : " aDmg")] = parseInt(amount) > 0 && dtype === "superficial" ? parseInt(Math.ceil(amount / 2)) : parseInt(amount)
+			attrList[trait.toLowerCase() + ( ["superficial", "superficial+", "spent"].includes(dtype) ? "_sDmg" : "_aDmg")] = parseInt(amount) > 0 && dtype === "superficial" ? parseInt(Math.ceil(amount / 2)) : parseInt(amount)
 			setAttrs(charObj.id, attrList)
 
 			return true
@@ -257,20 +257,14 @@ const Chars = (function Chars () {
 			const results = []
 			for (const mvc of MVCVALS) {
 				results.push(bHTML.div.title.start + mvc[0] + bHTML.div.title.stop)
-				for (let i = 1; i < mvc.length; i++) {
-					let [fType, result] = ["", ""]
+				for (const [fType, ...mvcItems] of mvc.slice(1)) {
 					try {
-						const randItem = _.shuffle(mvc[i].slice(1))[0]
-						fType = mvc[i][0]
-						result = bHTML.div[fType].start + randItem + bHTML.div[fType].stop
+						results.push(bHTML.div[fType].start + _.shuffle(mvcItems)[0] + bHTML.div[fType].stop)
 					} catch (errObj) {
-						return D.ThrowError(`ERRORED returning '${D.JSL(fType)}' for '${i}' of '${mvc}', of '${D.JSL(MVCVALS)}`)
+						return D.ThrowError(`ERRORED returning '${D.JSL(fType)}' for '${D.JSL(mvcItems)}' of '${D.JSL(mvc)}', of '${D.JSL(MVCVALS)}'`)
 					}
-					// D.Log("Result Code " + i + ": " + D.JSL(result));
-					results.push(result)
 				}
 			}
-			// D.Log("FINAL HTML: " + D.JS(finalCode));
 			D.SendToPlayer(params.name, HTML.start + results.join("") + HTML.stop, " ")
 
 			return true
@@ -405,10 +399,10 @@ const Chars = (function Chars () {
 			case "!delProj":
 				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
 				    let attrs = []
-				    _.each( ["project_false", "_[object"], v => {
+				    _.each( ["project_false", "_[object"], val => {
 						attrs = attrs.concat(_.filter(findObjs( {_type: "attribute", _characterid: D.GetChar(msg).id} ),
-							vv => vv.get("name").toLowerCase()
-								.includes(v)))
+							v => v.get("name").toLowerCase()
+								.includes(val)))
 				    } )
 					_.each(attrs, v => v.remove())
 					attrs = _.filter(findObjs( {_type: "attribute", _characterid: D.GetChar(msg).id} ),

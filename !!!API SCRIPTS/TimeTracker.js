@@ -93,7 +93,7 @@ const TimeTracker = (() => {
 			if (msg.type !== "api" || !playerIsGM(msg.playerid))
 				return
 			const args = msg.content.split(/\s+/u),
-				currentDate = state[D.GAMENAME].TimeTracker.currentDate
+				{currentDate} = state[D.GAMENAME].TimeTracker
 			let [tracker, horizon, params] = [[], [], []],
 				[date, delta, unit] = [null, null, null]
 			switch (args.shift().toLowerCase()) {
@@ -105,8 +105,8 @@ const TimeTracker = (() => {
 					D.Alert("Register an image object first, with '!reg horizon'", "TIMETRACKER")
 					break
 				}
-				tracker = findObjs( {_id: state[D.GAMENAME].TimeTracker.timeText} )[0]
-				horizon = findObjs( {_id: state[D.GAMENAME].TimeTracker.horizonImage} )[0]
+				[tracker] = findObjs( {_id: state[D.GAMENAME].TimeTracker.timeText} );
+				[horizon] = findObjs( {_id: state[D.GAMENAME].TimeTracker.horizonImage} )
 				params = args.slice(1).join(" ")
 					.toUpperCase()
 				switch (args.shift().toLowerCase()) {

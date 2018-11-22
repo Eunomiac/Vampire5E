@@ -125,7 +125,17 @@ const D = (() => {
 		// #region BASE FUNCTIONALITY: Fundamental Functions & String Manipulation to Declare First
 
 		/* Finds the first player who is GM. */
-		getGMID = () => _.find(findObjs( {_type: "player"} ), v => playerIsGM(v._id)),
+		getGMID = () => {
+			const playerObjs = findObjs( {_type: "player"} ),
+			 gmObjs = playerObjs.filter(v => {
+					log(`[getGMID() Iterator: Player Obj] ${JSON.stringify(v)}`)
+					log(`[getGMID() Iterator: playerIsGM(id)] ${playerIsGM(v._id)}`)
+
+					return playerIsGM(v._id)
+				} )
+
+			return gmObjs[0]
+		},
 
 		/* Whispers formatted chat message to player given: display name OR player ID.
      		Message can be an array of strings OR objects, of form: { message: <message>, title: <title> }. */
@@ -200,6 +210,9 @@ const D = (() => {
 			return `${num}${["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"][num % 10]}`
 		},
 
+		// capitalize = str => str.slice(0, 1).toUpperCase() + str.slice(1),
+		capitalize = str => str,
+
 		/* Converts string of form "key:val, key:val, key:val" into an object. */
 		parseToObj = val => {
 			const obj = {}
@@ -212,15 +225,56 @@ const D = (() => {
 				return D.ThrowError(`Cannot parse value '${D.JSL(val)}' to object.`, "DATA: ParseToObj")
 
 			for (const keyVal of args) {
-				const kvp = keyVal.split(/\s*:\s*/u)
+				const kvp = keyVal.split(/\s*:\s*(?!\/)/u)
 				obj[kvp[0]] = parseInt(kvp[1] ) || kvp[1]
 			}
 
 			return obj
 		},
 
-		/* When given a message object, will return all selected objects. */
-		getSelected = msg => { msg.selected && msg.selected[0] ? msg.selected : false },
+		isObject = v => v !== null && typeof v === "object",
+
+		/* When given a message object, will return all selected objects, or false. */
+		getSelected = (msg, types) => {
+		/* CONTENT OF MSG:
+				{
+					content: !img add Site Office,
+					playerid: -LLIBpH_GL5I-9lAOiw9,
+					selected: [
+						{
+							_id: -LPzfIXAdLCyolJlH-TG,
+							_type: graphic
+						}
+					],
+					type: api,
+					who: Storyteller (GM)
+				}
+		*/
+			const objs = []
+			if (msg.selected && msg.selected[0] ) {
+				if (types) {
+					for (const typ of types) {
+						objs.push(
+							_.map(
+								_.filter(msg.selected,
+									sel => getObj(typ, sel._id)),
+								sel => getObj(sel._type, sel._id)
+							)
+						)
+					}
+				} else {
+					objs.push(
+						_.map(
+							_.filter(msg.selected,
+								sel => getObj(sel._type, sel._id)),
+							sel => getObj(sel._type, sel._id)
+						)
+					)
+				}
+			}
+
+			return _.flatten(objs)
+		},
 
 		/* Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. */
 		isIn = function (needle, haystack) {
@@ -333,32 +387,32 @@ const D = (() => {
 			} else {
 				return throwError(`Bad Value: '${jStr(value)}'`, "GETCHARS")
 			}
-			_.each(searchParams, v => {
+			_.each(searchParams, val => {
 			// If parameter is a CHARACTER ID:
-				if (_.isString(v) && getObj("character", v)) {
-					charObjs.add(getObj("character", v))
+				if (_.isString(val) && getObj("character", val)) {
+					charObjs.add(getObj("character", val))
 				// If parameters is a TOKEN OBJECT:
-				} else if (_.isObject(v) && v.id && v.get("_type") === "graphic" && v.get("_subtype") === "token") {
-					const char = getObj("character", v.get("represents"))
+				} else if (_.isObject(val) && val.id && val.get("_type") === "graphic" && val.get("_subtype") === "token") {
+					const char = getObj("character", val.get("represents"))
 					if (char)
 						charObjs.add(char)
 					else
-						throwError(`Token '${jStr(v.id)}' Does Not Represent a Character.`, "D.GETCHARS")
+						throwError(`Token '${jStr(val.id)}' Does Not Represent a Character.`, "D.GETCHARS")
 				// If parameter is "all":
-				} else if (v === "all") {
+				} else if (val === "all") {
 					_.each(findObjs( {_type: "character"} ), char => charObjs.add(char))
 				// If parameter calls for REGISTERED CHARACTERS:
-				} else if (v === "registered") {
-					_.each(CHARREGISTRY, (vv, charID) => {
-						if (charID === vv.id)
+				} else if (val === "registered") {
+					_.each(CHARREGISTRY, (v, charID) => {
+						if (charID === v.id)
 							charObjs.add(getObj("character", charID))
 					} )
 				// If parameter is a CHARACTER NAME:
-				} else if (_.isString(v)) {
-					_.each(findObjs( {_type: "character", name: v} ), char => charObjs.add(char))
+				} else if (_.isString(val)) {
+					_.each(findObjs( {_type: "character", name: val} ), char => charObjs.add(char))
 				}
 				if (charObjs.size === 0)
-					throwError(`No Characters Found for Value '${jStr(v)}' in '${jStr(value)}'`, "D.GETCHARS")
+					throwError(`No Characters Found for Value '${jStr(val)}' in '${jStr(value)}'`, "D.GETCHARS")
 			} )
 
 			return [...charObjs]
@@ -406,14 +460,14 @@ const D = (() => {
 				characterid: charObj.id
 			} )
 			_.each(filterArray,
-				v => {
+				val => {
 					attrObjs = attrObjs.filter(
-						vv => vv.get("name").toLowerCase()
-							.includes(v.toLowerCase())
+						v => v.get("name").toLowerCase()
+							.includes(val.toLowerCase())
 					)
 					attrObjs = _.filter(attrObjs,
-						vv => vv.get("name").toLowerCase()
-							.includes(v.toLowerCase()))
+						v => v.get("name").toLowerCase()
+							.includes(val.toLowerCase()))
 				} )
 
 			return attrObjs
@@ -439,9 +493,9 @@ const D = (() => {
 				if (value.get("_type") === "graphic" && value.get("_subtype") === "token")
 					playerID = value.get("represents")
 				if (value.get("_type") === "character") {
-					playerID = value.get("controlledby").replace("all,", "")
+					[playerID] = value.get("controlledby").replace("all,", "")
 						.replace(",all", "")
-						.split(",", 1)[0]
+						.split(",", 1)
 				}
 				if (!playerID)
 					throw new Error(`No player ID found controlling ${value.get("_type")} with ID '${value.id}'`)
@@ -475,7 +529,7 @@ const D = (() => {
 		// #endregion
 
 		// #region SETTERS:  New Repeating Section Rows
-		makeRow = function (char, secName, attrs) {
+		makeRow = function (charID, secName, attrs) {
 			const IDa = 0,
 				IDb = [],
 		     characters = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz",
@@ -539,7 +593,7 @@ generateUUID2 = (function generateUUID () {
 				name: prefix + k,
 				current: v,
 				max: "",
-				_characterid: char
+				_characterid: charID
 			} ))
 
 			return rowID
@@ -560,7 +614,7 @@ generateUUID2 = (function generateUUID () {
 		CheckInstall: checkInstall,
 
 		GAMENAME,
-		GMID: getGMID,
+		GMID: getGMID(),
 
 		ATTRIBUTES,
 		SKILLS,
@@ -575,12 +629,14 @@ generateUUID2 = (function generateUUID () {
 		JS: jStr, 						// D.JS(obj, isLog): Parses a string. If isLog, will not use HTML.
 		JSL: jLog, 						// D.JSL(obj):  Parses a string, for output to the console log.
 		Ordinal: ordinal, 				// D.Ordinal(num): Returns ordinalized number (e.g. 1 -> "1st")
+		Capitalize: capitalize,			// D.Capitalize(str): Capitalizes the first character in the string.
 		ParseToObj: parseToObj,			/* D.ParseToObj(string): Returns object with parameters given by
 											a string of form 'key:val, key:val,' */
 		GetSelected: getSelected,		// D.GetSelected(msg): Returns selected objects in message.
 		Log: logEntry, 					// D.Log(msg, title): Formats log message, with title.
 		IsIn: isIn, 					/* D.IsIn(needle, [haystack]): Returns formatted needle if found in
 											haystack (= all traits by default) */
+		IsObj: isObject,				// D.IsObj(val): Returns true if val is an object (not array)
 		GetName: getName, 				/* D.GetName(id): Returns name of graphic, character or player's
 											display name. If isShort, returns name without quoteparts
        										OR only last name if no quotes. */
