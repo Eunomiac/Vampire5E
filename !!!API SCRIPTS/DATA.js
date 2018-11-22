@@ -236,20 +236,6 @@ const D = (() => {
 
 		/* When given a message object, will return all selected objects, or false. */
 		getSelected = (msg, types) => {
-		/* CONTENT OF MSG:
-				{
-					content: !img add Site Office,
-					playerid: -LLIBpH_GL5I-9lAOiw9,
-					selected: [
-						{
-							_id: -LPzfIXAdLCyolJlH-TG,
-							_type: graphic
-						}
-					],
-					type: api,
-					who: Storyteller (GM)
-				}
-		*/
 			const objs = []
 			if (msg.selected && msg.selected[0] ) {
 				if (types) {
@@ -444,7 +430,7 @@ const D = (() => {
 				)
 			if (!attrObjs || attrObjs.length === 0)
 				return throwError(`No attributes found with id '${JSON.stringify(lowCaseID)}${charObj ? `' for char '${getName(charObj)}` : ""}'`)
-			logEntry(`AttrObjs: ${jLog(attrObjs)}`, "GETCASEREPID")
+			// logEntry(`AttrObjs: ${jLog(attrObjs)}`, "GETCASEREPID")
 
 			return attrObjs[0].get("name").split("_")[2]
 		},
@@ -557,34 +543,6 @@ const D = (() => {
 					return IDc
 					  }
 				  )(),
-
-				/* PREVIOUS CODE:
-generateUUID2 = (function generateUUID () {
-			 return function uuidCrafter () {
-						let IDc = (new Date()).getTime() + 0,
-							IDf = 7
-						const IDd = IDc === IDa,
-							  IDe = new Array(8)
-						for (IDf; IDf >= 0; IDf--) {
-							IDe[IDf] = characters.charAt(IDc % 64)
-							IDc = Math.floor(IDc / 64)
-						}
-						IDc = IDe.join("")
-						if (IDd) {
-							for (IDf = 11; IDf >= 0 && IDb[IDf] === 63; IDf--)
-								IDb[IDf] = 0
-
-							IDb[IDf]++
-						} else {
-							for (IDf = 0; IDf < 12; IDf++)
-								IDb[IDf] = Math.floor(64 * Math.random())
-						}
-						for (IDf = 0; IDf < 12; IDf++)
-							IDc += characters.charAt(IDb[IDf] )
-
-						return IDc
-					}
-				} )(), */
 				makeRowID = () => generateUUID().replace(/_/gu, "Z"),
 				rowID = makeRowID(),
 				prefix = `repeating_${secName}_${rowID}_`
