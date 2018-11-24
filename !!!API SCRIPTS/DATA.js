@@ -232,7 +232,7 @@ const D = (() => {
 			return obj
 		},
 
-		isObject = v => v !== null && typeof v === "object",
+		isObject = (obj, type) => obj && obj !== null && typeof obj === "object" && (!type || obj.get("_type") === type),
 
 		/* When given a message object, will return all selected objects, or false. */
 		getSelected = (msg, types) => {

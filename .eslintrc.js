@@ -12,7 +12,7 @@ module.exports = {
     "globals": {
         "D": true,
         "Chars": true,
-        "WigglePads": true,
+        "DragPads": true,
         "ChatFuncs": true,
         "Roller": true,
         "TimeTracker": true,
@@ -229,7 +229,7 @@ module.exports = {
         "arrow-parens": ["error", "as-needed"],
         "arrow-spacing": ["error", { "before": true, "after": true }],
         "generator-star-spacing": ["error", {"before": true, "after": false}],
-        "no-confusing-arrow": ["error", {"allowParens": true}],
+        //"no-confusing-arrow": ["error", {"allowParens": true}],
         "no-useless-computed-key": "error",
         "no-useless-constructor": "error",
         "no-useless-rename": "error",

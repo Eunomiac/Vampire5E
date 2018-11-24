@@ -1,18 +1,25 @@
 const Images = (() => {
 	// #region CONFIGURATION
-	const IMGDATA = {
+	const STATEREF = state[D.GAMENAME].Images,
+		  REGISTRY = STATEREF.registry,
+		   IMGDATA = {
 			   blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
+			 default: {x: 100, y: 100, h: 400, w: 600},
 			district: {x: 100, y: 100, h: 400, w: 600},
 			    site: {x: 100, y: 100, h: 400, w: 600}
 		},
 		// #endregion
 
 		// #region GETTERS: Image Object & Data Retrieval
-		getImageObj = (val, cat) => {
-			let [imgObj] = D.GetSelected(val)
+		getImageObj = imgRef => {
+			let [imgObj] = D.GetSelected(imgRef)
 			try {
-				if ((!imgObj || !imgObj.get("_type") === "graphic") && state[D.GAMENAME].Images.registry[cat] )
-					imgObj = getObj("graphic", state[D.GAMENAME].Images.registry[cat].id)
+				if (!D.IsObj(imgObj, "graphic") && _.isString(imgRef)) {
+					if (REGISTRY[imgRef] )
+						imgObj = getObj("graphic", REGISTRY[imgRef].id)
+					else
+						imgObj = getObj("graphic", imgRef)
+				}
 			} catch (errObj) {
 				return D.ThrowError(`${D.JSL(errObj)}`, "[ERROR] IMAGES: Get")
 			}
@@ -23,15 +30,15 @@ const Images = (() => {
 		getImageData = (val, cat) => {
 			let imgData = null
 			try {
-				if (_.isString(val) && state[D.GAMENAME].Images.registry[val] ) {
-					imgData = state[D.GAMENAME].Images.registry[val]
+				if (_.isString(val) && REGISTRY[val] ) {
+					imgData = REGISTRY[val]
 				} else if (D.IsObj(val)) {
 					const imgObj = (val.selected && D.GetSelected(val)[0] ) || val
 					if (imgObj.get("type") !== "graphic")
 						return D.ThrowError(`Object '${imgObj}' is not an image object.`, "IMAGES: GetData")
-					for (const cats of state[D.GAMENAME].Images.registry[cat] ) {
-						if (state[D.GAMENAME].Images.registry[cats].id === imgObj.id)
-							imgData = state[D.GAMENAME].Images.registry[cats]
+					for (const cats of REGISTRY[cat] ) {
+						if (REGISTRY[cats].id === imgObj.id)
+							imgData = REGISTRY[cats]
 					}
 				}
 			} catch (errObj) {
@@ -43,67 +50,117 @@ const Images = (() => {
 		// #endregion
 
 		// #region SETTERS: Registering & Manipulating Image Objects
-		regImage = (imgObj, cat, params = {} ) => {
-			const imgSrcs = (params.entries && _.pick(params, v => v.startsWith("http"))) || {}
-			state[D.GAMENAME].Images.registry[cat] = {
-				id: imgObj.id || state[D.GAMENAME].Images.registry[cat].id,
-				category: cat,
-				pos: {
-					x: params.x || imgObj.get("left") || state[D.GAMENAME].Images.registry[cat].x || (IMGDATA[cat] && IMGDATA[cat].x) || 200,
-					y: params.y || imgObj.get("top") || state[D.GAMENAME].Images.registry[cat].y || (IMGDATA[cat] && IMGDATA[cat].y) || 200,
-					h: params.h || imgObj.get("height") || state[D.GAMENAME].Images.registry[cat].h || (IMGDATA[cat] && IMGDATA[cat].h) || 100,
-					w: params.w || imgObj.get("width") || state[D.GAMENAME].Images.registry[cat].w || (IMGDATA[cat] && IMGDATA[cat].w) || 100
-				},
-				srcs: (
-					imgSrcs.entries ?
-						imgSrcs :
-						state[D.GAMENAME].Images.registry[cat] && state[D.GAMENAME].Images.registry[cat].srcs
-				) || {}
-			}
-			D.Alert(`Host obj for image category '${D.JS(cat)}' registered: ${D.JS(state[D.GAMENAME].Images.registry[cat] )}`, "IMAGES: regImage")
-
-			return true
-		},
-
-		addSrc = (imgVal, cat, name) => {
+		addImgSrc = (imgSrcRef, hostName, imgName) => {
 			try {
-				const imgObj = getImageObj(imgVal),
-					imgSrc = getImageObj(imgVal).get("imgsrc")
-						.replace(/\w*?(?=\.png)/u, "thumb")
-				// D.Alert(`Retrieved Image Object (${D.JSL(D.IsObj(imgObj))}): ${D.JSL(imgObj)}`, "IMAGES: addSrc")
-				if (imgObj && state[D.GAMENAME].Images.registry[cat] ) {
-					state[D.GAMENAME].Images.registry[cat].srcs[name] = imgSrc
-					D.Alert(`Image '${D.JS(name)}' added to category '${D.JS(cat)}'.<br><br>Source: ${D.JS(imgSrc)}`)
+				const imgSrc = (_.isString(imgSrcRef) && imgSrcRef.includes("http") ?
+					imgSrcRef :
+					getImageObj(imgSrcRef).get("imgsrc") || "")
+					.replace(/\w*?(?=\.png)/u, "thumb")
+				if (imgSrc !== "" && REGISTRY[hostName] ) {
+					REGISTRY[hostName].srcs[imgName] = imgSrc
+					D.Alert(`Image '${D.JS(imgName)}' added to category '${D.JS(hostName)}'.<br><br>Source: ${D.JS(imgSrc)}`)
 				}
 			} catch (errObj) {
 				D.ThrowError(`Bad arguments: ${errObj}`, "IMAGES: addSrc")
 			}
 		},
 
-		setImage = (cat, imgsrc) => {
-			const imgObj = getImageObj( {}, cat)
-			imgObj.set("imgsrc", imgsrc)
+		regImage = (hostObj, hostName, params = {} ) => {
+			if (D.IsObj(hostObj) && hostObj.get("_type" === "graphic")) {
+				const imgSrcs = (params.entries && _.pick(params, v => v.startsWith("http"))) || {}
+				REGISTRY[hostName] = {
+					id: hostObj.id,
+					category: hostName,
+					pos: {
+						x: params.x || hostObj.get("left") || REGISTRY[hostName].x || (IMGDATA[hostName] && IMGDATA[hostName].x) || 200,
+						y: params.y || hostObj.get("top") || REGISTRY[hostName].y || (IMGDATA[hostName] && IMGDATA[hostName].y) || 200,
+						h: params.h || hostObj.get("height") || REGISTRY[hostName].h || (IMGDATA[hostName] && IMGDATA[hostName].h) || 100,
+						w: params.w || hostObj.get("width") || REGISTRY[hostName].w || (IMGDATA[hostName] && IMGDATA[hostName].w) || 100
+					},
+					srcs: {}
+				}
+				for (const imgName of _.keys(imgSrcs))
+					addImgSrc(imgSrcs[imgName], imgName)
+
+				D.Alert(`Host obj for '${D.JS(hostName)}' registered: ${D.JS(REGISTRY[hostName] )}`, "IMAGES: regImage")
+
+				return REGISTRY[hostName]
+			}
+
+			return D.ThrowError(`Invalid img object '${D.JSL(hostObj)}'`, "IMAGES: regImage")
+		},
+
+		makeImage = (hostName, params = {} ) => {
+			const dataRef = IMGDATA[hostName] || IMGDATA.default,
+			       imgObj = createObj("graphic", {
+					imgsrc: params.imgsrc || IMGDATA.blank,
+					left: params.x || dataRef.x,
+					top: params.y || dataRef.y,
+					width: params.width || dataRef.width,
+					height: params.height || dataRef.height,
+					layer: params.layer || "objects",
+					isdrawing: true,
+					name: params.name || "",
+					controlledby: params.controlledby || ""
+				   } )
+			regImage(imgObj, hostName)
+		},
+
+		setImage = (hostName, imgName) => {
+			if (REGISTRY[hostName] ) {
+				const stateRef = REGISTRY[hostName],
+					    imgObj = getImageObj( {}, hostName)
+				if (imgObj) {
+					if (stateRef.srcs) {
+						if (stateRef.srcs[imgName] )
+							imgObj.set("imgsrc", stateRef.srcs[imgName] )
+						else
+							return D.ThrowError(`No image '${D.JSL(imgName)}' found in category '${D.JSL(hostName)}'`, "Images: setImage()")
+					} else {
+						return D.ThrowError(`Category '${D.JSL(hostName)}' is missing 'srcs' property`, "Images: setImage()")
+					}
+
+					return imgObj
+				}
+
+				return D.ThrowError(`Invalid image object '${D.JSL(imgObj)}'`, "Images: setImage()")
+			}
+
+			return D.ThrowError(`Invalid category '${D.JSL(hostName)}'`, "Images: setImage()")
+		},
+
+		removeImage = hostName => {
+			if (hostName && REGISTRY[hostName] ) {
+				const hostObj = getObj("graphic", REGISTRY[hostName].id)
+				if (D.IsObj(hostObj, "graphic"))
+					hostObj.remove()
+				delete REGISTRY[hostName]
+
+				return true
+			}
+
+			return D.ThrowError(`Invalid host name ${D.JSL(hostName)}`, "IMAGES: removeImage")
 		},
 		// #endregion
 
 		// #region MACRO BUILDING: Building Selection Macros for Images
-		buildMacro = (gmID, name, cats) => {
+		buildMacro = (gmID, macroName, hostNames) => {
 			let action = "!img set ?{Choose Image Category"
-			for (const cat of cats) {
-				if (state[D.GAMENAME].Images.registry[cat] ) {
-					action += `| ${D.Capitalize(cat)}, ?{Choose ${D.Capitalize(cat)}`
-					for (const imgName of _.sortBy(_.keys(state[D.GAMENAME].Images.registry[cat].srcs), k => k))
-						action += ` &amp;#124;${D.Capitalize(imgName)}&amp;#44; ${D.Capitalize(cat)} ${state[D.GAMENAME].Images.registry[cat].srcs[imgName]}`
-					action += ` &amp;#124;-- blank --&amp;#44; ${D.Capitalize(cat)} ${IMGDATA.blank} &amp;#125; `
+			for (const hostName of hostNames) {
+				if (REGISTRY[hostName] ) {
+					action += `| ${D.Capitalize(hostName)}, ?{Choose ${D.Capitalize(hostName)}`
+					for (const imgName of _.sortBy(_.keys(REGISTRY[hostName].srcs), k => k))
+						action += ` &amp;#124;${D.Capitalize(imgName)}&amp;#44; ${D.Capitalize(hostName)} ${REGISTRY[hostName].srcs[imgName]}`
+					action += ` &amp;#124;-- blank --&amp;#44; ${D.Capitalize(hostName)} ${IMGDATA.blank} &amp;#125; `
 				} else {
-					D.Alert(`Bad Cat: ${D.JSL(cat)}`, "BUILDMACRO ITERATOR")
+					D.Alert(`Bad Host Name: ${D.JSL(hostName)}`, "BUILDMACRO ITERATOR")
 				}
 			}
 			action += "}"
 
 			createObj("macro", {
 				_playerid: gmID,
-				name,
+				macroName,
 				action,
 				visibleto: gmID
 			} )
@@ -112,55 +169,68 @@ const Images = (() => {
 
 		// #region Event Handlers (handleInput)
 		handleInput = function (msg) {
-			if (msg.type !== "api" || !playerIsGM(msg.playerid))
+			const args = msg.content.split(/\s+/u),
+			 hostNames = []
+			if (msg.type !== "api" || !playerIsGM(msg.playerid) || args.shift() !== "!img")
 				return
-
-			const args = msg.content.split(/\s+/u)
-			let [name, cat, imgObj] = [null, null, null]
-			if (args.shift() !== "!img")
-				return
-
+			let [imgName, hostName, imgObj] = [null, null, null]
 			switch (args.shift().toLowerCase()) {
 			case "reg":
 			case "register":
 				imgObj = getImageObj(msg)
 				if (imgObj) {
-					cat = args.shift()
-					if (cat === null)
-						D.Alert("Syntax: !img reg <cat> [<params = imgName:imgSrc, imgName : imgSrc>]", "IMAGES, !img reg")
+					hostName = args.shift()
+					if (hostName)
+						regImage(imgObj, hostName, D.ParseToObj(args.join(" ")))
 					else
-						regImage(imgObj, cat, D.ParseToObj(args.join(" ")))
+						D.Alert("Syntax: !img reg <hostName> [<params = imgName:imgSrc, imgName : imgSrc>]", "IMAGES: !img reg")
 				} else {
-					D.Alert("Select an image object first!", "IMAGES, !img reg")
+					D.Alert("Select an image object first!", "IMAGES: !img reg")
 				}
 				break
-			case "reset":
-				delete state[D.GAMENAME].Images
-				Images.CheckInstall()
+			case "removeAll":
+				for (hostName of _.keys(REGISTRY))
+					hostNames.push(hostName)
+				// Falls through
+			case "remove":
+				if (hostNames.length === 0)
+					hostNames.push(args.shift())
+				if (hostNames.filter(v => v).length > 0) {
+					for (hostName of hostNames)
+						removeImage(hostName)
+				} else {
+					D.Alert("No hostnames provided.<br><br>Syntax: !img remove <hostName> OR !img removeAll")
+				}
 				break
 			case "add":
 			case "addsrc":
-				cat = args.shift()
-				name = args.shift()
-				addSrc(msg, cat, name)
+				[hostName, imgName] = args
+				if (hostName && REGISTRY[hostName] ) {
+					if (imgName)
+						addImgSrc(msg, hostName, imgName)
+					else
+						D.Alert(`Invalid image name '${D.JS(imgName)}'`, "IMAGES: !img addsrc")
+				} else {
+					D.Alert(`Host name '${D.JS(hostName)}' not registered.`, "IMAGES: !img addsrc")
+				}
 				break
 			case "set":
-				cat = args.shift()
-				setImage(cat, args.shift())
+				hostName = args.shift()
+				setImage(hostName, args.shift())
 				break
 			case "macro":
-				name = args.shift()
-				cat = args.join(" ").split(/,\s*?/gu)
-				buildMacro(msg.playerid, name, cat)
+				imgName = args.shift()
+				hostName = args.join(" ").split(/,\s*?/gu)
+				buildMacro(msg.playerid, imgName, hostName)
 				break
 			case "getData":
 				imgObj = getImageObj(msg)
 				if (imgObj) {
 					D.Alert(getImageData(imgObj), "IMAGES, !img getData")
 				} else {
-					name = args.shift()
-					if (name && state[D.GAMENAME].Images.registry[name] )
-						D.Alert(D.JS(state[D.GAMENAME].Images.registry[name] ), `IMAGES: '${D.JS(name)}'`)
+					imgName = args.shift()
+					if (imgName && REGISTRY[imgName] )
+						D.Alert(D.JS(REGISTRY[imgName] ), `IMAGES: '${D.JS(imgName)}'`)
 					else
 						D.Alert("Syntax: !img get [<category> <name>] (or select an image object)", "IMAGES, !img getData")
 				}
@@ -186,7 +256,10 @@ const Images = (() => {
 		RegisterEventHandlers: regHandlers,
 		CheckInstall: checkInstall,
 		Get: getImageObj,
-		GetData: getImageData
+		GetData: getImageData,
+		MakeImage: makeImage,
+		Register: regImage,
+		Remove: removeImage
 	}
 } )()
 

@@ -4,6 +4,14 @@
 	// #region CONFIGURATION: Image Links, Color Schemes
 	const POSITIONS = {
 			diceFrame: {top: 207, left: 175},
+			dice: {
+				diceList: {top: 186, left: 171, height: 91, width: 91,
+					pad: {dX: 0, dY: 0, dH: -33, dW: -35},
+					spread: 56},
+				bigDice: {top: 185, left: 185, height: 147, width: 147,
+					pad: {dX: 0, dY: 0, dH: -47, dW: -53},
+					spread: 75}
+			},
 			bloodCloudFX: {top: 185, left: 74.75},
 			bloodBoltFX: {top: 185, left: 74.75},
 			smokeBomb: {top: 301, left: 126}
@@ -27,8 +35,12 @@
 			blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
 			diffFrame: "https://s3.amazonaws.com/files.d20.io/images/64184544/CnzRwB8CwKGg-0jfjCkT6w/thumb.png?1538736404",
 			frontFrame: "https://s3.amazonaws.com/files.d20.io/images/64756368/mUTW1L_8xESxARXGKBm6cw/thumb.png?1539408973",
-			topMids: ["https://s3.amazonaws.com/files.d20.io/images/64683716/nPNGOLxzJ8WU0BzLNisuwg/thumb.png?1539327926", "https://s3.amazonaws.com/files.d20.io/images/64683714/VPzeYN8xpO_cPmqg1rgFRQ/thumb.png?1539327926", "https://s3.amazonaws.com/files.d20.io/images/64683715/xUCVS7pOmfS3ravsS2Vzpw/thumb.png?1539327926"],
-			bottomMids: ["https://s3.amazonaws.com/files.d20.io/images/64683769/yVNOcNMVgUjGybRBVq3rTQ/thumb.png?1539328057", "https://s3.amazonaws.com/files.d20.io/images/64683709/8JFF_j804fT92-JBncWJyw/thumb.png?1539327927", "https://s3.amazonaws.com/files.d20.io/images/64683711/upnHr36sBnFYuQpkxoVm_A/thumb.png?1539327926"],
+			topMids: ["https://s3.amazonaws.com/files.d20.io/images/64683716/nPNGOLxzJ8WU0BzLNisuwg/thumb.png?1539327926",
+				"https://s3.amazonaws.com/files.d20.io/images/64683714/VPzeYN8xpO_cPmqg1rgFRQ/thumb.png?1539327926",
+				"https://s3.amazonaws.com/files.d20.io/images/64683715/xUCVS7pOmfS3ravsS2Vzpw/thumb.png?1539327926"],
+			bottomMids: ["https://s3.amazonaws.com/files.d20.io/images/64683769/yVNOcNMVgUjGybRBVq3rTQ/thumb.png?1539328057",
+				"https://s3.amazonaws.com/files.d20.io/images/64683709/8JFF_j804fT92-JBncWJyw/thumb.png?1539327927",
+				"https://s3.amazonaws.com/files.d20.io/images/64683711/upnHr36sBnFYuQpkxoVm_A/thumb.png?1539327926"],
 			topEnd: "https://s3.amazonaws.com/files.d20.io/images/64683713/4IwPjcY7x5ZCLJ9ey2lICA/thumb.png?1539327926",
 			bottomEnd: "https://s3.amazonaws.com/files.d20.io/images/64683710/rJDVNhm6wMNhmQx1uIp13w/thumb.png?1539327926"
 		},
@@ -255,45 +267,108 @@
 		},
 		// #endregion
 
-		// #region Object Registration
-		registerDie = function (obj, category = "diceList", isResetting) {
-			state[D.GAMENAME].Roller[category] = isResetting ? [] : state[D.GAMENAME].Roller[category] || []
-			if (obj === null)
-				return
-			obj.set( {
-				imgsrc: IMAGES.dice.blank,
-				layer: "map",
-				isdrawing: true,
-				name: `rollerDie_${state[D.GAMENAME].Roller[category].length}_${category}`,
-				controlledby: ""
-			} )
-			state[D.GAMENAME].Roller[category].push( {
-				id: obj.id,
-				top: obj.get("top"),
-				left: obj.get("left"),
-				width: obj.get("width")
-			} )
-			WigglePads.MakePad(obj, "selectDie", "height:-28 width:-42 x:0 y:0")
-			D.Alert(`Registered die #${state[D.GAMENAME].Roller[category].length}: ${D.JS(state[D.GAMENAME].Roller[category] )}, Added WigglePad #${_.values(state[D.GAMENAME].WigglePads.byPad).length}`, "ROLLER: registerDie()")
+		// #region Object Creation & Registration
+		registerDie = function (obj, category) {
+			const padRef = POSITIONS.dice[category].pad
+			let padParams = ""
+			state[D.GAMENAME].Roller[category] = state[D.GAMENAME].Roller[category] || []
+			if (D.IsObj(obj, "graphic")) {
+				obj.set( {
+					imgsrc: IMAGES.dice.Bf,
+					layer: "map",
+					isdrawing: true,
+					name: `rollerDie_${category}_${state[D.GAMENAME].Roller[category].length}`,
+					controlledby: ""
+				} )
+				state[D.GAMENAME].Roller[category].push( {
+					id: obj.id,
+					top: obj.get("top"),
+					left: obj.get("left"),
+					width: obj.get("width"),
+					height: obj.get("height"),
+					value: "blank"
+				} )
+
+				padParams = `height:${padRef.dH.toString()}, width:${padRef.dW.toString()}, x:${padRef.dX.toString()}, y:${padRef.dY.toString()}`
+				DragPads.MakePad(obj, "selectDie", padParams)
+				D.Alert(`Registered die #${state[D.GAMENAME].Roller[category].length}: ${D.JS(state[D.GAMENAME].Roller[category] )}, Added WigglePad #${_.values(state[D.GAMENAME].DragPads.byPad).length}`, "ROLLER: registerDie()")
+
+				D.Alert(`Returning Die Object: ${D.JS(obj)}`)
+
+				return obj
+			}
+
+			return D.ThrowError(`Invalid object: ${D.JSL(obj)}`, "Roller: registerDie()")
 		},
 
-		registerText = function (obj, objName, params = {} ) {
-			state[D.GAMENAME].Roller.textList = params.isResetting ? {} : state[D.GAMENAME].Roller.textList || {}
-			if (obj === null)
-				return
-			obj.set( {
-				layer: "map",
-				name: `rollerText_${objName}`,
-				controlledby: ""
+		makeDie = category => {
+			state[D.GAMENAME].Roller[category] = state[D.GAMENAME].Roller[category] || []
+			const stateRef = state[D.GAMENAME].Roller,
+				    posRef = POSITIONS.dice[category],
+			           die = createObj("graphic", {
+					_pageid: D.PAGEID(),
+					imgsrc: IMAGES.dice.Bf,
+					left: posRef.left + posRef.spread * stateRef[category].length,
+					top: posRef.top,
+					width: posRef.width,
+					height: posRef.height,
+					layer: "map",
+					isdrawing: true,
+					controlledby: ""
+			   } )
+			die.set( {
+				left: posRef.left + posRef.spread * stateRef[category].length,
+				top: posRef.top,
+				width: posRef.width,
+				height: posRef.height,
 			} )
-			state[D.GAMENAME].Roller.textList[objName] = {
-				id: obj.id,
-				top: obj.get("top"),
-				left: obj.get("left"),
-				height: obj.get("height"),
-				width: obj.get("width")
+			D.Alert(`Created Die: ${D.JS(die)}`)
+			registerDie(die, category)
+
+			return die
+		},
+
+		makeAllDice = (category, amount) => {
+			const newDice = [],
+			      oldDice = _.filter(findObjs( {
+					_pageid: Campaign().get("playerpageid"),
+					_type: "graphic"
+				} ), obj => obj.get("name").includes("rollerDie") && obj.get("name").includes(category))
+			// First, delete all existing dice in that category and clear the registry.
+			for (const diceObj of oldDice) {
+				DragPads.DelPad(diceObj)
+				diceObj.remove()
+				state[D.GAMENAME].Roller[category] = []
 			}
-			D.Alert(`Registered text box '${objName}: ${D.JS(state[D.GAMENAME].Roller.textList)}`, "ROLLER: registerText()")
+			// Now, make requested number of dice.
+			for (let i = 0; i < amount; i++)
+				newDice.push(makeDie(category))
+
+			D.Alert(`NewDice List: ${D.JS(newDice)}`)
+
+			for (let i = newDice.length; i > 0; i--)
+				toFront(newDice[i - 1] )
+		},
+
+		registerText = function (obj, objName) {
+			state[D.GAMENAME].Roller.textList = state[D.GAMENAME].Roller.textList || {}
+			if (obj) {
+				obj.set( {
+					layer: "map",
+					name: `rollerText_${objName}`,
+					controlledby: ""
+				} )
+				state[D.GAMENAME].Roller.textList[objName] = {
+					id: obj.id,
+					top: obj.get("top"),
+					left: obj.get("left"),
+					height: obj.get("height"),
+					width: obj.get("width")
+				}
+				D.Alert(`Registered text box '${objName}: ${D.JS(state[D.GAMENAME].Roller.textList)}`, "ROLLER: registerText()")
+			}
+
+			return D.ThrowError(`Invalid object: ${D.JSL(obj)}`, "Roller: registerText()")
 		},
 
 		registerImg = function (obj, objName, params) {
@@ -434,9 +509,10 @@
 		},
 
 		reposition = function (selObjs = [] ) {
-			for (const sel in selObjs) {
-				const [obj] = findObjs( {_id: sel._id} )
-				_.find(_.pick(state[D.GAMENAME].Roller, STATECATS[obj.get("type")] ),
+			D.Alert(`Selected Objects: ${selObjs}`, "ROLLER: Reposition")
+			for (const sel of selObjs) {
+				const obj = getObj(sel._type, sel._id)
+				_.find(_.pick(state[D.GAMENAME].Roller, STATECATS[sel._type] ),
 					(val, key) => _.find(val,
 						(v, k) => {
 							if (v.id === obj.id) {
@@ -548,21 +624,19 @@
 		// #endregion
 
 		// #region Dice Graphic Control
-		setDie = function (dieNum, dieCat = "diceList", dieVal, params = {} ) {
+		setDie = function (dieNum, dieCat = "diceList", dieVal, params = {}, rollType = "") {
 			const dieRef = state[D.GAMENAME].Roller[dieCat][dieNum],
 				dieParams = {id: dieRef.id},
 				die = getObj("graphic", dieParams.id)
 			if (!die)
 				return D.ThrowError(`ROLLER: SETDIE(${dieNum}, ${dieCat}, ${dieVal}) >> No die registered.`)
+			D.DB(`Setting die ${D.JSL(dieNum)} (dieVal: ${D.JSL(dieVal)}, params: ${D.JSL(params)})`)
 
 			if (dieVal !== "selected") {
 				dieRef.value = dieVal
 				state[D.GAMENAME].Roller.selected[dieCat] = _.without(state[D.GAMENAME].Roller.selected[dieCat], dieNum)
 			}
-			if (dieVal === "blank" || dieVal.includes("H"))
-				WigglePads.Set(dieParams.id, {layer: "map"} )
-			else
-				WigglePads.Set(dieParams.id, {layer: "objects"} )
+			DragPads.Toggle(dieParams.id, !["humanity", "project", "secret", "remorse", "willpower"].includes(rollType) && dieVal !== "blank" && !dieVal.includes("H"))
 			dieParams.imgsrc = IMAGES.dice[dieVal]
 			_.each( ["top", "left", "width"], dir => {
 				if (die.get(dir) !== dieRef[dir] || (params.shift && params.shift[dir] ))
@@ -575,6 +649,7 @@
 		},
 
 		selectDie = function (dieNum, dieCat) {
+			state[D.GAMENAME].Roller.selected[dieCat] = state[D.GAMENAME].Roller.selected[dieCat] || []
 			if (state[D.GAMENAME].Roller.selected[dieCat].includes(dieNum)) {
 				setDie(dieNum, dieCat, state[D.GAMENAME].Roller[dieCat][dieNum].value)
 				state[D.GAMENAME].Roller.selected[dieCat] = _.without(state[D.GAMENAME].Roller.selected[dieCat], dieNum)
@@ -588,10 +663,12 @@
 				isRerollFXOn = true
 				D.RunFX("bloodCloud", POSITIONS.bloodCloudFX)
 				rerollFX = setInterval(D.RunFX, 1800, "bloodCloud", POSITIONS.bloodCloudFX)
+				DragPads.Toggle("wpReroll", true)
 			} else if (state[D.GAMENAME].Roller.selected[dieCat].length === 0) {
 				isRerollFXOn = false
 				clearInterval(rerollFX)
 				rerollFX = null
+				DragPads.Toggle("wpReroll", false)
 			}
 		},
 		// #endregion
@@ -632,13 +709,13 @@
 					.replace(/:\d+/gu, "")
 					.replace(/_/gu, " ")),
 				 bloodPot = parseInt(getAttrByName(charObj.id, `${gN}BloodPotency`)) || 0
-			if ( ["rouse", "rouse2", "remorse", "check", "project", "secret"].includes(rollType))
+			if ( ["rouse", "rouse2", "remorse", "check", "project", "secret", "humanity"].includes(rollType))
 				return flagData
 			if (parseInt(getAttrByName(charObj.id, "applySpecialty")) > 0) {
 				flagData.posFlagLines.push("Specialty (●)")
 				flagData.flagDiceMod++
 			}
-			if (parseInt(getAttrByName(charObj.id, "applySpecialty")) > 0) {
+			if (parseInt(getAttrByName(charObj.id, "applyResonance")) > 0) {
 				flagData.posFlagLines.push("Resonance (●)")
 				flagData.flagDiceMod++
 			}
@@ -1121,12 +1198,12 @@ commit: 0
 				break
 			case "rouse2":
 			case "rouse":
-				rollResults.diceVals = _.map(rollResults.rolls, rol => { parseInt(rol.slice(1)) < 6 ? "Hb" : "Bs" } )
+				rollResults.diceVals = _.map(rollResults.rolls, rol => parseInt(rol.slice(1)) < 6 ? "Hb" : "Bs")
 				if (rollResults.diceVals[1] && rollResults.diceVals[0] !== rollResults.diceVals[1] )
 					rollResults.diceVals = ["Hb", "Bs"]
 				break
 			case "check":
-				rollResults.diceVals = _.map(rollResults.rolls, rol => { parseInt(rol.slice(1)) < 6 ? "Hf" : "Bs" } )
+				rollResults.diceVals = _.map(rollResults.rolls, rol => parseInt(rol.slice(1)) < 6 ? "Hf" : "Bs")
 				break
 			default:
 				break
@@ -1555,13 +1632,23 @@ rollData = { posFlagLines, negFlagLines }
 			case "rouse":
 			case "check":
 				diceCats = diceCats.reverse()
+			// Falls through
+			case "project":
+			case "secret":
+			case "humanity":
+			case "willpower":
+			case "remorse":
+				DragPads.Toggle("selectDie", false)
 				break
 			default:
 				break
 			}
+
+			D.Alert(`RollResults: ${D.JS(rollResults)}<br><br>DiceCats: ${D.JS(diceCats)}`)
+
 			// D.DB("Processing '" + D.JSL(diceCats[0]) + "' (length = " + D.JSL(state[D.GAMENAME].Roller[diceCats[0]].length) + "): " + D.JSL(state[D.GAMENAME].Roller[diceCats[0]]), "ROLLER: applyRoll()", 2);
 			for (let i = 0; i < state[D.GAMENAME].Roller[diceCats[0]].length; i++)
-				diceObjs.push(setDie(i, diceCats[0], rollResults.diceVals[i] || "blank", {type: rollData.type, shift: {top: yShift} } ))
+				diceObjs.push(setDie(i, diceCats[0], rollResults.diceVals[i] || "blank", {type: rollData.type, shift: {top: yShift} }, rollData.type))
 			// D.DB("Dice Objects List: '" + D.JSL(diceObjs) + "'", "ROLLER: applyRoll()", 2);
 
 			bookends = [diceObjs[0], diceObjs[rollResults.diceVals.length - 1]]
@@ -1619,10 +1706,11 @@ rollData = { posFlagLines, negFlagLines }
 							state[D.GAMENAME].Roller.selected[dieCat].includes(parseInt(dNum))
 					), v => v.value
 				)
-				// D.DB("UNSELECTED VALUES: " + D.JSL(rolledDice), "ROLLER: wpReroll()", 3);
+			// D.DB("UNSELECTED VALUES: " + D.JSL(rolledDice), "ROLLER: wpReroll()", 3);
 
 			rollData.rerollAmt = state[D.GAMENAME].Roller.selected[dieCat].length
 			applyRoll(rollData, rollDice(rollData, _.values(rolledDice)))
+			DragPads.Toggle("wpReroll", false)
 		},
 
 		changeRoll = function (deltaDice) {
@@ -1835,6 +1923,9 @@ rollData = { posFlagLines, negFlagLines }
 			} case "!buildFrame":
 				initFrame()
 				break
+			case "!makeAllDice":
+				makeAllDice(args.shift(), parseInt(args.shift()))
+				break
 			case "!showDice":
 				_.each(state[D.GAMENAME].Roller.diceList, (v, dNum) => {
 					const thisDie = setDie(dNum, "diceList", "Hs")
@@ -1953,7 +2044,7 @@ rollData = { posFlagLines, negFlagLines }
 			state[D.GAMENAME].Roller.selected = state[D.GAMENAME].Roller.selected || {diceList: [], bigDice: []}
 			state[D.GAMENAME].Roller.imgList = state[D.GAMENAME].Roller.imgList || {}
 		}
-		// #endregion
+	// #endregion
 
 	return {
 		RegisterEventHandlers: regHandlers,
