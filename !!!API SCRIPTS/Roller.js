@@ -1644,7 +1644,7 @@ rollData = { posFlagLines, negFlagLines }
 				break
 			}
 
-			D.Alert(`RollResults: ${D.JS(rollResults)}<br><br>DiceCats: ${D.JS(diceCats)}`)
+			// D.Alert(`RollResults: ${D.JS(rollResults)}<br><br>DiceCats: ${D.JS(diceCats)}`)
 
 			// D.DB("Processing '" + D.JSL(diceCats[0]) + "' (length = " + D.JSL(state[D.GAMENAME].Roller[diceCats[0]].length) + "): " + D.JSL(state[D.GAMENAME].Roller[diceCats[0]]), "ROLLER: applyRoll()", 2);
 			for (let i = 0; i < state[D.GAMENAME].Roller[diceCats[0]].length; i++)
