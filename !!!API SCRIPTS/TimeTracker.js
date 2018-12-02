@@ -52,7 +52,7 @@ const TimeTracker = (() => {
 				lateNight.setUTCDate(date.getUTCDate() + 1)
 			if (date.getUTCHours() < 14)
 				dusk.setUTCDate(date.getUTCDate() - 1)
-			D.Alert(`DAWN: ${D.JSL(dawn)}<br>DUSK: ${D.JSL(dusk)}<br>LATE: ${D.JSL(lateNight)}<br>PREDAWN[0]: ${D.JSL(new Date(new Date(dawn).setUTCMinutes(dawn.getUTCMinutes() + HORIZONS.predawn[0] )))}<br><br>CURRENT: ${D.JSL(date)}`, "TIMETRACKER: SETHORIZON()")
+			// D.Alert(`DAWN: ${D.JSL(dawn)}<br>DUSK: ${D.JSL(dusk)}<br>LATE: ${D.JSL(lateNight)}<br>PREDAWN[0]: ${D.JSL(new Date(new Date(dawn).setUTCMinutes(dawn.getUTCMinutes() + HORIZONS.predawn[0] )))}<br><br>CURRENT: ${D.JSL(date)}`, "TIMETRACKER: SETHORIZON()")
 			if (date < dusk || date > dawn) {
 				horizon.set("imgsrc", IMAGES.day)
 			} else if (date < lateNight) {
@@ -128,7 +128,7 @@ const TimeTracker = (() => {
 					else if (unit.includes("m"))
 						date.setUTCMinutes(date.getUTCMinutes() + delta)
 					break
-				case "set": //   !time set 2018-07-09T01:12
+				case "set": //   !time set 2018-07-13T01:12
 					date = new Date(params)
 					break
 				default:

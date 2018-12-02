@@ -223,6 +223,20 @@ const Chars = (function Chars () {
 				D.Alert(`Registered '${D.GetName(char)}'`)
 			} )
 		},
+
+		unregisterChar = function (charString) {
+			const stateRef = state[D.GAMENAME].Chars
+			let [charName, altKey] = [null, null]
+			if (stateRef[charString] ) {
+				charName = stateRef[charString].name
+				altKey = charString === charName ? stateRef[charString].id : charName
+				delete state[D.GAMENAME].Chars[charString]
+				delete state[D.GAMENAME].Chars[altKey]
+				D.Alert(`Unregistered ${D.JSL(charName)}.`, "CHARS: UNREGISTERCHAR")
+			} else {
+				D.ThrowError(`No character found registered with search key '${D.JSL(charString)}'`)
+			}
+		},
 		// #endregion
 
 		// #region Awarding XP
@@ -277,9 +291,8 @@ const Chars = (function Chars () {
 				return
 			const who = (getObj("player", msg.playerid) || {get: () => "API"} ).get("displayname"),
 				args = msg.content.split(/\s+/u)
-			D.Log(`Input from '${D.JSL(who)}' with args '${D.JSL(args)}'`)
 			let [chars, params] = [[], []],
-				[amount, session, trait, dtype, dmg, incapString] = new Array(6).fill(null)
+				[amount, session, trait, dtype, dmg, incapString, charData] = new Array(7).fill(null)
 			switch (args.shift()) {
 			case "!rChar":
 				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] )
@@ -287,6 +300,14 @@ const Chars = (function Chars () {
 				else
 					D.ThrowError("Select character tokens first!", "CHARS")
 				break
+			case "!dChar":
+				charData = args.shift()
+				if (playerIsGM(msg.playerid) && charData)
+					unregisterChar(charData)
+				else
+					D.ThrowError("Input a valid search string to remove the character!", "CHARS")
+				break
+
 			case "!xp": // !xp Cost Session Message, with some character tokens selected.
 				chars = D.GetChars(msg)
 				if (playerIsGM(msg.playerid) && chars) {

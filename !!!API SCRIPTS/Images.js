@@ -109,11 +109,13 @@ const Images = (() => {
 		setImage = (hostName, imgName) => {
 			if (REGISTRY[hostName] ) {
 				const stateRef = REGISTRY[hostName],
-					    imgObj = getImageObj( {}, hostName)
+					    imgObj = getImageObj(hostName)
 				if (imgObj) {
 					if (stateRef.srcs) {
 						if (stateRef.srcs[imgName] )
 							imgObj.set("imgsrc", stateRef.srcs[imgName] )
+						else if (_.values(stateRef.srcs).includes(imgName))
+							imgObj.set("imgsrc", imgName)
 						else
 							return D.ThrowError(`No image '${D.JSL(imgName)}' found in category '${D.JSL(hostName)}'`, "Images: setImage()")
 					} else {
@@ -214,9 +216,9 @@ const Images = (() => {
 					D.Alert(`Host name '${D.JS(hostName)}' not registered.`, "IMAGES: !img addsrc")
 				}
 				break
-			case "set":
-				hostName = args.shift()
-				setImage(hostName, args.shift())
+			case "setlocation":
+				setImage("District", args.shift())
+				setImage("Site", args.shift())
 				break
 			case "macro":
 				imgName = args.shift()

@@ -293,7 +293,7 @@
 				DragPads.MakePad(obj, "selectDie", padParams)
 				D.Alert(`Registered die #${state[D.GAMENAME].Roller[category].length}: ${D.JS(state[D.GAMENAME].Roller[category] )}, Added WigglePad #${_.values(state[D.GAMENAME].DragPads.byPad).length}`, "ROLLER: registerDie()")
 
-				D.Alert(`Returning Die Object: ${D.JS(obj)}`)
+				// D.Alert(`Returning Die Object: ${D.JS(obj)}`)
 
 				return obj
 			}
@@ -468,7 +468,9 @@
 				params.width = D.GetTextWidth(obj, params.text)
 				params.left = left + params.width / 2 - width / 2
 			} else if (params.justified && params.justified === "center") { params.left = left }
-			if (params.shift) {
+			if (params.shift && params.shift.anchor) {
+				if (!state[D.GAMENAME].Roller.textList[params.shift.anchor] )
+					return D.ThrowError(`No anchored object registered with name '${D.JS(params.shift.anchor)}' in params set:<br><br>${D.JS(params)}.`, "ROLLER: setText()")
 				const anchorObj = getObj("text", state[D.GAMENAME].Roller.textList[params.shift.anchor].id),
 					anchorWidth = parseInt(anchorObj.get("width")),
 					 anchorLeft = parseInt(anchorObj.get("left"))
@@ -1752,28 +1754,28 @@ rollData = { posFlagLines, negFlagLines }
 			case 3:
 				if (posRes.length === 2) {
 					if (posRes.charAt(0) === posRes.charAt(1))
-						resProbs = D.RESPROBS.pos2neg
+						resProbs = D.RESONANCEODDS.pos2neg
 					else
-						resProbs = D.RESPROBS.posposneg
+						resProbs = D.RESONANCEODDS.posposneg
 				} else if (negRes.charAt(0) === negRes.charAt(1)) {
-					resProbs = D.RESPROBS.neg2pos
+					resProbs = D.RESONANCEODDS.neg2pos
 				} else {
-					resProbs = D.RESPROBS.posnegneg
+					resProbs = D.RESONANCEODDS.posnegneg
 				}
 				break
 			case 2:
 				if (posRes.length === 2)
-					resProbs = D.RESPROBS.pospos
+					resProbs = D.RESONANCEODDS.pospos
 				else if (negRes.length === 2)
-					resProbs = D.RESPROBS.negneg
+					resProbs = D.RESONANCEODDS.negneg
 				else
-					resProbs = D.RESPROBS.posneg
+					resProbs = D.RESONANCEODDS.posneg
 				break
 			case 1:
-				resProbs = posRes.length === 1 ? D.RESPROBS.pos : D.RESPROBS.neg
+				resProbs = posRes.length === 1 ? D.RESONANCEODDS.pos : D.RESONANCEODDS.neg
 				break
 			case 0:
-				resProbs = D.RESPROBS.norm
+				resProbs = D.RESONANCEODDS.norm
 				break
 			default:
 				return D.ThrowError("Too many variables!")
@@ -1984,27 +1986,7 @@ rollData = { posFlagLines, negFlagLines }
 					args[0] = ""
 				if (args[1] === "x")
 					args[1] = ""
-				sendChat("ROLLER", `/w Storyteller 
-					<br/>
-					<div style='
-						display: block; 
-						background: url(https://i.imgur.com/kBl8aTO.jpg);
-						text-align: center;
-						border: 4px crimson outset;
-					'>
-						<br/>
-						<span style='
-							display: block; 
-							font-weight: bold; 
-							color: red; 
-							font-size: 16px; 
-							text-align: 
-							center; width: 100%
-						'>
-							${_.map(getResonance(args[0], args[1], args[2] === "2"), v => v.toUpperCase()).join(" ")}
-						</span>
-						<br/>
-					</div>`)
+				sendChat("", `<br/><div style="display: block; margin-top: -20px; margin-left: -10px; height: auto; background: url(https://i.imgur.com/kBl8aTO.jpg);text-align: center;border: 4px crimson outset;"><br><span style="display: block; font-weight: bold; color: red; font-size: 16px; text-align: center; width: 100%;">${_.map(getResonance(args[0], args[1], args[2] === "2"), v => v.toUpperCase()).join(" ")}</span><br/></div>`)
 				break
 			case "!nxsroll":
 			case "!xnsroll":
