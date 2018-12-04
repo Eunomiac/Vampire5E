@@ -10,8 +10,10 @@ module.exports = {
         }
     },
     "globals": {
+        "START": true,
         "D": true,
         "Chars": true,
+        "Images": true,
         "DragPads": true,
         "ChatFuncs": true,
         "Roller": true,
@@ -138,7 +140,7 @@ module.exports = {
         "array-element-newline": ["error", "consistent"],
         "block-spacing": ["error", "always"],
         "brace-style": ["error", "1tbs", {"allowSingleLine": true}],
-        "camelcase": ["error", {"properties": "never"}],
+        "camelcase": ["error", {"properties": "never", "ignoreDestructuring": true}],
         //"capitalized-comments": ["error", "always", {"ignoreConsecutiveComments": true}],
         "comma-dangle": ["error", "only-multiline"],
         "comma-spacing": ["error", {"before": false, "after": true}],
@@ -185,7 +187,7 @@ module.exports = {
         //"nonblock-statement-body-position": ["error", "beside", { "overrides": { "while": "below", "for": "below", "do": "below" } }],
         "nonblock-statement-body-position": ["error", "below"],
         "new-parens": "error",
-        "newline-per-chained-call": ["error", { "ignoreChainWithDepth": 2 }],
+        "newline-per-chained-call": ["error", { "ignoreChainWithDepth": 3 }],
         "no-array-constructor": "error",
         "no-bitwise": "error",
         "no-continue": "error",

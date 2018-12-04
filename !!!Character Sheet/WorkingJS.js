@@ -1,5 +1,6 @@
-﻿/* eslint-disable one-var */
-const VAMPWORKER = (() => {
+﻿/* eslint-disable max-len */
+/* eslint-disable one-var */
+(() => {
 	// #region Variable Declarations
 	let logPrefix = "",
 		logDepth = 0
@@ -18,16 +19,8 @@ const VAMPWORKER = (() => {
 		DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
 		TRACKERS = ["Health", "Willpower", "BloodPotency", "Humanity"],
 		REFERENCESTATS = ["Hunger", "Stains", "resonance", "rollMod", "rollDiff", "applyDiscipline", "applyBloodSurge", "applySpecialty", "applyResonant", "incapacitation", "rollArray"],
-		DISCIPLINEREFS = ["Disc1", "Disc2", "Disc3", "repeating_discLeft", "repeating_discMid", "repeating_discRight"],
-		ENUMSTATS = ["Disc1", "Disc2", "Disc3"],
-		REPVARS = {
-			discLeft: ["disc", "disc_name", "disc_flag", "discPowerToggle"],
-			discMid: ["disc", "disc_name", "disc_flag", "discPowerToggle"],
-			discRight: ["disc", "disc_name", "disc_flag", "discPowerToggle"],
-			advantage: ["advantage", "advantage_name", "advantage_flag", "advantage_type", "advantage_details"],
-			negAdvantage: ["negAdvantage", "negAdvantage_name", "negAdvantage_flag", "negAdvantage_type", "negAdvantage_details"]
-		},
 		ATTRBLACKLIST = ["powertoggle"],
+		ROLLFLAGS = ["rollDiff", "rollMod", "Hunger", "applyDiscipline", "applyBloodSurge", "applySpecialty", "applyResonant", "incapacitation", "Stains", "resonance", "rollArray"],
 		FLAGACTIONS = {
 
 			/* If key is flagged, action to take depending on type of stat it would be paired with
@@ -512,10 +505,24 @@ const VAMPWORKER = (() => {
 				"are defectors to the Sabbat, but there do exist Lasombra antitribu in the Camarilla.  Tzimisce antitribu are virtually unheard of, both",
 				"because the Tremere hunt them mercilessly, and because of the ease with which the Clan of Shapers can disguise their heritage."]
 		],
-		XPREPSECTIONS = ["spentxp", "earnedxp"],
+		// #endregion
+
+		// #region Repeating Field Configuration
+		DISCENUMS = ["Disc1", "Disc2", "Disc3"],
+		DISCREPREFS = {
+			discLeft: ["disc", "disc_name", "disc_flag", "discPowerToggle"],
+			discMid: ["disc", "disc_name", "disc_flag", "discPowerToggle"],
+			discRight: ["disc", "disc_name", "disc_flag", "discPowerToggle"]
+		},
+
+		ADVREPREFS = {
+			advantage: ["advantage", "advantage_name", "advantage_flag", "advantage_type", "advantage_details"],
+			negAdvantage: ["negAdvantage", "negAdvantage_name", "negAdvantage_flag", "negAdvantage_type", "negAdvantage_details"]
+		},
+
 		XPREPREFS = {
-			earned: ["xp_session", "xp_award", "xp_reason"],
-			spent: ["xp_spenttoggle", "xp_category", "xp_trait", "xp_initial", "xp_new", "xp_traittoggle", "xp_initialtoggle", "xp_arrowtoggle", "xp_newtoggle", "xp_cost"]
+			spentxp: ["xp_spenttoggle", "xp_category", "xp_trait", "xp_initial", "xp_new", "xp_traittoggle", "xp_initialtoggle", "xp_arrowtoggle", "xp_newtoggle", "xp_cost"],
+			earnedxp: ["xp_session", "xp_award", "xp_reason"]
 		},
 		XPPARAMS = {
 			Attribute: {colToggles: ["xp_traittoggle", "xp_initialtoggle", "xp_newtoggle"], cost: 5},
@@ -532,17 +539,26 @@ const VAMPWORKER = (() => {
 
 		GROUPPREFIXES = ["g1", "g2", "g3", "g4", "g5", "g6", "g7", "g8", "g9"],
 		GROUPATTRS = ["charname", "Hunger"],
-		GROUPREPSECS = ["rolls"],
-		GROUPREPREFS = ["grollType", "gtrait1name", "gtrait1value", "gtrait2name", "gtrait2value", "grolldiff", "grollmod", "gposflags", "gnegflags", "groll_params"],
+		GROUPREPREFS = {
+			rolls: ["grollType", "gtrait1name", "gtrait1value", "gtrait2name", "gtrait2value", "grolldiff", "grollmod", "gposflags", "gnegflags", "groll_params"]
+		},
 
-		PROJREPSECS = ["project"],
-		PROJFLAGS = ["projectstartdate", "projectincnum", "projectincunit", "projectscope", "projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2", "projectlaunchmod", "projectstake1_name", "projectstake1", "projectstake2_name", "projectstake2", "projectstake3_name", "projectstake3", "projectstake4_name", "projectstake4", "projectstake5_name", "projectstake5", "projectstake6_name", "projectstake6", "projectlaunchresults", "projectlaunchresultsmargin", "projectlaunchdiffmod", "projectwasrushed"],
+		PROJREPREFS = {
+			project: ["projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectscope", "projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2", "projectlaunchmod", "projectstake1_name", "projectstake1", "projectstake2_name", "projectstake2", "projectstake3_name", "projectstake3", "projectstake4_name", "projectstake4", "projectstake5_name", "projectstake5", "projectstake6_name", "projectstake6", "projectlaunchresults", "projectlaunchresultsmargin", "projectlaunchdiffmod", "projectwasrushed"]
+		},
 		PROJDATEREFS = ["projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectrushpool", "projectlaunchrollToggle", "projectlaunchresults"],
 		// #endregion
 
 		// #region Derivative Stats
-		basicStats = _.flatten( [_.values(ATTRIBUTES), _.values(SKILLS), ENUMSTATS, TRACKERS] ),
-		statFlags = _.map(_.omit(basicStats, TRACKERS), stat => `${stat}_flag`),
+		basicStats = _.flatten( [_.values(ATTRIBUTES), _.values(SKILLS), DISCENUMS, TRACKERS] ),
+		basicStatFlags = _.map(_.omit(basicStats, TRACKERS), v => `${v}_flag`),
+		allAttrs = [
+			...ROLLFLAGS,
+			...basicStats,
+			...basicStatFlags,
+			..._.map(DISCENUMS, v => `${v}_name`)
+		],
+		attrNames = _.union(ATTRIBUTES, SKILLS, DISCIPLINES, TRACKERS),
 		// #endregion
 
 		// #region UTILITY: Logging, Checks & String Formatting
@@ -555,6 +571,22 @@ const VAMPWORKER = (() => {
 
 			return test
 		},
+		trimAttr = attr => attr.replace("_flag", "").replace("_type", "").replace("_name", ""),
+		isIn = (needle, haystack = attrNames) => {
+			const [ndl, hay] = [`\\b${trimAttr(needle)}\\b`, haystack],
+				names = _.isArray(hay) ?
+					_.flatten(hay) :
+					_.isObject(hay) ? _.keys(hay) : [hay],
+				index = _.findIndex(names,
+					v => v.match(new RegExp(ndl, "iu")) !== null ||
+						 v.match(new RegExp(ndl.replace(/_/gu, " "), "iu")) !== null ||
+						 v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null ||
+						 v.match(new RegExp(`${ndl}_name`, "iu")) !== null)
+
+			return index >= 0 && names[index]
+		},
+		realName = (attr, attrRef = attrNames) => isIn(`${trimAttr(attr)}_name`, attrRef) ||
+												  isIn(trimAttr(attr), attrRef),
 		log = (msg, isWarn, isLoud) => {
 			if (isLoud)
 				return console.log(logPrefix + " ".repeat(logDepth * 3) + msg)
@@ -593,7 +625,9 @@ const VAMPWORKER = (() => {
 		},
 		parseTAttrs = (tAttrs, tPrefix = "", trigger = "change:") => {
 			const parsed = _.map(tAttrs, v => trigger + tPrefix + v).join(" ")
-			log(`parseTAttrs(${JSON.stringify(tAttrs)}, ${JSON.stringify(tPrefix)}, ${JSON.stringify(trigger)}) = ${JSON.stringify(parsed)}`)
+
+			/* log(`parseTAttrs(${JSON.stringify(tAttrs)}, ${JSON.stringify(tPrefix)},
+			   ${JSON.stringify(trigger)}) = ${JSON.stringify(parsed)}`) */
 
 			return parsed
 		},
@@ -603,9 +637,11 @@ const VAMPWORKER = (() => {
 				tSecs ? parseTAttrs(tSecs, `repeating_${gN}${tPrefix}`) : "",
 				tSecs ? parseTAttrs(tSecs, `repeating_${gN}${tPrefix}`, "remove:") : ""
 			]
-			log(`getTriggers(${JSON.stringify(tAttrs)}, ${JSON.stringify(tPrefix)}, ${JSON.stringify(gN)}, ${JSON.stringify(tSecs)}) = ${JSON.stringify(parsedArray)}`)
+
+			/* log(`getTriggers(${JSON.stringify(tAttrs)}, ${JSON.stringify(tPrefix)},
+			   ${JSON.stringify(gN)}, ${JSON.stringify(tSecs)}) = ${JSON.stringify(parsedArray)}`) */
 			parsedArray = _.compact(parsedArray).join(" ")
-			log(`.... into: ${JSON.stringify(parsedArray)}`)
+			// log(`.... into: ${JSON.stringify(parsedArray)}`)
 
 			return parsedArray
 		},
@@ -616,7 +652,7 @@ const VAMPWORKER = (() => {
 		run$ = (tasks, cback) => {
 			let current = 0
 			const done = (empty, ...args) => {
-					log(`@ASync@ DONE START: Err = ${JSON.stringify(empty)}, Args = ${JSON.stringify(args)}`)
+					// log(`@ASync@ DONE START: Err = ${JSON.stringify(empty)}, Args = ${JSON.stringify(args)}`)
 					const end = () => {
 						const newArgs = args ? [].concat(empty, args) : [empty]
 						if (cback)
@@ -625,12 +661,12 @@ const VAMPWORKER = (() => {
 					end()
 				},
 				each = (empty, ...args) => {
-					log(`@ASync@ EACH START: Err = ${JSON.stringify(empty)}`)
+					// log(`@ASync@ EACH START: Err = ${JSON.stringify(empty)}`)
 
 					/* log(`... ..@ASync@ Arguments = ${JSON.stringify(arguments)}`)
 					   const args2 = Array.prototype.slice.call(arguments, 1) */
-					log(`... ..@ASync@      Args = ${JSON.stringify(args)}`)
-					// log(`... ..@ASync@     Args2 = ${JSON.stringify(args2)}`)
+					/* log(`... ..@ASync@      Args = ${JSON.stringify(args)}`)
+					   log(`... ..@ASync@     Args2 = ${JSON.stringify(args2)}`) */
 					if (++current >= tasks.length || empty)
 						done(empty, args)
 					else
@@ -648,23 +684,33 @@ const VAMPWORKER = (() => {
 				cback(null)
 			} )
 		},
-		$getRepAttrs = (repInfo, gN = "") => cback => {
+		$getRepAttrs = (repInfo = {}, gN = "") => cback => {
 			const repVals = [[], []],
 				   $funcs = []
-			_.each(_.keys(repInfo), sec => {
-				$funcs.push(cbk => {
-					getSectionIDs(sec, idArray => {
-						_.each(idArray, repID => {
-							_.each(repInfo[sec], stat => {
-								repVals[0].push(`repeating_${gN}${sec}_${repID}_${stat}`)
+			if (_.isString(repInfo)) {
+				_.each(_.compact(repInfo.split(",")), v => {
+					if (v.includes("repeating")) {
+						repVals[0].push(v)
+						repVals[1] = _.uniq( [...repVals[1], v.split("_")[2]] )
+					}
+				} )
+				cback(null, ...repVals)
+			} else {
+				_.each(_.keys(repInfo), sec => {
+					$funcs.push(cbk => {
+						getSectionIDs(sec, idArray => {
+							_.each(idArray, repID => {
+								_.each(repInfo[sec], stat => {
+									repVals[0].push(`repeating_${gN}${sec}_${repID}_${stat}`)
+								} )
+								repVals[1].push(repID)
 							} )
-							repVals[1].push(repID)
+							cbk(null)
 						} )
-						cbk(null)
 					} )
 				} )
-			} )
-			run$($funcs, () => cback(null, ...repVals))
+				run$($funcs, () => cback(null, ...repVals))
+			}
 		},
 		// #endregion
 
@@ -707,9 +753,9 @@ const VAMPWORKER = (() => {
 					(attrs, ids, cBack) => {
 						// const [attrs, ids] = repVals
 						log(`Attrs: ${JSON.stringify(attrs)}, IDs: ${JSON.stringify(ids)}`)
-						getAttrs(groupify( ["Disc1_name", "Disc2_name", "Disc3_name"], gN).concat(attrs), vals => {
-							attrList[`${gN}ritualsToggle`] = _.values(vals).includes("Blood Sorcery") ? 1 : 0
-							attrList[`${gN}formulaeToggle`] = _.values(vals).includes("Alchemy") ? 1 : 0
+						getAttrs(groupify( ["Disc1_name", "Disc2_name", "Disc3_name"], gN).concat(attrs), ATTRS => {
+							attrList[`${gN}ritualsToggle`] = _.values(ATTRS).includes("Blood Sorcery") ? 1 : 0
+							attrList[`${gN}formulaeToggle`] = _.values(ATTRS).includes("Alchemy") ? 1 : 0
 							cBack(null, attrList)
 						} )
 					},
@@ -719,7 +765,7 @@ const VAMPWORKER = (() => {
 		},
 		doClans = (gN = "") => {
 			const attrList = {},
-				    $funcs = [
+				$funcs = [
 					cBack => {
 						getAttrs(groupify( ["clan", "BloodPotency"], gN), ATTRS => {
 							attrList.clanBaneTitle = `${ATTRS[`${gN}clan`]} Clan Bane`
@@ -744,14 +790,15 @@ const VAMPWORKER = (() => {
 				]
 			run$($funcs)
 		},
-		doDiscs = (target, gN = "") => {
-			if (isBlacklisted(target))
+		doDiscPowers = (stat, gN = "") => {
+			if (isBlacklisted(stat))
 				return
 			const attrList = {},
 				$funcs = [
 					cback => {
-						getAttrs(groupify( [target], gN), ATTRS => {
-							attrList[`${target}PowerToggle`] = ATTRS[target]
+						getAttrs( [stat], ATTRS => {
+							log(`[DODISCS ATTRS = ${JSON.stringify(ATTRS)}]`)
+							attrList[`${stat}PowerToggle`] = ATTRS[stat]
 							cback(null, attrList)
 						} )
 					},
@@ -760,12 +807,12 @@ const VAMPWORKER = (() => {
 				]
 			run$($funcs)
 		},
-		doRes = (gN = "") => {
+		doResonance = (gN = "") => {
 			const attrList = {},
 				$funcs = [
 					cback => {
 						getAttrs(groupify( ["resonance"], gN), ATTRS => {
-							attrList[`${gN}resDisciplines`] = ATTRS[`${gN}resonance`] === 0 ? "" : `(${resDisciplines[ATTRS[`${gN}resonance`]].join(" & ")})`
+							attrList[`${gN}resDisciplines`] = ATTRS[`${gN}resonance`] === 0 ? "" : `(${_.compact(resDisciplines[ATTRS[`${gN}resonance`]] ).join(" & ")})`
 							cback(null, attrList)
 						} )
 					},
@@ -786,7 +833,7 @@ const VAMPWORKER = (() => {
 				]
 			run$($funcs)
 		},
-		rotateMarquee = () => {
+		doMarquee = () => {
 			const attrList = {},
 				$funcs = [
 					cback => {
@@ -821,10 +868,10 @@ const VAMPWORKER = (() => {
 		}
 
 	on("change:clan", () => doClans())
-	on(getTriggers(DISCIPLINEREFS), eInfo => doDiscs(eInfo.sourceAttribute))
-	on("change:resonance", () => doRes())
+	on(getTriggers(DISCENUMS, "", "", _.keys(DISCREPREFS)), eInfo => doDiscPowers(eInfo.sourceAttribute))
+	on("change:resonance", () => doResonance())
 	on("change:dob change:doe", () => doDOBDOE())
-	on("change:core-tab", () => rotateMarquee())
+	on("change:core-tab", () => doMarquee())
 	// #endregion
 
 	// #region UPDATE: Trackers (Health, Willpower, Blood Potency, Humanity)
@@ -1362,7 +1409,7 @@ const VAMPWORKER = (() => {
 		}
 
 	on("change:todaysdate", () => doProjectDates())
-	const projTrigs = getTriggers(null, "", "", PROJREPSECS)
+	const projTrigs = getTriggers(null, "", "", _.keys(PROJREPREFS))
 	log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 	log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 	log(`PROJTRIGS: ${JSON.stringify(projTrigs)}`)
@@ -1378,485 +1425,408 @@ const VAMPWORKER = (() => {
 
 	// #region UPDATE: Experience
 	const doXP = (gN = "") => {
-		const attrList = {},
-			$funcs = [
-				$getRepAttrs( {earnedxp: XPREPREFS.earned}, gN),
-				(attrs, ids, cback) => {
-					getAttrs(_.filter(attrs, v => v.includes("xp_award")), ATTRS => {
-						cback(null, {
-							xp_earnedtotal: _.reduce(
-								_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num) || 0
-							)
-						} )
-					} )
-				},
-				$set,
-				$getRepAttrs( {spentxp: XPREPREFS.spent}, gN),
-				(attrs, ids, cback) => {
-					getAttrs( [...attrs, "xp_earnedtotal", "xp_category"], ATTRS => {
-						let spentTotal = 0
-						_.each(ids, rowID => {
-							const p = v => `repeating_spentxp_${rowID}_${v}`,
+		const $funcs = [
+			$getRepAttrs(_.pick(XPREPREFS, (v, k) => k === "earnedxp" && v.includes("xp_award")), gN),
+			(attrs, ids, cback) => {
+				const attrList = {}
+				getAttrs(attrs, ATTRS => {
+					attrList.xp_earnedtotal = _.reduce(
+						_.values(ATTRS), (total, next) => parseInt(total) + parseInt(next) || 0
+					)
+					cback(null, attrList)
+				} )
+			},
+			$set,
+			$getRepAttrs( [..._.pick(XPREPREFS, "spentxp"), "xp_earnedtotal", "xp_category"], gN),
+			(attrs, ids, cback) => {
+				const attrList = {}
+				getAttrs(attrs, ATTRS => {
+					let spentTotal = 0
+					_.each(ids, rowID => {
+						const p = v => `repeating_spentxp_${rowID}_${v}`,
 								 pV = v => ATTRS[p(v)],
 								 pI = v => parseInt(pV(v)) || 0,
-								cat = pV("xp_category"),
-								colRef = XPPARAMS[cat] && XPPARAMS[cat].colToggles
-							if (colRef) {
-								if (
-									(!colRef.includes("xp_traittoggle") || pV("xp_trait") !== "") &&
+							cat = pV("xp_category"),
+							colRef = XPPARAMS[cat] ? XPPARAMS[cat].colToggles : null
+						if (colRef) {
+							if (
+								(!colRef.includes("xp_traittoggle") || pV("xp_trait") !== "") &&
 									(!colRef.includes("xp_initialtoggle") || pV("xp_initial") !== "") &&
 									(!colRef.includes("xp_newtoggle") || pV("xp_new") !== "")
-								) {
-									if (colRef.includes("xp_newtoggle")) {
-										let delta = 0
-										if (colRef.includes("xp_initialtoggle")) {
-											if (cat === "Advantage") {
-												delta = (pI("xp_new") - pI("xp_initial")) * XPPARAMS[cat].cost
-											} else {
-												for (let i = pI("xp_initial"); i < pI("xp_new"); i++)
-													delta += (i + 1) * XPPARAMS[cat].cost
-											}
+							) {
+								if (colRef.includes("xp_newtoggle")) {
+									let delta = 0
+									if (colRef.includes("xp_initialtoggle")) {
+										if (cat === "Advantage") {
+											delta = (pI("xp_new") - pI("xp_initial")) * XPPARAMS[cat].cost
 										} else {
-											delta = pI("xp_new") * XPPARAMS[cat].cost
+											for (let i = pI("xp_initial"); i < pI("xp_new"); i++)
+												delta += (i + 1) * XPPARAMS[cat].cost
 										}
-										attrList[p("xp_cost")] = Math.max(0, delta)
 									} else {
-										attrList[p("xp_cost")] = Math.max(0, XPPARAMS[cat].cost)
+										delta = pI("xp_new") * XPPARAMS[cat].cost
 									}
-									if (pV("xp_spenttoggle") === "on" && attrList[p("xp_cost")] > 0)
-										spentTotal += attrList[p("xp_cost")] || 0
-									if (attrList[p("xp_cost")] === 0)
-										attrList[p("xp_cost")] = ""
+									attrList[p("xp_cost")] = Math.max(0, delta)
+								} else {
+									attrList[p("xp_cost")] = Math.max(0, XPPARAMS[cat].cost)
 								}
+								if (pV("xp_spenttoggle") === "on" && attrList[p("xp_cost")] > 0)
+									spentTotal += attrList[p("xp_cost")] || 0
+								if (attrList[p("xp_cost")] === 0)
+									attrList[p("xp_cost")] = ""
 							}
-							_.each( ["xp_traittoggle", "xp_initialtoggle", "xp_newtoggle"],
-								v => {
-									attrList[p(v)] =
+						}
+						_.each( ["xp_traittoggle", "xp_initialtoggle", "xp_newtoggle"],
+							v => {
+								attrList[p(v)] =
 										colRef.includes(v) ?
 											pI(v) === 1 ? undefined : 1 :
 											pI(v) === 0 ? undefined : 0
-								} )
-							attrList[p("xp_arrowtoggle")] = Number(colRef.includes("xp_initialtoggle") && colRef.includes("xp_newtoggle"))
-						} )
-						attrList.xp_summary = `${ATTRS.xp_earnedtotal} XP Earned${spentTotal > 0 ? ` - ${spentTotal} XP Spent =  ${parseInt(ATTRS.xp_earnedtotal) - spentTotal} XP Remaining` : ""}`
-						cback(null, attrList)
+							} )
+						attrList[p("xp_arrowtoggle")] = Number(colRef.includes("xp_initialtoggle") && colRef.includes("xp_newtoggle"))
 					} )
-				},
-				$set
-			]
+					attrList.xp_summary = `${ATTRS.xp_earnedtotal} XP Earned${spentTotal > 0 ? ` - ${spentTotal} XP Spent =  ${parseInt(ATTRS.xp_earnedtotal) - spentTotal} XP Remaining` : ""}`
+					cback(null, attrList)
+				} )
+			},
+			$set
+		]
 		run$($funcs)
 	}
-	on(getTriggers(null, "", "", XPREPSECTIONS), () => doXP())
+	on(getTriggers(null, "", "", _.keys(XPREPREFS)), () => doXP())
 	// #endregion
 
 	// #region UPDATE: Dice Roller
-	const doRepSections = opts => {
-			const repStats = []
-
-			_.each(_.values(REPVARS), sec => {
-				getSectionIDs(sec, idArray => {
-					_.each(idArray, rowID => {
-						repStats.push(`repeating_${sec}_${rowID}_${sec}`)
-					} )
-					log(`@@@@: SETTING REPATTRS: ${JSON.stringify( {repStats: repStats.join(",")} )}`)
-					setAttrs( {repStats: repStats.join(",")} )
-					if (sec === _.values(REPVARS)[_.values(REPVARS).length - 1] && opts.stat && opts.stat.includes("_flag"))
-						doRolls(opts.stat.replace("_flag", ""), opts, repStats.join(","))
-				} )
-			} )
+	const doRollRepRefs = (gN = "") => {
+			const attrList = {},
+				$funcs = [
+					$getRepAttrs(Object.assign(DISCREPREFS, ADVREPREFS), gN),
+					(attrs, ids, cBack) => {
+						getAttrs( ["repStats"], ATTRS => {
+							/* log(`[DoRollRepRefs] From $getRepAttrs: ${JSON.stringify(_.reject(attrs, v => v.includes("_details")))}`)
+							   log(`[DoRollRepRefs] Prev RepStats: ${JSON.stringify(ATTRS.repStats.split(","))}`) */
+							if (!_.isEqual(
+								_.compact(ATTRS.repStats.split(",")),
+								_.reject(attrs, v => v.includes("_details"))
+							))
+								attrList.repStats = _.reject(attrs, v => v.includes("_details")).join(",")
+							cBack(null, attrList)
+						} )
+					},
+					$set
+				]
+			run$($funcs)
 		},
-
-		/* const doRepSections = (options, gN = "") => {
+		$getRollAttrs = (gN = "") => cBack => {
 			const repAttrs = [],
-				  attrList = {},
-			        $funcs = [
-					$getRepAttrs(REPVARS, gN),
-					(attrs, ids, cbk) => {
-						log(`@@@@: SETTING REPATTRS: ${JSON.stringify( {repStats: attrs.join(",")} )}`)
-						getAttrs( [...attrs, "repStats"], ATTRS => {
-
-						})
+				$funcs = [
+					cBack2 => {
+						getAttrs( ["repStats"], ATTRS => {
+							log(` >>> $funcs[ 1 ] >>> repStats: ${JSON.stringify(ATTRS.repStats)}`)
+							cBack2(null, ATTRS.repStats)
+						} )
+					},
+					(repStats = [], cBack2) => {
+						log(` >>> $funcs[ 2:START ] >>> repAttrs: ${JSON.stringify(repAttrs)}`)
+						run$( [
+							$getRepAttrs(repStats, gN),
+							(attrs, ids, cBack3) => {
+								repAttrs.push(..._.reject(attrs, v => v.includes("_details")))
+								log(` >>> $funcs[ 2:SUB ] >>> repAttrs: ${JSON.stringify(repAttrs)}`)
+								cBack3(null)
+							}
+						], () => {
+							log(` >>> $funcs[ 2:END ] >>> repAttrs: ${JSON.stringify(repAttrs)}`)
+							cBack2(null)
+						} )
 					}
 				]
-			setAttrs( {repStats: repStats.join(",")} )
-			if (sec === _.values(REPVARS)[_.values(REPVARS).length - 1] && options.stat && options.stat.includes("_flag"))
-				doRolls(options.stat.replace("_flag", ""), options, repStats.join(","))
-			const repInfo = {}
-			_.each(_.values(REPVARS), sec => repInfo[sec] = REPVARS[sec] )
-			$getRepAttrs = (repInfo, gN = "") => cback => {
-				const repVals = [[], []],
-					   $funcs = []
-				_.each(_.keys(repInfo), sec => {
-					$funcs.push(cbk => {
-						getSectionIDs(sec, idArray => {
-							_.each(idArray, repID => {
-								_.each(repInfo[sec], stat => {
-									repVals[0].push(`repeating_${gN}${sec}_${repID}_${stat}`)
-								} )
-								repVals[1].push(repID)
-							} )
-							cbk(null)
-						} )
-					} )
-				} )
-				run$($funcs, () => cback(null, ...repVals))
-			},
-			_.each(_.values(REPVARS), function (sec) {
-				getSectionIDs(sec, function (idArray) {
-					_.each(idArray, function (id) {
-						repStats.push(`repeating_${sec}_${id}_${sec}`)
-					} )
-					log(`@@@@: SETTING REPATTRS: ${JSON.stringify( {repStats: repStats.join(",")} )}`)
-					setAttrs( {repStats: repStats.join(",")} )
-					if (sec === _.values(REPVARS)[_.values(REPVARS).length - 1] && options.stat && options.stat.includes("_flag"))
-						doRolls(options.stat.replace("_flag", ""), options, repStats.join(","))
-				} )
-			} )
-		},*/
-
-		doRolls = (stat, opts = {}, repString) => {
-			logPrefix = `[ UR(${stat}: ${opts.source})${opts.triggerAttr ? ` (${JSON.stringify(opts.triggerAttr)})` : ""} ] `
+			run$($funcs, () => cBack(null, [...allAttrs, ...repAttrs] ))
+		},
+		doRolls = (targetAttr, opts = {}, gN = "") => {
+			logPrefix = `[ DR(${trimAttr(targetAttr)}) ]`
 			logDepth = 0
 
-			getAttrs( ["repStats"], ATTRS => {
-				const order = []
-				repString = repString || ATTRS.repStats
-				log(`@@@@ REPSTRING IN UPDATE ROLLS: ${JSON.stringify(repString)}`)
+			const attrList = {},
+				$funcs = [
+					$getRollAttrs(gN),
+					(attrs, cBack) => {
+						getAttrs(attrs, ATTRS => {
+							let [rArray, newRArray] = [[], []],
+								[aType, bType] = [null, null]
+							const [prevRArray, oArray, clearAttrs] = [[], [], {}],
+								basicAttrNames = _.uniq(_.map(ATTRS, v => trimAttr(v))),
+								stat = targetAttr === "GEN" ? "GEN" : isIn(targetAttr, ATTRS),
+								checkType = attr => {
+								// Returns type of stat sent in as parameter.
+									const name = realName(attr)
+									if (isIn(name, _.values(ATTRIBUTES)))
+										return "attribute"
+									else if (isIn(name, _.values(SKILLS)))
+										return "skill"
+									else if (isIn("repeating", attr) && isIn("advantage", attr))
+										return "advantage"
+									else if (isIn(name, DISCIPLINES))
+										return "discipline"
+									else if (isIn(name, TRACKERS))
+										return "tracker"
 
-				let [type, stat_flag] = [null, null],
-					rArray = [],
-					newRArray = [],
-					repStats = repString ? repString.split(",") : [],
-					allStats = basicStats.concat(repStats),
-					attrArray = REFERENCESTATS.concat(basicStats).concat(_.map(basicStats, v => `${v}_flag`))
-				_.each(ENUMSTATS, v => {
-					attrArray.push(`${v}_name`)
-				} )
-				var getRepKeys = (repSts, suffix) => {
-					if (repSts.length === 0)
-						return null
-					if (!_.isString(suffix)) {
-						return getRepKeys(repSts, "_name").concat(getRepKeys(repSts, "_flag"))
-							.concat(getRepKeys(repSts, ""))
-					}
+									log(`CkType(${JSON.stringify(attr)}): Can't Determine Type`)
 
-					return _.map(repSts, v => `repeating_${v}`.replace("repeating_repeating", "repeating") + suffix)
-				}
-				_.each(getRepKeys(repStats), v => attrArray.push(v))
-
-				log(`@@@ FINAL ATTRARRAY = '${JSON.stringify(attrArray)}`)
-
-
-				getAttrs(attrArray, ATTRS_2 => {
-					if (!opts.silent) {
-						log(">>>>>>>>>>>")
-						log(`>>> START >>> UPDATEROLLS(${stat})${opts.triggerAttr ? ` (${JSON.stringify(opts.triggerAttr)})` : ""}`)
-						log(">>>>>>>>>>>")
-					} else {
-						log(`( silent start ) UPDATEROLLS(${stat})${opts.triggerAttr ? ` (${JSON.stringify(opts.triggerAttr)})` : ""}`)
-					}
-
-					const newAttrs = {}
-					let isFlagChanged = false,
-
-						isIn = function (ndl, hay) {
-							hay = hay || ATTRS_2
-							ndl = `\\b${ndl}\\b`
-							let result
-							if (_.isArray(hay)) {
-								const index = _.findIndex(_.flatten(hay),
-									v => v.match(new RegExp(ndl, "iu")) !== null ||
-										v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null)
-								result = index === -1 ? false : _.flatten(hay)[index]
-							} else if (_.isObject(hay)) {
-								const index = _.findIndex(_.keys(hay), v => v.match(new RegExp(ndl, "iu")) !== null || v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null || v.match(new RegExp(`${ndl}_name`, "iu")))
-								result = index === -1 ? false : _.keys(hay)[index]
-							} else { result = hay.match(new RegExp(ndl, "iu")) !== null }
-
-							return result || false
-						},
-
-						realName = function (st, statList, isHalting) {
-							statList = statList || ATTRS_2
-							st = st.replace("_flag", "").replace("_name")
-							if (isHalting)
-								return statList[isIn(`${st}_name`, statList)] || isIn(st, statList)
-
-							return statList[isIn(`${st}_name`, statList)] || isIn(st, statList) || realName(st, _.union(ATTRIBUTES, SKILLS, DISCIPLINES, TRACKERS), true)
-						},
-
-						checkType = function (st) {
-							// Returns type of stat sent in as parameter.
-							const name = realName(st)
-							if (isIn(name, _.values(ATTRIBUTES)))
-								return "attribute"
-							else if (isIn(name, _.values(SKILLS)))
-								return "skill"
-							else if (isIn(st, "repeating_advantage"))
-								return "advantage"
-							else if (isIn(name, DISCIPLINES))
-								return "discipline"
-							else if (isIn(name, TRACKERS))
-								return "tracker"
-
-							log(`CkType(${JSON.stringify(st)}): Can't Determine Type`)
-
-							return false
-						},
-
-						checkFlag = function (st) {
-							if (!_.isString(st)) {
-								log(`CHECKFLAG(${JSON.stringify(st)}) is NOT A STRING.`)
-
-								return false
-							}
-							const flag = isIn(`${st.replace("_flag", "").replace("_name", "")}_flag`)
-							let result
-							if (flag === false || parseInt(ATTRS_2[flag] ) === 0)
-								result = false
-							else
-								result = true
-
-							return result
-						}
-
-					if (stat !== "rolltype") {
-						stat = isIn(stat)
-						_.each( ["rollDiff", "rollMod", "applyDiscipline", "applyBloodSurge", "applySpecialty", "applyResonant"], v => { newAttrs[v] = 0 } )
-					}
-
-					// First, all stats are searched, and flagged stats are added to rArray.
-					log(">>> FINDING STATS CURRENTLY FLAGGED ON SHEET...")
-					logDepth++
-					allStats.forEach(v => {
-						if (checkFlag(v)) {
-							rArray.push(v)
-							log(`>>> FOUND: '${JSON.stringify(v)}'`)
-						}
-					} )
-					log(`>>> PREVIOUS R-ARRAY: '${JSON.stringify(ATTRS_2.rollArray)}'`)
-					log(`>>> NEW R-ARRAY: '${JSON.stringify(rArray)}'`)
-
-					// IF RESETTING, clear all selected flags and other related parameters:
-					if (opts.reset) {
-						_.each( ["rollArray", "rollflagdisplay", "roll_params"], v => {
-							newAttrs[v] = ""
-							ATTRS_2[v] = ""
-						} )
-						_.each( ["rollDiff", "rollMod", "applyDiscipline", "applyBloodSurge", "applySpecialty", "applyResonant"].concat(_.map(rArray, v => `${v}_flag`)), v => {
-							newAttrs[v] = 0
-							ATTRS_2[v] = 0
-						} )
-					} else {
-						// Next, the roll array settings (from the last time this function was called) are stored in prevRArray.
-						const prevRArray = ATTRS_2.rollArray && ATTRS_2.rollArray !== "" ? ATTRS_2.rollArray.split(",") : []
-						log(`>>> NEW PREV-R-ARRAY: ${JSON.stringify(prevRArray)}`)
-						logDepth--
-
-						// If the stat being dod is anything OTHER than rolltype, flag the new traits, add them to rArray, and clean up the character sheet:
-						if (stat !== "rolltype") {
-							log(">>> NOT A ROLLTYPE: CHECKING FLAGS...")
-							logDepth++
-							// If the stat has been UNflagGED ...
-							if (checkFlag(stat) === 0) {
-								// ... REMOVE it from rArray.
-								isFlagChanged = true
-								const prunedRArray = _.without(rArray, isIn(stat, rArray))
-								log(`>>> --UNFLAGGING-- '${stat}' from R-ARRAY (${JSON.stringify(rArray)}'`)
-								logDepth++
-								newRArray = _.without(rArray, isIn(stat, rArray))
-								log(`> NEW R-ARRAY = '${JSON.stringify(newRArray)}'`)
-								logDepth--
-							} else if (checkFlag(stat) !== false) {
-								// Otherwise, if the stat is being FLAGGED, determine its TYPE.
-								isFlagChanged = true
-								log(`>>> ++FLAGGED++ into R-ARRAY '${JSON.stringify(rArray)}'`)
-								logDepth++
-								log(`> PREV-R-ARRAY '${JSON.stringify(prevRArray)}' [LENGTH: ${prevRArray.length}]`)
-								logDepth++
-								type = checkType(stat)
-								// Determine target rArray:
-								switch (prevRArray.length) {
-								case 0:
-									log(" ... FILLING EMPTY.")
-									newRArray = [stat]
-									break
-								case 1:
-									// Look up FLAGACTIONS:  add = prepend; repThis = replace; skip = clear.
-									const pType = checkType(prevRArray[0] )
-									switch (FLAGACTIONS[type][checkType(prevRArray[0] )] ) {
+									return false
+								},
+								checkFlag = attr => _.isString(attr) &&
+										isIn(`${trimAttr(attr)}_flag`, ATTRS) &&
+										parseInt(ATTRS[isIn(`${trimAttr(attr)}_flag`, ATTRS)] ) !== 0,
+								checkAction = (thisType, compType, isRerunning) => {
+									switch (FLAGACTIONS[thisType][compType] ) {
 									case "add":
-										log(` ... ADDING (statType: ${JSON.stringify(type)}, prevType: ${JSON.stringify(pType)})`)
-										newRArray = [prevRArray[0], stat]
+										log(` ... ${isRerunning ? "SECOND " : "FIRST "}ADD: ${JSON.stringify(prevRArray)} -> ${JSON.stringify( [prevRArray[isRerunning ? 0 : 1], stat] )}`)
+										newRArray = [prevRArray[isRerunning ? 0 : 1], stat]
 										break
 									case "repThis":
+										log(` ... ${isRerunning ? "SECOND " : "FIRST "}REPLACE: ${JSON.stringify(prevRArray)} -> ${JSON.stringify( [prevRArray[isRerunning ? 1 : 0], stat] )}`)
+										newRArray = [prevRArray[isRerunning ? 1 : 0], stat]
+										break
 									case "skip":
-										log(` ... CLEARING (statType: ${JSON.stringify(type)}, prevType: ${JSON.stringify(pType)})`)
-										newRArray = [stat]
+										log(` ... ${isRerunning ? "CLEARING " : "SKIPPING "}${JSON.stringify(prevRArray)}${isRerunning ? ` -> ${JSON.stringify( [stat] )}` : ""}`)
+										if (isRerunning)
+											newRArray = [stat]
+										else
+											checkAction(thisType, checkType(prevRArray[0] ), true)
+										break
+									default:
 										break
 									}
-									break
-								default:
-									/* Look up FLAGACTIONS re: NEWEST first:
-										add = bump oldest, repThis = replace NEWEST, skip = check NEXT..
-										If SKIP, check OLDEST in FLAGACTIONS:
-										add = replace newest, repThis = replace oldest, skip = clear. */
-									const checkAction = function (thisType, compType, isRerunning) {
-										switch (FLAGACTIONS[thisType][compType] ) {
-										case "add":
-											log(` ... ${isRerunning ? "SECOND " : "FIRST "}ADD: ${JSON.stringify(prevRArray)} -> ${JSON.stringify( [prevRArray[isRerunning ? 0 : 1], stat] )}`)
-											newRArray = [prevRArray[isRerunning ? 0 : 1], stat]
-											break
-										case "repThis":
-											log(` ... ${isRerunning ? "SECOND " : "FIRST "}REPLACE: ${JSON.stringify(prevRArray)} -> ${JSON.stringify( [prevRArray[isRerunning ? 1 : 0], stat] )}`)
-											newRArray = [prevRArray[isRerunning ? 1 : 0], stat]
-											break
-										case "skip":
-											log(` ... ${isRerunning ? "CLEARING " : "SKIPPING "}${JSON.stringify(prevRArray)}${isRerunning ? ` -> ${JSON.stringify( [stat] )}` : ""}`)
-											if (isRerunning)
-												newRArray = [stat]
-											else
-												checkAction(thisType, checkType(prevRArray[0] ), true)
-											break
-										}
-									}
-									checkAction(type, checkType(prevRArray[1] ))
-									break
 								}
 
-								// Remove any duplicates from R-Array:
-								newRArray = _.uniq(newRArray)
-								logDepth--
-								log(`> NEW R-ARRAY = '${JSON.stringify(newRArray)}'`)
-								logDepth--
+							if (stat === "GEN") {
+								_.each( ["rollDiff", "rollMod", "applyDiscipline", "applyBloodSurge", "applySpecialty", "applyResonant"], v => {
+									if (parseInt(ATTRS[v] ) !== 0)
+										attrList[v] = 0
+								} )
 							}
-							logDepth--
 
-							// Now unflag any traits that were flagged, but aren't in the newRArray
-							log(">>> SETTING TRAITS IN R-ARRAY *NOT* IN NEW R-ARRAY TO BE CLEARED...")
+							// First, all stats are searched, and flagged stats are added to rArray.
+							log(">>> FINDING STATS CURRENTLY FLAGGED ON SHEET...")
 							logDepth++
-							log(`> R-ARRAY: ${JSON.stringify(rArray)}, NEW R-ARRAY: ${JSON.stringify(newRArray)}`)
-							const diff = rArray.filter(v => !newRArray.includes(v))
-							log(`> TRAITS TO CLEAR: ${JSON.stringify(diff)}`)
-							const clearAttrs = {}
-							diff.forEach(v => {
-								clearAttrs[`${v}_flag`] = 0
+							_.each(basicAttrNames, v => {
+								if (checkFlag(v)) {
+									rArray.push(v)
+									log(`>>> FOUND: '${JSON.stringify(v)}'`)
+								}
 							} )
-							setAttrs(clearAttrs, {silent: true} )
-							// Set new R-Array:
-							rArray = _.clone(newRArray)
-							log(`> ATTRS TO BE SET: ${JSON.stringify(newAttrs)}`)
+							log(`>>> PREVIOUS R-ARRAY: '${JSON.stringify(ATTRS.rollArray)}'`)
+							log(`>>> NEW R-ARRAY: '${JSON.stringify(rArray)}'`)
+
+							// IF RESETTING, clear all selected flags and other related parameters:
+							if (opts.reset) {
+								_.each( ["rollArray", "rollflagdisplay", "roll_params"], v => {
+									[attrList[v], ATTRS[v]] = ["", ""]
+								} )
+								_.each( ["rollDiff", "rollMod", "applyDiscipline", "applyBloodSurge", "applySpecialty", "applyResonant"].concat(_.map(rArray, v => `${v}_flag`)), v => {
+									[attrList[v], ATTRS[v]] = [0, 0]
+								} )
+							} else {
+								// Next, the roll array settings (from the last time this function was called) are stored in prevRArray.
+								prevRArray.push(..._.compact((ATTRS.rollArray || "").split(",")))
+								log(`>>> NEW PREV-R-ARRAY: ${JSON.stringify(prevRArray)}`)
+								logDepth--
+
+								// If the stat being dod is anything OTHER than rolltype, flag the new traits, add them to rArray, and clean up the character sheet:
+								if (stat !== "GEN") {
+									log(">>> NOT A ROLLTYPE: CHECKING FLAGS...")
+									logDepth++
+									// If the stat has been UNflagGED ...
+									if (checkFlag(stat) === 0) {
+										// ... REMOVE it from rArray.
+										log(`>>> --UNFLAGGING-- '${stat}' from R-ARRAY (${JSON.stringify(rArray)}'`)
+										logDepth++
+										newRArray = _.without(rArray, isIn(stat, rArray))
+										log(`> NEW R-ARRAY = '${JSON.stringify(newRArray)}'`)
+										logDepth--
+									} else if (checkFlag(stat) !== false) {
+										// Otherwise, if the stat is being FLAGGED, determine its TYPE.
+										log(`>>> ++FLAGGED++ into R-ARRAY '${JSON.stringify(rArray)}'`)
+										logDepth++
+										log(`> PREV-R-ARRAY '${JSON.stringify(prevRArray)}' [LENGTH: ${prevRArray.length}]`)
+										logDepth++
+										aType = checkType(stat)
+										// Determine target rArray:
+										switch (prevRArray.length) {
+										case 0:
+											log(" ... FILLING EMPTY.")
+											newRArray = [stat]
+											break
+										case 1:
+											// Look up FLAGACTIONS:  add = prepend; repThis = replace; skip = clear.
+											bType = checkType(prevRArray[0] )
+											switch (FLAGACTIONS[aType][checkType(prevRArray[0] )] ) {
+											case "add":
+												log(` ... ADDING (statType: ${JSON.stringify(aType)}, prevType: ${JSON.stringify(bType)})`)
+												newRArray = [prevRArray[0], stat]
+												break
+											case "repThis":
+											case "skip":
+												log(` ... CLEARING (statType: ${JSON.stringify(aType)}, prevType: ${JSON.stringify(bType)})`)
+												newRArray = [stat]
+												break
+											default:
+												break
+											}
+											break
+										default:
+											/* Look up FLAGACTIONS re: NEWEST first:
+												add = bump oldest, repThis = replace NEWEST, skip = check NEXT..
+												If SKIP, check OLDEST in FLAGACTIONS:
+												add = replace newest, repThis = replace oldest, skip = clear. */
+											checkAction(aType, checkType(prevRArray[1] ))
+											break
+										}
+										// Remove any duplicates from R-Array:
+										newRArray = _.uniq(newRArray)
+										logDepth--
+										log(`> NEW R-ARRAY = '${JSON.stringify(newRArray)}'`)
+										logDepth--
+									}
+									logDepth--
+
+									// Now unflag any traits that were flagged, but aren't in the newRArray
+									log(">>> SETTING TRAITS IN R-ARRAY *NOT* IN NEW R-ARRAY TO BE CLEARED...")
+									logDepth++
+									log(`> R-ARRAY: ${JSON.stringify(rArray)}, NEW R-ARRAY: ${JSON.stringify(newRArray)}`)
+									log(`> TRAITS TO CLEAR: ${JSON.stringify(rArray.filter(v => !newRArray.includes(v)))}`)
+									_.each(rArray.filter(v => !newRArray.includes(v)), v => {
+										if (parseInt(ATTRS[`${v}_flag`] || 0) !== 0)
+											clearAttrs[`${v}_flag`] = 0
+									} )
+									setAttrs(clearAttrs, {silent: true} )
+									// Set new R-Array:
+									rArray = _.clone(newRArray)
+									log(`> ATTRS TO BE SET: ${JSON.stringify(attrList)}`)
+									logDepth--
+								}
+
+								// If we aren't flagging a new stat, final roll array equals prevRArray; otherwise, it equals rArray.
+								log(">>> DETERMINE R-ARRAY TO STORE FOR NEXT ROLL...")
+								logDepth++
+								attrList.rollArray = (stat === "GEN" ? prevRArray : rArray).join(",")
+								log(`> FLAG CHANGING: ${JSON.stringify(stat !== "GEN")} --> 'rollArray' = ${JSON.stringify(attrList.rollArray)}`)
+								logDepth--
+
+								// Arrange rArray in order: ATTRIBUTES, SKILLS, then OTHERS.
+								rArray.filter(v => checkType(v) === "attribute").forEach(v => oArray.push(v))
+								rArray.filter(v => checkType(v) === "skill").forEach(v => oArray.push(v))
+								rArray.filter(v => ["advantage", "discipline", "tracker"].includes(checkType(v))).forEach(v => oArray.push(v))
+
+								log(`>>> ORDERING R-ARRAY: ${JSON.stringify(oArray)}`)
+							}
+
+							log(">>> SETTING STAT DISPLAY FOR ROLLER...")
+							logDepth++
+
+							attrList.rolldisplay = ""
+
+							if (!oArray || oArray.length === 0) {
+								if (ATTRS.rollMod === 0 && ATTRS.rollDiff === 0)
+									attrList.rolldisplay = "Simple Roll or Check"
+								else
+									attrList.rolldisplay = "Simple Roll"
+							} else {
+								attrList.rolldisplay = oArray.map(v => realName(v)).join(" + ")
+							}
+
+							log(`> FIRST PASS: ${JSON.stringify(attrList.rolldisplay)}`)
+
+							if (!attrList.rolldisplay.includes("or Check")) {
+								if (ATTRS.rollMod < 0)
+									attrList.rolldisplay += ` ${ATTRS.rollMod}`.replace("-", "- ")
+								else if (ATTRS.rollMod > 0)
+									attrList.rolldisplay += ` + ${ATTRS.rollMod}`
+								if (ATTRS.rollDiff !== 0)
+									attrList.rolldisplay += ` vs. ${ATTRS.rollDiff}`
+							}
+
+							log(`> FINAL DISPLAY: ${JSON.stringify(attrList.rolldisplay)}`)
 							logDepth--
-						}
 
-						// If we aren't flagging a new stat, final roll array equals prevRArray; otherwise, it equals rArray.
-						newAttrs.rollArray = ""
-						log(">>> DETERMINE R-ARRAY TO STORE FOR NEXT ROLL...")
-						logDepth++
-						if (isFlagChanged) {
-							newAttrs.rollArray = rArray.join(",")
-							log(`> FLAG CHANGED! 'rollArray' = ${JSON.stringify(newAttrs.rollArray)}`)
-							rotateMarquee()
-						} else {
-							newAttrs.rollArray = prevRArray.join(",")
-							log(`> NO FLAG CHANGES: 'rollArray' = ${JSON.stringify(newAttrs.rollArray)}`)
-						}
-						logDepth--
+							if (!opts.reset) {
+								log(">>> DETERMINING ROLL PARAMETERS, ROLL FLAGS, AND API COMMAND...")
+								logDepth++
 
-						// Arrange rArray in order: ATTRIBUTES, SKILLS, then OTHERS.
-						rArray.filter(v => checkType(v) === "attribute").forEach(v => order.push(v))
-						rArray.filter(v => checkType(v) === "skill").forEach(v => order.push(v))
-						rArray.filter(v => ["advantage", "discipline", "tracker"].includes(checkType(v))).forEach(v => order.push(v))
+								// Add all stats to the parameter list:
+								attrList.roll_params = `@{character_name}|${oArray.join(",")}`
+								log(`> FIRST PASS (PARAMS): ${JSON.stringify(attrList.roll_params)}`)
+							}
 
-						log(`>>> ORDERING R-ARRAY: ${JSON.stringify(order)}`)
-					}
+							log(`>>> FINAL ATTRIBUTES TO BE SET: ${JSON.stringify(attrList)}`)
 
-					log(">>> SETTING STAT DISPLAY FOR ROLLER...")
-					logDepth++
+							// Set ATTRIBUTES so they can be used by the roll template (which will be automatically called by the button press.
 
-					newAttrs.rolldisplay = ""
-
-					if (!order || order.length === 0) {
-						if (ATTRS_2.rollMod === 0 && ATTRS_2.rollDiff === 0)
-							newAttrs.rolldisplay = "Simple Roll or Check"
-						else
-							newAttrs.rolldisplay = "Simple Roll"
-					} else { newAttrs.rolldisplay = order.map(v => realName(v, ATTRS_2)).join(" + ") }
-
-					log(`> FIRST PASS: ${JSON.stringify(newAttrs.rolldisplay)}`)
-					const flags = []
-
-					if (newAttrs.rolldisplay !== "Simple Roll or Check") {
-						if (ATTRS_2.rollMod < 0)
-							newAttrs.rolldisplay += ` ${ATTRS_2.rollMod}`.replace("-", "- ")
-						else if (ATTRS_2.rollMod > 0)
-							newAttrs.rolldisplay += ` + ${ATTRS_2.rollMod}`
-						if (ATTRS_2.rollDiff !== 0)
-							newAttrs.rolldisplay += ` vs. ${ATTRS_2.rollDiff}`
-					}
-
-					// newAttrs.rolldisplay += ".";
-					log(`> FINAL DISPLAY: ${JSON.stringify(newAttrs.rolldisplay)}`)
-					logDepth--
-
-					if (!opts.reset) {
-						log(">>> DETERMINING ROLL PARAMETERS, ROLL FLAGS, AND API COMMAND...")
-						logDepth++
-
-						// Add all stats to the parameter list:
-						newAttrs.roll_params = `@{character_name}|${order.join(",")}` // + "|" + v.Hunger + "|" + v.rollDiff + "|" + v.rollMod + "|";
-						log(`> FIRST PASS (PARAMS): ${JSON.stringify(newAttrs.roll_params)}`)
-					}
-
-					log(`>>> FINAL ATTRIBUTES TO BE SET: ${JSON.stringify(newAttrs)}`)
-
-					// Set ATTRIBUTES so they can be used by the roll template (which will be automatically called by the button press.
-
-					setAttrs(newAttrs, {silent: true} )
-				} )
-			} )
+							cBack(null, attrList)
+						} )
+					},
+					$set
+				]
+			run$($funcs)
 		}
 
-	on("sheet:opened", eInfo => {
-		log("--===[[ REPEATING STATS INTRO: EVENTINFO]]===--")
-		log(JSON.stringify(eInfo))
+	on(`sheet:opened ${getTriggers(null, "", "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)] )}`, eInfo => {
 		if (eInfo.sourceType === "sheetworker")
 			return
-		doRepSections( {stat: eInfo.sourceAttribute, source: eInfo.sourceType.slice(0, 2), silent: false} )
+		doRollRepRefs()
 	} )
-	const watchString = `change:${statFlags.join(" change:")} change:repeating_${_.values(REPVARS).join(" change:repeating_")} remove:repeating_${_.values(REPVARS).join(" remove:repeating_")}`
-	// log(JSON.stringify(watchString));
-	on(watchString, eInfo => {
-		log(`--===@@@[[ WATCH STRING TRIGGERED ON ${trimrep( {[eInfo.sourceAttribute]: ""} )} ]]===--`)
-		log(JSON.stringify(eInfo))
-		if (eInfo.sourceType === "sheetworker" ||
-				_.filter(ATTRBLACKLIST, stat => eInfo.sourceAttribute.includes(stat)).length > 0)
+	on(getTriggers(allAttrs, "", "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)] ), eInfo => {
+		log("--===@@@[[ WATCH STRING TRIGGERED ]]===--")
+		log(`--===@@@[[ ${JSON.stringify(eInfo)} ]]===--`)
+		if (eInfo.sourceType === "sheetworker" || isBlacklisted(eInfo.sourceAttribute))
 			return
 		doRolls(
-			eInfo.sourceAttribute
-				.replace("_flag", "")
-				.replace("_name", "")
-				.replace("_type", ""),
-			{
-				source: eInfo.sourceType.slice(0, 2),
-				silent: true
-			}
-		) // , silent: eInfo.sourceType === "sheetworker"
-	} )
-	on("change:rollDiff change:rollMod change:Hunger change:applyDiscipline change:applyBloodSurge change:applySpecialty change:applyResonant change:incapacitation", eInfo => {
-		log(`--===@@@[[ ROLLDIFF WATCH TRIGGERED ON ${eInfo.sourceAttribute} ]]===--`)
-		log(JSON.stringify(eInfo))
-		doRolls("rolltype", {source: eInfo.sourceType.slice(0, 2), triggerAttr: eInfo.sourceAttribute, silent: true} ) // , silent: eInfo.sourceType === "sheetworker"
+			ROLLFLAGS.join("|").toLowerCase().includes(eInfo.sourceAttribute) ? "GEN" : eInfo.sourceAttribute,
+			{silent: true}
+		)
 	} )
 	// #endregion
 
 	// #region GROUP SHEET ACTIONS
 
+	const doRoller = gN => {
+		const $funcs = [
+			$getRepAttrs( {rolls: GROUPREPREFS}, gN),
+			(attrs, ids, cback) => {
+				getAttrs( ["character_name", `${gN}charname`, `${gN}Hunger`].concat(attrs), ATTRS => {
+					log(`FULL LIST: ${JSON.stringify(ATTRS)}`)
+					const attrList = {}
+					_.each(ids, rowId => {
+						const p = v => `repeating_${gN}rolls_${rowId}_${v}`,
+							 pV = v => ATTRS[p(v)],
+							 pI = v => parseInt(pV(v)) || 0
+						attrList[p("groll_params")] =
+								`${pV("grollType")}|${
+									ATTRS.character_name}|${
+									gN}|${
+									ATTRS[`${gN}charname`]}|${
+									pV("gtrait1name")}:${pI("gtrait1value")},${
+									pV("gtrait2name")}:${pI("gtrait2value")}|${
+									pI("grolldiff")}|${
+									pI("grollmod")}|${
+									pV("gposflags")}|${
+									pV("gnegflags")}`
+						log(`... NEW ROLL PARAMS: ${JSON.stringify(attrList)}`)
+					} )
+					cback(null, attrList)
+				} )
+			},
+			$set
+		]
+		run$($funcs)
+	}
+
 	_.each(GROUPPREFIXES, gN => {
 		on(getTriggers( ["charname"], "", gN), () => getAttrs( [`${gN}charname`], v => setAttrs(_.object( [[`${gN}name`, v[`${gN}charname`]]] ))))
 
 		on(getTriggers( ["clan"], "", gN), () => doClans(gN))
-		on(getTriggers(DISCIPLINEREFS, "", gN), eInfo => doDiscs(eInfo.sourceAttribute, gN))
+		on(getTriggers(DISCENUMS, "", gN), eInfo => doDiscPowers(eInfo.sourceAttribute, gN))
 
 		on(getTriggers( ["bonusHealth"], "", gN), () => doTrackerMax("Health", gN))
 		on(getTriggers( ["bonusWillpower"], "", gN), () => doTrackerMax("Willpower", gN))
@@ -1866,7 +1836,7 @@ const VAMPWORKER = (() => {
 		on(getTriggers( ["BloodPotency"], "", gN), () => doTracker("Blood Potency", gN))
 		on(`${getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "humanity_", gN)} ${getTriggers( ["deltaHumanity", "deltaStains"], "", gN)}`, () => doTracker("Humanity", gN))
 
-		on(getTriggers(GROUPATTRS, "", gN, GROUPREPSECS), () => doRoller(gN))
+		on(getTriggers(GROUPATTRS, "", gN, _.keys(GROUPREPREFS)), () => doRoller(gN))
 	} )
 
 	/* //Group Character #1
@@ -1996,40 +1966,10 @@ const VAMPWORKER = (() => {
 		});
 		on(getTriggers(GROUPATTRS, "", "g9", GROUPREPSECTIONS), function () { doRoller("g9"); }); */
 
-	var doRoller = function (gN) {
-		const $funcs = [
-			$getRepAttrs( {rolls: GROUPREPREFS}, gN),
-			(attrs, ids, cback) => {
-				getAttrs( ["character_name", `${gN}charname`, `${gN}Hunger`].concat(attrs), ATTRS => {
-					log(`FULL LIST: ${JSON.stringify(ATTRS)}`)
-					const attrList = {}
-					_.each(ids, rowId => {
-						const p = v => `repeating_${gN}rolls_${rowId}_${v}`,
-							 pV = v => ATTRS[p(v)],
-							 pI = v => parseInt(pV(v)) || 0
-						attrList[p("groll_params")] =
-								`${pV("grollType")}|${
-									ATTRS.character_name}|${
-									gN}|${
-									ATTRS[`${gN}charname`]}|${
-									pV("gtrait1name")}:${pI("gtrait1value")},${
-									pV("gtrait2name")}:${pI("gtrait2value")}|${
-									pI("grolldiff")}|${
-									pI("grollmod")}|${
-									pV("gposflags")}|${
-									pV("gnegflags")}`
-						log(`... NEW ROLL PARAMS: ${JSON.stringify(attrList)}`)
-					} )
-					cback(null, attrList)
-				} )
-			},
-			$set
-		]
-		run$($funcs)
-	}
+
 	// #endregion
 
 	// #region Sheetworker Actions (Above "on(changes)" ignore sheetworker.)
-	on("change:Hunger", eInfo => doRolls("rolltype"))
+	on("change:Hunger", () => doRolls("GEN"))
 	// #endregion
 } )()

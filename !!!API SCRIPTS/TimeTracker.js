@@ -94,8 +94,8 @@ const TimeTracker = (() => {
 				return
 			const args = msg.content.split(/\s+/u),
 				{currentDate} = state[D.GAMENAME].TimeTracker
-			let [tracker, horizon, params] = [[], [], []],
-				[date, delta, unit] = [null, null, null]
+			let [tracker, horizon] = [[], [], []],
+				[date, delta, unit, hour, min] = [null, null, null, null, null]
 			switch (args.shift().toLowerCase()) {
 			case "!time":
 				if (!state[D.GAMENAME].TimeTracker.timeText) {
@@ -107,14 +107,13 @@ const TimeTracker = (() => {
 				}
 				[tracker] = findObjs( {_id: state[D.GAMENAME].TimeTracker.timeText} );
 				[horizon] = findObjs( {_id: state[D.GAMENAME].TimeTracker.horizonImage} )
-				params = args.slice(1).join(" ")
-					.toUpperCase()
+				// params = args.slice(1).join(" ").toUpperCase()
 				switch (args.shift().toLowerCase()) {
 				case "add":
-					params = _.compact(params.split(" "))
+					delta = parseInt(args.shift())
+					unit = args.shift().toLowerCase()
+					// params = _.compact(args.join(" ").split(" "))
 					date = new Date(parseInt(currentDate))
-					delta = parseInt(params.shift())
-					unit = params.shift().toLowerCase()
 					if (unit.slice(0, 1) === "y")
 						date.setUTCFullYear(date.getUTCFullYear() + delta)
 					else if (unit.includes("mo"))
@@ -128,8 +127,19 @@ const TimeTracker = (() => {
 					else if (unit.includes("m"))
 						date.setUTCMinutes(date.getUTCMinutes() + delta)
 					break
-				case "set": //   !time set 2018-07-13T01:12
-					date = new Date(params)
+				case "set": //   !time set 2018-07-14T20:12
+					if (args.length === 4) {
+						date = new Date(parseInt(currentDate))
+						date.setUTCFullYear(parseInt(args.shift()))
+						date.setUTCMonth(parseInt(args.shift()) + 1)
+						date.setUTCDate(parseInt(args.shift()));
+						[hour, min] = args.shift().split(":")
+						date.setUTCHours(parseInt(hour))
+						date.setUTCMinutes(parseInt(min))
+						D.Alert(`Date set to ${D.JSL(date.toString())}`)
+					} else {
+						D.Alert("Syntax: !set <year> <month 1-12> <day> <24-hour>:<min>", "TIMETRACKER !SET")
+					}
 					break
 				default:
 					D.ThrowError("Commands are 'add' and 'set'.")

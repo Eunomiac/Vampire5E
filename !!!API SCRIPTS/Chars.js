@@ -1,4 +1,4 @@
-const Chars = (function Chars () {
+const Chars = (() => {
 	// #region Constants and Declarations
 	const MVCVALS = [
 			[
