@@ -1,4 +1,5 @@
 const TimeTracker = (() => {
+	let timeTimer = null
 	// #region Configuration
 	const IMAGES = {
 			day: "https://s3.amazonaws.com/files.d20.io/images/66268397/qtmx8f4z8jcvK2sEGaxl5A/thumb.jpg?1541330279",
@@ -71,7 +72,7 @@ const TimeTracker = (() => {
 		// .replace(/^00/gu, "12").replace(/^0/gu, "")
 		setCurrentDate = function (date, tracker, horizon) {
 			tracker.set("text", `${DAYSOFWEEK[date.getUTCDay()]}, ${
-				MONTHS[date.getMonth()]} ${
+				MONTHS[date.getUTCMonth()]} ${
 				D.Ordinal(date.getUTCDate())}, ${
 				(date.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
 				date.getUTCMinutes() < 10 ? "0" : ""}${date.getUTCMinutes().toString()} ${
@@ -85,6 +86,11 @@ const TimeTracker = (() => {
 			)
 				_.each(D.GetChars("registered"), char => setAttrs(char.id, {todaysdate: date.getTime().toString()} ))
 			setHorizon(date, horizon)
+		},
+
+		tickClock = (date, tracker, horizon) => {
+			date.setUTCMinutes(date.getUTCMinutes() + 1)
+			setCurrentDate(date, tracker, horizon)
 		},
 		// #endregion
 
@@ -107,17 +113,17 @@ const TimeTracker = (() => {
 				}
 				[tracker] = findObjs( {_id: state[D.GAMENAME].TimeTracker.timeText} );
 				[horizon] = findObjs( {_id: state[D.GAMENAME].TimeTracker.horizonImage} )
+				date = new Date(parseInt(currentDate))
 				// params = args.slice(1).join(" ").toUpperCase()
 				switch (args.shift().toLowerCase()) {
 				case "add":
 					delta = parseInt(args.shift())
 					unit = args.shift().toLowerCase()
 					// params = _.compact(args.join(" ").split(" "))
-					date = new Date(parseInt(currentDate))
 					if (unit.slice(0, 1) === "y")
 						date.setUTCFullYear(date.getUTCFullYear() + delta)
 					else if (unit.includes("mo"))
-						date.setUTCMonth(date.getMonth() + delta)
+						date.setUTCMonth(date.getUTCMonth() + delta)
 					else if (unit.slice(0, 1) === "w")
 						date.setUTCDate(date.getUTCDate() + 7 * delta)
 					else if (unit.slice(0, 1) === "d")
@@ -129,20 +135,29 @@ const TimeTracker = (() => {
 					break
 				case "set": //   !time set 2018-07-14T20:12
 					if (args.length === 4) {
-						date = new Date(parseInt(currentDate))
 						date.setUTCFullYear(parseInt(args.shift()))
-						date.setUTCMonth(parseInt(args.shift()) + 1)
+						date.setUTCMonth(parseInt(args.shift()) - 1)
 						date.setUTCDate(parseInt(args.shift()));
 						[hour, min] = args.shift().split(":")
 						date.setUTCHours(parseInt(hour))
 						date.setUTCMinutes(parseInt(min))
 						D.Alert(`Date set to ${D.JSL(date.toString())}`)
 					} else {
-						D.Alert("Syntax: !set <year> <month 1-12> <day> <24-hour>:<min>", "TIMETRACKER !SET")
+						D.Alert("Syntax: !set year month1-12 day 24-hour:min", "TIMETRACKER !SET")
 					}
 					break
+				case "run":  // Sets time to slowly move forward in real time.
+					clearInterval(timeTimer)
+					timeTimer = setInterval(tickClock, (parseInt(args.shift()) || 60) * 1000, date, tracker, horizon)
+					D.Alert(`Auto clock ticking ENABLED at:<br><br>!time set ${date.getUTCFullYear()} ${date.getUTCMonth() + 1} ${date.getUTCDate()} ${date.getUTCHours()}:${date.getUTCMinutes()}`, "TIMETRACKER !TIME")
+					break
+				case "stop":
+					clearInterval(timeTimer)
+					timeTimer = null
+					D.Alert("Auto clock ticking DISABLED", "TIMETRACKER !TIME")
+					break
 				default:
-					D.ThrowError("Commands are 'add' and 'set'.")
+					D.ThrowError("Commands are 'add', 'set', 'run' and 'stop'.")
 
 					return
 				}
