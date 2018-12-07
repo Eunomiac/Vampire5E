@@ -123,7 +123,6 @@ module.exports = {
         "no-label-var": "error",
         "no-shadow": "error",
         "no-undef-init": "error",
-        "no-undefined": "warn",
         "no-use-before-define": "error",
         "callback-return": "error",
         "handle-callback-err": "error",
@@ -169,7 +168,7 @@ module.exports = {
             "ignoreRegExpLiterals": true,
             "ignorePattern": "^.*?D\.(Alert|ThrowError|Log|DB)"
         }],
-        "max-statements-per-line": ["error", { "max": 2 }],
+        "max-statements-per-line": ["error", { "max": 3 }],
         "multiline-comment-style": ["error", "bare-block"],
         "multiline-ternary": ["error", "always-multiline" ],
         //No idea how to get the regex to match.
@@ -192,21 +191,6 @@ module.exports = {
         "no-bitwise": "error",
         "no-continue": "error",
         "no-lonely-if": "error",
-        "no-mixed-operators": [
-            "error",
-            {
-                "groups": [
-                    ["+", "-"],
-                    //["**"],
-                    ["*", "/", "%"],
-                    ["&", "|", "^", "~", "<<", ">>", ">>>"],
-                    ["==", "!=", "===", "!==", ">", ">=", "<", "<="],
-                    ["&&", "||"],
-                    ["in", "instanceof"]
-                ],
-                "allowSamePrecedence": true
-            }
-        ],
         "object-curly-newline": ["error", { "consistent": true }],
         "object-curly-spacing": ["error", "never", { "objectsInObjects": true }],
         "one-var": ["error", "always"],

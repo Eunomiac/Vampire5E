@@ -263,23 +263,24 @@ const D = (() => {
 		},
 
 		/* Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. */
-		isIn = function (needle, haystack) {
-			let result = false
+		isIn = (needle, haystack = [..._.flatten(_.values(ATTRIBUTES)),
+								    ..._.flatten(_.values(SKILLS)),
+								    ...DISCIPLINES,
+								    ...TRACKERS] ) => {
 			try {
-				const hay = haystack || _.flatten( [_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS] ),
-				  ndl = `\\b${needle.replace(/^g[0-9]/u, "")}\\b`
-				if (_.isArray(hay)) {
-					const index = _.findIndex(_.flatten(hay), v => v.match(new RegExp(ndl, "iu")) !== null || v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null)
-					result = index === -1 ? false : _.flatten(hay)[index]
-				} else if (_.isObject(hay)) {
-					const index = _.findIndex(_.keys(hay), v => v.match(new RegExp(ndl, "iu")) !== null ||
+				const ndl = `\\b${needle.replace(/^g[0-9]/u, "")}\\b`
+				if (_.isArray(haystack)) {
+					const index = _.findIndex(_.flatten(haystack), v => v.match(new RegExp(ndl, "iu")) !== null || v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null)
+
+					return index === -1 ? false : _.flatten(haystack)[index]
+				} else if (_.isObject(haystack)) {
+					const index = _.findIndex(_.keys(haystack), v => v.match(new RegExp(ndl, "iu")) !== null ||
 					v.match(new RegExp(ndl.replace(/_/gu), "iu"))) !== null
-					result = index === -1 ? false : _.keys(hay)[index]
-				} else {
-					result = hay.match(new RegExp(ndl, "iu")) !== null
+
+					return index === -1 ? false : _.keys(haystack)[index]
 				}
 
-				return result
+				return haystack.search(new RegExp(needle, "iu")) > -1 && haystack
 			} catch (errObj) {
 				return D.ThrowError(`Error locating stat '${D.JSL(needle)}' in ${D.JSL(haystack)}'`, "D.IsIn()")
 			}

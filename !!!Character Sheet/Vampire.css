@@ -2009,6 +2009,18 @@
 	left: -2%;
 }
 
+.charsheet div.sheet-advantages input.sheet-editableflag.sheet-customtrait {
+	width: 80px;
+	height: 100%;
+	margin: 0px -30px -20px 0px;
+}
+
+.charsheet div.sheet-advantages input.sheet-attr + input[type="text"] {
+	background-size: 100% 140%;
+	margin-left: -10px;
+	padding-left: 15px;
+}
+
 /*#endregion*/
 
 /*#region SECTION: Domain */

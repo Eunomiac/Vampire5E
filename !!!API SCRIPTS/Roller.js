@@ -1,6 +1,6 @@
 ﻿const Roller = (() => {
 	let isRerollFXOn = false,
-		    rerollFX = null
+		rerollFX = null
 	// #region CONFIGURATION: Image Links, Color Schemes
 	const POSITIONS = {
 			diceFrame: {top: 207, left: 175},
@@ -632,7 +632,7 @@
 				die = getObj("graphic", dieParams.id)
 			if (!die)
 				return D.ThrowError(`ROLLER: SETDIE(${dieNum}, ${dieCat}, ${dieVal}) >> No die registered.`)
-			D.DB(`Setting die ${D.JSL(dieNum)} (dieVal: ${D.JSL(dieVal)}, params: ${D.JSL(params)})`)
+			// D.DB(`Setting die ${D.JSL(dieNum)} (dieVal: ${D.JSL(dieVal)}, params: ${D.JSL(params)})`)
 
 			if (dieVal !== "selected") {
 				dieRef.value = dieVal
@@ -707,9 +707,9 @@
 					posFlagLines: [],
 					flagDiceMod: 0
 				},
-				traitList = _.map(params.groupNum ? params.args[1].split(",") : params[0].split(","), v => v
-					.replace(/:\d+/gu, "")
-					.replace(/_/gu, " ")),
+				traitList = _.compact(
+					_.map((params.args[1] || params[0] || "").split(","), v => v.replace(/:\d+/gu, "").replace(/_/gu, " "))
+				),
 				 bloodPot = parseInt(getAttrByName(charObj.id, `${gN}BloodPotency`)) || 0
 			if ( ["rouse", "rouse2", "remorse", "check", "project", "secret", "humanity"].includes(rollType))
 				return flagData
@@ -717,7 +717,7 @@
 				flagData.posFlagLines.push("Specialty (●)")
 				flagData.flagDiceMod++
 			}
-			if (parseInt(getAttrByName(charObj.id, "applyResonance")) > 0) {
+			if (parseInt(getAttrByName(charObj.id, "applyResonant")) > 0) {
 				flagData.posFlagLines.push("Resonance (●)")
 				flagData.flagDiceMod++
 			}
@@ -741,7 +741,7 @@
 			   D.Log(D.JSL(params.args[4]), "PARAMS DATA 4"); */
 			_.each(_.compact(_.flatten( [
 				getAttrByName(charObj.id, `${gN}incapacitation`) ? getAttrByName(charObj.id, `${gN}incapacitation`).split(",") : [],
-				params.args.length > 4 ? params.args[4].split(",") : "",
+				params.args.length > 3 ? params.args[4].split(",") : "",
 				params.args.length > 4 ? params.args[5].split(",") : ""
 			] )), flag => {
 				if (flag === "Health" && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.physical, D.SKILLS.physical] )).length > 0) {
@@ -776,16 +776,25 @@
 		},
 
 		parseTraits = function (charObj, rollType, params) {
+			let traits = _.compact((params.args[1] || params[0] || "").split(","))
 			const gN = params.groupNum || "",
-				tFull = {traitList: null, traitData: {}, traitDiceMod: 0}
-			let traits = _.compact(params.groupNum ? params.args[1].split(",") : params[0].split(","))
+				tFull = {traitList: [], traitData: {}, traitDiceMod: 0}
+
 			if (!params.groupNum) {
-				if (rollType === "frenzy")
-					traits = ["Humanity", "Willpower"]
-				if (rollType === "humanity" || rollType === "remorse")
+				switch (rollType) {
+				case "frenzy":
+					traits = ["Willpower", "Humanity"]
+					break
+				case "humanity":
+				case "remorse":
 					traits = ["Humanity"]
-				if (rollType === "willpower")
+					break
+				case "willpower":
 					traits = ["Willpower"]
+					break
+				default:
+					break
+				}
 			}
 
 			tFull.traitList = traits.map(v => v.replace(/:\d+/gu, ""))
@@ -800,15 +809,15 @@
 					if (rollType === "frenzy" && tData[0] === "Humanity") {
 						tFull.traitData.Humanity.display = "⅓ Humanity"
 						tFull.traitData.Humanity.value = Math.floor(tFull.traitData.Humanity.value / 3)
-					} else if (rollType === "remorse" && tData[0] === "Humanity") {
+					} else if (rollType === "remorse" && tData[0] === "Stains") {
 						tFull.traitData.Humanity.display = "Human Potential"
-						tFull.traitData.Humanity.value += 10 -
-                                          tFull.traitData.Humanity.value -
-                                          (parseInt(getAttrByName(charObj.id, `${gN}Stains`)) || 0)
+						tFull.traitData.Humanity.value = 10 - tFull.traitData.Humanity.value - parseInt(tData[1] )
+						tFull.traitList = _.without(tFull.traitList, "Stains", "stains")
+						delete tFull.traitData[tData[0]]
 					}
 				} else {
 					tFull.traitData[trt] = {
-						display: D.IsIn(trt) || D.IsIn(getAttrByName(charObj.id, `${gN + trt}_name`)),
+						display: D.IsIn(trt) || getAttrByName(charObj.id, `${gN + trt}_name`),
 						value: parseInt(getAttrByName(charObj.id, gN + trt)) || 0
 					}
 					if (rollType === "frenzy" && trt === "Humanity") {
@@ -1521,12 +1530,18 @@ rollData = { posFlagLines, negFlagLines }
 						}
 						break
 					case "trait":
-						if ((total === 0 || margin < 0) && rollResults.H.botches > 0) {
+						if (
+							(total === 0 || (margin && margin < 0)) &&
+							rollResults.H.botches > 0
+						) {
 							rollLines.outcome.text = "BESTIAL FAILURE!"
 							logLines.outcome = `${CHATSTYLES.outcomeRed}BESTIAL FAILURE!</span></div>`
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "worst")
 							break
-						} else if (margin >= 0 && rollResults.critPairs.hb + rollResults.critPairs.hh > 0) {
+						} else if (
+							(!margin || margin >= 0) &&
+							(rollResults.critPairs.hb + rollResults.critPairs.hh) > 0
+						) {
 							rollLines.outcome.text = "MESSY CRITICAL!"
 							logLines.outcome = `${CHATSTYLES.outcomeRed}MESSY CRITICAL!</span></div>`
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "worst")
