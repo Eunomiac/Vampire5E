@@ -50,7 +50,9 @@ module.exports = {
         "no-console": "off",
         "no-async-promise-executor": "error",
         "no-await-in-loop": "error",
-        "no-extra-parens": ["error", "all", { "nestedBinaryExpressions": false }],
+        "no-extra-parens": ["error", "all", {
+            "nestedBinaryExpressions": false
+        }],
         "no-misleading-character-class": "error",
         "no-prototype-builtins": "error",
         "no-template-curly-in-string": "error",
@@ -64,7 +66,9 @@ module.exports = {
         //"complexity": ["warn", 20],
         "consistent-return": "error",
         "curly": ["error", "multi-or-nest", "consistent"],
-        "default-case": ["error", { "commentPattern": "^skip\\sdefault" }],
+        "default-case": ["error", {
+            "commentPattern": "^skip\\sdefault"
+        }],
         "dot-location": ["error", "property"],
         "dot-notation": "error",
         "eqeqeq": "error",
@@ -89,7 +93,9 @@ module.exports = {
         "no-lone-blocks": "error",
         "no-loop-func": "error",
         //"no-magic-numbers": ["warn", { "ignoreArrayIndexes": true, "ignore": [-5, -2, -1, 0, 0.5, 1, 2, 5, 10, 100, 1000] }],
-        "no-multi-spaces": ["error", { "ignoreEOLComments": true, }],
+        "no-multi-spaces": ["error", {
+            "ignoreEOLComments": true,
+        }],
         "no-multi-str": "error",
         "no-new": "error",
         "no-new-func": "error",
@@ -133,16 +139,22 @@ module.exports = {
         "no-process-env": "error",
         "no-process-exit": "error",
         "no-sync": "error",
-        
+
         "array-bracket-newline": ["error", "consistent"],
         "array-bracket-spacing": ["error", "never"],
         "array-element-newline": ["error", "consistent"],
         "block-spacing": ["error", "always"],
-        "brace-style": ["error", "1tbs", {"allowSingleLine": true}],
-        "camelcase": ["error", {"properties": "never", "ignoreDestructuring": true}],
+        "brace-style": ["error", "1tbs", {
+            "allowSingleLine": true
+        }],
+        "camelcase": "off",
+        //"camelcase": ["error", {"properties": "never", "ignoreDestructuring": true}],
         //"capitalized-comments": ["error", "always", {"ignoreConsecutiveComments": true}],
         "comma-dangle": ["error", "only-multiline"],
-        "comma-spacing": ["error", {"before": false, "after": true}],
+        "comma-spacing": ["error", {
+            "before": false,
+            "after": true
+        }],
         "comma-style": ["error", "last"],
         "computed-property-spacing": ["error", "never"],
         "consistent-this": ["error", "that"],
@@ -150,34 +162,53 @@ module.exports = {
         "func-call-spacing": ["error", "never"],
         "func-name-matching": "error",
         "func-names": ["error", "as-needed"],
-        "func-style": ["error", "expression", {"allowArrowFunctions" : true}],
+        "func-style": ["error", "expression", {
+            "allowArrowFunctions": true
+        }],
         "function-paren-newline": ["error", "consistent"],
         "id-blacklist": ["error", "data", "err", "e", "cb", "callback"],
-        "id-length": ["error", { "min": 3, "max": 14, "properties": "never", "exceptions": ["v", "k", "kv", "i", "j", "gN", "p", "pI", "pV", "D"] }],
+        "id-length": ["error", {
+            "min": 3,
+            "max": 14,
+            "properties": "never",
+            "exceptions": ["v", "v1", "v2", "k", "kv", "i", "j", "gN", "p", "pI", "pV", "D"]
+        }],
         "implicit-arrow-linebreak": ["error", "beside"],
         "indent": ["warn", "tab"],
-        "key-spacing": ["error", { "beforeColon": false }],
-        "keyword-spacing": ["error", { "before": true, "after": true } ],
+        "key-spacing": ["error", {
+            "beforeColon": false
+        }],
+        "keyword-spacing": ["error", {
+            "before": true,
+            "after": true
+        }],
         "linebreak-style": ["error", "unix"],
-        "lines-around-comment": ["error", { "beforeBlockComment": true, "allowBlockStart": true }],
-        "max-len": ["error", { 
-            "code": 120, 
-            "ignoreUrls": true, 
-            "ignoreStrings": true, 
-            "ignoreTemplateLiterals": true, 
+        "lines-around-comment": ["error", {
+            "beforeBlockComment": true,
+            "allowBlockStart": true
+        }],
+        "max-len": ["error", {
+            "code": 120,
+            "ignoreUrls": true,
+            "ignoreStrings": true,
+            "ignoreTemplateLiterals": true,
             "ignoreRegExpLiterals": true,
             "ignorePattern": "^.*?D\.(Alert|ThrowError|Log|DB)"
         }],
-        "max-statements-per-line": ["error", { "max": 3 }],
+        "max-statements-per-line": ["error", {
+            "max": 3
+        }],
         "multiline-comment-style": ["error", "bare-block"],
-        "multiline-ternary": ["error", "always-multiline" ],
+        "multiline-ternary": ["error", "always-multiline"],
         //No idea how to get the regex to match.
         //"new-cap": ["warn", {"newIsCap": true, "capIsNewExceptions": ["Campaign"], "capIsNewExceptionPattern": "\bD\.[A-Z]", "properties": "never" }],
         //"D\.[A-Z][^\\s\\d]*?(\\../g" }],
         //("D\.[A-Z].*?\(\gu)") }],
-        "no-mixed-spaces-and-tabs": ["error", "smart-tabs" ],
+        "no-mixed-spaces-and-tabs": ["error", "smart-tabs"],
         "no-multi-assign": "error",
-        "no-multiple-empty-lines": ["error", { "max": 2} ],
+        "no-multiple-empty-lines": ["error", {
+            "max": 2
+        }],
         "no-negated-condition": "error",
         "no-new-object": "error",
         "no-trailing-spaces": "error",
@@ -186,39 +217,72 @@ module.exports = {
         //"nonblock-statement-body-position": ["error", "beside", { "overrides": { "while": "below", "for": "below", "do": "below" } }],
         "nonblock-statement-body-position": ["error", "below"],
         "new-parens": "error",
-        "newline-per-chained-call": ["error", { "ignoreChainWithDepth": 3 }],
+        "newline-per-chained-call": ["error", {
+            "ignoreChainWithDepth": 3
+        }],
         "no-array-constructor": "error",
         "no-bitwise": "error",
         "no-continue": "error",
         "no-lonely-if": "error",
-        "object-curly-newline": ["error", { "consistent": true }],
-        "object-curly-spacing": ["error", "never", { "objectsInObjects": true }],
+        "object-curly-newline": ["error", {
+            "consistent": true
+        }],
+        "object-curly-spacing": ["error", "never", {
+            "objectsInObjects": true
+        }],
         "one-var": ["error", "always"],
         "one-var-declaration-per-line": ["error", "initializations"],
         "operator-assignment": ["error", "always"],
         "operator-linebreak": ["error", "after"],
         "padded-blocks": ["error", "never"],
-        "padding-line-between-statements": ["error", { blankLine: "always", prev: "*", next: "return" }],
+        "padding-line-between-statements": ["error", {
+            blankLine: "always",
+            prev: "*",
+            next: "return"
+        }],
         "prefer-object-spread": "error",
         "quote-props": ["error", "consistent-as-needed"],
-        "quotes": ["error", "double", { "avoidEscape": false }],
+        "quotes": ["error", "double", {
+            "avoidEscape": false
+        }],
         "semi": ["error", "never"],
-        "semi-spacing": ["error", {"before": false, "after": true}],
+        "semi-spacing": ["error", {
+            "before": false,
+            "after": true
+        }],
         "semi-style": ["error", "last"],
-        "space-before-blocks": ["error", { "functions": "always", "keywords": "always", "classes": "always" }],
+        "space-before-blocks": ["error", {
+            "functions": "always",
+            "keywords": "always",
+            "classes": "always"
+        }],
         "space-before-function-paren": "error",
-        "space-in-parens": ["error", "never", { "exceptions": ["{}", "[]"]}],
+        "space-in-parens": ["error", "never", {
+            "exceptions": ["{}", "[]"]
+        }],
         "space-infix-ops": "error",
-        "space-unary-ops": ["error", {"words": true, "nonwords": false}],
+        "space-unary-ops": ["error", {
+            "words": true,
+            "nonwords": false
+        }],
         "spaced-comment": ["error", "always"],
-        "switch-colon-spacing": ["error", {"after": true, "before": false}],
+        "switch-colon-spacing": ["error", {
+            "after": true,
+            "before": false
+        }],
         "template-tag-spacing": ["error", "never"],
         "wrap-regex": "error",
 
         "arrow-body-style": ["error", "as-needed"],
         "arrow-parens": ["error", "as-needed"],
-        "arrow-spacing": ["error", { "before": true, "after": true }],
-        "generator-star-spacing": ["error", {"before": true, "after": false}],
+        "arrow-spacing": ["error", {
+            "before": true,
+            "after": true
+        }],
+        "generator-star-spacing": ["error", {
+            "before": true,
+            "after": false
+        }],
         //"no-confusing-arrow": ["error", {"allowParens": true}],
         "no-useless-computed-key": "error",
         "no-useless-constructor": "error",
@@ -226,7 +290,10 @@ module.exports = {
         "no-var": "error",
         "object-shorthand": "error",
         "prefer-const": "error",
-        "prefer-destructuring": ["error", { "array": true, "object": true }],
+        "prefer-destructuring": ["error", {
+            "array": true,
+            "object": true
+        }],
         "prefer-numeric-literals": "error",
         "prefer-rest-params": "error",
         "prefer-spread": "error",
@@ -234,6 +301,9 @@ module.exports = {
         "rest-spread-spacing": ["error", "never"],
         "symbol-description": "error",
         "template-curly-spacing": ["error", "never"],
-        "yield-star-spacing": ["error", {"before": true, "after": false}]
+        "yield-star-spacing": ["error", {
+            "before": true,
+            "after": false
+        }]
     }
 };

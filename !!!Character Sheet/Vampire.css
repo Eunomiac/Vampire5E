@@ -252,14 +252,15 @@
 }
 
 .charsheet .sheet-littlenote {
-	width: 85%;
+	width: 130%;
 	height: 22px;
 	line-height: 11px;
+	margin: -6px 0px 5px -15%;
+	padding: 0px;
 	text-align: center;
 	text-align-last: center;
-	margin-top: -6px;
 
-	color: #444;
+	color: #933;
 	font-size: 11px;
 	font-family: 'Cormorant Garamond';
 	font-weight: 900;
@@ -1237,7 +1238,7 @@
 	margin-top: 15px;
 }
 
-.charsheet div.sheet-marquee div.sheet-marqueeTitle {
+.charsheet div.sheet-marquee div.sheet-marquee_title {
 	width: 70%;
 	/*margin: -10px 0px 2px 0px;*/
 	padding: 0px;
@@ -1296,7 +1297,7 @@
 
 }
 
-.charsheet div.sheet-marquee div.sheet-marqueeTitle textarea {
+.charsheet div.sheet-marquee div.sheet-marquee_title textarea {
 	height: 30px;
 	font-family: 'Bradley Gratis';
 	font-size: 30px;
@@ -1332,7 +1333,8 @@
 .charsheet div.sheet-hungercol select {
 	height: 25px;
 	width: 100%;
-	margin-left: 5%;
+	margin-left: 2px;
+	text-align: center;
 	text-align-last: center;
 
 	border: none;
@@ -1469,13 +1471,13 @@
 	background:url('https://imgur.com/Jv9M176.png');
 }
 
-.charsheet div.sheet-longbuttonblock div.sheet-rolldisplayblock {
+.charsheet div.sheet-longbuttonblock div.sheet-rollpooldisplayblock {
 	height: 35px;
 	width: calc(100% - 2px);
 	margin: -3px 0px 3px 2px;
 }
 
-.charsheet div.sheet-longbuttonblock div.sheet-rolldisplayblock textarea {
+.charsheet div.sheet-longbuttonblock div.sheet-rollpooldisplayblock textarea {
 	height: 100%;
 	width: 100%;
 	line-height: 35px;
@@ -2101,12 +2103,12 @@
 
 /*#region SECTION: Tenets, Convictions, Touchstones */
 .charsheet div.sheet-tenets input.sheet-customtrait,
-.charsheet div.sheet-convictionstouchstones input.sheet-customtrait {
+.charsheet div.sheet-beliefs input.sheet-customtrait {
 	height: 20px;
 	text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc;
 	margin-bottom: 10px;
 }
-.charsheet div.sheet-convictionstouchstones div.sheet-header3 {
+.charsheet div.sheet-beliefs div.sheet-header3 {
 	display: inline-block;
 }
 

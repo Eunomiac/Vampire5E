@@ -259,7 +259,7 @@ const Chars = (() => {
 		adjustDamage = function (charObj, trt, dtype, amount) {
 			const attrList = {},
 				trait = trt.slice(0, 1).toUpperCase() + trt.slice(1)
-			attrList[trait.toLowerCase() + ( ["superficial", "superficial+", "spent"].includes(dtype) ? "_sDmg" : "_aDmg")] = parseInt(amount) > 0 && dtype === "superficial" ? parseInt(Math.ceil(amount / 2)) : parseInt(amount)
+			attrList[trait.toLowerCase() + ( ["superficial", "superficial+", "spent"].includes(dtype) ? "_sdmg" : "_admg")] = parseInt(amount) > 0 && dtype === "superficial" ? parseInt(Math.ceil(amount / 2)) : parseInt(amount)
 			setAttrs(charObj.id, attrList)
 
 			return true
@@ -341,14 +341,14 @@ const Chars = (() => {
 				break
 			case "!getIncap":
 				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] )
-					D.Alert(`Incapacitation String for '${D.GetName(D.GetChar(msg))}': <br/><br/>${D.GetStat(msg, "incapacitation").get("current")}<br/><br/>e.g. !setIncap Compulsion (Arrogance):a:-2<br/><br/>OR<br/><br/>!setIncap Compulsion (Arrogance):Strength,Dexterity,Animal Ken,Dominate:-2`, "CHARS")
+					D.Alert(`Incapacitation String for '${D.GetName(D.GetChar(msg))}': <br/><br/>${D.GetStat(msg, "incap").get("current")}<br/><br/>e.g. !setIncap Compulsion (Arrogance):a:-2<br/><br/>OR<br/><br/>!setIncap Compulsion (Arrogance):Strength,Dexterity,Animal Ken,Dominate:-2`, "CHARS")
 				else
 					D.Alert("Select a character first!", "CHARS")
 				break
 			case "!setIncap":
 				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
 					incapString = args.join(" ")
-					setAttrs(D.GetChar(msg).id, {incapacitation: incapString} )
+					setAttrs(D.GetChar(msg).id, {incap: incapString} )
 					D.Alert(`Incapacitation String for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(incapString)}`, "CHARS !setIncap")
 				} else {
 					D.Alert("Select a character first!", "CHARS")
@@ -360,7 +360,7 @@ const Chars = (() => {
 					params = args.join(" ").split("|")
 					if (params.length === 2) {
 						setAttrs(D.GetChar(msg).id, {
-							compulsiondisplay_toggle: 1,
+							compulsion_toggle: 1,
 							compulsion: `${params[0].toUpperCase()} --- ${params[1]}`
 						} )
 						D.Alert(`Compulsion for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(`${params[0].toUpperCase()} --- ${params[1]}`)}`, "CHARS !setDys")
@@ -380,7 +380,7 @@ const Chars = (() => {
 					params = args.join(" ").split("|")
 					if (params.length === 2) {
 						setAttrs(D.GetChar(msg).id, {
-							dyscrasiasdisplay_toggle: 1,
+							dyscrasias_toggle: 1,
 							dyscrasias: `${params[0].toUpperCase()} --- ${params[1]}`
 						} )
 						D.Alert(`Dyscrasias for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(`${params[0].toUpperCase()} --- ${params[1]}`)}`, "CHARS !setDys")
@@ -394,7 +394,7 @@ const Chars = (() => {
 			case "!clearCompulsion":
 			case "!clearComp":
 				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
-					setAttrs(D.GetChar(msg).id, {compulsiondisplay_toggle: 0} )
+					setAttrs(D.GetChar(msg).id, {compulsion_toggle: 0} )
 					D.Alert(`Compulsion disabled for '${D.GetName(D.GetChar(msg))}'`, "CHARS !clearComp")
 				} else {
 					D.Alert("Select a character first!", "CHARS")
@@ -403,7 +403,7 @@ const Chars = (() => {
 			case "!clearDyscrasias":
 			case "!clearDys":
 				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
-					setAttrs(D.GetChar(msg).id, {dyscrasiasdisplay_toggle: 0} )
+					setAttrs(D.GetChar(msg).id, {dyscrasias_toggle: 0} )
 					D.Alert(`Dyscrasias disabled for '${D.GetName(D.GetChar(msg))}'`, "CHARS !clearDys")
 				} else {
 					D.Alert("Select a character first!", "CHARS")

@@ -710,37 +710,37 @@
 				traitList = _.compact(
 					_.map((params.args[1] || params[0] || "").split(","), v => v.replace(/:\d+/gu, "").replace(/_/gu, " "))
 				),
-				 bloodPot = parseInt(getAttrByName(charObj.id, `${gN}BloodPotency`)) || 0
+				 bloodPot = parseInt(getAttrByName(charObj.id, `${gN}bp`)) || 0
 			if ( ["rouse", "rouse2", "remorse", "check", "project", "secret", "humanity"].includes(rollType))
 				return flagData
-			if (parseInt(getAttrByName(charObj.id, "applySpecialty")) > 0) {
+			if (parseInt(getAttrByName(charObj.id, "applyspecialty")) > 0) {
 				flagData.posFlagLines.push("Specialty (●)")
 				flagData.flagDiceMod++
 			}
-			if (parseInt(getAttrByName(charObj.id, "applyResonant")) > 0) {
+			if (parseInt(getAttrByName(charObj.id, "applyresonance")) > 0) {
 				flagData.posFlagLines.push("Resonance (●)")
 				flagData.flagDiceMod++
 			}
-			if (parseInt(getAttrByName(charObj.id, `${gN}applyBloodSurge`)) > 0) {
-				const bonus = D.BLOODPOTENCY[bloodPot].bloodSurge
+			if (parseInt(getAttrByName(charObj.id, `${gN}applybloodsurge`)) > 0) {
+				const bonus = D.BLOODPOTENCY[bloodPot].bp_surge
 				flagData.posFlagLines.push(`Blood Surge (${bonus > 0 ? "●".repeat(bonus) : "~"})`)
 				flagData.flagDiceMod += bonus
 			}
-			if (parseInt(getAttrByName(charObj.id, `${gN}applyDiscipline`)) > 0) {
-				const bonus = D.BLOODPOTENCY[bloodPot].bloodDiscBonus
+			if (parseInt(getAttrByName(charObj.id, `${gN}applydisc`)) > 0) {
+				const bonus = D.BLOODPOTENCY[bloodPot].bp_discbonus
 				flagData.posFlagLines.push(`Discipline (${bonus > 0 ? "●".repeat(bonus) : "~"})`)
 				flagData.flagDiceMod += bonus
 			}
 			if (params.groupNum)
 				params.args[5] = _.map(params.args[5].split(","), v => `${v.split(":")[0]}:-${Math.abs(parseInt(v.split(":")[1] ))}`).join(",")
 
-			/* D.Log(D.JSL(getAttrByName(charObj.id, gN + "incapacitation")), "INCAPACITATION");
+			/* D.Log(D.JSL(getAttrByName(charObj.id, gN + "incap")), "INCAPACITATION");
 			   D.Log("PARAMS: " + D.JSL(params), "PARAMS");
 			   D.Log("PARAMS DATA: " + D.JSL(params.args), "PARAMS DATA");
 			   Return;
 			   D.Log(D.JSL(params.args[4]), "PARAMS DATA 4"); */
 			_.each(_.compact(_.flatten( [
-				getAttrByName(charObj.id, `${gN}incapacitation`) ? getAttrByName(charObj.id, `${gN}incapacitation`).split(",") : [],
+				getAttrByName(charObj.id, `${gN}incap`) ? getAttrByName(charObj.id, `${gN}incap`).split(",") : [],
 				params.args.length > 3 ? params.args[4].split(",") : "",
 				params.args.length > 4 ? params.args[5].split(",") : ""
 			] )), flag => {
@@ -871,7 +871,7 @@ diff: 3
 					groupNum: gN,
 					charID: charObj.id,
 					type: rollType,
-					hunger: parseInt(getAttrByName(charObj.id, `${gN}Hunger`)),
+					hunger: parseInt(getAttrByName(charObj.id, `${gN}hunger`)),
 					posFlagLines: flagData.posFlagLines,
 					negFlagLines: flagData.negFlagLines,
 					dicePool: flagData.flagDiceMod + traitData.traitDiceMod,
@@ -894,15 +894,15 @@ diff: 3
 					D.Log(`PREFIX: ${D.JSL(rollData.prefix)}`)
 				// Falls through
 				case "frenzy":
-					rollData.diff = parseInt(params[1] ) || parseInt(getAttrByName(charObj.id, "rollDiff"))
+					rollData.diff = parseInt(params[1] ) || parseInt(getAttrByName(charObj.id, "rolldiff"))
 					break
 				case "secret":
 					rollData.diff = params[2] ? parseInt(params[2] ) || 0 : 0
 					rollData.mod = params[1] ? parseInt(params[1] ) || 0 : 0
 					break
 				default:
-					rollData.diff = parseInt(getAttrByName(charObj.id, "rollDiff"))
-					rollData.mod = parseInt(getAttrByName(charObj.id, "rollMod"))
+					rollData.diff = parseInt(getAttrByName(charObj.id, "rolldiff"))
+					rollData.mod = parseInt(getAttrByName(charObj.id, "rollmod"))
 					break
 				}
 			}
@@ -1413,7 +1413,7 @@ rollData = { posFlagLines, negFlagLines }
 						if (rollData.mod !== 0) {
 							if (rollData.traits.length === 0 && rollData.mod > 0) {
 								rollLines.mainRoll.text = `${rollData.mod} Dice`
-								logLines.mainRoll = `${rollData.mod} Dice`
+								logLines.mainRoll = `${CHATSTYLES.mainRoll + rollData.mod} Dice`
 							} else {
 								logLines.mainRoll += (rollData.mod < 0 ? " - " : " + ") + Math.abs(rollData.mod)
 								rollLines.mainRoll.text += (rollData.mod < 0 ? " - " : " + ") + Math.abs(rollData.mod)
@@ -1492,7 +1492,7 @@ rollData = { posFlagLines, negFlagLines }
 							deltaAttrs[p("projectlaunchresults")] = "TOTAL FAIL"
 							deltaAttrs[p("projectlaunchresultsmargin")] = "You've Angered Someone..."
 							deltaAttrs[p("projectlaunchdiffmod")] = 0
-							deltaAttrs[p("projectlaunchrollToggle")] = 2
+							deltaAttrs[p("projectlaunchroll_toggle")] = 2
 						} else if (margin < 0) {
 							logLines.outcome = `${CHATSTYLES.outcomeOrange}FAILURE!</span></div>`
 							logLines.subOutcome = `${CHATSTYLES.subOutcomeOrange}+1 Difficulty to Try Again</span></div>`
@@ -1513,7 +1513,7 @@ rollData = { posFlagLines, negFlagLines }
 							deltaAttrs[p("projectlaunchresults")] = "CRITICAL WIN!"
 							deltaAttrs[p("projectlaunchresultsmargin")] = "No Stake Needed!"
 							deltaAttrs[p("projectlaunchdiffmod")] = 0
-							deltaAttrs[p("projectlaunchrollToggle")] = 2
+							deltaAttrs[p("projectlaunchroll_toggle")] = 2
 						} else {
 							logLines.outcome = `${CHATSTYLES.outcomeWhite}SUCCESS!</span></div>`
 							logLines.subOutcome = `${CHATSTYLES.subOutcomeWhite}Stake ${rollResults.commit} Dots</span></div>`
@@ -1524,8 +1524,8 @@ rollData = { posFlagLines, negFlagLines }
 							deltaAttrs[p("projectlaunchresults")] = "SUCCESS!"
 							deltaAttrs[p("projectlaunchresultsmargin")] = `Stake ${rollResults.commit} Dots (${rollResults.commit} to go)`
 							deltaAttrs[p("projectlaunchdiffmod")] = 0
-							deltaAttrs[p("projectlaunchrollToggle")] = 2
-							deltaAttrs[p("projectstakesToggle")] = 1
+							deltaAttrs[p("projectlaunchroll_toggle")] = 2
+							deltaAttrs[p("projectstakes_toggle")] = 1
 							deltaAttrs[p("projecttotalstake")] = rollResults.commit
 						}
 						break
@@ -1584,12 +1584,12 @@ rollData = { posFlagLines, negFlagLines }
 						}
 						break
 					case "remorse":
-						deltaAttrs[`${gNum}deltaStains`] =
+						deltaAttrs[`${gNum}humanity_dstains`] =
 							-1 * parseInt(getAttrByName(rollData.charID, `${gNum}Stains`) || 0)
 						if (rollResults.total === 0) {
 							rollLines.outcome.text = "YOUR HUMANITY FADES..."
 							logLines.outcome = `${CHATSTYLES.outcomeRed}DEGENERATION</span></div>`
-							deltaAttrs[`${gNum}deltaHumanity`] = -1
+							deltaAttrs[`${gNum}humanity_dhum`] = -1
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "bad")
 						} else {
 							rollLines.outcome.text = "YOU FIND ABSOLUTION!"
@@ -1607,7 +1607,7 @@ rollData = { posFlagLines, negFlagLines }
 							rollLines.outcome.text = "HUNGER ROUSED!"
 							logLines.outcome = `${CHATSTYLES.outcomeRed}ROUSED!</span></div>`
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "worst")
-							deltaAttrs[`${gNum}Hunger`] = parseInt(getAttrByName(rollData.charID, `${gNum}Hunger`)) + 1
+							deltaAttrs[`${gNum}hunger`] = parseInt(getAttrByName(rollData.charID, `${gNum}hunger`)) + 1
 						}
 						break
 					case "check":

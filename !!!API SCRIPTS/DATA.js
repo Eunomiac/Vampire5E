@@ -23,61 +23,61 @@ const D = (() => {
 		},
 		SKILLS = {
 			physical: ["Athletics", "Brawl", "Craft", "Drive", "Firearms", "Melee", "Larceny", "Stealth", "Survival"],
-			social: ["Animal Ken", "Animal_Ken", "Etiquette", "Insight", "Intimidation", "Leadership", "Performance", "Persuasion", "Streetwise", "Subterfuge"],
+			social: ["Animal Ken", "Etiquette", "Insight", "Intimidation", "Leadership", "Performance", "Persuasion", "Streetwise", "Subterfuge"],
 			mental: ["Academics", "Awareness", "Finance", "Investigation", "Medicine", "Occult", "Politics", "Science", "Technology"]
 		},
 		DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Dominate", "Fortitude", "Obfuscate", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
-		TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"],
+		TRACKERS = ["Willpower", "Health", "Humanity", bp],
 		BLOODPOTENCY = [
-			{bloodSurge: 0, bloodDiscBonus: 0},
-			{bloodSurge: 1, bloodDiscBonus: 1},
-			{bloodSurge: 1, bloodDiscBonus: 1},
-			{bloodSurge: 2, bloodDiscBonus: 1},
-			{bloodSurge: 2, bloodDiscBonus: 2},
-			{bloodSurge: 3, bloodDiscBonus: 2},
-			{bloodSurge: 3, bloodDiscBonus: 3},
-			{bloodSurge: 4, bloodDiscBonus: 3},
-			{bloodSurge: 4, bloodDiscBonus: 4},
-			{bloodSurge: 5, bloodDiscBonus: 4},
-			{bloodSurge: 5, bloodDiscBonus: 5}
+			{bp_surge: 0, bp_discbonus: 0},
+		{bp_surge: 1, bp_discbonus: 1},
+		{bp_surge: 1, bp_discbonus: 1},
+		{bp_surge: 2, bp_discbonus: 1},
+		{bp_surge: 2, bp_discbonus: 2},
+		{bp_surge: 3, bp_discbonus: 2},
+		{bp_surge: 3, bp_discbonus: 3},
+		{bp_surge: 4, bp_discbonus: 3},
+		{bp_surge: 4, bp_discbonus: 4},
+		{bp_surge: 5, bp_discbonus: 4},
+		{bp_surge: 5, bp_discbonus: 5}
 		],
 		RESONANCEODDS = {
 			norm: [{neg: 0.167, fleet: 0.1, intense: 0.053, acute: 0.013},
-				{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
-				{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
-				{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009}],
+		{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
+		{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
+		{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009}],
 			neg: [{neg: 0.136, fleet: 0.082, intense: 0.044, acute: 0.011},
-				{neg: 0.136, fleet: 0.082, intense: 0.044, acute: 0.011},
-				{neg: 0.136, fleet: 0.082, intense: 0.044, acute: 0.011},
-				{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}],
+		{neg: 0.136, fleet: 0.082, intense: 0.044, acute: 0.011},
+		{neg: 0.136, fleet: 0.082, intense: 0.044, acute: 0.011},
+		{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}],
 			posneg: [{neg: 0.167, fleet: 0.1, intense: 0.053, acute: 0.013},
-				{neg: 0.121, fleet: 0.073, intense: 0.039, acute: 0.01},
-				{neg: 0.121, fleet: 0.073, intense: 0.039, acute: 0.01},
-				{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}],
+		{neg: 0.121, fleet: 0.073, intense: 0.039, acute: 0.01},
+		{neg: 0.121, fleet: 0.073, intense: 0.039, acute: 0.01},
+		{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}],
 			pospos: [{neg: 0.124, fleet: 0.075, intense: 0.107, acute: 0.027},
-				{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
-				{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
-				{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009}],
+		{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
+		{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
+		{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009}],
 			negneg: [{neg: 0.15, fleet: 0.09, intense: 0.048, acute: 0.012},
-				{neg: 0.15, fleet: 0.09, intense: 0.048, acute: 0.012},
-				{neg: 0.15, fleet: 0.09, intense: 0.048, acute: 0.012},
-				{neg: 0.05, fleet: 0.03, intense: 0.016, acute: 0.004}],
+		{neg: 0.15, fleet: 0.09, intense: 0.048, acute: 0.012},
+		{neg: 0.15, fleet: 0.09, intense: 0.048, acute: 0.012},
+		{neg: 0.05, fleet: 0.03, intense: 0.016, acute: 0.004}],
 			pos2neg: [{neg: 0.124, fleet: 0.075, intense: 0.107, acute: 0.027},
-				{neg: 0.144, fleet: 0.086, intense: 0.046, acute: 0.012},
-				{neg: 0.144, fleet: 0.086, intense: 0.046, acute: 0.012},
-				{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}],
+		{neg: 0.144, fleet: 0.086, intense: 0.046, acute: 0.012},
+		{neg: 0.144, fleet: 0.086, intense: 0.046, acute: 0.012},
+		{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}],
 			neg2pos: [{neg: 0.196, fleet: 0.117, intense: 0.063, acute: 0.016},
-				{neg: 0.13, fleet: 0.078, intense: 0.042, acute: 0.01},
-				{neg: 0.13, fleet: 0.078, intense: 0.042, acute: 0.01},
-				{neg: 0.043, fleet: 0.026, intense: 0.014, acute: 0.003}],
+		{neg: 0.13, fleet: 0.078, intense: 0.042, acute: 0.01},
+		{neg: 0.13, fleet: 0.078, intense: 0.042, acute: 0.01},
+		{neg: 0.043, fleet: 0.026, intense: 0.014, acute: 0.003}],
 			posposneg: [{neg: 0.167, fleet: 0.1, intense: 0.053, acute: 0.013},
-				{neg: 0.167, fleet: 0.1, intense: 0.053, acute: 0.013},
-				{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
-				{neg: 0.056, fleet: 0.033, intense: 0.018, acute: 0.004}],
+		{neg: 0.167, fleet: 0.1, intense: 0.053, acute: 0.013},
+		{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
+		{neg: 0.056, fleet: 0.033, intense: 0.018, acute: 0.004}],
 			posnegneg: [{neg: 0.191, fleet: 0.115, intense: 0.061, acute: 0.015},
-				{neg: 0.127, fleet: 0.076, intense: 0.041, acute: 0.01},
-				{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007},
-				{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}]
+		{neg: 0.127, fleet: 0.076, intense: 0.041, acute: 0.01},
+		{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007},
+		{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}]
 		},
 		// eslint-disable-next-line id-length
 		FX = {
@@ -515,7 +515,7 @@ const D = (() => {
 		},
 		// #endregion
 
-		// #region SETTERS:  New Repeating Section Rows
+		// #region Repeating Section Manipulation
 		makeRow = function (charID, secName, attrs) {
 			const IDa = 0,
 				IDb = [],
@@ -557,6 +557,10 @@ const D = (() => {
 
 			return rowID
 		},
+
+		deleteRow = (charID, rowID) => {
+			
+		}
 		// #endregion
 
 		// Runs one of the special effects defined above.
