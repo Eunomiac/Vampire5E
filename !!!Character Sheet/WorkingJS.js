@@ -3,7 +3,7 @@
 (() => {
 	// #region Variable Declarations
 	let [LOGPREFIX, LOGDEPTH] = ["", 0],
-		LASTEVENT = {}
+	LASTEVENT = {}
 	const isDebug = true,
 		LOGOPTIONS = {},
 		ATTRIBUTES = {
@@ -188,395 +188,470 @@
 			},
 		],
 		bpDependants = [{
-			bp_surge: 0,
-			bp_mend: 1,
-			bp_discbonus: 0,
-			bp_rousereroll: 0,
-			bp_baneseverity: 0,
-			bp_slakeanimal: 1,
-			bp_slakehuman: 0,
-			bp_slakekill: 1
-		},
-		{
-			bp_surge: 1,
-			bp_mend: 1,
-			bp_discbonus: 1,
-			bp_rousereroll: 0,
-			bp_baneseverity: 1,
-			bp_slakeanimal: 1,
-			bp_slakehuman: 0,
-			bp_slakekill: 1
-		},
-		{
-			bp_surge: 1,
-			bp_mend: 2,
-			bp_discbonus: 1,
-			bp_rousereroll: 1,
-			bp_baneseverity: 1,
-			bp_slakeanimal: 0.5,
-			bp_slakehuman: 0,
-			bp_slakekill: 1
-		},
-		{
-			bp_surge: 2,
-			bp_mend: 2,
-			bp_discbonus: 1,
-			bp_rousereroll: 2,
-			bp_baneseverity: 2,
-			bp_slakeanimal: 0,
-			bp_slakehuman: 0,
-			bp_slakekill: 1
-		},
-		{
-			bp_surge: 2,
-			bp_mend: 3,
-			bp_discbonus: 2,
-			bp_rousereroll: 2,
-			bp_baneseverity: 2,
-			bp_slakeanimal: 0,
-			bp_slakehuman: -1,
-			bp_slakekill: 1
-		},
-		{
-			bp_surge: 3,
-			bp_mend: 3,
-			bp_discbonus: 2,
-			bp_rousereroll: 3,
-			bp_baneseverity: 3,
-			bp_slakeanimal: 0,
-			bp_slakehuman: -1,
-			bp_slakekill: 2
-		},
-		{
-			bp_surge: 3,
-			bp_mend: 3,
-			bp_discbonus: 3,
-			bp_rousereroll: 3,
-			bp_baneseverity: 3,
-			bp_slakeanimal: 0,
-			bp_slakehuman: -2,
-			bp_slakekill: 2
-		},
-		{
-			bp_surge: 4,
-			bp_mend: 3,
-			bp_discbonus: 3,
-			bp_rousereroll: 4,
-			bp_baneseverity: 4,
-			bp_slakeanimal: 0,
-			bp_slakehuman: -2,
-			bp_slakekill: 2
-		},
-		{
-			bp_surge: 4,
-			bp_mend: 4,
-			bp_discbonus: 4,
-			bp_rousereroll: 4,
-			bp_baneseverity: 4,
-			bp_slakeanimal: 0,
-			bp_slakehuman: -2,
-			bp_slakekill: 3
-		},
-		{
-			bp_surge: 5,
-			bp_mend: 4,
-			bp_discbonus: 4,
-			bp_rousereroll: 5,
-			bp_baneseverity: 5,
-			bp_slakeanimal: 0,
-			bp_slakehuman: -2,
-			bp_slakekill: 3
-		},
-		{
-			bp_surge: 5,
-			bp_mend: 5,
-			bp_discbonus: 5,
-			bp_rousereroll: 5,
-			bp_baneseverity: 5,
-			bp_slakeanimal: 0,
-			bp_slakehuman: -3,
-			bp_slakekill: 3
-		}],
+				bp_surge: 0,
+				bp_mend: 1,
+				bp_discbonus: 0,
+				bp_rousereroll: 0,
+				bp_baneseverity: 0,
+				bp_slakeanimal: 1,
+				bp_slakehuman: 0,
+				bp_slakekill: 1
+			},
+			{
+				bp_surge: 1,
+				bp_mend: 1,
+				bp_discbonus: 1,
+				bp_rousereroll: 0,
+				bp_baneseverity: 1,
+				bp_slakeanimal: 1,
+				bp_slakehuman: 0,
+				bp_slakekill: 1
+			},
+			{
+				bp_surge: 1,
+				bp_mend: 2,
+				bp_discbonus: 1,
+				bp_rousereroll: 1,
+				bp_baneseverity: 1,
+				bp_slakeanimal: 0.5,
+				bp_slakehuman: 0,
+				bp_slakekill: 1
+			},
+			{
+				bp_surge: 2,
+				bp_mend: 2,
+				bp_discbonus: 1,
+				bp_rousereroll: 2,
+				bp_baneseverity: 2,
+				bp_slakeanimal: 0,
+				bp_slakehuman: 0,
+				bp_slakekill: 1
+			},
+			{
+				bp_surge: 2,
+				bp_mend: 3,
+				bp_discbonus: 2,
+				bp_rousereroll: 2,
+				bp_baneseverity: 2,
+				bp_slakeanimal: 0,
+				bp_slakehuman: -1,
+				bp_slakekill: 1
+			},
+			{
+				bp_surge: 3,
+				bp_mend: 3,
+				bp_discbonus: 2,
+				bp_rousereroll: 3,
+				bp_baneseverity: 3,
+				bp_slakeanimal: 0,
+				bp_slakehuman: -1,
+				bp_slakekill: 2
+			},
+			{
+				bp_surge: 3,
+				bp_mend: 3,
+				bp_discbonus: 3,
+				bp_rousereroll: 3,
+				bp_baneseverity: 3,
+				bp_slakeanimal: 0,
+				bp_slakehuman: -2,
+				bp_slakekill: 2
+			},
+			{
+				bp_surge: 4,
+				bp_mend: 3,
+				bp_discbonus: 3,
+				bp_rousereroll: 4,
+				bp_baneseverity: 4,
+				bp_slakeanimal: 0,
+				bp_slakehuman: -2,
+				bp_slakekill: 2
+			},
+			{
+				bp_surge: 4,
+				bp_mend: 4,
+				bp_discbonus: 4,
+				bp_rousereroll: 4,
+				bp_baneseverity: 4,
+				bp_slakeanimal: 0,
+				bp_slakehuman: -2,
+				bp_slakekill: 3
+			},
+			{
+				bp_surge: 5,
+				bp_mend: 4,
+				bp_discbonus: 4,
+				bp_rousereroll: 5,
+				bp_baneseverity: 5,
+				bp_slakeanimal: 0,
+				bp_slakehuman: -2,
+				bp_slakekill: 3
+			},
+			{
+				bp_surge: 5,
+				bp_mend: 5,
+				bp_discbonus: 5,
+				bp_rousereroll: 5,
+				bp_baneseverity: 5,
+				bp_slakeanimal: 0,
+				bp_slakehuman: -3,
+				bp_slakekill: 3
+			}
+		],
 		marqueeTips = [
 			["Caine the First",
 				"Caine, son of Adam, was the First vampire.",
 				"He sired the Second Generation, of which there were three: Enoch the Wise, Irad the Strong, and Zillah the Beautiful.",
-				"All are said to have perished in the time before the Great Flood at the hands of their childer, the Antediluvians of the Third Generation."],
+				"All are said to have perished in the time before the Great Flood at the hands of their childer, the Antediluvians of the Third Generation."
+			],
 			["Masquerade",
 				"~ THE FIRST TRADITION ~",
 				"\"Thou shall not reveal thy true nature to those not of the Blood.",
-				"Doing so forfeits your claim to the Blood.\""],
+				"Doing so forfeits your claim to the Blood.\""
+			],
 			["Domain",
 				"~ THE SECOND TRADITION ~",
 				"\"All others owe thee respect while in thy domain.",
-				"None may challenge thy word while in it.\""],
+				"None may challenge thy word while in it.\""
+			],
 			["Progeny",
 				"~ THE THIRD TRADITION ~",
-				"\"Thou shall only Sire another with the permission of thine Eldest.\""],
+				"\"Thou shall only Sire another with the permission of thine Eldest.\""
+			],
 			["Accounting",
 				"~ THE FOURTH TRADITION ~",
 				"\"Those thou create are thine own children.",
-				"Until thy Progeny shall be Released, their sins are thine to endure.\""],
+				"Until thy Progeny shall be Released, their sins are thine to endure.\""
+			],
 			["Hospitality",
 				"~ THE FIFTH TRADITION ~",
 				"\"When thou comest to a foreign city, thou shall present thyself to the Eldest who ruleth there.",
-				"Without the word of acceptance, thou art nothing.\""],
+				"Without the word of acceptance, thou art nothing.\""
+			],
 			["Destruction",
 				"~ THE SIXTH TRADITION ~",
 				"\"The right to destroy another of thy kind belongeth only to thine Eldest.",
-				"Only the Eldest among thee shall call the Blood Hunt.\""],
+				"Only the Eldest among thee shall call the Blood Hunt.\""
+			],
 			["The Prince",
 				"A prince is a vampire who has claimed leadership over a city on behalf of the Camarilla.",
-				"Only the prince possesses the authority of the Eldest, as described in the Six Traditions."],
+				"Only the prince possesses the authority of the Eldest, as described in the Six Traditions."
+			],
 			["The Council of Primogen",
 				"The primogen are Camarilla officials that, at least in theory, serve as the representatives of their respective clans",
 				"to the prince of a city under Camarilla rule.  In general, the ruling vampires of the city value the primogen and their",
-				"opinions; they are called in to consult on decisions; and their recommendations carry great weight."],
+				"opinions; they are called in to consult on decisions; and their recommendations carry great weight."
+			],
 			["The Baron",
 				"A baron is the Anarch Movement's equivalent of a Camarilla prince: the highest Anarch authority in a city.",
 				"As the Anarchs believe in a system that awards merit, barons tend to vary in age",
-				"and experience far more than princes, who are generally elders."],
+				"and experience far more than princes, who are generally elders."
+			],
 			["The Camarilla",
 				"The Camarilla is the largest of the vampiric sects, an organization which ostensibly represents and protects all vampires by",
 				"enforcing and promulgating the Six Traditions. It is currently composed of five clans (Malkavian, Nosferatu, Toreador, Tremere",
-				"and Ventrue), though officially it considers all Kindred under its purview and welcomes any that obey its laws."],
+				"and Ventrue), though officially it considers all Kindred under its purview and welcomes any that obey its laws."
+			],
 			["The Anarchs",
 				"The Anarchs are vampires who reject the status quo of Camarilla society.  They especially resent the privileged status held by",
 				"elders, and champion the rights of younger Kindred against an establishment that concentrates power among the very old.  Unlike the",
-				"Sabbat, the Anarchs loosely hold to the Traditions of the Camarilla, and are largely (if reluctantly) tolerated by the larger sect."],
+				"Sabbat, the Anarchs loosely hold to the Traditions of the Camarilla, and are largely (if reluctantly) tolerated by the larger sect."
+			],
 			["The Sabbat",
 				"The Sabbat is a loose organization of Kindred who reject the Traditions and the assumed humanity of the Camarilla, their bitter enemies.",
-				"Also known as the Sword of Caine, they believe they are the army Caine will use to destroy the Antediluvians once Gehenna arrives."],
+				"Also known as the Sword of Caine, they believe they are the army Caine will use to destroy the Antediluvians once Gehenna arrives."
+			],
 			["The Convention of Thorns",
 				"The Convention of Thorns is the founding document of the Camarilla. Signed",
 				"in 1493 between Camarilla leaders, Anarchs, and Clan Assamite, the three-way",
-				"peace agreement marked the end of the first Anarch Revolt."],
+				"peace agreement marked the end of the first Anarch Revolt."
+			],
 			["The Convention of Prague",
 				"In 2012, at the Convention of Prague, several Camarilla leaders were killed by Brujah rebels during the clan's violent exit from the sect.",
-				"Tonight, Clan Brujah is associated with the Anarchs, along with many of Clan Gangrel (another clan that recently left the Camarilla)."],
+				"Tonight, Clan Brujah is associated with the Anarchs, along with many of Clan Gangrel (another clan that recently left the Camarilla)."
+			],
 			["High Clans",
 				"Before the Second Inquisition destroyed Clan Tremere's Prime Chantry in Vienna, the warlocks",
-				"were one of the High Clans of the Camarilla, along with Clan Toreador and Clan Ventrue."],
+				"were one of the High Clans of the Camarilla, along with Clan Toreador and Clan Ventrue."
+			],
 			["Low Clans",
 				"Clan Brujah and Clan Gangrel recently left the Camarilla to join the Anarch",
-				"Movement, leaving Clan Malkavian and Clan Nosferatu as the two Low Clans of the Camarilla."],
+				"Movement, leaving Clan Malkavian and Clan Nosferatu as the two Low Clans of the Camarilla."
+			],
 			["Autarkis",
 				"An autarkis is a vampire who remains outside and apart from the larger vampire society of a given",
 				"city, one who refuses to acknowledge the claim of a prince, baron, sect, clan, or other such",
-				"entity. Autarkes tend to be old and powerful, to successfully flout the authority of the ruling sect."],
+				"entity. Autarkes tend to be old and powerful, to successfully flout the authority of the ruling sect."
+			],
 			["The Inconnu",
 				"The Inconnu are an ancient and secretive sect of vampires, about whom virtually nothing is known.",
-				"The only visible facet of the sect seems to be the Monitors, who watch vampiric events while avoiding direct interference."],
+				"The only visible facet of the sect seems to be the Monitors, who watch vampiric events while avoiding direct interference."
+			],
 			["Resonance & Dyscrasias",
 				"Strong emotions can give a mortal's blood \"resonance\". Drinking strongly-resonant blood empowers the use of associated disciplines; the",
 				"strongest resonances (called \"dyscrasias\") confer even greater rewards. It is possible to influence resonances in mortals, cultivating",
-				"their blood to your tastes.  With a Project, you can change a resonance entirely, and even confer a dyscrasias upon the blood."],
+				"their blood to your tastes.  With a Project, you can change a resonance entirely, and even confer a dyscrasias upon the blood."
+			],
 			["The Blood Hunt",
 				"If the prince calls a Blood Hunt (or, more traditionally, the \"Lexitalionis\") against a",
 				"vampire, all Kindred in the city are given permission to kill and even diablerize the convicted.",
-				"It is one of the few times diablerie is sanctioned by the Camarilla."],
+				"It is one of the few times diablerie is sanctioned by the Camarilla."
+			],
 			["The Blood Bond",
 				"Drinking another vampire's blood on three consecutive nights will forge a blood",
-				"bond, a hollow mockery of subservient love that enslaves you to their will."],
+				"bond, a hollow mockery of subservient love that enslaves you to their will."
+			],
 			["Diablerie",
 				"Diablerie is the act of draining another vampire's blood and soul to gain a measure of their power.",
 				"It is the only way to lower one's generation, but it is anathema to the Camarilla:",
-				"Diablerists risk final death if their crimes are discovered."],
+				"Diablerists risk final death if their crimes are discovered."
+			],
 			["Ghouls",
 				"Feeding a mortal your blood transforms them into a ghoul.  They will gain a measure of your vampiric",
-				"power while retaining their humanity, and their addiction to your blood secures their loyalty."],
+				"power while retaining their humanity, and their addiction to your blood secures their loyalty."
+			],
 			["Clan Brujah: The Learned Clan",
 				"Clan Brujah of the Anarchs descends from Troile of the Third Generation, childe of Irad the Strong, childe of Caine the First.",
-				"Iconoclasts and rebels, they boldly fight the establishment to forge a new world."],
+				"Iconoclasts and rebels, they boldly fight the establishment to forge a new world."
+			],
 			["Clan Gangrel: The Clan of the Beast",
 				"Clan Gangrel descends from Ennoia of the Third Generation, whose sire is unknown.",
 				"Outcasts and wanderers, the Gangrel are closely tied to the animal aspect of the Beast",
-				"— whether as a wolf in back alleys, or as a shark in the boardroom."],
+				"— whether as a wolf in back alleys, or as a shark in the boardroom."
+			],
 			["Clan Malkavian: The Moon Clan",
 				"Clan Malkavian of the Camarilla descends from Malkav of the Third Generation, childe of Enoch the Wise, childe of Caine the First.",
-				"Cursed with vision and madness, the Malkavians are seers for whom prophecy and delusion are often indistinguishable."],
+				"Cursed with vision and madness, the Malkavians are seers for whom prophecy and delusion are often indistinguishable."
+			],
 			["Clan Nosferatu: The Clan of the Hidden",
 				"Clan Nosferatu of the Camarilla descends from Absimiliard of the Third Generation, childe of Zillah the Beautiful, childe of",
 				"Caine the First. Cursed with deformity and ugliness, they watch and listen from the shadows and the sewers, building an ever-",
-				"growing treasure-trove of secrets.  This knowledge is highly prized, and comprises the largest part of their political capital."],
+				"growing treasure-trove of secrets.  This knowledge is highly prized, and comprises the largest part of their political capital."
+			],
 			["Clan Toreador: The Clan of the Rose",
 				"Clan Toreador of the Camarilla descends from Arikel of the Third Generation, childe of Enoch the Wise, childe of Caine the First.",
 				"Famous and infamous as a clan of artists and innovators, they are one of the bastions of the Camarilla, for",
-				"their very survival depends on the facades of civility and grace on which the sect prides itself."],
+				"their very survival depends on the facades of civility and grace on which the sect prides itself."
+			],
 			["Clan Tremere: The Usurpers",
 				"Clan Tremere of the Camarilla descends from Tremere of the Third Generation, who diablerized and usurped Saulot, childe of Enoch",
 				"the Wise, childe of Caine the First.  Thus Clan Tremere replaced Clan Salubri as one of the thirteen Great Clans, and hunted them to",
-				"extinction. Warlocks and blood sorcerers, the once-mighty Tremere recently suffered a devastating blow from the Second Inquisition."],
+				"extinction. Warlocks and blood sorcerers, the once-mighty Tremere recently suffered a devastating blow from the Second Inquisition."
+			],
 			["Clan Ventrue: The Kingship Clan",
 				"Clan Ventrue of the Camarilla descends from Ventru of the Third Generation, childe of Irad the Strong, childe of Caine the First.",
 				"Aristocrats and rulers, Clan Ventrue represents the establishment.  They see themselves as the leaders of the Camarilla, and",
-				"hold more positions of influence and power (among both mortals and Kindred) than any other clan."],
+				"hold more positions of influence and power (among both mortals and Kindred) than any other clan."
+			],
 			["Clan Lasombra: The Night Clan",
 				"Clan Lasombra of the Sabbat descends from Lasombra of the Third Generation, childe of Irad the Strong, childe of Caine the First.",
 				"Predatory, elegant and inhuman manipulators of darkness and shadow, the leaders of the Sabbat",
-				"are ruthless social Darwinists who believe in the worthy ruling, and the unworthy serving."],
+				"are ruthless social Darwinists who believe in the worthy ruling, and the unworthy serving."
+			],
 			["Clan Tzimisce: The Clan of Shapers",
 				"Clan Tzimisce (\"zih-ME-see\") of the Sabbat descends from an Antediluvian known only as \"the Eldest\", childe of Enoch the Wise, childe",
 				"of Caine the First.  Scholars, sorcerers and flesh-shapers, the Tzimisce are alien and inscrutable, proudly renouncing",
-				"their humanity to focus on transcending the limitations of the vampiric state, by following their \"Path of Metamorphosis\"."],
+				"their humanity to focus on transcending the limitations of the vampiric state, by following their \"Path of Metamorphosis\"."
+			],
 			["Clan Assamite: The Clan of the Hunt",
 				"Clan Assamite of the mountain fortress Alamut in the Middle East, known as the Banu Haqim, descends from Haqim of the Third",
 				"generation, childe of Zillah the Beautiful, childe of Caine the First.  Traditionally seen as dangerous assassins and diablerists, in",
-				"truth they are guardians, scholars and warriors who seek to distance themselves from the Jyhad."],
+				"truth they are guardians, scholars and warriors who seek to distance themselves from the Jyhad."
+			],
 			["Clan Hecata: The Clan of Death",
 				"Clan Hecata of Venice descends from Augustus Giovanni, who diablerized and usurped Ashur, childe of Irad the Strong, childe",
 				"of Caine the First.  Thus Clan Hecata replaced Clan Cappadocian as one of the thirteen Great Clans, and hunted them to",
-				"extinction. Incestuous necromancers with a penchant for organized crime, the Hecata rarely Embrace outside of their own mortal family."],
+				"extinction. Incestuous necromancers with a penchant for organized crime, the Hecata rarely Embrace outside of their own mortal family."
+			],
 			["Clan Setite: The Snake Clan",
 				"Clan Setite of the Anarchs, known tonight as the Ministry, descends from Setekh of the Third Generation, childe of Zillah the Beautiful,",
 				"childe of Caine the First.  Serpentine tempters, corruptors and purveyors of every vice, they are seen by many to embody the snake in the",
-				"Garden of Eden.  The Ministry only recently joined the Anarch Movement, after being shunned by the Camarilla."],
+				"Garden of Eden.  The Ministry only recently joined the Anarch Movement, after being shunned by the Camarilla."
+			],
 			["Gehenna",
 				"Foretold in the Book of Nod, a sacred text to many Kindred, Gehenna is the vampire Armageddon:",
-				"It is prophesied to be the time when the Antediluvians will rise from their slumbers and devour their descendants."],
+				"It is prophesied to be the time when the Antediluvians will rise from their slumbers and devour their descendants."
+			],
 			["Jyhad",
 				"The Jyhad is said to be the \"eternal struggle\" for dominance between ancient methuselahs and the surviving Antediluvians.",
 				"Believers claim it is a subtle and insidious conflict, one that is fought in the everynight interactions of",
-				"younger vampires, most of whom are entirely unaware they are being controlled and used as pawns."],
+				"younger vampires, most of whom are entirely unaware they are being controlled and used as pawns."
+			],
 			["Golconda",
 				"Golconda is a mystical state of enlightenment where a vampire is no longer subject to the",
 				"Beast, or, alternatively, where the Beast and human aspects of a vampire are in balance.",
-				"The secrets of achieving Golconda are known by very few; many more consider Golconda to be a myth."],
+				"The secrets of achieving Golconda are known by very few; many more consider Golconda to be a myth."
+			],
 			["Frenzy",
 				"A frenzy occurs when the Beast seizes control of your body to act out your (its?) most primal instincts, regardless of the consequences.",
-				"Frenzies are most-often the result of being overwhelmed by anger, by fear, or by hunger."],
+				"Frenzies are most-often the result of being overwhelmed by anger, by fear, or by hunger."
+			],
 			["Of Cities: The Barrens",
 				"The Barrens are places in the city with a dearth of mortal prey, making them unsuitable for the Kindred.",
-				"The Barrens often include industrial areas, abandoned districts, and the city outskirts."],
+				"The Barrens often include industrial areas, abandoned districts, and the city outskirts."
+			],
 			["Of Cities: The Rack",
 				"The Rack consists of the most favourable hunting grounds in the city, and thus the most valuable domains.",
-				"Clubs, bars and other areas with a vibrant night life generally comprise the Rack."],
+				"Clubs, bars and other areas with a vibrant night life generally comprise the Rack."
+			],
 			["Dracula",
 				"Dracula, the vampire made famous by the mortal author Bram Stoker, is indeed real.",
 				"An elder of Clan Tzimisce, the powers described in Stoker's novel are manifestations of Dracula's command",
-				"of myriad disciplines, including Protean, Vicissitude, Dominate, Presence and Animalism."],
+				"of myriad disciplines, including Protean, Vicissitude, Dominate, Presence and Animalism."
+			],
 			["The Beckoning",
 				"The Beckoning is a calling in the Blood, a cry for aid from the sleeping Antediluvians to guard their places of rest from from the",
 				"Sabbat, who search for them relentlessly in the Middle East.  The stronger the Blood, the stronger the call:  Only vampires of the ninth",
-				"generation and lower feel it at all.  Many continue to resist the summons; many others have found it impossible to ignore."],
+				"generation and lower feel it at all.  Many continue to resist the summons; many others have found it impossible to ignore."
+			],
 			["Of Cities: Elysium",
 				"Elysium is any place declared as such by the prince, in which the safety of all Kindred is assured and violence is forbidden.",
-				"As neutral ground for all, Elysiums become hubs of Kindred activity."],
+				"As neutral ground for all, Elysiums become hubs of Kindred activity."
+			],
 			["Torpor",
 				"Torpor is a long state of dreamless slumber, during which a Kindred quite literally sleeps like the dead.",
 				"Serious injury or hunger can force a vampire into torpor, as can a stake that punctures the heart.",
-				"The oldest vampires enter torpor voluntarily, sleeping away the centuries for reasons unknown."],
+				"The oldest vampires enter torpor voluntarily, sleeping away the centuries for reasons unknown."
+			],
 			["The Blush of Life",
 				"With effort, Kindred can force their hearts to beat and their cheeks to flush for a time, assuming the appearance of a living mortal.",
-				"Called \"the Blush of Life\", it is an imperfect disguise that grows ever more difficult to achieve as one loses touch with humanity."],
+				"Called \"the Blush of Life\", it is an imperfect disguise that grows ever more difficult to achieve as one loses touch with humanity."
+			],
 			["Mechanic: Memoriam",
 				"If you want to assert that you did something in the past, you can call for a \"Memoriam\".",
 				"During Memoriam, we play out a quick flashback scene to see how things really turned out.",
-				"If you are successful, you retroactively gain the benefits of your past efforts in the present."],
+				"If you are successful, you retroactively gain the benefits of your past efforts in the present."
+			],
 			["The Prophecy of Gehenna",
 				"\"You will know these last times by the Time of Thin Blood, which will mark vampires that cannot beget.",
 				"You will know them by the Clanless, who will come to rule.\"",
-				"                                                    — The Book of Nod"],
+				"                                                    — The Book of Nod"
+			],
 			["The Second Inquisition",
 				"The Second Inquisition is the name given to the current mortal pogrom against the Kindred: a global effort by covert government",
 				"agencies aided by a secret militant wing of the Vatican to erase vampires from existence. It began when a Camarilla plot to turn mortal",
-				"authorities against their enemies backfired, revealing the existence of the Kindred to governments around the world."],
+				"authorities against their enemies backfired, revealing the existence of the Kindred to governments around the world."
+			],
 			["The Week of Nightmares",
 				"The Week of Nightmares occurred in the summer of 1999, when the Ravnos Antediluvian Zapathasura awakened from torpor and, after",
 				"a long and bloody conflict, was defeated by a powerful alliance of vampires, werewolves and mages.  At the moment of his",
-				"death, Zapathasura unleashed a psychic scream that drove every Ravnos into a cannibalistic frenzy, nearly destroying the entire clan."],
+				"death, Zapathasura unleashed a psychic scream that drove every Ravnos into a cannibalistic frenzy, nearly destroying the entire clan."
+			],
 			["Clan Ravnos: The Wanderer Clan",
 				"Clan Ravnos of India descends from Zapathasura of the Third Generation, whose sire is unknown.",
 				"Nomads, tricksters and performers, they have long been villified as con-artists and deceivers.  Armed",
-				"with unparalleled powers of illusion, the very senses turn traitor in the presence of a Ravnos."],
+				"with unparalleled powers of illusion, the very senses turn traitor in the presence of a Ravnos."
+			],
 			["Enoch the Wise",
 				"Enoch the Wise was Caine's first childe, and the eldest member of the Second Generation.",
 				"Brilliant and insightful, the Antediluvians he sired inherited the gift of Auspex, as did the clans they founded:",
-				"Clan Malkavian; Clan Salubri, who would be usurped by the Tremere; Clan Toreador; and Clan Tzimisce."],
+				"Clan Malkavian; Clan Salubri, who would be usurped by the Tremere; Clan Toreador; and Clan Tzimisce."
+			],
 			["Zillah the Beautiful",
 				"Zillah the Beautiful was Caine's second childe, and the middle sibling of the Second Generation.",
 				"A master of perception and disguise, the Antediluvians she sired inherited the gift of Obfuscate, as did the clans they founded:",
-				"Clan Nosferatu; Clan Assamite, known tonight as the Banu Haqim; and Clan Setite, known tonight as the Ministry."],
+				"Clan Nosferatu; Clan Assamite, known tonight as the Banu Haqim; and Clan Setite, known tonight as the Ministry."
+			],
 			["Irad the Strong",
 				"Irad the Strong was Caine's third childe, and the youngest member of the Second Generation.",
 				"A man of strong will and great ambition, the Antediluvians he sired inherited the gift of Dominate, as did the clans they founded:",
-				"Clan Brujah, who rejected the Gift; Clan Cappadocian, who would be usurped by the Hecata; Clan Lasombra; and Clan Ventrue."],
+				"Clan Brujah, who rejected the Gift; Clan Cappadocian, who would be usurped by the Hecata; Clan Lasombra; and Clan Ventrue."
+			],
 			["The Pyramid Falls",
 				"Until recently, Clan Tremere was the most rigidly organized of the thirteen Great Clans: every warlock was bound by Blood to the strict",
 				"hierarchy of the Pyramid.  But in recent nights, the Blood of Clan Tremere has lost its power to command obedience.  The Pyramid",
-				"has shattered, dividing the clan into three factions: House Tremere, House Goratrix, and House Carna."],
+				"has shattered, dividing the clan into three factions: House Tremere, House Goratrix, and House Carna."
+			],
 			["Shovelheads",
 				"When the Sabbat assault a city, no strategy is more threatening to the Masquerade than their penchant for",
 				"mass-Embracing mortals, knocking them unconscious with a shovel before they frenzy, and throwing them into",
-				"an open grave from which they must dig themselves out — a process that invariably drives them insane."],
+				"an open grave from which they must dig themselves out — a process that invariably drives them insane."
+			],
 			["The Book of Nod",
 				"An ancient text hailed as scripture by some and as fraudulent nonsense by others, the Book of Nod is the oldest text",
 				"that mentions vampires as they exist tonight.  It begins with the Testament of Caine, tells of his relationship with the blood-",
-				"witch Lillith, describes the First City and the creation of the thirteen Great Clans, and ends with the doomsday Prophecy of Gehenna."],
+				"witch Lillith, describes the First City and the creation of the thirteen Great Clans, and ends with the doomsday Prophecy of Gehenna."
+			],
 			["The Sacking of Carthage",
 				"The ancient city of Carthage was Clan Brujah's greatest achievement: strong, prosperous, idealistic, and entirely theirs...",
 				"until the armies of Ventrue-held Rome destroyed it utterly, salting the earth so Carthage could never rise again.  Clan Brujah",
-				"has never forgotten the blood on Clan Ventrue's hands: The two clans have despised each other ever since."],
+				"has never forgotten the blood on Clan Ventrue's hands: The two clans have despised each other ever since."
+			],
 			["Clan Rivalries: Ventrue & Lasombra",
 				"The Ventrue and the Lasombra are as alike as they are polar opposites: As the Ventrue rule the Camarilla, the Lasombra rule the",
 				"Sabbat. Both Embrace the capable and the ambitious; both prize power above all else; and both consider themselves the true masters",
-				"of Dominate. Their hatred for each other is matched only by their grudging respect for their rival kings among the Kindred."],
+				"of Dominate. Their hatred for each other is matched only by their grudging respect for their rival kings among the Kindred."
+			],
 			["Clan Rivalries: Brujah & Ventrue",
 				"When Ventrue-controlled Rome sacked Carthage, the greatest of Clan Brujah's achievements, they sparked a rivalry whose age is",
 				"only surpassed by the fued between Clan Ravnos and Clan Gangrel.  With Clan Ventrue embodying the status quo and Clan Brujah",
-				"rebelling against the establishment, their mutual disdain has found no shortage of fuel over the centuries."],
+				"rebelling against the establishment, their mutual disdain has found no shortage of fuel over the centuries."
+			],
 			["Clan Rivalries: Tremere & Tzimisce",
 				"It wasn't Tremere who unlocked the secrets of vampiric immortality, but his disciple Goratrix.  His methods were barbaric: he",
 				"experimented on hundreds of native Tzimisce, ultimately starting a war between Clan Tzimisce and the newly-formed Clan Tremere.",
-				"Though the Omen War has long ended, the hatred between the two clans persists undimmed into the modern nights."],
+				"Though the Omen War has long ended, the hatred between the two clans persists undimmed into the modern nights."
+			],
 			["Clan Rivalries: Tremere & Assamite",
 				"In 1493, at the signing of the Convention of Thorns that founded the Camarilla, the Assamites were widely feared for their",
 				"wanton commission of diablerie.  So Clan Tremere placed a curse on the entire bloodline, preventing them from drinking Kindred",
-				"Blood. Though the curse was recently broken, the Assamites (now the Banu Haqim) have yet to forgive Clan Tremere's interference."],
+				"Blood. Though the curse was recently broken, the Assamites (now the Banu Haqim) have yet to forgive Clan Tremere's interference."
+			],
 			["Clan Rivalries: Gangrel & Ravnos",
 				"When the Gangrel Antediluvian Ennoia murdered a favored childe of the Ravnos Antediluvian Zapathasura, Zapathasura cursed Ennoia",
 				"as a beast, placing upon her what would become the clan bane of all Gangrel.  Thus began the oldest rivalry between clans, a feud",
-				"known to every Gangrel and to every Ravnos, which continues to rage unchecked in modern nights."],
+				"known to every Gangrel and to every Ravnos, which continues to rage unchecked in modern nights."
+			],
 			["Clan Rivalries: Nosferatu & Toreador",
 				"Throughout history, Clan Toreador has been behind a cavalcade of subtle machinations against Clan Nosferatu, ostracizing them from",
 				"\"polite\" Kindred society and resigning them to the slums and sewers. For most clans, these acts would be unforgivable, but the",
-				"Nosferatu are subtle and indisposed to grudges. Nevertheless, the Toreador know to expect a very steep price to secure Nosferatu services."],
+				"Nosferatu are subtle and indisposed to grudges. Nevertheless, the Toreador know to expect a very steep price to secure Nosferatu services."
+			],
 			["The First Inquisition: The Burning Times",
 				"During the 14th, 15th and 16th centuries, the Inquisition raged throughout Europe.  Many Kindred were destroyed, and many more",
 				"were forced to abandon their holdings and go into hiding.  To most Kindred, this was the first time they learned to fear mortals as",
-				"a threat.  A cultural shift took hold, leading to the Tradition of the Masquerade and the formation of the Camarilla."],
+				"a threat.  A cultural shift took hold, leading to the Tradition of the Masquerade and the formation of the Camarilla."
+			],
 			["Prestation",
 				"Prestation describes the system of exchanging favors among the Kindred.  Since debts do not expire and eternity is a very long",
 				"time, prestation carries great weight among immortals of all sects.  Though favors (or \"boons\" as they are known) are usually tracked",
-				"informally, a Kindred who renegs on such a debt is quickly identified, and risks social ostracism — or worse."],
+				"informally, a Kindred who renegs on such a debt is quickly identified, and risks social ostracism — or worse."
+			],
 			["Mechanic: Projects",
 				"Any long-term goal that you have for your character should be tracked as a \"Project\".  To start a Project, describe the goal you ",
 				"wish to accomplish, and we'll go from there.  Be warned: Your adversaries are running their own Projects, and may interfere with yours.",
-				"There are systems for discovering Projects, interfering with Projects, and even stealing a Project and reaping its benefits."],
+				"There are systems for discovering Projects, interfering with Projects, and even stealing a Project and reaping its benefits."
+			],
 			["The Seneschal",
 				"A seneschal is an influential vampire who is empowered by the prince to act on their behalf on most matters.  At any time, they may be",
 				"asked to step into the prince's place if they leave town on business, abdicate, or are slain.  However powerful the position of",
-				"seneschal, all actions taken by the city's second-highest authority remain subject to revocation by the prince."],
+				"seneschal, all actions taken by the city's second-highest authority remain subject to revocation by the prince."
+			],
 			["Justicars",
 				"The justicars are the most powerful visible component of the Camarilla's worldwide presence, charged with adjudicating matters of the",
 				"Traditions on a global scale. There is one justicar for each Camarilla clan: Juliet, the Malkavian Justicar; Molly MacDonald, the",
-				"Nosferatu Justicar; Diana Iadanza, the Toreador Justicar; Ian Carfax, the Tremere Justicar; and Lucinde, the Ventrue Justicar."],
+				"Nosferatu Justicar; Diana Iadanza, the Toreador Justicar; Ian Carfax, the Tremere Justicar; and Lucinde, the Ventrue Justicar."
+			],
 			["Archons",
 				"Archons are the trusted, hand-picked servants of the justicars: if the justicars are the Camarilla's hands, the archons are its fingers.",
 				"A justicar can appoint any number of archons, and each acts with the justicar's full authority in all matters.  The appearance of an",
-				"archon in a city is a time of great uncertainty, for even princes must defer to a justicar's mandate."],
+				"archon in a city is a time of great uncertainty, for even princes must defer to a justicar's mandate."
+			],
 			["The Sheriff",
 				"The sheriff is a vampire selected by the prince and primogen who enforces the Blood Hunt within the prince's domain, as",
 				"well as any other edicts of the prince.  Ultimately, they are charged with maintaining order and harmony within a city, and",
-				"investigating the commission of any crimes against the prince's laws or the Traditions themselves."],
+				"investigating the commission of any crimes against the prince's laws or the Traditions themselves."
+			],
 			["Scourges",
 				"A scourge is directly subordinate to the prince, and is responsible for the destruction of the thin-blooded as well",
 				"as any other vampires who have been Embraced in violation of the Third Tradition.  Unlike the sheriff, a scourge operates",
-				"under no pretense of due process or investigation: those they hunt are already guilty by their very nature."],
+				"under no pretense of due process or investigation: those they hunt are already guilty by their very nature."
+			],
 			["Antitribu",
 				"An antitribu is a vampire who is aligned with a sect that opposes the one their clan traditionally associates with.  Most antitribu",
 				"are defectors to the Sabbat, but there do exist Lasombra antitribu in the Camarilla.  Tzimisce antitribu are virtually unheard of, both",
-				"because the Tremere hunt them mercilessly, and because of the ease with which the Clan of Shapers can disguise their heritage."]
+				"because the Tremere hunt them mercilessly, and because of the ease with which the Clan of Shapers can disguise their heritage."
+			]
 		]
 	// #endregion
 
@@ -653,15 +728,15 @@
 	// #endregion
 
 	// #region Derivative Stats
-	const BASICATTRS = _.flatten( [_.values(ATTRIBUTES), _.values(SKILLS), DISCENUMS, TRACKERS] ),
+	const BASICATTRS = _.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCENUMS, TRACKERS]),
 		BASICFLAGS = _.map(_.omit(BASICATTRS, TRACKERS), v => `${v}_flag`),
-		ALLATTRS = _.map( [
+		ALLATTRS = _.map([
 			...ROLLFLAGS.all,
 			...BASICATTRS,
 			...BASICFLAGS,
 			..._.map(DISCENUMS, v => `${v}_name`)
 		], v => v.toLowerCase()),
-		ATTRDISPNAMES = _.flatten( [_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS] )
+		ATTRDISPNAMES = _.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS])
 	// #endregion
 
 	// #region UTILITY: Logging, Checks & String Formatting
@@ -672,7 +747,7 @@
 		},
 		isBlacklisted = attr => _.pick(ATTRBLACKLIST,
 			bannedAttr => attr.toLowerCase().includes(bannedAttr.toLowerCase()))
-			.length > 0,
+		.length > 0,
 		trimAttr = attr => _.isString(attr) && attr.replace("_flag", "").replace("_type", "").replace("_name", "") || JSON.stringify(attr),
 		parseRepAttr = attr => {
 			if (attr.includes("repeating")) {
@@ -687,14 +762,14 @@
 				attr
 			}
 		},
-		trimStat = attrList => _.object(_.map(_.keys(attrList), k => [parseRepAttr(k).stat || parseRepAttr(k).attr, attrList[k]] )),
+		trimStat = attrList => _.object(_.map(_.keys(attrList), k => [parseRepAttr(k).stat || parseRepAttr(k).attr, attrList[k]])),
 		isIn = (needle, haystack) => {
 			if (!_.isString(needle))
 				return false
 			if (_.isString(haystack))
 				return haystack.search(new RegExp(needle, "iu")) > -1 && haystack
 			const [ndl, hay] = [`\\b${needle}\\b`, haystack],
-				names = _.isArray(hay) ? _.flatten(hay) : _.isObject(hay) ? _.keys(hay) : [hay],
+			names = _.isArray(hay) ? _.flatten(hay) : _.isObject(hay) ? _.keys(hay) : [hay],
 				index = _.findIndex(names,
 					v => v.match(new RegExp(ndl, "iu")) !== null ||
 					v.match(new RegExp(ndl.replace(/_/gu, " "), "iu")) !== null ||
@@ -705,16 +780,16 @@
 
 			return index >= 0 && names[index]
 		},
-		realName = (attr, ATTRS = {} ) => isIn(trimAttr(attr), ATTRDISPNAMES) ||
+		realName = (attr, ATTRS = {}) => isIn(trimAttr(attr), ATTRDISPNAMES) ||
 		isIn(ATTRS[`${trimAttr(attr)}_name`], ATTRDISPNAMES) ||
 		ATTRS[`${trimAttr(attr)}_name`] ||
 		trimAttr(attr),
 		parseTAttrs = (tAttrs, tPrefix = "", trigger = "change:") => _.map(tAttrs, v => trigger + tPrefix + v).join(" "),
-		getTriggers = (tAttrs, tPrefix = "", gN = "", tSecs) => _.compact( [
+		getTriggers = (tAttrs, tPrefix = "", gN = "", tSecs) => _.compact([
 			tAttrs ? parseTAttrs(tAttrs, gN + tPrefix) : "",
 			tSecs ? parseTAttrs(tSecs, `repeating_${gN}${tPrefix}`) : "",
 			tSecs ? parseTAttrs(tSecs, `repeating_${gN}${tPrefix}`, "remove:") : ""
-		] ).join(" "),
+		]).join(" "),
 		groupify = (attrArray, gN = "") => _.map(attrArray, attr => gN + attr)
 	// #endregion
 
@@ -752,7 +827,7 @@
 			setAttrs(attrList, {}, () => {
 				log(`>> ATTRS SET >> ${JSON.stringify(trimStat(attrList))}`)
 				cback(null)
-			} )
+			})
 		},
 		$getRepAttrs = (repInfo = {}, gN = "") => cback => {
 			const repVals = [
@@ -764,9 +839,9 @@
 				_.each(_.compact(repInfo.split(",")), v => {
 					if (v.includes("repeating")) {
 						repVals[0].push(v)
-						repVals[1] = _.uniq( [...repVals[1], v.split("_")[2]] )
+						repVals[1] = _.uniq([...repVals[1], v.split("_")[2]])
 					}
-				} )
+				})
 				cback(null, ...repVals)
 			} else {
 				_.each(_.keys(repInfo), sec => {
@@ -775,13 +850,13 @@
 							_.each(idArray, repID => {
 								_.each(repInfo[sec], stat => {
 									repVals[0].push(`repeating_${gN}${sec}_${repID}_${stat}`)
-								} )
+								})
 								repVals[1].push(repID)
-							} )
+							})
 							cbk(null)
-						} )
-					} )
-				} )
+						})
+					})
+				})
 				run$($funcs, () => cback(null, ...repVals))
 			}
 		}
@@ -822,7 +897,7 @@
 	const $checkRituals = (gN = "") => cback => {
 			const attrList = {},
 				$funcs = [
-					$getRepAttrs( {
+					$getRepAttrs({
 						discLeft: ["disc_name"],
 						discMid: ["disc_name"],
 						discRight: ["disc_name"]
@@ -830,11 +905,11 @@
 					(attrs, ids, cBack) => {
 						// const [attrs, ids] = repVals
 						log(`Attrs: ${JSON.stringify(attrs)}, IDs: ${JSON.stringify(ids)}`)
-						getAttrs(groupify( ["disc1_name", "disc2_name", "disc3_name"], gN).concat(attrs), ATTRS => {
+						getAttrs(groupify(["disc1_name", "disc2_name", "disc3_name"], gN).concat(attrs), ATTRS => {
 							attrList[`${gN}rituals_toggle`] = _.values(ATTRS).includes("Blood Sorcery") || _.values(ATTRS).includes("Oblivion") ? 1 : 0
 							attrList[`${gN}formulae_toggle`] = _.values(ATTRS).includes("Alchemy") ? 1 : 0
 							cBack(null, attrList)
-						} )
+						})
 					},
 					$set
 				]
@@ -844,7 +919,7 @@
 			const attrList = {},
 				$funcs = [
 					cBack => {
-						getAttrs(groupify( ["clan", "bp"], gN), ATTRS => {
+						getAttrs(groupify(["clan", "bp"], gN), ATTRS => {
 							attrList.bane_title = `${ATTRS[`${gN}clan`]} Clan Bane`
 							attrList.bane_text = baneText[ATTRS[`${gN}clan`]].replace("Bane Severity", `Bane Severity (${
 								bpDependants[ATTRS[`${gN}bp`]].bp_baneseverity
@@ -860,7 +935,7 @@
 								}
 							}
 							cBack(null, attrList)
-						} )
+						})
 					},
 					$set,
 					$checkRituals(gN)
@@ -873,11 +948,11 @@
 			const attrList = {},
 				$funcs = [
 					cback => {
-						getAttrs( [stat], ATTRS => {
+						getAttrs([stat], ATTRS => {
 							log(`[DODISCS ATTRS = ${JSON.stringify(ATTRS)}]`)
 							attrList[`${stat}power_toggle`] = ATTRS[stat]
 							cback(null, attrList)
-						} )
+						})
 					},
 					$set,
 					$checkRituals(gN)
@@ -888,10 +963,10 @@
 			const attrList = {},
 				$funcs = [
 					cback => {
-						getAttrs(groupify( ["resonance"], gN), ATTRS => {
+						getAttrs(groupify(["resonance"], gN), ATTRS => {
 							attrList[`${gN}res_discs`] = ATTRS[`${gN}resonance`] === "None" ? " " : `(${_.compact(res_discs[ATTRS[`${gN}resonance`]] ).join(" & ")})`
 							cback(null, attrList)
-						} )
+						})
 					},
 					$set
 				]
@@ -901,10 +976,10 @@
 			const attrList = {},
 				$funcs = [
 					cback => {
-						getAttrs(groupify( ["char_dob", "char_doe"], gN), ATTRS => {
+						getAttrs(groupify(["char_dob", "char_doe"], gN), ATTRS => {
 							attrList[`${gN}char_dobdoe`] = `${ATTRS[`${gN}char_dob`]} — ${ATTRS[`${gN}char_doe`]}`
 							cback(null, attrList)
-						} )
+						})
 					},
 					$set
 				]
@@ -914,7 +989,7 @@
 			const attrList = {},
 				$funcs = [
 					cback => {
-						getAttrs( ["marquee_tracker"], ATTRS => {
+						getAttrs(["marquee_tracker"], ATTRS => {
 							let mTracker = (ATTRS.marquee_tracker || "").split(","),
 								[thisMarquee, tIndex] = [
 									[], null
@@ -925,10 +1000,10 @@
 										_.keys(marqueeTips), mTracker
 									)
 								)
-								mTracker = _.compact( [
+								mTracker = _.compact([
 									..._.shuffle(mTracker.concat(newShuffle.slice(0, 10))),
 									...mTracker.concat(newShuffle.slice(10))
-								] )
+								])
 							}
 							do
 								tIndex = parseInt(mTracker.shift())
@@ -939,7 +1014,7 @@
 							[attrList.marquee_title] = thisMarquee
 							attrList.marquee = thisMarquee.slice(1).join("\n")
 							cback(null, attrList)
-						} )
+						})
 					},
 					$set
 				]
@@ -949,25 +1024,24 @@
 	on("change:clan", eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dCLAN(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doClans()
-	} )
+	})
 	on(getTriggers(DISCENUMS, "", "", _.keys(DISCREPREFS)), eInfo => {
 		if (eInfo.sourceAttribute.includes("power_toggle"))
-			return
-		[LOGPREFIX, LOGDEPTH] = [`[dPOWERS(${trimAttr(eInfo.sourceAttribute)})]`, 0]
+			return [LOGPREFIX, LOGDEPTH] = [`[dPOWERS(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doDiscPowers(eInfo.sourceAttribute)
-	} )
+	})
 	on("change:resonance", eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dRESONANCE(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doResonance()
-	} )
+	})
 	on("change:char_dob change:char_doe", eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dDOB(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doDOBDOE()
-	} )
+	})
 	on("change:tab_core", eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dMARQUEE(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doMarquee()
-	} )
+	})
 	// #endregion
 
 	// #region UPDATE: Trackers (Health, Willpower, Blood Potency, Humanity)
@@ -981,16 +1055,16 @@
 				attrList = {}
 			let attrs = []
 			switch (tracker.toLowerCase()) {
-			case "health":
-				attrs = groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "max", "sdmg", "admg"], v => `health_${v}`), "incap"], gN)
-				break
-			case "willpower":
-				attrs = groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "max", "sdmg", "admg"], v => `willpower_${v}`), "incap"], gN)
-				break
-			default:
-				log(`ERROR: Invalid tracker sumbitted to binCheck: ${tracker}`)
+				case "health":
+					attrs = groupify([..._.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "max", "sdmg", "admg"], v => `health_${v}`), "incap"], gN)
+					break
+				case "willpower":
+					attrs = groupify([..._.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "max", "sdmg", "admg"], v => `willpower_${v}`), "incap"], gN)
+					break
+				default:
+					log(`ERROR: Invalid tracker sumbitted to binCheck: ${tracker}`)
 
-				return false
+					return false
 			}
 
 			return cback => {
@@ -1001,10 +1075,10 @@
 						// Activate Boxes Based on Max Stats
 						boxList = _.pick(ATTRS, (v, k) => {
 							log(`... v:${v}, k:${k}`)
-							const num = parseInt(k.split("_")[1] )
+							const num = parseInt(k.split("_")[1])
 
 							return !_.isNaN(num) && num <= pI("max")
-						} )
+						})
 					log(`BoxList: ${JSON.stringify(boxList)}`)
 
 					// Sort Boxes According to Damage
@@ -1058,10 +1132,10 @@
 
 					// Check For Incapacitation
 					if (dmgBins[0].length === 0) {
-						attrList[`${gN}incap`] = _.compact(_.uniq(_.union((ATTRS[`${gN}incap`] || "").split(","), [tracker] ))).join(",")
+						attrList[`${gN}incap`] = _.compact(_.uniq(_.union((ATTRS[`${gN}incap`] || "").split(","), [tracker]))).join(",")
 						attrList[`${gN}${tracker.toLowerCase()}_impairtoggle"`] = 1
 					} else {
-						attrList[`${gN}incap`] = _.compact(_.uniq(_.difference((ATTRS[`${gN}incap`] || "").split(","), [tracker] ))).join(",")
+						attrList[`${gN}incap`] = _.compact(_.uniq(_.difference((ATTRS[`${gN}incap`] || "").split(","), [tracker]))).join(",")
 						attrList[`${gN}${tracker.toLowerCase()}_impairtoggle"`] = 0
 					}
 
@@ -1069,16 +1143,16 @@
 					let binNum = 0
 					_.each(dmgBins, bin => {
 						_.each(bin, box => {
-							if (parseInt(ATTRS[box] ) !== binNum)
+							if (parseInt(ATTRS[box]) !== binNum)
 								attrList[box] = binNum
-						} )
+						})
 						binNum++
-					} )
+					})
 					attrList[`${gN}${tracker}`] = dmgBins[0].length
 
 					log(`${tracker} FINAL ATTRS: ${JSON.stringify(attrList)}`)
 					cback(null, attrList)
-				} )
+				})
 			}
 		},
 
@@ -1086,33 +1160,33 @@
 			const attrList = {},
 				$funcs = []
 			switch (tracker) {
-			case "Health":
-			case "Willpower":
-				$funcs.push($binCheck(tracker, gN))
-				break
-			case "Blood Potency Full":
-			case "Blood Potency":
-				$funcs.push(cbk => {
-					getAttrs(groupify( ["clan", "bp"], gN), ATTRS => {
-						_.each(bpDependants[ATTRS[`${gN}bp`]], (v, k) => {
-							attrList[gN + k] = v
-						} )
-						attrList[`${gN}bp_surgetext`] =
+				case "Health":
+				case "Willpower":
+					$funcs.push($binCheck(tracker, gN))
+					break
+				case "Blood Potency Full":
+				case "Blood Potency":
+					$funcs.push(cbk => {
+						getAttrs(groupify(["clan", "bp"], gN), ATTRS => {
+							_.each(bpDependants[ATTRS[`${gN}bp`]], (v, k) => {
+								attrList[gN + k] = v
+							})
+							attrList[`${gN}bp_surgetext`] =
 								attrList[`${gN}bp_surge`] === 0 ?
-									"None" :
-									`+${attrList[`${gN}bp_surge`] === 1 ?
+								"None" :
+								`+${attrList[`${gN}bp_surge`] === 1 ?
 										`${attrList[`${gN}bp_surge`]} Die` :
 										`${attrList[`${gN}bp_surge`]} Dice`}`
-						attrList[`${gN}bp_mendtext`] =
+							attrList[`${gN}bp_mendtext`] =
 								attrList[`${gN}bp_mend`] === 0 ?
-									"None" :
-									`${
+								"None" :
+								`${
 										attrList[`${gN}bp_mend`]
 									} Superficial`
-						attrList[`${gN}bp_discbonustext`] =
+							attrList[`${gN}bp_discbonustext`] =
 								attrList[`${gN}bp_discbonus`] === 0 ?
-									"None" :
-									`+${
+								"None" :
+								`+${
 										attrList[`${gN}bp_discbonus`] === 1 ?
 											`${
 												attrList[`${gN}bp_discbonus`]
@@ -1132,8 +1206,8 @@
 											attrList[`${gN}bp_rousereroll`]
 										]
 									}`
-						attrList[`${gN}bp_slakebag`] = attrList[`${gN}bp_slakeanimal`]
-						attrList[`${gN}bp_slaketext`] = `Animals & bagged blood slake ${
+							attrList[`${gN}bp_slakebag`] = attrList[`${gN}bp_slakeanimal`]
+							attrList[`${gN}bp_slaketext`] = `Animals & bagged blood slake ${
 							{0: "no", 0.5: "half", 1: "full"}[attrList[`
 							$ {
 								gN
@@ -1144,56 +1218,56 @@
 								"Humans slake full Hunger.\n" :
 								`${attrList[`${gN}bp_slakehuman`]} Hunger slaked from humans.\n`
 						}Must kill to reduce Hunger below ${attrList[`${gN}bp_slakekill`]}.`
-						cbk(null, attrList)
-					} )
-				} )
-				break
-			case "Humanity":
-				$funcs.push(cbk => {
-					getAttrs(groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`), "humanity_dhum", "humanity_dstains"], gN), ATTRS => {
-						const p = v => gN + v,
-							pV = v => ATTRS[p(v)],
-							pI = v => parseInt(pV(v)) || 0
+							cbk(null, attrList)
+						})
+					})
+					break
+				case "Humanity":
+					$funcs.push(cbk => {
+						getAttrs(groupify([..._.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`), "humanity_dhum", "humanity_dstains"], gN), ATTRS => {
+							const p = v => gN + v,
+								pV = v => ATTRS[p(v)],
+								pI = v => parseInt(pV(v)) || 0
 
-						/* 1) Determine Current Humanity & Stains
-									EMPTY BOX CLICKED?  -->  Fill with Stains AND set "last
-										changed dot" variable to that box
-									STAIN CLICKED? ---> IF last changed dot, change to HUMANITY
-										and fill empties to left with humanity.  OTHERWISE, change
-										it to empty and empty all stains to left
-									HUMANITY CLICKED? ---> Turn blank, and all humanity to the right.
-									... THEN set Humanity and Stains attributes.
-									2) DeltaHumanity/DeltaStains set?
-									Change corresponding boxes.
-									If +dHumanity hits a Stain, stop.
-									If +dStain hits Humanity, trigger Degeneration impairment.
-									Set humanity_dhum/humanity_dstains to zero. */
-						if (pI("humanity_dhum") !== 0) {
-							attrList[p("Humanity")] =
+							/* 1) Determine Current Humanity & Stains
+										EMPTY BOX CLICKED?  -->  Fill with Stains AND set "last
+											changed dot" variable to that box
+										STAIN CLICKED? ---> IF last changed dot, change to HUMANITY
+											and fill empties to left with humanity.  OTHERWISE, change
+											it to empty and empty all stains to left
+										HUMANITY CLICKED? ---> Turn blank, and all humanity to the right.
+										... THEN set Humanity and Stains attributes.
+										2) DeltaHumanity/DeltaStains set?
+										Change corresponding boxes.
+										If +dHumanity hits a Stain, stop.
+										If +dStain hits Humanity, trigger Degeneration impairment.
+										Set humanity_dhum/humanity_dstains to zero. */
+							if (pI("humanity_dhum") !== 0) {
+								attrList[p("Humanity")] =
 									_.filter(
 										_.values(
-											_.omit(ATTRS, groupify( ["humanity_dhum", "humanity_dstains"], gN))
+											_.omit(ATTRS, groupify(["humanity_dhum", "humanity_dstains"], gN))
 										), attr => parseInt(attr) === 1
 									).length + pI("humanity_dhum")
-							attrList[p("humanity_dhum")] = 0
-						}
-						if (pI("humanity_dstains") !== 0) {
-							attrList[p("Stains")] =
+								attrList[p("humanity_dhum")] = 0
+							}
+							if (pI("humanity_dstains") !== 0) {
+								attrList[p("Stains")] =
 									_.filter(
 										_.values(
-											_.omit(ATTRS, groupify( ["humanity_dhum", "humanity_dstains"], gN))
+											_.omit(ATTRS, groupify(["humanity_dhum", "humanity_dstains"], gN))
 										), attr => parseInt(attr) === 2
 									).length + pI("humanity_dstains")
-							attrList[p("humanity_dstains")] = 0
-						}
-						cbk(null, attrList)
-					} )
-				} )
-				break
-			default:
-				log(`Error in doTracker(${tracker}, ${gN}): Unrecognized tracker.`)
+								attrList[p("humanity_dstains")] = 0
+							}
+							cbk(null, attrList)
+						})
+					})
+					break
+				default:
+					log(`Error in doTracker(${tracker}, ${gN}): Unrecognized tracker.`)
 
-				return
+					return
 			}
 
 			$funcs.push($set)
@@ -1206,31 +1280,31 @@
 			const attrList = {},
 				$funcs = []
 			switch (tracker) {
-			case "Health":
-				// log("At Health");
-				$funcs.push(cback => {
-					getAttrs(groupify( ["Stamina", "bonus_health"], gN), ATTRS => {
-						if (gN === "") {
-							attrList.health_max = Math.min(
-								15,
-								Math.max(
-									1,
-									_.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num)) + 3
+				case "Health":
+					// log("At Health");
+					$funcs.push(cback => {
+						getAttrs(groupify(["Stamina", "bonus_health"], gN), ATTRS => {
+							if (gN === "") {
+								attrList.health_max = Math.min(
+									15,
+									Math.max(
+										1,
+										_.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num)) + 3
+									)
 								)
-							)
-						} else {
-							attrList[`${gN}health_max`] = ATTRS[`${gN}bonusHealth`]
-						}
-						cback(null, attrList)
-					} )
-				} )
-				break
-			case "Willpower":
-				// log("At Willpower");
-				$funcs.push(cback => {
-					getAttrs(groupify( ["Composure", "Resolve", "bonus_willpower"], gN), ATTRS => {
-						if (gN === "") {
-							attrList.willpower_max =
+							} else {
+								attrList[`${gN}health_max`] = ATTRS[`${gN}bonusHealth`]
+							}
+							cback(null, attrList)
+						})
+					})
+					break
+				case "Willpower":
+					// log("At Willpower");
+					$funcs.push(cback => {
+						getAttrs(groupify(["Composure", "Resolve", "bonus_willpower"], gN), ATTRS => {
+							if (gN === "") {
+								attrList.willpower_max =
 									Math.min(
 										10,
 										Math.max(
@@ -1238,29 +1312,29 @@
 											_.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num))
 										)
 									)
-						} else {
-							attrList[`${gN}willpower_max`] = ATTRS[`${gN}bonusWillpower`]
-						}
-						cback(null, attrList)
-					} )
-				} )
-				break
-			case "Blood Potency Full":
-			case "Blood Potency":
-				// log("At Blood Potency");
-				$funcs.push(cback => {
-					getAttrs(groupify( ["generation", "bonus_bp"], gN), ATTRS => {
-						attrList[`${gN}bp_max`] = Math.min(10, Math.max(0, genDepts[parseInt(ATTRS[`${gN}generation`] )].bp_max + (gN === "" ? parseInt(ATTRS[`${gN}bonus_bp`] ) : 0)))
-						if (tracker === "Blood Potency Full")
-							attrList[`${gN}bp`] = genDepts[parseInt(ATTRS[`${gN}generation`] )].bp
-						cback(null, attrList)
-					} )
-				} )
-				break
-			default:
-				log(`ERROR: Unrecognized Tracker Type ${tracker}`)
+							} else {
+								attrList[`${gN}willpower_max`] = ATTRS[`${gN}bonusWillpower`]
+							}
+							cback(null, attrList)
+						})
+					})
+					break
+				case "Blood Potency Full":
+				case "Blood Potency":
+					// log("At Blood Potency");
+					$funcs.push(cback => {
+						getAttrs(groupify(["generation", "bonus_bp"], gN), ATTRS => {
+							attrList[`${gN}bp_max`] = Math.min(10, Math.max(0, genDepts[parseInt(ATTRS[`${gN}generation`])].bp_max + (gN === "" ? parseInt(ATTRS[`${gN}bonus_bp`]) : 0)))
+							if (tracker === "Blood Potency Full")
+								attrList[`${gN}bp`] = genDepts[parseInt(ATTRS[`${gN}generation`])].bp
+							cback(null, attrList)
+						})
+					})
+					break
+				default:
+					log(`ERROR: Unrecognized Tracker Type ${tracker}`)
 
-				return
+					return
 			}
 
 			$funcs.push($set)
@@ -1272,35 +1346,35 @@
 	on("change:Stamina change:bonus_health", eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dH.MAX(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doTrackerMax("Health")
-	} )
+	})
 	on("change:Composure change:Resolve change:bonus_willpower", eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dWP.MAX(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doTrackerMax("Willpower")
-	} )
+	})
 	on("change:Generation change:bonus_bp", eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dBP.MAX(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doTrackerMax("Blood Potency Full")
-	} )
-	on(getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "sdmg", "admg"], "health_"), eInfo => {
+	})
+	on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "sdmg", "admg"], "health_"), eInfo => {
 		if (eInfo.sourceType !== "api" || ["health_sdmg", "health_admg"].includes(eInfo.sourceAttribute)) {
 			[LOGPREFIX, LOGDEPTH] = [`[dHEALTH(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 			doTracker("Health")
 		}
-	} )
-	on(getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "sdmg", "admg"], "willpower_"), eInfo => {
+	})
+	on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "sdmg", "admg"], "willpower_"), eInfo => {
 		if (eInfo.sourceType !== "api" || ["willpower_sdmg", "willpower_admg"].includes(eInfo.sourceAttribute)) {
 			[LOGPREFIX, LOGDEPTH] = [`[dWILL(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 			doTracker("Willpower")
 		}
-	} )
+	})
 	on("change:bp", eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dBP(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doTracker("Blood Potency")
-	} )
+	})
 	on(`${getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "humanity_")} change:humanity_dhum change:humanity_dstains`, eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dHUM(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doTracker("Humanity")
-	} )
+	})
 	// #endregion
 
 	// #region UPDATE: Projects, Memoriam, Time
@@ -1308,13 +1382,13 @@
 	const doProjectDates = (gN = "", cback) => {
 			const attrList = {},
 				$funcs = [
-					$getRepAttrs( {
+					$getRepAttrs({
 						project: PROJDATEREFS
 					}, gN),
 
 					(attrs, ids, cbk) => {
 						// log(`>>>> REP ATTRS: ${JSON.stringify(attrs)}`)
-						getAttrs( [...attrs, "date_today"], ATTRS => {
+						getAttrs([...attrs, "date_today"], ATTRS => {
 							// log(`>>>> GETATTRS: ${JSON.stringify(ATTRS)}`)
 							_.each(ids, rowID => {
 								const p = v => `repeating_${gN}project_${rowID}_${v}`,
@@ -1334,10 +1408,10 @@
 								}
 								if (counterPos !== currentPos)
 									attrList[p("projectinccounter")] = counterPos
-							} )
+							})
 							// log(`   >>>> ATTRLIST: ${JSON.stringify(attrList)}`)
 							cbk(null, attrList)
-						} )
+						})
 					},
 
 					$set
@@ -1355,7 +1429,7 @@
 
 			return cback => {
 				const p = v => `repeating_${sec}_${rowID}_${v}`,
-					attrs = _.map( [
+					attrs = _.map([
 						"projectlaunchtrait1_name",
 						"projectlaunchmod",
 						"projectlaunchtrait1",
@@ -1370,13 +1444,13 @@
 						cbk => {
 							getAttrs(attrs, ATTRS => {
 								const pV = v => ATTRS[p(v)],
-									pI = v => parseInt(ATTRS[p(v)] ) || 0,
+									pI = v => parseInt(ATTRS[p(v)]) || 0,
 									attrList = {},
 									scope = pI("projectscope"),
 									launchDiffMod = pI("projectlaunchdiffmod"),
 									launchDiff = pI("projectlaunchdiff"),
-									traits = _.map( ["projectlaunchtrait1", "projectlaunchtrait2"],
-										v => [pV(`${v}_name`), pI(v)] ),
+									traits = _.map(["projectlaunchtrait1", "projectlaunchtrait2"],
+										v => [pV(`${v}_name`), pI(v)]),
 									results = pV("projectlaunchresults"),
 									launchTrtCheck = []
 								let traitString = ""
@@ -1402,7 +1476,7 @@
 									}
 								}
 								cbk(null, attrList)
-							} )
+							})
 						},
 						$set
 					]
@@ -1412,20 +1486,20 @@
 		},
 		doProjects = (source, gN = "") => {
 			const row = source
-					.split("_")
-					.slice(0, 3)
-					.join("_"),
+				.split("_")
+				.slice(0, 3)
+				.join("_"),
 				stat = source
-					.split("_")
-					.slice(3)
-					.join("_")
+				.split("_")
+				.slice(3)
+				.join("_")
 			// log(`ROW = ${JSON.stringify(row)}, STAT = ${JSON.stringify(stat)}`)
 			const p = v => `${row}_${v}`,
 				$funcs = [],
 				attrs = [],
 				attrList = {}
-			if ( ["projectstartdate", "projectincnum", "projectincunit"].includes(stat)) {
-				attrs.push(..._.map( ["projectstartdate", "projectincnum", "projectincunit"], v => p(v)), "date_today")
+			if (["projectstartdate", "projectincnum", "projectincunit"].includes(stat)) {
+				attrs.push(..._.map(["projectstartdate", "projectincnum", "projectincunit"], v => p(v)), "date_today")
 				$funcs.push(...[
 					cback => {
 						getAttrs(attrs, ATTRS => {
@@ -1452,36 +1526,36 @@
 							} else {
 								const eDate = new Date(sDate)
 								switch (iUnit) {
-								case "hours":
-									eDate.setUTCHours(eDate.getUTCHours() + 10 * inc)
-									break
-								case "days":
-									eDate.setUTCDate(eDate.getUTCDate() + 10 * inc)
-									break
-								case "weeks":
-									eDate.setUTCDate(eDate.getUTCDate() + 10 * 7 * inc)
-									break
-								case "months":
-									eDate.setUTCMonth(eDate.getMonth() + 10 * inc)
-									break
-								case "years":
-									eDate.setUTCFullYear(eDate.getUTCFullYear() + 10 * inc)
-									break
-								default:
-									log(`ERROR: Invalid time unit for project incrementor: ${JSON.stringify(iUnit)}`)
+									case "hours":
+										eDate.setUTCHours(eDate.getUTCHours() + 10 * inc)
+										break
+									case "days":
+										eDate.setUTCDate(eDate.getUTCDate() + 10 * inc)
+										break
+									case "weeks":
+										eDate.setUTCDate(eDate.getUTCDate() + 10 * 7 * inc)
+										break
+									case "months":
+										eDate.setUTCMonth(eDate.getMonth() + 10 * inc)
+										break
+									case "years":
+										eDate.setUTCFullYear(eDate.getUTCFullYear() + 10 * inc)
+										break
+									default:
+										log(`ERROR: Invalid time unit for project incrementor: ${JSON.stringify(iUnit)}`)
 
-									return
+										return
 								}
 								attrList[p("projectenddate")] = formatDString(eDate)
 							}
 							cback(null, attrList)
-						} )
+						})
 					},
 					$set,
 					cback => doProjectDates(gN, cback)
-				] )
-			} else if ( ["projectscope", "projectlaunchdiff", "projectlaunchdiffmod", "projectlaunchresults"].includes(stat)) {
-				attrs.push(..._.map( ["projectscope", "projectlaunchmod", "projectlaunchdiffmod"], v => p(v)), "date_today")
+				])
+			} else if (["projectscope", "projectlaunchdiff", "projectlaunchdiffmod", "projectlaunchresults"].includes(stat)) {
+				attrs.push(..._.map(["projectscope", "projectlaunchmod", "projectlaunchdiffmod"], v => p(v)), "date_today")
 				$funcs.push(...[
 					cback => {
 						getAttrs(attrs, ATTRS => {
@@ -1490,15 +1564,15 @@
 								scope = pI("projectscope")
 							attrList[p("projectlaunchdiff")] = scope + 2 + pI("projectlaunchdiffmod")
 							cback(null, attrList)
-						} )
+						})
 					},
 					$set,
 					$checkLaunch(source, gN)
-				] )
-			} else if ( ["projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2", "projectlaunchmod"].includes(stat)) {
+				])
+			} else if (["projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2", "projectlaunchmod"].includes(stat)) {
 				$funcs.push($checkLaunch(source, gN))
 			} else if (stat.includes("projectstake")) {
-				attrs.push(_.map( [..._.map( [1, 2, 3, 4, 5, 6], v => `projectstake${v}`), "projectlaunchresults", "projecttotalstake", "projectwasrushed", "projectrushstakelost"], v => p(v)))
+				attrs.push(_.map([..._.map([1, 2, 3, 4, 5, 6], v => `projectstake${v}`), "projectlaunchresults", "projecttotalstake", "projectwasrushed", "projectrushstakelost"], v => p(v)))
 				$funcs.push(...[
 					cback => {
 						getAttrs(attrs, ATTRS => {
@@ -1509,31 +1583,31 @@
 							if (pI("projectwasrushed")) {
 								// Track the stakes the player still has to sacrifice.
 							} else {
-								const stakeRemaining = Math.max(0, pI("projecttotalstake")) - _.reduce(..._.map( [1, 2, 3, 4, 5, 6], v => pI(`projectstake${v}`)), (memo, num) => parseInt(memo) + parseInt(num))
+								const stakeRemaining = Math.max(0, pI("projecttotalstake")) - _.reduce(..._.map([1, 2, 3, 4, 5, 6], v => pI(`projectstake${v}`)), (memo, num) => parseInt(memo) + parseInt(num))
 								if (stakeRemaining > 0)
 									attrList[p("projectlaunchresultsmargin")] = `Stake ${pV("projecttotalstake")} Dots (${stakeRemaining} to go)`
 								else
 									attrList[p("projectlaunchresultsmargin")] = `${pV("projecttotalstake")} Dots Staked`
 							}
 							cback(null, attrList)
-						} )
+						})
 					},
 					$set
-				] )
-			} else if ( ["projectwasrushed"].includes(stat)) {
-				attrs.push(..._.map( [..._.map( [1, 2, 3, 4, 5, 6], v => `projectstake${v}`), "projectwasrushed", "projectrushstakelost"], v => p(v)))
+				])
+			} else if (["projectwasrushed"].includes(stat)) {
+				attrs.push(..._.map([..._.map([1, 2, 3, 4, 5, 6], v => `projectstake${v}`), "projectwasrushed", "projectrushstakelost"], v => p(v)))
 				$funcs.push(...[
 					cback => {
 						getAttrs(attrs, ATTRS => {
 							/* If the rush was a failure, wipe all of the projectstake values AFTER
 							summing and recording them in projectstakesatrush, and track which
 							stakes the player is losing by them filling in the same boxes again. */
-							attrList.push(ATTRS[attrs[0]] )
+							attrList.push(ATTRS[attrs[0]])
 							cback(null, attrList)
-						} )
+						})
 					},
 					$set
-				] )
+				])
 			}
 			run$($funcs)
 		}
@@ -1541,19 +1615,18 @@
 	on("change:date_today", eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dProjDATES(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doProjectDates()
-	} )
+	})
 	on(getTriggers(null, "", "", _.keys(PROJREPREFS)), eInfo => {
 		if (eInfo.sourceType === "sheetworker")
-			return
-		[LOGPREFIX, LOGDEPTH] = [`[dPROJECTS(${trimAttr(eInfo.sourceAttribute)})]`, 0]
+			return [LOGPREFIX, LOGDEPTH] = [`[dPROJECTS(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doProjects(eInfo.sourceAttribute)
-	} )
+	})
 	// #endregion
 
 	// #region UPDATE: Experience
 	const doXP = (gN = "") => {
 		const $funcs = [
-			$getRepAttrs( {
+			$getRepAttrs({
 				earnedxp: ["xp_award"]
 			}, gN),
 			(attrs, ids, cback) => {
@@ -1563,15 +1636,15 @@
 						_.values(ATTRS), (total, next) => parseInt(total) + parseInt(next) || 0
 					)
 					cback(null, attrList)
-				} )
+				})
 			},
 			$set,
-			$getRepAttrs( {
+			$getRepAttrs({
 				spentxp: XPREPREFS.spentxp
 			}, gN),
 			(attrs, ids, cback) => {
 				const attrList = {}
-				getAttrs( [...attrs, "xp_earnedtotal"], ATTRS => {
+				getAttrs([...attrs, "xp_earnedtotal"], ATTRS => {
 					let spentTotal = 0
 					_.each(ids, rowID => {
 						const p = v => `repeating_spentxp_${rowID}_${v}`,
@@ -1607,18 +1680,18 @@
 									attrList[p("xp_cost")] = ""
 							}
 						}
-						_.each( ["xp_traittoggle", "xp_initialtoggle", "xp_newtoggle"],
+						_.each(["xp_traittoggle", "xp_initialtoggle", "xp_newtoggle"],
 							v => {
 								if (colRef.includes(v) && pI(v) === 0)
 									attrList[p(v)] = 1
 								else if (!colRef.includes(v) && pI(v) === 1)
 									attrList[p(v)] = 0
-							} )
+							})
 						attrList[p("xp_arrowtoggle")] = Number(colRef.includes("xp_initialtoggle") && colRef.includes("xp_newtoggle"))
-					} )
+					})
 					attrList.xp_summary = `${ATTRS.xp_earnedtotal} XP Earned${spentTotal > 0 ? ` - ${spentTotal} XP Spent =  ${parseInt(ATTRS.xp_earnedtotal) - spentTotal} XP Remaining` : ""}`
 					cback(null, attrList)
-				} )
+				})
 			},
 			$set
 		]
@@ -1627,7 +1700,7 @@
 	on(getTriggers(null, "", "", _.keys(XPREPREFS)), eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dXP(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doXP()
-	} )
+	})
 	// #endregion
 
 	// #region UPDATE: Dice Roller
@@ -1636,16 +1709,16 @@
 				$funcs = [
 					$getRepAttrs(Object.assign(DISCREPREFS, ADVREPREFS), gN),
 					(attrs, ids, cBack) => {
-						getAttrs( ["repstats"], ATTRS => {
+						getAttrs(["repstats"], ATTRS => {
 							/* log(`[DoRollRepRefs] From $getRepAttrs: ${JSON.stringify(_.reject(attrs, v => v.includes("_details")))}`)
 							   log(`[DoRollRepRefs] Prev RepStats: ${JSON.stringify(ATTRS.repstats.split(","))}`) */
 							if (!_.isEqual(
-								_.compact(ATTRS.repstats.split(",")),
-								_.reject(attrs, v => v.includes("_details"))
-							))
+									_.compact(ATTRS.repstats.split(",")),
+									_.reject(attrs, v => v.includes("_details"))
+								))
 								attrList.repstats = _.reject(attrs, v => v.includes("_details")).join(",")
 							cBack(null, attrList)
-						} )
+						})
 					},
 					$set
 				]
@@ -1655,14 +1728,14 @@
 			const repAttrs = [],
 				$funcs = [
 					cBack2 => {
-						getAttrs( ["repstats"], ATTRS => {
+						getAttrs(["repstats"], ATTRS => {
 							// log(` >>> $funcs[ 1 ] >>> repstats: ${JSON.stringify(ATTRS.repstats)}`)
 							cBack2(null, ATTRS.repstats)
-						} )
+						})
 					},
 					(repstats = [], cBack2) => {
 						// log(` >>> $funcs[ 2:START ] >>> repAttrs: ${JSON.stringify(repAttrs)}`)
-						run$( [
+						run$([
 							$getRepAttrs(repstats, gN),
 							(attrs, ids, cBack3) => {
 								repAttrs.push(..._.reject(attrs, v => v.includes("_details")))
@@ -1672,10 +1745,10 @@
 						], () => {
 							// log(` >>> $funcs[ 2:END ] >>> repAttrs: ${JSON.stringify(repAttrs)}`)
 							cBack2(null)
-						} )
+						})
 					}
 				]
-			run$($funcs, () => cBack(null, [...ALLATTRS, ...repAttrs] ))
+			run$($funcs, () => cBack(null, [...ALLATTRS, ...repAttrs]))
 		},
 		doRolls = (targetAttr, opts = {}, gN = "") => {
 			const attrList = {},
@@ -1687,11 +1760,11 @@
 							
 							${JSON.stringify(ATTRS)}`, true)
 							const [rArray, prevRArray, clearAttrs] = [
-									[],
-									[],
-									{}
-								],
-								stat = isIn(targetAttr, ROLLFLAGS.all) || trimAttr(isIn(targetAttr, ATTRS)),
+								[],
+								[],
+								{}
+							],
+							stat = isIn(targetAttr, ROLLFLAGS.all) || trimAttr(isIn(targetAttr, ATTRS)),
 								checkType = attr => {
 									// Returns type of stat sent in as parameter.
 									const name = realName(attr, ATTRS)
@@ -1714,10 +1787,10 @@
 									const flagName = isIn(`${trimAttr(attr)}_flag`, ATTRS)
 									if (!flagName)
 										return false
-									if (parseInt(ATTRS[flagName] ) === 1)
+									if (parseInt(ATTRS[flagName]) === 1)
 										log(`${JSON.stringify(attr)}: ${JSON.stringify(flagName)} = 1`)
 
-									return parseInt(ATTRS[flagName] )
+									return parseInt(ATTRS[flagName])
 								},
 								validateFlags = flagArray => {
 									// Flags must be submitted in an ordered stack, with the oldest flag at the top.
@@ -1728,41 +1801,41 @@
 										return false
 									}
 									switch (flagArray.length) {
-									case 2:
-										switch (checkAction(...flagArray)) {
-										case "replace":
-										case "pass":
-											flagArray.shift()
-											break
-										default:
-											break
-										}
-										break
-									case 3:
-										switch (checkAction(...flagArray.slice(1))) {
-										case "append":
-											flagArray.shift()
-											break
-										case "replace":
-											flagArray.splice(1, 1)
-											break
-										case "pass":
-											flagArray.splice(1, 1)
+										case 2:
 											switch (checkAction(...flagArray)) {
-											case "replace":
-											case "pass":
-												flagArray.shift()
-												break
-											default:
-												break
+												case "replace":
+												case "pass":
+													flagArray.shift()
+													break
+												default:
+													break
+											}
+											break
+										case 3:
+											switch (checkAction(...flagArray.slice(1))) {
+												case "append":
+													flagArray.shift()
+													break
+												case "replace":
+													flagArray.splice(1, 1)
+													break
+												case "pass":
+													flagArray.splice(1, 1)
+													switch (checkAction(...flagArray)) {
+														case "replace":
+														case "pass":
+															flagArray.shift()
+															break
+														default:
+															break
+													}
+													break
+												default:
+													break
 											}
 											break
 										default:
 											break
-										}
-										break
-									default:
-										break
 									}
 								}
 							prevRArray.push(..._.compact((ATTRS.rollarray || "").split(",")))
@@ -1777,11 +1850,11 @@
 								_.each(ROLLFLAGS.str,
 									v => {
 										[attrList[v], ATTRS[v]] = ["", ""]
-									} )
-								_.each( [...ROLLFLAGS.num, ..._.map(prevRArray, v => `${v}_flag`)],
+									})
+								_.each([...ROLLFLAGS.num, ..._.map(prevRArray, v => `${v}_flag`)],
 									v => {
 										[attrList[v], ATTRS[v]] = [0, 0]
-									} )
+									})
 								attrList.rollpooldisplay = "Simple Roll or Check"
 								attrList.rollparams = "@{character_name}|"
 							} else if (targetAttr.includes("_flag")) {
@@ -1794,7 +1867,7 @@
 									rArray.push(stat)
 								// Next, reset the various roll parameters to default:
 								for (const val of ROLLFLAGS.num) {
-									if (parseInt(ATTRS[val] ) !== 0)
+									if (parseInt(ATTRS[val]) !== 0)
 										[ATTRS[val], attrList[val]] = [0, 0]
 								}
 							} else {
@@ -1820,11 +1893,11 @@
 							_.each(_.without(prevRArray, ...rArray), v => {
 								if (checkFlag(v) === 1)
 									clearAttrs[`${v}_flag`] = 0
-							} )
+							})
 							log(`... CLEARING: ${_.keys(clearAttrs)}`)
 							setAttrs(clearAttrs, {
 								silent: true
-							} )
+							})
 
 							// Order the rArray as ATTRIBUTES, SKILLS, then OTHERS.
 							rArray.sort(
@@ -1853,41 +1926,39 @@
 							log(`>>> ROLL PARAMETER: ${JSON.stringify(attrList.rollparams)}`)
 
 							cBack(null, attrList)
-						} )
+						})
 					},
 					$set
 				]
 			run$($funcs, () => {
 				LASTEVENT = {}
-			} )
+			})
 		}
 
 	on(`sheet:opened ${getTriggers(null, "", "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)] )}`, eInfo => {
 		if (eInfo.sourceType === "sheetworker" || (eInfo.sourceAttribute && eInfo.sourceAttribute.includes("power_toggle")))
-			return
-		[LOGPREFIX, LOGDEPTH] = [`[dRollRepRefs(${trimAttr(eInfo.sourceAttribute)})]`, 0]
+			return [LOGPREFIX, LOGDEPTH] = [`[dRollRepRefs(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doRollRepRefs()
-	} )
-	on(getTriggers(ALLATTRS, "", "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)] ), eInfo => {
+	})
+	on(getTriggers(ALLATTRS, "", "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)]), eInfo => {
 		log("@@@ STAT ROLLER TRIGGERED @@@")
 		if (_.isEqual(eInfo, LASTEVENT) || eInfo.sourceType === "sheetworker" || eInfo.sourceAttribute.includes("power_toggle"))
-			return
-		[LOGPREFIX, LOGDEPTH, LASTEVENT] = [`[dRolls(${trimAttr(eInfo.sourceAttribute)})]`, 0, _.clone(eInfo)]
+			return [LOGPREFIX, LOGDEPTH, LASTEVENT] = [`[dRolls(${trimAttr(eInfo.sourceAttribute)})]`, 0, _.clone(eInfo)]
 		doRolls(eInfo.sourceAttribute, {
 			silent: true
-		} )
-	} )
+		})
+	})
 	// #endregion
 
 	// #region GROUP SHEET ACTIONS
 
 	const doRoller = gN => {
 		const $funcs = [
-			$getRepAttrs( {
+			$getRepAttrs({
 				rolls: GROUPREPREFS
 			}, gN),
 			(attrs, ids, cback) => {
-				getAttrs( ["character_name", `${gN}charname`, `${gN}hunger`].concat(attrs), ATTRS => {
+				getAttrs(["character_name", `${gN}charname`, `${gN}hunger`].concat(attrs), ATTRS => {
 					log(`FULL LIST: ${JSON.stringify(ATTRS)}`)
 					const attrList = {}
 					_.each(ids, rowId => {
@@ -1906,9 +1977,9 @@
 								pV("gposflags")}|${
 								pV("gnegflags")}`
 						log(`... NEW ROLL PARAMS: ${JSON.stringify(attrList)}`)
-					} )
+					})
 					cback(null, attrList)
-				} )
+				})
 			},
 			$set
 		]
@@ -1916,56 +1987,56 @@
 	}
 
 	_.each(GROUPPREFIXES, gN => {
-		on(getTriggers( ["charname"], "", gN), eInfo => {
+		on(getTriggers(["charname"], "", gN), eInfo => {
 			[LOGPREFIX, LOGDEPTH] = [`[${gN}-NAME(${trimAttr(eInfo.sourceAttribute)})]`, 0]
-			getAttrs( [`${gN}charname`], v => setAttrs(_.object( [
+			getAttrs([`${gN}charname`], v => setAttrs(_.object([
 				[`${gN}name`, v[`${gN}charname`]]
-			] )))
-		} )
+			])))
+		})
 
-		on(getTriggers( ["clan"], "", gN), eInfo => {
+		on(getTriggers(["clan"], "", gN), eInfo => {
 			[LOGPREFIX, LOGDEPTH] = [`[${gN}-dCLANS(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 			doClans(gN)
-		} )
+		})
 		on(getTriggers(DISCENUMS, "", gN), eInfo => {
 			[LOGPREFIX, LOGDEPTH] = [`[${gN}-dPOWERS(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 			doDiscPowers(eInfo.sourceAttribute, gN)
-		} )
+		})
 
-		on(getTriggers( ["bonus_health"], "", gN), eInfo => {
+		on(getTriggers(["bonus_health"], "", gN), eInfo => {
 			[LOGPREFIX, LOGDEPTH] = [`[${gN}-dH.MAX(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 			doTrackerMax("Health", gN)
-		} )
-		on(getTriggers( ["bonus_willpower"], "", gN), eInfo => {
+		})
+		on(getTriggers(["bonus_willpower"], "", gN), eInfo => {
 			[LOGPREFIX, LOGDEPTH] = [`[${gN}-dWP.MAX(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 			doTrackerMax("Willpower", gN)
-		} )
-		on(getTriggers( ["generation", "bonus_bp"], "", gN), eInfo => {
+		})
+		on(getTriggers(["generation", "bonus_bp"], "", gN), eInfo => {
 			[LOGPREFIX, LOGDEPTH] = [`[${gN}-dBP-MAX(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 			doTrackerMax("Blood Potency Full", gN)
-		} )
-		on(getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "sdmg", "admg"], "health_", gN), eInfo => {
+		})
+		on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "sdmg", "admg"], "health_", gN), eInfo => {
 			[LOGPREFIX, LOGDEPTH] = [`[${gN}-dHEALTH(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 			doTracker("Health", gN)
-		} )
-		on(getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "sdmg", "admg"], "willpower_", gN), eInfo => {
+		})
+		on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "sdmg", "admg"], "willpower_", gN), eInfo => {
 			[LOGPREFIX, LOGDEPTH] = [`[${gN}-dWILL(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 			doTracker("Willpower", gN)
-		} )
-		on(getTriggers( ["bp"], "", gN), eInfo => {
+		})
+		on(getTriggers(["bp"], "", gN), eInfo => {
 			[LOGPREFIX, LOGDEPTH] = [`[${gN}-dBP(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 			doTracker("Blood Potency", gN)
-		} )
+		})
 		on(`${getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "humanity_", gN)} ${getTriggers( ["humanity_dhum", "humanity_dstains"], "", gN)}`, eInfo => {
 			[LOGPREFIX, LOGDEPTH] = [`[${gN}-dHUM(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 			doTracker("Humanity", gN)
-		} )
+		})
 
 		on(getTriggers(GROUPATTRS, "", gN, _.keys(GROUPREPREFS)), eInfo => {
 			[LOGPREFIX, LOGDEPTH] = [`[${gN}-dROLLER(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 			doRoller(gN)
-		} )
-	} )
+		})
+	})
 
 	/* //Group Character #1
 		on("change:g1charname", function () { getAttrs(["g1charname"], function (v) { setAttrs({ g1name: v.g1charname }); }) });
@@ -1984,9 +2055,9 @@
 	// #endregion
 
 	// #region Sheetworker Actions (Above "on(changes)" ignore sheetworker.)
-	on("change:Hunger", () => {
+	on("change:hunger", () => {
 		[LOGPREFIX, LOGDEPTH] = ["[!SWORKER! dRoll(Hunger)]", 0]
 		doRolls("GEN")
-	} )
+	})
 	// #endregion
-} )()
+})()

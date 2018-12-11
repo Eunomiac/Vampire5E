@@ -6,13 +6,13 @@
 const D = (() => {
 	// #region CONFIGURATION: Game Name, Character Registry
 	const GAMENAME = "VAMPIRE",
-		CHARREGISTRY = state[GAMENAME].Chars,
-		// #endregion
+		CHARREGISTRY = state[GAMENAME].Chars
+	// #endregion
 
-		// #region DECLARATIONS: Reference Variables
-		VALS = {
+	// #region DECLARATIONS: Reference Variables
+	const VALS = {
 			PAGEID: () => Campaign().get("playerpageid"),
-			CELLSIZE () {
+			CELLSIZE() {
 				return 70 * getObj("page", Campaign().get("playerpageid")).get("snapping_increment")
 			}
 		},
@@ -26,58 +26,279 @@ const D = (() => {
 			social: ["Animal Ken", "Etiquette", "Insight", "Intimidation", "Leadership", "Performance", "Persuasion", "Streetwise", "Subterfuge"],
 			mental: ["Academics", "Awareness", "Finance", "Investigation", "Medicine", "Occult", "Politics", "Science", "Technology"]
 		},
-		DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Dominate", "Fortitude", "Obfuscate", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
-		TRACKERS = ["Willpower", "Health", "Humanity", bp],
-		BLOODPOTENCY = [
-			{bp_surge: 0, bp_discbonus: 0},
-		{bp_surge: 1, bp_discbonus: 1},
-		{bp_surge: 1, bp_discbonus: 1},
-		{bp_surge: 2, bp_discbonus: 1},
-		{bp_surge: 2, bp_discbonus: 2},
-		{bp_surge: 3, bp_discbonus: 2},
-		{bp_surge: 3, bp_discbonus: 3},
-		{bp_surge: 4, bp_discbonus: 3},
-		{bp_surge: 4, bp_discbonus: 4},
-		{bp_surge: 5, bp_discbonus: 4},
-		{bp_surge: 5, bp_discbonus: 5}
+		DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
+		TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"],
+		BLOODPOTENCY = [{
+				bp_surge: 0,
+				bp_discbonus: 0
+			},
+			{
+				bp_surge: 1,
+				bp_discbonus: 1
+			},
+			{
+				bp_surge: 1,
+				bp_discbonus: 1
+			},
+			{
+				bp_surge: 2,
+				bp_discbonus: 1
+			},
+			{
+				bp_surge: 2,
+				bp_discbonus: 2
+			},
+			{
+				bp_surge: 3,
+				bp_discbonus: 2
+			},
+			{
+				bp_surge: 3,
+				bp_discbonus: 3
+			},
+			{
+				bp_surge: 4,
+				bp_discbonus: 3
+			},
+			{
+				bp_surge: 4,
+				bp_discbonus: 4
+			},
+			{
+				bp_surge: 5,
+				bp_discbonus: 4
+			},
+			{
+				bp_surge: 5,
+				bp_discbonus: 5
+			}
 		],
 		RESONANCEODDS = {
-			norm: [{neg: 0.167, fleet: 0.1, intense: 0.053, acute: 0.013},
-		{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
-		{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
-		{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009}],
-			neg: [{neg: 0.136, fleet: 0.082, intense: 0.044, acute: 0.011},
-		{neg: 0.136, fleet: 0.082, intense: 0.044, acute: 0.011},
-		{neg: 0.136, fleet: 0.082, intense: 0.044, acute: 0.011},
-		{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}],
-			posneg: [{neg: 0.167, fleet: 0.1, intense: 0.053, acute: 0.013},
-		{neg: 0.121, fleet: 0.073, intense: 0.039, acute: 0.01},
-		{neg: 0.121, fleet: 0.073, intense: 0.039, acute: 0.01},
-		{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}],
-			pospos: [{neg: 0.124, fleet: 0.075, intense: 0.107, acute: 0.027},
-		{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
-		{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
-		{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009}],
-			negneg: [{neg: 0.15, fleet: 0.09, intense: 0.048, acute: 0.012},
-		{neg: 0.15, fleet: 0.09, intense: 0.048, acute: 0.012},
-		{neg: 0.15, fleet: 0.09, intense: 0.048, acute: 0.012},
-		{neg: 0.05, fleet: 0.03, intense: 0.016, acute: 0.004}],
-			pos2neg: [{neg: 0.124, fleet: 0.075, intense: 0.107, acute: 0.027},
-		{neg: 0.144, fleet: 0.086, intense: 0.046, acute: 0.012},
-		{neg: 0.144, fleet: 0.086, intense: 0.046, acute: 0.012},
-		{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}],
-			neg2pos: [{neg: 0.196, fleet: 0.117, intense: 0.063, acute: 0.016},
-		{neg: 0.13, fleet: 0.078, intense: 0.042, acute: 0.01},
-		{neg: 0.13, fleet: 0.078, intense: 0.042, acute: 0.01},
-		{neg: 0.043, fleet: 0.026, intense: 0.014, acute: 0.003}],
-			posposneg: [{neg: 0.167, fleet: 0.1, intense: 0.053, acute: 0.013},
-		{neg: 0.167, fleet: 0.1, intense: 0.053, acute: 0.013},
-		{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
-		{neg: 0.056, fleet: 0.033, intense: 0.018, acute: 0.004}],
-			posnegneg: [{neg: 0.191, fleet: 0.115, intense: 0.061, acute: 0.015},
-		{neg: 0.127, fleet: 0.076, intense: 0.041, acute: 0.01},
-		{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007},
-		{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}]
+			norm: [{
+					neg: 0.167,
+					fleet: 0.1,
+					intense: 0.053,
+					acute: 0.013
+				},
+				{
+					neg: 0.111,
+					fleet: 0.067,
+					intense: 0.036,
+					acute: 0.009
+				},
+				{
+					neg: 0.111,
+					fleet: 0.067,
+					intense: 0.036,
+					acute: 0.009
+				},
+				{
+					neg: 0.111,
+					fleet: 0.067,
+					intense: 0.036,
+					acute: 0.009
+				}
+			],
+			neg: [{
+					neg: 0.136,
+					fleet: 0.082,
+					intense: 0.044,
+					acute: 0.011
+				},
+				{
+					neg: 0.136,
+					fleet: 0.082,
+					intense: 0.044,
+					acute: 0.011
+				},
+				{
+					neg: 0.136,
+					fleet: 0.082,
+					intense: 0.044,
+					acute: 0.011
+				},
+				{
+					neg: 0.091,
+					fleet: 0.055,
+					intense: 0.029,
+					acute: 0.007
+				}
+			],
+			posneg: [{
+					neg: 0.167,
+					fleet: 0.1,
+					intense: 0.053,
+					acute: 0.013
+				},
+				{
+					neg: 0.121,
+					fleet: 0.073,
+					intense: 0.039,
+					acute: 0.01
+				},
+				{
+					neg: 0.121,
+					fleet: 0.073,
+					intense: 0.039,
+					acute: 0.01
+				},
+				{
+					neg: 0.091,
+					fleet: 0.055,
+					intense: 0.029,
+					acute: 0.007
+				}
+			],
+			pospos: [{
+					neg: 0.124,
+					fleet: 0.075,
+					intense: 0.107,
+					acute: 0.027
+				},
+				{
+					neg: 0.111,
+					fleet: 0.067,
+					intense: 0.036,
+					acute: 0.009
+				},
+				{
+					neg: 0.111,
+					fleet: 0.067,
+					intense: 0.036,
+					acute: 0.009
+				},
+				{
+					neg: 0.111,
+					fleet: 0.067,
+					intense: 0.036,
+					acute: 0.009
+				}
+			],
+			negneg: [{
+					neg: 0.15,
+					fleet: 0.09,
+					intense: 0.048,
+					acute: 0.012
+				},
+				{
+					neg: 0.15,
+					fleet: 0.09,
+					intense: 0.048,
+					acute: 0.012
+				},
+				{
+					neg: 0.15,
+					fleet: 0.09,
+					intense: 0.048,
+					acute: 0.012
+				},
+				{
+					neg: 0.05,
+					fleet: 0.03,
+					intense: 0.016,
+					acute: 0.004
+				}
+			],
+			pos2neg: [{
+					neg: 0.124,
+					fleet: 0.075,
+					intense: 0.107,
+					acute: 0.027
+				},
+				{
+					neg: 0.144,
+					fleet: 0.086,
+					intense: 0.046,
+					acute: 0.012
+				},
+				{
+					neg: 0.144,
+					fleet: 0.086,
+					intense: 0.046,
+					acute: 0.012
+				},
+				{
+					neg: 0.091,
+					fleet: 0.055,
+					intense: 0.029,
+					acute: 0.007
+				}
+			],
+			neg2pos: [{
+					neg: 0.196,
+					fleet: 0.117,
+					intense: 0.063,
+					acute: 0.016
+				},
+				{
+					neg: 0.13,
+					fleet: 0.078,
+					intense: 0.042,
+					acute: 0.01
+				},
+				{
+					neg: 0.13,
+					fleet: 0.078,
+					intense: 0.042,
+					acute: 0.01
+				},
+				{
+					neg: 0.043,
+					fleet: 0.026,
+					intense: 0.014,
+					acute: 0.003
+				}
+			],
+			posposneg: [{
+					neg: 0.167,
+					fleet: 0.1,
+					intense: 0.053,
+					acute: 0.013
+				},
+				{
+					neg: 0.167,
+					fleet: 0.1,
+					intense: 0.053,
+					acute: 0.013
+				},
+				{
+					neg: 0.111,
+					fleet: 0.067,
+					intense: 0.036,
+					acute: 0.009
+				},
+				{
+					neg: 0.056,
+					fleet: 0.033,
+					intense: 0.018,
+					acute: 0.004
+				}
+			],
+			posnegneg: [{
+					neg: 0.191,
+					fleet: 0.115,
+					intense: 0.061,
+					acute: 0.015
+				},
+				{
+					neg: 0.127,
+					fleet: 0.076,
+					intense: 0.041,
+					acute: 0.01
+				},
+				{
+					neg: 0.091,
+					fleet: 0.055,
+					intense: 0.029,
+					acute: 0.007
+				},
+				{
+					neg: 0.091,
+					fleet: 0.055,
+					intense: 0.029,
+					acute: 0.007
+				}
+			]
 		},
 		// eslint-disable-next-line id-length
 		FX = {
@@ -119,20 +340,22 @@ const D = (() => {
 				startColour: [200, 0, 0, 1],
 				startColourRandom: [12, 12, 12, 1]
 			}
-		},
-		// #endregion
+		}
+	// #endregion
 
-		// #region BASE FUNCTIONALITY: Fundamental Functions & String Manipulation to Declare First
+	// #region BASE FUNCTIONALITY: Fundamental Functions & String Manipulation to Declare First
 
-		/* Finds the first player who is GM. */
-		getGMID = () => {
-			const playerObjs = findObjs( {_type: "player"} ),
-			 gmObjs = playerObjs.filter(v => {
+	/* Finds the first player who is GM. */
+	const getGMID = () => {
+			const playerObjs = findObjs({
+					_type: "player"
+				}),
+				gmObjs = playerObjs.filter(v => {
 					log(`[getGMID() Iterator: Player Obj] ${JSON.stringify(v)}`)
 					log(`[getGMID() Iterator: playerIsGM(id)] ${playerIsGM(v._id)}`)
 
 					return playerIsGM(v._id)
-				} )
+				})
 
 			return gmObjs[0]
 		},
@@ -141,11 +364,11 @@ const D = (() => {
      		Message can be an array of strings OR objects, of form: { message: <message>, title: <title> }. */
 		sendToPlayer = function (who, message = "", title = "") {
 			const player = getObj("player", who) ? getObj("player", who).get("_displayname") : who,
-			  parseChatLine = msg => {
-				  let str = ""
-				  _.each(_.flatten( [msg] ), v => {
-					  str += `<div style="display: block;"><span style="font-family:sans-serif; font-size: 10px; line-height: 10px;">${v}</span></div>`
-					} )
+				parseChatLine = msg => {
+					let str = ""
+					_.each(_.flatten([msg]), v => {
+						str += `<div style="display: block;"><span style="font-family:sans-serif; font-size: 10px; line-height: 10px;">${v}</span></div>`
+					})
 
 					return str
 				}
@@ -204,7 +427,7 @@ const D = (() => {
 		/* Converts any number by adding its appropriate ordinal ("2nd", "3rd", etc.) */
 		ordinal = num => {
 			const tNum = parseInt(num) - (100 * Math.floor(parseInt(num) / 100))
-			if ( [11, 12, 13].includes(tNum))
+			if ([11, 12, 13].includes(tNum))
 				return `${num}th`
 
 			return `${num}${["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"][num % 10]}`
@@ -226,7 +449,7 @@ const D = (() => {
 
 			for (const keyVal of args) {
 				const kvp = keyVal.split(/\s*:\s*(?!\/)/u)
-				obj[kvp[0]] = parseInt(kvp[1] ) || kvp[1]
+				obj[kvp[0]] = parseInt(kvp[1]) || kvp[1]
 			}
 
 			return obj
@@ -237,7 +460,7 @@ const D = (() => {
 		/* When given a message object, will return all selected objects, or false. */
 		getSelected = (msg, types) => {
 			const objs = []
-			if (msg.selected && msg.selected[0] ) {
+			if (msg.selected && msg.selected[0]) {
 				if (types) {
 					for (const typ of types) {
 						objs.push(
@@ -264,9 +487,10 @@ const D = (() => {
 
 		/* Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. */
 		isIn = (needle, haystack = [..._.flatten(_.values(ATTRIBUTES)),
-								    ..._.flatten(_.values(SKILLS)),
-								    ...DISCIPLINES,
-								    ...TRACKERS] ) => {
+			..._.flatten(_.values(SKILLS)),
+			...DISCIPLINES,
+			...TRACKERS
+		]) => {
 			try {
 				const ndl = `\\b${needle.replace(/^g[0-9]/u, "")}\\b`
 				if (_.isArray(haystack)) {
@@ -275,7 +499,7 @@ const D = (() => {
 					return index === -1 ? false : _.flatten(haystack)[index]
 				} else if (_.isObject(haystack)) {
 					const index = _.findIndex(_.keys(haystack), v => v.match(new RegExp(ndl, "iu")) !== null ||
-					v.match(new RegExp(ndl.replace(/_/gu), "iu"))) !== null
+						v.match(new RegExp(ndl.replace(/_/gu), "iu"))) !== null
 
 					return index === -1 ? false : _.keys(haystack)[index]
 				}
@@ -284,13 +508,15 @@ const D = (() => {
 			} catch (errObj) {
 				return D.ThrowError(`Error locating stat '${D.JSL(needle)}' in ${D.JSL(haystack)}'`, "D.IsIn()")
 			}
+		}
+	// #endregion
+
+	// #region DEBUGGING & ERROR MANAGEMENT
+
+	// Sets debug and alert thresholds.
+	const setDebugLvl = (lvl = 0, aLvl = 0) => {
+			[state[GAMENAME].DEBUGLEVEL, state[GAMENAME].DEBUGALERT] = [lvl, aLvl]
 		},
-		// #endregion
-
-		// #region DEBUGGING & ERROR MANAGEMENT
-
-		// Sets debug and alert thresholds.
-		setDebugLvl = (lvl = 0, aLvl = 0) => { [state[GAMENAME].DEBUGLEVEL, state[GAMENAME].DEBUGALERT] = [lvl, aLvl] },
 
 		// Returns a string of current Debug settings.
 		getDebugInfo = () => `Debug Level: ${state[GAMENAME].DEBUGLEVEL || 0},
@@ -321,18 +547,18 @@ const D = (() => {
 			log(`[ERROR: ${jStr(title, true)}] ${jStr(msg, true)}`)
 
 			return false
-		},
-		// #endregion
+		}
+	// #endregion
 
-		// #region GETTERS: Object, Character and Player Data
+	// #region GETTERS: Object, Character and Player Data
 
-		// Returns the NAME of the Graphic, Character or Player (DISPLAYNAME) given: object or ID.
-		getName = function (value, isShort) {
+	// Returns the NAME of the Graphic, Character or Player (DISPLAYNAME) given: object or ID.
+	const getName = function (value, isShort) {
 			const objID = _.isString(value) ? value : value._id,
 				obj = _.isString(value) ? getObj("graphic", objID) || getObj("character", objID) : value,
 				name = (obj && obj.get("name")) ||
-					(getObj("player", objID) && getObj("player", objID).get("_displayname")) ||
-					null
+				(getObj("player", objID) && getObj("player", objID).get("_displayname")) ||
+				null
 			if (!name)
 				return throwError(`No name found for character ID: ${objID}`, "D.GETNAME")
 			if (!isShort)
@@ -357,12 +583,12 @@ const D = (() => {
 			if (!value)
 				return throwError("No Value Given!", "D.GETCHARS")
 			if (value.who) {
-				if (!value.selected || !value.selected[0] )
+				if (!value.selected || !value.selected[0])
 					return throwError("Must Select a Token!", "D.GETCHARS")
 				const tokens = _.filter(value.selected,
 					selection => getObj("graphic", selection._id) &&
-						_.isString(getObj("graphic", selection._id).get("represents")) &&
-						getObj("character", getObj("graphic", selection._id).get("represents")))
+					_.isString(getObj("graphic", selection._id).get("represents")) &&
+					getObj("character", getObj("graphic", selection._id).get("represents")))
 				if (!tokens)
 					return throwError(`No Valid Token Selected: ${jStr(value.selected)}`, "D.GETCHARS")
 
@@ -375,59 +601,62 @@ const D = (() => {
 				return throwError(`Bad Value: '${jStr(value)}'`, "GETCHARS")
 			}
 			_.each(searchParams, val => {
-			// If parameter is a CHARACTER ID:
+				// If parameter is a CHARACTER ID:
 				if (_.isString(val) && getObj("character", val)) {
 					charObjs.add(getObj("character", val))
-				// If parameters is a TOKEN OBJECT:
+					// If parameters is a TOKEN OBJECT:
 				} else if (_.isObject(val) && val.id && val.get("_type") === "graphic" && val.get("_subtype") === "token") {
 					const char = getObj("character", val.get("represents"))
 					if (char)
 						charObjs.add(char)
 					else
 						throwError(`Token '${jStr(val.id)}' Does Not Represent a Character.`, "D.GETCHARS")
-				// If parameter is "all":
+					// If parameter is "all":
 				} else if (val === "all") {
-					_.each(findObjs( {_type: "character"} ), char => charObjs.add(char))
-				// If parameter calls for REGISTERED CHARACTERS:
+					_.each(findObjs({
+						_type: "character"
+					}), char => charObjs.add(char))
+					// If parameter calls for REGISTERED CHARACTERS:
 				} else if (val === "registered") {
 					_.each(CHARREGISTRY, (v, charID) => {
 						if (charID === v.id)
 							charObjs.add(getObj("character", charID))
-					} )
-				// If parameter is a CHARACTER NAME:
+					})
+					// If parameter is a CHARACTER NAME:
 				} else if (_.isString(val)) {
-					_.each(findObjs( {_type: "character", name: val} ), char => charObjs.add(char))
+					_.each(findObjs({
+						_type: "character",
+						name: val
+					}), char => charObjs.add(char))
 				}
 				if (charObjs.size === 0)
 					throwError(`No Characters Found for Value '${jStr(val)}' in '${jStr(value)}'`, "D.GETCHARS")
-			} )
+			})
 
 			return [...charObjs]
 		},
 
 		getChar = v => getChars(v)[0],
 
-		getStat = (v, name) => findObjs( {
+		getStat = (v, name) => findObjs({
 			_type: "attribute",
 			_characterid: getChar(v).id,
 			_name: name
-		} )[0],
+		})[0],
 
 		// Given a lower-case row ID (from sheetworker), converts it to proper case.
 		getCaseRepID = function (lowCaseID, charRef) {
 			const charObj = getChar(charRef),
 				attrObjs = _.filter(
-					findObjs(charObj ?
-						{
-							type: "attribute",
-							characterid: charObj.id
-						} :
-						{
-							type: "attribute"
-						} ),
+					findObjs(charObj ? {
+						type: "attribute",
+						characterid: charObj.id
+					} : {
+						type: "attribute"
+					}),
 					v => v.get("name")
-						.toLowerCase()
-						.includes(lowCaseID)
+					.toLowerCase()
+					.includes(lowCaseID)
 				)
 			if (!attrObjs || attrObjs.length === 0)
 				return throwError(`No attributes found with id '${JSON.stringify(lowCaseID)}${charObj ? `' for char '${getName(charObj)}` : ""}'`)
@@ -442,20 +671,20 @@ const D = (() => {
 			const charObj = getChar(value)
 			if (!charObj)
 				return throwError(`No character at '${jStr(value)}'`)
-			let attrObjs = findObjs( {
+			let attrObjs = findObjs({
 				type: "attribute",
 				characterid: charObj.id
-			} )
+			})
 			_.each(filterArray,
 				val => {
 					attrObjs = attrObjs.filter(
 						v => v.get("name").toLowerCase()
-							.includes(val.toLowerCase())
+						.includes(val.toLowerCase())
 					)
 					attrObjs = _.filter(attrObjs,
 						v => v.get("name").toLowerCase()
-							.includes(val.toLowerCase()))
-				} )
+						.includes(val.toLowerCase()))
+				})
 
 			return attrObjs
 		},
@@ -467,10 +696,10 @@ const D = (() => {
 		getPlayerID = function (value) {
 			if (_.isString(value)) {
 				try {
-					return findObjs( {
+					return findObjs({
 						_type: "player",
 						_displayname: value
-					} )[0].id
+					})[0].id
 				} catch (errObj) {
 					return throwError(`No player found at '${jStr(value)}'`, "D.GETPLAYERID")
 				}
@@ -496,9 +725,9 @@ const D = (() => {
 		getTextWidth = function (obj, text) {
 			const font = obj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
 				size = obj.get("font_size"),
-			     chars = text.split(""),
-			   fontRef = state.DATA.CHARWIDTH[font],
-			   charRef = fontRef && fontRef[size]
+				chars = text.split(""),
+				fontRef = state.DATA.CHARWIDTH[font],
+				charRef = fontRef && fontRef[size]
 			let width = 0
 			if (!fontRef)
 				return throwError(`No font reference for '${font}'`)
@@ -508,21 +737,21 @@ const D = (() => {
 				if (!charRef[char] && charRef[char] !== " " && charRef[char] !== 0)
 					logEntry(`... MISSING '${char}' in '${font}' at size '${size}'`)
 				else
-					width += parseInt(charRef[char] )
-			} )
+					width += parseInt(charRef[char])
+			})
 
 			return width
-		},
-		// #endregion
+		}
+	// #endregion
 
-		// #region Repeating Section Manipulation
-		makeRow = function (charID, secName, attrs) {
+	// #region Repeating Section Manipulation
+	const makeRow = function (charID, secName, attrs) {
 			const IDa = 0,
 				IDb = [],
-		     characters = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz",
-		   generateUUID = (() => () => {
-					        let IDc = (new Date()).getTime() + 0,
-						      IDf = 7
+				characters = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz",
+				generateUUID = (() => () => {
+					let IDc = (new Date()).getTime() + 0,
+						IDf = 7
 					const IDd = IDc === IDa,
 						IDe = new Array(8)
 					for (IDf; IDf >= 0; IDf--) {
@@ -539,11 +768,10 @@ const D = (() => {
 							IDb[IDf] = Math.floor(64 * Math.random())
 					}
 					for (IDf = 0; IDf < 12; IDf++)
-						IDc += characters.charAt(IDb[IDf] )
+						IDc += characters.charAt(IDb[IDf])
 
 					return IDc
-					  }
-				  )(),
+				})(),
 				makeRowID = () => generateUUID().replace(/_/gu, "Z"),
 				rowID = makeRowID(),
 				prefix = `repeating_${secName}_${rowID}_`
@@ -553,24 +781,26 @@ const D = (() => {
 				current: v,
 				max: "",
 				_characterid: charID
-			} ))
+			}))
 
 			return rowID
 		},
 
 		deleteRow = (charID, rowID) => {
-			
-		}
-		// #endregion
 
-		// Runs one of the special effects defined above.
-		runFX = (name, pos) => spawnFxWithDefinition(pos.left, pos.top, FX[name] ),
-
-		// #region INITIALIZATION
-		checkInstall = () => {
-			state[GAMENAME] = state[GAMENAME] || {}
-			state[GAMENAME].DEBUGCATS = state[GAMENAME].DEBUGCATS || ""
 		}
+	// #endregion
+
+	// #region SPECIAL FX
+	// Runs one of the special effects defined above.
+	const runFX = (name, pos) => spawnFxWithDefinition(pos.left, pos.top, FX[name])
+	// #endregion
+
+	// #region INITIALIZATION
+	checkInstall = () => {
+		state[GAMENAME] = state[GAMENAME] || {}
+		state[GAMENAME].DEBUGCATS = state[GAMENAME].DEBUGCATS || ""
+	}
 	// #endregion
 
 	return {
@@ -589,55 +819,69 @@ const D = (() => {
 		PAGEID: VALS.PAGEID,
 		CELLSIZE: VALS.CELLSIZE,
 
-		JS: jStr, 						// D.JS(obj, isLog): Parses a string. If isLog, will not use HTML.
-		JSL: jLog, 						// D.JSL(obj):  Parses a string, for output to the console log.
-		Ordinal: ordinal, 				// D.Ordinal(num): Returns ordinalized number (e.g. 1 -> "1st")
-		Capitalize: capitalize,			// D.Capitalize(str): Capitalizes the first character in the string.
-		ParseToObj: parseToObj,			/* D.ParseToObj(string): Returns object with parameters given by
-											a string of form 'key:val, key:val,' */
-		GetSelected: getSelected,		// D.GetSelected(msg): Returns selected objects in message.
-		Log: logEntry, 					// D.Log(msg, title): Formats log message, with title.
-		IsIn: isIn, 					/* D.IsIn(needle, [haystack]): Returns formatted needle if found in
+		JS: jStr, // D.JS(obj, isLog): Parses a string. If isLog, will not use HTML.
+		JSL: jLog, // D.JSL(obj):  Parses a string, for output to the console log.
+		Ordinal: ordinal, // D.Ordinal(num): Returns ordinalized number (e.g. 1 -> "1st")
+		Capitalize: capitalize, // D.Capitalize(str): Capitalizes the first character in the string.
+		ParseToObj: parseToObj,
+		/* D.ParseToObj(string): Returns object with parameters given by
+										a string of form 'key:val, key:val,' */
+		GetSelected: getSelected, // D.GetSelected(msg): Returns selected objects in message.
+		Log: logEntry, // D.Log(msg, title): Formats log message, with title.
+		IsIn: isIn,
+		/* D.IsIn(needle, [haystack]): Returns formatted needle if found in
 											haystack (= all traits by default) */
-		IsObj: isObject,				// D.IsObj(val): Returns true if val is an object (not array)
-		GetName: getName, 				/* D.GetName(id): Returns name of graphic, character or player's
+		IsObj: isObject, // D.IsObj(val): Returns true if val is an object (not array)
+		GetName: getName,
+		/* D.GetName(id): Returns name of graphic, character or player's
 											display name. If isShort, returns name without quoteparts
        										OR only last name if no quotes. */
-		GetChars: getChars, 			/* D.GetChars(val): Returns array of matching characters, given
+		GetChars: getChars,
+		/* D.GetChars(val): Returns array of matching characters, given
 											"all", a chat message with selected token(s), character ID,
        										player ID, character name OR array of those params. */
-		GetChar: getChar, 				/* D.GetChar(val): As above, but returns only the first character
+		GetChar: getChar,
+		/* D.GetChar(val): As above, but returns only the first character
 		       								object found.*/
-		GetStat: getStat, 				/* D.GetStat(char, name):  Given any valid character value, returns the
+		GetStat: getStat,
+		/* D.GetStat(char, name):  Given any valid character value, returns the
 											attribute object described by name. */
 		GetRepIDCase: getCaseRepID,
 		GetRepStats: getRepStats,
 		GetRepStat: getRepStat,
-		GetPlayerID: getPlayerID, 		/* D.GetPlayerID(val):  Returns player ID given: display name, token
+		GetPlayerID: getPlayerID,
+		/* D.GetPlayerID(val):  Returns player ID given: display name, token
 		       								object, character object.*/
-		GetTextWidth: getTextWidth, 	/* D.GetTextWidth(obj, text):  Returns width of given text object if
+		GetTextWidth: getTextWidth,
+		/* D.GetTextWidth(obj, text):  Returns width of given text object if
 			       							it held supplied text. */
-		MakeRow: makeRow, 				/* D.MakeRow(charID/obj, secName, attrs):  Creates repeating fieldset
+		MakeRow: makeRow,
+		/* D.MakeRow(charID/obj, secName, attrs):  Creates repeating fieldset
 											row in secName with attrs for character given by object or ID.*/
-		RunFX: runFX, 					/* D.RunFX(name, {top: y, left: x}):  Runs a special effect at
+		RunFX: runFX,
+		/* D.RunFX(name, {top: y, left: x}):  Runs a special effect at
 											the given location. */
-		ThrowError: throwError, 		// D.ThrowError(errObj, title): Logs an error and messages GM.
-		GetDebugInfo: getDebugInfo,		// D.GetDebugInfo(): Displays the debug level, alert level, and categories.
-		SetDebugLevel: setDebugLvl, 	/* D.SetDebugLevel(lvl, alertLevel): Sets debug level to lvl. D.DB calls with
+		ThrowError: throwError, // D.ThrowError(errObj, title): Logs an error and messages GM.
+		GetDebugInfo: getDebugInfo, // D.GetDebugInfo(): Displays the debug level, alert level, and categories.
+		SetDebugLevel: setDebugLvl,
+		/* D.SetDebugLevel(lvl, alertLevel): Sets debug level to lvl. D.DB calls with
 											levels lower than this will be muted; alertLevel is the same, but will
 											publish the message to Roll20 chat. */
-		SetDebugCats: setDebugCats,		/* D.SetDebugCats(cats): Adds given categories to debug list, or clears the list
+		SetDebugCats: setDebugCats,
+		/* D.SetDebugCats(cats): Adds given categories to debug list, or clears the list
 											if no categories are given */
-		DB: formatDebug, 				/* D.DB(msg, title, category, lvl): Logs debug if DEBUGLEVEL equal to lvl,
+		DB: formatDebug,
+		/* D.DB(msg, title, category, lvl): Logs debug if DEBUGLEVEL equal to lvl,
 												and if category has been set via SetDebugCats(). */
-		Alert: alertGM, 				// D.Alert(msg, title): Sends alert message to GM.
-		SendToPlayer: sendToPlayer 		/* D.SendToPlayer(who, msg, title): Sends chat message as 'who' with
+		Alert: alertGM, // D.Alert(msg, title): Sends alert message to GM.
+		SendToPlayer: sendToPlayer
+		/* D.SendToPlayer(who, msg, title): Sends chat message as 'who' with
 											message and title. Message can be an array of strings OR
        										objects, of form: { message: <message>, title: <title> } */
 	}
-} )()
+})()
 
 on("ready", () => {
 	D.CheckInstall()
 	D.Log("Ready!", "DATA")
-} )
+})
