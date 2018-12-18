@@ -22,119 +22,120 @@ const Images = (() => {
 				h: 400,
 				w: 600
 			}
-		}
-	// #endregion
-
-	// #region GETTERS: Image Object & Data Retrieval
-	const getImageObj = imgRef => {
-			let [imgObj] = D.GetSelected(imgRef)
-			try {
-				if (!D.IsObj(imgObj, "graphic") && _.isString(imgRef)) {
-					if (REGISTRY[imgRef])
-						imgObj = getObj("graphic", REGISTRY[imgRef].id)
-					else
-						imgObj = getObj("graphic", imgRef)
-				}
-			} catch (errObj) {
-				return D.ThrowError(`${D.JSL(errObj)}`, "[ERROR] IMAGES: Get")
-			}
-
-			return imgObj
 		},
+		// #endregion
 
-		getImageData = (val, cat) => {
-			let imgData = null
+		// #region GETTERS: Image Object & Data Retrieval
+		getImageObj = imgRef => {
 			try {
-				if (_.isString(val) && REGISTRY[val]) {
-					imgData = REGISTRY[val]
-				} else if (D.IsObj(val)) {
-					const imgObj = (val.selected && D.GetSelected(val)[0]) || val
-					if (imgObj.get("type") !== "graphic")
-						return D.ThrowError(`Object '${imgObj}' is not an image object.`, "IMAGES: GetData")
-					for (const cats of REGISTRY[cat]) {
-						if (REGISTRY[cats].id === imgObj.id)
-							imgData = REGISTRY[cats]
-					}
-				}
+				const imgObj = D.IsObj(imgRef, "graphic") ?
+					imgRef :
+					_.isString(imgRef) ?
+						REGISTRY[imgRef] ?
+							getObj("graphic", REGISTRY[imgRef].id) :
+							getObj("graphic", imgRef) || null :
+						D.GetSelected(imgRef) ?
+							D.GetSelected(imgRef)[0] :
+							null
+
+				return imgObj
 			} catch (errObj) {
-				return D.ThrowError(`Cannot locate image with search value '${D.JS(val)}'`, "IMAGES: GetData")
+				return D.ThrowError(`IMGREF: ${D.JS(imgRef)}`, "IMAGES.getImageObj", errObj)
 			}
+		},
+		getImageData = imgRef => {
+			try {
+				const imgName = D.IsObj(imgRef, "graphic") ?
+					imgRef.get("name") :
+					_.isString(imgRef) ?
+						imgRef :
+						D.GetSelected(imgRef) ?
+							D.GetSelected(imgRef)[0].get("name") :
+							null
+				if (imgName && REGISTRY[imgName] )
+					return REGISTRY[imgName]
 
-			return imgData
-		}
-	// #endregion
+				return D.ThrowError(`Image reference '${imgRef}' does not refer to a registered image object.`, "IMAGES: GetData")
+			} catch (errObj) {
+				return D.ThrowError(`Cannot locate image with search value '${D.JS(imgRef)}'`, "IMAGES.getImageData", errObj)
+			}
+		},
+		// #endregion
 
-	// #region SETTERS: Registering & Manipulating Image Objects
-	const addImgSrc = (imgSrcRef, hostName, imgName) => {
+		// #region SETTERS: Registering & Manipulating Image Objects
+		addImgSrc = (imgSrcRef, imgName, srcName) => {
 			try {
 				const imgSrc = (_.isString(imgSrcRef) && imgSrcRef.includes("http") ?
-						imgSrcRef :
-						getImageObj(imgSrcRef).get("imgsrc") || "")
+					imgSrcRef :
+					getImageObj(imgSrcRef).get("imgsrc") || "")
 					.replace(/\w*?(?=\.png)/u, "thumb")
-				if (imgSrc !== "" && REGISTRY[hostName]) {
-					REGISTRY[hostName].srcs[imgName] = imgSrc
-					D.Alert(`Image '${D.JS(imgName)}' added to category '${D.JS(hostName)}'.<br><br>Source: ${D.JS(imgSrc)}`)
+				if (imgSrc !== "" && REGISTRY[imgName] ) {
+					REGISTRY[imgName].srcs[srcName] = imgSrc
+					D.Alert(`Image '${D.JS(srcName)}' added to category '${D.JS(imgName)}'.<br><br>Source: ${D.JS(imgSrc)}`)
 				}
 			} catch (errObj) {
-				D.ThrowError(`Bad arguments: ${errObj}`, "IMAGES: addSrc")
+				D.ThrowError("", "IMAGES.addImgSrc", errObj)
 			}
 		},
-
-		regImage = (hostObj, hostName, params = {}) => {
-			if (D.IsObj(hostObj) && hostObj.get("_type" === "graphic")) {
-				const imgSrcs = (params.entries && _.pick(params, v => v.startsWith("http"))) || {}
-				REGISTRY[hostName] = {
-					id: hostObj.id,
-					category: hostName,
-					pos: {
-						x: params.x || hostObj.get("left") || REGISTRY[hostName].x || (IMGDATA[hostName] && IMGDATA[hostName].x) || 200,
-						y: params.y || hostObj.get("top") || REGISTRY[hostName].y || (IMGDATA[hostName] && IMGDATA[hostName].y) || 200,
-						h: params.h || hostObj.get("height") || REGISTRY[hostName].h || (IMGDATA[hostName] && IMGDATA[hostName].h) || 100,
-						w: params.w || hostObj.get("width") || REGISTRY[hostName].w || (IMGDATA[hostName] && IMGDATA[hostName].w) || 100
-					},
+		regImage = (imgObj, imgName, params = {} ) => {
+			if (D.IsObj(imgObj, "graphic")) {
+				const imgSrcs = (params.entries && _.pick(params, v => v.startsWith("http"))) || {},
+					baseName = imgName.replace(/(_|\d|#)+$/gu, "").toLowerCase(),
+					name = `${imgName.replace(/(_|\d|#)+$/gu, "")}_${_.filter(_.keys(REGISTRY), k => k.includes(imgName.replace(/(_|\d|#)+$/gu, ""))).length + 1}`
+				D.Alert(`BaseName: ${baseName}, FullName: ${name}`)
+				REGISTRY[name] = {
+					id: imgObj.id,
+					name,
+					left: params.left || imgObj.get("left") || REGISTRY[name].left || (IMGDATA[baseName] && IMGDATA[baseName].left) || 200,
+					top: params.top || imgObj.get("top") || REGISTRY[name].top || (IMGDATA[baseName] && IMGDATA[baseName].top) || 200,
+					height: params.height || imgObj.get("height") || REGISTRY[name].height || (IMGDATA[baseName] && IMGDATA[baseName].height) || 100,
+					width: params.width || imgObj.get("width") || REGISTRY[name].width || (IMGDATA[baseName] && IMGDATA[baseName].width) || 100,
 					srcs: {}
 				}
-				for (const imgName of _.keys(imgSrcs))
-					addImgSrc(imgSrcs[imgName], imgName)
+				for (const srcName of _.keys(imgSrcs))
+					addImgSrc(imgSrcs[srcName], srcName)
 
-				D.Alert(`Host obj for '${D.JS(hostName)}' registered: ${D.JS(REGISTRY[hostName] )}`, "IMAGES: regImage")
+				D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(REGISTRY[name] )}`, "IMAGES: regImage")
 
-				return REGISTRY[hostName]
+				return getImageData(name)
 			}
 
-			return D.ThrowError(`Invalid img object '${D.JSL(hostObj)}'`, "IMAGES: regImage")
+			return D.ThrowError(`Invalid img object '${D.JSL(imgObj)}'`, "IMAGES: regImage")
 		},
-
-		makeImage = (hostName, params = {}) => {
-			const dataRef = IMGDATA[hostName] || IMGDATA.default,
+		makeImage = (imgName = "", params = {} ) => {
+			const dataRef = IMGDATA[imgName] || IMGDATA.default,
+				name = imgName.replace(/#+/gu, _.filter(_.keys(IMGDATA), k => k.includes(imgName.replace(/#+/gu, ""))).length + 1),
 				imgObj = createObj("graphic", {
+					_pageid: params.pageID || D.PAGEID(),
+					name,
 					imgsrc: params.imgsrc || IMGDATA.blank,
-					left: params.x || dataRef.x,
-					top: params.y || dataRef.y,
+					left: params.left || dataRef.width,
+					top: params.height || dataRef.height,
 					width: params.width || dataRef.width,
 					height: params.height || dataRef.height,
 					layer: params.layer || "objects",
-					isdrawing: true,
-					name: params.name || "",
-					controlledby: params.controlledby || ""
-				})
-			regImage(imgObj, hostName)
-		},
+					isdrawing: params.isDrawing !== false,
+					controlledby: params.controlledby || "",
+					showname: params.showname === true
+				} )
+			regImage(imgObj, name)
 
-		setImage = (hostName, imgName) => {
-			if (REGISTRY[hostName]) {
-				const stateRef = REGISTRY[hostName],
-					imgObj = getImageObj(hostName)
+			return imgObj
+		},
+		setImage = (imgRef, srcRef) => {
+			if (getImageData(imgRef)) {
+				const stateRef = REGISTRY[getImageData(imgRef).name],
+					imgObj = getImageObj(imgRef)
 				if (imgObj) {
 					if (stateRef.srcs) {
-						if (stateRef.srcs[imgName])
-							imgObj.set("imgsrc", stateRef.srcs[imgName])
-						else if (_.values(stateRef.srcs).includes(imgName))
-							imgObj.set("imgsrc", imgName)
+						if (stateRef.srcs[srcRef] )
+							imgObj.set("imgsrc", stateRef.srcs[srcRef] )
+						else if (_.values(stateRef.srcs).includes(srcRef))
+							imgObj.set("imgsrc", srcRef)
 						else
-							return D.ThrowError(`No image '${D.JSL(imgName)}' found in category '${D.JSL(hostName)}'`, "Images: setImage()")
+							return D.ThrowError(`No image source '${D.JSL(srcRef)}' found for image object '${D.JSL(imgRef)}'`, "Images: setImage()")
 					} else {
-						return D.ThrowError(`Category '${D.JSL(hostName)}' is missing 'srcs' property`, "Images: setImage()")
+						return D.ThrowError(`Image object '${D.JSL(imgRef)}' is missing 'srcs' property`, "Images: setImage()")
 					}
 
 					return imgObj
@@ -143,62 +144,65 @@ const Images = (() => {
 				return D.ThrowError(`Invalid image object '${D.JSL(imgObj)}'`, "Images: setImage()")
 			}
 
-			return D.ThrowError(`Invalid category '${D.JSL(hostName)}'`, "Images: setImage()")
+			return D.ThrowError(`Invalid category '${D.JSL(imgRef)}'`, "Images: setImage()")
 		},
+		removeImage = imgRef => {
+			const imgObj = getImageObj(imgRef),
+				imgData = getImageData(imgRef)
+			if (imgObj) {
+				imgObj.remove()
+				delete REGISTRY[imgData.name]
 
-		removeImage = hostName => {
-			if (hostName && REGISTRY[hostName]) {
-				const hostObj = getObj("graphic", REGISTRY[hostName].id)
-				if (D.IsObj(hostObj, "graphic"))
-					hostObj.remove()
-				delete REGISTRY[hostName]
+				return true
+			} else if (imgData && REGISTRY[imgData.name]) {
+				delete REGISTRY[imgData.name]
 
 				return true
 			}
 
-			return D.ThrowError(`Invalid host name ${D.JSL(hostName)}`, "IMAGES: removeImage")
-		}
-	// #endregion
+			return D.ThrowError(`Invalid image reference ${D.JSL(imgRef)}`, "IMAGES: removeImage")
+		},
+		// #endregion
 
-	// #region MACRO BUILDING: Building Selection Macros for Images
-	const buildMacro = (gmID, macroName, hostNames) => {
-		let action = "!img set ?{Choose Image Category"
-		for (const hostName of hostNames) {
-			if (REGISTRY[hostName]) {
-				action += `| ${D.Capitalize(hostName)}, ?{Choose ${D.Capitalize(hostName)}`
-				for (const imgName of _.sortBy(_.keys(REGISTRY[hostName].srcs), k => k))
-					action += ` &amp;#124;${D.Capitalize(imgName)}&amp;#44; ${D.Capitalize(hostName)} ${REGISTRY[hostName].srcs[imgName]}`
-				action += ` &amp;#124;-- blank --&amp;#44; ${D.Capitalize(hostName)} ${IMGDATA.blank} &amp;#125; `
-			} else {
-				D.Alert(`Bad Host Name: ${D.JSL(hostName)}`, "BUILDMACRO ITERATOR")
+		// #region MACRO BUILDING: Building Selection Macros for Images
+		buildMacro = (macroName, imgNames) => {
+			let action = "!img set ?{Choose Image Category"
+			for (const imgName of imgNames) {
+				if (REGISTRY[imgName] ) {
+					action += `| ${D.Capitalize(imgName)}, ?{Choose ${D.Capitalize(imgName)}`
+					for (const srcName of _.sortBy(_.keys(REGISTRY[imgName].srcs), k => k))
+						action += ` &amp;#124;${D.Capitalize(srcName)}&amp;#44; ${D.Capitalize(srcName)} ${REGISTRY[srcName].srcs[srcName]}`
+					action += ` &amp;#124;-- blank --&amp;#44; ${D.Capitalize(imgName)} ${IMGDATA.blank} &amp;#125; `
+				} else {
+					D.Alert(`Bad Image Name: ${D.JSL(imgName)}`, "BUILDMACRO ITERATOR")
+				}
 			}
-		}
-		action += "}"
+			action += "}"
 
-		createObj("macro", {
-			_playerid: gmID,
-			macroName,
-			action,
-			visibleto: gmID
-		})
-	}
-	// #endregion
+			createObj("macro", {
+				_playerid: D.GMID(),
+				macroName,
+				action,
+				visibleto: D.GMID()
+			} )
+		},
+		// #endregion
 
-	// #region Event Handlers (handleInput)
-	const handleInput = function (msg) {
-		const args = msg.content.split(/\s+/u),
-			hostNames = []
-		if (msg.type !== "api" || !playerIsGM(msg.playerid) || args.shift() !== "!img")
-			return
-		let [imgName, hostName, imgObj] = [null, null, null]
-		switch (args.shift().toLowerCase()) {
+		// #region Event Handlers (handleInput)
+		handleInput = msg => {
+			const args = msg.content.split(/\s+/u),
+				imgNames = []
+			if (msg.type !== "api" || !playerIsGM(msg.playerid) || args.shift() !== "!img")
+				return
+			let [srcName, imgName, imgObj] = [null, null, null]
+			switch (args.shift().toLowerCase()) {
 			case "reg":
 			case "register":
 				imgObj = getImageObj(msg)
 				if (imgObj) {
-					hostName = args.shift()
-					if (hostName)
-						regImage(imgObj, hostName, D.ParseToObj(args.join(" ")))
+					imgName = args.shift()
+					if (imgName)
+						regImage(imgObj, imgName, D.ParseToObj(args.join(" ")))
 					else
 						D.Alert("Syntax: !img reg <hostName> [<params = imgName:imgSrc, imgName : imgSrc>]", "IMAGES: !img reg")
 				} else {
@@ -206,29 +210,29 @@ const Images = (() => {
 				}
 				break
 			case "removeAll":
-				for (hostName of _.keys(REGISTRY))
-					hostNames.push(hostName)
-				// Falls through
+				for (imgName of _.keys(REGISTRY))
+					imgNames.push(imgName)
+					// Falls through
 			case "remove":
-				if (hostNames.length === 0)
-					hostNames.push(args.shift())
-				if (hostNames.filter(v => v).length > 0) {
-					for (hostName of hostNames)
-						removeImage(hostName)
+				if (imgNames.length === 0)
+					imgNames.push(args.shift())
+				if (imgNames.filter(v => v).length > 0) {
+					for (imgName of imgNames)
+						removeImage(imgName)
 				} else {
 					D.Alert("No hostnames provided.<br><br>Syntax: !img remove <hostName> OR !img removeAll")
 				}
 				break
 			case "add":
 			case "addsrc":
-				[hostName, imgName] = args
-				if (hostName && REGISTRY[hostName]) {
-					if (imgName)
-						addImgSrc(msg, hostName, imgName)
+				[imgName, srcName] = args
+				if (imgName && REGISTRY[imgName] ) {
+					if (srcName)
+						addImgSrc(msg, imgName, srcName)
 					else
-						D.Alert(`Invalid image name '${D.JS(imgName)}'`, "IMAGES: !img addsrc")
+						D.Alert(`Invalid image name '${D.JS(srcName)}'`, "IMAGES: !img addsrc")
 				} else {
-					D.Alert(`Host name '${D.JS(hostName)}' not registered.`, "IMAGES: !img addsrc")
+					D.Alert(`Host name '${D.JS(imgName)}' not registered.`, "IMAGES: !img addsrc")
 				}
 				break
 			case "setlocation":
@@ -236,9 +240,9 @@ const Images = (() => {
 				setImage("Site", args.shift())
 				break
 			case "macro":
-				imgName = args.shift()
-				hostName = args.join(" ").split(/,\s*?/gu)
-				buildMacro(msg.playerid, imgName, hostName)
+				srcName = args.shift()
+				imgName = args.join(" ").split(/,\s*?/gu)
+				buildMacro(srcName, imgName)
 				break
 			case "getData":
 				imgObj = getImageObj(msg)
@@ -246,26 +250,27 @@ const Images = (() => {
 					D.Alert(getImageData(imgObj), "IMAGES, !img getData")
 				} else {
 					imgName = args.shift()
-					if (imgName && REGISTRY[imgName])
-						D.Alert(D.JS(REGISTRY[imgName]), `IMAGES: '${D.JS(imgName)}'`)
+					if (imgName && REGISTRY[imgName] )
+						D.Alert(D.JS(REGISTRY[imgName] ), `IMAGES: '${D.JS(imgName)}'`)
 					else
 						D.Alert("Syntax: !img get [<category> <name>] (or select an image object)", "IMAGES, !img getData")
 				}
 				break
 			default:
 				break
-		}
-	}
-	// #endregion
+			}
+		},
+		// #endregion
 
-	// #region Public Functions: RegisterEventHandlers
-	const regHandlers = function () {
+		// #region Public Functions: RegisterEventHandlers
+		regHandlers = () => {
 			on("chat:message", handleInput)
 		},
 
 		checkInstall = () => {
 			state[D.GAMENAME].Images = state[D.GAMENAME].Images || {}
 			state[D.GAMENAME].Images.registry = state[D.GAMENAME].Images.registry || {}
+			delete state[D.GAMENAME].Images.registry.District_
 		}
 	// #endregion
 
@@ -278,10 +283,10 @@ const Images = (() => {
 		Register: regImage,
 		Remove: removeImage
 	}
-})()
+} )()
 
 on("ready", () => {
 	Images.RegisterEventHandlers()
 	Images.CheckInstall()
-	D.Log("Ready!", "Images")
-})
+	// D.Log("Ready!", "Images")
+} )

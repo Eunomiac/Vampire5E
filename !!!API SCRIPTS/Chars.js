@@ -19,8 +19,7 @@ const Chars = (() => {
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... you had a talent that showed itself at an early age. Everyone told you you would be famous for it, but here you are.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... you look a job with no experience that no one thought you could do. After a few years, you quit and didn't look back. You can't say why.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... someone very close to you died. No one would tell you what happened, and the people around you refused to talk about it.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... Work. Sleep. Work. Sleep. Forever. One day you'd had enough, and in the middle of the day exploded in a rage. You left that life behind and never talk about it."
-				],
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... Work. Sleep. Work. Sleep. Forever. One day you'd had enough, and in the middle of the day exploded in a rage. You left that life behind and never talk about it."],
 				["para",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Endless Regret</u>:</b></span><br>You didn't comport yourself with any dignity or honesty. You thought you were better than that.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Simmering Rage</u>:</b></span><br>They know what they did, and they did it knowing what would happen.",
@@ -31,8 +30,7 @@ const Chars = (() => {
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Renewed Purpose</u>:</b></span><br>Everything is lined up for you. You know what you have to do with your life now.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Frail Hopelessness</u>:</b></span><br>Nothing matters, and the more you look at it the more you feel like the Universe is a great, crushing wave.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You're <i>still</i> driven to <span style=\"font-size: 14px; margin-top: 10px;\"><u>Hypervigilance</u>:</b></span><br>This could happen at any moment to anyone. You keep your head on a swivel for the next time it does.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Overwhelming Oneness</u>:</b></span><br>Have you laid in the grass and felt the Earth spinning around you? That's how you feel when you reflect on this memory."
-				],
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Overwhelming Oneness</u>:</b></span><br>Have you laid in the grass and felt the Earth spinning around you? That's how you feel when you reflect on this memory."],
 				["para",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... it never ended. You just move forward and try to put the past behind you. But when you can't help but look back, it's always there, right at your heels.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... the responsible parties died before they could be confronted about their part in it.",
@@ -43,8 +41,7 @@ const Chars = (() => {
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... the system stepped in, the state or family, and took it all out of your hands.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... you don't understand how it happened, and because you don't understand it, you can't resolve it.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... everything returned to normal on the outside, but just underneath that veneer of normalcy... it sits.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... other things took priority, so it remained an open loop, still in the back of your head."
-				]
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You can't let go because ... </b></span><br> ... other things took priority, so it remained an open loop, still in the back of your head."]
 			],
 			[
 				"Habits",
@@ -52,14 +49,13 @@ const Chars = (() => {
 					"You reinforce or establish your <b>Profession</b> ",
 					"You reinforce or establish your <b>Regional Background</b> ",
 					"You reinforce or establish your <b>Social Class</b> ",
-					"You reinforce or establish  your <b>Childhood</b> ",
+					"You reinforce or establish your <b>Childhood</b> ",
 					"You reinforce or establish your <b>Political Ideology</b> ",
 					"You reinforce or establish your <b>Opinion on Authority</b> ",
 					"You reinforce or establish your <b>Religious Faith</b> ",
 					"You reinforce or establish your <b>Family Status</b> ",
 					"You reinforce or establish your <b>Sexual Preference</b> ",
-					"You reinforce or establish your <b>Gender Identity</b> "
-				],
+					"You reinforce or establish your <b>Gender Identity</b> "],
 				["paraMid",
 					"with your <b>Speech and Accent</b>, but undermine, subvert or contradict it ",
 					"with your <b>Clothing and Aesthetics</b>, but undermine, subvert or contradict it ",
@@ -70,8 +66,7 @@ const Chars = (() => {
 					"through your <b>Nervous Nature</b>, but undermine, subvert or contradict it ",
 					"with your <b>Indulgent Vices</b>, but undermine, subvert or contradict it ",
 					"with your <b>Outward Ambitions</b>, but undermine, subvert or contradict it ",
-					"through your <b>Confident Behavior</b>, but undermine, subvert or contradict it "
-				],
+					"through your <b>Confident Behavior</b>, but undermine, subvert or contradict it "],
 				["paraEnd",
 					"with your <b>Speech and Accent</b>.",
 					"with your <b>Clothing and Aesthetics</b>.",
@@ -82,8 +77,7 @@ const Chars = (() => {
 					"through your <b>Nervous Nature</b>.",
 					"with your <b>Indulgent Vices</b>.",
 					"with your <b>Outward Ambitions</b>.",
-					"through your <b>Confident Behavior</b>."
-				]
+					"through your <b>Confident Behavior</b>."]
 			],
 			[
 				"Signposts",
@@ -98,8 +92,7 @@ const Chars = (() => {
 					"When you encounter <b>Intellectualism</b>, ",
 					"When you see or show <b>Respect</b>, ",
 					"When you see or bring about <b>Justice</b>, ",
-					"When you see or show <b>Mercy</b>, "
-				],
+					"When you see or show <b>Mercy</b>, "],
 				["paraEnd",
 					"you react with <b>Hatred</b> (or) <b>Love:</b> You want to destroy them for existing, or to bask in their glory.",
 					"you react with <b>Disgust</b> (or) <b>Appreciation:</b> The smell of sour milk, or the sweet smell of opportunity.",
@@ -110,8 +103,7 @@ const Chars = (() => {
 					"you react with <b>Amazement</b> (or) <b>Criticism:</b> Someone has to see this thing!",
 					"you react with <b>Acceptance</b> (or) <b>Denial:</b> All this is according to design, or a change must come, whatever the cost.",
 					"you react with <b>Attraction</b> (or) <b>Repulsion:</b> If you can just get a little closer... or farther away...",
-					"you react with <b>Zeal</b> (or) <b>Boredom:</b> You're reminded of what is good in the world, or you grow impatient to find something more interesting."
-				],
+					"you react with <b>Zeal</b> (or) <b>Boredom:</b> You're reminded of what is good in the world, or you grow impatient to find something more interesting."],
 				["paraStart",
 					"When you see or commit an <b>Abuse of Power</b>, ",
 					"When you see or show <b>Disrespect</b>, ",
@@ -123,8 +115,7 @@ const Chars = (() => {
 					"When you encounter <b>Intellectualism</b>, ",
 					"When you see or show <b>Respect</b>, ",
 					"When you see or bring about <b>Justice</b>, ",
-					"When you see or show <b>Mercy</b>, "
-				],
+					"When you see or show <b>Mercy</b>, "],
 				["paraEnd",
 					"you react with <b>Hatred</b> (or) <b>Love:</b> You want to destroy them for existing, or to bask in their glory.",
 					"you react with <b>Disgust</b> (or) <b>Appreciation:</b> The smell of sour milk, or the sweet smell of opportunity.",
@@ -135,8 +126,7 @@ const Chars = (() => {
 					"you react with <b>Amazement</b> (or) <b>Criticism:</b> Someone has to see this thing!",
 					"you react with <b>Acceptance</b> (or) <b>Denial:</b> All this is according to design, or a change must come, whatever the cost.",
 					"you react with <b>Attraction</b> (or) <b>Repulsion:</b> If you can just get a little closer... or farther away...",
-					"you react with <b>Zeal</b> (or) <b>Boredom:</b> You're reminded of what is good in the world, or you grow impatient to find something more interesting."
-				]
+					"you react with <b>Zeal</b> (or) <b>Boredom:</b> You're reminded of what is good in the world, or you grow impatient to find something more interesting."]
 			]
 		],
 		HTML = {
@@ -214,11 +204,11 @@ const Chars = (() => {
 					stop: "</div>"
 				}
 			}
-		}
-	// #endregion
+		},
+		// #endregion
 
-	// #region Register Characters
-	const registerChars = function (chars) {
+		// #region Register Characters
+	 registerChars = chars => {
 			_.each(chars, char => {
 				state[D.GAMENAME].Chars[char.id] = {
 					name: D.GetName(char),
@@ -231,13 +221,12 @@ const Chars = (() => {
 					playerID: D.GetPlayerID(char)
 				}
 				D.Alert(`Registered '${D.GetName(char)}'`)
-			})
+			} )
 		},
-
-		unregisterChar = function (charString) {
+		unregisterChar = charString => {
 			const stateRef = state[D.GAMENAME].Chars
 			let [charName, altKey] = [null, null]
-			if (stateRef[charString]) {
+			if (stateRef[charString] ) {
 				charName = stateRef[charString].name
 				altKey = charString === charName ? stateRef[charString].id : charName
 				delete state[D.GAMENAME].Chars[charString]
@@ -246,71 +235,71 @@ const Chars = (() => {
 			} else {
 				D.ThrowError(`No character found registered with search key '${D.JSL(charString)}'`)
 			}
-		}
-	// #endregion
+		},
+		// #endregion
 
-	// #region Awarding XP
-	const awardXP = function (char, award, session, reason) {
-		if (!state[D.GAMENAME].Chars[char.id])
-			return D.ThrowError("You must register the character first.", "AWARDXP")
-		const rowID = D.MakeRow(char.id, "earnedxp", {
-			xp_award: award,
-			xp_session: session,
-			xp_reason: reason
-		})
-		if (rowID)
+		// #region Awarding XP
+	 awardXP = (char, award, session, reason) => {
+			if (!state[D.GAMENAME].Chars[char.id] )
+				return D.ThrowError("You must register the character first.", "AWARDXP")
+			const rowID = D.MakeRow(char.id, "earnedxp", {
+				xp_award: award,
+				xp_session: session,
+				xp_reason: reason
+			} )
+			if (rowID)
+				return true
+
+			return D.ThrowError(`Unable to make row for '${D.JSL(char)}'`, "AWARDXP")
+		},
+		// #endregion
+
+		// #region Manipulating Stats on Sheet
+	 adjustDamage = (charObj, trt, dtype, amount) => {
+			const attrList = {},
+				trait = trt.slice(0, 1).toUpperCase() + trt.slice(1)
+			attrList[trait.toLowerCase() + ( ["superficial", "superficial+", "spent"].includes(dtype) ? "_sdmg" : "_admg")] = parseInt(amount) > 0 && dtype === "superficial" ? parseInt(Math.ceil(amount / 2)) : parseInt(amount)
+			setAttrs(charObj.id, attrList)
+
 			return true
+		},
+		// #endregion
 
-		return D.ThrowError(`Unable to make row for '${D.JSL(char)}'`, "AWARDXP")
-	}
-	// #endregion
-
-	// #region Manipulating Stats on Sheet
-	const adjustDamage = function (charObj, trt, dtype, amount) {
-		const attrList = {},
-			trait = trt.slice(0, 1).toUpperCase() + trt.slice(1)
-		attrList[trait.toLowerCase() + (["superficial", "superficial+", "spent"].includes(dtype) ? "_sdmg" : "_admg")] = parseInt(amount) > 0 && dtype === "superficial" ? parseInt(Math.ceil(amount / 2)) : parseInt(amount)
-		setAttrs(charObj.id, attrList)
-
-		return true
-	}
-	// #endregion
-
-	// #region Generating MVCs
-	const MVC = function (params) {
-		const results = []
-		for (const mvc of MVCVALS) {
-			results.push(bHTML.div.title.start + mvc[0] + bHTML.div.title.stop)
-			for (const [fType, ...mvcItems] of mvc.slice(1)) {
-				try {
-					results.push(bHTML.div[fType].start + _.shuffle(mvcItems)[0] + bHTML.div[fType].stop)
-				} catch (errObj) {
-					return D.ThrowError(`ERRORED returning '${D.JSL(fType)}' for '${D.JSL(mvcItems)}' of '${D.JSL(mvc)}', of '${D.JSL(MVCVALS)}'`)
+		// #region Generating MVCs
+	 MVC = params => {
+			const results = []
+			for (const mvc of MVCVALS) {
+				results.push(bHTML.div.title.start + mvc[0] + bHTML.div.title.stop)
+				for (const [fType, ...mvcItems] of mvc.slice(1)) {
+					try {
+						results.push(bHTML.div[fType].start + _.shuffle(mvcItems)[0] + bHTML.div[fType].stop)
+					} catch (errObj) {
+						return D.ThrowError(`ERRORED returning '${D.JSL(fType)}' for '${D.JSL(mvcItems)}' of '${D.JSL(mvc)}'`, "CHARS.MVC", errObj)
+					}
 				}
 			}
-		}
-		D.SendToPlayer(params.name, HTML.start + results.join("") + HTML.stop, " ")
+			D.SendToPlayer(params.name, HTML.start + results.join("") + HTML.stop, " ")
 
-		return true
-	}
-	// #endregion
+			return true
+		},
+		// #endregion
 
-	// #region Event Handlers (handleInput)
-	const handleInput = function (msg) {
-		if (msg.type !== "api")
-			return
-		const who = (getObj("player", msg.playerid) || {
-				get: () => "API"
-			}).get("displayname"),
-			args = msg.content.split(/\s+/u)
-		let [chars, params] = [
-			[],
-			[]
-		],
-		[amount, session, trait, dtype, dmg, incapString, charData] = new Array(7).fill(null)
-		switch (args.shift()) {
+		// #region Event Handlers (handleInput)
+	 handleInput = msg => {
+			if (msg.type !== "api")
+				return
+			const who = (getObj("player", msg.playerid) || {
+					get: () => "API"
+				} ).get("displayname"),
+				args = msg.content.split(/\s+/u)
+			let [chars, params] = [
+					[],
+					[]
+				],
+				[amount, session, trait, dtype, dmg, incapString, charData] = new Array(7).fill(null)
+			switch (args.shift()) {
 			case "!rChar":
-				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0])
+				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] )
 					registerChars(D.GetChars(msg))
 				else
 					D.ThrowError("Select character tokens first!", "CHARS")
@@ -333,7 +322,7 @@ const Chars = (() => {
 							D.Alert(`${amount} XP awarded to ${D.GetName(char)}`, "!XP")
 						else
 							D.ThrowError(`FAILED to award ${JSON.stringify(amount)} XP to ${JSON.stringify(D.GetName(char))}`, "!XP")
-					})
+					} )
 				} else {
 					D.ThrowError("Select character tokens first!", "CHARS")
 				}
@@ -349,23 +338,23 @@ const Chars = (() => {
 							D.Alert(`Dealt ${D.JS(dmg)} ${D.JS(dtype)} ${D.JS(trait)} damage to ${D.GetName(char)}`, "CHARS")
 						else
 							D.ThrowError(`FAILED to damage ${D.GetName(char)}`, "CHARS")
-					})
+					} )
 				} else {
 					D.ThrowError("Select character tokens first!", "CHARS")
 				}
 				break
 			case "!getIncap":
-				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0])
+				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] )
 					D.Alert(`Incapacitation String for '${D.GetName(D.GetChar(msg))}': <br/><br/>${D.GetStat(msg, "incap").get("current")}<br/><br/>e.g. !setIncap Compulsion (Arrogance):a:-2<br/><br/>OR<br/><br/>!setIncap Compulsion (Arrogance):Strength,Dexterity,Animal Ken,Dominate:-2`, "CHARS")
 				else
 					D.Alert("Select a character first!", "CHARS")
 				break
 			case "!setIncap":
-				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0]) {
+				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
 					incapString = args.join(" ")
 					setAttrs(D.GetChar(msg).id, {
 						incap: incapString
-					})
+					} )
 					D.Alert(`Incapacitation String for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(incapString)}`, "CHARS !setIncap")
 				} else {
 					D.Alert("Select a character first!", "CHARS")
@@ -373,13 +362,13 @@ const Chars = (() => {
 				break
 			case "!setCompulsion":
 			case "!setComp":
-				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0]) {
+				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
 					params = args.join(" ").split("|")
 					if (params.length === 2) {
 						setAttrs(D.GetChar(msg).id, {
 							compulsion_toggle: 1,
 							compulsion: `${params[0].toUpperCase()} --- ${params[1]}`
-						})
+						} )
 						D.Alert(`Compulsion for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(`${params[0].toUpperCase()} --- ${params[1]}`)}`, "CHARS !setDys")
 					} else {
 						D.Alert("Must supply a title and a message separated by a pipe '|'", "CHARS !setComp")
@@ -395,13 +384,13 @@ const Chars = (() => {
 		   FRAGILE CONFIDENCE --- Add three dice to all rolls to intimidate or oppress others (including
 			uses of Dominate), until someone successfully resists you.  After that point, subtract three
 			dice from all Social rolls. */
-				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0]) {
+				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
 					params = args.join(" ").split("|")
 					if (params.length === 2) {
 						setAttrs(D.GetChar(msg).id, {
 							dyscrasias_toggle: 1,
 							dyscrasias: `${params[0].toUpperCase()} --- ${params[1]}`
-						})
+						} )
 						D.Alert(`Dyscrasias for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(`${params[0].toUpperCase()} --- ${params[1]}`)}`, "CHARS !setDys")
 					} else {
 						D.Alert("Must supply a title and a message separated by a pipe '|'", "CHARS !setDys")
@@ -412,10 +401,10 @@ const Chars = (() => {
 				break
 			case "!clearCompulsion":
 			case "!clearComp":
-				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0]) {
+				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
 					setAttrs(D.GetChar(msg).id, {
 						compulsion_toggle: 0
-					})
+					} )
 					D.Alert(`Compulsion disabled for '${D.GetName(D.GetChar(msg))}'`, "CHARS !clearComp")
 				} else {
 					D.Alert("Select a character first!", "CHARS")
@@ -423,43 +412,43 @@ const Chars = (() => {
 				break
 			case "!clearDyscrasias":
 			case "!clearDys":
-				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0]) {
+				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
 					setAttrs(D.GetChar(msg).id, {
 						dyscrasias_toggle: 0
-					})
+					} )
 					D.Alert(`Dyscrasias disabled for '${D.GetName(D.GetChar(msg))}'`, "CHARS !clearDys")
 				} else {
 					D.Alert("Select a character first!", "CHARS")
 				}
 				break
 			case "!getProj":
-				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0]) {
-					const attrs = _.filter(findObjs({
-							_type: "attribute",
-							_characterid: D.GetChar(msg).id
-						}),
-						v => v.get("name").toLowerCase()
+				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
+					const attrs = _.filter(findObjs( {
+						_type: "attribute",
+						_characterid: D.GetChar(msg).id
+					} ),
+					v => v.get("name").toLowerCase()
 						.includes("repeating_project_"))
 					D.Alert(`Project Attributes List: ${D.JS(attrs)}`, "CHARS !getProj")
 				}
 				break
 			case "!delProj":
-				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0]) {
+				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
 					let attrs = []
-					_.each(["project_false", "_[object"], val => {
-						attrs = attrs.concat(_.filter(findObjs({
-								_type: "attribute",
-								_characterid: D.GetChar(msg).id
-							}),
-							v => v.get("name").toLowerCase()
-							.includes(val)))
-					})
-					_.each(attrs, v => v.remove())
-					attrs = _.filter(findObjs({
+					_.each( ["project_false", "_[object"], val => {
+						attrs = attrs.concat(_.filter(findObjs( {
 							_type: "attribute",
 							_characterid: D.GetChar(msg).id
-						}),
+						} ),
 						v => v.get("name").toLowerCase()
+							.includes(val)))
+					} )
+					_.each(attrs, v => v.remove())
+					attrs = _.filter(findObjs( {
+						_type: "attribute",
+						_characterid: D.GetChar(msg).id
+					} ),
+					v => v.get("name").toLowerCase()
 						.includes("repeating_project_"))
 					D.Alert(`New Attributes List: ${D.JS(attrs)}`, "CHARS !delProj")
 				}
@@ -471,11 +460,11 @@ const Chars = (() => {
 				MVC(params)
 				break
 			case "!freeText":
-				_.each(findObjs({
+				_.each(findObjs( {
 					pageid: Campaign().get("playerpageid"),
 					type: "text",
 					layer: "objects"
-				}), obj => obj.set("controlledby", "all"))
+				} ), obj => obj.set("controlledby", "all"))
 				break
 			case "!debug":
 				if (playerIsGM(msg.playerid)) {
@@ -487,14 +476,13 @@ const Chars = (() => {
 				break
 			default:
 				break
-		}
-	}
-	// #endregion
+			}
+		},
+		// #endregion
 
-	// #region Public Functions: regHandlers
-	const regHandlers = () => on("chat:message", handleInput),
-
-		checkInstall = function () {
+		// #region Public Functions: regHandlers
+	 regHandlers = () => on("chat:message", handleInput),
+		checkInstall = () => {
 			// Delete state[D.GAMENAME].Chars;
 			state[D.GAMENAME] = state[D.GAMENAME] || {}
 			state[D.GAMENAME].Chars = state[D.GAMENAME].Chars || {}
@@ -505,10 +493,10 @@ const Chars = (() => {
 		RegisterEventHandlers: regHandlers,
 		CheckInstall: checkInstall
 	}
-})()
+} )()
 
 on("ready", () => {
 	Chars.RegisterEventHandlers()
 	Chars.CheckInstall()
 	D.Log("Ready!", "Chars")
-})
+} )

@@ -171,7 +171,7 @@ module.exports = {
             "min": 3,
             "max": 14,
             "properties": "never",
-            "exceptions": ["v", "v1", "v2", "k", "kv", "i", "j", "gN", "p", "pI", "pV", "D"]
+            "exceptions": ["v", "v1", "v2", "k", "kv", "i", "j", "gN", "p", "pI", "pV", "D", "FX", "a", "b"]
         }],
         "implicit-arrow-linebreak": ["error", "beside"],
         "indent": ["warn", "tab"],
