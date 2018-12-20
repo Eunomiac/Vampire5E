@@ -5,7 +5,7 @@
     "avatar": "https://s3.amazonaws.com/files.d20.io/images/65828763/rYmHDkxinqImRW5X_OfyBQ/med.png?1540750845",
     "bio": "",
     "gmnotes": "",
-    "defaulttoken": "{\"left\":2128,\"top\":903,\"width\":154,\"height\":210,\"imgsrc\":\"https://s3.amazonaws.com/files.d20.io/images/65831676/wmTQ818qDdfyKAQ_lM_pDA/med.png?1540752931\",\"page_id\":\"-LNZxbXyJYEL4nRFEm4x\",\"layer\":\"objects\",\"name\":\"Johannes Napier\",\"represents\":\"-LN4Supsc0Xj1-ajOz4I\",\"showplayers_name\":true,\"playersedit_name\":false,\"playersedit_bar1\":false,\"playersedit_bar2\":false,\"playersedit_bar3\":false,\"playersedit_aura1\":false,\"playersedit_aura2\":false,\"lastmove\":\"1946,1358\"}",
+    "defaulttoken": "{\"left\":2005.5,\"top\":1179.5,\"width\":154,\"height\":210,\"imgsrc\":\"https://s3.amazonaws.com/files.d20.io/images/69211889/6jgOBzDBfwvQV__fsORH6g/max.png?1544987477\",\"page_id\":\"-LNZxbXyJYEL4nRFEm4x\",\"layer\":\"objects\",\"name\":\"Johannes Napier\",\"represents\":\"-LN4Supsc0Xj1-ajOz4I\",\"showplayers_name\":true,\"playersedit_name\":false,\"playersedit_bar1\":false,\"playersedit_bar2\":false,\"playersedit_bar3\":false,\"playersedit_aura1\":false,\"playersedit_aura2\":false,\"lastmove\":\"2002,1177\"}",
     "tags": "[]",
     "controlledby": "-LN7lNnjuWmFuvVPW76H",
     "inplayerjournals": "all",
@@ -937,7 +937,7 @@
             "name": "willpower_8",
             "current": "0",
             "max": "",
-            "id": "-LNaebc27_ZDlvpWbnM"
+            "id": "-LNaebc27__ZDlvpWbnM"
         },
         {
             "name": "willpower_9",
@@ -1487,7 +1487,7 @@
         },
         {
             "name": "hunger",
-            "current": 2,
+            "current": 3,
             "max": "",
             "id": "-LO4gi5zCR1dAmlrr5gv"
         },
@@ -1837,7 +1837,7 @@
             "name": "repeating_spentxp_-LOaLRdJZb62plNm2LGK_xp_trait_toggle",
             "current": 1,
             "max": "",
-            "id": "-LOaLTSnF383Pq5OqY_"
+            "id": "-LOaLTSnF383Pq5OqY__"
         },
         {
             "name": "repeating_spentxp_-LOaLRdJZb62plNm2LGK_xp_initial_toggle",
@@ -2536,30 +2536,6 @@
             "id": "-LQi-J10d6tpbZvbtT8U"
         },
         {
-            "name": "health_sdmg",
-            "current": 0,
-            "max": "",
-            "id": "-LQi-K-AM296CEtXIw9p"
-        },
-        {
-            "name": "health_admg",
-            "current": 0,
-            "max": "",
-            "id": "-LQi-K-E9uh0ypRAxMAA"
-        },
-        {
-            "name": "willpower_sdmg",
-            "current": 0,
-            "max": "",
-            "id": "-LQi-K-WySMmOHvw5uPC"
-        },
-        {
-            "name": "willpower_admg",
-            "current": 0,
-            "max": "",
-            "id": "-LQi-K-_IsbwTgdSKkG_"
-        },
-        {
             "name": "date_today",
             "current": "1532050500000",
             "max": "",
@@ -3176,6 +3152,46 @@
             "current": "Session XP award.",
             "max": "",
             "id": "-LTLFBBf118lTQiKX-h3"
+        }, {
+            "name": "repeating_project_-LTtfgO5qTvsneO38goP_projectlaunchtrait2_name",
+            "current": "",
+            "max": "",
+            "id": "-LTtfmYez_4GOhIrM-jX"
+        }, {
+            "name": "repeating_project_-LTtfgO5qTvsneO38goP_projectlaunchtrait2",
+            "current": "0",
+            "max": "",
+            "id": "-LTtfmZczGVZ77S8OsKi"
+        }, {
+            "name": "repeating_project_-LTtfgO5qTvsneO38goP_projectlaunchdiff",
+            "current": 3,
+            "max": "",
+            "id": "-LTtfmb-OCUXX1CjY_GX"
+        }, {
+            "name": "repeating_project_-LTtfgO5qTvsneO38goP_projectlaunchroll_toggle",
+            "current": 0,
+            "max": "",
+            "id": "-LTtfmb2AwsaY8fOJSHd"
+        }, {
+            "name": "repeating_project_-LTtfgO5qTvsneO38goP_projectlaunchtrait1_name",
+            "current": "",
+            "max": "",
+            "id": "-LTtfpJ_gFLSoCz_weJa"
+        }, {
+            "name": "repeating_project_-LTtfgO5qTvsneO38goP_projectlaunchtrait1",
+            "current": "0",
+            "max": "",
+            "id": "-LTtfpKd7kmk8Mvhwuue"
+        }, {
+            "name": "repeating_project_-LTtfgO5qTvsneO38goP_projectlaunchrollparams",
+            "current": "@{character_name}|Streetwise:3,Allies (Bookies):4|2|0|0|-lttfgo5qtvsneo38gop",
+            "max": "",
+            "id": "-LTtfpMpH6YwemoSircR"
+        }, {
+            "name": "repeating_project_-LTtfgO5qTvsneO38goP_projectscope",
+            "current": "1",
+            "max": "",
+            "id": "-LTthpjf31giJVDwuPQe"
         }
     ],
     "abilities": []

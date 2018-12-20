@@ -1,0 +1,10 @@
+API FIXING
+
+- secret roll
+- projects
+- time tracker
+- frenzy roll (and others)
+
+ADDITIONS
+
+- staked project dots

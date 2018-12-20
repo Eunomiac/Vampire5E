@@ -459,21 +459,6 @@ const Chars = (() => {
 				}
 				MVC(params)
 				break
-			case "!freeText":
-				_.each(findObjs( {
-					pageid: Campaign().get("playerpageid"),
-					type: "text",
-					layer: "objects"
-				} ), obj => obj.set("controlledby", "all"))
-				break
-			case "!debug":
-				if (playerIsGM(msg.playerid)) {
-					D.SetDebugLevel(parseInt(args.shift()))
-					D.Alert(`Debug Level set to ${state[D.GAMENAME].DEBUGLEVEL}`)
-				} else {
-					D.Alert("You must be a GM to use this command.")
-				}
-				break
 			default:
 				break
 			}

@@ -5,7 +5,7 @@
     "avatar": "https://s3.amazonaws.com/files.d20.io/images/65828643/A14n-cWQwg61si6l4hWuOg/med.png?1540750736",
     "bio": "",
     "gmnotes": "",
-    "defaulttoken": "{\"left\":560,\"top\":903,\"width\":154,\"height\":210,\"imgsrc\":\"https://s3.amazonaws.com/files.d20.io/images/65831677/nrVcfH9YUyHTftd6t-Qdbg/med.png?1540752932\",\"page_id\":\"-LNZxbXyJYEL4nRFEm4x\",\"layer\":\"objects\",\"name\":\"Kingston \\\"King\\\" Black\",\"represents\":\"-LN4P73XRfqCcI8U6c-t\",\"showplayers_name\":true,\"playersedit_name\":false,\"playersedit_bar1\":false,\"playersedit_bar2\":false,\"playersedit_bar3\":false,\"playersedit_aura1\":false,\"playersedit_aura2\":false,\"lastmove\":\"651,966\"}",
+    "defaulttoken": "{\"left\":1757,\"top\":1484,\"width\":154,\"height\":210,\"imgsrc\":\"https://s3.amazonaws.com/files.d20.io/images/69211878/sua0A6B-GJIRhWYm4DN5IQ/max.png?1544987472\",\"page_id\":\"-LNZxbXyJYEL4nRFEm4x\",\"layer\":\"objects\",\"name\":\"Kingston \\\"King\\\" Black\",\"represents\":\"-LN4P73XRfqCcI8U6c-t\",\"showplayers_name\":true,\"playersedit_name\":false,\"playersedit_bar1\":false,\"playersedit_bar2\":false,\"playersedit_bar3\":false,\"playersedit_aura1\":false,\"playersedit_aura2\":false,\"lastmove\":\"1823.5,1480.5\"}",
     "tags": "[]",
     "controlledby": "-LMGDQqIvyL87oIfrVDX",
     "inplayerjournals": "all",
@@ -1325,7 +1325,7 @@
         },
         {
             "name": "hunger",
-            "current": "3",
+            "current": "1",
             "max": "",
             "id": "-LOWLKkmBa7FA4KktIRU"
         },
@@ -1495,7 +1495,7 @@
             "name": "repeating_spentxp_-LOWlWWA79oFXgWQhWH-_xp_new_toggle",
             "current": 1,
             "max": "",
-            "id": "-LOWlXf2teZCbrjw_a6"
+            "id": "-LOWlXf2teZCbrjw__a6"
         },
         {
             "name": "repeating_spentxp_-LOWlWWA79oFXgWQhWH-_xp_arrow_toggle",
@@ -2308,22 +2308,10 @@
             "id": "-LQhz54FzB4OaLJ2I8cc"
         },
         {
-            "name": "health_admg",
-            "current": -6,
-            "max": "",
-            "id": "-LQhz54KHcIuevG57PG0"
-        },
-        {
             "name": "willpower_sdmg",
             "current": 0,
             "max": "",
             "id": "-LQhz55eVuwFEbTaNfJF"
-        },
-        {
-            "name": "willpower_admg",
-            "current": 0,
-            "max": "",
-            "id": "-LQhz55htX-iu455v35B"
         },
         {
             "name": "repeating_discleft_-LN7nwZft-kxiXK4LHKj_discpower_toggle",
@@ -2546,6 +2534,62 @@
             "current": "Session XP award.",
             "max": "",
             "id": "-LTLFBBovcHqFjQicUCq"
+        }, {
+            "name": "repeating_spentxp_-LTtou-cbpVghoaQ2br1_xp_category",
+            "current": "Advantage",
+            "max": "",
+            "id": "-LTtouzfHCXyFf_l82L5"
+        }, {
+            "name": "repeating_spentxp_-LTtou-cbpVghoaQ2br1_xp_traittoggle",
+            "current": 1,
+            "max": "",
+            "id": "-LTtov1GfyuN6UMu86Ip"
+        }, {
+            "name": "repeating_spentxp_-LTtou-cbpVghoaQ2br1_xp_initialtoggle",
+            "current": 1,
+            "max": "",
+            "id": "-LTtov1KFo1yJB85gitz"
+        }, {
+            "name": "repeating_spentxp_-LTtou-cbpVghoaQ2br1_xp_newtoggle",
+            "current": 1,
+            "max": "",
+            "id": "-LTtov1QB-jbIS_gc0p5"
+        }, {
+            "name": "repeating_spentxp_-LTtou-cbpVghoaQ2br1_xp_arrowtoggle",
+            "current": 1,
+            "max": "",
+            "id": "-LTtov1VTetCZle-h9VI"
+        }, {
+            "name": "repeating_spentxp_-LTtou-cbpVghoaQ2br1_xp_trait",
+            "current": "Golconda",
+            "max": "",
+            "id": "-LTtowLAib5amHYeLFDL"
+        }, {
+            "name": "repeating_spentxp_-LTtou-cbpVghoaQ2br1_xp_cost",
+            "current": 6,
+            "max": "",
+            "id": "-LTtowNKWho2Qg7O-iBg"
+        }, {
+            "name": "repeating_spentxp_-LTtou-cbpVghoaQ2br1_xp_initial",
+            "current": "1",
+            "max": "",
+            "id": "-LTtowi4ZfT3VH6A1yJd"
+        }, {
+            "name": "repeating_spentxp_-LTtou-cbpVghoaQ2br1_xp_new",
+            "current": "3",
+            "max": "",
+            "id": "-LTtox26zcRV77NEYTFG"
+        }, {
+            "name": "repeating_spentxp_-LTtou-cbpVghoaQ2br1_xp_spenttoggle",
+            "current": "0",
+            "max": "",
+            "id": "-LTtoxZClMhEzmIJIDyT"
+        },
+        {
+            "name": "repeating_project_-LTtwHIEh19DZBlmXGHB_projectgoal",
+            "current": "To raise my Golconda Loresheet Rating",
+            "max": "",
+            "id": "-LTtwJA4iUch5dvjAzUk"
         }
     ],
     "abilities": []

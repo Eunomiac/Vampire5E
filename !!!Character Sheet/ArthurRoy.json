@@ -275,7 +275,7 @@
         },
         {
             "name": "tab_core",
-            "current": "6",
+            "current": "1",
             "max": "",
             "id": "-LN6tLRoEraDdOnzt-z7"
         },
@@ -1706,30 +1706,6 @@
             "current": "Three Troubled Thin-Bloods: Story completion award.",
             "max": "",
             "id": "-LQi-2PTfOwLXKntefGb"
-        },
-        {
-            "name": "health_sdmg",
-            "current": 0,
-            "max": "",
-            "id": "-LQi-Rfd3tnYFIBBp4ql"
-        },
-        {
-            "name": "health_admg",
-            "current": 0,
-            "max": "",
-            "id": "-LQi-Rfl2S16lIrWKR57"
-        },
-        {
-            "name": "willpower_sdmg",
-            "current": 0,
-            "max": "",
-            "id": "-LQi-Rg6YORKd678MnO2"
-        },
-        {
-            "name": "willpower_admg",
-            "current": 0,
-            "max": "",
-            "id": "-LQi-Rg9gSqlDdh1t4yw"
         },
         {
             "name": "date_today",

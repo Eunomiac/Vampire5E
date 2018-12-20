@@ -154,7 +154,7 @@ const Images = (() => {
 				delete REGISTRY[imgData.name]
 
 				return true
-			} else if (imgData && REGISTRY[imgData.name]) {
+			} else if (imgData && REGISTRY[imgData.name] ) {
 				delete REGISTRY[imgData.name]
 
 				return true

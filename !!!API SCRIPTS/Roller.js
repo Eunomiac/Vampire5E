@@ -1,7 +1,7 @@
 ﻿const Roller = (() => {
 	let [isRerollFXOn, rerollFX] = [false, null]
-	/* let rerollFX2 = null
-	   #region CONFIGURATION: Image Links, Color Schemes */
+
+	// #region CONFIGURATION: Image Links, Color Schemes */
 	const SETTINGS = {
 			dice: {
 				diceList: 30,
@@ -399,11 +399,11 @@
 			}
 		},
 		CHATSTYLES = {
-			fullBox: "<div style=\"display: block; width: 250px; padding: 5px 5px; margin-left: -38px; margin-top: -22px; margin-bottom: -5px; color: white; font-variant: small-caps; font-family: 'Bodoni SvtyTwo ITC TT'; text-align: left; font-size: 16px;  border: 3px outset darkred; background: url('https://imgur.com/kBl8aTO.jpg') center no-repeat; z-index: 100; position: relative;\">",
+			fullBox: "<div style=\"display: block;width: 259px;padding: 5px 5px;margin-left: -42px;margin-top: -30px;margin-bottom: -5px;color: white;font-variant: small-caps;font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset darkred;background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;\">",
 			space10: "<span style=\"display: inline-block; width: 10px;\"></span>",
 			space30: "<span style=\"display: inline-block; width: 30px;\"></span>",
 			space40: "<span style=\"display: inline-block; width: 40px;\"></span>",
-			rollerName: "<div style=\"display: block; width: 100%; font-size: 16px; height: 10px; padding: 3px 0px; border-bottom: 1px solid white;\">",
+			rollerName: "<div style=\"display: block; width: 100%; font-size: 16px; height: 15px; padding: 0px 3px 5px 3px; border-bottom: 1px solid white;\">",
 			mainRoll: "<div style=\"display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid white;\"><span style=\"display: block; height: 16px; line-height: 16px; width: 100%; font-size: 12px; font-variant: none;\">",
 			mainRollSub: "<span style=\"display: block; height: 12px; line-height: 12px; width: 100%; margin-left: 24px; font-size: 10px; font-variant: italic;\">",
 			check: "<div style=\"display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid white;\"><span style=\"display: block; height: 20px;  line-height: 20px; width: 100%; margin-left: 10%;\">",
@@ -687,9 +687,6 @@
 					width,
 					left
 				} = state[D.GAMENAME].Roller.textList[objName]
-			//if (objName === "difficulty") {
-				//D.Alert(`At Difficulty.  Object: ${D.JS(obj)}`)
-			//}
 			if (!obj)
 				return D.ThrowError(`Failure to recover object '${D.JS(objName)}': ${D.JS(state[D.GAMENAME].Roller.textList)}`, "ROLLER: setText()")
 			if (params.justified && params.justified === "left") {
@@ -718,13 +715,7 @@
 			}
 			if (_.isNaN(params.left) || _.isNaN(params.width))
 				return D.ThrowError(`Bad left or width given for '${D.JS(objName)}': ${D.JS(params)}`, "ROLLER: setText()")
-			obj.set(_.omit(params, ["justified", "shift"]))
-			if (objName === "difficulty") {
-				obj.set("text", "2")
-				obj.set("layer", "objects")
-				toFront(obj)
-				obj.set("font_size: 70")
-			}
+			obj.set(_.omit(params, ["justified", "shift"] ))
 
 			return params
 		},
@@ -783,8 +774,8 @@
 			const [imageList, textList] = [
 					[],
 					[]
-			],
-				bgImg = getObj("graphic", state[D.GAMENAME].Roller.imgList.Background)  /*,
+				],
+				bgImg = getObj("graphic", state[D.GAMENAME].Roller.imgList.Background)  /* ,
 				bgImg = Images.Get("Background")*/
 			for (const name of _.keys(state[D.GAMENAME].Roller.textList))
 				clearText(name)
@@ -967,6 +958,7 @@
 				D.RunFX("bloodCloud1", POSITIONS.bloodCloudFX)
 				// D.RunFX("bloodCloud2", POSITIONS.bloodCloudFX)
 				rerollFX = setInterval(D.RunFX, 1800, "bloodCloud1", POSITIONS.bloodCloudFX)
+
 				/* rerollFX2 = setInterval(D.RunFX, 1800, "bloodCloud2", POSITIONS.bloodCloudFX)
 				   D.RunFX("bloodCloud", POSITIONS.bloodCloudFX)
 				   rerollFX = setInterval(D.RunFX, 1800, "bloodCloud", POSITIONS.bloodCloudFX) */
@@ -1069,14 +1061,14 @@
 			if (!params.groupNum) {
 				switch (rollType) {
 				case "frenzy":
-					traits = ["Willpower", "Humanity"]
+					traits = ["willpower", "humanity"]
 					break
 				case "humanity":
 				case "remorse":
-					traits = ["Humanity"]
+					traits = ["humanity"]
 					break
 				case "willpower":
-					traits = ["Willpower"]
+					traits = ["willpower"]
 					break
 				default:
 					break
@@ -1089,16 +1081,16 @@
 				if (trt.includes(":")) {
 					const tData = trt.split(":")
 					tFull.traitData[tData[0]] = {
-						display: tData[0],
+						display: D.Capitalize(tData[0] ),
 						value: parseInt(tData[1] )
 					}
-					if (rollType === "frenzy" && tData[0] === "Humanity") {
-						tFull.traitData.Humanity.display = "⅓ Humanity"
-						tFull.traitData.Humanity.value = Math.floor(tFull.traitData.Humanity.value / 3)
-					} else if (rollType === "remorse" && tData[0] === "Stains") {
-						tFull.traitData.Humanity.display = "Human Potential"
-						tFull.traitData.Humanity.value = 10 - tFull.traitData.Humanity.value - parseInt(tData[1] )
-						tFull.traitList = _.without(tFull.traitList, "Stains", "stains")
+					if (rollType === "frenzy" && tData[0] === "humanity") {
+						tFull.traitData.humanity.display = "⅓ Humanity"
+						tFull.traitData.humanity.value = Math.floor(tFull.traitData.humanity.value / 3)
+					} else if (rollType === "remorse" && tData[0] === "stains") {
+						tFull.traitData.humanity.display = "Human Potential"
+						tFull.traitData.humanity.value = 10 - tFull.traitData.humanity.value - parseInt(tData[1] )
+						tFull.traitList = _.without(tFull.traitList, "stains")
 						delete tFull.traitData[tData[0]]
 					}
 				} else {
@@ -1106,14 +1098,14 @@
 						display: D.IsIn(trt) || getAttrByName(charObj.id, `${gN + trt}_name`),
 						value: parseInt(getAttrByName(charObj.id, gN + trt)) || 0
 					}
-					if (rollType === "frenzy" && trt === "Humanity") {
-						tFull.traitData.Humanity.display = "⅓ Humanity"
-						tFull.traitData.Humanity.value = Math.floor(tFull.traitData.Humanity.value / 3)
-					} else if (rollType === "remorse" && trt === "Humanity") {
-						tFull.traitData.Humanity.display = "Human Potential"
-						tFull.traitData.Humanity.value = 10 -
-							tFull.traitData.Humanity.value -
-							(parseInt(getAttrByName(charObj.id, `${gN}Stains`)) || 0)
+					if (rollType === "frenzy" && trt === "humanity") {
+						tFull.traitData.humanity.display = "⅓ Humanity"
+						tFull.traitData.humanity.value = Math.floor(tFull.traitData.humanity.value / 3)
+					} else if (rollType === "remorse" && trt === "humanity") {
+						tFull.traitData.humanity.display = "Human Potential"
+						tFull.traitData.humanity.value = 10 -
+							tFull.traitData.humanity.value -
+							(parseInt(getAttrByName(charObj.id, `${gN}stains`)) || 0)
 					} else if (!tFull.traitData[trt].display) {
 						D.SendToPlayer(D.GetPlayerID(charObj), `Error determining NAME of trait '${D.JS(trt)}'.`, "ERROR: Dice Roller")
 					}
@@ -1163,48 +1155,44 @@
 					traits: traitData.traitList,
 					traitData: traitData.traitData,
 					diffMod: 0,
-					prefix: ""
+					prefix: "",
+					diff: null,
+					mod: null
 				}
 			if (params.groupNum) {
 				[rollData.charName] = params.args
-				rollData.diff = parseInt(params.args[2] ) || 0
-				rollData.mod = parseInt(params.args[3] ) || 0
+				rollData.diff = parseInt(params.args[2] || 0)
+				rollData.mod = parseInt(params.args[3] || 0)
 			} else {
 				rollData.charName = D.GetName(charObj)
 				switch (rollType) {
+				case "remorse":
+					rollData.diff = 0
+					rollData.mod = 0
+					break
 				case "project":
-					rollData.mod = parseInt(params[2] )
-					rollData.diffMod = parseInt(params[3] )
+					rollData.diffMod = parseInt(params[3] || 0)
 					rollData.prefix = ["repeating", "project", D.GetRepIDCase(params[4] ), ""].join("_")
-					D.Log(`PREFIX: ${D.JSL(rollData.prefix)}`)
+					D.Log(`PROJECT PREFIX: ${D.JSL(rollData.prefix)}`)
 					// Falls through
-				case "frenzy":
-					rollData.diff = parseInt(params[1] ) || parseInt(getAttrByName(charObj.id, "rolldiff"))
-					break
 				case "secret":
-					rollData.diff = params[2] ? parseInt(params[2] ) || 0 : 0
-					rollData.mod = params[1] ? parseInt(params[1] ) || 0 : 0
+					rollData.diff = parseInt(params[1] || 0)
+					rollData.mod = parseInt(params[2] || 0)
 					break
+				case "frenzy":
+					rollData.diff = parseInt(params[2] || 0)
+					// Falls through
 				default:
-					rollData.diff = parseInt(getAttrByName(charObj.id, "rolldiff"))
-					rollData.mod = parseInt(getAttrByName(charObj.id, "rollmod"))
+					rollData.diff = rollData.diff === null ? parseInt(getAttrByName(charObj.id, "rolldiff")) : rollData.diff
+					rollData.mod = rollData.mod === null ? parseInt(getAttrByName(charObj.id, "rollmod")) : rollData.mod
 					break
 				}
 			}
-			switch (rollType) {
-			case "remorse":
-				rollData.diff = 0
-				rollData.mod = 0
-				// Falls through
-			case "project":
-			case "humanity":
-			case "frenzy":
-			case "willpower":
+
+			if ( ["remorse", "project", "humanity", "frenzy", "willpower", "check", "rouse", "rouse2"].includes(rollType))
 				rollData.hunger = 0
-				break
-			default:
-				break
-			}
+
+			D.DB(`ROLL DATA: ${D.JS(rollData)}`, "ROLLER: makeSheetRoll()", 1)
 
 			return rollData
 		},
@@ -1214,7 +1202,8 @@
 		buildDicePool = rollData => {
 			/* MUST SUPPLY:
 				  For Rouse & Checks:    rollData = { type }
-				  For All Others:        rollData = { type, mod, << traits: [], traitData: { value, display }, hunger >> } */
+				  For All Others:        rollData = { type, mod, << traits: [],
+																traitData: { value, display }, hunger >> } */
 			/* EXAMPLE RESULTS:
 				{
 				  groupNum: "",
@@ -1263,9 +1252,9 @@
 				return rollData
 			default:
 				_.each(_.values(rollData.traitData), v => {
-					rollData.dicePool += v.value
+					rollData.dicePool += parseInt(v.value) || 0
 				} )
-				rollData.dicePool += rollData.mod
+				rollData.dicePool += parseInt(rollData.mod) || 0
 				break
 			}
 			if (rollData.traits.length === 0 && rollData.dicePool <= 0) {
@@ -1275,6 +1264,7 @@
 			}
 			rollData.hungerPool = Math.min(rollData.hunger, Math.max(1, rollData.dicePool))
 			rollData.basePool = Math.max(1, rollData.dicePool) - rollData.hungerPool
+			D.DB(`ROLL DATA: ${D.JS(rollData)}`, "ROLLER: buildDicePool()", 1)
 
 			return rollData
 
@@ -1330,8 +1320,9 @@
 				  margin: 5,
 				  commit: 0
 				}*/
-			D.DB(`RECEIVED ROLL DATA: ${D.JSL(rollData)}`, "ROLLER: rollDice()", 3)
-			D.DB(`RECEIVED ADDED VALS: ${D.JSL(addVals)}`, "ROLLER: rollDice()", 3)
+			// D.DB(`RECEIVED ROLL DATA: ${D.JSL(rollData)}`, "ROLLER: rollDice()", 3)
+			if (addVals)
+				D.DB(`ADDED VALS: ${D.JS(addVals)}`, "ROLLER: rollDice()", 3)
 			const sortBins = [],
 				rollResults = {
 					total: 0,
@@ -1490,6 +1481,7 @@
 				const scope = rollData.diff - rollData.diffMod - 2
 				rollResults.commit = Math.max(1, scope + 1 - rollResults.margin)
 			}
+			D.DB(`ROLL RESULTS: ${D.JS(rollResults)}`, "ROLLER: rollDice()", 1)
 
 			return rollResults
 		},
@@ -1499,11 +1491,18 @@
 				  rollResults = { diceVals = [], total, << margin >> }
 
 			resultBlock: "<div style=\"display: block; width: 120%; margin-left: -10%; height: auto; \">",
-			resultCount: "<div style=\"display: inline-block; width: YYY; text-align: right; height: 100%; \"><span style=\"display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none; height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: right; margin-right: 10px; font-size: 12px;\">",
-			margin: "<div style=\"display: inline-block; width: YYY; text-align: left; height: 100%; \"><span style=\"display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none; height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: left; margin-left: 10px; font-size: 12px;\">", */
+			resultCount: "<div style=\"display: inline-block; width: YYY; text-align: right; height: 100%; \">
+				<span style=\"display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none;
+					height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: right;
+					margin-right: 10px; font-size: 12px;\">",
+			margin: "<div style=\"display: inline-block; width: YYY; text-align: left; height: 100%; \">
+				<span style=\"display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none;
+					height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: left;
+					margin-left: 10px; font-size: 12px;\">", */
 			const dims = {widthSide: 0, widthMid: 0, marginSide: 0},
 				critCount = _.reduce(_.values(rollResults.critPairs), (tot, num) => tot + num, 0),
-				splitAt = Math.ceil((rollResults.diceVals.length + critCount) / Math.ceil((rollResults.diceVals.length + critCount) / split))
+				splitAt = Math.ceil((rollResults.diceVals.length + critCount) /
+							  Math.ceil((rollResults.diceVals.length + critCount) / split))
 			let logLine = `${CHATSTYLES.resultBlock}${CHATSTYLES.resultCount}${rollResults.total}:</span></div>${
 					CHATSTYLES.resultDice.colStart}${CHATSTYLES.resultDice.lineStart}`,
 				counter = 0
@@ -1533,9 +1532,10 @@
 						logLine,
 						"</div></div>",
 						CHATSTYLES.margin,
-						rollResults.margin >= 0 ? "(+" : "(-",
-						Math.abs(rollResults.margin),
-						")</span></div></div>"
+						typeof rollResults.margin === "number" ?
+							`(${rollResults.margin >= 0 ? "+" : "-"} ${Math.abs(rollResults.margin)})` :
+							"",
+						"</span></div></div>"
 					].join("")
 						.replace(/XXX/gu, dims.widthMid)
 						.replace(/YYY/gu, dims.widthSide)
@@ -1635,15 +1635,16 @@
 				}
 				// Falls through
 			case "frenzy":
-				rollLines.difficulty = {
-					text: ""
+				if (rollData.diff > 0) {
+					rollLines.difficulty = {
+						text: ""
+					}
 				}
 				// Falls through
 			case "remorse":
 			case "rouse2":
 			case "rouse":
 			case "check":
-				setImg("diffFrame", "blank")
 				rollLines.summary = {
 					text: ""
 				}
@@ -1665,6 +1666,9 @@
 				return D.ThrowError(`Unrecognized rollType: ${D.JSL(rollData.rollType)}`, "APPLYROLL: START")
 			}
 
+			if (rollData.diff === 0)
+				setImg("diffFrame", "blank")
+
 			_.each(_.keys(rollLines), line => {
 				if (_.isString(COLORSCHEMES[rollData.type][line] ))
 					rollLines[line] = setColor(line, rollData.type, rollLines[line] )
@@ -1672,8 +1676,8 @@
 
 			blankLines = _.keys(_.omit(state[D.GAMENAME].Roller.textList, _.keys(rollLines)))
 
-			D.DB(`ROLL LINES: ${D.JSL(rollLines)}`, "ROLLER: applyRoll()", 3)
-			D.DB(`BLANKING LINES: ${D.JSL(blankLines)}`, "ROLLER: applyRoll()", 3)
+			D.DB(`ROLL LINES: ${D.JS(rollLines)}`, "ROLLER: applyRoll()", 3)
+			D.DB(`BLANKING LINES: ${D.JS(blankLines)}`, "ROLLER: applyRoll()", 3)
 
 			_.each(rollLines, (content, name) => {
 				switch (name) {
@@ -1701,11 +1705,11 @@
 						_.each(rollData.traits, trt => {
 							let dotline = "●".repeat(rollData.traitData[trt].value)
 							switch (trt) {
-							case "Stains":
+							case "stains":
 								dotline = ""
 								// Falls through
-							case "Humanity":
-								stains = Math.max(parseInt(getAttrByName(rollData.charID, "Stains") || 0), 0)
+							case "humanity":
+								stains = Math.max(parseInt(getAttrByName(rollData.charID, "stains") || 0), 0)
 								if (rollData.type === "frenzy") {
 									stains = Math.max(stains === 0 ? 0 : 1, Math.floor(stains / 3))
 									maxHumanity = 4
@@ -1715,7 +1719,7 @@
 								else
 									dotline += "◌".repeat(Math.max(maxHumanity - dotline.length - (stains || 0)), 0) + "‡".repeat(stains || 0)
 								break
-							case "Willpower": // Stains
+							case "willpower": // Stains
 								dotline += "◌".repeat(Math.max(0, parseInt(getAttrByName(rollData.charID, "willpower_max")) - parseInt(rollData.traitData[trt].value)))
 								break
 							default:
@@ -1723,7 +1727,7 @@
 									dotline = "~"
 								break
 							}
-							if (trt !== "Stains") {
+							if (trt !== "stains") {
 								mainRollParts.push(
 									`${rollData.traitData[trt].display} (${dotline})`
 								)
@@ -1736,7 +1740,7 @@
 						rollLines.rollerName.text = introPhrase
 						rollLines.mainRoll.text = mainRollParts.join(" + ")
 						logLines.mainRoll = CHATSTYLES.mainRoll + mainRollLog.join(" + ")
-						if (rollData.mod !== 0) {
+						if (rollData.mod && rollData.mod !== 0) {
 							if (rollData.traits.length === 0 && rollData.mod > 0) {
 								rollLines.mainRoll.text = `${rollData.mod} Dice`
 								logLines.mainRoll = `${CHATSTYLES.mainRoll + rollData.mod} Dice`
@@ -1781,19 +1785,20 @@
 					break
 				case "difficulty":
 					if (rollData.diff === 0 && rollData.diffMod === 0) {
-						//D.Alert("Difficulty Is BLANK!")
+						// D.Alert("Difficulty Is BLANK!")
 						rollLines.difficulty.text = " "
 						setImg("diffFrame", "blank")
 						break
 					}
-					//D.Alert(`Setting Difficulty to ${rollData.diff}`)
+					// D.Alert(`Setting Difficulty to ${rollData.diff}`)
 					setImg("diffFrame", "diffFrame")
 					rollLines.difficulty = {
 						text: rollData.diff.toString()
 					}
-						logLines.difficulty = ` vs. ${rollData.diff}`
-						//D.Alert(`RollLines: ${D.JS(rollLines)}`)
-						//D.Alert(`LogLines: ${D.JS(logLines)}`)
+					logLines.difficulty = ` vs. ${rollData.diff}`
+
+					/* D.Alert(`RollLines: ${D.JS(rollLines)}`)
+						   D.Alert(`LogLines: ${D.JS(logLines)}`) */
 					break
 				case "resultCount":
 					rollLines.resultCount.text = JSON.stringify(rollResults.total)
@@ -1975,7 +1980,7 @@
                         logLines.outcome + logLines.subOutcome}</div>`
 			D.DB(`LOGLINES: ${D.JS(logLines)}`, "LOG LINES", 2)
 
-			D.SendToPlayer("Storyteller", logString, " ")
+			sendChat("", logString)
 			// D.Alert(logString);
 
 			D.DB("... Complete.", "ROLLER: applyRolls()", 4)
@@ -2045,18 +2050,10 @@
 			return deltaAttrs
 		},
 		makeSheetRoll = (charObj, rollType, params) => {
-			D.DB(`RECEIVED PARAMS: ${D.JSL(params)}`, "ROLLER: makeSheetRoll()", 2)
+			D.DB(`PARAMS: ${D.JS(params)} (length: ${params.length})`, "ROLLER: makeSheetRoll()", 1)
 
-			let rollData = getRollData(charObj, rollType, params)
-			D.DB(`ROLL DATA: ${D.JSL(rollData)}`, "ROLLER: makeSheetRoll()", 2)
-
-			rollData = buildDicePool(rollData)
-			D.DB(`BUILD POOL: ${D.JSL(rollData)}`, "ROLLER: makeSheetRoll()", 2)
-
-			const rollResults = rollDice(rollData)
-			D.DB(`ROLL RESULTS: ${D.JSL(rollResults)}`, "ROLLER: makeSheetRoll()", 2)
-
-			applyRoll(rollData, rollResults)
+			const rollData = buildDicePool(getRollData(charObj, rollType, params))
+			applyRoll(rollData, rollDice(rollData))
 		},
 		wpReroll = dieCat => {
 			clearInterval(rerollFX);
@@ -2392,7 +2389,7 @@
 				else
 					chars = D.GetChars(msg)
 				if (params.length < 1 || params.length > 3)
-					D.ThrowError(`Syntax Error: ![x][n]sroll: <trait1>[,<trait2>]|[<mod>]|[<diff>] (${D.JSL(params)})`)
+					D.ThrowError(`Syntax Error: ![x][n]sroll: <trait1>[,<trait2>]|[<diff>]|[<mod>] (${D.JSL(params)})`)
 				else
 					makeSecretRoll(chars, params, isSilent, isHidingTraits)
 				break

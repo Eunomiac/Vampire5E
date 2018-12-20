@@ -6,8 +6,13 @@
 const D = (() => {
 	// #region CONFIGURATION: Game Name, Character Registry
 	const GAMENAME = "VAMPIRE",
-		DBFILTER = [],
 		CHARREGISTRY = state[GAMENAME] && state[GAMENAME].Chars || {},
+		HTMLFORMATS = {
+			titleStart: "<div style=\"display: block; width: auto; padding: 0px 5px; margin-left: -42px; margin-top: -30px;font-family: copperplate gothic; font-variant: small-caps; font-size: 16px; background-color: #333333; color: white;border: 2px solid black; position: relative; height: 20px; line-height: 23px;\">",
+			titleEnd: "</div>",
+			bodyStart: "<div style=\"display: block;width: auto;padding: 5px 5px;margin-left: -42px; font-family: verdana;font-size: 12px;background-color: white;border: 2px solid black;line-height: 14px;position: relative;\">",
+			bodyEnd: "</div><div style=\"display: block; width: auto; margin-left: -42px; background-color: none; position: relative; height: 25px;\"></div>"
+		},
 		// #endregion
 
 		// #region DECLARATIONS: Reference Variables
@@ -376,32 +381,7 @@ const D = (() => {
 			if (gmObj)
 				return gmObj.id
 
-			return throwError("No GM found.", "DATA GETGMID")
-		},
-		sendToPlayer = (who, message = "", title = "") => {
-			/* Whispers formatted chat message to player given: display name OR player ID.
-     		Message can be an array of strings OR objects, of form: { message: <message>, title: <title> }. */
-			const player = getObj("player", who) ? getObj("player", who).get("_displayname") : who,
-				parseChatLine = msg => {
-					let str = ""
-					_.each(_.flatten( [msg] ), v => {
-						str += `<div style="display: block;"><span style="font-family:sans-serif; font-size: 10px; line-height: 10px;">${v}</span></div>`
-					} )
-
-					return str
-				}
-			let mString = null
-			if (player && _.isArray(message)) {
-				_.each(message.filter(v => _.isObject(v)), msg => sendToPlayer(who, msg, title))
-			} else if (player && _.isObject(message)) {
-				sendToPlayer(who, message.message || "", message.title || title)
-			} else {
-				mString = `<div style="border: 1px solid black; background-color: white; padding: 3px 3px;"><div style="display: block; font-weight: bold; border-bottom: 1px solid black;">${title}</div>${parseChatLine(message)}</div>`
-				if (player === "all")
-					sendChat("", mString)
-				else
-					sendChat("", `/w ${player} ${mString}`)
-			}
+			return D.ThrowError("No GM found.", "DATA GETGMID")
 		},
 		jStr = obj => {
 			/* Parses a value of any type via JSON.stringify, and then further styles it for display either
@@ -410,23 +390,37 @@ const D = (() => {
 				if (_.isUndefined(obj))
 					return "&gt;UNDEFINED&lt;"
 
-				return JSON.stringify(obj, null, "    ")
+				const replacer = (k, v) => typeof v === "string" ? v.replace(/\\/gu, "") : v
+
+				return JSON.stringify(obj, replacer, 2)
+					.replace(/(\s*?)"([^"]*?)"\s*?:/gu, "$1$2:")
+					.replace(/\\n/gu, "<br/>")
+					.replace(/\\t/gu, "")
+					.replace(/ /gu, "&nbsp;")
+					.replace(/\\"/gu, "\"")
+					.slice(1, -1)
+
+				/* return JSON.stringify(obj, null, 2)
 					.replace(/"/gu, "'")
 					.replace(/ /gu, "&nbsp;")
 					.replace(/\\n/gu, "<br/>")
 					.replace(/\\/gu, "")
 					.replace(/&nbsp;&nbsp;/gu, "&nbsp;")
-					.slice(1, -1)
+					.slice(1, -1) */
 			} catch (errObj) {
 				return D.ThrowError("", "DATA.jStr", errObj)
 			}
 		},
 		jLog = obj => {
-		/* Parses a value in a way that is appropriate to the console log. */
+			/* Parses a value in a way that is appropriate to the console log. */
 			if (_.isUndefined(obj))
 				return "<UNDEFINED>"
 
-			return JSON.stringify(obj)
+			return jStr(obj)
+				.replace(/<br\/>/gu, "")
+				.replace(/(&nbsp;)+/gu, " ")
+
+			/* JSON.stringify(obj, null, 3)
 				.replace(/[/"\n]/gu, "")
 				.replace(/:/gu, ": ")
 				.replace(/\[/gu, "[")
@@ -434,18 +428,34 @@ const D = (() => {
 				.replace(/,/gu, ", ")
 				.replace(/\{/gu, "{")
 				.replace(/\}/gu, "}")
-				.replace(/\s+/gu, " ")
+				.replace(/\s+/gu, " ") */
+		},
+		sendToPlayer = (who, message = "", title = "") => {
+			/* Whispers formatted chat message to player given: display name OR player ID. */
+			const player = getObj("player", who) ?
+					getObj("player", who).get("_displayname") :
+					who,
+				html = [
+					HTMLFORMATS.titleStart,
+					jStr(title),
+					HTMLFORMATS.titleEnd,
+					HTMLFORMATS.bodyStart,
+					jStr(message),
+					HTMLFORMATS.bodyEnd
+				].join("")
+			if (player === "all" || player === "")
+				sendChat("", html)
+			else
+				sendChat("", `/w ${player} ${html}`)
 		},
 		logEntry = (msg, title = "") => {
 			/* Styling and sending to the Storyteller via whisper (Alert) or to the API console (Log). */
 			log(`[${jLog(title)}]: ${jLog(msg)}`)
 		},
 		alertGM = (msg, title = "[ALERT]") => {
-			if (DBFILTER.length === 0 || _.filter(DBFILTER, filt => title.includes(filt))) {
-				sendToPlayer("Storyteller", `<div style="display: block; width: 120%; padding: 3px 3px; margin-left: -20%; font-family: Verdana; background-color: white; border: 2px solid black;">${jStr(msg)}</div><div style="font-size: 6px; margin-top:5px;">SHOWING: ${
-					DBFILTER.length === 0 ? "ALL" : DBFILTER.join(", ")
-				}</div>`, title)
-			}
+			sendToPlayer("Storyteller", msg, title)
+			log(msg)
+			log(jStr(msg))
 		},
 		ordinal = num => {
 			/* Converts any number by adding its appropriate ordinal ("2nd", "3rd", etc.) */
@@ -459,7 +469,7 @@ const D = (() => {
 			if (_.isString(str))
 				return str.slice(0, 1).toUpperCase() + str.slice(1)
 
-			throwError(`Attempt to capitalize non-string '${jLog(str)}'`, "DATA: CAPITALIZE")
+			D.ThrowError(`Attempt to capitalize non-string '${jLog(str)}'`, "DATA: CAPITALIZE")
 
 			return str
 		},
@@ -483,17 +493,16 @@ const D = (() => {
 		},
 		isObject = (obj, type) => obj && obj !== null && typeof obj === "object" && (!type || (obj.get && obj.get("_type") === type)),
 		getSelected = (msg, types) => {
-		/* When given a message object, will return all selected objects, or false. */
+			/* When given a message object, will return all selected objects, or false. */
 			let selObjs = []
-			const objs = []
-			if (_.isObject(msg) && msg.selected && msg.selected[0]) {
+			if (_.isObject(msg) && msg.selected && msg.selected[0] ) {
 				selObjs.push(..._.map(msg.selected, v => getObj(v._type, v._id)))
 				if (types)
 					selObjs = _.filter(selObjs, v => types.includes(v.get("_type")))
 			} else {
 				return false
 			}
-			//D.Alert(jStr(selObjs), "SELECTED OBJECTS")
+			// D.Alert(jStr(selObjs), "SELECTED OBJECTS")
 
 			return selObjs
 		},
@@ -507,13 +516,13 @@ const D = (() => {
 				if (_.isArray(haystack)) {
 					const index = _.findIndex(_.flatten(haystack),
 						v => v.match(new RegExp(ndl, "iu")) !== null ||
-							 v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null)
+						v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null)
 
 					return index === -1 ? false : _.flatten(haystack)[index]
 				} else if (_.isObject(haystack)) {
 					const index = _.findIndex(_.keys(haystack),
 						v => v.match(new RegExp(ndl, "iu")) !== null ||
-							 v.match(new RegExp(ndl.replace(/_/gu), "iu"))) !== null
+						v.match(new RegExp(ndl.replace(/_/gu), "iu"))) !== null
 
 					return index === -1 ? false : _.keys(haystack)[index]
 				}
@@ -526,36 +535,38 @@ const D = (() => {
 		// #endregion
 
 		// #region DEBUGGING & ERROR MANAGEMENT
-		setDebugLvl = (lvl = 0, aLvl = 0) => {
+		setDebugLvl = (lvl, aLvl) => {
 			// Sets debug and alert thresholds.
-			[state[GAMENAME].DEBUGLEVEL, state[GAMENAME].DEBUGALERT] = [lvl, aLvl]
+			[state[GAMENAME].DEBUGLEVEL, state[GAMENAME].DEBUGALERT] = [parseInt(lvl || 0), parseInt(aLvl || 0)]
+			D.Alert(`Debug Level set to ${state[GAMENAME].DEBUGLEVEL}
+			Alert Level set to ${state[GAMENAME].DEBUGALERT}`, "DATA: setDebugLvl()")
 		},
-		getDebugInfo = () => `Debug Level: ${state[GAMENAME].DEBUGLEVEL || 0},
-					Alert At: ${state[GAMENAME].DEBUGALERT || 0}
-					Active Categories: ${state[GAMENAME].DEBUGCATS.split("|").join(", ")}`,
-		setDebugCats = (...cats) => {
-			// Sets categories for which debug alerts are allowed, or clears them if no parameters given.
-			const catSet = new Set(state[GAMENAME].DEBUGCATS.split("|"), ...cats)
-			state[GAMENAME].DEBUGCATS = cats.length === 0 ? "" : catSet.join("|")
-		},
+		getDebugInfo = () => `Logging at level ${state[GAMENAME].DEBUGLEVEL || 0} and below.
+		Alerting at level ${state[GAMENAME].DEBUGALERT || 0} and below.`,
 		addDBFilter = text => {
-			DBFILTER.push(text)
+			state[GAMENAME].DBFILTER.push(text)
+			D.Alert(`Debug Filter '${text}' Added.  Current filter set:
+
+			${jStr(state[GAMENAME].DBFILTER)}`, "DATA: addDBFilter()")
 		},
 		removeDBFilter = text => {
-			DBFILTER.splice(DBFILTER.findIndex(v => v === text), 1)
+			state[GAMENAME].DBFILTER = _.without(state[GAMENAME].DBFILTER, text)
+			D.Alert(`Debug Filter '${text}' Removed.  Current filter set:
+
+			${jStr(state[GAMENAME].DBFILTER)}`, "DATA: removeDBFilter()")
 		},
 		clearDBFilters = () => {
-			DBFILTER.splice(0, Infinity)
+			state[GAMENAME].DBFILTER = []
+			D.Alert("Debug Filters Cleared.", "DATA: clearDBFilters()")
 		},
-		formatDebug = (msg, title, level = state[GAMENAME].DEBUGLEVEL || 0, category = "") => {
-			/* Compares the priority level of the received bug report, and only logs it (or alerts it) if the
-			debug levels and categories (see setDebugLvl) are appropriate. */
-			if (state[GAMENAME].DEBUGCATS === "ALL" || state[GAMENAME].DEBUGCATS.includes(category)) {
-				if (state[GAMENAME].DEBUGLEVEL >= parseInt(level))
-					logEntry(msg, title)
-				if (state[GAMENAME].ALERTLEVEL >= parseInt(level))
-					alertGM(msg, title)
-			}
+		formatDebug = (msg, title, level = state[GAMENAME].DEBUGLEVEL || 0) => {
+			/* Compares the priority level of the received bug report, and...
+				LOGS it if its level is absent OR exceeded by DEBUGLEVEL
+				ALERTS it if its level is exceeded by ALERTLEVEL. */
+			if (state[GAMENAME].DEBUGLEVEL >= parseInt(level))
+				logEntry(msg, title)
+			if (state[GAMENAME].DEBUGALERT >= parseInt(level))
+				alertGM(msg, title)
 		},
 		throwError = (msgText, title = "???", errObj) => {
 			// Sends specified error message to the GM.
@@ -597,25 +608,37 @@ const D = (() => {
 				a token object, a message with selected tokens, OR an array of such parameters. */
 			const charObjs = new Set()
 			let searchParams = []
-			if (!value)
-				return throwError("No Value Given!", "D.GETCHARS")
-			if (value.who) {
-				if (!value.selected || !value.selected[0] )
-					return throwError("Must Select a Token!", "D.GETCHARS")
-				const tokens = _.filter(value.selected,
-					selection => getObj("graphic", selection._id) &&
-					_.isString(getObj("graphic", selection._id).get("represents")) &&
-					getObj("character", getObj("graphic", selection._id).get("represents")))
-				if (!tokens)
-					return throwError(`No Valid Token Selected: ${jStr(value.selected)}`, "D.GETCHARS")
 
-				return _.map(tokens, v => getObj("character", getObj("graphic", v._id).get("represents")))
-			} else if (_.isArray(value)) {
-				searchParams = value
-			} else if (_.isString(value) || _.isObject(value)) {
-				searchParams.push(value)
-			} else {
-				return throwError(`Bad Value: '${jStr(value)}'`, "GETCHARS")
+			/* if (!value)
+				return throwError(`No Value Given: ${D.JS(value)}!`, "D.GETCHARS") */
+			try {
+				if (value.who) {
+					if (!value.selected || !value.selected[0] )
+						return throwError("Must Select a Token!", "D.GETCHARS")
+					const tokens = _.filter(value.selected,
+						selection => getObj("graphic", selection._id) &&
+							_.isString(getObj("graphic", selection._id).get("represents")) &&
+							getObj("character", getObj("graphic", selection._id).get("represents")))
+					if (!tokens)
+						return throwError(`No Valid Token Selected: ${jStr(value.selected)}`, "D.GETCHARS")
+
+					return _.map(tokens, v => getObj("character", getObj("graphic", v._id).get("represents")))
+				} else if (_.isArray(value)) {
+					searchParams = value
+				} else if (_.isString(value) || _.isObject(value)) {
+					searchParams.push(value)
+				} else {
+					return throwError(`Bad Value: '${jStr(value)}'`, "GETCHARS")
+				}
+			} catch (errObj) {
+				D.Alert(`Error Getting Char:
+				${errObj.name}
+				${errObj.message}
+				
+				STACK:
+				${D.JS(errObj.stack)}`, "ERR: D.GetChars")
+
+				return false
 			}
 			_.each(searchParams, val => {
 				// If parameter is a CHARACTER ID:
@@ -716,13 +739,8 @@ const D = (() => {
 			const charObj = getChar(charRef),
 				attrObjs = _.filter(
 					findObjs(charObj ?
-						{
-							type: "attribute",
-							characterid: charObj.id
-						} :
-						{
-							type: "attribute"
-						} ),
+						{type: "attribute", characterid: charObj.id} :
+						{type: "attribute"} ),
 					v => v.get("name")
 						.toLowerCase()
 						.includes(lowCaseID)
@@ -799,31 +817,31 @@ const D = (() => {
 
 			return rowID
 		},
-		deleteRow = (charID, rowID) => {
+
+		/* deleteRow = (charID, rowID) => {
 
 		},
 		sortSection = (charID, section, sortFunc) => {
 
-		},
+		}, */
 		// #endregion
 
 		// #region SPECIAL FX
-	 runFX = (name, pos) => {
-		// Runs one of the special effects defined above.
+		runFX = (name, pos) => {
+			// Runs one of the special effects defined above.
 			spawnFxWithDefinition(pos.left, pos.top, FX[name] )
 		},
 		// #endregion
 
 		// #region INITIALIZATION
 		checkInstall = () => {
-			delete state.VAMPIRE.WigglePads
-			delete state.VAMPIRE.DATA
+			delete state[GAMENAME].DEBUGCATS
 			state[GAMENAME] = state[GAMENAME] || {}
 			state[GAMENAME].DATA = state[GAMENAME].DATA || {}
 			state[GAMENAME].DATA.CHARWIDTH = state[GAMENAME].DATA.CHARWIDTH || {}
-			state[GAMENAME].DEBUGCATS = state[GAMENAME].DEBUGCATS || ""
+			state[GAMENAME].DBFILTER = state[GAMENAME].DBFILTER || []
 		}
-		// #endregion
+	// #endregion
 
 	return {
 		CheckInstall: checkInstall,
@@ -911,10 +929,6 @@ const D = (() => {
 											  levels lower than this will be muted;
 											  alertLevel is the same, but will
 											  publish the message to Roll20 chat. */
-		SetDebugCats: setDebugCats,
-
-		/* D.SetDebugCats(cats): Adds given categories to debug list, or clears the list
-									if no categories are given */
 		AddDBFilter: addDBFilter,
 		ClearDBFilters: clearDBFilters,
 		RemoveDBFilter: removeDBFilter,

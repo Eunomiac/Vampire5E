@@ -1936,30 +1936,6 @@
             "id": "-LQi-2PeTJQmUlwlyiLE"
         },
         {
-            "name": "health_sdmg",
-            "current": 0,
-            "max": "",
-            "id": "-LQi-MUGJgrMabH3a6Ot"
-        },
-        {
-            "name": "health_admg",
-            "current": 0,
-            "max": "",
-            "id": "-LQi-MUKXysDzrbFBIAH"
-        },
-        {
-            "name": "willpower_sdmg",
-            "current": 0,
-            "max": "",
-            "id": "-LQi-MUalPOIkLereLUR"
-        },
-        {
-            "name": "willpower_admg",
-            "current": 0,
-            "max": "",
-            "id": "-LQi-MUeML7mfkIbTR5t"
-        },
-        {
             "name": "date_today",
             "current": "1532050500000",
             "max": "",
