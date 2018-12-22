@@ -192,17 +192,17 @@
 				text: "negMods"
 			},
 			summary: {
-				font_family: "Contrail One",
-				font_size: 40,
-				top: 97,
+				font_family: "Candal",
+				font_size: 56,
+				top: 91,
 				left: 75,
 				color: COLORS.white,
 				text: "SS"
 			},
 			summaryShadow: {
-				font_family: "Contrail One",
-				font_size: 40,
-				top: 102,
+				font_family: "Candal",
+				font_size: 56,
+				top: 96,
 				left: 80,
 				color: COLORS.black,
 				text: "SS"
@@ -219,7 +219,7 @@
 				font_family: "Candal",
 				font_size: 56,
 				top: 185,
-				left: 66,
+				left: 75,
 				color: COLORS.white,
 				text: "RC"
 			},
@@ -227,7 +227,7 @@
 				font_family: "Candal",
 				font_size: 56,
 				top: 190,
-				left: 71,
+				left: 80,
 				color: COLORS.black,
 				text: "RC"
 			},
@@ -775,7 +775,9 @@
 					[],
 					[]
 				],
-				bgImg = getObj("graphic", state[D.GAMENAME].Roller.imgList.Background)  /* ,
+				bgImg = getObj("graphic", state[D.GAMENAME].Roller.imgList.Background)
+
+			/* ,
 				bgImg = Images.Get("Background")*/
 			for (const name of _.keys(state[D.GAMENAME].Roller.textList))
 				clearText(name)
@@ -858,8 +860,8 @@
 			))
 			DragPads.MakePad(null, "wpReroll", `height:${POSITIONS.diceFrameRerollPad.height()
 			 }, width:${POSITIONS.diceFrameRerollPad.width()
-			 }, x:${POSITIONS.diceFrameRerollPad.left()
-			 }, y:${POSITIONS.diceFrameRerollPad.top()
+			 }, left:${POSITIONS.diceFrameRerollPad.left()
+			 }, top:${POSITIONS.diceFrameRerollPad.top()
 			}`)
 			DragPads.Toggle("wpReroll", false)
 			imageList.reverse()
@@ -1180,8 +1182,9 @@
 					rollData.mod = parseInt(params[2] || 0)
 					break
 				case "frenzy":
-					rollData.diff = parseInt(params[2] || 0)
-					// Falls through
+					rollData.diff = parseInt(params[0] || 0)
+					rollData.mod = parseInt(params[1] || 0)
+					break
 				default:
 					rollData.diff = rollData.diff === null ? parseInt(getAttrByName(charObj.id, "rolldiff")) : rollData.diff
 					rollData.mod = rollData.mod === null ? parseInt(getAttrByName(charObj.id, "rollmod")) : rollData.mod
@@ -1499,10 +1502,14 @@
 				<span style=\"display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none;
 					height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: left;
 					margin-left: 10px; font-size: 12px;\">", */
-			const dims = {widthSide: 0, widthMid: 0, marginSide: 0},
+			const dims = {
+					widthSide: 0,
+					widthMid: 0,
+					marginSide: 0
+				},
 				critCount = _.reduce(_.values(rollResults.critPairs), (tot, num) => tot + num, 0),
 				splitAt = Math.ceil((rollResults.diceVals.length + critCount) /
-							  Math.ceil((rollResults.diceVals.length + critCount) / split))
+					Math.ceil((rollResults.diceVals.length + critCount) / split))
 			let logLine = `${CHATSTYLES.resultBlock}${CHATSTYLES.resultCount}${rollResults.total}:</span></div>${
 					CHATSTYLES.resultDice.colStart}${CHATSTYLES.resultDice.lineStart}`,
 				counter = 0
@@ -1798,7 +1805,7 @@
 					logLines.difficulty = ` vs. ${rollData.diff}`
 
 					/* D.Alert(`RollLines: ${D.JS(rollLines)}`)
-						   D.Alert(`LogLines: ${D.JS(logLines)}`) */
+							   D.Alert(`LogLines: ${D.JS(logLines)}`) */
 					break
 				case "resultCount":
 					rollLines.resultCount.text = JSON.stringify(rollResults.total)
@@ -2255,7 +2262,7 @@
 				break
 			case "!frenzyroll":
 				rollType = "frenzy"
-				args = `${state[D.GAMENAME].Roller.frenzyRoll}|${args[0]}`.split(" ")
+				args = `${state[D.GAMENAME].Roller.frenzyRoll} ${args[0]}`.split(" ")
 				D.DB(`NEW ARGS: ${D.JSL(args)}`, "!frenzyroll", 2)
 				// Falls through
 			case "!frenzyinitroll":
@@ -2292,7 +2299,7 @@
 				if (!charObj) {
 					D.ThrowError(`!${rollType}roll: No character found with name ${D.JS(name)}`)
 				} else if (rollType === "frenzyInit") {
-					state[D.GAMENAME].Roller.frenzyRoll = `${name}|${params.join("|")}`
+					state[D.GAMENAME].Roller.frenzyRoll = `${name}|`
 					sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px crimson outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!&#13;#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: white; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: red; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${name}</span><br/></div>`)
 
 					return

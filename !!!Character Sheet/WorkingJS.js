@@ -670,11 +670,11 @@
 			if (isDebug && (isLoud || !LOGOPTIONS.silent))
 				console[isWarn ? "warn" : "log"](prefix + msg)
 		},
-		isBlacklisted = attr => _.pick(ATTRBLACKLIST,
+		isBlacklisted = (attr = "") => _.pick(ATTRBLACKLIST,
 			bannedAttr => attr.toLowerCase().includes(bannedAttr.toLowerCase()))
 			.length > 0,
 		trimAttr = attr => _.isString(attr) && attr.replace("_flag", "").replace("_type", "").replace("_name", "") ||
-			JSON.stringify(attr),
+		JSON.stringify(attr),
 		parseRepAttr = attr => {
 			if (attr.includes("repeating")) {
 				return {
@@ -723,7 +723,6 @@
 	const run$ = (tasks, cback) => {
 			let current = 0
 			const done = (empty, ...args) => {
-					// log(`@ASync@ DONE START: Err = ${JSON.stringify(empty)}, Args = ${JSON.stringify(args)}`)
 					const end = () => {
 						const newArgs = args ? [].concat(empty, args) : [empty]
 						if (cback)
@@ -968,6 +967,12 @@
 	on("change:tab_core", eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dMARQUEE(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doMarquee()
+		setAttrs( {
+			lastbox: "",
+			lasthumanity: "",
+			laststains: "",
+			lastcollisions: ""
+		} )
 	} )
 	// #endregion
 
@@ -1083,8 +1088,11 @@
 			}
 		},
 
-		doTracker = (tracker, stat, gN = "", cback) => {
-			const statVal = parseInt(stat.split("_")[1] || 0) || 0,
+		doTracker = (tracker, eInfo = {
+			sourceAttribute: ""
+		}, gN = "", cback) => {
+			const stat = eInfo.sourceAttribute,
+				statVal = stat ? parseInt(stat.split("_")[1] || 0) : 0,
 				attrList = {},
 				$funcs = []
 			switch (tracker.toLowerCase()) {
@@ -1151,73 +1159,165 @@
 				} )
 				break
 			case "humanity":
-				if (statVal > 0) {
-					// A humanity button was clicked.					
-				} else if ([`${gN}stains`, `${gN}humanity`].includes(stat)) {
-					// Direct change to stains/humanity.
-				} else {
-					// dHum or dStains set.
-				}
-				$funcs.push(cbk => {
-					getAttrs(groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`), "humanity_dhum", "humanity_dstains", "humanity", "stains"], gN), ATTRS => {
-						const p = v => gN + v,
-							pV = v => ATTRS[p(v)],
-							pI = v => parseInt(pV(v)) || 0,
-							setHumanity = valArray => {
-								for (let i = 0; i++; i < 10) {
-									if (pI(`humanity_${i + 1}`) !== valArray[i] )
-										attrList[`humanity_${i + 1}`] = valArray[i]
+				if (eInfo.sourceType === "player" && statVal > 0) {
+					log("")
+					log("****************************************************")
+					log(`Operating on Humanity Stat Value ${statVal}`)
+					log("****************************************************")
+					log("")
+					$funcs.push(cbk => {
+						getAttrs(groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`), "lastbox", "lasthumanity", "laststains", "lastcollisions", "humanity", "stains"], gN), ATTRS => {
+							let newDotline = []
+							const humArray = _.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => ATTRS[`humanity_${v}`] ),
+								curHumanity = () => _.filter(humArray, v => parseInt(v) === 2).length,
+								curStains = () => _.filter(humArray, v => parseInt(v) === 3).length,
+								curCollisions = () => _.filter(humArray, v => parseInt(v) === 4).length,
+								p = v => `humanity_${v}`,
+								pV = v => ATTRS[p(v)],
+								pI = v => parseInt(pV(v) || 0),
+								gHum = v => parseInt(humArray[v - 1] ),
+								fillBoxes = (humanity, stains) => {
+									const newHumanity = (new Array(10)).fill("1"),
+										hum = Math.min(10, Math.max(0, humanity)),
+										stn = Math.min(10, Math.max(0, stains))
+									if (hum > 0)
+										newHumanity.fill("2", 0, hum)
+									if (stn > 0)
+										newHumanity.fill("3", stn * -1)
+									if (hum > 0 && stn > 0 && (hum + stn > 10))
+										newHumanity.fill("4", stn * -1, stn * -1 + (10 - hum - stn))
+
+									return newHumanity
+								},
+								checkLast = () => {
+									if (ATTRS.lastbox === stat) {
+										const lastArray = fillBoxes(parseInt(ATTRS.lasthumanity), parseInt(ATTRS.laststains))
+
+										return lastArray[statVal - 1]
+									}
+
+									return false
 								}
+							log(`In Group Attrs. ATTRS[hum] = ${ATTRS.humanity}, CURHUM = ${curHumanity()}, ATTRS[stains] = ${ATTRS.stains}, CURSTAINS = ${curStains()}, statVal = ${statVal}, gHum = ${gHum(statVal)}`)
+							log(`humArray: ${JSON.stringify(humArray)}`)
+							log(`ATTRS: ${JSON.stringify(ATTRS)}`)
+							if (ATTRS.lastbox !== stat)
+								attrList.lastbox = stat
+							if (ATTRS.lasthumanity !== curHumanity())
+								attrList.lasthumanity = curHumanity()
+							if (ATTRS.laststains !== curStains())
+								attrList.laststains = curStains()
+							if (ATTRS.lastcollisions !== curCollisions())
+								attrList.lastcollisions = curCollisions()
+							switch (gHum(statVal)) {
+							case 1: // Clicked on a blank square
+								log("Case 1: Clicked Blank")
+								switch (checkLast()) {
+								case "2":
+									log("Reclick: Last time Humanity, Now Setting to Stains")
+									newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), 11 - statVal)
+									break
+								case "3":
+									log("Reclick: Last time Stains, Now Setting to Humanity")
+									newDotline = fillBoxes(statVal, parseInt(ATTRS.laststains))
+									break
+								case "4":
+									log("Reclick: Last time Collision, Now Setting to ...?")
+									// newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
+									break
+								default:
+									log(`Default: Set Stains to Blank Square (${statVal})`)
+									newDotline = fillBoxes(curHumanity(), 11 - statVal)
+									break
+								}
+								break
+							case 2: // Clicked on a humanity square
+								log("Case 2: Clicked Humanity")
+								switch (checkLast()) {
+								case "1":
+									log("Reclick: Last time Blank, Now Setting to Stains")
+									newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), 11 - statVal)
+									break
+								case "3":
+									log("Reclick: Last time Stains, Now Setting to Collision")
+									newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), 11 - statVal + 1)
+									attrList.lasthumanity = ATTRS.lasthumanity
+									break
+								case "4":
+									log("Reclick: Last time Collision, Now Setting to ...?")
+									// newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
+									break
+								default:
+									log("Default: Set Humanity to One Less")
+									newDotline = fillBoxes(statVal - 1, curStains())
+									break
+								}
+								break
+							case 3: // Clicked on a stain square
+								log("Case 3: Clicked Stain")
+								switch (checkLast()) {
+								case "1":
+									log("Reclick: Last time Blank, Now Setting to Humanity")
+									newDotline = fillBoxes(statVal, parseInt(ATTRS.laststains))
+									break
+								case "2":
+									log("Reclick: Last time Humanity, Now Setting to Humanity?")
+									newDotline = fillBoxes(statVal, parseInt(ATTRS.laststains))
+									break
+								case "4":
+									log("Reclick: Last time Collision, Now Setting to ...?")
+									// newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
+									break
+								default:
+									log("Default: Set Stains to One Less")
+									newDotline = fillBoxes(curHumanity(), 11 - statVal - 1)
+									break
+								}
+								break
+							case 4: // Clicked on a collision
+								log("Case 3: Clicked Collision")
+								switch (checkLast()) {
+								case "1":
+									log("Reclick: Last time Blank, Now Setting to ...?")
+									// newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
+									break
+								case "2":
+									log("Reclick: Last time Humanity, Now Setting to Humanity?")
+									// newDotline = fillBoxes(statVal, parseInt(ATTRS.laststains), statVal)
+									break
+								case "3":
+									log("Reclick: Last time Stain, Now Setting to ...?")
+									// newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
+									break
+								default:
+									log("Default: Set humanity, clear all stains")
+									newDotline = fillBoxes(statVal, 0)
+									break
+								}
+								break
+							default:
+								break
 							}
-						let curHumanity = _.filter(
-								_.values(
-									_.omit(ATTRS, groupify( ["humanity_dhum", "humanity_dstains"], gN))
-								), attr => parseInt(attr) === 1
-							).length + pI("humanity_dhum"),
-							curStains = _.filter(
-								_.values(
-									_.omit(ATTRS, groupify( ["humanity_dhum", "humanity_dstains"], gN))
-								), attr => parseInt(attr) === 2
-							).length + pI("humanity_dstains")
+							log(`Out of Switch: ${JSON.stringify(newDotline)}`)
 
-						// If a square marked Humanity was clicked, turn it blank and set humanity to one lower.
-						if (humanityDot > 0 && pI(`humanity_${humanityDot}`) === 1) {
-							curHumanity =
-
-							humanityVals.fill(0, 0, humanityDot - 2)
-							const vals = new Array(10)
-						}
-
-						// If a square marked Stain was clicked, turn it blank and all stain dots to the LEFT blank
-
-						// If a blank square was clicked, turn it into a Stain and all blank dots to the LEFT to Stains
-
-						/* ALSO need a temporary flag on dots to account for "correction pushes" where a different behaviour is
-						   desired than the default. */
-
-						if (pI("humanity") !== curHumanity)
-							attrList[p("humanity")] = curHumanity
-						if (pI("stains") !== curStains)
-							attrList[p("stains")] = curStains
-						if (pI("humanity_dhum") !== 0)
-							attrList[p("humanity_dhum")] = 0
-						if (pI("humanity_dstains") !== 0)
-							attrList[p("humanity_dstains")] = 0
-						for (let i = 1; i <= curHumanity; i++) {
-							if (pI(`humanity_${i}`) !== 1)
-								attrList[p(`humanity_${i}`)] = 1
-						}
-						for (let i = curHumanity + 1; i <= 10 - curStains; i++) {
-							if (pI(`humanity_${i}`) !== 0)
-								attrList[p(`humanity_${i}`)] = 0
-						}
-						for (let i = 10 - curStains + 1; i <= 10; i++) {
-							if (pI(`humanity_${i}`) !== 2)
-								attrList[p(`humanity_${i}`)] = 2
-						}
+							for (let i = 1; i <= 10; i++) {
+								// log(`pI(${i}) = ${pI(i)}; newDotline[${i} - 1] = ${newDotline[i - 1]}`)
+								if (pI(i) !== parseInt(newDotline[i - 1] ))
+									attrList[p(i)] = newDotline[i - 1]
+							}
+							if (parseInt(ATTRS.humanity) !== curHumanity())
+								attrList.humanity = curHumanity()
+							if (parseInt(ATTRS.stains) !== curStains())
+								attrList.stains = curStains()
+							log(`Last List: ${JSON.stringify(attrList)}`)
+							cbk(null, attrList)
+						} )
+					} )
+				} else {
+					$funcs.push(cbk => {
 						cbk(null, attrList)
 					} )
-				} )
+				}
 				break
 			default:
 				log(`Error in doTracker(${tracker}, ${gN}): Unrecognized tracker.`)
@@ -1228,15 +1328,13 @@
 			run$($funcs, cback ? () => cback(null) : undefined)
 		},
 
-		$doTracker = (tracker, stat, gN = "") => cback => doTracker(tracker, stat, gN, cback),
+		$doTracker = (tracker, eInfo, gN = "") => cback => doTracker(tracker, eInfo, gN, cback),
 
-		doTrackerMax = (tracker, gN = "") => {
+		doTrackerMax = (tracker, eInfo, gN = "") => {
 			const attrList = {},
 				$funcs = []
-			let stat = ""
 			switch (tracker.toLowerCase()) {
 			case "health":
-				stat = "health"
 				$funcs.push(cback => {
 					getAttrs(groupify( ["stamina", "bonus_health"], gN), ATTRS => {
 						if (gN === "") {
@@ -1255,7 +1353,6 @@
 				} )
 				break
 			case "willpower":
-				stat = "willpower"
 				$funcs.push(cback => {
 					getAttrs(groupify( ["composure", "resolve", "bonus_willpower"], gN), ATTRS => {
 						if (gN === "") {
@@ -1276,7 +1373,6 @@
 				break
 			case "blood potency full":
 			case "blood potency":
-				stat = "bp"
 				// log("At Blood Potency");
 				$funcs.push(cback => {
 					getAttrs(groupify( ["generation", "bonus_bp"], gN), ATTRS => {
@@ -1294,7 +1390,7 @@
 			}
 
 			$funcs.push($set)
-			$funcs.push($doTracker(tracker, stat, gN))
+			$funcs.push($doTracker(tracker, eInfo, gN))
 
 			run$($funcs)
 		}
@@ -1314,22 +1410,22 @@
 	on(getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "sdmg", "admg"], "health_"), eInfo => {
 		if (eInfo.sourceType !== "api" || ["health_sdmg", "health_admg"].includes(eInfo.sourceAttribute)) {
 			[LOGPREFIX, LOGDEPTH] = [`[dHEALTH(${trimAttr(eInfo.sourceAttribute)})]`, 0]
-			doTracker("Health", eInfo.sourceAttribute)
+			doTracker("Health", eInfo)
 		}
 	} )
 	on(getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "sdmg", "admg"], "willpower_"), eInfo => {
 		if (eInfo.sourceType !== "api" || ["willpower_sdmg", "willpower_admg"].includes(eInfo.sourceAttribute)) {
 			[LOGPREFIX, LOGDEPTH] = [`[dWILL(${trimAttr(eInfo.sourceAttribute)})]`, 0]
-			doTracker("Willpower", eInfo.sourceAttribute)
+			doTracker("Willpower", eInfo)
 		}
 	} )
 	on("change:bp", eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dBP(${trimAttr(eInfo.sourceAttribute)})]`, 0]
-		doTracker("Blood Potency", eInfo.sourceAttribute)
+		doTracker("Blood Potency", eInfo)
 	} )
-	on(`${getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "dhum", "dstains"], "humanity_")} ${getTriggers["humanity", "stains"]}`, eInfo => {
+	on(`${getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "dhum", "dstains"], "humanity_")} ${getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "humanitybox_")} ${getTriggers( ["humanity", "stains"] )}`, eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dHum(${trimAttr(eInfo.sourceAttribute)})]`, 0]
-		doTracker("Humanity", eInfo.sourceAttribute)
+		doTracker("Humanity", eInfo)
 	} )
 	// #endregion
 
@@ -1913,7 +2009,6 @@
 	// #endregion
 
 	// #region GROUP SHEET ACTIONS
-
 	const doRoller = gN => {
 		const $funcs = [
 			$getRepAttrs( {

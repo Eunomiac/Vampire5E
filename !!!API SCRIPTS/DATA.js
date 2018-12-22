@@ -351,7 +351,7 @@ const D = (() => {
 			bloodBolt: {
 				angle: 0,
 				angleRandom: 0.5,
-				duration: 1,
+				duration: 5,
 				emissionRate: 5000,
 				endColour: [0, 0, 0, 0],
 				endColourRandom: [0, 0, 0, 0],
@@ -360,7 +360,7 @@ const D = (() => {
 					y: 0.01
 				},
 				lifeSpan: 5,
-				lifeSpanRandom: 1,
+				lifeSpanRandom: 0,
 				maxParticles: 5000,
 				size: 50,
 				sizeRandom: 0,
@@ -398,7 +398,7 @@ const D = (() => {
 					.replace(/\\t/gu, "")
 					.replace(/ /gu, "&nbsp;")
 					.replace(/\\"/gu, "\"")
-					.slice(1, -1)
+					// .slice(1, -1)
 
 				/* return JSON.stringify(obj, null, 2)
 					.replace(/"/gu, "'")
@@ -419,6 +419,8 @@ const D = (() => {
 			return jStr(obj)
 				.replace(/<br\/>/gu, "")
 				.replace(/(&nbsp;)+/gu, " ")
+				.replace(/\\"\\"/gu, "'")
+				.replace(/"/gu, "")
 
 			/* JSON.stringify(obj, null, 3)
 				.replace(/[/"\n]/gu, "")
@@ -454,8 +456,6 @@ const D = (() => {
 		},
 		alertGM = (msg, title = "[ALERT]") => {
 			sendToPlayer("Storyteller", msg, title)
-			log(msg)
-			log(jStr(msg))
 		},
 		ordinal = num => {
 			/* Converts any number by adding its appropriate ordinal ("2nd", "3rd", etc.) */
