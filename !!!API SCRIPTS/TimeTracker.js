@@ -77,12 +77,14 @@ const TimeTracker = (() => {
 				date.getUTCMinutes() < 10 ? "0" : ""}${date.getUTCMinutes().toString()} ${
 				Math.floor(date.getUTCHours() / 12) === 0 ? "AM" : "PM"}`)
 			const lastDate = new Date(parseInt(state[D.GAMENAME].TimeTracker.currentDate))
+			D.Log(`Last Date: ${D.JSL(lastDate)}`)
 			state[D.GAMENAME].TimeTracker.currentDate = date.getTime().toString()
 			if (
 				date.getUTCFullYear() !== lastDate.getUTCFullYear() ||
 				date.getMonth() !== lastDate.getMonth() ||
 				date.getUTCDate() !== lastDate.getUTCDate()
 			) {
+				D.Log(`Chars Received: ${D.GetChars("registered").length}`)
 				_.each(D.GetChars("registered"), char => setAttrs(char.id, {
 					date_today: date.getTime().toString()
 				} ))
@@ -154,7 +156,7 @@ const TimeTracker = (() => {
 						date.setUTCMinutes(parseInt(min))
 						D.Alert(`Date set to ${D.JSL(date.toString())}`)
 					} else {
-						D.Alert("Syntax: !set year month1-12 day 24-hour:min", "TIMETRACKER !SET")
+						D.Alert("Syntax: !time set year month1-12 day 24-hour:min", "TIMETRACKER !SET")
 					}
 					break
 				case "run": // Sets time to slowly move forward in real time.

@@ -24,7 +24,7 @@ const ChatFuncs = (() => {
 		getImg = obj => {
 			if (!obj || obj.get("_type") !== "graphic")
 				return false
-			D.Alert( [`<b>ID:</b> ${obj.id}`, `<b>SRC:</b> ${obj.get("imgsrc").replace("max", "thumb")}`], "Image Data")
+			D.Alert(`<b>ID:</b> ${obj.id}<br/><b>SRC:</b> ${obj.get("imgsrc").replace("max", "thumb")}`, "Image Data")
 
 			return true
 		},
@@ -41,7 +41,7 @@ const ChatFuncs = (() => {
 			_.each(sortedAttrs, attrInfo => {
 				attrsLines.push(`${attrInfo.id}: ${attrInfo.name}`)
 			} )
-			D.Alert(D.JS(attrsLines), "All Characters")
+			D.Alert(attrsLines.join("<br/>"), "All Characters")
 
 			return true
 		},
@@ -53,8 +53,7 @@ const ChatFuncs = (() => {
 				const charObj = getObj("character", obj.get("represents")),
 					name = charObj.get("name"),
 					playerID = charObj.get("controlledby").replace("all,", "")
-				D.Log(charObj, "CHAROBJ")
-				D.Alert( [`<b>Name:</b> ${name}`, `<b>CharID:</b> ${charObj.id}`, `<b>PlayerID:</b> ${playerID}`], "Character Data")
+				D.Alert(`<b>Name:</b> ${name}<br/><b>CharID:</b> ${charObj.id}<br/><b>PlayerID:</b> ${playerID}`, "Character Data")
 			} catch (errObj) {
 				D.ThrowError("", "CHARS.getChar", errObj)
 
@@ -84,8 +83,7 @@ const ChatFuncs = (() => {
 			_.each(sortedAttrs, attrInfo => {
 				attrsLines.push(`${attrInfo.name} (${attrInfo.id.slice(10, 14)}): ${attrInfo.current}`)
 			} )
-			D.Alert(D.JS(attrsLines), `Attributes For ${D.GetName(obj)}`)
-			D.Alert(`Num Objs: ${allAttrObjs.length}, Attrs: ${allAttrs.length}, Sorted: ${sortedAttrs.length}, Lines: ${attrsLines.length}`)
+			D.Alert(`${attrsLines.join("<br/>")}<br/><br/>Num Objs: ${allAttrObjs.length}, Attrs: ${allAttrs.length}, Sorted: ${sortedAttrs.length}, Lines: ${attrsLines.length}`, `Attributes For ${D.GetName(obj)}`)
 
 			return true
 		},
@@ -100,7 +98,7 @@ const ChatFuncs = (() => {
 				}<br/> <b>Left:</b> ${obj.get("left") - (0.5 * obj.get("width"))
 				}<br/> <b>Top:</b> ${obj.get("top") - (0.5 * obj.get("height"))
 				}<br/> <b>Dimensions:</b> ${obj.get("width")} x ${obj.get("height")}`
-			D.Alert( [`<b><u>GRID</u>:</b><br/>${gridInfo}`, `<b><u>PIXELS</u>:</b><br/>${pixelInfo}`], "Position Data")
+			D.Alert(`<b><u>GRID</u>:</b><br/>${gridInfo}<br/><b><u>PIXELS</u>:</b><br/>${pixelInfo}`, "Position Data")
 
 			return true
 		},
@@ -283,13 +281,15 @@ const ChatFuncs = (() => {
 				case "size":
 				{
 					if (msg.selected && msg.selected[0] ) {
-						obj = getObj(msg.selected[0]._type, msg.selected[0]._id)
-						if (obj) {
-							attrList = args.join(" ").split(",")
-							_.each(attrList, v => {
-								params[v.split(":")[0]] = parseInt(v.split(":")[1] ) || v.split(":")[1]
-							} )
-							obj.set(params)
+						for (const objData of msg.selected) {
+							obj = getObj(objData._type, objData._id)
+							if (obj) {
+								attrList = args.join(" ").split(",")
+								_.each(attrList, v => {
+									params[v.split(":")[0]] = parseInt(v.split(":")[1] ) || v.split(":")[1]
+								} )
+								obj.set(params)
+							}
 						}
 					}
 					break

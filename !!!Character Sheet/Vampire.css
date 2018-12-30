@@ -2447,6 +2447,130 @@ textarea {
 
 /* #endregion*/
 
+/* #region SECTION: Timeline */
+.charsheet div.sheet {
+	margin-bottom: 10px;
+	width: 95%;
+}
+
+.charsheet div.sheet-timeline div,
+.charsheet div.sheet-timeline div.linerow,
+.charsheet div.sheet-timeline span,
+.charsheet div.sheet-timeline input,
+.charsheet div.sheet-timeline textarea,
+.charsheet div.sheet-timeline select {
+	height: 20px;
+	font-family: 'Bodoni SvtyTwo ITC TT' !important;
+}
+
+.charsheet div.sheet-timeline textarea {
+	padding: 0px 0px;
+	overflow: hidden;
+}
+
+.charsheet div.sheet-timeline.sheet-timewhole {
+	border-bottom: 1px grey solid;
+	border-top: 1px grey solid;
+	padding: 5px 0px 7px 0px;
+	margin: 0px;
+}
+
+.charsheet div.sheet-timeline.sheet-doublerow.sheet-timedate {
+	width: 100px;
+	height: auto;
+	margin-right: 20px;
+	border-radius: 0;
+	padding: 0px;
+}
+
+.charsheet div.sheet-timeline.sheet-doublerow.sheet-timebody {
+	height: auto;
+	width: calc(100% - 100px - 20px);
+	border-radius: 0;
+	padding: 0px;
+}
+
+.charsheet div.sheet-timeline.sheet-timedate textarea {
+	height: 20px;
+	line-height: 20px;
+	font-size: 14px;
+	font-variant: small-caps;
+	margin-top: -4px;
+}
+
+.charsheet div.sheet-timeline.sheet-timetitle textarea {
+	width: calc(100% - 9px);
+	height: calc(25px - 6px);
+	background-color: rgba(255, 255, 255, 0.3);
+	border-radius: 5px;
+	border: 3px white outset;
+	margin-top: -3px;
+	line-height: 22px;
+	font-size: 14px;
+}
+.charsheet div.sheet-timeline.sheet-timesummary {
+	height: 14px;
+}
+
+.charsheet div.sheet-timeline.sheet-timesummary textarea {
+	padding-left: 3px;
+	height: 100%;
+	width: calc(100% - 30px);
+	color: black !important;
+	font-size: 12px;
+	text-shadow: none !important;
+	font-weight: normal !important;
+	line-height: 14px;
+	margin-top: 5px;
+}
+
+.charsheet div.sheet-timeline span.sheet-header5 {
+	width: 95px;
+	margin-right: 5px;
+}
+
+.charsheet div.sheet-timeline .sheet-doublerow {
+	height: 45px;
+}
+
+.charsheet div.sheet-timeline div.sheet-doublerow .sheet-squareBox {
+	width: 45px;
+	height: 45px;
+	font-size: 32px !important;
+	line-height: 40px;
+}
+
+.charsheet div.sheet-timeline div.sheet-linerow .sheet-squareBox {
+	width: 20px;
+	height: 20px;
+	font-size: 16px !important;
+	padding: 0px;
+}
+
+.charsheet div.sheet-timeline select.sheet-squareBox {
+	width: 80px;
+	margin-top: -2px;
+	margin-bottom: 2px;
+}
+
+.charsheet div.sheet-timeline input.sheet-timelinegoal {
+	width: 95%;
+}
+
+.charsheet div.sheet-timeline div.sheet-timelinestake {
+	width: calc(100% - 40px - 20px - 5px);
+}
+
+.charsheet div.sheet-timeline div.sheet-timelinestake input.sheet-dotlinename {
+	width: calc(100% - 96px);
+}
+
+.charsheet div.sheet-timeline input.sheet-hoverpopup+span+div {
+	width: 75%;
+	left: 0px;
+}
+/* #endregion*/
+
 /*#region SECTION: SPENT XP*/
 .charsheet div.sheet-xp {
 	text-align: center;

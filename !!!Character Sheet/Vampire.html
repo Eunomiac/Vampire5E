@@ -7721,6 +7721,32 @@
         <div class="sheet-col1">
             <span>Coming Soon...</span>
         </div>
+        <!-- TIMELINE -->
+        <div class="sheet-header1">
+            <img src="https://imgur.com/acsr55c.png" /> <!-- Memoriam -->
+        </div>
+        <fieldset class="repeating_timeline">
+            <input type="hidden" name="attr_timelinerowid" value="0" />
+            <div class="sheet-coltight1 sheet-timeline sheet-timewhole">
+                <div class="sheet-coltight1 sheet-timeline sheet-doublerow sheet-timedate">
+                    <textarea class="sheet-timeline sheet-darkText" name="attr_tl_duration">Dec 3, 2028</textarea>
+                <textarea class="sheet-timeline sheet-right sheet-darkText" name="attr_tl_duration">— Aug 20, 2018</textarea>
+                </div>
+                <div class="sheet-coltight1 sheet-timeline sheet-doublerow sheet-timebody">
+                    <div class="sheet-coltight1 sheet-timeline sheet-linerow sheet-timetitle">
+                        <input class="sheet-hoverpopup" type="checkbox" value="1" style="margin-left: -20px;" /><span></span>
+                        <div class="sheet-coltight1">
+                            <textarea class="sheet-collapsibletitle" readonly>Details</textarea>
+                            <textarea class="sheet-collapsiblebody sheet-editable" name="attr_tl_details"></textarea>
+                        </div>
+                        <textarea class="sheet-timeline sheet-timetitle" readonly name="attr_tl_title">PROJECT: Seeking to raise my Golconda rating.</textarea>
+                    </div>
+                    <div class="sheet-coltight1 sheet-timeline sheet-linerow sheet-timesummary">
+                        <textarea class="sheet-timeline sheet-timesummary" readonly name="attr_tl_summary">Difficulty too high? Consider asking for help from allies, gaining a bonus from a Memoriam, cashing in Boons you've earned from other Kindred for a dice bonus, seeking beneficial modifiers in other Districts and Sites... or combine them all!</textarea>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
     </div>
     <!--[SINGLE SHEET] TAB 5 Combat-->
     <div class="sheet-pagecontainer sheet-section-5 sheet-singlesheet">
@@ -7981,24 +8007,6 @@
 			"Ministry": ["Obfuscate", "Presence", "Protean"],
 			"Ravnos": ["Animalism", "Fortitude", "Chimerstry"]
 		},
-
-		/* clanSubDivs = {
-			"Brujah": ["Hellene", "Fury"],
-			"Gangrel": [],
-			"Malkavian": [],
-			"Nosferatu": [],
-			"Toreador": ["Elite", "Abstract"],
-			"Tremere": ["House Tremere", "House Carna", "House Goratrix", "House Ipissiling"],
-			"Ventrue": ["Blue Blood", "Free Ventrue"],
-			"Caitiff": ["", "", ""],
-			"Thin-Blooded": ["Alchemy", "", ""],
-			"Lasombra": ["Keeper", "Magister"],
-			"Old Clan": [],
-			"Banu Haqim": ["Assamite", "Haqimite"],
-			"Hecata": ["Giovanni"],
-			"Ministry": ["Follower of Set", "Ministry"],
-			"Ravnos": []
-		}, */
 		genDepts = [
 			null,
 			null,
@@ -8457,12 +8465,10 @@
 			discMid: ["disc", "disc_name", "disc_flag", "discpower_toggle"],
 			discRight: ["disc", "disc_name", "disc_flag", "discpower_toggle"]
 		},
-
 		ADVREPREFS = {
 			advantage: ["advantage", "advantage_name", "advantage_flag", "advantage_type", "advantage_details"],
 			negadvantage: ["negadvantage", "negadvantage_name", "negadvantage_flag", "negadvantage_type", "negadvantage_details"]
 		},
-
 		XPREPREFS = {
 			spentxp: ["xp_spent_toggle", "xp_category", "xp_trait", "xp_initial", "xp_new", "xp_trait_toggle", "xp_initial_toggle", "xp_arrow_toggle", "xp_new_toggle", "xp_cost"],
 			earnedxp: ["xp_session", "xp_award", "xp_reason"]
@@ -8509,13 +8515,11 @@
 				cost: 10
 			}
 		},
-
 		GROUPPREFIXES = ["g1", "g2", "g3", "g4", "g5", "g6", "g7", "g8", "g9"],
 		GROUPATTRS = ["charname", "hunger"],
 		GROUPREPREFS = {
 			rolls: ["grolltype", "gtrait1name", "gtrait1value", "gtrait2name", "gtrait2value", "grolldiff", "grollmod", "gposflags", "gnegflags", "grollparams"]
 		},
-
 		PROJREPREFS = {
 			project: ["projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectscope", "projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2", "projectlaunchmod", "projectstake1_name", "projectstake1", "projectstake2_name", "projectstake2", "projectstake3_name", "projectstake3", "projectstake4_name", "projectstake4", "projectstake5_name", "projectstake5", "projectstake6_name", "projectstake6", "projectlaunchresults", "projectlaunchresultsmargin", "projectlaunchdiffmod", "projectwasrushed"]
 		},
@@ -8523,7 +8527,7 @@
 	// #endregion
 
 	// #region Derivative Stats
-	const BASICATTRS = _.flatten( [_.values(ATTRIBUTES), _.values(SKILLS), DISCENUMS, TRACKERS] ),
+	const BASICATTRS = _.map(_.flatten( [_.values(ATTRIBUTES), _.values(SKILLS), DISCENUMS, TRACKERS] ), v => v.toLowerCase()),
 		BASICFLAGS = _.map(_.omit(BASICATTRS, TRACKERS), v => `${v}_flag`),
 		ALLATTRS = _.map( [
 			...ROLLFLAGS.all,
@@ -8540,17 +8544,14 @@
 			if (isDebug && (isLoud || !LOGOPTIONS.silent))
 				console[isWarn ? "warn" : "log"](prefix + msg)
 		},
-		isBlacklisted = (attr = "") => _.pick(ATTRBLACKLIST,
-			bannedAttr => attr.toLowerCase().includes(bannedAttr.toLowerCase()))
-			.length > 0,
-		trimAttr = attr => _.isString(attr) && attr.replace("_flag", "").replace("_type", "").replace("_name", "") ||
-		JSON.stringify(attr),
+		isBlacklisted = (attr = "") => _.filter(ATTRBLACKLIST, bannedAttr => attr.toLowerCase().includes(bannedAttr.toLowerCase())) > 0,
+		trimAttr = attr => _.isString(attr) ? attr.replace(/(_flag|_type|_name)/gu, "") : JSON.stringify(attr),
 		parseRepAttr = attr => {
 			if (attr.includes("repeating")) {
 				return {
-					sec: attr.replace(/repeating_(.*?)_(-.*?)_(.*?)$/gu, /$1/u),
-					rowID: attr.replace(/repeating_(.*?)_(-.*?)_(.*?)$/gu, /$2/u),
-					stat: attr.replace(/repeating_(.*?)_(-.*?)_(.*?)$/gu, /$3/u)
+					sec: attr.replace(/repeating_(.*?)_(-.*?)_(.*?)$/gu, "$1"),
+					rowID: attr.replace(/repeating_(.*?)_(-.*?)_(.*?)$/gu, "$2"),
+					attr: attr.replace(/repeating_(.*?)_(-.*?)_(.*?)$/gu, "$3")
 				}
 			}
 
@@ -8558,14 +8559,16 @@
 				attr
 			}
 		},
-		trimStat = attrList => _.object(_.map(_.keys(attrList), k => [parseRepAttr(k).stat || parseRepAttr(k).attr, attrList[k]] )),
+		trimStat = attrList => _.object(_.map(_.keys(attrList), k => [parseRepAttr(k).attr, attrList[k]] )),
 		isIn = (needle, haystack) => {
 			if (!_.isString(needle))
 				return false
 			if (_.isString(haystack))
 				return haystack.search(new RegExp(needle, "iu")) > -1 && haystack
 			const [ndl, hay] = [`\\b${needle}\\b`, haystack],
-				names = _.isArray(hay) ? _.flatten(hay) : _.isObject(hay) ? _.keys(hay) : [hay],
+				names = _.isArray(hay) ?
+					_.flatten(hay) :
+					_.isObject(hay) ? _.keys(hay) : [hay],
 				index = _.findIndex(names,
 					v => v.match(new RegExp(ndl, "iu")) !== null ||
 					v.match(new RegExp(ndl.replace(/_/gu, " "), "iu")) !== null ||
@@ -8601,12 +8604,6 @@
 					end()
 				},
 				each = (empty, ...args) => {
-					// log(`@ASync@ EACH START: Err = ${JSON.stringify(empty)}`)
-
-					/* log(`... ..@ASync@ Arguments = ${JSON.stringify(arguments)}`)
-					   const args2 = Array.prototype.slice.call(arguments, 1) */
-					/* log(`... ..@ASync@      Args = ${JSON.stringify(args)}`)
-					   log(`... ..@ASync@     Args2 = ${JSON.stringify(args2)}`) */
 					if (++current >= tasks.length || empty)
 						done(empty, args)
 					else
@@ -8683,6 +8680,9 @@
 				end: parseDString(endDate)
 			}
 
+			if (dates.today.getTime() >= dates.end.getTime())
+				return 1
+
 			return (dates.today.getTime() - dates.start.getTime()) / (dates.end.getTime() - dates.start.getTime())
 		}
 	// #endregion
@@ -8697,9 +8697,7 @@
 						discRight: ["disc_name"]
 					}, gN),
 					(attrs, ids, cBack) => {
-						// const [attrs, ids] = repVals
-						log(`Attrs: ${JSON.stringify(attrs)}, IDs: ${JSON.stringify(ids)}`)
-						getAttrs(groupify( ["disc1_name", "disc2_name", "disc3_name"], gN).concat(attrs), ATTRS => {
+						getAttrs( [...groupify( ["disc1_name", "disc2_name", "disc3_name"], gN), ...attrs], ATTRS => {
 							attrList[`${gN}rituals_toggle`] = _.values(ATTRS).includes("Blood Sorcery") || _.values(ATTRS).includes("Oblivion") ? 1 : 0
 							attrList[`${gN}formulae_toggle`] = _.values(ATTRS).includes("Alchemy") ? 1 : 0
 							cBack(null, attrList)
@@ -8821,7 +8819,7 @@
 		doClans()
 	} )
 	on(getTriggers(DISCENUMS, "", "", _.keys(DISCREPREFS)), eInfo => {
-		if (!eInfo.sourceAttribute.includes("power_toggle")) {
+		if (!isBlacklisted(eInfo.sourceAttribute)) {
 			[LOGPREFIX, LOGDEPTH] = [`[dPOWERS(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 			doDiscPowers(eInfo.sourceAttribute)
 		}
@@ -8837,7 +8835,12 @@
 	on("change:tab_core", eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dMARQUEE(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doMarquee()
-		setAttrs({lastbox: "", lasthumanity: "", laststains: "", lastcollisions: ""})
+		setAttrs( {
+			lastbox: "",
+			lasthumanity: "",
+			laststains: "",
+			lastcollisions: ""
+		} )
 	} )
 	// #endregion
 
@@ -8866,17 +8869,14 @@
 
 			return cback => {
 				getAttrs(attrs, ATTRS => {
-					log(`In Bincheck for ${tracker}, ATTRS = ${JSON.stringify(ATTRS)}`)
 					const pV = v => ATTRS[p(v)],
 						pI = v => parseInt(pV(v)) || 0,
 						// Activate Boxes Based on Max Stats
 						boxList = _.pick(ATTRS, (v, k) => {
-							log(`... v:${v}, k:${k}`)
 							const num = parseInt(k.split("_")[1] )
 
 							return !_.isNaN(num) && num <= pI("max")
 						} )
-					log(`BoxList: ${JSON.stringify(boxList)}`)
 
 					// Sort Boxes According to Damage
 					_.each(boxList, (dmg, box) => dmgBins[dmg].push(box))
@@ -8947,13 +8947,13 @@
 					} )
 					attrList[`${gN}${tracker}`] = dmgBins[0].length
 
-					log(`${tracker} FINAL ATTRS: ${JSON.stringify(attrList)}`)
 					cback(null, attrList)
 				} )
 			}
 		},
-
-		doTracker = (tracker, eInfo = {sourceAttribute: ""}, gN = "", cback) => {
+		doTracker = (tracker, eInfo = {
+			sourceAttribute: ""
+		}, gN = "", cback) => {
 			const stat = eInfo.sourceAttribute,
 				statVal = stat ? parseInt(stat.split("_")[1] || 0) : 0,
 				attrList = {},
@@ -9158,7 +9158,8 @@
 									break
 								}
 								break
-							default: break
+							default:
+								break
 							}
 							log(`Out of Switch: ${JSON.stringify(newDotline)}`)
 
@@ -9235,7 +9236,6 @@
 				break
 			case "blood potency full":
 			case "blood potency":
-				// log("At Blood Potency");
 				$funcs.push(cback => {
 					getAttrs(groupify( ["generation", "bonus_bp"], gN), ATTRS => {
 						attrList[`${gN}bp_max`] = Math.min(10, Math.max(0, genDepts[parseInt(ATTRS[`${gN}generation`] )].bp_max + (gN === "" ? parseInt(ATTRS[`${gN}bonus_bp`] ) : 0)))
@@ -9309,16 +9309,17 @@
 									pV = v => ATTRS[p(v)],
 									pI = v => parseInt(pV(v)) || 0,
 									currentPos = pI("projectinccounter")
+								log(`DoProjDates: pV() = ${pV("date_today")}`)
 								let counterPos = 11
 								// log(`   >>>> LRT: ${JSON.stringify(pI("projectlaunchroll_toggle"))}`)
 								if (pI("projectlaunchroll_toggle") === 2 && !pV("projectlaunchresults").includes("TOTAL")) {
-									counterPos = Math.min(
+									counterPos = Math.max(Math.min(
 										10 - Math.floor(
 											10 * getProgress(
 												formatDString(new Date(parseInt(ATTRS.date_today))), pV("projectstartdate"), pV("projectenddate")
 											)
 										), 10
-									)
+									), 0)
 								}
 								if (counterPos !== currentPos)
 									attrList[p("projectinccounter")] = counterPos
@@ -9336,72 +9337,76 @@
 			const rowData = source.split("_")
 			rowData.shift()
 			const sec = rowData.shift(),
-				rowID = rowData.shift()
+				rowID = rowData.shift(),
+				stat = rowData.join("_")
 
 			/* log(`CHECK LAUNCH REP VALS: ${JSON.stringify(sec)}; ${
-				JSON.stringify(rowID)}; ${JSON.stringify(stat)}`, "LAUNCHTOGGLE") */
+			   JSON.stringify(rowID)}; ${JSON.stringify(source)}`, "LAUNCHTOGGLE") */
 
 			return cback => {
-				const p = v => `repeating_${sec}_${rowID}_${v}`,
-					attrs = _.map( [
-						"projectlaunchtrait1_name",
-						"projectlaunchmod",
-						"projectlaunchtrait1",
-						"projectlaunchtrait2_name",
-						"projectlaunchtrait2",
-						"projectscope",
-						"projectlaunchresults",
-						"projectlaunchdiff",
-						"projectlaunchdiffmod"
-					], v => p(v)),
-					$funcs = [
-						cbk => {
-							getAttrs(attrs, ATTRS => {
-								const pV = v => ATTRS[p(v)],
-									pI = v => parseInt(ATTRS[p(v)] ) || 0,
-									attrList = {},
-									scope = pI("projectscope"),
-									launchDiffMod = pI("projectlaunchdiffmod"),
-									launchDiff = pI("projectlaunchdiff"),
-									traits = _.map( ["projectlaunchtrait1", "projectlaunchtrait2"],
-										v => ( {
-											name: pV(`${v}_name`),
-											value: pI(v)
-										} )),
-									results = pV("projectlaunchresults"),
-									launchTrtCheck = []
-								let traitString = ""
-								if (results.includes("SUCCESS") || results.includes("CRITICAL") || results.includes("TOTAL")) {
-									attrList[p("projectlaunchroll_toggle")] = 2
-								} else {
-									_.each(traits, trt => trt.value ?
-										launchTrtCheck.push(trt.name === "" ? -1 : 1) :
-										launchTrtCheck.push(trt.name === "" ? 0 : -1))
-									attrList[p("projectlaunchdiff")] = scope + 2 + launchDiffMod
-									if (launchTrtCheck.includes(-1) || !launchTrtCheck.includes(1)) {
-										attrList[p("projectlaunchroll_toggle")] = 0
+				if (stat.includes("projectstake") || ["projecttotalstake", "projectrushstakelost", "projectwasrushed"].includes(stat)) {
+					cback(null)
+				} else {
+					const p = v => `repeating_${sec}_${rowID}_${v}`,
+						attrs = _.map( [
+							"projectlaunchtrait1_name",
+							"projectlaunchmod",
+							"projectlaunchtrait1",
+							"projectlaunchtrait2_name",
+							"projectlaunchtrait2",
+							"projectscope",
+							"projectlaunchresults",
+							"projectlaunchdiff",
+							"projectlaunchdiffmod"
+						], v => p(v)),
+						$funcs = [
+							cbk => {
+								getAttrs(attrs, ATTRS => {
+									const pV = v => ATTRS[p(v)],
+										pI = v => parseInt(ATTRS[p(v)] ) || 0,
+										attrList = {},
+										scope = pI("projectscope"),
+										launchDiffMod = pI("projectlaunchdiffmod"),
+										launchDiff = pI("projectlaunchdiff"),
+										traits = _.map( ["projectlaunchtrait1", "projectlaunchtrait2"],
+											v => ( {
+												name: pV(`${v}_name`),
+												value: pI(v)
+											} )),
+										results = pV("projectlaunchresults"),
+										launchTrtCheck = []
+									let traitString = ""
+									if (results.includes("SUCCESS") || results.includes("CRITICAL") || results.includes("TOTAL")) {
+										attrList[p("projectlaunchroll_toggle")] = 2
 									} else {
-										attrList[p("projectlaunchroll_toggle")] = 1
-										if (traits[0].name !== "" &&
-											traits[1].name !== "" &&
-											traits[0].value > 0 &&
-											traits[1].value > 0 && launchDiff) {
-											traitString = [_.values(traits[0] ).join(":"), _.values(traits[1] ).join(":")].join(",")
+										_.each(traits, trt => trt.value ?
+											launchTrtCheck.push(trt.name === "" ? -1 : 1) :
+											launchTrtCheck.push(trt.name === "" ? 0 : -1))
+										attrList[p("projectlaunchdiff")] = scope + 2 + launchDiffMod
+										if (launchTrtCheck.includes(-1) || !launchTrtCheck.includes(1)) {
+											attrList[p("projectlaunchroll_toggle")] = 0
+										} else {
+											attrList[p("projectlaunchroll_toggle")] = 1
+											if (traits[0].name !== "" && traits[0].value > 0 ||
+												traits[1].name !== "" && traits[1].value > 0) {
+												traitString = [_.values(traits[0] ).join(":"), _.values(traits[1] ).join(":")].join(",")
 
-											attrList[p("projectlaunchrollparams")] = `@{character_name}|${traitString}|${launchDiff}|${pI("projectlaunchmod")}|${launchDiffMod}|${rowID}`
+												attrList[p("projectlaunchrollparams")] = `@{character_name}|${traitString}|${launchDiff}|${pI("projectlaunchmod")}|${launchDiffMod}|${rowID}`
+											}
 										}
 									}
-								}
-								cbk(null, attrList)
-							} )
-						},
-						$set
-					]
+									cbk(null, attrList)
+								} )
+							},
+							$set
+						]
 
-				run$($funcs, () => cback(null))
+					run$($funcs, () => cback(null))
+				}
 			}
 		},
 		doProjects = (source, gN = "") => {
+			log(`DOPROJECTS: SOURCE = ${JSON.stringify(source)}`)
 			const row = source
 					.split("_")
 					.slice(0, 3)
@@ -9410,11 +9415,13 @@
 					.split("_")
 					.slice(3)
 					.join("_")
-			// log(`ROW = ${JSON.stringify(row)}, STAT = ${JSON.stringify(stat)}`)
+			// log(`DOPROJECTS: ROW = ${JSON.stringify(row)}, STAT = ${JSON.stringify(stat)}`)
 			const p = v => `${row}_${v}`,
 				$funcs = [],
 				attrs = [],
 				attrList = {}
+
+			// Updating project end date when date values are changed.
 			if ( ["projectstartdate", "projectincnum", "projectincunit"].includes(stat)) {
 				attrs.push(..._.map( ["projectstartdate", "projectincnum", "projectincunit"], v => p(v)), "date_today")
 				$funcs.push(...[
@@ -9428,7 +9435,7 @@
 							let sDate = null
 
 							/* log(`CDATE: ${JSON.stringify(cDate)}`)
-							   log(`ATTRS: ${JSON.stringify(ATTRS)}`) */
+								   log(`ATTRS: ${JSON.stringify(ATTRS)}`) */
 							if (pV("projectstartdate")) {
 								sDate = new Date(parseDString(pV("projectstartdate")))
 							} else {
@@ -9471,7 +9478,9 @@
 					$set,
 					cback => doProjectDates(gN, cback)
 				] )
-			} else if ( ["projectscope", "projectlaunchdiff", "projectlaunchdiffmod", "projectlaunchresults"].includes(stat)) {
+
+			// Updating launch roll difficulty display upon change to scope or difficulty
+			} else if ( ["projectscope", "projectscope_name", "projectlaunchdiff", "projectlaunchdiffmod"].includes(stat)) {
 				attrs.push(..._.map( ["projectscope", "projectlaunchmod", "projectlaunchdiffmod"], v => p(v)), "date_today")
 				$funcs.push(...[
 					cback => {
@@ -9486,45 +9495,50 @@
 					$set,
 					$checkLaunch(source, gN)
 				] )
+
+			// Updating launch roll when launch traits are changed.
 			} else if ( ["projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2", "projectlaunchmod"].includes(stat)) {
 				$funcs.push($checkLaunch(source, gN))
-			} else if (stat.includes("projectstake")) {
-				attrs.push(_.map( [..._.map( [1, 2, 3, 4, 5, 6], v => `projectstake${v}`), "projectlaunchresults", "projecttotalstake", "projectwasrushed", "projectrushstakelost"], v => p(v)))
+
+			//
+			} else if (stat.includes("projectstake") || ["projectlaunchresults", "projecttotalstake", "projectrushstakelost", "projectwasrushed"].includes(stat)) {
+				attrs.push(..._.map( [..._.map( [1, 2, 3, 4, 5, 6], v => `projectstake${v}`), "projectlaunchresults", "projecttotalstake", "projectwasrushed", "projectrushstakelost"], v => p(v)))
 				$funcs.push(...[
 					cback => {
 						getAttrs(attrs, ATTRS => {
 							const pV = v => ATTRS[p(v)],
 								pI = v => parseInt(pV(v)) || 0
-							if (pV("projectlaunchresults").includes("CRITICAL") || pV("projectlaunchresults").includes("FAIL"))
-								return
-							if (pI("projectwasrushed")) {
-								// Track the stakes the player still has to sacrifice.
-							} else {
-								const stakeRemaining = Math.max(0, pI("projecttotalstake")) - _.reduce(..._.map( [1, 2, 3, 4, 5, 6], v => pI(`projectstake${v}`)), (memo, num) => parseInt(memo) + parseInt(num))
+							if (pV("projectlaunchresults").includes("SUCCESS")) {
+								attrList[p("projectstakes_toggle")] = 1
+								const stakeRemaining = Math.max(0, pI("projecttotalstake")) - _.reduce(_.map( [1, 2, 3, 4, 5, 6], v => pI(`projectstake${v}`)), (memo, num) => parseInt(memo) + parseInt(num))
+								log(`STAKE REMAINING: ${JSON.stringify(stakeRemaining)}`)
 								if (stakeRemaining > 0)
-									attrList[p("projectlaunchresultsmargin")] = `Stake ${pV("projecttotalstake")} Dots (${stakeRemaining} to go)`
+									attrList[p("projectlaunchresultsmargin")] = `Stake ${pV("projecttotalstake")} Dot${pI("projecttotalstake") > 1 ? "s" : ""} (${stakeRemaining} to go)`
 								else
-									attrList[p("projectlaunchresultsmargin")] = `${pV("projecttotalstake")} Dots Staked`
+									attrList[p("projectlaunchresultsmargin")] = `${pV("projecttotalstake")} Dot${pI("projecttotalstake") > 1 ? "s" : ""} Staked`
 							}
 							cback(null, attrList)
 						} )
 					},
-					$set
+					$set,
+					$checkLaunch(source, gN)
 				] )
 			} else if ( ["projectwasrushed"].includes(stat)) {
-				attrs.push(..._.map( [..._.map( [1, 2, 3, 4, 5, 6], v => `projectstake${v}`), "projectwasrushed", "projectrushstakelost"], v => p(v)))
+				attrs.push(_.map( [..._.map( [1, 2, 3, 4, 5, 6], v => `projectstake${v}`), "projectwasrushed", "projectrushstakelost"], v => p(v)))
 				$funcs.push(...[
 					cback => {
 						getAttrs(attrs, ATTRS => {
 							/* If the rush was a failure, wipe all of the projectstake values AFTER
-							summing and recording them in projectstakesatrush, and track which
-							stakes the player is losing by them filling in the same boxes again. */
+								summing and recording them in projectstakesatrush, and track which
+								stakes the player is losing by them filling in the same boxes again. */
 							attrList.push(ATTRS[attrs[0]] )
 							cback(null, attrList)
 						} )
 					},
 					$set
 				] )
+			} else {
+				log(`DOPROJECTS ERROR: Unrecognized stat: ${stat}`)
 			}
 			run$($funcs)
 		}
@@ -9534,9 +9548,16 @@
 		doProjectDates()
 	} )
 	on(getTriggers(null, "", "", _.keys(PROJREPREFS)), eInfo => {
-		/* if (eInfo.sourceType === "sheetworker")
-		   return [LOGPREFIX, LOGDEPTH] = [`[dPROJECTS(${trimAttr(eInfo.sourceAttribute)})]`, 0] */
-		doProjects(eInfo.sourceAttribute)
+		log(`DOPROJECTS --> EINFO: ${JSON.stringify(eInfo)}`)
+		if (eInfo.sourceType !== "sheetworker" && !isBlacklisted(eInfo.sourceAttribute))
+			doProjects(eInfo.sourceAttribute)
+
+		/* try {
+			log(`DOPROJECTS --> EINFO: ${JSON.stringify(eInfo)}`)
+		} catch (errObj) {
+			log(`... ERROR IN DOPROJECTS WITH EINFO = ${JSON.stringify(eInfo)}
+			<br/>${errObj.name}<br>${errObj.message}<br><br>${errObj.stack}`)
+		} */
 	} )
 	// #endregion
 
@@ -9627,8 +9648,6 @@
 					$getRepAttrs(Object.assign(DISCREPREFS, ADVREPREFS), gN),
 					(attrs, ids, cBack) => {
 						getAttrs( ["repstats"], ATTRS => {
-							/* log(`[DoRollRepRefs] From $getRepAttrs: ${JSON.stringify(_.reject(attrs, v => v.includes("_details")))}`)
-							   log(`[DoRollRepRefs] Prev RepStats: ${JSON.stringify(ATTRS.repstats.split(","))}`) */
 							if (!_.isEqual(
 								_.compact(ATTRS.repstats.split(",")),
 								_.reject(attrs, v => v.includes("_details"))
@@ -9646,29 +9665,22 @@
 				$funcs = [
 					cBack2 => {
 						getAttrs( ["repstats"], ATTRS => {
-							// log(` >>> $funcs[ 1 ] >>> repstats: ${JSON.stringify(ATTRS.repstats)}`)
 							cBack2(null, ATTRS.repstats)
 						} )
 					},
 					(repstats = [], cBack2) => {
-						// log(` >>> $funcs[ 2:START ] >>> repAttrs: ${JSON.stringify(repAttrs)}`)
 						run$( [
 							$getRepAttrs(repstats, gN),
 							(attrs, ids, cBack3) => {
 								repAttrs.push(..._.reject(attrs, v => v.includes("_details")))
-								// log(` >>> $funcs[ 2:SUB ] >>> repAttrs: ${JSON.stringify(repAttrs)}`)
 								cBack3(null)
 							}
-						], () => {
-							// log(` >>> $funcs[ 2:END ] >>> repAttrs: ${JSON.stringify(repAttrs)}`)
-							cBack2(null)
-						} )
+						], () => { cBack2(null) } )
 					}
 				]
 			run$($funcs, () => cBack(null, [...ALLATTRS, ...repAttrs] ))
 		},
 		doRolls = (targetAttr, opts = {}, gN = "") => {
-			log("@@@ DOING ROLLS @@@")
 			const attrList = {},
 				$funcs = [
 					$getRollAttrs(gN),
@@ -9703,12 +9715,10 @@
 								},
 								checkFlag = attr => {
 									const flagName = isIn(`${trimAttr(attr)}_flag`, ATTRS)
-									if (!flagName)
-										return false
-									if (parseInt(ATTRS[flagName] ) === 1)
-										log(`${JSON.stringify(attr)}: ${JSON.stringify(flagName)} = 1`)
+									if (flagName && parseInt(ATTRS[flagName] ) === 1)
+										return parseInt(ATTRS[flagName] )
 
-									return parseInt(ATTRS[flagName] )
+									return false
 								},
 								validateFlags = flagArray => {
 									// Flags must be submitted in an ordered stack, with the oldest flag at the top.
@@ -9981,6 +9991,5 @@
 	// #endregion
 } )()
 </script>
-
 
 </html>

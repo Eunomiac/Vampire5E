@@ -250,8 +250,8 @@
 			subOutcome: {
 				font_family: "Contrail One",
 				font_size: 32,
-				top: 346,
-				left: 343,
+				top: 370,
+				left: 575,
 				color: COLORS.white,
 				text: "subOutcome"
 			}
@@ -399,7 +399,7 @@
 			}
 		},
 		CHATSTYLES = {
-			fullBox: "<div style=\"display: block;width: 259px;padding: 5px 5px;margin-left: -42px;margin-top: -30px;margin-bottom: -5px;color: white;font-variant: small-caps;font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset darkred;background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;\">",
+			fullBox: "<div style=\"display: block;width: 259px;padding: 5px 5px;margin-left: -42px;margin-top: -30px;margin-bottom: 20px;color: white;font-variant: small-caps;font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset darkred;background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;\">",
 			space10: "<span style=\"display: inline-block; width: 10px;\"></span>",
 			space30: "<span style=\"display: inline-block; width: 30px;\"></span>",
 			space40: "<span style=\"display: inline-block; width: 40px;\"></span>",
@@ -682,39 +682,50 @@
 		setText = (objName, params) => {
 			if (!state[D.GAMENAME].Roller.textList[objName] )
 				return D.ThrowError(`No text object registered with name '${D.JS(objName)}'.`, "ROLLER: setText()")
-			const obj = getObj("text", state[D.GAMENAME].Roller.textList[objName].id),
-				{
-					width,
-					left
-				} = state[D.GAMENAME].Roller.textList[objName]
+			const obj = getObj("text", state[D.GAMENAME].Roller.textList[objName].id)
 			if (!obj)
 				return D.ThrowError(`Failure to recover object '${D.JS(objName)}': ${D.JS(state[D.GAMENAME].Roller.textList)}`, "ROLLER: setText()")
+			state[D.GAMENAME].Roller.textList[objName].width = state[D.GAMENAME].Roller.textList[objName].width === 0 ?
+				parseInt(obj.get("width")) :
+				state[D.GAMENAME].Roller.textList[objName].width
+			state[D.GAMENAME].Roller.textList[objName].height = state[D.GAMENAME].Roller.textList[objName].height === 0 ?
+				parseInt(obj.get("height")) :
+				state[D.GAMENAME].Roller.textList[objName].height
+			const {
+				width,
+				left,
+				top
+			} = state[D.GAMENAME].Roller.textList[objName]
+			params.top = top
+			params.left = left
 			if (params.justified && params.justified === "left") {
 				params.width = D.GetTextWidth(obj, params.text)
 				params.left = left + params.width / 2 - width / 2
-			} else if (params.justified && params.justified === "center") {
-				params.left = left
 			}
-			if (params.shift && params.shift.anchor) {
-				if (!state[D.GAMENAME].Roller.textList[params.shift.anchor] )
-					return D.ThrowError(`No anchored object registered with name '${D.JS(params.shift.anchor)}' in params set:<br><br>${D.JS(params)}.`, "ROLLER: setText()")
-				const anchorObj = getObj("text", state[D.GAMENAME].Roller.textList[params.shift.anchor].id),
-					anchorWidth = parseInt(anchorObj.get("width")),
-					anchorLeft = parseInt(anchorObj.get("left"))
-				switch (params.shift.anchorSide) {
-				case "right":
-					params.left = anchorLeft +
-							(0.5 * anchorWidth) +
-							(0.5 * params.width) +
-							parseInt(params.shift.amount)
-					// D.DB("Shifting " + D.JSL(objName) + " right by " + D.JSL(params.shift.amount) + " from " + D.JSL(anchorLeft) + " to " + D.JSL(params.left), "ROLLER: setText()", 2);
-					break
-				default:
-					break
+			if (params.shift) {
+				if (params.shift.anchor) {
+					if (!state[D.GAMENAME].Roller.textList[params.shift.anchor] )
+						return D.ThrowError(`No anchored object registered with name '${D.JS(params.shift.anchor)}' in params set:<br><br>${D.JS(params)}.`, "ROLLER: setText()")
+					const anchorObj = getObj("text", state[D.GAMENAME].Roller.textList[params.shift.anchor].id),
+						anchorWidth = parseInt(anchorObj.get("width")),
+						anchorLeft = parseInt(anchorObj.get("left"))
+					switch (params.shift.anchorSide) {
+					case "right":
+						params.left = anchorLeft +
+								(0.5 * anchorWidth) +
+								(0.5 * params.width) +
+								parseInt(params.shift.amount)
+						// D.DB("Shifting " + D.JSL(objName) + " right by " + D.JSL(params.shift.amount) + " from " + D.JSL(anchorLeft) + " to " + D.JSL(params.left), "ROLLER: setText()", 2);
+						break
+					default:
+						break
+					}
 				}
+				params.left += params.shift.left || 0
+				params.top += params.shift.top || 0
 			}
-			if (_.isNaN(params.left) || _.isNaN(params.width))
-				return D.ThrowError(`Bad left or width given for '${D.JS(objName)}': ${D.JS(params)}`, "ROLLER: setText()")
+			if (_.isNaN(params.left) || _.isNaN(params.top) || _.isNaN(params.width))
+				return D.ThrowError(`Bad top, left or width given for '${D.JS(objName)}': ${D.JS(params)}`, "ROLLER: setText()")
 			obj.set(_.omit(params, ["justified", "shift"] ))
 
 			return params
@@ -1577,11 +1588,17 @@
 					},
 					mainRoll: {
 						text: "",
-						justified: "left"
+						justified: "left",
+						shift: {
+							top: 20
+						}
 					},
 					mainRollShadow: {
 						text: "",
-						justified: "left"
+						justified: "left",
+						shift: {
+							top: 20
+						}
 					}
 				},
 				logLines = {
@@ -1617,6 +1634,8 @@
 						text: `+ ${rollData.posFlagLines.join(" + ")}          `,
 						justified: "left"
 					}
+					rollLines.mainRoll.shift.top = 0
+					rollLines.mainRollShadow.shift.top = 0
 				} else {
 					rollLines.posMods = {
 						text: "  ",
@@ -1633,6 +1652,8 @@
 							amount: 0
 						}
 					}
+					rollLines.mainRoll.shift.top = 0
+					rollLines.mainRollShadow.shift.top = 0
 				}
 				// Falls through
 			case "willpower":
@@ -1842,8 +1863,6 @@
 							rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "worst")
 							deltaAttrs[p("projectlaunchresults")] = "TOTAL FAIL"
 							deltaAttrs[p("projectlaunchresultsmargin")] = "You've Angered Someone..."
-							deltaAttrs[p("projectlaunchdiffmod")] = 0
-							deltaAttrs[p("projectlaunchroll_toggle")] = 2
 						} else if (margin < 0) {
 							logLines.outcome = `${CHATSTYLES.outcomeOrange}FAILURE!</span></div>`
 							logLines.subOutcome = `${CHATSTYLES.subOutcomeOrange}+1 Difficulty to Try Again</span></div>`
@@ -1861,10 +1880,8 @@
 							rollLines.subOutcome.text = "No Commit Needed!"
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "best")
 							rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "best")
-							deltaAttrs[p("projectlaunchresults")] = "CRITICAL WIN!"
 							deltaAttrs[p("projectlaunchresultsmargin")] = "No Stake Needed!"
-							deltaAttrs[p("projectlaunchdiffmod")] = 0
-							deltaAttrs[p("projectlaunchroll_toggle")] = 2
+							deltaAttrs[p("projectlaunchresults")] = "CRITICAL WIN!"
 						} else {
 							logLines.outcome = `${CHATSTYLES.outcomeWhite}SUCCESS!</span></div>`
 							logLines.subOutcome = `${CHATSTYLES.subOutcomeWhite}Stake ${rollResults.commit} Dots</span></div>`
@@ -1872,12 +1889,9 @@
 							rollLines.subOutcome.text = `Stake ${rollResults.commit} Dots`
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "best")
 							rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "best")
-							deltaAttrs[p("projectlaunchresults")] = "SUCCESS!"
-							deltaAttrs[p("projectlaunchresultsmargin")] = `Stake ${rollResults.commit} Dots (${rollResults.commit} to go)`
-							deltaAttrs[p("projectlaunchdiffmod")] = 0
-							deltaAttrs[p("projectlaunchroll_toggle")] = 2
-							deltaAttrs[p("projectstakes_toggle")] = 1
 							deltaAttrs[p("projecttotalstake")] = rollResults.commit
+							deltaAttrs[p("projectlaunchresultsmargin")] = `Stake ${rollResults.commit} Dot${rollResults.commit > 1 ? "s" : ""} (${rollResults.commit} to go)`
+							deltaAttrs[p("projectlaunchresults")] = "SUCCESS!"
 						}
 						break
 					case "trait":
@@ -2050,7 +2064,7 @@
 
 			D.RunFX("bloodBolt", POSITIONS.bloodBoltFX)
 			if (_.values(deltaAttrs).length > 0) {
-				// D.Alert(D.JS(deltaAttrs), "DELTA ATTRS");
+				D.DB(`DELTAATTRS: ${D.JS(deltaAttrs)}`, 1)
 				setAttrs(rollData.charID, deltaAttrs)
 			}
 
@@ -2060,7 +2074,9 @@
 			D.DB(`PARAMS: ${D.JS(params)} (length: ${params.length})`, "ROLLER: makeSheetRoll()", 1)
 
 			const rollData = buildDicePool(getRollData(charObj, rollType, params))
+			D.DB(`RECEIVED ROLLDATA: ${D.JS(rollData)}`, 1)
 			applyRoll(rollData, rollDice(rollData))
+			D.DB("FINISHED APPLY ROLL.", 1)
 		},
 		wpReroll = dieCat => {
 			clearInterval(rerollFX);

@@ -398,7 +398,7 @@ const D = (() => {
 					.replace(/\\t/gu, "")
 					.replace(/ /gu, "&nbsp;")
 					.replace(/\\"/gu, "\"")
-					// .slice(1, -1)
+					.slice(1, -1)
 
 				/* return JSON.stringify(obj, null, 2)
 					.replace(/"/gu, "'")
@@ -659,7 +659,7 @@ const D = (() => {
 					// If parameter calls for REGISTERED CHARACTERS:
 				} else if (val === "registered") {
 					_.each(CHARREGISTRY, (v, charID) => {
-						if (charID === v.id)
+						if (charID === v.id && getObj("character", charID))
 							charObjs.add(getObj("character", charID))
 					} )
 					// If parameter is a CHARACTER NAME:
@@ -743,8 +743,11 @@ const D = (() => {
 						{type: "attribute"} ),
 					v => v.get("name")
 						.toLowerCase()
-						.includes(lowCaseID)
+						.includes(lowCaseID.toLowerCase())
 				)
+			D.Alert(`${D.JS(attrObjs)}
+			
+			found for charRef '${D.JS(charRef)}'`)
 			if (!attrObjs || attrObjs.length === 0)
 				return throwError(`No attributes found with id '${JSON.stringify(lowCaseID)}${charObj ? `' for char '${getName(charObj)}` : ""}'`)
 

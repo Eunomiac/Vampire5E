@@ -305,7 +305,7 @@ const Chars = (() => {
 					D.ThrowError("Select character tokens first!", "CHARS")
 				break
 			case "!dChar":
-				charData = args.shift()
+				charData = args.join(" ")
 				if (playerIsGM(msg.playerid) && charData)
 					unregisterChar(charData)
 				else
