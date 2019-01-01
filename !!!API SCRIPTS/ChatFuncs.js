@@ -269,17 +269,12 @@ const ChatFuncs = (() => {
 			{
 				switch (args.shift()) {
 				case "dblvl":
-				{
 					D.SetDebugLevel(...args)
 					break
-				}
 				case "dbfilter":
-				{
 					D.AddDBFilter(args.shift())
 					break
-				}
 				case "size":
-				{
 					if (msg.selected && msg.selected[0] ) {
 						for (const objData of msg.selected) {
 							obj = getObj(objData._type, objData._id)
@@ -293,9 +288,7 @@ const ChatFuncs = (() => {
 						}
 					}
 					break
-				}
-				default:
-					break
+				default: break
 				}
 				break
 			}
@@ -321,8 +314,7 @@ const ChatFuncs = (() => {
 						sendHelpMsg()
 					break
 
-				default:
-					break
+				default: break
 				}
 				break
 			case "!find":

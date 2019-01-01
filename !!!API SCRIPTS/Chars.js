@@ -453,6 +453,14 @@ const Chars = (() => {
 					D.Alert(`New Attributes List: ${D.JS(attrs)}`, "CHARS !delProj")
 				}
 				break
+			case "!setProj":
+				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
+					const charObj = D.GetChar(msg),
+						prop = args.shift(),
+						value = args.shift()
+					charObj.set(prop, value)
+				}
+				break
 			case "!MVC":
 				params = {
 					name: who

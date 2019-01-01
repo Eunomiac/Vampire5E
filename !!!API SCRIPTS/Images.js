@@ -45,13 +45,16 @@ const Images = (() => {
 		},
 		getImageData = imgRef => {
 			try {
-				const imgName = D.IsObj(imgRef, "graphic") ?
-					imgRef.get("name") :
-					_.isString(imgRef) ?
-						imgRef :
-						D.GetSelected(imgRef) ?
-							D.GetSelected(imgRef)[0].get("name") :
-							null
+				const imgName =
+					D.IsObj(imgRef, "graphic") ?
+						imgRef.get("name") :
+						D.IsObj(getObj("graphic", imgRef)) ?
+							getObj("graphic", imgRef).get("name") :
+							_.isString(imgRef) ?
+								imgRef :
+								D.GetSelected(imgRef) ?
+									D.GetSelected(imgRef)[0].get("name") :
+									null
 				if (imgName && REGISTRY[imgName] )
 					return REGISTRY[imgName]
 
@@ -77,25 +80,35 @@ const Images = (() => {
 				D.ThrowError("", "IMAGES.addImgSrc", errObj)
 			}
 		},
-		regImage = (imgObj, imgName, params = {} ) => {
+		regImage = (imgObj, imgName, options = {} ) => {
+			// D.Alert(`Options for '${D.JS(imgName)}': ${D.JS(options)}`, "IMAGES: regImage")
 			if (D.IsObj(imgObj, "graphic")) {
-				const imgSrcs = (params.entries && _.pick(params, v => v.startsWith("http"))) || {},
+				const imgSrcs = (options.entries && _.pick(options, v => v.startsWith("http"))) || {},
 					baseName = imgName.replace(/(_|\d|#)+$/gu, "").toLowerCase(),
-					name = `${imgName.replace(/(_|\d|#)+$/gu, "")}_${_.filter(_.keys(REGISTRY), k => k.includes(imgName.replace(/(_|\d|#)+$/gu, ""))).length + 1}`
-				D.Alert(`BaseName: ${baseName}, FullName: ${name}`)
+					name = `${imgName.replace(/(_|\d|#)+$/gu, "")}_${_.filter(_.keys(REGISTRY), k => k.includes(imgName.replace(/(_|\d|#)+$/gu, ""))).length + 1}`,
+					params = {
+						left: options.left || imgObj.get("left") || REGISTRY[name].left || (IMGDATA[baseName] && IMGDATA[baseName].left),
+						top: options.top || imgObj.get("top") || REGISTRY[name].top || (IMGDATA[baseName] && IMGDATA[baseName].top),
+						height: options.height || imgObj.get("height") || REGISTRY[name].height || (IMGDATA[baseName] && IMGDATA[baseName].height),
+						width: options.width || imgObj.get("width") || REGISTRY[name].width || (IMGDATA[baseName] && IMGDATA[baseName].width)
+					}
+				// D.Alert(`Params for '${D.JS(imgName)}': ${D.JS(params)}`, "IMAGES: regImage")
+				if (!params.left || !params.top || !params.height || !params.width)
+					return D.ThrowError("Must supply position & dimension to register image.", "IMAGES:RegImage")
 				REGISTRY[name] = {
 					id: imgObj.id,
 					name,
-					left: params.left || imgObj.get("left") || REGISTRY[name].left || (IMGDATA[baseName] && IMGDATA[baseName].left) || 200,
-					top: params.top || imgObj.get("top") || REGISTRY[name].top || (IMGDATA[baseName] && IMGDATA[baseName].top) || 200,
-					height: params.height || imgObj.get("height") || REGISTRY[name].height || (IMGDATA[baseName] && IMGDATA[baseName].height) || 100,
-					width: params.width || imgObj.get("width") || REGISTRY[name].width || (IMGDATA[baseName] && IMGDATA[baseName].width) || 100,
+					left: params.left,
+					top: params.top,
+					height: params.height,
+					width: params.width,
 					srcs: {}
 				}
+				imgObj.set("name", name)
 				for (const srcName of _.keys(imgSrcs))
 					addImgSrc(imgSrcs[srcName], srcName)
 
-				D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(REGISTRY[name] )}`, "IMAGES: regImage")
+				// D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(REGISTRY[name] )}`, "IMAGES: regImage")
 
 				return getImageData(name)
 			}
@@ -104,13 +117,11 @@ const Images = (() => {
 		},
 		makeImage = (imgName = "", params = {} ) => {
 			const dataRef = IMGDATA[imgName] || IMGDATA.default,
-				name = imgName.replace(/#+/gu, _.filter(_.keys(IMGDATA), k => k.includes(imgName.replace(/#+/gu, ""))).length + 1),
 				imgObj = createObj("graphic", {
-					_pageid: params.pageID || D.PAGEID(),
-					name,
+					_pageid: params._pageID || D.PAGEID(),
 					imgsrc: params.imgsrc || IMGDATA.blank,
-					left: params.left || dataRef.width,
-					top: params.height || dataRef.height,
+					left: params.left || dataRef.left,
+					top: params.top || dataRef.top,
 					width: params.width || dataRef.width,
 					height: params.height || dataRef.height,
 					layer: params.layer || "objects",
@@ -118,7 +129,7 @@ const Images = (() => {
 					controlledby: params.controlledby || "",
 					showname: params.showname === true
 				} )
-			regImage(imgObj, name)
+			regImage(imgObj, imgName)
 
 			return imgObj
 		},
@@ -161,6 +172,12 @@ const Images = (() => {
 			}
 
 			return D.ThrowError(`Invalid image reference ${D.JSL(imgRef)}`, "IMAGES: removeImage")
+		},
+		cleanRegistry = () => {
+			for (const imgName of _.keys(REGISTRY)) {
+				if (!getImageObj(imgName))
+					removeImage(imgName)
+			}
 		},
 		// #endregion
 
@@ -222,6 +239,9 @@ const Images = (() => {
 				} else {
 					D.Alert("No hostnames provided.<br><br>Syntax: !img remove <hostName> OR !img removeAll")
 				}
+				break
+			case "clean":
+				cleanRegistry()
 				break
 			case "add":
 			case "addsrc":

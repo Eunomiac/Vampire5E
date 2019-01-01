@@ -51,17 +51,14 @@ const DragPads = (() => {
 		getPad = padRef => {
 			const pads = []
 			if (D.IsObj(padRef)) {
-				D.Log(`It's an OBJECT: ${D.JS(padRef)}`, "DRAGPADS: GET PAD")
 				pads.push(getObj("graphic",
 					state[D.GAMENAME].DragPads.byGraphic[padRef.id] ?
 						state[D.GAMENAME].DragPads.byGraphic[padRef.id].id :
 						state[D.GAMENAME].DragPads.byPad[padRef.id] ?
 							padRef.id :
 							null))
-				D.Log(`PADS: ${D.JS(pads)}`)
 			} else if (_.isString(padRef)) {
 				if (FUNCTIONS[padRef] ) {
-					D.Log(`It's a FUNCTION: ${D.JS(padRef)}`, "DRAGPADS: GET PAD")
 					pads.push(
 						..._.map(
 							_.keys(
@@ -74,15 +71,12 @@ const DragPads = (() => {
 							pID => getObj("graphic", pID)
 						)
 					)
-					D.Log(`PADS: ${D.JS(pads)}`)
 				} else {
-					D.Log(`It's a STRING (ID): ${D.JS(padRef)}`, "DRAGPADS: GET PAD")
 					pads.push(getObj("graphic", state[D.GAMENAME].DragPads.byGraphic[padRef] ?
 						state[D.GAMENAME].DragPads.byGraphic[padRef].id :
 						state[D.GAMENAME].DragPads.byPad[padRef] ?
 							padRef :
 							null))
-					D.Log(`PADS: ${D.JS(pads)}`)
 				}
 			}
 
@@ -102,94 +96,67 @@ const DragPads = (() => {
 
 			return pads
 		},
-		makePad = (graphicObj, funcName, params = "height:0, width:0, left:0, top:0") => {
-			let [refObj, pad, partnerPad] = [null, null, null],
-				options = {}
-			const isGraphicObj = D.IsObj(graphicObj, "graphic"),
-				imgName = {
-					pad: `${funcName}_Pad_${
-						_.filter(
-							_.map(
-								_.values(state[D.GAMENAME].DragPads.byPad), v => v.funcName
-							),
-							v => funcName === v.funcName
-						).length + 1
-					}`
-				}
-			imgName.partner = imgName.pad.replace("Pad", "PartnerPad")
+		makePad = (graphicObj, funcName, params = "deltaTop:0, deltaLeft:, deltaHeight:0, deltaWidth:0") => {
+			const options = {
+				controlledby: "all",
+				layer: "map"
+			}
+			let [pad, partnerPad] = [null, null]
 			if (_.isString(params)) {
 				_.each(params.split(/,\s*?(?=\S)/gu),
 					v => {
 						[, options[v.split(/\s*?(?=\S):\s*?(?=\S)/gu)[0]]] = v.split(/\s*?(?=\S):\s*?(?=\S)/gu)
 					} )
+			} else if (D.IsObj(params)) {
+				Object.assign(options, params)
 			} else {
-				options = params
+				return D.ThrowError(`Bad parameters: ${D.JS(params)}`, "DRAGPADS:MakePad")
 			}
-			if (isGraphicObj) {
-				refObj = graphicObj
-				options.gID = graphicObj.id
-			} else {
-				refObj = Images.MakeImage("DP_TempRef_#", {
-					left: parseInt(options.left),
-					top: parseInt(options.top),
-					width: parseInt(options.width),
-					height: parseInt(options.height),
-					layer: "gmlayer"
-				} )
-				options.left = 0
-				options.top = 0
-				options.height = 0
-				options.width = 0
-				options.gID = 0
+			// D.Alert(`makePad Options: ${D.JS(options)}`, "DRAGPADS.MakePad")
+			if (D.IsObj(graphicObj, "graphic")) {
+				options._pageid = graphicObj.get("_pageid")
+				options.left = options.left || graphicObj.get("left")
+				options.top = options.top || graphicObj.get("top")
+				options.width = options.width || graphicObj.get("width")
+				options.height = options.height || graphicObj.get("height")
 			}
-			pad = Images.MakeImage(imgName.pad, {
-				_pageid: refObj.get("_pageid"),
-				left: refObj.get("left") + parseInt(options.left || 0),
-				top: refObj.get("top") + parseInt(options.top || 0),
-				width: refObj.get("width") + parseInt(options.width || 0),
-				height: refObj.get("height") + parseInt(options.height || 0),
-				controlledby: "all"
-			} )
-			partnerPad = Images.MakeImage(imgName.partner, {
-				_pageid: refObj.get("_pageid"),
-				left: refObj.get("left") + parseInt(options.left || 0),
-				top: refObj.get("top") + parseInt(options.top || 0),
-				width: refObj.get("width") + parseInt(options.width || 0),
-				height: refObj.get("height") + parseInt(options.height || 0),
-				layer: "map"
-			} )
+			if (!options.left || !options.top || !options.width || !options.height)
+				return D.ThrowError("Must include reference object OR positions & dimensions to make pad.", "DRAGPADS:MakePad")
+			options._pageid = options._pageid || D.PAGEID()
+			options.left += parseInt(options.deltaLeft || 0)
+			options.top += parseInt(options.deltaTop || 0)
+			options.width += parseInt(options.deltaWidth || 0)
+			options.height += parseInt(options.deltaHeight || 0)
+			delete options.deltaLeft
+			delete options.deltaTop
+			delete options.deltaWidth
+			delete options.deltaHeight
+			pad = Images.MakeImage(`${funcName}_Pad_#`, options)
+			partnerPad = Images.MakeImage(`${funcName}_PartnerPad_#`, options)
 			state[D.GAMENAME].DragPads.byPad[pad.id] = {
-				id: options.gID,
 				funcName,
-				name: imgName.pad,
+				name: pad.get("name"),
 				left: pad.get("left"),
 				top: pad.get("top"),
-				width: pad.get("width"),
 				height: pad.get("height"),
-				deltaLeft: parseInt(options.left || 0),
-				deltaTop: parseInt(options.top || 0),
-				deltaHeight: parseInt(options.height || 0),
-				deltaWidth: parseInt(options.width || 0),
+				width: pad.get("width"),
 				partnerID: partnerPad.id,
 				active: "on"
 			}
 			state[D.GAMENAME].DragPads.byPad[partnerPad.id] = {
-				id: options.gID,
 				funcName,
-				name: imgName.partner,
+				name: partnerPad.get("name"),
 				left: partnerPad.get("left"),
 				top: partnerPad.get("top"),
-				width: partnerPad.get("width"),
 				height: partnerPad.get("height"),
-				deltaLeft: parseInt(options.left || 0),
-				deltaTop: parseInt(options.top || 0),
-				deltaHeight: parseInt(options.height || 0),
-				deltaWidth: parseInt(options.width || 0),
+				width: partnerPad.get("width"),
 				partnerID: pad.id,
 				active: "off"
 			}
-			if (isGraphicObj) {
-				state[D.GAMENAME].DragPads.byGraphic[refObj.id] = {
+			if (D.IsObj(graphicObj, "graphic")) {
+				state[D.GAMENAME].DragPads.byPad[pad.id].id = graphicObj.id
+				state[D.GAMENAME].DragPads.byPad[partnerPad.id].id = graphicObj.id
+				state[D.GAMENAME].DragPads.byGraphic[graphicObj.id] = {
 					id: pad.id,
 					pad: state[D.GAMENAME].DragPads.byPad[pad.id],
 					partnerPad: state[D.GAMENAME].DragPads.byPad[partnerPad.id]
@@ -206,8 +173,7 @@ const DragPads = (() => {
 					if (state[D.GAMENAME].DragPads.byPad[pad.id] ) {
 						padData = state[D.GAMENAME].DragPads.byPad[pad.id]
 						Images.Remove(padData.name)
-						if (state[D.GAMENAME].DragPads.byGraphic[padData.id] )
-							delete state[D.GAMENAME].DragPads.byGraphic[padData.id]
+						delete state[D.GAMENAME].DragPads.byGraphic[padData.id]
 						if (padData.partnerID) {
 							Images.Remove(padData.partnerID)
 							delete state[D.GAMENAME].DragPads.byPad[padData.partnerID]
@@ -235,53 +201,6 @@ const DragPads = (() => {
 			_.each(_.omit(state[D.GAMENAME].DragPads.byPad, v => v.funcName !== funcName), (val, key) => {
 				delete state[D.GAMENAME].DragPads.byPad[key]
 			} )
-		},
-		partnerPad = padID => {
-			const pad = getObj("graphic", padID),
-				padData = state[D.GAMENAME].DragPads.byPad[padID],
-				graphicObj = getObj("graphic", padData.id)
-			if (graphicObj) {
-				const pPad = makePad(
-					getObj("graphic", padData.id),
-					padData.funcName, {
-						left: padData.left,
-						top: padData.top,
-						width: padData.width,
-						height: padData.height,
-						layer: "gmlayer",
-						controlledby: "",
-						name: `DP_PartnerPad_${padData.funcName}_${padID}`
-					}
-				)
-				pPad.set( {
-					layer: "gmlayer",
-					controlledby: ""
-				} )
-				padData.partnerID = pPad.id
-				state[D.GAMENAME].DragPads.byPad[pPad.id].partnerID = padID
-
-				return [pad, pPad]
-			}
-			delete state[D.GAMENAME].DragPads.byGraphic[padData.id]
-			delete state[D.GAMENAME].DragPads.byPad[padID]
-
-			return false
-		},
-		partnerAllPads = () => {
-			const padIDs = [],
-				testData = []
-			for (const padID of _.keys(state[D.GAMENAME].DragPads.byPad))
-				testData.push(`Pad ID: ${D.JSL(padID)}`)
-			D.DB(`Pad ID Iteration: ${D.JSL(testData)}`)
-			for (const padID of _.keys(state[D.GAMENAME].DragPads.byPad)) {
-				D.DB(`Testing PadID ${D.JSL(padID)}`)
-				if (!state[D.GAMENAME].DragPads.byPad[padID].partnerID)
-					padIDs.push(padID)
-			}
-			for (const padID of padIDs) {
-				D.DB(`Sent ${D.JSL(padID)} to partnerPad()`)
-				partnerPad(padID)
-			}
 		},
 		togglePad = (padRef, isActive) => {
 			const padIDs = []
@@ -311,18 +230,6 @@ const DragPads = (() => {
 			}
 
 			return true
-		},
-		setPad = (graphicId, params) => {
-			if (!state[D.GAMENAME].DragPads.byGraphic[graphicId] )
-				return D.ThrowError(`Bad graphic ID: '${D.JS(graphicId)}'; Can't set params: '${D.JS(params)}'`, "WIGGLEPADS: setPad()")
-			const [pad] = findObjs( {
-				_id: state[D.GAMENAME].DragPads.byGraphic[graphicId].id
-			} )
-			if (!pad)
-				return D.ThrowError(`No pad found with ID: '${D.JS(graphicId)}'; Can't set params: '${D.JS(params)}'`, "WIGGLEPADS: setPad()")
-			pad.set(params)
-
-			return pad
 		},
 		// #endregion
 
@@ -408,9 +315,6 @@ const DragPads = (() => {
 					}
 				}
 				break
-			case "!partnerpads":
-				partnerAllPads()
-				break
 			case "!resetpads":
 				_.each(state[D.GAMENAME].DragPads.byGraphic, (v, padID) => {
 					obj = getObj("graphic", padID) || getObj("text", padID)
@@ -437,7 +341,7 @@ const DragPads = (() => {
 				D.Alert("Pads Reset!", "!resetpads")
 				break
 			case "!wpCLEAR":
-				arg = args.shift()
+				arg = args.shift() || "all"
 				if (arg.toLowerCase() === "all") {
 					_.each(state[D.GAMENAME].DragPads.byGraphic, v => {
 						obj = getObj("graphic", v.id)
@@ -483,7 +387,6 @@ const DragPads = (() => {
 		ClearAllPads: clearAllPads,
 		GetPad: getPad,
 		GetPads: getPads,
-		Set: setPad,
 		Toggle: togglePad,
 		DelPad: removePad
 	}

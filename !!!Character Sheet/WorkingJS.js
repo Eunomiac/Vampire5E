@@ -18,7 +18,7 @@
 		},
 		DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
 		TRACKERS = ["Health", "Willpower", "Blood Potency", "Humanity"],
-		ATTRBLACKLIST = ["toggle"],
+		ATTRBLACKLIST = ["toggle", "inccounter"],
 		ROLLFLAGS = {
 			all: ["rolldiff", "rollmod", "hunger", "applydisc", "applybloodsurge", "applyspecialty", "applyresonance", "incap", "Stains", "resonance", "rollarray"],
 			num: ["rolldiff", "rollmod", "applydisc", "applybloodsurge", "applyspecialty", "applyresonance"],
@@ -1134,7 +1134,6 @@
 					log("")
 					$funcs.push(cbk => {
 						getAttrs(groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`), "lastbox", "lasthumanity", "laststains", "lastcollisions", "humanity", "stains"], gN), ATTRS => {
-							let newDotline = []
 							const humArray = _.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => ATTRS[`humanity_${v}`] ),
 								curHumanity = () => _.filter(humArray, v => parseInt(v) === 2).length,
 								curStains = () => _.filter(humArray, v => parseInt(v) === 3).length,
@@ -1143,22 +1142,25 @@
 								pV = v => ATTRS[p(v)],
 								pI = v => parseInt(pV(v) || 0),
 								gHum = v => parseInt(humArray[v - 1] ),
-								fillBoxes = (humanity, stains) => {
-									const newHumanity = (new Array(10)).fill("1"),
-										hum = Math.min(10, Math.max(0, humanity)),
+								checkBoxes = (humanity, stains, hArray = new Array(10)) => {
+									hArray.fill("1")
+									const hum = Math.min(10, Math.max(0, humanity)),
 										stn = Math.min(10, Math.max(0, stains))
 									if (hum > 0)
-										newHumanity.fill("2", 0, hum)
+										hArray.fill("2", 0, hum)
 									if (stn > 0)
-										newHumanity.fill("3", stn * -1)
+										hArray.fill("3", stn * -1)
 									if (hum > 0 && stn > 0 && (hum + stn > 10))
-										newHumanity.fill("4", stn * -1, stn * -1 + (10 - hum - stn))
+										hArray.fill("4", stn * -1, stn * -1 + (10 - hum - stn))
 
-									return newHumanity
+									return hArray
+								},
+								fillBoxes = (humanity, stains) => {
+									checkBoxes(humanity, stains, humArray)
 								},
 								checkLast = () => {
 									if (ATTRS.lastbox === stat) {
-										const lastArray = fillBoxes(parseInt(ATTRS.lasthumanity), parseInt(ATTRS.laststains))
+										const lastArray = checkBoxes(parseInt(ATTRS.lasthumanity), parseInt(ATTRS.laststains))
 
 										return lastArray[statVal - 1]
 									}
@@ -1182,19 +1184,19 @@
 								switch (checkLast()) {
 								case "2":
 									log("Reclick: Last time Humanity, Now Setting to Stains")
-									newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), 11 - statVal)
+									fillBoxes(parseInt(ATTRS.lasthumanity), 11 - statVal)
 									break
 								case "3":
 									log("Reclick: Last time Stains, Now Setting to Humanity")
-									newDotline = fillBoxes(statVal, parseInt(ATTRS.laststains))
+									fillBoxes(statVal, Math.min(10 - statVal, parseInt(ATTRS.laststains)))
 									break
 								case "4":
 									log("Reclick: Last time Collision, Now Setting to ...?")
-									// newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
+									// fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
 									break
 								default:
 									log(`Default: Set Stains to Blank Square (${statVal})`)
-									newDotline = fillBoxes(curHumanity(), 11 - statVal)
+									fillBoxes(curHumanity(), 11 - statVal)
 									break
 								}
 								break
@@ -1203,11 +1205,11 @@
 								switch (checkLast()) {
 								case "1":
 									log("Reclick: Last time Blank, Now Setting to Stains")
-									newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), 11 - statVal)
+									fillBoxes(parseInt(ATTRS.lasthumanity), 11 - statVal)
 									break
 								case "3":
 									log("Reclick: Last time Stains, Now Setting to Collision")
-									newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), 11 - statVal + 1)
+									fillBoxes(statVal, 11 - (statVal + 1))
 									attrList.lasthumanity = ATTRS.lasthumanity
 									break
 								case "4":
@@ -1216,7 +1218,7 @@
 									break
 								default:
 									log("Default: Set Humanity to One Less")
-									newDotline = fillBoxes(statVal - 1, curStains())
+									fillBoxes(statVal - 1, curStains())
 									break
 								}
 								break
@@ -1225,19 +1227,19 @@
 								switch (checkLast()) {
 								case "1":
 									log("Reclick: Last time Blank, Now Setting to Humanity")
-									newDotline = fillBoxes(statVal, parseInt(ATTRS.laststains))
+									fillBoxes(statVal, parseInt(ATTRS.laststains))
 									break
 								case "2":
 									log("Reclick: Last time Humanity, Now Setting to Humanity?")
-									newDotline = fillBoxes(statVal, parseInt(ATTRS.laststains))
+									fillBoxes(statVal, parseInt(ATTRS.laststains))
 									break
 								case "4":
 									log("Reclick: Last time Collision, Now Setting to ...?")
-									// newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
+									// fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
 									break
 								default:
 									log("Default: Set Stains to One Less")
-									newDotline = fillBoxes(curHumanity(), 11 - statVal - 1)
+									fillBoxes(curHumanity(), 11 - statVal - 1)
 									break
 								}
 								break
@@ -1246,31 +1248,31 @@
 								switch (checkLast()) {
 								case "1":
 									log("Reclick: Last time Blank, Now Setting to ...?")
-									// newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
+									// fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
 									break
 								case "2":
 									log("Reclick: Last time Humanity, Now Setting to Humanity?")
-									// newDotline = fillBoxes(statVal, parseInt(ATTRS.laststains), statVal)
+									// fillBoxes(statVal, parseInt(ATTRS.laststains), statVal)
 									break
 								case "3":
 									log("Reclick: Last time Stain, Now Setting to ...?")
-									// newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
+									// fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
 									break
 								default:
 									log("Default: Set humanity, clear all stains")
-									newDotline = fillBoxes(statVal, 0)
+									fillBoxes(statVal, 0)
 									break
 								}
 								break
 							default:
 								break
 							}
-							log(`Out of Switch: ${JSON.stringify(newDotline)}`)
+							log(`Out of Switch: ${JSON.stringify(humArray)}`)
 
 							for (let i = 1; i <= 10; i++) {
-								// log(`pI(${i}) = ${pI(i)}; newDotline[${i} - 1] = ${newDotline[i - 1]}`)
-								if (pI(i) !== parseInt(newDotline[i - 1] ))
-									attrList[p(i)] = newDotline[i - 1]
+								// log(`pI(${i}) = ${pI(i)}; humArray[${i} - 1] = ${humArray[i - 1]}`)
+								if (pI(i) !== parseInt(humArray[i - 1] ))
+									attrList[p(i)] = humArray[i - 1]
 							}
 							if (parseInt(ATTRS.humanity) !== curHumanity())
 								attrList.humanity = curHumanity()
@@ -1583,7 +1585,7 @@
 					cback => doProjectDates(gN, cback)
 				] )
 
-			// Updating launch roll difficulty display upon change to scope or difficulty
+				// Updating launch roll difficulty display upon change to scope or difficulty
 			} else if ( ["projectscope", "projectscope_name", "projectlaunchdiff", "projectlaunchdiffmod"].includes(stat)) {
 				attrs.push(..._.map( ["projectscope", "projectlaunchmod", "projectlaunchdiffmod"], v => p(v)), "date_today")
 				$funcs.push(...[
@@ -1600,11 +1602,11 @@
 					$checkLaunch(source, gN)
 				] )
 
-			// Updating launch roll when launch traits are changed.
+				// Updating launch roll when launch traits are changed.
 			} else if ( ["projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2", "projectlaunchmod"].includes(stat)) {
 				$funcs.push($checkLaunch(source, gN))
 
-			//
+				//
 			} else if (stat.includes("projectstake") || ["projectlaunchresults", "projecttotalstake", "projectrushstakelost", "projectwasrushed"].includes(stat)) {
 				attrs.push(..._.map( [..._.map( [1, 2, 3, 4, 5, 6], v => `projectstake${v}`), "projectlaunchresults", "projecttotalstake", "projectwasrushed", "projectrushstakelost"], v => p(v)))
 				$funcs.push(...[
@@ -1779,7 +1781,9 @@
 								repAttrs.push(..._.reject(attrs, v => v.includes("_details")))
 								cBack3(null)
 							}
-						], () => { cBack2(null) } )
+						], () => {
+							cBack2(null)
+						} )
 					}
 				]
 			run$($funcs, () => cBack(null, [...ALLATTRS, ...repAttrs] ))

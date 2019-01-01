@@ -154,8 +154,8 @@
 			rollerName: {
 				font_family: "Candal",
 				font_size: 32,
-				top: 25,
-				left: 90,
+				top: 20,
+				left: 45,
 				color: COLORS.white,
 				text: "rollerName"
 			},
@@ -210,8 +210,8 @@
 			difficulty: {
 				font_family: "Contrail One",
 				font_size: 32,
-				top: 251,
-				left: 95,
+				top: 253,
+				left: 96,
 				color: COLORS.white,
 				text: "D"
 			},
@@ -243,15 +243,15 @@
 				font_family: "Contrail One",
 				font_size: 100,
 				top: 297,
-				left: 210,
+				left: 200,
 				color: COLORS.white,
 				text: "outcome"
 			},
 			subOutcome: {
 				font_family: "Contrail One",
 				font_size: 32,
-				top: 370,
-				left: 575,
+				top: 341,
+				left: 360,
 				color: COLORS.white,
 				text: "subOutcome"
 			}
@@ -459,7 +459,6 @@
 		// #region Object Creation & Registration
 		registerDie = (obj, category) => {
 			const padRef = POSITIONS.dice[category].pad
-			let padParams = ""
 			state[D.GAMENAME].Roller[category] = state[D.GAMENAME].Roller[category] || []
 			if (D.IsObj(obj, "graphic")) {
 				obj.set( {
@@ -477,10 +476,13 @@
 					height: obj.get("height"),
 					value: "blank"
 				} )
-
-				padParams = `height:${padRef.dH.toString()}, width:${padRef.dW.toString()}, x:${padRef.dX.toString()}, y:${padRef.dY.toString()}`
-				DragPads.MakePad(obj, "selectDie", padParams)
-				// D.Alert(`Registered die #${state[D.GAMENAME].Roller[category].length}: ${D.JS(_.values(state[D.GAMENAME].Roller[category]).slice(-1))}, Added WigglePad #${_.values(state[D.GAMENAME].DragPads.byPad).length}`, "ROLLER: registerDie()")
+				DragPads.MakePad(obj, "selectDie", {
+					deltaHeight: padRef.dH,
+					deltaWidth: padRef.dW,
+					deltaLeft: padRef.dX,
+					deltaTop: padRef.dY
+				} )
+				D.Alert(`Registered die #${state[D.GAMENAME].Roller[category].length}: ${D.JS(_.values(state[D.GAMENAME].Roller[category] ).slice(-1))}, Added WigglePad #${_.values(state[D.GAMENAME].DragPads.byPad).length}`, "ROLLER: registerDie()")
 
 				// D.Alert(`Returning Die Object: ${D.JS(obj)}`)
 
@@ -682,20 +684,14 @@
 		setText = (objName, params) => {
 			if (!state[D.GAMENAME].Roller.textList[objName] )
 				return D.ThrowError(`No text object registered with name '${D.JS(objName)}'.`, "ROLLER: setText()")
-			const obj = getObj("text", state[D.GAMENAME].Roller.textList[objName].id)
+			const obj = getObj("text", state[D.GAMENAME].Roller.textList[objName].id),
+				{
+					width,
+					left,
+					top
+				} = state[D.GAMENAME].Roller.textList[objName]
 			if (!obj)
 				return D.ThrowError(`Failure to recover object '${D.JS(objName)}': ${D.JS(state[D.GAMENAME].Roller.textList)}`, "ROLLER: setText()")
-			state[D.GAMENAME].Roller.textList[objName].width = state[D.GAMENAME].Roller.textList[objName].width === 0 ?
-				parseInt(obj.get("width")) :
-				state[D.GAMENAME].Roller.textList[objName].width
-			state[D.GAMENAME].Roller.textList[objName].height = state[D.GAMENAME].Roller.textList[objName].height === 0 ?
-				parseInt(obj.get("height")) :
-				state[D.GAMENAME].Roller.textList[objName].height
-			const {
-				width,
-				left,
-				top
-			} = state[D.GAMENAME].Roller.textList[objName]
 			params.top = top
 			params.left = left
 			if (params.justified && params.justified === "left") {
@@ -758,7 +754,7 @@
 			return params
 		},
 		reposition = (selObjs = [] ) => {
-			D.Alert(`Selected Objects: ${selObjs}`, "ROLLER: Reposition")
+			// D.Alert(`Selected Objects: ${selObjs}`, "ROLLER: Reposition")
 			for (const sel of selObjs) {
 				const obj = getObj(sel._type, sel._id)
 				_.find(_.pick(state[D.GAMENAME].Roller, STATECATS[sel._type] ),
@@ -869,11 +865,12 @@
 				POSITIONS.diceFrameDiffFrame.height(),
 				POSITIONS.diceFrameDiffFrame.width()
 			))
-			DragPads.MakePad(null, "wpReroll", `height:${POSITIONS.diceFrameRerollPad.height()
-			 }, width:${POSITIONS.diceFrameRerollPad.width()
-			 }, left:${POSITIONS.diceFrameRerollPad.left()
-			 }, top:${POSITIONS.diceFrameRerollPad.top()
-			}`)
+			DragPads.MakePad(null, "wpReroll", {
+				top: POSITIONS.diceFrameRerollPad.top(),
+				left: POSITIONS.diceFrameRerollPad.left(),
+				height: POSITIONS.diceFrameRerollPad.height(),
+				width: POSITIONS.diceFrameRerollPad.width()
+			} )
 			DragPads.Toggle("wpReroll", false)
 			imageList.reverse()
 			for (const img of imageList) {
