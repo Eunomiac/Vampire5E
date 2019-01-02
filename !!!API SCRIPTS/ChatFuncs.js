@@ -7,22 +7,70 @@
    to other API objects --- use DATA and SET for that. */
 
 const ChatFuncs = (() => {
-	const HELPMESSAGE = {
-			title: "<div style=\"display: block; width: auto; padding: 0px 5px; margin-left: -42px; margin-top: -30px;font-family: copperplate gothic; font-variant: small-caps; font-size: 16px; background-color: #333333; color: white;border: 2px solid black; position: relative; height: 20px; line-height: 23px;\">Chat Function Help</div>",
-			message: "<div style=\"display: block;width: auto;padding: 5px 5px;margin-left: -42px; font-family: verdana;font-size: 12px;background-color: white;border: 2px solid black;line-height: 14px;position: relative;\"><p>Various commands to query information from the Roll20 tabletop and state variable. <b>If a command relies on a \"selected token\", make sure the token is associated with a character sheet (via the token's setting menu).</p><p><b>Commands</b><div style=\"padding-left:10px;\"><ul><li style=\"border-top: 1px solid #ccc;border-bottom: 1px solid #ccc;\"><b><span style=\"font-family: serif;\">!get all</span></b> - Gets a JSON stringified list of all the object's properties</li><li style=\"border-top: 1px solid #ccc;border-bottom: 1px solid #ccc;\"><b><span style=\"font-family: serif;\">!get char</span></b> - Gets the name, character ID, and player ID represented by the selected token.</li><li style=\"border-top: 1px solid #ccc;border-bottom: 1px solid #ccc;\"><b><span style=\"font-family: serif;\">!get img</span></b> - Gets the graphic ID and img source of the selected graphic.</li><li style=\"border-top: 1px solid #ccc;border-bottom: 1px solid #ccc;\"><b><span style=\"font-family: serif;\">!get pos</span></b> - Gets the position and dimensions of the selected object, in both grid and pixel units.</li><li style=\"border-top: 1px solid #ccc;border-bottom: 1px solid #ccc;\"><b><span style=\"font-family: serif;\">!get attr[s]</span></b> - Gets all attribute objects attached to the selected character token.  Alternatively, \"<b>!get attr attr1 [attr2] [attr3]...</b>\" will let you filter for the attributes you want.</li><li style=\"border-top: 1px solid #ccc;border-bottom: 1px solid #ccc;\"><b><span style=\"font-family: serif;\">!get prop [&lt;id&gt;] &lt;property&gt;</span></b> - Gets the contents of the specified property on the selected object, or the object ID.</li> <li style=\"border-top: 1px solid #ccc;border-bottom: 1px solid #ccc;\"><b><span style=\"font-family: serif;\">!get state [&lt;namespace&gt;]</span></b> - Gets a stringified list of all items in the given state namespace.</li></ul></div></p></div><div style=\"display: block; width: auto; margin-left: -42px; background-color: none; position: relative; height: 25px;\"></div>"
-		},
-		sendHelpMsg = () => sendChat("", `/w Storyteller ${HELPMESSAGE.title}${HELPMESSAGE.message}`),
+	// #region HELP MESSAGE
+	const HELPMESSAGE = D.JSH(
+			`<div style="display: block; margin-bottom: 10px;">
+				Various commands to query information from the Roll20 tabletop and state variable. <b>If a command relies on a "selected token", make sure the token is associated with a character sheet (via the token's setting menu).</b>
+			</div>
+			<div style="display: block; margin-bottom: 10px;">
+				<h3 style="font-variant: small-caps;">Commands</h3>
+				<div style="padding-left:10px;">
+					<ul>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!get all
+							</span> - Gets a JSON stringified list of all the object's properties
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!get char
+							</span> - Gets the name, character ID, and player ID represented by the selected token.
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!get img
+							</span> - Gets the graphic ID and img source of the selected graphic.
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!get pos
+							</span> - Gets the position and dimensions of the selected object, in both grid and pixel units.
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!get attrs
+							</span> - Gets all attribute objects attached to the selected character token.<br>
+							<span style="font-weight: bolder; font-family: serif;">
+								!get attr attr1 [attr2] [attr3]...
+							</span> - Gets only the specified attributes attached to the selected character token.
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!get prop [&lt;id&gt;] &lt;property&gt;
+							</span> - Gets the contents of the specified property on the selected object, or the object ID.
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!get state [&lt;namespace&gt;]
+							</span> - Gets a stringified list of all items in the given state namespace.  You can omit the first parameter; if you do, it is assumed to be "${D.GAMENAME}".
+						</li>
+					</ul>
+				</div>
+			</div>`
+		),
+		sendHelpMsg = () => D.Alert(HELPMESSAGE, "HELP: Chat Functions"),
+		// #endregion
 
 		// #region Get Data Functions
 		getSelected = (obj, isGettingAll) => {
-			if (!obj)
+			if (!D.IsObj(obj))
 				return false
 			D.Alert(isGettingAll ? D.JS(obj) : obj.id)
 
 			return true
 		},
 		getImg = obj => {
-			if (!obj || obj.get("_type") !== "graphic")
+			if (!D.IsObj(obj, "graphic"))
 				return false
 			D.Alert(`<b>ID:</b> ${obj.id}<br/><b>SRC:</b> ${obj.get("imgsrc").replace("max", "thumb")}`, "Image Data")
 
@@ -46,8 +94,7 @@ const ChatFuncs = (() => {
 			return true
 		},
 		getChar = obj => {
-			D.Log(obj, "OBJ")
-			if (!obj || obj.get("_type") !== "graphic" || obj.get("_subtype") !== "token")
+			if (!D.IsObj(obj, "graphic", "token"))
 				return false
 			try {
 				const charObj = getObj("character", obj.get("represents")),
@@ -117,6 +164,8 @@ const ChatFuncs = (() => {
 		},
 		getStateData = namespace => {
 			let stateInfo = state
+			if (namespace[0] !== D.GAMENAME)
+				namespace.unshift(D.GAMENAME)
 			const title = `state.${namespace.join(".")}`
 			// eslint-disable-next-line no-unmodified-loop-condition
 			while (namespace && namespace.length > 0)
@@ -128,6 +177,8 @@ const ChatFuncs = (() => {
 		},
 		clearStateData = namespace => {
 			let stateInfo = state
+			if (namespace[0] !== D.GAMENAME)
+				namespace.unshift(D.GAMENAME)
 			const title = `Clearing state.${namespace.join(".")}`
 			// eslint-disable-next-line no-unmodified-loop-condition
 			while (namespace && namespace.length > 0)
@@ -191,10 +242,8 @@ const ChatFuncs = (() => {
 			switch (args.shift().toLowerCase()) {
 			case "!get":
 			{
-				if (msg.selected && msg.selected[0] ) {
-					[obj] = findObjs( {
-						_id: msg.selected[0]._id
-					} )
+				if (D.GetSelected(msg)) {
+					[obj] = D.GetSelected(msg)
 				} else {
 					for (let i = 1; i < args.length; i++) {
 						[obj] = findObjs( {

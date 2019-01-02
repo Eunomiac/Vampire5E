@@ -575,7 +575,8 @@
 		},
 		XPREPREFS = {
 			spentxp: ["xp_spent_toggle", "xp_category", "xp_trait", "xp_initial", "xp_new", "xp_trait_toggle", "xp_initial_toggle", "xp_arrow_toggle", "xp_new_toggle", "xp_cost"],
-			earnedxp: ["xp_session", "xp_award", "xp_reason"]
+			earnedxp: ["xp_session", "xp_award", "xp_reason"],
+			earnedxpright: ["xp_session", "xp_award", "xp_reason"]
 		},
 		XPPARAMS = {
 			"Attribute": {
@@ -1671,7 +1672,8 @@
 	const doXP = (gN = "") => {
 		const $funcs = [
 			$getRepAttrs( {
-				earnedxp: ["xp_award"]
+				earnedxp: ["xp_award"],
+				earnedxpright: ["xp_award"]
 			}, gN),
 			(attrs, ids, cback) => {
 				const attrList = {}

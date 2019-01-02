@@ -1,6 +1,6 @@
 const TimeTracker = (() => {
 	let timeTimer = null
-	// #region Configuration
+	    // #region Configuration
 	const IMAGES = {
 			day: "https://s3.amazonaws.com/files.d20.io/images/66268397/qtmx8f4z8jcvK2sEGaxl5A/thumb.jpg?1541330279",
 			night: "https://s3.amazonaws.com/files.d20.io/images/66268396/ZI7kzQ3i8TH9dANaYBDPlA/thumb.jpg?1541330279",
@@ -37,7 +37,7 @@ const TimeTracker = (() => {
 		// #endregion
 
 		// #region Date Functions
-	 setHorizon = (date, horizon) => {
+		setHorizon = (date, horizon) => {
 			const nighttime = _.map(NIGHT[date.getMonth()], v => [parseInt(v.split(":")[0] ), parseInt(v.split(":")[1] )] ),
 				dawn = new Date((new Date(date)).setUTCHours(nighttime[0][0], nighttime[0][1] )),
 				dusk = new Date((new Date(date)).setUTCHours(nighttime[1][0], nighttime[1][1] )),
@@ -70,7 +70,8 @@ const TimeTracker = (() => {
 			}
 		},
 		setCurrentDate = (date, tracker, horizon) => {
-			tracker.set("text", `${DAYSOFWEEK[date.getUTCDay()]}, ${
+			tracker.set("text", `${
+				DAYSOFWEEK[date.getUTCDay()]}, ${
 				MONTHS[date.getUTCMonth()]} ${
 				D.Ordinal(date.getUTCDate())}, ${
 				(date.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
@@ -79,6 +80,7 @@ const TimeTracker = (() => {
 			const lastDate = new Date(parseInt(state[D.GAMENAME].TimeTracker.currentDate))
 			D.Log(`Last Date: ${D.JSL(lastDate)}`)
 			state[D.GAMENAME].TimeTracker.currentDate = date.getTime().toString()
+			D.Log(`New Date: ${D.JSL(lastDate)}`)
 			if (
 				date.getUTCFullYear() !== lastDate.getUTCFullYear() ||
 				date.getMonth() !== lastDate.getMonth() ||
@@ -98,7 +100,7 @@ const TimeTracker = (() => {
 		// #endregion
 
 		// #region Event Handlers (handleInput)
-	 handleInput = msg => {
+		handleInput = msg => {
 			if (msg.type !== "api" || !playerIsGM(msg.playerid))
 				return
 			const args = msg.content.split(/\s+/u),
@@ -199,7 +201,7 @@ const TimeTracker = (() => {
 		// #endregion
 
 		// #region Public Functions: regHandlers, tapSpite
-	 regHandlers = () => on("chat:message", handleInput),
+		regHandlers = () => on("chat:message", handleInput),
 		checkInstall = () => {
 			state[D.GAMENAME] = state[D.GAMENAME] || {}
 			state[D.GAMENAME].TimeTracker = state[D.GAMENAME].TimeTracker || {}

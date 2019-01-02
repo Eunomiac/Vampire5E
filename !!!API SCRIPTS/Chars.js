@@ -205,6 +205,42 @@ const Chars = (() => {
 				}
 			}
 		},
+		SORTFUNCS = {
+			earnedxp: (charRef, secName, idA, idB) => {
+				const attrsA = D.GetRepAttrs(charRef, [secName, idA] ),
+					  attrsB = D.GetRepAttrs(charRef, [secName, idB] ),
+					  p = (v, id) => `repeating_${secName}_${id}_${v}`,
+					  sessions = [
+						"Zero",
+						"One",
+						"Two",
+						"Three",
+						"Four",
+						"Five",
+						"Six",
+						"Seven",
+						"Eight",
+						"Nine",
+						"Ten",
+						"Eleven",
+						"Twelve",
+						"Thirteen",
+						"Fourteen",
+						"Fifteen",
+						"Sixteen",
+						"Seventeen",
+						"Eighteen",
+						"Nineteen",
+						"Twenty"
+					],
+					sessA = sessions.indexOf(attrsA[p("xp_session", idA)] ),
+					sessB = sessions.indexOf(attrsB[p("xp_session", idB)] )
+				if (sessA === sessB)
+					return parseInt(attrsB[p("xp_award", idB)] ) - parseInt(attrsA[p("xp_award", idA)] )
+
+				return sessA - sessB
+			}
+		},
 		// #endregion
 
 		// #region Register Characters
@@ -247,8 +283,11 @@ const Chars = (() => {
 				xp_session: session,
 				xp_reason: reason
 			} )
-			if (rowID)
+			if (rowID) {
+				D.SplitRepSec(char, "earnedxp", "earnedxpright", SORTFUNCS.earnedxp, "split")
+
 				return true
+			}
 
 			return D.ThrowError(`Unable to make row for '${D.JSL(char)}'`, "AWARDXP")
 		},
@@ -461,6 +500,18 @@ const Chars = (() => {
 					charObj.set(prop, value)
 				}
 				break
+			case "!copyRepRow":
+				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] && args.length === 3)
+					D.CopyToSec(msg, ...args)
+				break
+			case "!sortRepRow":
+				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] && args.length === 2)
+					D.SortRepSec(msg, args.shift(), SORTFUNCS[args.shift()] )
+				break
+			case "!splitRepSecs":
+				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] && args.length >= 3)
+					D.SplitRepSec(msg, args.shift(), args.shift(), SORTFUNCS[args.shift()], args[0] || null)
+				break
 			case "!MVC":
 				params = {
 					name: who
@@ -476,7 +527,7 @@ const Chars = (() => {
 		// #region Public Functions: regHandlers
 	 regHandlers = () => on("chat:message", handleInput),
 		checkInstall = () => {
-			// Delete state[D.GAMENAME].Chars;
+		// Delete state[D.GAMENAME].Chars;
 			state[D.GAMENAME] = state[D.GAMENAME] || {}
 			state[D.GAMENAME].Chars = state[D.GAMENAME].Chars || {}
 		}

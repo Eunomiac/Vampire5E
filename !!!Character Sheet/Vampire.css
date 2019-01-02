@@ -6,7 +6,7 @@
 	FOOTER URL IS https://imgur.com/FNL9mcz.png
 */
 
-	/*#region Root Styles */
+	/* #region Root Styles */
 	.charsheet {
 		width: 884px;
 		margin-left: -22px;
@@ -293,7 +293,7 @@
 	}
 
 	/*#endregion*/
-	/*#region Layout */
+	/* #region Layout */
 	.charsheet div.sheet-header {
 		height: 250px;
 		margin-bottom: -160px;
@@ -413,7 +413,7 @@
 
 	/* #endregion */
 
-	/*#region Navigation Bar & Page Control */
+	/* #region Navigation Bar & Page Control */
 	.charsheet input.sheet-tab0:not(:checked)~.sheet-settings,
 	.charsheet input.sheet-tab0:not(:checked)~.sheet-settings+span,
 	.charsheet input.sheet-singlesheettab[type=radio]:checked~.sheet-groupsheet,
@@ -1270,7 +1270,7 @@
 
 	/* #endregion */
 
-	/*#region SECTION: Settings */
+	/* #region SECTION: Settings */
 	/*.charsheet div.sheet-settings div.sheet-header2 {
 	margin-top: 90px;
 	margin-bottom: -90px;
@@ -1313,7 +1313,6 @@
 	}
 
 	/*#endregion*/
-
 	/* #region SECTION: Marquee Text */
 
 	/* ENABLE THE FOLLOWING STYLE TO DISABLE THE MARQUEE:*/
@@ -1887,7 +1886,7 @@
 	}
 
 	/* #endregion */
-	/*#region SECTION: Attributes & Skills */
+	/* #region SECTION: Attributes & Skills */
 	.charsheet div.sheet-attributes div.sheet-header3 {
 		margin-top: -5px;
 		margin-bottom: 0px;
@@ -2049,7 +2048,7 @@
 	}
 
 	/*#endregion*/
-	/*#region SECTION: Advantages */
+	/* #region SECTION: Advantages */
 	.charsheet div.sheet-advantages div.sheet-header3 {
 		margin-bottom: 10px;
 	}
@@ -2116,20 +2115,20 @@
 
 	/*#endregion*/
 
-	/*#region SECTION: Domain */
+	/* #region SECTION: Domain */
 	.charsheet div.sheet-domain textarea {
 		pointer-events: auto;
 	}
 
 	/*#endregion*/
-	/*#region SECTION: Assets */
+	/* #region SECTION: Assets */
 	.charsheet div.sheet-assets textarea {
 		pointer-events: auto;
 	}
 
 
 	/*#endregion*/
-	/*#region SECTION: Prestation */
+	/* #region SECTION: Prestation */
 	.charsheet div.sheet-prestation input[type="text"],
 	.charsheet div.sheet-prestation select,
 	.charsheet div.sheet-prestation textarea {
@@ -2193,7 +2192,7 @@
 
 	/*#endregion*/
 
-	/*#region SECTION: Tenets, Convictions, Touchstones */
+	/* #region SECTION: Tenets, Convictions, Touchstones */
 	.charsheet div.sheet-tenets input.sheet-customtrait,
 	.charsheet div.sheet-beliefs input.sheet-customtrait {
 		height: 20px;
@@ -2206,10 +2205,10 @@
 	}
 
 	/*#endregion */
-	/*#region SECTION: Ambitions & Desires */
+	/* #region SECTION: Ambitions & Desires */
 
 	/*#endregion */
-	/*#region SECTION: Mask */
+	/* #region SECTION: Mask */
 	.charsheet div.sheet-mask {
 		text-align: center;
 		text-align-last: center;
@@ -2222,7 +2221,7 @@
 	}
 
 	/*#endregion */
-	/*#region SECTION: History */
+	/* #region SECTION: History */
 	.charsheet div.sheet-history span.sheet-header2 {
 		width: 150px;
 	}
@@ -2439,7 +2438,6 @@
 
 
 	/* #endregion*/
-
 	/* #region SECTION: Timeline */
 	.charsheet div.sheet {
 		margin-bottom: 10px;
@@ -2566,7 +2564,7 @@
 
 	/* #endregion*/
 
-	/*#region SECTION: SPENT XP*/
+	/* #region SECTION: XP*/
 	.charsheet div.sheet-xp {
 		text-align: center;
 		text-align-last: center;
@@ -2586,8 +2584,6 @@
 		/*text-shadow: none;*/
 		overflow: hidden;
 	}
-
-
 
 	.charsheet div.sheet-section-6>div.sheet-header1 textarea.sheet-darkText {
 		width: 100%;
@@ -2636,20 +2632,38 @@
 		overflow: hidden;
 	}
 
-	.charsheet div.sheet-earnedxp .charsheet div.sheet-earnedxp textarea {
-		font-size: 16px;
+	.charsheet div.sheet-earnedxp {
+		margin-left: 0px;
+	}
+	
+	.charsheet div.sheet-earnedxp div.sheet-coltight1 {
+		height: 16px;
+		margin-bottom: 0px;
+	}
+
+	.charsheet div.sheet-earnedxp div.sheet-colheader,
+	.charsheet div.sheet-earnedxp div.sheet-colheader span {
+		height: 15px;
+		margin-bottom: 5px;
+	}
+
+	.charsheet div.sheet-earnedxp textarea {
+		padding-left: 0px;
+		padding-right: 10px;
+		font-size: 14px;
+		line-height: 16px;
+		text-indent: 0px;
+		width: 100%;
+		height: 16px;
 	}
 
 	.charsheet div.sheet-earnedxp textarea.sheet-session {
-		line-height: 20px;
 		font-weight: normal;
-		padding-left: 10px;
-
 	}
 
 	.charsheet div.sheet-earnedxp textarea.sheet-xpreason {
-		line-height: 20px;
-		padding-left: 10px;
+		line-height: 16px;
+		padding-left: 0px;
 
 		font-size: 14px;
 		font-weight: normal;
@@ -2961,7 +2975,6 @@
 
 	/* #endregion */
 
-
 	/* #region Fixing Roll20 Styles */
 	.charsheet div.itemcontrol>button,
 	.charsheet div.repcontrol>button,
@@ -2991,7 +3004,7 @@
 
 	/* #endregion */
 
-	/*#region FEATURE DISABLING */
+	/* #region FEATURE DISABLING */
 .charsheet span.sheet-underconstruction {
 	height: 70px;
 	width: 100%;

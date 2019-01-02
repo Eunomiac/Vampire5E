@@ -399,12 +399,12 @@
 			}
 		},
 		CHATSTYLES = {
-			fullBox: "<div style=\"display: block;width: 259px;padding: 5px 5px;margin-left: -42px;margin-top: -30px;margin-bottom: 20px;color: white;font-variant: small-caps;font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset darkred;background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;\">",
+			fullBox: "<div style=\"display: block;width: 259px;padding: 5px 5px;margin-left: -42px;margin-top: -30px;margin-bottom: 20px;color: white;font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset darkred;background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;\">",
 			space10: "<span style=\"display: inline-block; width: 10px;\"></span>",
 			space30: "<span style=\"display: inline-block; width: 30px;\"></span>",
 			space40: "<span style=\"display: inline-block; width: 40px;\"></span>",
-			rollerName: "<div style=\"display: block; width: 100%; font-size: 16px; height: 15px; padding: 0px 3px 5px 3px; border-bottom: 1px solid white;\">",
-			mainRoll: "<div style=\"display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid white;\"><span style=\"display: block; height: 16px; line-height: 16px; width: 100%; font-size: 12px; font-variant: none;\">",
+			rollerName: "<div style=\"display: block; width: 100%; font-variant: small-caps; font-size: 16px; height: 15px; padding-bottom: 5px; border-bottom: 1px solid white;\">",
+			mainRoll: "<div style=\"display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid white;\"><span style=\"display: block; height: 16px; line-height: 16px; width: 100%; font-size: 14px; \">",
 			mainRollSub: "<span style=\"display: block; height: 12px; line-height: 12px; width: 100%; margin-left: 24px; font-size: 10px; font-variant: italic;\">",
 			check: "<div style=\"display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid white;\"><span style=\"display: block; height: 20px;  line-height: 20px; width: 100%; margin-left: 10%;\">",
 			summary: "<div style=\"display: block; width: 100%; padding: 3px 0px; height: auto; \"><span style=\"display: block; height: 16px; width: 100%; margin-left: 5%; line-height: 16px; font-size: 14px;\">",
@@ -1548,7 +1548,7 @@
 						"</div></div>",
 						CHATSTYLES.margin,
 						typeof rollResults.margin === "number" ?
-							`(${rollResults.margin >= 0 ? "+" : "-"} ${Math.abs(rollResults.margin)})` :
+							`(${rollResults.margin >= 0 ? "+" : "-"}${Math.abs(rollResults.margin)})` :
 							"",
 						"</span></div></div>"
 					].join("")

@@ -10,7 +10,7 @@ const D = (() => {
 		HTMLFORMATS = {
 			titleStart: "<div style=\"display: block; width: auto; padding: 0px 5px; margin-left: -42px; margin-top: -30px;font-family: copperplate gothic; font-variant: small-caps; font-size: 16px; background-color: #333333; color: white;border: 2px solid black; position: relative; height: 20px; line-height: 23px;\">",
 			titleEnd: "</div>",
-			bodyStart: "<div style=\"display: block;width: auto;padding: 5px 5px;margin-left: -42px; font-family: verdana;font-size: 12px;background-color: white;border: 2px solid black;line-height: 14px;position: relative;\">",
+			bodyStart: "<div style=\"display: block;width: auto;padding: 5px 5px;margin-left: -42px; font-family: input, verdana, sans-serif;font-size: 10px;background-color: white;border: 2px solid black;line-height: 14px;position: relative;\">",
 			bodyEnd: "</div><div style=\"display: block; width: auto; margin-left: -42px; background-color: none; position: relative; height: 25px;\"></div>"
 		},
 		// #endregion
@@ -177,6 +177,15 @@ const D = (() => {
 		},
 		// #endregion
 
+		// #region DECLARATIONS: Dependent Variables
+		ALLSTATS = [
+			..._.flatten(_.values(ATTRIBUTES)),
+			..._.flatten(_.values(SKILLS)),
+			...DISCIPLINES,
+			...TRACKERS
+		],
+		// #endregion
+
 		// #region BASE FUNCTIONALITY: Fundamental Functions & String Manipulation to Declare First
 		getGMID = () => {
 			/* Finds the first player who is GM. */
@@ -201,7 +210,7 @@ const D = (() => {
 					.replace(/(\s*?)"([^"]*?)"\s*?:/gu, "$1$2:")
 					.replace(/\\n/gu, "<br/>")
 					.replace(/\\t/gu, "")
-					.replace(/ /gu, "&nbsp;")
+					.replace(/ (?= )/gu, "&nbsp;")
 					.replace(/\\"/gu, "\"")
 					.slice(1, -1)
 
@@ -215,6 +224,14 @@ const D = (() => {
 			} catch (errObj) {
 				return D.ThrowError("", "DATA.jStr", errObj)
 			}
+		},
+		jStrHTML = str => {
+			if (_.isUndefined(str))
+				return "&gt;UNDEFINED&lt;"
+			if (_.isString(str))
+				return str.replace(/\n/gu, "")
+
+			return JSON.stringify(str).replace(/\\n/gu, "")
 		},
 		jLog = obj => {
 			/* Parses a value in a way that is appropriate to the console log. */
@@ -296,25 +313,35 @@ const D = (() => {
 
 			return obj
 		},
-		isObject = (obj, type) => obj && obj !== null && typeof obj === "object" && (!type || (obj.get && obj.get("_type") === type)),
-		getSelected = (msg, types) => {
-			/* When given a message object, will return all selected objects, or false. */
-			let selObjs = []
-			if (_.isObject(msg) && msg.selected && msg.selected[0] ) {
-				selObjs.push(..._.map(msg.selected, v => getObj(v._type, v._id)))
-				if (types)
-					selObjs = _.filter(selObjs, v => types.includes(v.get("_type")))
-			} else {
-				return false
-			}
-			// D.Alert(jStr(selObjs), "SELECTED OBJECTS")
+		keyMapObject = (obj, kFunc, vFunc) => {
+			const newObj = {}
+			_.each(obj, (v, k) => {
+				newObj[kFunc ? kFunc(k, v) : k] = vFunc ? vFunc(v, k) : v
+			} )
 
-			return selObjs
+			return newObj
 		},
-		isIn = (needle, haystack = [..._.flatten(_.values(ATTRIBUTES)),
-			..._.flatten(_.values(SKILLS)),
-			...DISCIPLINES,
-			...TRACKERS] ) => {
+		isObject = (obj, type, subtype) => {
+			if (
+				obj &&
+				obj !== null &&
+				typeof obj === "object" &&
+				obj.get &&
+				(!type || obj.get("_type") === type) &&
+				(!subtype || obj.get("_subtype") === subtype)
+			)
+				return true
+
+			/* D.Alert(`Obj ? ${Boolean(obj)}<br>
+				Obj !== Null ? ${obj !== null}<br>
+				typeof val === "object" ? ${obj !== null && typeof obj === "object"}<br>
+				val.get ? ${Boolean(obj !== null && typeof obj === "object" && obj.get)}<br>
+				!type OR val.get("_type") === "${type}" ? ${Boolean(obj !== null && typeof obj === "object" && obj.get) && (!type || obj.get("_type") === type)}
+				!subtype OR ... ? ${Boolean(obj !== null && typeof obj === "object" && obj.get) && (!type || obj.get("_type") === type) && (!subtype || obj.get("_subtype") === subtype)}<br>`)
+ */
+			return false
+		},
+		isIn = (needle, haystack = ALLSTATS) => {
 			/* Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. */
 			try {
 				const ndl = `\\b${needle.replace(/^g[0-9]/u, "")}\\b`
@@ -386,6 +413,20 @@ const D = (() => {
 		// #endregion
 
 		// #region GETTERS: Object, Character and Player Data
+		getSelected = (msg, types) => {
+			/* When given a message object, will return all selected objects, or false. */
+			let selObjs = []
+			if (_.isObject(msg) && msg.selected && msg.selected[0] ) {
+				selObjs.push(..._.map(msg.selected, v => getObj(v._type, v._id)))
+				if (types)
+					selObjs = _.filter(selObjs, v => types.includes(v.get("_type")))
+			} else {
+				return false
+			}
+			// D.Alert(jStr(selObjs), "SELECTED OBJECTS")
+
+			return selObjs
+		},
 		getName = (value, isShort) => {
 			// Returns the NAME of the Graphic, Character or Player (DISPLAYNAME) given: object or ID.
 			const objID = _.isString(value) ? value : value._id,
@@ -445,12 +486,23 @@ const D = (() => {
 
 				return false
 			}
+			// D.Alert(`Search Params: ${D.JS(searchParams)}`)
 			_.each(searchParams, val => {
-				// If parameter is a CHARACTER ID:
-				if (_.isString(val) && getObj("character", val)) {
+				/* D.Alert(`Obj !== Null ? ${val !== null}<br>
+					typeof val === "object" ? ${val !== null && typeof val === "object"}<br>
+					val.get ? ${Boolean(val !== null && typeof val === "object" && val.get)}<br>
+					val.get(type) === "character" ? ${Boolean(val !== null && typeof val === "object" && val.get) && val.get("_type") === "character"}
+					D.IsObj(val, "character") ? ${D.IsObj(val, "character")}`)
+				// If parameter is a CHARACTER OBJECT already: */
+				if (D.IsObj(val, "character")) {
+					charObjs.add(getObj("character", val.id))
+
+					/* D.Alert(`We have a character!  CharObjs = ${D.JS(charObjs)}`)
+					   If parameter is a CHARACTER ID: */
+				} else if (_.isString(val) && getObj("character", val)) {
 					charObjs.add(getObj("character", val))
 					// If parameters is a TOKEN OBJECT:
-				} else if (_.isObject(val) && val.id && val.get("_type") === "graphic" && val.get("_subtype") === "token") {
+				} else if (D.IsObj(val, "graphic", "token")) {
 					const char = getObj("character", val.get("represents"))
 					if (char)
 						charObjs.add(char)
@@ -558,12 +610,12 @@ const D = (() => {
 
 			return attrObjs[0].get("name").split("_")[2]
 		},
-		getRepStats = (value, filterArray) => {
+		getRepStats = (charRef, filterArray) => {
 			/* Returns an ARRAY of REPEATING ATTRIBUTE OBJECTS on <value> character.  Can specify a filter array
 			containing strings that must appear in the attribute's name. */
-			const charObj = getChar(value)
+			const charObj = getChar(charRef)
 			if (!charObj)
-				return throwError(`No character at '${jStr(value)}'`)
+				return throwError(`No character at '${jStr(charRef)}'`)
 			let attrObjs = findObjs( {
 				type: "attribute",
 				characterid: charObj.id
@@ -581,13 +633,34 @@ const D = (() => {
 
 			return attrObjs
 		},
-		getRepStat = (v, fArray) => {
-			// As getRepStats(), but only returns a single attribute object.
-			getRepStats(v, fArray)[0]
+		// As getRepStats(), but only returns a single attribute object.
+		getRepStat = (charRef, filterArray) => getRepStats(charRef, filterArray)[0],
+		// As getRepStats(), but returns a list of attribute {name: value} pairs instead of attribute objects.
+		getRepAttrs = (charRef, filterArray) => {
+			const attrList = {}
+			_.each(getRepStats(charRef, filterArray), v => {
+				attrList[v.get("name")] = v.get("current")
+			} )
+
+			// D.Alert(`GETREPATTRS: ${D.JS(attrList)}`)
+
+			return attrList
 		},
-		makeRow = (charID, secName, attrs) => {
-			const IDa = 0,
+		isRepRow = (charRef, rowID) => getRepStats(charRef, [rowID] ).length > 0,
+		getRepRowIDs = (charRef, secName) => _.uniq(
+			_.map(
+				_.keys(
+					_.pick(
+						getRepAttrs(charRef, ["repeating", `${secName}_`] ), (v, k) => k.startsWith(`repeating_${secName}_`)
+					)
+				), k => k.replace(`repeating_${secName}_`, "").substr(0, 20)
+			)
+		),
+		makeRow = (charRef, secName, attrs) => {
+			const attrList = {},
+				IDa = 0,
 				IDb = [],
+				charID = D.GetChar(charRef).id,
 				characters = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz",
 				generateUUID = (() => () => {
 					let IDc = (new Date()).getTime() + 0,
@@ -616,27 +689,79 @@ const D = (() => {
 				rowID = makeRowID(),
 				prefix = `repeating_${secName}_${rowID}_`
 
-			_.each(attrs, (v, k) => createObj("attribute", {
-				name: prefix + k,
-				current: v,
-				max: "",
-				_characterid: charID
-			} ))
+			_.each(attrs, (v, k) => {
+				createObj("attribute", {
+					name: prefix + k,
+					max: "",
+					_characterid: charID
+				} )
+				attrList[prefix + k] = v
+			} )
+			setAttrs(charID, attrList)
 
 			return rowID
 		},
+		deleteRepRow = (charRef, secName, rowID) => {
+			if (!D.GetChar(charRef) || !_.isString(secName) || !_.isString(rowID))
+				return D.ThrowError(`Need valid charRef (${D.JSL(charRef)}), secName (${D.JSL(secName)}) and rowID (${D.JSL(rowID)}) to delete a repeating row.`, "DATA.DeleteRepRow")
+			const attrObjs = getRepStats(charRef, [secName, rowID] )
+			if (attrObjs.length === 0)
+				return D.ThrowError(`No row "repeating_${secName}_${rowID}" to delete for ${D.GetName(charRef)}.`, "DATA.DeleteRepRow")
+			_.each(attrObjs, v => v.remove())
 
-		/* deleteRow = (charID, rowID) => {
-
+			return true
 		},
-		sortSection = (charID, section, sortFunc) => {
+		copyToRepSec = (charRef, sourceSec, sourceRowID, targetSec) => {
+			const attrList = keyMapObject(getRepAttrs(charRef, [sourceSec, sourceRowID] ), k => k.replace(`repeating_${sourceSec}_${sourceRowID}_`, ""))
+			makeRow(charRef, targetSec, attrList)
+			deleteRepRow(charRef, sourceSec, sourceRowID)
+		},
+		sortRepSec = (charRef, secName, sortFunc) => {
+			/* Sortfunc must have parameters (charRef, secName, rowID1, rowID2) and return
+			POSITIVE INTEGER if row1 should be ABOVE row2. */
+			// D.Log(`CharRef: ${D.JSL(charRef)}`)
+			const rowIDs = getRepRowIDs(charRef, secName),
+				sortTrigger = getRepAttrs(charRef, [`repeating_${secName}_${rowIDs[0]}_sorttrigger`] )
+			// D.Alert(`RepOrder: ${D.JS(repOrderAttr)}<br><br>${rowIDs.length} Row IDs for ${secName}:<br><br>${D.JS(rowIDs)}`, "DATA.SortRepSec")
+			rowIDs.sort((idA, idB) => sortFunc(charRef, secName, idA, idB))
+			// D.Alert(`... SORTED?<br><br>${D.JS(rowIDs)}<br><br>TEST ATTR: ${D.JS(sortTrigger)}`, "DATA.SortRepSec")
+			setAttrs(D.GetChar(charRef).id, {[`_reporder_repeating_${secName}`]: rowIDs.join(",")} )
+			sortTrigger[`repeating_${secName}_${rowIDs[0]}_sorttrigger`] = sortTrigger[`repeating_${secName}_${rowIDs[0]}_sorttrigger`] === "false"
+			setAttrs(D.GetChar(charRef).id, sortTrigger)
 
-		}, */
+			return rowIDs
+		},
+		splitRepSec = (charRef, sourceSec, targetSec, sortFunc, mode = "split") => {
+			/* Will combine values from both source and target sections, sort them, then evenly split
+			them between the two sections.  Split modes include:
+				"split" (default) --- the bottom half of results will be moved to targetSec
+				"even" --- even-numbered rows will be moved to targetSec
+			Sortfunc must have parameters (charRef, secName, rowID1, rowID2) and return
+			POSITIVE INTEGER if row1 should be ABOVE row2.  */
+			_.each(getRepRowIDs(charRef, targetSec), id => {
+				copyToRepSec(charRef, targetSec, id, sourceSec)
+			} )
+			const sortedIDs = sortRepSec(charRef, sourceSec, sortFunc)
+			switch (mode) {
+			case "split":
+				sortedIDs.splice(0, Math.ceil(sortedIDs.length / 2))
+				while (sortedIDs.length > 0)
+					copyToRepSec(charRef, sourceSec, sortedIDs.shift(), targetSec)
+				break
+			case "even":
+				for (let i = 0; i < sortedIDs.length; i++) {
+					if (i % 2)
+						copyToRepSec(charRef, sourceSec, sortedIDs[i], targetSec)
+				}
+				break
+			default: break
+			}
+		},
 		// #endregion
 
 		// #region SPECIAL FX
 		runFX = (name, pos) => {
-			// Runs one of the special effects defined above.
+		// Runs one of the special effects defined above.
 			spawnFxWithDefinition(pos.left, pos.top, FX[name] )
 		},
 		// #endregion
@@ -671,11 +796,18 @@ const D = (() => {
 		// D.JS(obj, isLog): Parses a string. If isLog, will not use HTML.
 		JSL: jLog,
 		// D.JSL(obj):  Parses a string, for output to the console log.
+		JSH: jStrHTML,
+
+		/* D.JSH(string):  Strips a multiline string of linebreaks, typically used for HTML
+		code (so you can format your code) for easy reading without including the incidental
+		linebreaks as <br> tags in a subsequent jStr call. */
 		Ordinal: ordinal,
 		// D.Ordinal(num): Returns ordinalized number (e.g. 1 -> "1st")
 		Capitalize: capitalize,
 		// D.Capitalize(str): Capitalizes the first character in the string.
 		ParseToObj: parseToObj,
+
+		KeyMapObj: keyMapObject,
 
 		/* D.ParseToObj(string): Returns object with parameters given by
 								  a string of form 'key:val, key:val,' */
@@ -707,9 +839,15 @@ const D = (() => {
 
 		/* D.GetStat(char, name):  Given any valid character value, returns the
 									attribute object described by name. */
+		IsRepRow: isRepRow,
 		GetRepIDCase: getCaseRepID,
 		GetRepStats: getRepStats,
 		GetRepStat: getRepStat,
+		GetRepAttrs: getRepAttrs,
+		CopyToSec: copyToRepSec,
+		SortRepSec: sortRepSec,
+		SplitRepSec: splitRepSec,
+
 		GetPlayerID: getPlayerID,
 
 		/* D.GetPlayerID(val):  Returns player ID given: display name, token
