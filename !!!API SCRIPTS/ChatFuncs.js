@@ -15,6 +15,7 @@ const ChatFuncs = (() => {
 			<div style="display: block; margin-bottom: 10px;">
 				<h3 style="font-variant: small-caps;">Commands</h3>
 				<div style="padding-left:10px;">
+					<h4 style="font-variant: small-caps;">!GET:</h4>
 					<ul>
 						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
 							<span style="font-weight: bolder; font-family: serif;">
@@ -25,6 +26,16 @@ const ChatFuncs = (() => {
 							<span style="font-weight: bolder; font-family: serif;">
 								!get char
 							</span> - Gets the name, character ID, and player ID represented by the selected token.
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!get chars
+							</span> - Gets the names and IDs of all character objects
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!get gm
+							</span> - Gets the player ID of the GM.
 						</li>
 						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
 							<span style="font-weight: bolder; font-family: serif;">
@@ -53,6 +64,75 @@ const ChatFuncs = (() => {
 							<span style="font-weight: bolder; font-family: serif;">
 								!get state [&lt;namespace&gt;]
 							</span> - Gets a stringified list of all items in the given state namespace.  You can omit the first parameter; if you do, it is assumed to be "${D.GAMENAME}".
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!get page
+							</span> - Gets the page ID the player tab is set to.
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!get debug
+							</span> - Gets the current debug settings.
+						</li>
+					</ul>
+					<h4 style="font-variant: small-caps;">!SET:</h4>
+					<ul>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!set dblvl
+							</span> - 
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!set dbfilter
+							</span> - 
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!set size height:#, width:#
+							</span> - Sets the size of all selected objects to the given dimensions.
+						</li>
+					</ul>
+					<h4 style="font-variant: small-caps;">!CLEAR:</h4>
+					<ul>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!clear dbfilter
+							</span> - 
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!clear obj &lt;type&gt; &lt;pattern&gt;
+							</span> - Removes all objects of the given type that contain &lt;pattern&gt; in the name.
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!clear state [&lt;namespace&gt;]
+							</span> - Clears the given state values.
+						</li>
+					</ul>
+					<h4 style="font-variant: small-caps;">!TEXT:</h4>
+					<ul>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!text prep &lt;character&gt;
+							</span> - Sets all selected text strings to 20 copies of the given character.  (Use with !text resolve to get the necessary information for measuring text widths.)
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!text resolve
+							</span> - Measures the width of selected text strings (prepared with !text prep).
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!text check
+							</span> - Checks recorded width data for text in the selected formats.
+						</li>
+						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+							<span style="font-weight: bolder; font-family: serif;">
+								!text upper/lower
+							</span> - Changes the case of selected text object(s).
 						</li>
 					</ul>
 				</div>
@@ -237,7 +317,6 @@ const ChatFuncs = (() => {
 				params = {}
 			let [obj, attrList] = [{}, {}],
 				objsToKill = [],
-				[width] = [0, 0, 0],
 				[objType, objID, pattern] = ["", "", ""]
 			switch (args.shift().toLowerCase()) {
 			case "!get":
@@ -328,7 +407,7 @@ const ChatFuncs = (() => {
 						for (const objData of msg.selected) {
 							obj = getObj(objData._type, objData._id)
 							if (obj) {
-								attrList = args.join(" ").split(",")
+								attrList = args.join("").split(",")
 								_.each(attrList, v => {
 									params[v.split(":")[0]] = parseInt(v.split(":")[1] ) || v.split(":")[1]
 								} )
@@ -377,52 +456,50 @@ const ChatFuncs = (() => {
 					}
 					D.Alert(D.JS(getObj(objType, objID)), "Object(s) Found")
 					break
-				case "textWidth":
-					if (!msg.selected || !msg.selected[0] )
-						break
-					width = D.GetTextWidth(findObjs( {
-						_id: msg.selected[0]._id
-					} )[0], args.join(" "))
-					D.Alert(`The text you entered should be ${width} pixels wide.`)
-					break
 				default:
 					sendHelpMsg()
 					break
 				}
 				break
-			case "!prepText":
-				if (!msg.selected || !msg.selected[0] )
+			case "!text":
+				switch (args.shift()) {
+				case "prep":
+					if (!msg.selected || !msg.selected[0] )
+						break
+					prepText(msg.selected, args.shift())
+					D.Alert("Move the text object around, and type '!resText' when you have.")
 					break
-				prepText(msg.selected, args.shift())
-				D.Alert("Move the text object around, and type '!resText' when you have.")
-				break
-			case "!resText":
-				if (!msg.selected || !msg.selected[0] )
+				case "res":
+				case "resolve":
+					if (!msg.selected || !msg.selected[0] )
+						break
+					resolveText(msg.selected)
 					break
-				resolveText(msg.selected)
-				break
-			case "!upperText":
-				if (!msg.selected || !msg.selected[0] )
+				case "upper":
+					if (!msg.selected || !msg.selected[0] )
+						break
+					caseText(msg.selected, "upper")
 					break
-				caseText(msg.selected, "upper")
-				break
-			case "!lowerText":
-				if (!msg.selected || !msg.selected[0] )
+				case "lower":
+					if (!msg.selected || !msg.selected[0] )
+						break
+					caseText(msg.selected, "lower")
 					break
-				caseText(msg.selected, "lower")
+				case "check":
+					if (!msg.selected || !msg.selected[0] )
+						break;
+					[obj] = findObjs( {
+						_id: msg.selected[0]._id
+					} );
+					((font = obj.get("font_family").split(" "), size = obj.get("font_size")) => {
+						D.Alert(`There are ${_.values(state.DATA.CHARWIDTH[font][size] ).length} entries.`, `${D.JS(font).toUpperCase()} ${D.JS(size)}`)
+					} )()
+					break
+				default:
+					break
+				}
 				break
-			case "!checkText":
-				if (!msg.selected || !msg.selected[0] )
-					break;
-				[obj] = findObjs( {
-					_id: msg.selected[0]._id
-				} );
-				((font = obj.get("font_family").split(" "), size = obj.get("font_size")) => {
-					D.Alert(`There are ${_.values(state.DATA.CHARWIDTH[font][size] ).length} entries.`, `${D.JS(font).toUpperCase()} ${D.JS(size)}`)
-				} )()
-				break
-			default:
-				break
+			default: break
 			}
 		},
 		// #endregion
