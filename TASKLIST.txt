@@ -2,12 +2,12 @@ API FIXING
 
 - secret roll
 - image macro
-- xp not updating when set
+- new tombstones
+- prep session
 
 ADDITIONS
 
 - staked project dots
-- two columns for XP
 - shrink vertical size of projects
     - add project rush line
     - add timeline that is populated when project is started, and changed when project is completed or rushed; players can delete projects themselves

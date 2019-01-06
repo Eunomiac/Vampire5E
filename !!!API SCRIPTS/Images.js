@@ -221,30 +221,6 @@ const Images = (() => {
 		},
 		// #endregion
 
-		// #region MACRO BUILDING: Building Selection Macros for Images
-		buildMacro = (macroName, imgNames) => {
-			let action = "!img set ?{Choose Image Category"
-			for (const imgName of imgNames) {
-				if (REGISTRY[imgName] ) {
-					action += `| ${D.Capitalize(imgName)}, ?{Choose ${D.Capitalize(imgName)}`
-					for (const srcName of _.sortBy(_.keys(REGISTRY[imgName].srcs), k => k))
-						action += ` &amp;#124;${D.Capitalize(srcName)}&amp;#44; ${D.Capitalize(srcName)} ${REGISTRY[srcName].srcs[srcName]}`
-					action += ` &amp;#124;-- blank --&amp;#44; ${D.Capitalize(imgName)} ${IMGDATA.blank} &amp;#125; `
-				} else {
-					D.Alert(`Bad Image Name: ${D.JSL(imgName)}`, "BUILDMACRO ITERATOR")
-				}
-			}
-			action += "}"
-
-			createObj("macro", {
-				_playerid: D.GMID(),
-				macroName,
-				action,
-				visibleto: D.GMID()
-			} )
-		},
-		// #endregion
-
 		// #region Event Handlers (handleAdd, handleInput)
 		handleAdd = obj => {
 			if (imgRecord)
@@ -257,7 +233,7 @@ const Images = (() => {
 				imgNames = []
 			if (msg.type !== "api" || !playerIsGM(msg.playerid) || args.shift() !== "!img")
 				return
-			let [srcName, imgName, imgObj] = [null, null, null]
+			let [srcName, imgName, imgObj, params] = [null, null, null, null]
 			switch (args.shift().toLowerCase()) {
 			case "reg":
 			case "register":
@@ -270,6 +246,19 @@ const Images = (() => {
 						D.Alert("Syntax: !img reg <hostName> [<params = imgName:imgSrc, imgName : imgSrc>]", "IMAGES: !img reg")
 				} else {
 					D.Alert("Select an image object first!", "IMAGES: !img reg")
+				}
+				break
+			case "repo":
+			case "reposition":
+				imgObj = getImageObj(msg)
+				if (imgObj && imgObj.get && imgObj.get("name") && REGISTRY[imgObj.get("name")] ) {
+					REGISTRY[imgObj.get("name")].top = parseInt(imgObj.get("top"))
+					REGISTRY[imgObj.get("name")].left = parseInt(imgObj.get("left"))
+					REGISTRY[imgObj.get("name")].height = parseInt(imgObj.get("height"))
+					REGISTRY[imgObj.get("name")].width = parseInt(imgObj.get("width"))
+					D.Alert(`Image ${imgObj.get("name")} repositioned:<br><br>${D.JS(REGISTRY[imgObj.get("name")] )}`)
+				} else {
+					D.Alert("Unable to retrieve an image to reposition", "IMAGES: !img repo")
 				}
 				break
 			case "removeall":
@@ -293,12 +282,30 @@ const Images = (() => {
 			case "addsrc":
 				[imgName, srcName] = args
 				if (imgName && REGISTRY[imgName] ) {
+					if (!_.isObject(REGISTRY[imgName].srcs))
+						REGISTRY[imgName].srcs = {}
 					if (srcName)
 						addImgSrc(msg, imgName, srcName)
 					else
 						D.Alert(`Invalid image name '${D.JS(srcName)}'`, "IMAGES: !img addsrc")
 				} else {
 					D.Alert(`Host name '${D.JS(imgName)}' not registered.`, "IMAGES: !img addsrc")
+				}
+				break
+			case "setsrc":
+				[imgName, srcName] = args
+				if (imgName && REGISTRY[imgName] ) {
+					REGISTRY[imgName].srcs = {}
+					if (srcName.split(",").length > 1) {
+						for (params of srcName.split(","))
+							REGISTRY[imgName].srcs[params.split(":")[0]] = params.split(":")[1]
+					} else if (srcName.includes(":")) {
+						REGISTRY[imgName].srcs[srcName.split(":")[0]] = srcName.split(":")[1]
+					} else {
+						REGISTRY[imgName].srcs = srcName
+					}
+				} else {
+					D.Alert(`No image registered under ${imgName}`)
 				}
 				break
 			case "set":
@@ -309,15 +316,6 @@ const Images = (() => {
 				break
 			case "off":
 				toggleImage(args.shift(), false)
-				break
-			case "setlocation":
-				setImage("District", args.shift())
-				setImage("Site", args.shift())
-				break
-			case "macro":
-				srcName = args.shift()
-				imgName = args.join(" ").split(/,\s*?/gu)
-				buildMacro(srcName, imgName)
 				break
 			case "getdata":
 				imgObj = getImageObj(msg)

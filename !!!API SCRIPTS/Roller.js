@@ -1044,9 +1044,9 @@
 						mod = parseInt(customFlag[customFlag.length - 1] )
 					if ((customFlag.length === 2 || customFlag.length === 3) && (
 						(customFlag[1].includes("p") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.physical, D.SKILLS.physical] )).length > 0) ||
-							(customFlag[1].includes("m") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.mental, D.SKILLS.mental] )).length > 0) ||
-							(customFlag[1].includes("s") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.social, D.SKILLS.social] )).length > 0) ||
-							(customFlag[1].includes("d") && _.intersection(traitList, D.DISCIPLINES).length > 0)
+						(customFlag[1].includes("m") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.mental, D.SKILLS.mental] )).length > 0) ||
+						(customFlag[1].includes("s") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.social, D.SKILLS.social] )).length > 0) ||
+						(customFlag[1].includes("d") && _.intersection(traitList, D.DISCIPLINES).length > 0)
 					)) {
 						if (mod >= 0)
 							flagData.posFlagLines.push(`${customFlag[0]} (${mod > 0 ? "●".repeat(mod) : "~"})`)
@@ -1611,7 +1611,7 @@
 				},
 				p = v => rollData.prefix + v
 			let [blankLines, introPhrase, logPhrase, logString, stains, margin, total, bookends, spread] =
-			new Array(9).fill(null),
+				new Array(9).fill(null),
 				maxHumanity = 10,
 				diceCats = _.clone(STATECATS.dice)
 
@@ -1774,6 +1774,8 @@
 								rollLines.mainRoll.text += (rollData.mod < 0 ? " - " : " + ") + Math.abs(rollData.mod)
 							}
 						}
+						if (rollData.type === "project")
+							deltaAttrs[p("projectlaunchresults")] = logLines.mainRoll
 						if (rollData.dicePool <= 0) {
 							logLines.mainRollSub = `${CHATSTYLES.mainRollSub}(One Die Minimum)</span>`
 							rollData.dicePool = 1
@@ -1821,9 +1823,11 @@
 						text: rollData.diff.toString()
 					}
 					logLines.difficulty = ` vs. ${rollData.diff}`
+					if (rollData.type === "project")
+						deltaAttrs[p("projectlaunchresults")] += ` vs. Difficulty ${rollData.diff}`
 
 					/* D.Alert(`RollLines: ${D.JS(rollLines)}`)
-							   D.Alert(`LogLines: ${D.JS(logLines)}`) */
+								   D.Alert(`LogLines: ${D.JS(logLines)}`) */
 					break
 				case "resultCount":
 					rollLines.resultCount.text = JSON.stringify(rollResults.total)
@@ -1858,7 +1862,7 @@
 							rollLines.subOutcome.text = "Your Enemies Close In..."
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "worst")
 							rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "worst")
-							deltaAttrs[p("projectlaunchresults")] = "TOTAL FAIL"
+							deltaAttrs[p("projectlaunchresults")] += ":&nbsp;&nbsp;&nbsp;TOTAL FAIL"
 							deltaAttrs[p("projectlaunchresultsmargin")] = "You've Angered Someone..."
 						} else if (margin < 0) {
 							logLines.outcome = `${CHATSTYLES.outcomeOrange}FAILURE!</span></div>`
@@ -1867,7 +1871,7 @@
 							rollLines.subOutcome.text = "+1 Difficulty to Try Again"
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "bad")
 							rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "bad")
-							deltaAttrs[p("projectlaunchresults")] = "FAILURE"
+							deltaAttrs[p("projectlaunchresults")] = undefined
 							deltaAttrs[p("projectlaunchdiffmod")] = rollData.diffMod + 1
 							deltaAttrs[p("projectlaunchdiff")] = rollData.diff + 1
 						} else if (rollResults.critPairs.bb > 0) {
@@ -1877,8 +1881,8 @@
 							rollLines.subOutcome.text = "No Commit Needed!"
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "best")
 							rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "best")
+							deltaAttrs[p("projectlaunchresults")] += ":&nbsp;&nbsp;&nbsp;CRITICAL WIN!"
 							deltaAttrs[p("projectlaunchresultsmargin")] = "No Stake Needed!"
-							deltaAttrs[p("projectlaunchresults")] = "CRITICAL WIN!"
 						} else {
 							logLines.outcome = `${CHATSTYLES.outcomeWhite}SUCCESS!</span></div>`
 							logLines.subOutcome = `${CHATSTYLES.subOutcomeWhite}Stake ${rollResults.commit} Dots</span></div>`
@@ -1887,8 +1891,8 @@
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "best")
 							rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "best")
 							deltaAttrs[p("projecttotalstake")] = rollResults.commit
-							deltaAttrs[p("projectlaunchresultsmargin")] = `Stake ${rollResults.commit} Dot${rollResults.commit > 1 ? "s" : ""} (${rollResults.commit} to go)`
-							deltaAttrs[p("projectlaunchresults")] = "SUCCESS!"
+							deltaAttrs[p("projectlaunchresultsmargin")] = `(${rollResults.commit} Stake Required, ${rollResults.commit} to Go)`
+							deltaAttrs[p("projectlaunchresults")] = `:&nbsp;&nbsp;&nbsp;${total} SUCCESS${total > 1 ? "ES" : ""}!`
 						}
 						break
 					case "trait":
@@ -1995,7 +1999,8 @@
 			logLines.mainRoll = `${logLines.mainRoll + logLines.difficulty}</span>${logLines.mainRollSub}</div>`
 			logLines.resultDice = formatDiceLine(rollData, rollResults, 13)
 			logString = `${logLines.fullBox + logLines.rollerName + logLines.mainRoll + logLines.resultDice +
-                        logLines.outcome + logLines.subOutcome}</div>`
+				logLines.outcome + logLines.subOutcome}</div>`
+
 			D.DB(`LOGLINES: ${D.JS(logLines)}`, "LOG LINES", 2)
 
 			sendChat("", logString)
@@ -2084,7 +2089,7 @@
 					_.omit(
 						state[D.GAMENAME].Roller[dieCat],
 						(v, dNum) => v.value === "blank" ||
-						state[D.GAMENAME].Roller.selected[dieCat].includes(parseInt(dNum))
+							state[D.GAMENAME].Roller.selected[dieCat].includes(parseInt(dNum))
 					), v => v.value
 				)
 			rollData.rerollAmt = state[D.GAMENAME].Roller.selected[dieCat].length

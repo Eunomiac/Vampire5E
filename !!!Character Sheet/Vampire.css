@@ -292,6 +292,12 @@
 		font-weight: bolder;
 	}
 
+	.charsheet .sheet-cleanText {
+		color: black !important;
+		text-shadow: none !important;
+		font-weight: normal !important;
+	}
+
 	/*#endregion*/
 	/* #region Layout */
 	.charsheet div.sheet-header {
@@ -874,7 +880,8 @@
 	}
 
 	.charsheet input.sheet-containertoggle,
-	.charsheet input.sheet-containerselector {
+	.charsheet input.sheet-containerselector,
+	.charsheet input.sheet-containeractivator {
 		display: none;
 	}
 
@@ -2264,7 +2271,7 @@
 	}
 
 	.charsheet div.sheet-projects .sheet-doublerow {
-		height: 45px;
+		height: 45px !important;
 	}
 
 	.charsheet div.sheet-projects div.sheet-projectinccounter10 {
@@ -2424,11 +2431,17 @@
 	}
 
 	.charsheet div.sheet-projects div.sheet-projectstake {
-		width: calc(100% - 40px - 20px - 5px);
+		width: calc(100% - 40px - 5px);
 	}
 
 	.charsheet div.sheet-projects div.sheet-projectstake input.sheet-dotlinename {
 		width: calc(100% - 96px);
+		height: 16px;
+		font-size: 12px;
+		line-height: 14px;
+		text-indent: 2px;
+		padding: 0px 0px;
+		margin-top: 2px;
 	}
 
 	.charsheet div.sheet-projects input.sheet-hoverpopup+span+div {
@@ -2436,6 +2449,109 @@
 		left: 0px;
 	}
 
+	.charsheet div.sheet-projectsummary {
+		margin: 0px !important;
+	}
+
+	.charsheet div.sheet-projectsummary div,
+	.charsheet div.sheet-projectsummary span,
+	.charsheet div.sheet-projectsummary input,
+	.charsheet div.sheet-projectsummary textarea,
+	.charsheet div.sheet-projectsummary select {
+		height: 20px;
+		font-family: 'Bodoni SvtyTwo ITC TT' !important;
+		margin-bottom: 0px;
+	}
+
+	.charsheet div.sheet-projects div.sheet-projectsummary textarea {
+		padding: 0px 0px;
+		overflow: hidden;
+		font-size: 14px;
+		line-height: 21px;
+	}
+
+	.charsheet div.sheet-projects div.sheet-projectsummary.sheet-projectlaunchresults {
+		margin-top: 3px !important;
+	}
+
+	.charsheet div.sheet-projects div.sheet-projectsummary textarea.sheet-projectlaunchresults {
+		width: calc(0.65*(100% - 55px - 5px));
+	}
+
+	.charsheet div.sheet-projects div.sheet-projectsummary textarea.sheet-projectlaunchresultsmargin {
+		width: calc(0.35*(100% - 55px - 5px));
+	}
+
+	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-projectdate {
+		width: 100px;
+		height: auto;
+		border-radius: 0;
+		margin-right: 10px;
+		padding: 0px;
+	}
+
+	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-projectdate textarea,
+	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-projectdate span {
+		height: 14px;
+		line-height: 14px;
+		font-size: 14px;
+		font-variant: small-caps;
+	}
+
+	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-projectbody {
+		height: auto;
+		width: calc(100% - 100px - 59px);
+		border-radius: 0;
+		padding: 0px;
+	}
+
+	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-projectbody div.sheet-outsetFrame {		
+		width: calc(100% - 11px);
+		height: auto;
+		background-color: rgba(255, 255, 255, 0.3);
+		border-radius: 5px;
+		border: 3px white outset;
+		padding: 3px 0px;
+	}
+
+	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-outsetFrame textarea {
+		height: 18px;
+		line-height: 18px;
+		text-indent: 5px;
+	}
+
+	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-outsetFrame textarea.sheet-projectscope {
+		width: calc(100% - 55px - 5px - 3px);
+		color: black !important;
+		font-size: 14px;
+		text-shadow: none !important;
+		font-weight: normal !important;
+	}
+
+	.charsheet div.sheet-projects div.sheet-projectsummary textarea.sheet-header5 {
+		width: 60px;
+		text-indent: 3px !important;
+	}
+
+/* 	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-doublerow .sheet-squareBox {
+		width: 45px;
+		height: 45px;
+		font-size: 32px !important;
+		line-height: 40px;
+	}
+
+	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-linerow .sheet-squareBox {
+		width: 20px;
+		height: 20px;
+		font-size: 16px !important;
+		padding: 0px;
+	}
+
+	.charsheet div.sheet-projects div.sheet-projectsummary select.sheet-squareBox {
+		width: 80px;
+		margin-top: -2px;
+		margin-bottom: 2px;
+	} */
 
 	/* #endregion*/
 	/* #region SECTION: Timeline */
