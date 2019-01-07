@@ -1,8 +1,6 @@
 API FIXING
 
 - secret roll
-- image macro
-- new tombstones
 - prep session
 
 ADDITIONS

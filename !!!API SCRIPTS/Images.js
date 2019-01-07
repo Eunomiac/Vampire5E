@@ -83,6 +83,20 @@ const Images = (() => {
 				return D.ThrowError(`Cannot locate image with search value '${D.JS(imgRef)}'`, "IMAGES.getImageData", errObj)
 			}
 		},
+		getImageSrcs = imgRef => {
+			try {
+				if (getImageKey(imgRef)) {
+					if (_.isString(getImageData(imgRef).srcs))
+						return getImageSrcs(getImageData(imgRef).srcs)
+
+					return getImageData(imgRef).srcs
+				}
+
+				return D.ThrowError(`Image reference '${imgRef}' does not refer to a registered image object.`, "IMAGES: GetSrcs")
+			} catch (errObj) {
+				return D.ThrowError(`Cannot locate image with search value '${D.JS(imgRef)}'`, "IMAGES: GetSrcs", errObj)
+			}
+		},
 		// #endregion
 
 		// #region SETTERS: Registering & Manipulating Image Objects
@@ -91,7 +105,7 @@ const Images = (() => {
 				const imgSrc = (_.isString(imgSrcRef) && imgSrcRef.includes("http") ?
 					imgSrcRef :
 					getImageObj(imgSrcRef).get("imgsrc") || "")
-					.replace(/\w*?(?=\.png)/u, "thumb")
+					.replace(/\w*?(?=\.\w+?\?)/u, "thumb")
 				if (imgSrc !== "" && REGISTRY[imgName] ) {
 					REGISTRY[imgName].srcs[srcName] = imgSrc
 					D.Alert(`Image '${D.JS(srcName)}' added to category '${D.JS(imgName)}'.<br><br>Source: ${D.JS(imgSrc)}`)
@@ -221,6 +235,32 @@ const Images = (() => {
 		},
 		// #endregion
 
+		// #region MACRO BUILDING: Building Selection Macros for Images
+		buildMacro = (macroName, chatTrigger, imgData) => {
+			/* imgData should be an object whose keys are the names of host images, and values are
+				the <x> in "Select <X>" shown in the macro query. */
+			// D.Alert(`imgData: ${D.JS(imgData)}`)
+			const hostNames = _.map(_.keys(imgData), v => v.trim())
+			// D.Alert(`hostNames: ${D.JS(_.map(hostNames, v => `'${v}'`))}`)
+			let action = `img ${chatTrigger}`
+			for (const hostName of hostNames) {
+				if (getImageKey(hostName)) {
+					action += ` ${hostName}:?{${imgData[hostName]}|--blank--,blank`
+					// D.Alert(`GetImageSrcs(${hostName}) = ${D.JS(getImageSrcs(hostName))}`)
+					for (const srcName of _.keys(getImageSrcs(hostName)).sort())
+						action += `|${srcName},${srcName}`
+					action += "}"
+				}
+			}
+			createObj("macro", {
+				_playerid: D.GMID(),
+				name: macroName,
+				action,
+				visibleto: D.GMID()
+			} )
+		},
+		// #endregion
+
 		// #region Event Handlers (handleAdd, handleInput)
 		handleAdd = obj => {
 			if (imgRecord)
@@ -233,7 +273,8 @@ const Images = (() => {
 				imgNames = []
 			if (msg.type !== "api" || !playerIsGM(msg.playerid) || args.shift() !== "!img")
 				return
-			let [srcName, imgName, imgObj, params] = [null, null, null, null]
+			let [srcName, imgName, imgObj, macroName, chatTrigger] = [null, null, null, null, null, null],
+				params = {}
 			switch (args.shift().toLowerCase()) {
 			case "reg":
 			case "register":
@@ -309,13 +350,26 @@ const Images = (() => {
 				}
 				break
 			case "set":
-				setImage(args.shift(), args.shift())
+				for (const param of args)
+					setImage(...param.split(":"))
 				break
 			case "on":
-				toggleImage(args.shift(), true)
+				for (const param of args)
+					toggleImage(param, true)
 				break
 			case "off":
-				toggleImage(args.shift(), false)
+				for (const param of args)
+					toggleImage(param, false)
+				break
+			case "toggle":
+				for (const param of args)
+					toggleImage(param.split(":")[1], param.split(":")[0] === "on")
+				break
+			case "copy":
+				imgObj = getImageObj(args.shift())
+				srcName = imgObj.get("imgsrc")
+				imgObj = getImageObj(args.shift())
+				imgObj.set("imgsrc", srcName)
 				break
 			case "getdata":
 				imgObj = getImageObj(msg)
@@ -328,6 +382,13 @@ const Images = (() => {
 					else
 						D.Alert("Syntax: !img get [<category> <name>] (or select an image object)", "IMAGES, !img getData")
 				}
+				break
+			case "buildmacro":
+				[macroName, chatTrigger] = [args.shift(), args.shift()]
+				// D.Alert(`MacroName: ${macroName}, ChatTrigger: ${chatTrigger}`)
+				for (const param of _.map(args.join(" ").split(","), v => v.trim()))
+					params[param.split(":")[0]] = param.split(":")[1]
+				buildMacro(macroName, chatTrigger, params)
 				break
 			case "toggleadd":
 				imgRecord = !imgRecord
