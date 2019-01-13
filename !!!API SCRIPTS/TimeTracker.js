@@ -1,22 +1,13 @@
 const TimeTracker = (() => {
-	let timeTimer = null
+	let [timeTimer, dateObj, trackerObj] = [null, null, null],
+		[isRunning, isRunningFast] = [false, false]
 	    // #region Configuration
-	const IMAGES = {
-			day: "https://s3.amazonaws.com/files.d20.io/images/66268397/qtmx8f4z8jcvK2sEGaxl5A/thumb.jpg?1541330279",
-			night: "https://s3.amazonaws.com/files.d20.io/images/66268396/ZI7kzQ3i8TH9dANaYBDPlA/thumb.jpg?1541330279",
-			latenight: "https://s3.amazonaws.com/files.d20.io/images/66268394/y4ITk2QTo_ifYKZWhTXiGg/thumb.jpg?1541330278",
-			predawn: [
-				"https://s3.amazonaws.com/files.d20.io/images/66268399/ZCbXqDFScIhdXGwoWq8C8g/thumb.jpg?1541330279",
-				"https://s3.amazonaws.com/files.d20.io/images/66268393/a3N45dEewo9234IcrNQh2Q/thumb.jpg?1541330279",
-				"https://s3.amazonaws.com/files.d20.io/images/66268395/65zluFmgkw_5V2WXanLaqQ/thumb.jpg?1541330280",
-				"https://s3.amazonaws.com/files.d20.io/images/66268398/_mHzoQDP6323ZTWApHnjsw/thumb.jpg?1541330279",
-				"https://s3.amazonaws.com/files.d20.io/images/66268400/F5YhSKEOvgAV8ZF2HpdHUQ/thumb.jpg?1541330280"
-			],
-			dawn: "https://s3.amazonaws.com/files.d20.io/images/66268397/qtmx8f4z8jcvK2sEGaxl5A/thumb.jpg?1541330279"
-		},
+	const CLOCKSPEED = 50,
+		TWEENDURS = [15, 40, 60, 600, 1440, 3000, 5000, 7000, 8000, 9000, 10000, Infinity],
+		RUNNINGFASTAT = 1500000,
 		DAYSOFWEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
 		MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-		NIGHT = [
+		TWILIGHT = [
 			["7:44", "17:12"],
 			["7:11", "17:51"],
 			["7:22", "19:28"],
@@ -30,72 +21,114 @@ const TimeTracker = (() => {
 			["7:11", "17:51"],
 			["7:44", "17:12"]
 		],
-		HORIZONS = {
-			latenight: "1:00",
-			predawn: [-90, -60, -30, -15, -5]
+		IMAGETIMES = {
+			"2:00": "night3",
+			"3:30": "night4",
+			[-90]: "night5",
+			[-60]: "predawn5",
+			[-30]: "predawn4",
+			[-15]: "predawn3",
+			[-5]: "predawn2",
+			"dawn": "predawn1",
+			"dusk": "day",
+			"21:30": "night1",
+			"23:00": "night2",
+			"24:00": "night3"
 		},
 		// #endregion
 
+		// #region Derivative Stats
+		TWILIGHTMINS = _.map(TWILIGHT, v => _.map(v, v2 => 60 * parseInt(v2.split(":")[0] ) + parseInt(v2.split(":")[1] ))),
+		// #endregion
+
 		// #region Date Functions
-		setHorizon = (date, horizon) => {
-			const nighttime = _.map(NIGHT[date.getMonth()], v => [parseInt(v.split(":")[0] ), parseInt(v.split(":")[1] )] ),
-				dawn = new Date((new Date(date)).setUTCHours(nighttime[0][0], nighttime[0][1] )),
-				dusk = new Date((new Date(date)).setUTCHours(nighttime[1][0], nighttime[1][1] )),
-				lateNight = new Date((new Date(date)).setUTCHours(
-					parseInt(HORIZONS.latenight.split(":")[0] ),
-					parseInt(HORIZONS.latenight.split(":")[1] )
-				))
-			if (date.getUTCHours() > 10)
-				dawn.setUTCDate(date.getUTCDate() + 1)
-			if (date.getUTCHours() < 14 && lateNight.getUTCHours() > 14)
-				lateNight.setUTCDate(date.getUTCDate() - 1)
-			if (date.getUTCHours() > 14 && lateNight.getUTCHours() < 14)
-				lateNight.setUTCDate(date.getUTCDate() + 1)
-			if (date.getUTCHours() < 14)
-				dusk.setUTCDate(date.getUTCDate() - 1)
-			// D.Alert(`DAWN: ${D.JSL(dawn)}<br>DUSK: ${D.JSL(dusk)}<br>LATE: ${D.JSL(lateNight)}<br>PREDAWN[0]: ${D.JSL(new Date(new Date(dawn).setUTCMinutes(dawn.getUTCMinutes() + HORIZONS.predawn[0] )))}<br><br>CURRENT: ${D.JSL(date)}`, "TIMETRACKER: SETHORIZON()")
-			if (date < dusk || date > dawn) {
-				horizon.set("imgsrc", IMAGES.day)
-			} else if (date < lateNight) {
-				horizon.set("imgsrc", IMAGES.night)
-			} else if (date < new Date(dawn).setUTCMinutes(dawn.getUTCMinutes() + HORIZONS.predawn[0] )) {
-				horizon.set("imgsrc", IMAGES.latenight)
-			} else {
-				for (let i = HORIZONS.predawn.length; i > 0; i--) {
-					if (date >= new Date(dawn).setUTCMinutes(dawn.getUTCMinutes() + HORIZONS.predawn[i - 1] )) {
-						horizon.set("imgsrc", IMAGES.predawn[i - 1] )
-						break
-					}
+		setHorizon = () => {
+			/* D.Log(`Date Obj? ${Boolean(dateObj)}, state val: ${D.JSL(state[D.GAMENAME].TimeTracker.currentDate)}`)
+			   dateObj = dateObj || new Date(state[D.GAMENAME].TimeTracker.currentDate) */
+			let imgSrcName = ""
+			// D.Log(`DATE OBJECT: ${D.JSL(dateObj)}`)
+			const [dawn, dusk] = TWILIGHTMINS[dateObj.getMonth()],
+				imgTimes = _.object(_.map(_.keys(IMAGETIMES), k => {
+					if (k.includes(":"))
+						return 60 * parseInt(k.split(":")[0] ) + parseInt(k.split(":")[1] )
+					else if (k === "dawn")
+						return dawn
+					else if (k === "dusk")
+						return dusk
+
+					return dawn + parseInt(k)
+				} ), _.values(IMAGETIMES)),
+				curTime = 60 * dateObj.getUTCHours() + dateObj.getUTCMinutes()
+			imgSrcName = imgTimes[_.find(_.keys(imgTimes), v => curTime <= v)]
+			if (isRunningFast)
+				imgSrcName = imgSrcName.includes("night") ? "night2" : "day"
+			if (imgSrcName !== state[D.GAMENAME].TimeTracker.lastHorizon) {
+				state[D.GAMENAME].TimeTracker.lastHorizon = imgSrcName
+				Images.Set("Horizon", imgSrcName)
+			}
+		},
+		setCurrentDate = () => {
+			// dateObj = dateObj || new Date(parseInt(state[D.GAMENAME].TimeTracker.currentDate))
+			trackerObj.set("text", `${
+				DAYSOFWEEK[dateObj.getUTCDay()]}, ${
+				MONTHS[dateObj.getUTCMonth()]} ${
+				D.Ordinal(dateObj.getUTCDate())}, ${
+				(dateObj.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
+				dateObj.getUTCMinutes() < 10 ? "0" : ""}${dateObj.getUTCMinutes().toString()} ${
+				Math.floor(dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`)
+			if (!isRunning) {
+				const lastDate = new Date(parseInt(state[D.GAMENAME].TimeTracker.currentDate))
+				state[D.GAMENAME].TimeTracker.currentDate = dateObj.getTime()
+				if (
+					dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
+					dateObj.getMonth() !== lastDate.getMonth() ||
+					dateObj.getUTCDate() !== lastDate.getUTCDate()
+				) {
+					_.each(D.GetChars("registered"), char => setAttrs(char.id, {
+						date_today: dateObj.getTime().toString()
+					} ))
 				}
 			}
+			setHorizon()
 		},
-		setCurrentDate = (date, tracker, horizon) => {
-			tracker.set("text", `${
-				DAYSOFWEEK[date.getUTCDay()]}, ${
-				MONTHS[date.getUTCMonth()]} ${
-				D.Ordinal(date.getUTCDate())}, ${
-				(date.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
-				date.getUTCMinutes() < 10 ? "0" : ""}${date.getUTCMinutes().toString()} ${
-				Math.floor(date.getUTCHours() / 12) === 0 ? "AM" : "PM"}`)
-			const lastDate = new Date(parseInt(state[D.GAMENAME].TimeTracker.currentDate))
-			D.Log(`Last Date: ${D.JSL(lastDate)}`)
-			state[D.GAMENAME].TimeTracker.currentDate = date.getTime().toString()
-			D.Log(`New Date: ${D.JSL(lastDate)}`)
-			if (
-				date.getUTCFullYear() !== lastDate.getUTCFullYear() ||
-				date.getMonth() !== lastDate.getMonth() ||
-				date.getUTCDate() !== lastDate.getUTCDate()
-			) {
-				D.Log(`Chars Received: ${D.GetChars("registered").length}`)
-				_.each(D.GetChars("registered"), char => setAttrs(char.id, {
-					date_today: date.getTime().toString()
-				} ))
-			}
-			setHorizon(date, horizon)
+		easeInOutSine = (curTime, startVal, deltaVal, duration) => -deltaVal / 2 *
+			(Math.cos(Math.PI * curTime / duration) - 1) +
+			startVal,
+		easeInOutQuad = (curTime, startVal, deltaVal, duration) => {
+			let cTime = curTime
+			cTime /= duration / 2
+			if (cTime < 1)
+				return deltaVal / 2 * cTime * cTime + startVal
+			cTime--
+
+			return -deltaVal / 2 * (cTime * (cTime - 2) - 1) + startVal
 		},
-		tickClock = (date, tracker, horizon) => {
-			date.setUTCMinutes(date.getUTCMinutes() + 1)
-			setCurrentDate(date, tracker, horizon)
+		tweenClock = finalDate => {
+			let [curTime, lastTime] = [0, 0]
+			const deltaTime = finalDate - dateObj,
+				duration = (_.findIndex(TWEENDURS, v => deltaTime / 60000 <= v) + 1) * 1000,
+				startTime = dateObj.getTime(),
+				easeSet = () => {
+					if (curTime >= duration) {
+						clearInterval(timeTimer)
+						isRunning = false
+						isRunningFast = false
+						// D.Log("Is Running: FALSE")
+					}
+					const newDelta = easeInOutSine(curTime, 0, deltaTime, duration)
+					isRunningFast = newDelta - lastTime > RUNNINGFASTAT
+					// D.Log(`Setting Date.  lastTime = ${newDelta - lastTime}, IsRunning = ${isRunning}, IsRunningFast = ${isRunningFast}`)
+					lastTime = newDelta
+					dateObj.setTime(startTime + newDelta)
+					setCurrentDate()
+					curTime += CLOCKSPEED
+				}
+			isRunning = true
+			timeTimer = setInterval(easeSet, CLOCKSPEED)
+		},
+		tickClock = () => {
+			dateObj.setUTCMinutes(dateObj.getUTCMinutes() + 1)
+			setCurrentDate()
 		},
 		// #endregion
 
@@ -103,68 +136,58 @@ const TimeTracker = (() => {
 		handleInput = msg => {
 			if (msg.type !== "api" || !playerIsGM(msg.playerid))
 				return
-			const args = msg.content.split(/\s+/u),
-				{
-					currentDate
-				} = state[D.GAMENAME].TimeTracker
-			let [tracker, horizon] = [
-					[],
-					[],
-					[]
-				],
-				[date, delta, unit, hour, min] = [null, null, null, null, null]
+			const args = msg.content.split(/\s+/u)
+			let [date2, delta, unit, hour, min] = [null, null, null, null, null]
 			switch (args.shift().toLowerCase()) {
 			case "!time":
 				if (!state[D.GAMENAME].TimeTracker.timeText) {
 					D.Alert("Register a text object first, with '!regTime'", "TIMETRACKER")
 					break
-				} else if (!state[D.GAMENAME].TimeTracker.horizonImage) {
-					D.Alert("Register an image object first, with '!regHorizon'", "TIMETRACKER")
+				} else if (!Images.GetData("Horizon")) {
+					D.Alert("Register an image object first, with '!img reg Horizon'", "TIMETRACKER")
 					break
 				}
-				[tracker] = findObjs( {
-					_id: state[D.GAMENAME].TimeTracker.timeText
-				} );
-				[horizon] = findObjs( {
-					_id: state[D.GAMENAME].TimeTracker.horizonImage
-				} )
-				date = new Date(parseInt(currentDate))
-				// params = args.slice(1).join(" ").toUpperCase()
+
+				/* dateObj = dateObj || new Date(state[D.GAMENAME].TimeTracker.currentDate)
+				   params = args.slice(1).join(" ").toUpperCase() */
 				switch (args.shift().toLowerCase()) {
 				case "add":
 					delta = parseInt(args.shift())
 					unit = args.shift().toLowerCase()
+					date2 = new Date(dateObj)
 					// params = _.compact(args.join(" ").split(" "))
 					if (unit.slice(0, 1) === "y")
-						date.setUTCFullYear(date.getUTCFullYear() + delta)
+						date2.setUTCFullYear(date2.getUTCFullYear() + delta)
 					else if (unit.includes("mo"))
-						date.setUTCMonth(date.getUTCMonth() + delta)
+						date2.setUTCMonth(date2.getUTCMonth() + delta)
 					else if (unit.slice(0, 1) === "w")
-						date.setUTCDate(date.getUTCDate() + 7 * delta)
+						date2.setUTCDate(date2.getUTCDate() + 7 * delta)
 					else if (unit.slice(0, 1) === "d")
-						date.setUTCDate(date.getUTCDate() + delta)
+						date2.setUTCDate(date2.getUTCDate() + delta)
 					else if (unit.slice(0, 1) === "h")
-						date.setUTCHours(date.getUTCHours() + delta)
+						date2.setUTCHours(date2.getUTCHours() + delta)
 					else if (unit.includes("m"))
-						date.setUTCMinutes(date.getUTCMinutes() + delta)
-					break
+						date2.setUTCMinutes(date2.getUTCMinutes() + delta)
+					tweenClock(date2)
+
+					return
 				case "set": //   !time set 2018-07-14T20:12
 					if (args.length === 4) {
-						date.setUTCFullYear(parseInt(args.shift()))
-						date.setUTCMonth(parseInt(args.shift()) - 1)
-						date.setUTCDate(parseInt(args.shift()));
+						dateObj.setUTCFullYear(parseInt(args.shift()))
+						dateObj.setUTCMonth(parseInt(args.shift()) - 1)
+						dateObj.setUTCDate(parseInt(args.shift()));
 						[hour, min] = args.shift().split(":")
-						date.setUTCHours(parseInt(hour))
-						date.setUTCMinutes(parseInt(min))
-						D.Alert(`Date set to ${D.JSL(date.toString())}`)
+						dateObj.setUTCHours(parseInt(hour))
+						dateObj.setUTCMinutes(parseInt(min))
+						D.Alert(`Date set to ${D.JSL(dateObj.toString())}`)
 					} else {
 						D.Alert("Syntax: !time set year month1-12 day 24-hour:min", "TIMETRACKER !SET")
 					}
 					break
 				case "run": // Sets time to slowly move forward in real time.
 					clearInterval(timeTimer)
-					timeTimer = setInterval(tickClock, (parseInt(args.shift()) || 60) * 1000, date, tracker, horizon)
-					D.Alert(`Auto clock ticking ENABLED at:<br><br>!time set ${date.getUTCFullYear()} ${date.getUTCMonth() + 1} ${date.getUTCDate()} ${date.getUTCHours()}:${date.getUTCMinutes()}`, "TIMETRACKER !TIME")
+					timeTimer = setInterval(tickClock, (parseInt(args.shift()) || 60) * 1000)
+					D.Alert(`Auto clock ticking ENABLED at:<br><br>!time set ${dateObj.getUTCFullYear()} ${dateObj.getUTCMonth() + 1} ${dateObj.getUTCDate()} ${dateObj.getUTCHours()}:${dateObj.getUTCMinutes()}`, "TIMETRACKER !TIME")
 					break
 				case "stop":
 					clearInterval(timeTimer)
@@ -176,7 +199,7 @@ const TimeTracker = (() => {
 
 					return
 				}
-				setCurrentDate(date, tracker, horizon)
+				setCurrentDate()
 				break
 			case "!regtime":
 				if (!msg.selected || !msg.selected[0] ) {
@@ -204,7 +227,11 @@ const TimeTracker = (() => {
 		regHandlers = () => on("chat:message", handleInput),
 		checkInstall = () => {
 			state[D.GAMENAME] = state[D.GAMENAME] || {}
-			state[D.GAMENAME].TimeTracker = state[D.GAMENAME].TimeTracker || {}
+			state[D.GAMENAME].TimeTracker = state[D.GAMENAME].TimeTracker || {};
+			[trackerObj] = findObjs( {
+				_id: state[D.GAMENAME].TimeTracker.timeText
+			} )
+			dateObj = new Date(state[D.GAMENAME].TimeTracker.currentDate)
 		}
 	// #endregion
 

@@ -335,7 +335,7 @@ const Chars = (() => {
 					[],
 					[]
 				],
-				[amount, session, trait, dtype, dmg, incapString, charData] = new Array(7).fill(null)
+				[amount, session, trait, dtype, dmg, attrString, charData] = new Array(7).fill(null)
 			switch (args.shift()) {
 			case "!rChar":
 				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] )
@@ -382,6 +382,16 @@ const Chars = (() => {
 					D.ThrowError("Select character tokens first!", "CHARS")
 				}
 				break
+			case "!getStat":
+				trait = args.shift()
+				for (const char of D.GetChars("registered")) {
+					// params.push(`${char.get("name")}: ${D.JS(D.GetStat(char, trait))}`)
+					params.push(`${char.get("name")}: ${D.GetStat(char, trait, true) ? D.GetStat(char, trait, true).get("current") : "-"}`)
+					// D.Alert(`${_.map(D.GetRepStats(char, ["advantage"] ), v => `${v.get("name")}: ${v.get("current")}`)}`)
+				}
+				attrString = params.join("<br>")
+				D.Alert(attrString, `${D.Capitalize(trait)}:`)
+				break
 			case "!getIncap":
 				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] )
 					D.Alert(`Incapacitation String for '${D.GetName(D.GetChar(msg))}': <br/><br/>${D.GetStat(msg, "incap").get("current")}<br/><br/>e.g. !setIncap Compulsion (Arrogance):a:-2<br/><br/>OR<br/><br/>!setIncap Compulsion (Arrogance):Strength,Dexterity,Animal Ken,Dominate:-2`, "CHARS")
@@ -390,11 +400,11 @@ const Chars = (() => {
 				break
 			case "!setIncap":
 				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] ) {
-					incapString = args.join(" ")
+					attrString = args.join(" ")
 					setAttrs(D.GetChar(msg).id, {
-						incap: incapString
+						incap: attrString
 					} )
-					D.Alert(`Incapacitation String for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(incapString)}`, "CHARS !setIncap")
+					D.Alert(`Incapacitation String for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(attrString)}`, "CHARS !setIncap")
 				} else {
 					D.Alert("Select a character first!", "CHARS")
 				}
@@ -517,6 +527,9 @@ const Chars = (() => {
 					name: who
 				}
 				MVC(params)
+				break
+			case "!startSession":
+
 				break
 			default:
 				break
