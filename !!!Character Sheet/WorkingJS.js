@@ -2096,6 +2096,7 @@
 	// #region Sheetworker Actions (Above "on(changes)" ignore sheetworker.)
 	on("change:hunger", () => {
 		[LOGPREFIX, LOGDEPTH] = ["[!SWORKER! dRoll(Hunger)]", 0]
+		log("HUNGER CHANGED!")
 		doRolls("GEN")
 	} )
 	// #endregion

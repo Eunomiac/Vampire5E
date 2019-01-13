@@ -75,12 +75,51 @@ const Images = (() => {
 		},
 		getImageData = imgRef => {
 			try {
-				if (getImageKey(imgRef))
+				if (getImageKey(imgRef)) {
 					return REGISTRY[getImageKey(imgRef)]
+				} else if (getImageObj(imgRef)) {
+					const imgObj = getImageObj(imgRef)
+					D.Alert(`Retrieving data for UNREGISTERED Image Object ${D.JSL(imgRef)}`, "IMAGES: GetData")
+
+					return {
+						id: imgObj.id,
+						name: imgObj.get("name"),
+						left: parseInt(imgObj.get("left")),
+						top: parseInt(imgObj.get("top")),
+						height: parseInt(imgObj.get("height")),
+						width: parseInt(imgObj.get("width")),
+						activeLayer: imgObj.get("activeLayer")
+					}
+				}
 
 				return D.ThrowError(`Image reference '${imgRef}' does not refer to a registered image object.`, "IMAGES: GetData")
 			} catch (errObj) {
 				return D.ThrowError(`Cannot locate image with search value '${D.JS(imgRef)}'`, "IMAGES.getImageData", errObj)
+			}
+		},
+		getBounds = imgData => {
+			const bounds = {
+				topY: imgData.top - 0.5 * imgData.height,
+				bottomY: imgData.top + 0.5 * imgData.height,
+				leftX: imgData.left - 0.5 * imgData.width,
+				rightX: imgData.left + 0.5 * imgData.width
+			}
+			D.Log(`[BOUNDS]: ${D.JSL(bounds)}`)
+
+			return bounds
+		},
+		getImageSrcs = imgRef => {
+			try {
+				if (getImageKey(imgRef)) {
+					if (_.isString(getImageData(imgRef).srcs))
+						return getImageSrcs(getImageData(imgRef).srcs)
+
+					return getImageData(imgRef).srcs
+				}
+
+				return D.ThrowError(`Image reference '${imgRef}' does not refer to a registered image object.`, "IMAGES: GetSrcs")
+			} catch (errObj) {
+				return D.ThrowError(`Cannot locate image with search value '${D.JS(imgRef)}'`, "IMAGES: GetSrcs", errObj)
 			}
 		},
 		// #endregion
@@ -90,12 +129,20 @@ const Images = (() => {
 			try {
 				const imgSrc = (_.isString(imgSrcRef) && imgSrcRef.includes("http") ?
 					imgSrcRef :
-					getImageObj(imgSrcRef).get("imgsrc") || "")
-					.replace(/\w*?(?=\.png)/u, "thumb")
+					getImageObj(imgSrcRef).get("imgsrc") || "").replace(/\w*?(?=\.\w+?\?)/u, "thumb")
 				if (imgSrc !== "" && REGISTRY[imgName] ) {
 					REGISTRY[imgName].srcs[srcName] = imgSrc
 					D.Alert(`Image '${D.JS(srcName)}' added to category '${D.JS(imgName)}'.<br><br>Source: ${D.JS(imgSrc)}`)
 				}
+			} catch (errObj) {
+				D.ThrowError("", "IMAGES.addImgSrc", errObj)
+			}
+		},
+		addGenSrc = (imgSrcRef, srcName) => {
+			try {
+				REGISTRY.Sources[srcName] = (_.isString(imgSrcRef) && imgSrcRef.includes("http") ?
+					imgSrcRef :
+					getImageObj(imgSrcRef).get("imgsrc") || "").replace(/\w*?(?=\.\w+?\?)/u, "thumb")
 			} catch (errObj) {
 				D.ThrowError("", "IMAGES.addImgSrc", errObj)
 			}
@@ -112,7 +159,6 @@ const Images = (() => {
 						height: options.height || imgObj.get("height") || REGISTRY[name].height || (IMGDATA[baseName] && IMGDATA[baseName].height),
 						width: options.width || imgObj.get("width") || REGISTRY[name].width || (IMGDATA[baseName] && IMGDATA[baseName].width)
 					}
-				// D.Alert(`Params for '${D.JS(imgName)}': ${D.JS(params)}`, "IMAGES: regImage")
 				if (!params.left || !params.top || !params.height || !params.width)
 					return D.ThrowError("Must supply position & dimension to register image.", "IMAGES:RegImage")
 				REGISTRY[name] = {
@@ -123,7 +169,7 @@ const Images = (() => {
 					height: params.height,
 					width: params.width,
 					activeLayer: params.activeLayer || "map",
-					startActive: params.startActive || false,
+					startActive: Boolean(params.startActive || false),
 					srcs: {}
 				}
 				imgObj.set( {name, showname: false} )
@@ -161,21 +207,19 @@ const Images = (() => {
 			if (getImageData(imgRef)) {
 				const imgObj = getImageObj(imgRef)
 				let stateRef = REGISTRY[getImageData(imgRef).name]
-				if (imgObj) {
-					if (stateRef && stateRef.srcs) {
-						if (_.isString(stateRef.srcs) && REGISTRY[getImageData(stateRef.srcs).name] )
-							stateRef = REGISTRY[getImageData(stateRef.srcs).name]
-						if (stateRef.srcs[srcRef] )
-							imgObj.set("imgsrc", stateRef.srcs[srcRef] )
-						else if (_.values(stateRef.srcs).includes(srcRef))
-							imgObj.set("imgsrc", srcRef)
-						else if (_.isString(IMGDATA[srcRef] ))
-							imgObj.set("imgsrc", IMGDATA[srcRef] )
-						else
-							return D.ThrowError(`No image source '${D.JSL(srcRef)}' found for image object '${D.JSL(imgRef)}'`, "Images: setImage()")
-					} else {
+				if (imgObj && stateRef) {
+					if (_.isString(stateRef.srcs) && REGISTRY[getImageData(stateRef.srcs).name] )
+						stateRef = REGISTRY[getImageData(stateRef.srcs).name]
+					if (stateRef.srcs[srcRef] )
+						imgObj.set("imgsrc", stateRef.srcs[srcRef] )
+					else if (_.values(stateRef.srcs).includes(srcRef))
+						imgObj.set("imgsrc", srcRef)
+					else if (_.isString(IMGDATA[srcRef] ))
+						imgObj.set("imgsrc", IMGDATA[srcRef] )
+					else if (_.isString(srcRef) && REGISTRY.Sources[srcRef] )
+						imgObj.set("imgsrc", REGISTRY.Sources[srcRef] )
+					else
 						return D.ThrowError(`Image object '${D.JSL(imgRef)}' is unregistered or is missing 'srcs' property`, "Images: setImage()")
-					}
 
 					return imgObj
 				}
@@ -184,6 +228,151 @@ const Images = (() => {
 			}
 
 			return D.ThrowError(`Invalid category '${D.JSL(imgRef)}'`, "Images: setImage()")
+		},
+		setImgParams = (imgRef, params) => {
+			const imgObj = getImageObj(imgRef)
+			imgObj.set(params)
+		},
+		alignImages = (imgRefs, alignMode = "center", anchorRef = "best") => {
+			const imgObjs = D.GetSelected(imgRefs) || _.map(imgRefs, v => getImageObj(v)),
+				  imgData = _.map(imgObjs, obj => {
+					 const tData = {
+						id: obj.id,
+						obj,
+						height: parseInt(obj.get("height")),
+						width: parseInt(obj.get("width")),
+						top: parseInt(obj.get("top")),
+						left: parseInt(obj.get("left"))
+					}
+					Object.assign(tData, getBounds(tData))
+
+					return tData
+				  } ),
+				  [minX, maxX] = (v => [v[0].left, v.slice(-1)[0].left + v.slice(-1)[0].width] )(
+					  _.sortBy(imgData, v => v.left + v.width)
+				  ),
+				  [minY, maxY] = (v => [v[0].top, v.slice(-1)[0].top + v.slice(-1)[0].height] )(
+					  _.sortBy(imgData, v => v.top + v.height)
+				  ),
+				  [centerX, centerY] = [maxX - minX, maxY - minY]
+			let [sorted, anchor] = [{}, {}],
+				bounds = [],
+				[counter, spacer] = [0, 0]
+			Object.assign(imgData, getBounds(imgData))
+			switch (alignMode.toLowerCase()) {
+			case "distvert":
+				sorted = _.sortBy(imgData, "top")
+				bounds = [imgData[0].top, imgData.slice(-1)[0].top]
+				spacer = (bounds[1] - bounds[0] ) / (imgData.length - 1)
+				for (const iData of imgData) {
+					setImgParams(iData.id, {top: bounds[0] + counter * spacer} )
+					counter++
+				}
+				break
+			case "disthoriz":
+				sorted = _.sortBy(imgData, "left")
+				bounds = [imgData[0].left, imgData.slice(-1)[0].left]
+				spacer = (bounds[1] - bounds[0] ) / (imgData.length - 1)
+				for (const iData of imgData) {
+					setImgParams(iData.id, {left: bounds[0] + counter * spacer} )
+					counter++
+				}
+				break
+			default:
+				switch (anchorRef.toLowerCase()) {
+				case "best":
+					switch (alignMode.toLowerCase()) {
+					case "centerX":
+						sorted = _.sortBy(imgData, v => Math.pow(v.left - centerX, 2))
+						break
+					case "centerY":
+						sorted = _.sortBy(imgData, v => Math.pow(v.top - centerY, 2))
+						break
+					case "resize":
+						sorted = _.sortBy(imgData, v => -(v.height * v.width))
+						break
+					case "left":
+					case "leftedge":
+						sorted = _.sortBy(imgData, "leftX")
+						break
+					case "right":
+					case "rightedge":
+						sorted = _.sortBy(imgData, "rightX").reverse()
+						break
+					case "top":
+					case "topedge":
+						sorted = _.sortBy(imgData, "topY")
+						break
+					case "bottom":
+					case "bottomedge":
+						sorted = _.sortBy(imgData, "bottomY").reverse()
+						break
+					default: break
+					}
+					break
+				case "left":
+				case "leftmost":
+					sorted = _.sortBy(imgData, "leftX")
+					break
+				case "top":
+				case "topmost":
+					sorted = _.sortBy(imgData, "topY")
+					break
+				case "right":
+				case "rightmost":
+					sorted = _.sortBy(imgData, "rightX").reverse()
+					break
+				case "bottom":
+				case "bot":
+				case "botmost":
+				case "bottommost":
+					sorted = _.sortBy(imgData, "bottomY").reverse()
+					break
+				default: break
+				}
+				anchor = sorted.shift()
+				// D.Alert(`ANCHOR: ${D.JS(anchor)}`)
+				switch (alignMode.toLowerCase()) {
+				case "resize":
+					for (const iData of sorted) {
+						iData.obj.set( {
+							height: anchor.height,
+							width: anchor.width
+						} )
+					}
+					break
+				case "centerX":
+					for (const iData of sorted)
+						iData.obj.set( {left: anchor.left} )
+					break
+				case "centerY":
+					for (const iData of sorted)
+						iData.obj.set( {top: anchor.top} )
+					break
+				case "left":
+				case "leftedge":
+					for (const iData of sorted)
+						iData.obj.set( {left: anchor.leftX + 0.5 * iData.width} )
+					break
+				case "right":
+				case "rightedge":
+					for (const iData of sorted)
+						iData.obj.set( {left: anchor.rightX - 0.5 * iData.width} )
+					break
+				case "top":
+				case "topedge":
+					for (const iData of sorted)
+						iData.obj.set( {top: anchor.topY + 0.5 * iData.height} )
+					break
+				case "bottom":
+				case "bottomedge":
+					for (const iData of sorted)
+						iData.obj.set( {top: anchor.bottomY - 0.5 * iData.height} )
+					break
+				default: break
+				}
+				break
+			}
 		},
 		toggleImage = (imgRef, isActive, srcRef) => {
 			const imgObj = getImageObj(imgRef),
@@ -222,23 +411,21 @@ const Images = (() => {
 		// #endregion
 
 		// #region MACRO BUILDING: Building Selection Macros for Images
-		buildMacro = (macroName, imgNames) => {
-			let action = "!img set ?{Choose Image Category"
-			for (const imgName of imgNames) {
-				if (REGISTRY[imgName] ) {
-					action += `| ${D.Capitalize(imgName)}, ?{Choose ${D.Capitalize(imgName)}`
-					for (const srcName of _.sortBy(_.keys(REGISTRY[imgName].srcs), k => k))
-						action += ` &amp;#124;${D.Capitalize(srcName)}&amp;#44; ${D.Capitalize(srcName)} ${REGISTRY[srcName].srcs[srcName]}`
-					action += ` &amp;#124;-- blank --&amp;#44; ${D.Capitalize(imgName)} ${IMGDATA.blank} &amp;#125; `
-				} else {
-					D.Alert(`Bad Image Name: ${D.JSL(imgName)}`, "BUILDMACRO ITERATOR")
+		buildMacro = (name, chatTrigger, imgData) => {
+			/* imgData should be an object whose keys are the names of host images, and values are
+				the <x> in "Select <X>" shown in the macro query. */
+			let action = `img ${chatTrigger}`
+			for (const hostName of _.map(_.keys(imgData), v => v.trim())) {
+				if (getImageKey(hostName)) {
+					action += ` ${hostName}:?{${imgData[hostName]}|--blank--,blank`
+					for (const srcName of _.keys(getImageSrcs(hostName)).sort())
+						action += `|${srcName},${srcName}`
+					action += "}"
 				}
 			}
-			action += "}"
-
 			createObj("macro", {
 				_playerid: D.GMID(),
-				macroName,
+				name,
 				action,
 				visibleto: D.GMID()
 			} )
@@ -257,7 +444,8 @@ const Images = (() => {
 				imgNames = []
 			if (msg.type !== "api" || !playerIsGM(msg.playerid) || args.shift() !== "!img")
 				return
-			let [srcName, imgName, imgObj] = [null, null, null]
+			let [srcName, imgName, imgObj, macroName, chatTrigger] = [null, null, null, null, null, null],
+				params = {}
 			switch (args.shift().toLowerCase()) {
 			case "reg":
 			case "register":
@@ -270,6 +458,19 @@ const Images = (() => {
 						D.Alert("Syntax: !img reg <hostName> [<params = imgName:imgSrc, imgName : imgSrc>]", "IMAGES: !img reg")
 				} else {
 					D.Alert("Select an image object first!", "IMAGES: !img reg")
+				}
+				break
+			case "repo":
+			case "reposition":
+				imgObj = getImageObj(msg)
+				if (imgObj && imgObj.get && imgObj.get("name") && REGISTRY[imgObj.get("name")] ) {
+					REGISTRY[imgObj.get("name")].top = parseInt(imgObj.get("top"))
+					REGISTRY[imgObj.get("name")].left = parseInt(imgObj.get("left"))
+					REGISTRY[imgObj.get("name")].height = parseInt(imgObj.get("height"))
+					REGISTRY[imgObj.get("name")].width = parseInt(imgObj.get("width"))
+					D.Alert(`Image ${imgObj.get("name")} repositioned:<br><br>${D.JS(REGISTRY[imgObj.get("name")] )}`)
+				} else {
+					D.Alert("Unable to retrieve an image to reposition", "IMAGES: !img repo")
 				}
 				break
 			case "removeall":
@@ -292,7 +493,11 @@ const Images = (() => {
 			case "add":
 			case "addsrc":
 				[imgName, srcName] = args
-				if (imgName && REGISTRY[imgName] ) {
+				if (!srcName) {
+					addGenSrc(msg, imgName)
+				} else if (imgName && REGISTRY[imgName] ) {
+					if (!_.isObject(REGISTRY[imgName].srcs))
+						REGISTRY[imgName].srcs = {}
 					if (srcName)
 						addImgSrc(msg, imgName, srcName)
 					else
@@ -301,23 +506,47 @@ const Images = (() => {
 					D.Alert(`Host name '${D.JS(imgName)}' not registered.`, "IMAGES: !img addsrc")
 				}
 				break
+			case "setsrc":
+				[imgName, srcName] = args
+				if (imgName && REGISTRY[imgName] ) {
+					REGISTRY[imgName].srcs = {}
+					if (srcName.split(",").length > 1) {
+						for (params of srcName.split(","))
+							REGISTRY[imgName].srcs[params.split(":")[0]] = params.split(":")[1]
+					} else if (srcName.includes(":")) {
+						REGISTRY[imgName].srcs[srcName.split(":")[0]] = srcName.split(":")[1]
+					} else {
+						REGISTRY[imgName].srcs = srcName
+					}
+				} else {
+					D.Alert(`No image registered under ${imgName}`)
+				}
+				break
 			case "set":
-				setImage(args.shift(), args.shift())
+				for (const param of args)
+					setImage(...param.split(":"))
 				break
 			case "on":
-				toggleImage(args.shift(), true)
+				for (const param of args)
+					toggleImage(param, true)
 				break
 			case "off":
-				toggleImage(args.shift(), false)
+				for (const param of args)
+					toggleImage(param, false)
 				break
-			case "setlocation":
-				setImage("District", args.shift())
-				setImage("Site", args.shift())
+			case "toggle":
+				for (const param of args)
+					toggleImage(param.split(":")[1], param.split(":")[0] === "on")
 				break
-			case "macro":
-				srcName = args.shift()
-				imgName = args.join(" ").split(/,\s*?/gu)
-				buildMacro(srcName, imgName)
+			case "align":
+				if (D.GetSelected(msg))
+					alignImages(msg, ...args)
+				break
+			case "copy":
+				imgObj = getImageObj(args.shift())
+				srcName = imgObj.get("imgsrc")
+				imgObj = getImageObj(args.shift())
+				imgObj.set("imgsrc", srcName)
 				break
 			case "getdata":
 				imgObj = getImageObj(msg)
@@ -330,6 +559,13 @@ const Images = (() => {
 					else
 						D.Alert("Syntax: !img get [<category> <name>] (or select an image object)", "IMAGES, !img getData")
 				}
+				break
+			case "buildmacro":
+				[macroName, chatTrigger] = [args.shift(), args.shift()]
+				// D.Alert(`MacroName: ${macroName}, ChatTrigger: ${chatTrigger}`)
+				for (const param of _.map(args.join(" ").split(","), v => v.trim()))
+					params[param.split(":")[0]] = param.split(":")[1]
+				buildMacro(macroName, chatTrigger, params)
 				break
 			case "toggleadd":
 				imgRecord = !imgRecord
@@ -386,6 +622,24 @@ const Images = (() => {
 		checkInstall = () => {
 			state[D.GAMENAME].Images = state[D.GAMENAME].Images || {}
 			state[D.GAMENAME].Images.registry = state[D.GAMENAME].Images.registry || {}
+			state[D.GAMENAME].Images.registry.Sources = state[D.GAMENAME].Images.registry.Sources || {}
+
+			/* state[D.GAMENAME].Images.registry.HungerTopRight_1.srcs = {
+				1: "https://s3.amazonaws.com/files.d20.io/images/71118365/_0IwXUktqOjlN6wwqDOnYg/thumb.png?1547377423",
+				2: "https://s3.amazonaws.com/files.d20.io/images/71118367/OlzHIFWN5lw4uBwp2_Jcrg/thumb.png?1547377423",
+				3: "https://s3.amazonaws.com/files.d20.io/images/71118364/CZU5WbJIIeHxrd3OlGf8yw/thumb.png?1547377426",
+				4: "https://s3.amazonaws.com/files.d20.io/images/71118363/D9QYrkfkCIiKF6C_Q38ndA/thumb.png?1547377424",
+				5: "https://s3.amazonaws.com/files.d20.io/images/71131744/wtnAdRNzqjuAM3K4D6BRDg/thumb.png?1547391569"
+			}
+			state[D.GAMENAME].Images.registry.HungerBotRight_1.srcs = "HungerTopRight"
+			state[D.GAMENAME].Images.registry.HungerTopLeft_1.srcs = {
+				1: "https://s3.amazonaws.com/files.d20.io/images/71135541/E31TUpR-EtMYCCBve6I9tw/thumb.png?1547394656",
+				2: "https://s3.amazonaws.com/files.d20.io/images/71135540/1UBrj7N1QlZLclYYeO3Ygg/thumb.png?1547394656",
+				3: "https://s3.amazonaws.com/files.d20.io/images/71135539/rKAr6-5zPPbCZQpbQHBJxA/thumb.png?1547394659",
+				4: "https://s3.amazonaws.com/files.d20.io/images/71135537/NdR2yr9pfIn8SlxHFtGZ4Q/thumb.png?1547394658",
+				5: "https://s3.amazonaws.com/files.d20.io/images/71135538/Nlnh0i70TsCbkGypUdv3Pw/thumb.png?1547394658"
+			}
+			state[D.GAMENAME].Images.registry.HungerBotLeft_1.srcs = "HungerTopLeft" */
 		}
 	// #endregion
 
