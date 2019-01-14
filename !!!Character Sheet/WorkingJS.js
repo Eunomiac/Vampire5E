@@ -18,7 +18,7 @@
 		},
 		DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
 		TRACKERS = ["Health", "Willpower", "Blood Potency", "Humanity"],
-		HUMSEQUENCES = ["BSH", "HBHXS", "SBS", "XHB"],
+		// HUMSEQUENCES = ["BSH", "HBHXS", "SBS", "XHB"],
 		ATTRBLACKLIST = ["toggle", "inccounter"],
 		ROLLFLAGS = {
 			all: ["rolldiff", "rollmod", "hunger", "applydisc", "applybloodsurge", "applyspecialty", "applyresonance", "incap", "Stains", "resonance", "rollarray"],
@@ -648,6 +648,7 @@
 	const log = (msg, isWarn, isLoud, logPrefix = LOGPREFIX) => {
 			const prefix = LOGOPTIONS.silent ? `  ($${logPrefix}$)` : logPrefix + " ".repeat(LOGDEPTH * 3)
 			if (isDebug && (isLoud || !LOGOPTIONS.silent))
+				// eslint-disable-next-line no-console
 				console[isWarn ? "warn" : "log"](prefix + msg)
 		},
 		isBlacklisted = (attr = "") => _.filter(ATTRBLACKLIST, bannedAttr => attr.toLowerCase().includes(bannedAttr.toLowerCase())) > 0,
@@ -1135,9 +1136,10 @@
 					log("****************************************************")
 					log("")
 					$funcs.push(cbk => {
-						getAttrs(groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`), "prevtrack", "prevclick", "humsequence"], gN), ATTRS => {
+						cbk(null)
+						/* getAttrs(groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`), "prevtrack", "prevclick", "humsequence"], gN), ATTRS => {
 							let humArray = _.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => parseInt(ATTRS[`humanity_${v}`] ))
-							const current = _.countBy(humArray, v => ["blank", "humanity", "stains", "collision"][v - 1] ),
+							const // current = _.countBy(humArray, v => ["blank", "humanity", "stains", "collision"][v - 1] ),
 								prevHumArray = ATTRS.prevtrack.split(","),
 								thisClick = eInfo.sourceAttribute.slice(-2).replace("_", ""),
 								thisClickIndex = parseInt(thisClick) - 1,
@@ -1226,9 +1228,9 @@
 									hArray.fill("4", stn * -1, stn * -1 + (10 - hum - stn))
 
 								return hArray
-							} */
-							// cbk(null, attrList)
-						} )
+							} 
+							cbk(null, attrList)
+						} ) */
 					} )
 				} else {
 					$funcs.push(cbk => {

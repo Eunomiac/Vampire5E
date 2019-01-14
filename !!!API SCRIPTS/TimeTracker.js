@@ -147,6 +147,7 @@ const TimeTracker = (() => {
 					D.Alert("Register an image object first, with '!img reg Horizon'", "TIMETRACKER")
 					break
 				}
+
 				/* dateObj = dateObj || new Date(state[D.GAMENAME].TimeTracker.currentDate)
 				   params = args.slice(1).join(" ").toUpperCase() */
 				switch (args.shift().toLowerCase()) {

@@ -235,8 +235,8 @@ const Images = (() => {
 		},
 		alignImages = (imgRefs, alignMode = "center", anchorRef = "best") => {
 			const imgObjs = D.GetSelected(imgRefs) || _.map(imgRefs, v => getImageObj(v)),
-				  imgData = _.map(imgObjs, obj => {
-					 const tData = {
+				imgData = _.map(imgObjs, obj => {
+					const tData = {
 						id: obj.id,
 						obj,
 						height: parseInt(obj.get("height")),
@@ -247,14 +247,14 @@ const Images = (() => {
 					Object.assign(tData, getBounds(tData))
 
 					return tData
-				  } ),
-				  [minX, maxX] = (v => [v[0].left, v.slice(-1)[0].left + v.slice(-1)[0].width] )(
-					  _.sortBy(imgData, v => v.left + v.width)
-				  ),
-				  [minY, maxY] = (v => [v[0].top, v.slice(-1)[0].top + v.slice(-1)[0].height] )(
-					  _.sortBy(imgData, v => v.top + v.height)
-				  ),
-				  [centerX, centerY] = [maxX - minX, maxY - minY]
+				} ),
+				[minX, maxX] = (v => [v[0].left, v.slice(-1)[0].left + v.slice(-1)[0].width] )(
+					_.sortBy(imgData, v => v.left + v.width)
+				),
+				[minY, maxY] = (v => [v[0].top, v.slice(-1)[0].top + v.slice(-1)[0].height] )(
+					_.sortBy(imgData, v => v.top + v.height)
+				),
+				[centerX, centerY] = [maxX - minX, maxY - minY]
 			let [sorted, anchor] = [{}, {}],
 				bounds = [],
 				[counter, spacer] = [0, 0]
