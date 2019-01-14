@@ -2271,7 +2271,7 @@
 	}
 
 	.charsheet div.sheet-projects .sheet-doublerow {
-		height: 45px !important;
+		height: 45px;
 	}
 
 	.charsheet div.sheet-projects div.sheet-projectinccounter10 {
