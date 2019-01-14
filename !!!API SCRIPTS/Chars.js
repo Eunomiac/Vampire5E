@@ -323,7 +323,11 @@ const Chars = (() => {
 		},
 		// #endregion
 
-		// #region Event Handlers (handleInput)
+		// #region Event Handlers (handleInput, handleAttribute)
+	 handleAttr = (obj, prev) => {
+		 if (obj.get("name") === "hunger" && obj.get("current") !== prev.current)
+				Images.Toggle(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, true, obj.get("current"))
+	 },
 	 handleInput = msg => {
 			if (msg.type !== "api")
 				return
@@ -385,9 +389,9 @@ const Chars = (() => {
 			case "!getStat":
 				trait = args.shift()
 				for (const char of D.GetChars("registered")) {
-					//params.push(`${char.get("name")}: ${D.JS(D.GetStat(char, trait))}`)
+					// params.push(`${char.get("name")}: ${D.JS(D.GetStat(char, trait))}`)
 					params.push(`${char.get("name")}: ${D.GetStat(char, trait, true) ? D.GetStat(char, trait, true).get("current") : "-"}`)
-					//D.Alert(`${_.map(D.GetRepStats(char, ["advantage"] ), v => `${v.get("name")}: ${v.get("current")}`)}`)
+					// D.Alert(`${_.map(D.GetRepStats(char, ["advantage"] ), v => `${v.get("name")}: ${v.get("current")}`)}`)
 				}
 				attrString = params.join("<br>")
 				D.Alert(attrString, `${D.Capitalize(trait)}:`)
@@ -522,6 +526,10 @@ const Chars = (() => {
 				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] && args.length >= 3)
 					D.SplitRepSec(msg, args.shift(), args.shift(), SORTFUNCS[args.shift()], args[0] || null)
 				break
+			case "!setattr":
+				if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0] )
+					setAttrs(D.GetChar(msg).id, {sandboxquadrant: args.shift()} )
+				break
 			case "!MVC":
 				params = {
 					name: who
@@ -529,7 +537,6 @@ const Chars = (() => {
 				MVC(params)
 				break
 			case "!startSession":
-				
 				break
 			default:
 				break
@@ -538,7 +545,10 @@ const Chars = (() => {
 		// #endregion
 
 		// #region Public Functions: regHandlers
-	 regHandlers = () => on("chat:message", handleInput),
+	 regHandlers = () => {
+		 on("chat:message", handleInput)
+		 on("change:attribute:current", handleAttr)
+		},
 		checkInstall = () => {
 		// Delete state[D.GAMENAME].Chars;
 			state[D.GAMENAME] = state[D.GAMENAME] || {}
