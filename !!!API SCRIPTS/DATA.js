@@ -332,13 +332,6 @@ const D = (() => {
 			)
 				return true
 
-			/* D.Alert(`Obj ? ${Boolean(obj)}<br>
-				Obj !== Null ? ${obj !== null}<br>
-				typeof val === "object" ? ${obj !== null && typeof obj === "object"}<br>
-				val.get ? ${Boolean(obj !== null && typeof obj === "object" && obj.get)}<br>
-				!type OR val.get("_type") === "${type}" ? ${Boolean(obj !== null && typeof obj === "object" && obj.get) && (!type || obj.get("_type") === type)}
-				!subtype OR ... ? ${Boolean(obj !== null && typeof obj === "object" && obj.get) && (!type || obj.get("_type") === type) && (!subtype || obj.get("_subtype") === subtype)}<br>`)
- */
 			return false
 		},
 		isIn = (needle, haystack = ALLSTATS) => {
@@ -488,11 +481,6 @@ const D = (() => {
 			}
 			// D.Alert(`Search Params: ${D.JS(searchParams)}`)
 			_.each(searchParams, val => {
-				/* D.Alert(`Obj !== Null ? ${val !== null}<br>
-					typeof val === "object" ? ${val !== null && typeof val === "object"}<br>
-					val.get ? ${Boolean(val !== null && typeof val === "object" && val.get)}<br>
-					val.get(type) === "character" ? ${Boolean(val !== null && typeof val === "object" && val.get) && val.get("_type") === "character"}
-					D.IsObj(val, "character") ? ${D.IsObj(val, "character")}`)
 				// If parameter is a CHARACTER OBJECT already: */
 				if (D.IsObj(val, "character")) {
 					charObjs.add(getObj("character", val.id))
@@ -533,11 +521,57 @@ const D = (() => {
 			return [...charObjs]
 		},
 		getChar = v => getChars(v)[0],
-		getStat = (v, name) => findObjs( {
-			_type: "attribute",
-			_characterid: getChar(v).id,
-			_name: name
-		} )[0],
+		getStat = (charRef, statName, isNumOnly = false) => {
+			let stats = findObjs( {
+				_type: "attribute",
+				_characterid: getChar(charRef).id,
+				_name: statName
+			} )
+			if (isNumOnly)
+				stats = _.filter(stats, v => _.isNumber(parseInt(v.get("current"))) && !_.isNaN(parseInt(v.get("current"))))
+			if (stats[0] && stats[0] !== undefined)
+				return stats[0]
+			stats = getRepStats(charRef, [statName] )
+			if (isNumOnly)
+				stats = _.filter(stats, v => _.isNumber(parseInt(v.get("current"))) && !_.isNaN(parseInt(v.get("current"))))
+			if (stats[0] && stats[0] !== undefined)
+				return stats[0]
+			for (const stat of _.filter(getRepStats(charRef, ["repeating", "_name"] ), v => v.get("current") === statName)) {
+				stats.push(...findObjs( {
+					_type: "attribute",
+					_characterid: getChar(charRef).id,
+					_name: stat.get("name").replace(/_name/gu, "")
+				} ))
+			}
+			if (isNumOnly)
+				stats = _.filter(stats, v => _.isNumber(parseInt(v.get("current"))) && !_.isNaN(parseInt(v.get("current"))))
+			if (stats[0] && stats[0] !== undefined)
+				return stats[0]
+			for (const stat of _.filter(getRepStats(charRef, ["repeating", "_name"] ), v => v.get("current").startsWith(statName))) {
+				stats.push(...findObjs( {
+					_type: "attribute",
+					_characterid: getChar(charRef).id,
+					_name: stat.get("name").replace(/_name/gu, "")
+				} ))
+			}
+			if (isNumOnly)
+				stats = _.filter(stats, v => _.isNumber(parseInt(v.get("current"))) && !_.isNaN(parseInt(v.get("current"))))
+			if (stats[0] && stats[0] !== undefined)
+				return stats[0]
+			for (const stat of _.filter(getRepStats(charRef, ["repeating", "_name"] ), v => v.get("current").includes(statName))) {
+				stats.push(...findObjs( {
+					_type: "attribute",
+					_characterid: getChar(charRef).id,
+					_name: stat.get("name").replace(/_name/gu, "")
+				} ))
+			}
+			if (isNumOnly)
+				stats = _.filter(stats, v => _.isNumber(parseInt(v.get("current"))) && !_.isNaN(parseInt(v.get("current"))))
+			if (stats[0] && stats[0] !== undefined)
+				return stats[0]
+
+			return false
+		},
 		getPlayerID = value => {
 			// Returns a PLAYER ID given: display name, token object, character object.
 			if (_.isString(value)) {

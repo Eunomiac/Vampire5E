@@ -182,7 +182,7 @@ module.exports = {
             "before": true,
             "after": true
         }],
-        "linebreak-style": ["error", "unix"],
+        "linebreak-style": ["error", "windows"],
         "lines-around-comment": ["error", {
             "beforeBlockComment": true,
             "allowBlockStart": true
