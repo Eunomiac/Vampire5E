@@ -6677,6 +6677,7 @@
 		},
 		DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
 		TRACKERS = ["Health", "Willpower", "Blood Potency", "Humanity"],
+		// HUMSEQUENCES = ["BSH", "HBHXS", "SBS", "XHB"],
 		ATTRBLACKLIST = ["toggle", "inccounter"],
 		ROLLFLAGS = {
 			all: ["rolldiff", "rollmod", "hunger", "applydisc", "applybloodsurge", "applyspecialty", "applyresonance", "incap", "Stains", "resonance", "rollarray"],
@@ -7306,6 +7307,7 @@
 	const log = (msg, isWarn, isLoud, logPrefix = LOGPREFIX) => {
 			const prefix = LOGOPTIONS.silent ? `  ($${logPrefix}$)` : logPrefix + " ".repeat(LOGDEPTH * 3)
 			if (isDebug && (isLoud || !LOGOPTIONS.silent))
+				// eslint-disable-next-line no-console
 				console[isWarn ? "warn" : "log"](prefix + msg)
 		},
 		isBlacklisted = (attr = "") => _.filter(ATTRBLACKLIST, bannedAttr => attr.toLowerCase().includes(bannedAttr.toLowerCase())) > 0,
@@ -7793,154 +7795,101 @@
 					log("****************************************************")
 					log("")
 					$funcs.push(cbk => {
-						getAttrs(groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`), "lastbox", "lasthumanity", "laststains", "lastcollisions", "humanity", "stains"], gN), ATTRS => {
-							const humArray = _.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => ATTRS[`humanity_${v}`] ),
-								curHumanity = () => _.filter(humArray, v => parseInt(v) === 2).length,
-								curStains = () => _.filter(humArray, v => parseInt(v) === 3).length,
-								curCollisions = () => _.filter(humArray, v => parseInt(v) === 4).length,
-								p = v => `humanity_${v}`,
-								pV = v => ATTRS[p(v)],
-								pI = v => parseInt(pV(v) || 0),
-								gHum = v => parseInt(humArray[v - 1] ),
-								checkBoxes = (humanity, stains, hArray = new Array(10)) => {
-									hArray.fill("1")
-									const hum = Math.min(10, Math.max(0, humanity)),
-										stn = Math.min(10, Math.max(0, stains))
-									if (hum > 0)
-										hArray.fill("2", 0, hum)
-									if (stn > 0)
-										hArray.fill("3", stn * -1)
-									if (hum > 0 && stn > 0 && (hum + stn > 10))
-										hArray.fill("4", stn * -1, stn * -1 + (10 - hum - stn))
-
-									return hArray
-								},
-								fillBoxes = (humanity, stains) => {
-									checkBoxes(humanity, stains, humArray)
-								},
-								checkLast = () => {
-									if (ATTRS.lastbox === stat) {
-										const lastArray = checkBoxes(parseInt(ATTRS.lasthumanity), parseInt(ATTRS.laststains))
-
-										return lastArray[statVal - 1]
+						cbk(null)
+						/* getAttrs(groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`), "prevtrack", "prevclick", "humsequence"], gN), ATTRS => {
+							let humArray = _.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => parseInt(ATTRS[`humanity_${v}`] ))
+							const // current = _.countBy(humArray, v => ["blank", "humanity", "stains", "collision"][v - 1] ),
+								prevHumArray = ATTRS.prevtrack.split(","),
+								thisClick = eInfo.sourceAttribute.slice(-2).replace("_", ""),
+								thisClickIndex = parseInt(thisClick) - 1,
+								setHumanity = (click, setTo) => {
+									switch ( ["blank", "humanity", "stain", "collision"][parseInt(ATTRS[`humanity_${click}`] ) - 1] ) {
+									case "blank":
+										switch (setTo) {
+										case "humanity":
+											humArray.fill(2, 0, click)
+											break
+										case "stain":
+											humArray.fill(3, click - 1)
+											break
+										default: break
+										}
+										break
+									case "humanity":
+										switch (setTo) {
+										case "blank":
+											humArray = [
+												...humArray.slice(0, click - 1),
+												...humArray.slice(click - 1).map(v => v === 2 ? 1 : v)
+											]
+											break
+										case "stain":
+											humArray = [
+												...humArray.slice(0, click - 1),
+												...humArray.slice(click - 1).fill(3)
+											]
+											break
+										case "collision":
+											humArray = [
+												...humArray.slice(0, click - 1),
+												...humArray.slice(click - 1).map(v => v === 2 ? 4 : v === 4 ? 4 : 3)
+											]
+											break
+										default: break
+										}
+										break
+									case "stain":
+										switch (setTo) {
+										case "blank":
+											humArray = [
+												...humArray.slice(0, click).map(v => v === 4 ? 2 : v === 3 ? 1 : v),
+												...humArray.slice(click)
+											]
+											break
+										case "humanity":
+											humArray = [
+												...humArray.slice(0, click).fill(2),
+												...humArray.slice(click)
+											]
+											break
+										default: break
+										}
+										break
+									case "collision":
+										switch (setTo) {
+										case "humanity":
+											humArray = [
+												...humArray.slice(0, click - 1).map(v => v === 4 ? 2 : v),
+												2,
+												...humArray.slice(click)
+											]
+											break
+										case "blank":
+											humArray = humArray.map(v => v >= 3 ? 1 : v)
+											break
+										default: break
+										}
+										break
+									default: break
 									}
+								}
 
-									return false
-								}
-							log(`In Group Attrs. ATTRS[hum] = ${ATTRS.humanity}, CURHUM = ${curHumanity()}, ATTRS[stains] = ${ATTRS.stains}, CURSTAINS = ${curStains()}, statVal = ${statVal}, gHum = ${gHum(statVal)}`)
-							log(`humArray: ${JSON.stringify(humArray)}`)
-							log(`ATTRS: ${JSON.stringify(ATTRS)}`)
-							if (ATTRS.lastbox !== stat)
-								attrList.lastbox = stat
-							if (ATTRS.lasthumanity !== curHumanity())
-								attrList.lasthumanity = curHumanity()
-							if (ATTRS.laststains !== curStains())
-								attrList.laststains = curStains()
-							if (ATTRS.lastcollisions !== curCollisions())
-								attrList.lastcollisions = curCollisions()
-							switch (gHum(statVal)) {
-							case 1: // Clicked on a blank square
-								log("Case 1: Clicked Blank")
-								switch (checkLast()) {
-								case "2":
-									log("Reclick: Last time Humanity, Now Setting to Stains")
-									fillBoxes(parseInt(ATTRS.lasthumanity), 11 - statVal)
-									break
-								case "3":
-									log("Reclick: Last time Stains, Now Setting to Humanity")
-									fillBoxes(statVal, Math.min(10 - statVal, parseInt(ATTRS.laststains)))
-									break
-								case "4":
-									log("Reclick: Last time Collision, Now Setting to ...?")
-									// fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
-									break
-								default:
-									log(`Default: Set Stains to Blank Square (${statVal})`)
-									fillBoxes(curHumanity(), 11 - statVal)
-									break
-								}
-								break
-							case 2: // Clicked on a humanity square
-								log("Case 2: Clicked Humanity")
-								switch (checkLast()) {
-								case "1":
-									log("Reclick: Last time Blank, Now Setting to Stains")
-									fillBoxes(parseInt(ATTRS.lasthumanity), 11 - statVal)
-									break
-								case "3":
-									log("Reclick: Last time Stains, Now Setting to Collision")
-									fillBoxes(statVal, 11 - (statVal + 1))
-									attrList.lasthumanity = ATTRS.lasthumanity
-									break
-								case "4":
-									log("Reclick: Last time Collision, Now Setting to ...?")
-									// newDotline = fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
-									break
-								default:
-									log("Default: Set Humanity to One Less")
-									fillBoxes(statVal - 1, curStains())
-									break
-								}
-								break
-							case 3: // Clicked on a stain square
-								log("Case 3: Clicked Stain")
-								switch (checkLast()) {
-								case "1":
-									log("Reclick: Last time Blank, Now Setting to Humanity")
-									fillBoxes(statVal, parseInt(ATTRS.laststains))
-									break
-								case "2":
-									log("Reclick: Last time Humanity, Now Setting to Humanity?")
-									fillBoxes(statVal, parseInt(ATTRS.laststains))
-									break
-								case "4":
-									log("Reclick: Last time Collision, Now Setting to ...?")
-									// fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
-									break
-								default:
-									log("Default: Set Stains to One Less")
-									fillBoxes(curHumanity(), 11 - statVal - 1)
-									break
-								}
-								break
-							case 4: // Clicked on a collision
-								log("Case 3: Clicked Collision")
-								switch (checkLast()) {
-								case "1":
-									log("Reclick: Last time Blank, Now Setting to ...?")
-									// fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
-									break
-								case "2":
-									log("Reclick: Last time Humanity, Now Setting to Humanity?")
-									// fillBoxes(statVal, parseInt(ATTRS.laststains), statVal)
-									break
-								case "3":
-									log("Reclick: Last time Stain, Now Setting to ...?")
-									// fillBoxes(parseInt(ATTRS.lasthumanity), statVal)
-									break
-								default:
-									log("Default: Set humanity, clear all stains")
-									fillBoxes(statVal, 0)
-									break
-								}
-								break
-							default:
-								break
-							}
-							log(`Out of Switch: ${JSON.stringify(humArray)}`)
 
-							for (let i = 1; i <= 10; i++) {
-								// log(`pI(${i}) = ${pI(i)}; humArray[${i} - 1] = ${humArray[i - 1]}`)
-								if (pI(i) !== parseInt(humArray[i - 1] ))
-									attrList[p(i)] = humArray[i - 1]
-							}
-							if (parseInt(ATTRS.humanity) !== curHumanity())
-								attrList.humanity = curHumanity()
-							if (parseInt(ATTRS.stains) !== curStains())
-								attrList.stains = curStains()
-							log(`Last List: ${JSON.stringify(attrList)}`)
+							/* checkBoxes = (humanity, stains, hArray = new Array(10)) => {
+								hArray.fill("1")
+								const hum = Math.min(10, Math.max(0, humanity)),
+									stn = Math.min(10, Math.max(0, stains))
+								if (hum > 0)
+									hArray.fill("2", 0, hum)
+								if (stn > 0)
+									hArray.fill("3", stn * -1)
+								if (hum > 0 && stn > 0 && (hum + stn > 10))
+									hArray.fill("4", stn * -1, stn * -1 + (10 - hum - stn))
+
+								return hArray
+							} 
 							cbk(null, attrList)
-						} )
+						} ) */
 					} )
 				} else {
 					$funcs.push(cbk => {
