@@ -43,8 +43,8 @@ const TimeTracker = (() => {
 
 		// #region Date Functions
 		setHorizon = () => {
-			// D.Log(`Date Obj? ${Boolean(dateObj)}, state val: ${D.JSL(state[D.GAMENAME].TimeTracker.currentDate)}`)
-			//dateObj = dateObj || new Date(state[D.GAMENAME].TimeTracker.currentDate)
+			/* D.Log(`Date Obj? ${Boolean(dateObj)}, state val: ${D.JSL(state[D.GAMENAME].TimeTracker.currentDate)}`)
+			   dateObj = dateObj || new Date(state[D.GAMENAME].TimeTracker.currentDate) */
 			let imgSrcName = ""
 			// D.Log(`DATE OBJECT: ${D.JSL(dateObj)}`)
 			const [dawn, dusk] = TWILIGHTMINS[dateObj.getMonth()],
@@ -68,7 +68,7 @@ const TimeTracker = (() => {
 			}
 		},
 		setCurrentDate = () => {
-			//dateObj = dateObj || new Date(parseInt(state[D.GAMENAME].TimeTracker.currentDate))
+			// dateObj = dateObj || new Date(parseInt(state[D.GAMENAME].TimeTracker.currentDate))
 			trackerObj.set("text", `${
 				DAYSOFWEEK[dateObj.getUTCDay()]}, ${
 				MONTHS[dateObj.getUTCMonth()]} ${
@@ -113,11 +113,11 @@ const TimeTracker = (() => {
 						clearInterval(timeTimer)
 						isRunning = false
 						isRunningFast = false
-						//D.Log("Is Running: FALSE")
+						// D.Log("Is Running: FALSE")
 					}
 					const newDelta = easeInOutSine(curTime, 0, deltaTime, duration)
 					isRunningFast = newDelta - lastTime > RUNNINGFASTAT
-					//D.Log(`Setting Date.  lastTime = ${newDelta - lastTime}, IsRunning = ${isRunning}, IsRunningFast = ${isRunningFast}`)
+					// D.Log(`Setting Date.  lastTime = ${newDelta - lastTime}, IsRunning = ${isRunning}, IsRunningFast = ${isRunningFast}`)
 					lastTime = newDelta
 					dateObj.setTime(startTime + newDelta)
 					setCurrentDate()
@@ -147,8 +147,9 @@ const TimeTracker = (() => {
 					D.Alert("Register an image object first, with '!img reg Horizon'", "TIMETRACKER")
 					break
 				}
-				// dateObj = dateObj || new Date(state[D.GAMENAME].TimeTracker.currentDate)
-				// params = args.slice(1).join(" ").toUpperCase()
+
+				/* dateObj = dateObj || new Date(state[D.GAMENAME].TimeTracker.currentDate)
+				   params = args.slice(1).join(" ").toUpperCase() */
 				switch (args.shift().toLowerCase()) {
 				case "add":
 					delta = parseInt(args.shift())
