@@ -849,7 +849,7 @@
 					cback => {
 						getAttrs( [stat], ATTRS => {
 							log(`[DODISCS ATTRS = ${JSON.stringify(ATTRS)}]`)
-							if (stat.endsWith("disc"))
+							if (stat.endsWith("disc") || stat.startsWith("disc"))
 								attrList[`${stat}power_toggle`] = ATTRS[stat]
 							cback(null, attrList)
 						} )
@@ -1641,6 +1641,7 @@
 				const attrList = {}
 				getAttrs( [...attrs, "xp_earnedtotal"], ATTRS => {
 					let spentTotal = 0
+					ATTRS.xp_earnedtotal = ATTRS.xp_earnedtotal || 0
 					_.each(ids, rowID => {
 						const p = v => `repeating_spentxp_${rowID}_${v}`,
 							pV = v => ATTRS[p(v)],
