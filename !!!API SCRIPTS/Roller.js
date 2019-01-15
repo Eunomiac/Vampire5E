@@ -399,7 +399,7 @@
 			}
 		},
 		CHATSTYLES = {
-			fullBox: "<div style=\"display: block;width: 259px;padding: 5px 5px;margin-left: -42px;margin-top: -30px;margin-bottom: 20px;color: white;font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset darkred;background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;\">",
+			fullBox: "<div style=\"display: block;width: 259px;padding: 5px 5px;margin-left: -42px;color: white;font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset darkred;background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;\">",
 			space10: "<span style=\"display: inline-block; width: 10px;\"></span>",
 			space30: "<span style=\"display: inline-block; width: 30px;\"></span>",
 			space40: "<span style=\"display: inline-block; width: 40px;\"></span>",
@@ -1994,6 +1994,9 @@
 					break
 				}
 			} )
+
+			if (_.isNumber(deltaAttrs.hunger))
+				Images.Toggle(`Hunger${getAttrByName(rollData.charID, "sandboxquadrant")}_1`, true, deltaAttrs.hunger)
 
 			logLines.rollerName = `${CHATSTYLES.rollerName + rollData.charName + logLines.rollerName}</div>`
 			logLines.mainRoll = `${logLines.mainRoll + logLines.difficulty}</span>${logLines.mainRollSub}</div>`
