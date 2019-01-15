@@ -209,19 +209,11 @@ const Chars = (() => {
 			},
 		},
 	}
-
-
 	const SORTFUNCS = {
 		earnedxp: (charRef, secName, idA, idB) => {
-			const attrsA = D.GetRepAttrs(charRef, [secName, idA])
-
-					
-			const attrsB = D.GetRepAttrs(charRef, [secName, idB])
-
-					
-			const p = (v, id) => `repeating_${secName}_${id}_${v}`
-
-					
+			const attrsA = D.GetRepAttrs(charRef, [secName, idA])					
+			const attrsB = D.GetRepAttrs(charRef, [secName, idB])					
+			const p = (v, id) => `repeating_${secName}_${id}_${v}`					
 			const sessions = [
 				"Zero",
 				"One",
@@ -244,19 +236,16 @@ const Chars = (() => {
 				"Eighteen",
 				"Nineteen",
 				"Twenty",
-			]
-
-					
-			const sessA = sessions.indexOf(attrsA[p("xp_session", idA)])
-
-					
+			]					
+			const sessA = sessions.indexOf(attrsA[p("xp_session", idA)])					
 			const sessB = sessions.indexOf(attrsB[p("xp_session", idB)])
-			if (sessA === sessB) { return parseInt(attrsB[p("xp_award", idB)]) - parseInt(attrsA[p("xp_award", idA)]) }
+
+			if (sessA === sessB)
+				return parseInt(attrsB[p("xp_award", idB)]) - parseInt(attrsA[p("xp_award", idA)])
 
 			return sessA - sessB
-		},
+		}
 	}
-
 	// #endregion
 
 	// #region Register Characters
@@ -353,7 +342,8 @@ const Chars = (() => {
 	// #region Event Handlers (handleInput, handleAttribute)
 
 	const handleAttr = (obj, prev) => {
-		if (obj.get("name") === "hunger" && obj.get("current") !== prev.current) { Images.Toggle(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, true, obj.get("current")) }
+		if (obj.get("name") === "hunger" && obj.get("current") !== prev.current)
+			Images.Toggle(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, true, obj.get("current"))
 	}
 
 
