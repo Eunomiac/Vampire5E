@@ -1059,9 +1059,7 @@
 				} )
 			}
 		},
-		doTracker = (tracker, eInfo = {
-			sourceAttribute: ""
-		}, gN = "", cback) => {
+		doTracker = (tracker, eInfo = { sourceAttribute: "" }, gN = "", cback) => {
 			const stat = eInfo.sourceAttribute,
 				statVal = stat ? parseInt(stat.split("_")[1] || 0) : 0,
 				attrList = {},
@@ -1115,11 +1113,7 @@
 									}`
 						attrList[`${gN}bp_slakebag`] = attrList[`${gN}bp_slakeanimal`]
 						attrList[`${gN}bp_slaketext`] = `Animals & bagged blood slake ${
-							{0: "no", 0.5: "half", 1: "full"}[attrList[`
-							$ {
-								gN
-							}
-							bp_slakeanimal `]]
+							{0: "no", 0.5: "half", 1: "full"}[attrList[`${gN}bp_slakeanimal`]]
 						} Hunger.\n${
 							attrList[`${gN}bp_slakehuman`] === 0 ?
 								"Humans slake full Hunger.\n" :

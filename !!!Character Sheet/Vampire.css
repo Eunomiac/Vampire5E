@@ -20,8 +20,6 @@
 		font-size: 0px;
 		font-style: normal;
 		line-height: initial;
-
-		font-family: Percol
 	}
 
 	.charsheet div.sheet-fullwrapper {
@@ -941,7 +939,6 @@
 	}
 
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-whitedot+span::before {
-		margin-top: 0px;
 		content: "";
 
 		background-color: rgba(150, 150, 150, 0.4);
@@ -1676,25 +1673,25 @@
 	.charsheet div.sheet-compulsiondisplay,
 	.charsheet div.sheet-dyscrasiasdisplay {
 		height: 40px;
-		width: calc(100% + 10px);
-		margin: -15px 0px 15px 3px;
+		width: calc(100% - 20px - 6px - 6px);
+		margin: -10px 0px 15px 3px;
 	}
 
 	.charsheet div.sheet-dyscrasiasdisplay span.sheet-header2,
 	.charsheet div.sheet-compulsiondisplay span.sheet-header2 {
 		width: 96px;
 		line-height: 16px;
-		margin-right: 10px;
-
+		margin-left: -13px;
 		vertical-align: top;
 	}
 
 	.charsheet div.sheet-compulsiondisplay textarea,
 	.charsheet div.sheet-dyscrasiasdisplay textarea {
 		height: 40px;
-		width: calc(100% - 96px - 10px - 10px);
+		width: calc(100% - (105px - 10px));
 		margin-top: -3px;
 		line-height: 20px;
+		margin-right: -10px;
 	}
 
 	.charsheet div.sheet-compulsiondisplay span.sheet-header2,
