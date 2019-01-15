@@ -1,7 +1,7 @@
 const TimeTracker = (() => {
 	let [timeTimer, dateObj, trackerObj] = [null, null, null],
 		[isRunning, isRunningFast] = [false, false]
-	    // #region Configuration
+	// #region Configuration
 	const CLOCKSPEED = 50,
 		TWEENDURS = [15, 40, 60, 600, 1440, 3000, 5000, 7000, 8000, 9000, 10000, Infinity],
 		RUNNINGFASTAT = 1500000,
@@ -94,6 +94,7 @@ const TimeTracker = (() => {
 		easeInOutSine = (curTime, startVal, deltaVal, duration) => -deltaVal / 2 *
 			(Math.cos(Math.PI * curTime / duration) - 1) +
 			startVal,
+		// eslint-disable-next-line no-unused-vars
 		easeInOutQuad = (curTime, startVal, deltaVal, duration) => {
 			let cTime = curTime
 			cTime /= duration / 2
