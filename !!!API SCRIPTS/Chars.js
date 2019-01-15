@@ -427,9 +427,9 @@ const Chars = (() => {
 				if (params.length === 2) {
 					setAttrs(D.GetChar(msg).id, {
 						compulsion_toggle: 1,
-						compulsion: `${params[0].toUpperCase()} --- ${params[1]}`,
+						compulsion: `${params[0].toUpperCase()} — ${params[1]}`,
 					})
-					D.Alert(`Compulsion for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(`${params[0].toUpperCase()} --- ${params[1]}`)}`, "CHARS !setDys")
+					D.Alert(`Compulsion for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(`${params[0].toUpperCase()} — ${params[1]}`)}`, "CHARS !setDys")
 				} else {
 					D.Alert("Must supply a title and a message separated by a pipe '|'", "CHARS !setComp")
 				}
@@ -441,7 +441,7 @@ const Chars = (() => {
 		case "!setDyscrasias":
 
 			/* Dyscrasiasdisplay toggle, dyscrasias
-		   FRAGILE CONFIDENCE --- Add three dice to all rolls to intimidate or oppress others (including
+		   FRAGILE CONFIDENCE — Add three dice to all rolls to intimidate or oppress others (including
 			uses of Dominate), until someone successfully resists you.  After that point, subtract three
 			dice from all Social rolls. */
 			if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0]) {
@@ -449,9 +449,9 @@ const Chars = (() => {
 				if (params.length === 2) {
 					setAttrs(D.GetChar(msg).id, {
 						dyscrasias_toggle: 1,
-						dyscrasias: `${params[0].toUpperCase()} --- ${params[1]}`,
+						dyscrasias: `${params[0].toUpperCase()} — ${params[1]}`,
 					})
-					D.Alert(`Dyscrasias for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(`${params[0].toUpperCase()} --- ${params[1]}`)}`, "CHARS !setDys")
+					D.Alert(`Dyscrasias for '${D.GetName(D.GetChar(msg))}' set to: <br/><br/>${D.JS(`${params[0].toUpperCase()} — ${params[1]}`)}`, "CHARS !setDys")
 				} else {
 					D.Alert("Must supply a title and a message separated by a pipe '|'", "CHARS !setDys")
 				}

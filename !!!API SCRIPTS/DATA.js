@@ -768,8 +768,8 @@ const D = (() => {
 		splitRepSec = (charRef, sourceSec, targetSec, sortFunc, mode = "split") => {
 			/* Will combine values from both source and target sections, sort them, then evenly split
 			them between the two sections.  Split modes include:
-				"split" (default) --- the bottom half of results will be moved to targetSec
-				"even" --- even-numbered rows will be moved to targetSec
+				"split" (default) — the bottom half of results will be moved to targetSec
+				"even" — even-numbered rows will be moved to targetSec
 			Sortfunc must have parameters (charRef, secName, rowID1, rowID2) and return
 			POSITIVE INTEGER if row1 should be ABOVE row2.  */
 			_.each(getRepRowIDs(charRef, targetSec), id => {

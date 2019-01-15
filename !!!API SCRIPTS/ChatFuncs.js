@@ -4,7 +4,7 @@
    library of handy resources for other scripts to use, and a master configuration file for your game.  You can find
    a list of all of the available methods at the end of the script.  Configuration is a bit trickier, but is contained
    to the CONFIGURATION and DECLARATIONS #regions. Strictly a utility script: Doesn't set things or return information
-   to other API objects --- use DATA and SET for that. */
+   to other API objects — use DATA and SET for that. */
 
 const ChatFuncs = (() => {
 	// #region HELP MESSAGE
