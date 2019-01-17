@@ -561,9 +561,8 @@ const Chars = (() => {
 
 
 	const checkInstall = () => {
-		// Delete state[D.GAMENAME].Chars;
 		state[D.GAMENAME] = state[D.GAMENAME] || {}
-		state[D.GAMENAME].Chars = state[D.GAMENAME].Chars || {}
+		state[D.GAMENAME].Chars = state[D.GAMENAME].Chars || {}		
 	}
 	// #endregion
 

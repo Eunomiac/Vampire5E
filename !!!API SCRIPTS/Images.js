@@ -623,23 +623,6 @@ const Images = (() => {
 			state[D.GAMENAME].Images = state[D.GAMENAME].Images || {}
 			state[D.GAMENAME].Images.registry = state[D.GAMENAME].Images.registry || {}
 			state[D.GAMENAME].Images.registry.Sources = state[D.GAMENAME].Images.registry.Sources || {}
-
-			/* state[D.GAMENAME].Images.registry.HungerTopRight_1.srcs = {
-				1: "https://s3.amazonaws.com/files.d20.io/images/71118365/_0IwXUktqOjlN6wwqDOnYg/thumb.png?1547377423",
-				2: "https://s3.amazonaws.com/files.d20.io/images/71118367/OlzHIFWN5lw4uBwp2_Jcrg/thumb.png?1547377423",
-				3: "https://s3.amazonaws.com/files.d20.io/images/71118364/CZU5WbJIIeHxrd3OlGf8yw/thumb.png?1547377426",
-				4: "https://s3.amazonaws.com/files.d20.io/images/71118363/D9QYrkfkCIiKF6C_Q38ndA/thumb.png?1547377424",
-				5: "https://s3.amazonaws.com/files.d20.io/images/71131744/wtnAdRNzqjuAM3K4D6BRDg/thumb.png?1547391569"
-			}
-			state[D.GAMENAME].Images.registry.HungerBotRight_1.srcs = "HungerTopRight"
-			state[D.GAMENAME].Images.registry.HungerTopLeft_1.srcs = {
-				1: "https://s3.amazonaws.com/files.d20.io/images/71135541/E31TUpR-EtMYCCBve6I9tw/thumb.png?1547394656",
-				2: "https://s3.amazonaws.com/files.d20.io/images/71135540/1UBrj7N1QlZLclYYeO3Ygg/thumb.png?1547394656",
-				3: "https://s3.amazonaws.com/files.d20.io/images/71135539/rKAr6-5zPPbCZQpbQHBJxA/thumb.png?1547394659",
-				4: "https://s3.amazonaws.com/files.d20.io/images/71135537/NdR2yr9pfIn8SlxHFtGZ4Q/thumb.png?1547394658",
-				5: "https://s3.amazonaws.com/files.d20.io/images/71135538/Nlnh0i70TsCbkGypUdv3Pw/thumb.png?1547394658"
-			}
-			state[D.GAMENAME].Images.registry.HungerBotLeft_1.srcs = "HungerTopLeft" */
 		}
 	// #endregion
 

@@ -494,7 +494,7 @@
 	}
 
 	.charsheet input.sheet-hoverpopup:not(:checked):hover+span::before {
-		background: url("https://imgur.com/eKebYyL.png");
+		background: url("https://i.imgur.com/bGSrWIX.png");
 		background-size: 100%;
 	}
 
@@ -1068,22 +1068,23 @@
 		margin-top: -4px;
 		margin-left: -5px;
 
-		background: url("https://imgur.com/MbGS3dV.png");
+		background: url("https://i.imgur.com/XBoDQCh.png");
+		/* background: url("https://i.imgur.com/HWWfNcX.png"); */
 		background-size: 100%;
 	}
 
 	.charsheet input.sheet-hoverpopup:not(:checked):hover+span::before {
-		background: url("https://imgur.com/eKebYyL.png");
+		background: url("https://i.imgur.com/bGSrWIX.png");
 		background-size: 100%;
 	}
 
 	.charsheet input.sheet-hoverpopup:checked+span::before {
-		background: url("https://imgur.com/RqhLCmn.png");
+		background: url("https://i.imgur.com/Uap12Oh.png");
 		background-size: 100%;
 	}
 
 	.charsheet input.sheet-hoverpopup:checked:hover+span::before {
-		background: url("https://imgur.com/ADUnbmh.png");
+		background: url("https://i.imgur.com/ilsagfG.png");
 		background-size: 100%;
 	}
 
