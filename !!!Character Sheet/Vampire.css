@@ -265,15 +265,15 @@
 		width: 130%;
 		height: 22px;
 		line-height: 11px;
-		margin: -6px 0px 5px -15%;
+		margin: -5px 0px 5px -15%;
 		padding: 0px;
 		text-align: center;
 		text-align-last: center;
 
-		color: #933;
+		color: black;
 		font-size: 11px;
 		font-family: 'Cormorant Garamond';
-		font-weight: 900;
+		font-weight: normal;
 
 		text-shadow: none;
 	}
@@ -1679,7 +1679,7 @@
 
 	.charsheet div.sheet-dyscrasiasdisplay span.sheet-header2,
 	.charsheet div.sheet-compulsiondisplay span.sheet-header2 {
-		width: 96px;
+		width: 105px;
 		line-height: 16px;
 		margin-left: -13px;
 		vertical-align: top;
@@ -1688,7 +1688,7 @@
 	.charsheet div.sheet-compulsiondisplay textarea,
 	.charsheet div.sheet-dyscrasiasdisplay textarea {
 		height: 40px;
-		width: calc(100% - (105px - 10px));
+		width: calc(100% - (105px - 13px));
 		margin-top: -3px;
 		line-height: 20px;
 		margin-right: -10px;
