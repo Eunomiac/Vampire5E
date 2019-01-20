@@ -261,11 +261,12 @@ const ChatFuncs = (() => {
 				namespace.unshift(D.GAMENAME)
 			const title = `Clearing state.${namespace.join(".")}`
 			// eslint-disable-next-line no-unmodified-loop-condition
-			while (namespace && namespace.length > 0)
+			while (namespace && namespace.length > 1)
 				stateInfo = stateInfo[namespace.shift()]
 
-			D.Alert(`DELETED ${D.JS(stateInfo)}`, title)
-			stateInfo = ""
+			D.Alert(`DELETED ${namespace[0]} of ${D.JS(stateInfo)}`, title)
+			delete stateInfo[namespace.shift()]
+			//stateInfo = ""
 
 			return true
 		},

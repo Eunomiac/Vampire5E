@@ -250,35 +250,57 @@ const Chars = (() => {
 
 	// #region Register Characters
 
-	const registerChars = (chars) => {
+	const registerChars = (msg) => {
+		const chars = D.GetChars(msg),
+			tokens = D.GetSelected(msg)
 		_.each(chars, (char) => {
+			const token = tokens.shift(),
+				charName = D.GetName(char),
+				tokenName = charName.replace(/["'\s]*/gu, "") + "Token"
 			state[D.GAMENAME].Chars[char.id] = {
-				name: D.GetName(char),
+				name: charName,
 				id: char.id,
-				playerID: D.GetPlayerID(char),
+				playerID: D.GetPlayerID(char)
 			}
 			state[D.GAMENAME].Chars[D.GetName(char)] = {
-				name: D.GetName(char),
+				name: charName,
 				id: char.id,
-				playerID: D.GetPlayerID(char),
+				playerID: D.GetPlayerID(char)
 			}
+			state[D.GAMENAME].Chars[D.GetPlayerID(char)] = {
+				name: charName,
+				id: char.id,
+				playerID: D.GetPlayerID(char)	
+			}
+			Images.Register(token, tokenName)
 			D.Alert(`Registered '${D.GetName(char)}'`)
 		})
 	}
-
-
 	const unregisterChar = (charString) => {
 		const stateRef = state[D.GAMENAME].Chars
-		let [charName, altKey] = [null, null]
+		let [charName, charID, playerID] = [null, null, null]
 		if (stateRef[charString]) {
 			charName = stateRef[charString].name
-			altKey = charString === charName ? stateRef[charString].id : charName
+			charID = stateRef[charString].id
+			playerID = stateRef[charString].playerID
+			if (charString !== charID)
+				delete state[D.GAMENAME].Chars[charID]
+			if (charString !== charName)
+				delete state[D.GAMENAME].Chars[charName]
+			if (charString !== playerID)
+				delete state[D.GAMENAME].Chars[playerID]
 			delete state[D.GAMENAME].Chars[charString]
-			delete state[D.GAMENAME].Chars[altKey]
 			D.Alert(`Unregistered ${D.JSL(charName)}.`, "CHARS: UNREGISTERCHAR")
 		} else {
 			D.ThrowError(`No character found registered with search key '${D.JSL(charString)}'`)
 		}
+	}
+	const registerToken = (msg, hostName, srcName) => {
+		if (!Images.GetKey(hostName)) 
+			return D.ThrowError(`No image registered under ${hostName}`, "CHARS:RegisterToken")
+
+		Images.SetSrc(msg, hostName, srcName)
+		return true
 	}
 
 	// #endregion
@@ -315,6 +337,11 @@ const Chars = (() => {
 
 		return true
 	}
+
+	// #endregion
+
+	// #region Character Token Functions
+	
 
 	// #endregion
 
@@ -361,16 +388,24 @@ const Chars = (() => {
 		]
 
 				
-		let [amount, session, trait, dtype, dmg, attrString, charData] = new Array(7).fill(null)
+		let [amount, session, trait, dtype, dmg, attrString, charID, charData, token] = new Array(9).fill(null)
 		switch (args.shift()) {
 		case "!rChar":
-			if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0]) { registerChars(D.GetChars(msg)) } else { D.ThrowError("Select character tokens first!", "CHARS") }
+			if (playerIsGM(msg.playerid) && msg.selected && msg.selected[0])
+				registerChars(msg)
+			else
+				D.ThrowError("Select character tokens first!", "CHARS")
 			break
 		case "!dChar":
 			charData = args.join(" ")
 			if (playerIsGM(msg.playerid) && charData) { unregisterChar(charData) } else { D.ThrowError("Input a valid search string to remove the character!", "CHARS") }
 			break
-
+		case "!rToken":
+			if (playerIsGM(msg.playerid) && msg.selected && msg.selected.length === 1 && args.length === 2)
+				registerToken(msg, args.shift(), args.shift())
+			else
+				D.ThrowError("Select a graphic object. Syntax: !rToken <hostName> <srcName>", "CHARS")
+			break
 		case "!xp": // !xp Cost Session Message, with some character tokens selected.
 			chars = D.GetChars(msg)
 			if (playerIsGM(msg.playerid) && chars) {
@@ -543,6 +578,31 @@ const Chars = (() => {
 			}
 			MVC(params)
 			break
+		case "!hide":
+			charID = state[D.GAMENAME].Chars[msg.playerid].id;			
+			[token] = findObjs( {
+				_pageid: D.PAGEID(),
+				_type: "graphic",
+				_subtype: "token",
+				represents: charID
+			})
+			D.Alert(`Found Token: ${D.JSL(token)}`, "!HIDE")			
+			Images.ToggleToken(token, "obf", "prev")
+			break
+		case "!mask":
+			charID = state[D.GAMENAME].Chars[msg.playerid].id;			
+			[token] = findObjs( {
+				_pageid: D.PAGEID(),
+				_type: "graphic",
+				_subtype: "token",
+				represents: charID
+			})
+			D.Alert(`Found Token: ${D.JSL(token)}`, "!HIDE")			
+			Images.ToggleToken(token, "mask", "prev")
+			break		
+		case "!setToken":
+			Images.ToggleToken(D.GetSelected(msg)[0], args.shift(), args.shift() || "prev")
+			break
 		case "!startSession":
 			break
 		default:
@@ -562,7 +622,11 @@ const Chars = (() => {
 
 	const checkInstall = () => {
 		state[D.GAMENAME] = state[D.GAMENAME] || {}
-		state[D.GAMENAME].Chars = state[D.GAMENAME].Chars || {}		
+		state[D.GAMENAME].Chars = state[D.GAMENAME].Chars || {}
+		
+		state[D.GAMENAME].Images.registry["JohannesNapierToken_1"].srcs.base = "https://s3.amazonaws.com/files.d20.io/images/69211889/6jgOBzDBfwvQV__fsORH6g/thumb.png?1544987477"
+		state[D.GAMENAME].Images.registry["Dr.ArthurRoyToken_1"].srcs.base = "https://s3.amazonaws.com/files.d20.io/images/69211896/wzLOhOB9kJEWjOmriZYWQw/thumb.png?1544987482"
+		state[D.GAMENAME].Images.registry["AvaWongToken_1"].srcs.base = "https://s3.amazonaws.com/files.d20.io/images/69211865/KtYm8rlY3VY3FdU_8ufO5g/thumb.png?1544987464"
 	}
 	// #endregion
 

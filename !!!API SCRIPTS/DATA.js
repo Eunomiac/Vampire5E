@@ -459,7 +459,7 @@ const D = (() => {
 							_.isString(getObj("graphic", selection._id).get("represents")) &&
 							getObj("character", getObj("graphic", selection._id).get("represents")))
 					if (!tokens)
-						return throwError(`No Valid Token Selected: ${jStr(value.selected)}`, "D.GETCHARS")
+						return false // throwError(`No Valid Token Selected: ${jStr(value.selected)}`, "D.GETCHARS")
 
 					return _.map(tokens, v => getObj("character", getObj("graphic", v._id).get("represents")))
 				} else if (_.isArray(value)) {
@@ -470,12 +470,12 @@ const D = (() => {
 					return throwError(`Bad Value: '${jStr(value)}'`, "GETCHARS")
 				}
 			} catch (errObj) {
-				D.Alert(`Error Getting Char:
+				/* D.Alert(`Error Getting Char:
 				${errObj.name}
 				${errObj.message}
 				
 				STACK:
-				${D.JS(errObj.stack)}`, "ERR: D.GetChars")
+				${D.JS(errObj.stack)}`, "ERR: D.GetChars") */
 
 				return false
 			}
@@ -515,7 +515,7 @@ const D = (() => {
 					} ), char => charObjs.add(char))
 				}
 				if (charObjs.size === 0)
-					throwError(`No Characters Found for Value '${jStr(val)}' in '${jStr(value)}'`, "D.GETCHARS")
+					return false // throwError(`No Characters Found for Value '${jStr(val)}' in '${jStr(value)}'`, "D.GETCHARS")
 			} )
 
 			return [...charObjs]
@@ -589,9 +589,7 @@ const D = (() => {
 				if (value.get("_type") === "graphic" && value.get("_subtype") === "token")
 					playerID = value.get("represents")
 				if (value.get("_type") === "character") {
-					[playerID] = value.get("controlledby").replace("all,", "")
-						.replace(",all", "")
-						.split(",", 1)
+					playerID = value.get("controlledby").replace(/(,all|all,)/gu, "")
 				}
 				if (!playerID)
 					throw new Error(`No player ID found controlling ${value.get("_type")} with ID '${value.id}'`)

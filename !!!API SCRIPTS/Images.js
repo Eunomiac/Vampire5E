@@ -45,15 +45,17 @@ const Images = (() => {
 								D.GetSelected(imgRef) ?
 									D.GetSelected(imgRef)[0].get("name") :
 									null
+				// D.Alert(`IsObj? ${D.IsObj(imgRef, "graphic")}
+				// Getting Name: ${imgRef.get("name")}`, "IMAGE NAME")
 				if (imgName && _.find(_.keys(REGISTRY), v => v.toLowerCase().startsWith(imgName.toLowerCase()))) {
 					return _.keys(REGISTRY)[
 						_.findIndex(_.keys(REGISTRY), v => v.toLowerCase().startsWith(imgName.toLowerCase()))
 					]
 				}
 
-				return D.ThrowError(`Image reference '${imgRef}' does not refer to a registered image object.`, "IMAGES: GetImageKey")
+				return D.ThrowError(`Image reference '${D.JSL(imgRef)}' does not refer to a registered image object.`, "IMAGES: GetImageKey")
 			} catch (errObj) {
-				return D.ThrowError(`Cannot locate image with search value '${D.JS(imgRef)}'`, "IMAGES GetImageKey", errObj)
+				return D.ThrowError(`Cannot locate image with search value '${D.JSL(imgRef)}'`, "IMAGES GetImageKey", errObj)
 			}
 		},
 		getImageObj = imgRef => {
@@ -168,9 +170,16 @@ const Images = (() => {
 					top: params.top,
 					height: params.height,
 					width: params.width,
-					activeLayer: params.activeLayer || "map",
-					startActive: Boolean(params.startActive || false),
+					activeLayer: options.activeLayer || "map",
+					startActive: Boolean(options.startActive || false),
 					srcs: {}
+				}
+				if (D.GetChar(imgObj)) {
+					REGISTRY[name].activeLayer = "objects"
+					REGISTRY[name].startActive = true
+					REGISTRY[name].srcs = {
+						base: imgObj.get("imgsrc").replace(/med/gu, "thumb")
+					}
 				}
 				imgObj.set( {name, showname: false} )
 				if (!REGISTRY[name].startActive)
@@ -386,10 +395,32 @@ const Images = (() => {
 				setImage(imgRef, "blank")
 			}
 		},
-		removeImage = imgRef => {
+		toggleToken = (imgRef, newSrc, toggleRef) => {
+			const imgKey = getImageKey(imgRef),
+				imgData = getImageData(imgKey),
+				prevSrc = imgData.prevSrc,
+				curSrc = imgData.curSrc
+			REGISTRY[imgKey].prevSrc = REGISTRY[imgKey].curSrc
+			if (newSrc === curSrc) {
+				if (toggleRef === "prev" && prevSrc) {
+					Images.Set(imgKey, prevSrc)
+					REGISTRY[imgKey].curSrc = prevSrc
+				} else if (_.keys(imgData.srcs).includes(toggleRef)) {
+					Images.Set(imgKey, toggleRef)
+					REGISTRY[imgKey].curSrc = toggleRef
+				} else {
+					Images.Set(imgKey, "base")
+					REGISTRY[imgKey].curSrc = "base"
+				}
+			} else {
+				Images.Set(imgKey, newSrc)
+				REGISTRY[imgKey].curSrc = newSrc
+			}
+		},
+		removeImage = (imgRef, isRegOnly) => {
 			const imgObj = getImageObj(imgRef),
 				imgData = getImageData(imgRef)
-			if (imgObj) {
+			if (imgObj && !isRegOnly) {
 				imgObj.remove()
 				delete REGISTRY[imgData.name]
 
@@ -455,7 +486,7 @@ const Images = (() => {
 					if (imgName)
 						regImage(imgObj, imgName, D.ParseToObj(args.join(" ")))
 					else
-						D.Alert("Syntax: !img reg <hostName> [<params = imgName:imgSrc, imgName : imgSrc>]", "IMAGES: !img reg")
+						D.Alert("Syntax: !img reg <hostName> [startLayer:<layer>, isStartingActive:<true>], <imgName:imgSrc>]", "IMAGES: !img reg")
 				} else {
 					D.Alert("Select an image object first!", "IMAGES: !img reg")
 				}
@@ -487,6 +518,9 @@ const Images = (() => {
 					D.Alert("No hostnames provided.<br><br>Syntax: !img remove <hostName> OR !img removeAll")
 				}
 				break
+			case "clear":
+				removeImage(args.join(" "), true)
+				break				
 			case "clean":
 				cleanRegistry()
 				break
@@ -630,12 +664,15 @@ const Images = (() => {
 		RegisterEventHandlers: regHandlers,
 		CheckInstall: checkInstall,
 		Get: getImageObj,
+		GetKey: getImageKey,
 		GetData: getImageData,
 		MakeImage: makeImage,
 		Register: regImage,
+		SetSrc: addImgSrc,
 		Remove: removeImage,
 		Set: setImage,
-		Toggle: toggleImage
+		Toggle: toggleImage,
+		ToggleToken: toggleToken
 	}
 } )()
 

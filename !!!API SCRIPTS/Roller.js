@@ -778,14 +778,8 @@
 
 		// #region Dice Frame
 		initFrame = () => {
-			const [imageList, textList] = [
-					[],
-					[]
-				],
-				bgImg = getObj("graphic", state[D.GAMENAME].Roller.imgList.Background)
-
-			/* ,
-				bgImg = Images.Get("Background")*/
+			const [imageList, textList] = [[],[]],
+				bgImg = Images.Get("Background")
 			for (const name of _.keys(state[D.GAMENAME].Roller.textList))
 				clearText(name)
 			for (const name of _.keys(state[D.GAMENAME].Roller.imgList)) {
