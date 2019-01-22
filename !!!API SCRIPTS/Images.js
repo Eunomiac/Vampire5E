@@ -106,7 +106,7 @@ const Images = (() => {
 				leftX: imgData.left - 0.5 * imgData.width,
 				rightX: imgData.left + 0.5 * imgData.width
 			}
-			D.Log(`[BOUNDS]: ${D.JSL(bounds)}`)
+			//D.Log(`[BOUNDS]: ${D.JSL(bounds)}`)
 
 			return bounds
 		},
@@ -180,10 +180,13 @@ const Images = (() => {
 					REGISTRY[name].srcs = {
 						base: imgObj.get("imgsrc").replace(/med/gu, "thumb")
 					}
+					REGISTRY[name].curSrc = "base"
 				}
 				imgObj.set( {name, showname: false} )
-				if (!REGISTRY[name].startActive)
+				if (!REGISTRY[name].startActive) {
 					imgObj.set( {imgsrc: IMGDATA.blank, layer: "gmlayer"} )
+					REGISTRY[name].curSrc = "blank"
+				}
 				for (const srcName of _.keys(imgSrcs))
 					addImgSrc(imgSrcs[srcName], srcName)
 
@@ -213,23 +216,29 @@ const Images = (() => {
 			return imgObj
 		},
 		setImage = (imgRef, srcRef) => {
+			//D.Alert(`Getting ${D.JS(srcRef)} for ${D.JS(imgRef)} --> ${D.JS(REGISTRY[getImageData(imgRef).name].srcs[srcRef])}`, "IMAGES:SetImage")
 			if (getImageData(imgRef)) {
 				const imgObj = getImageObj(imgRef)
-				let stateRef = REGISTRY[getImageData(imgRef).name]
+				let stateRef = REGISTRY[getImageData(imgRef).name],
+					srcName = srcRef
+				//D.Alert(D.JS(REGISTRY[getImageData(imgRef).name]))
 				if (imgObj && stateRef) {
+					//D.Alert(`Getting ${D.JS(stateRef.srcs)} --> ${D.JS(srcRef)} --> ${D.JS(stateRef.srcs[srcRef])}`, "IMAGES:SetImage")
 					if (_.isString(stateRef.srcs) && REGISTRY[getImageData(stateRef.srcs).name] )
 						stateRef = REGISTRY[getImageData(stateRef.srcs).name]
-					if (stateRef.srcs[srcRef] )
+					if (stateRef.srcs[srcRef] )					
 						imgObj.set("imgsrc", stateRef.srcs[srcRef] )
-					else if (_.values(stateRef.srcs).includes(srcRef))
+					else if (_.values(stateRef.srcs).includes(srcRef) && srcRef.includes("http")) {
 						imgObj.set("imgsrc", srcRef)
-					else if (_.isString(IMGDATA[srcRef] ))
+						srcName = null
+					} else if (_.isString(IMGDATA[srcRef] ))
 						imgObj.set("imgsrc", IMGDATA[srcRef] )
 					else if (_.isString(srcRef) && REGISTRY.Sources[srcRef] )
 						imgObj.set("imgsrc", REGISTRY.Sources[srcRef] )
 					else
 						return D.ThrowError(`Image object '${D.JSL(imgRef)}' is unregistered or is missing 'srcs' property`, "Images: setImage()")
 
+					REGISTRY[getImageData(imgRef).name].curSrc = srcName
 					return imgObj
 				}
 
@@ -241,11 +250,12 @@ const Images = (() => {
 		setImgParams = (imgRef, params) => {
 			const imgObj = getImageObj(imgRef)
 			imgObj.set(params)
+			return imgObj
 		},
-		alignImages = (imgRefs, alignMode = "center", anchorRef = "best") => {
-			const imgObjs = D.GetSelected(imgRefs) || _.map(imgRefs, v => getImageObj(v)),
+		sortImages = (imgObjs, modes = "", anchors = []) => {
+			const sortModes = _.flatten([modes]),
 				imgData = _.map(imgObjs, obj => {
-					const tData = {
+					const odata = {
 						id: obj.id,
 						obj,
 						height: parseInt(obj.get("height")),
@@ -253,9 +263,9 @@ const Images = (() => {
 						top: parseInt(obj.get("top")),
 						left: parseInt(obj.get("left"))
 					}
-					Object.assign(tData, getBounds(tData))
+					Object.assign(odata, getBounds(odata))
 
-					return tData
+					return odata
 				} ),
 				[minX, maxX] = (v => [v[0].left, v.slice(-1)[0].left + v.slice(-1)[0].width] )(
 					_.sortBy(imgData, v => v.left + v.width)
@@ -264,84 +274,105 @@ const Images = (() => {
 					_.sortBy(imgData, v => v.top + v.height)
 				),
 				[centerX, centerY] = [maxX - minX, maxY - minY]
-			let [sorted, anchor] = [{}, {}],
-				bounds = [],
-				[counter, spacer] = [0, 0]
-			Object.assign(imgData, getBounds(imgData))
-			switch (alignMode.toLowerCase()) {
-			case "distvert":
-				sorted = _.sortBy(imgData, "top")
-				bounds = [imgData[0].top, imgData.slice(-1)[0].top]
-				spacer = (bounds[1] - bounds[0] ) / (imgData.length - 1)
-				for (const iData of imgData) {
-					setImgParams(iData.id, {top: bounds[0] + counter * spacer} )
-					counter++
-				}
-				break
-			case "disthoriz":
-				sorted = _.sortBy(imgData, "left")
-				bounds = [imgData[0].left, imgData.slice(-1)[0].left]
-				spacer = (bounds[1] - bounds[0] ) / (imgData.length - 1)
-				for (const iData of imgData) {
-					setImgParams(iData.id, {left: bounds[0] + counter * spacer} )
-					counter++
-				}
-				break
-			default:
-				switch (anchorRef.toLowerCase()) {
-				case "best":
-					switch (alignMode.toLowerCase()) {
-					case "centerX":
-						sorted = _.sortBy(imgData, v => Math.pow(v.left - centerX, 2))
-						break
-					case "centerY":
-						sorted = _.sortBy(imgData, v => Math.pow(v.top - centerY, 2))
-						break
-					case "resize":
-						sorted = _.sortBy(imgData, v => -(v.height * v.width))
+			let [sortedArray, anchorArray, bounds] = [ [], [], [] ],
+				anchorRef = "best"
+			for (var i = 0; i < sortModes.length; i++) {
+				anchorRef = anchors[i] || anchorRef
+				let [spacer, counter] = [0, 0],
+					[sorted, revSorted] = [[], []]
+				switch(sortModes[i]) {
+				case "distvert":
+					sorted = _.sortBy(imgData, "top")
+					bounds = [sorted[0].top, sorted.slice(-1)[0].top]
+					spacer = (bounds[1] - bounds[0] ) / (sorted.length - 1)
+					for (const iData of sorted) {
+						revSorted.unshift(setImgParams(iData.id, {top: bounds[0] + counter * spacer}, true ))
+						counter++
+					}
+					for (const obj of revSorted)
+						toFront(obj)
+					break
+				case "disthoriz":
+					sorted = _.sortBy(imgData, "left")
+					bounds = [sorted[0].left, sorted.slice(-1)[0].left]
+					spacer = (bounds[1] - bounds[0] ) / (sorted.length - 1)
+					for (const iData of sorted) {
+						//D.Alert(`Setting image ${D.JS(iData)}`)
+						revSorted.unshift(setImgParams(iData.id, {left: bounds[0] + counter * spacer}, true ))
+						counter++
+					}
+					for (const obj of revSorted)
+						toFront(obj)
+					//D.Alert(`Bounds: ${D.JS(bounds)}, Spacer: ${D.JS(spacer)}`)
+					break
+				default:
+					switch (anchorRef.toLowerCase()) {
+					case "best":
+						switch (sortModes[i]) {
+						case "centerX":
+							sorted = _.sortBy(imgData, v => Math.pow(v.left - centerX, 2))
+							break
+						case "centerY":
+							sorted = _.sortBy(imgData, v => Math.pow(v.top - centerY, 2))
+							break
+						case "resize":
+							sorted = _.sortBy(imgData, v => -(v.height * v.width))
+							break
+						case "left":
+						case "leftedge":
+							sorted = _.sortBy(imgData, "leftX")
+							break
+						case "right":
+						case "rightedge":
+							sorted = _.sortBy(imgData, "rightX").reverse()
+							break
+						case "top":
+						case "topedge":
+							sorted = _.sortBy(imgData, "topY")
+							break
+						case "bottom":
+						case "bottomedge":
+							sorted = _.sortBy(imgData, "bottomY").reverse()
+							break
+						default: break
+						}
 						break
 					case "left":
-					case "leftedge":
+					case "leftmost":
 						sorted = _.sortBy(imgData, "leftX")
 						break
-					case "right":
-					case "rightedge":
-						sorted = _.sortBy(imgData, "rightX").reverse()
-						break
 					case "top":
-					case "topedge":
+					case "topmost":
 						sorted = _.sortBy(imgData, "topY")
 						break
+					case "right":
+					case "rightmost":
+						sorted = _.sortBy(imgData, "rightX").reverse()
+						break
 					case "bottom":
-					case "bottomedge":
+					case "bot":
+					case "botmost":
+					case "bottommost":
 						sorted = _.sortBy(imgData, "bottomY").reverse()
 						break
 					default: break
 					}
-					break
-				case "left":
-				case "leftmost":
-					sorted = _.sortBy(imgData, "leftX")
-					break
-				case "top":
-				case "topmost":
-					sorted = _.sortBy(imgData, "topY")
-					break
-				case "right":
-				case "rightmost":
-					sorted = _.sortBy(imgData, "rightX").reverse()
-					break
-				case "bottom":
-				case "bot":
-				case "botmost":
-				case "bottommost":
-					sorted = _.sortBy(imgData, "bottomY").reverse()
-					break
-				default: break
 				}
-				anchor = sorted.shift()
+				anchorArray.push(sorted.shift())
+				sortedArray.push(sorted)		
+			}
+			
+			return [sortedArray, anchorArray]
+		},
+		alignImages = (imgRefs, alignModes = "center", anchorRefs = "best") => {
+			const imgObjs = D.GetSelected(imgRefs) || _.map(imgRefs, v => getImageObj(v)),
+				aModes = alignModes.split(","),
+				aRefs = anchorRefs.split(","),
+				[sortedArray, anchorArray] = sortImages(imgObjs, aModes, aRefs)
+			for (let i = 0; i < sortedArray.length; i++) {
+				const [sorted, anchor] = [sortedArray[i], anchorArray[i]]
+				switch (aModes[i].toLowerCase()) {			
 				// D.Alert(`ANCHOR: ${D.JS(anchor)}`)
-				switch (alignMode.toLowerCase()) {
 				case "resize":
 					for (const iData of sorted) {
 						iData.obj.set( {
@@ -380,8 +411,7 @@ const Images = (() => {
 					break
 				default: break
 				}
-				break
-			}
+			}			
 		},
 		toggleImage = (imgRef, isActive, srcRef) => {
 			const imgObj = getImageObj(imgRef),
@@ -657,6 +687,62 @@ const Images = (() => {
 			state[D.GAMENAME].Images = state[D.GAMENAME].Images || {}
 			state[D.GAMENAME].Images.registry = state[D.GAMENAME].Images.registry || {}
 			state[D.GAMENAME].Images.registry.Sources = state[D.GAMENAME].Images.registry.Sources || {}
+
+			state[D.GAMENAME].Images.registry.Horizon_1.startActive = true
+			state[D.GAMENAME].Images.registry.Horizon_1.srcs = {
+				night1: "https://s3.amazonaws.com/files.d20.io/images/71894926/x0iwUmXe0qwPj2c0RNThrA/thumb.jpg?1548156419",
+				night2:"https://s3.amazonaws.com/files.d20.io/images/71894930/8vRnSCPcxCePKQKb8QG6IQ/thumb.jpg?1548156426",
+				night3:"https://s3.amazonaws.com/files.d20.io/images/71894932/NyU3BlmW-Gy2JHId8xMv-A/thumb.jpg?1548156432",
+				night4:"https://s3.amazonaws.com/files.d20.io/images/71894939/BHBTXMscL6wRJvyMPQU_tQ/thumb.jpg?1548156438",
+				night5:"https://s3.amazonaws.com/files.d20.io/images/71894941/AzXORZJ_rrdZnxBVBE9FXg/thumb.jpg?1548156443",
+				predawn5: "https://s3.amazonaws.com/files.d20.io/images/70539093/3F-Cml26foFBqFoe6RxMqw/thumb.jpg?1546765788",
+				predawn4: "https://s3.amazonaws.com/files.d20.io/images/70539009/g_z4PJbQ2KMjOj4-TSKVWg/thumb.jpg?1546765708",
+				predawn3: "https://s3.amazonaws.com/files.d20.io/images/70539010/5PZAtlLDifVYZl-_FDxkdA/thumb.jpg?1546765707",
+				predawn2: "https://s3.amazonaws.com/files.d20.io/images/70539013/CGFI7B4rnXtzFKcjoVHGfg/thumb.jpg?1546765708",
+				predawn1: "https://s3.amazonaws.com/files.d20.io/images/70539011/oDhxVSCUGZZVRtTVQ4HDxQ/thumb.jpg?1546765707",
+				day: "https://s3.amazonaws.com/files.d20.io/images/70539012/S_ylewwroYstPusoGX0wEQ/thumb.jpg?1546765707"
+			}
+			state[D.GAMENAME].Images.registry.AirLightCN_5.startActive = true
+			state[D.GAMENAME].Images.registry.AirLightCN_5.srcs = {
+				off: IMGDATA.blank,
+				on: "https://s3.amazonaws.com/files.d20.io/images/71894817/H8ldyZdFtjUq-R0PWPbA6A/thumb.png?1548156168"
+			}
+			state[D.GAMENAME].Images.registry.AirLightCN_4.startActive = true
+			state[D.GAMENAME].Images.registry.AirLightCN_4.srcs = {
+				off: IMGDATA.blank,
+				on: "https://s3.amazonaws.com/files.d20.io/images/71894822/clLAf7qGlLb6SHOPqn2DXA/thumb.png?1548156180"
+			}
+			state[D.GAMENAME].Images.registry.AirLightCN_3.startActive = true
+			state[D.GAMENAME].Images.registry.AirLightCN_3.srcs = {
+				off: IMGDATA.blank,
+				on: "https://s3.amazonaws.com/files.d20.io/images/71894825/kmNgRlnAFL5FkV0CN3Advg/thumb.png?1548156184"
+			}
+			state[D.GAMENAME].Images.registry.AirLightCN_2.startActive = true
+			state[D.GAMENAME].Images.registry.AirLightCN_2.srcs = {
+				off: IMGDATA.blank,
+				on: "https://s3.amazonaws.com/files.d20.io/images/71894826/f0g0X5EA-KU9R9fyUxQd_w/thumb.png?1548156188"
+			}
+			state[D.GAMENAME].Images.registry.AirLightCN_1.startActive = true
+			state[D.GAMENAME].Images.registry.AirLightCN_1.srcs = {
+				off: IMGDATA.blank,
+				on: "https://s3.amazonaws.com/files.d20.io/images/71894829/rXtU8u3Fjbsaqmc80qbcIQ/thumb.png?1548156192"
+			}
+			state[D.GAMENAME].Images.registry.AirLightLeft_1.startActive = true
+			state[D.GAMENAME].Images.registry.AirLightLeft_1.srcs = {
+				off: IMGDATA.blank,
+				half: "https://s3.amazonaws.com/files.d20.io/images/71894831/zfUTcNbgsG0I5a0UVGaJFA/thumb.png?1548156196",
+				on: "https://s3.amazonaws.com/files.d20.io/images/71894834/O-Ust0_ZgkAk8JBbz0Wpbg/thumb.png?1548156200"
+			}
+			state[D.GAMENAME].Images.registry.AirLightMid_1.startActive = true
+			state[D.GAMENAME].Images.registry.AirLightMid_1.srcs = {
+				off: IMGDATA.blank,
+				on: "https://s3.amazonaws.com/files.d20.io/images/71894836/nSoHOW_K7YU1DmrxszJ83g/thumb.png?1548156204"
+			}
+			state[D.GAMENAME].Images.registry.AirLightTop_1.startActive = true
+			state[D.GAMENAME].Images.registry.AirLightTop_1.srcs = {
+				off: IMGDATA.blank,
+				on: "https://s3.amazonaws.com/files.d20.io/images/71894842/MeivxopZEQWzmqEVfNqBaQ/thumb.png?1548156208"
+			}
 		}
 	// #endregion
 

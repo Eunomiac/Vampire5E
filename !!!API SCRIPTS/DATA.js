@@ -212,7 +212,7 @@ const D = (() => {
 					.replace(/\\t/gu, "")
 					.replace(/ (?= )/gu, "&nbsp;")
 					.replace(/\\"/gu, "\"")
-					.slice(1, -1)
+					.replace(/(^"|"$)/gu, "")
 
 				/* return JSON.stringify(obj, null, 2)
 					.replace(/"/gu, "'")
@@ -428,7 +428,7 @@ const D = (() => {
 				(getObj("player", objID) && getObj("player", objID).get("_displayname")) ||
 				null
 			if (!name)
-				return throwError(`No name found for character ID: ${objID}`, "D.GETNAME")
+				return false
 			if (!isShort)
 				return name
 			if (name.includes("\"")) {
@@ -467,16 +467,9 @@ const D = (() => {
 				} else if (_.isString(value) || _.isObject(value)) {
 					searchParams.push(value)
 				} else {
-					return throwError(`Bad Value: '${jStr(value)}'`, "GETCHARS")
+					return false
 				}
 			} catch (errObj) {
-				/* D.Alert(`Error Getting Char:
-				${errObj.name}
-				${errObj.message}
-				
-				STACK:
-				${D.JS(errObj.stack)}`, "ERR: D.GetChars") */
-
 				return false
 			}
 			// D.Alert(`Search Params: ${D.JS(searchParams)}`)
@@ -494,8 +487,6 @@ const D = (() => {
 					const char = getObj("character", val.get("represents"))
 					if (char)
 						charObjs.add(char)
-					else
-						throwError(`Token '${jStr(val.id)}' Does Not Represent a Character.`, "D.GETCHARS")
 					// If parameter is "all":
 				} else if (val === "all") {
 					_.each(findObjs( {
@@ -510,9 +501,11 @@ const D = (() => {
 					// If parameter is a CHARACTER NAME:
 				} else if (_.isString(val)) {
 					_.each(findObjs( {
-						_type: "character",
-						name: val
-					} ), char => charObjs.add(char))
+						_type: "character"
+					} ), char => {
+						if (char.get("name").toLowerCase().includes(val.toLowerCase()))
+							charObjs.add(char)
+					} )
 				}
 				if (charObjs.size === 0)
 					return false // throwError(`No Characters Found for Value '${jStr(val)}' in '${jStr(value)}'`, "D.GETCHARS")
@@ -581,22 +574,19 @@ const D = (() => {
 						_displayname: value
 					} )[0].id
 				} catch (errObj) {
-					return throwError(`No player found at '${jStr(value)}'`, "DATA.getPlayerID", errObj)
+					return false
 				}
 			}
 			try {
 				let playerID = null
 				if (value.get("_type") === "graphic" && value.get("_subtype") === "token")
 					playerID = value.get("represents")
-				if (value.get("_type") === "character") {
+				if (value.get("_type") === "character")
 					playerID = value.get("controlledby").replace(/(,all|all,)/gu, "")
-				}
-				if (!playerID)
-					throw new Error(`No player ID found controlling ${value.get("_type")} with ID '${value.id}'`)
 
-				return playerID
+				return playerID || false
 			} catch (errObj) {
-				return throwError(`No player ID found at '${jStr(value)}'`, "DATA.getPlayerID", errObj)
+				return false
 			}
 		},
 		getTextWidth = (obj, text) => {
@@ -689,6 +679,10 @@ const D = (() => {
 			)
 		),
 		makeRow = (charRef, secName, attrs) => {
+			if (secName.toLowerCase() === "untitled") {
+				D.Log("ERROR: SEC NAME IS 'UNTITLED'!", "DATA:MakeRow()")
+				return false
+			}
 			const attrList = {},
 				IDa = 0,
 				IDb = [],

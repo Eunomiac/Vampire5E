@@ -1,6 +1,7 @@
 const TimeTracker = (() => {
+	const [airLights, airKeys] = [[], {}]
 	let [timeTimer, dateObj, trackerObj] = [null, null, null],
-		[isRunning, isRunningFast] = [false, false]
+		[isRunning, isRunningFast, isAirlights, isTimeRunning] = [false, false, true, false]
 		// #region Configuration
 	const CLOCKSPEED = 50,
 		TWEENDURS = [15, 40, 60, 600, 1440, 3000, 5000, 7000, 8000, 9000, 10000, Infinity],
@@ -22,18 +23,38 @@ const TimeTracker = (() => {
 			["7:44", "17:12"]
 		],
 		IMAGETIMES = {
-			"2:00": "night3",
-			"3:30": "night4",
-			[-90]: "night5",
-			[-60]: "predawn5",
-			[-30]: "predawn4",
-			[-15]: "predawn3",
+			"1:00": "night2",
+			"2:30": "night3",
+			"4:00": "night4",
+			[-60]: "night5",
+			[-30]: "predawn5",
+			[-20]: "predawn4",
+			[-10]: "predawn3",
 			[-5]: "predawn2",
 			"dawn": "predawn1",
 			"dusk": "day",
-			"21:30": "night1",
-			"23:00": "night2",
-			"24:00": "night3"
+			"23:30": "night1",
+			"24:00": "night2"
+		},
+		AIRLIGHTS = {
+			AirLightLeft_1: {
+				off: 10000,
+				half: 500,
+				on: 500
+			},
+			AirLightMid_1: {
+				off: 11000,
+				on: 3000
+			},
+			AirLightTop_1: {
+				off: 5000,
+				on: 5000
+			},
+			AirLightCN_1: {off: 15000, on: 1500},
+			AirLightCN_2: {off: 15250, on: 1500},
+			AirLightCN_3: {off: 15500, on: 1500},
+			AirLightCN_4: {off: 15750, on: 1500},
+			AirLightCN_5: {off: 16000, on: 1500}
 		},
 		// #endregion
 
@@ -128,8 +149,40 @@ const TimeTracker = (() => {
 			timeTimer = setInterval(easeSet, CLOCKSPEED)
 		},
 		tickClock = () => {
-			dateObj.setUTCMinutes(dateObj.getUTCMinutes() + 1)
-			setCurrentDate()
+			if (isTimeRunning) {
+				dateObj.setUTCMinutes(dateObj.getUTCMinutes() + 1)
+				setCurrentDate()
+			}
+		},
+		tickAirLight = (alight) => {
+			if (!isAirlights) {
+				Images.Set(alight, "off")
+				return null
+			}
+			let [curSrc, curDur] = [null, null]
+			if (airKeys[alight].length === 0) {
+				curSrc = "off"
+				curDur = 30000 - _.reduce(_.values(AIRLIGHTS[alight]), (t, n) => t + n)
+				airKeys[alight] = [..._.keys(AIRLIGHTS[alight])]
+				//D.Alert(`OFF: [${D.JSL(airKeys[alight].join(","))}]`, D.JS(alight))
+			} else {
+				curSrc = airKeys[alight].shift()
+				curDur = AIRLIGHTS[alight][curSrc]
+				//D.Alert(`${curSrc.toUpperCase()}: [${D.JS(airKeys[alight].join(","))}]`, D.JS(alight))
+			}
+			if (curSrc !== Images.GetData(alight).curSrc)
+				Images.Toggle(alight, true, curSrc)
+
+			return setTimeout(() => { tickAirLight(alight) }, curDur )
+		},
+		startAirLights = () => {
+			isAirlights = true
+			while (airLights.length > 0)
+				clearInterval(airLights.pop())
+			for (const alight of _.keys(AIRLIGHTS)) {
+				airKeys[alight] = [..._.keys(AIRLIGHTS[alight])]
+				airLights.push(tickAirLight(alight))
+			}
 		},
 		// #endregion
 
@@ -187,12 +240,15 @@ const TimeTracker = (() => {
 					break
 				case "run": // Sets time to slowly move forward in real time.
 					clearInterval(timeTimer)
+					isTimeRunning = true
 					timeTimer = setInterval(tickClock, (parseInt(args.shift()) || 60) * 1000)
+					startAirLights()
 					D.Alert(`Auto clock ticking ENABLED at:<br><br>!time set ${dateObj.getUTCFullYear()} ${dateObj.getUTCMonth() + 1} ${dateObj.getUTCDate()} ${dateObj.getUTCHours()}:${dateObj.getUTCMinutes()}`, "TIMETRACKER !TIME")
 					break
 				case "stop":
 					clearInterval(timeTimer)
 					timeTimer = null
+					isTimeRunning = false
 					D.Alert("Auto clock ticking DISABLED", "TIMETRACKER !TIME")
 					break
 				default:
