@@ -1886,7 +1886,7 @@
 							rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "best")
 							deltaAttrs[p("projecttotalstake")] = rollResults.commit
 							deltaAttrs[p("projectlaunchresultsmargin")] = `(${rollResults.commit} Stake Required, ${rollResults.commit} to Go)`
-							deltaAttrs[p("projectlaunchresults")] = `:&nbsp;&nbsp;&nbsp;${total} SUCCESS${total > 1 ? "ES" : ""}!`
+							deltaAttrs[p("projectlaunchresults")] = `${total} SUCCESS${total > 1 ? "ES" : ""}!`
 						}
 						break
 					case "trait":
@@ -2088,7 +2088,10 @@
 						(v, dNum) => v.value === "blank" ||
 							state[D.GAMENAME].Roller.selected[dieCat].includes(parseInt(dNum))
 					), v => v.value
-				)
+				),
+				charObj = getObj("character", rollData.charID)
+			if (charObj)
+				Chars.Damage(charObj, "willpower", "spent", 1)
 			rollData.rerollAmt = state[D.GAMENAME].Roller.selected[dieCat].length
 			applyRoll(rollData, rollDice(rollData, _.values(rolledDice)))
 			DragPads.Toggle("wpReroll", false)

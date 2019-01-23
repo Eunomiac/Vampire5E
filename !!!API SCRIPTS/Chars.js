@@ -345,6 +345,35 @@ const Chars = (() => {
 
 	// #endregion
 
+	// #region Starting/Ending Sessions & Waking Up
+	const startSession = () => {
+		for (const char of D.GetChars("registered")) {
+			const healWP = Math.max(parseInt(getAttrByName(char.id, "composure")), parseInt(getAttrByName(char.id, "resolve")))
+			adjustDamage(char, "willpower", "superficial+", -1 * healWP)
+		}
+		TimeTracker.StartClock()
+		TimeTracker.StartLights()
+	}
+	const endSession = (sessionNum) => {
+		for (const char of D.GetChars("registered")) {
+			awardXP(char, 2, sessionNum, "Session XP award.")
+		}
+		TimeTracker.StopClock()
+	}
+	const wakePlayers = () => {		
+		for (const char of D.GetChars("registered")) {
+			for (const hBox of _.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], v => `health_${v}`)) {
+				if (getAttrByName(char.id, hBox) === "2") {
+					// HEAL
+					break
+				}
+			}
+			// ROUSE CHECK FOR WAKING
+		}
+	}
+
+	// #endregion
+
 	// #region Generating MVCs
 
 	const MVC = (params) => {
@@ -604,6 +633,13 @@ const Chars = (() => {
 			Images.ToggleToken(D.GetSelected(msg)[0], args.shift(), args.shift() || "prev")
 			break
 		case "!startSession":
+			if (playerIsGM(msg.playerid)) startSession()
+			break
+		case "!wake":
+			if (playerIsGM(msg.playerid)) wakePlayers()
+			break
+		case "!endSession":
+			if (playerIsGM(msg.playerid)) endSession() 
 			break
 		default:
 			break
@@ -624,15 +660,17 @@ const Chars = (() => {
 		state[D.GAMENAME] = state[D.GAMENAME] || {}
 		state[D.GAMENAME].Chars = state[D.GAMENAME].Chars || {}
 		
-		state[D.GAMENAME].Images.registry["JohannesNapierToken_1"].srcs.base = "https://s3.amazonaws.com/files.d20.io/images/69211889/6jgOBzDBfwvQV__fsORH6g/thumb.png?1544987477"
+		/* state[D.GAMENAME].Images.registry["JohannesNapierToken_1"].srcs.base = "https://s3.amazonaws.com/files.d20.io/images/69211889/6jgOBzDBfwvQV__fsORH6g/thumb.png?1544987477"
 		state[D.GAMENAME].Images.registry["Dr.ArthurRoyToken_1"].srcs.base = "https://s3.amazonaws.com/files.d20.io/images/69211896/wzLOhOB9kJEWjOmriZYWQw/thumb.png?1544987482"
 		state[D.GAMENAME].Images.registry["AvaWongToken_1"].srcs.base = "https://s3.amazonaws.com/files.d20.io/images/69211865/KtYm8rlY3VY3FdU_8ufO5g/thumb.png?1544987464"
+	 */
 	}
 	// #endregion
 
 	return {
 		RegisterEventHandlers: regHandlers,
 		CheckInstall: checkInstall,
+		Damage: adjustDamage
 	}
 })()
 

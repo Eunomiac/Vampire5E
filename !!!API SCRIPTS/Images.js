@@ -688,7 +688,7 @@ const Images = (() => {
 			state[D.GAMENAME].Images.registry = state[D.GAMENAME].Images.registry || {}
 			state[D.GAMENAME].Images.registry.Sources = state[D.GAMENAME].Images.registry.Sources || {}
 
-			state[D.GAMENAME].Images.registry.Horizon_1.startActive = true
+			/* state[D.GAMENAME].Images.registry.Horizon_1.startActive = true
 			state[D.GAMENAME].Images.registry.Horizon_1.srcs = {
 				night1: "https://s3.amazonaws.com/files.d20.io/images/71894926/x0iwUmXe0qwPj2c0RNThrA/thumb.jpg?1548156419",
 				night2:"https://s3.amazonaws.com/files.d20.io/images/71894930/8vRnSCPcxCePKQKb8QG6IQ/thumb.jpg?1548156426",
@@ -742,7 +742,7 @@ const Images = (() => {
 			state[D.GAMENAME].Images.registry.AirLightTop_1.srcs = {
 				off: IMGDATA.blank,
 				on: "https://s3.amazonaws.com/files.d20.io/images/71894842/MeivxopZEQWzmqEVfNqBaQ/thumb.png?1548156208"
-			}
+			} */
 		}
 	// #endregion
 

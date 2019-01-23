@@ -2429,7 +2429,7 @@
 	}
 
 	.charsheet div.sheet-projects div.sheet-projectstake {
-		width: calc(100% - 40px - 5px);
+		width: calc(100% - 40px - 25px);
 	}
 
 	.charsheet div.sheet-projects div.sheet-projectstake input.sheet-dotlinename {

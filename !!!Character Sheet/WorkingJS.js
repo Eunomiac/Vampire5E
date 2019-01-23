@@ -1673,12 +1673,12 @@
 						}
 						_.each( ["xp_trait_toggle", "xp_initial_toggle", "xp_new_toggle"],
 							v => {
-								if (colRef.includes(v) && pI(v) === 0)
+								if (colRef && colRef.includes(v) && pI(v) === 0)
 									attrList[p(v)] = 1
-								else if (!colRef.includes(v) && pI(v) === 1)
+								else if (colRef && !colRef.includes(v) && pI(v) === 1)
 									attrList[p(v)] = 0
 							} )
-						attrList[p("xp_arrow_toggle")] = Number(colRef.includes("xp_initial_toggle") && colRef.includes("xp_new_toggle"))
+						attrList[p("xp_arrow_toggle")] = Number(colRef && colRef.includes("xp_initial_toggle") && colRef.includes("xp_new_toggle"))
 					} )
 					attrList.xp_summary = `${ATTRS.xp_earnedtotal} XP Earned${spentTotal > 0 ? ` - ${spentTotal} XP Spent =  ${parseInt(ATTRS.xp_earnedtotal) - spentTotal} XP Remaining` : ""}`
 					cback(null, attrList)
