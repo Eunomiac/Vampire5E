@@ -1769,7 +1769,7 @@
 							}
 						}
 						if (rollData.type === "project")
-							deltaAttrs[p("projectlaunchresults")] = logLines.mainRoll
+							deltaAttrs[p("projectlaunchresultsummary")] = logLines.mainRoll
 						if (rollData.dicePool <= 0) {
 							logLines.mainRollSub = `${CHATSTYLES.mainRollSub}(One Die Minimum)</span>`
 							rollData.dicePool = 1
@@ -1818,7 +1818,7 @@
 					}
 					logLines.difficulty = ` vs. ${rollData.diff}`
 					if (rollData.type === "project")
-						deltaAttrs[p("projectlaunchresults")] += ` vs. Difficulty ${rollData.diff}`
+						deltaAttrs[p("projectlaunchresultsummary")] += ` vs. Difficulty ${rollData.diff}`
 
 					/* D.Alert(`RollLines: ${D.JS(rollLines)}`)
 								   D.Alert(`LogLines: ${D.JS(logLines)}`) */
@@ -1856,7 +1856,8 @@
 							rollLines.subOutcome.text = "Your Enemies Close In..."
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "worst")
 							rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "worst")
-							deltaAttrs[p("projectlaunchresults")] += ":&nbsp;&nbsp;&nbsp;TOTAL FAIL"
+							deltaAttrs[p("projectlaunchresultsummary")] += ":&nbsp;&nbsp;&nbsp;TOTAL FAIL"
+							deltaAttrs[p("projectlaunchresults")] = "TOTAL FAIL"
 							deltaAttrs[p("projectlaunchresultsmargin")] = "You've Angered Someone..."
 						} else if (margin < 0) {
 							logLines.outcome = `${CHATSTYLES.outcomeOrange}FAILURE!</span></div>`
@@ -1865,7 +1866,7 @@
 							rollLines.subOutcome.text = "+1 Difficulty to Try Again"
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "bad")
 							rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "bad")
-							deltaAttrs[p("projectlaunchresults")] = undefined
+							delete deltaAttrs[p("projectlaunchresultsummary")]
 							deltaAttrs[p("projectlaunchdiffmod")] = rollData.diffMod + 1
 							deltaAttrs[p("projectlaunchdiff")] = rollData.diff + 1
 						} else if (rollResults.critPairs.bb > 0) {
@@ -1875,7 +1876,8 @@
 							rollLines.subOutcome.text = "No Commit Needed!"
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "best")
 							rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "best")
-							deltaAttrs[p("projectlaunchresults")] += ":&nbsp;&nbsp;&nbsp;CRITICAL WIN!"
+							deltaAttrs[p("projectlaunchresultsummary")] += ":&nbsp;&nbsp;&nbsp;CRITICAL WIN!"
+							deltaAttrs[p("projectlaunchresults")] = "CRITICAL WIN!"
 							deltaAttrs[p("projectlaunchresultsmargin")] = "No Stake Needed!"
 						} else {
 							logLines.outcome = `${CHATSTYLES.outcomeWhite}SUCCESS!</span></div>`
@@ -1886,7 +1888,8 @@
 							rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "best")
 							deltaAttrs[p("projecttotalstake")] = rollResults.commit
 							deltaAttrs[p("projectlaunchresultsmargin")] = `(${rollResults.commit} Stake Required, ${rollResults.commit} to Go)`
-							deltaAttrs[p("projectlaunchresults")] = `${total} SUCCESS${total > 1 ? "ES" : ""}!`
+							deltaAttrs[p("projectlaunchresultsummary")] += `:&nbsp;&nbsp;&nbsp;${total} SUCCESS${total > 1 ? "ES" : ""}!`
+							deltaAttrs[p("projectlaunchresults")] = "SUCCESS!"
 						}
 						break
 					case "trait":

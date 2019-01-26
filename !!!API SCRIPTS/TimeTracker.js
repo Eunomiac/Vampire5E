@@ -40,9 +40,9 @@ const TimeTracker = (() => {
 			AirLightLeft_1: ["on:0", "on:7000", "half:100", "off:100", "half:100", "off:100", "half:100", "off:100"],
 			AirLightMid_1: ["on:0", "on:5000", "off:500"],
 			AirLightTop_1: ["on:0", "on:60000", "off:1000", "on:1000", "off:1000", "on:1000", "off:1000", "on:1000", "off:1000", "on:1000", "off:1000"],
-			AirLightCN_1: ["off:0", "off:10000", "on:1000", "off:1000"],
-			AirLightCN_2: ["off:2000", "off:100000", "on:1000", "off:1000"],
-			AirLightCN_3: ["off:6000", "off:100000", "on:1000", "off:1000"],
+			/* AirLightCN_1: ["off:0", "off:10000", "on:1000", "off:1000"],
+			AirLightCN_2: ["off:2000", "off:10000", "on:1000", "off:1000"],
+			AirLightCN_3: ["off:6000", "off:10000", "on:1000", "off:1000"], */
 			AirLightCN_4: ["on:0", "on:2000", "off:2000"],
 			AirLightCN_5: ["on:100", "on:2000", "off:2000"]
 		},
@@ -161,6 +161,10 @@ const TimeTracker = (() => {
 		tickAirLight = (alight, isStartup) => {
 			if (!isAirlights) {
 				Images.Set(alight, "on")
+				for (const alight of _.keys(airLights)) {
+					clearTimeout(airLights[alight])
+					delete airLights[alight]
+				}
 			} else {
 				const curTime = airTimes[alight].shift()
 				const [curSrc, curDur] = _.map(curTime.split(":"), v => _.isNaN(parseInt(v)) ? v : parseInt(v))
@@ -248,6 +252,9 @@ const TimeTracker = (() => {
 					return
 				}
 				setCurrentDate()
+				break
+			case "!stoplights":
+				isAirlights = false
 				break
 			case "!regtime":
 				if (!msg.selected || !msg.selected[0] ) {

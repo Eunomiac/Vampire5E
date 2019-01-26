@@ -272,13 +272,9 @@ const D = (() => {
 			else
 				sendChat("", `/w ${player} ${html}`)
 		},
-		logEntry = (msg, title = "") => {
-			/* Styling and sending to the Storyteller via whisper (Alert) or to the API console (Log). */
-			log(`[${jLog(title)}]: ${jLog(msg)}`)
-		},
-		alertGM = (msg, title = "[ALERT]") => {
-			sendToPlayer("Storyteller", msg, title)
-		},
+		/* Styling and sending to the Storyteller via whisper (Alert) or to the API console (Log). */
+		logEntry = (msg, title = "") => log(`[${jLog(title)}]: ${jLog(msg)}`),
+		alertGM = (msg, title = "[ALERT]") => sendToPlayer("Storyteller", msg, title),
 		ordinal = num => {
 			/* Converts any number by adding its appropriate ordinal ("2nd", "3rd", etc.) */
 			const tNum = parseInt(num) - (100 * Math.floor(parseInt(num) / 100))
@@ -644,10 +640,10 @@ const D = (() => {
 			} )
 			_.each(filterArray,
 				val => {
-					attrObjs = attrObjs.filter(
+					/* attrObjs = attrObjs.filter(
 						v => v.get("name").toLowerCase()
 							.includes(val.toLowerCase())
-					)
+					) */
 					attrObjs = _.filter(attrObjs,
 						v => v.get("name").toLowerCase()
 							.includes(val.toLowerCase()))
@@ -669,20 +665,18 @@ const D = (() => {
 			return attrList
 		},
 		isRepRow = (charRef, rowID) => getRepStats(charRef, [rowID] ).length > 0,
-		getRepRowIDs = (charRef, secName) => _.uniq(
-			_.map(
-				_.keys(
-					_.pick(
-						getRepAttrs(charRef, ["repeating", `${secName}_`] ), (v, k) => k.startsWith(`repeating_${secName}_`)
-					)
-				), k => k.replace(`repeating_${secName}_`, "").substr(0, 20)
+		getRepRowIDs = (charRef, secName) => {
+			_.uniq(
+				_.map(
+					_.keys(
+						_.pick(
+							getRepAttrs(charRef, ["repeating", `${secName}_`] ), (v, k) => k.startsWith(`repeating_${secName}_`)
+						)
+					), k => k.replace(`repeating_${secName}_`, "").substr(0, 20)
+				)
 			)
-		),
-		makeRow = (charRef, secName, attrs) => {
-			if (secName.toLowerCase() === "untitled") {
-				D.Log("ERROR: SEC NAME IS 'UNTITLED'!", "DATA:MakeRow()")
-				return false
-			}
+		},
+		makeRepRow = (charRef, secName, attrs) => {
 			const attrList = {},
 				IDa = 0,
 				IDb = [],
@@ -731,6 +725,7 @@ const D = (() => {
 			if (!D.GetChar(charRef) || !_.isString(secName) || !_.isString(rowID))
 				return D.ThrowError(`Need valid charRef (${D.JSL(charRef)}), secName (${D.JSL(secName)}) and rowID (${D.JSL(rowID)}) to delete a repeating row.`, "DATA.DeleteRepRow")
 			const attrObjs = getRepStats(charRef, [secName, rowID] )
+			// D.Alert(`deleteRepRow(charRef, ${D.JS(secName)}, ${D.JS(rowID)})<br><br><b>AttrObjs:</b><br>${D.JS(_.map(attrObjs, v => v.get("name")))}`, "DATA:DeleteRepRow")
 			if (attrObjs.length === 0)
 				return D.ThrowError(`No row "repeating_${secName}_${rowID}" to delete for ${D.GetName(charRef)}.`, "DATA.DeleteRepRow")
 			_.each(attrObjs, v => v.remove())
@@ -739,7 +734,8 @@ const D = (() => {
 		},
 		copyToRepSec = (charRef, sourceSec, sourceRowID, targetSec) => {
 			const attrList = keyMapObject(getRepAttrs(charRef, [sourceSec, sourceRowID] ), k => k.replace(`repeating_${sourceSec}_${sourceRowID}_`, ""))
-			makeRow(charRef, targetSec, attrList)
+			// D.Alert(`copyToRepSec(charRef, ${D.JS(sourceSec)}, ${D.JS(sourceRowID)}, ${D.JS(targetSec)})<br><br><b>AttrList:</b><br>${D.JS(attrList)}`, "DATA:CopyToRepSec")
+			makeRepRow(charRef, targetSec, attrList)
 			deleteRepRow(charRef, sourceSec, sourceRowID)
 		},
 		sortRepSec = (charRef, secName, sortFunc) => {
@@ -753,6 +749,7 @@ const D = (() => {
 			// D.Alert(`... SORTED?<br><br>${D.JS(rowIDs)}<br><br>TEST ATTR: ${D.JS(sortTrigger)}`, "DATA.SortRepSec")
 			setAttrs(D.GetChar(charRef).id, {[`_reporder_repeating_${secName}`]: rowIDs.join(",")} )
 			sortTrigger[`repeating_${secName}_${rowIDs[0]}_sorttrigger`] = sortTrigger[`repeating_${secName}_${rowIDs[0]}_sorttrigger`] === "false"
+			// D.Alert(`sortRepSec(charRef, ${D.JS(secName)}, sortFunc)<br><br><b>RowIDs:</b><br>${D.JS(rowIDs)}<br><br><b>sortTrigger:</b><br>${D.JS(sortTrigger)}`, "DATA:SortRepSec")
 			setAttrs(D.GetChar(charRef).id, sortTrigger)
 
 			return rowIDs
@@ -764,21 +761,29 @@ const D = (() => {
 				"even" — even-numbered rows will be moved to targetSec
 			Sortfunc must have parameters (charRef, secName, rowID1, rowID2) and return
 			POSITIVE INTEGER if row1 should be ABOVE row2.  */
+			// D.Alert(`splitRepSec(charRef, ${D.JS(sourceSec)}, ${D.JS(targetSec)}, sortFunc, ${D.JS(mode)})`, "DATA:SplitRepSec")
+			
+			// D.Alert("@@@ STARTING _.EACH COPYTOREPSEC @@@", "DATA:SplitRepSec")
 			_.each(getRepRowIDs(charRef, targetSec), id => {
 				copyToRepSec(charRef, targetSec, id, sourceSec)
 			} )
 			const sortedIDs = sortRepSec(charRef, sourceSec, sortFunc)
+			// D.Alert(`@@@ FINISHED _.EACH COPYTOREPSEC @@@<br><br><b>sortedIDs:</b><br>${D.JS(sortedIDs)}`, "DATA:SplitRepSec")
 			switch (mode) {
 			case "split":
 				sortedIDs.splice(0, Math.ceil(sortedIDs.length / 2))
+				// D.Alert(`@@@ SPLIT: STARTING SPLIT. @@@<br><br><b>sortedIDs (NEW):</b><br>${D.JS(sortedIDs)}`, "DATA:SplitRepSec")
 				while (sortedIDs.length > 0)
 					copyToRepSec(charRef, sourceSec, sortedIDs.shift(), targetSec)
+				// D.Alert("@@@ SPLIT: FINISHED SPLIT.", "DATA:SplitRepSec")
 				break
 			case "even":
+				// D.Alert("@@@ EVEN: STARTING EVEN.", "DATA:SplitRepSec")
 				for (let i = 0; i < sortedIDs.length; i++) {
 					if (i % 2)
 						copyToRepSec(charRef, sourceSec, sortedIDs[i], targetSec)
 				}
+				// D.Alert("@@@ EVEN: FINISHED EVEN.", "DATA:SplitRepSec")
 				break
 			default: break
 			}
@@ -882,7 +887,7 @@ const D = (() => {
 
 		/* D.GetTextWidth(obj, text):  Returns width of given text object if
 			       					    it held supplied text. */
-		MakeRow: makeRow,
+		MakeRow: makeRepRow,
 
 		/* D.MakeRow(charID/obj, secName, attrs):  Creates repeating fieldset row in
 													secName with attrs for character

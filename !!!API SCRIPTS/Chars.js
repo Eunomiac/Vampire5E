@@ -340,11 +340,6 @@ const Chars = (() => {
 
 	// #endregion
 
-	// #region Character Token Functions
-	
-
-	// #endregion
-
 	// #region Starting/Ending Sessions & Waking Up
 	const startSession = () => {
 		for (const char of D.GetChars("registered")) {
@@ -408,14 +403,12 @@ const Chars = (() => {
 		const who = (getObj("player", msg.playerid) || {
 			get: () => "API",
 		}).get("displayname")
-
 				
 		const args = msg.content.split(/\s+/u)
 		let [chars, params] = [
 			[],
 			[],
 		]
-
 				
 		let [amount, session, trait, dtype, dmg, attrString, charID, charData, token] = new Array(9).fill(null)
 		switch (args.shift()) {
@@ -654,7 +647,6 @@ const Chars = (() => {
 		on("chat:message", handleInput)
 		on("change:attribute:current", handleAttr)
 	}
-
 
 	const checkInstall = () => {
 		state[D.GAMENAME] = state[D.GAMENAME] || {}
