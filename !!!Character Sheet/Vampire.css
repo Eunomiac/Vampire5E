@@ -6,32 +6,9 @@
 	FOOTER URL IS https://imgur.com/FNL9mcz.png
 */
 
-	/* #region Root Styles */
-	.charsheet {
-		width: 884px;
-		margin-left: -22px;
-		padding: 0px 0px !important;
-
-		display: block;
-		background: url('https://imgur.com/cEhqqBG.png');
-		background-size: 100%;
-
-		font-family: 'Cormorant Garamond';
-		font-size: 0px;
-		font-style: normal;
-		line-height: initial;
-	}
-
-	.charsheet div.sheet-fullwrapper {
-		margin-top: -1px;
-	}
-
-	.charsheet div,
-	span,
-	input,
-	textarea,
-	select,
-	img {
+	/* #region DEFAULT ELEMENT STYLES */
+	/* #region ... General */
+	div, span, img, input, textarea, select {
 		width: 100%;
 		margin: 0px 0px;
 		padding: 0px 0px;
@@ -42,28 +19,39 @@
 		display: inline-block;
 		box-sizing: border-box;
 		resize: none;
-		position: relative;
 
-		background: none;
-		background-size: 100%;
-
-		color: black;
-
-		/* text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 2px #ccc; */
-
-		z-index: 1;
+		background: none 100% no-repeat center center;
 
 		border: none;
 	}
-
-	.charsheet span,
-	input,
-	textarea,
-	select {
+	input, textarea, select {
 		font-size: 16px;
-		text-indent: 2px;
+		text-indent: 2px;		
 	}
+	/* #endregion */
+	/* #region ... Wrapper (.charsheet) */
+	.charsheet {
+		width: 884px;
+		margin-left: -22px;
+		/* padding: 0px 0px; */
 
+		/* display: block; */
+		background-image: url('https://imgur.com/cEhqqBG.png');
+		background-repeat: repeat-y;
+
+		/* font-size: 0px;
+		font-family: 'Cormorant Garamond';
+		font-style: normal;
+		line-height: initial; */
+	}
+	/* #endregion */
+	/* #region ... Textarea */
+	.charsheet textarea {
+		padding: 3px 5px;
+		pointer-events: none;
+	}
+	/* #endregion */
+	/* #region ... Select */
 	.charsheet select {
 		-webkit-appearance: none;
 		background: url('https://i.imgur.com/XGlqfRG.png') no-repeat right;
@@ -75,536 +63,78 @@
 		color: black !important;
 		text-shadow: none !important;
 	}
-
-	.charsheet textarea {
-		padding: 3px 5px;
-		pointer-events: none;
-	}
-
-	.charsheet textarea.sheet-generalInput {
-		height: 100px;
-		margin-bottom: 10px;
-		line-height: 16px;
-		text-align: left;
-		text-align-last: left;
-
-		/*background: rgba(125, 125, 125, 0.25);*/
-
-		font-size: 14px !important;
-		font-variant: normal;
-		font-family: 'sexsmith';
-		font-weight: normal !important;
-
-		text-shadow: none !important;
-
-		/*border: 2px #999 inset;
-	border-left: none;
-	border-right: none;
-	border-radius: 10px;*/
-
-		pointer-events: all;
-	}
-
-	.charsheet hr {
-		margin: 10px 0px;
-		border-bottom: 2px solid #999;
-	}
-
-
-	.charsheet button[class^="sheet"] {
-		height: 100%;
-		width: 100%;
-		margin: 0px 0px !important;
-		padding: 0px 0px !important;
-
-		background: none;
-		font-size: 0px !important;
-
-		border: none !important;
-
-		opacity: 0;
-	}
-
-	.charsheet div.sheet-tooltip {
-		position: relative;
-		display: inline-block;
-	}
-
-	/* Tooltip text */
-	.charsheet div.sheet-tooltip .sheet-tooltiptext {
-		visibility: hidden;
-		width: 120px;
-		background-color: black;
-		color: #fff;
-		text-align: center;
-		padding: 5px 0;
-		border-radius: 6px;
-
-		/* Position the tooltip text - see examples below! */
-		position: absolute;
-		z-index: 1;
-	}
-
-	/* Show the tooltip text when you mouse over the tooltip container */
-	.charsheet div.sheet-tooltip:hover .sheet-tooltiptext {
-		visibility: visible;
-	}
-
-
-	.charsheet select,
-	input[type="text"],
-	textarea {
-		height: 16px;
-
-		display: inline-block;
-
-		color: rgba(255, 255, 255, 0.5);
-	}
-
-	.charsheet .sheet-header1,
-	.charsheet .sheet-header2,
-	.charsheet input.sheet-header2,
-	.charsheet .sheet-header3,
-	.charsheet .sheet-header4,
-	.charsheet .sheet-header5 {
-		display: inline-block;
-		text-align: center;
-		text-align-last: center;
-
-		color: rgba(255, 255, 255, 0.5);
-		font-family: 'Bodoni SvtyTwo ITC TT' !important;
-		font-size: 20px !important;
-		font-variant: small-caps;
-
-		text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc;
-
-		/*z-index: 10;*/
-	}
-
-	.charsheet .sheet-header1 {
-		margin: 10px 0px;
-	}
-
-	.charsheet input[type="text"].sheet-header2 {
-		height: 24px !important;
-	}
-
-	.charsheet .sheet-header3 {
-		margin-bottom: 10px;
-
-		display: block;
-
-		color: rgba(255, 255, 255, 0.5);
-		font-variant: normal;
-
-		/*text-shadow: none;*/
-	}
-
-	.charsheet .sheet-header4 {
-		margin-top: 5px;
-		color: rgba(255, 255, 255, 0.5);
-	}
-
-	.charsheet .sheet-header5 {
-		color: rgba(255, 255, 255, 0.5);
-
-		font-size: 16px !important;
-	}
-
-	.charsheet .sheet-insetBox {
-		background-color: rgba(100, 100, 100, 0.3);
-		box-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 2px #ccc;
-		border-radius: 5px;
-	}
-
-	.charsheet input.sheet-insetBox {
-		padding-left: 5px;
-	}
-
-	.charsheet .sheet-centered {
-		text-align: center !important;
-		text-align-last: center !important;
-	}
-
-	.charsheet .sheet-left {
-		text-align: left !important;
-		text-align-last: left !important;
-	}
-
-	.charsheet .sheet-right {
-		text-align: right !important;
-		text-align-last: right !important;
-	}
-
-	.charsheet .sheet-bold {
-		font-weight: bolder !important;
-	}
-
-	.charsheet .sheet-normal {
-		font-weight: normal !important;
-	}
-
-	.charsheet .sheet-littlenote {
-		width: 130%;
-		height: 22px;
-		line-height: 11px;
-		margin: -6px 0px 5px -15%;
-		padding: 0px;
-		text-align: center;
-		text-align-last: center;
-
-		color: #933;
-		font-size: 11px;
-		font-family: 'Cormorant Garamond';
-		font-weight: 900;
-
-		text-shadow: none;
-	}
-
-	.charsheet .sheet-clearText {
-		color: black !important;
-		font-weight: bolder !important;
-		text-shadow: -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 2px #ccc !important;
-	}
-
-	.charsheet .sheet-darkText {
-		color: black !important;
-		text-shadow: none !important;
-		font-weight: bolder;
-	}
-
-	.charsheet .sheet-cleanText {
-		color: black !important;
-		text-shadow: none !important;
-		font-weight: normal !important;
-	}
-
-	/*#endregion*/
-	/* #region Layout */
-	.charsheet div.sheet-loadingbay,
-	.charsheet div.sheet-loadingbay img {
-		height: 1px;
-		width: 1px;
-		margin-bottom: -1px;
-	}
-
-	.charsheet div.sheet-header {
-		height: 250px;
-		margin-bottom: -160px;
-		max-height: 200px;
-
-		display: block;
-		background: none;
-	}
-
-	.charsheet div.sheet-footer {
-		margin-top: -150px;
-		z-index: 0;
-	}
-
-	.charsheet div.sheet-pagecontainer {
-		margin-left: 1px;
-		margin-right: -1px;
-		padding: 0px 30px 20px 30px;
-
-		text-align: center;
-		text-align-last: center;
-
-		/*z-index: 1000;*/
-	}
-
-	.charsheet div.sheet-engravedFrame {
-		height: auto;
-		width: 80%;
-		padding: 5px 10px;
-
-		background-color: rgba(100, 100, 100, 0.15);
-
-		border: 3px inset #ccc;
-		border-radius: 7px;
-	}
-
-	.charsheet div[class*="sheet-col"] {
-		margin: 0px 5px;
-	}
-
-	.charsheet div[class*="sheet-coltight"] {
-		margin: 0px 0px;
-	}
-
-	.charsheet div.sheet-col1 {
-		width: calc(100% * (1) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-coltight1 {
-		width: calc(100% * (1));
-	}
-
-	.charsheet div.sheet-col3x4 {
-		width: calc(100% * (3/4) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-coltight3x4 {
-		width: calc(100% * (3/4));
-	}
-
-	.charsheet div.sheet-col2x3 {
-		width: calc(100% * (2/3) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-coltight2x3 {
-		width: calc(100% * (2/3));
-	}
-
-	.charsheet div.sheet-col1x3 {
-		width: calc(100% * (1/3) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-coltight1x3 {
-		width: calc(100% * (1/3));
-	}
-
-	.charsheet div.sheet-col2 {
-		width: calc(100% * (1/2) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-colshort2 {
-		width: calc(100% * (1/2.5) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-coltight2 {
-		width: calc(100% * (1/2));
-	}
-
-	.charsheet div.sheet-col3 {
-		width: calc(100% * (1/3) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-colshort3 {
-		width: calc(100% * (1/3.5) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-coltight3 {
-		width: calc(100% * (1/3));
-	}
-
-	.charsheet div.sheet-col4 {
-		width: calc(100% * (1/4) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-colshort4 {
-		width: calc(100% * (1/4.5) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-coltight4 {
-		width: calc(100% * (1/4));
-	}
-
-	.charsheet div.sheet-75px {
-		width: 75px;
-	}
-
 	/* #endregion */
-	/* #region Grid Layout */
-	.charsheet div[class*="grid"] {
+	/* #endregion */
+
+	/* #region GRID LAYOUT */
+	.charsheet, div.sheet-grid {
+		display: grid !important; /* !IMP to override inaccessible Roll20 settings. */ 
 		grid-gap: 5px;
 		grid-auto-rows: 20px;
 		grid-row-gap: 2px;
 
-		background: none;
 		position: relative;
 		z-index: 0;
 	}
-
 	.charsheet {
-		width: 884px;
-
-		display: grid !important; /* Necessary to override inaccessible Roll20 settings. */ 
-		grid: 
+		grid-template-areas:
 			'header'
 			'navbar'
-			'sheet'
+			'contents'
 			'footer';
-
-		margin-left: -22px;
-		padding: 0px 0px !important; /* Necessary to override inaccessible Roll20 settings. */
-
-		background: url('https://imgur.com/cEhqqBG.png');
-
-		font-family: 'Cormorant Garamond';
-		font-size: 0px;
-		line-height: normal;
 	}
 
-	.charsheet > div.sheet-loadingbay,
-	.charsheet > div.sheet-loadingbay img {
-		height: 1px;
-		width: 1px;
-		margin-bottom: -1px;
-	}
-
-	.charsheet > div.sheet-header {
+	div.sheet-header {
 		grid-area: header;
 		margin-bottom: -160px;
+
+		background-image: url('https://imgur.com/DJ3KxdD.png');
 		/* height: 250px;
 		max-height: 200px;
 		display: block; */
 	}
 
-	.charsheet > div[class*="navbargrid"] {
+	div.sheet-navbar {
 		grid-area: navbar;
-		grid-gap: 5px;
-		grid-auto-rows: 20px;
-		grid-row-gap: 2px;
+		display: grid;
+		
+	}
 
-		background: none;
+	div.sheet-contents {
+		grid-area: sheet;
 		position: relative;
 		z-index: 0;
 	}
 
-	.charsheet > div[class*="sheetgrid"] {
-		grid-area: sheet;
-		grid: 
-			'marquee',
-			'topblock',
-			'diceroller',
-			'body';
-		grid-gap: 5px;
-		grid-auto-rows: 20px;
-		grid-row-gap: 2px;
-
-		background: none;
-		position: relative;
-		z-index: 1;
-
-		/* margin-left: 1px;
-		margin-right: -1px; 
-		padding: 0px 30px 20px 30px; 
-
-		text-align: center;
-		text-align-last: center;*/
-	}
-
-	.charsheet div.sheet-marquee { grid-area: marquee; }
-	.charsheet div.sheet-topblock {	grid-area: topblock; }
-	.charsheet div.sheet-diceroller { grid-area: diceroller; }
-	.charsheet div.sheet-body {	grid-area: body; }
-
-	.charsheet > div.sheet-footer {
+	div.sheet-footer {
 		grid-area: footer;
 		margin-top: -150px;
+
+		background-image: url('https://imgur.com/FNL9mcz.png');
 	}
-
-
-
-	.charsheet div[class*="sheet-col"] {
-		margin: 0px 5px;
-	}
-
-	.charsheet div[class*="sheet-coltight"] {
-		margin: 0px 0px;
-	}
-
-	.charsheet div.sheet-col1 {
-		width: calc(100% * (1) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-coltight1 {
-		width: calc(100% * (1));
-	}
-
-	.charsheet div.sheet-col3x4 {
-		width: calc(100% * (3/4) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-coltight3x4 {
-		width: calc(100% * (3/4));
-	}
-
-	.charsheet div.sheet-col2x3 {
-		width: calc(100% * (2/3) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-coltight2x3 {
-		width: calc(100% * (2/3));
-	}
-
-	.charsheet div.sheet-col1x3 {
-		width: calc(100% * (1/3) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-coltight1x3 {
-		width: calc(100% * (1/3));
-	}
-
-	.charsheet div.sheet-col2 {
-		width: calc(100% * (1/2) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-colshort2 {
-		width: calc(100% * (1/2.5) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-coltight2 {
-		width: calc(100% * (1/2));
-	}
-
-	.charsheet div.sheet-col3 {
-		width: calc(100% * (1/3) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-colshort3 {
-		width: calc(100% * (1/3.5) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-coltight3 {
-		width: calc(100% * (1/3));
-	}
-
-	.charsheet div.sheet-col4 {
-		width: calc(100% * (1/4) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-colshort4 {
-		width: calc(100% * (1/4.5) - (2 * 5px));
-	}
-
-	.charsheet div.sheet-coltight4 {
-		width: calc(100% * (1/4));
-	}
-
-	.charsheet div.sheet-75px {
-		width: 75px;
-	}	
-
-	.charsheet div[class*="tight"] {
-		grid-gap: 0;
-		margin: 0;
-		padding: 0;
-		font-size: 0;
-	}
-
-	
-	.charsheet div.sheet-engravedFrame {
-		height: auto;
-		width: 80%;
-		padding: 5px 10px;
-
-		background-color: rgba(100, 100, 100, 0.15);
-
-		border: 3px inset #ccc;
-		border-radius: 7px;
-	}
-
-
 	/* #endregion */
 
-	/* #region Sheet Selection & Page Control */
+	/* #region MISC LAYOUT */
+	div.sheet-loadingbay,
+	div.sheet-loadingbay img {
+		height: 1px;
+		width: 1px;
+		margin-bottom: -1px;
+	}
+	/* #endregion
 
-	/* Initialize three top-level grid containers to invisible. */
-	.charsheet [class*="navbargrid"],
-	.charsheet [class*="sheetgrid"],
-	.charsheet [class*="pagegrid"] {
+/* ==================================================================================================== */
+
+	/* #region SHEET & PAGE SELECTORS */
+
+	/* Initialize three top-level grid containers and settings page controller to invisible. */
+	.charsheet .sheet-settings,
+	.charsheet .sheet-vamp,
+	.charsheet .sheet-mortal,
+	.charsheet .sheet-npcvamp,
+	.charsheet .sheet-npcmortal,
+	.charsheet .sheet-npcother,
+	.charsheet .sheet-npcgroup {
 		display: none;
 	}
 
@@ -653,7 +183,6 @@
 	.charsheet input[type=hidden].sheet-pagecontrol[value="0"]~.sheet-settingssheetgrid {
 		display: grid;
 	}
-	/* #endregion */
 
 	.charsheet input.sheet-tab0:checked~div.sheet-settings {
 		margin-top: -18px;
@@ -941,6 +470,489 @@
 
 	/*#endregion*/
 
+
+	/* #region Root Styles */
+
+	.charsheet div.sheet-fullwrapper {
+		margin-top: -1px;
+	}
+
+	.charsheet textarea.sheet-generalInput {
+		height: 100px;
+		margin-bottom: 10px;
+		line-height: 16px;
+		text-align: left;
+		text-align-last: left;
+
+		/*background: rgba(125, 125, 125, 0.25);*/
+
+		font-size: 14px !important;
+		font-variant: normal;
+		font-family: 'sexsmith';
+		font-weight: normal !important;
+
+		text-shadow: none !important;
+
+		/*border: 2px #999 inset;
+	border-left: none;
+	border-right: none;
+	border-radius: 10px;*/
+
+		pointer-events: all;
+	}
+
+	.charsheet hr {
+		margin: 10px 0px;
+		border-bottom: 2px solid #999;
+	}
+
+
+	.charsheet button[class^="sheet"] {
+		height: 100%;
+		width: 100%;
+		margin: 0px 0px !important;
+		padding: 0px 0px !important;
+
+		background: none;
+		font-size: 0px !important;
+
+		border: none !important;
+
+		opacity: 0;
+	}
+
+	.charsheet div.sheet-tooltip {
+		position: relative;
+		display: inline-block;
+	}
+
+	/* Tooltip text */
+	.charsheet div.sheet-tooltip .sheet-tooltiptext {
+		visibility: hidden;
+		width: 120px;
+		background-color: black;
+		color: #fff;
+		text-align: center;
+		padding: 5px 0;
+		border-radius: 6px;
+
+		/* Position the tooltip text - see examples below! */
+		position: absolute;
+		z-index: 1;
+	}
+
+	/* Show the tooltip text when you mouse over the tooltip container */
+	.charsheet div.sheet-tooltip:hover .sheet-tooltiptext {
+		visibility: visible;
+	}
+
+
+	.charsheet select,
+	input[type="text"],
+	textarea {
+		height: 16px;
+
+		display: inline-block;
+
+		color: rgba(255, 255, 255, 0.5);
+	}
+
+	.charsheet .sheet-header1,
+	.charsheet .sheet-header2,
+	.charsheet input.sheet-header2,
+	.charsheet .sheet-header3,
+	.charsheet .sheet-header4,
+	.charsheet .sheet-header5 {
+		display: inline-block;
+		text-align: center;
+		text-align-last: center;
+
+		color: rgba(255, 255, 255, 0.5);
+		font-family: 'Bodoni SvtyTwo ITC TT' !important;
+		font-size: 20px !important;
+		font-variant: small-caps;
+
+		text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc;
+
+		/*z-index: 10;*/
+	}
+
+	.charsheet .sheet-header1 {
+		margin: 10px 0px;
+	}
+
+	.charsheet input[type="text"].sheet-header2 {
+		height: 24px !important;
+	}
+
+	.charsheet .sheet-header3 {
+		margin-bottom: 10px;
+
+		display: block;
+
+		color: rgba(255, 255, 255, 0.5);
+		font-variant: normal;
+
+		/*text-shadow: none;*/
+	}
+
+	.charsheet .sheet-header4 {
+		margin-top: 5px;
+		color: rgba(255, 255, 255, 0.5);
+	}
+
+	.charsheet .sheet-header5 {
+		color: rgba(255, 255, 255, 0.5);
+
+		font-size: 16px !important;
+	}
+
+	.charsheet .sheet-insetBox {
+		background-color: rgba(100, 100, 100, 0.3);
+		box-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 2px #ccc;
+		border-radius: 5px;
+	}
+
+	.charsheet input.sheet-insetBox {
+		padding-left: 5px;
+	}
+
+	.charsheet .sheet-centered {
+		text-align: center !important;
+		text-align-last: center !important;
+	}
+
+	.charsheet .sheet-left {
+		text-align: left !important;
+		text-align-last: left !important;
+	}
+
+	.charsheet .sheet-right {
+		text-align: right !important;
+		text-align-last: right !important;
+	}
+
+	.charsheet .sheet-bold {
+		font-weight: bolder !important;
+	}
+
+	.charsheet .sheet-normal {
+		font-weight: normal !important;
+	}
+
+	.charsheet .sheet-littlenote {
+		width: 130%;
+		height: 22px;
+		line-height: 11px;
+		margin: -6px 0px 5px -15%;
+		padding: 0px;
+		text-align: center;
+		text-align-last: center;
+
+		color: #933;
+		font-size: 11px;
+		font-family: 'Cormorant Garamond';
+		font-weight: 900;
+
+		text-shadow: none;
+	}
+
+	.charsheet .sheet-clearText {
+		color: black !important;
+		font-weight: bolder !important;
+		text-shadow: -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 2px #ccc !important;
+	}
+
+	.charsheet .sheet-darkText {
+		color: black !important;
+		text-shadow: none !important;
+		font-weight: bolder;
+	}
+
+	.charsheet .sheet-cleanText {
+		color: black !important;
+		text-shadow: none !important;
+		font-weight: normal !important;
+	}
+
+	/*#endregion*/
+	/* #region Layout */
+	.charsheet div.sheet-loadingbay,
+	.charsheet div.sheet-loadingbay img {
+		height: 1px;
+		width: 1px;
+		margin-bottom: -1px;
+	}
+
+	.charsheet div.sheet-header {
+		height: 250px;
+		margin-bottom: -160px;
+		max-height: 200px;
+
+		display: block;
+		background: none;
+	}
+
+
+
+	.charsheet div.sheet-pagecontainer {
+		margin-left: 1px;
+		margin-right: -1px;
+		padding: 0px 30px 20px 30px;
+
+		text-align: center;
+		text-align-last: center;
+
+		/*z-index: 1000;*/
+	}
+
+	.charsheet div.sheet-engravedFrame {
+		height: auto;
+		width: 80%;
+		padding: 5px 10px;
+
+		background-color: rgba(100, 100, 100, 0.15);
+
+		border: 3px inset #ccc;
+		border-radius: 7px;
+	}
+
+	.charsheet div[class*="sheet-col"] {
+		margin: 0px 5px;
+	}
+
+	.charsheet div[class*="sheet-coltight"] {
+		margin: 0px 0px;
+	}
+
+	.charsheet div.sheet-col1 {
+		width: calc(100% * (1) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-coltight1 {
+		width: calc(100% * (1));
+	}
+
+	.charsheet div.sheet-col3x4 {
+		width: calc(100% * (3/4) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-coltight3x4 {
+		width: calc(100% * (3/4));
+	}
+
+	.charsheet div.sheet-col2x3 {
+		width: calc(100% * (2/3) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-coltight2x3 {
+		width: calc(100% * (2/3));
+	}
+
+	.charsheet div.sheet-col1x3 {
+		width: calc(100% * (1/3) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-coltight1x3 {
+		width: calc(100% * (1/3));
+	}
+
+	.charsheet div.sheet-col2 {
+		width: calc(100% * (1/2) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-colshort2 {
+		width: calc(100% * (1/2.5) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-coltight2 {
+		width: calc(100% * (1/2));
+	}
+
+	.charsheet div.sheet-col3 {
+		width: calc(100% * (1/3) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-colshort3 {
+		width: calc(100% * (1/3.5) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-coltight3 {
+		width: calc(100% * (1/3));
+	}
+
+	.charsheet div.sheet-col4 {
+		width: calc(100% * (1/4) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-colshort4 {
+		width: calc(100% * (1/4.5) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-coltight4 {
+		width: calc(100% * (1/4));
+	}
+
+	.charsheet div.sheet-75px {
+		width: 75px;
+	}
+
+	/* #endregion */
+	/* #region Grid Layout */
+
+
+
+	.charsheet > 
+
+	.charsheet > div[class*="navbargrid"] {
+		grid-area: navbar;
+		grid-gap: 5px;
+		grid-auto-rows: 20px;
+		grid-row-gap: 2px;
+
+		background: none;
+		position: relative;
+		z-index: 0;
+	}
+
+	.charsheet > div[class*="sheetgrid"] {
+		grid-area: sheet;
+		grid: 
+			'marquee',
+			'topblock',
+			'diceroller',
+			'body';
+		grid-gap: 5px;
+		grid-auto-rows: 20px;
+		grid-row-gap: 2px;
+
+		background: none;
+		position: relative;
+		z-index: 1;
+
+		/* margin-left: 1px;
+		margin-right: -1px; 
+		padding: 0px 30px 20px 30px; 
+
+		text-align: center;
+		text-align-last: center;*/
+	}
+
+	.charsheet div.sheet-marquee { grid-area: marquee; }
+	.charsheet div.sheet-topblock {	grid-area: topblock; }
+	.charsheet div.sheet-diceroller { grid-area: diceroller; }
+	.charsheet div.sheet-body {	grid-area: body; }
+
+	.charsheet > div.sheet-footer {
+		grid-area: footer;
+		margin-top: -150px;
+	}
+
+
+
+	.charsheet div[class*="sheet-col"] {
+		margin: 0px 5px;
+	}
+
+	.charsheet div[class*="sheet-coltight"] {
+		margin: 0px 0px;
+	}
+
+	.charsheet div.sheet-col1 {
+		width: calc(100% * (1) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-coltight1 {
+		width: calc(100% * (1));
+	}
+
+	.charsheet div.sheet-col3x4 {
+		width: calc(100% * (3/4) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-coltight3x4 {
+		width: calc(100% * (3/4));
+	}
+
+	.charsheet div.sheet-col2x3 {
+		width: calc(100% * (2/3) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-coltight2x3 {
+		width: calc(100% * (2/3));
+	}
+
+	.charsheet div.sheet-col1x3 {
+		width: calc(100% * (1/3) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-coltight1x3 {
+		width: calc(100% * (1/3));
+	}
+
+	.charsheet div.sheet-col2 {
+		width: calc(100% * (1/2) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-colshort2 {
+		width: calc(100% * (1/2.5) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-coltight2 {
+		width: calc(100% * (1/2));
+	}
+
+	.charsheet div.sheet-col3 {
+		width: calc(100% * (1/3) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-colshort3 {
+		width: calc(100% * (1/3.5) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-coltight3 {
+		width: calc(100% * (1/3));
+	}
+
+	.charsheet div.sheet-col4 {
+		width: calc(100% * (1/4) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-colshort4 {
+		width: calc(100% * (1/4.5) - (2 * 5px));
+	}
+
+	.charsheet div.sheet-coltight4 {
+		width: calc(100% * (1/4));
+	}
+
+	.charsheet div.sheet-75px {
+		width: 75px;
+	}	
+
+	.charsheet div[class*="tight"] {
+		grid-gap: 0;
+		margin: 0;
+		padding: 0;
+		font-size: 0;
+	}
+
+	
+	.charsheet div.sheet-engravedFrame {
+		height: auto;
+		width: 80%;
+		padding: 5px 10px;
+
+		background-color: rgba(100, 100, 100, 0.15);
+
+		border: 3px inset #ccc;
+		border-radius: 7px;
+	}
+
+
+	/* #endregion */
+
+	
 	/* #region Trait Selection & Highlighting */
 	.charsheet input.sheet-attr:not(.sheet-grouptab) {
 		width: 80px;
