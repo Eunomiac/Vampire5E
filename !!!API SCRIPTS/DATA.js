@@ -510,56 +510,60 @@ const D = (() => {
 			return [...charObjs]
 		},
 		getChar = v => getChars(v)[0],
-		getStat = (charRef, statName, isNumOnly = false) => {
-			let stats = findObjs( {
-				_type: "attribute",
-				_characterid: getChar(charRef).id,
-				_name: statName
+		getStats = (charRef, searchPattern, isNumOnly = false) => {
+			const charObj = D.GetChar(charRef)
+			let attrObjs = []
+			if (!charObj)
+				return D.ThrowError(`Invalid character reference: ${D.JS(charRef)}`, "DATA:GetStats")
+			if (_.isArray(searchPattern)) {
+				let patterns = [...searchPattern]
+				attrObjs = getStats(charRef, patterns.shift(), isNumOnly)
+				for (const pattern of patterns)
+					attrObjs = _.intersection(attrObjs, getStats(charRef, pattern, isNumOnly))					
+			} else {
+				// First, attempt to find the exact attribute name.
+				attrObjs = findObjs( {
+					_type: "attribute",
+					_characterid: getChar(charRef).id,
+					_name: searchPattern
+				} )
+				// ... if not, try a fuzzier search, using the statName as a search parameter.
+				if (attrObjs.length === 0)
+					attrObjs = _.filter(findObjs({
+						type: "attribute",
+						characterid: charObj.id
+					}), v => v.get("name").toLowerCase().includes(searchPattern.toLowerCase()))
+				// ... if not, see if 'statName' is included in the "..._name" value of a repeating attribute.
+				if (attrObjs.length === 0) {
+					let nameStatsAll = getStats(charRef, ["repeating", "_name"]),
+						nameStats = _.filter(nameStatsAll, v => v.get("current").toLowerCase() === searchPattern.toLowerCase())
+					if (nameStats.length === 0)
+						nameStats = _.filter(nameStatsAll, v => v.get("current").toLowerCase().includes(searchPattern.toLowerCase()))
+					if (nameStats.length > 0)
+						for (const stat of nameStats)
+							attrObjs.push(...findObjs( {
+								_type: "attribute",
+								_characterid: getChar(charRef).id,
+								_name: stat.get("name").replace(/_name/gu, "")
+							} ))			
+				}
+				// If only looking for numerical values, filter out non-numbers.
+				if (attrObjs.length > 0 && isNumOnly)
+					attrObjs = _.filter(attrObjs, v => _.isNumber(parseInt(v.get("current"))) && !_.isNaN(parseInt(v.get("current"))))
+			}
+			if (attrObjs.length > 0)
+				return attrObjs
+			
+			return D.ThrowError(`No attributes matched all search patterns: ${D.JS(searchPattern)}`, "DATA:GetStats")
+		},
+		getStat = (charRef, searchPattern, isNumOnly) => getStats(charRef, searchPattern, isNumOnly)[0],
+		getStatData = (charRef, filterArray) => {
+			const attrList = {}
+			_.each(getStats(charRef, filterArray), v => {
+				attrList[v.get("name")] = v.get("current")
 			} )
-			if (isNumOnly)
-				stats = _.filter(stats, v => _.isNumber(parseInt(v.get("current"))) && !_.isNaN(parseInt(v.get("current"))))
-			if (stats[0] && stats[0] !== undefined)
-				return stats[0]
-			stats = getRepStats(charRef, [statName] )
-			if (isNumOnly)
-				stats = _.filter(stats, v => _.isNumber(parseInt(v.get("current"))) && !_.isNaN(parseInt(v.get("current"))))
-			if (stats[0] && stats[0] !== undefined)
-				return stats[0]
-			for (const stat of _.filter(getRepStats(charRef, ["repeating", "_name"] ), v => v.get("current") === statName)) {
-				stats.push(...findObjs( {
-					_type: "attribute",
-					_characterid: getChar(charRef).id,
-					_name: stat.get("name").replace(/_name/gu, "")
-				} ))
-			}
-			if (isNumOnly)
-				stats = _.filter(stats, v => _.isNumber(parseInt(v.get("current"))) && !_.isNaN(parseInt(v.get("current"))))
-			if (stats[0] && stats[0] !== undefined)
-				return stats[0]
-			for (const stat of _.filter(getRepStats(charRef, ["repeating", "_name"] ), v => v.get("current").startsWith(statName))) {
-				stats.push(...findObjs( {
-					_type: "attribute",
-					_characterid: getChar(charRef).id,
-					_name: stat.get("name").replace(/_name/gu, "")
-				} ))
-			}
-			if (isNumOnly)
-				stats = _.filter(stats, v => _.isNumber(parseInt(v.get("current"))) && !_.isNaN(parseInt(v.get("current"))))
-			if (stats[0] && stats[0] !== undefined)
-				return stats[0]
-			for (const stat of _.filter(getRepStats(charRef, ["repeating", "_name"] ), v => v.get("current").includes(statName))) {
-				stats.push(...findObjs( {
-					_type: "attribute",
-					_characterid: getChar(charRef).id,
-					_name: stat.get("name").replace(/_name/gu, "")
-				} ))
-			}
-			if (isNumOnly)
-				stats = _.filter(stats, v => _.isNumber(parseInt(v.get("current"))) && !_.isNaN(parseInt(v.get("current"))))
-			if (stats[0] && stats[0] !== undefined)
-				return stats[0]
 
-			return false
+			return attrList
 		},
 		getPlayerID = value => {
 			// Returns a PLAYER ID given: display name, token object, character object.
@@ -628,54 +632,17 @@ const D = (() => {
 
 			return attrObjs[0].get("name").split("_")[2]
 		},
-		getRepStats = (charRef, filterArray) => {
-			/* Returns an ARRAY of REPEATING ATTRIBUTE OBJECTS on <value> character.  Can specify a filter array
-			containing strings that must appear in the attribute's name. */
-			const charObj = getChar(charRef)
-			if (!charObj)
-				return throwError(`No character at '${jStr(charRef)}'`)
-			let attrObjs = findObjs( {
-				type: "attribute",
-				characterid: charObj.id
-			} )
-			_.each(filterArray,
-				val => {
-					/* attrObjs = attrObjs.filter(
-						v => v.get("name").toLowerCase()
-							.includes(val.toLowerCase())
-					) */
-					attrObjs = _.filter(attrObjs,
-						v => v.get("name").toLowerCase()
-							.includes(val.toLowerCase()))
-				} )
-
-			return attrObjs
-		},
-		// As getRepStats(), but only returns a single attribute object.
-		getRepStat = (charRef, filterArray) => getRepStats(charRef, filterArray)[0],
-		// As getRepStats(), but returns a list of attribute {name: value} pairs instead of attribute objects.
-		getRepAttrs = (charRef, filterArray) => {
-			const attrList = {}
-			_.each(getRepStats(charRef, filterArray), v => {
-				attrList[v.get("name")] = v.get("current")
-			} )
-
-			// D.Alert(`GETREPATTRS: ${D.JS(attrList)}`)
-
-			return attrList
-		},
-		isRepRow = (charRef, rowID) => getRepStats(charRef, [rowID] ).length > 0,
-		getRepRowIDs = (charRef, secName) => {
+		isRepRow = (charRef, rowID) => getStats(charRef, [rowID] ).length > 0,
+		getRepRowIDs = (charRef, secName) => 
 			_.uniq(
 				_.map(
 					_.keys(
 						_.pick(
-							getRepAttrs(charRef, ["repeating", `${secName}_`] ), (v, k) => k.startsWith(`repeating_${secName}_`)
+							getStatData(charRef, ["repeating", `${secName}_`] ), (v, k) => k.startsWith(`repeating_${secName}_`)
 						)
 					), k => k.replace(`repeating_${secName}_`, "").substr(0, 20)
 				)
-			)
-		},
+			),
 		makeRepRow = (charRef, secName, attrs) => {
 			const attrList = {},
 				IDa = 0,
@@ -724,7 +691,7 @@ const D = (() => {
 		deleteRepRow = (charRef, secName, rowID) => {
 			if (!D.GetChar(charRef) || !_.isString(secName) || !_.isString(rowID))
 				return D.ThrowError(`Need valid charRef (${D.JSL(charRef)}), secName (${D.JSL(secName)}) and rowID (${D.JSL(rowID)}) to delete a repeating row.`, "DATA.DeleteRepRow")
-			const attrObjs = getRepStats(charRef, [secName, rowID] )
+			const attrObjs = getStats(charRef, [secName, rowID] )
 			// D.Alert(`deleteRepRow(charRef, ${D.JS(secName)}, ${D.JS(rowID)})<br><br><b>AttrObjs:</b><br>${D.JS(_.map(attrObjs, v => v.get("name")))}`, "DATA:DeleteRepRow")
 			if (attrObjs.length === 0)
 				return D.ThrowError(`No row "repeating_${secName}_${rowID}" to delete for ${D.GetName(charRef)}.`, "DATA.DeleteRepRow")
@@ -733,7 +700,7 @@ const D = (() => {
 			return true
 		},
 		copyToRepSec = (charRef, sourceSec, sourceRowID, targetSec) => {
-			const attrList = keyMapObject(getRepAttrs(charRef, [sourceSec, sourceRowID] ), k => k.replace(`repeating_${sourceSec}_${sourceRowID}_`, ""))
+			const attrList = keyMapObject(getStatData(charRef, [sourceSec, sourceRowID] ), k => k.replace(`repeating_${sourceSec}_${sourceRowID}_`, ""))
 			// D.Alert(`copyToRepSec(charRef, ${D.JS(sourceSec)}, ${D.JS(sourceRowID)}, ${D.JS(targetSec)})<br><br><b>AttrList:</b><br>${D.JS(attrList)}`, "DATA:CopyToRepSec")
 			makeRepRow(charRef, targetSec, attrList)
 			deleteRepRow(charRef, sourceSec, sourceRowID)
@@ -743,7 +710,7 @@ const D = (() => {
 			POSITIVE INTEGER if row1 should be ABOVE row2. */
 			// D.Log(`CharRef: ${D.JSL(charRef)}`)
 			const rowIDs = getRepRowIDs(charRef, secName),
-				sortTrigger = getRepAttrs(charRef, [`repeating_${secName}_${rowIDs[0]}_sorttrigger`] )
+				sortTrigger = getStatData(charRef, [`repeating_${secName}_${rowIDs[0]}_sorttrigger`] )
 			// D.Alert(`RepOrder: ${D.JS(repOrderAttr)}<br><br>${rowIDs.length} Row IDs for ${secName}:<br><br>${D.JS(rowIDs)}`, "DATA.SortRepSec")
 			rowIDs.sort((idA, idB) => sortFunc(charRef, secName, idA, idB))
 			// D.Alert(`... SORTED?<br><br>${D.JS(rowIDs)}<br><br>TEST ATTR: ${D.JS(sortTrigger)}`, "DATA.SortRepSec")
@@ -866,15 +833,14 @@ const D = (() => {
 
 		/* D.GetChar(val): As above, but returns only the first character
 		       				object found.*/
+		GetStats: getStats,
 		GetStat: getStat,
+		GetStatData: getStatData,
 
 		/* D.GetStat(char, name):  Given any valid character value, returns the
 									attribute object described by name. */
 		IsRepRow: isRepRow,
 		GetRepIDCase: getCaseRepID,
-		GetRepStats: getRepStats,
-		GetRepStat: getRepStat,
-		GetRepAttrs: getRepAttrs,
 		CopyToSec: copyToRepSec,
 		SortRepSec: sortRepSec,
 		SplitRepSec: splitRepSec,
