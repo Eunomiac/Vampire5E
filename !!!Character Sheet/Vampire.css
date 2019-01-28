@@ -32,7 +32,7 @@
 	/* #region ... Wrapper (.charsheet) */
 	.charsheet {
 		width: 884px;
-		margin-left: -22px;
+		margin-left: -32px;
 		/* padding: 0px 0px; */
 
 		/* display: block; */
@@ -58,7 +58,6 @@
 		background-size: 15px 10px;
 		padding-right: 5px;
 	}
-
 	.charsheet select option {
 		color: black !important;
 		text-shadow: none !important;
@@ -67,50 +66,98 @@
 	/* #endregion */
 
 	/* #region GRID LAYOUT */
-	.charsheet, div.sheet-grid {
+	.charsheet, div[class*="grid"] {
 		display: grid !important; /* !IMP to override inaccessible Roll20 settings. */ 
 		grid-gap: 5px;
-		grid-auto-rows: 20px;
 		grid-row-gap: 2px;
 
 		position: relative;
-		z-index: 0;
+		z-index: 1;
 	}
 	.charsheet {
+		grid-template-columns: 28px auto 28px;
 		grid-template-areas:
-			'header'
-			'navbar'
-			'contents'
-			'footer';
+			'mainheader mainheader mainheader'
+			'. navbar .'
+			'. mainbody .'
+			'mainfooter mainfooter mainfooter';
 	}
 
-	div.sheet-header {
-		grid-area: header;
-		margin-bottom: -160px;
+	div.sheet-mainheader {
+		grid-area: mainheader;
+		height: 250px;
+		margin-bottom: -150px;
 
 		background-image: url('https://imgur.com/DJ3KxdD.png');
 		/* height: 250px;
 		max-height: 200px;
 		display: block; */
 	}
-
 	div.sheet-navbar {
 		grid-area: navbar;
-		display: grid;
-		
+		height: 40px;	
+	}
+	div.sheet-navbar.sheet-vamp,
+	div.sheet-navbar.sheet-mortal,
+	div.sheet-navbar.sheet-npc {
+		grid-template-areas: 'tab1 tab2 tab3 tab4 tab5 tab6 tab9';
+	}
+	div.sheet-navbar.sheet-group {
+		grid-template-areas: 
+			'. tab0 .'
+			'tab1 tab2 tab3'
+			'tab4 tab5 tab6'
+			'tab7 tab8 tab9'
 	}
 
-	div.sheet-contents {
-		grid-area: sheet;
-		position: relative;
-		z-index: 0;
+	div.sheet-mainbody {
+		grid-area: mainbody;
+		grid-auto-rows: 24px;
+		grid-template-areas:
+			'header header header header header header'
+			'. titlecolleft titlecolleft titlecolright titlecolright .'
+			'fourcolgrid fourcolgrid fourcolgrid fourcolgrid fourcolgrid fourcolgrid'
+			'col3left col3left col3mid col3mid col3right col3right';
+/* 		position: relative;
+		z-index: 0; */
 	}
-
-	div.sheet-footer {
-		grid-area: footer;
+	div.sheet-mainfooter {
+		grid-area: mainfooter;
+		height: 250px;
 		margin-top: -150px;
 
 		background-image: url('https://imgur.com/FNL9mcz.png');
+	}	
+	div.sheet-mainbody div.sheet-header {
+		grid-area: header;
+		background-color: rgba(255, 0, 0, 0.3);
+	}
+	div.sheet-mainbody div.sheet-blank {
+		grid-area: blank;
+	}
+	div.sheet-mainbody div.sheet-titlecolleft {
+		grid-area: titlecolleft;
+		background-color: rgba(255, 255, 0, 0.3);
+	}
+	div.sheet-mainbody div.sheet-titlecolright {
+		grid-area: titlecolright;
+		background-color: rgba(255, 0, 255, 0.3);
+	}
+	div.sheet-mainbody div.sheet-fourcolgrid {
+		grid-area: fourcolgrid;
+		background-color: rgba(0, 255, 0, 0.3);
+	}
+	div.sheet-mainbody div.sheet-col3left {
+		grid-area: col3left;
+		background-color: rgba(255, 0, 0, 0.3);
+	}
+	div.sheet-mainbody div.sheet-col3mid {
+		grid-area: col3mid;
+		background-color: rgba(0, 255, 0, 0.3);
+	}
+	div.sheet-mainbody div.sheet-col3right {
+		grid-area: col3right;
+		background-color: rgba(0, 0, 255, 0.3);
 	}
 	/* #endregion */
 
@@ -139,50 +186,112 @@
 	}
 
 	/* Activate the appropriate character sheet and navbar according to sheet controller. */
-	.charsheet input[type=hidden].sheet-sheetcontrol[value="0"]~.sheet-vampsheetgrid,
-	.charsheet input[type=hidden].sheet-sheetcontrol[value="0"]~.sheet-vampnavbargrid,
-	.charsheet input[type=hidden].sheet-sheetcontrol[value="1"]~.sheet-mortalsheetgrid,
-	.charsheet input[type=hidden].sheet-sheetcontrol[value="1"]~.sheet-mortalnavbargrid,
-	.charsheet input[type=hidden].sheet-sheetcontrol[value="2"]~.sheet-npcsheetgrid,
-	.charsheet input[type=hidden].sheet-sheetcontrol[value="2"]~.sheet-npcnavbargrid,
-	.charsheet input[type=hidden].sheet-sheetcontrol[value="3"]~.sheet-groupsheetgrid,
-	.charsheet input[type=hidden].sheet-sheetcontrol[value="3"]~.sheet-groupnavbargrid {
+	.charsheet input[type=hidden].sheet-sheetcontrol[value="1"]~.sheet-toplevel.sheet-vamp,
+	.charsheet input[type=hidden].sheet-sheetcontrol[value="2"]~.sheet-toplevel.sheet-mortal,
+	.charsheet input[type=hidden].sheet-sheetcontrol[value="3"]~.sheet-toplevel.sheet-npcvamp,
+	.charsheet input[type=hidden].sheet-sheetcontrol[value="4"]~.sheet-toplevel.sheet-npcmortal,
+	.charsheet input[type=hidden].sheet-sheetcontrol[value="5"]~.sheet-toplevel.sheet-npcother,
+	.charsheet input[type=hidden].sheet-sheetcontrol[value="6"]~.sheet-toplevel.sheet-group, {
 		display: grid;
 	}
 	
 	/* Activate the appropriate page based on the navbar's page control. */
-	/* Vampire character sheet pages. */
-	.charsheet input[type=hidden].sheet-pagecontrol[value="1"]~.sheet-vamppagegrid.sheet-frontpage,
-	.charsheet input[type=hidden].sheet-pagecontrol[value="2"]~.sheet-vamppagegrid.sheet-page2,
-	.charsheet input[type=hidden].sheet-pagecontrol[value="3"]~.sheet-vamppagegrid.sheet-page3,
-	.charsheet input[type=hidden].sheet-pagecontrol[value="4"]~.sheet-vamppagegrid.sheet-page4,
-	.charsheet input[type=hidden].sheet-pagecontrol[value="5"]~.sheet-vamppagegrid.sheet-page5,
-	.charsheet input[type=hidden].sheet-pagecontrol[value="6"]~.sheet-vamppagegrid.sheet-page6,
-	.charsheet input[type=hidden].sheet-pagecontrol:not([value="0"]):not([value="9"])~.sheet-vamppagegrid.sheet-marquee,
-	.charsheet input[type=hidden].sheet-pagecontrol:not([value="0"]):not([value="9"])~.sheet-vamppagegrid.sheet-diceroller,
-	.charsheet input[type=hidden].sheet-pagecontrol[value="9"]~[class*="vamppage"],
+	/* Single character sheet pages. */
+	.charsheet input[type=hidden].sheet-pagecontrol[value="1"]~.sheet-toplevel > .sheet-page1,
+	.charsheet input[type=hidden].sheet-pagecontrol[value="2"]~.sheet-toplevel > .sheet-page2,
+	.charsheet input[type=hidden].sheet-pagecontrol[value="3"]~.sheet-toplevel > .sheet-page3,
+	.charsheet input[type=hidden].sheet-pagecontrol[value="4"]~.sheet-toplevel > .sheet-page4,
+	.charsheet input[type=hidden].sheet-pagecontrol[value="5"]~.sheet-toplevel > .sheet-page5,
+	.charsheet input[type=hidden].sheet-pagecontrol[value="6"]~.sheet-toplevel > .sheet-page6,
+	.charsheet input[type=hidden].sheet-pagecontrol:not([value="0"]):not([value="9"])~.sheet-toplevel > .sheet-marquee,
+	.charsheet input[type=hidden].sheet-pagecontrol:not([value="0"]):not([value="9"])~.sheet-toplevel > .sheet-diceroller,
+	.charsheet input[type=hidden].sheet-pagecontrol[value="9"]~.sheet-toplevel > [class*="page"]
 	/* Group character sheet pages. */	
-	.charsheet input[type=hidden].sheet-pagecontrol[value="11"]~.sheet-grouppagegrid.sheet-frontpage,
-	.charsheet input[type=hidden].sheet-pagecontrol[value="12"]~.sheet-grouppagegrid.sheet-charpage1,
-	.charsheet input[type=hidden].sheet-pagecontrol[value="13"]~.sheet-grouppagegrid.sheet-charpage2,
-	.charsheet input[type=hidden].sheet-pagecontrol[value="14"]~.sheet-grouppagegrid.sheet-charpage3,
-	.charsheet input[type=hidden].sheet-pagecontrol[value="15"]~.sheet-grouppagegrid.sheet-charpage4,
-	.charsheet input[type=hidden].sheet-pagecontrol[value="16"]~.sheet-grouppagegrid.sheet-charpage5,
-	.charsheet input[type=hidden].sheet-pagecontrol[value="17"]~.sheet-grouppagegrid.sheet-charpage6,
-	.charsheet input[type=hidden].sheet-pagecontrol[value="18"]~.sheet-grouppagegrid.sheet-charpage7,
-	.charsheet input[type=hidden].sheet-pagecontrol[value="19"]~.sheet-grouppagegrid.sheet-charpage8,
-	.charsheet input[type=hidden].sheet-pagecontrol[value="20"]~.sheet-grouppagegrid.sheet-charpage9 {
+	.charsheet input[type=hidden].sheet-pagecontrol[value="10"]~.sheet-toplevel > .sheet-mainpage,
+	.charsheet input[type=hidden].sheet-pagecontrol[value="21"]~.sheet-toplevel > .sheet-char1,
+	.charsheet input[type=hidden].sheet-pagecontrol[value="22"]~.sheet-toplevel > .sheet-char2,
+	.charsheet input[type=hidden].sheet-pagecontrol[value="23"]~.sheet-toplevel > .sheet-char3,
+	.charsheet input[type=hidden].sheet-pagecontrol[value="24"]~.sheet-toplevel > .sheet-char4,
+	.charsheet input[type=hidden].sheet-pagecontrol[value="25"]~.sheet-toplevel > .sheet-char5,
+	.charsheet input[type=hidden].sheet-pagecontrol[value="26"]~.sheet-toplevel > .sheet-char6,
+	.charsheet input[type=hidden].sheet-pagecontrol[value="27"]~.sheet-toplevel > .sheet-char7,
+	.charsheet input[type=hidden].sheet-pagecontrol[value="28"]~.sheet-toplevel > .sheet-char8,
+	.charsheet input[type=hidden].sheet-pagecontrol[value="29"]~.sheet-toplevel > .sheet-char9 {
 		display: grid;
 	}
 
 	/* Handle special case for settings sheet/page hybrid: It's controlled by sheet-specific page
 	controllers, but must be available to all sheets. */
-	.charsheet input[type=hidden].sheet-pagecontrol[value="0"]~[class*="sheetgrid"] {
+	.charsheet input[type=hidden].sheet-pagecontrol[value="0"]~.sheet-sheet {
 		display: none;
 	}
-	.charsheet input[type=hidden].sheet-pagecontrol[value="0"]~.sheet-settingssheetgrid {
+	.charsheet input[type=hidden].sheet-pagecontrol[value="0"]~.sheet-settings {
 		display: grid;
 	}
+
+	/* Format the Tabs Themselves */
+	.charsheet input.sheet-pageselector {
+		margin-right: -100%;
+		opacity: 0;
+		cursor: pointer;
+	}
+	.charsheet .sheet-vamp input[type=radio].sheet-tab1:not(.sheet-selectable) + span,
+	.charsheet .sheet-mortal input[type=radio].sheet-tab1:not(.sheet-selectable) + span {
+		background: url('https://imgur.com/n9ZUm0N.png') no-repeat center;
+	}
+	.charsheet .sheet-vamp input[type=radio].sheet-tab1:not(.sheet-selectable):checked + span,
+	.charsheet .sheet-mortal input[type=radio].sheet-tab1:not(.sheet-selectable):checked + span {
+		background: url('https://imgur.com/UKf9Utd.png') no-repeat center;
+	}
+	.charsheet .sheet-vamp input[type=radio].sheet-tab2:not(.sheet-selectable) + span,
+	.charsheet .sheet-mortal input[type=radio].sheet-tab2:not(.sheet-selectable) + span {
+		background: url('https://imgur.com/Huyeyla.png') no-repeat center;
+	}
+	.charsheet .sheet-vamp input[type=radio].sheet-tab2:not(.sheet-selectable):checked + span,
+	.charsheet .sheet-mortal input[type=radio].sheet-tab2:not(.sheet-selectable):checked + span {
+		background: url('https://imgur.com/7X0Yd7L.png') no-repeat center;
+	}
+	.charsheet .sheet-vamp input[type=radio].sheet-tab3:not(.sheet-selectable) + span,
+	.charsheet .sheet-mortal input[type=radio].sheet-tab3:not(.sheet-selectable) + span {
+		background: url('https://imgur.com/Jd3cDeh.png') no-repeat center;
+	}
+	.charsheet .sheet-vamp input[type=radio].sheet-tab3:not(.sheet-selectable):checked + span,
+	.charsheet .sheet-mortal input[type=radio].sheet-tab3:not(.sheet-selectable):checked + span {
+		background: url('https://imgur.com/ohn2ui6.png') no-repeat center;
+	}
+	.charsheet .sheet-vamp input[type=radio].sheet-tab4:not(.sheet-selectable) + span,
+	.charsheet .sheet-mortal input[type=radio].sheet-tab4:not(.sheet-selectable) + span {
+		background: url('https://imgur.com/SjbaEvs.png') no-repeat center;
+	}
+	.charsheet .sheet-vamp input[type=radio].sheet-tab4:not(.sheet-selectable):checked + span,
+	.charsheet .sheet-mortal input[type=radio].sheet-tab4:not(.sheet-selectable):checked + span {
+		background: url('https://imgur.com/jfwuABe.png') no-repeat center;
+	}
+	.charsheet .sheet-vamp input[type=radio].sheet-tab5:not(.sheet-selectable) + span,
+	.charsheet .sheet-mortal input[type=radio].sheet-tab5:not(.sheet-selectable) + span {
+		background: url('https://imgur.com/0tZn5fi.png') no-repeat center;
+	}
+	.charsheet .sheet-vamp input[type=radio].sheet-tab5:not(.sheet-selectable):checked + span,
+	.charsheet .sheet-mortal input[type=radio].sheet-tab5:not(.sheet-selectable):checked + span {
+		background: url('https://imgur.com/hzE9fjl.png') no-repeat center;
+	}
+	.charsheet .sheet-vamp input[type=radio].sheet-tab6:not(.sheet-selectable) + span,
+	.charsheet .sheet-mortal input[type=radio].sheet-tab6:not(.sheet-selectable) + span {
+		background: url('https://imgur.com/Fe8tW8v.png') no-repeat center;
+	}
+	.charsheet .sheet-vamp input[type=radio].sheet-tab6:not(.sheet-selectable):checked + span,
+	.charsheet .sheet-mortal input[type=radio].sheet-tab6:not(.sheet-selectable):checked + span {
+		background: url('https://imgur.com/c29Guhd.png') no-repeat center;
+	}
+	.charsheet .sheet-vamp input[type=radio].sheet-tab9:not(.sheet-selectable) + span,
+	.charsheet .sheet-mortal input[type=radio].sheet-tab9:not(.sheet-selectable) + span {
+		background: url('https://imgur.com/59zUk2e.png') no-repeat center;
+	}
+	.charsheet .sheet-vamp input[type=radio].sheet-tab9:not(.sheet-selectable):checked + span,
+	.charsheet .sheet-mortal input[type=radio].sheet-tab9:not(.sheet-selectable):checked + span {
+		background: url('https://imgur.com/lI1fhK7.png') no-repeat center;
+	}
+
 
 	.charsheet input.sheet-tab0:checked~div.sheet-settings {
 		margin-top: -18px;
