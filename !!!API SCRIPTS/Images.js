@@ -5,6 +5,10 @@ const Images = (() => {
 		// #region CONFIGURATION
 		STATEREF = state[D.GAMENAME].Images,
 		REGISTRY = STATEREF.registry,
+		SANDBOX = {
+			height: 2680,
+			width: 1664
+		},
 		IMGDATA = {
 			blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
 			default: {
@@ -373,6 +377,34 @@ const Images = (() => {
 				const [sorted, anchor] = [sortedArray[i], anchorArray[i]]
 				switch (aModes[i].toLowerCase()) {			
 				// D.Alert(`ANCHOR: ${D.JS(anchor)}`)
+				case "farleft":				
+					for (const iData of sorted) {
+						iData.obj.set( {
+							left: 0.5 * iData.width
+						} )
+					}
+					break
+				case "farright":				
+					for (const iData of sorted) {
+						iData.obj.set( {
+							left: SANDBOX.width - 0.5 * iData.width
+						} )
+					}
+					break
+				case "fartop":				
+					for (const iData of sorted) {
+						iData.obj.set( {
+							top: 0.5 * iData.height
+						} )
+					}
+					break
+				case "farbottom":				
+					for (const iData of sorted) {
+						iData.obj.set( {
+							top: SANDBOX.height - 0.5 * iData.height
+						} )
+					}
+					break
 				case "resize":
 					for (const iData of sorted) {
 						iData.obj.set( {
@@ -412,6 +444,16 @@ const Images = (() => {
 				default: break
 				}
 			}			
+		},
+		positionImages = (imgRefs, ...params) => {
+			const imgObjs = D.GetSelected(imgRefs) || _.map(imgRefs, v => getImageObj(v))
+			for (const imgObj of imgObjs) {
+				const attrList = {}		
+				for (const param of params) {
+					attrList[param.split(":")[0]] = parseInt(param.split(":")[1])
+				}
+				setImgParams(imgObj, attrList)
+			}
 		},
 		toggleImage = (imgRef, isActive, srcRef) => {
 			const imgObj = getImageObj(imgRef),
@@ -505,7 +547,7 @@ const Images = (() => {
 				imgNames = []
 			if (msg.type !== "api" || !playerIsGM(msg.playerid) || args.shift() !== "!img")
 				return
-			let [srcName, imgName, imgObj, macroName, chatTrigger] = [null, null, null, null, null, null],
+			let [srcName, imgName, imgObj, imgCat, macroName, chatTrigger] = [null, null, null, null, null, null, null],
 				params = {}
 			switch (args.shift().toLowerCase()) {
 			case "reg":
@@ -606,6 +648,11 @@ const Images = (() => {
 				if (D.GetSelected(msg))
 					alignImages(msg, ...args)
 				break
+			case "pos":
+			case "position":
+				if (D.GetSelected(msg))
+					positionImages(msg, ...args)
+				break
 			case "copy":
 				imgObj = getImageObj(args.shift())
 				srcName = imgObj.get("imgsrc")
@@ -649,7 +696,7 @@ const Images = (() => {
 							imgResizeDims[v.split(":")[0]] = _.isNumber(v.split(":")[1] ) ? parseInt(v.split(":")[1] ) : v.split(":")[1]
 						} )
 					} else {
-						D.Alert("Must supply either a valid IMGDATA key OR \"height:&lt;height&gt;, width:&lt;width&gt;\"", "IMAGES, !img toggleResize")
+						D.Alert("Must supply either a valid IMGDATA key OR \"height:<height>, width:<width>\"", "IMAGES, !img toggleResize")
 						break
 					}
 					D.Alert(`New images automatically resized to height: ${imgResizeDims.height}, width: ${imgResizeDims.width}.`, "IMAGES, !img toggleResize")
@@ -671,6 +718,27 @@ const Images = (() => {
 					toggleImage(imgRef, REGISTRY[imgRef].startActive)
 				}
 				break
+			case "alltofront":
+				for (const imgRef of _.keys(REGISTRY)) {
+					REGISTRY[imgRef].activeLayer = "objects"
+					toggleImage(imgRef, REGISTRY[imgRef].startActive)
+				}
+				break
+			case "tomap":
+				imgCat = args.shift() || "@@NULL@@"
+				for (const imgRef of _.keys(REGISTRY)) {
+					if (imgRef.toLowerCase().includes(imgCat.toLowerCase()))
+						REGISTRY[imgRef].activeLayer = "map"
+					toggleImage(imgRef, REGISTRY[imgRef].startActive)
+				}
+				break
+			case "tofront":
+				imgCat = args.shift() || "@@NULL@@"
+				for (const imgRef of _.keys(REGISTRY)) {
+					if (imgRef.toLowerCase().includes(imgCat.toLowerCase()))
+						toFront(getImageObj(imgRef))
+				}
+				break				
 			default:
 				break
 			}
@@ -688,61 +756,20 @@ const Images = (() => {
 			state[D.GAMENAME].Images.registry = state[D.GAMENAME].Images.registry || {}
 			state[D.GAMENAME].Images.registry.Sources = state[D.GAMENAME].Images.registry.Sources || {}
 
-			/* state[D.GAMENAME].Images.registry.Horizon_1.startActive = true
-			state[D.GAMENAME].Images.registry.Horizon_1.srcs = {
-				night1: "https://s3.amazonaws.com/files.d20.io/images/71894926/x0iwUmXe0qwPj2c0RNThrA/thumb.jpg?1548156419",
-				night2:"https://s3.amazonaws.com/files.d20.io/images/71894930/8vRnSCPcxCePKQKb8QG6IQ/thumb.jpg?1548156426",
-				night3:"https://s3.amazonaws.com/files.d20.io/images/71894932/NyU3BlmW-Gy2JHId8xMv-A/thumb.jpg?1548156432",
-				night4:"https://s3.amazonaws.com/files.d20.io/images/71894939/BHBTXMscL6wRJvyMPQU_tQ/thumb.jpg?1548156438",
-				night5:"https://s3.amazonaws.com/files.d20.io/images/71894941/AzXORZJ_rrdZnxBVBE9FXg/thumb.jpg?1548156443",
-				predawn5: "https://s3.amazonaws.com/files.d20.io/images/70539093/3F-Cml26foFBqFoe6RxMqw/thumb.jpg?1546765788",
-				predawn4: "https://s3.amazonaws.com/files.d20.io/images/70539009/g_z4PJbQ2KMjOj4-TSKVWg/thumb.jpg?1546765708",
-				predawn3: "https://s3.amazonaws.com/files.d20.io/images/70539010/5PZAtlLDifVYZl-_FDxkdA/thumb.jpg?1546765707",
-				predawn2: "https://s3.amazonaws.com/files.d20.io/images/70539013/CGFI7B4rnXtzFKcjoVHGfg/thumb.jpg?1546765708",
-				predawn1: "https://s3.amazonaws.com/files.d20.io/images/70539011/oDhxVSCUGZZVRtTVQ4HDxQ/thumb.jpg?1546765707",
-				day: "https://s3.amazonaws.com/files.d20.io/images/70539012/S_ylewwroYstPusoGX0wEQ/thumb.jpg?1546765707"
+			state.VAMPIRE.Images.registry.Horizon_1.startActive = true
+			state.VAMPIRE.Images.registry.Horizon_1.srcs = {
+				night1: "https://s3.amazonaws.com/files.d20.io/images/73196230/aXKz5yMMQr0bjxo1TWVDCw/thumb.jpg?1549439118",
+				night2: "https://s3.amazonaws.com/files.d20.io/images/73196235/j3ziWH55jyk2Y3AZVhHT-A/thumb.jpg?1549439124",
+				night3: "https://s3.amazonaws.com/files.d20.io/images/73196338/aSBJyW5s_T6VT5RXeN7uTQ/thumb.jpg?1549439353",
+				night4: "https://s3.amazonaws.com/files.d20.io/images/73196345/twWFrd6NRjpSKcy7iPL6Gw/thumb.jpg?1549439365",
+				night5: "https://s3.amazonaws.com/files.d20.io/images/73196420/3zXxD2_Jn_JDiBEhqFbCMA/thumb.jpg?1549439523",
+				predawn5: "https://s3.amazonaws.com/files.d20.io/images/73196424/RFakOjdNS6aN6rf5pGyvQA/thumb.jpg?1549439532",
+				predawn4: "https://s3.amazonaws.com/files.d20.io/images/73196437/b0ZbS8R2CJ9IYddN9iUfmg/thumb.jpg?1549439558",
+				predawn3: "https://s3.amazonaws.com/files.d20.io/images/73196447/v8-Hj_q85eJQPbwyOcyeTA/thumb.jpg?1549439575",
+				predawn2: "https://s3.amazonaws.com/files.d20.io/images/73196454/nIwlBTvprOUITX8mypS9hQ/thumb.jpg?1549439587",
+				predawn1: "https://s3.amazonaws.com/files.d20.io/images/73196523/9EUpHBSXYZubSmEhwedJ3Q/thumb.jpg?1549439726",
+				day: "https://s3.amazonaws.com/files.d20.io/images/73196525/HnEUSSd9qzhqnTIDqZqQvQ/thumb.jpg?1549439735"
 			}
-			state[D.GAMENAME].Images.registry.AirLightCN_5.startActive = true
-			state[D.GAMENAME].Images.registry.AirLightCN_5.srcs = {
-				off: IMGDATA.blank,
-				on: "https://s3.amazonaws.com/files.d20.io/images/71894817/H8ldyZdFtjUq-R0PWPbA6A/thumb.png?1548156168"
-			}
-			state[D.GAMENAME].Images.registry.AirLightCN_4.startActive = true
-			state[D.GAMENAME].Images.registry.AirLightCN_4.srcs = {
-				off: IMGDATA.blank,
-				on: "https://s3.amazonaws.com/files.d20.io/images/71894822/clLAf7qGlLb6SHOPqn2DXA/thumb.png?1548156180"
-			}
-			state[D.GAMENAME].Images.registry.AirLightCN_3.startActive = true
-			state[D.GAMENAME].Images.registry.AirLightCN_3.srcs = {
-				off: IMGDATA.blank,
-				on: "https://s3.amazonaws.com/files.d20.io/images/71894825/kmNgRlnAFL5FkV0CN3Advg/thumb.png?1548156184"
-			}
-			state[D.GAMENAME].Images.registry.AirLightCN_2.startActive = true
-			state[D.GAMENAME].Images.registry.AirLightCN_2.srcs = {
-				off: IMGDATA.blank,
-				on: "https://s3.amazonaws.com/files.d20.io/images/71894826/f0g0X5EA-KU9R9fyUxQd_w/thumb.png?1548156188"
-			}
-			state[D.GAMENAME].Images.registry.AirLightCN_1.startActive = true
-			state[D.GAMENAME].Images.registry.AirLightCN_1.srcs = {
-				off: IMGDATA.blank,
-				on: "https://s3.amazonaws.com/files.d20.io/images/71894829/rXtU8u3Fjbsaqmc80qbcIQ/thumb.png?1548156192"
-			}
-			state[D.GAMENAME].Images.registry.AirLightLeft_1.startActive = true
-			state[D.GAMENAME].Images.registry.AirLightLeft_1.srcs = {
-				off: IMGDATA.blank,
-				half: "https://s3.amazonaws.com/files.d20.io/images/71894831/zfUTcNbgsG0I5a0UVGaJFA/thumb.png?1548156196",
-				on: "https://s3.amazonaws.com/files.d20.io/images/71894834/O-Ust0_ZgkAk8JBbz0Wpbg/thumb.png?1548156200"
-			}
-			state[D.GAMENAME].Images.registry.AirLightMid_1.startActive = true
-			state[D.GAMENAME].Images.registry.AirLightMid_1.srcs = {
-				off: IMGDATA.blank,
-				on: "https://s3.amazonaws.com/files.d20.io/images/71894836/nSoHOW_K7YU1DmrxszJ83g/thumb.png?1548156204"
-			}
-			state[D.GAMENAME].Images.registry.AirLightTop_1.startActive = true
-			state[D.GAMENAME].Images.registry.AirLightTop_1.srcs = {
-				off: IMGDATA.blank,
-				on: "https://s3.amazonaws.com/files.d20.io/images/71894842/MeivxopZEQWzmqEVfNqBaQ/thumb.png?1548156208"
-			} */
 		}
 	// #endregion
 

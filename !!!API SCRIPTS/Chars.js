@@ -10,16 +10,16 @@ const Chars = (() => {
 			[
 				"Pivotal Event",
 				["para",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... you fell in love with the wrong person, who dragged you into an exciting world you never knew existed. You freaked out and left them.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... your best friend accused you of a crime you know you didn't commit, but they have photos that prove otherwise.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... you ended up in a literal warzone, bullets flying all around you. If it weren't for a dangerous psychopath you befriended you'd be a corpse.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... your parents were deranged on some basal level and you grew up in chaos. You escaped as soon as you could.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... somehow, through no fault of your own, you ended up with money and status. You don't know what happened to it all.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... someone once took you out into some isolated place and showed you something that gives you weird dreams to this day.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... you had a talent that showed itself at an early age. Everyone told you you would be famous for it, but here you are.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... you look a job with no experience that no one thought you could do. After a few years, you quit and didn't look back. You can't say why.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... someone very close to you died. No one would tell you what happened, and the people around you refused to talk about it.",
-					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>Before your Embrace ...</b></span><br>... Work. Sleep. Work. Sleep. Forever. One day you'd had enough, and in the middle of the day exploded in a rage. You left that life behind and never talk about it."],
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... you fell in love with the wrong person, who dragged you into an exciting world you never knew existed. You freaked out and left them.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... your best friend accused you of a crime you know you didn't commit, but they have photos that prove otherwise.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... you ended up in a literal warzone, bullets flying all around you. If it weren't for a dangerous psychopath you befriended you'd be a corpse.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... your parents were deranged on some basal level and you grew up in chaos. You escaped as soon as you could.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... somehow, through no fault of your own, you ended up with money and status. You don't know what happened to it all.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... someone once took you out into some isolated place and showed you something that gives you weird dreams to this day.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... you had a talent that showed itself at an early age. Everyone told you you would be famous for it, but here you are.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... you look a job with no experience that no one thought you could do. After a few years, you quit and didn't look back. You can't say why.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... someone very close to you died. No one would tell you what happened, and the people around you refused to talk about it.",
+					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>In the past ...</b></span><br>... Work. Sleep. Work. Sleep. Forever. One day you'd had enough, and in the middle of the day exploded in a rage. You left that life behind and never talk about it."],
 				["para",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Endless Regret</u>:</b></span><br>You didn't comport yourself with any dignity or honesty. You thought you were better than that.",
 					"<span style=\"font-size: 14px; margin-top: 10px;\"><b>You <i>still</i> feel <span style=\"font-size: 14px; margin-top: 10px;\"><u>Simmering Rage</u>:</b></span><br>They know what they did, and they did it knowing what would happen.",
@@ -130,7 +130,7 @@ const Chars = (() => {
 			],
 		],
 		HTML = {
-			start: "<div style=\"display: block; width: 250px; padding: 5px 5px; margin-left: -38px; margin-top: -20px; margin-bottom: -5px; color: white; font-variant: small-caps; font-family: 'Bodoni SvtyTwo ITC TT'; text-align: left; font-size: 16px;  border: 3px outset darkred; background: url('https://imgur.com/kBl8aTO.jpg') top; bg-color: black; z-index: 100; position: relative;\">",
+			start: "<div style=\"display: block; width: 100%; padding: 5px 5px; margin-left: -10px; margin-top: -20px; margin-bottom: -5px; color: white; font-variant: small-caps; font-family: 'Bodoni SvtyTwo ITC TT'; text-align: left; font-size: 16px;  border: 3px outset darkred; background: url('https://imgur.com/kBl8aTO.jpg') top; bg-color: black; z-index: 100; position: relative;\">",
 			stop: "</div>",
 		},
 		bHTML = {
@@ -549,7 +549,7 @@ const Chars = (() => {
 				default: break
 				}
 				break					
-			case "!MVC":
+			case "!mvc":
 				MVC({name: who})
 				break
 			case "!hide":
@@ -572,16 +572,16 @@ const Chars = (() => {
 				})	
 				Images.ToggleToken(token, "mask", "prev")
 				break		
-			case "!setToken":
+			case "!settoken":
 				Images.ToggleToken(D.GetSelected(msg)[0], args.shift(), args.shift() || "prev")
 				break
-			case "!startSession":
+			case "!startsession":
 				if (playerIsGM(msg.playerid)) startSession()
 				break
 			case "!wake":
 				if (playerIsGM(msg.playerid)) wakePlayers()
 				break
-			case "!endSession":
+			case "!endsession":
 				if (playerIsGM(msg.playerid)) endSession() 
 				break
 			default: break

@@ -1,6 +1,6 @@
 const TimeTracker = (() => {
 	const [airLights, airTimes] = [{}, {}]
-	let [timeTimer, dateObj, trackerObj] = [null, null, null],
+	let [timeTimer, dateObj, trackerObj, trackerShadow] = [null, null, null, null],
 		[isRunning, isRunningFast, isAirlights, isTimeRunning] = [false, false, true, false]
 		// #region Configuration
 	const CLOCKSPEED = 50,
@@ -80,13 +80,15 @@ const TimeTracker = (() => {
 		},
 		setCurrentDate = () => {
 			// dateObj = dateObj || new Date(parseInt(state[D.GAMENAME].TimeTracker.currentDate))
-			trackerObj.set("text", `${
+			const timeText = `${
 				DAYSOFWEEK[dateObj.getUTCDay()]}, ${
 				MONTHS[dateObj.getUTCMonth()]} ${
 				D.Ordinal(dateObj.getUTCDate())}, ${
 				(dateObj.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
 				dateObj.getUTCMinutes() < 10 ? "0" : ""}${dateObj.getUTCMinutes().toString()} ${
-				Math.floor(dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`)
+				Math.floor(dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`
+			trackerObj.set("text", timeText)
+			trackerShadow.set("text", timeText)
 			if (!isRunning) {
 				const lastDate = new Date(parseInt(state[D.GAMENAME].TimeTracker.currentDate))
 				state[D.GAMENAME].TimeTracker.currentDate = dateObj.getTime()
@@ -157,7 +159,21 @@ const TimeTracker = (() => {
 			timeTimer = null
 			isTimeRunning = false
 			D.Alert("Auto clock ticking DISABLED", "TIMETRACKER !TIME")
-		},			
+		},
+		//#endregion
+		
+		//#region Temperature Simulation
+		convertFtoC = fahr => 0.55556 * (fahr - 32),
+		convertCtoF = cels => 1.8 * cels + 32,
+		heatIndex = (temp, relHumid) => -42.379 + 2.04901523*temp + 10.14333127*relHumid 
+			- 0.22475541*temp*relHumid - 6.83783*Math.pow(10,-3)*temp*temp
+			- 5.481717*Math.pow(10,-2)*relHumid*relHumid
+			+ 1.22874*Math.pow(10,-3)*temp*temp*relHumid 
+			+ 8.5282*Math.pow(10,-4)*temp*relHumid*relHumid 
+			- 1.99*Math.pow(10,-6)*temp*temp*relHumid*relHumid,
+		//#endregion
+
+		//#region Airplane Lights
 		tickAirLight = (alight, isStartup) => {
 			if (!isAirlights) {
 				Images.Set(alight, "on")
@@ -258,15 +274,23 @@ const TimeTracker = (() => {
 				break
 			case "!regtime":
 				if (!msg.selected || !msg.selected[0] ) {
-					D.ThrowError("Select an object, then '!regTime / !regHorizon'.")
+					D.ThrowError("Select an object, then '!regTime / !regHorizon / !regTimeShadow'.")
 				} else {
 					state[D.GAMENAME].TimeTracker.timeText = msg.selected[0]._id
 					D.Alert(`Registered Time Text as: ${D.JS(state[D.GAMENAME].TimeTracker.timeText)}`)
 				}
 				break
+			case "!regtimeshadow":
+				if (!msg.selected || !msg.selected[0] ) {
+					D.ThrowError("Select an object, then '!regTime / !regHorizon / !regTimeShadow'.")
+				} else {
+					state[D.GAMENAME].TimeTracker.timeTextShadow = msg.selected[0]._id
+					D.Alert(`Registered Time Text Shadow as: ${D.JS(state[D.GAMENAME].TimeTracker.timeTextShadow)}`)
+				}
+				break
 			case "!reghorizon":
 				if (!msg.selected || !msg.selected[0] ) {
-					D.ThrowError("Select an object, then '!regTime / !regHorizon'.")
+					D.ThrowError("Select an object, then '!regTime / !regHorizon / !regTimeShadow'.")
 				} else {
 					state[D.GAMENAME].TimeTracker.horizonImage = msg.selected[0]._id
 					D.Alert(`Registered Horizon Image as: ${D.JS(state[D.GAMENAME].TimeTracker.horizonImage)}`)
@@ -285,6 +309,9 @@ const TimeTracker = (() => {
 			state[D.GAMENAME].TimeTracker = state[D.GAMENAME].TimeTracker || {};
 			[trackerObj] = findObjs( {
 				_id: state[D.GAMENAME].TimeTracker.timeText
+			} );
+			[trackerShadow] = findObjs( {
+				_id: state[D.GAMENAME].TimeTracker.timeTextShadow
 			} )
 			dateObj = new Date(state[D.GAMENAME].TimeTracker.currentDate)
 			startAirLights()
