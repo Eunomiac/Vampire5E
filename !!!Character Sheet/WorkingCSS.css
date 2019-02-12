@@ -1133,20 +1133,6 @@
 	}
 
 	.charsheet input.sheet-hoverpopup+span+div {
-		left: calc((-10%)/2);
-		bottom: 20px;
-		height: 190px !important;
-		width: 150%;
-
-		display: none;
-		position: absolute;
-
-		background: url("https://imgur.com/kBl8aTO.jpg");
-		background-size: 100%;
-
-		border: 3px white outset;
-
-		z-index: 250;
 	}
 
 	.charsheet input.sheet-hoverpopup+span+div div input[type="text"],

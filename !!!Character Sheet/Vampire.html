@@ -109,15 +109,37 @@
     </div>
 </div>
 <!-- #region NAVBAR: Page Control -->
-<div class="vamp mortal navbar"></div>
+<div class="vamp mortal navbar grid nogridgap">
+    <div class="tab tab1">
+        <input class="sheet-tab sheet-tab1 sheet-singlesheet" type="radio" name="attr_tab_core" value="1" title="Front" checked /><span></span>
+    </div>
+    <div class="tab tab2">
+        <input class="sheet-tab sheet-tab2 sheet-singlesheet" type="radio" name="attr_tab_core" value="2" title="Details" /><span></span>
+    </div>
+    <div class="tab tab3">
+        <input class="sheet-tab sheet-tab3 sheet-singlesheet" type="radio" name="attr_tab_core" value="3" title="Humanity" /><span></span>
+    </div>
+    <div class="tab tab4">
+        <input class="sheet-tab sheet-tab4 sheet-singlesheet" type="radio" name="attr_tab_core" value="4" title="Projects" /><span></span>
+    </div>
+    <div class="tab tab5">
+        <input class="sheet-tab sheet-tab5 sheet-singlesheet" type="radio" name="attr_tab_core" value="5" title="Combat" /><span></span>
+    </div>
+    <div class="tab tab6">
+        <input class="sheet-tab sheet-tab6 sheet-singlesheet" type="radio" name="attr_tab_core" value="6" title="Experience" /><span></span>
+    </div>
+    <div class="tab tab9">
+        <input class="sheet-tab sheet-tab9 sheet-singlesheet" type="radio" name="attr_tab_core" value="9" title="All" /><span></span>
+    </div>
+</div>
 <!-- #endregion -->
 <!-- #region ... Single Sheet -->
-<div class="vamp mainbody page1 4cols grid">
+<div class="vamp mainbody page1 col grid">
     <div class="charname">
         <input class="size5 engraved insettext center" type="text" name="attr_character_name" placeholder="(Your Name Here)">
     </div>
     <div class="chardates">
-        <input class="size4 engraved insettext center" type="text" name="attr_char_dobdoe" placeholder="January 2, 1938 --- January 19, 2015">
+        <input class="size4 engraved insettext center stretchvert" type="text" name="attr_char_dobdoe" placeholder="January 2, 1938 --- January 19, 2015">
     </div>
     <div class="4colsthin grid">
         <div class="col">
@@ -131,7 +153,7 @@
             </div>
         </div>    
         <div class="col">
-            <select class="size3 cormorant insettext" name="attr_clan" value="0">
+            <select class="size3 cormorant insettext nudgeleft" name="attr_clan" value="0">
                 <option value="0" selected></option>
                 <option value="Brujah">Brujah</option>
                 <option value="Gangrel">Gangrel</option>
@@ -153,10 +175,36 @@
             </select>
         </div>
         <div class="col">
+            <span class="size4 engraved insettext percolator">Generation:</span>
+        </div>    
+        <div class="col">
+            <select class="size3 cormorant insettext" name="attr_generation" value="0">
+                <option value="0" selected></option>
+                <option value="0">----THIN-BLOODED------</option>
+                <option value="16">Sixteenth</option>
+                <option value="15">Fifteenth</option>
+                <option value="14">Fourteenth</option>
+                <option value="0">----NEONATE----------</option>
+                <option value="13">Thirteenth</option>
+                <option value="12">Twelfth</option>
+                <option value="0">----ANCILLA----------</option>
+                <option value="11">Eleventh</option>
+                <option value="10">Tenth</option>
+                <option value="0">----ELDER------------</option>
+                <option value="9">Ninth</option>
+                <option value="8">Eighth</option>
+                <option value="7">Seventh</option>
+                <option value="6">Sixth</option>
+                <option value="0">----METHUSELAH-------</option>
+                <option value="5">Fifth</option>
+                <option value="4">Fourth</option>
+            </select>
+        </div>
+        <div class="col">
             <span class="size4 engraved insettext percolator">Faction:</span>
         </div>    
         <div class="col">
-            <select class="size3 cormorant insettext" name="attr_faction" value="0">
+            <select class="size3 cormorant insettext nudgeleft" name="attr_faction" value="0">
                 <option value="0" selected></option>
                 <option value="Anarch">Anarch</option>
                 <option value="Camarilla">Camarilla</option>
@@ -166,56 +214,25 @@
                 <option value="Autarkis">Autarkis</option>
                 <option value="Inconnu">Inconnu</option>
                 <option value="0">---------------------</option>
-                <option value="Second Inquisition">Second Inquisition</option>
+                <option value="Inquisition">Inquisition</option>
             </select>
         </div>
         <div class="col">
-            <input class="popup" type="checkbox" value="1" /><span></span>
-            <div class="popup col">
-                <textarea class="title" name="attr_bane_title" placeholder="Choose Your Clan!" readonly></textarea>
-                <textarea class="body" name="attr_bane_text" readonly></textarea>
-            </div>
-            <div class="col">
-                <span class="size4 engraved insettext percolator">Clan:</span>
-            </div>
+            <span class="size4 engraved insettext percolator">Predator:</span>
         </div>    
         <div class="col">
-            <select class="size3 cormorant insettext" name="attr_clan" value="0">
+            <select class="size3 cormorant insettext" name="attr_predator" value="0">
                 <option value="0" selected></option>
-                <option value="Brujah">Brujah</option>
-                <option value="Gangrel">Gangrel</option>
-                <option value="Malkavian">Malkavian</option>
-                <option value="Nosferatu">Nosferatu</option>
-                <option value="Toreador">Toreador</option>
-                <option value="Tremere">Tremere</option>
-                <option value="Ventrue">Ventrue</option>
-                <option value="Caitiff">Caitiff</option>
-                <option value="Thin-Blooded">Thin-Blooded</option>
-                <option value="0">---------------------</option>
-                <option value="Lasombra">Lasombra</option>
-                <option value="Tzimisce">Tzimisce</option>
-                <option value="0">---------------------</option>
-                <option value="Banu Haqim">Banu Haqim</option>
-                <option value="Hecata">Hecata</option>
-                <option value="Ministry">Ministry</option>
-                <option value="Ravnos">Ravnos</option>
-            </select>
-        </div>
-        <div class="col">
-            <span class="size4 engraved insettext percolator">Faction:</span>
-        </div>    
-        <div class="col">
-            <select class="size3 cormorant insettext" name="attr_faction" value="0">
-                <option value="0" selected></option>
-                <option value="Anarch">Anarch</option>
-                <option value="Camarilla">Camarilla</option>
-                <option value="Inconnu">Independent</option>
-                <option value="Sabbat">Sabbat</option>
-                <option value="0">---------------------</option>
-                <option value="Autarkis">Autarkis</option>
-                <option value="Inconnu">Inconnu</option>
-                <option value="0">---------------------</option>
-                <option value="Second Inquisition">Second Inquisition</option>
+                <option value="Alleycat">Alleycat</option>
+                <option value="Bagger">Bagger</option>
+                <option value="Blood_Leech">Blood Leech</option>
+                <option value="Cleaver">Cleaver</option>
+                <option value="Consensualist">Consensualist</option>
+                <option value="Farmer">Farmer</option>
+                <option value="Osiris">Osiris</option>
+                <option value="Sandman">Sandman</option>
+                <option value="Scene_Queen">Scene Queen</option>
+                <option value="Siren">Siren</option>
             </select>
         </div>
     </div>

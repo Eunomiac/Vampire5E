@@ -7,210 +7,146 @@
 */
 
 	/* #region DEFAULT ELEMENT STYLES */
-	/* #region ... General */
-	div, span, img, input, textarea, select {
-		width: 100%;
-		margin: 0px 0px;
-		padding: 0px 0px;
-		vertical-align: top;
-		text-align: left;
-		text-align-last: left;
-		line-height: 25px;
+		/* #region ... General */
+		div, span, img, input, textarea, select {
+			height: 100%;
+			width: 100%;
+			margin: 0px 0px;
+			padding: 0px 0px;
+			vertical-align: top;
+			text-align: left;
+			text-align-last: left;
+			line-height: 25px;
 
-		font-size: 0px;
+			font-size: 0px;
 
-		display: inline-block;
-		box-sizing: border-box;
-		resize: none;
+			display: inline-block;
+			box-sizing: border-box;
+			resize: none;
 
-		background: none;
-		background-size: 100%;
-		background-repeat: no-repeat;
-		background-position: center center;
+			background: none;
+			background-size: 100%;
+			background-repeat: no-repeat;
+			background-position: center center;
 
-		border: none;
-	}
-	input, textarea, select {
-		font-size: 16px;
-		text-indent: 2px;		
-	}
-	select option {
-		color: black !important;
-		text-shadow: none !important;
-	}
-	div.sheet-loadingbay,
-	div.sheet-loadingbay img {
-		height: 1px;
-		width: 1px;
-		margin-bottom: -1px;
-	}
+			border: none;
+		}
+		input, textarea, select {
+			font-size: 16px;
+			text-indent: 2px;		
+		}
+		select option {
+			color: black !important;
+			text-shadow: none !important;
+		}
+		.charsheet div.sheet-loadingbay,
+		.charsheet div.sheet-loadingbay img {
+			height: 1px;
+			width: 1px;
+			margin-bottom: -1px;
+		}
+		/* #endregion */
+		/* #region ... Wrapper (.charsheet) */
+		.charsheet {
+			width: 884px;
+			margin-left: -32px;
+			padding: 0px 0px !important; /* !IMP to override inaccessible Roll20 settings. */
+
+			background-image: url('https://imgur.com/cEhqqBG.png');
+			background-repeat: repeat-y;
+		}
+		/* #endregion */
+		/* #region ... Textarea */
+		.charsheet textarea {
+			padding: 3px 5px;
+			pointer-events: none;
+		}
+		/* #endregion */
+		/* #region ... Select */
+		.charsheet select {
+			-webkit-appearance: none;
+			background: url('https://i.imgur.com/XGlqfRG.png') no-repeat right;
+			background-size: 15px 10px;
+			padding-right: 5px;
+		}
+		.charsheet select option {
+			color: black !important;
+			text-shadow: none !important;
+		}
+		/* #endregion */
+		/* #region ... Input[Radio, Checkbox] */
+		.charsheet input[type="radio"],
+		.charsheet input[type="checkbox"] {
+			height: 100%;
+			width: 100%;
+			opacity: 0;
+			margin-right: -100%;
+			cursor: pointer;
+		}
+		/* #endregion */
 	/* #endregion */
-	/* #region ... Wrapper (.charsheet) */
-	.charsheet {
-		width: 884px;
-		margin-left: -32px;
-		padding: 0px 0px !important; /* !IMP to override inaccessible Roll20 settings. */
-
-		background-image: url('https://imgur.com/cEhqqBG.png');
-		background-repeat: repeat-y;
-	}
-	/* #endregion */
-	/* #region ... Textarea */
-	.charsheet textarea {
-		padding: 3px 5px;
-		pointer-events: none;
-	}
-	/* #endregion */
-	/* #region ... Select */
-	.charsheet select {
-		-webkit-appearance: none;
-		background: url('https://i.imgur.com/XGlqfRG.png') no-repeat right;
-		background-size: 15px 10px;
-		padding-right: 5px;
-	}
-	.charsheet select option {
-		color: black !important;
-		text-shadow: none !important;
-	}
-	/* #endregion */
-	/* #endregion */
-
-	/* #region GRID LAYOUT */
-	.charsheet, div[class*="grid"] {
-		display: grid !important; /* !IMP to override inaccessible Roll20 settings. */ 
-
-		position: relative;
-		z-index: 1;
-	}
-	/* #region Top Level Grid, Navbar, DiceRoller, Marquee */
-	.charsheet {
-		grid-template-columns: 28px auto 28px;
-		grid-template-areas:
-			'mainheader mainheader mainheader'
-			'. navbar .'
-			'. marquee .'
-			'. mainbody .'
-			'mainfooter mainfooter mainfooter';
-	}
-
-	div.sheet-mainheader {
-		grid-area: mainheader;
-		height: 250px;
-		margin-bottom: -150px;
-
-		background-image: url('https://imgur.com/DJ3KxdD.png');
-		/* height: 250px;
-		max-height: 200px;
-		display: block; */
-	}
-	div.sheet-navbar {
-		grid-area: navbar;
-		height: 40px;	
-	}
-	div.sheet-navbar.sheet-vamp,
-	div.sheet-navbar.sheet-mortal,
-	div.sheet-navbar.sheet-npc {
-		grid-template-areas: 'tab1 tab2 tab3 tab4 tab5 tab6 tab9';
-	}
-	div.sheet-navbar.sheet-group {
-		grid-template-areas: 
-			'. tab0 .'
-			'tab1 tab2 tab3'
-			'tab4 tab5 tab6'
-			'tab7 tab8 tab9';
-	}
-	
-	div.sheet-marquee {
-		grid-area: marquee;
-		grid-template-rows: 30px 16px 16px 16px;
-		grid-template-areas: 
-			'title'
-			'line1'
-			'line2'
-			'line3';
-		height: auto;
-	}
-
-	div.sheet-mainbody {
-		grid-area: mainbody;
-		grid-auto-rows: 24px;
-	}
-
-	div.sheet-mainfooter {
-		grid-area: mainfooter;
-		height: 250px;
-		margin-top: -150px;
-
-		background-image: url('https://imgur.com/FNL9mcz.png');
-	}
-	/* #endregion */
-	/* #region Various Grid Layouts */
-	.sheet-header {grid-area: header}
-	.sheet-spacer {grid-area: spacer; grid-column: span 1; grid-row: span 1;}
-	.sheet-charname {grid-area: charname;}
-	.sheet-chardates {grid-area: chardates;}
-
-	.sheet-col {grid-area: col; grid-column: span 1; grid-row: span 1;}
-	.sheet-2cols {grid-area: col2grid; grid-template-columns: auto auto;}
-	.sheet-3cols {grid-area: col3grid; grid-template-columns: auto auto auto;}
-	.sheet-4cols {grid-area: col4grid; grid-template-columns: auto auto auto auto;}
-	.sheet-5cols {grid-area: col5grid; grid-template-columns: auto auto auto auto auto;}
-	.sheet-6cols {grid-area: col6grid; grid-template-columns: auto auto auto auto auto auto;}
-	
-	.sheet-4colsthin {grid-area: col4thin; margin-left: 15%; grid-template-columns: 17.5% 17.5% 17.5% 17.5%;}
-	/* #endregion */
-	/* #endregion */
-
-	/* #region Generally Applicable Styles */
+	/* #region GENERAL FORMAT STYLES */
 	.sheet-center {
 		text-align: center;
 		text-align-last: center;
 	}
-	/* #region Font Styles & Sizes */
-	.sheet-size5 { font-size: 40px; }
-	.sheet-size4 { font-size: 24px; }
-	.sheet-size3 { font-size: 20px; }
-	.sheet-size2 { font-size: 16px; }
-	.sheet-size1 { font-size: 12px; }
+	.sheet-left {
+		text-align: left;
+		text-align-last: left;
+	}
+	.sheet-right {
+		text-align: right;
+		text-align-last: right;
+	}
+	.sheet-nudgeleft {
+		margin-left: -10px !important;
+		margin-right: 10px !important;
+	}
+	.sheet-nudgeup {
+		margin-top: -10px !important;
+		margin-bottom: 10px !important;
+	}
+	.sheet-stretchvert {
+		height: 110% !important;
+	}
+		/* #region Font Styles & Sizes */
+		.sheet-size5 { font-size: 40px; }
+		.sheet-size4 { font-size: 24px; }
+		.sheet-size3 { font-size: 20px; }
+		.sheet-size2 { font-size: 16px; }
+		.sheet-size1 { font-size: 12px; }
 
-	.sheet-engraved { 
-		font-family: 'Trajan Pro 3';
-		font-weight: normal;
-		font-variant: small-caps;
-	}
-	.sheet-percolator {
-		font-family: 'Percolator';
-		font-weight: normal;
-		font-variant: small-caps;
-		margin-top: 2px;
-		margin-bottom: -2px;
-	}
-	.sheet-cormorant {
-		font-family: 'Cormorant Garamond';
-		font-weight: normal;
-		font-variant: small-caps;
-	}
-
-	.sheet-insettext {
-		color: rgba(255, 255, 255, 0.5);
-		text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 2px #ccc;
-	}
-
+		.sheet-engraved { 
+			font-family: 'Trajan Pro 3';
+			font-weight: normal;
+			font-variant: small-caps;
+		}
+		.sheet-percolator {
+			font-family: 'Percolator';
+			font-weight: normal;
+			font-variant: small-caps;
+		}
+		.sheet-cormorant {
+			font-family: 'Cormorant Garamond';
+			font-weight: normal;
+			font-variant: small-caps;
+		}
+		.sheet-insettext {
+			color: rgba(255, 255, 255, 0.5);
+			text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 2px #ccc;
+		}
+		/* #endregion */
 	/* #endregion */
-
-	/* #endregion */
-
-	/* #region Hover-Over Popups */
+	/* #region HOVER-OVER POPUPS */
 	input.sheet-popup {
-		height: 100%;
+		height: 25px;
 		width: 25px;
 		margin-left: -30px;
-		opacity: 0;
+		margin-right: -25px;
 	}
 	input.sheet-popup+span {
-		height: 100%;
+		height: 25px;
 		width: 25px;
-		margin-left: -25px;
 		margin-right: 5px;
 		background-color: blue;
 	}
@@ -218,28 +154,140 @@
 		background-color: red;
 	}
 	input.sheet-popup+span+div.sheet-popup {
+		height: 190px;
+		width: 400px;
+		margin-left: -40px;
+		margin-right: calc(-400px + 40px);
+		margin-top: -190px;
+
 		display: none;
+		position: relative;
+		
+		background: url("https://imgur.com/kBl8aTO.jpg");
+		background-size: 100%;
+
+		border: 3px white outset;
+		z-index: 250;
+	}
+	input.sheet-popup:hover+span+div.sheet-popup {
+		display: inline-block;
 	}
 	/* #endregion */
+
+	/* #region GRID LAYOUT */
+	.charsheet,
+	.charsheet div[class*="grid"] {
+		display: grid !important; /* !IMP to override inaccessible Roll20 settings. */ 
+		position: relative;
+		z-index: 1;
+	}
+	.charsheet div[class*="grid"]:not(.sheet-nogridgap) {
+		grid-column-gap: 10px;
+		grid-row-gap: 3px;
+	}
+		/* #region Generic Grid Styles (Multipurpose) */
+		.sheet-header {grid-area: header}
+		.sheet-spacer {grid-area: spacer; grid-column: span 1; grid-row: span 1;}
+		.sheet-charname {grid-area: charname;}
+		.sheet-chardates {grid-area: chardates;}
+
+		.sheet-col {grid-area: col; grid-column: span 1; grid-row: span 1;}
+		.sheet-2cols {grid-area: col2grid; grid-template-columns: auto auto;}
+		.sheet-3cols {grid-area: col3grid; grid-template-columns: auto auto auto;}
+		.sheet-4cols {grid-area: col4grid; grid-template-columns: auto auto auto auto;}
+		.sheet-5cols {grid-area: col5grid; grid-template-columns: auto auto auto auto auto;}
+		.sheet-6cols {grid-area: col6grid; grid-template-columns: auto auto auto auto auto auto;}
+		
+		.sheet-4colsthin {
+			grid-area: col4thin;
+			padding: 0% 15%;
+			grid-template-areas: 'col col col col';
+			grid-template-columns: 25% 25% 25% 25%;
+		}
+		/* #endregion */
+		/* #region Generic Top-Level Grid Formats (Header, Navbar, Marquee, DiceRoller, MainBody, Footer) */
+		.charsheet {
+			grid-template-columns: 28px auto 28px;
+			grid-template-areas:
+				'mainheader mainheader mainheader'
+				'. navbar .'
+				'. marquee .'
+				'. mainbody .'
+				'mainfooter mainfooter mainfooter';
+		}
+		div.sheet-mainheader {
+			grid-area: mainheader;
+			height: 250px;
+			margin-bottom: -150px;
+
+			background-image: url('https://imgur.com/DJ3KxdD.png');
+		}	
+		div.sheet-navbar {
+			grid-area: navbar;
+		}
+		div.sheet-marquee {
+			grid-area: marquee;
+			grid-template-rows: 30px 16px 16px 16px;
+			grid-template-areas: 
+				'title'
+				'line1'
+				'line2'
+				'line3';
+			height: auto;
+		}
+		div.sheet-mainbody {
+			grid-area: mainbody;
+			grid-auto-rows: 24px;
+		}
+		div.sheet-mainfooter {
+			grid-area: mainfooter;
+			height: 250px;
+			margin-top: -150px;
+
+			background-image: url('https://imgur.com/FNL9mcz.png');
+		}
+		/* #endregion */
+		/* #region Sheet- and Page-Specific Grid Layouts */
+			/* #region Single Sheet Layout (Vamp, Mortal & NPC) */
+			div.sheet-navbar.sheet-vamp,
+			div.sheet-navbar.sheet-mortal,
+			div.sheet-navbar.sheet-npc {
+				height: 45px;
+				grid-template-areas: 'tab1 tab2 tab3 tab4 tab5 tab6 tab9';
+				grid-auto-columns: calc(100% / 7);
+			}
+			/* #endregion */
+		/* #endregion */
+	/* #endregion */
+
 
 	/* #region VAMP PAGE 1 */
 	div.sheet-mainbody.sheet-vamp.sheet-page1 {
 		grid-template-rows: 46px 30px auto 50px auto 20px auto;
 		grid-template-areas:
-			'charname charname charname charname charname charname'
-			'chardates chardates chardates chardates chardates chardates'
-			'col4thin col4thin col4thin col4thin col4thin col4thin'
-			'diceroller diceroller diceroller diceroller diceroller diceroller '
-			'col4grid col4grid col4grid col4grid col4grid col4grid'
-			'header header header header header header'
-			'col3grid col3grid col3grid col3grid col3grid col3grid';		
+			'charname'
+			'chardates'
+			'col4thin'
+			'diceroller'
+			'col4grid'
+			'header'
+			'col3grid';		
 	}
 
-	/* #endregion
+	/* #endregion */
 
 /* ==================================================================================================== */
 
 	/* #region SHEET & PAGE SELECTORS */
+	
+	div.sheet-navbar.sheet-group {
+		grid-template-areas: 
+			'. tab0 .'
+			'tab1 tab2 tab3'
+			'tab4 tab5 tab6'
+			'tab7 tab8 tab9';
+		grid-auto-columns: calc(100% / 3);
+	}
 
 	/* Initialize three top-level grid containers and settings page controller to invisible. */
 	.charsheet .sheet-settings,
@@ -248,12 +296,9 @@
 	.charsheet .sheet-npcvamp,
 	.charsheet .sheet-npcmortal,
 	.charsheet .sheet-npcother,
-	.charsheet .sheet-npcgroup {
-		display: none;
-	}
-
+	.charsheet .sheet-npcgroup,
 	.charsheet .sheet-navbar {
-		display: none !important;
+		display: none;
 	}
 
 	/* Activate the appropriate character sheet and navbar according to sheet controller. */
@@ -262,7 +307,7 @@
 	.charsheet input[type=hidden].sheet-sheetcontrol[value="3"]~.sheet-toplevel.sheet-npcvamp,
 	.charsheet input[type=hidden].sheet-sheetcontrol[value="4"]~.sheet-toplevel.sheet-npcmortal,
 	.charsheet input[type=hidden].sheet-sheetcontrol[value="5"]~.sheet-toplevel.sheet-npcother,
-	.charsheet input[type=hidden].sheet-sheetcontrol[value="6"]~.sheet-toplevel.sheet-group, {
+	.charsheet input[type=hidden].sheet-sheetcontrol[value="6"]~.sheet-toplevel.sheet-group {
 		display: grid;
 	}
 	
@@ -301,11 +346,28 @@
 	}
 
 	/* Format the Tabs Themselves */
-	.charsheet input.sheet-pageselector {
-		margin-right: -100%;
-		opacity: 0;
-		cursor: pointer;
+	.charsheet .sheet-vamp div.sheet-tab1 {
+		grid-area: tab1;
 	}
+	.charsheet .sheet-vamp div.sheet-tab2 {
+		grid-area: tab2;
+	}
+	.charsheet .sheet-vamp div.sheet-tab3 {
+		grid-area: tab3;
+	}
+	.charsheet .sheet-vamp div.sheet-tab4 {
+		grid-area: tab4;
+	}
+	.charsheet .sheet-vamp div.sheet-tab5 {
+		grid-area: tab5;
+	}
+	.charsheet .sheet-vamp div.sheet-tab6 {
+		grid-area: tab6;
+	}
+	.charsheet .sheet-vamp div.sheet-tab9 {
+		grid-area: tab9;
+	}
+
 	.charsheet .sheet-vamp input[type=radio].sheet-tab1:not(.sheet-selectable) + span,
 	.charsheet .sheet-mortal input[type=radio].sheet-tab1:not(.sheet-selectable) + span {
 		background: url('https://imgur.com/n9ZUm0N.png') no-repeat center;
@@ -362,10 +424,6 @@
 	.charsheet .sheet-mortal input[type=radio].sheet-tab9:not(.sheet-selectable):checked + span {
 		background: url('https://imgur.com/lI1fhK7.png') no-repeat center;
 	}
-
-
-
-
 
 	/* #region TESTING (COLORS) */
 	div.sheet-mainbody div.sheet-header {
