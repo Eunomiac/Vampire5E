@@ -94,7 +94,32 @@
 </div>
 <div class="mainheader"></div>
 <!-- #endregion -->
-<div class="marquee grid">
+<!-- #region NAVBAR: Page Control -->
+<div class="vamp mortal navbar grid tight">
+        <div class="tab tab1">
+            <input class="sheet-tab sheet-tab1 sheet-singlesheet" type="radio" name="attr_tab_core" value="1" title="Front" checked /><span></span>
+        </div>
+        <div class="tab tab2">
+            <input class="sheet-tab sheet-tab2 sheet-singlesheet" type="radio" name="attr_tab_core" value="2" title="Details" /><span></span>
+        </div>
+        <div class="tab tab3">
+            <input class="sheet-tab sheet-tab3 sheet-singlesheet" type="radio" name="attr_tab_core" value="3" title="Humanity" /><span></span>
+        </div>
+        <div class="tab tab4">
+            <input class="sheet-tab sheet-tab4 sheet-singlesheet" type="radio" name="attr_tab_core" value="4" title="Projects" /><span></span>
+        </div>
+        <div class="tab tab5">
+            <input class="sheet-tab sheet-tab5 sheet-singlesheet" type="radio" name="attr_tab_core" value="5" title="Combat" /><span></span>
+        </div>
+        <div class="tab tab6">
+            <input class="sheet-tab sheet-tab6 sheet-singlesheet" type="radio" name="attr_tab_core" value="6" title="Experience" /><span></span>
+        </div>
+        <div class="tab tab9">
+            <input class="sheet-tab sheet-tab9 sheet-singlesheet" type="radio" name="attr_tab_core" value="9" title="All" /><span></span>
+        </div>
+    </div>
+<!-- #endregion -->
+<div class="marquee grid tight">
     <div class="title">
         <textarea class="size4" name="attr_marquee_title" readonly></textarea>
     </div>
@@ -108,31 +133,7 @@
         <textarea class="size3" name="attr_marquee3" readonly></textarea>
     </div>
 </div>
-<!-- #region NAVBAR: Page Control -->
-<div class="vamp mortal navbar grid nogridgap">
-    <div class="tab tab1">
-        <input class="sheet-tab sheet-tab1 sheet-singlesheet" type="radio" name="attr_tab_core" value="1" title="Front" checked /><span></span>
-    </div>
-    <div class="tab tab2">
-        <input class="sheet-tab sheet-tab2 sheet-singlesheet" type="radio" name="attr_tab_core" value="2" title="Details" /><span></span>
-    </div>
-    <div class="tab tab3">
-        <input class="sheet-tab sheet-tab3 sheet-singlesheet" type="radio" name="attr_tab_core" value="3" title="Humanity" /><span></span>
-    </div>
-    <div class="tab tab4">
-        <input class="sheet-tab sheet-tab4 sheet-singlesheet" type="radio" name="attr_tab_core" value="4" title="Projects" /><span></span>
-    </div>
-    <div class="tab tab5">
-        <input class="sheet-tab sheet-tab5 sheet-singlesheet" type="radio" name="attr_tab_core" value="5" title="Combat" /><span></span>
-    </div>
-    <div class="tab tab6">
-        <input class="sheet-tab sheet-tab6 sheet-singlesheet" type="radio" name="attr_tab_core" value="6" title="Experience" /><span></span>
-    </div>
-    <div class="tab tab9">
-        <input class="sheet-tab sheet-tab9 sheet-singlesheet" type="radio" name="attr_tab_core" value="9" title="All" /><span></span>
-    </div>
-</div>
-<!-- #endregion -->
+
 <!-- #region ... Single Sheet -->
 <div class="vamp mainbody page1 col grid">
     <div class="charname">
@@ -236,20 +237,89 @@
             </select>
         </div>
     </div>
-    <div class="diceroller grid">
+    <div class="diceroller grid tight">
+        <div class="grid tight">
+            <span class="row center insettext size3 bodoni header">Hunger</span>
+            <div class="row dotline2"></div>
+            <span class="row center insettext size3 bodoni header">Resonance</span> 
+            <div class="row"></div>
+        </div>        
+        <div class="grid tight">
+            <div class="row grid tight">
+                <div class="col"></div>
+                <div class="col"></div>
+            </div>
+            <div class="row"></div>
+            <div class="row"></div>
+        </div>
+        <div class="grid tight">
+            <div class="row grid tight">
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col"></div>
+            </div>
+            <div class="row"></div>
+            <div class="row"></div>
+        </div>
+        <div class="grid tight">
+            <div class="row">
+                <input type="checkbox" class="traitselector"><span class="center insettext size2 bodoni header">Discipline</span>
+            </div>
+            <div class="row">
+                <input type="checkbox" class="traitselector"><span class="center insettext size2 bodoni header">Blood Surge</span>
+            </div>
+            <div class="row">
+                <input type="checkbox" class="traitselector"><span class="center insettext size2 bodoni header">Specialty</span>
+            </div>
+            <div class="row">
+                <input type="checkbox" class="traitselector"><span class="center insettext size2 bodoni header">Resonant</span>
+            </div>
+        </div>
         
     </div>
     <div class="4cols grid">
-        <div class="col"></div>
-        <div class="col"></div>
-        <div class="col"></div>
-        <div class="col"></div>
+        <div class="col">
+            <span class="row center insettext size3 bodoni">Health</span>
+            <input type="hidden" name="at_"><span class="row center redflag size1 allcaps bodoni"></span>
+            <div class="row boxline3 double center">
+
+            </div>
+        </div>
+        <div class="col">
+            <span class="row center insettext size3 bodoni">Willpower</span>
+            <input type="hidden" name="at_"><span class="row center redflag size1 allcaps bodoni"></span>
+            <div class="row boxline3 double center">
+                
+            </div>
+        </div>
+        <div class="col">
+            <span class="row center insettext size3 bodoni">Blood Potency</span>
+            <input type="hidden" name="at_"><span class="row center redflag size1 allcaps bodoni"></span>
+            <div class="row dotline3 double center">
+                
+            </div>
+        </div>
+        <div class="col">
+            <span class="row center insettext size3 bodoni">Humanity</span>
+            <input type="hidden" name="at_"><span class="row center redflag size1 allcaps bodoni"></span>
+            <div class="row boxline3 double center">
+                
+            </div>
+        </div>
     </div>
-    <div class="header"></div>
+    <div class="header"><img src="http://imgsrv.roll20.net/?src=imgur.com/eM2tVHp.png"></div>
     <div class="3cols grid">
-        <div class="col"></div>
-        <div class="col"></div>
-        <div class="col"></div>
+        <div class="col">
+            <span class="center bodoni insettext size3">Physical</span>
+        </div>
+        <div class="col">
+            <span class="center bodoni insettext size3">Social</span>
+        </div>
+        <div class="col">
+            <span class="center bodoni insettext size3">Mental</span>
+        </div>
     </div>
 </div>
 <!-- #endregion -->

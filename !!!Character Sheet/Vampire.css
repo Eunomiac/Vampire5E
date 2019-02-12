@@ -35,10 +35,6 @@
 			font-size: 16px;
 			text-indent: 2px;		
 		}
-		select option {
-			color: black !important;
-			text-shadow: none !important;
-		}
 		.charsheet div.sheet-loadingbay,
 		.charsheet div.sheet-loadingbay img {
 			height: 1px;
@@ -86,30 +82,32 @@
 		/* #endregion */
 	/* #endregion */
 	/* #region GENERAL FORMAT STYLES */
-	.sheet-center {
-		text-align: center;
-		text-align-last: center;
-	}
-	.sheet-left {
-		text-align: left;
-		text-align-last: left;
-	}
-	.sheet-right {
-		text-align: right;
-		text-align-last: right;
-	}
-	.sheet-nudgeleft {
-		margin-left: -10px !important;
-		margin-right: 10px !important;
-	}
-	.sheet-nudgeup {
-		margin-top: -10px !important;
-		margin-bottom: 10px !important;
-	}
-	.sheet-stretchvert {
-		height: 110% !important;
-	}
-		/* #region Font Styles & Sizes */
+		/* #region ... Alignment & Positioning */
+		.sheet-center {
+			text-align: center;
+			text-align-last: center;
+		}
+		.sheet-left {
+			text-align: left;
+			text-align-last: left;
+		}
+		.sheet-right {
+			text-align: right;
+			text-align-last: right;
+		}
+		.sheet-nudgeleft {
+			margin-left: -10px !important;
+			margin-right: 10px !important;
+		}
+		.sheet-nudgeup {
+			margin-top: -10px !important;
+			margin-bottom: 10px !important;
+		}
+		.sheet-stretchvert {
+			height: 110% !important;
+		}
+		/* #endregion */
+		/* #region ... Font Styles & Sizes */
 		.sheet-size5 { font-size: 40px; }
 		.sheet-size4 { font-size: 24px; }
 		.sheet-size3 { font-size: 20px; }
@@ -123,6 +121,11 @@
 		}
 		.sheet-percolator {
 			font-family: 'Percolator';
+			font-weight: normal;
+			font-variant: small-caps;
+		}
+		.sheet-bodoni {
+			font-family: 'Bodoni SvtyTwo ITC TT';
 			font-weight: normal;
 			font-variant: small-caps;
 		}
@@ -173,6 +176,20 @@
 		display: inline-block;
 	}
 	/* #endregion */
+	/* #region TRAIT SELECTION & HIGHLIGHTING */
+	.charsheet input[type="checkbox"].sheet-traitselector:checked+span {
+		color: white;
+		width: 120%;
+		margin: 0px -10%;
+		background: url("https://imgur.com/tgcewDw.png") bottom/110% 110% no-repeat;
+		text-shadow: 0px 0px 2px red, 0px 0px 2px red, 0px 0px 2px red;
+	} 
+	/* #endregion */
+	/* #region TRAIT DOT LINES, TRACKER BOX LINES */
+
+	/* #endregion */
+
+/* === GRID LAYOUT ====================================================================================== */
 
 	/* #region GRID LAYOUT */
 	.charsheet,
@@ -181,7 +198,7 @@
 		position: relative;
 		z-index: 1;
 	}
-	.charsheet div[class*="grid"]:not(.sheet-nogridgap) {
+	.charsheet div[class*="grid"]:not(.sheet-tight) {
 		grid-column-gap: 10px;
 		grid-row-gap: 3px;
 	}
@@ -200,14 +217,20 @@
 		
 		.sheet-4colsthin {
 			grid-area: col4thin;
-			padding: 0% 15%;
-			grid-template-areas: 'col col col col';
-			grid-template-columns: 25% 25% 25% 25%;
+			justify-content: center;
+			grid-template-columns: 17.5% 17.5% 17.5% 17.5%;
 		}
+
+		.sheet-row {grid-area: row; grid-column: span 1; grid-row: span 1;}
+		.sheet-2rows {grid-area: row2grid; grid-template-rows: auto auto;}
+		.sheet-3rows {grid-area: row3grid; grid-template-rows: auto auto auto;}
+		.sheet-4rows {grid-area: row4grid; grid-template-rows: auto auto auto auto;}
+		.sheet-5rows {grid-area: row5grid; grid-template-rows: auto auto auto auto auto;}
 		/* #endregion */
 		/* #region Generic Top-Level Grid Formats (Header, Navbar, Marquee, DiceRoller, MainBody, Footer) */
 		.charsheet {
 			grid-template-columns: 28px auto 28px;
+			grid-template-rows: 100px 50px 87px auto 250px;
 			grid-template-areas:
 				'mainheader mainheader mainheader'
 				'. navbar .'
@@ -217,10 +240,7 @@
 		}
 		div.sheet-mainheader {
 			grid-area: mainheader;
-			height: 250px;
-			margin-bottom: -150px;
-
-			background-image: url('https://imgur.com/DJ3KxdD.png');
+			background: url('https://imgur.com/DJ3KxdD.png') top;
 		}	
 		div.sheet-navbar {
 			grid-area: navbar;
@@ -228,12 +248,6 @@
 		div.sheet-marquee {
 			grid-area: marquee;
 			grid-template-rows: 30px 16px 16px 16px;
-			grid-template-areas: 
-				'title'
-				'line1'
-				'line2'
-				'line3';
-			height: auto;
 		}
 		div.sheet-mainbody {
 			grid-area: mainbody;
@@ -241,13 +255,65 @@
 		}
 		div.sheet-mainfooter {
 			grid-area: mainfooter;
-			height: 250px;
 			margin-top: -150px;
-
 			background-image: url('https://imgur.com/FNL9mcz.png');
 		}
 		/* #endregion */
 		/* #region Sheet- and Page-Specific Grid Layouts */
+			/* #region Diceroller */
+			div.sheet-vamp div.sheet-diceroller {
+				grid-area: diceroller;
+				height: 120px;
+				grid-template-columns: 105px 110px 508px auto;
+			}
+			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(1) {
+				grid-template-rows: 35px 25px 35px 25px;
+			}
+			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(2) {
+				grid-template-rows: 50px 35px 35px;
+				background: url('https://imgur.com/SCdHyti.png') left no-repeat;
+			}
+			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(2) div.sheet-row:nth-child(1) {
+				grid-template-columns: 74px 36px;
+			}
+			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(2) div.sheet-row:nth-child(1) div.sheet-col:nth-child(1):hover {
+				background: url('https://imgur.com/oZFnNOP.png') no-repeat;  /* Rouse */
+			}
+			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(2) div.sheet-row:nth-child(1) div.sheet-col:nth-child(2):hover {
+				background: url('https://imgur.com/oZFnNOP.png') no-repeat; /* x2 */
+			}
+			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(2) div.sheet-row:nth-child(2):hover {
+				background: url('https://imgur.com/GgJXyaF.png') no-repeat; /* Roll */
+			}			
+			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(2) div.sheet-row:nth-child(3):hover {
+				background: url('https://imgur.com/fsl89bm.png') no-repeat; /* Discipline Roll */
+			}
+			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(3) {
+				grid-template-rows: 50px 45px 25px;
+				background: url('https://imgur.com/SCdHyti.png') right no-repeat;
+			}			
+			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(3) div.sheet-row:nth-child(1) {
+				grid-template-columns: auto auto auto auto auto;
+			}				
+			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(3) div.sheet-row:nth-child(1) div.sheet-col:nth-child(1):hover {
+				background: url('https://imgur.com/MftmtUs.png') center no-repeat; /* Check */
+			}			
+			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(3) div.sheet-row:nth-child(1) div.sheet-col:nth-child(2):hover {
+				background: url('https://imgur.com/9zfAjdn.png') center no-repeat; /* Willpower */
+			}			
+			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(3) div.sheet-row:nth-child(1) div.sheet-col:nth-child(3):hover {
+				background: url('https://imgur.com/niwPzG0.png') center no-repeat; /* Humanity */
+			}			
+			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(3) div.sheet-row:nth-child(1) div.sheet-col:nth-child(4):hover {
+				background: url('https://imgur.com/ZKxUMKR.png') center no-repeat; /* Frenzy */
+			}			
+			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(3) div.sheet-row:nth-child(1) div.sheet-col:nth-child(5):hover {
+				background: url('https://imgur.com/Jv9M176.png') center no-repeat; /* Remorse */
+			}
+			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(4) {
+				grid-template-rows: 30px 30px 30px 30px;
+			}
+			/* #endregion */
 			/* #region Single Sheet Layout (Vamp, Mortal & NPC) */
 			div.sheet-navbar.sheet-vamp,
 			div.sheet-navbar.sheet-mortal,
@@ -255,25 +321,22 @@
 				height: 45px;
 				grid-template-areas: 'tab1 tab2 tab3 tab4 tab5 tab6 tab9';
 				grid-auto-columns: calc(100% / 7);
-			}
+			}			
+				/* #region VAMP PAGE 1 */
+				div.sheet-mainbody.sheet-vamp.sheet-page1 {
+					grid-template-rows: 46px 30px auto 120px auto 20px auto;
+					grid-template-areas:
+						'charname'
+						'chardates'
+						'col4thin'
+						'diceroller'
+						'col4grid'
+						'header'
+						'col3grid';		
+				}
+				/* #endregion */
 			/* #endregion */
 		/* #endregion */
-	/* #endregion */
-
-
-	/* #region VAMP PAGE 1 */
-	div.sheet-mainbody.sheet-vamp.sheet-page1 {
-		grid-template-rows: 46px 30px auto 50px auto 20px auto;
-		grid-template-areas:
-			'charname'
-			'chardates'
-			'col4thin'
-			'diceroller'
-			'col4grid'
-			'header'
-			'col3grid';		
-	}
-
 	/* #endregion */
 
 /* ==================================================================================================== */
