@@ -161,17 +161,6 @@ const TimeTracker = (() => {
 			D.Alert("Auto clock ticking DISABLED", "TIMETRACKER !TIME")
 		},
 		//#endregion
-		
-		//#region Temperature Simulation
-		convertFtoC = fahr => 0.55556 * (fahr - 32),
-		convertCtoF = cels => 1.8 * cels + 32,
-		heatIndex = (temp, relHumid) => -42.379 + 2.04901523*temp + 10.14333127*relHumid 
-			- 0.22475541*temp*relHumid - 6.83783*Math.pow(10,-3)*temp*temp
-			- 5.481717*Math.pow(10,-2)*relHumid*relHumid
-			+ 1.22874*Math.pow(10,-3)*temp*temp*relHumid 
-			+ 8.5282*Math.pow(10,-4)*temp*relHumid*relHumid 
-			- 1.99*Math.pow(10,-6)*temp*temp*relHumid*relHumid,
-		//#endregion
 
 		//#region Airplane Lights
 		tickAirLight = (alight, isStartup) => {

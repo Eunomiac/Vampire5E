@@ -598,11 +598,6 @@ const Chars = (() => {
 		checkInstall = () => {
 			state[D.GAMENAME] = state[D.GAMENAME] || {}
 			state[D.GAMENAME].Chars = state[D.GAMENAME].Chars || {}
-			
-		/* state[D.GAMENAME].Images.registry["JohannesNapierToken_1"].srcs.base = "https://s3.amazonaws.com/files.d20.io/images/69211889/6jgOBzDBfwvQV__fsORH6g/thumb.png?1544987477"
-			state[D.GAMENAME].Images.registry["Dr.ArthurRoyToken_1"].srcs.base = "https://s3.amazonaws.com/files.d20.io/images/69211896/wzLOhOB9kJEWjOmriZYWQw/thumb.png?1544987482"
-			state[D.GAMENAME].Images.registry["AvaWongToken_1"].srcs.base = "https://s3.amazonaws.com/files.d20.io/images/69211865/KtYm8rlY3VY3FdU_8ufO5g/thumb.png?1544987464"
-		 */
 		}
 	// #endregion
 	

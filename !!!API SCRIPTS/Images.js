@@ -770,6 +770,13 @@ const Images = (() => {
 				predawn1: "https://s3.amazonaws.com/files.d20.io/images/73196523/9EUpHBSXYZubSmEhwedJ3Q/thumb.jpg?1549439726",
 				day: "https://s3.amazonaws.com/files.d20.io/images/73196525/HnEUSSd9qzhqnTIDqZqQvQ/thumb.jpg?1549439735"
 			}
+
+
+			state.VAMPIRE.Images.registry.signalLight_Pad_1.startActive = true
+			state.VAMPIRE.Images.registry.YusefSignal_1.activeLayer = "objects"
+			state.VAMPIRE.Images.registry.YusefSignal_1.srcs = {
+				on: "https://s3.amazonaws.com/files.d20.io/images/73633941/TJcjeBQvNv_xCpFnogPccA/med.png?1549843150"
+			}
 		}
 	// #endregion
 

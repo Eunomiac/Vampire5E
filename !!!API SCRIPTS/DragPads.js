@@ -40,9 +40,9 @@ const DragPads = (() => {
 				if (!light)
 					D.ThrowError(`No signal light found with id ${JSON.stringify(args.id)}.`)
 				else if (light.get("imgsrc") === IMAGES.blank)
-					light.set("imgsrc", IMAGES.signalLight)
+					Images.Set(light, "on")
 				else
-					light.set("imgsrc", IMAGES.blank)
+					Images.Set(light, "blank")
 			}
 		},
 		// #endregion
@@ -96,7 +96,7 @@ const DragPads = (() => {
 
 			return pads
 		},
-		makePad = (graphicObj, funcName, params = "deltaTop:0, deltaLeft:, deltaHeight:0, deltaWidth:0") => {
+		makePad = (graphicObj, funcName, params = "deltaTop:0, deltaLeft:0, deltaHeight:0, deltaWidth:0") => {
 			const options = {
 				controlledby: "all",
 				layer: "map"
