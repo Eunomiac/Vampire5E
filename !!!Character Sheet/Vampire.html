@@ -240,7 +240,14 @@
     <div class="diceroller grid tight">
         <div class="grid tight">
             <span class="row center insettext size3 bodoni header">Hunger</span>
-            <div class="row dotline2"></div>
+            <div class="row dotline">
+                <input type="radio" class="dot zerodot" name="attr_Hunger" value="0" checked><span></span>
+                <input type="radio" class="dot" name="attr_Hunger" value="1"><span></span>
+                <input type="radio" class="dot" name="attr_Hunger" value="2"><span></span>
+                <input type="radio" class="dot" name="attr_Hunger" value="3"><span></span>
+                <input type="radio" class="dot" name="attr_Hunger" value="4"><span></span>
+                <input type="radio" class="dot" name="attr_Hunger" value="5"><span></span>
+            </div>
             <span class="row center insettext size3 bodoni header">Resonance</span> 
             <div class="row"></div>
         </div>        
@@ -264,9 +271,6 @@
             <div class="row"></div>
         </div>
         <div class="grid tight">
-            <div class="row">
-                <input type="checkbox" class="traitselector"><span class="center insettext size2 bodoni header">Discipline</span>
-            </div>
             <div class="row">
                 <input type="checkbox" class="traitselector"><span class="center insettext size2 bodoni header">Blood Surge</span>
             </div>

@@ -33,7 +33,7 @@
 		}
 		input, textarea, select {
 			font-size: 16px;
-			text-indent: 2px;		
+			text-indent: 2px;
 		}
 		.charsheet div.sheet-loadingbay,
 		.charsheet div.sheet-loadingbay img {
@@ -78,6 +78,7 @@
 			opacity: 0;
 			margin-right: -100%;
 			cursor: pointer;
+			vertical-align: top;
 		}
 		/* #endregion */
 	/* #endregion */
@@ -186,6 +187,113 @@
 	} 
 	/* #endregion */
 	/* #region TRAIT DOT LINES, TRACKER BOX LINES */
+		/* #region Standard Dot Line: 5 Dots + Zero Dot */
+		.charsheet div.sheet-dotline {
+			height: 16px;
+			width: calc(16px * 6);
+			margin-left: calc((100% - 16px * 6)/2);
+		}
+		.charsheet div.sheet-dotline input.sheet-dot {
+			width: calc(100% / 6);
+			margin-right: calc(-100% / 6);
+		}
+		.charsheet div.sheet-dotline input.sheet-dot+span {
+			height: calc(100% - 2px);
+			width: calc(100% / 6 - 2px);
+			margin: 1px 1px;
+			pointer-events: none;
+		}
+		.charsheet div.sheet-dotline input.sheet-dot+span::before {
+			height: calc(100% - 2px);
+			width: calc(100% - 2px);
+			background: #0a0a0a;
+			background: -moz-radial-gradient(#444, #0a0a0a);
+			background: -webkit-radial-gradient(#444, #0a0a0a);
+			background: radial-gradient(#444, #0a0a0a);
+	
+			content: "";
+			display: inline-block;
+	
+			border: solid 1px black;
+	
+			-moz-border-radius: 50%;
+			-webkit-border-radius: 50%;
+			border-radius: 50%;
+	
+			box-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black;
+		}
+		.charsheet div.sheet-dotline input.sheet-dot:checked~input.sheet-dot+span::before {
+			height: 100%;
+			width: 100%;
+			background: rgba(150, 150, 150, 0.4);
+	
+			border: none;
+	
+			box-shadow: -1px -1px 0px #000, 0px -1px 0px #999, 1px -1px 0px #aaa, 0px 0px 2px #000, 1px 0px 0px #fff, 0px 1px 0px #ccc, 1px 1px 0px #fff;
+		}
+		.charsheet div.sheet-dotline input.sheet-zerodot:checked+span::before {
+			opacity: 0;
+		}
+		.charsheet div.sheet-dotline input.sheet-zerodot:hover+span::before {
+			opacity: 1;
+		}
+		.charsheet div.sheet-dotline input.sheet-zerodot+span::before {
+			background-image: linear-gradient(45deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 60%), linear-gradient(-45deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 60%);
+			opacity: 0.25;
+	
+			text-shadow: none;
+		}
+		/* #endregion */
+		/* #region Variations: No Zero Dot, Ten Dot Lines, Larger Dots */
+		.charsheet div.sheet-dotline.sheet-nozero {
+			width: calc(16px * 5);
+			margin-left: calc((100% - 16px * 5)/2);
+		}
+		.charsheet div.sheet-dotline.sheet-tendots {
+			width: calc(16px * 11);
+			margin-left: calc((100% - 16px * 11)/2);
+		}
+		.charsheet div.sheet-dotline.sheet-nozero.sheet-tendots {
+			width: calc(16px * 10);
+			margin-left: calc((100% - 16px * 10)/2);
+		}
+		.charsheet div.sheet-dotline.sheet-dotsize20 {
+			height: 20px;
+			width: calc(20px * 6);
+			margin-left: calc((100% - 20px * 6)/2);
+		}
+		.charsheet div.sheet-dotline.sheet-dotsize20.sheet-nozero {
+			height: 20px;
+			width: calc(20px * 5);
+			margin-left: calc((100% - 20px * 5)/2);
+		}
+		.charsheet div.sheet-dotline.sheet-dotsize20.sheet-tendots {
+			width: calc(20px * 11);
+			margin-left: calc((100% - 20px * 11)/2);
+		}
+		.charsheet div.sheet-dotline.sheet-dotsize20.sheet-nozero.sheet-tendots {
+			height: 20px;
+			width: calc(20px * 10);
+			margin-left: calc((100% - 20px * 10)/2);
+		}
+		/* #endregion */
+		/* #region Variable-Length Box Lines: 1-20 Boxes, Blank/Slash/X */
+		.charsheet div.sheet-dotline input.sheet-box+span::before {
+			height: calc(100% - 2px);
+			width: calc(100% - 2px);
+	
+			background-color: rgba(150, 150, 150, 0.4);
+	
+			content: "";
+		}
+		/* #endregion */
+	/* #region CONTINGENT CONTAINER CONTROL */
+
+	/* #endregion */
+
+
+	
+
 
 	/* #endregion */
 
@@ -263,55 +371,55 @@
 			/* #region Diceroller */
 			div.sheet-vamp div.sheet-diceroller {
 				grid-area: diceroller;
-				height: 120px;
+				height: 102px;
 				grid-template-columns: 105px 110px 508px auto;
 			}
-			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(1) {
-				grid-template-rows: 35px 25px 35px 25px;
+			div.sheet-vamp div.sheet-diceroller > div.sheet-grid:nth-child(1) {
+				grid-template-rows: 26px 25px 26px 25px;
 			}
-			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(2) {
-				grid-template-rows: 50px 35px 35px;
-				background: url('https://imgur.com/SCdHyti.png') left no-repeat;
+			div.sheet-vamp div.sheet-diceroller > div.sheet-grid:nth-child(2) {
+				grid-template-rows: 36px 24px 24px;
+				background: url('https://i.imgur.com/wIKf9o2.png') left no-repeat;
 			}
-			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(2) div.sheet-row:nth-child(1) {
+			div.sheet-vamp div.sheet-diceroller > div.sheet-grid:nth-child(2) > div.sheet-row:nth-child(1) {
 				grid-template-columns: 74px 36px;
 			}
-			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(2) div.sheet-row:nth-child(1) div.sheet-col:nth-child(1):hover {
-				background: url('https://imgur.com/oZFnNOP.png') no-repeat;  /* Rouse */
+			div.sheet-vamp div.sheet-diceroller > div.sheet-grid:nth-child(2) > div.sheet-row:nth-child(1) > div.sheet-col:nth-child(1):hover {
+				background: url('https://i.imgur.com/35jhuxo.png') top/100% 105% no-repeat;  /* Rouse */
 			}
-			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(2) div.sheet-row:nth-child(1) div.sheet-col:nth-child(2):hover {
-				background: url('https://imgur.com/oZFnNOP.png') no-repeat; /* x2 */
+			div.sheet-vamp div.sheet-diceroller > div.sheet-grid:nth-child(2) > div.sheet-row:nth-child(1) > div.sheet-col:nth-child(2):hover {
+				background: url('https://i.imgur.com/4uWiGOD.png') top/100% 105% no-repeat; /* x2 */
 			}
-			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(2) div.sheet-row:nth-child(2):hover {
-				background: url('https://imgur.com/GgJXyaF.png') no-repeat; /* Roll */
+			div.sheet-vamp div.sheet-diceroller > div.sheet-grid:nth-child(2) > div.sheet-row:nth-child(2):hover {
+				background: url('https://i.imgur.com/CcyhHXp.png') top/100% 105% no-repeat; /* Discipline Roll */
 			}			
-			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(2) div.sheet-row:nth-child(3):hover {
-				background: url('https://imgur.com/fsl89bm.png') no-repeat; /* Discipline Roll */
+			div.sheet-vamp div.sheet-diceroller > div.sheet-grid:nth-child(2) > div.sheet-row:nth-child(3):hover {
+				background: url('https://i.imgur.com/szR9Alu.png') top/100% 105% no-repeat; /* Roll */
 			}
-			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(3) {
-				grid-template-rows: 50px 45px 25px;
-				background: url('https://imgur.com/SCdHyti.png') right no-repeat;
+			div.sheet-vamp div.sheet-diceroller > div.sheet-grid:nth-child(3) {
+				grid-template-rows: 36px 45px 25px;
+				background: url('https://i.imgur.com/wIKf9o2.png') right no-repeat;
 			}			
-			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(3) div.sheet-row:nth-child(1) {
-				grid-template-columns: auto auto auto auto auto;
+			div.sheet-vamp div.sheet-diceroller > div.sheet-grid:nth-child(3) > div.sheet-row:nth-child(1) {
+				grid-template-columns: 84px 127px 115px 88px 94px;
 			}				
-			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(3) div.sheet-row:nth-child(1) div.sheet-col:nth-child(1):hover {
-				background: url('https://imgur.com/MftmtUs.png') center no-repeat; /* Check */
+			div.sheet-vamp div.sheet-diceroller > div.sheet-grid:nth-child(3) > div.sheet-row:nth-child(1) > div.sheet-col:nth-child(1):hover {
+				background: url('https://i.imgur.com/151Nas0.png') top/100% 105% no-repeat; /* Check */
 			}			
 			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(3) div.sheet-row:nth-child(1) div.sheet-col:nth-child(2):hover {
-				background: url('https://imgur.com/9zfAjdn.png') center no-repeat; /* Willpower */
+				background: url('https://i.imgur.com/pfV7lN8.png') top/100% 105% no-repeat; /* Willpower */
 			}			
 			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(3) div.sheet-row:nth-child(1) div.sheet-col:nth-child(3):hover {
-				background: url('https://imgur.com/niwPzG0.png') center no-repeat; /* Humanity */
+				background: url('https://i.imgur.com/qDaN05p.png') top/100% 105% no-repeat; /* Humanity */
 			}			
 			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(3) div.sheet-row:nth-child(1) div.sheet-col:nth-child(4):hover {
-				background: url('https://imgur.com/ZKxUMKR.png') center no-repeat; /* Frenzy */
+				background: url('https://i.imgur.com/MIRa9hC.png') top/100% 105% no-repeat; /* Frenzy */
 			}			
 			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(3) div.sheet-row:nth-child(1) div.sheet-col:nth-child(5):hover {
-				background: url('https://imgur.com/Jv9M176.png') center no-repeat; /* Remorse */
+				background: url('https://i.imgur.com/M1FZFxC.png') top/100% 105% no-repeat; /* Remorse */
 			}
 			div.sheet-vamp div.sheet-diceroller div.sheet-grid:nth-child(4) {
-				grid-template-rows: 30px 30px 30px 30px;
+				grid-template-rows: 30px 30px 30px;
 			}
 			/* #endregion */
 			/* #region Single Sheet Layout (Vamp, Mortal & NPC) */
