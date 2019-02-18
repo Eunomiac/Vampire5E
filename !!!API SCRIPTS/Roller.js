@@ -1178,7 +1178,7 @@
 					rollData.diffMod = parseInt(params[3] || 0)
 					rollData.prefix = ["repeating", "project", D.GetRepIDCase(params[4] ), ""].join("_")
 					D.Log(`PROJECT PREFIX: ${D.JSL(rollData.prefix)}`)
-					// Falls through
+					 /* falls through */
 				case "secret":
 					rollData.diff = parseInt(params[1] || 0)
 					rollData.mod = parseInt(params[2] || 0)
@@ -1245,11 +1245,11 @@
 			case "rouse2":
 				rollData.dicePool++
 				rollData.hungerPool++
-				// Falls through
+				 /* falls through */
 			case "rouse":
 				rollData.hungerPool++
 				rollData.basePool--
-				// Falls through
+				 /* falls through */
 			case "check":
 				rollData.dicePool++
 				rollData.basePool++
@@ -1430,7 +1430,7 @@
 			case "trait":
 			case "frenzy":
 				sortBins.push("H")
-				// Falls through
+				 /* falls through */
 			case "remorse":
 			case "humanity":
 			case "willpower":
@@ -1618,7 +1618,7 @@
 				rollLines.subOutcome = {
 					text: ""
 				}
-				// Falls through
+				 /* falls through */
 			case "trait":
 				if (rollData.posFlagLines.length > 0) {
 					rollLines.posMods = {
@@ -1646,20 +1646,20 @@
 					rollLines.mainRoll.shift.top = 0
 					rollLines.mainRollShadow.shift.top = 0
 				}
-				// Falls through
+				 /* falls through */
 			case "willpower":
 			case "humanity":
 				rollLines.margin = {
 					text: ""
 				}
-				// Falls through
+				 /* falls through */
 			case "frenzy":
 				if (rollData.diff > 0) {
 					rollLines.difficulty = {
 						text: ""
 					}
 				}
-				// Falls through
+				 /* falls through */
 			case "remorse":
 			case "rouse2":
 			case "rouse":
@@ -1705,17 +1705,17 @@
 					case "remorse":
 						introPhrase = introPhrase || `Does ${rollData.charName} feel remorse?`
 						logPhrase = logPhrase || " rolls remorse:"
-						// Falls through
+						 /* falls through */
 					case "frenzy":
 						introPhrase = introPhrase || `${rollData.charName} and the Beast wrestle for control...`
 						logPhrase = logPhrase || " resists frenzy:"
-						// Falls through
+						 /* falls through */
 					case "project":
 						introPhrase = introPhrase ||
 									`${rollData.charName} launches a Project (Scope ${rollData.diff - rollData.diffMod - 2}):`
 						logPhrase = logPhrase ||
 									` launches a Project (Scope ${rollData.diff - rollData.diffMod - 2}):`
-						// Falls through
+						 /* falls through */
 					case "trait":
 					case "willpower":
 					case "humanity":
@@ -1726,7 +1726,7 @@
 							switch (trt) {
 							case "stains":
 								dotline = ""
-								// Falls through
+								 /* falls through */
 							case "humanity":
 								stains = Math.max(parseInt(getAttrByName(rollData.charID, "stains") || 0), 0)
 								if (rollData.type === "frenzy") {
@@ -1779,7 +1779,7 @@
 					case "rouse2":
 						rollLines.mainRoll.text = " (Best of Two)"
 						logLines.mainRollSub = `${CHATSTYLES.mainRollSub}(Best of Two)</span>`
-						// Falls through
+						 /* falls through */
 					case "rouse":
 						introPhrase = introPhrase || `${rollData.charName}:`
 						logPhrase = logPhrase || ":"
@@ -1910,7 +1910,7 @@
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "worst")
 							break
 						}
-						// Falls through
+						 /* falls through */
 					case "willpower":
 					case "humanity":
 						if (total === 0) {
@@ -2019,7 +2019,7 @@
 			case "rouse":
 			case "check":
 				diceCats = diceCats.reverse()
-				// Falls through
+				 /* falls through */
 			case "project":
 			case "secret":
 			case "humanity":
@@ -2285,31 +2285,31 @@
 				rollType = "frenzy"
 				args = `${state[D.GAMENAME].Roller.frenzyRoll} ${args[0]}`.split(" ")
 				D.DB(`NEW ARGS: ${D.JSL(args)}`, "!frenzyroll", 2)
-				// Falls through
+				 /* falls through */
 			case "!frenzyinitroll":
 				rollType = rollType || "frenzyInit"
-				// Falls through
+				 /* falls through */
 			case "!traitroll":
 				rollType = rollType || "trait"
-				// Falls through
+				 /* falls through */
 			case "!rouseroll":
 				rollType = rollType || "rouse"
-				// Falls through
+				 /* falls through */
 			case "!rouse2roll":
 				rollType = rollType || "rouse2"
-				// Falls through
+				 /* falls through */
 			case "!checkroll":
 				rollType = rollType || "check"
-				// Falls through
+				 /* falls through */
 			case "!willpowerroll":
 				rollType = rollType || "willpower"
-				// Falls through
+				 /* falls through */
 			case "!humanityroll":
 				rollType = rollType || "humanity"
-				// Falls through
+				 /* falls through */
 			case "!remorseroll":
 				rollType = rollType || "remorse"
-				// Falls through
+				 /* falls through */
 			case "!projectroll":
 			{
 				rollType = rollType || "project"

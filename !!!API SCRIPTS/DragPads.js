@@ -13,12 +13,13 @@ const DragPads = (() => {
 	   {  id: <id of graphic object beneath> } */
 		FUNCTIONS = {
 			selectDie (args) {
-				const diceCats = [...DICECATS]
+				const diceCats = [...DICECATS],
+						 idRef = args.id
 				let dieCat = "",
 					dieId = 0
 				do {
 					dieCat = diceCats.pop()
-					dieId = state[D.GAMENAME].Roller[dieCat].findIndex(v => v.id === args.id)
+					dieId = state[D.GAMENAME].Roller[dieCat].findIndex(v => v.id === idRef)
 				} while (dieId === -1)
 				Roller.Select(dieId, dieCat) // (dieNum, dieCat, dieVal, params)
 			},

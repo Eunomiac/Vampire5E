@@ -136,37 +136,37 @@ const Chars = (() => {
 		bHTML = {
 			div: {
 				title: {
-					start: "<div style=\""
-							+ "display:block; "
-							+ "width: 120%; "
-							+ "margin: 10px -10%;"
-							+ "color: white; "
-							+ "text-align: center; "
-							+ "font: normal normal 22px/22px Effloresce; "
-							+ "border-bottom: 1px white solid;"
-							+ "\" >",
+					start: "<div style=\"" +
+							"display:block; " +
+							"width: 120%; " +
+							"margin: 10px -10%;" +
+							"color: white; " +
+							"text-align: center; " +
+							"font: normal normal 22px/22px Effloresce; " +
+							"border-bottom: 1px white solid;" +
+							"\" >",
 					stop: "</div>",
 				},
 				header: {
-					start: "<div style=\""
-							+ "display:block; "
-							+ "width: 120%; "
-							+ "margin: 0px -10% 0px -10%;"
-							+ "color: white; "
-							+ "text-align: center; "
-							+ "font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT'; "
-							+ "\" >",
+					start: "<div style=\"" +
+							"display:block; " +
+							"width: 120%; " +
+							"margin: 0px -10% 0px -10%;" +
+							"color: white; " +
+							"text-align: center; " +
+							"font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT'; " +
+							"\" >",
 					stop: "</div>",
 				},
 				headerL: {
-					start: "<div style=\""
-							+ "display:inline-block; "
-							+ "width: 120%; "
-							+ "margin: 5% -10% 0px -10%;"
-							+ "color: white; "
-							+ "text-align: center; "
-							+ "font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT';"
-							+ "\" >",
+					start: "<div style=\"" +
+							"display:inline-block; " +
+							"width: 120%; " +
+							"margin: 5% -10% 0px -10%;" +
+							"color: white; " +
+							"text-align: center; " +
+							"font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT';" +
+							"\" >",
 					stop: "",
 				},
 				headerR: {
@@ -174,25 +174,25 @@ const Chars = (() => {
 					stop: "</div>",
 				},
 				para: {
-					start: "<div style=\""
-							+ "display:block; "
-							+ "width: 103%; "
-							+ "margin: 5px 0px;"
-							+ "color: white; "
-							+ "text-align: left; "
-							+ "font: normal normal 12px/14px Rockwell; "
-							+ "\" >",
+					start: "<div style=\"" +
+							"display:block; " +
+							"width: 103%; " +
+							"margin: 5px 0px;" +
+							"color: white; " +
+							"text-align: left; " +
+							"font: normal normal 12px/14px Rockwell; " +
+							"\" >",
 					stop: "</div>",
 				},
 				paraStart: {
-					start: "<div style=\""
-							+ "display:block; "
-							+ "width: 100%; "
-							+ "margin: 5px 0px;"
-							+ "color: white; "
-							+ "text-align: left; "
-							+ "font: normal normal 12px/14px Rockwell; "
-							+ "\" >",
+					start: "<div style=\"" +
+							"display:block; " +
+							"width: 100%; " +
+							"margin: 5px 0px;" +
+							"color: white; " +
+							"text-align: left; " +
+							"font: normal normal 12px/14px Rockwell; " +
+							"\" >",
 					stop: "",
 				},
 				paraMid: {

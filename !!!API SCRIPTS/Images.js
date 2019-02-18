@@ -579,7 +579,7 @@ const Images = (() => {
 			case "removeall":
 				for (imgName of _.keys(REGISTRY))
 					imgNames.push(imgName)
-					// Falls through
+					/* falls through */
 			case "remove":
 				if (imgNames.length === 0)
 					imgNames.push(args.shift())
