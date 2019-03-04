@@ -71,7 +71,7 @@
 			None: [" "],
 			Choleric: ["Celerity", "Potence"],
 			Melancholic: ["Fortitude", "Obfuscate"],
-			Entropic: ["Oblivion", ""],
+			Ischemic: ["Oblivion", ""],
 			Phlegmatic: ["Auspex", "Dominate"],
 			Sanguine: ["Blood Sorcery", "Presence"],
 			Primal: ["Animalism", "Protean"],
