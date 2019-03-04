@@ -14,7 +14,7 @@ const DragPads = (() => {
 		FUNCTIONS = {
 			selectDie (args) {
 				const diceCats = [...DICECATS],
-						 idRef = args.id
+					idRef = args.id
 				let dieCat = "",
 					dieId = 0
 				do {
@@ -227,6 +227,8 @@ const DragPads = (() => {
 					partner.set( {
 						layer: isActive && state[D.GAMENAME].DragPads.byPad[partner.id].active === "on" ? "objects" : "map"
 					} )
+					toFront(pad)
+					toFront(partner)
 				}
 			}
 

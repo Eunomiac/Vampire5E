@@ -1,5 +1,5 @@
 ﻿const Roller = (() => {
-	let [isRerollFXOn, rerollFX] = [false, null]
+	let [isRerollFXOn, rerollFX, isLocked] = [false, null, false]
 
 	// #region CONFIGURATION: Image Links, Color Schemes */
 	const SETTINGS = {
@@ -463,7 +463,7 @@
 			if (D.IsObj(obj, "graphic")) {
 				obj.set( {
 					imgsrc: IMAGES.dice.Bf,
-					layer: "map",
+					layer: "objects",
 					isdrawing: true,
 					name: `rollerDie_${category}_${state[D.GAMENAME].Roller[category].length}`,
 					controlledby: ""
@@ -491,7 +491,7 @@
 
 			return D.ThrowError(`Invalid object: ${D.JSL(obj)}`, "Roller: registerDie()")
 		},
-		makeDie = category => {
+		makeDie = (category, isActive = false) => {
 			state[D.GAMENAME].Roller[category] = state[D.GAMENAME].Roller[category] || []
 			const stateRef = state[D.GAMENAME].Roller,
 				posRef = POSITIONS.dice[category],
@@ -502,7 +502,7 @@
 					top: posRef.top,
 					width: posRef.width,
 					height: posRef.height,
-					layer: "map",
+					layer: isActive ? "objects" : "map",
 					isdrawing: true,
 					controlledby: ""
 				} )
@@ -533,7 +533,7 @@
 			clearDice(category)
 			// Now, make requested number of dice.
 			for (let i = 0; i < amount; i++)
-				newDice.push(makeDie(category))
+				newDice.push(makeDie(category, category === STATECATS.dice[0]))
 
 			// D.Alert(`NewDice List: ${D.JS(newDice)}`)
 
@@ -544,7 +544,7 @@
 			state[D.GAMENAME].Roller.textList = state[D.GAMENAME].Roller.textList || {}
 			if (obj) {
 				obj.set( {
-					layer: "map",
+					layer: "objects",
 					name: `rollerText_${objName}`,
 					controlledby: ""
 				} )
@@ -585,7 +585,7 @@
 			if (obj === null)
 				return
 			obj.set( {
-				layer: "map",
+				layer: "objects",
 				name: `rollerImage_${objName}`,
 				controlledby: ""
 			} )
@@ -605,7 +605,7 @@
 			if (obj === null)
 				return
 			obj.set( {
-				layer: "map",
+				layer: "objects",
 				name: `rollerShape_${objName}`,
 				controlledby: ""
 			} )
@@ -631,7 +631,7 @@
 				left,
 				width,
 				height,
-				layer: "map",
+				layer: "objects",
 				isdrawing: true,
 				controlledby: ""
 			} )
@@ -673,7 +673,7 @@
 				left,
 				color,
 				text,
-				layer: "map",
+				layer: "objects",
 				controlledby: ""
 			} )
 			// D.Alert(`Registering text '${name}'.`, "ROLLER MAKETEXT")
@@ -899,7 +899,7 @@
 			}
 			stretchPer = stretchWidth / imgs.length
 			D.DB(`${row} stretchWidth: ${stretchWidth}, imgs Length: ${imgs.length}, x225 ${imgs.length * 225}, stretch per: ${stretchPer}`, "SCALEFRAME()", 4)
-			D.DB(`${row} midCount: ${midCount}, blanks length: ${blanks.length}`)
+			D.DB(`${row} midCount: ${midCount}, blanks length: ${blanks.length}`, "SCALEFRAME()", 4)
 			endImg = imgs.shift()
 			left = POSITIONS.diceFrameFront.left() + 120
 			D.DB(`${row}Start at ${POSITIONS.diceFrameFront.left()}, + 120 to ${left}`, "SCALEFRAME()", 4)
@@ -937,6 +937,7 @@
 			}
 			DragPads.Toggle(dieParams.id, !["humanity", "project", "secret", "remorse", "willpower"].includes(rollType) && dieVal !== "blank" && !dieVal.includes("H"))
 			dieParams.imgsrc = IMAGES.dice[dieVal]
+			dieParams.layer = dieVal === "blank" ? "map" : "objects"
 			_.each( ["top", "left", "width"], dir => {
 				if (die.get(dir) !== dieRef[dir] || (params.shift && params.shift[dir] ))
 					dieParams[dir] = dieRef[dir] + (params.shift && params.shift[dir] ? params.shift[dir] : 0)
@@ -959,26 +960,21 @@
 			}
 			if (state[D.GAMENAME].Roller.selected[dieCat].length > 0 && !isRerollFXOn) {
 				isRerollFXOn = true
+				lockRoller(true)
 				D.RunFX("bloodCloud1", POSITIONS.bloodCloudFX)
-				// D.RunFX("bloodCloud2", POSITIONS.bloodCloudFX)
 				rerollFX = setInterval(D.RunFX, 1800, "bloodCloud1", POSITIONS.bloodCloudFX)
-
-				/* rerollFX2 = setInterval(D.RunFX, 1800, "bloodCloud2", POSITIONS.bloodCloudFX)
-				   D.RunFX("bloodCloud", POSITIONS.bloodCloudFX)
-				   rerollFX = setInterval(D.RunFX, 1800, "bloodCloud", POSITIONS.bloodCloudFX) */
 				DragPads.Toggle("wpReroll", true)
 			} else if (state[D.GAMENAME].Roller.selected[dieCat].length === 0) {
 				isRerollFXOn = false
+				lockRoller(false)
 				clearInterval(rerollFX)
-				// clearInterval(rerollFX2)
 				rerollFX = null
-				// rerollFX2 = null
 				DragPads.Toggle("wpReroll", false)
 			}
 		},
 		// #endregion
 
-		// #region Getting Information
+		// #region Getting Information & Setting State Roll Record
 		parseFlags = (charObj, rollType, params = {} ) => {
 			params.args = params.args || []
 			const gN = params.groupNum || "",
@@ -1200,6 +1196,26 @@
 			D.DB(`ROLL DATA: ${D.JS(rollData)}`, "ROLLER: makeSheetRoll()", 1)
 
 			return rollData
+		},
+		getCurrentRoll = () => state[D.GAMENAME].Roller.rollRecord[state[D.GAMENAME].Roller.rollIndex],
+		setCurrentRoll = (rollIndex) => {
+			state[D.GAMENAME].Roller.rollIndex = rollIndex
+		},
+		replaceRoll = (rollData, rollResults, rollIndex) => {
+			state[D.GAMENAME].Roller.rollIndex = rollIndex || state[D.GAMENAME].Roller.rollIndex
+			state[D.GAMENAME].Roller.rollRecord[state[D.GAMENAME].Roller.rollIndex] = {
+				rollData: _.clone(rollData),
+				rollResults: _.clone(rollResults)
+			}
+		},
+		recordRoll = (rollData, rollResults) => {
+			state[D.GAMENAME].Roller.rollIndex = 0
+			state[D.GAMENAME].Roller.rollRecord.unshift({
+				rollData: _.clone(rollData),
+				rollResults: _.clone(rollResults)
+			})
+			if (state[D.GAMENAME].Roller.rollRecord.length > 10)
+				state[D.GAMENAME].Roller.rollRecord.pop()
 		},
 		// #endregion
 
@@ -1554,7 +1570,7 @@
 
 			return logLine
 		},
-		applyRoll = (rollData, rollResults) => {
+		displayRoll = (isLogging = true) => {
 			/* MUST SUPPLY:
 				[ALL]
 				  rollData = { type, charName, charID }
@@ -1564,13 +1580,10 @@
 				  rollResults = { H: { botches }, critPairs: {hh, hb, bb}, << margin >> }
 				[TRAIT ONLY]
 				  rollData = { posFlagLines, negFlagLines } */
-			const gNum = rollData.groupNum || "",
+			const {rollData, rollResults} = getCurrentRoll(),
+				gNum = rollData.groupNum || "",
 				[deltaAttrs, txtWidths] = [{}, {}],
-				[mainRollParts, mainRollLog, diceObjs] = [
-					[],
-					[],
-					[]
-				],
+				[mainRollParts, mainRollLog, diceObjs] = [[], [], []],
 				yShift = 0,
 				rollLines = {
 					rollerName: {
@@ -1604,15 +1617,9 @@
 					subOutcome: ""
 				},
 				p = v => rollData.prefix + v
-			let [blankLines, introPhrase, logPhrase, logString, stains, margin, total, bookends, spread] =
-				new Array(9).fill(null),
+			let [blankLines, introPhrase, logPhrase, logString, stains, margin, total, bookends, spread] = new Array(9).fill(null),
 				maxHumanity = 10,
 				diceCats = _.clone(STATECATS.dice)
-
-			state[D.GAMENAME].Roller.lastRoll = {
-				rollData: _.clone(rollData),
-				rollResults: _.clone(rollResults)
-			}
 			switch (rollData.type) {
 			case "project":
 				rollLines.subOutcome = {
@@ -2002,8 +2009,9 @@
 				logLines.outcome + logLines.subOutcome}</div>`
 
 			D.DB(`LOGLINES: ${D.JS(logLines)}`, "LOG LINES", 2)
-
-			sendChat("", logString)
+			
+			if (isLogging)
+				sendChat("", logString)
 			// D.Alert(logString);
 
 			D.DB("... Complete.", "ROLLER: applyRolls()", 4)
@@ -2072,19 +2080,19 @@
 
 			return deltaAttrs
 		},
-		makeSheetRoll = (charObj, rollType, params) => {
+		makeNewRoll = (charObj, rollType, params) => {
 			D.DB(`PARAMS: ${D.JS(params)} (length: ${params.length})`, "ROLLER: makeSheetRoll()", 1)
-
 			const rollData = buildDicePool(getRollData(charObj, rollType, params))
 			D.DB(`RECEIVED ROLLDATA: ${D.JS(rollData)}`, 1)
-			applyRoll(rollData, rollDice(rollData))
-			D.DB("FINISHED APPLY ROLL.", 1)
+			recordRoll(rollData, rollDice(rollData))
+			displayRoll()
+			D.DB("FINISHED MAKE NEW ROLL.", "ROLLER: makeSheetRoll()", 1)
 		},
 		wpReroll = dieCat => {
 			clearInterval(rerollFX);
-			// clearInterval(rerollFX2);
 			[isRerollFXOn, rerollFX] = [false, null]
-			const rollData = _.clone(state[D.GAMENAME].Roller.lastRoll.rollData),
+			const rollRecord = getCurrentRoll(),
+				rollData = _.clone(rollRecord.rollData),
 				rolledDice = _.mapObject(
 					_.omit(
 						state[D.GAMENAME].Roller[dieCat],
@@ -2096,16 +2104,15 @@
 			if (charObj)
 				Chars.Damage(charObj, "willpower", "spent", 1)
 			rollData.rerollAmt = state[D.GAMENAME].Roller.selected[dieCat].length
-			applyRoll(rollData, rollDice(rollData, _.values(rolledDice)))
+			replaceRoll(rollData, rollDice(rollData, _.values(rolledDice)))
+			displayRoll()
+			lockRoller(false)
 			DragPads.Toggle("wpReroll", false)
 		},
 		changeRoll = deltaDice => {
-			const {
-				rollData
-			} = state[D.GAMENAME].Roller.lastRoll
-			let {
-				rollResults
-			} = state[D.GAMENAME].Roller.lastRoll
+			const rollRecord = getCurrentRoll(),
+				rollData = _.clone(rollRecord.rollData)
+			let rollResults = _.clone(rollRecord.rollResults)
 			if (parseInt(deltaDice) < 0) {
 				_.shuffle(rollResults.diceVals)
 				for (let i = 0; i > deltaDice; i--) {
@@ -2120,11 +2127,23 @@
 				rerollAmt: parseInt(deltaDice) > 0 ? parseInt(deltaDice) : 0,
 				diff: rollData.diff
 			}, rollResults.diceVals)
-			state[D.GAMENAME].Roller.lastRoll.rollData.dicePool += parseInt(deltaDice)
-			state[D.GAMENAME].Roller.lastRoll.rollData.basePool = Math.max(1, rollData.dicePool) - rollData.hungerPool
-
-			return applyRoll(state[D.GAMENAME].Roller.lastRoll.rollData, rollResults)
+			rollData.dicePool += parseInt(deltaDice)
+			rollData.basePool = Math.max(1, rollData.dicePool) - rollData.hungerPool
+			replaceRoll(rollData, rollResults)
+			displayRoll()
 		},
+		lockRoller = lockToggle => { isLocked = lockToggle === true },
+		loadRoll = (rollIndex) => {
+			setCurrentRoll(rollIndex)
+			displayRoll(false)
+		},
+		loadPrevRoll = () => {
+			loadRoll(Math.min(state[D.GAMENAME].Roller.rollIndex + 1, Math.max(state[D.GAMENAME].Roller.rollRecord.length - 1, 0)))
+		},
+		loadNextRoll = () => {			
+			loadRoll(Math.max(state[D.GAMENAME].Roller.rollIndex - 1, 0))
+		},
+
 		// #endregion
 
 		// #region Secret Rolls
@@ -2195,7 +2214,13 @@
 		getResonance = (posRes = "", negRes = "", isDoubleAcute) => {
 			let resProbs = [],
 				randNum = null,
-				resonances = ["Choleric", "Melancholic", "Phlegmatic", "Sanguine"]
+				resonances = ["Choleric", "Melancholic", "Phlegmatic", "Sanguine"],
+				discLines = [
+					"the resonant disciplines of Celerity and Potence",
+					"the resonant disciplines of Fortitude and Obfuscate",
+					"the resonant disciplines of Auspex and Dominate",
+					"the resonant disciplines of Blood Sorcery and Presence"
+				]
 			_.each(resonances, v => {
 				if (posRes.includes(v.toLowerCase().charAt(0))) {
 					resonances = _.without(resonances, v)
@@ -2237,7 +2262,7 @@
 				return D.ThrowError("Too many variables!")
 			}
 			resProbs = _.flatten(_.map(resProbs, v => _.values(v)))
-			if (isDoubleAcute) {
+			if (isDoubleAcute === "2") {
 				for (let i = 0; i < 4; i++) {
 					resProbs[i * 4 + 0] = resProbs[i * 4 + 0] - resProbs[i * 4 + 2] / 2 - resProbs[i * 4 + 3] / 2
 					resProbs[i * 4 + 1] = resProbs[i * 4 + 1] - resProbs[i * 4 + 2] / 2 - resProbs[i * 4 + 3] / 2
@@ -2252,8 +2277,9 @@
 			while (randNum > 0)
 
 			return [
-				["Negligible", "Fleeting", "Intense", "Acute"][3 - resProbs.length % 4],
-				resonances.reverse()[Math.floor(resProbs.length / 4)]
+				["Negligibly", "Fleetingly", "Intensely", "Acutely"][3 - resProbs.length % 4],
+				resonances.reverse()[Math.floor(resProbs.length / 4)],
+				discLines.reverse()[Math.floor(resProbs.length / 4)]
 			]
 			// Return ["Acute", "Choleric"];
 		},
@@ -2264,7 +2290,7 @@
 			if (msg.type !== "api")
 				return
 			let args = msg.content.split(/\s+/u),
-				[rollType, groupName, groupNum, charObj] = [null, null, null, null],
+				[rollType, groupName, groupNum, charObj, diceNums, resonance, resIntLine] = [null, null, null, null, null, null, null],
 				name = "",
 				[isSilent, isHidingTraits] = [false, false]
 			const rollString = args.shift()
@@ -2275,7 +2301,7 @@
 				groupName = args.shift()
 				groupNum = args.shift()
 				charObj = D.GetChar(groupName)
-				makeSheetRoll(charObj, rollType, {
+				makeNewRoll(charObj, rollType, {
 					groupNum,
 					groupName,
 					args
@@ -2283,11 +2309,14 @@
 				break
 			case "!frenzyroll":
 				rollType = "frenzy"
+				lockRoller(false)
 				args = `${state[D.GAMENAME].Roller.frenzyRoll} ${args[0]}`.split(" ")
 				D.DB(`NEW ARGS: ${D.JSL(args)}`, "!frenzyroll", 2)
 				/* falls through */
 			case "!frenzyinitroll":
 				rollType = rollType || "frenzyInit"
+				if (rollType !== "frenzy")
+					lockRoller(true)
 				/* falls through */
 			case "!traitroll":
 				rollType = rollType || "trait"
@@ -2318,14 +2347,15 @@
 				[charObj] = D.GetChars(params[0] )
 				name = params.shift()
 				if (!charObj) {
-					D.ThrowError(`!${rollType}roll: No character found with name ${D.JS(name)}`)
+					return D.ThrowError(`!${rollType}roll: No character found with name ${D.JS(name)}`)
 				} else if (rollType === "frenzyInit") {
 					state[D.GAMENAME].Roller.frenzyRoll = `${name}|`
 					sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px crimson outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!&#13;#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: white; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: red; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${name}</span><br/></div>`)
-
+					return
+				} else if (isLocked) {
 					return
 				}
-				makeSheetRoll(charObj, rollType, params)
+				makeNewRoll(charObj, rollType, params)
 				delete state[D.GAMENAME].Roller.frenzyRoll
 				break
 			}
@@ -2333,7 +2363,9 @@
 				initFrame()
 				break
 			case "!makeAllDice":
-				makeAllDice(args.shift(), parseInt(args.shift())) // makeAllDice(category, amount)
+				diceNums = [parseInt(args.shift() || 25), parseInt(args.shift() || 2)]
+				makeAllDice(STATECATS.dice[0], diceNums[0])
+				makeAllDice(STATECATS.dice[1], diceNums[1])
 				break
 			case "!showDice":
 				_.each(state[D.GAMENAME].Roller.diceList, (v, dNum) => {
@@ -2349,11 +2381,6 @@
 						thisDie.set("layer", "objects")
 						thisDie.set("isdrawing", false)
 					}
-				} )
-				break
-			case "!resetDice":
-				_.each(STATECATS.dice, dCat => {
-					state[D.GAMENAME].Roller[dCat] = []
 				} )
 				break
 			case "!reg":
@@ -2390,12 +2417,45 @@
 			case "!changeRoll":
 				changeRoll(parseInt(args.shift()))
 				break
+			case "!prevRoll":
+				loadPrevRoll()
+				break
+			case "!nextRoll":
+				loadNextRoll()
+				break
 			case "!resCheck":
 				if (args[0] === "x")
 					args[0] = ""
 				if (args[1] === "x")
 					args[1] = ""
-				sendChat("", `<br/><div style="display: block; margin-top: -20px; margin-left: -10px; height: auto; background: url(https://i.imgur.com/kBl8aTO.jpg);text-align: center;border: 4px crimson outset;"><br><span style="display: block; font-weight: bold; color: red; font-size: 16px; text-align: center; width: 100%;">${_.map(getResonance(args[0], args[1], args[2] === "2"), v => v.toUpperCase()).join(" ")}</span><br/></div>`)
+				resonance = getResonance(...args)
+				switch(resonance[0].toLowerCase()) {
+				case "negligibly":
+					resIntLine = `The blood carries only the smallest hint of ${resonance[1].toLowerCase()} resonance.  It is not strong enough to confer any benefits at all.`
+					break
+				case "fleetingly":
+					resIntLine = `The blood's faint ${resonance[1].toLowerCase()} resonance can guide you in developing ${resonance[2]}, but lacks any real power.`
+					break
+				case "intensely":
+					resIntLine = `The blood's strong ${resonance[1].toLowerCase()} resonance spreads through you, infusing your own vitae and enhancing both your control and understanding of ${resonance[2]}.`
+					break
+				case "acutely":
+					resIntLine = `This blood is special.  In addition to enhancing ${resonance[2]}, its ${resonance[1].toLowerCase()} resonance is so powerful that the emotions within have crystallized into a dyscracias.`
+					break
+				}
+				sendChat("", D.JSH(`
+					<div style="display: block; margin-left: -10px; height: auto; background: url(https://i.imgur.com/kBl8aTO.jpg);text-align: center;border: 4px crimson outset;">
+						<br>
+						<span style="display: block; font-weight: bold; color: red; font-size: 16px; text-align: center; width: 100%;">
+							${_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")}<br>
+						</span>
+						<br>
+						<span style="display: block; color: red; font-size: 12px; text-align: center; width: 100%;">
+							${resIntLine}
+						</span>
+						<br>
+					</div>`)
+				)
 				break
 			case "!nxsroll":
 			case "!xnsroll":
@@ -2441,6 +2501,7 @@
 			_.each(_.without(_.uniq(_.flatten(_.values(STATECATS))), ...STATECATS.dice), v => {
 				state[D.GAMENAME].Roller[v] = state[D.GAMENAME].Roller[v] || {}
 			} )
+			state[D.GAMENAME].Roller.rollRecord = state[D.GAMENAME].Roller.rollRecord || []
 		}
 	// #endregion
 

@@ -322,7 +322,7 @@ const D = (() => {
 				obj &&
 				obj !== null &&
 				typeof obj === "object" &&
-				obj.get &&
+				(!type || obj.get) &&
 				(!type || obj.get("_type") === type) &&
 				(!subtype || obj.get("_subtype") === subtype)
 			)
