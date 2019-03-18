@@ -468,6 +468,7 @@
 					name: `rollerDie_${category}_${state[D.GAMENAME].Roller[category].length}`,
 					controlledby: ""
 				} )
+				Images.Register(obj, `rollerDie_${category}_${state[D.GAMENAME].Roller[category].length}`)
 				state[D.GAMENAME].Roller[category].push( {
 					id: obj.id,
 					top: obj.get("top"),
@@ -524,7 +525,7 @@
 			} ), obj => obj.get("name").includes("rollerDie") && obj.get("name").includes(category))
 			for (const die of diceObjs) {
 				DragPads.DelPad(die.id)
-				die.remove()
+				Images.Remove(die.id)
 			}
 			state[D.GAMENAME].Roller[category] = []
 		},
@@ -623,7 +624,7 @@
 		// #endregion
 
 		// #region Graphic & Text Control
-		makeImg = (name, imgsrc, top, left, height, width) => {
+		makeImg = (name, imgsrc, top, left, height, width, layer = "objects") => {
 			const img = createObj("graphic", {
 				_pageid: D.PAGEID(),
 				imgsrc,
@@ -631,7 +632,7 @@
 				left,
 				width,
 				height,
-				layer: "objects",
+				layer,
 				isdrawing: true,
 				controlledby: ""
 			} )
@@ -787,6 +788,7 @@
 					clearImg(name)
 			}
 			DragPads.ClearAllPads("wpReroll")
+			Images.Remove("wpRerollPlaceholder")
 			DragPads.ClearAllPads("selectDie")
 			for (const cat of STATECATS.dice)
 				clearDice(cat)
@@ -859,7 +861,19 @@
 				POSITIONS.diceFrameDiffFrame.height(),
 				POSITIONS.diceFrameDiffFrame.width()
 			))
-			DragPads.MakePad(null, "wpReroll", {
+
+			//WP REROLL BUTTON
+			const wpReroller = makeImg(
+				"wpRerollPlaceholder",
+				IMAGES.blank,
+				POSITIONS.diceFrameRerollPad.top(),
+				POSITIONS.diceFrameRerollPad.left(),
+				POSITIONS.diceFrameRerollPad.height(),
+				POSITIONS.diceFrameRerollPad.width(),
+				"gmlayer"
+			)
+			Images.Register(wpReroller, "wpRerollPlaceholder")
+			DragPads.MakePad(wpReroller, "wpReroll", {
 				top: POSITIONS.diceFrameRerollPad.top(),
 				left: POSITIONS.diceFrameRerollPad.left(),
 				height: POSITIONS.diceFrameRerollPad.height(),
@@ -2083,7 +2097,7 @@
 		makeNewRoll = (charObj, rollType, params) => {
 			D.DB(`PARAMS: ${D.JS(params)} (length: ${params.length})`, "ROLLER: makeSheetRoll()", 1)
 			const rollData = buildDicePool(getRollData(charObj, rollType, params))
-			D.DB(`RECEIVED ROLLDATA: ${D.JS(rollData)}`, 1)
+			D.DB(`RECEIVED ROLLDATA: ${D.JS(rollData)}`, "ROLLER: makeSheetRoll()", 1)
 			recordRoll(rollData, rollDice(rollData))
 			displayRoll()
 			D.DB("FINISHED MAKE NEW ROLL.", "ROLLER: makeSheetRoll()", 1)
@@ -2361,6 +2375,10 @@
 			}
 			case "!buildFrame":
 				initFrame()
+				break
+			case "!clearAllDice":
+				clearDice(STATECATS.dice[0])
+				clearDice(STATECATS.dice[1])
 				break
 			case "!makeAllDice":
 				diceNums = [parseInt(args.shift() || 25), parseInt(args.shift() || 2)]

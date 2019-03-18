@@ -197,16 +197,31 @@ const D = (() => {
 
 			return D.ThrowError("No GM found.", "DATA GETGMID")
 		},
-		jStr = obj => {
+		jStr = (obj, isShortForm = false) => {
 			/* Parses a value of any type via JSON.stringify, and then further styles it for display either
 			in Roll20 chat, in the API console log, or both. */
 			try {
+				let returnObj
 				if (_.isUndefined(obj))
 					return "&gt;UNDEFINED&lt;"
+				if (isShortForm)
+					if (obj.get) {
+						if (obj.get("name"))
+							returnObj = { name: obj.get("name") }
+						else if (obj.get("id"))
+							returnObj = { id: obj.get("id") }
+					} else if (obj.name)
+						returnObj = { name: obj.name }
+					else if (obj.id)
+						returnObj = { id: obj.id }
+					else
+						returnObj = obj
+				else
+					returnObj = obj
 
 				const replacer = (k, v) => typeof v === "string" ? v.replace(/\\/gu, "") : v
 
-				return JSON.stringify(obj, replacer, 2)
+				return JSON.stringify(returnObj, replacer, 2)
 					.replace(/(\s*?)"([^"]*?)"\s*?:/gu, "$1$2:")
 					.replace(/\\n/gu, "<br/>")
 					.replace(/\\t/gu, "")
@@ -214,7 +229,7 @@ const D = (() => {
 					.replace(/\\"/gu, "\"")
 					.replace(/(^"|"$)/gu, "")
 
-				/* return JSON.stringify(obj, null, 2)
+				/* return JSON.stringify(returnObj, null, 2)
 					.replace(/"/gu, "'")
 					.replace(/ /gu, "&nbsp;")
 					.replace(/\\n/gu, "<br/>")
@@ -233,12 +248,12 @@ const D = (() => {
 
 			return JSON.stringify(str).replace(/\\n/gu, "")
 		},
-		jLog = obj => {
+		jLog = (obj, isShortForm = false) => {
 			/* Parses a value in a way that is appropriate to the console log. */
 			if (_.isUndefined(obj))
 				return "<UNDEFINED>"
-
-			return jStr(obj)
+			
+			return jStr(obj, isShortForm)
 				.replace(/<br\/>/gu, "")
 				.replace(/(&nbsp;)+/gu, " ")
 				.replace(/\\"\\"/gu, "'")

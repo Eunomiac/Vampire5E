@@ -1127,6 +1127,32 @@
 				break
 			case "humanity":
 				if (eInfo.sourceType === "player" && statVal > 0) {
+					const HUMANITYLOOKUP = {
+						blank: {
+							blank: "stain",
+							humanity: "stain",
+							stain: "humanity",
+							collision: "stain"
+						},
+						humanity: {
+							blank: "stain",
+							humanity: "blank",
+							stain: "collision",
+							collision: "stain"
+						},
+						stain: {
+							blank: "humanity",
+							humanity: "collision",
+							stain: "humanity",
+							collision: "blank"
+						},
+						collision:{
+							blank: "blank",
+							humanity: "stain",
+							stain: "humanity",
+							collision: "blank"
+						}
+					}
 					log("")
 					log("****************************************************")
 					log(`Operating on Humanity Stat Value ${statVal}`)
@@ -1134,14 +1160,21 @@
 					log("")
 					$funcs.push(cbk => {
 						cbk(null)
-						/* getAttrs(groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`), "prevtrack", "prevclick", "humsequence"], gN), ATTRS => {
+						return
+						getAttrs(groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`), "prevtrack", "prevclick", "humsequence"], gN), ATTRS => {
 							let humArray = _.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => parseInt(ATTRS[`humanity_${v}`] ))
-							const // current = _.countBy(humArray, v => ["blank", "humanity", "stains", "collision"][v - 1] ),
-								prevHumArray = ATTRS.prevtrack.split(","),
+							const current = _.countBy(humArray, v => ["blank", "humanity", "stains", "collision"][v - 1] ),
+								prevHumArray = ATTRS.prevtrack ? ATTRS.prevtrack.split(",") : _.clone(humArray),
 								thisClick = eInfo.sourceAttribute.slice(-2).replace("_", ""),
 								thisClickIndex = parseInt(thisClick) - 1,
+								thisClickVal = ["blank", "humanity", "stain", "collision"][humArray[thisClickIndex] - 1],
+								prevClick = ATTRS.prevclick ? ATTRS.prevclick.slice(-2).replace("_", "") : thisClick,
+								prevClickIndex = parseInt(prevClick) - 1,
+								prevClickVal = ["blank", "humanity", "stain", "collision"][prevHumArray[prevClickIndex] - 1],
 								setHumanity = (click, setTo) => {
-									switch ( ["blank", "humanity", "stain", "collision"][parseInt(ATTRS[`humanity_${click}`] ) - 1] ) {
+									const clickVal = ["blank", "humanity", "stain", "collision"][parseInt(ATTRS[`humanity_${click}`] ) - 1]
+									log(`Clicked ${JSON.stringify(clickVal)}, Set To ${JSON.stringify(setTo)}`)
+									switch (clickVal) {
 									case "blank":
 										switch (setTo) {
 										case "humanity":
@@ -1212,6 +1245,18 @@
 									}
 								}
 
+							log(`... HUMARRAY: ${JSON.stringify(humArray)}`)
+							log(`... CURRENT: ${JSON.stringify(current)}`)								
+							log(`... PREVHUMARRAY: ${JSON.stringify(prevHumArray)}`)								
+							log(`... THISCLICK: ${JSON.stringify(thisClick)}`)								
+							log(`... THISCLICKINDEX: ${JSON.stringify(thisClickIndex)}`)						
+							log(`... THISCLICKVAL: ${JSON.stringify(thisClickVal)}`)								
+							log(`... PREVCLICK: ${JSON.stringify(prevClick)}`)								
+							log(`... PREVCLICKINDEX: ${JSON.stringify(prevClickIndex)}`)						
+							log(`... PREVCLICKVAL: ${JSON.stringify(prevClickVal)}`)
+
+							attrList["prevtrack"] = humArray.join(",")
+							attrList["prevclick"] = thisClick
 
 							/* checkBoxes = (humanity, stains, hArray = new Array(10)) => {
 								hArray.fill("1")
@@ -1225,9 +1270,9 @@
 									hArray.fill("4", stn * -1, stn * -1 + (10 - hum - stn))
 
 								return hArray
-							} 
+							} */
 							cbk(null, attrList)
-						} ) */
+						} ) 
 					} )
 				} else {
 					$funcs.push(cbk => {
@@ -1243,9 +1288,7 @@
 			$funcs.push($set)
 			run$($funcs, cback ? () => cback(null) : undefined)
 		},
-
 		$doTracker = (tracker, eInfo, gN = "") => cback => doTracker(tracker, eInfo, gN, cback),
-
 		doTrackerMax = (tracker, eInfo, gN = "") => {
 			const attrList = {},
 				$funcs = []

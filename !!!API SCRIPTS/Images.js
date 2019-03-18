@@ -51,15 +51,17 @@ const Images = (() => {
 									null
 				// D.Alert(`IsObj? ${D.IsObj(imgRef, "graphic")}
 				// Getting Name: ${imgRef.get("name")}`, "IMAGE NAME")
-				if (imgName && _.find(_.keys(REGISTRY), v => v.toLowerCase().startsWith(imgName.toLowerCase()))) {
+				if (!imgName) {
+					return D.ThrowError(`Cannot find name of image from reference '${D.JSL(imgRef, true)}'`, "IMAGES: GetImageKey")
+				} else if (_.find(_.keys(REGISTRY), v => v.toLowerCase().startsWith(imgName.toLowerCase()))) {
 					return _.keys(REGISTRY)[
 						_.findIndex(_.keys(REGISTRY), v => v.toLowerCase().startsWith(imgName.toLowerCase()))
 					]
+				} else {
+					return D.ThrowError(`Cannot find image with name '${D.JSL(imgName)}' from reference ${D.JSL(imgRef, true)}`, "IMAGES: GetImageKey")
 				}
-
-				return D.ThrowError(`Image reference '${D.JSL(imgRef)}' does not refer to a registered image object.`, "IMAGES: GetImageKey")
 			} catch (errObj) {
-				return D.ThrowError(`Cannot locate image with search value '${D.JSL(imgRef)}'`, "IMAGES GetImageKey", errObj)
+				return D.ThrowError(`Cannot locate image with search value '${D.JSL(imgRef, true)}'`, "IMAGES GetImageKey", errObj)
 			}
 		},
 		getImageObj = imgRef => {
@@ -114,6 +116,7 @@ const Images = (() => {
 
 			return bounds
 		},
+		getImageSrc = imgRef => getImageData(imgRef) ? getImageData(imgRef).curSrc : false,
 		getImageSrcs = imgRef => {
 			try {
 				if (getImageKey(imgRef)) {
@@ -127,6 +130,11 @@ const Images = (() => {
 			} catch (errObj) {
 				return D.ThrowError(`Cannot locate image with search value '${D.JS(imgRef)}'`, "IMAGES: GetSrcs", errObj)
 			}
+		},
+		isImageActive = imgRef => {
+			if (getImageObj(imgRef) && getImageObj(imgRef).get("layer") === getImageData(imgRef).activeLayer)
+				return true
+			return false
 		},
 		// #endregion
 
@@ -153,7 +161,7 @@ const Images = (() => {
 				D.ThrowError("", "IMAGES.addImgSrc", errObj)
 			}
 		},
-		regImage = (imgObj, imgName, options = {} ) => {
+		regImage = (imgObj, imgName, options = {}, isSilent = false) => {
 			// D.Alert(`Options for '${D.JS(imgName)}': ${D.JS(options)}`, "IMAGES: regImage")
 			if (D.IsObj(imgObj, "graphic")) {
 				const imgSrcs = (options.entries && _.pick(options, v => v.startsWith("http"))) || {},
@@ -174,7 +182,7 @@ const Images = (() => {
 					top: params.top,
 					height: params.height,
 					width: params.width,
-					activeLayer: options.activeLayer || "map",
+					activeLayer: options.activeLayer || "objects",
 					startActive: Boolean(options.startActive || false),
 					srcs: {}
 				}
@@ -194,14 +202,15 @@ const Images = (() => {
 				for (const srcName of _.keys(imgSrcs))
 					addImgSrc(imgSrcs[srcName], srcName)
 
-				D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(REGISTRY[name] )}`, "IMAGES: regImage")
+				if (!isSilent)
+					D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(REGISTRY[name] )}`, "IMAGES: regImage")
 
 				return getImageData(name)
 			}
 
 			return D.ThrowError(`Invalid img object '${D.JSL(imgObj)}'`, "IMAGES: regImage")
 		},
-		makeImage = (imgName = "", params = {} ) => {
+		makeImage = (imgName = "", params = {}, isSilent = false ) => {
 			const dataRef = IMGDATA[imgName] || IMGDATA.default,
 				imgObj = createObj("graphic", {
 					_pageid: params._pageID || D.PAGEID(),
@@ -215,7 +224,7 @@ const Images = (() => {
 					controlledby: params.controlledby || "",
 					showname: params.showname === true
 				} )
-			regImage(imgObj, imgName)
+			regImage(imgObj, imgName, params.startActive ? {startActive: true} : {}, isSilent)
 
 			return imgObj
 		},
@@ -501,6 +510,8 @@ const Images = (() => {
 				delete REGISTRY[imgData.name]
 
 				return true
+			} else if (_.isString(imgRef) && REGISTRY[imgRef]) {
+				delete REGISTRY[imgRef]
 			}
 
 			return D.ThrowError(`Invalid image reference ${D.JSL(imgRef)}`, "IMAGES: removeImage")
@@ -592,7 +603,13 @@ const Images = (() => {
 				break
 			case "clear":
 				removeImage(args.join(" "), true)
-				break				
+				break
+			case "clearall":
+				_.each(REGISTRY, (v, k) => {
+					if (k.toLowerCase().includes(args[0].toLowerCase()))
+						removeImage(k)
+				})				
+				break
 			case "clean":
 				cleanRegistry()
 				break
@@ -629,8 +646,43 @@ const Images = (() => {
 				}
 				break
 			case "set":
-				for (const param of args)
-					setImage(...param.split(":"))
+				if (getImageData(args[0]))
+					imgObj = getImageObj(args.shift())
+				else if (getImageObj(msg))
+					imgObj = getImageObj(msg)
+				else
+					return D.ThrowError("Bad image reference.")
+				for (const param of args) {
+					params[param.split(":")[0]] = param.split(":")[1]
+				}
+				setImgParams(imgObj, params)
+				break
+			case "setlocation":
+			case "setloc":
+				for (const param of args) {
+					if (param.includes(":same")) {
+						const targetHost = param.split(":")[0] + "_1",
+							targetType = targetHost.includes("District") ? "District" : "Site"
+						let imgSrc = getImageSrc(targetHost)
+						if (!isImageActive(targetHost))
+							switch (targetHost) {
+							case "DistrictLeft_1":
+							case "SiteLeft_1":
+							case "DistrictRight_1":
+							case "SiteRight_1":
+								imgSrc = getImageSrc(targetType + "Center_1")
+								break
+							case "DistrictCenter_1":
+							case "SiteCenter_1":
+								imgSrc = getImageSrc(targetType + "Left_1")
+								break
+							default: break
+							}
+						setImage(targetHost, imgSrc)
+					} else {
+						setImage(...param.split(":"))
+					}
+				}
 				break
 			case "on":
 				for (const param of args)
@@ -671,6 +723,11 @@ const Images = (() => {
 						D.Alert("Syntax: !img get [<category> <name>] (or select an image object)", "IMAGES, !img getData")
 				}
 				break
+			case "getimgnames":
+			case "getimagenames":
+			case "getnames":
+				D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(state[D.GAMENAME].Images.registry))}`)
+				break
 			case "buildmacro":
 				[macroName, chatTrigger] = [args.shift(), args.shift()]
 				// D.Alert(`MacroName: ${macroName}, ChatTrigger: ${chatTrigger}`)
@@ -710,7 +767,7 @@ const Images = (() => {
 						REGISTRY[imgRef].activeLayer = "objects"
 						REGISTRY[imgRef].startActive = false
 					} else if (imgRef.includes("District")) {
-						REGISTRY[imgRef].activeLayer = "map"
+						REGISTRY[imgRef].activeLayer = "objects"
 						REGISTRY[imgRef].startActive = false
 					}
 					if (imgRef.includes("DistrictCenter"))
@@ -754,29 +811,8 @@ const Images = (() => {
 		checkInstall = () => {
 			state[D.GAMENAME].Images = state[D.GAMENAME].Images || {}
 			state[D.GAMENAME].Images.registry = state[D.GAMENAME].Images.registry || {}
-			state[D.GAMENAME].Images.registry.Sources = state[D.GAMENAME].Images.registry.Sources || {}
 
-			state.VAMPIRE.Images.registry.Horizon_1.startActive = true
-			state.VAMPIRE.Images.registry.Horizon_1.srcs = {
-				night1: "https://s3.amazonaws.com/files.d20.io/images/73196230/aXKz5yMMQr0bjxo1TWVDCw/thumb.jpg?1549439118",
-				night2: "https://s3.amazonaws.com/files.d20.io/images/73196235/j3ziWH55jyk2Y3AZVhHT-A/thumb.jpg?1549439124",
-				night3: "https://s3.amazonaws.com/files.d20.io/images/73196338/aSBJyW5s_T6VT5RXeN7uTQ/thumb.jpg?1549439353",
-				night4: "https://s3.amazonaws.com/files.d20.io/images/73196345/twWFrd6NRjpSKcy7iPL6Gw/thumb.jpg?1549439365",
-				night5: "https://s3.amazonaws.com/files.d20.io/images/73196420/3zXxD2_Jn_JDiBEhqFbCMA/thumb.jpg?1549439523",
-				predawn5: "https://s3.amazonaws.com/files.d20.io/images/73196424/RFakOjdNS6aN6rf5pGyvQA/thumb.jpg?1549439532",
-				predawn4: "https://s3.amazonaws.com/files.d20.io/images/73196437/b0ZbS8R2CJ9IYddN9iUfmg/thumb.jpg?1549439558",
-				predawn3: "https://s3.amazonaws.com/files.d20.io/images/73196447/v8-Hj_q85eJQPbwyOcyeTA/thumb.jpg?1549439575",
-				predawn2: "https://s3.amazonaws.com/files.d20.io/images/73196454/nIwlBTvprOUITX8mypS9hQ/thumb.jpg?1549439587",
-				predawn1: "https://s3.amazonaws.com/files.d20.io/images/73196523/9EUpHBSXYZubSmEhwedJ3Q/thumb.jpg?1549439726",
-				day: "https://s3.amazonaws.com/files.d20.io/images/73196525/HnEUSSd9qzhqnTIDqZqQvQ/thumb.jpg?1549439735"
-			}
-
-
-			state.VAMPIRE.Images.registry.signalLight_Pad_1.startActive = true
-			state.VAMPIRE.Images.registry.YusefSignal_1.activeLayer = "objects"
-			state.VAMPIRE.Images.registry.YusefSignal_1.srcs = {
-				on: "https://s3.amazonaws.com/files.d20.io/images/73633941/TJcjeBQvNv_xCpFnogPccA/med.png?1549843150"
-			}
+			//state[D.GAMENAME].Images.registry.SiteRight_1.id = "-LaFKO_Ol2idqqD9hQO5"
 		}
 	// #endregion
 
@@ -786,6 +822,7 @@ const Images = (() => {
 		Get: getImageObj,
 		GetKey: getImageKey,
 		GetData: getImageData,
+		GetSrc: getImageSrc,
 		MakeImage: makeImage,
 		Register: regImage,
 		SetSrc: addImgSrc,

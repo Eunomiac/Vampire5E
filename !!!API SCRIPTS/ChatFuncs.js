@@ -242,7 +242,7 @@ const ChatFuncs = (() => {
 
 			return true
 		},
-		getStateData = namespace => {
+		getStateData = (namespace, returnVals) => {
 			let stateInfo = state
 			if (namespace[0] !== D.GAMENAME)
 				namespace.unshift(D.GAMENAME)
@@ -250,8 +250,18 @@ const ChatFuncs = (() => {
 			// eslint-disable-next-line no-unmodified-loop-condition
 			while (namespace && namespace.length > 0)
 				stateInfo = stateInfo[namespace.shift()]
-
-			D.Alert(D.JS(stateInfo), title)
+			if (returnVals) {
+				const returnInfo = {}
+				_.each(stateInfo, (data, key) => {
+					const returnData = {}
+					_.each(_.isString(returnVals) ? returnVals.split(",") : returnVals, val => {
+						returnData[val] = data[val]
+					})
+					returnInfo[key] = _.clone(returnData)
+				})
+				D.Alert(D.JS(returnInfo), title)
+			} else
+				D.Alert(D.JS(stateInfo), title)
 
 			return true
 		},
@@ -317,7 +327,7 @@ const ChatFuncs = (() => {
 			const args = msg.content.split(/\s+/u),
 				params = {}
 			let [obj, attrList] = [{}, {}],
-				objsToKill = [],
+				[objsToKill, returnVals, theseArgs] = [[], [], []],
 				[objType, objID, pattern] = ["", "", ""]
 			switch (args.shift().toLowerCase()) {
 			case "!get":
@@ -380,6 +390,16 @@ const ChatFuncs = (() => {
 					break
 				case "state":
 					if (!getStateData(args))
+						sendHelpMsg()
+					break
+				case "statekeys":
+					if (!getStateData(args, true))
+						sendHelpMsg()
+					break
+				case "statevals": // !get statevals name, id|VAMPIRE Images ...
+					returnVals = args.join(" ").split("|")[0].replace(/\s+/gu, "").split(","),
+					theseArgs = args.join(" ").split("|")[1].split(/\s+/gu)
+					if (!getStateData(theseArgs, returnVals))
 						sendHelpMsg()
 					break
 				case "page":
