@@ -2225,75 +2225,165 @@
 		// #endregion
 
 		// #region Getting Random Resonance Based On District/Site Parameters
-		getResonance = (posRes = "", negRes = "", isDoubleAcute) => {
+		getResonance = (posRes = "", negRes = "", isDoubleAcute, testCycles = 0) => {
 			let resProbs = [],
 				randNum = null,
-				resonances = ["Choleric", "Melancholic", "Phlegmatic", "Sanguine"],
-				discLines = [
-					"the resonant disciplines of Celerity and Potence",
-					"the resonant disciplines of Fortitude and Obfuscate",
-					"the resonant disciplines of Auspex and Dominate",
-					"the resonant disciplines of Blood Sorcery and Presence"
-				]
-			_.each(resonances, v => {
-				if (posRes.includes(v.toLowerCase().charAt(0))) {
-					resonances = _.without(resonances, v)
-					resonances.unshift(v)
+				resonances = {
+					"Choleric": "c",
+					"Melancholic": "m",
+					"Phlegmatic": "p",
+					"Sanguine": "s",
+					"Primal": "r",
+					"Ischemic": "i",
+					"Mercurial": "q"
+				},
+				discLines = {
+					"Choleric":	"the resonant disciplines of Celerity and Potence",
+					"Melancholic": "the resonant disciplines of Fortitude and Obfuscate",
+					"Phlegmatic": "the resonant disciplines of Auspex and Dominate",
+					"Sanguine": "the resonant disciplines of Blood Sorcery and Presence",
+					"Primal": "the resonant disciplines of Animalism and Protean",
+					"Ischemic": "the resonant discipline of Oblivion",
+					"Mercurial": "the resonant practice of Alchemy"
+				},
+				tracer = "",
+				resList = _.keys(resonances)
+			_.each(resonances, (v, k) => {
+				if (posRes.includes(v)) {
+					resList = _.without(resList, k)
+					resList.unshift(k)
 				}
-				if (negRes.includes(v.toLowerCase().charAt(0))) {
-					resonances = _.without(resonances, v)
-					resonances.push(v)
+				if (negRes.includes(v)) {
+					resList = _.without(resList, k)
+					resList.push(k)
 				}
 			} )
+			if (!(posRes + negRes).includes("r"))
+				resList = _.without(resList, "Primal")
+			if (!(posRes + negRes).includes("i"))
+				resList = _.without(resList, "Ischemic")
+			if (!(posRes + negRes).includes("q"))
+				resList = _.without(resList, "Mercurial")
+			resList = resList.slice(0,4)
 			switch (posRes.length + negRes.length) {
 			case 3:
+				tracer += "3 Args, "
 				if (posRes.length === 2) {
-					if (posRes.charAt(0) === posRes.charAt(1))
+					tracer += "2 PosRes, "
+					if (posRes.charAt(0) === posRes.charAt(1)) {
+						tracer += "Equal: pos2neg"
 						resProbs = D.RESONANCEODDS.pos2neg
-					else
+					} else {
+						tracer += "UnEqual: posposneg"
 						resProbs = D.RESONANCEODDS.posposneg
+					}
 				} else if (negRes.charAt(0) === negRes.charAt(1)) {
+					tracer += "2 NegRes + Equal: neg2pos"
 					resProbs = D.RESONANCEODDS.neg2pos
 				} else {
+					tracer += "2 NegRes + UnEqual: posnegneg"
 					resProbs = D.RESONANCEODDS.posnegneg
 				}
 				break
 			case 2:
-				if (posRes.length === 2)
-					resProbs = D.RESONANCEODDS.pospos
-				else if (negRes.length === 2)
-					resProbs = D.RESONANCEODDS.negneg
-				else
+				tracer += "2 Args, "
+				if (posRes.length === 2) {
+					tracer += "2 PosRes, "
+					if (posRes.charAt(0) === posRes.charAt(1)) {
+						tracer += "Equal: pos2"
+						resProbs = D.RESONANCEODDS.pos2
+					} else {
+						tracer += "UnEqual: pospos"
+						resProbs = D.RESONANCEODDS.pospos
+					}
+				} else if (negRes.length === 2) {
+					tracer += "2 NegRes, "
+					if (negRes.charAt(0) === negRes.charAt(1)) {
+						tracer += "Equal: neg2"
+						resProbs = D.RESONANCEODDS.neg2
+					} else {
+						tracer += "UnEqual: negneg"
+						resProbs = D.RESONANCEODDS.negneg
+					}
+				} else {
+					tracer += "Neg & Pos: posneg"
 					resProbs = D.RESONANCEODDS.posneg
+				}
 				break
 			case 1:
+				tracer += "1 Arg, " + (posRes.length === 1 ? "Pos: pos" : "Neg: neg")
 				resProbs = posRes.length === 1 ? D.RESONANCEODDS.pos : D.RESONANCEODDS.neg
 				break
 			case 0:
+				tracer += "0 Args, norm"
 				resProbs = D.RESONANCEODDS.norm
 				break
 			default:
 				return D.ThrowError("Too many variables!")
 			}
-			resProbs = _.flatten(_.map(resProbs, v => _.values(v)))
+			let theseProbs = []
+			_.each(resProbs, v => {
+				theseProbs.push({
+					neg: v.neg,
+					fleet: v.fleet,
+					intense: v.intense,
+					acute: v.acute
+				})
+			})
 			if (isDoubleAcute === "2") {
 				for (let i = 0; i < 4; i++) {
-					resProbs[i * 4 + 0] = resProbs[i * 4 + 0] - resProbs[i * 4 + 2] / 2 - resProbs[i * 4 + 3] / 2
-					resProbs[i * 4 + 1] = resProbs[i * 4 + 1] - resProbs[i * 4 + 2] / 2 - resProbs[i * 4 + 3] / 2
-					resProbs[i * 4 + 2] = resProbs[i * 4 + 2] * 2
-					resProbs[i * 4 + 3] = resProbs[i * 4 + 3] * 2
+					theseProbs[i].acute = 3 * theseProbs[i].acute
+					theseProbs[i].neg = 0.92 * theseProbs[i].neg
+					theseProbs[i].intense = 0.92 * theseProbs[i].intense
+					theseProbs[i].fleet = 0.92 * theseProbs[i].fleet
 				}
 			}
+			theseProbs = _.flatten(_.map(theseProbs, v => _.values(v)))
+			//D.Alert(`theseProbs: ${D.JS(theseProbs)}`)
+			if (parseInt(testCycles) > 0) {
+				let record = {
+					NG: {C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0},
+					FL: {C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0},
+					IN: {C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0},
+					AC: {C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0},
+					C: {NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0},
+					M: {NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0},
+					P: {NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0},
+					S: {NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0},
+					R: {NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0},
+					I: {NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0},
+					Q: {NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0}
+				}
+				for (let i = 0; i < parseInt(testCycles); i++) {
+					randNum = Math.random()
+					let testProbs = _.clone(theseProbs),
+						testResonances = _.clone(resList)
+					do
+						randNum -= testProbs.shift()
+					while (randNum > 0)
+					record[["NG","FL","IN","AC"][3 - testProbs.length % 4]][resonances[testResonances.reverse()[Math.floor(testProbs.length / 4)]].toUpperCase()]++
+					record[["NG","FL","IN","AC"][3 - testProbs.length % 4]].TOT++
+					record[resonances[testResonances.reverse()[Math.floor(testProbs.length / 4)]].toUpperCase()][["NG","FL","IN","AC"][3 - testProbs.length % 4]]++
+					record[resonances[testResonances.reverse()[Math.floor(testProbs.length / 4)]].toUpperCase()].TOT++
+				}
+				_.each(record, (data, k) => {
+					record[k].PER = `${Math.round(data.TOT / parseInt(testCycles) * 10000)/100}%`
+					record[k] = `${data.TOT} (${record[k].PER})`
+				})
+				D.Alert(`Trace: ${D.JSL(tracer)}<br><br>testProbs: ${D.JSL(theseProbs)}<br><br>Resonances: ${D.JSL(resList)}<br><br>${D.JS(record)}`)
+			}			
 
 			randNum = Math.random()
 			do
-				randNum -= resProbs.shift()
+				randNum -= theseProbs.shift()
 			while (randNum > 0)
 
+			let thisRes = resList.reverse()[Math.floor(theseProbs.length / 4)]
+
 			return [
-				["Negligibly", "Fleetingly", "Intensely", "Acutely"][3 - resProbs.length % 4],
-				resonances.reverse()[Math.floor(resProbs.length / 4)],
-				discLines.reverse()[Math.floor(resProbs.length / 4)]
+				["Negligibly", "Fleetingly", "Intensely", "Acutely"][3 - theseProbs.length % 4],
+				thisRes,
+				discLines[thisRes]
 			]
 			// Return ["Acute", "Choleric"];
 		},
@@ -2304,7 +2394,7 @@
 			if (msg.type !== "api")
 				return
 			let args = msg.content.split(/\s+/u),
-				[rollType, groupName, groupNum, charObj, diceNums, resonance, resIntLine] = [null, null, null, null, null, null, null],
+				[rollType, groupName, groupNum, charObj, diceNums, resonance, resDetails, resIntLine] = [null, null, null, null, null, null, null],
 				name = "",
 				[isSilent, isHidingTraits] = [false, false]
 			const rollString = args.shift()
@@ -2441,12 +2531,43 @@
 			case "!nextRoll":
 				loadNextRoll()
 				break
+			case "!resTest":
+				if (args[0] === "x")
+					args[0] = ""
+				if (args[1] === "x")
+					args[1] = ""
+				resonance = getResonance(...args)
+				break
 			case "!resCheck":
 				if (args[0] === "x")
 					args[0] = ""
 				if (args[1] === "x")
 					args[1] = ""
 				resonance = getResonance(...args)
+				switch(resonance[1].toLowerCase()) {
+				case "choleric":
+					resDetails = "Angry ♦ Passionate ♦ Violent ♦ Envious"
+					break
+				case "sanguine":
+					resDetails = "Happy ♦ Horny ♦ Addicted ♦ Enthusiastic"
+					break
+				case "melancholic":
+					resDetails = "Sad ♦ Scared ♦ Intellectual ♦ Grounded"
+					break
+				case "phlegmatic":
+					resDetails = "Calm ♦ Apathetic ♦ Lazy ♦ Controlling"
+					break
+				case "primal":
+					resDetails = "Base ♦ Impulsive ♦ Irascible ♦ Insatiable"
+					break
+				case "ischemic":
+					resDetails = "Cold ♦ Amoral ♦ Patient ♦ Nihilistic"
+					break
+				case "mercurial":
+					resDetails = "Fluid ♦ Fatalistic ♦ Inscrutable ♦ Alien"
+					break
+
+				}
 				switch(resonance[0].toLowerCase()) {
 				case "negligibly":
 					resIntLine = `The blood carries only the smallest hint of ${resonance[1].toLowerCase()} resonance.  It is not strong enough to confer any benefits at all.`
@@ -2461,18 +2582,13 @@
 					resIntLine = `This blood is special.  In addition to enhancing ${resonance[2]}, its ${resonance[1].toLowerCase()} resonance is so powerful that the emotions within have crystallized into a dyscracias.`
 					break
 				}
-				sendChat("", D.JSH(`
-					<div style="display: block; margin-left: -10px; height: auto; background: url(https://i.imgur.com/kBl8aTO.jpg);text-align: center;border: 4px crimson outset;">
-						<br>
-						<span style="display: block; font-weight: bold; color: red; font-size: 16px; text-align: center; width: 100%;">
-							${_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")}<br>
-						</span>
-						<br>
-						<span style="display: block; color: red; font-size: 12px; text-align: center; width: 100%;">
-							${resIntLine}
-						</span>
-						<br>
-					</div>`)
+				sendChat("Resonance Check", D.JSH(`<div style="display: block; margin-left: -40px; height: auto; background: url(https://i.imgur.com/kBl8aTO.jpg);text-align: center;border: 4px crimson outset; padding: 5px; width: 255px;"><span style="display: block; font-weight: bold; color: red; text-align: center; width: 100%; font-family: sexsmith; font-size: 32px; height: 45px; line-height: 45px;">${
+					_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")
+				}</span><span style="display: block; width: 100%; text-align: center; font-family: Voltaire; color: black; background-color: red; font-size: 16px; margin-bottom: 7px; border-top: 1px solid red; border-bottom: 1px solid red; height: 20px; line-height: 20px; font-weight: bold;">${
+					resDetails
+				}</span><span style="display: block; color: red; font-size: 18px; text-align: center; width: 100%; font-family: sexsmith; font-weight: bold; text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black; line-height: 22px;">${
+					resIntLine
+				}</span></div>`)
 				)
 				break
 			case "!nxsroll":

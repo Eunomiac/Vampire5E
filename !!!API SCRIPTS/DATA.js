@@ -46,60 +46,78 @@ const D = (() => {
 			{bp_surge: 5, bp_discbonus: 5}
 		],
 		RESONANCEODDS = {
-			norm: [
-				{neg: 0.167, fleet: 0.1, intense: 0.053, acute: 0.013},
-				{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
-				{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
-				{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009}
-			],
-			neg: [
-				{neg: 0.136, fleet: 0.082, intense: 0.044, acute: 0.011},
-				{neg: 0.136, fleet: 0.082, intense: 0.044, acute: 0.011},
-				{neg: 0.136, fleet: 0.082, intense: 0.044, acute: 0.011},
-				{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}
-			],
-			posneg: [
-				{neg: 0.167, fleet: 0.1, intense: 0.053, acute: 0.013},
-				{neg: 0.121, fleet: 0.073, intense: 0.039, acute: 0.01},
-				{neg: 0.121, fleet: 0.073, intense: 0.039, acute: 0.01},
-				{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}
-			],
-			pospos: [
-				{neg: 0.124, fleet: 0.075, intense: 0.107, acute: 0.027},
-				{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
-				{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
-				{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009}
-			],
-			negneg: [
-				{neg: 0.15, fleet: 0.09, intense: 0.048, acute: 0.012},
-				{neg: 0.15, fleet: 0.09, intense: 0.048, acute: 0.012},
-				{neg: 0.15, fleet: 0.09, intense: 0.048, acute: 0.012},
-				{neg: 0.05, fleet: 0.03, intense: 0.016, acute: 0.004}
-			],
-			pos2neg: [
-				{neg: 0.124, fleet: 0.075, intense: 0.107, acute: 0.027},
-				{neg: 0.144, fleet: 0.086, intense: 0.046, acute: 0.012},
-				{neg: 0.144, fleet: 0.086, intense: 0.046, acute: 0.012},
-				{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}
-			],
-			neg2pos: [
-				{neg: 0.196, fleet: 0.117, intense: 0.063, acute: 0.016},
-				{neg: 0.13, fleet: 0.078, intense: 0.042, acute: 0.01},
-				{neg: 0.13, fleet: 0.078, intense: 0.042, acute: 0.01},
-				{neg: 0.043, fleet: 0.026, intense: 0.014, acute: 0.003}
-			],
-			posposneg: [
-				{neg: 0.167, fleet: 0.1, intense: 0.053, acute: 0.013},
-				{neg: 0.167, fleet: 0.1, intense: 0.053, acute: 0.013},
-				{neg: 0.111, fleet: 0.067, intense: 0.036, acute: 0.009},
-				{neg: 0.056, fleet: 0.033, intense: 0.018, acute: 0.004}
-			],
-			posnegneg: [
-				{neg: 0.191, fleet: 0.115, intense: 0.061, acute: 0.015},
-				{neg: 0.127, fleet: 0.076, intense: 0.041, acute: 0.01},
-				{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007},
-				{neg: 0.091, fleet: 0.055, intense: 0.029, acute: 0.007}
-			]
+			norm: [						
+				{neg: 0.1245, fleet: 0.0753, intense: 0.0403, acute: 0.01},
+				{neg: 0.1245, fleet: 0.0753, intense: 0.0403, acute: 0.01},
+				{neg: 0.1245, fleet: 0.0753, intense: 0.0403, acute: 0.01},
+				{neg: 0.1245, fleet: 0.0753, intense: 0.0403, acute: 0.01}
+			], 					
+			pos: [						
+				{neg: 0.166, fleet: 0.1003, intense: 0.0537, acute: 0.0133},
+				{neg: 0.1107, fleet: 0.0669, intense: 0.0358, acute: 0.0089},
+				{neg: 0.1107, fleet: 0.0669, intense: 0.0358, acute: 0.0089},
+				{neg: 0.1107, fleet: 0.0669, intense: 0.0358, acute: 0.0089}
+			], 					
+			neg: [						
+				{neg: 0.1358, fleet: 0.0821, intense: 0.0439, acute: 0.0109},
+				{neg: 0.1358, fleet: 0.0821, intense: 0.0439, acute: 0.0109},
+				{neg: 0.1358, fleet: 0.0821, intense: 0.0439, acute: 0.0109},
+				{neg: 0.0905, fleet: 0.0547, intense: 0.0293, acute: 0.0073}
+			], 					
+			posneg: [						
+				{neg: 0.1793, fleet: 0.1084, intense: 0.058, acute: 0.0144},
+				{neg: 0.1195, fleet: 0.0722, intense: 0.0386, acute: 0.0096},
+				{neg: 0.1195, fleet: 0.0722, intense: 0.0386, acute: 0.0096},
+				{neg: 0.0797, fleet: 0.0482, intense: 0.0258, acute: 0.0064}
+			], 					
+			pos2: [						
+				{neg: 0.249, fleet: 0.1505, intense: 0.0805, acute: 0.02},
+				{neg: 0.083, fleet: 0.0502, intense: 0.0268, acute: 0.0067},
+				{neg: 0.083, fleet: 0.0502, intense: 0.0268, acute: 0.0067},
+				{neg: 0.083, fleet: 0.0502, intense: 0.0268, acute: 0.0067}
+			], 					
+			pospos: [						
+				{neg: 0.166, fleet: 0.1003, intense: 0.0537, acute: 0.0133},
+				{neg: 0.166, fleet: 0.1003, intense: 0.0537, acute: 0.0133},
+				{neg: 0.083, fleet: 0.0502, intense: 0.0268, acute: 0.0067},
+				{neg: 0.083, fleet: 0.0502, intense: 0.0268, acute: 0.0067}
+			], 					
+			neg2: [						
+				{neg: 0.1573, fleet: 0.0951, intense: 0.0508, acute: 0.0126},
+				{neg: 0.1573, fleet: 0.0951, intense: 0.0508, acute: 0.0126},
+				{neg: 0.1573, fleet: 0.0951, intense: 0.0508, acute: 0.0126},
+				{neg: 0.0262, fleet: 0.0158, intense: 0.0085, acute: 0.0021}
+			], 					
+			negneg: [						
+				{neg: 0.166, fleet: 0.1003, intense: 0.0537, acute: 0.0133},
+				{neg: 0.166, fleet: 0.1003, intense: 0.0537, acute: 0.0133},
+				{neg: 0.083, fleet: 0.0502, intense: 0.0268, acute: 0.0067},
+				{neg: 0.083, fleet: 0.0502, intense: 0.0268, acute: 0.0067}
+			], 					
+			pos2neg: [						
+				{neg: 0.249, fleet: 0.1505, intense: 0.0805, acute: 0.02},
+				{neg: 0.0996, fleet: 0.0602, intense: 0.0322, acute: 0.008},
+				{neg: 0.0996, fleet: 0.0602, intense: 0.0322, acute: 0.008},
+				{neg: 0.0498, fleet: 0.0301, intense: 0.0161, acute: 0.004}
+			], 					
+			neg2pos: [						
+				{neg: 0.2241, fleet: 0.1355, intense: 0.0725, acute: 0.018},
+				{neg: 0.1245, fleet: 0.0753, intense: 0.0403, acute: 0.01},
+				{neg: 0.1245, fleet: 0.0753, intense: 0.0403, acute: 0.01},
+				{neg: 0.0249, fleet: 0.0151, intense: 0.0081, acute: 0.002}
+			], 					
+			posposneg: [						
+				{neg: 0.1743, fleet: 0.1054, intense: 0.0564, acute: 0.014},
+				{neg: 0.1743, fleet: 0.1054, intense: 0.0564, acute: 0.014},
+				{neg: 0.0996, fleet: 0.0602, intense: 0.0322, acute: 0.008},
+				{neg: 0.0498, fleet: 0.0301, intense: 0.0161, acute: 0.004}
+			], 					
+			posnegneg: [						
+				{neg: 0.2241, fleet: 0.1355, intense: 0.0725, acute: 0.018},
+				{neg: 0.1245, fleet: 0.0753, intense: 0.0403, acute: 0.01},
+				{neg: 0.0747, fleet: 0.0452, intense: 0.0242, acute: 0.006},
+				{neg: 0.0747, fleet: 0.0452, intense: 0.0242, acute: 0.006}
+			], 					
 		},
 		FX = {
 			bloodCloud: {
