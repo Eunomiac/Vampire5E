@@ -313,10 +313,14 @@ const Chars = (() => {
 				if (!D.Validate({char: [charRef], trait: [trait], number: amount}, "Chars", "AdjustTrait"))
 					return false
 			}
+			D.Log(D.JS(Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStatVal(charRef, trait) || 0) + parseInt(amount)))))
+			D.Log("STATVAL:" + D.GetStatVal(charRef, trait) + ", AMOUNT: " + amount)			
+			D.Log("COMBINED:" + (parseInt(D.GetStatVal(charRef, trait) || 0) + parseInt(amount)))
+			D.Log("ACTUAL: " + (Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStatVal(charRef, trait) || defaultTraitVal || 0) + parseInt(amount)))))
 			setAttrs(
 				D.GetChar(charRef).id, 
 				{
-					[trait.toLowerCase()]: Math.min(max || -Infinity, Math.max(min || Infinity, parseInt(D.GetStatVal(charRef, trait)) + parseInt(amount)))
+					[trait.toLowerCase()]: Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStatVal(charRef, trait) || defaultTraitVal || 0) + parseInt(amount)))
 				}
 			)
 			return true
@@ -350,19 +354,12 @@ const Chars = (() => {
 		adjustHumanity = (charRef, amount) => {
 			if (!D.Validate({char: [charRef], number: [amount]}, "Chars", "AdjustHumanity"))
 				return false
-			const newHumanity = Math.min(10, Math.max(0, (D.GetStatVal(charRef, "humanity") || 0) + parseInt(amount)))
 			if (adjustTrait(charRef,
 				"humanity",
 				parseInt(amount),
 				0,
 				10,
 				7
-			) && adjustTrait(charRef,
-				"stains",
-				0,
-				10 - newHumanity,
-				10,
-				0
 			))
 				return true
 			return false
@@ -499,6 +496,14 @@ const Chars = (() => {
 					} else {
 						D.ThrowError("Select character tokens first!",  "CHARS!char dmg")
 					}
+					break
+				case "hum":
+				case "humanity":
+					adjustHumanity(msg, parseInt(args.shift()))
+					break
+				case "stain":
+				case "stains":
+					adjustStains(msg, parseInt(args.shift()))
 					break
 				case "get":
 					if (!playerIsGM(msg.playerid))

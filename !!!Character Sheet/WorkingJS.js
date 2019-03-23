@@ -1062,9 +1062,7 @@
 			}
 		},
 		doTracker = (tracker, eInfo = { sourceAttribute: "" }, gN = "", cback) => {
-			const stat = eInfo.sourceAttribute,
-				statVal = stat ? parseInt(stat.split("_")[1] || 0) : 0,
-				attrList = {},
+			const attrList = {},
 				$funcs = []
 			switch (tracker.toLowerCase()) {
 			case "health":
@@ -1126,159 +1124,58 @@
 				} )
 				break
 			case "humanity":
-				if (eInfo.sourceType === "player" && statVal > 0) {
-					const HUMANITYLOOKUP = {
-						blank: {
-							blank: "stain",
-							humanity: "stain",
-							stain: "humanity",
-							collision: "stain"
-						},
-						humanity: {
-							blank: "stain",
-							humanity: "blank",
-							stain: "collision",
-							collision: "stain"
-						},
-						stain: {
-							blank: "humanity",
-							humanity: "collision",
-							stain: "humanity",
-							collision: "blank"
-						},
-						collision:{
-							blank: "blank",
-							humanity: "stain",
-							stain: "humanity",
-							collision: "blank"
-						}
-					}
-					log("")
-					log("****************************************************")
-					log(`Operating on Humanity Stat Value ${statVal}`)
-					log("****************************************************")
-					log("")
-					$funcs.push(cbk => {
-						cbk(null)
-						return
-						getAttrs(groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`), "prevtrack", "prevclick", "humsequence"], gN), ATTRS => {
-							let humArray = _.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => parseInt(ATTRS[`humanity_${v}`] ))
-							const current = _.countBy(humArray, v => ["blank", "humanity", "stains", "collision"][v - 1] ),
-								prevHumArray = ATTRS.prevtrack ? ATTRS.prevtrack.split(",") : _.clone(humArray),
-								thisClick = eInfo.sourceAttribute.slice(-2).replace("_", ""),
-								thisClickIndex = parseInt(thisClick) - 1,
-								thisClickVal = ["blank", "humanity", "stain", "collision"][humArray[thisClickIndex] - 1],
-								prevClick = ATTRS.prevclick ? ATTRS.prevclick.slice(-2).replace("_", "") : thisClick,
-								prevClickIndex = parseInt(prevClick) - 1,
-								prevClickVal = ["blank", "humanity", "stain", "collision"][prevHumArray[prevClickIndex] - 1],
-								setHumanity = (click, setTo) => {
-									const clickVal = ["blank", "humanity", "stain", "collision"][parseInt(ATTRS[`humanity_${click}`] ) - 1]
-									log(`Clicked ${JSON.stringify(clickVal)}, Set To ${JSON.stringify(setTo)}`)
-									switch (clickVal) {
-									case "blank":
-										switch (setTo) {
-										case "humanity":
-											humArray.fill(2, 0, click)
-											break
-										case "stain":
-											humArray.fill(3, click - 1)
-											break
-										default: break
-										}
-										break
-									case "humanity":
-										switch (setTo) {
-										case "blank":
-											humArray = [
-												...humArray.slice(0, click - 1),
-												...humArray.slice(click - 1).map(v => v === 2 ? 1 : v)
-											]
-											break
-										case "stain":
-											humArray = [
-												...humArray.slice(0, click - 1),
-												...humArray.slice(click - 1).fill(3)
-											]
-											break
-										case "collision":
-											humArray = [
-												...humArray.slice(0, click - 1),
-												...humArray.slice(click - 1).map(v => v === 2 ? 4 : v === 4 ? 4 : 3)
-											]
-											break
-										default: break
-										}
-										break
-									case "stain":
-										switch (setTo) {
-										case "blank":
-											humArray = [
-												...humArray.slice(0, click).map(v => v === 4 ? 2 : v === 3 ? 1 : v),
-												...humArray.slice(click)
-											]
-											break
-										case "humanity":
-											humArray = [
-												...humArray.slice(0, click).fill(2),
-												...humArray.slice(click)
-											]
-											break
-										default: break
-										}
-										break
-									case "collision":
-										switch (setTo) {
-										case "humanity":
-											humArray = [
-												...humArray.slice(0, click - 1).map(v => v === 4 ? 2 : v),
-												2,
-												...humArray.slice(click)
-											]
-											break
-										case "blank":
-											humArray = humArray.map(v => v >= 3 ? 1 : v)
-											break
-										default: break
-										}
-										break
-									default: break
-									}
-								}
-
-							log(`... HUMARRAY: ${JSON.stringify(humArray)}`)
-							log(`... CURRENT: ${JSON.stringify(current)}`)								
-							log(`... PREVHUMARRAY: ${JSON.stringify(prevHumArray)}`)								
-							log(`... THISCLICK: ${JSON.stringify(thisClick)}`)								
-							log(`... THISCLICKINDEX: ${JSON.stringify(thisClickIndex)}`)						
-							log(`... THISCLICKVAL: ${JSON.stringify(thisClickVal)}`)								
-							log(`... PREVCLICK: ${JSON.stringify(prevClick)}`)								
-							log(`... PREVCLICKINDEX: ${JSON.stringify(prevClickIndex)}`)						
-							log(`... PREVCLICKVAL: ${JSON.stringify(prevClickVal)}`)
-
-							attrList["prevtrack"] = humArray.join(",")
-							attrList["prevclick"] = thisClick
-
-							/* checkBoxes = (humanity, stains, hArray = new Array(10)) => {
-								hArray.fill("1")
-								const hum = Math.min(10, Math.max(0, humanity)),
-									stn = Math.min(10, Math.max(0, stains))
-								if (hum > 0)
-									hArray.fill("2", 0, hum)
-								if (stn > 0)
-									hArray.fill("3", stn * -1)
-								if (hum > 0 && stn > 0 && (hum + stn > 10))
-									hArray.fill("4", stn * -1, stn * -1 + (10 - hum - stn))
-
-								return hArray
-							} */
+				$funcs.push(cbk => {
+					if (eInfo.sourceType !== "sheetworker") {
+						const attrArray = groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`)]),
+							   humArray = new Array(10)
+						getAttrs(groupify(["stains", "humanity"]), ATTRS => {
+							const humanity = Math.min(10, Math.max(0, parseInt(ATTRS[`${gN}humanity`]))),
+								    stains = Math.min(10, Math.max(0, parseInt(ATTRS[`${gN}stains`])))
+							attrList[`${gN}humanity_impair_toggle`] = 0		
+							log(`... Humanity: ${JSON.stringify(humanity)}, Stains: ${JSON.stringify(stains)}, ATTRS: ${JSON.stringify(ATTRS)}`)
+							humArray.fill(3, 10 - stains)
+							humArray.fill(2, 0, Math.max(humanity, 0))
+							humArray.fill(1, humanity, 10 - stains)
+							log(`... humArray: ${JSON.stringify(humArray)}`)
+							for (let i = 0; i < humArray.length; i++) {
+								attrList[attrArray[i]] = humArray[i]
+							}
+							attrList[`${gN}stains`] = humArray.filter(v => v === 3).length				
+							log(`... attrList: ${JSON.stringify(attrList)}`)
 							cbk(null, attrList)
-						} ) 
-					} )
-				} else {
-					$funcs.push(cbk => {
-						cbk(null, attrList)
-					} )
-				}
+						})
+					}
+				})
+				break
+			case "stains":
+				$funcs.push(cbk => {
+					if (eInfo.sourceType !== "sheetworker") {
+						const attrArray = groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`)]),
+							humArray = new Array(10)
+						getAttrs(groupify(["humanity", "stains"]), ATTRS => {
+							const humanity = Math.min(10, Math.max(0, parseInt(ATTRS[`${gN}humanity`]))),
+								    stains = Math.min(10, Math.max(0, parseInt(ATTRS[`${gN}stains`])))
+							attrList[`${gN}humanity_impair_toggle`] = 0
+							log(`... Humanity: ${JSON.stringify(humanity)}, Stains: ${JSON.stringify(stains)}, ATTRS: ${JSON.stringify(ATTRS)}`)
+							if (humanity + stains > 10) {
+								attrList[`${gN}humanity_impair_toggle`] = 1
+								humArray.fill(4)
+								humArray.fill(3, humanity)
+								humArray.fill(2, 0, 10 - stains)
+							} else {
+								humArray.fill(1)
+								humArray.fill(2, 0, humanity)
+								humArray.fill(3, 10 - stains)
+							}
+							log(`... humArray: ${JSON.stringify(humArray)}`)
+							for (let i = 0; i < humArray.length; i++) {
+								attrList[attrArray[i]] = humArray[i]
+							}
+							log(`... attrList: ${JSON.stringify(attrList)}`)
+							cbk(null, attrList)
+						})
+					}
+				})
 				break
 			default:
 				log(`Error in doTracker(${tracker}, ${gN}): Unrecognized tracker.`)
@@ -1381,9 +1278,15 @@
 		[LOGPREFIX, LOGDEPTH] = [`[dBP(${trimAttr(eInfo.sourceAttribute)})]`, 0]
 		doTracker("Blood Potency", eInfo)
 	} )
-	on(`${getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "dhum", "dstains"], "humanity_")} ${getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "humanitybox_")} ${getTriggers( ["humanity", "stains"] )}`, eInfo => {
+	on("change:humanity", eInfo => {
 		[LOGPREFIX, LOGDEPTH] = [`[dHum(${trimAttr(eInfo.sourceAttribute)})]`, 0]
+		log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ HUMANITY TRIGGERED @@@ eInfo = ${JSON.stringify(eInfo)}`)
 		doTracker("Humanity", eInfo)
+	} )	
+	on("change:stains", eInfo => {
+		[LOGPREFIX, LOGDEPTH] = [`[dStn(${trimAttr(eInfo.sourceAttribute)})]`, 0]
+		log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ STAINS TRIGGERED @@@ eInfo = ${JSON.stringify(eInfo)}`)
+		doTracker("Stains", eInfo)
 	} )
 	// #endregion
 

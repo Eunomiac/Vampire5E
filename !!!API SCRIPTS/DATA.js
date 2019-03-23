@@ -633,7 +633,7 @@ const D = (() => {
 			// D.Alert(`Search Params: ${D.JS(searchParams)}`)
 			_.each(searchParams, val => {
 				// If parameter is a digit corresponding to a REGISTERED CHARACTER:
-				if (_.isNumber(parseInt(val)) && Chars.REGISTRY[parseInt(val)])
+				if (_.isNumber(parseInt(val)) && !_.isNaN(parseInt(val)) && Chars.REGISTRY[parseInt(val)])
 					charObjs.add(getObj("character", Chars.REGISTRY[parseInt(val)].id))
 				// If parameter is a CHARACTER OBJECT already: */
 				if (D.IsObj(val, "character")) {
@@ -730,7 +730,7 @@ const D = (() => {
 		getStatVal = (charRef, trait) => {
 			if (!D.Validate({char: [charRef], trait: [trait]}, "DATA", "GetStatVal"))
 				return
-			getStatData(charRef, [trait])
+			return getStatData(charRef, [trait])[trait]
 		},
 		getPlayerID = value => {
 			// Returns a PLAYER ID given: display name, token object, character object.
