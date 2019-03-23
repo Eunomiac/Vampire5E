@@ -24,7 +24,11 @@ module.exports = {
         "semi": [
             "error",
             "never"
-        ]
+        ],
+		"no-mixed-spaces-and-tabs": [
+			"error",
+			"smart-tabs"
+		]
     },
     "globals": {
         "START": true,

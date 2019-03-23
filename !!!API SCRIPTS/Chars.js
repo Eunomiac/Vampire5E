@@ -1,6 +1,8 @@
 const Chars = (() => {
 	// #region Constants and Declarations,
-	const MVCVALS = [
+	const STATEREF = state[D.GAMENAME].Chars,
+		REGISTRY = STATEREF.registry,
+		MVCVALS = [
 			[
 				"<span style=\"display: block; width: 100%; margin-top: -10px;\">Concept</span></div><div style=\"display: block; width: 100%; margin-top: -10px;\">",
 				["headerL", "A depressed", "A surly", "A straightforward", "A timid", "A clever", "A bold", "An inquisitive", "A circumspect", "An outgoing", "An optimistic", "An agreeable", "A wise", "A misguided", "A gregarious", "A jaded", "An analytical"],
@@ -243,71 +245,54 @@ const Chars = (() => {
 		},
 		// #endregion
 	
-		// #region Register Characters,
-		registerChars = (msg) => {
-			const chars = D.GetChars(msg),
-				tokens = D.GetSelected(msg)
-			_.each(chars, (char) => {
-				const token = tokens.shift(),
-					charName = D.GetName(char),
-					tokenName = charName.replace(/["'\s]*/gu, "") + "Token"
-				state[D.GAMENAME].Chars[char.id] = {
-					name: charName,
-					id: char.id,
-					playerID: D.GetPlayerID(char)
-				}
-				state[D.GAMENAME].Chars[D.GetName(char)] = {
-					name: charName,
-					id: char.id,
-					playerID: D.GetPlayerID(char)
-				}
-				state[D.GAMENAME].Chars[D.GetPlayerID(char)] = {
-					name: charName,
-					id: char.id,
-					playerID: D.GetPlayerID(char)	
-				}
-				Images.Register(token, tokenName)
-				D.Alert(`Registered '${D.GetName(char)}'`)
-			})
-		},
-		unregisterChar = (charString) => {
-			const stateRef = state[D.GAMENAME].Chars
-			let [charName, charID, playerID] = [null, null, null]
-			if (stateRef[charString]) {
-				charName = stateRef[charString].name
-				charID = stateRef[charString].id
-				playerID = stateRef[charString].playerID
-				if (charString !== charID)
-					delete state[D.GAMENAME].Chars[charID]
-				if (charString !== charName)
-					delete state[D.GAMENAME].Chars[charName]
-				if (charString !== playerID)
-					delete state[D.GAMENAME].Chars[playerID]
-				delete state[D.GAMENAME].Chars[charString]
-				D.Alert(`Unregistered ${D.JSL(charName)}.`, "CHARS: UNREGISTERCHAR")
-			} else {
-				D.ThrowError(`No character found registered with search key '${D.JSL(charString)}'`)
+		// #region Register Characters & Token Image Alternates,
+		registerChar = (msg, num) => {
+			if (D.GetSelected(msg).length > 1)
+				return D.ThrowError("Please select only one token.", "CHARS:RegisterChar")
+			const char = D.GetChar(msg),
+				 token = D.GetSelected(msg)[0],
+			   charNum = num ? num : _.keys(REGISTRY).length + 1,
+				charID = char.id,
+			  charName = D.GetName(char),
+			  playerID = D.GetPlayerID(char),
+		    playerName = D.GetName(playerID)
+
+			if (!char)
+				return D.ThrowError("No character found!", "CHARS:RegisterChar")
+			if (!token)
+				return D.ThrowError("Please select a character token.", "CHARS:RegisterChar")
+
+			REGISTRY[charNum] = {
+				id: charID,
+				name: charName,
+				playerID: playerID,
+				playerName: playerName,
+				tokenName: charName.replace(/["'\s]*/gu, "") + "Token"
 			}
+
+			D.Alert(`Character #${D.JSL(charNum)} Registered:<br><br>${D.JS(REGISTRY[charNum])}`, "CHARS:RegisterChar")
+			return
 		},
 		registerToken = (msg, hostName, srcName) => {
 			if (!Images.GetKey(hostName)) 
 				return D.ThrowError(`No image registered under ${hostName}`, "CHARS:RegisterToken")
 	
-			Images.SetSrc(msg, hostName, srcName)
+			Images.AddSrc(msg, hostName, srcName)
 			return true
 		},
 	
 		// #endregion
 	
 		// #region Awarding XP,
-		awardXP = (char, award, session, reason) => {
-			if (!state[D.GAMENAME].Chars[char.id])
-				return D.ThrowError("You must register the character first.", "AWARDXP")
-			const rowID = D.MakeRow(char.id, "earnedxp", {
-				xp_award: award,
-				xp_session: session,
-				xp_reason: reason,
-			})
+		awardXP = (charRef, award, session, reason) => {
+			if (!D.GetChar(charRef))
+				return D.ThrowError(`No character found given reference ${D.JS(charRef)}`, "CHARS:AwardXP")
+			const char = D.GetChar(charRef),
+				 rowID = D.MakeRow(char.id, "earnedxp", {
+					xp_award: award,
+					xp_session: session,
+					xp_reason: reason,
+				})
 			if (rowID) {
 				D.SplitRepSec(char, "earnedxp", "earnedxpright", SORTFUNCS.earnedxp, "split")
 	
@@ -320,13 +305,80 @@ const Chars = (() => {
 		// #endregion
 	
 		// #region Manipulating Stats on Sheet,
-		adjustDamage = (charObj, trt, dtype, amount) => {
-			const attrList = {},
-				trait = trt.slice(0, 1).toUpperCase() + trt.slice(1)
-			attrList[trait.toLowerCase() + (["superficial", "superficial+", "spent"].includes(dtype) ? "_sdmg" : "_admg")] = parseInt(amount) > 0 && dtype === "superficial" ? parseInt(Math.ceil(amount / 2)) : parseInt(amount)
-			setAttrs(charObj.id, attrList)
-	
+		adjustTrait = (charRef, trait, amount, min, max, defaultTraitVal) => {
+			if (D.Validate({number: defaultTraitVal}, "", "", true)) {
+				if (!D.Validate({char: [charRef], number: amount}, "Chars", "AdjustTrait"))
+					return false
+			} else {
+				if (!D.Validate({char: [charRef], trait: [trait], number: amount}, "Chars", "AdjustTrait"))
+					return false
+			}
+			setAttrs(
+				D.GetChar(charRef).id, 
+				{
+					[trait.toLowerCase()]: Math.min(max || -Infinity, Math.max(min || Infinity, parseInt(D.GetStatVal(charRef, trait)) + parseInt(amount)))
+				}
+			)
 			return true
+		},
+		adjustDamage = (charRef, trait, dtype, amount) => {
+			if (!D.Validate({char: [charRef], number: [amount]}, "Chars", "AdjustDamage"))
+				return false
+			if (adjustTrait(charRef,
+				trait.toLowerCase() + (["superficial", "superficial+", "spent"].includes(dtype) ? "_sdmg" : "_admg"),
+				parseInt(amount) > 0 && dtype === "superficial" ? parseInt(Math.ceil(amount / 2)) : parseInt(amount),
+				-Infinity,
+				Infinity,
+				0
+			))
+				return true
+			return false
+		},
+		adjustHunger = (charRef, amount, isKilling = false) => {
+			if (!D.Validate({char: [charRef], number: [amount], trait: ["bp_slakekill"]}, "Chars", "AdjustHunger"))
+				return false
+			if (adjustTrait(charRef,
+				"hunger",
+				parseInt(amount),
+				isKilling ? 0 : parseInt(D.GetStatVal(charRef, "bp_slakekill") || 1),
+				5,
+				1
+			))
+				return true
+			return false
+		},
+		adjustHumanity = (charRef, amount) => {
+			if (!D.Validate({char: [charRef], number: [amount]}, "Chars", "AdjustHumanity"))
+				return false
+			const newHumanity = Math.min(10, Math.max(0, (D.GetStatVal(charRef, "humanity") || 0) + parseInt(amount)))
+			if (adjustTrait(charRef,
+				"humanity",
+				parseInt(amount),
+				0,
+				10,
+				7
+			) && adjustTrait(charRef,
+				"stains",
+				0,
+				10 - newHumanity,
+				10,
+				0
+			))
+				return true
+			return false
+		},
+		adjustStains = (charRef, amount) => {
+			if (!D.Validate({char: [charRef], number: [amount]}, "Chars", "AdjustStains"))
+				return false
+			if (adjustTrait(charRef,
+				"stains",
+				parseInt(amount),
+				0,
+				10,
+				0
+			))
+				return true
+			return false
 		},
 	
 		// #endregion
@@ -392,7 +444,7 @@ const Chars = (() => {
 			let [chars, params, attrList] = [[], [], []],
 				token = {},
 				[amount, dmg] = [0, 0],
-				[session, trait, dtype, attrString, charID, charData] = new Array(6).fill("")
+				[session, trait, dtype, attrString, charID] = new Array(5).fill("")
 			switch (args.shift().toLowerCase()) {
 			case "!char":
 				if (!playerIsGM(msg.playerid))
@@ -401,17 +453,9 @@ const Chars = (() => {
 				case "reg":
 				case "register":
 					if (msg.selected && msg.selected[0])
-						registerChars(msg)
+						registerChar(msg)
 					else
 						D.ThrowError("Select character tokens first!", "CHARS:!char register")
-					break
-				case "del":
-				case "delete":
-					charData = args.join(" ")
-					if (charData)
-						unregisterChar(charData)
-					else
-						D.ThrowError("Input a valid search string to remove the character!", "CHARS:!char delete")
 					break
 				case "token":
 				case "regtoken":
@@ -422,18 +466,19 @@ const Chars = (() => {
 						D.ThrowError("Select a graphic object. Syntax: !char token <hostName> <srcName>", "CHARS:!char token")
 					break
 				case "xp": // !char xp Cost Session Message, with some character tokens selected.
-					chars = D.GetChars(msg)
+					chars = D.GetChars(msg) || D.GetChars("registered")
 					if (chars) {
 						amount = parseInt(args.shift()) || 0
 						session = args.shift()
 						_.each(chars, (char) => {
-							if (awardXP(char, amount, session, args.join(" ")))
+							if (awardXP(char, amount, session, args.join(" "))) {
 								D.Alert(`${amount} XP awarded to ${D.GetName(char)}`, "CHARS:!char xp")
-							else
+								D.SendToPlayer(D.GetPlayerID(char), `You have been awarded ${amount} XP for:<br><br>${D.JS(args.join(" "))}`)
+							} else
 								D.ThrowError(`FAILED to award ${JSON.stringify(amount)} XP to ${JSON.stringify(D.GetName(char))}`, "CHARS:!char xp")
 						})
 					} else {
-						D.ThrowError("Select character tokens first!", "CHARS:!char xp")
+						D.ThrowError("Select character tokens or register characters first!", "CHARS:!char xp")
 					}
 					break
 				case "dmg":
@@ -553,7 +598,7 @@ const Chars = (() => {
 				MVC({name: who})
 				break
 			case "!hide":
-				charID = state[D.GAMENAME].Chars[msg.playerid].id;			
+				charID = REGISTRY[msg.playerid].id;			
 				[token] = findObjs( {
 					_pageid: D.PAGEID(),
 					_type: "graphic",
@@ -563,7 +608,7 @@ const Chars = (() => {
 				Images.ToggleToken(token, "obf", "prev")
 				break
 			case "!mask":
-				charID = state[D.GAMENAME].Chars[msg.playerid].id;			
+				charID = REGISTRY[msg.playerid].id;			
 				[token] = findObjs( {
 					_pageid: D.PAGEID(),
 					_type: "graphic",
@@ -598,13 +643,19 @@ const Chars = (() => {
 		checkInstall = () => {
 			state[D.GAMENAME] = state[D.GAMENAME] || {}
 			state[D.GAMENAME].Chars = state[D.GAMENAME].Chars || {}
+			state[D.GAMENAME].Chars.registry = state[D.GAMENAME].Chars.registry || {}
 		}
 	// #endregion
 	
 	return {
 		RegisterEventHandlers: regHandlers,
 		CheckInstall: checkInstall,
-		Damage: adjustDamage
+		Registry: REGISTRY,
+		Damage: adjustDamage,
+		AdjustTrait: adjustTrait,
+		AdjustHunger: adjustHunger,
+		AdjustHumanity: adjustHumanity,
+		AdjustStains: adjustStains
 	}
 })()
 	

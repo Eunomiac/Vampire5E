@@ -6,7 +6,6 @@
 const D = (() => {
 	// #region CONFIGURATION: Game Name, Character Registry
 	const GAMENAME = "VAMPIRE",
-		CHARREGISTRY = state[GAMENAME] && state[GAMENAME].Chars || {},
 		HTMLFORMATS = {
 			titleStart: "<div style=\"display: block; width: auto; padding: 0px 5px; margin-left: -42px; margin-top: -30px;font-family: copperplate gothic; font-variant: small-caps; font-size: 16px; background-color: #333333; color: white;border: 2px solid black; position: relative; height: 20px; line-height: 23px;\">",
 			titleEnd: "</div>",
@@ -432,6 +431,138 @@ const D = (() => {
 
 			return false
 		},
+		// Validate Categories: char, player, trait, number, string, function, array, list, text, graphic, token, reprow
+		validate = (varList, namespace, funcName, isSilent = false) => {
+			const [errorLines, failedCats] = [[], []]
+			let traitErrors = []
+			_.each(_.keys(varList), cat => {
+				switch(cat.toLowerCase()) {
+				case "char":
+					_.each(varList[cat], v => {
+						if (!D.GetChar(v)) {
+							errorLines.push(`Invalid character reference: ${D.JS(v.get && v.get("name") || v.id || v)}`)
+							failedCats.push(cat)
+						}
+					})
+					break
+				case "player":
+					_.each(varList[cat], v => {
+						if (!D.GetPlayerID(v)) {
+							errorLines.push(`Invalid player reference: ${D.JS(v.get && v.get("name") || v.id || v)}`)
+							failedCats.push(cat)
+						}
+					})
+					break
+				case "trait":
+					traitErrors = []
+					_.each(varList[cat], v => {
+						if (!varList.char)
+							return D.ThrowError(`Unable to validate trait(s) ${D.JS(varList[cat])} without a character reference.`, "DATA:Validate")
+						let charErrors = []
+						_.each(varList.char, charRef => {
+							if (D.GetChar(charRef)) {
+								if (!D.GetStat(charRef, v))
+									charErrors.push(D.GetName(charRef))
+							}
+						})
+						if (charErrors.length > 0)
+							traitErrors.push(`${D.JS(v)}: ${charErrors.join(", ")}`)
+					})
+					if (traitErrors.length > 0) {
+						errorLines.push(`Invalid trait reference(s):<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${traitErrors.join("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")}`)
+						failedCats.push(cat)
+					}
+					break
+				case "number":					
+					_.each(varList[cat], v => {
+						if (!_.isNumber(v) || _.isNaN(v)) {
+							errorLines.push(`Invalid number: ${D.JS(v)}`)
+							failedCats.push(cat)
+						}
+					})
+					break
+				case "string":					
+					_.each(varList[cat], v => {
+						if (!_.isString(v)) {
+							errorLines.push(`Invalid string: ${D.JS(v)}`)
+							failedCats.push(cat)
+						}
+					})
+					break
+				case "function":					
+					_.each(varList[cat], v => {
+						if (!_.isFunction(v)) {
+							if (!errorLines.includes("One or more invalid functions."))
+								errorLines.push("One or more invalid functions.")
+							failedCats.push(cat)
+						}
+					})
+					break
+				case "array":					
+					_.each(varList[cat], v => {
+						if (!_.isArray(v)) {
+							errorLines.push(`Invalid array: ${D.JS(v)}`)
+							failedCats.push(cat)
+						}
+					})					
+					break
+				case "list":					
+					_.each(varList[cat], v => {
+						if (!_.isObject(v) || _.isFunction(v) || _.isArray(v) || v.get && v.get("_type")) {
+							errorLines.push(`Invalid list object: ${D.JS(v.get && v.get("name") || v.id || v)}`)
+							failedCats.push(cat)
+						}
+					})
+					break
+				case "text":					
+					_.each(varList[cat], v => {
+						if (v === null || typeof v !== "object" || !v.get || v.get("_type") !== "text") {
+							errorLines.push(`Invalid text object: ${D.JS(v.get && v.get("name") || v.id || v)}`)
+							failedCats.push(cat)
+						}
+					})
+					break
+				case "graphic":					
+					_.each(varList[cat], v => {
+						if (v === null || typeof v !== "object" || !v.get || v.get("_type") !== "graphic") {
+							errorLines.push(`Invalid graphic object: ${D.JS(v.get && v.get("name") || v.id || v)}`)
+							failedCats.push(cat)
+						}
+					})
+					break				
+				case "token":
+					_.each(varList[cat], tokenRef => {
+						if (!D.GetSelected(tokenRef)[0])
+							return D.ThrowError("Select a token first!", "DATA:Validate")
+						_.each(D.GetSelected(tokenRef), v => {
+							if (v === null || typeof v !== "object" || !v.get || v.get("_subtype") !== "token") {
+								errorLines.push(`Invalid token object: ${D.JS(v.get && v.get("name") || v.id || v || tokenRef)}`)
+								failedCats.push(cat)
+							}
+						})
+						failedCats.push(cat)
+					})
+					break
+				case "reprow":				
+					_.each(varList[cat], v => {
+						if (!varList.char)
+							return D.ThrowError(`Unable to validate repeating row ID(s) ${D.JS(varList[cat])} without a character reference.`, "DATA:Validate")
+						if (D.GetStats(D.GetChar(varList.char[0], [v] )).length === 0) {
+							errorLines.push(`Invalid repeating row ID: ${D.JS(v)}`)
+							failedCats.push(cat)
+						}
+					})
+					break
+				default: break
+				}
+			})
+			if (errorLines.length > 0) {
+				if (isSilent)
+					return false
+				return D.ThrowError(errorLines.join("<br>"), `${(namespace || "ERROR").toUpperCase()}: ${D.Capitalize(funcName || "Validation")}`)
+			}
+			return true
+		},
 		// #endregion
 
 		// #region GETTERS: Object, Character and Player Data
@@ -452,10 +583,8 @@ const D = (() => {
 		getName = (value, isShort) => {
 			// Returns the NAME of the Graphic, Character or Player (DISPLAYNAME) given: object or ID.
 			const objID = _.isString(value) ? value : value._id,
-				obj = _.isString(value) ? getObj("graphic", objID) || getObj("character", objID) : value,
-				name = (obj && obj.get("name")) ||
-				(getObj("player", objID) && getObj("player", objID).get("_displayname")) ||
-				null
+				obj = _.isString(value) ? getObj("graphic", objID) || getObj("character", objID) || getObj("player", objID) : value,
+				name = (obj && (obj.get("name") || obj.get("_displayname"))) || null
 			if (!name)
 				return false
 			if (!isShort)
@@ -493,7 +622,7 @@ const D = (() => {
 					return _.map(tokens, v => getObj("character", getObj("graphic", v._id).get("represents")))
 				} else if (_.isArray(value)) {
 					searchParams = value
-				} else if (_.isString(value) || _.isObject(value)) {
+				} else if (_.isString(value) || _.isObject(value) || _.isNumber(value)) {
 					searchParams.push(value)
 				} else {
 					return false
@@ -503,31 +632,31 @@ const D = (() => {
 			}
 			// D.Alert(`Search Params: ${D.JS(searchParams)}`)
 			_.each(searchParams, val => {
+				// If parameter is a digit corresponding to a REGISTERED CHARACTER:
+				if (_.isNumber(parseInt(val)) && Chars.REGISTRY[parseInt(val)])
+					charObjs.add(getObj("character", Chars.REGISTRY[parseInt(val)].id))
 				// If parameter is a CHARACTER OBJECT already: */
 				if (D.IsObj(val, "character")) {
 					charObjs.add(getObj("character", val.id))
-
-					/* D.Alert(`We have a character!  CharObjs = ${D.JS(charObjs)}`)
-					   If parameter is a CHARACTER ID: */
+				// If parameter is a CHARACTER ID:
 				} else if (_.isString(val) && getObj("character", val)) {
 					charObjs.add(getObj("character", val))
-					// If parameters is a TOKEN OBJECT:
+				// If parameters is a TOKEN OBJECT:
 				} else if (D.IsObj(val, "graphic", "token")) {
 					const char = getObj("character", val.get("represents"))
 					if (char)
 						charObjs.add(char)
-					// If parameter is "all":
+				// If parameter is "all":
 				} else if (val === "all") {
 					_.each(findObjs( {
 						_type: "character"
 					} ), char => charObjs.add(char))
-					// If parameter calls for REGISTERED CHARACTERS:
+				// If parameter calls for REGISTERED CHARACTERS:
 				} else if (val === "registered") {
-					_.each(CHARREGISTRY, (v, charID) => {
-						if (charID === v.id && getObj("character", charID))
-							charObjs.add(getObj("character", charID))
+					_.each(Chars.REGISTRY, v => {
+						charObjs.add(getObj("character", v.id))
 					} )
-					// If parameter is a CHARACTER NAME:
+				// If parameter is a CHARACTER NAME:
 				} else if (_.isString(val)) {
 					_.each(findObjs( {
 						_type: "character"
@@ -597,6 +726,11 @@ const D = (() => {
 			} )
 
 			return attrList
+		},
+		getStatVal = (charRef, trait) => {
+			if (!D.Validate({char: [charRef], trait: [trait]}, "DATA", "GetStatVal"))
+				return
+			getStatData(charRef, [trait])
 		},
 		getPlayerID = value => {
 			// Returns a PLAYER ID given: display name, token object, character object.
@@ -844,6 +978,15 @@ const D = (() => {
 								  a string of form 'key:val, key:val,' */
 		GetSelected: getSelected,
 		// D.GetSelected(msg): Returns selected objects in message.
+		Validate: validate,
+		/* D.Validate(varList, namespace, funcName):  Validates variables passed to it via varList, and
+			sends error message formatted with namespace and funcName.  VarList must be in form:
+			{
+				<category>: [<array of references>], ...
+			} 
+			Valid categories: 
+				char, player, trait,  text, graphic, token, reprow,
+				number, string, function, array, list  */
 		Log: logEntry,
 		// D.Log(msg, title): Formats log message, with title.
 		IsIn: isIn,
@@ -869,6 +1012,7 @@ const D = (() => {
 		GetStats: getStats,
 		GetStat: getStat,
 		GetStatData: getStatData,
+		GetStatVal: getStatVal,
 
 		/* D.GetStat(char, name):  Given any valid character value, returns the
 									attribute object described by name. */

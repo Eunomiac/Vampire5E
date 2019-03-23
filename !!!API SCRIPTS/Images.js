@@ -825,7 +825,7 @@ const Images = (() => {
 		GetSrc: getImageSrc,
 		MakeImage: makeImage,
 		Register: regImage,
-		SetSrc: addImgSrc,
+		AddSrc: addImgSrc,
 		Remove: removeImage,
 		Set: setImage,
 		Toggle: toggleImage,
