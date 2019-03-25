@@ -506,9 +506,7 @@ const TimeTracker = (() => {
 			}
 			setHorizon()
 		},
-		easeInOutSine = (curTime, startVal, deltaVal, duration) => -deltaVal / 2 *
-			(Math.cos(Math.PI * curTime / duration) - 1) +
-			startVal,
+		easeInOutSine = (curTime, startVal, deltaVal, duration) => -deltaVal / 2 * (Math.cos(Math.PI * curTime / duration) - 1) + startVal,
 		tweenClock = finalDate => {
 			let [curTime, lastTime] = [0, 0]
 			const deltaTime = finalDate - dateObj,
