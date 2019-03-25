@@ -2,7 +2,8 @@ const TimeTracker = (() => {
 	const [airLights, airTimes] = [{}, {}]
 	let [timeTimer, dateObj, trackerObj, trackerShadow] = [null, null, null, null],
 		[isRunning, isRunningFast, isAirlights, isTimeRunning] = [false, false, true, false]
-		// #region Configuration
+		
+	// #region Configuration
 	const CLOCKSPEED = 50,
 		TWEENDURS = [15, 40, 60, 600, 1440, 3000, 5000, 7000, 8000, 9000, 10000, Infinity],
 		RUNNINGFASTAT = 1500000,
@@ -445,7 +446,6 @@ const TimeTracker = (() => {
 		],
 		WEATHERTEMP = ["z", "y", "x", "w", "v", "u", "t", "s", "r", "q", "p", "o", "n", "m", "l", "k", "j", "i", "h", "g", "f", "e", "d", "c", "b", "a", "0", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"],
 		MONTHTEMP = ["f", "b", "a", "C", "Q", "S", "W", "V", "R", "H", "A", "a"],
-
 		// #endregion
 
 		// #region Derivative Stats
@@ -509,16 +509,6 @@ const TimeTracker = (() => {
 		easeInOutSine = (curTime, startVal, deltaVal, duration) => -deltaVal / 2 *
 			(Math.cos(Math.PI * curTime / duration) - 1) +
 			startVal,
-		// eslint-disable-next-line no-unused-vars
-		easeInOutQuad = (curTime, startVal, deltaVal, duration) => {
-			let cTime = curTime
-			cTime /= duration / 2
-			if (cTime < 1)
-				return deltaVal / 2 * cTime * cTime + startVal
-			cTime--
-
-			return -deltaVal / 2 * (cTime * (cTime - 2) - 1) + startVal
-		},
 		tweenClock = finalDate => {
 			let [curTime, lastTime] = [0, 0]
 			const deltaTime = finalDate - dateObj,
@@ -640,15 +630,11 @@ const TimeTracker = (() => {
 					D.Alert("Register an image object first, with '!img reg Horizon'", "TIMETRACKER")
 					break
 				}
-
-				/* dateObj = dateObj || new Date(state[D.GAMENAME].TimeTracker.currentDate)
-				   params = args.slice(1).join(" ").toUpperCase() */
 				switch ((args.shift() || "").toLowerCase()) {
 				case "add":
 					delta = parseInt(args.shift())
 					unit = args.shift().toLowerCase()
 					date2 = new Date(dateObj)
-					// params = _.compact(args.join(" ").split(" "))
 					if (unit.slice(0, 1) === "y")
 						date2.setUTCFullYear(date2.getUTCFullYear() + delta)
 					else if (unit.includes("mo"))
@@ -662,7 +648,6 @@ const TimeTracker = (() => {
 					else if (unit.includes("m"))
 						date2.setUTCMinutes(date2.getUTCMinutes() + delta)
 					tweenClock(date2)
-
 					return
 				case "set": //   !time set 2018-07-14T20:12
 					if (args.length === 4) {
@@ -677,7 +662,7 @@ const TimeTracker = (() => {
 						D.Alert("Syntax: !time set year month1-12 day 24-hour:min", "TIMETRACKER !SET")
 					}
 					break
-				case "run": // Sets time to slowly move forward in real time.
+				case "run":
 					startClock()
 					break
 				case "stop":
@@ -770,7 +755,7 @@ const TimeTracker = (() => {
 		},
 		// #endregion
 
-		// #region Public Functions: regHandlers, tapSpite
+		// #region Public Functions: regHandlers
 		regHandlers = () => on("chat:message", handleInput),
 		checkInstall = () => {
 			state[D.GAMENAME] = state[D.GAMENAME] || {}
@@ -784,7 +769,7 @@ const TimeTracker = (() => {
 			dateObj = new Date(state[D.GAMENAME].TimeTracker.currentDate)
 			startAirLights()
 		}
-	// #endregion
+		// #endregion
 
 	return {
 		RegisterEventHandlers: regHandlers,
