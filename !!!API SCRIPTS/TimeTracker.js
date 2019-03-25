@@ -46,6 +46,12 @@ const TimeTracker = (() => {
 			AirLightCN_4: ["on:0", "on:2000", "off:2000"],
 			AirLightCN_5: ["on:100", "on:2000", "off:2000"]
 		},
+		WEATHERCODES = [
+			{ x: "Clear", b: "Blizzard", bf: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", pf: "Downpour", s: "Snowing", sf: "Snowing", t: "Storm", tf: "Storm", w: "Raining", wf: "Drizzle" },
+			{ x: null, d: "Dry", h: "Humid", m: "Muggy", s: "Steamy" },
+			{ x: ["Still", "Still"], s: ["Soft Breeze", "Chill Breeze"], b: ["Breezy", "Cutting Breeze"], w: ["Blustery", "Driving Winds"], g: ["Gale", "Gale"], h: ["Howling Winds", "Howling Winds"], v: ["Roaring Winds", "Roaring Winds"] }
+		],
+		WINTERTEMP = 25,
 		// #endregion
 
 		// #region Derivative Stats
@@ -162,6 +168,40 @@ const TimeTracker = (() => {
 		},
 		//#endregion
 
+		// #region Weather Functions 
+		setWeather = params => {
+			const [tempC, forecast, humidity, wind] = params,
+				tempF = 9/5*parseFloat(tempC) + 32,
+				[tempCObj, tempFObj, forecastObj, tempCShadow, tempFShadow, forecastShadow] = [
+					getObj("text", state[D.GAMENAME].TimeTracker.tempCText),
+					getObj("text", state[D.GAMENAME].TimeTracker.tempFText),
+					getObj("text", state[D.GAMENAME].TimeTracker.weatherText),
+					getObj("text", state[D.GAMENAME].TimeTracker.tempCShadow),
+					getObj("text", state[D.GAMENAME].TimeTracker.tempFShadow),
+					getObj("text", state[D.GAMENAME].TimeTracker.weatherShadow)
+				]
+			let forecastLines = []
+			tempCObj.set("text", `${Math.round(tempC)}°C`)
+			tempFObj.set("text", `(${Math.round(tempF)}°F)`)
+			tempCShadow.set("text", `${Math.round(tempC)}°C`)
+			tempFShadow.set("text", `(${Math.round(tempF)}°F)`)
+			if (forecast && WEATHERCODES[0][forecast]) {
+				forecastLines.push(WEATHERCODES[0][forecast])
+			}
+			if (humidity && WEATHERCODES[1][humidity]) {
+				forecastLines.push(WEATHERCODES[1][humidity])
+			}
+			if (wind && WEATHERCODES[2][wind]) {
+				if (Math.round(tempC) < WINTERTEMP)
+					forecastLines.push(WEATHERCODES[2][wind][1])
+				else
+					forecastLines.push(WEATHERCODES[2][wind][0])
+			}
+			forecastObj.set("text", `${forecastLines.join(" ♦ ")}`)
+			forecastShadow.set("text", `${forecastLines.join(" ♦ ")}`)			
+		},
+		//#endregion
+
 		//#region Airplane Lights
 		tickAirLight = (alight, isStartup) => {
 			if (!isAirlights) {
@@ -198,7 +238,7 @@ const TimeTracker = (() => {
 			if (msg.type !== "api" || !playerIsGM(msg.playerid))
 				return
 			const args = msg.content.split(/\s+/u)
-			let [date2, delta, unit, hour, min] = [null, null, null, null, null]
+			let [params, date2, delta, unit, hour, min] = [[], null, null, null, null, null]
 			switch (args.shift().toLowerCase()) {
 			case "!time":
 				if (!state[D.GAMENAME].TimeTracker.timeText) {
@@ -211,7 +251,7 @@ const TimeTracker = (() => {
 
 				/* dateObj = dateObj || new Date(state[D.GAMENAME].TimeTracker.currentDate)
 				   params = args.slice(1).join(" ").toUpperCase() */
-				switch (args.shift().toLowerCase()) {
+				switch ((args.shift() || "").toLowerCase()) {
 				case "add":
 					delta = parseInt(args.shift())
 					unit = args.shift().toLowerCase()
@@ -252,7 +292,7 @@ const TimeTracker = (() => {
 					stopClock()
 					break
 				default:
-					D.ThrowError("Commands are 'add', 'set', 'run' and 'stop'.")
+					D.Alert("Commands are 'add', 'set', 'run' and 'stop'.<br><br>To set: <b>!time set 2018-07-14T20:12</b><br><br>Weather: <b>!setweather 32|p|h|g</b>")
 
 					return
 				}
@@ -284,6 +324,53 @@ const TimeTracker = (() => {
 					state[D.GAMENAME].TimeTracker.horizonImage = msg.selected[0]._id
 					D.Alert(`Registered Horizon Image as: ${D.JS(state[D.GAMENAME].TimeTracker.horizonImage)}`)
 				}
+				break
+			case "!regweather":
+				if (!msg.selected || !msg.selected[0] ) {
+					D.ThrowError("Select an object, then '!regTime / !regHorizon / !regTimeShadow / !regWeather / !regWeatherShadow'.")
+				} else {
+					switch(args.shift()) {
+					case "tempC":
+						state[D.GAMENAME].TimeTracker.tempCText = msg.selected[0]._id
+						D.Alert(`Registered Celsius Temperature Object as: ${D.JS(state[D.GAMENAME].TimeTracker.tempCText)}`)
+						break
+					case "tempF":
+						state[D.GAMENAME].TimeTracker.tempFText = msg.selected[0]._id
+						D.Alert(`Registered Fahrenheit Temperature Object as: ${D.JS(state[D.GAMENAME].TimeTracker.tempFText)}`)
+						break
+					case "main":
+						state[D.GAMENAME].TimeTracker.weatherText = msg.selected[0]._id
+						D.Alert(`Registered Weather Text Object as: ${D.JS(state[D.GAMENAME].TimeTracker.weatherText)}`)
+						break
+					default: break
+					}
+				}
+				break
+			case "!regweathershadow":
+				if (!msg.selected || !msg.selected[0] ) {
+					D.ThrowError("Select an object, then '!regTime / !regHorizon / !regTimeShadow / !regWeather / !regWeatherShadow'.")
+				} else {
+					switch(args.shift()) {
+					case "tempC":
+						state[D.GAMENAME].TimeTracker.tempCShadow = msg.selected[0]._id
+						D.Alert(`Registered Celsius Temperature Shadow as: ${D.JS(state[D.GAMENAME].TimeTracker.tempCShadow)}`)
+						break
+					case "tempF":
+						state[D.GAMENAME].TimeTracker.tempFShadow = msg.selected[0]._id
+						D.Alert(`Registered Fahrenheit Temperature Shadow as: ${D.JS(state[D.GAMENAME].TimeTracker.tempFShadow)}`)
+						break
+					case "main":
+						state[D.GAMENAME].TimeTracker.weatherShadow = msg.selected[0]._id
+						D.Alert(`Registered Weather Text Shadow as: ${D.JS(state[D.GAMENAME].TimeTracker.weatherShadow)}`)
+						break
+					default: break
+					}
+				}
+				break
+			case "!weatherset":
+			case "!setweather":
+				params = args.join(" ").split("|")
+				setWeather(params)
 				break
 			default:
 				break
