@@ -470,7 +470,11 @@ const TimeTracker = (() => {
 					return dawn + parseInt(k)
 				} ), _.values(IMAGETIMES)),
 				curTime = 60 * dateObj.getUTCHours() + dateObj.getUTCMinutes()
-			imgSrcName = imgTimes[_.find(_.keys(imgTimes), v => curTime <= v)]
+			if (weatherCode) {
+				imgSrcName = imgTimes[_.find(_.keys(imgTimes), v => curTime <= v)]
+			} else {
+				imgSrcName = imgTimes[_.find(_.keys(imgTimes), v => curTime <= v)]
+			}
 			if (isRunningFast)
 				imgSrcName = imgSrcName.includes("night") ? "night2" : "day"
 			if (imgSrcName !== state[D.GAMENAME].TimeTracker.lastHorizon) {
