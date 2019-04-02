@@ -654,8 +654,10 @@ const D = (() => {
 				// If parameter calls for REGISTERED CHARACTERS:
 				} else if (val === "registered") {
 					_.each(Chars.REGISTRY, v => {
+						//D.Alert(`Grabbing Character: ${D.JS(v)}<br><br>ID: ${D.JS(v.id)}<br><br>CHAR: ${D.JS(getObj("character", v.id))}`)
 						charObjs.add(getObj("character", v.id))
 					} )
+					//D.Alert(`Registered Characters: ${D.JS(_.map(charObjs, v => v.id))}`)
 				// If parameter is a CHARACTER NAME:
 				} else if (_.isString(val)) {
 					_.each(findObjs( {

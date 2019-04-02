@@ -655,7 +655,7 @@ const Chars = (() => {
 	return {
 		RegisterEventHandlers: regHandlers,
 		CheckInstall: checkInstall,
-		Registry: REGISTRY,
+		REGISTRY: REGISTRY,
 		Damage: adjustDamage,
 		AdjustTrait: adjustTrait,
 		AdjustHunger: adjustHunger,

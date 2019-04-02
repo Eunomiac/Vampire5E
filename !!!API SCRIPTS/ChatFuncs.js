@@ -189,6 +189,12 @@ const ChatFuncs = (() => {
 
 			return true
 		},
+		getName = obj => {
+			if (!D.IsObj(obj))
+				return false
+			D.Alert(`<b>Name:</b> ${D.JS(obj.get("name"))}`, "Object Name")
+			return true
+		},
 		getCharAttrs = (obj, filter = [] ) => {
 			if (!obj)
 				return false
@@ -352,6 +358,10 @@ const ChatFuncs = (() => {
 					break
 				case "all":
 					if (!getSelected(obj, true))
+						sendHelpMsg()
+					break
+				case "name":
+					if (!getName(obj))
 						sendHelpMsg()
 					break
 				case "gm":

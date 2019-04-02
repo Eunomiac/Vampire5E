@@ -34,10 +34,88 @@ const Images = (() => {
 				w: 165
 			}
 		},
+		IMAGELAYERS = {
+			map: [
+				"SignalLightTopLeft", "SignalLightTopRight", "SignalLightBotLeft", "SignalLightBotRight",
+				"WeatherTint_1", "WeatherTint_2", "WeatherTint_3",
+				"WeatherGround",			
+				"rollerDie_bigDice_1",
+				"rollerDie_bigDice_2",
+				"rollerDie_diceList_1",
+				"rollerDie_diceList_2",
+				"rollerDie_diceList_3",
+				"rollerDie_diceList_4",
+				"rollerDie_diceList_5",
+				"rollerDie_diceList_6",
+				"rollerDie_diceList_7",
+				"rollerDie_diceList_8",
+				"rollerDie_diceList_9",
+				"rollerDie_diceList_10",
+				"rollerDie_diceList_11",
+				"rollerDie_diceList_12",
+				"rollerDie_diceList_13",
+				"rollerDie_diceList_14",
+				"rollerDie_diceList_15",
+				"rollerDie_diceList_16",
+				"rollerDie_diceList_17",
+				"rollerDie_diceList_18",
+				"rollerDie_diceList_19",
+				"rollerDie_diceList_20",
+				"rollerDie_diceList_21",
+				"rollerDie_diceList_22",
+				"rollerDie_diceList_23",
+				"rollerDie_diceList_24",
+				"rollerDie_diceList_25",
+				"rollerDie_diceList_26",
+				"rollerDie_diceList_27",
+				"rollerDie_diceList_28",
+				"rollerDie_diceList_29",
+				"rollerDie_diceList_30",
+				"rollerImage_diffFrame",
+				"rollerImage_bottomEnd",
+				"rollerImage_topEnd",
+				"rollerImage_bottomMid_9",
+				"rollerImage_bottomMid_8",
+				"rollerImage_bottomMid_7",
+				"rollerImage_bottomMid_6",
+				"rollerImage_bottomMid_5",
+				"rollerImage_bottomMid_4",
+				"rollerImage_bottomMid_3",
+				"rollerImage_bottomMid_2",
+				"rollerImage_bottomMid_1",
+				"rollerImage_topMid_9",
+				"rollerImage_topMid_8",
+				"rollerImage_topMid_7",
+				"rollerImage_topMid_6",
+				"rollerImage_topMid_5",
+				"rollerImage_topMid_4",
+				"rollerImage_topMid_3",
+				"rollerImage_topMid_2",
+				"rollerImage_topMid_1",
+				"rollerImage_frontFrame",
+				"SiteCenter",
+				"SiteLeft",
+				"SiteRight",
+				"DistrictCenter",
+				"DistrictLeft",
+				"DistrictRight",
+				"WeatherMain",			
+				"AirLightLeft", "AirLightMid", "AirLightTop", "AirLightCN_4", "AirLightCN_5",
+				"HungerTopLeft", "HungerTopRight", "HungerBotLeft", "HungerBotRight",
+				"Horizon"
+			],
+			objects: [		
+				"YusefShamsinToken",
+				"AvaWongToken",
+				"JohannesNapierToken",
+				"Dr.ArthurRoyToken"
+			]
+		},
 		// #endregion
 
 		// #region GETTERS: Image Object & Data Retrieval
-		getImageKey = imgRef => {
+		isRegImg = imgRef => Boolean(getImageKey(imgRef)),
+		getImageKey = (imgRef, isSilent = false) => {
 			try {
 				const imgName =
 					D.IsObj(imgRef, "graphic") ?
@@ -45,25 +123,35 @@ const Images = (() => {
 						D.IsObj(getObj("graphic", imgRef)) ?
 							getObj("graphic", imgRef).get("name") :
 							_.isString(imgRef) ?
-								imgRef :
+								(REGISTRY[D.JSL(imgRef) + "_1"] ? imgRef + "_1" : imgRef) :
 								D.GetSelected(imgRef) ?
 									D.GetSelected(imgRef)[0].get("name") :
-									null
+									false
 				// D.Alert(`IsObj? ${D.IsObj(imgRef, "graphic")}
 				// Getting Name: ${imgRef.get("name")}`, "IMAGE NAME")
 				if (!imgName) {
-					return D.ThrowError(`Cannot find name of image from reference '${D.JSL(imgRef, true)}'`, "IMAGES: GetImageKey")
+					return !isSilent && D.ThrowError(`Cannot find name of image from reference '${D.JSL(imgRef, true)}'`, "IMAGES: GetImageKey")
 				} else if (_.find(_.keys(REGISTRY), v => v.toLowerCase().startsWith(imgName.toLowerCase()))) {
 					return _.keys(REGISTRY)[
 						_.findIndex(_.keys(REGISTRY), v => v.toLowerCase().startsWith(imgName.toLowerCase()))
 					]
 				} else {
-					return D.ThrowError(`Cannot find image with name '${D.JSL(imgName)}' from reference ${D.JSL(imgRef, true)}`, "IMAGES: GetImageKey")
+					return !isSilent && D.ThrowError(`Cannot find image with name '${D.JSL(imgName)}' from reference ${D.JSL(imgRef, true)}`, "IMAGES: GetImageKey")
 				}
 			} catch (errObj) {
-				return D.ThrowError(`Cannot locate image with search value '${D.JSL(imgRef, true)}'`, "IMAGES GetImageKey", errObj)
+				return !isSilent && D.ThrowError(`Cannot locate image with search value '${D.JSL(imgRef, true)}'`, "IMAGES GetImageKey", errObj)
 			}
 		},
+		/* getImageKeys = imgRefs => {
+			const imageRefs = D.GetSelected(imgRefs) || imgRefs,
+				imgKeys = []
+			for (const imgRef of imageRefs) {
+				imgKeys.push(getImageKey(imgRef))
+			}
+			return imgKeys
+		}, */
+		/* getImageName = imgRef => getImageKey(imgRef), */
+		/* getImageNames = imgRefs => getImageKeys(imgRefs), */
 		getImageObj = imgRef => {
 			try {
 				const imgObj = D.IsObj(imgRef, "graphic") ?
@@ -80,6 +168,16 @@ const Images = (() => {
 			} catch (errObj) {
 				return D.ThrowError(`IMGREF: ${D.JS(imgRef)}`, "IMAGES.getImageObj", errObj)
 			}
+		},
+		getImageObjs = imgRefs => {
+			const imageRefs = D.GetSelected(imgRefs) || imgRefs,
+				imgObjs = []
+			//D.Alert(`Image Refs: ${D.JS(imgRefs)}`)
+			for (const imgRef of imageRefs)
+				imgObjs.push(getImageObj(imgRef))
+			
+			//D.Alert(`Image Objs: ${D.JS(imgObjs)}`)
+			return imgObjs
 		},
 		getImageData = imgRef => {
 			try {
@@ -105,32 +203,29 @@ const Images = (() => {
 				return D.ThrowError(`Cannot locate image with search value '${D.JS(imgRef)}'`, "IMAGES.getImageData", errObj)
 			}
 		},
-		getBounds = imgData => {
-			const bounds = {
-				topY: imgData.top - 0.5 * imgData.height,
-				bottomY: imgData.top + 0.5 * imgData.height,
-				leftX: imgData.left - 0.5 * imgData.width,
-				rightX: imgData.left + 0.5 * imgData.width
+		/* getImageDatas = imgRefs => {
+			const imageRefs = D.GetSelected(imgRefs) || imgRefs,
+				 imageDatas = []
+			for (const imgRef of imageRefs) {
+				imageDatas.push(getImageData(imgRef))
 			}
+			return imageDatas
+		},	*/	
+		getImageBounds = (imgRef, params = {}) => {
+			if (D.IsObj(getImageObj(imgRef))) {
+				const imgData = Object.assign(getImageData(imgRef), params)
+				return {
+					topY: imgData.top - 0.5 * imgData.height,
+					bottomY: imgData.top + 0.5 * imgData.height,
+					leftX: imgData.left - 0.5 * imgData.width,
+					rightX: imgData.left + 0.5 * imgData.width
+				}
 			//D.Log(`[BOUNDS]: ${D.JSL(bounds)}`)
-
-			return bounds
+			} 
+			return D.ThrowError(`Image reference '${imgRef}' does not refer to a registered image object.`, "IMAGES: GetBounds")
 		},
 		getImageSrc = imgRef => getImageData(imgRef) ? getImageData(imgRef).curSrc : false,
-		getImageSrcs = imgRef => {
-			try {
-				if (getImageKey(imgRef)) {
-					if (_.isString(getImageData(imgRef).srcs))
-						return getImageSrcs(getImageData(imgRef).srcs)
-
-					return getImageData(imgRef).srcs
-				}
-
-				return D.ThrowError(`Image reference '${imgRef}' does not refer to a registered image object.`, "IMAGES: GetSrcs")
-			} catch (errObj) {
-				return D.ThrowError(`Cannot locate image with search value '${D.JS(imgRef)}'`, "IMAGES: GetSrcs", errObj)
-			}
-		},
+		/* getImageSrcs = imgRef => getImageData(imgRef) ? getImageData(imgRef).srcs : false, */
 		isImageActive = imgRef => {
 			if (getImageObj(imgRef) && getImageObj(imgRef).get("layer") === getImageData(imgRef).activeLayer)
 				return true
@@ -144,28 +239,21 @@ const Images = (() => {
 				const imgSrc = (_.isString(imgSrcRef) && imgSrcRef.includes("http") ?
 					imgSrcRef :
 					getImageObj(imgSrcRef).get("imgsrc") || "").replace(/\w*?(?=\.\w+?\?)/u, "thumb")
-				if (imgSrc !== "" && REGISTRY[imgName] ) {
-					REGISTRY[imgName].srcs[srcName] = imgSrc
+				if (imgSrc !== "" && isRegImg(imgName) ) {
+					REGISTRY[getImageKey(imgName)].srcs[srcName] = imgSrc
 					D.Alert(`Image '${D.JS(srcName)}' added to category '${D.JS(imgName)}'.<br><br>Source: ${D.JS(imgSrc)}`)
 				}
 			} catch (errObj) {
 				D.ThrowError("", "IMAGES.addImgSrc", errObj)
 			}
 		},
-		addGenSrc = (imgSrcRef, srcName) => {
-			try {
-				REGISTRY.Sources[srcName] = (_.isString(imgSrcRef) && imgSrcRef.includes("http") ?
-					imgSrcRef :
-					getImageObj(imgSrcRef).get("imgsrc") || "").replace(/\w*?(?=\.\w+?\?)/u, "thumb")
-			} catch (errObj) {
-				D.ThrowError("", "IMAGES.addImgSrc", errObj)
-			}
-		},
-		regImage = (imgObj, imgName, options = {}, isSilent = false) => {
-			// D.Alert(`Options for '${D.JS(imgName)}': ${D.JS(options)}`, "IMAGES: regImage")
+		regImage = (imgRef, imgName, srcName, activeLayer, startActive, options = {}, isSilent = false) => {
+		// D.Alert(`Options for '${D.JS(imgName)}': ${D.JS(options)}`, "IMAGES: regImage")
+			const imgObj = getImageObj(imgRef)
 			if (D.IsObj(imgObj, "graphic")) {
-				const imgSrcs = (options.entries && _.pick(options, v => v.startsWith("http"))) || {},
-					baseName = imgName.replace(/(_|\d|#)+$/gu, "").toLowerCase(),
+				if (!(imgRef && imgName && srcName && activeLayer && startActive !== null))
+					return D.ThrowError("Must supply all parameters for regImage.", "IMAGES: RegImage")
+				const baseName = imgName.replace(/(_|\d|#)+$/gu, "").toLowerCase(),
 					name = `${imgName.replace(/(_|\d|#)+$/gu, "")}_${_.filter(_.keys(REGISTRY), k => k.includes(imgName.replace(/(_|\d|#)+$/gu, ""))).length + 1}`,
 					params = {
 						left: options.left || imgObj.get("left") || REGISTRY[name].left || (IMGDATA[baseName] && IMGDATA[baseName].left),
@@ -175,6 +263,7 @@ const Images = (() => {
 					}
 				if (!params.left || !params.top || !params.height || !params.width)
 					return D.ThrowError("Must supply position & dimension to register image.", "IMAGES:RegImage")
+				imgObj.set( {name, showname: false} )
 				REGISTRY[name] = {
 					id: imgObj.id,
 					name,
@@ -182,33 +271,32 @@ const Images = (() => {
 					top: params.top,
 					height: params.height,
 					width: params.width,
-					activeLayer: options.activeLayer || "objects",
-					startActive: Boolean(options.startActive || false),
+					activeLayer: activeLayer,
+					startActive: Boolean(startActive),
 					srcs: {}
 				}
 				if (D.GetChar(imgObj)) {
 					REGISTRY[name].activeLayer = "objects"
 					REGISTRY[name].startActive = true
-					REGISTRY[name].srcs = {
-						base: imgObj.get("imgsrc").replace(/med/gu, "thumb")
-					}
-					REGISTRY[name].curSrc = "base"
+					addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, "base")
+					setImage(name, "base")
+				} else {
+					addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, srcName)
+					setImage(name, srcName)
 				}
-				imgObj.set( {name, showname: false} )
 				if (!REGISTRY[name].startActive) {
-					imgObj.set( {imgsrc: IMGDATA.blank, layer: "gmlayer"} )
-					REGISTRY[name].curSrc = "blank"
+					setImage(name, "blank")
+					layerImages([name], "gmlayer")
+				} else {
+					layerImages([name], REGISTRY[name].activeLayer)
 				}
-				for (const srcName of _.keys(imgSrcs))
-					addImgSrc(imgSrcs[srcName], srcName)
-
 				if (!isSilent)
 					D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(REGISTRY[name] )}`, "IMAGES: regImage")
 
 				return getImageData(name)
 			}
 
-			return D.ThrowError(`Invalid img object '${D.JSL(imgObj)}'`, "IMAGES: regImage")
+			return D.ThrowError(`Invalid img reference '${D.JSL(imgRef)}'`, "IMAGES: regImage")
 		},
 		makeImage = (imgName = "", params = {}, isSilent = false ) => {
 			const dataRef = IMGDATA[imgName] || IMGDATA.default,
@@ -223,22 +311,27 @@ const Images = (() => {
 					isdrawing: params.isDrawing !== false,
 					controlledby: params.controlledby || "",
 					showname: params.showname === true
-				} )
-			regImage(imgObj, imgName, params.startActive ? {startActive: true} : {}, isSilent)
+				} ),
+				activeLayer = params.activeLayer || "gmlayer",
+				isStartingActive = Boolean(params.startActive) === false ? false : true,
+				options = _.omit(params, ["activeLayer", "startActive"])
+			regImage(imgObj, imgName, params.imgsrc ? "base" : "blank", activeLayer, isStartingActive, options, isSilent)
 
 			return imgObj
 		},
 		setImage = (imgRef, srcRef) => {
-			//D.Alert(`Getting ${D.JS(srcRef)} for ${D.JS(imgRef)} --> ${D.JS(REGISTRY[getImageData(imgRef).name].srcs[srcRef])}`, "IMAGES:SetImage")
-			if (getImageData(imgRef)) {
-				const imgObj = getImageObj(imgRef)
-				let stateRef = REGISTRY[getImageData(imgRef).name],
+		//D.Alert(`Getting ${D.JS(srcRef)} for ${D.JS(imgRef)} --> ${D.JS(REGISTRY[getImageData(imgRef).name].srcs[srcRef])}`, "IMAGES:SetImage")
+			if (isRegImg(imgRef)) {
+				const imgObj = getImageObj(imgRef),
+					 imgName = getImageKey(imgRef)
+				//D.Alert(`Image Name: ${D.JS(imgName)}`)
+				let stateRef = REGISTRY[imgName],
 					srcName = srcRef
 				//D.Alert(D.JS(REGISTRY[getImageData(imgRef).name]))
 				if (imgObj && stateRef) {
-					//D.Alert(`Getting ${D.JS(stateRef.srcs)} --> ${D.JS(srcRef)} --> ${D.JS(stateRef.srcs[srcRef])}`, "IMAGES:SetImage")
-					if (_.isString(stateRef.srcs) && REGISTRY[getImageData(stateRef.srcs).name] )
-						stateRef = REGISTRY[getImageData(stateRef.srcs).name]
+				//D.Alert(`Getting ${D.JS(stateRef.srcs)} --> ${D.JS(srcRef)} --> ${D.JS(stateRef.srcs[srcRef])}`, "IMAGES:SetImage")
+					if (_.isString(stateRef.srcs) && REGISTRY[getImageKey(stateRef.srcs)] )
+						stateRef = REGISTRY[getImageKey(stateRef.srcs)]
 					if (stateRef.srcs[srcRef] )					
 						imgObj.set("imgsrc", stateRef.srcs[srcRef] )
 					else if (_.values(stateRef.srcs).includes(srcRef) && srcRef.includes("http")) {
@@ -265,10 +358,11 @@ const Images = (() => {
 			imgObj.set(params)
 			return imgObj
 		},
-		sortImages = (imgObjs, modes = "", anchors = []) => {
-			const sortModes = _.flatten([modes]),
-				imgData = _.map(imgObjs, obj => {
-					const odata = {
+		sortImages = (imgRefs, modes = "", anchors = []) => {
+			const imgObjs = getImageObjs(imgRefs),
+				sortModes = _.flatten([modes]),
+				    imgData = _.map(imgObjs, obj => {
+					const params = {
 						id: obj.id,
 						obj,
 						height: parseInt(obj.get("height")),
@@ -276,9 +370,7 @@ const Images = (() => {
 						top: parseInt(obj.get("top")),
 						left: parseInt(obj.get("left"))
 					}
-					Object.assign(odata, getBounds(odata))
-
-					return odata
+					return Object.assign(params, getImageBounds(obj, params))
 				} ),
 				[minX, maxX] = (v => [v[0].left, v.slice(-1)[0].left + v.slice(-1)[0].width] )(
 					_.sortBy(imgData, v => v.left + v.width)
@@ -310,7 +402,7 @@ const Images = (() => {
 					bounds = [sorted[0].left, sorted.slice(-1)[0].left]
 					spacer = (bounds[1] - bounds[0] ) / (sorted.length - 1)
 					for (const iData of sorted) {
-						//D.Alert(`Setting image ${D.JS(iData)}`)
+					//D.Alert(`Setting image ${D.JS(iData)}`)
 						revSorted.unshift(setImgParams(iData.id, {left: bounds[0] + counter * spacer}, true ))
 						counter++
 					}
@@ -378,10 +470,9 @@ const Images = (() => {
 			return [sortedArray, anchorArray]
 		},
 		alignImages = (imgRefs, alignModes = "center", anchorRefs = "best") => {
-			const imgObjs = D.GetSelected(imgRefs) || _.map(imgRefs, v => getImageObj(v)),
-				aModes = alignModes.split(","),
-				aRefs = anchorRefs.split(","),
-				[sortedArray, anchorArray] = sortImages(imgObjs, aModes, aRefs)
+			const aModes = alignModes.split(","),
+				   aRefs = anchorRefs.split(","),
+				[sortedArray, anchorArray] = sortImages(imgRefs, aModes, aRefs)
 			for (let i = 0; i < sortedArray.length; i++) {
 				const [sorted, anchor] = [sortedArray[i], anchorArray[i]]
 				switch (aModes[i].toLowerCase()) {			
@@ -455,12 +546,12 @@ const Images = (() => {
 			}			
 		},
 		positionImages = (imgRefs, ...params) => {
-			const imgObjs = D.GetSelected(imgRefs) || _.map(imgRefs, v => getImageObj(v))
+			const imgObjs = getImageObjs(imgRefs)
 			for (const imgObj of imgObjs) {
 				const attrList = {}		
-				for (const param of params) {
-					attrList[param.split(":")[0]] = parseInt(param.split(":")[1])
-				}
+				for (const param of params)
+					if (!isNaN(parseInt(param.split(":")[1])))
+						attrList[param.split(":")[0]] = parseInt(param.split(":")[1])
 				setImgParams(imgObj, attrList)
 			}
 		},
@@ -504,17 +595,21 @@ const Images = (() => {
 			if (imgObj && !isRegOnly) {
 				imgObj.remove()
 				delete REGISTRY[imgData.name]
-
 				return true
 			} else if (imgData && REGISTRY[imgData.name] ) {
 				delete REGISTRY[imgData.name]
-
 				return true
 			} else if (_.isString(imgRef) && REGISTRY[imgRef]) {
 				delete REGISTRY[imgRef]
+				return true
 			}
-
 			return D.ThrowError(`Invalid image reference ${D.JSL(imgRef)}`, "IMAGES: removeImage")
+		},
+		removeImages = (imgString, isRegOnly) => {
+			const imgNames = _.filter(_.keys(REGISTRY), v => v.includes(imgString))
+			for (const imgName of imgNames) {
+				removeImage(imgName, isRegOnly)
+			}
 		},
 		cleanRegistry = () => {
 			for (const imgName of _.keys(REGISTRY)) {
@@ -522,27 +617,31 @@ const Images = (() => {
 					removeImage(imgName)
 			}
 		},
-		// #endregion
-
-		// #region MACRO BUILDING: Building Selection Macros for Images
-		buildMacro = (name, chatTrigger, imgData) => {
-			/* imgData should be an object whose keys are the names of host images, and values are
-				the <x> in "Select <X>" shown in the macro query. */
-			let action = `img ${chatTrigger}`
-			for (const hostName of _.map(_.keys(imgData), v => v.trim())) {
-				if (getImageKey(hostName)) {
-					action += ` ${hostName}:?{${imgData[hostName]}|--blank--,blank`
-					for (const srcName of _.keys(getImageSrcs(hostName)).sort())
-						action += `|${srcName},${srcName}`
-					action += "}"
+		orderImages = (imgRefs, isToBack = false) => {
+			const imgObjs = getImageObjs(imgRefs)
+			//D.Alert(`Retrieved Images: ${D.JS(imgObjs)}`)
+			//D.Alert(`Retrieved Images: ${D.JS(getImageKeys(imgObjs))}`)
+			if (!isToBack)
+				imgObjs.reverse()
+			for (const imgObj of imgObjs) {
+				if (D.IsObj(imgObj, "graphic")) {
+					if (isToBack)
+						toBack(imgObj)
+					else
+						toFront(imgObj)
+				} else {
+					D.Alert(`Not an image object: ${D.JS(imgObj)}`, "IMAGES: OrderImages")
 				}
 			}
-			createObj("macro", {
-				_playerid: D.GMID(),
-				name,
-				action,
-				visibleto: D.GMID()
-			} )
+		},
+		layerImages = (imgRefs, layer) => {
+			const imgObjs = getImageObjs(imgRefs)
+			for (const imgObj of imgObjs) {
+				if (D.IsObj(imgObj, "graphic"))
+					imgObj.set({layer: layer})
+				else 
+					D.Alert(`No image found for reference ${D.JS(imgObj)}`, "IMAGES: OrderImages")
+			}
 		},
 		// #endregion
 
@@ -558,18 +657,18 @@ const Images = (() => {
 				imgNames = []
 			if (msg.type !== "api" || !playerIsGM(msg.playerid) || args.shift() !== "!img")
 				return
-			let [srcName, imgName, imgObj, imgCat, macroName, chatTrigger] = [null, null, null, null, null, null, null],
+			let [srcName, imgName, imgObj, imgLayer, isStartActive] = [null, null, null, null, null],
 				params = {}
 			switch (args.shift().toLowerCase()) {
 			case "reg":
 			case "register":
 				imgObj = getImageObj(msg)
 				if (imgObj) {
-					imgName = args.shift()
-					if (imgName)
-						regImage(imgObj, imgName, D.ParseToObj(args.join(" ")))
+					[imgName, srcName, imgLayer, isStartActive] = [args.shift(), args.shift(), args.shift(), args.shift()]
+					if (imgName && srcName && imgLayer && isStartActive)
+						regImage(imgObj, imgName, srcName, imgLayer, isStartActive, D.ParseToObj(args.join(" ")))
 					else
-						D.Alert("Syntax: !img reg <hostName> [startLayer:<layer>, isStartingActive:<true>], <imgName:imgSrc>]", "IMAGES: !img reg")
+						D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; [params]", "IMAGES: !img reg")
 				} else {
 					D.Alert("Select an image object first!", "IMAGES: !img reg")
 				}
@@ -577,38 +676,54 @@ const Images = (() => {
 			case "repo":
 			case "reposition":
 				imgObj = getImageObj(msg)
-				if (imgObj && imgObj.get && imgObj.get("name") && REGISTRY[imgObj.get("name")] ) {
-					REGISTRY[imgObj.get("name")].top = parseInt(imgObj.get("top"))
-					REGISTRY[imgObj.get("name")].left = parseInt(imgObj.get("left"))
-					REGISTRY[imgObj.get("name")].height = parseInt(imgObj.get("height"))
-					REGISTRY[imgObj.get("name")].width = parseInt(imgObj.get("width"))
-					D.Alert(`Image ${imgObj.get("name")} repositioned:<br><br>${D.JS(REGISTRY[imgObj.get("name")] )}`)
+				if (isRegImg(msg)) {
+					[imgObj, imgName] = [getImageObj(msg), getImageKey(msg)]
+					REGISTRY[imgName].top = parseInt(imgObj.get("top"))
+					REGISTRY[imgName].left = parseInt(imgObj.get("left"))
+					REGISTRY[imgName].height = parseInt(imgObj.get("height"))
+					REGISTRY[imgName].width = parseInt(imgObj.get("width"))
+					D.Alert(`Image ${imgName} repositioned:<br><br>${D.JS(REGISTRY[imgName] )}`)
 				} else {
 					D.Alert("Unable to retrieve an image to reposition", "IMAGES: !img repo")
 				}
 				break
+			case "layer":
+				imgLayer = args.pop()
+				layerImages(args.length > 0 ? args : msg, imgLayer)
+				break
+			case "tofront":
+				orderImages(args.length > 0 ? args : msg)
+				break
+			case "toback":
+				orderImages(args.length > 0 ? args : msg, true)
+				break
 			case "removeall":
 				for (imgName of _.keys(REGISTRY))
-					imgNames.push(imgName)
-					/* falls through */
+					if (!args[0] || imgName.toLowerCase().includes((args.join(" ").toLowerCase())))
+						imgNames.push(imgName)
+			/* falls through */
 			case "remove":
-				if (imgNames.length === 0)
-					imgNames.push(args.shift())
-				if (imgNames.filter(v => v).length > 0) {
+				if (imgNames.length > 0)
 					for (imgName of imgNames)
 						removeImage(imgName)
-				} else {
+				else if (args[0])
+					removeImage(args.join(" "))
+				else 
 					D.Alert("No hostnames provided.<br><br>Syntax: !img remove <hostName> OR !img removeAll")
-				}
-				break
-			case "clear":
-				removeImage(args.join(" "), true)
 				break
 			case "clearall":
-				_.each(REGISTRY, (v, k) => {
-					if (k.toLowerCase().includes(args[0].toLowerCase()))
-						removeImage(k)
-				})				
+				for (imgName of _.keys(REGISTRY))
+					if (!args[0] || imgName.toLowerCase().includes((args.join(" ").toLowerCase())))
+						imgNames.push(imgName)
+			/* falls through */
+			case "clear":
+				if (imgNames.length > 0)
+					for (imgName of imgNames)
+						removeImage(imgName, true)
+				else if (args[0])
+					removeImage(args.join(" "), true)
+				else 
+					D.Alert("No hostnames provided.<br><br>Syntax: !img clear <hostName> OR !img clearAll")
 				break
 			case "clean":
 				cleanRegistry()
@@ -616,9 +731,8 @@ const Images = (() => {
 			case "add":
 			case "addsrc":
 				[imgName, srcName] = args
-				if (!srcName) {
-					addGenSrc(msg, imgName)
-				} else if (imgName && REGISTRY[imgName] ) {
+				if (isRegImg(imgName)) {
+					imgName = getImageKey(imgName)
 					if (!_.isObject(REGISTRY[imgName].srcs))
 						REGISTRY[imgName].srcs = {}
 					if (srcName)
@@ -631,19 +745,10 @@ const Images = (() => {
 				break
 			case "setsrc":
 				[imgName, srcName] = args
-				if (imgName && REGISTRY[imgName] ) {
-					REGISTRY[imgName].srcs = {}
-					if (srcName.split(",").length > 1) {
-						for (params of srcName.split(","))
-							REGISTRY[imgName].srcs[params.split(":")[0]] = params.split(":")[1]
-					} else if (srcName.includes(":")) {
-						REGISTRY[imgName].srcs[srcName.split(":")[0]] = srcName.split(":")[1]
-					} else {
-						REGISTRY[imgName].srcs = srcName
-					}
-				} else {
-					D.Alert(`No image registered under ${imgName}`)
-				}
+				if (isRegImg(imgName))
+					setImage(imgName, srcName)
+				else
+					D.Alert(`Image name ${D.JS(imgName)} is not registered.`, "IMAGES: !img setsrc")
 				break
 			case "set":
 				if (getImageData(args[0]))
@@ -728,13 +833,6 @@ const Images = (() => {
 			case "getnames":
 				D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(state[D.GAMENAME].Images.registry))}`)
 				break
-			case "buildmacro":
-				[macroName, chatTrigger] = [args.shift(), args.shift()]
-				// D.Alert(`MacroName: ${macroName}, ChatTrigger: ${chatTrigger}`)
-				for (const param of _.map(args.join(" ").split(","), v => v.trim()))
-					params[param.split(":")[0]] = param.split(":")[1]
-				buildMacro(macroName, chatTrigger, params)
-				break
 			case "toggleadd":
 				imgRecord = !imgRecord
 				if (imgRecord)
@@ -745,57 +843,25 @@ const Images = (() => {
 			case "toggleresize":
 				imgResize = !imgResize
 				if (imgResize) {
-					if (args.length === 1 && IMGDATA[args[0]] ) {
-						imgResizeDims.height = IMGDATA[args[0]].h
-						imgResizeDims.width = IMGDATA[args[0]].w
-					} else if (args.length === 2) {
-						_.each(args.join("").split(","), v => {
-							imgResizeDims[v.split(":")[0]] = _.isNumber(v.split(":")[1] ) ? parseInt(v.split(":")[1] ) : v.split(":")[1]
+					params = args.join("").split(",")
+					if (params.length === 1 && IMGDATA[params[0]] ) {
+						imgResizeDims.height = IMGDATA[params[0]].h
+						imgResizeDims.width = IMGDATA[params[0]].w
+					} else if (params.length === 2) {
+						_.each(params, v => {
+							if (!isNaN(parseInt(v.split(":")[1])))
+								imgResizeDims[v.split(":")[0]] = parseInt(v.split(":")[1])
 						} )
 					} else {
 						D.Alert("Must supply either a valid IMGDATA key OR \"height:<height>, width:<width>\"", "IMAGES, !img toggleResize")
+						imgResize = false
 						break
 					}
 					D.Alert(`New images automatically resized to height: ${imgResizeDims.height}, width: ${imgResizeDims.width}.`, "IMAGES, !img toggleResize")
 				} else {
 					D.Alert("Image resizing disabled.", "IMAGES, !img toggleResize")
 				}
-				break
-			case "fixregistry":
-				for (const imgRef of _.keys(REGISTRY)) {
-					if (imgRef.includes("wpReroll") || imgRef.includes("selectDie")) {
-						REGISTRY[imgRef].activeLayer = "objects"
-						REGISTRY[imgRef].startActive = false
-					} else if (imgRef.includes("District")) {
-						REGISTRY[imgRef].activeLayer = "objects"
-						REGISTRY[imgRef].startActive = false
-					}
-					if (imgRef.includes("DistrictCenter"))
-						REGISTRY[imgRef].startActive = true
-					toggleImage(imgRef, REGISTRY[imgRef].startActive)
-				}
-				break
-			case "alltofront":
-				for (const imgRef of _.keys(REGISTRY)) {
-					REGISTRY[imgRef].activeLayer = "objects"
-					toggleImage(imgRef, REGISTRY[imgRef].startActive)
-				}
-				break
-			case "tomap":
-				imgCat = args.shift() || "@@NULL@@"
-				for (const imgRef of _.keys(REGISTRY)) {
-					if (imgRef.toLowerCase().includes(imgCat.toLowerCase()))
-						REGISTRY[imgRef].activeLayer = "map"
-					toggleImage(imgRef, REGISTRY[imgRef].startActive)
-				}
-				break
-			case "tofront":
-				imgCat = args.shift() || "@@NULL@@"
-				for (const imgRef of _.keys(REGISTRY)) {
-					if (imgRef.toLowerCase().includes(imgCat.toLowerCase()))
-						toFront(getImageObj(imgRef))
-				}
-				break				
+				break		
 			default:
 				break
 			}
@@ -812,7 +878,7 @@ const Images = (() => {
 			state[D.GAMENAME].Images = state[D.GAMENAME].Images || {}
 			state[D.GAMENAME].Images.registry = state[D.GAMENAME].Images.registry || {}
 
-			//state[D.GAMENAME].Images.registry.SiteRight_1.id = "-LaFKO_Ol2idqqD9hQO5"
+		//state[D.GAMENAME].Images.registry.SiteRight_1.id = "-LaFKO_Ol2idqqD9hQO5"
 		}
 	// #endregion
 
@@ -827,9 +893,13 @@ const Images = (() => {
 		Register: regImage,
 		AddSrc: addImgSrc,
 		Remove: removeImage,
+		RemoveAll: removeImages,
 		Set: setImage,
 		Toggle: toggleImage,
-		ToggleToken: toggleToken
+		ToggleToken: toggleToken,
+		OrderImages: orderImages,
+		LayerImages: layerImages,
+		IMAGELAYERS: IMAGELAYERS
 	}
 } )()
 

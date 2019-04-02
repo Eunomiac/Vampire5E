@@ -468,7 +468,7 @@
 					name: `rollerDie_${category}_${state[D.GAMENAME].Roller[category].length}`,
 					controlledby: ""
 				} )
-				Images.Register(obj, `rollerDie_${category}_${state[D.GAMENAME].Roller[category].length}`)
+				Images.Register(obj, `rollerDie_${category}_${state[D.GAMENAME].Roller[category].length}`, "Bf", "map", false)
 				state[D.GAMENAME].Roller[category].push( {
 					id: obj.id,
 					top: obj.get("top"),
@@ -530,16 +530,11 @@
 			state[D.GAMENAME].Roller[category] = []
 		},
 		makeAllDice = (category, amount) => {
-			const newDice = []
 			clearDice(category)
 			// Now, make requested number of dice.
 			for (let i = 0; i < amount; i++)
-				newDice.push(makeDie(category, category === STATECATS.dice[0]))
+				makeDie(category, category === STATECATS.dice[0])
 
-			// D.Alert(`NewDice List: ${D.JS(newDice)}`)
-
-			for (let i = newDice.length; i > 0; i--)
-				toFront(newDice[i - 1] )
 		},
 		registerText = (obj, objName) => {
 			state[D.GAMENAME].Roller.textList = state[D.GAMENAME].Roller.textList || {}
@@ -779,16 +774,18 @@
 
 		// #region Dice Frame
 		initFrame = () => {
-			const [imageList, textList] = [[],[]],
-				bgImg = Images.Get("Background")
+			const textList = []
+			let workingImg = null
 			for (const name of _.keys(state[D.GAMENAME].Roller.textList))
 				clearText(name)
 			for (const name of _.keys(state[D.GAMENAME].Roller.imgList)) {
-				if (name !== "Background")
-					clearImg(name)
+				clearImg(name)
 			}
+			state[D.GAMENAME].Roller.imgList = {}
+			state[D.GAMENAME].Roller.textList = {}
 			DragPads.ClearAllPads("wpReroll")
 			Images.Remove("wpRerollPlaceholder")
+			Images.RemoveAll("rollerImage")
 			DragPads.ClearAllPads("selectDie")
 			for (const cat of STATECATS.dice)
 				clearDice(cat)
@@ -803,67 +800,59 @@
 					TEXTLINES[textLine].text
 				))
 			}
-			textList.reverse()
-			for (const txt of textList) {
-				if (_.isObject(txt))
-					toFront(txt)
-				else
-					D.Alert("Not a text object.")
-			}
-
-			imageList.push(makeImg(
+			Images.Register(makeImg(
 				"frontFrame",
 				IMAGES.frontFrame,
 				POSITIONS.diceFrameFront.top(),
 				POSITIONS.diceFrameFront.left(),
 				POSITIONS.diceFrameFront.height(),
 				POSITIONS.diceFrameFront.width()
-			))
+			), "rollerImage_frontFrame", "base", "map", true)
 			for (let i = 0; i < 9; i++) {
-				imageList.push(makeImg(
-					`topMid${i}`,
+				Images.Register(makeImg(
+					`topMid_${i}`,
 					IMAGES.topMids[i - 3 * Math.floor(i / 3)],
 					POSITIONS.diceFrameMidTop.top(),
 					POSITIONS.diceFrameMidTop.left() + (i * POSITIONS.diceFrameMidTop.xShift()),
 					POSITIONS.diceFrameMidTop.height(),
 					POSITIONS.diceFrameMidTop.width()
-				))
-				imageList.push(makeImg(
-					`bottomMid${i}`,
+				), `rollerImage_topMid_${i}`, "base", "map", true)
+				Images.Register(makeImg(
+					`bottomMid_${i}`,
 					IMAGES.bottomMids[i - 3 * Math.floor(i / 3)],
 					POSITIONS.diceFrameMidBottom.top(),
 					POSITIONS.diceFrameMidBottom.left() + (i * POSITIONS.diceFrameMidBottom.xShift()),
 					POSITIONS.diceFrameMidBottom.height(),
 					POSITIONS.diceFrameMidBottom.width()
-				))
+				), `rollerImage_bottomMid_${i}`, "base", "map", true)
 			}
-			imageList.push(makeImg(
+			Images.Register(makeImg(
 				"topEnd",
 				IMAGES.topEnd,
 				POSITIONS.diceFrameEndTop.top(),
 				POSITIONS.diceFrameEndTop.left(),
 				POSITIONS.diceFrameEndTop.height(),
 				POSITIONS.diceFrameEndTop.width()
-			))
-			imageList.push(makeImg(
+			), "rollerImage_topEnd", "base", "map", true)
+			Images.Register(makeImg(
 				"bottomEnd",
 				IMAGES.bottomEnd,
 				POSITIONS.diceFrameEndBottom.top(),
 				POSITIONS.diceFrameEndBottom.left(),
 				POSITIONS.diceFrameEndBottom.height(),
 				POSITIONS.diceFrameEndBottom.width()
-			))
-			imageList.push(makeImg(
+			), "rollerImage_bottomEnd", "base", "map", true)
+			Images.Register(makeImg(
 				"diffFrame",
 				IMAGES.diffFrame,
 				POSITIONS.diceFrameDiffFrame.top(),
 				POSITIONS.diceFrameDiffFrame.left(),
 				POSITIONS.diceFrameDiffFrame.height(),
 				POSITIONS.diceFrameDiffFrame.width()
-			))
+			), "rollerImage_diffFrame", "base", "map", true)
 
 			//WP REROLL BUTTON
-			const wpReroller = makeImg(
+			Images.Register(makeImg(
 				"wpRerollPlaceholder",
 				IMAGES.blank,
 				POSITIONS.diceFrameRerollPad.top(),
@@ -871,28 +860,26 @@
 				POSITIONS.diceFrameRerollPad.height(),
 				POSITIONS.diceFrameRerollPad.width(),
 				"gmlayer"
-			)
-			Images.Register(wpReroller, "wpRerollPlaceholder")
-			DragPads.MakePad(wpReroller, "wpReroll", {
+			), "wpRerollPlaceholder", "blank", "map", false)
+			DragPads.MakePad(workingImg, "wpReroll", {
 				top: POSITIONS.diceFrameRerollPad.top(),
 				left: POSITIONS.diceFrameRerollPad.left(),
 				height: POSITIONS.diceFrameRerollPad.height(),
 				width: POSITIONS.diceFrameRerollPad.width()
 			} )
 			DragPads.Toggle("wpReroll", false)
-			imageList.reverse()
-			for (const img of imageList) {
-				if (_.isObject(img))
-					toBack(img)
-				else
-					D.Alert("Not an image.")
-			}
-			if (bgImg)
-				toBack(bgImg)
-			else
-				D.Alert(`No background image found for id ${D.JS(state[D.GAMENAME].Roller.imgList.Background.id)}`)
 			for (const diceCat of _.keys(SETTINGS.dice))
 				makeAllDice(diceCat, SETTINGS.dice[diceCat] )
+			Images.LayerImages(Images.IMAGELAYERS.map, "map")
+			Images.LayerImages(Images.IMAGELAYERS.objects, "objects")
+			Images.OrderImages(Images.IMAGELAYERS.map)			
+			textList.reverse()
+			for (const txt of textList) {
+				if (_.isObject(txt))
+					toFront(txt)
+				else
+					D.Alert("Not a text object.")
+			}
 		},
 		scaleFrame = (row, width) => {
 			const stretchWidth = Math.max(width, 120),
@@ -900,7 +887,7 @@
 				blanks = []
 			let [midCount, endImg, stretchPer, left] = [0, null, 0, null]
 			while (stretchWidth > 225 * (imgs.length - 1)) {
-				imgs.push(getObj("graphic", state[D.GAMENAME].Roller.imgList[`${row}Mid${midCount}`].id))
+				imgs.push(getObj("graphic", state[D.GAMENAME].Roller.imgList[`${row}Mid_${midCount}`].id))
 				midCount++
 				if (midCount >= IMAGES[`${row}Mids`].length * 3) {
 					// D.Alert("Need " + (midCount - imgs.length + 2) + " more mid sections for " + row);
@@ -908,7 +895,7 @@
 				}
 			}
 			while (midCount < IMAGES[`${row}Mids`].length * 3) {
-				blanks.push(getObj("graphic", state[D.GAMENAME].Roller.imgList[`${row}Mid${midCount}`].id))
+				blanks.push(getObj("graphic", state[D.GAMENAME].Roller.imgList[`${row}Mid_${midCount}`].id))
 				midCount++
 			}
 			stretchPer = stretchWidth / imgs.length
