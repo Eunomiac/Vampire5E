@@ -453,11 +453,7 @@ const TimeTracker = (() => {
 		// #endregion
 
 		// #region Date Functions
-		setHorizon = weatherCode => {
-			/* D.Log(`Date Obj? ${Boolean(dateObj)}, state val: ${D.JSL(state[D.GAMENAME].TimeTracker.currentDate)}`)
-			   dateObj = dateObj || new Date(state[D.GAMENAME].TimeTracker.currentDate) */
-			let imgSrcName = ""
-			// D.Log(`DATE OBJECT: ${D.JSL(dateObj)}`)
+		getHorizon = () => {
 			const [dawn, dusk] = TWILIGHTMINS[dateObj.getMonth()],
 				imgTimes = _.object(_.map(_.keys(IMAGETIMES), k => {
 					if (k.includes(":"))
@@ -470,11 +466,13 @@ const TimeTracker = (() => {
 					return dawn + parseInt(k)
 				} ), _.values(IMAGETIMES)),
 				curTime = 60 * dateObj.getUTCHours() + dateObj.getUTCMinutes()
-			if (weatherCode) {
-				imgSrcName = imgTimes[_.find(_.keys(imgTimes), v => curTime <= v)]
-			} else {
-				imgSrcName = imgTimes[_.find(_.keys(imgTimes), v => curTime <= v)]
-			}
+			return imgTimes[_.find(_.keys(imgTimes), v => curTime <= v)]
+		},
+		setHorizon = () => {
+			/* D.Log(`Date Obj? ${Boolean(dateObj)}, state val: ${D.JSL(state[D.GAMENAME].TimeTracker.currentDate)}`)
+			   dateObj = dateObj || new Date(state[D.GAMENAME].TimeTracker.currentDate) */
+			let imgSrcName = getHorizon()
+			// D.Log(`DATE OBJECT: ${D.JSL(dateObj)}`)
 			if (isRunningFast)
 				imgSrcName = imgSrcName.includes("night") ? "night2" : "day"
 			if (imgSrcName !== state[D.GAMENAME].TimeTracker.lastHorizon) {
@@ -514,11 +512,11 @@ const TimeTracker = (() => {
 		},
 		setIsRunning = isRun => {
 			isRunning = isRun
+			Images.OrderImages(Images.IMAGELAYERS.map, true)
 			if (isRunning) {
 				Images.LayerImages(_.reject(Images.IMAGELAYERS.map, v => v.includes("Horizon")), "objects")
 			} else {
 				Images.LayerImages(_.reject(Images.IMAGELAYERS.map, v => v.includes("Horizon")), "map")
-				Images.OrderImages(Images.IMAGELAYERS.map)
 			}			
 		},
 		easeInOutSine = (curTime, startVal, deltaVal, duration) => -deltaVal / 2 * (Math.cos(Math.PI * curTime / duration) - 1) + startVal,
@@ -579,7 +577,25 @@ const TimeTracker = (() => {
 					getObj("text", state[D.GAMENAME].TimeTracker.tempCShadow),
 					getObj("text", state[D.GAMENAME].TimeTracker.tempFShadow),
 					getObj("text", state[D.GAMENAME].TimeTracker.weatherShadow)
-				]
+				],
+				getCloudSrc = () => {
+					switch (getHorizon()) {
+					case "night1":
+						return "night1clouds"
+					case "day":
+						// return "dayclouds"
+						return "brightclouds1"
+					case "predawn5":
+					case "predawn4":
+					case "predawn3":
+					case "predawn2":
+					case "predawn1":
+					case "night5":
+						return "darkclouds"
+					default:
+						return `brightclouds${randomInteger(3)}`
+					}
+				}
 			let forecastLines = []
 			//D.Alert(`Weather Code: ${D.JS(weatherCode)}<br>Month Temp: ${D.JS(getTemp(MONTHTEMP[dateObj.getUTCMonth()]))}<br><br>Delta Temp: ${D.JS(getTemp(weatherCode.charAt(2)))} (Code: ${weatherCode.charAt(2)})`)
 			weatherData.tempC = getTemp(MONTHTEMP[dateObj.getUTCMonth()]) + getTemp(weatherCode.charAt(2))
@@ -591,51 +607,55 @@ const TimeTracker = (() => {
 			// x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
 			case "b":
 				Images.Set("WeatherMain", "heavysnow")
-				//Images.Set("WeatherFog", "heavyfog")
+				Images.Set("WeatherFog", "blank")
+				Images.Set("WeatherClouds", getCloudSrc())
 				//Images.Set("WeatherClouds", "stormy")
 				break
 			case "c":
 				Images.Set("WeatherMain", "blank")
-				//Images.Set("WeatherFog", "blank")
-				//Images.Set("WeatherClouds", "overcast")
+				Images.Set("WeatherFog", "blank")
+				Images.Set("WeatherClouds", getCloudSrc())
 				break			
 			case "f":
 				Images.Set("WeatherMain", "blank")
-				//Images.Set("WeatherFog", "heavyfog")
-				//Images.Set("WeatherClouds", "overcast")
+				Images.Set("WeatherFog", "fog")
+				Images.Set("WeatherClouds", getCloudSrc())
 				break			
 			case "p":
-				//Images.Set("WeatherMain", "heavyrain")
-				//Images.Set("WeatherFog", "lightfog")
-				//Images.Set("WeatherClouds", "overcast")
+				Images.Set("WeatherMain", "heavyrain")
+				Images.Set("WeatherFog", "blank")
+				Images.Set("WeatherClouds", getCloudSrc())
 				break					
 			case "s":
 				Images.Set("WeatherMain", "lightsnow")
-				//Images.Set("WeatherFog", "lightfog")
-				//Images.Set("WeatherClouds", "overcast")
+				Images.Set("WeatherFog", "blank")
+				Images.Set("WeatherClouds", getCloudSrc())
 				break						
 			case "t":
+				Images.Set("WeatherMain", "heavyrain")
 				//Images.Set("WeatherMain", "thunderstorm")
-				//Images.Set("WeatherFog", "lightfog")
+				Images.Set("WeatherFog", "blank")
+				Images.Set("WeatherClouds", getCloudSrc())
 				//Images.Set("WeatherClouds", "thunderstorm")
 				break					
 			case "w":
-				//Images.Set("WeatherMain", "lightrain")
-				//Images.Set("WeatherFog", "blank")
-				//Images.Set("WeatherClouds", "overcast")
+				Images.Set("WeatherMain", "lightrain")
+				Images.Set("WeatherFog", "blank")
+				Images.Set("WeatherClouds", getCloudSrc())
 				break
 			case "x":
 				Images.Set("WeatherMain", "blank")
-				//Images.Set("WeatherClouds", "blank")
-				/*if (weatherCode.charAt(1) === "f")
-					Images.Set("WeatherFog", "heavyfog")
+				Images.Set("WeatherClouds", "blank")
+				if (weatherCode.charAt(1) === "f")
+					Images.Set("WeatherFog", "fog")
 				else
-					Images.Set("WeatherFog", "blank") */
+					Images.Set("WeatherFog", "blank")
 				break
 			}
 			Images.Set("WeatherTint_1", weatherData.tempC < 0 ? "cold" : "blank")
 			Images.Set("WeatherTint_2", weatherData.tempC < -6 ? "cold" : "blank")
 			Images.Set("WeatherTint_3", weatherData.tempC < -12 ? "cold" : "blank")
+			Images.Set("WeatherFrost", weatherData.tempC > 0 ? "blank" : weatherData.tempC > -6 ? "frost1" : weatherData.tempC > -12 ? "frost2" : "frost3")
 			forecastLines.push(weatherCode.slice(0,2) === "xf" ? WEATHERCODES[0][weatherCode.charAt(1)] : WEATHERCODES[0][weatherCode.charAt(0)])
 			if (weatherCode.charAt(3) !== "x")
 				forecastLines.push(WEATHERCODES[1][weatherCode.charAt(3)])
@@ -645,6 +665,14 @@ const TimeTracker = (() => {
 			// setHorizon(weatherCode)
 		},
 		getGroundCover = (isTesting = false, downVal = 0.5, upb = 2, ups = 1) => {
+			const weatherCode = WEATHERDATA[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()]
+			switch (weatherCode.charAt(0)) {
+			case "w":
+			case "t":
+			case "p":
+				return "wet"
+			default: break
+			}
 			if (dateObj.getUTCMonth() >= 3 && dateObj.getUTCMonth() <= 9)
 				return "blank"
 			const checkDate = new Date(dateObj)
@@ -675,46 +703,50 @@ const TimeTracker = (() => {
 					else
 						testStyles += " border: 2px solid white;"
 					*/
-					if (groundCover > 40)
+					/*if (groundCover > 40)
 						testStyles += " color: #0055FF; font-weight: bold; text-shadow: 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white; box-shadow: 0px 0px 4px #00F inset, 0px 0px 4px #00F inset, 0px 0px 4px #00F inset, 0px 0px 4px #00F inset; border: 2px solid blue;"
 					else if (groundCover > 1)
 						testStyles += " color: black; text-shadow: 0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white; box-shadow: 0px 0px 2px #00F inset; border: 2px solid #ACF;"
 					else
-						testStyles += " border: 2px solid white;"
+						testStyles += " border: 2px solid white;"*/
 					if (groundCover === 0)
 						testStyles += " color: #999999; font-weight: normal; font-style: italic;"
-					else if (tempC > 10)
+					else if (groundCover > 50)
 						testStyles += " background-color: #F88;"
-					else if (tempC > 5)
+					else if (groundCover > 40)
 						testStyles += " background-color: #FC8;"
-					else if (tempC > 0)
+					else if (groundCover > 30)
 						testStyles += " background-color: #FF8;"
-					else if (tempC > -5)
+					else if (groundCover > 20)
 						testStyles += " background-color: #AEF;"
-					else if (tempC > -10)
+					else if (groundCover > 10)
 						testStyles += " background-color: #ACF;"
-					else if (tempC > -15)
-						testStyles += " background-color: #AAF;"
 					else
-						testStyles += " background-color: #A7F;"
+						testStyles += " background-color: #AAF;"
 					testString += `<span style="${testStyles}">${D.JS(groundCover)}</span>`
 				}
 				testString += "<br>"
 			}
 			if(isTesting)
 				D.Alert(`<b>GROUND COVER:</b><br><br>${testString}<br><br>!testground down10, down0, downneg5, upb, ups`, "GROUND COVER")
-			if (groundCover > 40) {
-				return "heavysnow"
-			} else if (groundCover > 1) {
-				return "medsnow"
-			} else if ((getTemp(MONTHTEMP[dateObj.getUTCMonth()]) + getTemp(WEATHERDATA[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()].charAt(2))) < 1)
-				return "lightsnow"
+			if (groundCover > 50)
+				return "snow5"
+			else if (groundCover > 40)
+				return "snow4"
+			else if (groundCover > 30)
+				return "snow3"
+			else if (groundCover > 20)
+				return "snow2"
+			else if (groundCover > 10)
+				return "snow1"
+			else if ((getTemp(MONTHTEMP[dateObj.getUTCMonth()]) + getTemp(WEATHERDATA[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()].charAt(2))) < 1)
+				return "frost"
 			else
 				return "blank"
 		},
 		//#endregion
 
-		//#region Airplane Lights
+		// #region Airplane Lights
 		tickAirLight = (alight, isStartup) => {
 			if (!isAirlights) {
 				Images.Set(alight, "on")

@@ -37,8 +37,7 @@ const Images = (() => {
 		IMAGELAYERS = {
 			map: [
 				"SignalLightTopLeft", "SignalLightTopRight", "SignalLightBotLeft", "SignalLightBotRight",
-				"WeatherTint_1", "WeatherTint_2", "WeatherTint_3",
-				"WeatherGround",			
+				"WeatherTint_1",	
 				"rollerDie_bigDice_1",
 				"rollerDie_bigDice_2",
 				"rollerDie_diceList_1",
@@ -99,7 +98,12 @@ const Images = (() => {
 				"DistrictCenter",
 				"DistrictLeft",
 				"DistrictRight",
-				"WeatherMain",			
+				"WeatherFrost",
+				"WeatherFog",	
+				"WeatherTint_2", "WeatherTint_3",
+				"WeatherMain",
+				"WeatherClouds",
+				"WeatherGround",	
 				"AirLightLeft", "AirLightMid", "AirLightTop", "AirLightCN_4", "AirLightCN_5",
 				"HungerTopLeft", "HungerTopRight", "HungerBotLeft", "HungerBotRight",
 				"Horizon"
@@ -636,6 +640,7 @@ const Images = (() => {
 		},
 		layerImages = (imgRefs, layer) => {
 			const imgObjs = getImageObjs(imgRefs)
+			orderImages(IMAGELAYERS.objects)
 			for (const imgObj of imgObjs) {
 				if (D.IsObj(imgObj, "graphic"))
 					imgObj.set({layer: layer})

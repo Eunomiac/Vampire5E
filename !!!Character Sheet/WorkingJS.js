@@ -1,8 +1,10 @@
 ﻿/* eslint-disable max-len */
 /* eslint-disable one-var */
+/* eslint-disable no-console */
 (() => {
 	// #region Variable Declarations
-	let LASTEVENT = {}
+	let LASTEVENT = {},
+		APIROWID = null
 	const isDebug = true,
 		LOGOPTIONS = {},
 		ATTRIBUTES = {
@@ -541,6 +543,53 @@
 					repRowSplit.join("_"),
 					v => `${repRowSplit.join("_")}_${v}`
 				]
+		},
+		sFuncs = (sec, attrs) => {
+			if (attrs)
+				return [
+					`repeating_${sec}`,
+					v => `repeating_${sec}_${v}`,
+					v => attrs[`repeating_${sec}_${v}`],
+					v => parseInt(attrs[`repeating_${sec}_${v}`] || 0)
+				]
+			else
+				return [
+					`repeating_${sec}`,
+					v => `repeating_${sec}_${v}`
+				]
+		},
+		simpleRepAttrs = ATTRS => {
+			const newAttrs = {}
+			if (_.isString(ATTRS)) {
+				if (ATTRS.includes("repeating")) {
+					if (parseRepAttr(ATTRS)[2] && parseRepAttr(ATTRS)[2].length > 1)
+						return `♦${getRowID(ATTRS).slice(5,10)}_${parseRepAttr(ATTRS)[2]}♦`
+					else
+						return `♦${parseRepAttr(ATTRS)[1]}♦`
+				} else
+					return ATTRS
+			} else {
+				for (const attr of _.keys(ATTRS)) {
+					if (attr.includes("repeating")) {
+						if (parseRepAttr(attr)[2] && parseRepAttr(attr)[2].length > 1)
+							newAttrs[`♦${getRowID(attr).slice(5,10)}_${parseRepAttr(attr)[2]}♦`] = ATTRS[attr]
+						else
+							newAttrs[`♦${parseRepAttr(attr)[1]}♦`] = ATTRS[attr]
+					} else
+						newAttrs[attr] = ATTRS[attr]
+				}
+				return newAttrs
+			}
+		},
+		getRowID = stat => parseRepAttr(stat)[1],
+		parseEInfo = eInfo => {
+			if (eInfo.sourceType.toUpperCase() === "API") {
+				APIROWID = getRowID(eInfo.sourceAttribute)
+				return `API: ${simpleRepAttrs(eInfo.sourceAttribute)} (Row ID: ${APIROWID})`
+			} else {
+				APIROWID = null
+				return `${eInfo.sourceType.toUpperCase()}: ${simpleRepAttrs(eInfo.sourceAttribute)}: ${eInfo.previousValue} >>> ${eInfo.newValue}`
+			}
 		}
 	// #endregion
 
@@ -609,8 +658,11 @@
 			}
 			return str
 		},
-		formatDString = date => `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`
-		//getProgress = (todaysDate, startDate, endDate) => Math.min(10, Math.max(0, (parseDString(todaysDate).getTime() - parseDString(startDate).getTime()) / (parseDString(endDate).getTime() - parseDString(startDate).getTime())))
+		formatDString = date => `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`,
+		getProgress = (todaysDate, startDate, endDate) => Math.min(1, Math.max(0, 
+			(parseDString(todaysDate).getTime() - parseDString(startDate).getTime()) / (parseDString(endDate).getTime() - parseDString(startDate).getTime())
+		))
+		
 	// #endregion
 
 	// #region UPDATE: Clan, Discipline, Resonance, DOB/DOE, Marquee Rotating
@@ -1079,224 +1131,255 @@
 	// #region UPDATE: Projects
 
 	// Updating project end date when date values are changed.
-	const doProjectDates = (cback) => {
-		//log(`SOURCE = ${JSON.stringify(source)}`, "doProjDates")
-			const attrList = {},			
+	const doProjectDates = callback => {
+			const attrList= {},
+				attrArray = _.map([
+					"projectstartdate", "projectincnum", "projectincunit"
+				], v => `repeating_project_${v}`),
+				funcName = "doProjectDates",
 				getEndDate = (start, incUnit, incNum) => {
 					const end = new Date(start)
+					//log(`EndDate: ${JSON.stringify(end)}`, "DoProjectDates >>> GetEndDate")
 					switch (incUnit) {
 					case "hours":
-						return end.setUTCHours(start.getUTCHours() + 10 * incNum)
+						return new Date(end.setUTCHours(start.getUTCHours() + 10 * incNum))
 					case "days":
-						return end.setUTCDate(start.getUTCDate() + 10 * incNum)
+						return new Date(end.setUTCDate(start.getUTCDate() + 10 * incNum))
 					case "weeks":
-						return end.setUTCDate(start.getUTCDate() + 10 * 7 * incNum)
+						return new Date(end.setUTCDate(start.getUTCDate() + 10 * 7 * incNum))
 					case "months":
-						return end.setUTCMonth(start.getMonth() + 10 * incNum)
+						return new Date(end.setUTCMonth(start.getMonth() + 10 * incNum))
 					case "years":
-						return end.setUTCFullYear(start.getUTCFullYear() + 10 * incNum)
+						return new Date(end.setUTCFullYear(start.getUTCFullYear() + 10 * incNum))
 					default:
 						log(`ERROR: Invalid time unit for project incrementor: ${JSON.stringify(incUnit)}`)
 						return
 					}
-				},
-				$funcs = [
-					$getRepAttrs( { project: [
-						"projectstartdate",
-						"projectincnum",
-						"projectincunit"
-					] }),
-					(attrArray, cbk) => {
-						getAttrs( [...attrArray, "date_today"], ATTRS => {
-							const [, p, pV, pI] = pFuncs(attrArray[0], ATTRS),
-								curDate = new Date(parseDString(ATTRS.date_today))
-							let startDate = null
-
-							log(`CDATE: ${JSON.stringify(curDate)}`)
-							log(`ATTRS: ${JSON.stringify(ATTRS)}`)
-							if (pV("projectstartdate")) {
-								startDate = new Date(parseDString(pV("projectstartdate")))
-							} else {
-								startDate = new Date(curDate)
-								// log(`SDATE: ${JSON.stringify(sDate)}`)
-								attrList[p("projectstartdate")] = formatDString(startDate)
-							}
-
-							if (!curDate || pI("projectincnum") === 0 || !["hours", "days", "weeks", "months", "years"].includes(pV("projectincunit"))) {
-								log(`Can't Solve End Date: ${JSON.stringify(curDate)}, ${JSON.stringify(p("projectincnum"))} = ${JSON.stringify(pV("projectincnum"))}, ${JSON.stringify(p("projectincunit"))} = ${JSON.stringify(pV("projectincunit"))}`)
-								attrList[p("projectenddate")] = ""
-							} else						
-								attrList[p("projectenddate")] = formatDString(getEndDate(startDate, pV("projectincunit"), pI("projectincnum")))
-							cbk(null, attrList)
-						} )
-					},
-					$set
-				]				
-			run$($funcs, () => cback ? cback(null) : undefined)
+				}
+			log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+			getAttrs( [...attrArray, "date_today"], ATTRS => {
+				//const [, p, pV, pI] = pFuncs(_.keys(ATTRS)[0], ATTRS),
+				const [, p, pV, pI] = sFuncs("project", ATTRS),
+					curDate = new Date(parseDString(ATTRS.date_today))
+				log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+				let startDate = null
+				if (pV("projectstartdate")) {
+					startDate = new Date(parseDString(pV("projectstartdate")))
+					//log(`Parsing Start Date "${pV("projectstartdate")}": ${JSON.stringify(startDate)}`, funcName)
+				} else {
+					startDate = new Date(curDate)
+					attrList[p("projectstartdate")] = formatDString(startDate)
+				}
+				if (!curDate || pI("projectincnum") === 0 || !["hours", "days", "weeks", "months", "years"].includes(pV("projectincunit")))
+					attrList[p("projectenddate")] = ""
+				else						
+					attrList[p("projectenddate")] = formatDString(getEndDate(startDate, pV("projectincunit"), pI("projectincnum")))
+				setAttrs(attrList, {}, () => {
+					log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+					if (callback)
+						callback(null)
+				})
+			} )
 		},
 		// Updating launch roll difficulty display upon change to scope or difficulty.
-		doProjectDiff = (cback) => {
-		//log(`SOURCE = ${JSON.stringify(source)}`, "doProjDiff")
-			const attrList = {},
-				$funcs = [
-					$getRepAttrs( { project: [
-						"projectscope",
-						"projectlaunchdiffmod"
-					] }),
-					(attrArray, cbk) => {
-						getAttrs( attrArray, ATTRS => {
-							const [, p, , pI] = pFuncs(attrArray[0], ATTRS)
-							attrList[p("projectlaunchdiff")] = pI("projectscope") + 2 + pI("projectlaunchdiffmod")
-							cbk(null, attrList)
-						} )
-					},
-					$set
-				]			
-			run$($funcs, () => cback ? cback(null) : undefined)
+		doProjectDiff = callback => {
+			const attrList= {},
+				attrArray = _.map([
+					"projectscope",	"projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1,2,3], v => [`projectforcedstake${v}`, `projectforcedstake${v}_name`, `projectteamwork${v}`]))
+				], v => `repeating_project_${v}`),
+				funcName = "DoProjectDiff"
+			log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+			getAttrs(attrArray, ATTRS => {
+				const [, p, , pI] = sFuncs("project", ATTRS)
+				let [forcedStake, teamwork] = [0, 0]
+				log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+				_.each(_.map([1,2,3], v => `projectforcedstake${v}`), stat => {
+					forcedStake += pI(stat)
+				})					
+				_.each(_.map([1,2,3], v => `projectteamwork${v}`), stat => {
+					teamwork += pI(stat)
+				})
+				attrList[p("projectforcedstakemod")] = 2*forcedStake + teamwork
+				if (attrList[p("projectforcedstakemod")] > 0)
+					attrList[p("projectforcedstakemodline")] = `+${attrList[p("projectforcedstakemod")]}`
+				else
+					attrList[p("projectforcedstakemodline")] = ""
+				attrList[p("projectlaunchdiff")] = pI("projectscope") + 2 + pI("projectlaunchdiffmod")					
+				setAttrs(attrList, {}, () => {
+					log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+					if (callback)
+						callback(null)
+				})
+			} )
 		},
 		// Check whether to display Launch Project button.
-		doProjectLaunchCheck = (cback) => {
-			const attrList = {},
-				$funcs = [
-					$getRepAttrs( { project: [
-						"projectlaunchtrait1_name",
-						"projectlaunchtrait1",
-						"projectlaunchtrait2_name",
-						"projectlaunchtrait2",
-						"projectlaunchresults"
-					] }),
-					(attrArray, cbk) => {
-						getAttrs(attrArray, ATTRS => {
-							const [, p, pV, pI] = pFuncs(attrArray[0], ATTRS),
-								traits = _.map( ["projectlaunchtrait1", "projectlaunchtrait2"], v => ( { name: pV(`${v}_name`), value: pI(v) } )),
-								launchTrtCheck = []
-							if (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("CRITICAL") || pV("projectlaunchresults").includes("TOTAL")) {
-								attrList[p("projectlaunchroll_toggle")] = 2
-							} else {
-								_.each(traits, trt => trt.value ? launchTrtCheck.push(trt.name === "" ? -1 : 1) : launchTrtCheck.push(trt.name === "" ? 0 : -1))
-								if (launchTrtCheck.includes(-1) || !launchTrtCheck.includes(1))
-									attrList[p("projectlaunchroll_toggle")] = 0
-								else
-									attrList[p("projectlaunchroll_toggle")] = 1
-							}
-							cbk(null, attrList)	
-						} )
-					},
-					$set
-				]
-			run$($funcs, () => cback ? cback(null) : undefined)
+		doProjectLaunchCheck = callback => {
+			const attrList= {},
+				attrArray = _.map([
+					"projectlaunchmod", "projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2", "projectlaunchresults", "projectenddate"
+				], v => `repeating_project_${v}`),
+				funcName = "DoProjectLaunchCheck"
+			log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+			getAttrs(attrArray, ATTRS => {
+				const [, p, pV, pI] = sFuncs("project", ATTRS),
+					traits = _.map( ["projectlaunchtrait1", "projectlaunchtrait2"], v => ( { name: pV(`${v}_name`), value: pI(v) } )),
+					launchTrtCheck = []
+				log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+				if (pV("projectenddate") === "") {
+					attrList[p("projectlaunchroll_toggle")] = 0
+				} else if (pV("projectlaunchresults") && (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("CRITICAL") || pV("projectlaunchresults").includes("TOTAL"))) {
+					attrList[p("projectlaunchroll_toggle")] = 2
+				} else {
+					_.each(traits, trt => {
+						if (trt.name && trt.name !== "") {
+							launchTrtCheck.push(trt.value > 0)
+						} else if (trt.value > 0)
+							launchTrtCheck.push(false)
+					})
+					if (launchTrtCheck.includes(true) && !launchTrtCheck.includes(false))
+						attrList[p("projectlaunchroll_toggle")] = 1
+					else
+						attrList[p("projectlaunchroll_toggle")] = 0							
+				}
+				setAttrs(attrList, {}, () => {
+					log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+					if (callback)
+						callback(null)
+				})
+			} )
 		},
 		// Updates the project counter when the time changes.
-		doProjectCounter = (cback) => {
-			const attrList = {},
-				$funcs = [
-					$getRepAttrs( { project: [
-						"projectstartdate",
-						"projectenddate",
-						"projectinccounter",
-						"projectlaunchroll_toggle",
-						"projectlaunchresults"
-					] }),
-					(attrArray, cbk) => {
-						getAttrs( [...attrArray, "date_today"], ATTRS => {
-							const ids = _.uniq(_.map(attrArray, v => v.slice("_")[2]))
-							log(`ids: ${JSON.stringify(ids)}`)
-							log(`attrArray: ${JSON.stringify(ATTRS)}`)
-							/*_.each(ids, rowID => {
-								const [,p,pV,pI] = pFuncs(`repeating_project_${rowID}`, ATTRS)
-								let counterPos = 11
-								// log(`   >>>> LRT: ${JSON.stringify(pI("projectlaunchroll_toggle"))}`)
-								if (pI("projectlaunchroll_toggle") === 2 && !pV("projectlaunchresults").includes("TOTAL"))
-									counterPos = 10 - Math.floor(10 * getProgress(
-										formatDString(new Date(parseInt(ATTRS.date_today))), pV("projectstartdate"), pV("projectenddate")
-									))							
-								if (counterPos !== pI("projectinccounter"))
-									attrList[p("projectinccounter")] = counterPos
-							} )*/
-							// log(`   >>>> ATTRLIST: ${JSON.stringify(attrList)}`)
-							cbk(null, attrList)
-						} )
-					},
-					$set
-				]
-			run$($funcs, cback ? () => cback(null) : undefined)
+		doProjectCounter = callback => {
+			const [attrList, attrArray] = [{}, []],
+				funcName = "DoProjectCounter"
+			log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+			getSectionIDs("project", idArray => {
+				_.each(idArray, repID => {
+					_.each(["projectstartdate",	"projectenddate", "projectinccounter", "projectlaunchroll_toggle", "projectlaunchresults"], stat => {
+						attrArray.push(`repeating_project_${repID}_${stat}`)
+					} )
+				} )
+				getAttrs( [...attrArray, "date_today"], ATTRS => {
+					const ids = _.uniq(_.map(attrArray, v => parseRepAttr(v)[1]))
+					//log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+					//log(`Retrieved IDs: ${JSON.stringify(simpleRepAttrs(ids))}`, funcName)
+					_.each(ids, rowID => {
+						const [,p,pV,pI] = pFuncs(`repeating_project_${rowID}`, ATTRS)
+						let counterPos = 11
+						//log(`p-Test: p("projectinccounter) = ${JSON.stringify(p("projectinccounter"))}`, funcName)
+						if (pV("projectlaunchresults") && (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("CRITICAL")))
+							counterPos = 10 - Math.floor(10 * getProgress(
+								new Date(parseInt(ATTRS.date_today)), pV("projectstartdate"), pV("projectenddate")
+							))
+						if (counterPos !== pI("projectinccounter"))
+							attrList[p("projectinccounter")] = counterPos
+					} )
+					setAttrs(attrList, {}, () => {
+						log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+						if (_.isFunction(callback))
+							callback(null)
+					})
+				} )
+			} )
 		},
-		doProjectStake = (cback) => {
-			const attrList = {},
-				$funcs = [
-					$getRepAttrs( { project: [
-						"projectlaunchresults",
-						..._.map( [1, 2, 3, 4, 5, 6], v => `projectstake${v}`),
-						"projecttotalstake"
-					] }),
-					(attrArray, cbk) => {
-						getAttrs(attrArray, ATTRS => {
-							const [, p, pV, pI] = pFuncs(attrArray[0], ATTRS)
-							if (pV("projectlaunchresults").includes("SUCCESS")) {
-								attrList[p("projectstakes_toggle")] = 1
-								const stakeRemaining = Math.max(0, pI("projecttotalstake")) - _.reduce(_.map( [1, 2, 3, 4, 5, 6], v => pI(`projectstake${v}`)), (memo, num) => parseInt(memo) + parseInt(num))
-								log(`STAKE REMAINING: ${JSON.stringify(stakeRemaining)}`)
-								if (stakeRemaining > 0)
-									attrList[p("projectlaunchresultsmargin")] = `Stake ${pV("projecttotalstake")} Dot${pI("projecttotalstake") > 1 ? "s" : ""} (${stakeRemaining} to go)`
-								else
-									attrList[p("projectlaunchresultsmargin")] = `${pV("projecttotalstake")} Dot${pI("projecttotalstake") > 1 ? "s" : ""} Staked`
-							}
-							cbk(null, attrList)
-						} )
-					},
-					$set
-				]
-			run$($funcs, () => cback ? cback(null) : undefined)
+		doProjectStake = callback => {
+			const attrList= {},
+				attrArray = _.map([
+					"projectlaunchresults", ..._.map( [1, 2, 3, 4, 5, 6], v => `projectstake${v}`), "projecttotalstake"
+				], v => `repeating_project_${v}`),
+				funcName = "DoProjectStake"
+			log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+			getAttrs(attrArray, ATTRS => {
+				const [, p, pV, pI] = sFuncs("project", ATTRS)
+				log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+				if (pV("projectlaunchresults") && pV("projectlaunchresults").includes("SUCCESS")) {
+					attrList[p("projectstakes_toggle")] = 1
+					const stakeRemaining = Math.max(0, pI("projecttotalstake")) - _.reduce(_.map( [1, 2, 3, 4, 5, 6], v => pI(`projectstake${v}`)), (memo, num) => parseInt(memo) + parseInt(num))
+					if (stakeRemaining > 0)
+						attrList[p("projectlaunchresultsmargin")] = `Stake ${pV("projecttotalstake")} Dot${pI("projecttotalstake") > 1 ? "s" : ""} (${stakeRemaining} to go)`
+					else
+						attrList[p("projectlaunchresultsmargin")] = `${pV("projecttotalstake")} Dot${pI("projecttotalstake") > 1 ? "s" : ""} Staked`
+				}
+				setAttrs(attrList, {}, () => {
+					log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+					if (callback)
+						callback(null)
+				})
+			} )
 		},
-		doProjectLaunchParams = (cback) => {
-			const attrList = {},
-				$funcs = [
-					$getRepAttrs( { project: [
-						"projectlaunchdiff",
-						"projectlaunchmod",
-						"projectlaunchdiffmod",
-						"projectlaunchtrait1_name",
-						"projectlaunchtrait1",
-						"projectlaunchtrait2_name",
-						"projectlaunchtrait2"
-					] }),
-					(attrArray, cbk) => {
-						getAttrs(attrArray, ATTRS => {
-							const [, p, pV, pI] = pFuncs(attrArray[0], ATTRS),
-								traits = _.map( ["projectlaunchtrait1", "projectlaunchtrait2"], v => ( { name: pV(`${v}_name`), value: pI(v) } ))
-							let traitString = ""
-							if (traits[0].name !== "" && traits[0].value > 0 ||
-								traits[1].name !== "" && traits[1].value > 0) {
-								traitString = [_.values(traits[0] ).join(":"), _.values(traits[1] ).join(":")].join(",")
-								attrList[p("projectlaunchrollparams")] = `@{character_name}|${traitString}|${pI("projectlaunchdiff")}|${pI("projectlaunchmod")}|${pI("projectlaunchdiffmod")}|${parseRepAttr(p())[1]}`
-							}
-							cbk(null, attrList)
-						} )
+		doProjectLaunchParams = eInfo => { 
+			return callback => {
+				const attrList= {},
+					attrArray = _.map([
+						"projectlaunchdiff", "projectforcedstakemod", ..._.map([1,2,3], v => `projectteamwork${v}`), "projectlaunchmod", "projectlaunchdiffmod", "projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2"
+					], v => `repeating_project_${v}`),
+					funcName = "DoProjectLaunchParams"
+				log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+				log(`Attr Array: ${JSON.stringify(attrArray)}`, funcName)
+				getAttrs(attrArray, ATTRS => {
+					const [, p, pV, pI] = sFuncs("project", ATTRS),
+						traits = _.map( ["projectlaunchtrait1", "projectlaunchtrait2"], v => ( { name: pV(`${v}_name`), value: pI(v) } ))
+					let traitString = ""
+					log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+					if (traits[0].name !== "" && traits[0].value > 0 ||
+						traits[1].name !== "" && traits[1].value > 0) {
+						traitString = [_.values(traits[0] ).join(":"), _.values(traits[1] ).join(":")].join(",")
+						attrList[p("projectlaunchrollparams")] = `@{character_name}|${traitString}|${pI("projectlaunchdiff")}|${pI("projectlaunchmod") + pI("projectforcedstakemod")}|${pI("projectlaunchdiffmod")}|${getRowID(eInfo.sourceAttribute)}`
 					}
-				]	
-			run$($funcs, () => cback ? cback(null) : undefined)
+					setAttrs(attrList, {}, () => {
+						log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+						if (callback)
+							callback(null)
+					})	
+				} )
+			}
 		}
 
 	on("change:date_today", doProjectCounter)
 	on(getTriggers(null, "", "", {project: ["projectstartdate", "projectincnum", "projectincunit"]}), eInfo => {
-		if (eInfo.sourceType !== "sheetworker")
-			run$([doProjectDates, doProjectLaunchCheck])
+		if (eInfo.sourceType !== "sheetworker") {
+			console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
+			log(`(Dates, LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
+			run$([doProjectDates, doProjectLaunchCheck, doProjectLaunchParams(eInfo)], () => {
+				console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
+			})
+		}
 	} )
-	on(getTriggers(null, "", "", {project: ["projectscope", "projectlaunchmod", "projectlaunchdiffmod"]}), eInfo => {
-		if (eInfo.sourceType !== "sheetworker")
-			run$([doProjectDiff, doProjectLaunchParams, doProjectLaunchCheck])
+	on(getTriggers(null, "", "", {project: ["projectscope", "projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1,2,3], v => [`projectforcedstake${v}`, `projectforcedstake${v}_name`, `projectteamwork${v}`]))]}), eInfo => {
+		if (eInfo.sourceType !== "sheetworker") {
+			console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
+			log(`(Diff, LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
+			run$([doProjectDiff, doProjectLaunchCheck, doProjectLaunchParams(eInfo)], () => {
+				console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
+			})
+		}
 	} )
 	on(getTriggers(null, "", "", {project: ["projectlaunchtrait1", "projectlaunchtrait1_name", "projectlaunchtrait2", "projectlaunchtrait2_name"]}), eInfo => {
-		if (eInfo.sourceType !== "sheetworker")
-			run$([doProjectLaunchParams, doProjectLaunchCheck])
+		if (eInfo.sourceType !== "sheetworker") {
+			console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
+			log(`(LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
+			run$([doProjectLaunchCheck, doProjectLaunchParams(eInfo)], () => {
+				console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
+			})
+		}
 	} )
 	on(getTriggers(null, "", "", {project: ["projectlaunchresults"]}), eInfo => {
-		if (eInfo.sourceType !== "sheetworker")
-			run$([doProjectDiff, doProjectLaunchCheck, doProjectStake])
+		if (eInfo.sourceType !== "sheetworker") {
+			console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
+			log(`(Diff, LCheck, LParams, Stake, Counter) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
+			run$([doProjectDiff, doProjectLaunchCheck, doProjectLaunchParams(eInfo), doProjectStake, doProjectCounter], () => {
+				console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
+			})
+		}
 	} )
 	on(getTriggers(null, "", "", {project: _.flatten(_.map([1,2,3,4,5,6], v => [`projectstake${v}`, `projectstake${v}_name`]))}), eInfo => {
-		if (eInfo.sourceType !== "sheetworker")
-			run$([doProjectStake])
+		if (eInfo.sourceType !== "sheetworker") {
+			console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
+			log(`(Stake) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
+			run$([doProjectStake], () => {
+				console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
+			})
+		}
 	} )
 	// #endregion
 

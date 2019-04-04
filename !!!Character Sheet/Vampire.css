@@ -2257,6 +2257,10 @@
 	.charsheet div.sheet-projects textarea {
 		padding: 0px 0px;
 	}
+	
+	.charsheet div.sheet-projects textarea.sheet-narrowText {
+		font-family: Voltaire !important;
+	}
 
 	.charsheet div.sheet-projects .sheet-projectheader {
 		height: 25px;
@@ -2420,6 +2424,10 @@
 		margin-bottom: 2px;
 	}
 
+	.charsheet div.sheet-projects div.sheet-projectforcedstake {
+		width: calc(50% - 90px - 25px);
+	}
+
 	.charsheet div.sheet-projects input.sheet-projectgoal {
 		width: 95%;
 	}
@@ -2432,6 +2440,7 @@
 		width: calc(100% - 40px - 25px);
 	}
 
+	.charsheet div.sheet-projects div.sheet-projectforcedstake input.sheet-dotlinename,
 	.charsheet div.sheet-projects div.sheet-projectstake input.sheet-dotlinename {
 		width: calc(100% - 96px);
 		height: 16px;

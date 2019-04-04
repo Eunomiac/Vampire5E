@@ -159,6 +159,14 @@
 				color: COLORS.white,
 				text: "rollerName"
 			},
+			rollerNameShadow: {
+				font_family: "Candal",
+				font_size: 32,
+				top: 25,
+				left: 50,
+				color: COLORS.black,
+				text: "rollerName"
+			},
 			mainRoll: {
 				font_family: "Contrail One",
 				font_size: 40,
@@ -403,7 +411,7 @@
 			space10: "<span style=\"display: inline-block; width: 10px;\"></span>",
 			space30: "<span style=\"display: inline-block; width: 30px;\"></span>",
 			space40: "<span style=\"display: inline-block; width: 40px;\"></span>",
-			rollerName: "<div style=\"display: block; width: 100%; font-variant: small-caps; font-size: 16px; height: 15px; padding-bottom: 5px; border-bottom: 1px solid white;\">",
+			rollerName: "<div style=\"display: block; width: 100%; font-variant: small-caps; font-size: 16px; height: 15px; padding-bottom: 5px; border-bottom: 1px solid white; overflow: hidden;\">",
 			mainRoll: "<div style=\"display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid white;\"><span style=\"display: block; height: 16px; line-height: 16px; width: 100%; font-size: 14px; \">",
 			mainRollSub: "<span style=\"display: block; height: 12px; line-height: 12px; width: 100%; margin-left: 24px; font-size: 10px; font-variant: italic;\">",
 			check: "<div style=\"display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid white;\"><span style=\"display: block; height: 20px;  line-height: 20px; width: 100%; margin-left: 10%;\">",
@@ -1591,6 +1599,10 @@
 						text: "",
 						justified: "left"
 					},
+					rollerNameShadow: {
+						text: "",
+						justified: "left"
+					},
 					mainRoll: {
 						text: "",
 						justified: "left",
@@ -1720,9 +1732,9 @@
 						/* falls through */
 					case "project":
 						introPhrase = introPhrase ||
-									`${rollData.charName} launches a Project (Scope ${rollData.diff - rollData.diffMod - 2}):`
+									`${rollData.charName} launches a Project:`
 						logPhrase = logPhrase ||
-									` launches a Project (Scope ${rollData.diff - rollData.diffMod - 2}):`
+									" launches a Project:"
 						/* falls through */
 					case "trait":
 					case "willpower":
@@ -1806,6 +1818,7 @@
 					}
 					logLines.rollerName = logPhrase
 					rollLines.rollerName.text = introPhrase || ""
+					rollLines.rollerNameShadow.text = rollLines.rollerName.text
 					rollLines.mainRollShadow.text = rollLines.mainRoll.text
 					break
 				case "summary":
@@ -1864,7 +1877,7 @@
 							rollLines.subOutcome.text = "Your Enemies Close In..."
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "worst")
 							rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "worst")
-							deltaAttrs[p("projectlaunchresultsummary")] += ":&nbsp;&nbsp;&nbsp;TOTAL FAIL"
+							deltaAttrs[p("projectlaunchresultsummary")] += ":   TOTAL FAIL"
 							deltaAttrs[p("projectlaunchresults")] = "TOTAL FAIL"
 							deltaAttrs[p("projectlaunchresultsmargin")] = "You've Angered Someone..."
 						} else if (margin < 0) {
@@ -1884,19 +1897,19 @@
 							rollLines.subOutcome.text = "No Commit Needed!"
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "best")
 							rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "best")
-							deltaAttrs[p("projectlaunchresultsummary")] += ":&nbsp;&nbsp;&nbsp;CRITICAL WIN!"
+							deltaAttrs[p("projectlaunchresultsummary")] += ":   CRITICAL WIN!"
 							deltaAttrs[p("projectlaunchresults")] = "CRITICAL WIN!"
 							deltaAttrs[p("projectlaunchresultsmargin")] = "No Stake Needed!"
 						} else {
 							logLines.outcome = `${CHATSTYLES.outcomeWhite}SUCCESS!</span></div>`
 							logLines.subOutcome = `${CHATSTYLES.subOutcomeWhite}Stake ${rollResults.commit} Dots</span></div>`
 							rollLines.outcome.text = "SUCCESS!"
-							rollLines.subOutcome.text = `Stake ${rollResults.commit} Dots`
+							rollLines.subOutcome.text = `Stake ${rollResults.commit} Dot${rollResults.commit > 1 ? "s" : ""}`
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "best")
 							rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "best")
 							deltaAttrs[p("projecttotalstake")] = rollResults.commit
 							deltaAttrs[p("projectlaunchresultsmargin")] = `(${rollResults.commit} Stake Required, ${rollResults.commit} to Go)`
-							deltaAttrs[p("projectlaunchresultsummary")] += `:&nbsp;&nbsp;&nbsp;${total} SUCCESS${total > 1 ? "ES" : ""}!`
+							deltaAttrs[p("projectlaunchresultsummary")] += `:   ${total} SUCCESS${total > 1 ? "ES" : ""}!`
 							deltaAttrs[p("projectlaunchresults")] = "SUCCESS!"
 						}
 						break
@@ -2075,7 +2088,7 @@
 
 			D.RunFX("bloodBolt", POSITIONS.bloodBoltFX)
 			if (_.values(deltaAttrs).length > 0) {
-				D.DB(`DELTAATTRS: ${D.JS(deltaAttrs)}`, 1)
+				D.DB(`DELTAATTRS: ${D.JSL(deltaAttrs)}`, "ROLLER: makeSheetRoll", 1)
 				setAttrs(rollData.charID, deltaAttrs)
 			}
 
@@ -2441,7 +2454,8 @@
 					return D.ThrowError(`!${rollType}roll: No character found with name ${D.JS(name)}`)
 				} else if (rollType === "frenzyInit") {
 					state[D.GAMENAME].Roller.frenzyRoll = `${name}|`
-					sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px crimson outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!&#13;#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: white; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: red; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${name}</span><br/></div>`)
+					sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px crimson outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!
+#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: white; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: red; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${name}</span><br/></div>`)
 					return
 				} else if (isLocked) {
 					return

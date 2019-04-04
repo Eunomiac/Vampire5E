@@ -793,9 +793,6 @@ const D = (() => {
 						.toLowerCase()
 						.includes(lowCaseID.toLowerCase())
 				)
-			D.Alert(`${D.JS(attrObjs)}
-			
-			found!`)
 			if (!attrObjs || attrObjs.length === 0)
 				return throwError(`No attributes found with id '${JSON.stringify(lowCaseID)}${charObj ? `' for char '${getName(charObj)}` : ""}'`)
 
