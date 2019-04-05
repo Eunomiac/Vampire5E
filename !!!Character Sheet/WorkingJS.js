@@ -87,19 +87,19 @@
 			null,
 			null,
 			null,
-			{ bp_max: 10, bp: 5},
-			{ bp_max: 9, bp: 4},
-			{ bp_max: 8, bp: 3},
-			{ bp_max: 7, bp: 3},
-			{ bp_max: 6, bp: 2},
-			{ bp_max: 5, bp: 2},
-			{ bp_max: 4, bp: 1},
-			{ bp_max: 4, bp: 1},
-			{ bp_max: 3, bp: 1},
-			{ bp_max: 3, bp: 1},
-			{ bp_max: 0, bp: 0},
-			{ bp_max: 0, bp: 0},
-			{ bp_max: 0, bp: 0}
+			{ bp_max: 10, blood_potency: 5},
+			{ bp_max: 9, blood_potency: 4},
+			{ bp_max: 8, blood_potency: 3},
+			{ bp_max: 7, blood_potency: 3},
+			{ bp_max: 6, blood_potency: 2},
+			{ bp_max: 5, blood_potency: 2},
+			{ bp_max: 4, blood_potency: 1},
+			{ bp_max: 4, blood_potency: 1},
+			{ bp_max: 3, blood_potency: 1},
+			{ bp_max: 3, blood_potency: 1},
+			{ bp_max: 0, blood_potency: 0},
+			{ bp_max: 0, blood_potency: 0},
+			{ bp_max: 0, blood_potency: 0}
 		],
 		bpDependants = [
 			{ bp_surge: 1, bp_mend: 1, bp_discbonus: 1, bp_rousereroll: 0, bp_baneseverity: 1, bp_slakeanimal: 1, bp_slakehuman: 0, bp_slakekill: 1 },
@@ -689,10 +689,10 @@
 			const attrList = {},
 				$funcs = [
 					cBack => {
-						getAttrs(groupify( ["clan", "bp"], gN), ATTRS => {
+						getAttrs(groupify( ["clan", "blood_potency"], gN), ATTRS => {
 							attrList.bane_title = `${ATTRS[`${gN}clan`]} Clan Bane`
 							attrList.bane_text = baneText[ATTRS[`${gN}clan`]].replace("Bane Severity", `Bane Severity (${
-								bpDependants[ATTRS[`${gN}bp`]].bp_baneseverity
+								bpDependants[ATTRS[`${gN}blood_potency`]].bp_baneseverity
 							})`)
 							const cDiscs = clanDiscs[ATTRS[`${gN}clan`]]
 							for (let i = 1; i <= 3; i++) {
@@ -920,8 +920,8 @@
 			case "blood potency full":
 			case "blood potency":
 				$funcs.push(cbk => {
-					getAttrs(groupify( ["clan", "bp"], gN), ATTRS => {
-						_.each(bpDependants[ATTRS[`${gN}bp`]], (v, k) => {
+					getAttrs(groupify( ["clan", "blood_potency"], gN), ATTRS => {
+						_.each(bpDependants[ATTRS[`${gN}blood_potency`]], (v, k) => {
 							attrList[gN + k] = v
 						} )
 						attrList[`${gN}bp_surgetext`] =
@@ -1081,7 +1081,7 @@
 					getAttrs(groupify( ["generation", "bonus_bp"], gN), ATTRS => {
 						attrList[`${gN}bp_max`] = Math.min(10, Math.max(0, genDepts[parseInt(ATTRS[`${gN}generation`] )].bp_max + (gN === "" ? parseInt(ATTRS[`${gN}bonus_bp`] ) : 0)))
 						if (tracker === "Blood Potency Full")
-							attrList[`${gN}bp`] = genDepts[parseInt(ATTRS[`${gN}generation`] )].bp
+							attrList[`${gN}blood_potency`] = genDepts[parseInt(ATTRS[`${gN}generation`] )].blood_potency
 						cback(null, attrList)
 					} )
 				} )
@@ -1117,7 +1117,7 @@
 			doTracker("Willpower", eInfo)
 		}
 	} )
-	on("change:bp", eInfo => {
+	on("change:blood_potency", eInfo => {
 		doTracker("Blood Potency", eInfo)
 	} )
 	on("change:humanity", eInfo => {
@@ -1271,8 +1271,12 @@
 							counterPos = 10 - Math.floor(10 * getProgress(
 								new Date(parseInt(ATTRS.date_today)), pV("projectstartdate"), pV("projectenddate")
 							))
-						if (counterPos !== pI("projectinccounter"))
+						if (counterPos !== pI("projectinccounter")) {
 							attrList[p("projectinccounter")] = counterPos
+							if (counterPos === 0) {
+								doProjectRecord(rowID)()
+							}
+						}
 					} )
 					setAttrs(attrList, {}, () => {
 						log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
@@ -1333,6 +1337,34 @@
 					})	
 				} )
 			}
+		},
+		doProjectRecord = rowID => {
+			return callback => {
+				const attrList= {},
+					attrArray = _.map([
+						"projectstartdate", "projectenddate", "projectgoal", "projectscope", "projectdetails", "projectlaunchresults", "projectscope_name", "projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2"
+					], v => `repeating_project_${rowID}_${v}`),
+					newRowID = generateRowID(),
+					funcName = "doProjectRecord"
+				log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+				getAttrs(attrArray, ATTRS => {
+					const [, , pV, pI] = pFuncs(_.keys(ATTRS)[0], ATTRS),
+						[, np] = pFuncs(`repeating_timeline_${newRowID}_stat`)
+					log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+					attrList[np("tlstartdate")] = pV("projectstartdate")
+					attrList[np("tlenddate")] = `— ${pV("projectenddate")}`
+					attrList[np("tldetails")] = pV("projectdetails")
+					attrList[np("tlcategory")] = "PROJECT"
+					attrList[np("tldotdisplay")] = "●".repeat(pI("projectscope"))
+					attrList[np("tltitle")] = pV("projectgoal")
+					attrList[np("tlsummary")] = pV("projectscope_name")
+					setAttrs(attrList, {}, () => {
+						log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+						if (callback)
+							callback(null)
+					})
+				} )
+			}
 		}
 
 	on("change:date_today", doProjectCounter)
@@ -1381,6 +1413,12 @@
 			})
 		}
 	} )
+	on("clicked:archiveproject", (eInfo) => {
+		log(`Button Clicked!  EInfo: ${JSON.stringify(eInfo)}`, "BUTTON")
+		getAttrs(["repeating_project_projectlaunchtrait1_name"], ATTRS => {
+			log(`... ATTRS: ${JSON.stringify(ATTRS)}`)
+		})
+	})
 	// #endregion
 
 	// #region UPDATE: Time
@@ -1773,7 +1811,7 @@
 		on(getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "sdmg", "admg"], "willpower_", gN), eInfo => {
 			doTracker("Willpower", eInfo.sourceAttribute, gN)
 		} )
-		on(getTriggers( ["bp"], "", gN), eInfo => {
+		on(getTriggers( ["blood_potency"], "", gN), eInfo => {
 			doTracker("Blood Potency", eInfo.sourceAttribute, gN)
 		} )
 		on(`${getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "dhum", "dstains"], "humanity_", gN)} ${getTriggers( ["humanity", "stains"], "", gN)}`, eInfo => {

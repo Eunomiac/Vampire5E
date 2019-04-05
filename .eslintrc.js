@@ -64,6 +64,9 @@ module.exports = {
         "clearInterval": false,
         "getGMID": false,
         "sendChatMessage": false,
-        "arguments": true
+        "arguments": true,
+        "generateRowID": false,
+        "MarkStart": true,
+        "MarkStop": true
     }
 };

@@ -1,4 +1,5 @@
-﻿const Roller = (() => {
+﻿void MarkStart("Roller")
+const Roller = (() => {
 	let [isRerollFXOn, rerollFX, isLocked] = [false, null, false]
 
 	// #region CONFIGURATION: Image Links, Color Schemes */
@@ -995,7 +996,7 @@
 				traitList = _.compact(
 					_.map((params.args[1] || params[0] || "").split(","), v => v.replace(/:\d+/gu, "").replace(/_/gu, " "))
 				),
-				bloodPot = parseInt(getAttrByName(charObj.id, `${gN}bp`)) || 0
+				bloodPot = parseInt(getAttrByName(charObj.id, `${gN}blood_potency`)) || 0
 			if ( ["rouse", "rouse2", "remorse", "check", "project", "secret", "humanity"].includes(rollType))
 				return flagData
 			if (parseInt(getAttrByName(charObj.id, "applyspecialty")) > 0) {
@@ -2653,3 +2654,4 @@ on("ready", () => {
 	Roller.CheckInstall()
 	D.Log("Ready!", "Roller")
 } )
+void MarkStop("Roller")

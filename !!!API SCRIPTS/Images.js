@@ -1,3 +1,4 @@
+void MarkStart("Media")
 const Images = (() => {
 	let imgRecord = false,
 		imgResize = false
@@ -102,11 +103,13 @@ const Images = (() => {
 				"WeatherFog",	
 				"WeatherTint_2", "WeatherTint_3",
 				"WeatherMain",
+				//"WeatherLightning_1", //"WeatherLightning_2", "WeatherLightning_3", "WeatherLightning_4", "WeatherLightning_5",
 				"WeatherClouds",
 				"WeatherGround",	
 				"AirLightLeft", "AirLightMid", "AirLightTop", "AirLightCN_4", "AirLightCN_5",
 				"HungerTopLeft", "HungerTopRight", "HungerBotLeft", "HungerBotRight",
-				"Horizon"
+				"Horizon",
+				"WeatherLightning_1"
 			],
 			objects: [		
 				"YusefShamsinToken",
@@ -913,3 +916,4 @@ on("ready", () => {
 	Images.CheckInstall()
 	D.Log("Ready!", "Images")
 } )
+void MarkStop("Media")

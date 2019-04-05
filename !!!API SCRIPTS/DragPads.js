@@ -1,3 +1,4 @@
+void MarkStart("DragPads")
 const DragPads = (() => {
 	// #region CONFIGURATION
 	const IMAGES = {
@@ -469,3 +470,4 @@ on("ready", () => {
 	DragPads.CheckInstall()
 	D.Log("Ready!", "DragPads")
 } )
+void MarkStop("DragPads")

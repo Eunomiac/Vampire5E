@@ -1,3 +1,4 @@
+void MarkStart("ChatFuncs")
 /* ChatFuncs.js, "ChatFuncs".  No exposure to other scripts in the API.
    >>> ChatFuncs is a library of commands that can be triggered from within roll20 chat.  You can view the properties
    of selected objects and the state variable; run text-sizing tests to be used in scripts like Roller;   is both a
@@ -550,3 +551,4 @@ on("ready", () => {
 	ChatFuncs.RegisterEventHandlers()
 	D.Log("Ready!", "ChatFuncs")
 } )
+void MarkStop("ChatFuncs")

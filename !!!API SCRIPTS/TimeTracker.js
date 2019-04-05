@@ -1,3 +1,4 @@
+void MarkStart("TimeTracker")
 const TimeTracker = (() => {
 	const [airLights, airTimes] = [{}, {}]
 	let [timeTimer, dateObj, trackerObj, trackerShadow] = [null, null, null, null],
@@ -491,9 +492,10 @@ const TimeTracker = (() => {
 				Math.floor(dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`
 			trackerObj.set("text", timeText)
 			trackerShadow.set("text", timeText)
-			let groundCover = getGroundCover()
+			
 			if (!isRunning) {
-				const lastDate = new Date(parseInt(state[D.GAMENAME].TimeTracker.currentDate))
+				const lastDate = new Date(parseInt(state[D.GAMENAME].TimeTracker.currentDate)),
+				   groundCover = getGroundCover()
 				state[D.GAMENAME].TimeTracker.currentDate = dateObj.getTime()
 				if (
 					dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
@@ -504,9 +506,15 @@ const TimeTracker = (() => {
 						date_today: dateObj.getTime().toString()
 					} ))
 				}
-				setWeather()
-				Images.Set("WeatherGround", groundCover)
-
+				if (
+					dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
+					dateObj.getMonth() !== lastDate.getMonth() ||
+					dateObj.getUTCDate() !== lastDate.getUTCDate() ||
+					dateObj.getUTCHours() !== lastDate.getUTCHours()
+				) {
+					setWeather()
+					Images.Set("WeatherGround", groundCover)
+				}
 			}
 			setHorizon()
 		},
@@ -950,3 +958,4 @@ on("ready", () => {
 	TimeTracker.CheckInstall()
 	D.Log("Ready!", "TimeTracker")
 } )
+void MarkStop("TimeTracker")

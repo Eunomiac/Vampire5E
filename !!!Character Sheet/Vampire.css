@@ -2404,6 +2404,35 @@
 
 	}
 
+	.charsheet div.sheet-projects button.sheet-projectarchive {		
+		width: 100px;
+		height: 30px;
+		background-color: rgba(255, 255, 255, 0.3);
+		border-radius: 5px;
+		border: 3px white outset !important;
+		margin-top: -10px !important;
+		font-size: 20px !important;
+		color: rgba(255, 255, 255, 0.5);
+		text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 2px #ccc;
+		opacity: 1
+	}
+
+	.charsheet div.sheet-projects button.sheet-projectarchive:active {
+		background-color: rgba(100, 100, 100, 0.3);
+		box-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 2px #ccc;
+		border: 3px white inset !important;
+	}
+
+	.charsheet div.sheet-projects button.sheet-projectarchive:focus {
+		outline: 0;
+	}
+
+	.charsheet div.sheet-projects button.sheet-projectarchive:hover:not(:active) {
+		outline: 0;
+		border: 3px outset #ffffcc !important;
+		color: white;
+	}
+
 	.charsheet div.sheet-projects div.sheet-doublerow .sheet-squareBox {
 		width: 45px;
 		height: 45px;
@@ -2585,8 +2614,19 @@
 	.charsheet div.sheet-timeline.sheet-timewhole {
 		border-bottom: 1px grey solid;
 		border-top: 1px grey solid;
-		padding: 5px 0px 7px 0px;
+		padding: 5px 0px 0px 0px;
 		margin: 0px;
+	}
+
+	.charsheet div.sheet-timeline.sheet-doublerow.sheet-timecategory {
+		width: 90px;
+		margin: 0px;
+		border-radius: 0;
+		padding: 0px;
+	}
+
+	.charsheet div.sheet-timeline textarea.sheet-dotdisplay {
+		height: 15px;
 	}
 
 	.charsheet div.sheet-timeline.sheet-doublerow.sheet-timedate {
@@ -2599,7 +2639,7 @@
 
 	.charsheet div.sheet-timeline.sheet-doublerow.sheet-timebody {
 		height: auto;
-		width: calc(100% - 100px - 20px);
+		width: calc(100% - 90px - 100px - 20px);
 		border-radius: 0;
 		padding: 0px;
 	}
@@ -2609,10 +2649,9 @@
 		line-height: 20px;
 		font-size: 14px;
 		font-variant: small-caps;
-		margin-top: -4px;
 	}
 
-	.charsheet div.sheet-timeline.sheet-timetitle textarea {
+	.charsheet div.sheet-timeline textarea.sheet-outset {
 		width: calc(100% - 9px);
 		height: calc(25px - 6px);
 		background-color: rgba(255, 255, 255, 0.3);
@@ -2624,19 +2663,20 @@
 	}
 
 	.charsheet div.sheet-timeline.sheet-timesummary {
-		height: 14px;
+		height: auto;
 	}
 
 	.charsheet div.sheet-timeline.sheet-timesummary textarea {
 		padding-left: 3px;
-		height: 100%;
+		height: 15px;
 		width: calc(100% - 30px);
 		color: black !important;
 		font-size: 12px;
 		text-shadow: none !important;
 		font-weight: normal !important;
 		line-height: 14px;
-		margin-top: 5px;
+		margin-top: 3px;
+		overflow: hidden;
 	}
 
 	.charsheet div.sheet-timeline span.sheet-header5 {
@@ -2645,7 +2685,7 @@
 	}
 
 	.charsheet div.sheet-timeline .sheet-doublerow {
-		height: 45px;
+		height: auto;
 	}
 
 	.charsheet div.sheet-timeline div.sheet-doublerow .sheet-squareBox {
@@ -2966,7 +3006,7 @@
 		background-size: 100%;
 	}
 
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-iconBox.sheet-bp {
+	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-iconBox.sheet-blood_potency {
 		background: url('https://i.imgur.com/cMdFcaj.png') no-repeat center;
 		background-size: 100%;
 		margin: 0px -7px;

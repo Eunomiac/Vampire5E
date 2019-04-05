@@ -1,3 +1,4 @@
+void MarkStart("Chars")
 const Chars = (() => {
 	// #region Constants and Declarations,
 	const STATEREF = state[D.GAMENAME].Chars,
@@ -409,6 +410,67 @@ const Chars = (() => {
 	
 		// #endregion
 	
+		// #region Populating Character Attributes
+		/* ATTRIBUTES = {
+			physical: ["Strength", "Dexterity", "Stamina"],
+			social: ["Charisma", "Manipulation", "Composure"],
+			mental: ["Intelligence", "Wits", "Resolve"]
+		},
+		SKILLS = {
+			physical: ["Athletics", "Brawl", "Craft", "Drive", "Firearms", "Melee", "Larceny", "Stealth", "Survival"],
+			social: ["Animal Ken", "Etiquette", "Insight", "Intimidation", "Leadership", "Performance", "Persuasion", "Streetwise", "Subterfuge"],
+			mental: ["Academics", "Awareness", "Finance", "Investigation", "Medicine", "Occult", "Politics", "Science", "Technology"]
+		},
+		DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
+		TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"], */
+		populateDefaults = (charRef) => {
+			const p = v => v.toLowerCase().replace(/\s+?/gu, "_")
+			let testVals = {
+				attributes: [],
+				skills: [],
+				trackers: [],
+				misc: []
+			}
+			for (const attr of _.flatten(_.values(D.ATTRIBUTES))) {
+				testVals.attributes.push(p(attr))
+			}
+			for (const skill of _.flatten(_.values(D.SKILLS))) {
+				testVals.skills.push(p(skill))
+			}
+			for (const tracker of D.TRACKERS) {
+				testVals.trackers.push(p(tracker))
+			}
+			D.Alert(D.JS(testVals))
+		},
+		changeAttrName = (oldName, newName) => {
+			const allChars = findObjs( {
+					_type: "character"
+				} ),
+				  attrList = {}
+			for (const char of allChars) {
+				attrList[char.get("name")] = []
+				const attr = findObjs( {
+					_type: "attribute",
+					_characterid: char.id,
+					name: oldName
+				})[0]
+				if (attr) {
+					attrList[char.get("name")].push({
+						[newName]: attr.get("current"),
+						[`${newName}_max`]: attr.get("max")
+					})
+					setAttrs(char.id, {
+						[newName]: attr.get("current"),
+						[`${newName}_max`]: attr.get("max")
+					})
+					attr.remove()
+				}				
+			}
+
+			D.Alert(D.JS(attrList))
+		},
+		// #endregion
+
 		// #region Generating MVCs,
 		MVC = (params) => {
 			const results = []
@@ -596,6 +658,14 @@ const Chars = (() => {
 					default: break
 					}
 					break	
+				case "defaults":
+					if (!playerIsGM(msg.playerid))
+						return
+					populateDefaults(D.GetChar(msg))
+					break
+				case "changeattr":
+					changeAttrName(args.shift(), args.shift())
+					break
 				default: break
 				}
 				break					
@@ -669,4 +739,4 @@ on("ready", () => {
 	Chars.CheckInstall()
 	D.Log("Ready!", "Chars")
 })
-	
+void MarkStop("Chars")

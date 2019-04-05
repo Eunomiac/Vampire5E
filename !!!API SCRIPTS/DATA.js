@@ -1,4 +1,5 @@
-﻿/* DATA.js, "DATA".  Exposed as "D" in the API sandbox.
+﻿void MarkStart("DATA")
+/* DATA.js, "DATA".  Exposed as "D" in the API sandbox.
    >>> DATA is both a library of handy resources for other scripts to use, and a master configuration file for your
    game.  You can find a list of all of the available methods at the end of the script.  Configuration is a bit
    trickier, but is contained in the CONFIGURATION and DECLARATIONS #regions. */
@@ -31,6 +32,7 @@ const D = (() => {
 		},
 		DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
 		TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"],
+		MISCATTRS = ["bp_max"],
 		BLOODPOTENCY = [
 			{bp_surge: 0, bp_discbonus: 0},
 			{bp_surge: 1, bp_discbonus: 1},
@@ -950,6 +952,7 @@ const D = (() => {
 		SKILLS,
 		DISCIPLINES,
 		TRACKERS,
+		MISCATTRS,
 		BLOODPOTENCY,
 		RESONANCEODDS,
 
@@ -1069,3 +1072,4 @@ on("ready", () => {
 	D.CheckInstall()
 	D.Log("Ready!", "DATA")
 } )
+void MarkStop("DATA")
