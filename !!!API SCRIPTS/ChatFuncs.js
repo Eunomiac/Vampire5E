@@ -428,11 +428,9 @@ const ChatFuncs = (() => {
 			case "!set":
 			{
 				switch (args.shift()) {
-				case "dblvl":
-					D.SetDebugLevel(...args)
-					break
-				case "dbfilter":
-					D.AddDBFilter(args.shift())
+				case "dbwatch":
+				case "watchlist":
+					D.SetDebugWatchList(args)
 					break
 				case "size":
 					if (msg.selected && msg.selected[0] ) {

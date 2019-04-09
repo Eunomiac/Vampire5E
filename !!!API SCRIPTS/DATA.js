@@ -7,16 +7,18 @@
 const D = (() => {
 	// #region CONFIGURATION: Game Name, Character Registry
 	const GAMENAME = "VAMPIRE",
+		SCRIPTNAME = "DATA",
+		STATEREF = state[GAMENAME][SCRIPTNAME],
 		HTMLFORMATS = {
 			titleStart: "<div style=\"display: block; width: auto; padding: 0px 5px; margin-left: -42px; margin-top: -30px;font-family: copperplate gothic; font-variant: small-caps; font-size: 16px; background-color: #333333; color: white;border: 2px solid black; position: relative; height: 20px; line-height: 23px;\">",
 			titleEnd: "</div>",
 			bodyStart: "<div style=\"display: block;width: auto;padding: 5px 5px;margin-left: -42px; font-family: input, verdana, sans-serif;font-size: 10px;background-color: white;border: 2px solid black;line-height: 14px;position: relative;\">",
 			bodyEnd: "</div><div style=\"display: block; width: auto; margin-left: -42px; background-color: none; position: relative; height: 25px;\"></div>"
-		},
-		// #endregion
+		}
+	// #endregion
 
-		// #region DECLARATIONS: Reference Variables
-		VALS = {
+	// #region DECLARATIONS: Reference Variables
+	const VALS = {
 			PAGEID: () => Campaign().get("playerpageid"),
 			CELLSIZE: () => 70 * getObj("page", Campaign().get("playerpageid")).get("snapping_increment")
 		},
@@ -193,20 +195,20 @@ const D = (() => {
 				startColour: [1, 0, 0, 0.5],
 				startColourRandom: [10, 0, 0, 1]
 			}
-		},
-		// #endregion
+		}
+	// #endregion
 
-		// #region DECLARATIONS: Dependent Variables
-		ALLSTATS = [
-			..._.flatten(_.values(ATTRIBUTES)),
-			..._.flatten(_.values(SKILLS)),
-			...DISCIPLINES,
-			...TRACKERS
-		],
-		// #endregion
+	// #region DECLARATIONS: Dependent Variables
+	const ALLSTATS = [
+		..._.flatten(_.values(ATTRIBUTES)),
+		..._.flatten(_.values(SKILLS)),
+		...DISCIPLINES,
+		...TRACKERS
+	]
+	// #endregion
 
-		// #region BASE FUNCTIONALITY: Fundamental Functions & String Manipulation to Declare First
-		getGMID = () => {
+	// #region BASE FUNCTIONALITY: Fundamental Functions & String Manipulation to Declare First
+	const getGMID = () => {
 			/* Finds the first player who is GM. */
 			const gmObj = _.find(findObjs( {
 				_type: "player"
@@ -386,52 +388,35 @@ const D = (() => {
 			} catch (errObj) {
 				return D.ThrowError(`Error locating stat '${D.JSL(needle)}' in ${D.JSL(haystack)}'`, "DATA.isIn", errObj)
 			}
-		},
+		}
 		// #endregion
 
-		// #region DEBUGGING & ERROR MANAGEMENT
-		setDebugLvl = (lvl, aLvl) => {
-			// Sets debug and alert thresholds.
-			[state[GAMENAME].DEBUGLEVEL, state[GAMENAME].DEBUGALERT] = [parseInt(lvl || 0), parseInt(aLvl || 0)]
-			D.Alert(`Debug Level set to ${state[GAMENAME].DEBUGLEVEL}
-			Alert Level set to ${state[GAMENAME].DEBUGALERT}`, "DATA: setDebugLvl()")
+	// #region DEBUGGING & ERROR MANAGEMENT
+	const setWatchList = (keywords) => {
+			const newWatchWords = _.flatten([keywords])
+			STATEREF.WATCHLIST = _.difference(_.union(STATEREF.WATCHLIST, newWatchWords), _.intersection(STATEREF.WATCHLIST, newWatchWords))
+			D.Alert(`Debug Watch List set to:<br><br> ${D.JS(STATEREF.WATCHLIST)}`, "DATA: setWatchList")
 		},
-		getDebugInfo = () => `Logging at level ${state[GAMENAME].DEBUGLEVEL || 0} and below.
-		Alerting at level ${state[GAMENAME].DEBUGALERT || 0} and below.`,
-		addDBFilter = text => {
-			state[GAMENAME].DBFILTER.push(text)
-			D.Alert(`Debug Filter '${text}' Added.  Current filter set:
-
-			${jStr(state[GAMENAME].DBFILTER)}`, "DATA: addDBFilter()")
+		getDebugInfo = () => {
+			D.Alert(`Debug Watch List:<br><br> ${D.JS(STATEREF.WATCHLIST)}`, "DATA: setWatchList")
 		},
-		removeDBFilter = text => {
-			state[GAMENAME].DBFILTER = _.without(state[GAMENAME].DBFILTER, text)
-			D.Alert(`Debug Filter '${text}' Removed.  Current filter set:
-
-			${jStr(state[GAMENAME].DBFILTER)}`, "DATA: removeDBFilter()")
-		},
-		clearDBFilters = () => {
-			state[GAMENAME].DBFILTER = []
-			D.Alert("Debug Filters Cleared.", "DATA: clearDBFilters()")
-		},
-		formatDebug = (msg, title, level = state[GAMENAME].DEBUGLEVEL || 0) => {
-			/* Compares the priority level of the received bug report, and...
-				LOGS it if its level is absent OR exceeded by DEBUGLEVEL
-				ALERTS it if its level is exceeded by ALERTLEVEL. */
-			if (state[GAMENAME].DEBUGLEVEL >= parseInt(level))
-				logEntry(msg, title)
-			if (state[GAMENAME].DEBUGALERT >= parseInt(level))
-				alertGM(msg, title)
+		formatDebug = (msg, title) => {
+			logEntry(msg, title)
+			alertGM(msg, title)
 		},
 		throwError = (msgText, title = "???", errObj) => {
 			// Sends specified error message to the GM.
 			let msg = msgText
 			if (errObj)
 				msg += `<br>${errObj.name}<br>${errObj.message}<br><br>${errObj.stack}`
-			sendToPlayer(D.GMID(), jStr(msg), `[ERROR] ${title}`)
+			//sendToPlayer(D.GMID(), jStr(msg), `[ERROR] ${title}`)
 			log(`[ERROR: ${jLog(title)}] ${jLog(msg)}`)
 
 			return false
+		},
+		debugAlert = (msg, funcName, scriptName) => {
+			if (STATEREF.WATCHLIST.includes(funcName) || STATEREF.WATCHLIST.includes(scriptName))
+				formatDebug(msg, `${scriptName.toUpperCase()}: ${funcName}()`)
 		},
 		// Validate Categories: char, player, trait, number, string, function, array, list, text, graphic, token, reprow
 		validate = (varList, namespace, funcName, isSilent = false) => {
@@ -564,11 +549,11 @@ const D = (() => {
 				return D.ThrowError(errorLines.join("<br>"), `${(namespace || "ERROR").toUpperCase()}: ${D.Capitalize(funcName || "Validation")}`)
 			}
 			return true
-		},
+		}
 		// #endregion
 
-		// #region GETTERS: Object, Character and Player Data
-		getSelected = (msg, types) => {
+	// #region GETTERS: Object, Character and Player Data
+	const getSelected = (msg, types) => {
 			/* When given a message object, will return all selected objects, or false. */
 			let selObjs = []
 			if (_.isObject(msg) && msg.selected && msg.selected[0] ) {
@@ -602,7 +587,7 @@ const D = (() => {
 				.replace(/.*\s/iu, "")
 				.replace(/_/gu, " ")
 		},
-		getChars = value => {
+		getChars = (value, isSilent = false) => {
 			/* Returns an ARRAY OF CHARACTERS given: "all", "registered", a character ID, a character Name,
 				a token object, a message with selected tokens, OR an array of such parameters. */
 			const charObjs = new Set()
@@ -613,7 +598,7 @@ const D = (() => {
 			try {
 				if (value.who) {
 					if (!value.selected || !value.selected[0] )
-						return throwError("Must Select a Token!", "D.GETCHARS")
+						return isSilent ? false : throwError("Must Select a Token!", "D.GETCHARS")
 					const tokens = _.filter(value.selected,
 						selection => getObj("graphic", selection._id) &&
 							_.isString(getObj("graphic", selection._id).get("represents")) &&
@@ -676,11 +661,11 @@ const D = (() => {
 			return [...charObjs]
 		},
 		getChar = v => getChars(v)[0],
-		getStats = (charRef, searchPattern, isNumOnly = false) => {
+		getStats = (charRef, searchPattern, isNumOnly = false, isSilent = false) => {
 			const charObj = D.GetChar(charRef)
 			let attrObjs = []
 			if (!charObj)
-				return D.ThrowError(`Invalid character reference: ${D.JS(charRef)}`, "DATA:GetStats")
+				return isSilent ? false : D.ThrowError(`Invalid character reference: ${D.JS(charRef)}`, "DATA:GetStats")
 			if (_.isArray(searchPattern)) {
 				let patterns = [...searchPattern]
 				attrObjs = getStats(charRef, patterns.shift(), isNumOnly)
@@ -693,12 +678,14 @@ const D = (() => {
 					_characterid: getChar(charRef).id,
 					_name: searchPattern
 				} )
+				//D.Alert(`PATTERN: ${D.JS(searchPattern)}<br><br>${D.JS(_.map(attrObjs, v => v.get("name")))}`, "DATA: GetStats (PASS 1)" )
 				// ... if not, try a fuzzier search, using the statName as a search parameter.
 				if (attrObjs.length === 0)
 					attrObjs = _.filter(findObjs({
 						type: "attribute",
 						characterid: charObj.id
-					}), v => v.get("name").toLowerCase().includes(searchPattern.toLowerCase()))
+					}), v => v.get("name").toLowerCase().includes(searchPattern.toLowerCase()))					
+				//D.Alert(`PATTERN: ${D.JS(searchPattern)}<br><br>${D.JS(_.map(attrObjs, v => v.get("name")))}`, "DATA: GetStats (PASS 2)" )
 				// ... if not, see if 'statName' is included in the "..._name" value of a repeating attribute.
 				if (attrObjs.length === 0) {
 					let nameStatsAll = getStats(charRef, ["repeating", "_name"]),
@@ -712,23 +699,25 @@ const D = (() => {
 								_characterid: getChar(charRef).id,
 								_name: stat.get("name").replace(/_name/gu, "")
 							} ))			
-				}
+				}				
+				//D.Alert(`PATTERN: ${D.JS(searchPattern)}<br><br>${D.JS(_.map(attrObjs, v => v.get("name")))}`, "DATA: GetStats (PASS 3)" )
 				// If only looking for numerical values, filter out non-numbers.
 				if (attrObjs.length > 0 && isNumOnly)
 					attrObjs = _.filter(attrObjs, v => _.isNumber(parseInt(v.get("current"))) && !_.isNaN(parseInt(v.get("current"))))
 			}
+			
+			//D.Alert(`PATTERN: ${D.JS(searchPattern)}<br><br>${D.JS(_.map(attrObjs, v => v.get("name")))}`, "DATA: FINAL" )
 			if (attrObjs.length > 0)
 				return attrObjs
 			
-			return D.ThrowError(`No attributes matched all search patterns: ${D.JS(searchPattern)}`, "DATA:GetStats")
+			return isSilent ? false : D.ThrowError(`No attributes matched all search patterns: ${D.JS(searchPattern)}`, "DATA:GetStats")
 		},
-		getStat = (charRef, searchPattern, isNumOnly) => getStats(charRef, searchPattern, isNumOnly)[0],
-		getStatData = (charRef, filterArray) => {
+		getStat = (charRef, searchPattern, isNumOnly, isSilent = false) => getStats(charRef, searchPattern, isNumOnly, isSilent)[0],
+		getStatData = (charRef, filterArray, isSilent = false) => {
 			const attrList = {}
-			_.each(getStats(charRef, filterArray), v => {
+			_.each(getStats(charRef, filterArray, false, isSilent), v => {
 				attrList[v.get("name")] = v.get("current")
 			} )
-
 			return attrList
 		},
 		getStatVal = (charRef, trait) => {
@@ -736,28 +725,33 @@ const D = (() => {
 				return
 			return getStatData(charRef, [trait])[trait]
 		},
-		getPlayerID = value => {
-			// Returns a PLAYER ID given: display name, token object, character object.
-			if (_.isString(value)) {
-				try {
-					return findObjs( {
-						_type: "player",
-						_displayname: value
-					} )[0].id
-				} catch (errObj) {
-					return false
-				}
-			}
+		getPlayerID = (value, isSilent = false) => {
+			// Returns a PLAYER ID given: display name, token object, character reference.
+			let playerID = null
 			try {
-				let playerID = null
-				if (value.get("_type") === "graphic" && value.get("_subtype") === "token")
-					playerID = value.get("represents")
-				if (value.get("_type") === "character")
-					playerID = value.get("controlledby").replace(/(,all|all,)/gu, "")
+				if (D.GetChar(value)) {
+					playerID = _.filter(value.get("controlledby").split(","), v => v !== "all")
+					if (playerID.length > 1 && !isSilent)
+						D.ThrowError(`WARNING: Finding MULTIPLE player IDs connected to character reference '${D.JS(value)}':<br><br>${D.JS(playerID)}`, "DATA: GetPlayerID")
+					
+					return playerID[0]
+				}
+				if (_.isString(value)) {
+					try {
+						return findObjs( {
+							_type: "player",
+							_displayname: value
+						} )[0].id
+					} catch (errObj) {
+						return isSilent ? false : D.ThrowError(`Unable to find player connected to player reference '${D.JS(value)}'`, "DATA: GetPlayerID")
+					}
+				}
+				if (D.IsObj(value, "graphic", "token"))
+					playerID = getPlayerID(value.get("represents"))					
 
-				return playerID || false
+				return playerID || (isSilent ? false : D.ThrowError(`Unable to find player connected to character token '${D.JS(value)}'`, "DATA: GetPlayerID"))
 			} catch (errObj) {
-				return false
+				return isSilent ? false : D.ThrowError(`Unable to find player connected to reference '${D.JS(value)}'.<br><br>${D.JS(errObj)}`, "DATA: GetPlayerID")
 			}
 		},
 		getTextWidth = (obj, text) => {
@@ -780,37 +774,33 @@ const D = (() => {
 			} )
 
 			return width
-		},
+		}
 		// #endregion
 
-		// #region Repeating Section Manipulation
-		getCaseRepID = (lowCaseID, charRef) => {
-			// Given a lower-case row ID (from sheetworker), converts it to proper case.
-			const charObj = getChar(charRef),
-				attrObjs = _.filter(
-					findObjs(charObj ?
-						{type: "attribute", characterid: charObj.id} :
-						{type: "attribute"} ),
-					v => v.get("name")
-						.toLowerCase()
-						.includes(lowCaseID.toLowerCase())
-				)
-			if (!attrObjs || attrObjs.length === 0)
-				return throwError(`No attributes found with id '${JSON.stringify(lowCaseID)}${charObj ? `' for char '${getName(charObj)}` : ""}'`)
-
-			return attrObjs[0].get("name").split("_")[2]
-		},
-		isRepRow = (charRef, rowID) => getStats(charRef, [rowID] ).length > 0,
-		getRepRowIDs = (charRef, secName) => 
+	// #region Repeating Section Manipulation
+	const isRepRow = (charRef, rowID) => getStats(charRef, [rowID] ).length > 0,
+		getRepRowIDs = (charRef, secName, isSilent = false) => 
 			_.uniq(
 				_.map(
 					_.keys(
 						_.pick(
-							getStatData(charRef, ["repeating", `${secName}_`] ), (v, k) => k.startsWith(`repeating_${secName}_`)
+							getStatData(charRef, ["repeating", `${secName}_`], isSilent), (v, k) => k.startsWith(`repeating_${secName}_`)
 						)
 					), k => k.replace(`repeating_${secName}_`, "").substr(0, 20)
 				)
 			),
+		getRepAttrObjs = (charRef, secName, isSilent = false) => _.pick(getStats(charRef, ["repeating", `${secName}_`], isSilent), v => v.get("name").startsWith(`repeating_${secName}`)),
+		getRepAttrData = (charRef, secName, isSilent = false) => _.pick(getStatData(charRef, ["repeating", `${secName}_`], isSilent), (v, k) => k.startsWith(`repeating_${secName}_`)),
+		parseRepAttr = (attrRef) => {
+			let nameParts = (D.IsObj(attrRef, "attribute") ? attrRef.get("name") : attrRef).split("_")
+			if (nameParts.length > 2) {
+				return {
+					section: nameParts[1],
+					rowID: nameParts[2],
+					stat: nameParts.slice(3).join("_")
+				}
+			}
+		},
 		makeRepRow = (charRef, secName, attrs) => {
 			const attrList = {},
 				IDa = 0,
@@ -845,12 +835,16 @@ const D = (() => {
 				prefix = `repeating_${secName}_${rowID}_`
 
 			_.each(attrs, (v, k) => {
-				createObj("attribute", {
-					name: prefix + k,
-					max: "",
-					_characterid: charID
-				} )
-				attrList[prefix + k] = v
+				if (_.isString(prefix + k) && (prefix + k).length > 12) {
+					createObj("attribute", {
+						name: prefix + k,
+						max: "",
+						_characterid: charID
+					} )
+					attrList[prefix + k] = v
+				} else {
+					return D.ThrowError(`Failure at makeRepRow(charRef, ${D.JSL(secName)}, ${D.JSL(attrs)})<br><br>Prefix (${D.JSL(prefix)}) + K (${D.JSL(k)}) is NOT A STRING asd})`, "DATA: makeRepRow()")
+				}
 			} )
 			setAttrs(charID, attrList)
 
@@ -923,23 +917,38 @@ const D = (() => {
 			default: break
 			}
 		},
-		// #endregion
+		getCaseRepID = (lowCaseID, charRef) => {
+			// Given a lower-case row ID (from sheetworker), converts it to proper case.
+			const charObj = getChar(charRef),
+				attrObjs = _.filter(
+					findObjs(charObj ?
+						{type: "attribute", characterid: charObj.id} :
+						{type: "attribute"} ),
+					v => v.get("name")
+						.toLowerCase()
+						.includes(lowCaseID.toLowerCase())
+				)
+			if (!attrObjs || attrObjs.length === 0)
+				return throwError(`No attributes found with id '${JSON.stringify(lowCaseID)}${charObj ? `' for char '${getName(charObj)}` : ""}'`)
 
-		// #region SPECIAL FX
-		runFX = (name, pos) => {
-		// Runs one of the special effects defined above.
-			spawnFxWithDefinition(pos.left, pos.top, FX[name] )
-		},
-		// #endregion
-
-		// #region INITIALIZATION
-		checkInstall = () => {
-			delete state[GAMENAME].DEBUGCATS
-			state[GAMENAME] = state[GAMENAME] || {}
-			state[GAMENAME].DATA = state[GAMENAME].DATA || {}
-			state[GAMENAME].DATA.CHARWIDTH = state[GAMENAME].DATA.CHARWIDTH || {}
-			state[GAMENAME].DBFILTER = state[GAMENAME].DBFILTER || []
+			return attrObjs[0].get("name").split("_")[2]
 		}
+		// #endregion
+
+	// #region SPECIAL FX
+	const runFX = (name, pos) => {
+		// Runs one of the special effects defined above.
+		spawnFxWithDefinition(pos.left, pos.top, FX[name] )
+	}
+	// #endregion
+
+	// #region INITIALIZATION
+	const checkInstall = () => {
+		state[GAMENAME] = state[GAMENAME] || {}
+		state[GAMENAME][SCRIPTNAME] = state[GAMENAME][SCRIPTNAME] || {}
+		state[GAMENAME][SCRIPTNAME].WATCHLIST = state[GAMENAME][SCRIPTNAME].WATCHLIST || []
+		state[GAMENAME][SCRIPTNAME].CHARWIDTH = state[GAMENAME][SCRIPTNAME].CHARWIDTH || {}
+	}
 	// #endregion
 
 	return {
@@ -1019,6 +1028,10 @@ const D = (() => {
 		/* D.GetStat(char, name):  Given any valid character value, returns the
 									attribute object described by name. */
 		IsRepRow: isRepRow,
+		GetRepAttrObjs: getRepAttrObjs,
+		GetRepAttrs: getRepAttrData,
+		GetRepIDs: getRepRowIDs,
+		ParseRepAttr: parseRepAttr,
 		GetRepIDCase: getCaseRepID,
 		CopyToSec: copyToRepSec,
 		SortRepSec: sortRepSec,
@@ -1045,19 +1058,11 @@ const D = (() => {
 		// D.ThrowError(errObj, title, errObj): Logs an error and messages GM.
 		GetDebugInfo: getDebugInfo,
 		// D.GetDebugInfo(): Displays the debug level, alert level, and categories.
-		SetDebugLevel: setDebugLvl,
+		SetDebugWatchList: setWatchList,
 
-		/* D.SetDebugLevel(lvl, alertLevel): Sets debug level to lvl. D.DB calls with
-											  levels lower than this will be muted;
-											  alertLevel is the same, but will
-											  publish the message to Roll20 chat. */
-		AddDBFilter: addDBFilter,
-		ClearDBFilters: clearDBFilters,
-		RemoveDBFilter: removeDBFilter,
 		DB: formatDebug,
+		DBAlert: debugAlert,
 
-		/* D.DB(msg, title, category, lvl): Logs debug if DEBUGLEVEL equal to lvl,
-											 and if category has been set via SetDebugCats(). */
 		Alert: alertGM,
 		// D.Alert(msg, title): Sends alert message to GM.
 		SendToPlayer: sendToPlayer

@@ -59,7 +59,7 @@
 			"Caitiff": "Your Caitiff Blood is too dilute to carry the legacy of an Antediluvian in the form of a Clan Bane. Nevertheless, your clanless nature ensures other Kindred view you as an outsider:  You begin with the Suspect (•) Flaw, and cannot purchase positive Status during character creation.  Moreover, you suffer a dice penalty on Social tests against fellow Kindred who know you are Caitiff equal to one-half your Bane Severity, rounded down to a minimum of one.",
 			"Thin-Blooded": "Your thin blood is weaker than that of other Kindred, but the ways in which that weakness manifests differs from one duskborn to another.  Refer to your Thin-Blood Merits & Flaws determine how you differ from the standard Thin-Blooded weaknesses described in VAMPIRE Core, pp. 111 - 113.",
 			"Lasombra": "Your Lasombra Blood is tainted by the same Abyss that gives you power over darkness.  Your reflection, recorded image and recorded voice are distorted, but not enough to hide your identity: avoiding vampire detection systems suffers a penalty equal to your Bane Severity.  Moreover, you must succeed on a Technology roll against a Difficulty of 2 plus your Bane Severity to use modern communications devices.",
-			"Old Clan": "Your storied Tzimisce Blood is inexhorably tied to the Old World.  You must sleep each day submerged in soil taken from Eastern Europe, or you suffer a penalty equal to your Bane Severity to all dice pools the following night.",
+			"Tzimisce": "Your storied Tzimisce Blood is inexhorably tied to the Old World.  You must sleep each day submerged in soil taken from Eastern Europe, or you suffer a penalty equal to your Bane Severity to all dice pools the following night.",
 			"Banu Haqim": "Your Assamite Blood drives you to feed from those deserving of punishment: especially the Kindred.  Upon slaking Hunger with Cainite Blood, you must roll to resist Hunger Frenzy against a Difficulty of 2 plus your Bane Severity.",
 			"Hecata": "Your Hecata Blood is tainted with death.  When feeding, you do not cause ecstasy in your prey, but rather excruciating pain.  Moreover, mortals subconsciously sense your blighted nature:  You suffer a penalty equal to your Bane Severity to all attempts to feed from mortals that do not rely on force.",
 			"Ministry": "Yours is the Blood of Set, and it shares His longing for darkness.  You suffer your Bane Severity in additional aggravated damage from sunlight, and an equivalent penalty to all dice pools when bright light is directed straight at you.",
@@ -76,7 +76,7 @@
 			"Caitiff": ["", "", ""],
 			"Thin-Blooded": ["Alchemy", "", ""],
 			"Lasombra": ["Dominate", "Oblivion", "Potence"],
-			"Old Clan": ["Animalism", "Auspex", "Protean"],
+			"Tzimisce": ["Animalism", "Auspex", "Protean"],
 			"Banu Haqim": ["Celerity", "Obfuscate", "Blood Sorcery"],
 			"Hecata": ["Auspex", "Fortitude", "Oblivion"],
 			"Ministry": ["Obfuscate", "Presence", "Protean"],
@@ -1255,7 +1255,7 @@
 			log("", `████ ${funcName.toUpperCase()} CALLED ████`)
 			getSectionIDs("project", idArray => {
 				_.each(idArray, repID => {
-					_.each(["projectstartdate",	"projectenddate", "projectinccounter", "projectlaunchroll_toggle", "projectlaunchresults"], stat => {
+					_.each(["projectlaunchroll_toggle", "projectstartdate",	"projectenddate", "projectinccounter", "projectlaunchroll_toggle", "projectlaunchresults"], stat => {
 						attrArray.push(`repeating_project_${repID}_${stat}`)
 					} )
 				} )
@@ -1271,11 +1271,12 @@
 							counterPos = 10 - Math.floor(10 * getProgress(
 								new Date(parseInt(ATTRS.date_today)), pV("projectstartdate"), pV("projectenddate")
 							))
+						if (counterPos === 0 && pI("projectlaunchroll_toggle") !== 3)
+							attrList[p("projectlaunchroll_toggle")] = 3
+						else if (counterPos !== 0 && pI("projectlaunchroll_toggle") === 3)
+							attrList[p("projectlaunchroll_toggle")] = 2
 						if (counterPos !== pI("projectinccounter")) {
 							attrList[p("projectinccounter")] = counterPos
-							if (counterPos === 0) {
-								doProjectRecord(rowID)()
-							}
 						}
 					} )
 					setAttrs(attrList, {}, () => {
@@ -1355,7 +1356,7 @@
 					attrList[np("tlenddate")] = `— ${pV("projectenddate")}`
 					attrList[np("tldetails")] = pV("projectdetails")
 					attrList[np("tlcategory")] = "PROJECT"
-					attrList[np("tldotdisplay")] = "●".repeat(pI("projectscope"))
+					attrList[np("tldotdisplay")] = pI("projectscope") > 0 ? "●".repeat(pI("projectscope")) : "Ꝋ"
 					attrList[np("tltitle")] = pV("projectgoal")
 					attrList[np("tlsummary")] = pV("projectscope_name")
 					setAttrs(attrList, {}, () => {
@@ -1413,19 +1414,122 @@
 			})
 		}
 	} )
-	on("clicked:archiveproject", (eInfo) => {
-		log(`Button Clicked!  EInfo: ${JSON.stringify(eInfo)}`, "BUTTON")
-		getAttrs(["repeating_project_projectlaunchtrait1_name"], ATTRS => {
-			log(`... ATTRS: ${JSON.stringify(ATTRS)}`)
+	// #endregion
+
+	// #region UPDATE: Timeline
+	const sortTimeline = () => {
+		getAttrs(["_reporder_timeline"], v => {
+		  getSectionIDs("timeline", function (idArray) {
+				let reporderArray = v["_reporder_timeline"] ? v["_reporder_timeline"].toLowerCase().split(",") : [],
+					          ids = [...new Set(reporderArray.filter(vv => idArray.includes(vv)).concat(idArray))]
+			  // SORT FUNCTIONS HERE
+		  })
 		})
+	  }
+	on("change:repeating_project:archiveproject", (eInfo) => {
+		if (eInfo.sourceType !== "sheetworker") {
+			doProjectRecord(getRowID(eInfo.sourceAttribute))(() => {
+				removeRepeatingRow(`repeating_project_${getRowID(eInfo.sourceAttribute)}`)
+				sortTimeline()
+			})
+		}
 	})
 	// #endregion
 
-	// #region UPDATE: Time
-
-	// #endregion
-
 	// #region UPDATE: Experience
+	const doEXP = callback => {
+		const attrList ={},
+			attrArray = {"earnedxp": [], "earnedxpright": [], "spentxp": []},
+			funcName = "doEXP"
+		log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+		getSectionIDs("earnedxp", idArray => {
+			_.each(idArray, repID => {
+				_.each(["xp_award"], stat => {
+					attrArray.earnedxp.push(`repeating_earnedxp_${repID}_${stat}`)
+				} )
+			} )
+			getSectionIDs("earnedxpright", idArray => {
+				_.each(idArray, repID => {
+					_.each(["xp_award"], stat => {
+						attrArray.earnedxpright.push(`repeating_earnedxpright_${repID}_${stat}`)
+					} )
+				} )
+				getSectionIDs("spentxp", idArray => {
+					_.each(idArray, repID => {
+						_.each(XPREPREFS.spentxp, stat => {
+							attrArray.spentxp.push(`repeating_spentxp_${repID}_${stat}`)
+						} )
+					} )
+					getAttrs( [..._.flatten(_.values(attrArray)), "xp_earnedtotal"], ATTRS => {
+						const ids = {
+							earnedxp: _.uniq(_.map(attrArray.earnedxp, v => parseRepAttr(v)[1])),
+							earnedxpright: _.uniq(_.map(attrArray.earnedxpright, v => parseRepAttr(v)[1])),
+							spentxp: _.uniq(_.map(attrArray.spentxp, v => parseRepAttr(v)[1]))
+						}
+						log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+						log(`Retrieved IDs (earnedxp): ${JSON.stringify(simpleRepAttrs(ids.earnedxp))}`, funcName)
+						log(`Retrieved IDs (earnedxpright): ${JSON.stringify(simpleRepAttrs(ids.earnedxpright))}`, funcName)
+						log(`Retrieved IDs (spentxp): ${JSON.stringify(simpleRepAttrs(ids.spentxp))}`, funcName)
+						attrList.xp_earnedtotal = _.reduce(
+							_.values(_.filter(ATTRS, (v, k) => k.includes("xp_award"))), (total, next) => parseInt(total) + parseInt(next) || 0
+						)
+						ATTRS.xp_earnedtotal = attrList.xp_earnedtotal
+						log(`Earned Total: ${JSON.stringify(attrList.xp_earnedtotal)}`, funcName)
+						let spentTotal = 0
+						_.each(ids.spentxp, rowID => {
+							const [,p,pV,pI] = pFuncs(`repeating_spentxp_${rowID}_dummyStat`, ATTRS),
+								cat = pV("xp_category"),
+								colRef = XPPARAMS[cat] ? XPPARAMS[cat].colToggles : null
+							if (colRef) {
+								if (
+									(!colRef.includes("xp_trait_toggle") || pV("xp_trait") !== "") &&
+									(!colRef.includes("xp_initial_toggle") || pV("xp_initial") !== "") &&
+									(!colRef.includes("xp_new_toggle") || pV("xp_new") !== "")
+								) {
+									if (colRef.includes("xp_new_toggle")) {
+										let delta = 0
+										if (colRef.includes("xp_initial_toggle")) {
+											if (cat === "Advantage") {
+												delta = (pI("xp_new") - pI("xp_initial")) * XPPARAMS[cat].cost
+											} else {
+												for (let i = pI("xp_initial"); i < pI("xp_new"); i++)
+													delta += (i + 1) * XPPARAMS[cat].cost
+											}
+										} else {
+											delta = pI("xp_new") * XPPARAMS[cat].cost
+										}
+										attrList[p("xp_cost")] = Math.max(0, delta)
+									} else {
+										attrList[p("xp_cost")] = Math.max(0, XPPARAMS[cat].cost)
+									}
+									if (pV("xp_spent_toggle") === "on" && attrList[p("xp_cost")] > 0)
+										spentTotal += attrList[p("xp_cost")] || 0
+									if (attrList[p("xp_cost")] === 0)
+										attrList[p("xp_cost")] = ""
+								}
+							}
+							_.each( ["xp_trait_toggle", "xp_initial_toggle", "xp_new_toggle"],
+								v => {
+									if (colRef && colRef.includes(v) && pI(v) === 0)
+										attrList[p(v)] = 1
+									else if (colRef && !colRef.includes(v) && pI(v) === 1)
+										attrList[p(v)] = 0
+								} )
+							attrList[p("xp_arrow_toggle")] = Number(colRef && colRef.includes("xp_initial_toggle") && colRef.includes("xp_new_toggle"))
+						} )
+						attrList.xp_summary = `${ATTRS.xp_earnedtotal} XP Earned${spentTotal > 0 ? ` - ${spentTotal} XP Spent =  ${parseInt(ATTRS.xp_earnedtotal) - spentTotal} XP Remaining` : ""}`
+						setAttrs(attrList, {}, () => {
+							log(`Setting Attributes: ${JSON.stringify(attrList)}`, funcName)
+							if (_.isFunction(callback))
+								callback(null)
+						})
+					} )
+				} )
+			} )
+		} )
+	}
+
+	/*
 	const doXP = (gN = "") => {
 		const $funcs = [
 			$getRepAttrs( {
@@ -1503,7 +1607,8 @@
 		]
 		run$($funcs)
 	}
-	on(getTriggers(null, "", "", _.keys(XPREPREFS)), doXP)
+	*/
+	on(getTriggers(null, "", "", _.keys(XPREPREFS)), doEXP)
 	// #endregion
 
 	// #region UPDATE: Dice Roller

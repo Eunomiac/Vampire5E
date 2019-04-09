@@ -734,7 +734,7 @@
 		opacity: 0;
 	}
 
-	.charsheet input.sheet-attr:not(.sheet-grouptab)+span:not(.sheet-nohighlight),
+	.charsheet input.sheet-attr:not(.sheet-grouptab)+span:not(.sheet-nohighlight):not(.sheet-projectarchive),
 	.charsheet input.sheet-attr:not(.sheet-grouptab)+div.sheet-attr {
 		width: 75px;
 		height: 17px;
@@ -795,7 +795,11 @@
 		display: inline-block;
 	}
 
-	.charsheet div.sheet-dotline input+span::before {
+	.charsheet div.sheet-dotline input.sheet-highdot {
+		pointer-events: none;
+	}
+
+	.charsheet div.sheet-dotline input:not(.sheet-highdot)+span::before {
 		line-height: 14px;
 
 		display: inline-block;
@@ -810,7 +814,7 @@
 		box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc;
 	}
 
-	.charsheet div.sheet-dotline input.sheet-dot+span::before {
+	.charsheet div.sheet-dotline input.sheet-dot:not(.sheet-highdot)+span::before {
 		height: 10px;
 		width: 10px;
 		margin: -2px 0px 2px 0px;
@@ -827,7 +831,7 @@
 		-webkit-border-radius: 50%;
 		border-radius: 50%;
 
-		box-shadow: none;
+		box-shadow: 1px 1px 2px black, 1px 1px 2px black;
 	}
 
 	.charsheet div.sheet-dotline input.sheet-box+span::before {
@@ -840,11 +844,11 @@
 		content: "";
 	}
 
-	.charsheet div.sheet-dotline input:checked~input+span::before {
+	.charsheet div.sheet-dotline input:checked:not(.sheet-highdot)~input+span::before {
 		content: "";
 	}
 
-	.charsheet div.sheet-dotline input.sheet-dot:checked~input.sheet-dot+span::before {
+	.charsheet div.sheet-dotline input.sheet-dot:checked:not(.sheet-highdot)~input.sheet-dot+span::before {
 		height: 12px;
 		width: 12px;
 		margin: -2px 1px 2px 1px;
@@ -855,20 +859,73 @@
 		box-shadow: -1px -1px 0px #000, 0px -1px 0px #999, 1px -1px 0px #aaa, 0px 0px 2px #000, 1px 0px 0px #fff, 0px 1px 0px #ccc, 1px 1px 0px #fff;
 	}
 
-	.charsheet div.sheet-dotline input.sheet-zero:checked+span::before {
+	.charsheet div.sheet-dotline input.sheet-zero:checked:not(.sheet-highdot)+span::before {
 		opacity: 0;
 	}
 
-	.charsheet div.sheet-dotline input.sheet-zero:hover+span::before {
+	.charsheet div.sheet-dotline input.sheet-zero:hover:not(.sheet-highdot)+span::before {
 		opacity: 1;
 	}
 
-	.charsheet div.sheet-dotline input.sheet-zero+span::before {
+	.charsheet div.sheet-dotline input.sheet-zero:not(.sheet-highdot)+span::before {
 		line-height: 12px;
 		background-image: linear-gradient(45deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 60%), linear-gradient(-45deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 60%);
 		opacity: 0.25;
 
 		text-shadow: none;
+	}
+
+	.charsheet div.sheet-dotline input.sheet-highdot+span::before {
+		line-height: 14px;
+
+		display: inline-block;
+		text-align: center;
+		text-align-last: center;
+		vertical-align: middle;
+
+		content: "";
+		color: black;
+		font-size: 16px;
+
+		box-shadow: -1px -1px 0px #333, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #fff, 1px 1px 0px #fff, 1px 1px 2px #ccc;
+	}
+
+	.charsheet div.sheet-dotline input.sheet-dot.sheet-highdot+span::before {
+		height: 16px;
+		width: 16px;
+		margin: -2px 0px 2px -1px;
+		background: url('http://imgsrv.roll20.net:5100/?src=imgur.com/U5ZW214.png') no-repeat center;
+
+		content: "";
+
+		box-sizing: border-box;
+
+		-moz-border-radius: 50%;
+		-webkit-border-radius: 50%;
+		border-radius: 50%;
+
+		box-shadow: 1px 1px 2px black, 1px 1px 2px black;
+	}
+
+	.charsheet div.sheet-dotline input.sheet-dot:checked~input.sheet-highdot+span {
+		opacity: 0;
+	}
+
+	.charsheet div.sheet-dotline input.sheet-highdot:checked~input+span::before {
+		content: "";
+	}
+
+	.charsheet div.sheet-dotline input.sheet-highdot:checked~input.sheet-dot+span::before {
+		height: 14px;
+		width: 14px;
+		margin: -4px 1px 4px 1px;
+		border: none;
+		box-shadow: none;
+		opacity: 0;
+	}
+
+	.charsheet div.sheet-dotline input.sheet-highdot:nth-last-of-type(5) {
+		margin-left: -75px;
 	}
 
 	/*#endregion*/
@@ -1902,7 +1959,7 @@
 		margin-left: calc((50% - 96px)/2);
 	}
 
-	.charsheet div.sheet-attributes input.sheet-attr+span:not(.sheet-nohighlight),
+	.charsheet div.sheet-attributes input.sheet-attr+span:not(.sheet-nohighlight):not(.sheet-projectarchive),
 	.charsheet div.sheet-attributes input.sheet-attr:checked+div.sheet-attr,
 	.charsheet div.sheet-attributes input.sheet-attr:checked+select,
 	.charsheet div.sheet-attributes input.sheet-attr:checked+textarea {
@@ -1923,7 +1980,7 @@
 		margin-bottom: 0px;
 	}
 
-	.charsheet div.sheet-skills input.sheet-attr+span:not(.sheet-nohighlight),
+	.charsheet div.sheet-skills input.sheet-attr+span:not(.sheet-nohighlight):not(.sheet-projectarchive),
 	.charsheet div.sheet-skills input.sheet-attr+div.sheet-attr,
 	.charsheet div.sheet-skills input.sheet-attr+select,
 	.charsheet div.sheet-skills input.sheet-attr+textarea {
@@ -2396,31 +2453,43 @@
 		background-size: 100%;
 	}
 
-
-
 	.charsheet div.sheet-projects div.sheet-launchroll button {
 		height: 40px;
 		width: 100px;
-
 	}
 
-	.charsheet div.sheet-projects button.sheet-projectarchive {		
-		width: 100px;
+	.charsheet div.sheet-projects div.sheet-projectarchive {
+		width: 205px;
+		margin: 2px -15px 0px 0px;
+	}
+
+	.charsheet div.sheet-projects div.sheet-projectarchive input {
+		width: 150px;
 		height: 30px;
+		margin-right: -150px;
+	}
+
+	.charsheet div.sheet-projects div.sheet-projectarchive input + span.sheet-projectarchive {
+		height: 30px;
+		width: 150px;
+		margin: 0px 0px;
+		line-height: 30px;
+		border: 3px outset white;
+		text-align: center;
+		text-align-last: center;
 		background-color: rgba(255, 255, 255, 0.3);
 		border-radius: 5px;
-		border: 3px white outset !important;
-		margin-top: -10px !important;
-		font-size: 20px !important;
-		color: rgba(255, 255, 255, 0.5);
-		text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 2px #ccc;
-		opacity: 1
+		font-size: 24px;
+		font-variant: small-caps;
 	}
 
-	.charsheet div.sheet-projects button.sheet-projectarchive:active {
+	.charsheet div.sheet-projects div.sheet-projectarchive input:checked + span.sheet-projectarchive {
 		background-color: rgba(100, 100, 100, 0.3);
 		box-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 2px #ccc;
-		border: 3px white inset !important;
+		border: 3px grey inset !important;
+		background-image: none;
+		color: black !important;
+		text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 2px #ccc;
 	}
 
 	.charsheet div.sheet-projects button.sheet-projectarchive:focus {
@@ -2606,6 +2675,14 @@
 		font-family: 'Bodoni SvtyTwo ITC TT' !important;
 	}
 
+	.charsheet div.sheet-timeline div {
+		height: auto;
+	}
+
+	.charsheet div.sheet-timeline div.repcontrol {
+		display: none !important;
+	}
+
 	.charsheet div.sheet-timeline textarea {
 		padding: 0px 0px;
 		overflow: hidden;
@@ -2616,6 +2693,7 @@
 		border-top: 1px grey solid;
 		padding: 5px 0px 0px 0px;
 		margin: 0px;
+		height: 40px;
 	}
 
 	.charsheet div.sheet-timeline.sheet-doublerow.sheet-timecategory {

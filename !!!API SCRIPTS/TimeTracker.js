@@ -5,7 +5,8 @@ const TimeTracker = (() => {
 		[isRunning, isRunningFast, isAirlights, isTimeRunning] = [false, false, true, false]
 		
 	// #region Configuration
-	const CLOCKSPEED = 50,
+	const STATEREF = state[D.GAMENAME].TimeTracker,
+		CLOCKSPEED = 50,
 		TWEENDURS = [15, 40, 60, 600, 1440, 3000, 5000, 7000, 8000, 9000, 10000, Infinity],
 		RUNNINGFASTAT = 1500000,
 		DAYSOFWEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
@@ -474,11 +475,17 @@ const TimeTracker = (() => {
 			   dateObj = dateObj || new Date(state[D.GAMENAME].TimeTracker.currentDate) */
 			let imgSrcName = getHorizon()
 			// D.Log(`DATE OBJECT: ${D.JSL(dateObj)}`)
-			if (isRunningFast)
-				imgSrcName = imgSrcName.includes("night") ? "night2" : "day"
-			if (imgSrcName !== state[D.GAMENAME].TimeTracker.lastHorizon) {
-				state[D.GAMENAME].TimeTracker.lastHorizon = imgSrcName
-				Images.Set("Horizon", imgSrcName)
+			if (isRunningFast) {
+				if (imgSrcName.includes("night") && STATEREF.lastHorizon !== "night") {
+					Images.OrderImages(["Horizon_1", "Horizon_2"], true)
+					STATEREF.lastHorizon = "night"
+				} else if (!imgSrcName.includes("night") && STATEREF.lastHorizon.includes("night")) {
+					Images.OrderImages(["Horizon_2", "Horizon_1"], true)
+					STATEREF.lastHorizon = "day"
+				}
+			} else if (imgSrcName !== STATEREF.lastHorizon) {
+				STATEREF.lastHorizon = imgSrcName
+				Images.Set("Horizon_1", imgSrcName)
 			}
 		},
 		setCurrentDate = () => {
@@ -492,11 +499,18 @@ const TimeTracker = (() => {
 				Math.floor(dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`
 			trackerObj.set("text", timeText)
 			trackerShadow.set("text", timeText)
-			
-			if (!isRunning) {
+			setHorizon()
+		},
+		setIsRunning = runStatus => {
+			isRunning = runStatus
+			Images.OrderImages(Images.IMAGELAYERS.map, true)
+			if (isRunning) {
+				Images.LayerImages(_.reject(Images.IMAGELAYERS.map, v => v.includes("Horizon")), "objects")
+			} else {
+				Images.LayerImages(_.reject(Images.IMAGELAYERS.map, v => v.includes("Horizon")), "map")
 				const lastDate = new Date(parseInt(state[D.GAMENAME].TimeTracker.currentDate)),
-				   groundCover = getGroundCover()
-				state[D.GAMENAME].TimeTracker.currentDate = dateObj.getTime()
+					   groundCover = getGroundCover()
+				STATEREF.currentDate = dateObj.getTime()
 				if (
 					dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
 					dateObj.getMonth() !== lastDate.getMonth() ||
@@ -515,17 +529,20 @@ const TimeTracker = (() => {
 					setWeather()
 					Images.Set("WeatherGround", groundCover)
 				}
-			}
-			setHorizon()
-		},
-		setIsRunning = isRun => {
-			isRunning = isRun
-			Images.OrderImages(Images.IMAGELAYERS.map, true)
-			if (isRunning) {
-				Images.LayerImages(_.reject(Images.IMAGELAYERS.map, v => v.includes("Horizon")), "objects")
-			} else {
-				Images.LayerImages(_.reject(Images.IMAGELAYERS.map, v => v.includes("Horizon")), "map")
 			}			
+		},
+		setIsRunningFast = runStatus => {
+			if (runStatus && !isRunningFast) {
+				isRunningFast = runStatus
+				Images.Set("WeatherMain", "blank")
+				Images.Set("WeatherClouds", "blank")
+				Images.Set("WeatherFog", "blank")
+				Images.Set("Horizon_1", "night3")
+				Images.OrderImages(["Horizon_2", "Horizon_1"], true)
+				//STATEREF.lastHorizon = "day"
+			} else if (!runStatus && isRunningFast) {
+				isRunningFast = runStatus
+			}
 		},
 		easeInOutSine = (curTime, startVal, deltaVal, duration) => -deltaVal / 2 * (Math.cos(Math.PI * curTime / duration) - 1) + startVal,
 		tweenClock = finalDate => {
@@ -534,14 +551,14 @@ const TimeTracker = (() => {
 				duration = (_.findIndex(TWEENDURS, v => deltaTime / 60000 <= v) + 1) * 1000,
 				startTime = dateObj.getTime(),
 				easeSet = () => {
-					if (curTime >= duration) {
+					if (Math.abs(curTime) >= Math.abs(duration)) {
 						clearInterval(timeTimer)
 						setIsRunning(false)
-						isRunningFast = false
+						setIsRunningFast(false)
 						// D.Log("Is Running: FALSE")
 					}
 					const newDelta = easeInOutSine(curTime, 0, deltaTime, duration)
-					isRunningFast = newDelta - lastTime > RUNNINGFASTAT
+					setIsRunningFast(Math.abs(newDelta - lastTime) > RUNNINGFASTAT)
 					// D.Log(`Setting Date.  lastTime = ${newDelta - lastTime}, IsRunning = ${isRunning}, IsRunningFast = ${isRunningFast}`)
 					lastTime = newDelta
 					dateObj.setTime(startTime + newDelta)
@@ -616,8 +633,7 @@ const TimeTracker = (() => {
 			case "b":
 				Images.Set("WeatherMain", "heavysnow")
 				Images.Set("WeatherFog", "blank")
-				Images.Set("WeatherClouds", getCloudSrc())
-				//Images.Set("WeatherClouds", "stormy")
+				Images.Set("WeatherClouds", "stormy")
 				break
 			case "c":
 				Images.Set("WeatherMain", "blank")
@@ -641,10 +657,9 @@ const TimeTracker = (() => {
 				break						
 			case "t":
 				Images.Set("WeatherMain", "heavyrain")
-				//Images.Set("WeatherMain", "thunderstorm")
 				Images.Set("WeatherFog", "blank")
-				Images.Set("WeatherClouds", getCloudSrc())
-				//Images.Set("WeatherClouds", "thunderstorm")
+				Images.Set("WeatherClouds", "stormy")
+				// Lightning Animations
 				break					
 			case "w":
 				Images.Set("WeatherMain", "lightrain")
@@ -660,9 +675,6 @@ const TimeTracker = (() => {
 					Images.Set("WeatherFog", "blank")
 				break
 			}
-			Images.Set("WeatherTint_1", weatherData.tempC < 0 ? "cold" : "blank")
-			Images.Set("WeatherTint_2", weatherData.tempC < -6 ? "cold" : "blank")
-			Images.Set("WeatherTint_3", weatherData.tempC < -12 ? "cold" : "blank")
 			Images.Set("WeatherFrost", weatherData.tempC > 0 ? "blank" : weatherData.tempC > -6 ? "frost1" : weatherData.tempC > -12 ? "frost2" : "frost3")
 			forecastLines.push(weatherCode.slice(0,2) === "xf" ? WEATHERCODES[0][weatherCode.charAt(1)] : WEATHERCODES[0][weatherCode.charAt(0)])
 			if (weatherCode.charAt(3) !== "x")
@@ -670,7 +682,6 @@ const TimeTracker = (() => {
 			forecastLines.push(weatherData.tempC < WINTERTEMP ? WEATHERCODES[2][weatherCode.charAt(4)][1] : WEATHERCODES[2][weatherCode.charAt(4)][0])
 			forecastObj.set("text", `${forecastLines.join(" ♦ ")}`)
 			forecastShadow.set("text", `${forecastLines.join(" ♦ ")}`)
-			// setHorizon(weatherCode)
 		},
 		getGroundCover = (isTesting = false, downVal = 0.5, upb = 2, ups = 1) => {
 			const weatherCode = WEATHERDATA[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()]
@@ -688,6 +699,7 @@ const TimeTracker = (() => {
 				testString = ""
 			checkDate.setUTCDate(checkDate.getUTCDate() - 60)
 
+			// START DEBUG TESTING CODE
 			for (let i = -60; i <= 0; i++) {
 				checkDate.setUTCDate(checkDate.getUTCDate() + 1)
 				const dayCodes = WEATHERDATA[checkDate.getUTCMonth()][checkDate.getUTCDate()]
@@ -737,6 +749,8 @@ const TimeTracker = (() => {
 			}
 			if(isTesting)
 				D.Alert(`<b>GROUND COVER:</b><br><br>${testString}<br><br>!testground down10, down0, downneg5, upb, ups`, "GROUND COVER")
+			// END DEBUG TESTING CODE
+			
 			if (groundCover > 50)
 				return "snow5"
 			else if (groundCover > 40)
@@ -796,8 +810,8 @@ const TimeTracker = (() => {
 				if (!state[D.GAMENAME].TimeTracker.timeText) {
 					D.Alert("Register a text object first, with '!regTime'", "TIMETRACKER")
 					break
-				} else if (!Images.GetData("Horizon")) {
-					D.Alert("Register an image object first, with '!img reg Horizon'", "TIMETRACKER")
+				} else if (!Images.GetData("Horizon_1") || !Images.GetData("Horizon_2")) {
+					D.Alert("Register horizon image objects first, with '!img reg Horizon_1' and '!img reg Horizon_2'", "TIMETRACKER")
 					break
 				}
 				switch ((args.shift() || "").toLowerCase()) {
@@ -862,14 +876,6 @@ const TimeTracker = (() => {
 				} else {
 					state[D.GAMENAME].TimeTracker.timeTextShadow = msg.selected[0]._id
 					D.Alert(`Registered Time Text Shadow as: ${D.JS(state[D.GAMENAME].TimeTracker.timeTextShadow)}`)
-				}
-				break
-			case "!reghorizon":
-				if (!msg.selected || !msg.selected[0] ) {
-					D.ThrowError("Select an object, then '!regTime / !regHorizon / !regTimeShadow'.")
-				} else {
-					state[D.GAMENAME].TimeTracker.horizonImage = msg.selected[0]._id
-					D.Alert(`Registered Horizon Image as: ${D.JS(state[D.GAMENAME].TimeTracker.horizonImage)}`)
 				}
 				break
 			case "!regweather":

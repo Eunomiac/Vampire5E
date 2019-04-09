@@ -1,5 +1,7 @@
 ﻿void MarkStart("Roller")
 const Roller = (() => {
+	const STATEREF = state[D.GAMENAME].Roller,
+		SCRIPTNAME = "Roller"
 	let [isRerollFXOn, rerollFX, isLocked] = [false, null, false]
 
 	// #region CONFIGURATION: Image Links, Color Schemes */
@@ -716,7 +718,6 @@ const Roller = (() => {
 								(0.5 * anchorWidth) +
 								(0.5 * params.width) +
 								parseInt(params.shift.amount)
-						// D.DB("Shifting " + D.JSL(objName) + " right by " + D.JSL(params.shift.amount) + " from " + D.JSL(anchorLeft) + " to " + D.JSL(params.left), "ROLLER: setText()", 2);
 						break
 					default:
 						break
@@ -891,7 +892,8 @@ const Roller = (() => {
 			}
 		},
 		scaleFrame = (row, width) => {
-			const stretchWidth = Math.max(width, 120),
+			const funcName = "scaleFrame",
+				stretchWidth = Math.max(width, 120),
 				imgs = [getObj("graphic", state[D.GAMENAME].Roller.imgList[`${row}End`].id)],
 				blanks = []
 			let [midCount, endImg, stretchPer, left] = [0, null, 0, null]
@@ -908,23 +910,23 @@ const Roller = (() => {
 				midCount++
 			}
 			stretchPer = stretchWidth / imgs.length
-			D.DB(`${row} stretchWidth: ${stretchWidth}, imgs Length: ${imgs.length}, x225 ${imgs.length * 225}, stretch per: ${stretchPer}`, "SCALEFRAME()", 4)
-			D.DB(`${row} midCount: ${midCount}, blanks length: ${blanks.length}`, "SCALEFRAME()", 4)
+			D.DBAlert(`${row} stretchWidth: ${stretchWidth}, imgs Length: ${imgs.length}, x225 ${imgs.length * 225}, stretch per: ${stretchPer}`, funcName, SCRIPTNAME)
+			D.DBAlert(`${row} midCount: ${midCount}, blanks length: ${blanks.length}`, funcName, SCRIPTNAME)
 			endImg = imgs.shift()
 			left = POSITIONS.diceFrameFront.left() + 120
-			D.DB(`${row}Start at ${POSITIONS.diceFrameFront.left()}, + 120 to ${left}`, "SCALEFRAME()", 4)
+			D.DBAlert(`${row}Start at ${POSITIONS.diceFrameFront.left()}, + 120 to ${left}`, funcName, SCRIPTNAME)
 			for (let i = 0; i < imgs.length; i++) {
-				D.DB(`Setting ${row}Mid${i} to ${left}`, "SCALEFRAME()", 4)
+				D.DBAlert(`Setting ${row}Mid${i} to ${left}`, funcName, SCRIPTNAME)
 				imgs[i].set( {
 					left,
 					imgsrc: IMAGES[`${row}Mids`][i - 3 * Math.floor(i / 3)]
 				} )
 				left += stretchPer
 			}
-			D.DB(`Setting ${row}End to ${left}`, "SCALEFRAME()", 4)
+			D.DBAlert(`Setting ${row}End to ${left}`, funcName, SCRIPTNAME)
 			endImg.set("left", left)
 			for (let j = 0; j < blanks.length; j++) {
-				D.DB(`Blanking Img #${imgs.length}${j}`, "SCALEFRAME()", 4)
+				D.DBAlert(`Blanking Img #${imgs.length}${j}`, funcName, SCRIPTNAME)
 				blanks[j].set("imgsrc", IMAGES.blank)
 			}
 		},
@@ -932,14 +934,15 @@ const Roller = (() => {
 
 		// #region Dice Graphic Control
 		setDie = (dieNum, dieCat = "diceList", dieVal, params = {}, rollType = "") => {
-			const dieRef = state[D.GAMENAME].Roller[dieCat][dieNum],
+			const funcName = "setDie",
+				dieRef = state[D.GAMENAME].Roller[dieCat][dieNum],
 				dieParams = {
 					id: dieRef.id
 				},
 				die = getObj("graphic", dieParams.id)
 			if (!die)
 				return D.ThrowError(`ROLLER: SETDIE(${dieNum}, ${dieCat}, ${dieVal}) >> No die registered.`)
-			// D.DB(`Setting die ${D.JSL(dieNum)} (dieVal: ${D.JSL(dieVal)}, params: ${D.JSL(params)})`)
+			// D.DBAlert(`Setting die ${D.JSL(dieNum)} (dieVal: ${D.JSL(dieVal)}, params: ${D.JSL(params)})`, funcName, SCRIPTNAME)
 
 			if (dieVal !== "selected") {
 				dieRef.value = dieVal
@@ -952,7 +955,7 @@ const Roller = (() => {
 				if (die.get(dir) !== dieRef[dir] || (params.shift && params.shift[dir] ))
 					dieParams[dir] = dieRef[dir] + (params.shift && params.shift[dir] ? params.shift[dir] : 0)
 			} )
-			// D.DB("Setting '" + D.JSL(dieVal) + "' in " + D.JSL(dieCat) + " to '" + D.JSL(dieParams) + "'", "ROLLER: setDie()", 4);
+			// D.DBAlert("Setting '" + D.JSL(dieVal) + "' in " + D.JSL(dieCat) + " to '" + D.JSL(dieParams) + "'", , funcName, SCRIPTNAME)
 			die.set(dieParams)
 
 			return die
@@ -1151,7 +1154,8 @@ const Roller = (() => {
 				  mod: 0,
 				  diff: 3
 				}*/
-			const flagData = parseFlags(charObj, rollType, params),
+			const funcName = "getRolLData",
+				flagData = parseFlags(charObj, rollType, params),
 				traitData = parseTraits(charObj, rollType, params),
 				gN = params.groupNum || "",
 				rollData = {
@@ -1203,7 +1207,7 @@ const Roller = (() => {
 			if ( ["remorse", "project", "humanity", "frenzy", "willpower", "check", "rouse", "rouse2"].includes(rollType))
 				rollData.hunger = 0
 
-			D.DB(`ROLL DATA: ${D.JS(rollData)}`, "ROLLER: makeSheetRoll()", 1)
+			D.DBAlert(`ROLL DATA: ${D.JS(rollData)}`, funcName, SCRIPTNAME)
 
 			return rollData
 		},
@@ -1231,6 +1235,7 @@ const Roller = (() => {
 
 		// #region Rolling Dice & Formatting Result
 		buildDicePool = rollData => {
+			const funcName = "buildDicePool"
 			/* MUST SUPPLY:
 				  For Rouse & Checks:    rollData = { type }
 				  For All Others:        rollData = { type, mod, << traits: [],
@@ -1295,7 +1300,7 @@ const Roller = (() => {
 			}
 			rollData.hungerPool = Math.min(rollData.hunger, Math.max(1, rollData.dicePool))
 			rollData.basePool = Math.max(1, rollData.dicePool) - rollData.hungerPool
-			D.DB(`ROLL DATA: ${D.JS(rollData)}`, "ROLLER: buildDicePool()", 1)
+			D.DBAlert(`ROLL DATA: ${D.JS(rollData)}`, funcName, SCRIPTNAME)
 
 			return rollData
 
@@ -1351,9 +1356,10 @@ const Roller = (() => {
 				  margin: 5,
 				  commit: 0
 				}*/
-			// D.DB(`RECEIVED ROLL DATA: ${D.JSL(rollData)}`, "ROLLER: rollDice()", 3)
+			// D.DBAlert(`RECEIVED ROLL DATA: ${D.JSL(rollData)}`, funcName, SCRIPTNAME)
+			const funcName = "rollDice"
 			if (addVals)
-				D.DB(`ADDED VALS: ${D.JS(addVals)}`, "ROLLER: rollDice()", 3)
+				D.DBAlert(`ADDED VALS: ${D.JS(addVals)}`, funcName, SCRIPTNAME)
 			const sortBins = [],
 				rollResults = {
 					total: 0,
@@ -1449,7 +1455,7 @@ const Roller = (() => {
 				}
 			} )
 
-			D.DB(`PRE-SORT RESULTS: ${D.JSL(rollResults)}`, "ROLLER: rollDice()", 3)
+			D.DBAlert(`PRE-SORT RESULTS: ${D.JSL(rollResults)}`, funcName, SCRIPTNAME)
 			// D.Alert(rollResults, "PRESORT ROLL RESULTS");
 			switch (rollData.type) {
 			case "secret":
@@ -1512,7 +1518,7 @@ const Roller = (() => {
 				const scope = rollData.diff - rollData.diffMod - 2
 				rollResults.commit = Math.max(1, scope + 1 - rollResults.margin)
 			}
-			D.DB(`ROLL RESULTS: ${D.JS(rollResults)}`, "ROLLER: rollDice()", 1)
+			D.DBAlert(`ROLL RESULTS: ${D.JS(rollResults)}`, funcName, SCRIPTNAME)
 
 			return rollResults
 		},
@@ -1590,7 +1596,8 @@ const Roller = (() => {
 				  rollResults = { H: { botches }, critPairs: {hh, hb, bb}, << margin >> }
 				[TRAIT ONLY]
 				  rollData = { posFlagLines, negFlagLines } */
-			const {rollData, rollResults} = getCurrentRoll(),
+			const funcName = "displayRoll",
+				{rollData, rollResults} = getCurrentRoll(),
 				gNum = rollData.groupNum || "",
 				[deltaAttrs, txtWidths] = [{}, {}],
 				[mainRollParts, mainRollLog, diceObjs] = [[], [], []],
@@ -1716,8 +1723,8 @@ const Roller = (() => {
 
 			blankLines = _.keys(_.omit(state[D.GAMENAME].Roller.textList, _.keys(rollLines)))
 
-			D.DB(`ROLL LINES: ${D.JS(rollLines)}`, "ROLLER: applyRoll()", 3)
-			D.DB(`BLANKING LINES: ${D.JS(blankLines)}`, "ROLLER: applyRoll()", 3)
+			D.DBAlert(`ROLL LINES: ${D.JS(rollLines)}`, funcName, SCRIPTNAME)
+			D.DBAlert(`BLANKING LINES: ${D.JS(blankLines)}`, funcName, SCRIPTNAME)
 
 			_.each(rollLines, (content, name) => {
 				switch (name) {
@@ -1903,7 +1910,7 @@ const Roller = (() => {
 							deltaAttrs[p("projectlaunchresultsmargin")] = "No Stake Needed!"
 						} else {
 							logLines.outcome = `${CHATSTYLES.outcomeWhite}SUCCESS!</span></div>`
-							logLines.subOutcome = `${CHATSTYLES.subOutcomeWhite}Stake ${rollResults.commit} Dots</span></div>`
+							logLines.subOutcome = `${CHATSTYLES.subOutcomeWhite}Stake ${rollResults.commit} Dot${rollResults.commit > 1 ? "s" : ""}</span></div>`
 							rollLines.outcome.text = "SUCCESS!"
 							rollLines.subOutcome.text = `Stake ${rollResults.commit} Dot${rollResults.commit > 1 ? "s" : ""}`
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "best")
@@ -2023,13 +2030,13 @@ const Roller = (() => {
 			logString = `${logLines.fullBox + logLines.rollerName + logLines.mainRoll + logLines.resultDice +
 				logLines.outcome + logLines.subOutcome}</div>`
 
-			D.DB(`LOGLINES: ${D.JS(logLines)}`, "LOG LINES", 2)
+			D.DBAlert(`LOGLINES: ${D.JS(logLines)}`, funcName, SCRIPTNAME)
 			
 			if (isLogging)
 				sendChat("", logString)
 			// D.Alert(logString);
 
-			D.DB("... Complete.", "ROLLER: applyRolls()", 4)
+			D.DBAlert("... Complete.", funcName, SCRIPTNAME)
 
 			_.each(blankLines, line => {
 				rollLines[line] = {
@@ -2056,7 +2063,7 @@ const Roller = (() => {
 
 			// D.Alert(`RollResults: ${D.JS(rollResults)}<br><br>DiceCats: ${D.JS(diceCats)}`)
 
-			// D.DB("Processing '" + D.JSL(diceCats[0]) + "' (length = " + D.JSL(state[D.GAMENAME].Roller[diceCats[0]].length) + "): " + D.JSL(state[D.GAMENAME].Roller[diceCats[0]]), "ROLLER: applyRoll()", 2);
+			// D.DBAlert("Processing '" + D.JSL(diceCats[0]) + "' (length = " + D.JSL(state[D.GAMENAME].Roller[diceCats[0]].length) + "): " + D.JSL(state[D.GAMENAME].Roller[diceCats[0]]), funcName, SCRIPTNAME)
 			for (let i = 0; i < state[D.GAMENAME].Roller[diceCats[0]].length; i++) {
 				diceObjs.push(setDie(i, diceCats[0], rollResults.diceVals[i] || "blank", {
 					type: rollData.type,
@@ -2065,7 +2072,7 @@ const Roller = (() => {
 					}
 				}, rollData.type))
 			}
-			// D.DB("Dice Objects List: '" + D.JSL(diceObjs) + "'", "ROLLER: applyRoll()", 2);
+			// D.DBAlert("Dice Objects List: '" + D.JSL(diceObjs) + "'", funcName, SCRIPTNAME)
 
 			bookends = [diceObjs[0], diceObjs[rollResults.diceVals.length - 1]]
 
@@ -2089,19 +2096,20 @@ const Roller = (() => {
 
 			D.RunFX("bloodBolt", POSITIONS.bloodBoltFX)
 			if (_.values(deltaAttrs).length > 0) {
-				D.DB(`DELTAATTRS: ${D.JSL(deltaAttrs)}`, "ROLLER: makeSheetRoll", 1)
+				D.DBAlert(`DELTAATTRS: ${D.JSL(deltaAttrs)}`, funcName, SCRIPTNAME)
 				setAttrs(rollData.charID, deltaAttrs)
 			}
 
 			return deltaAttrs
 		},
 		makeNewRoll = (charObj, rollType, params) => {
-			D.DB(`PARAMS: ${D.JS(params)} (length: ${params.length})`, "ROLLER: makeSheetRoll()", 1)
+			const funcName = "makeNewRoll"
+			D.DBAlert(`PARAMS: ${D.JS(params)} (length: ${params.length})`, funcName, SCRIPTNAME)
 			const rollData = buildDicePool(getRollData(charObj, rollType, params))
-			D.DB(`RECEIVED ROLLDATA: ${D.JS(rollData)}`, "ROLLER: makeSheetRoll()", 1)
+			D.DBAlert(`RECEIVED ROLLDATA: ${D.JS(rollData)}`, funcName, SCRIPTNAME)
 			recordRoll(rollData, rollDice(rollData))
 			displayRoll()
-			D.DB("FINISHED MAKE NEW ROLL.", "ROLLER: makeSheetRoll()", 1)
+			D.DBAlert("FINISHED MAKE NEW ROLL.", funcName, SCRIPTNAME)
 		},
 		wpReroll = dieCat => {
 			clearInterval(rerollFX);
@@ -2394,6 +2402,7 @@ const Roller = (() => {
 		handleInput = msg => {
 			if (msg.type !== "api")
 				return
+			const funcName = "handleInput"
 			let args = msg.content.split(/\s+/u),
 				[rollType, groupName, groupNum, charObj, diceNums, resonance, resDetails, resIntLine] = [null, null, null, null, null, null, null],
 				name = "",
@@ -2416,7 +2425,7 @@ const Roller = (() => {
 				rollType = "frenzy"
 				lockRoller(false)
 				args = `${state[D.GAMENAME].Roller.frenzyRoll} ${args[0]}`.split(" ")
-				D.DB(`NEW ARGS: ${D.JSL(args)}`, "!frenzyroll", 2)
+				D.DBAlert(`NEW ARGS: ${D.JSL(args)}`, funcName, SCRIPTNAME)
 				/* falls through */
 			case "!frenzyinitroll":
 				rollType = rollType || "frenzyInit"

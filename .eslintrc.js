@@ -49,6 +49,7 @@ module.exports = {
         "filterObjs": false,
         "getAllObjs": false,
         "getAttrByName": false,
+        "removeRepeatingRow": false,
         "Campaign": false,
         "playerIsGM": false,
         "on": false,

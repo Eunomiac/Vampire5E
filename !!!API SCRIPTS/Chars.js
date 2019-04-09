@@ -132,6 +132,10 @@ const Chars = (() => {
 					"you react with <b>Zeal</b> (or) <b>Boredom:</b> You're reminded of what is good in the world, or you grow impatient to find something more interesting."],
 			],
 		],
+		[NPCSTATS] = [
+			/* eslint-disable-next-line quotes */
+			`{"-LNQHXkCj5qvPpMJRgaP": { "base": {"clan": "Tremere", "faction": "Camarilla", "generation": 8, "blood_potency": 6, "humanity": 3, "stains": 0 }, "attributes": { "strength": 3, "dexterity": 2, "stamina": 3, "charisma": 3, "manipulation": 3, "composure": 4, "intelligence": 6, "wits": 4, "resolve": 4 }, "skills": { "6": "OCC", "5": "AWA INT POL INS SUB", "4": "MEL ACA INV", "3": "BRA LED ETI", "2": "PER", "1": "SCI" }, "clandiscs": { "disc1": ["Auspex", 4], "disc2": ["Dominate", 5], "disc3": ["Blood Sorcery", 5] }, "otherdiscs": { "5": "", "4": "", "3": "PRE OBF", "2": "", "1": "" } },"-LNQFgr6-qOsG0YDON5o": { "base": {"clan": "Malkavian", "faction": "Anarch", "generation": 11, "blood_potency": 3, "humanity": 6, "stains": 0 }, "attributes": { "strength": 1, "dexterity": 2, "stamina": 2, "charisma": 3, "manipulation": 4, "composure": 2, "intelligence": 4, "wits": 5, "resolve": 2 }, "skills": { "6": "", "5": "INS AWA", "4": "SUB LED INV", "3": "LAR SUR POL", "2": "PER TEC ETI", "1": "ATH BRA MEL FIN" }, "clandiscs": { "disc1": ["Auspex", 4], "disc2": ["Dominate", 3], "disc3": ["Obfuscate", 4] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "CEL", "1": "" } },"-LNQFwYKATjHDhiO_SaO": { "base": {"clan": "Malkavian", "faction": "Anarch", "generation": 12, "blood_potency": 2, "humanity": 6, "stains": 0 }, "attributes": { "strength": 2, "dexterity": 3, "stamina": 2, "charisma": 3, "manipulation": 4, "composure": 3, "intelligence": 2, "wits": 2, "resolve": 1 }, "skills": { "6": "", "5": "PER", "4": "SUB", "3": "INS ATH", "2": "INV AWA STR", "1": "BRA STL DRV" }, "clandiscs": { "disc1": ["Auspex", 0], "disc2": ["Dominate", 4], "disc3": ["Obfuscate", 2] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "" } },"-LNQFyJ-TyDfOrdNSi_o": { "base": {"clan": "Brujah", "faction": "Anarch", "generation": 11, "blood_potency": 2, "humanity": 7, "stains": 0 }, "attributes": { "strength": 4, "dexterity": 3, "stamina": 3, "charisma": 2, "manipulation": 3, "composure": 2, "intelligence": 2, "wits": 1, "resolve": 2 }, "skills": { "6": "", "5": "", "4": "", "3": "SUB INS", "2": "PRF STR ATH ETI LAR ACA POL PER", "1": "AWA MEL TEC FIN SUR FIR TEC MED INV" }, "clandiscs": { "disc1": ["Celerity", 1], "disc2": ["Presence", 3], "disc3": ["Potence", 2] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "" } },"-LNQFw2N0ga48U9Topv6": { "base": {"clan": "Malkavian", "faction": "Anarch", "generation": 9, "blood_potency": 5, "humanity": 8, "stains": 0 }, "attributes": { "strength": 2, "dexterity": 4, "stamina": 2, "charisma": 1, "manipulation": 2, "composure": 2, "intelligence": 5, "wits": 4, "resolve": 2 }, "skills": { "6": "", "5": "", "4": "OCC INS", "3": "STL ACA POL STR", "2": "ATH SUB FIN MED SCI", "1": "BRA LAR MEL INT LED PER SUR DRV TEC ETI" }, "clandiscs": { "disc1": ["Auspex", 4], "disc2": ["Dominate", 1], "disc3": ["Obfuscate", 3] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "FOR" } },"-LNQHYdq6TiLMFGVmmW6": { "base": {"clan": "Nosferatu", "faction": "Camarilla", "generation": 10, "blood_potency": 3, "humanity": 8, "stains": 0 }, "attributes": { "strength": 2, "dexterity": 2, "stamina": 4, "charisma": 1, "manipulation": 1, "composure": 3, "intelligence": 3, "wits": 3, "resolve": 5 }, "skills": { "6": "", "5": "INV", "4": "AWA BRA INS", "3": "MEL STR LED", "2": "STE TEC ANK INT POL", "1": "ATH FIR SUR SUB" }, "clandiscs": { "disc1": ["Animalism", 2], "disc2": ["Obfuscate", 4], "disc3": ["Potence", 3] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "" } },"-LNQG0wxWA3u5Ec_eYzq": { "base": {"clan": "Nosferatu", "faction": "Anarch", "generation": 9, "blood_potency": 4, "humanity": 6, "stains": 0 }, "attributes": { "strength": 2, "dexterity": 1, "stamina": 2, "charisma": 3, "manipulation": 4, "composure": 5, "intelligence": 2, "wits": 4, "resolve": 2 }, "skills": { "6": "", "5": "INS PER POL", "4": "ANK LED", "3": "LED ACA", "2": "STL MEL", "1": "ATH INV" }, "clandiscs": { "disc1": ["Animalism", 4], "disc2": ["Obfuscate", 3], "disc3": ["Potence", 2] }, "otherdiscs": { "5": "", "4": "", "3": "PRE", "2": "", "1": "" } },"-LWe9buk5mborjCgeb95": { "base": {"clan": "Thin-Blooded", "faction": "Anarch", "generation": 14, "blood_potency": 0, "humanity": 9, "stains": 0 }, "attributes": { "strength": 2, "dexterity": 2, "stamina": 3, "charisma": 2, "manipulation": 1, "composure": 2, "intelligence": 4, "wits": 3, "resolve": 3 }, "skills": { "6": "", "5": "", "4": "SCI", "3": "OCC ACA TEC", "2": "INV AWA MED", "1": "PER SUB STR" }, "clandiscs": { "disc1": ["Alchemy", 3], "disc2": [], "disc3": [] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "" } },"-LNQG0fyUU5WgN2IYaLo": { "base": {"clan": "Brujah", "faction": "Anarch", "generation": 12, "blood_potency": 1, "humanity": 7, "stains": 0 }, "attributes": { "strength": 2, "dexterity": 2, "stamina": 3, "charisma": 4, "manipulation": 3, "composure": 3, "intelligence": 2, "wits": 1, "resolve": 2 }, "skills": { "6": "", "5": "", "4": "", "3": "PRF PER LED", "2": "INT AWA MEL POL SUB", "1": "ACA ETI INS STR BRA FIR INV" }, "clandiscs": { "disc1": ["Celerity", 1], "disc2": ["Presence", 2], "disc3": ["Potence", 1] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "" } },"-LNQG0N7ZGUK1zMpm6Zx": { "base": {"clan": "Malkavian", "faction": "Anarch", "generation": 13, "blood_potency": 1, "humanity": 7, "stains": 0 }, "attributes": { "strength": 2, "dexterity": 2, "stamina": 1, "charisma": 1, "manipulation": 4, "composure": 2, "intelligence": 4, "wits": 2, "resolve": 4 }, "skills": { "6": "", "5": "", "4": "INS", "3": "ACA OCC POL", "2": "FIN MED INV", "1": "STR SUB PER" }, "clandiscs": { "disc1": ["Auspex", 1], "disc2": ["Dominate", 1], "disc3": ["Obfuscate", 0] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "SOR PRO" } },"-LNQG04sy2d4LNugi8xE": { "base": {"clan": "Toreador", "faction": "Anarch", "generation": 11, "blood_potency": 1, "humanity": 6, "stains": 0 }, "attributes": { "strength": 2, "dexterity": 3, "stamina": 2, "charisma": 4, "manipulation": 4, "composure": 2, "intelligence": 2, "wits": 2, "resolve": 1 }, "clandiscs": { "disc1": ["Auspex", 1], "disc2": ["Celerity", 2], "disc3": ["Presence", 3] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "" } },"-LNQFzHYmcnDqQSytLhP": { "base": {"clan": "Brujah", "faction": "Anarch", "generation": 11, "blood_potency": 2, "humanity": 6, "stains": 0 }, "attributes": { "strength": 4, "dexterity": 3, "stamina": 3, "charisma": 2, "manipulation": 1, "composure": 2, "intelligence": 3, "wits": 2, "resolve": 2 }, "clandiscs": { "disc1": ["Celerity", 2], "disc2": ["Presence", 1], "disc3": ["Potence", 3] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "" } },"-LNQG-Q_Zvl0YZlCIzcQ": { "base": {"clan": "Gangrel", "faction": "Anarch", "generation": 11, "blood_potency": 2, "humanity": 5, "stains": 0 }, "attributes": { "strength": 3, "dexterity": 3, "stamina": 4, "charisma": 1, "manipulation": 2, "composure": 2, "intelligence": 2, "wits": 2, "resolve": 3 }, "clandiscs": { "disc1": ["Animalism", 1], "disc2": ["Fortitude", 0], "disc3": ["Protean", 0] }, "otherdiscs": { "5": "", "4": "", "3": "PRO", "2": "", "1": "" } },"-LNQG-8UJao43g8Hd2Fl": { "base": {"clan": "Gangrel", "faction": "Anarch", "generation": 11, "blood_potency": 3, "humanity": 5, "stains": 0 }, "attributes": { "strength": 3, "dexterity": 5, "stamina": 2, "charisma": 2, "manipulation": 1, "composure": 2, "intelligence": 2, "wits": 2, "resolve": 3 }, "clandiscs": { "disc1": ["Animalism", 2], "disc2": ["Fortitude", 0], "disc3": ["Protean", 0] }, "otherdiscs": { "5": "", "4": "PRO", "3": "", "2": "", "1": "" } },"-LNQFzrFI1aP3xdVYFVY": { "base": {"clan": "Gangrel", "faction": "Anarch", "generation": 11, "blood_potency": 2, "humanity": 6, "stains": 0 }, "attributes": { "strength": 3, "dexterity": 4, "stamina": 3, "charisma": 2, "manipulation": 3, "composure": 2, "intelligence": 2, "wits": 1, "resolve": 2 }, "clandiscs": { "disc1": ["Animalism", 2], "disc2": ["Fortitude", 1], "disc3": ["Protean", 0] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "PRO" } },"-LNQFz_V0ms41yrxwJ1x": { "base": {"clan": "Malkavian", "faction": "Anarch", "generation": 6, "blood_potency": 4, "humanity": 7, "stains": 0 }, "attributes": { "strength": 2, "dexterity": 3, "stamina": 3, "charisma": 4, "manipulation": 6, "composure": 5, "intelligence": 3, "wits": 3, "resolve": 5 }, "skills": { "6": "SUB", "5": "", "4": "", "3": "", "2": "", "1": "" }, "clandiscs": { "disc1": ["Auspex", 4], "disc2": ["Dominate", 5], "disc3": ["Obfuscate", 5] }, "otherdiscs": { "5": "", "4": "PRO", "3": "FOR", "2": "CEL", "1": "ANI" } },"-LNQFtzeAa6FUgB4pO1R": { "base": {"clan": "Brujah", "faction": "Anarch", "generation": 11, "blood_potency": 2, "humanity": 5, "stains": 0 }, "attributes": { "strength": 3, "dexterity": 2, "stamina": 2, "charisma": 4, "manipulation": 2, "composure": 4, "intelligence": 2, "wits": 1, "resolve": 2 }, "clandiscs": { "disc1": ["Celerity", 2], "disc2": ["Presence", 2], "disc3": ["Potence", 4] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "" } },"-LNQFtYW-m47AqMuMI4X": { "base": {"clan": "Malkavian", "faction": "Anarch", "generation": 13, "blood_potency": 1, "humanity": 5, "stains": 0 }, "attributes": { "strength": 3, "dexterity": 3, "stamina": 2, "charisma": 1, "manipulation": 2, "composure": 2, "intelligence": 4, "wits": 3, "resolve": 2 }, "clandiscs": { "disc1": ["Auspex", 1], "disc2": ["Dominate", 0], "disc3": ["Obfuscate", 2] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "ANI", "1": "POT" } },"-LNQFt37ROBDaLQ3aZuT": { "base": {"clan": "Nosferatu", "faction": "Anarch", "generation": 13, "blood_potency": 1, "humanity": 3, "stains": 0 }, "attributes": { "strength": 4, "dexterity": 3, "stamina": 3, "charisma": 1, "manipulation": 2, "composure": 2, "intelligence": 3, "wits": 2, "resolve": 2 }, "clandiscs": { "disc1": ["Animalism", 1], "disc2": ["Obfuscate", 1], "disc3": ["Potence", 1] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "PRO" } },"-LNQFxShAsElf1Qy5xv_": { "base": {"clan": "Gangrel", "faction": "Anarch", "generation": 13, "blood_potency": 2, "humanity": 6, "stains": 0 }, "attributes": { "strength": 4, "dexterity": 3, "stamina": 3, "charisma": 2, "manipulation": 1, "composure": 2, "intelligence": 2, "wits": 2, "resolve": 3 }, "clandiscs": { "disc1": ["Animalism", 0], "disc2": ["Fortitude", 2], "disc3": ["Protean", 0] }, "otherdiscs": { "5": "", "4": "PRO", "3": "", "2": "POT", "1": "" } },"-LNQFxo7w4eJYFQYNeZd": { "base": {"clan": "Gangrel", "faction": "Anarch", "generation": 13, "blood_potency": 1, "humanity": 6, "stains": 0 }, "attributes": { "strength": 3, "dexterity": 4, "stamina": 3, "charisma": 2, "manipulation": 1, "composure": 2, "intelligence": 2, "wits": 2, "resolve": 3 }, "clandiscs": { "disc1": ["Animalism", 0], "disc2": ["Fortitude", 3], "disc3": ["Protean", 0] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "PRO" } },"-LWeAmvEEK2_kLoCN2w_": { "base": {"clan": "Thin-Blooded", "faction": "Anarch", "generation": 14, "blood_potency": 0, "humanity": 6, "stains": 0 }, "attributes": { "strength": 4, "dexterity": 3, "stamina": 3, "charisma": 2, "manipulation": 3, "composure": 2, "intelligence": 1, "wits": 2, "resolve": 2 }, "clandiscs": { "disc1": ["Alchemy", 1], "disc2": [], "disc3": [] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "" } },"-LWeAY-ePMjLtV6xSs6h": { "base": {"clan": "Thin-Blooded", "faction": "Anarch", "generation": 14, "blood_potency": 0, "humanity": 7, "stains": 0 }, "attributes": { "strength": 2, "dexterity": 2, "stamina": 3, "charisma": 3, "manipulation": 3, "composure": 2, "intelligence": 2, "wits": 4, "resolve": 1 }, "clandiscs": { "disc1": ["Alchemy", 1], "disc2": [], "disc3": [] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "" } },"-LTJM_n4VcZzmFKjWG74": { "base": {"clan": "Ministry", "faction": "Anarch", "generation": 9, "blood_potency": 5, "humanity": 6, "stains": 0 }, "attributes": { "strength": 1, "dexterity": 3, "stamina": 2, "charisma": 5, "manipulation": 3, "composure": 4, "intelligence": 2, "wits": 4, "resolve": 2 }, "clandiscs": { "disc1": ["Obfuscate", 2], "disc2": ["Presence", 4], "disc3": ["Protean", 0] }, "otherdiscs": { "5": "AUS", "4": "", "3": "PRO", "2": "", "1": "CEL" } },"-LTJMSdW7fIoXAFfKcET": { "base": {"clan": "Ministry", "faction": "Anarch", "generation": 10, "blood_potency": 3, "humanity": 6, "stains": 0 }, "attributes": { "strength": 2, "dexterity": 2, "stamina": 1, "charisma": 4, "manipulation": 3, "composure": 3, "intelligence": 3, "wits": 2, "resolve": 2 }, "clandiscs": { "disc1": ["Obfuscate", 1], "disc2": ["Presence", 3], "disc3": ["Protean", 0] }, "otherdiscs": { "5": "", "4": "PRO", "3": "", "2": "", "1": "" } },"-LTJMWxeANEe12WCfXtm": { "base": {"clan": "Ministry", "faction": "Anarch", "generation": 10, "blood_potency": 3, "humanity": 4, "stains": 0 }, "attributes": { "strength": 2, "dexterity": 2, "stamina": 1, "charisma": 4, "manipulation": 5, "composure": 3, "intelligence": 4, "wits": 2, "resolve": 2 }, "clandiscs": { "disc1": ["Obfuscate", 1], "disc2": ["Presence", 4], "disc3": ["Protean", 0] }, "otherdiscs": { "5": "", "4": "", "3": "AUS PRO", "2": "", "1": "" } },"-LTJMKmVLVu5OazFXbUo": { "base": {"clan": "Ministry", "faction": "Anarch", "generation": 10, "blood_potency": 3, "humanity": 9, "stains": 0 }, "attributes": { "strength": 2, "dexterity": 3, "stamina": 2, "charisma": 4, "manipulation": 3, "composure": 3, "intelligence": 2, "wits": 2, "resolve": 1 }, "clandiscs": { "disc1": ["Obfuscate", 0], "disc2": ["Presence", 4], "disc3": ["Protean", 0] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "PRO", "1": "" } },"-LU7pcmKytkmcej5SH9c": { "base": {"clan": "Brujah", "faction": "Anarch", "generation": 12, "humanity": 9, "stains": 0 }, "attributes": { "strength": 3, "dexterity": 3, "stamina": 3, "charisma": 2, "manipulation": 1, "composure": 2, "intelligence": 2, "wits": 2, "resolve": 4 } },"-LNQFvl-ktzpXfhkW8ZQ": { "base": {"clan": "Brujah", "faction": "Anarch", "generation": 12, "blood_potency": 2, "humanity": 7, "stains": 0 }, "attributes": { "strength": 3, "dexterity": 3, "stamina": 4, "charisma": 2, "manipulation": 1, "composure": 2, "intelligence": 2, "wits": 2, "resolve": 3 }, "clandiscs": { "disc1": ["Celerity", 2], "disc2": ["Presence", 1], "disc3": ["Potence", 1] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "" } },"-LNQFv8D4hqgpkRNVb8I": { "base": {"clan": "Nosferatu", "faction": "Anarch", "generation": 12, "blood_potency": 2, "humanity": 7, "stains": 0 }, "attributes": { "strength": 3, "dexterity": 4, "stamina": 3, "charisma": 1, "manipulation": 2, "composure": 2, "intelligence": 2, "wits": 3, "resolve": 2 }, "clandiscs": { "disc1": ["Animalism", 0], "disc2": ["Obfuscate", 3], "disc3": ["Potence", 0] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "CEL" } },"-LNQFvRGMoiNF54OL3wL": { "base": {"clan": "Gangrel", "faction": "Anarch", "generation": 12, "blood_potency": 2, "humanity": 6, "stains": 0 }, "attributes": { "strength": 3, "dexterity": 3, "stamina": 4, "charisma": 2, "manipulation": 2, "composure": 2, "intelligence": 3, "wits": 1, "resolve": 2 }, "clandiscs": { "disc1": ["Animalism", 1], "disc2": ["Fortitude", 1], "disc3": ["Protean", 0] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "PRO", "1": "" } },"-LWeQPMwOtwmjU_CY-uE": { "base": {"clan": "Nosferatu", "faction": "Camarilla", "generation": 8, "blood_potency": 4, "humanity": 5, "stains": 0 }, "attributes": { "strength": 4, "dexterity": 3, "stamina": 4, "charisma": 3, "manipulation": 2, "composure": 3, "intelligence": 6, "wits": 3, "resolve": 4 }, "clandiscs": { "disc1": ["Animalism", 4], "disc2": ["Obfuscate", 5], "disc3": ["Potence", 4] }, "otherdiscs": { "5": "", "4": "", "3": "CEL", "2": "DOM", "1": "FOR AUS" } },"-LYxow0RcEaAl2B-nZBK": { "base": {"clan": "Banu Haqim", "faction": "Camarilla", "generation": 7, "blood_potency": 6, "humanity": 5, "stains": 0 }, "attributes": { "strength": 3, "dexterity": 4, "stamina": 3, "charisma": 3, "manipulation": 3, "composure": 4, "intelligence": 6, "wits": 2, "resolve": 4 }, "clandiscs": { "disc1": ["Celerity", 5], "disc2": ["Obfuscate", 5], "disc3": ["Blood Sorcery", 4] }, "otherdiscs": { "5": "", "4": "", "3": "POT FOR", "2": "", "1": "" } },"-LYxov6gTCWlZO86Jlw2": { "base": {"clan": "Banu Haqim", "faction": "Camarilla", "generation": 8, "blood_potency": 5, "humanity": 5, "stains": 0 }, "attributes": { "strength": 4, "dexterity": 5, "stamina": 2, "charisma": 3, "manipulation": 2, "composure": 2, "intelligence": 4, "wits": 2, "resolve": 1 }, "skills": { "6": "", "5": "MEL", "4": "STL ACA OCC", "3": "ATH POL INV LAR", "2": "", "1": "" }, "clandiscs": { "disc1": ["Celerity", 4], "disc2": ["Obfuscate", 3], "disc3": ["Blood Sorcery", 2] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "POT FOR" } },"-LNQHYKTacAmhlW7G87N": { "base": {"clan": "Ventrue", "faction": "Camarilla", "generation": 9, "blood_potency": 4, "humanity": 6, "stains": 0 }, "attributes": { "strength": 2, "dexterity": 2, "stamina": 2, "charisma": 5, "manipulation": 3, "composure": 4, "intelligence": 3, "wits": 1, "resolve": 4 }, "clandiscs": { "disc1": ["Dominate", 4], "disc2": ["Fortitude", 3], "disc3": ["Presence", 5] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "AUS", "1": "CEL" } },"-LPNSsmxNeokaKtssoE1": { "base": {"clan": "Tremere", "faction": "Camarilla", "generation": 9, "blood_potency": 4, "humanity": 6, "stains": 0 }, "clandiscs": { "disc1": ["Auspex", 1], "disc2": ["Dominate", 4], "disc3": ["Blood Sorcery", 2] }, "otherdiscs": { "5": "", "4": "", "3": "CEL", "2": "", "1": "POT" } },"-LWeQO4py4GrquBo2Gck": { "base": {"clan": "Nosferatu", "faction": "Camarilla", "generation": 10, "blood_potency": 3, "humanity": 5, "stains": 0 }, "clandiscs": { "disc1": ["Animalism", 3], "disc2": ["Obfuscate", 4], "disc3": ["Potence", 3] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "CEL FOR PRO" } },"-LWeQNOKb98WrdeMY_OZ": { "base": {"clan": "Nosferatu", "faction": "Camarilla", "generation": 10, "blood_potency": 3, "humanity": 5, "stains": 0 }, "clandiscs": { "disc1": ["Animalism", 2], "disc2": ["Obfuscate", 3], "disc3": ["Potence", 1] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "PRE", "1": "DOM" } },"-LV_h7g8eC2VrHbM8iXi": { "base": {"clan": "Toreador", "faction": "Camarilla", "generation": 12, "blood_potency": 1, "humanity": 6, "stains": 0 }, "clandiscs": { "disc1": ["Auspex", 2], "disc2": ["Celerity", 1], "disc3": ["Presence", 3] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "" } },"-LV_h7H_YjGXLpmW0aiR": { "base": {"clan": "Ventrue", "faction": "Camarilla", "generation": 11, "blood_potency": 3, "humanity": 6, "stains": 0 }, "clandiscs": { "disc1": ["Dominate", 4], "disc2": ["Fortitude", 1], "disc3": ["Presence", 3] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "" } },"-LWeQOc-Gvu8OuQTIwqO": { "base": {"clan": "Nosferatu", "faction": "Camarilla", "generation": 12, "blood_potency": 2 } },"-LWeCAgTYMRyw0wkup2b": { "base": {"clan": "Nosferatu", "faction": "Camarilla", "generation": 12, "blood_potency": 2 } },"-LWeCA5hHOkeh4_2JwBa": { "base": {"clan": "Nosferatu", "faction": "Camarilla", "generation": 13, "blood_potency": 1 } },"-LWeC9aDbH63n7oD8e9z": { "base": {"clan": "Nosferatu", "faction": "Camarilla", "generation": 13, "blood_potency": 1 } },"-LWeRWzQ91Fp8DxQHuxU": { "base": {"clan": "Lasombra", "faction": "Sabbat", "generation": 10, "blood_potency": 4, "humanity": 5, "stains": 0 }, "clandiscs": { "disc1": ["Dominate", 0], "disc2": ["Oblivion", 4], "disc3": ["Potence", 0] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "OBF", "1": "" } },"-LWeRVv36yuBjWcAJ8Mh": { "base": {"clan": "Nosferatu", "faction": "Sabbat", "generation": 10, "blood_potency": 4, "humanity": 3, "stains": 0 }, "clandiscs": { "disc1": ["Animalism", 0], "disc2": ["Obfuscate", 4], "disc3": ["Potence", 2] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "" } },"-LWeRLFK7B44jj-N079k": { "base": {"clan": "Banu Haqim", "faction": "Autarkis", "generation": 7, "blood_potency": 6, "humanity": 4, "stains": 0 }, "attributes": { "strength": 4, "dexterity": 6, "stamina": 5, "charisma": 2, "manipulation": 3, "composure": 3, "intelligence": 5, "wits": 3, "resolve": 3 }, "clandiscs": { "disc1": ["Celerity", 4], "disc2": ["Obfuscate", 5], "disc3": ["Blood Sorcery", 5] }, "otherdiscs": { "5": "", "4": "POT", "3": "FOR", "2": "AUS", "1": "PRO" } },"-LWeRKYQh6q3a09MGYug": { "base": {"clan": "Nosferatu", "faction": "Autarkis", "generation": 7, "blood_potency": 7, "humanity": 1, "stains": 0 }, "attributes": { "strength": 6, "dexterity": 5, "stamina": 5, "charisma": 3, "manipulation": 3, "composure": 3, "intelligence": 2, "wits": 3, "resolve": 4 }, "clandiscs": { "disc1": ["Animalism", 5], "disc2": ["Obfuscate", 5], "disc3": ["Potence", 5] }, "otherdiscs": { "5": "", "4": "PRO", "3": "FOR", "2": "CEL", "1": "" } },"-LW8juZsciktrgdbmAl1": { "base": {"clan": "Tremere", "faction": "Camarilla", "generation": 13, "blood_potency": 2, "humanity": 7, "stains": 0 }, "clandiscs": { "disc1": ["Auspex", 2], "disc2": ["Dominate", 0], "disc3": ["Blood Sorcery", 4] }, "otherdiscs": { "5": "", "4": "", "3": "", "2": "", "1": "" } },"-Lbu2c0GWai65y-zjZ7k": { "base": {"clan": "Tzimisce", "faction": "Sabbat", "generation": 6, "blood_potency": 8, "humanity": 3, "stains": 0 }, "attributes": { "strength": 4, "dexterity": 4, "stamina": 3, "charisma": 6, "manipulation": 5, "composure": 5, "intelligence": 5, "wits": 4, "resolve": 3 }, "skills": { "6": "MED ACA", "5": "MEL OCC POL AWA INT SUB", "4": "ETI INV", "3": "LED PER", "2": "STL ATH", "1": "ANI" }, "clandiscs": { "disc1": ["Animalism", 3], "disc2": ["Auspex", 5], "disc3": ["Vicissitude", 5] }, "otherdiscs": { "5": "DOM", "4": "PRE SOR", "3": "CEL", "2": "FOR", "1": "" } },"-Lbu3wurxt5lHXWMIC73": { "base": {"clan": "Lasombra", "faction": "Sabbat", "generation": 7, "blood_potency": 7, "humanity": 3, "stains": 0 }, "attributes": { "strength": 5, "dexterity": 4, "stamina": 5, "charisma": 4, "manipulation": 3, "composure": 4, "intelligence": 3, "wits": 5, "resolve": 4 }, "skills": { "6": "BRA STL", "5": "SUB OCC MEL LED POL ETI", "4": "ATH PER", "3": "SEC ACA", "2": "DRV LAR", "1": "INV" }, "clandiscs": { "disc1": ["Dominate", 5], "disc2": ["Oblivion", 5], "disc3": ["Potence", 5] }, "otherdiscs": { "5": "", "4": "FOR", "3": "CEL", "2": "PTN", "1": "" } }}`
+		],
 		HTML = {
 			start: "<div style=\"display: block; width: 100%; padding: 5px 5px; margin-left: -10px; margin-top: -20px; margin-bottom: -5px; color: white; font-variant: small-caps; font-family: 'Bodoni SvtyTwo ITC TT'; text-align: left; font-size: 16px;  border: 3px outset darkred; background: url('https://imgur.com/kBl8aTO.jpg') top; bg-color: black; z-index: 100; position: relative;\">",
 			stop: "</div>",
@@ -243,6 +247,35 @@ const Chars = (() => {
 	
 				return sessA - sessB
 			}
+		},
+		SKILLABBVS = {
+			ATH: "athletics",
+			BRA: "brawl",
+			CRA: "craft",
+			DRV: "drive",
+			FIR: "firearms",
+			MEL: "melee",
+			LAR: "larceny",
+			STL: "stealth",
+			SUR: "survival",
+			ANK: "animal_ken",
+			ETI: "etiquette",
+			INS: "insight",
+			INT: "intimidation",
+			LED: "leadership",
+			PRF: "performance",
+			PER: "persuasion",
+			STR: "streetwise",
+			SUB: "subterfuge",
+			ACA: "academics",
+			AWA: "awareness",
+			FIN: "finance",
+			INV: "investigation",
+			MED: "medicine",
+			OCC: "occult",
+			POL: "politics",
+			SCI: "science",
+			TEC: "technology"
 		},
 		// #endregion
 	
@@ -469,6 +502,50 @@ const Chars = (() => {
 
 			D.Alert(D.JS(attrList))
 		},
+		setNPCStats = (charRef) => {
+			const charIDs = [],
+				attrList = {},
+				npcStats = JSON.parse(NPCSTATS)
+			if (charRef) {
+				charIDs.push(D.GetChar(charRef).id)
+			} else {
+				charIDs.push(..._.keys(npcStats))
+			}
+			for (const charID of charIDs) {
+				const charData = npcStats[charID]
+				if (charData.base) {
+					for (const attr of _.keys(charData.base)) {
+						attrList[attr] = charData.base[attr]
+					}
+				}
+				if (charData.attributes) {
+					for (const attribute of _.keys(charData.attributes)) {
+						attrList[attribute] = charData.attributes[attribute]
+					}
+				}
+				if (charData.skills) {
+					for (const skillAbv of _.keys(SKILLABBVS)) {
+						attrList[SKILLABBVS[skillAbv]] = parseInt(_.findKey(charData.skills, v => v.includes(skillAbv)) || 0)
+					}
+				}
+				if (charData.clandiscs) {
+					_.each(["disc1", "disc2", "disc3"], discnum => {
+						if (charData.clandiscs[discnum].length > 0) {
+							attrList[`${discnum}_name`] = charData.clandiscs[discnum][0]
+							attrList[discnum] = charData.clandiscs[discnum][1]
+						} else {
+							attrList[`${discnum}_name`] = ""
+							attrList[discnum] = 0
+						}						
+					})					
+				}
+				/* if (charData.otherdiscs) {
+
+				} */
+				setAttrs(charID, attrList)
+				D.Alert(`ATTRLIST FOR ${D.GetName(charID)}:<br><br>${D.JS(attrList)}`)
+			}
+		},
 		// #endregion
 
 		// #region Generating MVCs,
@@ -501,9 +578,11 @@ const Chars = (() => {
 			const who = (getObj("player", msg.playerid) || {get: () => "API",}).get("displayname"),
 				args = msg.content.split(/\s+/u)
 			let [chars, params, attrList] = [[], [], []],
-				token = {},
+				[token, imgData] = [{}, {}],
 				[amount, dmg] = [0, 0],
-				[session, trait, dtype, attrString, charID] = new Array(5).fill("")
+				[session, trait, dtype, attrString, charID] = new Array(5).fill(""),
+				char = null,
+				msgString = ""
 			switch (args.shift().toLowerCase()) {
 			case "!char":
 				if (!playerIsGM(msg.playerid))
@@ -600,6 +679,16 @@ const Chars = (() => {
 							D.Alert(`Project Attributes List: ${D.JS(attrs)}`, "CHARS !getProj")
 						}
 						break
+					case "charids":
+						chars = findObjs( {
+							_type: "character"
+						} )
+						msgString = ""
+						for (const char of chars) {
+							msgString += `${D.GetName(char)}<span style="color: red; font-weight:bold;">@T</span>${char.id}<br>`
+						}
+						D.Alert(D.JS(msgString))
+						break
 					default: break
 					}
 					break
@@ -612,9 +701,15 @@ const Chars = (() => {
 					case "stat":
 					case "stats":
 						if (msg.selected && msg.selected[0]) {
-							for (const statpair of args.join(" ").replace(/,?\s*?/gu, "|").split("|"))
-								attrList[statpair.split(":")[0]] = statpair.split(":")[1]
-							setAttrs(D.GetChar(msg).id, attrList) }
+							char = D.GetChar(msg)
+						} else {
+							char = D.GetChar(args.shift())
+						}
+						if (char) {
+							for (const statpair of args.join(" ").replace(/[,|\s]\s*?/gu, "|").split("|"))
+								attrList[statpair.split(":")[0]] = parseInt(statpair.split(":")[1])||0
+							setAttrs(char.id, attrList)
+						}
 						break
 					default: break
 					}
@@ -663,6 +758,11 @@ const Chars = (() => {
 						return
 					populateDefaults(D.GetChar(msg))
 					break
+				case "setnpcs":
+					if (!playerIsGM(msg.playerid))
+						return
+					setNPCStats(args.shift())
+					break
 				case "changeattr":
 					changeAttrName(args.shift(), args.shift())
 					break
@@ -672,18 +772,41 @@ const Chars = (() => {
 			case "!mvc":
 				MVC({name: who})
 				break
+			case "!sense":
+				charID = REGISTRY[_.findKey(REGISTRY, v => v.playerID === msg.playerID)].id;
+				[token] = findObjs( {
+					_pageid: D.PAGEID(),
+					_type: "graphic",
+					_subtype: "token",
+					represents: charID
+				})
+				imgData = Images.GetData(token)
+				if (imgData.curSrc === "obf")
+					Images.ToggleToken(token, "senseObf", "prev")
+				else if (imgData.curSrc === "senseObf")				
+					Images.ToggleToken(token, "obf", "prev")
+				else
+					Images.ToggleToken(token, "sense", "prev")
+				break
 			case "!hide":
-				charID = REGISTRY[msg.playerid].id;			
+				charID = REGISTRY[_.findKey(REGISTRY, v => v.playerID === msg.playerID)].id;
 				[token] = findObjs( {
 					_pageid: D.PAGEID(),
 					_type: "graphic",
 					_subtype: "token",
 					represents: charID
 				})	
-				Images.ToggleToken(token, "obf", "prev")
+				imgData = Images.GetData(token)
+				if (imgData.curSrc === "sense")
+					Images.ToggleToken(token, "senseObf", "prev")
+				else if (imgData.curSrc === "senseObf")
+					Images.ToggleToken(token, "sense", "prev")
+				else
+					Images.ToggleToken(token, "obf", "prev")
 				break
 			case "!mask":
-				charID = REGISTRY[msg.playerid].id;			
+				charID = REGISTRY[_.findKey(REGISTRY, v => v.playerID === "-LMGDQqIvyL87oIfrVDX")].id;	
+				//charID = REGISTRY[_.findKey(REGISTRY, v => v.playerID === msg.playerID)].id;
 				[token] = findObjs( {
 					_pageid: D.PAGEID(),
 					_type: "graphic",

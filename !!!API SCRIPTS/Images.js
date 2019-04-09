@@ -2,9 +2,10 @@ void MarkStart("Media")
 const Images = (() => {
 	let imgRecord = false,
 		imgResize = false
-	const imgResizeDims = {height: 100, width: 100},
+	const SCRIPTNAME = "Images",
+		imgResizeDims = {height: 100, width: 100},
 		// #region CONFIGURATION
-		STATEREF = state[D.GAMENAME].Images,
+		STATEREF = state[D.GAMENAME][SCRIPTNAME],
 		REGISTRY = STATEREF.registry,
 		SANDBOX = {
 			height: 2680,
@@ -19,16 +20,40 @@ const Images = (() => {
 				w: 600
 			},
 			district: {
-				x: 100,
-				y: 100,
-				h: 594,
-				w: 861
+				x: 1367,
+				y: 1000,
+				h: 604,
+				w: 896,
+			},
+			districtLeft: {
+				x: 925,
+				y: 983,
+				h: 556,
+				w: 805
+			},			
+			districtRight: {
+				x: 1742,
+				y: 983,
+				h: 556,
+				w: 806
 			},
 			site: {
-				x: 100,
-				y: 100,
+				x: 1374,
+				y: 1382,
 				h: 515,
-				w: 701
+				w: 701,
+			},			
+			siteLeft: {
+				x: 978,
+				y: 1377,
+				h: 515,
+				w: 701,
+			},
+			siteRight: {
+				x: 1690,
+				y: 1377,
+				h: 515,
+				w: 701,
 			},
 			token: {
 				h: 210,
@@ -38,7 +63,6 @@ const Images = (() => {
 		IMAGELAYERS = {
 			map: [
 				"SignalLightTopLeft", "SignalLightTopRight", "SignalLightBotLeft", "SignalLightBotRight",
-				"WeatherTint_1",	
 				"rollerDie_bigDice_1",
 				"rollerDie_bigDice_2",
 				"rollerDie_diceList_1",
@@ -100,16 +124,15 @@ const Images = (() => {
 				"DistrictLeft",
 				"DistrictRight",
 				"WeatherFrost",
-				"WeatherFog",	
-				"WeatherTint_2", "WeatherTint_3",
+				"WeatherFog",
 				"WeatherMain",
 				//"WeatherLightning_1", //"WeatherLightning_2", "WeatherLightning_3", "WeatherLightning_4", "WeatherLightning_5",
+				"WeatherGround",
 				"WeatherClouds",
-				"WeatherGround",	
 				"AirLightLeft", "AirLightMid", "AirLightTop", "AirLightCN_4", "AirLightCN_5",
 				"HungerTopLeft", "HungerTopRight", "HungerBotLeft", "HungerBotRight",
-				"Horizon",
-				"WeatherLightning_1"
+				"Horizon_1",
+				"Horizon_2"
 			],
 			objects: [		
 				"YusefShamsinToken",
@@ -187,12 +210,13 @@ const Images = (() => {
 			return imgObjs
 		},
 		getImageData = imgRef => {
+			const funcName = "getImageData"
 			try {
 				if (getImageKey(imgRef)) {
 					return REGISTRY[getImageKey(imgRef)]
 				} else if (getImageObj(imgRef)) {
 					const imgObj = getImageObj(imgRef)
-					D.Alert(`Retrieving data for UNREGISTERED Image Object ${D.JSL(imgRef)}`, "IMAGES: GetData")
+					D.DBAlert(`Retrieving data for UNREGISTERED Image Object ${D.JSL(imgRef)}`, funcName, SCRIPTNAME)
 
 					return {
 						id: imgObj.id,
@@ -326,32 +350,34 @@ const Images = (() => {
 
 			return imgObj
 		},
-		setImage = (imgRef, srcRef) => {
-		//D.Alert(`Getting ${D.JS(srcRef)} for ${D.JS(imgRef)} --> ${D.JS(REGISTRY[getImageData(imgRef).name].srcs[srcRef])}`, "IMAGES:SetImage")
+		setImage = (imgRef, srcRef, isSilent = false) => {
+			//D.Alert(`Getting ${D.JS(srcRef)} for ${D.JS(imgRef)} --> ${D.JS(REGISTRY[getImageData(imgRef).name].srcs[srcRef])}`, "IMAGES:SetImage")
 			if (isRegImg(imgRef)) {
 				const imgObj = getImageObj(imgRef),
 					 imgName = getImageKey(imgRef)
 				//D.Alert(`Image Name: ${D.JS(imgName)}`)
 				let stateRef = REGISTRY[imgName],
-					srcName = srcRef
+					srcURL = srcRef
 				//D.Alert(D.JS(REGISTRY[getImageData(imgRef).name]))
 				if (imgObj && stateRef) {
 				//D.Alert(`Getting ${D.JS(stateRef.srcs)} --> ${D.JS(srcRef)} --> ${D.JS(stateRef.srcs[srcRef])}`, "IMAGES:SetImage")
 					if (_.isString(stateRef.srcs) && REGISTRY[getImageKey(stateRef.srcs)] )
 						stateRef = REGISTRY[getImageKey(stateRef.srcs)]
-					if (stateRef.srcs[srcRef] )					
-						imgObj.set("imgsrc", stateRef.srcs[srcRef] )
+					if (stateRef.srcs[srcRef] )
+						srcURL = stateRef.srcs[srcRef]	
 					else if (_.values(stateRef.srcs).includes(srcRef) && srcRef.includes("http")) {
-						imgObj.set("imgsrc", srcRef)
-						srcName = null
+						srcURL = srcRef
 					} else if (_.isString(IMGDATA[srcRef] ))
-						imgObj.set("imgsrc", IMGDATA[srcRef] )
-					else if (_.isString(srcRef) && REGISTRY.Sources[srcRef] )
-						imgObj.set("imgsrc", REGISTRY.Sources[srcRef] )
+						srcURL = IMGDATA[srcRef]
 					else
-						return D.ThrowError(`Image object '${D.JSL(imgRef)}' is unregistered or is missing 'srcs' property`, "Images: setImage()")
-
-					REGISTRY[getImageData(imgRef).name].curSrc = srcName
+						return isSilent ? D.ThrowError(`Image object '${D.JSL(imgRef)}' is unregistered or is missing 'srcs' property`, "Images: setImage()") : false
+								
+					imgObj.set("imgsrc", srcURL )
+					if (srcRef === "blank")
+						imgObj.set("layer", "walls")
+					else
+						imgObj.set("layer", getImageData(imgRef).activeLayer)
+					REGISTRY[getImageData(imgRef).name].curSrc = srcRef
 					return imgObj
 				}
 
@@ -570,7 +596,7 @@ const Images = (() => {
 				if (srcRef)
 					setImage(imgRef, srcRef)
 			} else if (imgObj && !isActive) {
-				imgObj.set("layer", "gmlayer")
+				imgObj.set("layer", "walls")
 				setImage(imgRef, "blank")
 			}
 		},
@@ -665,7 +691,7 @@ const Images = (() => {
 				imgNames = []
 			if (msg.type !== "api" || !playerIsGM(msg.playerid) || args.shift() !== "!img")
 				return
-			let [srcName, imgName, imgObj, imgLayer, isStartActive] = [null, null, null, null, null],
+			let [srcName, imgName, imgObj, imgLayer, imgData, isStartActive] = [null, null, null, null, null, null],
 				params = {}
 			switch (args.shift().toLowerCase()) {
 			case "reg":
@@ -836,6 +862,10 @@ const Images = (() => {
 						D.Alert("Syntax: !img get [<category> <name>] (or select an image object)", "IMAGES, !img getData")
 				}
 				break
+			case "getalldata":
+				imgData = _.map(REGISTRY, v => `${v.name}: ${v.startActive ? v.activeLayer.toUpperCase() : v.activeLayer.toLowerCase()} ${_.isObject(v.srcs) ? _.keys(v.srcs) : v.srcs}`)
+				D.Alert(D.JS(imgData), "IMAGES, !img getAllData")
+				break
 			case "getimgnames":
 			case "getimagenames":
 			case "getnames":
@@ -861,7 +891,7 @@ const Images = (() => {
 								imgResizeDims[v.split(":")[0]] = parseInt(v.split(":")[1])
 						} )
 					} else {
-						D.Alert("Must supply either a valid IMGDATA key OR \"height:<height>, width:<width>\"", "IMAGES, !img toggleResize")
+						D.Alert("Must supply either a valid IMGDATA key (token, district, districtLeft, districtRight, site, siteLeft, siteRight) OR \"height:<height>, width:<width>\"", "IMAGES, !img toggleResize")
 						imgResize = false
 						break
 					}
@@ -885,8 +915,6 @@ const Images = (() => {
 		checkInstall = () => {
 			state[D.GAMENAME].Images = state[D.GAMENAME].Images || {}
 			state[D.GAMENAME].Images.registry = state[D.GAMENAME].Images.registry || {}
-
-		//state[D.GAMENAME].Images.registry.SiteRight_1.id = "-LaFKO_Ol2idqqD9hQO5"
 		}
 	// #endregion
 
