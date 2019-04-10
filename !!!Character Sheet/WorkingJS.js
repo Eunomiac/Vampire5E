@@ -4,7 +4,8 @@
 (() => {
 	// #region Variable Declarations
 	let LASTEVENT = {},
-		APIROWID = null
+		APIROWID = null,
+		ISOFFLINE = false
 	const isDebug = true,
 		LOGOPTIONS = {},
 		ATTRIBUTES = {
@@ -45,7 +46,7 @@
 			Phlegmatic: ["Auspex", "Dominate"],
 			Sanguine: ["Blood Sorcery", "Presence"],
 			Primal: ["Animalism", "Protean"],
-			Mercurial: ["Alchemy", ""]
+			Mercurial: ["Alchemy", "Vicissitude"]
 		},
 		baneText = {
 			"0": null,
@@ -76,7 +77,7 @@
 			"Caitiff": ["", "", ""],
 			"Thin-Blooded": ["Alchemy", "", ""],
 			"Lasombra": ["Dominate", "Oblivion", "Potence"],
-			"Tzimisce": ["Animalism", "Auspex", "Protean"],
+			"Tzimisce": ["Animalism", "Auspex", "Vicissitude"],
 			"Banu Haqim": ["Celerity", "Obfuscate", "Blood Sorcery"],
 			"Hecata": ["Auspex", "Fortitude", "Oblivion"],
 			"Ministry": ["Obfuscate", "Presence", "Protean"],
@@ -87,19 +88,19 @@
 			null,
 			null,
 			null,
-			{ bp_max: 10, blood_potency: 5},
-			{ bp_max: 9, blood_potency: 4},
-			{ bp_max: 8, blood_potency: 3},
-			{ bp_max: 7, blood_potency: 3},
-			{ bp_max: 6, blood_potency: 2},
-			{ bp_max: 5, blood_potency: 2},
-			{ bp_max: 4, blood_potency: 1},
-			{ bp_max: 4, blood_potency: 1},
-			{ bp_max: 3, blood_potency: 1},
-			{ bp_max: 3, blood_potency: 1},
-			{ bp_max: 0, blood_potency: 0},
-			{ bp_max: 0, blood_potency: 0},
-			{ bp_max: 0, blood_potency: 0}
+			{ blood_potency_max: 10, blood_potency: 5},
+			{ blood_potency_max: 9, blood_potency: 4},
+			{ blood_potency_max: 8, blood_potency: 3},
+			{ blood_potency_max: 7, blood_potency: 3},
+			{ blood_potency_max: 6, blood_potency: 2},
+			{ blood_potency_max: 5, blood_potency: 2},
+			{ blood_potency_max: 4, blood_potency: 1},
+			{ blood_potency_max: 4, blood_potency: 1},
+			{ blood_potency_max: 3, blood_potency: 1},
+			{ blood_potency_max: 3, blood_potency: 1},
+			{ blood_potency_max: 0, blood_potency: 0},
+			{ blood_potency_max: 0, blood_potency: 0},
+			{ blood_potency_max: 0, blood_potency: 0}
 		],
 		bpDependants = [
 			{ bp_surge: 1, bp_mend: 1, bp_discbonus: 1, bp_rousereroll: 0, bp_baneseverity: 1, bp_slakeanimal: 1, bp_slakehuman: 0, bp_slakekill: 1 },
@@ -111,7 +112,8 @@
 			{ bp_surge: 4, bp_mend: 3, bp_discbonus: 3, bp_rousereroll: 4, bp_baneseverity: 4, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 2 },
 			{ bp_surge: 4, bp_mend: 4, bp_discbonus: 4, bp_rousereroll: 4, bp_baneseverity: 4, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 3 },
 			{ bp_surge: 5, bp_mend: 4, bp_discbonus: 4, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 3 },
-			{ bp_surge: 5, bp_mend: 5, bp_discbonus: 5, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -3, bp_slakekill: 3 }
+			{ bp_surge: 5, bp_mend: 5, bp_discbonus: 5, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -3, bp_slakekill: 3 },
+			{ bp_surge: 10, bp_mend: 10, bp_discbonus: 10, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -4, bp_slakekill: 4 }
 		],
 		marqueeTips = [
 			["Caine the First",
@@ -456,11 +458,6 @@
 				colToggles: ["xp_initial_toggle", "xp_new_toggle"],
 				cost: 10
 			}
-		},
-		GROUPPREFIXES = ["g1", "g2", "g3", "g4", "g5", "g6", "g7", "g8", "g9"],
-		GROUPATTRS = ["charname", "hunger"],
-		GROUPREPREFS = {
-			rolls: ["grolltype", "gtrait1name", "gtrait1value", "gtrait2name", "gtrait2value", "grolldiff", "grollmod", "gposflags", "gnegflags", "grollparams"]
 		}
 	// #endregion
 
@@ -509,23 +506,21 @@
 									      ATTRS[`${trimAttr(attr)}_name`] ||
 										  trimAttr(attr),
 		// getTriggers (attrs, prefix, gN, sections	): Returns "on:..." event listener string for simple attributes (in attrs) or repeating sections (in sections). RETURNS string
-		getTriggers = (attrs, prefix = "", gN = "", repSecs) => {
+		getTriggers = (attrs, prefix = "", repSecs) => {
 			const triggerStrings = []
 			if (attrs)
-				triggerStrings.push(_.map(attrs, v => `change:${gN}${prefix}${v}`).join(" "))
+				triggerStrings.push(_.map(attrs, v => `change:${prefix}${v}`).join(" "))
 			if (repSecs && _.isArray(repSecs))
-				triggerStrings.push([..._.map(repSecs, v => `change:repeating_${gN}${prefix}${v}`), ..._.map(repSecs, v => `remove:repeating_${gN}${prefix}${v}`)].join(" "))
+				triggerStrings.push([..._.map(repSecs, v => `change:repeating_${prefix}${v}`), ..._.map(repSecs, v => `remove:repeating_${prefix}${v}`)].join(" "))
 			else if (repSecs && _.isObject(repSecs)) {
 				_.each(_.keys(repSecs), k => {
 					_.each(repSecs[k], v => {
-						triggerStrings.push(`change:repeating_${gN}${prefix}${k}:${v}`)
+						triggerStrings.push(`change:repeating_${prefix}${k}:${v}`)
 					})
 				})
 			}
 			return _.compact(triggerStrings).join(" ")
 		},
-		// groupify(attrArray, gN): Appends the group number to each attribute in attrArray. RETURNS new attrArray.
-		groupify = (attrArray, gN = "") => _.map(attrArray, attr => gN + attr),
 		// parseRepAttr: Given repeating attr, returns array: [sectionName, rowID, statName]
 		parseRepAttr = repAttr => [repAttr.split("_")[1], repAttr.split("_")[2], repAttr.split("_").slice(3).join("_")], 
 		// pFuncs(repStatName, ATTRS): Provides prefix and repeating row parsing functions (p, pV, pI).  RETURNS [prefix, p, pV, pI] OR [prefix, p] if no ATTRS value given.
@@ -622,7 +617,7 @@
 				cback(null)
 			} )
 		},
-		$getRepAttrs = (repInfo = {}, gN = "") => cback => {
+		$getRepAttrs = (repInfo = {}) => cback => {
 			const [attrArray, $funcs] = [ [], [] ]
 			if (_.isString(repInfo)) {
 				_.each(_.compact(repInfo.split(",")), v => {
@@ -636,7 +631,7 @@
 						getSectionIDs(sec, idArray => {
 							_.each(idArray, repID => {
 								_.each(repInfo[sec], stat => {
-									attrArray.push(`repeating_${gN}${sec}_${repID}_${stat}`)
+									attrArray.push(`repeating_${sec}_${repID}_${stat}`)
 								} )
 							} )
 							cbk(null)
@@ -665,19 +660,33 @@
 		
 	// #endregion
 
+	// #region ACTIVATION: Sheetworker Toggle 
+	on("change:sheetworkertoggle", eInfo => {
+		log("Toggling Sheetworker...")
+		if (eInfo.sourceType !== "sheetworker") {
+			ISOFFLINE = !ISOFFLINE
+			log(`Sheetworker: ${JSON.stringify(ISOFFLINE)}`)
+			if (ISOFFLINE)
+				setAttrs({sheetworkertoggle: "1"})
+			else
+				setAttrs({sheetworkertoggle: "0"})
+		}
+	})
+	// #endregion
+
 	// #region UPDATE: Clan, Discipline, Resonance, DOB/DOE, Marquee Rotating
-	const $checkRituals = (gN = "") => cback => {
+	const $checkRituals = () => cback => {
 			const attrList = {},
 				$funcs = [
 					$getRepAttrs( {
 						discLeft: ["disc_name"],
 						discMid: ["disc_name"],
 						discRight: ["disc_name"]
-					}, gN),
+					}),
 					(attrArray, cBack) => {
-						getAttrs( [...groupify( ["disc1_name", "disc2_name", "disc3_name"], gN), ...attrArray], ATTRS => {
-							attrList[`${gN}rituals_toggle`] = _.values(ATTRS).includes("Blood Sorcery") || _.values(ATTRS).includes("Oblivion") ? 1 : 0
-							attrList[`${gN}formulae_toggle`] = _.values(ATTRS).includes("Alchemy") ? 1 : 0
+						getAttrs( [... ["disc1_name", "disc2_name", "disc3_name"], ...attrArray], ATTRS => {
+							attrList["rituals_toggle"] = _.values(ATTRS).includes("Blood Sorcery") || _.values(ATTRS).includes("Oblivion") ? 1 : 0
+							attrList["formulae_toggle"] = _.values(ATTRS).includes("Alchemy") ? 1 : 0
 							cBack(null, attrList)
 						} )
 					},
@@ -685,34 +694,34 @@
 				]
 			run$($funcs, () => cback(null))
 		},
-		doClans = (gN = "") => {
+		doClans = () => {
 			const attrList = {},
 				$funcs = [
 					cBack => {
-						getAttrs(groupify( ["clan", "blood_potency"], gN), ATTRS => {
-							attrList.bane_title = `${ATTRS[`${gN}clan`]} Clan Bane`
-							attrList.bane_text = baneText[ATTRS[`${gN}clan`]].replace("Bane Severity", `Bane Severity (${
-								bpDependants[ATTRS[`${gN}blood_potency`]].bp_baneseverity
+						getAttrs( ["clan", "blood_potency"], ATTRS => {
+							attrList.bane_title = `${ATTRS["clan"]} Clan Bane`
+							attrList.bane_text = baneText[ATTRS["clan"]].replace("Bane Severity", `Bane Severity (${
+								bpDependants[ATTRS["blood_potency"]].bp_baneseverity
 							})`)
-							const cDiscs = clanDiscs[ATTRS[`${gN}clan`]]
+							const cDiscs = clanDiscs[ATTRS["clan"]]
 							for (let i = 1; i <= 3; i++) {
 								if (cDiscs[i - 1] === "") {
-									attrList[`${gN}disc${i}_toggle`] = 0
-									attrList[`${gN}disc${i}_name`] = ""
+									attrList[`disc${i}_toggle`] = 0
+									attrList[`disc${i}_name`] = ""
 								} else {
-									attrList[`${gN}disc${i}_toggle`] = 1
-									attrList[`${gN}disc${i}_name`] = cDiscs[i - 1]
+									attrList[`disc${i}_toggle`] = 1
+									attrList[`disc${i}_name`] = cDiscs[i - 1]
 								}
 							}
 							cBack(null, attrList)
 						} )
 					},
 					$set,
-					$checkRituals(gN)
+					$checkRituals()
 				]
 			run$($funcs)
 		},
-		doDiscPowers = (stat, gN = "") => {
+		doDiscPowers = (stat) => {
 			if (isBlacklisted(stat))
 				return
 			const attrList = {},
@@ -726,16 +735,17 @@
 						} )
 					},
 					$set,
-					$checkRituals(gN)
+					$checkRituals()
 				]
 			run$($funcs)
 		},
-		doResonance = (gN = "") => {
+		doResonance = () => {
 			const attrList = {},
 				$funcs = [
 					cback => {
-						getAttrs(groupify( ["resonance"], gN), ATTRS => {
-							attrList[`${gN}res_discs`] = ATTRS[`${gN}resonance`] === "None" ? " " : `(${_.compact(res_discs[ATTRS[`${gN}resonance`]] ).join(" & ")})`
+						getAttrs(["resonance"], ATTRS => {
+							log(`Resonance Attrs: ${JSON.stringify(ATTRS)}`)
+							attrList["res_discs"] = ATTRS["resonance"] === "None" ? " " : `(${_.compact(res_discs[ATTRS["resonance"]] ).join(" & ")})`
 							cback(null, attrList)
 						} )
 					},
@@ -743,12 +753,12 @@
 				]
 			run$($funcs)
 		},
-		doDOBDOE = (gN = "") => {
+		doDOBDOE = () => {
 			const attrList = {},
 				$funcs = [
 					cback => {
-						getAttrs(groupify( ["char_dob", "char_doe"], gN), ATTRS => {
-							attrList[`${gN}char_dobdoe`] = `${ATTRS[`${gN}char_dob`]} — ${ATTRS[`${gN}char_doe`]}`
+						getAttrs( ["char_dob", "char_doe"], ATTRS => {
+							attrList["char_dobdoe"] = `${ATTRS["char_dob"]} — ${ATTRS["char_doe"]}`
 							cback(null, attrList)
 						} )
 					},
@@ -793,7 +803,7 @@
 		}
 
 	on("change:clan", doClans)
-	on(getTriggers(DISCENUMS, "", "", _.keys(DISCREPREFS)), eInfo => {
+	on(getTriggers(DISCENUMS, "", _.keys(DISCREPREFS)), eInfo => {
 		if (!isBlacklisted(eInfo.sourceAttribute))
 			doDiscPowers(eInfo.sourceAttribute)
 	} )
@@ -803,8 +813,8 @@
 	// #endregion
 
 	// #region UPDATE: Trackers (Health, Willpower, Blood Potency, Humanity)
-	const $binCheck = (tracker, gN = "") => {
-			const p = v => `${gN}${tracker.toLowerCase()}_${v}`,
+	const $binCheck = (tracker) => {
+			const p = v => `${tracker.toLowerCase()}_${v}`,
 				dmgBins = [
 					[],
 					[],
@@ -814,10 +824,10 @@
 			let attrs = []
 			switch (tracker.toLowerCase()) {
 			case "health":
-				attrs = groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "max", "sdmg", "admg"], v => `health_${v}`), "incap"], gN)
+				attrs =  [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "max", "sdmg", "admg"], v => `health_${v}`), "incap"]
 				break
 			case "willpower":
-				attrs = groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "max", "sdmg", "admg"], v => `willpower_${v}`), "incap"], gN)
+				attrs =  [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "max", "sdmg", "admg"], v => `willpower_${v}`), "incap"]
 				break
 			default:
 				log(`ERROR: Invalid tracker sumbitted to binCheck: ${tracker}`)
@@ -887,11 +897,11 @@
 
 					// Check For Incapacitation
 					if (dmgBins[0].length === 0) {
-						attrList[`${gN}incap`] = _.compact(_.uniq(_.union((ATTRS[`${gN}incap`] || "").split(","), [tracker] ))).join(",")
-						attrList[`${gN}${tracker.toLowerCase()}_impair_toggle`] = 1
+						attrList["incap"] = _.compact(_.uniq(_.union((ATTRS["incap"] || "").split(","), [tracker] ))).join(",")
+						attrList[`${tracker.toLowerCase()}_impair_toggle`] = 1
 					} else {
-						attrList[`${gN}incap`] = _.compact(_.uniq(_.difference((ATTRS[`${gN}incap`] || "").split(","), [tracker] ))).join(",")
-						attrList[`${gN}${tracker.toLowerCase()}_impair_toggle`] = 0
+						attrList["incap"] = _.compact(_.uniq(_.difference((ATTRS["incap"] || "").split(","), [tracker] ))).join(",")
+						attrList[`${tracker.toLowerCase()}_impair_toggle`] = 0
 					}
 
 					// Apply Tracker Damage to Boxes
@@ -903,49 +913,49 @@
 						} )
 						binNum++
 					} )
-					attrList[`${gN}${tracker}`] = dmgBins[0].length
+					attrList[`${tracker}`] = dmgBins[0].length
 
 					cback(null, attrList)
 				} )
 			}
 		},
-		doTracker = (tracker, eInfo = { sourceAttribute: "" }, gN = "", cback) => {
+		doTracker = (tracker, eInfo = { sourceAttribute: "" }, cback) => {
 			const attrList = {},
 				$funcs = []
 			switch (tracker.toLowerCase()) {
 			case "health":
 			case "willpower":
-				$funcs.push($binCheck(tracker, gN))
+				$funcs.push($binCheck(tracker))
 				break
 			case "blood potency full":
 			case "blood potency":
 				$funcs.push(cbk => {
-					getAttrs(groupify( ["clan", "blood_potency"], gN), ATTRS => {
-						_.each(bpDependants[ATTRS[`${gN}blood_potency`]], (v, k) => {
-							attrList[gN + k] = v
+					getAttrs( ["clan", "blood_potency"], ATTRS => {
+						_.each(bpDependants[ATTRS["blood_potency"]], (v, k) => {
+							attrList[k] = v
 						} )
-						attrList[`${gN}bp_surgetext`] =
-								attrList[`${gN}bp_surge`] === 0 ?
+						attrList["bp_surgetext"] =
+								attrList["bp_surge"] === 0 ?
 									"None" :
-									`+${attrList[`${gN}bp_surge`] === 1 ?
-										`${attrList[`${gN}bp_surge`]} Die` :
-										`${attrList[`${gN}bp_surge`]} Dice`}`
-						attrList[`${gN}bp_mendtext`] =
-								attrList[`${gN}bp_mend`] === 0 ?
+									`+${attrList["bp_surge"] === 1 ?
+										`${attrList["bp_surge"]} Die` :
+										`${attrList["bp_surge"]} Dice`}`
+						attrList["bp_mendtext"] =
+								attrList["bp_mend"] === 0 ?
 									"None" :
 									`${
-										attrList[`${gN}bp_mend`]
+										attrList["bp_mend"]
 									} Superficial`
-						attrList[`${gN}bp_discbonustext`] =
-								attrList[`${gN}bp_discbonus`] === 0 ?
+						attrList["bp_discbonustext"] =
+								attrList["bp_discbonus"] === 0 ?
 									"None" :
 									`+${
-										attrList[`${gN}bp_discbonus`] === 1 ?
+										attrList["bp_discbonus"] === 1 ?
 											`${
-												attrList[`${gN}bp_discbonus`]
+												attrList["bp_discbonus"]
 											} Die` :
 											`${
-												attrList[`${gN}bp_discbonus`]
+												attrList["bp_discbonus"]
 											} Dice`
 									}${
 										[
@@ -956,17 +966,17 @@
 											";  Rouse x2 for Levels 1 - 4.",
 											";  Rouse x2 for All Levels."
 										][
-											attrList[`${gN}bp_rousereroll`]
+											attrList["bp_rousereroll"]
 										]
 									}`
-						attrList[`${gN}bp_slakebag`] = attrList[`${gN}bp_slakeanimal`]
-						attrList[`${gN}bp_slaketext`] = `Animals & bagged blood slake ${
-							{0: "no", 0.5: "half", 1: "full"}[attrList[`${gN}bp_slakeanimal`]]
+						attrList["bp_slakebag"] = attrList["bp_slakeanimal"]
+						attrList["bp_slaketext"] = `Animals & bagged blood slake ${
+							{0: "no", 0.5: "half", 1: "full"}[attrList["bp_slakeanimal"]]
 						} Hunger.\n${
-							attrList[`${gN}bp_slakehuman`] === 0 ?
+							attrList["bp_slakehuman"] === 0 ?
 								"Humans slake full Hunger.\n" :
-								`${attrList[`${gN}bp_slakehuman`]} Hunger slaked from humans.\n`
-						}Must kill to reduce Hunger below ${attrList[`${gN}bp_slakekill`]}.`
+								`${attrList["bp_slakehuman"]} Hunger slaked from humans.\n`
+						}Must kill to reduce Hunger below ${attrList["bp_slakekill"]}.`
 						cbk(null, attrList)
 					} )
 				} )
@@ -974,12 +984,12 @@
 			case "humanity":
 				$funcs.push(cbk => {
 					if (eInfo.sourceType !== "sheetworker") {
-						const attrArray = groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`)]),
+						const attrArray = _.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`),
 							   humArray = new Array(10)
-						getAttrs(groupify(["stains", "humanity"]), ATTRS => {
-							const humanity = Math.min(10, Math.max(0, parseInt(ATTRS[`${gN}humanity`]))),
-								    stains = Math.min(10, Math.max(0, parseInt(ATTRS[`${gN}stains`])))
-							attrList[`${gN}humanity_impair_toggle`] = 0		
+						getAttrs(["stains", "humanity"], ATTRS => {
+							const humanity = Math.min(10, Math.max(0, parseInt(ATTRS["humanity"]))),
+								    stains = Math.min(10, Math.max(0, parseInt(ATTRS["stains"])))
+							attrList["humanity_impair_toggle"] = 0		
 							log(`... Humanity: ${JSON.stringify(humanity)}, Stains: ${JSON.stringify(stains)}, ATTRS: ${JSON.stringify(ATTRS)}`)
 							humArray.fill(3, 10 - stains)
 							humArray.fill(2, 0, Math.max(humanity, 0))
@@ -988,7 +998,7 @@
 							for (let i = 0; i < humArray.length; i++) {
 								attrList[attrArray[i]] = humArray[i]
 							}
-							attrList[`${gN}stains`] = humArray.filter(v => v === 3).length				
+							attrList["stains"] = humArray.filter(v => v === 3).length				
 							log(`... attrList: ${JSON.stringify(attrList)}`)
 							cbk(null, attrList)
 						})
@@ -998,15 +1008,15 @@
 			case "stains":
 				$funcs.push(cbk => {
 					if (eInfo.sourceType !== "sheetworker") {
-						const attrArray = groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`)]),
+						const attrArray = _.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`),
 							humArray = new Array(10)
-						getAttrs(groupify(["humanity", "stains"]), ATTRS => {
-							const humanity = Math.min(10, Math.max(0, parseInt(ATTRS[`${gN}humanity`]))),
-								    stains = Math.min(10, Math.max(0, parseInt(ATTRS[`${gN}stains`])))
-							attrList[`${gN}humanity_impair_toggle`] = 0
+						getAttrs(["humanity", "stains"], ATTRS => {
+							const humanity = Math.min(10, Math.max(0, parseInt(ATTRS["humanity"]))),
+								    stains = Math.min(10, Math.max(0, parseInt(ATTRS["stains"])))
+							attrList["humanity_impair_toggle"] = 0
 							log(`... Humanity: ${JSON.stringify(humanity)}, Stains: ${JSON.stringify(stains)}, ATTRS: ${JSON.stringify(ATTRS)}`)
 							if (humanity + stains > 10) {
-								attrList[`${gN}humanity_impair_toggle`] = 1
+								attrList["humanity_impair_toggle"] = 1
 								humArray.fill(4)
 								humArray.fill(3, humanity)
 								humArray.fill(2, 0, 10 - stains)
@@ -1026,41 +1036,36 @@
 				})
 				break
 			default:
-				log(`Error in doTracker(${tracker}, ${gN}): Unrecognized tracker.`)
+				log(`Error in doTracker(${tracker}, ): Unrecognized tracker.`)
 
 				return
 			}
 			$funcs.push($set)
 			run$($funcs, cback ? () => cback(null) : undefined)
 		},
-		$doTracker = (tracker, eInfo, gN = "") => cback => doTracker(tracker, eInfo, gN, cback),
-		doTrackerMax = (tracker, eInfo, gN = "") => {
+		$doTracker = (tracker, eInfo) => cback => doTracker(tracker, eInfo, cback),
+		doTrackerMax = (tracker, eInfo) => {
 			const attrList = {},
 				$funcs = []
 			switch (tracker.toLowerCase()) {
 			case "health":
 				$funcs.push(cback => {
-					getAttrs(groupify( ["stamina", "bonus_health"], gN), ATTRS => {
-						if (gN === "") {
-							attrList.health_max = Math.min(
-								15,
-								Math.max(
-									1,
-									_.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num)) + 3
-								)
+					getAttrs( ["stamina", "bonus_health"], ATTRS => {
+						attrList.health_max = Math.min(
+							15,
+							Math.max(
+								1,
+								_.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num)) + 3
 							)
-						} else {
-							attrList[`${gN}health_max`] = ATTRS[`${gN}bonus_health`]
-						}
+						)
 						cback(null, attrList)
 					} )
 				} )
 				break
 			case "willpower":
 				$funcs.push(cback => {
-					getAttrs(groupify( ["composure", "resolve", "bonus_willpower"], gN), ATTRS => {
-						if (gN === "") {
-							attrList.willpower_max =
+					getAttrs( ["composure", "resolve", "bonus_willpower"], ATTRS => {
+						attrList.willpower_max =
 									Math.min(
 										10,
 										Math.max(
@@ -1068,9 +1073,6 @@
 											_.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num))
 										)
 									)
-						} else {
-							attrList[`${gN}willpower_max`] = ATTRS[`${gN}bonus_willpower`]
-						}
 						cback(null, attrList)
 					} )
 				} )
@@ -1078,10 +1080,10 @@
 			case "blood potency full":
 			case "blood potency":
 				$funcs.push(cback => {
-					getAttrs(groupify( ["generation", "bonus_bp"], gN), ATTRS => {
-						attrList[`${gN}bp_max`] = Math.min(10, Math.max(0, genDepts[parseInt(ATTRS[`${gN}generation`] )].bp_max + (gN === "" ? parseInt(ATTRS[`${gN}bonus_bp`] ) : 0)))
+					getAttrs( ["generation", "bonus_bp"], ATTRS => {
+						attrList["blood_potency_max"] = Math.min(10, Math.max(0, genDepts[parseInt(ATTRS["generation"] )].blood_potency_max + parseInt(ATTRS["bonus_bp"])))
 						if (tracker === "Blood Potency Full")
-							attrList[`${gN}blood_potency`] = genDepts[parseInt(ATTRS[`${gN}generation`] )].blood_potency
+							attrList["blood_potency"] = genDepts[parseInt(ATTRS["generation"] )].blood_potency
 						cback(null, attrList)
 					} )
 				} )
@@ -1093,7 +1095,7 @@
 			}
 
 			$funcs.push($set)
-			$funcs.push($doTracker(tracker, eInfo, gN))
+			$funcs.push($doTracker(tracker, eInfo))
 
 			run$($funcs)
 		}
@@ -1121,10 +1123,12 @@
 		doTracker("Blood Potency", eInfo)
 	} )
 	on("change:humanity", eInfo => {
-		doTracker("Humanity", eInfo)
+		if (!ISOFFLINE && eInfo.sourceType !== "sheetworker")
+			doTracker("Humanity", eInfo)
 	} )	
 	on("change:stains", eInfo => {
-		doTracker("Stains", eInfo)
+		if (!ISOFFLINE && eInfo.sourceType !== "sheetworker")
+			doTracker("Stains", eInfo)
 	} )
 	// #endregion
 
@@ -1369,7 +1373,7 @@
 		}
 
 	on("change:date_today", doProjectCounter)
-	on(getTriggers(null, "", "", {project: ["projectstartdate", "projectincnum", "projectincunit"]}), eInfo => {
+	on(getTriggers(null, "", {project: ["projectstartdate", "projectincnum", "projectincunit"]}), eInfo => {
 		if (eInfo.sourceType !== "sheetworker") {
 			console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
 			log(`(Dates, LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
@@ -1378,7 +1382,7 @@
 			})
 		}
 	} )
-	on(getTriggers(null, "", "", {project: ["projectscope", "projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1,2,3], v => [`projectforcedstake${v}`, `projectforcedstake${v}_name`, `projectteamwork${v}`]))]}), eInfo => {
+	on(getTriggers(null, "", {project: ["projectscope", "projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1,2,3], v => [`projectforcedstake${v}`, `projectforcedstake${v}_name`, `projectteamwork${v}`]))]}), eInfo => {
 		if (eInfo.sourceType !== "sheetworker") {
 			console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
 			log(`(Diff, LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
@@ -1387,7 +1391,7 @@
 			})
 		}
 	} )
-	on(getTriggers(null, "", "", {project: ["projectlaunchtrait1", "projectlaunchtrait1_name", "projectlaunchtrait2", "projectlaunchtrait2_name"]}), eInfo => {
+	on(getTriggers(null, "", {project: ["projectlaunchtrait1", "projectlaunchtrait1_name", "projectlaunchtrait2", "projectlaunchtrait2_name"]}), eInfo => {
 		if (eInfo.sourceType !== "sheetworker") {
 			console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
 			log(`(LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
@@ -1396,7 +1400,7 @@
 			})
 		}
 	} )
-	on(getTriggers(null, "", "", {project: ["projectlaunchresults"]}), eInfo => {
+	on(getTriggers(null, "", {project: ["projectlaunchresults"]}), eInfo => {
 		if (eInfo.sourceType !== "sheetworker") {
 			console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
 			log(`(Diff, LCheck, LParams, Stake, Counter) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
@@ -1405,7 +1409,7 @@
 			})
 		}
 	} )
-	on(getTriggers(null, "", "", {project: _.flatten(_.map([1,2,3,4,5,6], v => [`projectstake${v}`, `projectstake${v}_name`]))}), eInfo => {
+	on(getTriggers(null, "", {project: _.flatten(_.map([1,2,3,4,5,6], v => [`projectstake${v}`, `projectstake${v}_name`]))}), eInfo => {
 		if (eInfo.sourceType !== "sheetworker") {
 			console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
 			log(`(Stake) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
@@ -1421,7 +1425,7 @@
 		getAttrs(["_reporder_timeline"], v => {
 		  getSectionIDs("timeline", function (idArray) {
 				let reporderArray = v["_reporder_timeline"] ? v["_reporder_timeline"].toLowerCase().split(",") : [],
-					          ids = [...new Set(reporderArray.filter(vv => idArray.includes(vv)).concat(idArray))]
+					          ids = [...new Set(reporderArray.filter(vv => idArray.includes(vv)).concat(idArray))] // eslint-disable-line no-unused-vars
 			  // SORT FUNCTIONS HERE
 		  })
 		})
@@ -1529,93 +1533,14 @@
 		} )
 	}
 
-	/*
-	const doXP = (gN = "") => {
-		const $funcs = [
-			$getRepAttrs( {
-				earnedxp: ["xp_award"],
-				earnedxpright: ["xp_award"]
-			}, gN),
-			(attrs, cback) => {
-				const attrList = {}
-				getAttrs(attrs, ATTRS => {
-					attrList.xp_earnedtotal = _.reduce(
-						_.values(ATTRS), (total, next) => parseInt(total) + parseInt(next) || 0
-					)
-					cback(null, attrList)
-				} )
-			},
-			$set,
-			$getRepAttrs( {
-				spentxp: XPREPREFS.spentxp
-			}, gN),
-			(attrs, cback) => {
-				const attrList = {}
-				getAttrs( [...attrs, "xp_earnedtotal"], ATTRS => {
-					let spentTotal = 0
-					ATTRS.xp_earnedtotal = ATTRS.xp_earnedtotal || 0
-					getSectionIDs("spentxp", idArray => {
-						_.each(idArray, rowID => {
-							const p = v => `repeating_spentxp_${rowID}_${v}`,
-								pV = v => ATTRS[p(v)],
-								pI = v => parseInt(pV(v)) || 0,
-								cat = pV("xp_category"),
-								colRef = XPPARAMS[cat] ? XPPARAMS[cat].colToggles : null
-							if (colRef) {
-								if (
-									(!colRef.includes("xp_trait_toggle") || pV("xp_trait") !== "") &&
-									(!colRef.includes("xp_initial_toggle") || pV("xp_initial") !== "") &&
-									(!colRef.includes("xp_new_toggle") || pV("xp_new") !== "")
-								) {
-									if (colRef.includes("xp_new_toggle")) {
-										let delta = 0
-										if (colRef.includes("xp_initial_toggle")) {
-											if (cat === "Advantage") {
-												delta = (pI("xp_new") - pI("xp_initial")) * XPPARAMS[cat].cost
-											} else {
-												for (let i = pI("xp_initial"); i < pI("xp_new"); i++)
-													delta += (i + 1) * XPPARAMS[cat].cost
-											}
-										} else {
-											delta = pI("xp_new") * XPPARAMS[cat].cost
-										}
-										attrList[p("xp_cost")] = Math.max(0, delta)
-									} else {
-										attrList[p("xp_cost")] = Math.max(0, XPPARAMS[cat].cost)
-									}
-									if (pV("xp_spent_toggle") === "on" && attrList[p("xp_cost")] > 0)
-										spentTotal += attrList[p("xp_cost")] || 0
-									if (attrList[p("xp_cost")] === 0)
-										attrList[p("xp_cost")] = ""
-								}
-							}
-							_.each( ["xp_trait_toggle", "xp_initial_toggle", "xp_new_toggle"],
-								v => {
-									if (colRef && colRef.includes(v) && pI(v) === 0)
-										attrList[p(v)] = 1
-									else if (colRef && !colRef.includes(v) && pI(v) === 1)
-										attrList[p(v)] = 0
-								} )
-							attrList[p("xp_arrow_toggle")] = Number(colRef && colRef.includes("xp_initial_toggle") && colRef.includes("xp_new_toggle"))
-						} )
-						attrList.xp_summary = `${ATTRS.xp_earnedtotal} XP Earned${spentTotal > 0 ? ` - ${spentTotal} XP Spent =  ${parseInt(ATTRS.xp_earnedtotal) - spentTotal} XP Remaining` : ""}`
-						cback(null, attrList)
-					} )
-				} )
-			},
-			$set
-		]
-		run$($funcs)
-	}
-	*/
-	on(getTriggers(null, "", "", _.keys(XPREPREFS)), doEXP)
+	on(getTriggers(null, "", _.keys(XPREPREFS)), doEXP)
 	// #endregion
 
 	// #region UPDATE: Dice Roller
-	const doRollRepRefs = (gN = "") => {
+	const doRollRepRefs = () => {
 			const attrList = {},
 				$funcs = [
-					$getRepAttrs(Object.assign(DISCREPREFS, ADVREPREFS), gN),
+					$getRepAttrs(Object.assign(DISCREPREFS, ADVREPREFS)),
 					(attrs, cBack) => {
 						getAttrs( ["repstats"], ATTRS => {
 							if (!_.isEqual(
@@ -1630,7 +1555,7 @@
 				]
 			run$($funcs)
 		},
-		$getRollAttrs = (gN = "") => cBack => {
+		$getRollAttrs = () => cBack => {
 			const repAttrs = [],
 				$funcs = [
 					cBack2 => {
@@ -1640,7 +1565,7 @@
 					},
 					(repstats = [], cBack2) => {
 						run$( [
-							$getRepAttrs(repstats, gN),
+							$getRepAttrs(repstats),
 							(attrs, cBack3) => {
 								repAttrs.push(..._.reject(attrs, v => v.includes("_details")))
 								cBack3(null)
@@ -1652,10 +1577,10 @@
 				]
 			run$($funcs, () => cBack(null, [...ALLATTRS, ...repAttrs] ))
 		},
-		doRolls = (targetAttr, opts = {}, gN = "") => {
+		doRolls = (targetAttr, opts = {}) => {
 			const attrList = {},
 				$funcs = [
-					$getRollAttrs(gN),
+					$getRollAttrs(),
 					(attrs, cBack) => {
 						getAttrs(attrs, ATTRS => {
 							log(`FULL ATTRS:
@@ -1835,113 +1760,21 @@
 			} )
 		}
 
-	on(`sheet:opened ${getTriggers(null, "", "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)] )}`, eInfo => {
+	on(`sheet:opened ${getTriggers(null, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)] )}`, eInfo => {
 		if (eInfo.sourceType !== "sheetworker" && !isBlacklisted(eInfo.sourceAttribute)) {
 			doRollRepRefs()
 		}
 	} )
-	on(getTriggers(ALLATTRS, "", "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)] ), eInfo => {
-		log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ STAT ROLLER TRIGGERED @@@`)
-		if (!_.isEqual(eInfo, LASTEVENT) && eInfo.sourceType !== "sheetworker" && !isBlacklisted(eInfo.sourceAttribute)) {
-			doRolls(eInfo.sourceAttribute, {
-				silent: true
-			} )
+	on(getTriggers(ALLATTRS, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)] ), eInfo => {
+		if (!ISOFFLINE) {
+			log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ STAT ROLLER TRIGGERED @@@`)
+			if (!_.isEqual(eInfo, LASTEVENT) && eInfo.sourceType !== "sheetworker" && !isBlacklisted(eInfo.sourceAttribute)) {
+				doRolls(eInfo.sourceAttribute, {
+					silent: true
+				} )
+			}
 		}
 	} )
-	// #endregion
-
-	// #region GROUP SHEET ACTIONS
-	const doRoller = gN => {
-		const $funcs = [
-			$getRepAttrs( {
-				rolls: GROUPREPREFS
-			}, gN),
-			(attrs, cback) => {
-				getAttrs( ["character_name", `${gN}charname`, `${gN}hunger`].concat(attrs), ATTRS => {
-					log(`FULL LIST: ${JSON.stringify(ATTRS)}`)
-					const attrList = {}					
-					getSectionIDs("rolls", idArray => {
-						_.each(idArray, rowId => {
-							const p = v => `repeating_${gN}rolls_${rowId}_${v}`,
-								pV = v => ATTRS[p(v)],
-								pI = v => parseInt(pV(v)) || 0
-							attrList[p("grollparams")] =
-							`${pV("grolltype")}|${
-								ATTRS.character_name}|${
-								gN}|${
-								ATTRS[`${gN}charname`]}|${
-								pV("gtrait1name")}:${pI("gtrait1value")},${
-								pV("gtrait2name")}:${pI("gtrait2value")}|${
-								pI("grolldiff")}|${
-								pI("grollmod")}|${
-								pV("gposflags")}|${
-								pV("gnegflags")}`
-							log(`... NEW ROLL PARAMS: ${JSON.stringify(attrList)}`)
-						} )
-						cback(null, attrList)
-					} ) 
-				} )
-			},
-			$set
-		]
-		run$($funcs)
-	}
-
-	_.each(GROUPPREFIXES, gN => {
-		on(getTriggers( ["charname"], "", gN), () => {
-			getAttrs( [`${gN}charname`], v => setAttrs(_.object( [
-				[`${gN}name`, v[`${gN}charname`]]
-			] )))
-		} )
-
-		on(getTriggers( ["clan"], "", gN), () => {
-			doClans(gN)
-		} )
-		on(getTriggers(DISCENUMS, "", gN), eInfo => {
-			doDiscPowers(eInfo.sourceAttribute, gN)
-		} )
-
-		on(getTriggers( ["bonus_health"], "", gN), () => {
-			doTrackerMax("Health", gN)
-		} )
-		on(getTriggers( ["bonus_willpower"], "", gN), () => {
-			doTrackerMax("Willpower", gN)
-		} )
-		on(getTriggers( ["generation", "bonus_bp"], "", gN), () => {
-			doTrackerMax("Blood Potency Full", gN)
-		} )
-		on(getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "sdmg", "admg"], "health_", gN), eInfo => {
-			doTracker("Health", eInfo.sourceAttribute, gN)
-		} )
-		on(getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "sdmg", "admg"], "willpower_", gN), eInfo => {
-			doTracker("Willpower", eInfo.sourceAttribute, gN)
-		} )
-		on(getTriggers( ["blood_potency"], "", gN), eInfo => {
-			doTracker("Blood Potency", eInfo.sourceAttribute, gN)
-		} )
-		on(`${getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "dhum", "dstains"], "humanity_", gN)} ${getTriggers( ["humanity", "stains"], "", gN)}`, eInfo => {
-			doTracker("Humanity", eInfo.sourceAttribute, gN)
-		} )
-
-		on(getTriggers(GROUPATTRS, "", gN, _.keys(GROUPREPREFS)), () => {
-			doRoller(gN)
-		} )
-	} )
-
-	/* //Group Character #1
-		on("change:g1charname", function () { getAttrs(["g1charname"], function (v) { setAttrs({ g1name: v.g1charname }); }) });
-		on("change:g1clan", function () { doClans("g1"); });
-		on(getTriggers(DISCIPLINEREFS, "g1"), function (eInfo) { doDiscs(eInfo.sourceAttribute); });
-		on("change:g1bonus_health", function () { doTrackerMax("Health", "g1"); });
-		on("change:g1bonus_willpower", function () { doTrackerMax("Willpower", "g1"); });
-		on(getTriggers(["generation", "bonus_bp"], "g1"), function () { doTrackerMax("Blood Potency Full", "g1"); });
-		on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "sdmg", "admg"], "g1health_"), function () { doTracker("Health", "g1"); });
-		on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "sdmg", "admg"], "g1willpower_"), function () { doTracker("Willpower", "g1"); });
-		on("change:g1bp", function () { doTracker("Blood Potency", "g1"); });
-		on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "g1humanity_") + " change:g1humanity_dhum change:g1humanity_dstains", function () {
-		doTracker("Humanity", "g1");
-		});
-		on(getTriggers(GROUPATTRS, "", "g1", GROUPREPSECTIONS), function () { doRoller("g1"); }); */
 	// #endregion
 
 	// #region Sheetworker Actions (Above "on(changes)" ignore sheetworker.)

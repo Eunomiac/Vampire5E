@@ -34,7 +34,7 @@ const D = (() => {
 		},
 		DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
 		TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"],
-		MISCATTRS = ["bp_max"],
+		MISCATTRS = ["blood_potency_max"],
 		BLOODPOTENCY = [
 			{bp_surge: 0, bp_discbonus: 0},
 			{bp_surge: 1, bp_discbonus: 1},
@@ -916,6 +916,13 @@ const D = (() => {
 				break
 			default: break
 			}
+			const attrCheck = _.map(findObjs({
+				_type: "attribute",
+				_characterid: D.GetChar(charRef).id
+			}), v => v.get("name"))
+			D.Alert(`Found ${attrCheck.length} Untitled Objects`)
+			D.Alert(`${D.JS(attrCheck)}`)
+			return
 		},
 		getCaseRepID = (lowCaseID, charRef) => {
 			// Given a lower-case row ID (from sheetworker), converts it to proper case.
@@ -1046,6 +1053,7 @@ const D = (() => {
 		/* D.GetTextWidth(obj, text):  Returns width of given text object if
 			       					    it held supplied text. */
 		MakeRow: makeRepRow,
+		DeleteRow: deleteRepRow,
 
 		/* D.MakeRow(charID/obj, secName, attrs):  Creates repeating fieldset row in
 													secName with attrs for character

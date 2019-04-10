@@ -954,7 +954,7 @@
 
 	.charsheet input.sheet-containerselector:not(:checked)+div,
 	.charsheet input.sheet-containerselector:not(:checked)+span {
-		display: none;
+		display: none !important;
 	}
 
 	/* #endregion */
@@ -2320,8 +2320,8 @@
 	}
 
 	.charsheet div.sheet-projects .sheet-projectheader {
-		height: 25px;
-		border-radius: 0;
+		margin-top: -3px;
+		line-height: 20px;
 	}
 
 	.charsheet div.sheet-projects span.sheet-header5 {
@@ -2531,7 +2531,9 @@
 	}
 
 	.charsheet div.sheet-projects input.sheet-dotlinename {
-		width: calc(100% - 100px - 96px);
+		width: calc(100% - 15px - 96px - 10px);
+		margin-left: 5px;
+		margin-top: 2px;
 	}
 
 	.charsheet div.sheet-projects div.sheet-projectstake {
@@ -2547,6 +2549,7 @@
 		text-indent: 2px;
 		padding: 0px 0px;
 		margin-top: 2px;
+		margin-left: 0px;
 	}
 
 	.charsheet div.sheet-projects input.sheet-hoverpopup+span+div {

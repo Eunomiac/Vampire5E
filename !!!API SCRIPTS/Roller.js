@@ -1,6 +1,6 @@
 ﻿void MarkStart("Roller")
 const Roller = (() => {
-	const STATEREF = state[D.GAMENAME].Roller,
+	const STATEREF = state[D.GAMENAME].Roller,	// eslint-disable-line no-unused-vars
 		SCRIPTNAME = "Roller"
 	let [isRerollFXOn, rerollFX, isLocked] = [false, null, false]
 
@@ -934,7 +934,7 @@ const Roller = (() => {
 
 		// #region Dice Graphic Control
 		setDie = (dieNum, dieCat = "diceList", dieVal, params = {}, rollType = "") => {
-			const funcName = "setDie",
+			const funcName = "setDie",	// eslint-disable-line no-unused-vars
 				dieRef = state[D.GAMENAME].Roller[dieCat][dieNum],
 				dieParams = {
 					id: dieRef.id
@@ -1976,11 +1976,11 @@ const Roller = (() => {
 						}
 						break
 					case "remorse":
-						deltaAttrs[`${gNum}humanity_dstains`] = -1 * parseInt(getAttrByName(rollData.charID, `${gNum}Stains`) || 0)
+						deltaAttrs[`${gNum}stains`] = 0
 						if (rollResults.total === 0) {
 							rollLines.outcome.text = "YOUR HUMANITY FADES..."
 							logLines.outcome = `${CHATSTYLES.outcomeRed}DEGENERATION</span></div>`
-							deltaAttrs[`${gNum}humanity_dhum`] = -1
+							deltaAttrs[`${gNum}humanity`] = parseInt(getAttrByName(rollData.charID, `${gNum}humanity`) || 1) - 1
 							rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "bad")
 						} else {
 							rollLines.outcome.text = "YOU FIND ABSOLUTION!"

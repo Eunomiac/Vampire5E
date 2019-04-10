@@ -96,6 +96,7 @@
             <img src="https://i.imgur.com/FqQFaTp.png" /> <!-- Social -->
             <img src="https://i.imgur.com/1oUQhBI.png" /> <!-- Mental -->
         </div>
+        <input type="hidden" name="attr_sheetworkertoggle" value="0"/>
         <!-- HEADER-->
         <div class="sheet-header"><img src="https://imgur.com/DJ3KxdD.png" /></div>
 
@@ -442,7 +443,6 @@
                 <input class="sheet-attr" type="checkbox" name="attr_applyresonance" value="1" /><span>Resonant</span>
                 <input type="hidden" name="attr_incap" value="" />
                 <input type="hidden" name="attr_rollarray" value="" />
-                <input type="hidden" name="attr_skipflags" value="" />
             </div>
             <div>
                 <input class="sheet-containerselector" type="radio" name="attr_dyscrasias_toggle" value="0" />
@@ -781,27 +781,27 @@
                         <div class="sheet-iconBox sheet-blood_potency"></div>
                     </div>
                     <div class="sheet-dotline sheet-variabledotline">
-                        <input class="sheet-dottoggle" type="radio" name="attr_g1bp_max" value="0" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g1blood_potency_max" value="0" />
                         <input class="sheet-dot" type="radio" name="attr_g1bp" value="0" checked style="display: none;" /><span style="display: none;"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g1bp_max" value="1" checked />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g1blood_potency_max" value="1" checked />
                         <input class="sheet-dot" type="radio" name="attr_g1bp" value="1" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g1bp_max" value="2" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g1blood_potency_max" value="2" />
                         <input class="sheet-dot" type="radio" name="attr_g1bp" value="2" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g1bp_max" value="3" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g1blood_potency_max" value="3" />
                         <input class="sheet-dot" type="radio" name="attr_g1bp" value="3" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g1bp_max" value="4" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g1blood_potency_max" value="4" />
                         <input class="sheet-dot" type="radio" name="attr_g1bp" value="4" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g1bp_max" value="5" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g1blood_potency_max" value="5" />
                         <input class="sheet-dot" type="radio" name="attr_g1bp" value="5" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g1bp_max" value="6" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g1blood_potency_max" value="6" />
                         <input class="sheet-dot" type="radio" name="attr_g1bp" value="6" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g1bp_max" value="7" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g1blood_potency_max" value="7" />
                         <input class="sheet-dot" type="radio" name="attr_g1bp" value="7" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g1bp_max" value="8" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g1blood_potency_max" value="8" />
                         <input class="sheet-dot" type="radio" name="attr_g1bp" value="8" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g1bp_max" value="9" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g1blood_potency_max" value="9" />
                         <input class="sheet-dot" type="radio" name="attr_g1bp" value="9" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g1bp_max" value="10" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g1blood_potency_max" value="10" />
                         <input class="sheet-dot" type="radio" name="attr_g1bp" value="10" /><span class="sheet-smalldot"></span>
                     </div>
                 </div>
@@ -809,8 +809,6 @@
                     <div class="sheet-iconBox sheet-humanity"></div>
                     <input type="hidden" name="attr_g1stains" />
                     <input type="hidden" name="attr_g1humanity" />
-                    <input type="hidden" name="attr_g1humanity_dstains" value="0" />
-                    <input type="hidden" name="attr_g1humanity_dhum" value="0" />
                     <div class="sheet-dotline sheet-variabledotline">
                         <input class="sheet-dottoggle" type="radio" name="attr_g1humanity_max" value="1" style="margin-left: -16px;" />
                         <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -1253,27 +1251,27 @@
                         <div class="sheet-iconBox sheet-blood_potency"></div>
                     </div>
                     <div class="sheet-dotline sheet-variabledotline">
-                        <input class="sheet-dottoggle" type="radio" name="attr_g2bp_max" value="0" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g2blood_potency_max" value="0" />
                         <input class="sheet-dot" type="radio" name="attr_g2bp" value="0" checked style="display: none;" /><span style="display: none;"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g2bp_max" value="1" checked />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g2blood_potency_max" value="1" checked />
                         <input class="sheet-dot" type="radio" name="attr_g2bp" value="1" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g2bp_max" value="2" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g2blood_potency_max" value="2" />
                         <input class="sheet-dot" type="radio" name="attr_g2bp" value="2" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g2bp_max" value="3" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g2blood_potency_max" value="3" />
                         <input class="sheet-dot" type="radio" name="attr_g2bp" value="3" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g2bp_max" value="4" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g2blood_potency_max" value="4" />
                         <input class="sheet-dot" type="radio" name="attr_g2bp" value="4" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g2bp_max" value="5" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g2blood_potency_max" value="5" />
                         <input class="sheet-dot" type="radio" name="attr_g2bp" value="5" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g2bp_max" value="6" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g2blood_potency_max" value="6" />
                         <input class="sheet-dot" type="radio" name="attr_g2bp" value="6" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g2bp_max" value="7" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g2blood_potency_max" value="7" />
                         <input class="sheet-dot" type="radio" name="attr_g2bp" value="7" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g2bp_max" value="8" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g2blood_potency_max" value="8" />
                         <input class="sheet-dot" type="radio" name="attr_g2bp" value="8" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g2bp_max" value="9" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g2blood_potency_max" value="9" />
                         <input class="sheet-dot" type="radio" name="attr_g2bp" value="9" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g2bp_max" value="10" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g2blood_potency_max" value="10" />
                         <input class="sheet-dot" type="radio" name="attr_g2bp" value="10" /><span class="sheet-smalldot"></span>
                     </div>
                 </div>
@@ -1281,8 +1279,6 @@
                     <div class="sheet-iconBox sheet-humanity"></div>
                     <input type="hidden" name="attr_g2stains" />
                     <input type="hidden" name="attr_g2humanity" />
-                    <input type="hidden" name="attr_g2humanity_dstains" value="0" />
-                    <input type="hidden" name="attr_g2humanity_dhum" value="0" />
                     <div class="sheet-dotline sheet-variabledotline">
                         <input class="sheet-dottoggle" type="radio" name="attr_g2humanity_max" value="1" style="margin-left: -16px;" />
                         <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -1725,27 +1721,27 @@
                         <div class="sheet-iconBox sheet-blood_potency"></div>
                     </div>
                     <div class="sheet-dotline sheet-variabledotline">
-                        <input class="sheet-dottoggle" type="radio" name="attr_g3bp_max" value="0" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g3blood_potency_max" value="0" />
                         <input class="sheet-dot" type="radio" name="attr_g3bp" value="0" checked style="display: none;" /><span style="display: none;"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g3bp_max" value="1" checked />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g3blood_potency_max" value="1" checked />
                         <input class="sheet-dot" type="radio" name="attr_g3bp" value="1" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g3bp_max" value="2" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g3blood_potency_max" value="2" />
                         <input class="sheet-dot" type="radio" name="attr_g3bp" value="2" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g3bp_max" value="3" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g3blood_potency_max" value="3" />
                         <input class="sheet-dot" type="radio" name="attr_g3bp" value="3" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g3bp_max" value="4" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g3blood_potency_max" value="4" />
                         <input class="sheet-dot" type="radio" name="attr_g3bp" value="4" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g3bp_max" value="5" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g3blood_potency_max" value="5" />
                         <input class="sheet-dot" type="radio" name="attr_g3bp" value="5" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g3bp_max" value="6" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g3blood_potency_max" value="6" />
                         <input class="sheet-dot" type="radio" name="attr_g3bp" value="6" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g3bp_max" value="7" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g3blood_potency_max" value="7" />
                         <input class="sheet-dot" type="radio" name="attr_g3bp" value="7" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g3bp_max" value="8" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g3blood_potency_max" value="8" />
                         <input class="sheet-dot" type="radio" name="attr_g3bp" value="8" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g3bp_max" value="9" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g3blood_potency_max" value="9" />
                         <input class="sheet-dot" type="radio" name="attr_g3bp" value="9" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g3bp_max" value="10" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g3blood_potency_max" value="10" />
                         <input class="sheet-dot" type="radio" name="attr_g3bp" value="10" /><span class="sheet-smalldot"></span>
                     </div>
                 </div>
@@ -1753,8 +1749,6 @@
                     <div class="sheet-iconBox sheet-humanity"></div>
                     <input type="hidden" name="attr_g3stains" />
                     <input type="hidden" name="attr_g3humanity" />
-                    <input type="hidden" name="attr_g3humanity_dstains" value="0" />
-                    <input type="hidden" name="attr_g3humanity_dhum" value="0" />
                     <div class="sheet-dotline sheet-variabledotline">
                         <input class="sheet-dottoggle" type="radio" name="attr_g3humanity_max" value="1" style="margin-left: -16px;" />
                         <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -2197,27 +2191,27 @@
                         <div class="sheet-iconBox sheet-blood_potency"></div>
                     </div>
                     <div class="sheet-dotline sheet-variabledotline">
-                        <input class="sheet-dottoggle" type="radio" name="attr_g4bp_max" value="0" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g4blood_potency_max" value="0" />
                         <input class="sheet-dot" type="radio" name="attr_g4bp" value="0" checked style="display: none;" /><span style="display: none;"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g4bp_max" value="1" checked />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g4blood_potency_max" value="1" checked />
                         <input class="sheet-dot" type="radio" name="attr_g4bp" value="1" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g4bp_max" value="2" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g4blood_potency_max" value="2" />
                         <input class="sheet-dot" type="radio" name="attr_g4bp" value="2" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g4bp_max" value="3" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g4blood_potency_max" value="3" />
                         <input class="sheet-dot" type="radio" name="attr_g4bp" value="3" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g4bp_max" value="4" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g4blood_potency_max" value="4" />
                         <input class="sheet-dot" type="radio" name="attr_g4bp" value="4" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g4bp_max" value="5" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g4blood_potency_max" value="5" />
                         <input class="sheet-dot" type="radio" name="attr_g4bp" value="5" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g4bp_max" value="6" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g4blood_potency_max" value="6" />
                         <input class="sheet-dot" type="radio" name="attr_g4bp" value="6" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g4bp_max" value="7" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g4blood_potency_max" value="7" />
                         <input class="sheet-dot" type="radio" name="attr_g4bp" value="7" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g4bp_max" value="8" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g4blood_potency_max" value="8" />
                         <input class="sheet-dot" type="radio" name="attr_g4bp" value="8" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g4bp_max" value="9" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g4blood_potency_max" value="9" />
                         <input class="sheet-dot" type="radio" name="attr_g4bp" value="9" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g4bp_max" value="10" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g4blood_potency_max" value="10" />
                         <input class="sheet-dot" type="radio" name="attr_g4bp" value="10" /><span class="sheet-smalldot"></span>
                     </div>
                 </div>
@@ -2225,8 +2219,6 @@
                     <div class="sheet-iconBox sheet-humanity"></div>
                     <input type="hidden" name="attr_g4stains" />
                     <input type="hidden" name="attr_g4humanity" />
-                    <input type="hidden" name="attr_g4humanity_dstains" value="0" />
-                    <input type="hidden" name="attr_g4humanity_dhum" value="0" />
                     <div class="sheet-dotline sheet-variabledotline">
                         <input class="sheet-dottoggle" type="radio" name="attr_g4humanity_max" value="1" style="margin-left: -16px;" />
                         <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -2669,27 +2661,27 @@
                         <div class="sheet-iconBox sheet-blood_potency"></div>
                     </div>
                     <div class="sheet-dotline sheet-variabledotline">
-                        <input class="sheet-dottoggle" type="radio" name="attr_g5bp_max" value="0" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g5blood_potency_max" value="0" />
                         <input class="sheet-dot" type="radio" name="attr_g5bp" value="0" checked style="display: none;" /><span style="display: none;"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g5bp_max" value="1" checked />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g5blood_potency_max" value="1" checked />
                         <input class="sheet-dot" type="radio" name="attr_g5bp" value="1" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g5bp_max" value="2" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g5blood_potency_max" value="2" />
                         <input class="sheet-dot" type="radio" name="attr_g5bp" value="2" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g5bp_max" value="3" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g5blood_potency_max" value="3" />
                         <input class="sheet-dot" type="radio" name="attr_g5bp" value="3" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g5bp_max" value="4" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g5blood_potency_max" value="4" />
                         <input class="sheet-dot" type="radio" name="attr_g5bp" value="4" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g5bp_max" value="5" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g5blood_potency_max" value="5" />
                         <input class="sheet-dot" type="radio" name="attr_g5bp" value="5" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g5bp_max" value="6" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g5blood_potency_max" value="6" />
                         <input class="sheet-dot" type="radio" name="attr_g5bp" value="6" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g5bp_max" value="7" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g5blood_potency_max" value="7" />
                         <input class="sheet-dot" type="radio" name="attr_g5bp" value="7" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g5bp_max" value="8" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g5blood_potency_max" value="8" />
                         <input class="sheet-dot" type="radio" name="attr_g5bp" value="8" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g5bp_max" value="9" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g5blood_potency_max" value="9" />
                         <input class="sheet-dot" type="radio" name="attr_g5bp" value="9" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g5bp_max" value="10" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g5blood_potency_max" value="10" />
                         <input class="sheet-dot" type="radio" name="attr_g5bp" value="10" /><span class="sheet-smalldot"></span>
                     </div>
                 </div>
@@ -2697,8 +2689,6 @@
                     <div class="sheet-iconBox sheet-humanity"></div>
                     <input type="hidden" name="attr_g5stains" />
                     <input type="hidden" name="attr_g5humanity" />
-                    <input type="hidden" name="attr_g5humanity_dstains" value="0" />
-                    <input type="hidden" name="attr_g5humanity_dhum" value="0" />
                     <div class="sheet-dotline sheet-variabledotline">
                         <input class="sheet-dottoggle" type="radio" name="attr_g5humanity_max" value="1" style="margin-left: -16px;" />
                         <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -3141,27 +3131,27 @@
                         <div class="sheet-iconBox sheet-blood_potency"></div>
                     </div>
                     <div class="sheet-dotline sheet-variabledotline">
-                        <input class="sheet-dottoggle" type="radio" name="attr_g6bp_max" value="0" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g6blood_potency_max" value="0" />
                         <input class="sheet-dot" type="radio" name="attr_g6bp" value="0" checked style="display: none;" /><span style="display: none;"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g6bp_max" value="1" checked />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g6blood_potency_max" value="1" checked />
                         <input class="sheet-dot" type="radio" name="attr_g6bp" value="1" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g6bp_max" value="2" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g6blood_potency_max" value="2" />
                         <input class="sheet-dot" type="radio" name="attr_g6bp" value="2" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g6bp_max" value="3" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g6blood_potency_max" value="3" />
                         <input class="sheet-dot" type="radio" name="attr_g6bp" value="3" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g6bp_max" value="4" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g6blood_potency_max" value="4" />
                         <input class="sheet-dot" type="radio" name="attr_g6bp" value="4" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g6bp_max" value="5" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g6blood_potency_max" value="5" />
                         <input class="sheet-dot" type="radio" name="attr_g6bp" value="5" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g6bp_max" value="6" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g6blood_potency_max" value="6" />
                         <input class="sheet-dot" type="radio" name="attr_g6bp" value="6" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g6bp_max" value="7" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g6blood_potency_max" value="7" />
                         <input class="sheet-dot" type="radio" name="attr_g6bp" value="7" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g6bp_max" value="8" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g6blood_potency_max" value="8" />
                         <input class="sheet-dot" type="radio" name="attr_g6bp" value="8" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g6bp_max" value="9" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g6blood_potency_max" value="9" />
                         <input class="sheet-dot" type="radio" name="attr_g6bp" value="9" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g6bp_max" value="10" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g6blood_potency_max" value="10" />
                         <input class="sheet-dot" type="radio" name="attr_g6bp" value="10" /><span class="sheet-smalldot"></span>
                     </div>
                 </div>
@@ -3169,8 +3159,6 @@
                     <div class="sheet-iconBox sheet-humanity"></div>
                     <input type="hidden" name="attr_g6stains" />
                     <input type="hidden" name="attr_g6humanity" />
-                    <input type="hidden" name="attr_g6humanity_dstains" value="0" />
-                    <input type="hidden" name="attr_g6humanity_dhum" value="0" />
                     <div class="sheet-dotline sheet-variabledotline">
                         <input class="sheet-dottoggle" type="radio" name="attr_g6humanity_max" value="1" style="margin-left: -16px;" />
                         <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -3613,27 +3601,27 @@
                         <div class="sheet-iconBox sheet-blood_potency"></div>
                     </div>
                     <div class="sheet-dotline sheet-variabledotline">
-                        <input class="sheet-dottoggle" type="radio" name="attr_g7bp_max" value="0" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g7blood_potency_max" value="0" />
                         <input class="sheet-dot" type="radio" name="attr_g7bp" value="0" checked style="display: none;" /><span style="display: none;"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g7bp_max" value="1" checked />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g7blood_potency_max" value="1" checked />
                         <input class="sheet-dot" type="radio" name="attr_g7bp" value="1" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g7bp_max" value="2" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g7blood_potency_max" value="2" />
                         <input class="sheet-dot" type="radio" name="attr_g7bp" value="2" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g7bp_max" value="3" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g7blood_potency_max" value="3" />
                         <input class="sheet-dot" type="radio" name="attr_g7bp" value="3" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g7bp_max" value="4" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g7blood_potency_max" value="4" />
                         <input class="sheet-dot" type="radio" name="attr_g7bp" value="4" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g7bp_max" value="5" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g7blood_potency_max" value="5" />
                         <input class="sheet-dot" type="radio" name="attr_g7bp" value="5" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g7bp_max" value="6" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g7blood_potency_max" value="6" />
                         <input class="sheet-dot" type="radio" name="attr_g7bp" value="6" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g7bp_max" value="7" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g7blood_potency_max" value="7" />
                         <input class="sheet-dot" type="radio" name="attr_g7bp" value="7" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g7bp_max" value="8" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g7blood_potency_max" value="8" />
                         <input class="sheet-dot" type="radio" name="attr_g7bp" value="8" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g7bp_max" value="9" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g7blood_potency_max" value="9" />
                         <input class="sheet-dot" type="radio" name="attr_g7bp" value="9" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g7bp_max" value="10" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g7blood_potency_max" value="10" />
                         <input class="sheet-dot" type="radio" name="attr_g7bp" value="10" /><span class="sheet-smalldot"></span>
                     </div>
                 </div>
@@ -3641,8 +3629,6 @@
                     <div class="sheet-iconBox sheet-humanity"></div>
                     <input type="hidden" name="attr_g7stains" />
                     <input type="hidden" name="attr_g7humanity" />
-                    <input type="hidden" name="attr_g7humanity_dstains" value="0" />
-                    <input type="hidden" name="attr_g7humanity_dhum" value="0" />
                     <div class="sheet-dotline sheet-variabledotline">
                         <input class="sheet-dottoggle" type="radio" name="attr_g7humanity_max" value="1" style="margin-left: -16px;" />
                         <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -4085,27 +4071,27 @@
                         <div class="sheet-iconBox sheet-blood_potency"></div>
                     </div>
                     <div class="sheet-dotline sheet-variabledotline">
-                        <input class="sheet-dottoggle" type="radio" name="attr_g8bp_max" value="0" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g8blood_potency_max" value="0" />
                         <input class="sheet-dot" type="radio" name="attr_g8bp" value="0" checked style="display: none;" /><span style="display: none;"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g8bp_max" value="1" checked />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g8blood_potency_max" value="1" checked />
                         <input class="sheet-dot" type="radio" name="attr_g8bp" value="1" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g8bp_max" value="2" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g8blood_potency_max" value="2" />
                         <input class="sheet-dot" type="radio" name="attr_g8bp" value="2" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g8bp_max" value="3" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g8blood_potency_max" value="3" />
                         <input class="sheet-dot" type="radio" name="attr_g8bp" value="3" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g8bp_max" value="4" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g8blood_potency_max" value="4" />
                         <input class="sheet-dot" type="radio" name="attr_g8bp" value="4" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g8bp_max" value="5" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g8blood_potency_max" value="5" />
                         <input class="sheet-dot" type="radio" name="attr_g8bp" value="5" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g8bp_max" value="6" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g8blood_potency_max" value="6" />
                         <input class="sheet-dot" type="radio" name="attr_g8bp" value="6" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g8bp_max" value="7" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g8blood_potency_max" value="7" />
                         <input class="sheet-dot" type="radio" name="attr_g8bp" value="7" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g8bp_max" value="8" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g8blood_potency_max" value="8" />
                         <input class="sheet-dot" type="radio" name="attr_g8bp" value="8" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g8bp_max" value="9" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g8blood_potency_max" value="9" />
                         <input class="sheet-dot" type="radio" name="attr_g8bp" value="9" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g8bp_max" value="10" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g8blood_potency_max" value="10" />
                         <input class="sheet-dot" type="radio" name="attr_g8bp" value="10" /><span class="sheet-smalldot"></span>
                     </div>
                 </div>
@@ -4113,8 +4099,6 @@
                     <div class="sheet-iconBox sheet-humanity"></div>
                     <input type="hidden" name="attr_g8stains" />
                     <input type="hidden" name="attr_g8humanity" />
-                    <input type="hidden" name="attr_g8humanity_dstains" value="0" />
-                    <input type="hidden" name="attr_g8humanity_dhum" value="0" />
                     <div class="sheet-dotline sheet-variabledotline">
                         <input class="sheet-dottoggle" type="radio" name="attr_g8humanity_max" value="1" style="margin-left: -16px;" />
                         <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -4557,27 +4541,27 @@
                         <div class="sheet-iconBox sheet-blood_potency"></div>
                     </div>
                     <div class="sheet-dotline sheet-variabledotline">
-                        <input class="sheet-dottoggle" type="radio" name="attr_g9bp_max" value="0" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g9blood_potency_max" value="0" />
                         <input class="sheet-dot" type="radio" name="attr_g9bp" value="0" checked style="display: none;" /><span style="display: none;"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g9bp_max" value="1" checked />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g9blood_potency_max" value="1" checked />
                         <input class="sheet-dot" type="radio" name="attr_g9bp" value="1" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g9bp_max" value="2" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g9blood_potency_max" value="2" />
                         <input class="sheet-dot" type="radio" name="attr_g9bp" value="2" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g9bp_max" value="3" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g9blood_potency_max" value="3" />
                         <input class="sheet-dot" type="radio" name="attr_g9bp" value="3" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g9bp_max" value="4" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g9blood_potency_max" value="4" />
                         <input class="sheet-dot" type="radio" name="attr_g9bp" value="4" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g9bp_max" value="5" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g9blood_potency_max" value="5" />
                         <input class="sheet-dot" type="radio" name="attr_g9bp" value="5" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g9bp_max" value="6" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g9blood_potency_max" value="6" />
                         <input class="sheet-dot" type="radio" name="attr_g9bp" value="6" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g9bp_max" value="7" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g9blood_potency_max" value="7" />
                         <input class="sheet-dot" type="radio" name="attr_g9bp" value="7" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g9bp_max" value="8" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g9blood_potency_max" value="8" />
                         <input class="sheet-dot" type="radio" name="attr_g9bp" value="8" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g9bp_max" value="9" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g9blood_potency_max" value="9" />
                         <input class="sheet-dot" type="radio" name="attr_g9bp" value="9" /><span class="sheet-smalldot"></span>
-                        <input class="sheet-dottoggle" type="radio" name="attr_g9bp_max" value="10" />
+                        <input class="sheet-dottoggle" type="radio" name="attr_g9blood_potency_max" value="10" />
                         <input class="sheet-dot" type="radio" name="attr_g9bp" value="10" /><span class="sheet-smalldot"></span>
                     </div>
                 </div>
@@ -4585,8 +4569,6 @@
                     <div class="sheet-iconBox sheet-humanity"></div>
                     <input type="hidden" name="attr_g9stains" />
                     <input type="hidden" name="attr_g9humanity" />
-                    <input type="hidden" name="attr_g9humanity_dstains" value="0" />
-                    <input type="hidden" name="attr_g9humanity_dhum" value="0" />
                     <div class="sheet-dotline sheet-variabledotline">
                         <input class="sheet-dottoggle" type="radio" name="attr_g9humanity_max" value="1" style="margin-left: -16px;" />
                         <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
@@ -4936,27 +4918,27 @@
                 </div>
                 <br />
                 <div class="sheet-dotline sheet-variabledotline sheet-centered" style="z-index: -10;">
-                    <input class="sheet-dottoggle" type="radio" name="attr_bp_max" value="0" />
+                    <input class="sheet-dottoggle" type="radio" name="attr_blood_potency_max" value="0" />
                     <input class="sheet-dot" type="radio" name="attr_blood_potency" value="0" checked style="display: none;" /><span style="display: none;"></span>
-                    <input class="sheet-dottoggle" type="radio" name="attr_bp_max" value="1" checked />
+                    <input class="sheet-dottoggle" type="radio" name="attr_blood_potency_max" value="1" checked />
                     <input class="sheet-dot" type="radio" name="attr_blood_potency" value="1" /><span></span>
-                    <input class="sheet-dottoggle" type="radio" name="attr_bp_max" value="2" />
+                    <input class="sheet-dottoggle" type="radio" name="attr_blood_potency_max" value="2" />
                     <input class="sheet-dot" type="radio" name="attr_blood_potency" value="2" /><span></span>
-                    <input class="sheet-dottoggle" type="radio" name="attr_bp_max" value="3" />
+                    <input class="sheet-dottoggle" type="radio" name="attr_blood_potency_max" value="3" />
                     <input class="sheet-dot" type="radio" name="attr_blood_potency" value="3" /><span></span>
-                    <input class="sheet-dottoggle" type="radio" name="attr_bp_max" value="4" />
+                    <input class="sheet-dottoggle" type="radio" name="attr_blood_potency_max" value="4" />
                     <input class="sheet-dot" type="radio" name="attr_blood_potency" value="4" /><span></span>
-                    <input class="sheet-dottoggle" type="radio" name="attr_bp_max" value="5" />
+                    <input class="sheet-dottoggle" type="radio" name="attr_blood_potency_max" value="5" />
                     <input class="sheet-dot" type="radio" name="attr_blood_potency" value="5" /><span></span>
-                    <input class="sheet-dottoggle" type="radio" name="attr_bp_max" value="6" />
+                    <input class="sheet-dottoggle" type="radio" name="attr_blood_potency_max" value="6" />
                     <input class="sheet-dot" type="radio" name="attr_blood_potency" value="6" /><span></span>
-                    <input class="sheet-dottoggle" type="radio" name="attr_bp_max" value="7" />
+                    <input class="sheet-dottoggle" type="radio" name="attr_blood_potency_max" value="7" />
                     <input class="sheet-dot" type="radio" name="attr_blood_potency" value="7" /><span></span>
-                    <input class="sheet-dottoggle" type="radio" name="attr_bp_max" value="8" />
+                    <input class="sheet-dottoggle" type="radio" name="attr_blood_potency_max" value="8" />
                     <input class="sheet-dot" type="radio" name="attr_blood_potency" value="8" /><span></span>
-                    <input class="sheet-dottoggle" type="radio" name="attr_bp_max" value="9" />
+                    <input class="sheet-dottoggle" type="radio" name="attr_blood_potency_max" value="9" />
                     <input class="sheet-dot" type="radio" name="attr_blood_potency" value="9" /><span></span>
-                    <input class="sheet-dottoggle" type="radio" name="attr_bp_max" value="10" />
+                    <input class="sheet-dottoggle" type="radio" name="attr_blood_potency_max" value="10" />
                     <input class="sheet-dot" type="radio" name="attr_blood_potency" value="10" /><span></span>
                 </div>
             </div>
@@ -6260,11 +6242,6 @@
         <!-- #region [SINGLE] TAB 4 Projects -->
         <div class="sheet-pagecontainer sheet-section-4 sheet-singlesheet">
         <input type="hidden" name="attr_date_today" />
-        <!-- CURRENT AGENDA -->
-        <!--<div class="sheet-header1">-->
-        <!--<img src="https://imgur.com/kU69P37.png" />-->
-        <!-- Current Agenda-->
-        <!--</div>-->
         <!-- PROJECTS -->
         <div class="sheet-header1">
             <img src="https://imgur.com/b4nLXfG.png" /> <!-- Projects -->
@@ -6272,46 +6249,28 @@
         <input type="hidden" name="attr_repeatingprojectslist" />
         <fieldset class="repeating_project">
             <input type="hidden" name="attr_projectsrowid" value="0" />
-            <div class="sheet-col1 sheet-projects sheet-engravedFrame" style="margin-bottom: 10px;">
+            <div class="sheet-col1 sheet-projects sheet-engravedFrame" style="margin-bottom: 10px; padding: 0px 10px;">
                 <div class="sheet-coltight1 sheet-doublerow" style="height: 55px; width: 93%; margin-right: 1%;">
                     <div class="sheet-coltight1 sheet-right sheet-linerow" style="height: 25px; margin-top: 5px;">
                         <input class="sheet-hoverpopup" type="checkbox" value="1" style="margin-left: -20px;" /><span></span>
                         <div class="sheet-coltight1">
                             <textarea class="sheet-collapsibletitle" readonly>Details</textarea>
                             <textarea class="sheet-collapsiblebody sheet-editable" name="attr_projectdetails"></textarea>
-                        </div>
-                        <input class="sheet-darkText sheet-projectheader sheet-insetBox" type="text" placeholder="Project Goal"
-                            name="attr_projectgoal" style="width: 98%;" />
-                    </div>
-                    <div class="sheet-coltight1x3 sheet-linerow">
-                        <span class="sheet-header5 sheet-left" style="width: 40px; margin-left: 20px;">Start:</span>
-                        <div class="sheet-coltight2x3">
-                            <input type="text" class="sheet-insetBox sheet-darkText" name="attr_projectstartdate"
-                                placeholder="(Default: Today)" />
-                        </div>
-                    </div>
-                    <div class="sheet-coltight1x3 sheet-linerow">
-                        <div class="sheet-coltight2">
-                            <span class="sheet-header5 sheet-right">Increment:</span><input type="text" class="sheet-insetBox sheet-darkText sheet-squareBox sheet-centered"
-                                name="attr_projectincnum" value="0" />
-                        </div>
-                        <div class="sheet-coltight2">
-                            <select class="sheet-insetBox sheet-darkText" name="attr_projectincunit" value="0" style="width: 100%;">
-                                <option value="0" selected></option>
-                                <option value="hours">Hour(s)</option>
-                                <option value="days">Day(s)</option>
-                                <option value="weeks">Week(s)</option>
-                                <option value="months">Month(s)</option>
-                                <option value="years">Year(s)</option>
-                            </select>
+                        </div>   
+                        <input type="text" class="sheet-insetBox sheet-darkText sheet-dotlinename" placeholder="Describe what is it you wish to achieve. (Put Scope calculations into the ankh to the left.)" name="attr_projectscope_name" />
+                        <div class="sheet-dotline" style="margin-left: 10px;">
+                            <input class="sheet-dot sheet-zero" type="radio" name="attr_projectscope" value="0" checked /><span></span>
+                            <input class="sheet-dot" type="radio" name="attr_projectscope" value="1" /><span></span>
+                            <input class="sheet-dot" type="radio" name="attr_projectscope" value="2" /><span></span>
+                            <input class="sheet-dot" type="radio" name="attr_projectscope" value="3" /><span></span>
+                            <input class="sheet-dot" type="radio" name="attr_projectscope" value="4" /><span></span>
+                            <input class="sheet-dot" type="radio" name="attr_projectscope" value="5" /><span></span>
                         </div>
                     </div>
-                    <div class="sheet-coltight1x3 sheet-linerow sheet-right">
-                        <span class="sheet-header5 sheet-right" style="width: 40px; margin-left: 20px;">Finish:</span>
-                        <div class="sheet-coltight2x3 sheet-right">
-                            <textarea type="text" class="sheet-darkText sheet-centered" name="attr_projectenddate"
-                                readonly></textarea>
-                        </div>
+                    <div class="sheet-coltight1 sheet-linerow" style="margin-bottom: 0px;">                     
+                            <input name="attr_projectfull_toggle" value="1" type="checkbox" style="width: 20px; margin: -10px -15px 0px -5px;">
+                            <span class="sheet-header5 sheet-left" style="width: 40px; margin-left: 20px; margin-top: -3px;">Hook:</span><input class="sheet-darkText sheet-projectheader sheet-insetBox" type="text" placeholder="How are you going to accomplish your goal? Answer in the form of a story hook!"
+                            name="attr_projectgoal" style="width: 91%;" />
                     </div>
                 </div>
                 <div class="sheet-coltight1 sheet-doublerow sheet-centered" style="width: 5%;">
@@ -6341,277 +6300,262 @@
                     <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="0" />
                     <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter0"></div>
                 </div>
-                <div class="sheet-coltight1 sheet-linerow">
-                    <span class="sheet-header5 sheet-left" style="width: 40px; margin-left: 20px;">Scope:</span><input
-                        type="text" class="sheet-insetBox sheet-darkText sheet-dotlinename" placeholder="Describe what you'll gain if the Project succeeds." name="attr_projectscope_name" />
-                    <div class="sheet-dotline" style="margin-left: 10px;">
-                        <input class="sheet-dot sheet-zero" type="radio" name="attr_projectscope" value="0" checked /><span></span>
-                        <input class="sheet-dot" type="radio" name="attr_projectscope" value="1" /><span></span>
-                        <input class="sheet-dot" type="radio" name="attr_projectscope" value="2" /><span></span>
-                        <input class="sheet-dot" type="radio" name="attr_projectscope" value="3" /><span></span>
-                        <input class="sheet-dot" type="radio" name="attr_projectscope" value="4" /><span></span>
-                        <input class="sheet-dot" type="radio" name="attr_projectscope" value="5" /><span></span>
-                    </div>
-                </div>
-                <div class="sheet-coltight1 sheet-linerow">
-                    <span class="sheet-header5 sheet-linerow sheet-left" style="margin: 0px 0px 0px -5px">Forced Stake:</span>
-                    <div class="sheet-coltight1 sheet-linerow sheet-projectforcedstake">
-                        <div class="sheet-coltight1 sheet-linerow">
-                            <input type="text" class="sheet-insetBox sheet-darkText sheet-dotlinename" name="attr_projectforcedstake1_name" />
-                            <div class="sheet-dotline">
-                                <input class="sheet-dot sheet-zero" type="radio" name="attr_projectforcedstake1" value="0"
-                                    checked /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectforcedstake1" value="1" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectforcedstake1" value="2" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectforcedstake1" value="3" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectforcedstake1" value="4" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectforcedstake1" value="5" /><span></span>
+                <input class="sheet-containerselector" type="checkbox" name="attr_projectfull_toggle" value="1" />
+                <div class="sheet-contingentcontainer" style="height: auto;">
+                    <div class="sheet-coltight1x3 sheet-linerow">
+                            <span class="sheet-header5 sheet-left" style="width: 40px; margin-left: 20px;">Start:</span>
+                            <div class="sheet-coltight2x3">
+                                <input type="text" class="sheet-insetBox sheet-darkText" name="attr_projectstartdate"
+                                    placeholder="(Default: Today)" />
+                            </div>
+                        </div>
+                        <div class="sheet-coltight1x3 sheet-linerow">
+                            <div class="sheet-coltight2">
+                                <span class="sheet-header5 sheet-right">Increment:</span><input type="text" class="sheet-insetBox sheet-darkText sheet-squareBox sheet-centered"
+                                    name="attr_projectincnum" value="0" />
+                            </div>
+                            <div class="sheet-coltight2">
+                                <select class="sheet-insetBox sheet-darkText" name="attr_projectincunit" value="0" style="width: 100%;">
+                                    <option value="0" selected></option>
+                                    <option value="hours">Hour(s)</option>
+                                    <option value="days">Day(s)</option>
+                                    <option value="weeks">Week(s)</option>
+                                    <option value="months">Month(s)</option>
+                                    <option value="years">Year(s)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="sheet-coltight1x3 sheet-linerow sheet-right">
+                            <span class="sheet-header5 sheet-right" style="width: 40px; margin-left: 20px;">Finish:</span>
+                            <div class="sheet-coltight2x3 sheet-right">
+                                <textarea type="text" class="sheet-darkText sheet-centered" name="attr_projectenddate"
+                                    readonly></textarea>
+                            </div>
+                        </div>
+                    <div class="sheet-coltight1 sheet-linerow">
+                        <span class="sheet-header5 sheet-linerow sheet-left" style="margin: 0px 0px 0px -5px">Forced Stake:</span>
+                        <div class="sheet-coltight1 sheet-linerow sheet-projectforcedstake">
+                            <div class="sheet-coltight1 sheet-linerow">
+                                <input type="text" class="sheet-insetBox sheet-darkText sheet-dotlinename" name="attr_projectforcedstake1_name" />
+                                <div class="sheet-dotline">
+                                    <input class="sheet-dot sheet-zero" type="radio" name="attr_projectforcedstake1" value="0"
+                                        checked /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectforcedstake1" value="1" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectforcedstake1" value="2" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectforcedstake1" value="3" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectforcedstake1" value="4" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectforcedstake1" value="5" /><span></span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="sheet-header5 sheet-linerow sheet-left" style="width: 120px; margin: 0px 0px 0px 10px">Teamwork Bonus:</span>
+                        <div class="sheet-coltight1 sheet-linerow sheet-projectforcedstake" style="width: 37%; margin-right: -10px;">
+                            <div class="sheet-coltight1 sheet-linerow">
+                                <div class="sheet-dotline">
+                                    <input class="sheet-dot sheet-zero" type="radio" name="attr_projectteamwork1" value="0"
+                                        checked /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectteamwork1" value="1" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectteamwork1" value="2" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectteamwork1" value="3" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectteamwork1" value="4" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectteamwork1" value="5" /><span></span>
+                                </div>
+                                <div class="sheet-dotline">
+                                    <input class="sheet-dot sheet-zero" type="radio" name="attr_projectteamwork2" value="0"
+                                        checked /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectteamwork2" value="1" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectteamwork2" value="2" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectteamwork2" value="3" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectteamwork2" value="4" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectteamwork2" value="5" /><span></span>
+                                </div>
+                                <div class="sheet-dotline">
+                                    <input class="sheet-dot sheet-zero" type="radio" name="attr_projectteamwork3" value="0"
+                                        checked /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectteamwork3" value="1" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectteamwork3" value="2" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectteamwork3" value="3" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectteamwork3" value="4" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectteamwork3" value="5" /><span></span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <span class="sheet-header5 sheet-linerow sheet-left" style="width: 120px; margin: 0px 0px 0px 10px">Teamwork Bonus:</span>
-                    <div class="sheet-coltight1 sheet-linerow sheet-projectforcedstake" style="width: 37%; margin-right: -10px;">
-                        <div class="sheet-coltight1 sheet-linerow">
-                            <div class="sheet-dotline">
-                                <input class="sheet-dot sheet-zero" type="radio" name="attr_projectteamwork1" value="0"
-                                    checked /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectteamwork1" value="1" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectteamwork1" value="2" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectteamwork1" value="3" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectteamwork1" value="4" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectteamwork1" value="5" /><span></span>
-                            </div>
-                            <div class="sheet-dotline">
-                                <input class="sheet-dot sheet-zero" type="radio" name="attr_projectteamwork2" value="0"
-                                    checked /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectteamwork2" value="1" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectteamwork2" value="2" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectteamwork2" value="3" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectteamwork2" value="4" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectteamwork2" value="5" /><span></span>
-                            </div>
-                            <div class="sheet-dotline">
-                                <input class="sheet-dot sheet-zero" type="radio" name="attr_projectteamwork3" value="0"
-                                    checked /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectteamwork3" value="1" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectteamwork3" value="2" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectteamwork3" value="3" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectteamwork3" value="4" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectteamwork3" value="5" /><span></span>
+                    <hr />
+                    <div class="sheet-coltight1 sheet-doublerow" style="width: 800px; margin-left: -10px;">
+                        <span class="sheet-header5 sheet-doublerow sheet-centered" style="width: 75px;">Launch<br />Roll:</span>
+                        <div class="sheet-coltight1 sheet-doublerow" style="width: 150px;">
+                            <div class="sheet-coltight1 sheet-linerow sheet-centered">
+                                <input type="text" class="sheet-insetBox sheet-darkText sheet-left" name="attr_projectlaunchtrait1_name" />
+                                <div class="sheet-dotline" style="margin-left: -10px;">
+                                    <input class="sheet-dot sheet-zero" type="radio" name="attr_projectlaunchtrait1" value="0"
+                                        checked /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait1" value="1" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait1" value="2" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait1" value="3" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait1" value="4" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait1" value="5" /><span></span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <hr />
-                <div class="sheet-coltight1 sheet-doublerow" style="width: 800px; margin-left: -10px;">
-                    <span class="sheet-header5 sheet-doublerow sheet-centered" style="width: 75px;">Launch<br />Roll:</span>
-                    <div class="sheet-coltight1 sheet-doublerow" style="width: 150px;">
-                        <div class="sheet-coltight1 sheet-linerow sheet-centered">
-                            <input type="text" class="sheet-insetBox sheet-darkText sheet-left" name="attr_projectlaunchtrait1_name" />
-                            <div class="sheet-dotline" style="margin-left: -10px;">
-                                <input class="sheet-dot sheet-zero" type="radio" name="attr_projectlaunchtrait1" value="0"
-                                    checked /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait1" value="1" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait1" value="2" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait1" value="3" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait1" value="4" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait1" value="5" /><span></span>
+                        <div class="sheet-coltight1 sheet-doublerow sheet-centered sheet-squareBox">
+                            <span class="sheet-header5 sheet-darkText sheet-squareBox">+</span>
+                        </div>
+                        <div class="sheet-coltight1 sheet-doublerow" style="width: 150px;">
+                            <div class="sheet-coltight1 sheet-linerow sheet-centered">
+                                <input type="text" class="sheet-insetBox sheet-darkText sheet-left" name="attr_projectlaunchtrait2_name" />
+                                <div class="sheet-dotline" style="margin-left: -10px;">
+                                    <input class="sheet-dot sheet-zero" type="radio" name="attr_projectlaunchtrait2" value="0"
+                                        checked /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait2" value="1" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait2" value="2" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait2" value="3" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait2" value="4" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait2" value="5" /><span></span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="sheet-coltight1 sheet-doublerow sheet-centered sheet-squareBox">
-                        <span class="sheet-header5 sheet-darkText sheet-squareBox">+</span>
-                    </div>
-                    <div class="sheet-coltight1 sheet-doublerow" style="width: 150px;">
-                        <div class="sheet-coltight1 sheet-linerow sheet-centered">
-                            <input type="text" class="sheet-insetBox sheet-darkText sheet-left" name="attr_projectlaunchtrait2_name" />
-                            <div class="sheet-dotline" style="margin-left: -10px;">
-                                <input class="sheet-dot sheet-zero" type="radio" name="attr_projectlaunchtrait2" value="0"
-                                    checked /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait2" value="1" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait2" value="2" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait2" value="3" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait2" value="4" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectlaunchtrait2" value="5" /><span></span>
-                            </div>
+                        <div class="sheet-coltight1 sheet-doublerow sheet-centered sheet-squareBox" style="width: 60px;">
+                            <select class="sheet-squareBox sheet-darkText" name="attr_projectlaunchmod" style="width: 60px;"
+                                value="0">
+                                <option value="9">+9</option>
+                                <option value="8">+8</option>
+                                <option value="7">+7</option>
+                                <option value="6">+6</option>
+                                <option value="5">+5</option>
+                                <option value="4">+4</option>
+                                <option value="3">+3</option>
+                                <option value="2">+2</option>
+                                <option value="1">+1</option>
+                                <option value="0" selected></option>
+                                <option value="-1">-1</option>
+                                <option value="-2">-2</option>
+                                <option value="-3">-3</option>
+                                <option value="-4">-4</option>
+                                <option value="-5">-5</option>
+                                <option value="-6">-6</option>
+                                <option value="-7">-7</option>
+                                <option value="-8">-8</option>
+                                <option value="-9">-9</option>
+                            </select>
                         </div>
-                    </div>
-                    <div class="sheet-coltight1 sheet-doublerow sheet-centered sheet-squareBox" style="width: 60px;">
-                        <select class="sheet-squareBox sheet-darkText" name="attr_projectlaunchmod" style="width: 60px;"
-                            value="0">
-                            <option value="9">+9</option>
-                            <option value="8">+8</option>
-                            <option value="7">+7</option>
-                            <option value="6">+6</option>
-                            <option value="5">+5</option>
-                            <option value="4">+4</option>
-                            <option value="3">+3</option>
-                            <option value="2">+2</option>
-                            <option value="1">+1</option>
-                            <option value="0" selected></option>
-                            <option value="-1">-1</option>
-                            <option value="-2">-2</option>
-                            <option value="-3">-3</option>
-                            <option value="-4">-4</option>
-                            <option value="-5">-5</option>
-                            <option value="-6">-6</option>
-                            <option value="-7">-7</option>
-                            <option value="-8">-8</option>
-                            <option value="-9">-9</option>
-                        </select>
-                    </div>
-                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox" style="width: 55px;">
-                        <textarea class="sheet-numberBox sheet-squareBox sheet-darkText" name="attr_projectforcedstakemodline"
-                            value="0" readonly style="width: 60px;"></textarea>
-                        <input type="hidden" name="attr_projectforcedstakemod" value="0" />
-                    </div>
-                    <div class="sheet-coltight1 sheet-doublerow sheet-centered sheet-squareBox">
-                        <span class="sheet-header5 sheet-darkText sheet-squareBox">vs.</span>
-                    </div>
-                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox" style="width: 25px;">
-                        <textarea class="sheet-numberBox sheet-squareBox sheet-darkText" name="attr_projectlaunchdiff"
-                            value="2" readonly>2</textarea>
-                        <input type="hidden" name="attr_projectlaunchdiffmod" value="0" />
-                    </div>
-                    <input class="sheet-containerselector" type="radio" name="attr_projectlaunchroll_toggle" value="0" checked />
-                    <div class="sheet-coltight1 sheet-doublerow sheet-centered" style="width: 205px; margin: 7px -15px 0px 0px;">
-                        <textarea class="sheet-centered sheet-darkText sheet-doublerow sheet-normal" style="font-size: 14px; font-weight: normal; line-height: 36px;"
-                            readonly>Waiting for Launch Roll...</textarea>
-                    </div>
-                    <input class="sheet-containerselector" type="radio" name="attr_projectlaunchroll_toggle" value="1" />
-                    <div class="sheet-coltight1 sheet-doublerow sheet-rollbutton sheet-launchroll sheet-launchrollmain" style="margin-right: -105px;">
-                        <div class="sheet-launchroll sheet-launchrolltop"></div>
-                        <div class="sheet-launchroll sheet-launchrollleft"></div>
-                        <div class="sheet-launchroll sheet-launchrollmid">
-                            <button class="sheet-button" type="roll" value="!projectroll @{projectlaunchrollparams}"></button>
-                        </div>
-                        <div class="sheet-launchroll sheet-launchrollright"></div>
-                        <div class="sheet-launchroll sheet-launchrollbottom"></div>
-                    </div>
-                    <input type="hidden" name="attr_projectlaunchrollparams" value="" />
-                    <input class="sheet-containerselector" type="radio" name="attr_projectlaunchroll_toggle" value="2" />
-                    <div class="sheet-coltight1 sheet-doublerow sheet-centered" style="width: 205px; margin: 7px -15px 0px 0px;">
-                        <div class="sheet-coltight1 sheet-linerow sheet-centered">
-                            <textarea class="sheet-centered sheet-darkText sheet-narrowText sheet-linerow" name="attr_projectlaunchresults"
-                                value="" readonly style="font-size: 32px; overflow: hidden; padding-top: 6px; height: 22px; margin-top: -2px;"></textarea>
-                        </div>
-                        <div class="sheet-coltight1 sheet-linerow sheet-centered">
-                            <textarea class="sheet-centered sheet-darkText sheet-linerow sheet-normal" name="attr_projectlaunchresultsmargin"
-                                style="font-size: 14px; font-weight: normal;" value="" readonly></textarea>
-                            <input type="hidden" name="attr_projecttotalstake" value="0" />
-                        </div>
-                    </div>                    
-                    <input class="sheet-containerselector" type="radio" name="attr_projectlaunchroll_toggle" value="3"/>
-                    <div class="sheet-coltight1 sheet-doublerow sheet-centered sheet-projectarchive">
-                        <input class="sheet-attr" type="checkbox" name="attr_archiveproject" value="1" /><span class="sheet-projectarchive">Archive</span>
-                    </div>
-                </div>
-                <input class="sheet-containerselector" type="radio" name="attr_projectstakes_toggle" value="0" checked />
-                <input class="sheet-containerselector" type="radio" name="attr_projectstakes_toggle" value="1" />
-                <div class="sheet-coltight1 sheet-linerow" style="margin-top: 5px;">
-                    <span class="sheet-header5 sheet-linerow sheet-left" style="width: 40px; margin-left: 20px;">Stake:</span>
-                    <div class="sheet-coltight1 sheet-linerow sheet-projectstake">
-                        <div class="sheet-coltight3 sheet-linerow">
-                            <input type="text" class="sheet-dotlinename sheet-insetBox sheet-darkText sheet-left" name="attr_projectstake1_name" />
-                            <div class="sheet-dotline">
-                                <input class="sheet-dot sheet-zero" type="radio" name="attr_projectstake1" value="0"
-                                    checked /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake1" value="1" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake1" value="2" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake1" value="3" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake1" value="4" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake1" value="5" /><span></span>
-                            </div>
-                        </div>
-                        <div class="sheet-coltight3 sheet-linerow">
-                            <input type="text" class="sheet-dotlinename sheet-insetBox sheet-darkText sheet-left" name="attr_projectstake2_name" />
-                            <div class="sheet-dotline">
-                                <input class="sheet-dot sheet-zero" type="radio" name="attr_projectstake2" value="0"
-                                    checked /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake2" value="1" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake2" value="2" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake2" value="3" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake2" value="4" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake2" value="5" /><span></span>
-                            </div>
-                        </div>
-                        <div class="sheet-coltight3 sheet-linerow">
-                            <input type="text" class="sheet-dotlinename sheet-insetBox sheet-darkText sheet-left" name="attr_projectstake3_name" />
-                            <div class="sheet-dotline">
-                                <input class="sheet-dot sheet-zero" type="radio" name="attr_projectstake3" value="0"
-                                    checked /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake3" value="1" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake3" value="2" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake3" value="3" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake3" value="4" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake3" value="5" /><span></span>
-                            </div>
-                        </div>
-                        <!-- <div class="sheet-coltight3 sheet-linerow">
-                            <input type="text" class="sheet-dotlinename sheet-insetBox sheet-darkText sheet-left" name="attr_projectstake4_name" />
-                            <div class="sheet-dotline">
-                                <input class="sheet-dot sheet-zero" type="radio" name="attr_projectstake4" value="0"
-                                    checked /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake4" value="1" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake4" value="2" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake4" value="3" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake4" value="4" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake4" value="5" /><span></span>
-                            </div>
-                        </div>
-                        <div class="sheet-coltight3 sheet-linerow">
-                            <input type="text" class="sheet-dotlinename sheet-insetBox sheet-darkText sheet-left" name="attr_projectstake5_name" />
-                            <div class="sheet-dotline">
-                                <input class="sheet-dot sheet-zero" type="radio" name="attr_projectstake5" value="0"
-                                    checked /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake5" value="1" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake5" value="2" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake5" value="3" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake5" value="4" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake5" value="5" /><span></span>
-                            </div>
-                        </div>
-                        <div class="sheet-coltight3 sheet-linerow">
-                            <input type="text" class="sheet-dotlinename sheet-insetBox sheet-darkText sheet-left" name="attr_projectstake6_name" />
-                            <div class="sheet-dotline">
-                                <input class="sheet-dot sheet-zero" type="radio" name="attr_projectstake6" value="0"
-                                    checked /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake6" value="1" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake6" value="2" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake6" value="3" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake6" value="4" /><span></span>
-                                <input class="sheet-dot" type="radio" name="attr_projectstake6" value="5" /><span></span>
-                            </div>
-                        </div> -->
-                    </div>
-                </div>
-                <hr />
-                <div style="display: none;">
-                    <div class="sheet-coltight2 sheet-doublerow sheet-centered">
-                        <span class="sheet-header5 sheet-doublerow sheet-left" style="width: 40px; margin-left: 20px; line-height: 40px;">Rush:</span>
-                        <div class="sheet-coltight1 sheet-doublerow sheet-squareBox" style="background-color: blue;">
-                            <input type="hidden" name="attr_projectwasrushed" value="0" />
-                            <input type="hidden" name="attr_projectstakesatrush" value="0" />
+                        <div class="sheet-coltight1 sheet-doublerow sheet-squareBox" style="width: 55px;">
+                            <textarea class="sheet-numberBox sheet-squareBox sheet-darkText" name="attr_projectforcedstakemodline"
+                                value="0" readonly style="width: 60px;"></textarea>
+                            <input type="hidden" name="attr_projectforcedstakemod" value="0" />
                         </div>
                         <div class="sheet-coltight1 sheet-doublerow sheet-centered sheet-squareBox">
                             <span class="sheet-header5 sheet-darkText sheet-squareBox">vs.</span>
                         </div>
-                        <div class="sheet-coltight1 sheet-doublerow sheet-squareBox">
-                            <textarea class="sheet-numberBox sheet-squareBox sheet-darkText sheet-centered" name="attr_projectrushpool"
-                                style="width: 30px;" value="0" readonly></textarea>
+                        <div class="sheet-coltight1 sheet-doublerow sheet-squareBox" style="width: 25px;">
+                            <textarea class="sheet-numberBox sheet-squareBox sheet-darkText" name="attr_projectlaunchdiff"
+                                value="2" readonly>2</textarea>
+                            <input type="hidden" name="attr_projectlaunchdiffmod" value="0" />
                         </div>
-                        <div class="sheet-coltight1 sheet-doublerow sheet-centered sheet-squareBox">
-                            <span class="sheet-header5 sheet-darkText sheet-squareBox">Dice</span>
+                        <input class="sheet-containerselector" type="radio" name="attr_projectlaunchroll_toggle" value="0" checked />
+                        <div class="sheet-coltight1 sheet-doublerow sheet-centered" style="width: 205px; margin: 7px -15px 0px 0px;">
+                            <textarea class="sheet-centered sheet-darkText sheet-doublerow sheet-normal" style="font-size: 14px; font-weight: normal; line-height: 36px;"
+                                readonly>Waiting for Launch Roll...</textarea>
+                        </div>
+                        <input class="sheet-containerselector" type="radio" name="attr_projectlaunchroll_toggle" value="1" />
+                        <div class="sheet-coltight1 sheet-doublerow sheet-rollbutton sheet-launchroll sheet-launchrollmain" style="margin-right: -105px;">
+                            <div class="sheet-launchroll sheet-launchrolltop"></div>
+                            <div class="sheet-launchroll sheet-launchrollleft"></div>
+                            <div class="sheet-launchroll sheet-launchrollmid">
+                                <button class="sheet-button" type="roll" value="!projectroll @{projectlaunchrollparams}"></button>
+                            </div>
+                            <div class="sheet-launchroll sheet-launchrollright"></div>
+                            <div class="sheet-launchroll sheet-launchrollbottom"></div>
+                        </div>
+                        <input type="hidden" name="attr_projectlaunchrollparams" value="" />
+                        <input class="sheet-containerselector" type="radio" name="attr_projectlaunchroll_toggle" value="2" />
+                        <div class="sheet-coltight1 sheet-doublerow sheet-centered" style="width: 205px; margin: 7px -15px 0px 0px;">
+                            <div class="sheet-coltight1 sheet-linerow sheet-centered">
+                                <textarea class="sheet-centered sheet-darkText sheet-narrowText sheet-linerow" name="attr_projectlaunchresults"
+                                    value="" readonly style="font-size: 32px; overflow: hidden; padding-top: 6px; height: 22px; margin-top: -2px;"></textarea>
+                            </div>
+                            <div class="sheet-coltight1 sheet-linerow sheet-centered">
+                                <textarea class="sheet-centered sheet-darkText sheet-linerow sheet-normal" name="attr_projectlaunchresultsmargin"
+                                    style="font-size: 14px; font-weight: normal;" value="" readonly></textarea>
+                                <input type="hidden" name="attr_projecttotalstake" value="0" />
+                            </div>
+                        </div>                    
+                        <input class="sheet-containerselector" type="radio" name="attr_projectlaunchroll_toggle" value="3"/>
+                        <div class="sheet-coltight1 sheet-doublerow sheet-centered sheet-projectarchive">
+                            <input class="sheet-attr" type="checkbox" name="attr_archiveproject" value="1" /><span class="sheet-projectarchive">Archive</span>
                         </div>
                     </div>
-                    <div class="sheet-coltight2 sheet-doublerow sheet-left">
-                        <div class="sheet-coltight1 sheet-linerow" style="width: 40%;">
-                            <textarea class="sheet-numberBox sheet-darkText sheet-centered" name="attr_projectrushstakelost"
-                                style="font-size: 22px; overflow: hidden;" value="0" readonly></textarea>
-                        </div><br />
-                        <div class="sheet-coltight1 sheet-linerow" style="width: 40%;">
-                            <textarea class="sheet-numberBox sheet-darkText sheet-normal sheet-centered" name="attr_projectrushstakelosttogo"
-                                value="0" readonly></textarea>
+                    <input class="sheet-containerselector" type="radio" name="attr_projectstakes_toggle" value="0" checked />
+                    <input class="sheet-containerselector" type="radio" name="attr_projectstakes_toggle" value="1" />
+                    <div class="sheet-coltight1 sheet-linerow" style="margin-top: 5px;">
+                        <span class="sheet-header5 sheet-linerow sheet-left" style="width: 40px; margin-left: 20px;">Stake:</span>
+                        <div class="sheet-coltight1 sheet-linerow sheet-projectstake">
+                            <div class="sheet-coltight3 sheet-linerow">
+                                <input type="text" class="sheet-dotlinename sheet-insetBox sheet-darkText sheet-left" name="attr_projectstake1_name" />
+                                <div class="sheet-dotline">
+                                    <input class="sheet-dot sheet-zero" type="radio" name="attr_projectstake1" value="0"
+                                        checked /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectstake1" value="1" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectstake1" value="2" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectstake1" value="3" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectstake1" value="4" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectstake1" value="5" /><span></span>
+                                </div>
+                            </div>
+                            <div class="sheet-coltight3 sheet-linerow">
+                                <input type="text" class="sheet-dotlinename sheet-insetBox sheet-darkText sheet-left" name="attr_projectstake2_name" />
+                                <div class="sheet-dotline">
+                                    <input class="sheet-dot sheet-zero" type="radio" name="attr_projectstake2" value="0"
+                                        checked /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectstake2" value="1" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectstake2" value="2" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectstake2" value="3" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectstake2" value="4" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectstake2" value="5" /><span></span>
+                                </div>
+                            </div>
+                            <div class="sheet-coltight3 sheet-linerow">
+                                <input type="text" class="sheet-dotlinename sheet-insetBox sheet-darkText sheet-left" name="attr_projectstake3_name" />
+                                <div class="sheet-dotline">
+                                    <input class="sheet-dot sheet-zero" type="radio" name="attr_projectstake3" value="0"
+                                        checked /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectstake3" value="1" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectstake3" value="2" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectstake3" value="3" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectstake3" value="4" /><span></span>
+                                    <input class="sheet-dot" type="radio" name="attr_projectstake3" value="5" /><span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                    <div style="display: none;">
+                        <div class="sheet-coltight2 sheet-doublerow sheet-centered">
+                            <span class="sheet-header5 sheet-doublerow sheet-left" style="width: 40px; margin-left: 20px; line-height: 40px;">Rush:</span>
+                            <div class="sheet-coltight1 sheet-doublerow sheet-squareBox" style="background-color: blue;">
+                                <input type="hidden" name="attr_projectwasrushed" value="0" />
+                                <input type="hidden" name="attr_projectstakesatrush" value="0" />
+                            </div>
+                            <div class="sheet-coltight1 sheet-doublerow sheet-centered sheet-squareBox">
+                                <span class="sheet-header5 sheet-darkText sheet-squareBox">vs.</span>
+                            </div>
+                            <div class="sheet-coltight1 sheet-doublerow sheet-squareBox">
+                                <textarea class="sheet-numberBox sheet-squareBox sheet-darkText sheet-centered" name="attr_projectrushpool"
+                                    style="width: 30px;" value="0" readonly></textarea>
+                            </div>
+                            <div class="sheet-coltight1 sheet-doublerow sheet-centered sheet-squareBox">
+                                <span class="sheet-header5 sheet-darkText sheet-squareBox">Dice</span>
+                            </div>
+                        </div>
+                        <div class="sheet-coltight2 sheet-doublerow sheet-left">
+                            <div class="sheet-coltight1 sheet-linerow" style="width: 40%;">
+                                <textarea class="sheet-numberBox sheet-darkText sheet-centered" name="attr_projectrushstakelost"
+                                    style="font-size: 22px; overflow: hidden;" value="0" readonly></textarea>
+                            </div><br />
+                            <div class="sheet-coltight1 sheet-linerow" style="width: 40%;">
+                                <textarea class="sheet-numberBox sheet-darkText sheet-normal sheet-centered" name="attr_projectrushstakelosttogo"
+                                    value="0" readonly></textarea>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -6820,7 +6764,7 @@
                     <div class="sheet-coltight1 sheet-left" style="width: 79%">
                         <textarea class="sheet-xpreason" name="attr_xp_reason" readonly></textarea>
                     </div>
-                    <input type="hidden" name="attr_xp_sorttrigger" value="1" />
+                    <input type="hidden" name="attr_sorttrigger" value="1" />
                 </fieldset>
             </div>
             <div class="sheet-col2 sheet-xp sheet-earnedxp" style="border-left: 3px lightgrey ridge; box-sizing: border-box; padding-left: 0.5%;">
@@ -6860,7 +6804,8 @@
 (() => {
 	// #region Variable Declarations
 	let LASTEVENT = {},
-		APIROWID = null
+		APIROWID = null,
+		ISOFFLINE = false
 	const isDebug = true,
 		LOGOPTIONS = {},
 		ATTRIBUTES = {
@@ -6901,7 +6846,7 @@
 			Phlegmatic: ["Auspex", "Dominate"],
 			Sanguine: ["Blood Sorcery", "Presence"],
 			Primal: ["Animalism", "Protean"],
-			Mercurial: ["Alchemy", ""]
+			Mercurial: ["Alchemy", "Vicissitude"]
 		},
 		baneText = {
 			"0": null,
@@ -6932,7 +6877,7 @@
 			"Caitiff": ["", "", ""],
 			"Thin-Blooded": ["Alchemy", "", ""],
 			"Lasombra": ["Dominate", "Oblivion", "Potence"],
-			"Tzimisce": ["Animalism", "Auspex", "Protean"],
+			"Tzimisce": ["Animalism", "Auspex", "Vicissitude"],
 			"Banu Haqim": ["Celerity", "Obfuscate", "Blood Sorcery"],
 			"Hecata": ["Auspex", "Fortitude", "Oblivion"],
 			"Ministry": ["Obfuscate", "Presence", "Protean"],
@@ -6943,19 +6888,19 @@
 			null,
 			null,
 			null,
-			{ bp_max: 10, blood_potency: 5},
-			{ bp_max: 9, blood_potency: 4},
-			{ bp_max: 8, blood_potency: 3},
-			{ bp_max: 7, blood_potency: 3},
-			{ bp_max: 6, blood_potency: 2},
-			{ bp_max: 5, blood_potency: 2},
-			{ bp_max: 4, blood_potency: 1},
-			{ bp_max: 4, blood_potency: 1},
-			{ bp_max: 3, blood_potency: 1},
-			{ bp_max: 3, blood_potency: 1},
-			{ bp_max: 0, blood_potency: 0},
-			{ bp_max: 0, blood_potency: 0},
-			{ bp_max: 0, blood_potency: 0}
+			{ blood_potency_max: 10, blood_potency: 5},
+			{ blood_potency_max: 9, blood_potency: 4},
+			{ blood_potency_max: 8, blood_potency: 3},
+			{ blood_potency_max: 7, blood_potency: 3},
+			{ blood_potency_max: 6, blood_potency: 2},
+			{ blood_potency_max: 5, blood_potency: 2},
+			{ blood_potency_max: 4, blood_potency: 1},
+			{ blood_potency_max: 4, blood_potency: 1},
+			{ blood_potency_max: 3, blood_potency: 1},
+			{ blood_potency_max: 3, blood_potency: 1},
+			{ blood_potency_max: 0, blood_potency: 0},
+			{ blood_potency_max: 0, blood_potency: 0},
+			{ blood_potency_max: 0, blood_potency: 0}
 		],
 		bpDependants = [
 			{ bp_surge: 1, bp_mend: 1, bp_discbonus: 1, bp_rousereroll: 0, bp_baneseverity: 1, bp_slakeanimal: 1, bp_slakehuman: 0, bp_slakekill: 1 },
@@ -6967,7 +6912,8 @@
 			{ bp_surge: 4, bp_mend: 3, bp_discbonus: 3, bp_rousereroll: 4, bp_baneseverity: 4, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 2 },
 			{ bp_surge: 4, bp_mend: 4, bp_discbonus: 4, bp_rousereroll: 4, bp_baneseverity: 4, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 3 },
 			{ bp_surge: 5, bp_mend: 4, bp_discbonus: 4, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 3 },
-			{ bp_surge: 5, bp_mend: 5, bp_discbonus: 5, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -3, bp_slakekill: 3 }
+			{ bp_surge: 5, bp_mend: 5, bp_discbonus: 5, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -3, bp_slakekill: 3 },
+			{ bp_surge: 10, bp_mend: 10, bp_discbonus: 10, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -4, bp_slakekill: 4 }
 		],
 		marqueeTips = [
 			["Caine the First",
@@ -7312,11 +7258,6 @@
 				colToggles: ["xp_initial_toggle", "xp_new_toggle"],
 				cost: 10
 			}
-		},
-		GROUPPREFIXES = ["g1", "g2", "g3", "g4", "g5", "g6", "g7", "g8", "g9"],
-		GROUPATTRS = ["charname", "hunger"],
-		GROUPREPREFS = {
-			rolls: ["grolltype", "gtrait1name", "gtrait1value", "gtrait2name", "gtrait2value", "grolldiff", "grollmod", "gposflags", "gnegflags", "grollparams"]
 		}
 	// #endregion
 
@@ -7365,23 +7306,21 @@
 									      ATTRS[`${trimAttr(attr)}_name`] ||
 										  trimAttr(attr),
 		// getTriggers (attrs, prefix, gN, sections	): Returns "on:..." event listener string for simple attributes (in attrs) or repeating sections (in sections). RETURNS string
-		getTriggers = (attrs, prefix = "", gN = "", repSecs) => {
+		getTriggers = (attrs, prefix = "", repSecs) => {
 			const triggerStrings = []
 			if (attrs)
-				triggerStrings.push(_.map(attrs, v => `change:${gN}${prefix}${v}`).join(" "))
+				triggerStrings.push(_.map(attrs, v => `change:${prefix}${v}`).join(" "))
 			if (repSecs && _.isArray(repSecs))
-				triggerStrings.push([..._.map(repSecs, v => `change:repeating_${gN}${prefix}${v}`), ..._.map(repSecs, v => `remove:repeating_${gN}${prefix}${v}`)].join(" "))
+				triggerStrings.push([..._.map(repSecs, v => `change:repeating_${prefix}${v}`), ..._.map(repSecs, v => `remove:repeating_${prefix}${v}`)].join(" "))
 			else if (repSecs && _.isObject(repSecs)) {
 				_.each(_.keys(repSecs), k => {
 					_.each(repSecs[k], v => {
-						triggerStrings.push(`change:repeating_${gN}${prefix}${k}:${v}`)
+						triggerStrings.push(`change:repeating_${prefix}${k}:${v}`)
 					})
 				})
 			}
 			return _.compact(triggerStrings).join(" ")
 		},
-		// groupify(attrArray, gN): Appends the group number to each attribute in attrArray. RETURNS new attrArray.
-		groupify = (attrArray, gN = "") => _.map(attrArray, attr => gN + attr),
 		// parseRepAttr: Given repeating attr, returns array: [sectionName, rowID, statName]
 		parseRepAttr = repAttr => [repAttr.split("_")[1], repAttr.split("_")[2], repAttr.split("_").slice(3).join("_")], 
 		// pFuncs(repStatName, ATTRS): Provides prefix and repeating row parsing functions (p, pV, pI).  RETURNS [prefix, p, pV, pI] OR [prefix, p] if no ATTRS value given.
@@ -7478,7 +7417,7 @@
 				cback(null)
 			} )
 		},
-		$getRepAttrs = (repInfo = {}, gN = "") => cback => {
+		$getRepAttrs = (repInfo = {}) => cback => {
 			const [attrArray, $funcs] = [ [], [] ]
 			if (_.isString(repInfo)) {
 				_.each(_.compact(repInfo.split(",")), v => {
@@ -7492,7 +7431,7 @@
 						getSectionIDs(sec, idArray => {
 							_.each(idArray, repID => {
 								_.each(repInfo[sec], stat => {
-									attrArray.push(`repeating_${gN}${sec}_${repID}_${stat}`)
+									attrArray.push(`repeating_${sec}_${repID}_${stat}`)
 								} )
 							} )
 							cbk(null)
@@ -7521,19 +7460,33 @@
 		
 	// #endregion
 
+	// #region ACTIVATION: Sheetworker Toggle 
+	on("change:sheetworkertoggle", eInfo => {
+		log("Toggling Sheetworker...")
+		if (eInfo.sourceType !== "sheetworker") {
+			ISOFFLINE = !ISOFFLINE
+			log(`Sheetworker: ${JSON.stringify(ISOFFLINE)}`)
+			if (ISOFFLINE)
+				setAttrs({sheetworkertoggle: "1"})
+			else
+				setAttrs({sheetworkertoggle: "0"})
+		}
+	})
+	// #endregion
+
 	// #region UPDATE: Clan, Discipline, Resonance, DOB/DOE, Marquee Rotating
-	const $checkRituals = (gN = "") => cback => {
+	const $checkRituals = () => cback => {
 			const attrList = {},
 				$funcs = [
 					$getRepAttrs( {
 						discLeft: ["disc_name"],
 						discMid: ["disc_name"],
 						discRight: ["disc_name"]
-					}, gN),
+					}),
 					(attrArray, cBack) => {
-						getAttrs( [...groupify( ["disc1_name", "disc2_name", "disc3_name"], gN), ...attrArray], ATTRS => {
-							attrList[`${gN}rituals_toggle`] = _.values(ATTRS).includes("Blood Sorcery") || _.values(ATTRS).includes("Oblivion") ? 1 : 0
-							attrList[`${gN}formulae_toggle`] = _.values(ATTRS).includes("Alchemy") ? 1 : 0
+						getAttrs( [... ["disc1_name", "disc2_name", "disc3_name"], ...attrArray], ATTRS => {
+							attrList["rituals_toggle"] = _.values(ATTRS).includes("Blood Sorcery") || _.values(ATTRS).includes("Oblivion") ? 1 : 0
+							attrList["formulae_toggle"] = _.values(ATTRS).includes("Alchemy") ? 1 : 0
 							cBack(null, attrList)
 						} )
 					},
@@ -7541,34 +7494,34 @@
 				]
 			run$($funcs, () => cback(null))
 		},
-		doClans = (gN = "") => {
+		doClans = () => {
 			const attrList = {},
 				$funcs = [
 					cBack => {
-						getAttrs(groupify( ["clan", "blood_potency"], gN), ATTRS => {
-							attrList.bane_title = `${ATTRS[`${gN}clan`]} Clan Bane`
-							attrList.bane_text = baneText[ATTRS[`${gN}clan`]].replace("Bane Severity", `Bane Severity (${
-								bpDependants[ATTRS[`${gN}blood_potency`]].bp_baneseverity
+						getAttrs( ["clan", "blood_potency"], ATTRS => {
+							attrList.bane_title = `${ATTRS["clan"]} Clan Bane`
+							attrList.bane_text = baneText[ATTRS["clan"]].replace("Bane Severity", `Bane Severity (${
+								bpDependants[ATTRS["blood_potency"]].bp_baneseverity
 							})`)
-							const cDiscs = clanDiscs[ATTRS[`${gN}clan`]]
+							const cDiscs = clanDiscs[ATTRS["clan"]]
 							for (let i = 1; i <= 3; i++) {
 								if (cDiscs[i - 1] === "") {
-									attrList[`${gN}disc${i}_toggle`] = 0
-									attrList[`${gN}disc${i}_name`] = ""
+									attrList[`disc${i}_toggle`] = 0
+									attrList[`disc${i}_name`] = ""
 								} else {
-									attrList[`${gN}disc${i}_toggle`] = 1
-									attrList[`${gN}disc${i}_name`] = cDiscs[i - 1]
+									attrList[`disc${i}_toggle`] = 1
+									attrList[`disc${i}_name`] = cDiscs[i - 1]
 								}
 							}
 							cBack(null, attrList)
 						} )
 					},
 					$set,
-					$checkRituals(gN)
+					$checkRituals()
 				]
 			run$($funcs)
 		},
-		doDiscPowers = (stat, gN = "") => {
+		doDiscPowers = (stat) => {
 			if (isBlacklisted(stat))
 				return
 			const attrList = {},
@@ -7582,16 +7535,17 @@
 						} )
 					},
 					$set,
-					$checkRituals(gN)
+					$checkRituals()
 				]
 			run$($funcs)
 		},
-		doResonance = (gN = "") => {
+		doResonance = () => {
 			const attrList = {},
 				$funcs = [
 					cback => {
-						getAttrs(groupify( ["resonance"], gN), ATTRS => {
-							attrList[`${gN}res_discs`] = ATTRS[`${gN}resonance`] === "None" ? " " : `(${_.compact(res_discs[ATTRS[`${gN}resonance`]] ).join(" & ")})`
+						getAttrs(["resonance"], ATTRS => {
+							log(`Resonance Attrs: ${JSON.stringify(ATTRS)}`)
+							attrList["res_discs"] = ATTRS["resonance"] === "None" ? " " : `(${_.compact(res_discs[ATTRS["resonance"]] ).join(" & ")})`
 							cback(null, attrList)
 						} )
 					},
@@ -7599,12 +7553,12 @@
 				]
 			run$($funcs)
 		},
-		doDOBDOE = (gN = "") => {
+		doDOBDOE = () => {
 			const attrList = {},
 				$funcs = [
 					cback => {
-						getAttrs(groupify( ["char_dob", "char_doe"], gN), ATTRS => {
-							attrList[`${gN}char_dobdoe`] = `${ATTRS[`${gN}char_dob`]} — ${ATTRS[`${gN}char_doe`]}`
+						getAttrs( ["char_dob", "char_doe"], ATTRS => {
+							attrList["char_dobdoe"] = `${ATTRS["char_dob"]} — ${ATTRS["char_doe"]}`
 							cback(null, attrList)
 						} )
 					},
@@ -7649,7 +7603,7 @@
 		}
 
 	on("change:clan", doClans)
-	on(getTriggers(DISCENUMS, "", "", _.keys(DISCREPREFS)), eInfo => {
+	on(getTriggers(DISCENUMS, "", _.keys(DISCREPREFS)), eInfo => {
 		if (!isBlacklisted(eInfo.sourceAttribute))
 			doDiscPowers(eInfo.sourceAttribute)
 	} )
@@ -7659,8 +7613,8 @@
 	// #endregion
 
 	// #region UPDATE: Trackers (Health, Willpower, Blood Potency, Humanity)
-	const $binCheck = (tracker, gN = "") => {
-			const p = v => `${gN}${tracker.toLowerCase()}_${v}`,
+	const $binCheck = (tracker) => {
+			const p = v => `${tracker.toLowerCase()}_${v}`,
 				dmgBins = [
 					[],
 					[],
@@ -7670,10 +7624,10 @@
 			let attrs = []
 			switch (tracker.toLowerCase()) {
 			case "health":
-				attrs = groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "max", "sdmg", "admg"], v => `health_${v}`), "incap"], gN)
+				attrs =  [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "max", "sdmg", "admg"], v => `health_${v}`), "incap"]
 				break
 			case "willpower":
-				attrs = groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "max", "sdmg", "admg"], v => `willpower_${v}`), "incap"], gN)
+				attrs =  [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "max", "sdmg", "admg"], v => `willpower_${v}`), "incap"]
 				break
 			default:
 				log(`ERROR: Invalid tracker sumbitted to binCheck: ${tracker}`)
@@ -7743,11 +7697,11 @@
 
 					// Check For Incapacitation
 					if (dmgBins[0].length === 0) {
-						attrList[`${gN}incap`] = _.compact(_.uniq(_.union((ATTRS[`${gN}incap`] || "").split(","), [tracker] ))).join(",")
-						attrList[`${gN}${tracker.toLowerCase()}_impair_toggle`] = 1
+						attrList["incap"] = _.compact(_.uniq(_.union((ATTRS["incap"] || "").split(","), [tracker] ))).join(",")
+						attrList[`${tracker.toLowerCase()}_impair_toggle`] = 1
 					} else {
-						attrList[`${gN}incap`] = _.compact(_.uniq(_.difference((ATTRS[`${gN}incap`] || "").split(","), [tracker] ))).join(",")
-						attrList[`${gN}${tracker.toLowerCase()}_impair_toggle`] = 0
+						attrList["incap"] = _.compact(_.uniq(_.difference((ATTRS["incap"] || "").split(","), [tracker] ))).join(",")
+						attrList[`${tracker.toLowerCase()}_impair_toggle`] = 0
 					}
 
 					// Apply Tracker Damage to Boxes
@@ -7759,49 +7713,49 @@
 						} )
 						binNum++
 					} )
-					attrList[`${gN}${tracker}`] = dmgBins[0].length
+					attrList[`${tracker}`] = dmgBins[0].length
 
 					cback(null, attrList)
 				} )
 			}
 		},
-		doTracker = (tracker, eInfo = { sourceAttribute: "" }, gN = "", cback) => {
+		doTracker = (tracker, eInfo = { sourceAttribute: "" }, cback) => {
 			const attrList = {},
 				$funcs = []
 			switch (tracker.toLowerCase()) {
 			case "health":
 			case "willpower":
-				$funcs.push($binCheck(tracker, gN))
+				$funcs.push($binCheck(tracker))
 				break
 			case "blood potency full":
 			case "blood potency":
 				$funcs.push(cbk => {
-					getAttrs(groupify( ["clan", "blood_potency"], gN), ATTRS => {
-						_.each(bpDependants[ATTRS[`${gN}blood_potency`]], (v, k) => {
-							attrList[gN + k] = v
+					getAttrs( ["clan", "blood_potency"], ATTRS => {
+						_.each(bpDependants[ATTRS["blood_potency"]], (v, k) => {
+							attrList[k] = v
 						} )
-						attrList[`${gN}bp_surgetext`] =
-								attrList[`${gN}bp_surge`] === 0 ?
+						attrList["bp_surgetext"] =
+								attrList["bp_surge"] === 0 ?
 									"None" :
-									`+${attrList[`${gN}bp_surge`] === 1 ?
-										`${attrList[`${gN}bp_surge`]} Die` :
-										`${attrList[`${gN}bp_surge`]} Dice`}`
-						attrList[`${gN}bp_mendtext`] =
-								attrList[`${gN}bp_mend`] === 0 ?
+									`+${attrList["bp_surge"] === 1 ?
+										`${attrList["bp_surge"]} Die` :
+										`${attrList["bp_surge"]} Dice`}`
+						attrList["bp_mendtext"] =
+								attrList["bp_mend"] === 0 ?
 									"None" :
 									`${
-										attrList[`${gN}bp_mend`]
+										attrList["bp_mend"]
 									} Superficial`
-						attrList[`${gN}bp_discbonustext`] =
-								attrList[`${gN}bp_discbonus`] === 0 ?
+						attrList["bp_discbonustext"] =
+								attrList["bp_discbonus"] === 0 ?
 									"None" :
 									`+${
-										attrList[`${gN}bp_discbonus`] === 1 ?
+										attrList["bp_discbonus"] === 1 ?
 											`${
-												attrList[`${gN}bp_discbonus`]
+												attrList["bp_discbonus"]
 											} Die` :
 											`${
-												attrList[`${gN}bp_discbonus`]
+												attrList["bp_discbonus"]
 											} Dice`
 									}${
 										[
@@ -7812,17 +7766,17 @@
 											";  Rouse x2 for Levels 1 - 4.",
 											";  Rouse x2 for All Levels."
 										][
-											attrList[`${gN}bp_rousereroll`]
+											attrList["bp_rousereroll"]
 										]
 									}`
-						attrList[`${gN}bp_slakebag`] = attrList[`${gN}bp_slakeanimal`]
-						attrList[`${gN}bp_slaketext`] = `Animals & bagged blood slake ${
-							{0: "no", 0.5: "half", 1: "full"}[attrList[`${gN}bp_slakeanimal`]]
+						attrList["bp_slakebag"] = attrList["bp_slakeanimal"]
+						attrList["bp_slaketext"] = `Animals & bagged blood slake ${
+							{0: "no", 0.5: "half", 1: "full"}[attrList["bp_slakeanimal"]]
 						} Hunger.\n${
-							attrList[`${gN}bp_slakehuman`] === 0 ?
+							attrList["bp_slakehuman"] === 0 ?
 								"Humans slake full Hunger.\n" :
-								`${attrList[`${gN}bp_slakehuman`]} Hunger slaked from humans.\n`
-						}Must kill to reduce Hunger below ${attrList[`${gN}bp_slakekill`]}.`
+								`${attrList["bp_slakehuman"]} Hunger slaked from humans.\n`
+						}Must kill to reduce Hunger below ${attrList["bp_slakekill"]}.`
 						cbk(null, attrList)
 					} )
 				} )
@@ -7830,12 +7784,12 @@
 			case "humanity":
 				$funcs.push(cbk => {
 					if (eInfo.sourceType !== "sheetworker") {
-						const attrArray = groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`)]),
+						const attrArray = _.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`),
 							   humArray = new Array(10)
-						getAttrs(groupify(["stains", "humanity"]), ATTRS => {
-							const humanity = Math.min(10, Math.max(0, parseInt(ATTRS[`${gN}humanity`]))),
-								    stains = Math.min(10, Math.max(0, parseInt(ATTRS[`${gN}stains`])))
-							attrList[`${gN}humanity_impair_toggle`] = 0		
+						getAttrs(["stains", "humanity"], ATTRS => {
+							const humanity = Math.min(10, Math.max(0, parseInt(ATTRS["humanity"]))),
+								    stains = Math.min(10, Math.max(0, parseInt(ATTRS["stains"])))
+							attrList["humanity_impair_toggle"] = 0		
 							log(`... Humanity: ${JSON.stringify(humanity)}, Stains: ${JSON.stringify(stains)}, ATTRS: ${JSON.stringify(ATTRS)}`)
 							humArray.fill(3, 10 - stains)
 							humArray.fill(2, 0, Math.max(humanity, 0))
@@ -7844,7 +7798,7 @@
 							for (let i = 0; i < humArray.length; i++) {
 								attrList[attrArray[i]] = humArray[i]
 							}
-							attrList[`${gN}stains`] = humArray.filter(v => v === 3).length				
+							attrList["stains"] = humArray.filter(v => v === 3).length				
 							log(`... attrList: ${JSON.stringify(attrList)}`)
 							cbk(null, attrList)
 						})
@@ -7854,15 +7808,15 @@
 			case "stains":
 				$funcs.push(cbk => {
 					if (eInfo.sourceType !== "sheetworker") {
-						const attrArray = groupify( [..._.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`)]),
+						const attrArray = _.map( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`),
 							humArray = new Array(10)
-						getAttrs(groupify(["humanity", "stains"]), ATTRS => {
-							const humanity = Math.min(10, Math.max(0, parseInt(ATTRS[`${gN}humanity`]))),
-								    stains = Math.min(10, Math.max(0, parseInt(ATTRS[`${gN}stains`])))
-							attrList[`${gN}humanity_impair_toggle`] = 0
+						getAttrs(["humanity", "stains"], ATTRS => {
+							const humanity = Math.min(10, Math.max(0, parseInt(ATTRS["humanity"]))),
+								    stains = Math.min(10, Math.max(0, parseInt(ATTRS["stains"])))
+							attrList["humanity_impair_toggle"] = 0
 							log(`... Humanity: ${JSON.stringify(humanity)}, Stains: ${JSON.stringify(stains)}, ATTRS: ${JSON.stringify(ATTRS)}`)
 							if (humanity + stains > 10) {
-								attrList[`${gN}humanity_impair_toggle`] = 1
+								attrList["humanity_impair_toggle"] = 1
 								humArray.fill(4)
 								humArray.fill(3, humanity)
 								humArray.fill(2, 0, 10 - stains)
@@ -7882,41 +7836,36 @@
 				})
 				break
 			default:
-				log(`Error in doTracker(${tracker}, ${gN}): Unrecognized tracker.`)
+				log(`Error in doTracker(${tracker}, ): Unrecognized tracker.`)
 
 				return
 			}
 			$funcs.push($set)
 			run$($funcs, cback ? () => cback(null) : undefined)
 		},
-		$doTracker = (tracker, eInfo, gN = "") => cback => doTracker(tracker, eInfo, gN, cback),
-		doTrackerMax = (tracker, eInfo, gN = "") => {
+		$doTracker = (tracker, eInfo) => cback => doTracker(tracker, eInfo, cback),
+		doTrackerMax = (tracker, eInfo) => {
 			const attrList = {},
 				$funcs = []
 			switch (tracker.toLowerCase()) {
 			case "health":
 				$funcs.push(cback => {
-					getAttrs(groupify( ["stamina", "bonus_health"], gN), ATTRS => {
-						if (gN === "") {
-							attrList.health_max = Math.min(
-								15,
-								Math.max(
-									1,
-									_.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num)) + 3
-								)
+					getAttrs( ["stamina", "bonus_health"], ATTRS => {
+						attrList.health_max = Math.min(
+							15,
+							Math.max(
+								1,
+								_.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num)) + 3
 							)
-						} else {
-							attrList[`${gN}health_max`] = ATTRS[`${gN}bonus_health`]
-						}
+						)
 						cback(null, attrList)
 					} )
 				} )
 				break
 			case "willpower":
 				$funcs.push(cback => {
-					getAttrs(groupify( ["composure", "resolve", "bonus_willpower"], gN), ATTRS => {
-						if (gN === "") {
-							attrList.willpower_max =
+					getAttrs( ["composure", "resolve", "bonus_willpower"], ATTRS => {
+						attrList.willpower_max =
 									Math.min(
 										10,
 										Math.max(
@@ -7924,9 +7873,6 @@
 											_.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num))
 										)
 									)
-						} else {
-							attrList[`${gN}willpower_max`] = ATTRS[`${gN}bonus_willpower`]
-						}
 						cback(null, attrList)
 					} )
 				} )
@@ -7934,10 +7880,10 @@
 			case "blood potency full":
 			case "blood potency":
 				$funcs.push(cback => {
-					getAttrs(groupify( ["generation", "bonus_bp"], gN), ATTRS => {
-						attrList[`${gN}bp_max`] = Math.min(10, Math.max(0, genDepts[parseInt(ATTRS[`${gN}generation`] )].bp_max + (gN === "" ? parseInt(ATTRS[`${gN}bonus_bp`] ) : 0)))
+					getAttrs( ["generation", "bonus_bp"], ATTRS => {
+						attrList["blood_potency_max"] = Math.min(10, Math.max(0, genDepts[parseInt(ATTRS["generation"] )].blood_potency_max + parseInt(ATTRS["bonus_bp"])))
 						if (tracker === "Blood Potency Full")
-							attrList[`${gN}blood_potency`] = genDepts[parseInt(ATTRS[`${gN}generation`] )].blood_potency
+							attrList["blood_potency"] = genDepts[parseInt(ATTRS["generation"] )].blood_potency
 						cback(null, attrList)
 					} )
 				} )
@@ -7949,7 +7895,7 @@
 			}
 
 			$funcs.push($set)
-			$funcs.push($doTracker(tracker, eInfo, gN))
+			$funcs.push($doTracker(tracker, eInfo))
 
 			run$($funcs)
 		}
@@ -7977,10 +7923,12 @@
 		doTracker("Blood Potency", eInfo)
 	} )
 	on("change:humanity", eInfo => {
-		doTracker("Humanity", eInfo)
+		if (!ISOFFLINE && eInfo.sourceType !== "sheetworker")
+			doTracker("Humanity", eInfo)
 	} )	
 	on("change:stains", eInfo => {
-		doTracker("Stains", eInfo)
+		if (!ISOFFLINE && eInfo.sourceType !== "sheetworker")
+			doTracker("Stains", eInfo)
 	} )
 	// #endregion
 
@@ -8225,7 +8173,7 @@
 		}
 
 	on("change:date_today", doProjectCounter)
-	on(getTriggers(null, "", "", {project: ["projectstartdate", "projectincnum", "projectincunit"]}), eInfo => {
+	on(getTriggers(null, "", {project: ["projectstartdate", "projectincnum", "projectincunit"]}), eInfo => {
 		if (eInfo.sourceType !== "sheetworker") {
 			console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
 			log(`(Dates, LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
@@ -8234,7 +8182,7 @@
 			})
 		}
 	} )
-	on(getTriggers(null, "", "", {project: ["projectscope", "projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1,2,3], v => [`projectforcedstake${v}`, `projectforcedstake${v}_name`, `projectteamwork${v}`]))]}), eInfo => {
+	on(getTriggers(null, "", {project: ["projectscope", "projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1,2,3], v => [`projectforcedstake${v}`, `projectforcedstake${v}_name`, `projectteamwork${v}`]))]}), eInfo => {
 		if (eInfo.sourceType !== "sheetworker") {
 			console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
 			log(`(Diff, LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
@@ -8243,7 +8191,7 @@
 			})
 		}
 	} )
-	on(getTriggers(null, "", "", {project: ["projectlaunchtrait1", "projectlaunchtrait1_name", "projectlaunchtrait2", "projectlaunchtrait2_name"]}), eInfo => {
+	on(getTriggers(null, "", {project: ["projectlaunchtrait1", "projectlaunchtrait1_name", "projectlaunchtrait2", "projectlaunchtrait2_name"]}), eInfo => {
 		if (eInfo.sourceType !== "sheetworker") {
 			console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
 			log(`(LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
@@ -8252,7 +8200,7 @@
 			})
 		}
 	} )
-	on(getTriggers(null, "", "", {project: ["projectlaunchresults"]}), eInfo => {
+	on(getTriggers(null, "", {project: ["projectlaunchresults"]}), eInfo => {
 		if (eInfo.sourceType !== "sheetworker") {
 			console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
 			log(`(Diff, LCheck, LParams, Stake, Counter) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
@@ -8261,7 +8209,7 @@
 			})
 		}
 	} )
-	on(getTriggers(null, "", "", {project: _.flatten(_.map([1,2,3,4,5,6], v => [`projectstake${v}`, `projectstake${v}_name`]))}), eInfo => {
+	on(getTriggers(null, "", {project: _.flatten(_.map([1,2,3,4,5,6], v => [`projectstake${v}`, `projectstake${v}_name`]))}), eInfo => {
 		if (eInfo.sourceType !== "sheetworker") {
 			console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
 			log(`(Stake) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
@@ -8277,7 +8225,7 @@
 		getAttrs(["_reporder_timeline"], v => {
 		  getSectionIDs("timeline", function (idArray) {
 				let reporderArray = v["_reporder_timeline"] ? v["_reporder_timeline"].toLowerCase().split(",") : [],
-					          ids = [...new Set(reporderArray.filter(vv => idArray.includes(vv)).concat(idArray))]
+					          ids = [...new Set(reporderArray.filter(vv => idArray.includes(vv)).concat(idArray))] // eslint-disable-line no-unused-vars
 			  // SORT FUNCTIONS HERE
 		  })
 		})
@@ -8385,93 +8333,14 @@
 		} )
 	}
 
-	/*
-	const doXP = (gN = "") => {
-		const $funcs = [
-			$getRepAttrs( {
-				earnedxp: ["xp_award"],
-				earnedxpright: ["xp_award"]
-			}, gN),
-			(attrs, cback) => {
-				const attrList = {}
-				getAttrs(attrs, ATTRS => {
-					attrList.xp_earnedtotal = _.reduce(
-						_.values(ATTRS), (total, next) => parseInt(total) + parseInt(next) || 0
-					)
-					cback(null, attrList)
-				} )
-			},
-			$set,
-			$getRepAttrs( {
-				spentxp: XPREPREFS.spentxp
-			}, gN),
-			(attrs, cback) => {
-				const attrList = {}
-				getAttrs( [...attrs, "xp_earnedtotal"], ATTRS => {
-					let spentTotal = 0
-					ATTRS.xp_earnedtotal = ATTRS.xp_earnedtotal || 0
-					getSectionIDs("spentxp", idArray => {
-						_.each(idArray, rowID => {
-							const p = v => `repeating_spentxp_${rowID}_${v}`,
-								pV = v => ATTRS[p(v)],
-								pI = v => parseInt(pV(v)) || 0,
-								cat = pV("xp_category"),
-								colRef = XPPARAMS[cat] ? XPPARAMS[cat].colToggles : null
-							if (colRef) {
-								if (
-									(!colRef.includes("xp_trait_toggle") || pV("xp_trait") !== "") &&
-									(!colRef.includes("xp_initial_toggle") || pV("xp_initial") !== "") &&
-									(!colRef.includes("xp_new_toggle") || pV("xp_new") !== "")
-								) {
-									if (colRef.includes("xp_new_toggle")) {
-										let delta = 0
-										if (colRef.includes("xp_initial_toggle")) {
-											if (cat === "Advantage") {
-												delta = (pI("xp_new") - pI("xp_initial")) * XPPARAMS[cat].cost
-											} else {
-												for (let i = pI("xp_initial"); i < pI("xp_new"); i++)
-													delta += (i + 1) * XPPARAMS[cat].cost
-											}
-										} else {
-											delta = pI("xp_new") * XPPARAMS[cat].cost
-										}
-										attrList[p("xp_cost")] = Math.max(0, delta)
-									} else {
-										attrList[p("xp_cost")] = Math.max(0, XPPARAMS[cat].cost)
-									}
-									if (pV("xp_spent_toggle") === "on" && attrList[p("xp_cost")] > 0)
-										spentTotal += attrList[p("xp_cost")] || 0
-									if (attrList[p("xp_cost")] === 0)
-										attrList[p("xp_cost")] = ""
-								}
-							}
-							_.each( ["xp_trait_toggle", "xp_initial_toggle", "xp_new_toggle"],
-								v => {
-									if (colRef && colRef.includes(v) && pI(v) === 0)
-										attrList[p(v)] = 1
-									else if (colRef && !colRef.includes(v) && pI(v) === 1)
-										attrList[p(v)] = 0
-								} )
-							attrList[p("xp_arrow_toggle")] = Number(colRef && colRef.includes("xp_initial_toggle") && colRef.includes("xp_new_toggle"))
-						} )
-						attrList.xp_summary = `${ATTRS.xp_earnedtotal} XP Earned${spentTotal > 0 ? ` - ${spentTotal} XP Spent =  ${parseInt(ATTRS.xp_earnedtotal) - spentTotal} XP Remaining` : ""}`
-						cback(null, attrList)
-					} )
-				} )
-			},
-			$set
-		]
-		run$($funcs)
-	}
-	*/
-	on(getTriggers(null, "", "", _.keys(XPREPREFS)), doEXP)
+	on(getTriggers(null, "", _.keys(XPREPREFS)), doEXP)
 	// #endregion
 
 	// #region UPDATE: Dice Roller
-	const doRollRepRefs = (gN = "") => {
+	const doRollRepRefs = () => {
 			const attrList = {},
 				$funcs = [
-					$getRepAttrs(Object.assign(DISCREPREFS, ADVREPREFS), gN),
+					$getRepAttrs(Object.assign(DISCREPREFS, ADVREPREFS)),
 					(attrs, cBack) => {
 						getAttrs( ["repstats"], ATTRS => {
 							if (!_.isEqual(
@@ -8486,7 +8355,7 @@
 				]
 			run$($funcs)
 		},
-		$getRollAttrs = (gN = "") => cBack => {
+		$getRollAttrs = () => cBack => {
 			const repAttrs = [],
 				$funcs = [
 					cBack2 => {
@@ -8496,7 +8365,7 @@
 					},
 					(repstats = [], cBack2) => {
 						run$( [
-							$getRepAttrs(repstats, gN),
+							$getRepAttrs(repstats),
 							(attrs, cBack3) => {
 								repAttrs.push(..._.reject(attrs, v => v.includes("_details")))
 								cBack3(null)
@@ -8508,10 +8377,10 @@
 				]
 			run$($funcs, () => cBack(null, [...ALLATTRS, ...repAttrs] ))
 		},
-		doRolls = (targetAttr, opts = {}, gN = "") => {
+		doRolls = (targetAttr, opts = {}) => {
 			const attrList = {},
 				$funcs = [
-					$getRollAttrs(gN),
+					$getRollAttrs(),
 					(attrs, cBack) => {
 						getAttrs(attrs, ATTRS => {
 							log(`FULL ATTRS:
@@ -8691,113 +8560,21 @@
 			} )
 		}
 
-	on(`sheet:opened ${getTriggers(null, "", "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)] )}`, eInfo => {
+	on(`sheet:opened ${getTriggers(null, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)] )}`, eInfo => {
 		if (eInfo.sourceType !== "sheetworker" && !isBlacklisted(eInfo.sourceAttribute)) {
 			doRollRepRefs()
 		}
 	} )
-	on(getTriggers(ALLATTRS, "", "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)] ), eInfo => {
-		log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ STAT ROLLER TRIGGERED @@@`)
-		if (!_.isEqual(eInfo, LASTEVENT) && eInfo.sourceType !== "sheetworker" && !isBlacklisted(eInfo.sourceAttribute)) {
-			doRolls(eInfo.sourceAttribute, {
-				silent: true
-			} )
+	on(getTriggers(ALLATTRS, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)] ), eInfo => {
+		if (!ISOFFLINE) {
+			log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ STAT ROLLER TRIGGERED @@@`)
+			if (!_.isEqual(eInfo, LASTEVENT) && eInfo.sourceType !== "sheetworker" && !isBlacklisted(eInfo.sourceAttribute)) {
+				doRolls(eInfo.sourceAttribute, {
+					silent: true
+				} )
+			}
 		}
 	} )
-	// #endregion
-
-	// #region GROUP SHEET ACTIONS
-	const doRoller = gN => {
-		const $funcs = [
-			$getRepAttrs( {
-				rolls: GROUPREPREFS
-			}, gN),
-			(attrs, cback) => {
-				getAttrs( ["character_name", `${gN}charname`, `${gN}hunger`].concat(attrs), ATTRS => {
-					log(`FULL LIST: ${JSON.stringify(ATTRS)}`)
-					const attrList = {}					
-					getSectionIDs("rolls", idArray => {
-						_.each(idArray, rowId => {
-							const p = v => `repeating_${gN}rolls_${rowId}_${v}`,
-								pV = v => ATTRS[p(v)],
-								pI = v => parseInt(pV(v)) || 0
-							attrList[p("grollparams")] =
-							`${pV("grolltype")}|${
-								ATTRS.character_name}|${
-								gN}|${
-								ATTRS[`${gN}charname`]}|${
-								pV("gtrait1name")}:${pI("gtrait1value")},${
-								pV("gtrait2name")}:${pI("gtrait2value")}|${
-								pI("grolldiff")}|${
-								pI("grollmod")}|${
-								pV("gposflags")}|${
-								pV("gnegflags")}`
-							log(`... NEW ROLL PARAMS: ${JSON.stringify(attrList)}`)
-						} )
-						cback(null, attrList)
-					} ) 
-				} )
-			},
-			$set
-		]
-		run$($funcs)
-	}
-
-	_.each(GROUPPREFIXES, gN => {
-		on(getTriggers( ["charname"], "", gN), () => {
-			getAttrs( [`${gN}charname`], v => setAttrs(_.object( [
-				[`${gN}name`, v[`${gN}charname`]]
-			] )))
-		} )
-
-		on(getTriggers( ["clan"], "", gN), () => {
-			doClans(gN)
-		} )
-		on(getTriggers(DISCENUMS, "", gN), eInfo => {
-			doDiscPowers(eInfo.sourceAttribute, gN)
-		} )
-
-		on(getTriggers( ["bonus_health"], "", gN), () => {
-			doTrackerMax("Health", gN)
-		} )
-		on(getTriggers( ["bonus_willpower"], "", gN), () => {
-			doTrackerMax("Willpower", gN)
-		} )
-		on(getTriggers( ["generation", "bonus_bp"], "", gN), () => {
-			doTrackerMax("Blood Potency Full", gN)
-		} )
-		on(getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "sdmg", "admg"], "health_", gN), eInfo => {
-			doTracker("Health", eInfo.sourceAttribute, gN)
-		} )
-		on(getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "sdmg", "admg"], "willpower_", gN), eInfo => {
-			doTracker("Willpower", eInfo.sourceAttribute, gN)
-		} )
-		on(getTriggers( ["blood_potency"], "", gN), eInfo => {
-			doTracker("Blood Potency", eInfo.sourceAttribute, gN)
-		} )
-		on(`${getTriggers( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "dhum", "dstains"], "humanity_", gN)} ${getTriggers( ["humanity", "stains"], "", gN)}`, eInfo => {
-			doTracker("Humanity", eInfo.sourceAttribute, gN)
-		} )
-
-		on(getTriggers(GROUPATTRS, "", gN, _.keys(GROUPREPREFS)), () => {
-			doRoller(gN)
-		} )
-	} )
-
-	/* //Group Character #1
-		on("change:g1charname", function () { getAttrs(["g1charname"], function (v) { setAttrs({ g1name: v.g1charname }); }) });
-		on("change:g1clan", function () { doClans("g1"); });
-		on(getTriggers(DISCIPLINEREFS, "g1"), function (eInfo) { doDiscs(eInfo.sourceAttribute); });
-		on("change:g1bonus_health", function () { doTrackerMax("Health", "g1"); });
-		on("change:g1bonus_willpower", function () { doTrackerMax("Willpower", "g1"); });
-		on(getTriggers(["generation", "bonus_bp"], "g1"), function () { doTrackerMax("Blood Potency Full", "g1"); });
-		on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "sdmg", "admg"], "g1health_"), function () { doTracker("Health", "g1"); });
-		on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "sdmg", "admg"], "g1willpower_"), function () { doTracker("Willpower", "g1"); });
-		on("change:g1bp", function () { doTracker("Blood Potency", "g1"); });
-		on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "g1humanity_") + " change:g1humanity_dhum change:g1humanity_dstains", function () {
-		doTracker("Humanity", "g1");
-		});
-		on(getTriggers(GROUPATTRS, "", "g1", GROUPREPSECTIONS), function () { doRoller("g1"); }); */
 	// #endregion
 
 	// #region Sheetworker Actions (Above "on(changes)" ignore sheetworker.)
