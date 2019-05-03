@@ -195,7 +195,8 @@ const D = (() => {
 				startColour: [1, 0, 0, 0.5],
 				startColourRandom: [10, 0, 0, 1]
 			}
-		}
+		},
+		SESSIONNUMS = ["Zero","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen","Twenty","Twenty-One","Twenty-Two","Twenty-Three","Twenty-Four","Twenty-Five","Twenty-Six","Twenty-Seven","Twenty-Eight","Twenty-Nine","Thirty","Thirty-One","Thirty-Two",]
 	// #endregion
 
 	// #region DECLARATIONS: Dependent Variables
@@ -642,7 +643,8 @@ const D = (() => {
 				} else if (val === "registered") {
 					_.each(Chars.REGISTRY, v => {
 						//D.Alert(`Grabbing Character: ${D.JS(v)}<br><br>ID: ${D.JS(v.id)}<br><br>CHAR: ${D.JS(getObj("character", v.id))}`)
-						charObjs.add(getObj("character", v.id))
+						if (!getObj("character", v.id).get("name").includes("Jesse,"))
+							charObjs.add(getObj("character", v.id))
 					} )
 					//D.Alert(`Registered Characters: ${D.JS(_.map(charObjs, v => v.id))}`)
 				// If parameter is a CHARACTER NAME:
@@ -916,12 +918,6 @@ const D = (() => {
 				break
 			default: break
 			}
-			const attrCheck = _.map(findObjs({
-				_type: "attribute",
-				_characterid: D.GetChar(charRef).id
-			}), v => v.get("name"))
-			D.Alert(`Found ${attrCheck.length} Untitled Objects`)
-			D.Alert(`${D.JS(attrCheck)}`)
 			return
 		},
 		getCaseRepID = (lowCaseID, charRef) => {
@@ -971,6 +967,7 @@ const D = (() => {
 		MISCATTRS,
 		BLOODPOTENCY,
 		RESONANCEODDS,
+		SESSIONNUMS,
 
 		PAGEID: VALS.PAGEID,
 		CELLSIZE: VALS.CELLSIZE,

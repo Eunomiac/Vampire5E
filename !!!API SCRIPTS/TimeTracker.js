@@ -455,6 +455,16 @@ const TimeTracker = (() => {
 		// #endregion
 
 		// #region Date Functions
+		parseDString = str => {
+			if (parseInt(str))
+				return new Date(parseInt(str))
+			if (_.isString(str) && str !== "") {
+				const strArray = _.compact(str.split(/[\s,]+?/gu))
+				return new Date(`${strArray[2]}-${["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(strArray[0].slice(0, 3).toLowerCase()) + 1}-${strArray[1]}`)
+			}
+			return str
+		},
+		formatDString = date => `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`,
 		getHorizon = () => {
 			const [dawn, dusk] = TWILIGHTMINS[dateObj.getMonth()],
 				imgTimes = _.object(_.map(_.keys(IMAGETIMES), k => {
@@ -470,7 +480,7 @@ const TimeTracker = (() => {
 				curTime = 60 * dateObj.getUTCHours() + dateObj.getUTCMinutes()
 			return imgTimes[_.find(_.keys(imgTimes), v => curTime <= v)]
 		},
-		setHorizon = () => {
+		setHorizon = (isForced = false) => {
 			/* D.Log(`Date Obj? ${Boolean(dateObj)}, state val: ${D.JSL(state[D.GAMENAME].TimeTracker.currentDate)}`)
 			   dateObj = dateObj || new Date(state[D.GAMENAME].TimeTracker.currentDate) */
 			let imgSrcName = getHorizon()
@@ -483,8 +493,9 @@ const TimeTracker = (() => {
 					Images.OrderImages(["Horizon_2", "Horizon_1"], true)
 					STATEREF.lastHorizon = "day"
 				}
-			} else if (imgSrcName !== STATEREF.lastHorizon) {
+			} else if (isForced || imgSrcName !== STATEREF.lastHorizon) {
 				STATEREF.lastHorizon = imgSrcName
+				Images.OrderImages(["Horizon_1", "Horizon_2"], true)
 				Images.Set("Horizon_1", imgSrcName)
 			}
 		},
@@ -499,7 +510,6 @@ const TimeTracker = (() => {
 				Math.floor(dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`
 			trackerObj.set("text", timeText)
 			trackerShadow.set("text", timeText)
-			setHorizon()
 		},
 		setIsRunning = runStatus => {
 			isRunning = runStatus
@@ -529,6 +539,7 @@ const TimeTracker = (() => {
 					setWeather()
 					Images.Set("WeatherGround", groundCover)
 				}
+				setHorizon()
 			}			
 		},
 		setIsRunningFast = runStatus => {
@@ -550,12 +561,18 @@ const TimeTracker = (() => {
 			const deltaTime = finalDate - dateObj,
 				duration = (_.findIndex(TWEENDURS, v => deltaTime / 60000 <= v) + 1) * 1000,
 				startTime = dateObj.getTime(),
+				fixDate = () => {
+					setHorizon(true)
+					setWeather()
+					Images.OrderImages(["Horizon_1", "Horizon_2"], true)
+				},
 				easeSet = () => {
 					if (Math.abs(curTime) >= Math.abs(duration)) {
 						clearInterval(timeTimer)
 						setIsRunning(false)
 						setIsRunningFast(false)
-						// D.Log("Is Running: FALSE")
+						D.Alert("Is Running: FALSE")
+						setTimeout(fixDate, 1000)
 					}
 					const newDelta = easeInOutSine(curTime, 0, deltaTime, duration)
 					setIsRunningFast(Math.abs(newDelta - lastTime) > RUNNINGFASTAT)
@@ -766,6 +783,35 @@ const TimeTracker = (() => {
 			else
 				return "blank"
 		},
+		checkWeatherReport = () => {
+		// const weatherCode = WEATHERDATA[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()],switch(weatherCode.charAt(0)) {
+		// x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
+			const weatherStrings = {}
+			for (const code of ["x", "b", "c", "f", "p", "s", "t", "w"]) {				
+				let startYear = dateObj.getUTCFullYear(),
+					startMonth = dateObj.getUTCMonth(),
+					startDay = dateObj.getUTCDate(),
+					startHour = dateObj.getUTCHours()
+				while (_.isUndefined(weatherStrings[WEATHERCODES[0][code]])) {
+					for (let m = startMonth; m < 12; m++) {
+						for (let d = startDay; d < WEATHERDATA[m].length; d++) {
+							let hourMatch = _.findIndex(WEATHERDATA[m][d], (v, k) => { return v.charAt(0) === code && (k <= 5 || k >= 20) })
+							if (hourMatch >= startHour) {
+								weatherStrings[WEATHERCODES[0][code]] = `!time set ${startYear} ${m} ${d} ${hourMatch} (${MONTHS[m].slice(0,3)}, ${hourMatch > 12 ? `${hourMatch - 12} PM` : `${hourMatch} AM)`})`
+								break
+							}
+							startHour = 0
+						}
+						if (!_.isUndefined(weatherStrings[code]))
+							break
+						startDay = 1
+					}
+					startMonth = 0
+					startYear++
+				}
+			}
+			D.Alert(`WEATHER REPORT:<br><br>${D.JS(weatherStrings)}`)			
+		},
 		//#endregion
 
 		// #region Airplane Lights
@@ -815,9 +861,14 @@ const TimeTracker = (() => {
 					break
 				}
 				switch ((args.shift() || "").toLowerCase()) {
+				case "set":
+					unit = "m"
+					delta = Math.ceil(((new Date(Date.UTC(..._.map(args, v => parseInt(v))))).getTime() - dateObj.getTime()) / (1000 * 60))
+					D.Alert(`Changing Date by ${D.JS(delta)} minutes.`)
+					/* falls through */
 				case "add":
-					delta = parseInt(args.shift())
-					unit = args.shift().toLowerCase()
+					delta = delta || parseInt(args.shift())
+					unit = unit || args.shift().toLowerCase()
 					date2 = new Date(dateObj)
 					if (unit.slice(0, 1) === "y")
 						date2.setUTCFullYear(date2.getUTCFullYear() + delta)
@@ -833,30 +884,23 @@ const TimeTracker = (() => {
 						date2.setUTCMinutes(date2.getUTCMinutes() + delta)
 					tweenClock(date2)
 					return
-				case "set": //   !time set 2018-07-14T20:12
-					if (args.length === 4) {
-						dateObj.setUTCFullYear(parseInt(args.shift()))
-						dateObj.setUTCMonth(parseInt(args.shift()) - 1)
-						dateObj.setUTCDate(parseInt(args.shift()));
-						[hour, min] = args.shift().split(":")
-						dateObj.setUTCHours(parseInt(hour))
-						dateObj.setUTCMinutes(parseInt(min))
-						D.Alert(`Date set to ${D.JSL(dateObj.toString())}`)
-					} else {
-						D.Alert("Syntax: !time set year month1-12 day 24-hour:min", "TIMETRACKER !SET")
-					}
-					break
 				case "run":
 					startClock()
 					break
 				case "stop":
 					stopClock()
 					break
+				case "fix":
+					date2 = new Date(dateObj)
+					date2.setUTCMinutes(date2.getUTCMinutes() + 1)
+					tweenClock(date2)
+					break
 				default:
 					D.Alert("Commands are 'add', 'set', 'run' and 'stop'.<br><br>To set: <b>!time set 2018-07-14T20:12</b><br><br>Weather: <b>!setweather 32|p|h|g</b>")
 
 					return
 				}
+
 				setCurrentDate()
 				break
 			case "!stoplights":
@@ -928,6 +972,9 @@ const TimeTracker = (() => {
 			case "!testground":
 				getGroundCover(true, ...args)
 				break
+			case "!weatherreport":
+				checkWeatherReport()
+				break
 			default:
 				break
 			}
@@ -955,7 +1002,10 @@ const TimeTracker = (() => {
 		CheckInstall: checkInstall,
 		StartClock: startClock,
 		StopClock: stopClock,
-		StartLights: startAirLights
+		StartLights: startAirLights,
+		CurrentDate: () => new Date(dateObj),
+		ParseDate: parseDString,
+		FormatDate: formatDString
 	}
 } )()
 

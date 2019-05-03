@@ -461,8 +461,8 @@ const Roller = (() => {
 				greyS: "<span style=\"display:inline-block; color: #A0A0A0; display: inline-block; line-height: 14px; font-family: Percolator; vertical-align: top; margin-right: 5px; margin-left: -5px;\">",
 				white: "<span style=\"display:inline-block; color: white; font-size: 24px; font-weight: bold;\">",
 				whiteB: "<span style=\"display:inline-block; color: white; font-size: 30px; font-weight: bold;\">",
-				greyPlus: "<span style=\"color: #A0A0A0; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 20px; vertical-align: top; line-height: 14px;\"> + </span>",
-				greyMinus: "<span style=\"color: #A0A0A0; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 20px; vertical-align: top; line-height: 14px;\"> - </span>"
+				greyPlus: "<span style=\"color: #A0A0A0; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 5px; vertical-align: top; line-height: 14px;\"> + </span>",
+				greyMinus: "<span style=\"color: #A0A0A0; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 5px; vertical-align: top; line-height: 14px;\"> - </span>"
 			}
 		},
 		// #endregion
@@ -988,7 +988,7 @@ const Roller = (() => {
 		// #endregion
 
 		// #region Getting Information & Setting State Roll Record
-		parseFlags = (charObj, rollType, params = {}, isDiscRoll = false ) => {
+		parseFlags = (charObj, rollType, params = {} ) => {
 			params.args = params.args || []
 			const gN = params.groupNum || "",
 				flagData = {
@@ -1015,7 +1015,7 @@ const Roller = (() => {
 				flagData.posFlagLines.push(`Blood Surge (${bonus > 0 ? "●".repeat(bonus) : "~"})`)
 				flagData.flagDiceMod += bonus
 			}
-			if (isDiscRoll) {
+			if (parseInt(getAttrByName(charObj.id, `${gN}applydisc`)) > 0) {
 				const bonus = D.BLOODPOTENCY[bloodPot].bp_discbonus
 				flagData.posFlagLines.push(`Discipline (${bonus > 0 ? "●".repeat(bonus) : "~"})`)
 				flagData.flagDiceMod += bonus
@@ -1127,11 +1127,10 @@ const Roller = (() => {
 					}
 				}
 			} )
-			D.Alert(D.JS(tFull))
 
 			return tFull
 		},
-		getRollData = (charObj, rollType, params, isDiscRoll = false) => {
+		getRollData = (charObj, rollType, params) => {
 			/* EXAMPLE RESULTS:
 				{
 				  groupNum: "",
@@ -1159,7 +1158,7 @@ const Roller = (() => {
 				  diff: 3
 				}*/
 			const funcName = "getRollData",
-				flagData = parseFlags(charObj, rollType, params, isDiscRoll),
+				flagData = parseFlags(charObj, rollType, params),
 				traitData = parseTraits(charObj, rollType, params),
 				gN = params.groupNum || "",
 				rollData = {
@@ -2106,10 +2105,10 @@ const Roller = (() => {
 
 			return deltaAttrs
 		},
-		makeNewRoll = (charObj, rollType, params, isDiscRoll) => {
+		makeNewRoll = (charObj, rollType, params) => {
 			const funcName = "makeNewRoll"
 			D.DBAlert(`PARAMS: ${D.JS(params)} (length: ${params.length})`, funcName, SCRIPTNAME)
-			const rollData = buildDicePool(getRollData(charObj, rollType, params, isDiscRoll))
+			const rollData = buildDicePool(getRollData(charObj, rollType, params))
 			D.DBAlert(`RECEIVED ROLLDATA: ${D.JS(rollData)}`, funcName, SCRIPTNAME)
 			recordRoll(rollData, rollDice(rollData))
 			displayRoll()
@@ -2174,71 +2173,81 @@ const Roller = (() => {
 		// #endregion
 
 		// #region Secret Rolls
-		makeSecretRoll = (chars, params, isSilent, isHidingTraits) => {
-			let rollData = buildDicePool(getRollData(chars[0], "secret", params)),
-				[traitLine, playerLine] = ["", ""],
-				resultLine = null
-			const {
-					dicePool
-				} = rollData,
-				blocks = []
+		makeSecretRoll = (chars, params, isSilent, isHidingTraits, hasNPCs, isOpposed) => {
+			const buildSecretRoll = (char, params, isNPC, opposedBy = []) => {
+					let poolData = getRollData(char, "secret", params),
+						rollData = buildDicePool(poolData),
+						[traitLine, playerLine, resultBlock] = ["", "", ""],
+						resultLine = null
+					const {dicePool} = rollData,
+						blocks = []
+					rollData.isSilent = isSilent || false,
+					rollData.isHidingTraits = isHidingTraits || false,
+					rollData.hasNPCs = hasNPCs || false,
+					rollData.isOpposed = isOpposed || false
+					if (isNPC || isSilent) {
+						playerLine = null
+					} else if (isHidingTraits || rollData.traits.length === 0) {
+						playerLine = `${CHATSTYLES.space30 + CHATSTYLES.secret.greyS}... rolling </span>${CHATSTYLES.secret.whiteB}${dicePool}</span>${CHATSTYLES.space10}${CHATSTYLES.secret.greyS}${dicePool === 1 ? " die " : " dice "}...</span>${CHATSTYLES.space40}`
+					} else if (opposedBy.length > 0) {
+						playerLine = "opposedBy is just a list of names to incorporate into the player message"
+					} else {
+						playerLine = `${CHATSTYLES.secret.greyS}rolling </span>${CHATSTYLES.secret.white}${_.map(_.keys(rollData.traitData), k => k.toLowerCase()).join(`</span><br>${CHATSTYLES.space30}${CHATSTYLES.secret.greyPlus}${CHATSTYLES.secret.white}`)}</span>`
+						if (rollData.mod !== 0)
+							playerLine += `${(rollData.mod > 0 ? CHATSTYLES.secret.greyPlus : "") + (rollData.mod < 0 ? CHATSTYLES.secret.greyMinus : "") + CHATSTYLES.secret.white + Math.abs(rollData.mod)}</span>`
+					}
 
-			if (isHidingTraits || rollData.traits.length === 0) {
-				playerLine = `${CHATSTYLES.space30 + CHATSTYLES.secret.greyS}... rolling </span>${CHATSTYLES.secret.whiteB}${dicePool}</span>${CHATSTYLES.space10}${CHATSTYLES.secret.greyS}${dicePool === 1 ? " die " : " dice "}...</span>${CHATSTYLES.space40}`
-			} else {
-				playerLine = `${CHATSTYLES.secret.greyS}rolling </span>${CHATSTYLES.secret.white}${_.map(_.keys(rollData.traitData), k => k.toLowerCase()).join(`</span><br>${CHATSTYLES.space30}${CHATSTYLES.secret.greyPlus}${CHATSTYLES.secret.white}`)}</span>`
-				if (rollData.mod !== 0)
-					playerLine += `${(rollData.mod > 0 ? CHATSTYLES.secret.greyPlus : "") + (rollData.mod < 0 ? CHATSTYLES.secret.greyMinus : "") + CHATSTYLES.secret.white + Math.abs(rollData.mod)}</span>`
-			}
+					if (rollData.traits.length > 0) {
+						traitLine = _.keys(rollData.traitData).join(" + ")
+						if (rollData.mod !== 0)
+							traitLine += (dicePool > 0 ? " + " : "") + (dicePool < 0 ? " - " : "") + Math.abs(rollData.mod)
+					} else {
+						traitLine = rollData.mod + (rollData.mod === 1 ? " Die" : " Dice")
+					}
 
-			if (rollData.traits.length > 0) {
-				traitLine = _.keys(rollData.traitData).join(" + ")
-				if (rollData.mod !== 0)
-					traitLine += (dicePool > 0 ? " + " : "") + (dicePool < 0 ? " - " : "") + Math.abs(rollData.mod)
-			} else {
-				traitLine = rollData.mod + (rollData.mod === 1 ? " Die" : " Dice")
-			}
-			let confirmString = ""
-			_.each(chars, char => {
-				rollData = getRollData(char, "secret", params)
-				rollData.isSilent = isSilent || false
-				rollData.isHidingTraits = isHidingTraits || false
-				rollData = buildDicePool(rollData)
-				let outcomeLine = ""
-				const rollResults = rollDice(rollData),
-					{
-						total,
-						margin
-					} = rollResults
-				if ((total === 0 || margin < 0) && rollResults.H.botches > 0)
-					outcomeLine = `${CHATSTYLES.outcomeRedSmall}BESTIAL FAIL!`
-				else if (margin >= 0 && rollResults.critPairs.hb + rollResults.critPairs.hh > 0)
-					outcomeLine = `${CHATSTYLES.outcomeWhiteSmall}MESSY CRIT! (${rollData.diff > 0 ? `+${margin}` : total})`
-				else if (total === 0)
-					outcomeLine = `${CHATSTYLES.outcomeRedSmall}TOTAL FAILURE!`
-				else if (margin < 0)
-					outcomeLine = `${CHATSTYLES.outcomeRedSmall}FAILURE${rollData.diff > 0 ? ` (${margin})` : ""}`
-				else if (rollResults.critPairs.bb > 0)
-					outcomeLine = `${CHATSTYLES.outcomeWhiteSmall}CRITICAL! (${rollData.diff > 0 ? `+${margin}` : total})`
-				else
-					outcomeLine = `${CHATSTYLES.outcomeWhiteSmall}SUCCESS! (${rollData.diff > 0 ? `+${margin}` : total})`
-				blocks.push(`${CHATSTYLES.secret.startBlock + CHATSTYLES.secret.blockNameStart + rollData.charName}</div>${
-					CHATSTYLES.secret.diceStart}${formatDiceLine(rollData, rollResults, 9, true).replace(/text-align: center; height: 20px/gu, "text-align: center; height: 20px; line-height: 25px")
-					.replace(/margin-bottom: 5px;/gu, "margin-bottom: 0px;")
-					.replace(/color: black; height: 24px/gu, "color: black; height: 18px")
-					.replace(/height: 24px/gu, "height: 20px")
-					.replace(/height: 22px/gu, "height: 18px")}</div>${
-					CHATSTYLES.secret.lineStart}${outcomeLine}</div></div></div>`)
-				if (!rollData.isSilent) {
+					const rollResults = rollDice(rollData),
+						{total, margin} = rollResults
+					resultBlock = resultBlock = `${CHATSTYLES.secret.startBlock + CHATSTYLES.secret.blockNameStart + rollData.charName}</div>${
+						CHATSTYLES.secret.diceStart}${formatDiceLine(rollData, rollResults, 9, true).replace(/text-align: center; height: 20px/gu, "text-align: center; height: 20px; line-height: 25px")
+						.replace(/margin-bottom: 5px;/gu, "margin-bottom: 0px;")
+						.replace(/color: black; height: 24px/gu, "color: black; height: 18px")
+						.replace(/height: 24px/gu, "height: 20px")
+						.replace(/height: 22px/gu, "height: 18px")}</div>${
+						CHATSTYLES.secret.lineStart}`
+					if ((total === 0 || margin < 0) && rollResults.H.botches > 0)
+						resultBlock += `${CHATSTYLES.outcomeRedSmall}BESTIAL FAIL!`
+					else if (margin >= 0 && rollResults.critPairs.hb + rollResults.critPairs.hh > 0)
+						resultBlock += `${CHATSTYLES.outcomeWhiteSmall}MESSY CRIT! (${rollData.diff > 0 ? `+${margin}` : total})`
+					else if (total === 0)
+						resultBlock += `${CHATSTYLES.outcomeRedSmall}TOTAL FAILURE!`
+					else if (margin < 0)
+						resultBlock += `${CHATSTYLES.outcomeRedSmall}FAILURE${rollData.diff > 0 ? ` (${margin})` : ""}`
+					else if (rollResults.critPairs.bb > 0)
+						resultBlock += `${CHATSTYLES.outcomeWhiteSmall}CRITICAL! (${rollData.diff > 0 ? `+${margin}` : total})`
+					else
+						resultBlock += `${CHATSTYLES.outcomeWhiteSmall}SUCCESS! (${rollData.diff > 0 ? `+${margin}` : total})`
+					resultBlock += "</div></div></div>"
+
+					return [playerLine, traitLine, resultBlock]
+				},
+				resultBlocks = []
+			let confirmString = "",
+				traitsByChar = {}
+			for (const char of chars) {
+				let [playerLine, traitLine, resultBlock] = buildSecretRoll(char, params, false, [])
+				traitsByChar[(D.GetName(char).split(" ")[0])] = traitLine
+				resultBlocks.push(resultBlock)
+				if (playerLine) {
 					sendChat("Storyteller", `/w ${D.GetName(char).split(" ")[0]} ${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}you are being tested ...</div>${CHATSTYLES.secret.playerBotLineStart}${playerLine}</div></div>`)
 					confirmString = `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}you are being tested ...</div>${CHATSTYLES.secret.playerBotLineStart}${playerLine}</div></div>`
-				} else {
-					confirmString = `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}<span style="width: 100%; text-align: center; text-align-last: center;">(SECRET ROLL)</span></div></div>`
+				} else if (isSilent) {
+					confirmString = `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}<span style="width: 100%; text-align: center; text-align-last: center;">(SILENT ROLL)</span></div></div>`
 				}
-			} )
-			resultLine = `${CHATSTYLES.fullBox + CHATSTYLES.secret.topLineStart + (rollData.isSilent ? "Silently Rolling" : "Secretly Rolling") + (rollData.isHidingTraits ? " (Traits Hidden)" : " ...")}</div>${CHATSTYLES.secret.traitLineStart}${traitLine}${rollData.diff > 0 ? ` vs. ${rollData.diff}` : ""}</div>${blocks.join("")}</div></div>`
+			}
+				
+				
 			sendChat("Storyteller", `/w Storyteller ${confirmString}`)
-			sendChat("Storyteller", `/w Storyteller ${resultLine}`)
+			sendChat("Storyteller", `/w Storyteller ${CHATSTYLES.fullBox + CHATSTYLES.secret.topLineStart + (isSilent ? "Silently Rolling" : "Secretly Rolling") + (isHidingTraits ? " (Traits Hidden)" : " ...")}</div>${CHATSTYLES.secret.traitLineStart}${traitLine}${rollData.diff > 0 ? ` vs. ${rollData.diff}` : ""}</div>${blocks.join("")}</div></div>`)
 		},
 		// #endregion
 
@@ -2415,7 +2424,7 @@ const Roller = (() => {
 			let args = msg.content.split(/\s+/u),
 				[rollType, groupName, groupNum, charObj, diceNums, resonance, resDetails, resIntLine] = [null, null, null, null, null, null, null],
 				name = "",
-				[isSilent, isHidingTraits, isDiscRoll] = [false, false, false]
+				[isSilent, isHidingTraits] = [false, false]
 			const rollString = args.shift()
 			switch (rollString) { // ! traitroll @{character_name}|Strength,Resolve|3|5|0|ICompulsion:3,IPhysical:2
 			case "!gRoll": // ! projectroll @{character_name}|Politics:3,Resources:2|mod|diff;
@@ -2440,9 +2449,6 @@ const Roller = (() => {
 				rollType = rollType || "frenzyInit"
 				if (rollType !== "frenzy")
 					lockRoller(true)
-				/* falls through */
-			case "!discroll":
-				isDiscRoll = true
 				/* falls through */
 			case "!traitroll":
 				rollType = rollType || "trait"
@@ -2482,7 +2488,7 @@ const Roller = (() => {
 				} else if (isLocked) {
 					return
 				}
-				makeNewRoll(charObj, rollType, params, isDiscRoll)
+				makeNewRoll(charObj, rollType, params)
 				delete state[D.GAMENAME].Roller.frenzyRoll
 				break
 			}
@@ -2614,29 +2620,29 @@ const Roller = (() => {
 				}</span></div>`)
 				)
 				break
-			case "!nxsroll":
-			case "!xnsroll":
-			case "!xsroll":
+			case "!sroll":
+			case "!snroll":
 			case "!sxroll":
 			case "!snxroll":
-			case "!sxnroll":
-			case "!nsroll":
-			case "!snroll":
-			case "!sroll":
 			{
 				rollType = "secret"
+				if (args[0] === "npc" || args[0] === "opp")
+					rollType = `secret${args.shift().toUpperCase()}`
 				const params = args.join(" ").split("|")
 				isSilent = rollString.includes("x")
 				isHidingTraits = rollString.includes("n")
 				let chars = null
-				if (!msg.selected || !msg.selected[0] )
+				if (rollType === "secret" && (!msg.selected || !msg.selected[0]))
 					chars = D.GetChars("registered")
 				else
 					chars = D.GetChars(msg)
 				if (params.length < 1 || params.length > 3)
-					D.ThrowError(`Syntax Error: ![x][n]sroll: <trait1>[,<trait2>,<mod>] (${D.JSL(params)})`)
-				else
-					makeSecretRoll(chars, params, isSilent, isHidingTraits)
+					return D.ThrowError(`Syntax Error: !s[n][x]roll [npc/opp] <trait1>[,<trait2>,<mod>] (${D.JSL(params)})`)
+				if (rollType === "opp" || rollType === "npc") {
+					chars = _.groupBy(chars, v => D.GetChars("registered").includes(v) ? "PCs" : "NPCs")
+					D.Alert(`Grouped Chars: ${D.JS(chars)}`)
+				}				
+				makeSecretRoll(chars, params, isSilent, isHidingTraits, rollType === "npc", rollType === "opp")
 				break
 			}
 			default:
