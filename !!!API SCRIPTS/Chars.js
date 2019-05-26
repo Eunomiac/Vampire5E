@@ -341,17 +341,40 @@ const Chars = (() => {
 			if (!D.GetChar(charRef))
 				return D.ThrowError(`No character found given reference ${D.JS(charRef)}`, "CHARS:AwardXP")
 			const char = D.GetChar(charRef),
-				 rowID = D.MakeRow(char.id, "earnedxp", {
+				 rowID = D.MakeRow(char.id, "earnedxpright", {
 					xp_award: award,
 					xp_session: D.SESSIONNUMS[STATEREF.SessionNum],
 					xp_reason: reason,
 				})
 			if (rowID) {
-				D.SplitRepSec(char, "earnedxp", "earnedxpright", SORTFUNCS.earnedxp, "split")
-	
+				let xpOrder = {
+					left: D.GetStatVal(char.id, "_reporder_repeating_earnedxp") ? D.GetStatVal(char.id, "_reporder_repeating_earnedxp").split(",") : [],
+					right: D.GetStatVal(char.id, "_reporder_repeating_earnedxpright") ? D.GetStatVal(char.id, "_reporder_repeating_earnedxpright").split(",") : []
+				}
+				//	D.Alert(`Original:<br><br>${D.JS(xpOrder)}`)
+				if (xpOrder.left.length > D.GetRepIDs(char.id, "earnedxp").length) {
+					xpOrder.left = xpOrder.left.slice(0,D.GetRepIDs(char.id, "earnedxp").length)
+				} else if (xpOrder.left.length === 0) {
+					xpOrder.left = D.GetRepIDs(char.id, "earnedxp")
+				}				
+				if (xpOrder.right.length > D.GetRepIDs(char.id, "earnedxpright").length) {
+					xpOrder.right = xpOrder.right.slice(0,D.GetRepIDs(char.id, "earnedxpright").length)
+				} else if (xpOrder.right.length === 0) {
+					xpOrder.right = D.GetRepIDs(char.id, "earnedxpright")
+				}	
+				//D.Alert(`New:<br><br>${D.JS(xpOrder)}`)
+				while (D.GetRepIDs(char.id, "earnedxpright").length > D.GetRepIDs(char.id, "earnedxp").length) {
+					let repID = D.GetRepIDs(char.id, "earnedxpright")[0]
+					xpOrder.left.push(repID)
+					xpOrder.right = _.without(xpOrder.right, repID)
+					D.CopyToSec(char.id, "earnedxpright", repID, "earnedxp")
+				}
+				setAttrs(char.id, {
+					"_reporder_repeating_earnedxp": xpOrder.left.join(","),
+					"_reporder_repeating_earnedxpright": xpOrder.right.join(",")
+				})
 				return true
-			}
-	
+			}	
 			return D.ThrowError(`Unable to make row for '${D.JSL(char)}'`, "AWARDXP")
 		},
 	
@@ -366,6 +389,7 @@ const Chars = (() => {
 				if (!D.Validate({char: [charRef], trait: [trait], number: amount}, "Chars", "AdjustTrait"))
 					return false
 			}
+			
 			D.Log(D.JS(Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStatVal(charRef, trait) || 0) + parseInt(amount)))))
 			D.Log("STATVAL:" + D.GetStatVal(charRef, trait) + ", AMOUNT: " + amount)			
 			D.Log("COMBINED:" + (parseInt(D.GetStatVal(charRef, trait) || 0) + parseInt(amount)))
@@ -441,12 +465,17 @@ const Chars = (() => {
 			TimeTracker.StartLights()
 
 		},
+		setSessionNum = sNum => {
+			STATEREF.SessionNum = sNum
+			D.Alert(`Session Number <b>${D.SESSIONNUMS[STATEREF.SessionNum]}</b> SET.`)
+		},
 		endSession = () => {
 			D.Alert(`Concluding Session ${D.SESSIONNUMS[STATEREF.SessionNum]}`)
 			for (const char of D.GetChars("registered")) {
 				awardXP(char, 2, D.SESSIONNUMS[STATEREF.SessionNum], "Session XP award.")
 			}
 			TimeTracker.StopClock()
+			TimeTracker.StopLights()
 		},
 		daysleep = () => {			
 			for (const char of D.GetChars("registered")) {
@@ -622,7 +651,7 @@ const Chars = (() => {
 				attrList.roll_array = ""
 				attrList.rollpooldisplay = ""
 				setAttrs(charID, attrList, {}, () => {
-					D.Alert("Callback Function Passed!")
+					//D.Alert("Callback Function Passed!")
 					setAttrs(charID, {hunger: Math.max(1, parseInt(getAttrByName("bp_slakekill")))})
 				})
 				D.Alert(`ATTRLIST FOR ${D.GetName(charID)}:<br><br>${D.JS(attrList)}`)
@@ -663,11 +692,10 @@ const Chars = (() => {
 				args = msg.content.split(/\s+/u)
 			//D.Alert(`WHO: ${D.JS(who)}`)
 			let [chars, params, attrList] = [[], [], []],
-				[token, imgData] = [{}, {}],
+				[token, famToken, charData, imgData] = [{}, {}, {}, {}],
 				[amount, dmg] = [0, 0],
-				[trait, dtype, attrString, charID] = new Array(4).fill(""),
-				char = null,
-				msgString = ""
+				[trait, dtype, attrString, playerObj, macroObjs, charID, alertString, msgString] = new Array(8).fill(""),
+				char = null
 			switch (args.shift().toLowerCase()) {
 			case "!char":
 				if (!playerIsGM(msg.playerid))
@@ -743,49 +771,6 @@ const Chars = (() => {
 						else 
 							D.Alert("Select a character first!", "CHARS:!get incap")
 						break
-					case "proj":
-					case "project":
-					case "projects":
-						if (msg.selected && msg.selected[0]) {
-							const attrs = _.map(D.GetStats(msg, "repeating_project_"),
-								v => {
-									const splitName = v.get("name").split("_").slice(2)
-									return {
-										fullname: v.get("name"),
-										name: splitName.slice(1).join("_"),
-										rowID: splitName[0],
-										value: v.get("current")
-									}
-								}
-							)
-							D.Alert(`Project Attributes List: ${D.JS(attrs)}`, "CHARS !getProj")
-						}
-						break
-					case "merits":
-					case "adv":
-					case "advantages":
-					case "backgrounds":
-						if (msg.selected && msg.selected[0]) {
-							let attrs = []
-							for (const secName of ["advantage", "negadvantage"]) {
-								attrs.push(..._.map(D.GetStats(msg, `repeating_${secName}_`),
-									v => {
-										const splitName = v.get("name").split("_").slice(2)
-										return {
-											fullname: v.get("name"),
-											name: splitName.slice(1).join("_"),
-											rowID: splitName[0],
-											value: v.get("current").toString().slice(0, 30)
-										}
-									}
-								))
-							}
-							if (_.isString(args[0])) {
-								attrs = _.filter(attrs, v => _.some(_.values(v), vv => vv.includes(args[0])))
-							}
-							D.Alert(`Advantages Attributes List: ${D.JS(attrs)}`, "CHARS: !chars get advantages")
-						}
-						break
 					case "charids":
 						chars = findObjs( {
 							_type: "character"
@@ -795,6 +780,31 @@ const Chars = (() => {
 							msgString += `${D.GetName(char)}<span style="color: red; font-weight:bold;">@T</span>${char.id}<br>`
 						}
 						D.Alert(D.JS(msgString))
+						break
+					case "player":
+						charData = REGISTRY[args[0]]
+						playerObj = getObj("player", charData.playerID)
+						D.Alert(`<b>NAME:</b> ${charData.playerName} (${charData.playerID})<br><b>PLAYS:</b> ${charData.name} (${charData.id})<br><br><b>DATA:</b><br><br>${D.JS(playerObj)}`, `PLAYER #${args[0]} DATA`)
+						break
+					case "macro":
+						charData = REGISTRY[args[0]]
+						macroObjs = findObjs({_type: "macro"})
+						macroObjs = _.filter(macroObjs,  v => {
+							let visTo = v.get("visibleto")
+							return visTo.includes("all") || visTo.includes(charData.playerID) || (visTo === "" && v.get("_playerid") === charData.playerID)
+						})
+						/* macroObjs = _.filter(macroObjs,  v => {
+							let visTo = v.get("visibleto")
+							if (args[1] && !v.get("name").toLowerCase().includes(args[1].toLowerCase()))
+								return false
+							return visTo.includes("all") || visTo.includes(charData.playerID)
+						}) */
+						alertString = ""
+						for (const macro of macroObjs) {
+							//alertString += `<b>${macro.get("name")}:</b><br>${macro.get("action")}<br><br>`
+							alertString += `<b>${macro.get("name")}:</b><br>${D.JS(macro)}<br><br>`
+						}
+						D.Alert(`${alertString}`, `PLAYER #${args[0]} MACROS`)
 						break
 					default: break
 					}
@@ -871,6 +881,35 @@ const Chars = (() => {
 			case "!mvc":
 				MVC({name: who})
 				break
+			case "!daylighters":
+				if (!playerIsGM(msg.playerid))
+					return
+				state[D.GAMENAME].Chars.isDaylighterSession = !state[D.GAMENAME].Chars.isDaylighterSession
+				D.Alert(`Daylighter Session Set To: ${state[D.GAMENAME].Chars.isDaylighterSession}`)
+				DragPads.Toggle("signalLight", !state[D.GAMENAME].Chars.isDaylighterSession)
+				TimeTracker.Fix()
+				for (const charData of _.values(REGISTRY).slice(0,4)) {
+					[token] = findObjs( {
+						_pageid: D.PAGEID(),
+						_type: "graphic",
+						_subtype: "token",
+						represents: charData.id
+					})
+					imgData = Images.GetData(token)
+					
+					if (state[D.GAMENAME].Chars.isDaylighterSession) {											
+						Images.SetData(token, {isDaylighter: true, unObfSrc: "base"})
+						Images.ToggleToken(token, "baseDL")
+						if (charData.famulusTokenID) {
+							famToken = Images.GetObj(charData.famulusTokenID)
+							Images.Toggle(famToken, false)
+						}
+					} else {
+						Images.SetData(token, {isDaylighter: false, unObfSrc: "base"})
+						Images.ToggleToken(token, "base")
+					}
+				}
+				break
 			case "!sense":
 				charID = REGISTRY[_.findKey(REGISTRY, v => v.playerID === msg.playerid)].id;
 				[token] = findObjs( {
@@ -879,16 +918,25 @@ const Chars = (() => {
 					_subtype: "token",
 					represents: charID
 				})
-				imgData = Images.GetData(token)
-				if (imgData.curSrc === "obf")
-					Images.ToggleToken(token, "senseObf", "prev")
-				else if (imgData.curSrc === "senseObf")				
-					Images.ToggleToken(token, "obf", "prev")
-				else
-					Images.ToggleToken(token, "sense", "prev")
+				imgData = Images.GetData(token)								
+				//D.Alert(`ImgData: ${D.JS(token)}`)
+				if (imgData.unObfSrc !== "sense") {
+					Images.SetData(token, {unObfSrc: "sense"})
+					if (imgData.isObf) {
+						Images.ToggleToken(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
+					} else {
+						Images.ToggleToken(token, `sense${imgData.isDaylighter ? "DL" : ""}`)
+					}			
+				} else {
+					Images.SetData(token, {unObfSrc: "base"})
+					if (imgData.isObf) {
+						Images.ToggleToken(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
+					} else {
+						Images.ToggleToken(token, `base${imgData.isDaylighter ? "DL" : ""}`)
+					}			
+				}
 				break
-			case "!hide":			
-				//D.Alert("hide RECEIVED")
+			case "!hide":	
 				charID = REGISTRY[_.findKey(REGISTRY, v => v.playerID === msg.playerid)].id;			
 				//D.Alert(`Char ID[${D.JS(_.findKey(REGISTRY, v => v.playerID === msg.playerid))}] = ${D.JS(charID)}`);
 				[token] = findObjs( {
@@ -900,34 +948,86 @@ const Chars = (() => {
 				//D.Alert(`Token: ${D.JS(token)}`)
 				imgData = Images.GetData(token)								
 				//D.Alert(`ImgData: ${D.JS(token)}`)
-				if (imgData.curSrc === "sense")
-					Images.ToggleToken(token, "senseObf", "prev")
-				else if (imgData.curSrc === "senseObf")
-					Images.ToggleToken(token, "sense", "prev")
-				else
-					Images.ToggleToken(token, "obf", "prev")
+				if (imgData.isObf) {
+					Images.ToggleToken(token, `${imgData.unObfSrc || "base"}${imgData.isDaylighter ? "DL" : ""}`)
+					Images.SetData(token, {isObf: false})
+				} else {
+					if (imgData.unObfSrc === "sense") {
+						Images.ToggleToken(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
+						Images.SetData(token, {isObf: true})
+					} else {
+						Images.ToggleToken(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
+						Images.SetData(token, {isObf: true})
+					}
+				}
 				break
 			case "!mask":
-				charID = REGISTRY[_.findKey(REGISTRY, v => v.playerID === "-LMGDQqIvyL87oIfrVDX")].id;	
-				//charID = REGISTRY[_.findKey(REGISTRY, v => v.playerID === msg.playerID)].id;
+				charID = REGISTRY[_.findKey(REGISTRY, v => v.playerID === msg.playerid)].id;	
 				[token] = findObjs( {
 					_pageid: D.PAGEID(),
 					_type: "graphic",
 					_subtype: "token",
 					represents: charID
-				})	
-				Images.ToggleToken(token, "mask", "prev")
-				break		
+				})
+				imgData = Images.GetData(token)
+				if (imgData.isDaylighter)
+					break							
+				//D.Alert(`ImgData: ${D.JS(token)}`)
+				if (imgData.unObfSrc === "mask") {
+					Images.SetData(token, {unObfSrc: "base"})
+					if (!imgData.isObf)
+						Images.ToggleToken(token, "base")
+				} else {
+					Images.SetData(token, {unObfSrc: "mask"})
+					if (!imgData.isObf)
+						Images.ToggleToken(token, "mask")
+				}				
+				break	
+			case "!famulus":
+				if (Chars.IsDaylighterSession())
+					break
+				charData = REGISTRY[_.findKey(REGISTRY, v => v.playerID === msg.playerid)]
+				charID = charData.id;
+				[token] = findObjs( {
+					_pageid: D.PAGEID(),
+					_type: "graphic",
+					_subtype: "token",
+					represents: charID
+				})
+				if (!charData.famulusTokenID)
+					break
+				famToken = Images.GetObj(charData.famulusTokenID)
+				if (famToken.get("layer") !== "objects")
+					Images.SetParams(famToken, {
+						top: token.get("top") - 100,
+						left: token.get("left") + 100
+					})
+				toFront(famToken)
+				Images.Toggle(famToken, famToken.get("layer") !== "objects", "base")
+				break
 			case "!settoken":
 				Images.ToggleToken(D.GetSelected(msg)[0], args.shift(), args.shift() || "prev")
 				break
 			case "!startsession":
 				if (playerIsGM(msg.playerid)) startSession()
 				break
+			case "!setsessionnum":
+				if (playerIsGM(msg.playerid)) setSessionNum(args.shift())
+				break
 			case "!endsession":
 				if (playerIsGM(msg.playerid)) endSession() 
 				break
 			default: break
+			case "!testxp":
+				charID = REGISTRY[args.shift()].id
+				switch(args.shift()) {
+				case "left":
+					D.Alert(`${D.JS(D.GetRepAttrs(charID, "earnedxp"))}<br><br>ORDER:<br>${D.GetStatVal(charID, "_reporder_repeating_earnedxp")}`)
+					break
+				case "right":
+					D.Alert(`${D.JS(D.GetRepAttrs(charID, "earnedxpright"))}<br><br>ORDER:<br>${D.GetStatVal(charID, "_reporder_repeating_earnedxpright")}`)
+					break
+				}
 			}
 		},
 	
@@ -942,7 +1042,21 @@ const Chars = (() => {
 			state[D.GAMENAME] = state[D.GAMENAME] || {}
 			state[D.GAMENAME].Chars = state[D.GAMENAME].Chars || {}
 			state[D.GAMENAME].Chars.registry = state[D.GAMENAME].Chars.registry || {}
+
+			// Storyteller Override:
+			//state[D.GAMENAME].Chars.registry["1"].playerID = "-LLIBpH_GL5I-9lAOiw9"
+			
+			// Return Player Control:
+			state[D.GAMENAME].Chars.registry["4"].playerID = "-LMGDbZCKw4bZk8ztfNf"
+			state[D.GAMENAME].Chars.registry["3"].playerID = "-LN7lNnjuWmFuvVPW76H"
+			state[D.GAMENAME].Chars.registry["2"].playerID = "-LN6n-fR8cSNR2E_N_3q"
+			state[D.GAMENAME].Chars.registry["1"].playerID = "-LMGDQqIvyL87oIfrVDX"
 		}
+
+
+
+	//state[D.GAMENAME].Chars.registry["1"].famulusTokenID = "-Lfn-vuWhy4jneRrccox"
+		
 	// #endregion
 	
 	return {
@@ -954,7 +1068,8 @@ const Chars = (() => {
 		AdjustHunger: adjustHunger,
 		AdjustHumanity: adjustHumanity,
 		AdjustStains: adjustStains,
-		DaySleep: daysleep
+		DaySleep: daysleep,
+		IsDaylighterSession: () => state[D.GAMENAME].Chars.isDaylighterSession
 	}
 })()
 	

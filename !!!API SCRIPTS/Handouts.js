@@ -55,11 +55,6 @@ const Handouts = (() => {
 				projData.push(thisData)
 			}
 			return projData
-		},
-		getNoteContents = (title, charRef) => {
-			let contents = ""
-			getHandoutObj(title, charRef).get("notes", (note) => { contents = note })
-			return contents
 		}
 	// #endregion
 
@@ -158,15 +153,6 @@ const Handouts = (() => {
 					switch(args.shift().toLowerCase()) {
 					case "projects":
 						summarizeProjects("Project Summary", D.GetChars("registered"))
-						break
-					case "contents":
-						params = getParams(args)
-						D.Alert(getNoteContents(params[0]), `HANDOUTS: Getting Note ${D.JS(params[0])}`)
-						D.Log(getNoteContents(params[0]))
-						D.Alert(D.JS(getNoteContents(params[0])))
-						D.Log(D.JSL(getNoteContents(params[0])))					
-						D.Alert(D.JSL(getNoteContents(params[0])))
-						D.Alert(D.JSH(getNoteContents(params[0])))
 						break
 					default: break
 					}

@@ -1668,7 +1668,7 @@
 		text-align-last: right;
 	}
 
-	.charsheet div.sheet-longbuttonblock div.sheet-rollParamsblock select {
+	.charsheet div.sheet-longbuttonblock div.sheet-rollParamsblock input {
 		height: 30px;
 		width: 60px;
 		margin-right: 10px;
@@ -1683,7 +1683,7 @@
 		border: none;
 	}
 
-	.charsheet div.sheet-longbuttonblock div.sheet-rollParamsblock input,
+	.charsheet div.sheet-longbuttonblock div.sheet-rollParamsblock input:not([type=number]),
 	.charsheet div.sheet-longbuttonblock div.sheet-rollParamsblock input+span {
 		height: 30px !important;
 		width: 30px !important;
@@ -2912,6 +2912,7 @@
 
 	.charsheet div.sheet-earnedxp textarea.sheet-session {
 		font-weight: normal;
+		font-family: Voltaire;
 	}
 
 	.charsheet div.sheet-earnedxp textarea.sheet-xpreason {

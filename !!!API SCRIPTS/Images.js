@@ -139,6 +139,79 @@ const Images = (() => {
 				"AvaWongToken",
 				"JohannesNapierToken",
 				"Dr.ArthurRoyToken"
+			],
+			daylighterMap: [
+				"rollerDie_bigDice_1",
+				"rollerDie_bigDice_2",
+				"rollerDie_diceList_1",
+				"rollerDie_diceList_2",
+				"rollerDie_diceList_3",
+				"rollerDie_diceList_4",
+				"rollerDie_diceList_5",
+				"rollerDie_diceList_6",
+				"rollerDie_diceList_7",
+				"rollerDie_diceList_8",
+				"rollerDie_diceList_9",
+				"rollerDie_diceList_10",
+				"rollerDie_diceList_11",
+				"rollerDie_diceList_12",
+				"rollerDie_diceList_13",
+				"rollerDie_diceList_14",
+				"rollerDie_diceList_15",
+				"rollerDie_diceList_16",
+				"rollerDie_diceList_17",
+				"rollerDie_diceList_18",
+				"rollerDie_diceList_19",
+				"rollerDie_diceList_20",
+				"rollerDie_diceList_21",
+				"rollerDie_diceList_22",
+				"rollerDie_diceList_23",
+				"rollerDie_diceList_24",
+				"rollerDie_diceList_25",
+				"rollerDie_diceList_26",
+				"rollerDie_diceList_27",
+				"rollerDie_diceList_28",
+				"rollerDie_diceList_29",
+				"rollerDie_diceList_30",
+				"rollerImage_diffFrame",
+				"rollerImage_bottomEnd",
+				"rollerImage_topEnd",
+				"rollerImage_bottomMid_9",
+				"rollerImage_bottomMid_8",
+				"rollerImage_bottomMid_7",
+				"rollerImage_bottomMid_6",
+				"rollerImage_bottomMid_5",
+				"rollerImage_bottomMid_4",
+				"rollerImage_bottomMid_3",
+				"rollerImage_bottomMid_2",
+				"rollerImage_bottomMid_1",
+				"rollerImage_topMid_9",
+				"rollerImage_topMid_8",
+				"rollerImage_topMid_7",
+				"rollerImage_topMid_6",
+				"rollerImage_topMid_5",
+				"rollerImage_topMid_4",
+				"rollerImage_topMid_3",
+				"rollerImage_topMid_2",
+				"rollerImage_topMid_1",
+				"rollerImage_frontFrame",
+				"SiteCenter",
+				"SiteLeft",
+				"SiteRight",
+				"DistrictCenter",
+				"DistrictLeft",
+				"DistrictRight",
+				"Horizon_1",
+				"WeatherFrost",
+				"WeatherFog",
+				"WeatherMain",
+				//"WeatherLightning_1", //"WeatherLightning_2", "WeatherLightning_3", "WeatherLightning_4", "WeatherLightning_5",
+				"WeatherGround",
+				"WeatherClouds",
+				"AirLightLeft", "AirLightMid", "AirLightTop", "AirLightCN_4", "AirLightCN_5",
+				"HungerTopLeft", "HungerTopRight", "HungerBotLeft", "HungerBotRight",
+				"Horizon_2",
+				"SignalLightTopLeft", "SignalLightTopRight", "SignalLightBotLeft", "SignalLightBotRight"
 			]
 		},
 		// #endregion
@@ -391,6 +464,12 @@ const Images = (() => {
 			imgObj.set(params)
 			return imgObj
 		},
+		setImgData = (imgRef, params) => {
+			_.each(params, (v, k) => {
+				REGISTRY[getImageKey(imgRef)][k] = v
+			})
+			return REGISTRY[getImageKey(imgRef)]
+		},
 		sortImages = (imgRefs, modes = "", anchors = []) => {
 			const imgObjs = getImageObjs(imgRefs),
 				sortModes = _.flatten([modes]),
@@ -600,27 +679,35 @@ const Images = (() => {
 				setImage(imgRef, "blank")
 			}
 		},
-		toggleToken = (imgRef, newSrc, toggleRef) => {
-			const imgKey = getImageKey(imgRef),
+		toggleToken = (imgRef, newSrc) => {
+			const imgKey = getImageKey(imgRef)/*,
 				imgData = getImageData(imgKey),
-				prevSrc = imgData.prevSrc,
-				curSrc = imgData.curSrc
+				prevSrc = "" + imgData.prevSrc,
+				curSrc = "" + imgData.curSrc */
+			Images.Set(imgKey, newSrc)
+			return
+			/* D.Alert(`Registry Storing: <br>prevSrc: ${REGISTRY[imgKey].prevSrc}<br>curSrc: ${REGISTRY[imgKey].curSrc}<br><br>Instructions: <br>toggleRef: ${toggleRef}<br>prevSrc: ${REGISTRY[imgKey].prevSrc}<br>curSrc: ${curSrc}<br>newSrc: ${newSrc}`)
 			REGISTRY[imgKey].prevSrc = REGISTRY[imgKey].curSrc
+			D.Alert(`Registry Now Storing: <br>prevSrc: ${REGISTRY[imgKey].prevSrc}<br>curSrc: ${REGISTRY[imgKey].curSrc}`)
 			if (newSrc === curSrc) {
 				if (toggleRef === "prev" && prevSrc) {
+					D.Alert(`toggleRef: ${toggleRef}<br>prevSrc: ${prevSrc}<br>curSrc: ${curSrc}<br>newSrc: ${newSrc}<br><br>... SO Setting To PrevSrc (${prevSrc})`)
 					Images.Set(imgKey, prevSrc)
 					REGISTRY[imgKey].curSrc = prevSrc
 				} else if (_.keys(imgData.srcs).includes(toggleRef)) {
-					Images.Set(imgKey, toggleRef)
+					Images.Set(imgKey, toggleRef)					
+					D.Alert(`toggleRef: ${toggleRef}<br>prevSrc: ${prevSrc}<br>curSrc: ${curSrc}<br>newSrc: ${newSrc}<br><br>... SO Setting To Toggle Ref (${toggleRef})`)
 					REGISTRY[imgKey].curSrc = toggleRef
-				} else {
+				} else {				
+					D.Alert(`toggleRef: ${toggleRef}<br>prevSrc: ${prevSrc}<br>curSrc: ${curSrc}<br>newSrc: ${newSrc}<br><br>... SO Setting To Base`)
 					Images.Set(imgKey, "base")
 					REGISTRY[imgKey].curSrc = "base"
 				}
-			} else {
-				Images.Set(imgKey, newSrc)
+			} else {								
+				D.Alert(`toggleRef: ${toggleRef}<br>prevSrc: ${prevSrc}<br>curSrc: ${curSrc}<br>newSrc: ${newSrc}<br><br>... SO Setting To NewSrc (${newSrc})`)
+				
 				REGISTRY[imgKey].curSrc = newSrc
-			}
+			} */
 		},
 		removeImage = (imgRef, isRegOnly) => {
 			const imgObj = getImageObj(imgRef),
@@ -651,7 +738,14 @@ const Images = (() => {
 			}
 		},
 		orderImages = (imgRefs, isToBack = false) => {
-			const imgObjs = getImageObjs(imgRefs)
+			let imgObjs
+			//D.Alert(`Ordering Images: ${D.JS(imgRefs)}`)
+			if (imgRefs === "map")
+				imgObjs = getImageObjs(IMAGELAYERS[(TimeTracker.IsDay() && state[D.GAMENAME].Chars.isDaylighterSession) ? "daylighterMap" : "map"])
+			else if (imgRefs === "objects")
+				imgObjs = getImageObjs(IMAGELAYERS.objects)
+			else
+				imgObjs = getImageObjs(imgRefs)
 			//D.Alert(`Retrieved Images: ${D.JS(imgObjs)}`)
 			//D.Alert(`Retrieved Images: ${D.JS(getImageKeys(imgObjs))}`)
 			if (!isToBack)
@@ -778,7 +872,12 @@ const Images = (() => {
 				}
 				break
 			case "setsrc":
-				[imgName, srcName] = args
+				if(D.Validate({token: D.GetSelected(msg)[0]})) {
+					imgName = Images.GetData(D.GetSelected(msg)[0]).name
+					srcName = args[0]
+				} else {
+					[imgName, srcName] = args
+				}
 				if (isRegImg(imgName))
 					setImage(imgName, srcName)
 				else
@@ -921,7 +1020,7 @@ const Images = (() => {
 	return {
 		RegisterEventHandlers: regHandlers,
 		CheckInstall: checkInstall,
-		Get: getImageObj,
+		GetObj: getImageObj,
 		GetKey: getImageKey,
 		GetData: getImageData,
 		GetSrc: getImageSrc,
@@ -931,6 +1030,8 @@ const Images = (() => {
 		Remove: removeImage,
 		RemoveAll: removeImages,
 		Set: setImage,
+		SetParams: setImgParams,
+		SetData: setImgData,
 		Toggle: toggleImage,
 		ToggleToken: toggleToken,
 		OrderImages: orderImages,

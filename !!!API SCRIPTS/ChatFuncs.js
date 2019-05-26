@@ -432,7 +432,7 @@ const ChatFuncs = (() => {
 				case "watchlist":
 					D.SetDebugWatchList(args)
 					break
-				case "size":
+				case "params":
 					if (msg.selected && msg.selected[0] ) {
 						for (const objData of msg.selected) {
 							obj = getObj(objData._type, objData._id)

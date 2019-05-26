@@ -882,7 +882,7 @@ const Roller = (() => {
 				makeAllDice(diceCat, SETTINGS.dice[diceCat] )
 			Images.LayerImages(Images.IMAGELAYERS.map, "map")
 			Images.LayerImages(Images.IMAGELAYERS.objects, "objects")
-			Images.OrderImages(Images.IMAGELAYERS.map)			
+			Images.OrderImages("map")			
 			textList.reverse()
 			for (const txt of textList) {
 				if (_.isObject(txt))
@@ -1127,7 +1127,7 @@ const Roller = (() => {
 					}
 				}
 			} )
-			D.Alert(D.JS(tFull))
+			//D.Alert(D.JS(tFull))
 
 			return tFull
 		},
