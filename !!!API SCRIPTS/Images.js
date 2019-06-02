@@ -779,6 +779,12 @@ const Images = (() => {
 			} else if (!areaRef || !AREAS[areaRef]) {
 				D.Alert(`No area registered as '${D.JS(areaRef)}'`, "IMAGES: setImageArea")
 			} else {
+				/*D.Alert(`Setting to: ${D.JS({
+					top: AREAS[areaRef].top,
+					left: AREAS[areaRef].left,
+					height: AREAS[areaRef].height,
+					width: AREAS[areaRef].width
+				})}`)*/
 				imgObj.set({
 					top: AREAS[areaRef].top,
 					left: AREAS[areaRef].left,
@@ -805,7 +811,9 @@ const Images = (() => {
 			switch (args.shift().toLowerCase()) {
 			case "reg":	case "register":
 				imgObj = getImageObj(msg)
-				if (args[0].toLowerCase() === "area") {
+				if (!args[0]) {
+					D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; [params (\"key:value, key:value\")]", "IMAGES: !img reg")
+				} else if (args[0].toLowerCase() === "area") {
 					args.shift()
 					areaName = args.shift()
 					if (!imgObj) {							
@@ -925,7 +933,7 @@ const Images = (() => {
 			case "clean": case "cleanreg": case "cleanregistry":
 				cleanRegistry()
 				break
-			case "add": {
+			case "add":
 				switch(args.shift().toLowerCase) {
 				case "src": case "source":
 					[imgName, srcName] = args
@@ -946,7 +954,6 @@ const Images = (() => {
 					break
 				}
 				break
-			}
 			case "del": case "delete":
 				if (args[0].toLowerCase() === "all") {
 					args.shift()
@@ -984,7 +991,7 @@ const Images = (() => {
 				switch(args.shift().toLowerCase()) {
 				case "on":
 					for (const param of args)
-						toggleImage(param, true)
+						toggleImage(param, true, "base")
 					break
 				case "off":
 					for (const param of args)
@@ -1073,6 +1080,10 @@ const Images = (() => {
 			state[D.GAMENAME].Images = state[D.GAMENAME].Images || {}
 			state[D.GAMENAME].Images.registry = state[D.GAMENAME].Images.registry || {}
 			state[D.GAMENAME].Images.areas = state[D.GAMENAME].Images.areas || {}
+
+			state.VAMPIRE.Images.registry.ComplicationMat_1.srcs = {
+				base: "https://s3.amazonaws.com/files.d20.io/images/82977782/TiSFMIRN70aWyiyQvW55Zw/thumb.jpg?1559488461"
+			}
 		}
 	// #endregion
 
