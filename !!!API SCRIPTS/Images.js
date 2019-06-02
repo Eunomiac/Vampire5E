@@ -7,6 +7,7 @@ const Images = (() => {
 		// #region CONFIGURATION
 		STATEREF = state[D.GAMENAME][SCRIPTNAME],
 		REGISTRY = STATEREF.registry,
+		AREAS = STATEREF.areas,
 		SANDBOX = {
 			height: 2680,
 			width: 1664
@@ -657,7 +658,7 @@ const Images = (() => {
 				}
 			}			
 		},
-		positionImages = (imgRefs, ...params) => {
+		posImages = (imgRefs, ...params) => {
 			const imgObjs = getImageObjs(imgRefs)
 			for (const imgObj of imgObjs) {
 				const attrList = {}		
@@ -709,10 +710,10 @@ const Images = (() => {
 				REGISTRY[imgKey].curSrc = newSrc
 			} */
 		},
-		removeImage = (imgRef, isRegOnly) => {
+		removeImage = (imgRef, isUnregOnly) => {
 			const imgObj = getImageObj(imgRef),
 				imgData = getImageData(imgRef)
-			if (imgObj && !isRegOnly) {
+			if (imgObj && !isUnregOnly) {
 				imgObj.remove()
 				delete REGISTRY[imgData.name]
 				return true
@@ -771,6 +772,21 @@ const Images = (() => {
 					D.Alert(`No image found for reference ${D.JS(imgObj)}`, "IMAGES: OrderImages")
 			}
 		},
+		setImageArea = (imgRef, areaRef) => {
+			const imgObj = getImageObj(imgRef)
+			if (!imgObj) {
+				D.Alert(`Invalid image reference: ${D.JS(imgRef)}`, "IMAGES: setImageArea")
+			} else if (!areaRef || !AREAS[areaRef]) {
+				D.Alert(`No area registered as '${D.JS(areaRef)}'`, "IMAGES: setImageArea")
+			} else {
+				imgObj.set({
+					top: AREAS[areaRef].top,
+					left: AREAS[areaRef].left,
+					height: AREAS[areaRef].height,
+					width: AREAS[areaRef].width
+				})
+			}
+		},
 		// #endregion
 
 		// #region Event Handlers (handleAdd, handleInput)
@@ -781,167 +797,236 @@ const Images = (() => {
 				obj.set(imgResizeDims)
 		},
 		handleInput = msg => {
-			const args = msg.content.split(/\s+/u),
-				imgNames = []
+			const args = msg.content.split(/\s+/u)
 			if (msg.type !== "api" || !playerIsGM(msg.playerid) || args.shift() !== "!img")
 				return
-			let [srcName, imgName, imgObj, imgLayer, imgData, isStartActive] = [null, null, null, null, null, null],
+			let [srcName, imgName, areaName, imgObj, imgLayer, imgData, isStartActive] = new Array(7),
 				params = {}
 			switch (args.shift().toLowerCase()) {
-			case "reg":
-			case "register":
+			case "reg":	case "register":
 				imgObj = getImageObj(msg)
-				if (imgObj) {
-					[imgName, srcName, imgLayer, isStartActive] = [args.shift(), args.shift(), args.shift(), args.shift()]
-					if (imgName && srcName && imgLayer && isStartActive)
-						regImage(imgObj, imgName, srcName, imgLayer, isStartActive, D.ParseToObj(args.join(" ")))
-					else
-						D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; [params]", "IMAGES: !img reg")
-				} else {
-					D.Alert("Select an image object first!", "IMAGES: !img reg")
-				}
-				break
-			case "repo":
-			case "reposition":
-				imgObj = getImageObj(msg)
-				if (isRegImg(msg)) {
-					[imgObj, imgName] = [getImageObj(msg), getImageKey(msg)]
-					REGISTRY[imgName].top = parseInt(imgObj.get("top"))
-					REGISTRY[imgName].left = parseInt(imgObj.get("left"))
-					REGISTRY[imgName].height = parseInt(imgObj.get("height"))
-					REGISTRY[imgName].width = parseInt(imgObj.get("width"))
-					D.Alert(`Image ${imgName} repositioned:<br><br>${D.JS(REGISTRY[imgName] )}`)
-				} else {
-					D.Alert("Unable to retrieve an image to reposition", "IMAGES: !img repo")
-				}
-				break
-			case "layer":
-				imgLayer = args.pop()
-				layerImages(args.length > 0 ? args : msg, imgLayer)
-				break
-			case "tofront":
-				orderImages(args.length > 0 ? args : msg)
-				break
-			case "toback":
-				orderImages(args.length > 0 ? args : msg, true)
-				break
-			case "removeall":
-				for (imgName of _.keys(REGISTRY))
-					if (!args[0] || imgName.toLowerCase().includes((args.join(" ").toLowerCase())))
-						imgNames.push(imgName)
-			/* falls through */
-			case "remove":
-				if (imgNames.length > 0)
-					for (imgName of imgNames)
-						removeImage(imgName)
-				else if (args[0])
-					removeImage(args.join(" "))
-				else 
-					D.Alert("No hostnames provided.<br><br>Syntax: !img remove <hostName> OR !img removeAll")
-				break
-			case "clearall":
-				for (imgName of _.keys(REGISTRY))
-					if (!args[0] || imgName.toLowerCase().includes((args.join(" ").toLowerCase())))
-						imgNames.push(imgName)
-			/* falls through */
-			case "clear":
-				if (imgNames.length > 0)
-					for (imgName of imgNames)
-						removeImage(imgName, true)
-				else if (args[0])
-					removeImage(args.join(" "), true)
-				else 
-					D.Alert("No hostnames provided.<br><br>Syntax: !img clear <hostName> OR !img clearAll")
-				break
-			case "clean":
-				cleanRegistry()
-				break
-			case "add":
-			case "addsrc":
-				[imgName, srcName] = args
-				if (isRegImg(imgName)) {
-					imgName = getImageKey(imgName)
-					if (!_.isObject(REGISTRY[imgName].srcs))
-						REGISTRY[imgName].srcs = {}
-					if (srcName)
-						addImgSrc(msg, imgName, srcName)
-					else
-						D.Alert(`Invalid image name '${D.JS(srcName)}'`, "IMAGES: !img addsrc")
-				} else {
-					D.Alert(`Host name '${D.JS(imgName)}' not registered.`, "IMAGES: !img addsrc")
-				}
-				break
-			case "setsrc":
-				if(D.Validate({token: D.GetSelected(msg)[0]})) {
-					imgName = Images.GetData(D.GetSelected(msg)[0]).name
-					srcName = args[0]
-				} else {
-					[imgName, srcName] = args
-				}
-				if (isRegImg(imgName))
-					setImage(imgName, srcName)
-				else
-					D.Alert(`Image name ${D.JS(imgName)} is not registered.`, "IMAGES: !img setsrc")
-				break
-			case "set":
-				if (getImageData(args[0]))
-					imgObj = getImageObj(args.shift())
-				else if (getImageObj(msg))
-					imgObj = getImageObj(msg)
-				else
-					return D.ThrowError("Bad image reference.")
-				for (const param of args) {
-					params[param.split(":")[0]] = param.split(":")[1]
-				}
-				setImgParams(imgObj, params)
-				break
-			case "setlocation":
-			case "setloc":
-				for (const param of args) {
-					if (param.includes(":same")) {
-						const targetHost = param.split(":")[0] + "_1",
-							targetType = targetHost.includes("District") ? "District" : "Site"
-						let imgSrc = getImageSrc(targetHost)
-						if (!isImageActive(targetHost))
-							switch (targetHost) {
-							case "DistrictLeft_1":
-							case "SiteLeft_1":
-							case "DistrictRight_1":
-							case "SiteRight_1":
-								imgSrc = getImageSrc(targetType + "Center_1")
-								break
-							case "DistrictCenter_1":
-							case "SiteCenter_1":
-								imgSrc = getImageSrc(targetType + "Left_1")
-								break
-							default: break
-							}
-						setImage(targetHost, imgSrc)
+				if (args[0].toLowerCase() === "area") {
+					args.shift()
+					areaName = args.shift()
+					if (!imgObj) {							
+						D.Alert("Select an image first!", "IMAGES: !img reg area")
 					} else {
-						setImage(...param.split(":"))
+						AREAS[areaName] = {
+							top: parseInt(imgObj.get("top")),
+							left: parseInt(imgObj.get("left")),
+							height: parseInt(imgObj.get("height")),
+							width: parseInt(imgObj.get("width"))
+						}
+						D.Alert(`Area Registered: ${areaName}<br><br><pre>${D.JS(AREAS[areaName])}</pre>`, "IMAGES: !img reg area")
+					}
+				} else {
+					if (!imgObj) {
+						D.Alert("Select an image object first!", "IMAGES: !img reg")
+					} else {
+						[imgName, srcName, imgLayer, isStartActive] = [args.shift(), args.shift(), args.shift(), args.shift()]
+						if (imgName && srcName && imgLayer && isStartActive)
+							regImage(imgObj, imgName, srcName, imgLayer, isStartActive, D.ParseToObj(args.join(" ")))
+						else
+							D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; [params (\"key:value, key:value\")]", "IMAGES: !img reg")
 					}
 				}
 				break
-			case "on":
-				for (const param of args)
-					toggleImage(param, true)
+			case "set":
+				switch (args.shift().toLowerCase()) {
+				case "pos": case "position":
+					imgObj = getImageObj(msg)
+					if (!imgObj) {
+						D.Alert("Select an image first!", "IMAGES: !img set position")
+					} else if (!isRegImg(msg)) {
+						D.Alert(`Image not registered.  To register selected image:
+						
+							<pre>!img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; [params ("key:value, key:value")]</pre>`, "IMAGES: !img set position")
+					} else {
+						[imgObj, imgName] = [getImageObj(msg), getImageKey(msg)]
+						REGISTRY[imgName] = {
+							top: parseInt(imgObj.get("top")),
+							left: parseInt(imgObj.get("left")),
+							height: parseInt(imgObj.get("height")),
+							width: parseInt(imgObj.get("width"))
+						}
+						D.Alert(`Position Set for Image ${imgName}<br><br><pre>${D.JS(REGISTRY[imgName] )}</pre>`)
+					}
+					break
+				case "source": case "src":
+					if(D.Validate({token: D.GetSelected(msg)[0]})) {
+						imgName = Images.GetData(D.GetSelected(msg)[0]).name
+						srcName = args[0]
+					} else {
+						[imgName, srcName] = args
+					}
+					if (isRegImg(imgName))
+						setImage(imgName, srcName)
+					else
+						D.Alert(`Image name ${D.JS(imgName)} is not registered.`, "IMAGES: !img set src")
+					break
+				case "area":
+					imgObj = getImageObj(msg)
+					if (!imgObj)
+						D.Alert("Select an image first!", "IMAGES: !img set area")
+					else
+						setImageArea(imgObj, args.shift())
+					break
+				case "layer":
+					imgLayer = args.pop()
+					layerImages(args.length > 0 ? args : msg, imgLayer)
+					break
+				case "tofront":
+					orderImages(args.length > 0 ? args : msg)
+					break
+				case "toback":
+					orderImages(args.length > 0 ? args : msg, true)
+					break
+				case "params":
+					if (getImageData(args[0]))
+						imgObj = getImageObj(args.shift())
+					else if (getImageObj(msg))
+						imgObj = getImageObj(msg)
+					else
+						return D.ThrowError("Bad image reference.")
+					for (const param of args) {
+						params[param.split(":")[0]] = param.split(":")[1]
+					}
+					setImgParams(imgObj, params)
+					break
+				case "loc": case "location":
+					for (const param of args) {
+						if (param.includes(":same")) {
+							const targetHost = param.split(":")[0] + "_1",
+								targetType = targetHost.includes("District") ? "District" : "Site"
+							let imgSrc = getImageSrc(targetHost)
+							if (!isImageActive(targetHost))
+								switch (targetHost) {
+								case "DistrictLeft_1":
+								case "SiteLeft_1":
+								case "DistrictRight_1":
+								case "SiteRight_1":
+									imgSrc = getImageSrc(targetType + "Center_1")
+									break
+								case "DistrictCenter_1":
+								case "SiteCenter_1":
+									imgSrc = getImageSrc(targetType + "Left_1")
+									break
+								default: break
+								}
+							setImage(targetHost, imgSrc)
+						} else {
+							setImage(...param.split(":"))
+						}
+					}
+					break
+				default: break
+				}
 				break
-			case "off":
-				for (const param of args)
-					toggleImage(param, false)
+			case "clean": case "cleanreg": case "cleanregistry":
+				cleanRegistry()
+				break
+			case "add": {
+				switch(args.shift().toLowerCase) {
+				case "src": case "source":
+					[imgName, srcName] = args
+					if (isRegImg(imgName)) {
+						imgName = getImageKey(imgName)
+						if (!_.isObject(REGISTRY[imgName].srcs))
+							REGISTRY[imgName].srcs = {}
+						if (srcName)
+							addImgSrc(msg, imgName, srcName)
+						else
+							D.Alert(`Invalid image name '${D.JS(srcName)}'`, "IMAGES: !img add src")
+					} else {
+						D.Alert(`Host name '${D.JS(imgName)}' not registered.`, "IMAGES: !img add src")
+					}
+					break
+				default:
+					D.Alert("<b>Syntax:<br><br><pre>!img add &lt;src/area&gt</pre>", "IMAGES: !img add")
+					break
+				}
+				break
+			}
+			case "del": case "delete":
+				if (args[0].toLowerCase() === "all") {
+					args.shift()
+					for (imgName of _.keys(REGISTRY))
+						if (!args[0] || imgName.toLowerCase().includes((args.join(" ").toLowerCase())))
+							removeImage(imgName)
+				} else if (getImageObjs(msg).length > 0) {
+					for (const obj of getImageObjs(msg)) {
+						removeImage(obj)
+					}
+				} else if (args[0] && getImageObj(args.join(" "))) {
+					removeImage(args.join(" "))
+				} else { 
+					D.Alert(`Provide "all" (plus an optional host name substring), a registered host name, or select image objects. <b>Syntax:</b><br><br><pre>!img del all <hostSubstring>
+					!img del <hostName></pre>`, "IMAGES: !img del")
+				}
+				break
+			case "unreg": case "unregister":
+				if (args[0].toLowerCase() === "all") {
+					args.shift()
+					for (imgName of _.keys(REGISTRY))
+						if (!args[0] || imgName.toLowerCase().includes((args.join(" ").toLowerCase())))
+							removeImage(imgName, true)
+				} else if (getImageObjs(msg).length > 0) {
+					for (const obj of getImageObjs(msg)) {
+						removeImage(obj, true)
+					}
+				} else if (args[0] && getImageObj(args.join(" "))) {
+					removeImage(args.join(" "), true)
+				} else { 
+					D.Alert("Provide \"all\", a registered host name, or select image objects. <b>Syntax:</b><br><br><pre>!img unreg all/<hostName>")
+				}
 				break
 			case "toggle":
-				for (const param of args)
-					toggleImage(param.split(":")[1], param.split(":")[0] === "on")
+				switch(args.shift().toLowerCase()) {
+				case "on":
+					for (const param of args)
+						toggleImage(param, true)
+					break
+				case "off":
+					for (const param of args)
+						toggleImage(param, false)
+					break
+				case "log":
+					imgRecord = !imgRecord
+					if (imgRecord)
+						D.Alert("Logging image data as they are added to the sandbox.", "IMAGES, !img toggle log")
+					else
+						D.Alert("Image logging disabled.", "IMAGES, !img toggle log")
+					break
+				case "resize":
+					imgResize = !imgResize
+					if (imgResize) {
+						params = args.join("").split(",")
+						if (params.length === 1 && IMGDATA[params[0]] ) {
+							imgResizeDims.height = IMGDATA[params[0]].h
+							imgResizeDims.width = IMGDATA[params[0]].w
+						} else if (params.length === 2) {
+							_.each(params, v => {
+								if (!isNaN(parseInt(v.split(":")[1])))
+									imgResizeDims[v.split(":")[0]] = parseInt(v.split(":")[1])
+							} )
+						} else {
+							D.Alert("Must supply either a valid IMGDATA key (token, district, districtLeft, districtRight, site, siteLeft, siteRight) OR \"height:<height>, width:<width>\"", "IMAGES, !img toggle resize")
+							imgResize = false
+							break
+						}
+						D.Alert(`New images automatically resized to height: ${imgResizeDims.height}, width: ${imgResizeDims.width}.`, "IMAGES, !img toggle resize")
+					} else {
+						D.Alert("Image resizing disabled.", "IMAGES, !img toggle resize")
+					}
+					break
+				default:
+					D.Alert("Must state either 'on', 'off', 'log' or 'resize'.  <b>Syntax:</b><br><br><pre>!img toggle &lt;on/off&gt; &lt;hostnames&gt;</pre><br><pre>!img toggle log/resize</pre>", "IMAGES: !img toggle")
+					break
+				}
 				break
 			case "align":
 				if (D.GetSelected(msg))
 					alignImages(msg, ...args)
-				break
-			case "pos":
-			case "position":
-				if (D.GetSelected(msg))
-					positionImages(msg, ...args)
 				break
 			case "copy":
 				imgObj = getImageObj(args.shift())
@@ -949,58 +1034,31 @@ const Images = (() => {
 				imgObj = getImageObj(args.shift())
 				imgObj.set("imgsrc", srcName)
 				break
-			case "getdata":
-				imgObj = getImageObj(msg)
-				if (imgObj) {
-					D.Alert(getImageData(imgObj), "IMAGES, !img getData")
-				} else {
-					imgName = args.shift()
-					if (imgName && REGISTRY[imgName] )
-						D.Alert(D.JS(REGISTRY[imgName] ), `IMAGES: '${D.JS(imgName)}'`)
-					else
-						D.Alert("Syntax: !img get [<category> <name>] (or select an image object)", "IMAGES, !img getData")
-				}
-				break
-			case "getalldata":
-				imgData = _.map(REGISTRY, v => `${v.name}: ${v.startActive ? v.activeLayer.toUpperCase() : v.activeLayer.toLowerCase()} ${_.isObject(v.srcs) ? _.keys(v.srcs) : v.srcs}`)
-				D.Alert(D.JS(imgData), "IMAGES, !img getAllData")
-				break
-			case "getimgnames":
-			case "getimagenames":
-			case "getnames":
-				D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(state[D.GAMENAME].Images.registry))}`)
-				break
-			case "toggleadd":
-				imgRecord = !imgRecord
-				if (imgRecord)
-					D.Alert("Logging image data as they are added to the sandbox.", "IMAGES, !img toggleAdd")
-				else
-					D.Alert("Image logging disabled.", "IMAGES, !img toggleAdd")
-				break
-			case "toggleresize":
-				imgResize = !imgResize
-				if (imgResize) {
-					params = args.join("").split(",")
-					if (params.length === 1 && IMGDATA[params[0]] ) {
-						imgResizeDims.height = IMGDATA[params[0]].h
-						imgResizeDims.width = IMGDATA[params[0]].w
-					} else if (params.length === 2) {
-						_.each(params, v => {
-							if (!isNaN(parseInt(v.split(":")[1])))
-								imgResizeDims[v.split(":")[0]] = parseInt(v.split(":")[1])
-						} )
+			case "get":
+				switch (args.shift().toLowerCase()) {
+				case "data":
+					imgObj = getImageObj(msg)
+					if (imgObj) {
+						D.Alert(getImageData(imgObj), "IMAGES, !img getData")
 					} else {
-						D.Alert("Must supply either a valid IMGDATA key (token, district, districtLeft, districtRight, site, siteLeft, siteRight) OR \"height:<height>, width:<width>\"", "IMAGES, !img toggleResize")
-						imgResize = false
-						break
+						imgName = args.shift()
+						if (imgName && REGISTRY[imgName] )
+							D.Alert(D.JS(REGISTRY[imgName] ), `IMAGES: '${D.JS(imgName)}'`)
+						else
+							D.Alert("Syntax: !img get data [<category> <name>] (or select an image object)", "IMAGES, !img get data")
 					}
-					D.Alert(`New images automatically resized to height: ${imgResizeDims.height}, width: ${imgResizeDims.width}.`, "IMAGES, !img toggleResize")
-				} else {
-					D.Alert("Image resizing disabled.", "IMAGES, !img toggleResize")
+					break
+				case "all":
+					imgData = _.map(REGISTRY, v => `${v.name}: ${v.startActive ? v.activeLayer.toUpperCase() : v.activeLayer.toLowerCase()} ${_.isObject(v.srcs) ? _.keys(v.srcs) : v.srcs}`)
+					D.Alert(D.JS(imgData), "IMAGES, !img get all")
+					break
+				case "names":
+					D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(state[D.GAMENAME].Images.registry))}`)
+					break
+				default: break
 				}
-				break		
-			default:
 				break
+			default: break
 			}
 		},
 		// #endregion
@@ -1014,6 +1072,7 @@ const Images = (() => {
 		checkInstall = () => {
 			state[D.GAMENAME].Images = state[D.GAMENAME].Images || {}
 			state[D.GAMENAME].Images.registry = state[D.GAMENAME].Images.registry || {}
+			state[D.GAMENAME].Images.areas = state[D.GAMENAME].Images.areas || {}
 		}
 	// #endregion
 
@@ -1032,6 +1091,7 @@ const Images = (() => {
 		Set: setImage,
 		SetParams: setImgParams,
 		SetData: setImgData,
+		SetArea: setImageArea,
 		Toggle: toggleImage,
 		ToggleToken: toggleToken,
 		OrderImages: orderImages,

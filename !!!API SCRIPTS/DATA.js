@@ -329,11 +329,11 @@ const D = (() => {
 			return str
 		},
 		parseToObj = val => {
-			/* Converts string of form "key:val, key:val, key:val" into an object. */
+			/* Converts an array or comma-delimited string of parameters ("key:val, key:val, key:val") into an object. */
 			const obj = {}
 			let args = null
 			if (_.isString(val))
-				args = val.split(/,\s*/u)
+				args = val.split(/,\s*?/ug)
 			else if (_.isArray(val))
 				args = [...val]
 			else
