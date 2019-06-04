@@ -1,11 +1,16 @@
 void MarkStart("Media")
 const Images = (() => {
+	// #region INITIALIZATION
+	const SCRIPTNAME = "Images",
+		    STATEREF = state[D.GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+	const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
+	// #endregion
+		
 	let imgRecord = false,
 		imgResize = false
-	const SCRIPTNAME = "Images",
-		imgResizeDims = {height: 100, width: 100},
+	const imgResizeDims = {height: 100, width: 100},
 		// #region CONFIGURATION
-		STATEREF = state[D.GAMENAME][SCRIPTNAME],
 		REGISTRY = STATEREF.registry,
 		AREAS = STATEREF.areas,
 		SANDBOX = {
@@ -133,7 +138,8 @@ const Images = (() => {
 				"AirLightLeft", "AirLightMid", "AirLightTop", "AirLightCN_4", "AirLightCN_5",
 				"HungerTopLeft", "HungerTopRight", "HungerBotLeft", "HungerBotRight",
 				"Horizon_1",
-				"Horizon_2"
+				"Horizon_2",
+				"ComplicationMat"
 			],
 			objects: [		
 				"YusefShamsinToken",
@@ -212,7 +218,8 @@ const Images = (() => {
 				"AirLightLeft", "AirLightMid", "AirLightTop", "AirLightCN_4", "AirLightCN_5",
 				"HungerTopLeft", "HungerTopRight", "HungerBotLeft", "HungerBotRight",
 				"Horizon_2",
-				"SignalLightTopLeft", "SignalLightTopRight", "SignalLightBotLeft", "SignalLightBotRight"
+				"SignalLightTopLeft", "SignalLightTopRight", "SignalLightBotLeft", "SignalLightBotRight",
+				"ComplicationMat"
 			]
 		},
 		// #endregion
@@ -663,7 +670,7 @@ const Images = (() => {
 			for (const imgObj of imgObjs) {
 				const attrList = {}		
 				for (const param of params)
-					if (!isNaN(parseInt(param.split(":")[1])))
+					if (VAL({number: param.split(":")[1]}))
 						attrList[param.split(":")[0]] = parseInt(param.split(":")[1])
 				setImgParams(imgObj, attrList)
 			}
@@ -861,7 +868,7 @@ const Images = (() => {
 					}
 					break
 				case "source": case "src":
-					if(D.Validate({token: D.GetSelected(msg)[0]})) {
+					if(VAL({token: D.GetSelected(msg)[0]})) {
 						imgName = Images.GetData(D.GetSelected(msg)[0]).name
 						srcName = args[0]
 					} else {

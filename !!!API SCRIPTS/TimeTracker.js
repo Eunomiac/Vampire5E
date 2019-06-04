@@ -1,11 +1,35 @@
 void MarkStart("TimeTracker")
 const TimeTracker = (() => {
-	const [airLights, airTimes] = [{}, {}]
-	let [timeTimer, dateObj, trackerObj, trackerShadow] = [null, null, null, null],
-		[isRunning, isRunningFast, isAirlights, isTimeRunning] = [false, false, true, false]
-		
+	// #region INITIALIZATION
+	const SCRIPTNAME = "TimeTracker",
+		    STATEREF = state[D.GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+	const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
+	
+	const checkInstall = () => {
+			state[D.GAMENAME] = state[D.GAMENAME] || {}
+			state[D.GAMENAME][SCRIPTNAME] = state[D.GAMENAME][SCRIPTNAME] || {}
+
+			STATEREF.trackerObj = STATEREF.timeText ? getObj("text", STATEREF.timeText) : null
+			STATEREF.trackerShadow = STATEREF.timeTextShadow ? getObj("text", STATEREF.timeTextShadow) : null
+			STATEREF.dateObj = STATEREF.currentDate ? new Date(STATEREF.currentDate) : null
+		},
+		regHandlers = () => {
+			on("chat:message", msg => {
+				if (msg.type !== "api" || !playerIsGM(msg.playerid)) return
+				const who = (getObj("player", msg.playerid) || {get: () => "API",}).get("displayname"),
+					 args = msg.content.split(/\s+/u),
+					 call = args.shift()
+				handleInput(msg, who, call, args)
+			})
+		}
+	// #endregion
+
+	let timeTimer = null,
+		[isRunning, isRunningFast, isAirlights, isTimeRunning] = [false, false, true, false]		
+	
 	// #region Configuration
-	const STATEREF = state[D.GAMENAME].TimeTracker,
+	const [airLights, airTimes] = [{}, {}],
 		CLOCKSPEED = 50,
 		TWEENDURS = [15, 40, 60, 600, 1440, 3000, 5000, 7000, 8000, 9000, 10000, Infinity],
 		RUNNINGFASTAT = 1500000,
@@ -471,7 +495,7 @@ const TimeTracker = (() => {
 			Images.OrderImages("map", true)
 		},
 		getHorizon = () => {
-			const [dawn, dusk] = TWILIGHTMINS[dateObj.getMonth()],
+			const [dawn, dusk] = TWILIGHTMINS[STATEREF.dateObj.getMonth()],
 				imgTimes = _.object(_.map(_.keys(IMAGETIMES), k => {
 					if (k.includes(":"))
 						return 60 * parseInt(k.split(":")[0] ) + parseInt(k.split(":")[1] )
@@ -482,7 +506,7 @@ const TimeTracker = (() => {
 
 					return dawn + parseInt(k)
 				} ), _.values(IMAGETIMES)),
-				curTime = 60 * dateObj.getUTCHours() + dateObj.getUTCMinutes(),
+				curTime = 60 * STATEREF.dateObj.getUTCHours() + STATEREF.dateObj.getUTCMinutes(),
 				curHoriz = imgTimes[_.find(_.keys(imgTimes), v => curTime <= v)]
 			//D.Alert(`Daylighter Check: ${state[D.GAMENAME].Chars.isDaylighterSession} vs. ${state[D.GAMENAME].Chars.isDaylighterSession}, imgSrc: ${curHoriz}`)
 			if (state[D.GAMENAME].Chars.isDaylighterSession && curHoriz === "day")
@@ -492,8 +516,8 @@ const TimeTracker = (() => {
 		},
 		isDay = () => getHorizon().includes("day"),
 		setHorizon = (isForced = false) => {
-			/* D.Log(`Date Obj? ${Boolean(dateObj)}, state val: ${D.JSL(state[D.GAMENAME].TimeTracker.currentDate)}`)
-			   dateObj = dateObj || new Date(state[D.GAMENAME].TimeTracker.currentDate) */
+			/* D.Log(`Date Obj? ${Boolean(dateObj)}, state val: ${D.JSL(STATEREF.currentDate)}`)
+			   dateObj = dateObj || new Date(STATEREF.currentDate) */
 			let imgSrcName = getHorizon()
 			// D.Log(`DATE OBJECT: ${D.JSL(dateObj)}`)
 			//D.Alert(`imgSrcName: ${imgSrcName}`)
@@ -512,16 +536,16 @@ const TimeTracker = (() => {
 			}
 		},
 		setCurrentDate = () => {
-			// dateObj = dateObj || new Date(parseInt(state[D.GAMENAME].TimeTracker.currentDate))
+			// dateObj = dateObj || new Date(parseInt(STATEREF.currentDate))
 			const timeText = `${
-				DAYSOFWEEK[dateObj.getUTCDay()]}, ${
-				MONTHS[dateObj.getUTCMonth()]} ${
-				D.Ordinal(dateObj.getUTCDate())}, ${
-				(dateObj.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
-				dateObj.getUTCMinutes() < 10 ? "0" : ""}${dateObj.getUTCMinutes().toString()} ${
-				Math.floor(dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`
-			trackerObj.set("text", timeText)
-			trackerShadow.set("text", timeText)
+				DAYSOFWEEK[STATEREF.dateObj.getUTCDay()]}, ${
+				MONTHS[STATEREF.dateObj.getUTCMonth()]} ${
+				D.Ordinal(STATEREF.dateObj.getUTCDate())}, ${
+				(STATEREF.dateObj.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
+				STATEREF.dateObj.getUTCMinutes() < 10 ? "0" : ""}${STATEREF.dateObj.getUTCMinutes().toString()} ${
+				Math.floor(STATEREF.dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`
+			STATEREF.trackerObj.set("text", timeText)
+			STATEREF.trackerShadow.set("text", timeText)
 		},
 		setIsRunning = runStatus => {
 			isRunning = runStatus
@@ -530,23 +554,23 @@ const TimeTracker = (() => {
 				Images.LayerImages(_.reject(Images.IMAGELAYERS.map, v => v.includes("Horizon")), "objects")
 			} else {
 				Images.LayerImages(_.reject(Images.IMAGELAYERS.map, v => v.includes("Horizon")), "map")
-				const lastDate = new Date(parseInt(state[D.GAMENAME].TimeTracker.currentDate)),
+				const lastDate = new Date(parseInt(STATEREF.currentDate)),
 					   groundCover = getGroundCover()
-				STATEREF.currentDate = dateObj.getTime()
+				STATEREF.currentDate = STATEREF.dateObj.getTime()
 				if (
-					dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
-					dateObj.getMonth() !== lastDate.getMonth() ||
-					dateObj.getUTCDate() !== lastDate.getUTCDate()
+					STATEREF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
+					STATEREF.dateObj.getMonth() !== lastDate.getMonth() ||
+					STATEREF.dateObj.getUTCDate() !== lastDate.getUTCDate()
 				) {
 					_.each(D.GetChars("registered"), char => setAttrs(char.id, {
-						date_today: dateObj.getTime().toString()
+						date_today: STATEREF.dateObj.getTime().toString()
 					} ))
 				}
 				if (
-					dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
-					dateObj.getMonth() !== lastDate.getMonth() ||
-					dateObj.getUTCDate() !== lastDate.getUTCDate() ||
-					dateObj.getUTCHours() !== lastDate.getUTCHours()
+					STATEREF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
+					STATEREF.dateObj.getMonth() !== lastDate.getMonth() ||
+					STATEREF.dateObj.getUTCDate() !== lastDate.getUTCDate() ||
+					STATEREF.dateObj.getUTCHours() !== lastDate.getUTCHours()
 				) {
 					setWeather()
 					Images.Set("WeatherGround", groundCover)
@@ -570,9 +594,9 @@ const TimeTracker = (() => {
 		easeInOutSine = (curTime, startVal, deltaVal, duration) => -deltaVal / 2 * (Math.cos(Math.PI * curTime / duration) - 1) + startVal,
 		tweenClock = finalDate => {
 			let [curTime, lastTime] = [0, 0]
-			const deltaTime = finalDate - dateObj,
+			const deltaTime = finalDate - STATEREF.dateObj,
 				duration = (_.findIndex(TWEENDURS, v => deltaTime / 60000 <= v) + 1) * 1000,
-				startTime = dateObj.getTime(),
+				startTime = STATEREF.dateObj.getTime(),
 				easeSet = () => {
 					if (Math.abs(curTime) >= Math.abs(duration)) {
 						clearInterval(timeTimer)
@@ -585,7 +609,7 @@ const TimeTracker = (() => {
 					setIsRunningFast(Math.abs(newDelta - lastTime) > RUNNINGFASTAT)
 					// D.Log(`Setting Date.  lastTime = ${newDelta - lastTime}, IsRunning = ${isRunning}, IsRunningFast = ${isRunningFast}`)
 					lastTime = newDelta
-					dateObj.setTime(startTime + newDelta)
+					STATEREF.dateObj.setTime(startTime + newDelta)
 					setCurrentDate()
 					curTime += CLOCKSPEED
 				}
@@ -594,7 +618,7 @@ const TimeTracker = (() => {
 		},
 		tickClock = () => {
 			if (isTimeRunning) {
-				dateObj.setUTCMinutes(dateObj.getUTCMinutes() + 1)
+				STATEREF.dateObj.setUTCMinutes(STATEREF.dateObj.getUTCMinutes() + 1)
 				setCurrentDate()
 			}
 		},
@@ -604,7 +628,7 @@ const TimeTracker = (() => {
 			timeTimer = setInterval(tickClock, (parseInt(secsPerMin) * 1000))
 			D.Alert(`Auto clock ticking ENABLED at:
 			
-			!time set ${dateObj.getUTCFullYear()} ${dateObj.getUTCMonth() + 1} ${dateObj.getUTCDate()} ${dateObj.getUTCHours()}:${dateObj.getUTCMinutes()}`, "TIMETRACKER !TIME")
+			!time set ${STATEREF.dateObj.getUTCFullYear()} ${STATEREF.dateObj.getUTCMonth() + 1} ${STATEREF.dateObj.getUTCDate()} ${STATEREF.dateObj.getUTCHours()}:${STATEREF.dateObj.getUTCMinutes()}`, "TIMETRACKER !TIME")
 		},
 		stopClock = () => {
 			clearInterval(timeTimer)
@@ -617,15 +641,15 @@ const TimeTracker = (() => {
 		// #region Weather Functions 
 		getTemp = code => WEATHERTEMP.indexOf(code) - 26,
 		setWeather = () => {
-			const weatherCode = WEATHERDATA[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()],
+			const weatherCode = WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()],
 				weatherData = {},
 				[tempCObj, tempFObj, forecastObj, tempCShadow, tempFShadow, forecastShadow] = [
-					getObj("text", state[D.GAMENAME].TimeTracker.tempCText),
-					getObj("text", state[D.GAMENAME].TimeTracker.tempFText),
-					getObj("text", state[D.GAMENAME].TimeTracker.weatherText),
-					getObj("text", state[D.GAMENAME].TimeTracker.tempCShadow),
-					getObj("text", state[D.GAMENAME].TimeTracker.tempFShadow),
-					getObj("text", state[D.GAMENAME].TimeTracker.weatherShadow)
+					getObj("text", STATEREF.tempCText),
+					getObj("text", STATEREF.tempFText),
+					getObj("text", STATEREF.weatherText),
+					getObj("text", STATEREF.tempCShadow),
+					getObj("text", STATEREF.tempFShadow),
+					getObj("text", STATEREF.weatherShadow)
 				],
 				getCloudSrc = () => {
 					switch (getHorizon()) {
@@ -648,10 +672,10 @@ const TimeTracker = (() => {
 				}
 			let forecastLines = []
 			//D.Alert(`Weather Code: ${D.JS(weatherCode)}<br>Month Temp: ${D.JS(getTemp(MONTHTEMP[dateObj.getUTCMonth()]))}<br><br>Delta Temp: ${D.JS(getTemp(weatherCode.charAt(2)))} (Code: ${weatherCode.charAt(2)})`)
-			weatherData.tempC = getTemp(MONTHTEMP[dateObj.getUTCMonth()]) + getTemp(weatherCode.charAt(2))
-			tempCObj.set("text", `${getTemp(MONTHTEMP[dateObj.getUTCMonth()]) + getTemp(weatherCode.charAt(2))}°C`)
+			weatherData.tempC = getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(weatherCode.charAt(2))
+			tempCObj.set("text", `${getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(weatherCode.charAt(2))}°C`)
 			tempFObj.set("text", `(${Math.round(Math.round(9/5*weatherData.tempC + 32))}°F)`)
-			tempCShadow.set("text", `${getTemp(MONTHTEMP[dateObj.getUTCMonth()]) + getTemp(weatherCode.charAt(2))}°C`)
+			tempCShadow.set("text", `${getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(weatherCode.charAt(2))}°C`)
 			tempFShadow.set("text", `(${Math.round(Math.round(9/5*weatherData.tempC + 32))}°F)`)
 			switch(getHorizon() === "day" || getHorizon() === "daylighters" ? "x" : weatherCode.charAt(0)) {
 			// x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
@@ -710,16 +734,16 @@ const TimeTracker = (() => {
 		},
 		getGroundCover = (isTesting = false, downVal = 0.3, upb = 1, ups = 0.5) => {			
 			//D.Alert(`IsTesting = ${D.JS(isTesting)}`)
-			const weatherCode = WEATHERDATA[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()]
-			if (dateObj.getUTCMonth() >= 3 && dateObj.getUTCMonth() <= 9)
+			const weatherCode = WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()]
+			if (STATEREF.dateObj.getUTCMonth() >= 3 && STATEREF.dateObj.getUTCMonth() <= 9)
 				return "blank"
 			if (isDay() && state[D.GAMENAME].Chars.isDaylighterSession) {
-				if ((getTemp(MONTHTEMP[dateObj.getUTCMonth()]) + getTemp(WEATHERDATA[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()].charAt(2))) < 1)
+				if ((getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()].charAt(2))) < 1)
 					return "frost"
 				else
 					return "blank"
 			}
-			const checkDate = new Date(dateObj)
+			const checkDate = new Date(STATEREF.dateObj)
 			let groundCover = 0,
 				testString = ""
 			checkDate.setUTCDate(checkDate.getUTCDate() - 60)
@@ -788,7 +812,7 @@ const TimeTracker = (() => {
 				return "snow1"
 			else if ("wtp".includes(weatherCode.charAt(0)))
 				return "wet"
-			else if ((getTemp(MONTHTEMP[dateObj.getUTCMonth()]) + getTemp(WEATHERDATA[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()].charAt(2))) < 1)
+			else if ((getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()].charAt(2))) < 1)
 				return "frost"
 			else
 				return "blank"
@@ -799,10 +823,10 @@ const TimeTracker = (() => {
 			const weatherStrings = {}
 			//let debugString = ""
 			for (const code of ["x", "b", "c", "f", "p", "s", "t", "w"]) {				
-				let startYear = dateObj.getFullYear(),
-					startMonth = dateObj.getMonth(),
-					startDay = dateObj.getDate(),
-					startHour = dateObj.getHours()
+				let startYear = STATEREF.dateObj.getFullYear(),
+					startMonth = STATEREF.dateObj.getMonth(),
+					startDay = STATEREF.dateObj.getDate(),
+					startHour = STATEREF.dateObj.getHours()
 				//debugString += dateObj + "<br>"
 				//debugString += `<br><br>${code}: [${startYear}-${startMonth}-${startDay}-${startHour}]`
 				while (_.isUndefined(weatherStrings[WEATHERCODES[0][code]])) {
@@ -866,14 +890,11 @@ const TimeTracker = (() => {
 		// #endregion
 
 		// #region Event Handlers (handleInput)
-		handleInput = msg => {
-			if (msg.type !== "api" || !playerIsGM(msg.playerid))
-				return
-			const args = msg.content.split(/\s+/u)
-			let [params, date2, delta, unit] = [[], null, null, null]
-			switch (args.shift().toLowerCase()) {
+		handleInput = (msg, who, call, args) => {
+			let [date2, delta, unit] = [null, null, null]
+			switch (call.toLowerCase()) {
 			case "!time":
-				if (!state[D.GAMENAME].TimeTracker.timeText) {
+				if (!STATEREF.timeText) {
 					D.Alert("Register a text object first, with '!regTime'", "TIMETRACKER")
 					break
 				} else if (!Images.GetData("Horizon_1") || !Images.GetData("Horizon_2")) {
@@ -883,13 +904,13 @@ const TimeTracker = (() => {
 				switch ((args.shift() || "").toLowerCase()) {
 				case "set":
 					unit = "m"
-					delta = Math.ceil(((new Date(Date.UTC(..._.map(args, v => parseInt(v))))).getTime() - dateObj.getTime()) / (1000 * 60))
+					delta = Math.ceil(((new Date(Date.UTC(..._.map(args, v => parseInt(v))))).getTime() - STATEREF.dateObj.getTime()) / (1000 * 60))
 					D.Alert(`Changing Date by ${D.JS(delta)} minutes.`)
 					/* falls through */
 				case "add":
 					delta = delta || parseInt(args.shift())
 					unit = unit || args.shift().toLowerCase()
-					date2 = new Date(dateObj)
+					date2 = new Date(STATEREF.dateObj)
 					if (unit.slice(0, 1) === "y")
 						date2.setUTCFullYear(date2.getUTCFullYear() + delta)
 					else if (unit.includes("mo"))
@@ -924,16 +945,16 @@ const TimeTracker = (() => {
 				if (!msg.selected || !msg.selected[0] ) {
 					D.ThrowError("Select an object, then '!regTime / !regHorizon / !regTimeShadow'.")
 				} else {
-					state[D.GAMENAME].TimeTracker.timeText = msg.selected[0]._id
-					D.Alert(`Registered Time Text as: ${D.JS(state[D.GAMENAME].TimeTracker.timeText)}`)
+					STATEREF.timeText = msg.selected[0]._id
+					D.Alert(`Registered Time Text as: ${D.JS(STATEREF.timeText)}`)
 				}
 				break
 			case "!regtimeshadow":
 				if (!msg.selected || !msg.selected[0] ) {
 					D.ThrowError("Select an object, then '!regTime / !regHorizon / !regTimeShadow'.")
 				} else {
-					state[D.GAMENAME].TimeTracker.timeTextShadow = msg.selected[0]._id
-					D.Alert(`Registered Time Text Shadow as: ${D.JS(state[D.GAMENAME].TimeTracker.timeTextShadow)}`)
+					STATEREF.timeTextShadow = msg.selected[0]._id
+					D.Alert(`Registered Time Text Shadow as: ${D.JS(STATEREF.timeTextShadow)}`)
 				}
 				break
 			case "!regweather":
@@ -942,16 +963,16 @@ const TimeTracker = (() => {
 				} else {
 					switch(args.shift()) {
 					case "tempC":
-						state[D.GAMENAME].TimeTracker.tempCText = msg.selected[0]._id
-						D.Alert(`Registered Celsius Temperature Object as: ${D.JS(state[D.GAMENAME].TimeTracker.tempCText)}`)
+						STATEREF.tempCText = msg.selected[0]._id
+						D.Alert(`Registered Celsius Temperature Object as: ${D.JS(STATEREF.tempCText)}`)
 						break
 					case "tempF":
-						state[D.GAMENAME].TimeTracker.tempFText = msg.selected[0]._id
-						D.Alert(`Registered Fahrenheit Temperature Object as: ${D.JS(state[D.GAMENAME].TimeTracker.tempFText)}`)
+						STATEREF.tempFText = msg.selected[0]._id
+						D.Alert(`Registered Fahrenheit Temperature Object as: ${D.JS(STATEREF.tempFText)}`)
 						break
 					case "main":
-						state[D.GAMENAME].TimeTracker.weatherText = msg.selected[0]._id
-						D.Alert(`Registered Weather Text Object as: ${D.JS(state[D.GAMENAME].TimeTracker.weatherText)}`)
+						STATEREF.weatherText = msg.selected[0]._id
+						D.Alert(`Registered Weather Text Object as: ${D.JS(STATEREF.weatherText)}`)
 						break
 					default: break
 					}
@@ -963,16 +984,16 @@ const TimeTracker = (() => {
 				} else {
 					switch(args.shift()) {
 					case "tempC":
-						state[D.GAMENAME].TimeTracker.tempCShadow = msg.selected[0]._id
-						D.Alert(`Registered Celsius Temperature Shadow as: ${D.JS(state[D.GAMENAME].TimeTracker.tempCShadow)}`)
+						STATEREF.tempCShadow = msg.selected[0]._id
+						D.Alert(`Registered Celsius Temperature Shadow as: ${D.JS(STATEREF.tempCShadow)}`)
 						break
 					case "tempF":
-						state[D.GAMENAME].TimeTracker.tempFShadow = msg.selected[0]._id
-						D.Alert(`Registered Fahrenheit Temperature Shadow as: ${D.JS(state[D.GAMENAME].TimeTracker.tempFShadow)}`)
+						STATEREF.tempFShadow = msg.selected[0]._id
+						D.Alert(`Registered Fahrenheit Temperature Shadow as: ${D.JS(STATEREF.tempFShadow)}`)
 						break
 					case "main":
-						state[D.GAMENAME].TimeTracker.weatherShadow = msg.selected[0]._id
-						D.Alert(`Registered Weather Text Shadow as: ${D.JS(state[D.GAMENAME].TimeTracker.weatherShadow)}`)
+						STATEREF.weatherShadow = msg.selected[0]._id
+						D.Alert(`Registered Weather Text Shadow as: ${D.JS(STATEREF.weatherShadow)}`)
 						break
 					default: break
 					}
@@ -980,8 +1001,7 @@ const TimeTracker = (() => {
 				break
 			case "!weatherset":
 			case "!setweather":
-				params = args.join(" ").split("|")
-				setWeather(params)
+				setWeather(args.join(" ").split("|"))
 				break
 			case "!testground":
 				//D.Alert("Received, Testing...")
@@ -993,22 +1013,6 @@ const TimeTracker = (() => {
 			default:
 				break
 			}
-		},
-		// #endregion
-
-		// #region Public Functions: regHandlers
-		regHandlers = () => on("chat:message", handleInput),
-		checkInstall = () => {
-			state[D.GAMENAME] = state[D.GAMENAME] || {}
-			state[D.GAMENAME].TimeTracker = state[D.GAMENAME].TimeTracker || {};
-			[trackerObj] = findObjs( {
-				_id: state[D.GAMENAME].TimeTracker.timeText
-			} );
-			[trackerShadow] = findObjs( {
-				_id: state[D.GAMENAME].TimeTracker.timeTextShadow
-			} )
-			dateObj = new Date(state[D.GAMENAME].TimeTracker.currentDate)
-			startAirLights()
 		}
 		// #endregion
 
@@ -1019,7 +1023,7 @@ const TimeTracker = (() => {
 		StopClock: stopClock,
 		StartLights: startAirLights,
 		StopLights: stopAirLights,
-		CurrentDate: () => new Date(dateObj),
+		CurrentDate: () => new Date(STATEREF.dateObj),
 		ParseDate: parseDString,
 		FormatDate: formatDString,
 		Fix: fixDate,

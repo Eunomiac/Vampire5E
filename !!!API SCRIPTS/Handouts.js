@@ -1,22 +1,28 @@
 void MarkStart("Handouts")
-const Handouts = (() => {
+const Handouts = (() => {	
+	// #region INITIALIZATION
+	const SCRIPTNAME = "Handouts",
+		    STATEREF = state[D.GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+	const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
+	// #endregion
+
 	// #region Configuration
-	const STATEREF = state[D.GAMENAME].Handouts,
-		HTMLStyle = {
-			divwrapper: "display: block; width: 600px;",
-			charName: "display: block; width: 600px; font-size: 32px; color: rgb(99,00,00); font-family: Voltaire; font-variant: small-caps;",
-			projectGoal: "display: block; width: 600px; height: 24px; background-color: rgb( 206 , 198 , 206 ); font-size: 16px; color: black; font-family: 'Alice Regular'; font-weight: bold; font-variant: small-caps; border-bottom: 1px solid black; border-top: 1px solid black;",
-			smallNote: "display:block; width: 580px; font-size: 10px; font-family: Goudy; margin-left: 20px;",
-			subheader: "display:inline-block; width: 60px; font-size: 14px; color: black; font-family: Voltaire; font-variant: small-caps; font-weight: bold; text-align: right; margin-right: 10px;",
-			projectScope: "display:inline-block; width: 530px; font-size: 12px; color: black; font-family: 'Alice Regular'; vertical-align: top; padding-top: 2px;",
-			critSucc: "display: inline-block; width: 300px; font-size: 20px; color: purple; font-family: Voltaire; font-weight: bold;",
-			succ: "display: inline-block; width: 300px; font-size: 20px; color: black; font-family: goodfish; font-weight: bold;",
-			endDate: "display: inline-block; width: 300px; font-size: 20px; color: black; font-family: Voltaire; font-weight: bold; text-align: right;",
-			daysleft: "display: inline-block; width: 600px; font-size: 14px; color: black; font-family: 'Alice Regular'; font-style: italic; text-align: right;",
-			projectStake: "display: inline-block; width: 530px; font-family: 'Alice Regular';",
-			forcedStake: "display: inline-block; width: 530px; font-family: 'Alice Regular'; color: #990000; font-weight: bold;",
-			teamwork: "display: inline-block; width: 530px; font-family: 'Alice Regular'; color: blue; font-weight: bold;"
-		}
+	const HTMLStyle = {
+		divwrapper: "display: block; width: 600px;",
+		charName: "display: block; width: 600px; font-size: 32px; color: rgb(99,00,00); font-family: Voltaire; font-variant: small-caps;",
+		projectGoal: "display: block; width: 600px; height: 24px; background-color: rgb( 206 , 198 , 206 ); font-size: 16px; color: black; font-family: 'Alice Regular'; font-weight: bold; font-variant: small-caps; border-bottom: 1px solid black; border-top: 1px solid black;",
+		smallNote: "display:block; width: 580px; font-size: 10px; font-family: Goudy; margin-left: 20px;",
+		subheader: "display:inline-block; width: 60px; font-size: 14px; color: black; font-family: Voltaire; font-variant: small-caps; font-weight: bold; text-align: right; margin-right: 10px;",
+		projectScope: "display:inline-block; width: 530px; font-size: 12px; color: black; font-family: 'Alice Regular'; vertical-align: top; padding-top: 2px;",
+		critSucc: "display: inline-block; width: 300px; font-size: 20px; color: purple; font-family: Voltaire; font-weight: bold;",
+		succ: "display: inline-block; width: 300px; font-size: 20px; color: black; font-family: goodfish; font-weight: bold;",
+		endDate: "display: inline-block; width: 300px; font-size: 20px; color: black; font-family: Voltaire; font-weight: bold; text-align: right;",
+		daysleft: "display: inline-block; width: 600px; font-size: 14px; color: black; font-family: 'Alice Regular'; font-style: italic; text-align: right;",
+		projectStake: "display: inline-block; width: 530px; font-family: 'Alice Regular';",
+		forcedStake: "display: inline-block; width: 530px; font-family: 'Alice Regular'; color: #990000; font-weight: bold;",
+		teamwork: "display: inline-block; width: 530px; font-family: 'Alice Regular'; color: blue; font-weight: bold;"
+	}
 	// #endregion
 
 	// #region GETTERS: Retrieving Notes, Data

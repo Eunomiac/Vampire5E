@@ -1,5 +1,12 @@
 void MarkStart("DragPads")
 const DragPads = (() => {
+	// #region INITIALIZATION
+	const SCRIPTNAME = "DragPads",
+		    STATEREF = state[D.GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+	const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
+	// #endregion
+
 	// #region CONFIGURATION
 	const IMAGES = {
 			blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",

@@ -8,7 +8,14 @@ void MarkStart("ChatFuncs")
    to other API objects — use DATA and SET for that. */
 
 const ChatFuncs = (() => {
-	// #region HELP MESSAGE
+	// #region INITIALIZATION
+	const SCRIPTNAME = "ChatFuncs",
+		    STATEREF = state[D.GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+	const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
+	// #endregion
+		
+	// #region HELP MESSAGE	
 	const HELPMESSAGE = D.JSH(
 			`<div style="display: block; margin-bottom: 10px;">
 				Various commands to query information from the Roll20 tabletop and state variable. <b>If a command relies on a "selected token", make sure the token is associated with a character sheet (via the token's setting menu).</b>

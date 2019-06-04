@@ -1,8 +1,14 @@
 void MarkStart("Chars")
 const Chars = (() => {
-	// #region Constants and Declarations,
-	const STATEREF = state[D.GAMENAME].Chars,
-		REGISTRY = STATEREF.registry,
+	// #region INITIALIZATION
+	const SCRIPTNAME = "Chars",
+		    STATEREF = state[D.GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+	const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
+	// #endregion
+
+	// #region Constants and Declarations
+	const REGISTRY = STATEREF.registry,
 		MVCVALS = [
 			[
 				"<span style=\"display: block; width: 100%; margin-top: -10px;\">Concept</span></div><div style=\"display: block; width: 100%; margin-top: -10px;\">",
@@ -382,11 +388,11 @@ const Chars = (() => {
 	
 		// #region Manipulating Stats on Sheet,
 		adjustTrait = (charRef, trait, amount, min, max, defaultTraitVal) => {
-			if (D.Validate({number: defaultTraitVal}, "", "", true)) {
-				if (!D.Validate({char: [charRef], number: amount}, "Chars", "AdjustTrait"))
+			if (VAL({number: defaultTraitVal})) {
+				if (!VAL({char: [charRef], number: amount}, "AdjustTrait"))
 					return false
 			} else {
-				if (!D.Validate({char: [charRef], trait: [trait], number: amount}, "Chars", "AdjustTrait"))
+				if (!VAL({char: [charRef], trait: [trait], number: amount}, "AdjustTrait"))
 					return false
 			}
 			
@@ -403,7 +409,7 @@ const Chars = (() => {
 			return true
 		},
 		adjustDamage = (charRef, trait, dtype, amount) => {
-			if (!D.Validate({char: [charRef], number: [amount]}, "Chars", "AdjustDamage"))
+			if (!VAL({char: [charRef], number: [amount]}, "AdjustDamage"))
 				return false
 			if (adjustTrait(charRef,
 				trait.toLowerCase() + (["superficial", "superficial+", "spent"].includes(dtype) ? "_sdmg" : "_admg"),
@@ -416,7 +422,7 @@ const Chars = (() => {
 			return false
 		},
 		adjustHunger = (charRef, amount, isKilling = false) => {
-			if (!D.Validate({char: [charRef], number: [amount], trait: ["bp_slakekill"]}, "Chars", "AdjustHunger"))
+			if (!VAL({char: [charRef], number: [amount], trait: ["bp_slakekill"]}, "AdjustHunger"))
 				return false
 			if (adjustTrait(charRef,
 				"hunger",
@@ -429,7 +435,7 @@ const Chars = (() => {
 			return false
 		},
 		adjustHumanity = (charRef, amount) => {
-			if (!D.Validate({char: [charRef], number: [amount]}, "Chars", "AdjustHumanity"))
+			if (!VAL({char: [charRef], number: [amount]}, "AdjustHumanity"))
 				return false
 			if (adjustTrait(charRef,
 				"humanity",
@@ -442,7 +448,7 @@ const Chars = (() => {
 			return false
 		},
 		adjustStains = (charRef, amount) => {
-			if (!D.Validate({char: [charRef], number: [amount]}, "Chars", "AdjustStains"))
+			if (!VAL({char: [charRef], number: [amount]}, "AdjustStains"))
 				return false
 			if (adjustTrait(charRef,
 				"stains",
@@ -689,7 +695,7 @@ const Chars = (() => {
 			//D.Alert(`MSG RECEIVED: ${D.JS(msg)}`)
 			if (msg.type !== "api") return
 			const who = (getObj("player", msg.playerid) || {get: () => "API",}).get("displayname"),
-				args = msg.content.split(/\s+/u)
+				 args = msg.content.split(/\s+/u)
 			//D.Alert(`WHO: ${D.JS(who)}`)
 			let [chars, params, attrList] = [[], [], []],
 				[token, famToken, charData, imgData] = [{}, {}, {}, {}],

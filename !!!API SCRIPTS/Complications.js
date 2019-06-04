@@ -1,9 +1,13 @@
 void MarkStart("Complications")
 const Complications = (() => {
-	// #region Configuration
-	const STATEREF = state[D.GAMENAME].Complications
-	let isRunning = false
+	// #region INITIALIZATION
+	const SCRIPTNAME = "Complications",
+		    STATEREF = state[D.GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+	const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
 	// #endregion
+
+	let isRunning = false
 
 	// #region GETTERS: Retrieving Notes, Data
 	

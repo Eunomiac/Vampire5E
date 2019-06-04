@@ -5,16 +5,21 @@
    trickier, but is contained in the CONFIGURATION and DECLARATIONS #regions. */
 
 const D = (() => {
+	// #region INITIALIZATION
+	const   GAMENAME = "VAMPIRE",
+	      SCRIPTNAME = "DATA",
+		    STATEREF = state[GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+	const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
+	// #endregion
+
 	// #region CONFIGURATION: Game Name, Character Registry
-	const GAMENAME = "VAMPIRE",
-		SCRIPTNAME = "DATA",
-		STATEREF = state[GAMENAME][SCRIPTNAME],
-		HTMLFORMATS = {
-			titleStart: "<div style=\"display: block; width: auto; padding: 0px 5px; margin-left: -42px; margin-top: -30px;font-family: copperplate gothic; font-variant: small-caps; font-size: 16px; background-color: #333333; color: white;border: 2px solid black; position: relative; height: 20px; line-height: 23px;\">",
-			titleEnd: "</div>",
-			bodyStart: "<div style=\"display: block;width: auto;padding: 5px 5px;margin-left: -42px; font-family: input, verdana, sans-serif;font-size: 10px;background-color: white;border: 2px solid black;line-height: 14px;position: relative;\">",
-			bodyEnd: "</div><div style=\"display: block; width: auto; margin-left: -42px; background-color: none; position: relative; height: 25px;\"></div>"
-		}
+	const HTMLFORMATS = {
+		titleStart: "<div style=\"display: block; width: auto; padding: 0px 5px; margin-left: -42px; margin-top: -30px;font-family: copperplate gothic; font-variant: small-caps; font-size: 16px; background-color: #333333; color: white;border: 2px solid black; position: relative; height: 20px; line-height: 23px;\">",
+		titleEnd: "</div>",
+		bodyStart: "<div style=\"display: block;width: auto;padding: 5px 5px;margin-left: -42px; font-family: input, verdana, sans-serif;font-size: 10px;background-color: white;border: 2px solid black;line-height: 14px;position: relative;\">",
+		bodyEnd: "</div><div style=\"display: block; width: auto; margin-left: -42px; background-color: none; position: relative; height: 25px;\"></div>"
+	}
 	// #endregion
 
 	// #region DECLARATIONS: Reference Variables
@@ -245,6 +250,8 @@ const D = (() => {
 
 				return JSON.stringify(returnObj, replacer, 2)
 					.replace(/(\s*?)"([^"]*?)"\s*?:/gu, "$1$2:")
+					.replace(/</gu, "&lt;")
+					.replace(/>/gu, "&gt;")
 					.replace(/\\n/gu, "<br/>")
 					.replace(/\\t/gu, "")
 					.replace(/ (?= )/gu, "&nbsp;")
@@ -395,7 +402,10 @@ const D = (() => {
 	// #region DEBUGGING & ERROR MANAGEMENT
 	const setWatchList = (keywords) => {
 			const newWatchWords = _.flatten([keywords])
-			STATEREF.WATCHLIST = _.difference(_.union(STATEREF.WATCHLIST, newWatchWords), _.intersection(STATEREF.WATCHLIST, newWatchWords))
+			if (newWatchWords.length === 0)
+				STATEREF.WATCHLIST = []
+			else
+				STATEREF.WATCHLIST = _.difference(_.union(STATEREF.WATCHLIST, newWatchWords), _.intersection(STATEREF.WATCHLIST, newWatchWords))
 			D.Alert(`Debug Watch List set to:<br><br> ${D.JS(STATEREF.WATCHLIST)}`, "DATA: setWatchList")
 		},
 		getDebugInfo = () => {
@@ -420,13 +430,14 @@ const D = (() => {
 				formatDebug(msg, `${scriptName.toUpperCase()}: ${funcName}()`)
 		},
 		// Validate Categories: char, player, trait, number, string, function, array, list, text, graphic, token, reprow
-		validate = (varList, namespace, funcName, isSilent = false) => {
+		validate = (varList, funcName, scriptName) => {
 			const [errorLines, failedCats] = [[], []]
 			let traitErrors = []
 			_.each(_.keys(varList), cat => {
 				switch(cat.toLowerCase()) {
 				case "char":
-					_.each(varList[cat], v => {
+					DB(`_.flatten([varList[cat]]) = ${D.JSL(_.flatten([varList[cat]]))}`, "validate")
+					_.each(_.flatten([varList[cat]]), v => {
 						if (!D.GetChar(v)) {
 							errorLines.push(`Invalid character reference: ${D.JS(v.get && v.get("name") || v.id || v)}`)
 							failedCats.push(cat)
@@ -434,7 +445,7 @@ const D = (() => {
 					})
 					break
 				case "player":
-					_.each(varList[cat], v => {
+					_.each(_.flatten([varList[cat]]), v => {
 						if (!D.GetPlayerID(v)) {
 							errorLines.push(`Invalid player reference: ${D.JS(v.get && v.get("name") || v.id || v)}`)
 							failedCats.push(cat)
@@ -443,7 +454,7 @@ const D = (() => {
 					break
 				case "trait":
 					traitErrors = []
-					_.each(varList[cat], v => {
+					_.each(_.flatten([varList[cat]]), v => {
 						if (!varList.char)
 							return D.ThrowError(`Unable to validate trait(s) ${D.JS(varList[cat])} without a character reference.`, "DATA:Validate")
 						let charErrors = []
@@ -462,7 +473,7 @@ const D = (() => {
 					}
 					break
 				case "number":					
-					_.each(varList[cat], v => {
+					_.each(_.flatten([varList[cat]]), v => {
 						if (!_.isNumber(v) || _.isNaN(v)) {
 							errorLines.push(`Invalid number: ${D.JS(v)}`)
 							failedCats.push(cat)
@@ -470,7 +481,7 @@ const D = (() => {
 					})
 					break
 				case "string":					
-					_.each(varList[cat], v => {
+					_.each(_.flatten([varList[cat]]), v => {
 						if (!_.isString(v)) {
 							errorLines.push(`Invalid string: ${D.JS(v)}`)
 							failedCats.push(cat)
@@ -478,7 +489,7 @@ const D = (() => {
 					})
 					break
 				case "function":					
-					_.each(varList[cat], v => {
+					_.each(_.flatten([varList[cat]]), v => {
 						if (!_.isFunction(v)) {
 							if (!errorLines.includes("One or more invalid functions."))
 								errorLines.push("One or more invalid functions.")
@@ -487,15 +498,13 @@ const D = (() => {
 					})
 					break
 				case "array":					
-					_.each(varList[cat], v => {
-						if (!_.isArray(v)) {
-							errorLines.push(`Invalid array: ${D.JS(v)}`)
-							failedCats.push(cat)
-						}
-					})					
+					if (!_.isArray(varList[cat])) {
+						errorLines.push(`Invalid array: ${D.JS(varList[cat])}`)
+						failedCats.push(cat)
+					}					
 					break
 				case "list":					
-					_.each(varList[cat], v => {
+					_.each(_.flatten([varList[cat]]), v => {
 						if (!_.isObject(v) || _.isFunction(v) || _.isArray(v) || v.get && v.get("_type")) {
 							errorLines.push(`Invalid list object: ${D.JS(v.get && v.get("name") || v.id || v)}`)
 							failedCats.push(cat)
@@ -503,7 +512,7 @@ const D = (() => {
 					})
 					break
 				case "text":					
-					_.each(varList[cat], v => {
+					_.each(_.flatten([varList[cat]]), v => {
 						if (v === null || typeof v !== "object" || !v.get || v.get("_type") !== "text") {
 							errorLines.push(`Invalid text object: ${D.JS(v.get && v.get("name") || v.id || v)}`)
 							failedCats.push(cat)
@@ -511,7 +520,7 @@ const D = (() => {
 					})
 					break
 				case "graphic":					
-					_.each(varList[cat], v => {
+					_.each(_.flatten([varList[cat]]), v => {
 						if (v === null || typeof v !== "object" || !v.get || v.get("_type") !== "graphic") {
 							errorLines.push(`Invalid graphic object: ${D.JS(v.get && v.get("name") || v.id || v)}`)
 							failedCats.push(cat)
@@ -519,12 +528,12 @@ const D = (() => {
 					})
 					break				
 				case "token":
-					_.each(varList[cat], tokenRef => {
-						if (!D.GetSelected(tokenRef)[0])
+					_.each(_.flatten([varList[cat]]), v => {
+						if (!D.GetSelected(v)[0])
 							return D.ThrowError("Select a token first!", "DATA:Validate")
-						_.each(D.GetSelected(tokenRef), v => {
-							if (v === null || typeof v !== "object" || !v.get || v.get("_subtype") !== "token") {
-								errorLines.push(`Invalid token object: ${D.JS(v.get && v.get("name") || v.id || v || tokenRef)}`)
+						_.each(D.GetSelected(v), vv => {
+							if (vv === null || typeof vv !== "object" || !vv.get || vv.get("_subtype") !== "token") {
+								errorLines.push(`Invalid token object: ${D.JS(vv.get && vv.get("name") || vv.id || vv || v)}`)
 								failedCats.push(cat)
 							}
 						})
@@ -532,7 +541,7 @@ const D = (() => {
 					})
 					break
 				case "reprow":				
-					_.each(varList[cat], v => {
+					_.each(_.flatten([varList[cat]]), v => {
 						if (!varList.char)
 							return D.ThrowError(`Unable to validate repeating row ID(s) ${D.JS(varList[cat])} without a character reference.`, "DATA:Validate")
 						if (D.GetStats(D.GetChar(varList.char[0], [v] )).length === 0) {
@@ -545,9 +554,9 @@ const D = (() => {
 				}
 			})
 			if (errorLines.length > 0) {
-				if (isSilent)
+				if (!funcName || !scriptName)
 					return false
-				return D.ThrowError(errorLines.join("<br>"), `${(namespace || "ERROR").toUpperCase()}: ${D.Capitalize(funcName || "Validation")}`)
+				return D.ThrowError(errorLines.join("<br>"), `${scriptName.toUpperCase()}: ${D.Capitalize(funcName)}`)
 			}
 			return true
 		}
@@ -723,7 +732,7 @@ const D = (() => {
 			return attrList
 		},
 		getStatVal = (charRef, trait) => {
-			if (!D.Validate({char: [charRef], trait: [trait]}, "DATA", "GetStatVal"))
+			if (!VAL({char: [charRef], trait: [trait]}, "GetStatVal"))
 				return
 			return getStatData(charRef, [trait])[trait]
 		},
@@ -994,7 +1003,7 @@ const D = (() => {
 		GetSelected: getSelected,
 		// D.GetSelected(msg): Returns selected objects in message.
 		Validate: validate,
-		/* D.Validate(varList, namespace, funcName):  Validates variables passed to it via varList, and
+		/* D.Validate(varList, funcName, scriptName):  Validates variables passed to it via varList, and
 			sends error message formatted with namespace and funcName.  VarList must be in form:
 			{
 				<category>: [<array of references>], ...
