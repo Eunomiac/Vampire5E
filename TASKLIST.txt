@@ -32,3 +32,13 @@ ADDITIONS
 - staked project dots
 - shrink vertical size of projects
     - add project rush line
+
+
+
+
+
+D.Alert(`Msg Object:<br><br>${D.JS(msg)})
+
+
+MSG RECEIVED:<br><br>{
+  content: "<div style="display: block; width: auto; padding: 0px 5px; margin-left: -42px; margin-top: -30px;font-family: copperplate gothic; font-variant: small-caps; font-size: 16px; background-color: #333333; color: white;border: 2px solid black; position: relative; height: 20px; line-height: 23px;">[ALERT]</div><div style="display: block;width: auto;padding: 5px 5px;margin-left: -42px; font-family: input, verdana, sans-serif;font-size: 10px;background-color: white;border: 2px solid black;line-height: 14px;position: relative;">MSG RECEIVED:<br><br>{<br/>  content: "<div style="display: block; width: auto; padding: 0px 5px; margin-left: -42px; margin-top: -30px;font-family: copperplate gothic; font-variant: small-caps; font-size: 16px; background-color: #333333; color: white;border: 2px solid black; position: relative; height: 20px; line-height: 23px;">[ALERT]</div><div style="display: block;width: auto;padding: 5px 5px;margin-left: -42px; font-family: input, verdana, sans-serif;font-size: 10px;background-color: white;border: 2px solid black;line-height: 14px;position: relative;">

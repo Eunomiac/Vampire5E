@@ -229,28 +229,26 @@ const Images = (() => {
 		getImageKey = (imgRef, isSilent = false) => {
 			try {
 				const imgName =
-					D.IsObj(imgRef, "graphic") ?
+					VAL({graphic: imgRef}) ?
 						imgRef.get("name") :
-						D.IsObj(getObj("graphic", imgRef)) ?
+						VAL({string: imgRef}) && VAL({graphic: getObj("graphic", imgRef)}) ?
 							getObj("graphic", imgRef).get("name") :
 							_.isString(imgRef) ?
-								(REGISTRY[D.JSL(imgRef) + "_1"] ? imgRef + "_1" : imgRef) :
+								(REGISTRY[D.JSC(imgRef) + "_1"] ? imgRef + "_1" : imgRef) :
 								D.GetSelected(imgRef) ?
 									D.GetSelected(imgRef)[0].get("name") :
 									false
-				// D.Alert(`IsObj? ${D.IsObj(imgRef, "graphic")}
-				// Getting Name: ${imgRef.get("name")}`, "IMAGE NAME")
 				if (!imgName) {
-					return !isSilent && D.ThrowError(`Cannot find name of image from reference '${D.JSL(imgRef, true)}'`, "IMAGES: GetImageKey")
+					return !isSilent && D.ThrowError(`Cannot find name of image from reference '${D.JSC(imgRef, true)}'`, "IMAGES: GetImageKey")
 				} else if (_.find(_.keys(REGISTRY), v => v.toLowerCase().startsWith(imgName.toLowerCase()))) {
 					return _.keys(REGISTRY)[
 						_.findIndex(_.keys(REGISTRY), v => v.toLowerCase().startsWith(imgName.toLowerCase()))
 					]
 				} else {
-					return !isSilent && D.ThrowError(`Cannot find image with name '${D.JSL(imgName)}' from reference ${D.JSL(imgRef, true)}`, "IMAGES: GetImageKey")
+					return !isSilent && D.ThrowError(`Cannot find image with name '${D.JSC(imgName)}' from reference ${D.JSC(imgRef, true)}`, "IMAGES: GetImageKey")
 				}
 			} catch (errObj) {
-				return !isSilent && D.ThrowError(`Cannot locate image with search value '${D.JSL(imgRef, true)}'`, "IMAGES GetImageKey", errObj)
+				return !isSilent && D.ThrowError(`Cannot locate image with search value '${D.JSC(imgRef, true)}'`, "IMAGES GetImageKey", errObj)
 			}
 		},
 		/* getImageKeys = imgRefs => {
@@ -265,7 +263,7 @@ const Images = (() => {
 		/* getImageNames = imgRefs => getImageKeys(imgRefs), */
 		getImageObj = imgRef => {
 			try {
-				const imgObj = D.IsObj(imgRef, "graphic") ?
+				const imgObj = VAL({graphic: imgRef}) ?
 					imgRef :
 					_.isString(imgRef) ?
 						getImageKey(imgRef) ?
@@ -297,7 +295,7 @@ const Images = (() => {
 					return REGISTRY[getImageKey(imgRef)]
 				} else if (getImageObj(imgRef)) {
 					const imgObj = getImageObj(imgRef)
-					D.DBAlert(`Retrieving data for UNREGISTERED Image Object ${D.JSL(imgRef)}`, funcName, SCRIPTNAME)
+					D.DBAlert(`Retrieving data for UNREGISTERED Image Object ${D.JSC(imgRef)}`, funcName, SCRIPTNAME)
 
 					return {
 						id: imgObj.id,
@@ -324,7 +322,7 @@ const Images = (() => {
 			return imageDatas
 		},	*/	
 		getImageBounds = (imgRef, params = {}) => {
-			if (D.IsObj(getImageObj(imgRef))) {
+			if (VAL({graphic: getImageObj(imgRef)}, "getImageBounds")) {
 				const imgData = Object.assign(getImageData(imgRef), params)
 				return {
 					topY: imgData.top - 0.5 * imgData.height,
@@ -332,9 +330,8 @@ const Images = (() => {
 					leftX: imgData.left - 0.5 * imgData.width,
 					rightX: imgData.left + 0.5 * imgData.width
 				}
-			//D.Log(`[BOUNDS]: ${D.JSL(bounds)}`)
 			} 
-			return D.ThrowError(`Image reference '${imgRef}' does not refer to a registered image object.`, "IMAGES: GetBounds")
+			return false
 		},
 		getImageSrc = imgRef => getImageData(imgRef) ? getImageData(imgRef).curSrc : false,
 		/* getImageSrcs = imgRef => getImageData(imgRef) ? getImageData(imgRef).srcs : false, */
@@ -362,7 +359,7 @@ const Images = (() => {
 		regImage = (imgRef, imgName, srcName, activeLayer, startActive, options = {}, isSilent = false) => {
 		// D.Alert(`Options for '${D.JS(imgName)}': ${D.JS(options)}`, "IMAGES: regImage")
 			const imgObj = getImageObj(imgRef)
-			if (D.IsObj(imgObj, "graphic")) {
+			if (VAL({graphic: imgObj})) {
 				if (!(imgRef && imgName && srcName && activeLayer && startActive !== null))
 					return D.ThrowError("Must supply all parameters for regImage.", "IMAGES: RegImage")
 				const baseName = imgName.replace(/(_|\d|#)+$/gu, "").toLowerCase(),
@@ -408,7 +405,7 @@ const Images = (() => {
 				return getImageData(name)
 			}
 
-			return D.ThrowError(`Invalid img reference '${D.JSL(imgRef)}'`, "IMAGES: regImage")
+			return D.ThrowError(`Invalid img reference '${D.JSC(imgRef)}'`, "IMAGES: regImage")
 		},
 		makeImage = (imgName = "", params = {}, isSilent = false ) => {
 			const dataRef = IMGDATA[imgName] || IMGDATA.default,
@@ -451,7 +448,7 @@ const Images = (() => {
 					} else if (_.isString(IMGDATA[srcRef] ))
 						srcURL = IMGDATA[srcRef]
 					else
-						return isSilent ? D.ThrowError(`Image object '${D.JSL(imgRef)}' is unregistered or is missing 'srcs' property`, "Images: setImage()") : false
+						return isSilent ? D.ThrowError(`Image object '${D.JSC(imgRef)}' is unregistered or is missing 'srcs' property`, "Images: setImage()") : false
 								
 					imgObj.set("imgsrc", srcURL )
 					if (srcRef === "blank")
@@ -462,10 +459,10 @@ const Images = (() => {
 					return imgObj
 				}
 
-				return D.ThrowError(`Invalid image object '${D.JSL(imgObj)}'`, "Images: setImage()")
+				return D.ThrowError(`Invalid image object '${D.JSC(imgObj)}'`, "Images: setImage()")
 			}
 
-			return D.ThrowError(`Invalid category '${D.JSL(imgRef)}'`, "Images: setImage()")
+			return D.ThrowError(`Invalid category '${D.JSC(imgRef)}'`, "Images: setImage()")
 		},
 		setImgParams = (imgRef, params) => {
 			const imgObj = getImageObj(imgRef)
@@ -731,7 +728,7 @@ const Images = (() => {
 				delete REGISTRY[imgRef]
 				return true
 			}
-			return D.ThrowError(`Invalid image reference ${D.JSL(imgRef)}`, "IMAGES: removeImage")
+			return D.ThrowError(`Invalid image reference ${D.JSC(imgRef)}`, "IMAGES: removeImage")
 		},
 		removeImages = (imgString, isRegOnly) => {
 			const imgNames = _.filter(_.keys(REGISTRY), v => v.includes(imgString))
@@ -749,7 +746,7 @@ const Images = (() => {
 			let imgObjs
 			//D.Alert(`Ordering Images: ${D.JS(imgRefs)}`)
 			if (imgRefs === "map")
-				imgObjs = getImageObjs(IMAGELAYERS[(TimeTracker.IsDay() && state[D.GAMENAME].Chars.isDaylighterSession) ? "daylighterMap" : "map"])
+				imgObjs = getImageObjs(IMAGELAYERS[(TimeTracker.IsDay() && state[D.GAMENAME].Char.isDaylighterSession) ? "daylighterMap" : "map"])
 			else if (imgRefs === "objects")
 				imgObjs = getImageObjs(IMAGELAYERS.objects)
 			else
@@ -759,7 +756,7 @@ const Images = (() => {
 			if (!isToBack)
 				imgObjs.reverse()
 			for (const imgObj of imgObjs) {
-				if (D.IsObj(imgObj, "graphic")) {
+				if (VAL({graphic: imgObj})) {
 					if (isToBack)
 						toBack(imgObj)
 					else
@@ -773,7 +770,7 @@ const Images = (() => {
 			const imgObjs = getImageObjs(imgRefs)
 			orderImages(IMAGELAYERS.objects)
 			for (const imgObj of imgObjs) {
-				if (D.IsObj(imgObj, "graphic"))
+				if (VAL({graphic: imgObj}))
 					imgObj.set({layer: layer})
 				else 
 					D.Alert(`No image found for reference ${D.JS(imgObj)}`, "IMAGES: OrderImages")

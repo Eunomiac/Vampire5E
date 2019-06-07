@@ -5,15 +5,59 @@
    trickier, but is contained in the CONFIGURATION and DECLARATIONS #regions. */
 
 const D = (() => {
-	// #region INITIALIZATION
-	const   GAMENAME = "VAMPIRE",
-	      SCRIPTNAME = "DATA",
-		    STATEREF = state[GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
-	const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
+	const GAMENAME = "VAMPIRE"
+	// ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
+	const SCRIPTNAME = "DATA",
+		 CHATCOMMAND = "!do",
+		      GMONLY = true
 
-	STATEREF.DebugLog = STATEREF.DebugLog || []
+	// #region COMMON INITIALIZATION
+	const STATEREF = state[GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+	const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+		  LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+		THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
+
+	const checkInstall = () => {
+			state[GAMENAME] = state[GAMENAME] || {}
+			state[GAMENAME][SCRIPTNAME] = state[GAMENAME][SCRIPTNAME] || {}
+			initialize()
+		},
+		regHandlers = () => {
+			on("chat:message", msg => {
+				if (msg.type !== "api" ||
+					(GMONLY && !playerIsGM(msg.playerid)) ||
+					(CHATCOMMAND && args.shift() !== CHATCOMMAND))
+					return
+				const who = D.GetPlayerName(msg) || "API",
+					 args = msg.content.split(/\s+/u),
+					 call = args.shift()
+				handleInput(msg, who, call, args)
+			})
+		}
+		/*
+		// #region EVENT HANDLERS: (HANDLEINPUT)
+		const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
+			// const 
+			switch (call) {
+			case "":
+
+				break
+			default: break
+			}
+		}
+		// #endregion
+		*/
 	// #endregion
+
+	// #region LOCAL INITIALIZATION
+	const initialize = () => {
+		STATEREF.WATCHLIST = STATEREF.WATCHLIST || []
+		STATEREF.CHARWIDTH = STATEREF.CHARWIDTH || {}
+		STATEREF.DEBUGLOG = STATEREF.DEBUGLOG || []
+	}	
+	// #endregion
+	// *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
 	// #region CONFIGURATION
 	const HTMLFORMATS = {
@@ -25,19 +69,6 @@ const D = (() => {
 	// #endregion
 
 	// **** DEPRECATED: STRIP FROM OTHER SCRIPTS ****
-	const isObject = (obj, type, subtype) => {
-		if (
-			obj &&
-			obj !== null &&
-			typeof obj === "object" &&
-			(!type || obj.get) &&
-			(!type || obj.get("_type") === type) &&
-			(!subtype || obj.get("_subtype") === subtype)
-		)
-			return true
-
-		return false
-	}
 
 	// #region DECLARATIONS: Reference Variables
 	const VALS = {
@@ -317,10 +348,15 @@ const D = (() => {
 					jStr(message),
 					HTMLFORMATS.bodyEnd
 				].join("")
-			if (who === "all" || who === "")
+			if (who === "all" || who === "") {
 				sendChat("", html)
-			else if (VAL({player: playerObj}, "sendToPlayer"))
+				return true
+			} else if (VAL({player: playerObj}, "sendToPlayer")) {
 				sendChat("", `/w ${playerObj.get("name")} ${html}`)
+				return true
+			}
+
+			return false
 		},
 		sendToGM = (msg, title) => sendToPlayer("Storyteller", msg, title || "[GM ALERT]"),
 		ordinal = num => {
@@ -349,7 +385,7 @@ const D = (() => {
 			else if (VAL({array: val}))
 				args.push(...val)
 			else
-				return throwError(`Cannot parse value '${D.JSL(val)}' to object.`, "parseToObj", SCRIPTNAME)
+				return throwError(`Cannot parse value '${D.JSC(val)}' to object.`, "parseToObj", SCRIPTNAME)
 
 			for (const kvp of _.map(args, v => v.split(/\s*:\s*(?!\/)/u)))
 				obj[kvp[0]] = parseInt(kvp[1] ) || kvp[1]
@@ -384,7 +420,7 @@ const D = (() => {
 
 				return haystack.search(new RegExp(needle, "iu")) > -1 && haystack
 			} catch (errObj) {
-				return throwError(`Error locating stat '${D.JSL(needle)}' in ${D.JSL(haystack)}'`, "isIn", SCRIPTNAME, errObj)
+				return throwError(`Error locating stat '${D.JSC(needle)}' in ${D.JSC(haystack)}'`, "isIn", SCRIPTNAME, errObj)
 			}
 		}
 	// #endregion
@@ -424,7 +460,9 @@ const D = (() => {
 
 	// #region VARIABLE VALIDATION
 	const validate = (varList, funcName, scriptName) => {
-		const [errorLines, failedCats, valArray] = [[], [], []]
+		// NOTE: To avoid accidental recursion, DO NOT use validate to confirm a type within the getter of that type.
+		//		(E.g do not use VAL{char} inside any of the getChar() functions.)
+		const [errorLines, valArray] = [[], []]
 		_.each(_.keys(varList), cat => {
 			valArray.length = 0
 			valArray.push(...(cat === "array" ? [varList[cat]] : _.flatten([varList[cat]])))
@@ -432,107 +470,82 @@ const D = (() => {
 				let errorCheck = null
 				switch(cat.toLowerCase()) {
 				case "char":
-					if (!D.GetChar(v)) {
+					if (!getChar(v))
 						errorLines.push(`Invalid character reference: ${jStr(v.get && v.get("name") || v.id || v, true)}`)
-						failedCats.push(cat)
-					}
 					break
 				case "object":
-					if (!(v.get && v.id)) {
+					if (!(v.get && v.id))
 						errorLines.push(`Invalid object: ${jStr(v.get && v.get("name") || v.id || v, true)}`)
-						failedCats.push(cat)
-					}
 					break
 				case "player":
-					if (!D.GetPlayerID(v)) {
+					if (!getPlayer(v))
 						errorLines.push(`Invalid player reference: ${jStr(v.get && v.get("name") || v.id || v)}`)
-						failedCats.push(cat)
-					}
 					break
 				case "trait":
-					if (!varList.char || !validate({char: varList.char}))
-						errorLines.push(`Unable to validate trait(s) ${jStr(varList[cat])} without a character reference.`)
-					else {
+					if (validate({char: varList.char})) {
 						errorCheck = []
 						_.each(_.flatten([varList.char]), charRef => {
-							if (!D.GetStat(charRef, v)) {
-								errorCheck.push(D.GetChar(charRef).get("name"))
-							}
+							if (!getAttr(charRef, v, true))
+								errorCheck.push(getChar(charRef).get("name"))
 						})
-						if (errorCheck.length > 0) {
+						if (errorCheck.length > 0)
 							errorLines.push(`Invalid trait: ${jStr(v.get && v.get("name") || v.id || v)} ON ${errorCheck.length}/${varList.char.length} character references:<br>${jStr(errorCheck)}`)
-							failedCats.push(cat)
-						}
+					} else {
+						errorLines.push(`Unable to validate trait(s) ${jStr(varList[cat])} without a character reference.`)
 					}
 					break
 				case "number":					
-					if (!_.isNumber(v) || _.isNaN(v)) {
+					if (_.isNaN(parseInt(v)))
 						errorLines.push(`Invalid number: ${jStr(v)}`)
-						failedCats.push(cat)
-					}
 					break
 				case "string":
-					if (!_.isString(v)) {
+					if (!_.isString(v))
 						errorLines.push(`Invalid string: ${jStr(v)}`)
-						failedCats.push(cat)
-					}
 					break
 				case "function":
-					if (!_.isFunction(v)) {
+					if (!_.isFunction(v))
 						errorLines.push("Invalid function.")
-						failedCats.push(cat)
-					}
 					break
 				case "array":					
-					if (!_.isArray(v)) {
+					if (!_.isArray(v))
 						errorLines.push(`Invalid array: ${jStr(v)}`)
-						failedCats.push(cat)
-					}					
 					break
 				case "list":					
-					if (!_.isObject(v) || _.isFunction(v) || _.isArray(v) || v.get && v.get("_type")) {
+					if (!_.isObject(v) || _.isFunction(v) || _.isArray(v) || v.get && v.get("_type"))
 						errorLines.push(`Invalid list object: ${jStr(v.get && v.get("name") || v.id || v)}`)
-						failedCats.push(cat)
-					}
 					break
 				case "text":					
-					if (v === null || !v.get || v.get("_type") !== "text") {
+					if (v === null || !v.get || v.get("_type") !== "text")
 						errorLines.push(`Invalid text object: ${jStr(v.get && v.get("name") || v.id || v)}`)
-						failedCats.push(cat)
-					}
 					break
 				case "graphic":					
-					if (v === null || !v.get || v.get("_type") !== "graphic") {
+					if (v === null || !v.get || v.get("_type") !== "graphic")
 						errorLines.push(`Invalid graphic object: ${jStr(v.get && v.get("name") || v.id || v)}`)
-						failedCats.push(cat)
-					}
-					break				
+					break
+				case "attribute":
+					if (v === null || !v.get || v.get("_type") !== "attribute")	
+						errorLines.push(`Invalid attribute object: ${jStr(v.get && v.get("name") || v.id || v)}`)
+					break			
 				case "token":
-					if (v === null || !v.get || v.get("_subtype") !== "token") {
-						errorLines.push(`Invalid token object: ${jStr(v.get && v.get("name") || v.id || v)}`)
-						failedCats.push(cat)
-					}
+					if (v === null || !v.get || v.get("_subtype") !== "token" || v.get("represents") === "")
+						errorLines.push(`Invalid token object (not a token, or doesn't represent a character): ${jStr(v.get && v.get("name") || v.id || v)}`)
 					break
 				case "reprow":			
-					if (!varList.char || !validate({char: varList.char}))
-						errorLines.push(`Unable to validate trait(s) ${jStr(varList[cat])} without a valid character reference.`)
-					else {
+					if (validate({char: varList.char})) {
 						errorCheck = true
 						_.each(_.flatten([varList.char]), charRef => {
-							if (D.GetStats(D.GetChar(charRef)).length > 0)
+							if (getAttrs(getChar(charRef), v, false, true).length > 0)
 								errorCheck = false
 						})
-						if (errorCheck) {
+						if (errorCheck)
 							errorLines.push(`Invalid repeating row reference: ${jStr(v)}`)
-							failedCats.push(cat)
-						}
+					} else {
+						errorLines.push(`Unable to validate trait(s) ${jStr(varList[cat])} without a valid character reference.`)
 					}
 					break
 				case "selection":
-					if (!v.selected || !v.selected[0]) {
+					if (!v.selected || !v.selected[0])
 						errorLines.push("Invalid selection: Select objects first!")
-						failedCats.push(cat)
-					}
 					break
 				default: break
 				}
@@ -550,173 +563,150 @@ const D = (() => {
 	// #endregion
 
 	// #region GETTERS: Object, Character and Player Data
-	const getSelected = (msg, types) => {
-			/* When given a message object, will return all selected objects, or false. */
-			let selObjs = []
+	const getSelected = (msg, typeFilter = []) => {
+			/* When given a message object, will return selected objects or false.
+				Can set one or more types.  In addition to standard types, can include "token" and "character"
+					"token" --> Will only return selected graphic objects that represent a character.
+					"character" --> Will return character objects associated with selected tokens. */
+			const selObjs = new Set(),
+				    types = _.flatten([typeFilter])
 			if (VAL({selection: msg}, "getSelected")) {
-				selObjs.push(..._.map(msg.selected, v => getObj(v._type, v._id)))
-				if (types) {
-					selObjs = _.filter(selObjs, v => _.flatten([types]).includes(v.get("_type")))
-					if (selObjs.length === 0)
-						return throwError(`None of the selected objects are of type(s) '${jStrL(types)}'`, "getSelected", SCRIPTNAME)
-				}
-				return selObjs
+				_.each(msg.selected, v => {
+					if (types.length === 0 || types.includes(v.get("_type")))
+						selObjs.add(getObj(v._type, v._id))
+					else if (v._type === "graphic" && VAL({token: getObj("graphic", v._id)})) {
+						if (types.includes("token"))
+							selObjs.add(getObj("graphic", v.id))
+						else if ((types.includes("char") || types.includes("character")) && VAL({char: getObj("graphic", v._id)}))
+							selObjs.add(getObj("character", getObj("graphic", v._id).get("represents")))
+					}
+				})
+
+				return selObjs.size > 0 ? [...selObjs] : throwError(`None of the selected objects are of type(s) '${jStrL(types)}'`, "getSelected", SCRIPTNAME)
 			}
+
 			return false
 		},
 		getName = (value, isShort) => {
 			// Returns the NAME of the Graphic, Character or Player (DISPLAYNAME) given: object or ID.
-			const objID = _.isString(value) ? value : value._id,
-				obj = _.isString(value) ? getObj("graphic", objID) || getObj("character", objID) || getObj("player", objID) : value,
-				name = (obj && (obj.get("name") || obj.get("_displayname"))) || null
-			if (!name)
-				return false
-			if (!isShort)
-				return name
-			if (name.includes("\"")) {
-				return name
-					.replace(/.*?["]/iu, "")
-					.replace(/["].*/iu, "")
-					.replace(/_/gu, " ")
-			}
+			const obj = VAL({object: value}) && value ||
+					    VAL({char: value}) && getChar(value) ||
+					    VAL({player: value}) && getPlayer(value) ||
+						VAL({string: value}) && getObj("graphic", value)
+			let name = VAL({player: obj}) && obj.get("_displayname") ||
+					   VAL({object: obj}, "getName") && obj.get("name")
 
-			return name
-				.replace(/.*\s/iu, "")
-				.replace(/_/gu, " ")
+			if (!name) return false
+			if (isShort)						// SHORTENING NAME:
+				if (name.includes("\""))		// If name contains quotes, remove everything except the quoted portion of the name.
+					name = name.replace(/.*?["]/iu, "").replace(/["].*/iu, "")
+				else							// Otherwise, remove the first word.				
+					name = name.replace(/.*\s/iu, "")
+			
+			return name.replace(/_/gu, " ")			
 		},
-		getChars = (value, isSilent = false) => {
+		getChars = (charRef, isSilent = false) => {
 			/* Returns an ARRAY OF CHARACTERS given: "all", "registered", a character ID, a character Name,
 				a token object, a message with selected tokens, OR an array of such parameters. */
 			const charObjs = new Set()
 			let searchParams = []
 
-			/* if (!value)
-				return throwError(`No Value Given: ${jStr(value)}!`, "D.GETCHARS") */
 			try {
-				if (value.who) {
-					if (!value.selected || !value.selected[0] )
-						return isSilent ? false : throwError("Must Select a Token!", "getChars", SCRIPTNAME)
-					const tokens = _.filter(value.selected,
-						selection => getObj("graphic", selection._id) &&
-							_.isString(getObj("graphic", selection._id).get("represents")) &&
-							getObj("character", getObj("graphic", selection._id).get("represents")))
-					if (!tokens)
-						return false // throwError(`No Valid Token Selected: ${jStr(value.selected)}`, "D.GETCHARS")
-
-					return _.map(tokens, v => getObj("character", getObj("graphic", v._id).get("represents")))
-				} else if (_.isArray(value)) {
-					searchParams = value
-				} else if (_.isString(value) || _.isObject(value) || _.isNumber(value)) {
-					searchParams.push(value)
+				if (charRef.who) {
+					_.each(getSelected(charRef, "character"), charObj => { charObjs.add(charObj) })
+					return charObjs.size > 0 ? charObjs : isSilent ? false : throwError("Must Select a Token!", "getChars", SCRIPTNAME)
+				} else if (VAL({array: charRef})) {
+					searchParams = charRef
+				} else if (VAL({string: charRef}) || VAL({object: charRef}) || VAL({number: charRef})) {
+					searchParams.push(charRef)
 				} else {
-					return false
+					return isSilent ? false : throwError(`Invalid character reference: ${jStr(charRef)}`, "getChars", SCRIPTNAME)
 				}
 			} catch (errObj) {
-				return false
+				return isSilent ? false : throwError("", "getChars", SCRIPTNAME, errObj)
 			}
-			_.each(searchParams, val => {
+			_.each(searchParams, v => {
 				// If parameter is a digit corresponding to a REGISTERED CHARACTER:
-				if (_.isNumber(parseInt(val)) && !_.isNaN(parseInt(val)) && Chars.REGISTRY[parseInt(val)])
-					charObjs.add(getObj("character", Chars.REGISTRY[parseInt(val)].id))
+				if (VAL({number: v}) && Char.REGISTRY[parseInt(v)]) {
+					charObjs.add(getObj("character", Char.REGISTRY[parseInt(v)].id))
 				// If parameter is a CHARACTER OBJECT already: */
-				if (D.IsObj(val, "character")) {
-					charObjs.add(getObj("character", val.id))
+				} else if (VAL({object: v}) && v.get("type") === "character") {
+					charObjs.add(v)
 				// If parameter is a CHARACTER ID:
-				} else if (_.isString(val) && getObj("character", val)) {
-					charObjs.add(getObj("character", val))
+				} else if (VAL({string: v}) && getObj("character", v)) {
+					charObjs.add(getObj("character", v))
 				// If parameters is a TOKEN OBJECT:
-				} else if (D.IsObj(val, "graphic", "token")) {
-					const char = getObj("character", val.get("represents"))
-					if (char)
-						charObjs.add(char)
+				} else if (VAL({token: v}) && getObj("character", v.get("represents"))) {
+					charObjs.add(getObj("character", v.get("represents")))
 				// If parameter is "all":
-				} else if (val === "all") {
-					_.each(findObjs( {
-						_type: "character"
-					} ), char => charObjs.add(char))
+				} else if (v === "all") {
+					_.each(findObjs( { _type: "character"} ), char => charObjs.add(char))
 				// If parameter calls for REGISTERED CHARACTERS:
-				} else if (val === "registered") {
-					_.each(Chars.REGISTRY, v => {
-						//alertGM(`Grabbing Character: ${jStr(v)}<br><br>ID: ${jStr(v.id)}<br><br>CHAR: ${jStr(getObj("character", v.id))}`)
-						if (!getObj("character", v.id).get("name").includes("Jesse,"))
-							charObjs.add(getObj("character", v.id))
-					} )
-					//alertGM(`Registered Characters: ${jStr(_.map(charObjs, v => v.id))}`)
+				} else if (v === "registered") {
+					_.each(Char.REGISTRY, v => { charObjs.add(getObj("character", v.id)) })
 				// If parameter is a CHARACTER NAME:
-				} else if (_.isString(val)) {
-					_.each(findObjs( {
-						_type: "character"
-					} ), char => {
-						if (char.get("name").toLowerCase().includes(val.toLowerCase()))
+				} else if (VAL({string: v})) {
+					_.each(findObjs( { _type: "character" } ), char => {
+						if (char.get("name").toLowerCase().includes(v.toLowerCase()))
 							charObjs.add(char)
 					} )
 				}
 				if (charObjs.size === 0)
-					return false // throwError(`No Characters Found for Value '${jStr(val)}' in '${jStr(value)}'`, "D.GETCHARS")
+					return isSilent ? false : throwError(`No Characters Found for Value '${jStr(v)}' in '${jStr(charRef)}'`, "getChars", SCRIPTNAME)
 			} )
 
-			return [...charObjs]
+			return _.reject([...charObjs], v => {v.get("name").includes("Jesse,")})		// Filtering out my test character, "Jesse, Good Lad That He Is" 
 		},
-		getChar = v => getChars(v)[0],
-		getAttrs = (charRef, searchPattern, isNumOnly = false, isSilent = false) => {
-			const charObj = D.GetChar(charRef)
-			let attrObjs = []
-			if (!charObj)
-				return isSilent ? false : throwError(`Invalid character reference: ${jStr(charRef)}`, "getStats", SCRIPTNAME)
-			if (_.isArray(searchPattern)) {
-				let patterns = [...searchPattern]
-				attrObjs = getAttrs(charRef, patterns.shift(), isNumOnly)
-				for (const pattern of patterns)
-					attrObjs = _.intersection(attrObjs, getAttrs(charRef, pattern, isNumOnly))					
-			} else {
-				// First, attempt to find the exact attribute name.
-				attrObjs = findObjs( {
-					_type: "attribute",
-					_characterid: getChar(charRef).id,
-					_name: searchPattern
-				} )
-				// ... if not, try a fuzzier search, using the statName as a search parameter.
-				if (attrObjs.length === 0)
-					attrObjs = _.filter(findObjs({
-						type: "attribute",
-						characterid: charObj.id
-					}), v => v.get("name").toLowerCase().includes(searchPattern.toLowerCase()))	
-				// ... if not, see if 'statName' is included in the "..._name" value of a repeating attribute.
-				if (attrObjs.length === 0) {
-					let nameStatsAll = getAttrs(charRef, ["repeating", "_name"]),
-						nameStats = _.filter(nameStatsAll, v => v.get("current").toLowerCase() === searchPattern.toLowerCase())
-					if (nameStats.length === 0)
-						nameStats = _.filter(nameStatsAll, v => v.get("current").toLowerCase().includes(searchPattern.toLowerCase()))
-					if (nameStats.length > 0)
-						for (const stat of nameStats)
-							attrObjs.push(...findObjs( {
-								_type: "attribute",
-								_characterid: getChar(charRef).id,
-								_name: stat.get("name").replace(/_name/gu, "")
-							} ))			
+		getChar = (charRef, isSilent = false) => getChars(charRef, isSilent)[0],
+		getAttrs = (charRef, searchPattern, isSilent = false) => {
+			const charObj = getChar(charRef, isSilent),
+				   charID = charObj && charObj.id,
+				charAttrs = charID && findObjs({_type: "attribute", _characterid: charID}),
+				 attrObjs = new Set()
+			if (!charObj || !charID || !charAttrs)
+				return isSilent ? false : throwError(`Invalid character reference, or character has no attributes: ${jStr(charRef)}`, "getAttrs", SCRIPTNAME)
+			if (VAL({array: searchPattern})) {
+				_.each([...searchPattern], v => {
+					_.each([...getAttrs(charRef, v, isSilent)], vv => { attrObjs.add(vv) })
+				})				
+			} else if (VAL({string: searchPattern}, "getAttrs")) {
+				// First, check for an exact match.
+				attrObjs.add(_.find(charAttrs, v => v.get("name").toLowerCase() === searchPattern.toLowerCase())); attrObjs.delete(undefined)
+				if (attrObjs.size === 0)	// ... then a fuzzy match.
+					_.each(_.filter(charAttrs, v => v.get("name").toLowerCase().includes(searchPattern.toLowerCase())), v => { attrObjs.add(v) })
+				if (attrObjs.size === 0) {
+				// If nothing found, check to see if searchPattern refers to the value of a repeating row's "..._name" attribute.
+					const nameAttrObjs = new Set()
+					// First check for an exact match.
+					nameAttrObjs.add(_.find(charAttrs, v => v.get("name").includes("_name") && v.get("current").toLowerCase() === searchPattern.toLowerCase())); nameAttrObjs.delete(undefined)
+					if (nameAttrObjs.size === 0)  // ... then a fuzzy match.
+						_.each(_.filter(charAttrs, v => v.get("name").includes("_name") && v.get("current").toLowerCase().includes(searchPattern.toLowerCase())), v => { nameAttrObjs.add(v) })
+					// Then grab the corresponding attribute(s) that carry the value:
+					_.each([...nameAttrObjs], v => { attrObjs.add(_.find(charAttrs, vv => vv.get("name") === v.get("name").replace(/_name/gu, ""))); attrObjs.delete(undefined) }) 	
 				}
-				// If only looking for numerical values, filter out non-numbers.
-				if (attrObjs.length > 0 && isNumOnly)
-					attrObjs = _.filter(attrObjs, v => _.isNumber(parseInt(v.get("current"))) && !_.isNaN(parseInt(v.get("current"))))
 			}
 			
-			if (attrObjs.length > 0)
-				return attrObjs
-			
-			return isSilent ? false : throwError(`No attributes matched all search patterns: ${jStr(searchPattern)}`, "getStats", SCRIPTNAME)
+			return attrObjs.size > 0 ? [...attrObjs] : isSilent ? false : throwError(`No attributes matched all search patterns: ${jStr(searchPattern)}`, "getAttrs", SCRIPTNAME)
 		},
-		getAttr = (charRef, searchPattern, isNumOnly, isSilent = false) => getAttrs(charRef, searchPattern, isNumOnly, isSilent)[0],
+		getAttr = (charRef, searchPattern, isSilent = false) => getAttrs(charRef, searchPattern, isSilent)[0],
+		getAttrNameFromObj = (attrObj) => {
+			if (VAL({attribute: attrObj})) {
+				if (attrObj.get("name").includes("repeating_")) {
+					if (getAttr(attrObj.get("_characterid"), `${attrObj.get("name")}_name`, true))
+						return
+				}
+			}
+		},  // USE THIS in other scripts when getting name, so "_name" is always taken into account?
 		getAttrList = (charRef, filterArray, isSilent = false) => {
 			const attrList = {}
-			_.each(getAttrs(charRef, filterArray, false, isSilent), v => {
-				attrList[v.get("name")] = v.get("current")
+			_.each(getAttrs(charRef, filterArray, isSilent), v => {
+				attrList[v.get("name")] = v.get("current")			// WAIT SOMETHING IS WRONG HERE RE: GETTING REP ROW "_name" ATTRIBUTES & VALUES
 			} )
 			return attrList
 		},
 		getAttrVal = (charRef, trait) => {
-			if (!VAL({char: [charRef], trait: [trait]}, "GetStatVal"))
-				return
-			return getAttrList(charRef, [trait])[trait]
+			if (VAL({char: [charRef], trait: [trait]}, "getAttrVal"))
+				return getAttrList(charRef, [trait])[trait]
 		},
 		getPlayerID = (value, isSilent = false) => {
 			// Returns a PLAYER ID given: display name, token object, character reference, player object, msg object, or player ID.
@@ -791,7 +781,7 @@ const D = (() => {
 		getRepAttrObjs = (charRef, secName, isSilent = false) => _.pick(getAttrs(charRef, ["repeating", `${secName}_`], isSilent), v => v.get("name").startsWith(`repeating_${secName}`)),
 		getRepAttrData = (charRef, secName, isSilent = false) => _.pick(getAttrList(charRef, ["repeating", `${secName}_`], isSilent), (v, k) => k.startsWith(`repeating_${secName}_`)),
 		parseRepAttr = (attrRef) => {
-			let nameParts = (D.IsObj(attrRef, "attribute") ? attrRef.get("name") : attrRef).split("_")
+			let nameParts = (VAL({attribute: attrRef}) ? attrRef.get("name") : attrRef).split("_")
 			if (nameParts.length > 2) {
 				return {
 					section: nameParts[1],
@@ -842,7 +832,7 @@ const D = (() => {
 					} )
 					attrList[prefix + k] = v
 				} else {
-					return throwError(`Failure at makeRepRow(charRef, ${D.JSL(secName)}, ${D.JSL(attrs)})<br><br>Prefix (${D.JSL(prefix)}) + K (${D.JSL(k)}) is NOT A STRING asd})`, "makeRepRow", SCRIPTNAME)
+					return throwError(`Failure at makeRepRow(charRef, ${D.JSC(secName)}, ${D.JSC(attrs)})<br><br>Prefix (${D.JSC(prefix)}) + K (${D.JSC(k)}) is NOT A STRING asd})`, "makeRepRow", SCRIPTNAME)
 				}
 			} )
 			setAttrs(charID, attrList)
@@ -851,7 +841,7 @@ const D = (() => {
 		},
 		deleteRepRow = (charRef, secName, rowID) => {
 			if (!D.GetChar(charRef) || !_.isString(secName) || !_.isString(rowID))
-				return throwError(`Need valid charRef (${D.JSL(charRef)}), secName (${D.JSL(secName)}) and rowID (${D.JSL(rowID)}) to delete a repeating row.`, "deleteRepRow", SCRIPTNAME)
+				return throwError(`Need valid charRef (${D.JSC(charRef)}), secName (${D.JSC(secName)}) and rowID (${D.JSC(rowID)}) to delete a repeating row.`, "deleteRepRow", SCRIPTNAME)
 			const attrObjs = getAttrs(charRef, [secName, rowID] )
 			// alertGM(`deleteRepRow(charRef, ${jStr(secName)}, ${jStr(rowID)})<br><br><b>AttrObjs:</b><br>${jStr(_.map(attrObjs, v => v.get("name")))}`, "DATA:DeleteRepRow")
 			if (attrObjs.length === 0)
@@ -869,7 +859,7 @@ const D = (() => {
 		sortRepSec = (charRef, secName, sortFunc) => {
 			/* Sortfunc must have parameters (charRef, secName, rowID1, rowID2) and return
 			POSITIVE INTEGER if row1 should be ABOVE row2. */
-			// D.Log(`CharRef: ${D.JSL(charRef)}`)
+			// D.Log(`CharRef: ${D.JSC(charRef)}`)
 			const rowIDs = getRepRowIDs(charRef, secName),
 				sortTrigger = getAttrList(charRef, [`repeating_${secName}_${rowIDs[0]}_sorttrigger`] )
 			// alertGM(`RepOrder: ${jStr(repOrderAttr)}<br><br>${rowIDs.length} Row IDs for ${secName}:<br><br>${jStr(rowIDs)}`, "DATA.SortRepSec")
@@ -942,16 +932,20 @@ const D = (() => {
 	}
 	// #endregion
 
-	// #region INITIALIZATION
-	const checkInstall = () => {
-		state[GAMENAME] = state[GAMENAME] || {}
-		state[GAMENAME][SCRIPTNAME] = state[GAMENAME][SCRIPTNAME] || {}
-		state[GAMENAME][SCRIPTNAME].WATCHLIST = state[GAMENAME][SCRIPTNAME].WATCHLIST || []
-		state[GAMENAME][SCRIPTNAME].CHARWIDTH = state[GAMENAME][SCRIPTNAME].CHARWIDTH || {}
+	// #region EVENT HANDLERS: (HANDLEINPUT)
+	const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
+		// const 
+		switch (call) {
+		case "":
+
+			break
+		default: break
+		}
 	}
 	// #endregion
 
 	return {
+		RegisterEventHandlers: regHandlers,
 		CheckInstall: checkInstall,
 
 		GAMENAME,
@@ -970,22 +964,19 @@ const D = (() => {
 		CELLSIZE: VALS.CELLSIZE,
 
 		JS: jStr,
-		JSH: jStrH,
-		JSL: jStrL,
-		JSC: jStrC,
-
-		Ordinal: ordinal, 									// D.Ordinal(num): Returns ordinalized number (e.g. 1 -> "1st")
+		JSL: jStrH,
+		JSC: jStrL,
+		JSR: jStrC,
+		Ordinalize: ordinal, 								// D.Ordinalize(num): Returns ordinalized number (e.g. 1 -> "1st")
 		Capitalize: capitalize,								// D.Capitalize(str): Capitalizes the first character in the string.
-		ParseToObj: parseToObj,								// D.ParseToObj(string): Returns object with parameters given by a string of form 'key:val, key:val, ...'
 
+		ParseToObj: parseToObj,								// D.ParseToObj(string): Returns object with parameters given by a string of form 'key:val, key:val, ...'
 		KeyMapObj: kvpMap,
 		
 		GetSelected: getSelected,							// D.GetSelected(msg): Returns selected objects in message.
 		Validate: validate,
 		Log: (msg, title = "") => log(`${jStrL(title)}: ${jStrL(msg)}`),
 		IsIn: isIn,											// D.IsIn(needle, [haystack]): Returns formatted needle if found in haystack (= all traits by default)
-		IsObj: isObject,
-		// D.IsObj(val): Returns true if val is an object (not array)
 		GetName: getName,
 
 		/* D.GetName(id): Returns name of graphic, character or player's
@@ -1055,6 +1046,7 @@ const D = (() => {
 } )()
 
 on("ready", () => {
+	D.RegisterEventHandlers()
 	D.CheckInstall()
 	D.Log("Ready!", "DATA")
 } )

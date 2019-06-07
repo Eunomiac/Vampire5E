@@ -508,18 +508,18 @@ const TimeTracker = (() => {
 				} ), _.values(IMAGETIMES)),
 				curTime = 60 * STATEREF.dateObj.getUTCHours() + STATEREF.dateObj.getUTCMinutes(),
 				curHoriz = imgTimes[_.find(_.keys(imgTimes), v => curTime <= v)]
-			//D.Alert(`Daylighter Check: ${state[D.GAMENAME].Chars.isDaylighterSession} vs. ${state[D.GAMENAME].Chars.isDaylighterSession}, imgSrc: ${curHoriz}`)
-			if (state[D.GAMENAME].Chars.isDaylighterSession && curHoriz === "day")
+			//D.Alert(`Daylighter Check: ${state[D.GAMENAME].Char.isDaylighterSession} vs. ${state[D.GAMENAME].Char.isDaylighterSession}, imgSrc: ${curHoriz}`)
+			if (state[D.GAMENAME].Char.isDaylighterSession && curHoriz === "day")
 				return "daylighters"
 			else
 				return curHoriz
 		},
 		isDay = () => getHorizon().includes("day"),
 		setHorizon = (isForced = false) => {
-			/* D.Log(`Date Obj? ${Boolean(dateObj)}, state val: ${D.JSL(STATEREF.currentDate)}`)
+			/* D.Log(`Date Obj? ${Boolean(dateObj)}, state val: ${D.JSC(STATEREF.currentDate)}`)
 			   dateObj = dateObj || new Date(STATEREF.currentDate) */
 			let imgSrcName = getHorizon()
-			// D.Log(`DATE OBJECT: ${D.JSL(dateObj)}`)
+			// D.Log(`DATE OBJECT: ${D.JSC(dateObj)}`)
 			//D.Alert(`imgSrcName: ${imgSrcName}`)
 			if (isRunningFast) {
 				if (imgSrcName.includes("night") && STATEREF.lastHorizon !== "night") {
@@ -540,7 +540,7 @@ const TimeTracker = (() => {
 			const timeText = `${
 				DAYSOFWEEK[STATEREF.dateObj.getUTCDay()]}, ${
 				MONTHS[STATEREF.dateObj.getUTCMonth()]} ${
-				D.Ordinal(STATEREF.dateObj.getUTCDate())}, ${
+				D.Ordinalize(STATEREF.dateObj.getUTCDate())}, ${
 				(STATEREF.dateObj.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
 				STATEREF.dateObj.getUTCMinutes() < 10 ? "0" : ""}${STATEREF.dateObj.getUTCMinutes().toString()} ${
 				Math.floor(STATEREF.dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`
@@ -737,7 +737,7 @@ const TimeTracker = (() => {
 			const weatherCode = WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()]
 			if (STATEREF.dateObj.getUTCMonth() >= 3 && STATEREF.dateObj.getUTCMonth() <= 9)
 				return "blank"
-			if (isDay() && state[D.GAMENAME].Chars.isDaylighterSession) {
+			if (isDay() && state[D.GAMENAME].Char.isDaylighterSession) {
 				if ((getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()].charAt(2))) < 1)
 					return "frost"
 				else

@@ -1,36 +1,65 @@
 ﻿void MarkStart("Roller")
 const Roller = (() => {
-	// #region INITIALIZATION
+	// ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
 	const SCRIPTNAME = "Roller",
-		    STATEREF = state[D.GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+		 CHATCOMMAND = null,
+			  GMONLY = true
+			  
+	// #region COMMON INITIALIZATION
+	const STATEREF = state[D.GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
 	const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
+		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+		  LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+		  THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
 
 	const checkInstall = () => {
 			state[D.GAMENAME] = state[D.GAMENAME] || {}
 			state[D.GAMENAME][SCRIPTNAME] = state[D.GAMENAME][SCRIPTNAME] || {}
-			STATEREF.rollRecord = STATEREF.rollRecord || []
-			STATEREF.selected = STATEREF.selected || {}
-			_.each(_.uniq(_.flatten(STATECATS.dice)), v => {
-				STATEREF.selected[v] = STATEREF.selected[v] || []
-				STATEREF[v] = STATEREF[v] || []
-			} )
-			_.each(_.without(_.uniq(_.flatten(_.values(STATECATS))), ...STATECATS.dice), v => {
-				STATEREF[v] = STATEREF[v] || {}
-			} )
+			initialize()
 		},
 		regHandlers = () => {
 			on("chat:message", msg => {
-				if (msg.type !== "api") return
-				const who = (getObj("player", msg.playerid) || {get: () => "API",}).get("displayname"),
+				if (msg.type !== "api" ||
+					(GMONLY && !playerIsGM(msg.playerid)) ||
+					(CHATCOMMAND && args.shift() !== CHATCOMMAND))
+					return
+				const who = D.GetPlayerName(msg) || "API",
 					 args = msg.content.split(/\s+/u),
 					 call = args.shift()
 				handleInput(msg, who, call, args)
 			})
 		}
-		   
-	let [isRerollFXOn, rerollFX, isLocked] = [false, null, false]
 	// #endregion
+
+	// #region LOCAL INITIALIZATION
+	const initialize = () => {
+		STATEREF.rollRecord = STATEREF.rollRecord || []
+		STATEREF.selected = STATEREF.selected || {}
+		_.each(_.uniq(_.flatten(STATECATS.dice)), v => {
+			STATEREF.selected[v] = STATEREF.selected[v] || []
+			STATEREF[v] = STATEREF[v] || []
+		} )
+		_.each(_.without(_.uniq(_.flatten(_.values(STATECATS))), ...STATECATS.dice), v => {
+			STATEREF[v] = STATEREF[v] || {}
+		} )
+	}
+	/*
+	// #region EVENT HANDLERS: (HANDLEINPUT)
+	const handleInput = (msg, who, call, args) => {
+		// const 
+		switch (call) {
+		case "":
+
+			break
+		default: break
+		}
+	}
+	// #endregion
+	*/
+	// #endregion	
+	
+	let [isRerollFXOn, rerollFX, isLocked] = [false, null, false]
+	// *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
 	// #region CONFIGURATION: Image Links, Color Schemes */
 	const SETTINGS = {
@@ -529,7 +558,7 @@ const Roller = (() => {
 				return obj
 			}
 
-			return D.ThrowError(`Invalid object: ${D.JSL(obj)}`, "Roller: registerDie()")
+			return D.ThrowError(`Invalid object: ${D.JSC(obj)}`, "Roller: registerDie()")
 		},
 		makeDie = (category, isActive = false) => {
 			STATEREF[category] = STATEREF[category] || []
@@ -593,7 +622,7 @@ const Roller = (() => {
 				return true
 			}
 
-			return D.ThrowError(`Invalid object: ${D.JSL(obj)}`, "Roller: registerText()")
+			return D.ThrowError(`Invalid object: ${D.JSC(obj)}`, "Roller: registerText()")
 		},
 		registerImg = (obj, objName, params = {} ) => {
 			if (VAL({string: params})) {
@@ -972,7 +1001,7 @@ const Roller = (() => {
 				die = getObj("graphic", dieParams.id)
 			if (!die)
 				return D.ThrowError(`ROLLER: SETDIE(${dieNum}, ${dieCat}, ${dieVal}) >> No die registered.`)
-			// D.DBAlert(`Setting die ${D.JSL(dieNum)} (dieVal: ${D.JSL(dieVal)}, params: ${D.JSL(params)})`, funcName, SCRIPTNAME)
+			// D.DBAlert(`Setting die ${D.JSC(dieNum)} (dieVal: ${D.JSC(dieVal)}, params: ${D.JSC(params)})`, funcName, SCRIPTNAME)
 
 			if (dieVal !== "selected") {
 				dieRef.value = dieVal
@@ -985,7 +1014,7 @@ const Roller = (() => {
 				if (die.get(dir) !== dieRef[dir] || (params.shift && params.shift[dir] ))
 					dieParams[dir] = dieRef[dir] + (params.shift && params.shift[dir] ? params.shift[dir] : 0)
 			} )
-			// D.DBAlert("Setting '" + D.JSL(dieVal) + "' in " + D.JSL(dieCat) + " to '" + D.JSL(dieParams) + "'", , funcName, SCRIPTNAME)
+			// D.DBAlert("Setting '" + D.JSC(dieVal) + "' in " + D.JSC(dieCat) + " to '" + D.JSC(dieParams) + "'", , funcName, SCRIPTNAME)
 			die.set(dieParams)
 
 			return die
@@ -1050,11 +1079,11 @@ const Roller = (() => {
 				flagData.flagDiceMod += bonus
 			}
 			
-			/* D.Log(D.JSL(getAttrByName(charObj.id, "incap")), "INCAPACITATION");
-			   D.Log("PARAMS: " + D.JSL(params), "PARAMS");
-			   D.Log("PARAMS DATA: " + D.JSL(params.args), "PARAMS DATA");
+			/* D.Log(D.JSC(getAttrByName(charObj.id, "incap")), "INCAPACITATION");
+			   D.Log("PARAMS: " + D.JSC(params), "PARAMS");
+			   D.Log("PARAMS DATA: " + D.JSC(params.args), "PARAMS DATA");
 			   Return;
-			   D.Log(D.JSL(params.args[4]), "PARAMS DATA 4"); */
+			   D.Log(D.JSC(params.args[4]), "PARAMS DATA 4"); */
 			_.each(_.compact(_.flatten( [
 				getAttrByName(charObj.id, "incap") ? getAttrByName(charObj.id, "incap").split(",") : [],
 				params.args.length > 3 ? params.args[4].split(",") : "",
@@ -1208,7 +1237,7 @@ const Roller = (() => {
 				rollData.mod = parseInt(params[2] || 0)
 				rollData.diffMod = parseInt(params[3] || 0)
 				rollData.prefix = ["repeating", "project", D.GetRepIDCase(params[4] ), ""].join("_")
-				DB(`PROJECT PREFIX: ${D.JSL(rollData.prefix)}`, "getRollData")
+				DB(`PROJECT PREFIX: ${D.JSC(rollData.prefix)}`, "getRollData")
 				break
 			case "secret":
 				rollData.diff = 0
@@ -1736,7 +1765,7 @@ const Roller = (() => {
 				}
 				break
 			default:
-				return D.ThrowError(`Unrecognized rollType: ${D.JSL(rollData.rollType)}`, "APPLYROLL: START")
+				return D.ThrowError(`Unrecognized rollType: ${D.JSC(rollData.rollType)}`, "APPLYROLL: START")
 			}
 
 			if (rollData.diff === 0)
@@ -2044,7 +2073,7 @@ const Roller = (() => {
 						}
 						break
 					default:
-						D.ThrowError(`Unrecognized rollType: ${D.JSL(rollData.rollType)}`, "APPLYROLL: MID")
+						D.ThrowError(`Unrecognized rollType: ${D.JSC(rollData.rollType)}`, "APPLYROLL: MID")
 					}
 					break
 				default:
@@ -2089,8 +2118,8 @@ const Roller = (() => {
 			}
 			DB(`SETTING DICE GRAPHICS
 			
-				Category: '${D.JSL(diceCats[0])}' (total dice: ${D.JSL(STATEREF[diceCats[0]].length)})
-				Showing Dice: [${D.JSL(_.reject(_.map(STATEREF[diceCats[0]], vv => vv.value), v => v === "blank").join(", "))}]`, "displayRoll")
+				Category: '${D.JSC(diceCats[0])}' (total dice: ${D.JSC(STATEREF[diceCats[0]].length)})
+				Showing Dice: [${D.JSC(_.reject(_.map(STATEREF[diceCats[0]], vv => vv.value), v => v === "blank").join(", "))}]`, "displayRoll")
 
 			for (let i = 0; i < STATEREF[diceCats[0]].length; i++) {
 				diceObjs.push(setDie(i, diceCats[0], rollResults.diceVals[i] || "blank", {
@@ -2104,7 +2133,7 @@ const Roller = (() => {
 			bookends = [diceObjs[0], diceObjs[rollResults.diceVals.length - 1]]
 
 			if (!bookends || bookends.length < 2 || _.isUndefined(bookends[0] ) || _.isUndefined(bookends[1] ))
-				return D.ThrowError(`Bookends Not Found.  DiceObjs.length is ${diceObjs.length}, rollResults.diceVals is ${rollResults.diceVals.length}: ${D.JSL(diceObjs)}`)
+				return D.ThrowError(`Bookends Not Found.  DiceObjs.length is ${diceObjs.length}, rollResults.diceVals is ${rollResults.diceVals.length}: ${D.JSC(diceObjs)}`)
 
 			spread = bookends[1].get("left") - bookends[0].get("left")
 
@@ -2161,7 +2190,7 @@ const Roller = (() => {
 				),
 				charObj = getObj("character", rollData.charID)
 			if (charObj)
-				Chars.Damage(charObj, "willpower", "spent", 1)
+				Char.Damage(charObj, "willpower", "spent", 1)
 			rollData.rerollAmt = STATEREF.selected[dieCat].length
 			replaceRoll(rollData, rollDice(rollData, _.values(rolledDice)))
 			displayRoll()
@@ -2177,7 +2206,7 @@ const Roller = (() => {
 				for (let i = 0; i > deltaDice; i--) {
 					const cutIndex = rollResults.diceVals.findIndex(v => v.startsWith("B"))
 					if (cutIndex === -1)
-						return D.ThrowError(`Not enough base dice to remove in: ${D.JSL(rollResults.diceVals)}`, "ROLLER: changeRoll()")
+						return D.ThrowError(`Not enough base dice to remove in: ${D.JSC(rollResults.diceVals)}`, "ROLLER: changeRoll()")
 					rollResults.diceVals.splice(cutIndex, 1)
 				}
 			}
@@ -2419,7 +2448,7 @@ const Roller = (() => {
 				record[k].PER = `${Math.round(data.TOT / parseInt(testCycles) * 10000)/100}%`
 				record[k] = `${data.TOT} (${record[k].PER})`
 			})
-			D.Alert(`Trace: ${D.JSL(tracer)}<br><br>testProbs: ${D.JSL(theseProbs)}<br><br>Resonances: ${D.JSL(resList)}<br><br>${D.JS(record)}`)
+			D.Alert(`Trace: ${D.JSC(tracer)}<br><br>testProbs: ${D.JSC(theseProbs)}<br><br>Resonances: ${D.JSC(resList)}<br><br>${D.JS(record)}`)
 		}			
 
 		randNum = Math.random()
@@ -2455,7 +2484,7 @@ const Roller = (() => {
 		case "!frenzyroll": rollType = rollType || "frenzy"
 			lockRoller(false)
 			args = `${STATEREF.frenzyRoll} ${args[0]}`.split(" ")
-			DB(`Parsing Frenzy Args: ${D.JSL(args)}`, "!frenzyroll")
+			DB(`Parsing Frenzy Args: ${D.JSC(args)}`, "!frenzyroll")
 			/* falls through */
 		case "!traitroll": rollType = rollType || "trait"
 			/* falls through */
@@ -2476,7 +2505,7 @@ const Roller = (() => {
 			params = _.map(args.join(" ").split("|"), v => v.trim())
 			name = params.shift()
 			charObj = D.GetChar(name)
-			DB(`Received Roll: ${D.JSL(call)} ${name}|${params.join("|")}
+			DB(`Received Roll: ${D.JSC(call)} ${name}|${params.join("|")}
 			
 			Params: [${D.JS(params.join(", "))}]
 			
@@ -2604,7 +2633,7 @@ const Roller = (() => {
 				resIntLine = `This blood is special.  In addition to enhancing ${resonance[2]}, its ${resonance[1].toLowerCase()} resonance is so powerful that the emotions within have crystallized into a dyscracias.`
 				break
 			}
-			sendChat("Resonance Check", D.JSH(`<div style="display: block; margin-left: -40px; height: auto; background: url(https://i.imgur.com/kBl8aTO.jpg);text-align: center;border: 4px crimson outset; padding: 5px; width: 255px;"><span style="display: block; font-weight: bold; color: red; text-align: center; width: 100%; font-family: sexsmith; font-size: 32px; height: 45px; line-height: 45px;">${
+			sendChat("Resonance Check", D.JSL(`<div style="display: block; margin-left: -40px; height: auto; background: url(https://i.imgur.com/kBl8aTO.jpg);text-align: center;border: 4px crimson outset; padding: 5px; width: 255px;"><span style="display: block; font-weight: bold; color: red; text-align: center; width: 100%; font-family: sexsmith; font-size: 32px; height: 45px; line-height: 45px;">${
 				_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")
 			}</span><span style="display: block; width: 100%; text-align: center; font-family: Voltaire; color: black; background-color: red; font-size: 16px; margin-bottom: 7px; border-top: 1px solid red; border-bottom: 1px solid red; height: 20px; line-height: 20px; font-weight: bold;">${
 				resDetails
@@ -2633,7 +2662,7 @@ const Roller = (() => {
 			else
 				chars = D.GetChars(msg)
 			if (params.length < 1 || params.length > 3)
-				D.ThrowError(`Syntax Error: ![x][n]sroll: <trait1>[,<trait2>,<mod>] (${D.JSL(params)})`)
+				D.ThrowError(`Syntax Error: ![x][n]sroll: <trait1>[,<trait2>,<mod>] (${D.JSC(params)})`)
 			else
 				makeSecretRoll(chars, params, isSilent, isHidingTraits)
 			break
@@ -2647,6 +2676,7 @@ const Roller = (() => {
 	return {
 		RegisterEventHandlers: regHandlers,
 		CheckInstall: checkInstall,
+
 		Select: selectDie,
 		Reroll: wpReroll
 	}
