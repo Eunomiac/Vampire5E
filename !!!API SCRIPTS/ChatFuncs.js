@@ -158,7 +158,8 @@ const ChatFuncs = (() => {
 			return true
 		},
 		getImg = obj => {
-			if (!VAL({graphic: obj})) return false
+			if (!D.IsObj(obj, "graphic"))
+				return false
 			D.Alert(`<b>ID:</b> ${obj.id}<br/><b>SRC:</b> ${obj.get("imgsrc").replace("max", "thumb")}`, "Image Data")
 
 			return true
