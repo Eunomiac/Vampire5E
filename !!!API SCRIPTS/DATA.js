@@ -435,132 +435,103 @@ const D = (() => {
 		},
 		// Validate Categories: char, player, trait, number, string, function, array, list, text, graphic, token, reprow
 		validate = (varList, funcName, scriptName) => {
-			const [errorLines, failedCats] = [[], []]
-			let traitErrors = []
+			// NOTE: To avoid accidental recursion, DO NOT use validate to confirm a type within the getter of that type.
+			//		(E.g do not use VAL{char} inside any of the getChar() functions.)
+			const [errorLines, valArray] = [[], []]
 			_.each(_.keys(varList), cat => {
-				switch(cat.toLowerCase()) {
-				case "char":
-					DB(`_.flatten([varList[cat]]) = ${D.JSL(_.flatten([varList[cat]]))}`, "validate")
-					_.each(_.flatten([varList[cat]]), v => {
-						if (!D.GetChar(v)) {
-							errorLines.push(`Invalid character reference: ${D.JS(v.get && v.get("name") || v.id || v)}`)
-							failedCats.push(cat)
+				valArray.length = 0
+				valArray.push(...(cat === "array" ? [varList[cat]] : _.flatten([varList[cat]])))
+				_.each(valArray, v => {
+					let errorCheck = null
+					switch(cat.toLowerCase()) {
+					case "char":
+						if (!getChar(v))
+							errorLines.push(`Invalid character reference: ${jStr(v.get && v.get("name") || v.id || v, true)}`)
+						break
+					case "object":
+						if (!(v.get && v.id))
+							errorLines.push(`Invalid object: ${jStr(v.get && v.get("name") || v.id || v, true)}`)
+						break
+					case "player":
+						if (!getPlayer(v))
+							errorLines.push(`Invalid player reference: ${jStr(v.get && v.get("name") || v.id || v)}`)
+						break
+					case "trait":
+						if (validate({char: varList.char})) {
+							errorCheck = []
+							_.each(_.flatten([varList.char]), charRef => {
+								if (!getAttr(charRef, v, true))
+									errorCheck.push(getChar(charRef).get("name"))
+							})
+							if (errorCheck.length > 0)
+								errorLines.push(`Invalid trait: ${jStr(v.get && v.get("name") || v.id || v)} ON ${errorCheck.length}/${varList.char.length} character references:<br>${jStr(errorCheck)}`)
+						} else {
+							errorLines.push(`Unable to validate trait(s) ${jStr(varList[cat])} without a character reference.`)
 						}
-					})
-					break
-				case "player":
-					_.each(_.flatten([varList[cat]]), v => {
-						if (!D.GetPlayerID(v)) {
-							errorLines.push(`Invalid player reference: ${D.JS(v.get && v.get("name") || v.id || v)}`)
-							failedCats.push(cat)
+						break
+					case "number":					
+						if (_.isNaN(parseInt(v)))
+							errorLines.push(`Invalid number: ${jStr(v)}`)
+						break
+					case "string":
+						if (!_.isString(v))
+							errorLines.push(`Invalid string: ${jStr(v)}`)
+						break
+					case "function":
+						if (!_.isFunction(v))
+							errorLines.push("Invalid function.")
+						break
+					case "array":					
+						if (!_.isArray(v))
+							errorLines.push(`Invalid array: ${jStr(v)}`)
+						break
+					case "list":					
+						if (!_.isObject(v) || _.isFunction(v) || _.isArray(v) || v.get && v.get("_type"))
+							errorLines.push(`Invalid list object: ${jStr(v.get && v.get("name") || v.id || v)}`)
+						break
+					case "text":					
+						if (v === null || !v.get || v.get("_type") !== "text")
+							errorLines.push(`Invalid text object: ${jStr(v.get && v.get("name") || v.id || v)}`)
+						break
+					case "graphic":					
+						if (v === null || !v.get || v.get("_type") !== "graphic")
+							errorLines.push(`Invalid graphic object: ${jStr(v.get && v.get("name") || v.id || v)}`)
+						break
+					case "attribute":
+						if (v === null || !v.get || v.get("_type") !== "attribute")	
+							errorLines.push(`Invalid attribute object: ${jStr(v.get && v.get("name") || v.id || v)}`)
+						break			
+					case "token":
+						if (v === null || !v.get || v.get("_subtype") !== "token" || v.get("represents") === "")
+							errorLines.push(`Invalid token object (not a token, or doesn't represent a character): ${jStr(v.get && v.get("name") || v.id || v)}`)
+						break
+					case "reprow":			
+						if (validate({char: varList.char})) {
+							errorCheck = true
+							_.each(_.flatten([varList.char]), charRef => {
+								if (getAttrs(getChar(charRef), v, false, true).length > 0)
+									errorCheck = false
+							})
+							if (errorCheck)
+								errorLines.push(`Invalid repeating row reference: ${jStr(v)}`)
+						} else {
+							errorLines.push(`Unable to validate trait(s) ${jStr(varList[cat])} without a valid character reference.`)
 						}
-					})
-					break
-				case "trait":
-					traitErrors = []
-					_.each(_.flatten([varList[cat]]), v => {
-						if (!varList.char)
-							return D.ThrowError(`Unable to validate trait(s) ${D.JS(varList[cat])} without a character reference.`, "DATA:Validate")
-						let charErrors = []
-						_.each(varList.char, charRef => {
-							if (D.GetChar(charRef)) {
-								if (!D.GetStat(charRef, v))
-									charErrors.push(D.GetName(charRef))
-							}
-						})
-						if (charErrors.length > 0)
-							traitErrors.push(`${D.JS(v)}: ${charErrors.join(", ")}`)
-					})
-					if (traitErrors.length > 0) {
-						errorLines.push(`Invalid trait reference(s):<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${traitErrors.join("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")}`)
-						failedCats.push(cat)
+						break
+					case "selection":
+						if (!v.selected || !v.selected[0])
+							errorLines.push("Invalid selection: Select objects first!")
+						break
+					default: break
 					}
-					break
-				case "number":					
-					_.each(_.flatten([varList[cat]]), v => {
-						if (!_.isNumber(v) || _.isNaN(v)) {
-							errorLines.push(`Invalid number: ${D.JS(v)}`)
-							failedCats.push(cat)
-						}
-					})
-					break
-				case "string":					
-					_.each(_.flatten([varList[cat]]), v => {
-						if (!_.isString(v)) {
-							errorLines.push(`Invalid string: ${D.JS(v)}`)
-							failedCats.push(cat)
-						}
-					})
-					break
-				case "function":					
-					_.each(_.flatten([varList[cat]]), v => {
-						if (!_.isFunction(v)) {
-							if (!errorLines.includes("One or more invalid functions."))
-								errorLines.push("One or more invalid functions.")
-							failedCats.push(cat)
-						}
-					})
-					break
-				case "array":					
-					if (!_.isArray(varList[cat])) {
-						errorLines.push(`Invalid array: ${D.JS(varList[cat])}`)
-						failedCats.push(cat)
-					}					
-					break
-				case "list":					
-					_.each(_.flatten([varList[cat]]), v => {
-						if (!_.isObject(v) || _.isFunction(v) || _.isArray(v) || v.get && v.get("_type")) {
-							errorLines.push(`Invalid list object: ${D.JS(v.get && v.get("name") || v.id || v)}`)
-							failedCats.push(cat)
-						}
-					})
-					break
-				case "text":					
-					_.each(_.flatten([varList[cat]]), v => {
-						if (v === null || typeof v !== "object" || !v.get || v.get("_type") !== "text") {
-							errorLines.push(`Invalid text object: ${D.JS(v.get && v.get("name") || v.id || v)}`)
-							failedCats.push(cat)
-						}
-					})
-					break
-				case "graphic":					
-					_.each(_.flatten([varList[cat]]), v => {
-						if (v === null || typeof v !== "object" || !v.get || v.get("_type") !== "graphic") {
-							errorLines.push(`Invalid graphic object: ${D.JS(v.get && v.get("name") || v.id || v)}`)
-							failedCats.push(cat)
-						}
-					})
-					break				
-				case "token":
-					_.each(_.flatten([varList[cat]]), v => {
-						if (!D.GetSelected(v)[0])
-							return D.ThrowError("Select a token first!", "DATA:Validate")
-						_.each(D.GetSelected(v), vv => {
-							if (vv === null || typeof vv !== "object" || !vv.get || vv.get("_subtype") !== "token") {
-								errorLines.push(`Invalid token object: ${D.JS(vv.get && vv.get("name") || vv.id || vv || v)}`)
-								failedCats.push(cat)
-							}
-						})
-						failedCats.push(cat)
-					})
-					break
-				case "reprow":				
-					_.each(_.flatten([varList[cat]]), v => {
-						if (!varList.char)
-							return D.ThrowError(`Unable to validate repeating row ID(s) ${D.JS(varList[cat])} without a character reference.`, "DATA:Validate")
-						if (D.GetStats(D.GetChar(varList.char[0], [v] )).length === 0) {
-							errorLines.push(`Invalid repeating row ID: ${D.JS(v)}`)
-							failedCats.push(cat)
-						}
-					})
-					break
-				default: break
-				}
+				})
 			})
 			if (errorLines.length > 0) {
 				if (!funcName || !scriptName)
 					return false
-				return D.ThrowError(errorLines.join("<br>"), `${scriptName.toUpperCase()}: ${D.Capitalize(funcName)}`)
+				return throwError(`[From ${jStr(scriptName).toUpperCase()}:${jStr(funcName)}]
+											
+											${errorLines.join("<br>")}`, "validate", SCRIPTNAME)
 			}
 			return true
 		}
