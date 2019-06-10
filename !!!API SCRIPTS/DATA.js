@@ -39,6 +39,7 @@ const D = (() => {
 		},
 		DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
 		TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"],
+		CLANS = ["Brujah", "Gangrel", "Malkavian", "Nosferatu", "Toreador", "Tremere", "Ventrue", "Lasombra", "Tzimisce", "Banu Haqim", "Ministry", "Hecata", "Ravnos"],
 		MISCATTRS = ["blood_potency_max"],
 		BLOODPOTENCY = [
 			{bp_surge: 0, bp_discbonus: 0},
@@ -250,15 +251,18 @@ const D = (() => {
 
 				return JSON.stringify(returnObj, replacer, 2)
 					.replace(/(\s*?)"([^"]*?)"\s*?:/gu, "$1$2:")
-					.replace(/</gu, "&lt;")
-					.replace(/>/gu, "&gt;")
 					.replace(/\\n/gu, "<br/>")
 					.replace(/\\t/gu, "")
 					.replace(/ (?= )/gu, "&nbsp;")
 					.replace(/\\"/gu, "\"")
 					.replace(/(^"|"$)/gu, "")
 
-				/* return JSON.stringify(returnObj, null, 2)
+				/*
+				
+					.replace(/</gu, "&lt;")
+					.replace(/>/gu, "&gt;")
+					
+				return JSON.stringify(returnObj, null, 2)
 					.replace(/"/gu, "'")
 					.replace(/ /gu, "&nbsp;")
 					.replace(/\\n/gu, "<br/>")
@@ -972,6 +976,7 @@ const D = (() => {
 		ATTRIBUTES,
 		SKILLS,
 		DISCIPLINES,
+		CLANS,
 		TRACKERS,
 		MISCATTRS,
 		BLOODPOTENCY,

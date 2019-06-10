@@ -468,7 +468,7 @@ const Chars = (() => {
 			STATEREF.SessionNum++
 			D.Alert(`Beginning Session ${D.SESSIONNUMS[STATEREF.SessionNum]}`)
 			TimeTracker.StartClock()
-			TimeTracker.StartLights()
+			//TimeTracker.StartLights()
 
 		},
 		setSessionNum = sNum => {
@@ -1053,10 +1053,10 @@ const Chars = (() => {
 			//state[D.GAMENAME].Chars.registry["1"].playerID = "-LLIBpH_GL5I-9lAOiw9"
 			
 			// Return Player Control:
-			state[D.GAMENAME].Chars.registry["4"].playerID = "-LMGDbZCKw4bZk8ztfNf"
-			state[D.GAMENAME].Chars.registry["3"].playerID = "-LN7lNnjuWmFuvVPW76H"
-			state[D.GAMENAME].Chars.registry["2"].playerID = "-LN6n-fR8cSNR2E_N_3q"
-			state[D.GAMENAME].Chars.registry["1"].playerID = "-LMGDQqIvyL87oIfrVDX"
+			//state[D.GAMENAME].Chars.registry["4"].playerID = "-LMGDbZCKw4bZk8ztfNf"
+			//state[D.GAMENAME].Chars.registry["3"].playerID = "-LN7lNnjuWmFuvVPW76H"
+			//state[D.GAMENAME].Chars.registry["2"].playerID = "-LN6n-fR8cSNR2E_N_3q"
+			//state[D.GAMENAME].Chars.registry["1"].playerID = "-LMGDQqIvyL87oIfrVDX"
 		}
 
 

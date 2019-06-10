@@ -1,0 +1,5829 @@
+{
+    "schema_version": 2,
+    "oldId": "-LTu1B8hYecqG406LPvr",
+    "name": "Yusef Shamsin",
+    "avatar": "https://s3.amazonaws.com/files.d20.io/images/71964526/qV25eUNvQPSU3-qf1n9Nvw/med.png?1548234176",
+    "bio": "",
+    "gmnotes": "",
+    "defaulttoken": "{\"left\":1150.586702954899,\"top\":1498.836702954899,\"width\":165,\"height\":210,\"imgsrc\":\"https://s3.amazonaws.com/files.d20.io/images/71700406/5ZKBy3HNYqBpBczWO15w2Q/med.png?1547964659\",\"page_id\":\"-LNZxbXyJYEL4nRFEm4x\",\"layer\":\"objects\",\"name\":\"Brett's Sewer Rat\",\"represents\":\"-LTu1B8hYecqG406LPvr\",\"showplayers_name\":true,\"playersedit_name\":false,\"playersedit_bar1\":false,\"playersedit_bar2\":false,\"playersedit_bar3\":false,\"playersedit_aura1\":false,\"playersedit_aura2\":false,\"lastmove\":\"1140.586702954899,1498.836702954899\"}",
+    "tags": "[]",
+    "controlledby": "all,-LMGDQqIvyL87oIfrVDX",
+    "inplayerjournals": "all",
+    "attribs": [
+        {
+            "name": "clan",
+            "current": "Nosferatu",
+            "max": "",
+            "id": "-LV1Jpr47Ig0bwsTzBxB"
+        },
+        {
+            "name": "bane_title",
+            "current": "Nosferatu Clan Bane",
+            "max": "",
+            "id": "-LV1Jpss0Zz322pwYoWS"
+        },
+        {
+            "name": "bane_text",
+            "current": "Your cursed Nosferatu Blood afflicts you with physical ugliness:  You have the Repulsive (••) Flaw at all times, and can never purchase dots in the Looks Merit.  In addition, any attempt to disguise yourself as human suffers a dice pool penalty equal to your Bane Severity (1) (this includes applicable uses of Obfuscate).",
+            "max": "",
+            "id": "-LV1JpsxPaooT1uNuGWP"
+        },
+        {
+            "name": "disc1_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LV1Jpt0jsOoSiV_MCwA"
+        },
+        {
+            "name": "disc1_name",
+            "current": "Animalism",
+            "max": "",
+            "id": "-LV1Jpt44kWgooOldK4u"
+        },
+        {
+            "name": "disc2_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LV1Jpt7SXxiwYua5Ovr"
+        },
+        {
+            "name": "disc2_name",
+            "current": "Obfuscate",
+            "max": "",
+            "id": "-LV1Jpt95-oGs7RwbALB"
+        },
+        {
+            "name": "disc3_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LV1JptBiayRx9RJenCN"
+        },
+        {
+            "name": "disc3_name",
+            "current": "Potence",
+            "max": "",
+            "id": "-LV1JptFIiRpp7zZbRek"
+        },
+        {
+            "name": "rituals_toggle",
+            "current": 0,
+            "max": "",
+            "id": "-LV1JptIMDG7yjickQB0"
+        },
+        {
+            "name": "formulae_toggle",
+            "current": 0,
+            "max": "",
+            "id": "-LV1JptPSXBxaWt-fugL"
+        },
+        {
+            "name": "generation",
+            "current": "12",
+            "max": "",
+            "id": "-LV1JrE0LwSzMiZl03rC"
+        },
+        {
+            "name": "bp_surge",
+            "current": 1,
+            "max": "",
+            "id": "-LV1JrFoXGHISQH8fglR"
+        },
+        {
+            "name": "bp_mend",
+            "current": 2,
+            "max": "",
+            "id": "-LV1JrFthH-2qFNj9apv"
+        },
+        {
+            "name": "bp_discbonus",
+            "current": 1,
+            "max": "",
+            "id": "-LV1JrFw2_eu7EVA3Q_s"
+        },
+        {
+            "name": "bp_rousereroll",
+            "current": 1,
+            "max": "",
+            "id": "-LV1JrFzPHbFVLWqvCFx"
+        },
+        {
+            "name": "bp_baneseverity",
+            "current": 1,
+            "max": "",
+            "id": "-LV1JrG18tz-GeLIYu9o"
+        },
+        {
+            "name": "bp_slakeanimal",
+            "current": 0.5,
+            "max": "",
+            "id": "-LV1JrG4Cp6WUkDYuR2k"
+        },
+        {
+            "name": "bp_slakehuman",
+            "current": 0,
+            "max": "",
+            "id": "-LV1JrG6XrekdnvYqcQ_"
+        },
+        {
+            "name": "bp_slakekill",
+            "current": 1,
+            "max": "",
+            "id": "-LV1JrG8x8rJPT77PMqY"
+        },
+        {
+            "name": "bp_surgetext",
+            "current": "+1 Die",
+            "max": "",
+            "id": "-LV1JrGCDTUXw2vSrlRP"
+        },
+        {
+            "name": "bp_mendtext",
+            "current": "2 Superficial",
+            "max": "",
+            "id": "-LV1JrGErHZQNvDSFuHM"
+        },
+        {
+            "name": "bp_discbonustext",
+            "current": "+1 Die;  Rouse x2 for Level 1.",
+            "max": "",
+            "id": "-LV1JrGGHH_MCNwGBhLj"
+        },
+        {
+            "name": "bp_slakebag",
+            "current": 0.5,
+            "max": "",
+            "id": "-LV1JrGHKMUkZcQPcLuk"
+        },
+        {
+            "name": "bp_slaketext",
+            "current": "Animals & bagged blood slake half Hunger.\nHumans slake full Hunger.\nMust kill to reduce Hunger below 1.",
+            "max": "",
+            "id": "-LV1JrGJstigeM4h7aId"
+        },
+        {
+            "name": "faction",
+            "current": "Anarch",
+            "max": "",
+            "id": "-LV1Js_4m_cGIPg6rZh0"
+        },
+        {
+            "name": "predator",
+            "current": "Farmer",
+            "max": "",
+            "id": "-LV1K07lnZRQSdy-xOWT"
+        },
+        {
+            "name": "tab_core",
+            "current": "6",
+            "max": "",
+            "id": "-LV1KhLvnjFePwWmrTmk"
+        },
+        {
+            "name": "lastbox",
+            "current": "",
+            "max": "",
+            "id": "-LV1KhNhgIqzQiOPlmlX"
+        },
+        {
+            "name": "lasthumanity",
+            "current": "",
+            "max": "",
+            "id": "-LV1KhNk6KBi4sSkbJkw"
+        },
+        {
+            "name": "laststains",
+            "current": "",
+            "max": "",
+            "id": "-LV1KhNngrknuR-2gTI4"
+        },
+        {
+            "name": "lastcollisions",
+            "current": "",
+            "max": "",
+            "id": "-LV1KhNpP8JBhgvcDCHf"
+        },
+        {
+            "name": "marquee_tracker",
+            "current": "26,50,42,18,6,44,70,17,41,57,51,73,21,14,3,71,59,12,33,60,1,48,52,64,29,4,68,40,31,28,58,20,56",
+            "max": "",
+            "id": "-LV1KhNs8GIVOgufczQx"
+        },
+        {
+            "name": "marquee_lines_toggle",
+            "current": 3,
+            "max": "",
+            "id": "-LV1KhNx8LRcnNGO_ULB"
+        },
+        {
+            "name": "marquee_title",
+            "current": "The Prince",
+            "max": "",
+            "id": "-LV1KhO039gfK08mfiCL"
+        },
+        {
+            "name": "marquee",
+            "current": "The prince is the vampire who has claimed leadership over a city on behalf of the Camarilla. Only the\nprince possesses the authority of the Eldest, the right to Embrace, and ultimate dominion over the city.\nThe Prince of Toronto is Osborne Lowell of Clan Ventrue, served by his seneschal Frederick Scheer, of Clan Tremere.",
+            "max": "",
+            "id": "-LV1KhO42GtbNgyC-LZ1"
+        },
+        {
+            "name": "humanitybox_7",
+            "current": "1",
+            "max": "",
+            "id": "-LVZW8kpReVPvs_bHbAZ"
+        },
+        {
+            "name": "humanity_7",
+            "current": 2,
+            "max": "",
+            "id": "-LVZW9Jgef4yoL50d0C8"
+        },
+        {
+            "name": "humanity_8",
+            "current": 2,
+            "max": "",
+            "id": "-LVZW9JiQN4n7slDuqCs"
+        },
+        {
+            "name": "humanity_9",
+            "current": 1,
+            "max": "",
+            "id": "-LVZW9JlKZLvbjJ-dNvn"
+        },
+        {
+            "name": "humanity_10",
+            "current": 1,
+            "max": "",
+            "id": "-LVZW9Jm_BRQSv6XaZTh"
+        },
+        {
+            "name": "humanity",
+            "current": 8,
+            "max": "",
+            "id": "-LVZW9Jr-NkbL0iA9LxR"
+        },
+        {
+            "name": "stains",
+            "current": 0,
+            "max": "",
+            "id": "-LVZW9JsLVIHyjoeyvxF"
+        },
+        {
+            "name": "humanity_1",
+            "current": 2,
+            "max": "",
+            "id": "-LVZWBBEk4M_jFK4ittj"
+        },
+        {
+            "name": "humanity_2",
+            "current": 2,
+            "max": "",
+            "id": "-LVZWBBIlWHfm-i77ALw"
+        },
+        {
+            "name": "humanity_3",
+            "current": 2,
+            "max": "",
+            "id": "-LVZWBBJX-oZ7DPdTZxz"
+        },
+        {
+            "name": "humanity_4",
+            "current": 2,
+            "max": "",
+            "id": "-LVZWBBKXKog1PTrTt_E"
+        },
+        {
+            "name": "humanity_5",
+            "current": 2,
+            "max": "",
+            "id": "-LVZWBBM9sv_I6EsHY1_"
+        },
+        {
+            "name": "humanity_6",
+            "current": 2,
+            "max": "",
+            "id": "-LVZWBBNY_qBC0j2yj_r"
+        },
+        {
+            "name": "humanitybox_5",
+            "current": "0",
+            "max": "",
+            "id": "-LVZWCQuKBQnYmH3NWH9"
+        },
+        {
+            "name": "humanitybox_8",
+            "current": "0",
+            "max": "",
+            "id": "-LVZWEpFhKMNVUBSWm0o"
+        },
+        {
+            "name": "rollarray",
+            "current": "persuasion,charisma",
+            "max": "",
+            "id": "-LVZWFQwit3ryKFEFCaX"
+        },
+        {
+            "name": "rollpooldisplay",
+            "current": "Charisma + Persuasion",
+            "max": "",
+            "id": "-LVZWFQxqf45tX1CKmYW"
+        },
+        {
+            "name": "rollparams",
+            "current": "@{character_name}|charisma,persuasion",
+            "max": "",
+            "id": "-LVZWFQykef5lBSGX1D3"
+        },
+        {
+            "name": "disc1",
+            "current": "3",
+            "max": "",
+            "id": "-LVt8v-1sjxY1LY_WNZY"
+        },
+        {
+            "name": "repstats",
+            "current": "repeating_advantage_-lamnmpnp9fgxuzf-z8j_advantage,repeating_advantage_-lamnmpnp9fgxuzf-z8j_advantage_name,repeating_advantage_-lamnmpnp9fgxuzf-z8j_advantage_flag,repeating_advantage_-lamnmpnp9fgxuzf-z8j_advantage_type,repeating_advantage_-lcoluiasbqgjlthpiaf_advantage,repeating_advantage_-lcoluiasbqgjlthpiaf_advantage_name,repeating_advantage_-lcoluiasbqgjlthpiaf_advantage_flag,repeating_advantage_-lcoluiasbqgjlthpiaf_advantage_type,repeating_advantage_-lcom9mstsdutlbkocxc_advantage,repeating_advantage_-lcom9mstsdutlbkocxc_advantage_name,repeating_advantage_-lcom9mstsdutlbkocxc_advantage_flag,repeating_advantage_-lcom9mstsdutlbkocxc_advantage_type,repeating_advantage_-lcomlzk8u6kkguzwsoa_advantage,repeating_advantage_-lcomlzk8u6kkguzwsoa_advantage_name,repeating_advantage_-lcomlzk8u6kkguzwsoa_advantage_flag,repeating_advantage_-lcomlzk8u6kkguzwsoa_advantage_type,repeating_advantage_-lcomyseamqwh6cy6zbl_advantage,repeating_advantage_-lcomyseamqwh6cy6zbl_advantage_name,repeating_advantage_-lcomyseamqwh6cy6zbl_advantage_flag,repeating_advantage_-lcomyseamqwh6cy6zbl_advantage_type,repeating_advantage_-lconmmqy7f0sleosgty_advantage,repeating_advantage_-lconmmqy7f0sleosgty_advantage_name,repeating_advantage_-lconmmqy7f0sleosgty_advantage_flag,repeating_advantage_-lconmmqy7f0sleosgty_advantage_type,repeating_advantage_-lcono3celwup5-szdul_advantage,repeating_advantage_-lcono3celwup5-szdul_advantage_name,repeating_advantage_-lcono3celwup5-szdul_advantage_flag,repeating_advantage_-lcono3celwup5-szdul_advantage_type,repeating_advantage_-lconptl4v52gtwzuepr_advantage,repeating_advantage_-lconptl4v52gtwzuepr_advantage_name,repeating_advantage_-lconptl4v52gtwzuepr_advantage_flag,repeating_advantage_-lconptl4v52gtwzuepr_advantage_type,repeating_advantage_-lconqyuzftthx38rtce_advantage,repeating_advantage_-lconqyuzftthx38rtce_advantage_name,repeating_advantage_-lconqyuzftthx38rtce_advantage_flag,repeating_advantage_-lconqyuzftthx38rtce_advantage_type,repeating_advantage_-lconsnyszsm6t4z1hmc_advantage,repeating_advantage_-lconsnyszsm6t4z1hmc_advantage_name,repeating_advantage_-lconsnyszsm6t4z1hmc_advantage_flag,repeating_advantage_-lconsnyszsm6t4z1hmc_advantage_type,repeating_advantage_-lconaebnd20hatkqzbt_advantage,repeating_advantage_-lconaebnd20hatkqzbt_advantage_name,repeating_advantage_-lconaebnd20hatkqzbt_advantage_flag,repeating_advantage_-lconaebnd20hatkqzbt_advantage_type,repeating_advantage_-lcooawjue6kailxglj0_advantage,repeating_advantage_-lcooawjue6kailxglj0_advantage_name,repeating_advantage_-lcooawjue6kailxglj0_advantage_flag,repeating_advantage_-lcooawjue6kailxglj0_advantage_type,repeating_advantage_-lcordhpaepv4134tovp_advantage,repeating_advantage_-lcordhpaepv4134tovp_advantage_name,repeating_advantage_-lcordhpaepv4134tovp_advantage_flag,repeating_advantage_-lcordhpaepv4134tovp_advantage_type,repeating_advantage_-lcr5na2b5sqjibfkobh_advantage,repeating_advantage_-lcr5na2b5sqjibfkobh_advantage_name,repeating_advantage_-lcr5na2b5sqjibfkobh_advantage_flag,repeating_advantage_-lcr5na2b5sqjibfkobh_advantage_type,repeating_advantage_-lgphmedkm4wjbmza2cm_advantage,repeating_advantage_-lgphmedkm4wjbmza2cm_advantage_name,repeating_advantage_-lgphmedkm4wjbmza2cm_advantage_flag,repeating_advantage_-lgphmedkm4wjbmza2cm_advantage_type,repeating_negadvantage_-lw5q7cftbgacjsv-nnc_negadvantage,repeating_negadvantage_-lw5q7cftbgacjsv-nnc_negadvantage_name,repeating_negadvantage_-lw5q7cftbgacjsv-nnc_negadvantage_flag,repeating_negadvantage_-lw5q7cftbgacjsv-nnc_negadvantage_type,repeating_negadvantage_-lcoryxtckmbspi7xfqw_negadvantage,repeating_negadvantage_-lcoryxtckmbspi7xfqw_negadvantage_name,repeating_negadvantage_-lcoryxtckmbspi7xfqw_negadvantage_flag,repeating_negadvantage_-lcoryxtckmbspi7xfqw_negadvantage_type",
+            "max": "",
+            "id": "-LVt8w1MK8nzQnwwDo0v"
+        },
+        {
+            "name": "disc2",
+            "current": "3",
+            "max": "",
+            "id": "-LVt9Vtjatt3zuTHGFMk"
+        },
+        {
+            "name": "disc3",
+            "current": "0",
+            "max": "",
+            "id": "-LVt9WJwPrWH1esUjNpa"
+        },
+        {
+            "name": "survival_spec",
+            "current": "Navigation",
+            "max": "",
+            "id": "-LW4ZbzgxSVmI5N5fq_D"
+        },
+        {
+            "name": "animal_ken_spec",
+            "current": "",
+            "max": "",
+            "id": "-LW4Zk_qZbLvUpJDOtqQ"
+        },
+        {
+            "name": "xp_earnedtotal",
+            "current": 124,
+            "max": "",
+            "id": "-LW4Zqcdyrp15mbn1LBy"
+        },
+        {
+            "name": "strength_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LW4aZEWjdHWDtIb78Xd"
+        },
+        {
+            "name": "athletics_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LW4aZPqPWhXyo7ZDLAS"
+        },
+        {
+            "name": "intelligence",
+            "current": "4",
+            "max": "",
+            "id": "-LW4ar_GFltaT9sCrRUu"
+        },
+        {
+            "name": "charisma",
+            "current": "3",
+            "max": "",
+            "id": "-LW4asm0XCSG1Vf43bCd"
+        },
+        {
+            "name": "manipulation",
+            "current": "3",
+            "max": "",
+            "id": "-LW4asrsu1JEYt_Wx2ea"
+        },
+        {
+            "name": "composure",
+            "current": "3",
+            "max": "",
+            "id": "-LW4asxKakBTOGvH7IcZ"
+        },
+        {
+            "name": "willpower",
+            "current": 5,
+            "max": 5,
+            "id": "-LW4asz6k4VJPPEUHwIb"
+        },
+        {
+            "name": "incap",
+            "current": "",
+            "max": "",
+            "id": "-LW4aszI1mfUSHLqNMsH"
+        },
+        {
+            "name": "willpower_impair_toggle",
+            "current": 0,
+            "max": "",
+            "id": "-LW4aszJogfeKMTpsEzs"
+        },
+        {
+            "name": "resolve",
+            "current": "2",
+            "max": "",
+            "id": "-LW4atjD7GEewlMNHsJs"
+        },
+        {
+            "name": "wits",
+            "current": "3",
+            "max": "",
+            "id": "-LW4attnC9MzM2pDynSA"
+        },
+        {
+            "name": "dexterity",
+            "current": "3",
+            "max": "",
+            "id": "-LW4auF8dRZyM-8bc3JJ"
+        },
+        {
+            "name": "stamina",
+            "current": "2",
+            "max": "",
+            "id": "-LW4auJDZGN6oFNfb16-"
+        },
+        {
+            "name": "health",
+            "current": 5,
+            "max": 5,
+            "id": "-LW4auL0egEhEk-BqG0p"
+        },
+        {
+            "name": "health_impair_toggle",
+            "current": 0,
+            "max": "",
+            "id": "-LW4auLBz-nUDW7PaVJj"
+        },
+        {
+            "name": "strength",
+            "current": "2",
+            "max": "",
+            "id": "-LW4axgHDnq08IWkBH6h"
+        },
+        {
+            "name": "hunger",
+            "current": "1",
+            "max": "",
+            "id": "-LW4b5ePmgbldgjijqMa"
+        },
+        {
+            "name": "xp_summary",
+            "current": "124 XP Earned - 122 XP Spent =  2 XP Remaining",
+            "max": "",
+            "id": "-LW4bB6MnTci-2EfTCUa"
+        },
+        {
+            "name": "technology",
+            "current": "3",
+            "max": "",
+            "id": "-LW4bMcbk43n94HkbRyD"
+        },
+        {
+            "name": "investigation",
+            "current": "3",
+            "max": "",
+            "id": "-LW4bNh_5kwAqoN9MrjD"
+        },
+        {
+            "name": "craft",
+            "current": "2",
+            "max": "",
+            "id": "-LW5PMyg5mtENv6F47iR"
+        },
+        {
+            "name": "academics",
+            "current": "2",
+            "max": "",
+            "id": "-LW5PNPez8siywlce9E6"
+        },
+        {
+            "name": "streetwise",
+            "current": "2",
+            "max": "",
+            "id": "-LW5PPZGuFjH47zEuo6w"
+        },
+        {
+            "name": "performance",
+            "current": "3",
+            "max": "",
+            "id": "-LW5PQPvVuAkU0fcvF8g"
+        },
+        {
+            "name": "animal_ken",
+            "current": "0",
+            "max": "",
+            "id": "-LW5PS_FG5bwLd9eNPDL"
+        },
+        {
+            "name": "survival",
+            "current": "1",
+            "max": "",
+            "id": "-LW5PTLl8zqFQUvOxkeR"
+        },
+        {
+            "name": "larceny",
+            "current": "3",
+            "max": "",
+            "id": "-LW5PUExmfksnYQjxkcs"
+        },
+        {
+            "name": "stealth",
+            "current": "2",
+            "max": "",
+            "id": "-LW5PUrdouHFLIdOvMAX"
+        },
+        {
+            "name": "drive",
+            "current": "0",
+            "max": "",
+            "id": "-LW5PVuoNQWlbZN4nhjO"
+        },
+        {
+            "name": "athletics",
+            "current": "1",
+            "max": "",
+            "id": "-LW5PWeN9SMekjbsCIZZ"
+        },
+        {
+            "name": "etiquette",
+            "current": "1",
+            "max": "",
+            "id": "-LW5PXxylukCv25IcNTR"
+        },
+        {
+            "name": "insight",
+            "current": "2",
+            "max": "",
+            "id": "-LW5PYK2rQqgC6MiJ8yj"
+        },
+        {
+            "name": "subterfuge",
+            "current": "3",
+            "max": "",
+            "id": "-LW5PZ5kYBUFGl_ceJmB"
+        },
+        {
+            "name": "occult",
+            "current": "1",
+            "max": "",
+            "id": "-LW5PZYtHxqcM2abb8Zb"
+        },
+        {
+            "name": "finance",
+            "current": "1",
+            "max": "",
+            "id": "-LW5P_YnO9leHCivnYZg"
+        },
+        {
+            "name": "science",
+            "current": "1",
+            "max": "",
+            "id": "-LW5Pn5o81rEhr0DT4C4"
+        },
+        {
+            "name": "politics",
+            "current": "1",
+            "max": "",
+            "id": "-LW5PnIQVt6dJd_UdZeK"
+        },
+        {
+            "name": "intimidation",
+            "current": "1",
+            "max": "",
+            "id": "-LW5PpTQ9r3OYNU3Bz-l"
+        },
+        {
+            "name": "repeating_negadvantage_-LW5Q7CfTBgaCjSv-Nnc_negadvantage_type",
+            "current": "Flaw",
+            "max": "",
+            "id": "-LW5Q7_aczti8uw_C0PV"
+        },
+        {
+            "name": "repeating_negadvantage_-LW5Q7CfTBgaCjSv-Nnc_negadvantage_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LW5Q7hDQCqvzkSLxvfb"
+        },
+        {
+            "name": "repeating_negadvantage_-LW5Q7CfTBgaCjSv-Nnc_negadvantage",
+            "current": "1",
+            "max": "",
+            "id": "-LW5Q8r5d40di0cIz2zu"
+        },
+        {
+            "name": "persuasion",
+            "current": "2",
+            "max": "",
+            "id": "-LW5SqXoj9qx8lldP-Gr"
+        },
+        {
+            "name": "disc1power_toggle",
+            "current": "3",
+            "max": "",
+            "id": "-LWAg-ghKqvclOBcibtL"
+        },
+        {
+            "name": "disc1_1",
+            "current": "Bond Famulus (Squirrel)",
+            "max": "",
+            "id": "-LWAg0tWZLecqShhuDud"
+        },
+        {
+            "name": "disc1_2",
+            "current": "Feral Whispers",
+            "max": "",
+            "id": "-LWAg1cMUkyDbVosKe4b"
+        },
+        {
+            "name": "disc1_3",
+            "current": "Unliving Hive ",
+            "max": "",
+            "id": "-LWAg2or4xEY1JwoAuMw"
+        },
+        {
+            "name": "disc2power_toggle",
+            "current": "3",
+            "max": "",
+            "id": "-LWAg55vbqluFDUlmjGZ"
+        },
+        {
+            "name": "disc2_1",
+            "current": "Cloak of Shadows",
+            "max": "",
+            "id": "-LWAg6h6TfjtTH3qCSIz"
+        },
+        {
+            "name": "resonance",
+            "current": "None",
+            "max": "",
+            "id": "-LWI3fuvRu8-Wyazs249"
+        },
+        {
+            "name": "res_discs",
+            "current": " ",
+            "max": "",
+            "id": "-LWI3fzBQY2G0r7U4nCp"
+        },
+        {
+            "name": "academics_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LWJl-Mpb2pqEGXtNHv0"
+        },
+        {
+            "name": "composure_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LWKWqSwS7nV1OolK756"
+        },
+        {
+            "name": "disc2_2",
+            "current": "Unseen Passage",
+            "max": "",
+            "id": "-LWLMUgyUOmwxHvEYWnN"
+        },
+        {
+            "name": "firearms",
+            "current": "0",
+            "max": "",
+            "id": "-LWLNhxgooMePbR_9I7k"
+        },
+        {
+            "name": "sandboxquadrant",
+            "current": "TopLeft",
+            "max": "",
+            "id": "-LWdxma676MW8CKCF-hY"
+        },
+        {
+            "name": "medicine",
+            "current": "0",
+            "max": "",
+            "id": "-LWeTi7UnyQzObcIxUZU"
+        },
+        {
+            "name": "awareness",
+            "current": "1",
+            "max": "",
+            "id": "-LWeU45Qr5AsLbVMYlFX"
+        },
+        {
+            "name": "larceny_spec",
+            "current": "Security Systems",
+            "max": "",
+            "id": "-LWeUFXCeJzf1P1p6erP"
+        },
+        {
+            "name": "academics_spec",
+            "current": "Architecture",
+            "max": "",
+            "id": "-LWeUc_f-tGj-5xWQ2-N"
+        },
+        {
+            "name": "craft_spec",
+            "current": "Design",
+            "max": "",
+            "id": "-LWeW8rG61AWDKBQpraU"
+        },
+        {
+            "name": "performance_spec",
+            "current": "Electronic Music",
+            "max": "",
+            "id": "-LWeWLQjk-_yuE09maMg"
+        },
+        {
+            "name": "technology_spec",
+            "current": "Hacking",
+            "max": "",
+            "id": "-LWeX2uQOUclIgYuQ7xy"
+        },
+        {
+            "name": "repeating_negadvantage_-LW5Q7CfTBgaCjSv-Nnc_negadvantage_name",
+            "current": "Folkloric Block",
+            "max": "",
+            "id": "-LWeXq3pEyft9-LhT_e3"
+        },
+        {
+            "name": "repeating_negadvantage_-LW5Q7CfTBgaCjSv-Nnc_negadvantage_details",
+            "current": "Spilled seeds you haven’t counted. Cause this shit is never going to happen.",
+            "max": "",
+            "id": "-LWeXu5PMq4PukaE1Smi"
+        },
+        {
+            "name": "domain_personal",
+            "current": "Technically has claim to the University of Toronto Domain by dint of being included in the Masque Coterie, although he's also attempted inroads into the Museum district, even going so far as to set up some residence there, although this was more squatting than claiming for the most part. ",
+            "max": "",
+            "id": "-LWel_YSoVoaZ8geqNTY"
+        },
+        {
+            "name": "domain_coterie",
+            "current": "As mentioned in personal domains, is included in the Domain Ownership of the \"Discovery\" District, although this claim is now rather suspect as a result of Seneschal Scheer's recent activities",
+            "max": "",
+            "id": "-LWemDYW4CPu7W5Udfz5"
+        },
+        {
+            "name": "domain_haven",
+            "current": "An underground adaptation of an abandoned subway station that is significantly luxurious and well situated ",
+            "max": "",
+            "id": "-LWemw0i4iwz9Pqbc3Z2"
+        },
+        {
+            "name": "assets_vehicles",
+            "current": "A grey 2004 Honda Civic, immaculately maintained, and a bus pass. He's considered getting a motorcycle as he isn't concerned about crashing and thinks it would be cool, but hasn't quite gotten around to forging the license needed.",
+            "max": "",
+            "id": "-LWhvle0JO9IaeV_mpPv"
+        },
+        {
+            "name": "mask",
+            "current": "Yusef Shamsin is an assumed name, inserted into the proper databases and with the appropriate records, although all created from whole cloth rather than stolen from some dead or living person to avoid getting outed by an in-depth investigation into his personage. \n\nYoung, single, college aged graduate with a degree in Architectural Engineering. ",
+            "max": "",
+            "id": "-LWhwNTzki4Kw1HcVqzK"
+        },
+        {
+            "name": "char_dob",
+            "current": "1957",
+            "max": "",
+            "id": "-LWhwNvOYCCKD8k5E9dW"
+        },
+        {
+            "name": "char_dobdoe",
+            "current": "1957 — 1979",
+            "max": "",
+            "id": "-LWhwNxKogGrV1klAvOs"
+        },
+        {
+            "name": "char_doe",
+            "current": "1979",
+            "max": "",
+            "id": "-LWhwP1zwXnl3r7QwBao"
+        },
+        {
+            "name": "mortal_history",
+            "current": "His parents were first generation immigrants and he was one of 4 other children, 3 sisters and a brother, and while this did create what he saw at the time as an awful living environment full of strife and expectations, looking back at it he still smiles and enjoys telling stories, or at least he thinks he would if anyone were to ever ask. Schooling for him was involved, something he was always working hard in and involving himself in everything that he could, although he did end up dropping out of wrestling much to his father and brothers chagrin. Being a rather small child who bloomed later in life he simply wasn't cut out for it. He wasn't one who could handle failure well. \n\nIn truth he threw himself into schooling and extracurricular because he felt lost. He didn't know what he was doing or what he wanted, and as time went on this built into a general ennui. He started growing distant from his friends and family, never cutting contact properly but focusing on other things. He started taking time out of his day, whenever he didn't have some other mandatory obligation to travel around his small home town, trying to see if anything would spark that inspiration. He found it in witnessing the first of Wayne Boden's murders. And so his fascination and voyeurism began. An obsession even, that he began to follow up on wherever he could. Reading, writing, building his life around it. When computers and gaming became probable, consumer grade products, his fantasies were able to expand beyond simple writing and drawing. \n\nObsessed with criminal psychology, especially serial killers, he ...\n\n",
+            "max": "",
+            "id": "-LWhyNzhY_spHAZhx7jc"
+        },
+        {
+            "name": "repeating_beliefs_-LWi6n9Xsqq7rXCHc9o0_touchstone_name",
+            "current": "Ayça Ayşin Turan",
+            "max": "",
+            "id": "-LWi6nursQgw6K4z2f-8"
+        },
+        {
+            "name": "repeating_beliefs_-LWi6oVjGjiEnXck41Dg_touchstone_name",
+            "current": "Towers",
+            "max": "",
+            "id": "-LWi7-ekUOctwtnTj-Vh"
+        },
+        {
+            "name": "repeating_beliefs_-LWi6oVjGjiEnXck41Dg_touchstone_details",
+            "current": "A Blood Doll. I'm sort of imagining them as similar to Klaus Hargreeves, at least in personality because I quite liked him. Nothing particularly exciting here, just a sad addicted person. ",
+            "max": "",
+            "id": "-LWi7DW6Z_mG6RMfJTgN"
+        },
+        {
+            "name": "repeating_beliefs_-LWi6n9Xsqq7rXCHc9o0_touchstone_details",
+            "current": "Criminal Psychologist: (Part of the Toronto PD) She continued her education in the Department of Psychology in Istanbul University. She was educated in Sinop Municipal Conservatory before transferring to Yale, finishing her degree with a profitable job offer waiting for her. She has, more or less, had the biggest negative impact on Yusef's life that he can recall, putting him through the mental health system, dosing him with medication, and effectively contributing to the eventual destruction of his social life, school life, and work life. Although she'd tell you it was all for a good cause, Yusef struggles to relate to this. Major issues reap major consequences, although minor ones earn sympathy and help. ",
+            "max": "",
+            "id": "-LWi7Eqw5jRhWVwi2Zfq"
+        },
+        {
+            "name": "repeating_beliefs_-LWi7FPJ81PYyj5thrEO_touchstone_details",
+            "current": "A strange man who's half mad, he \"heads\" more than a few homeless communities in the city where those without kith and kin can find a night of shelter and food. It's not a great system for all involved, and he is shamelessly exploitative of those under his care, but with connections both criminal and mundane, you'll be hard pressed to find a better benefactor. A bit of a duality of character, he's ruthless and caring, and which side you see depends on who's side you're on. Loyalty is rewarded.",
+            "max": "",
+            "id": "-LWi7IEZAuVydVDg1hfh"
+        },
+        {
+            "name": "repeating_beliefs_-LWi7FPJ81PYyj5thrEO_conviction",
+            "current": "Never Act Against The Clan",
+            "max": "",
+            "id": "-LWi9Zhe_elINcsWy3cr"
+        },
+        {
+            "name": "repeating_beliefs_-LWi7FPJ81PYyj5thrEO_touchstone_name",
+            "current": "The Bowery King",
+            "max": "",
+            "id": "-LWi9lO-US4u_vq2vvWg"
+        },
+        {
+            "name": "repeating_others_-LWiCCo-VqOJlX3S-yUU_kr_othername",
+            "current": "Nosferatu Secrets",
+            "max": "",
+            "id": "-LWiCFnWcMUg5mRRwHdc"
+        },
+        {
+            "name": "repeating_others_-LWiCCo-VqOJlX3S-yUU_kr_otherdetails",
+            "current": "In addition to the three Nosferatu you created, there are four more Camarilla Nosferatu that you are aware of (and you have no reason to believe Clan Nosferatu would hide the existence of a fifth). In order of age, starting with the youngest:\n\n- Ian Rammond:  A recent arrival to the city, this 13th-generation neonate is a young and timid mouse amidst a sea of hungry predators.  The rest of the city's Nosferatu have done all they can to protect and guide the young vampire, but some are starting to say he may not have handled his transformation... well. He refuses to discuss why he left his former city, a point of concern but also irritation among the secret-loving Nosferatu.\n- Emily, the Dusk Rose:  A 10th-generation ancilla, Emily is the real scourge: she arranged for Raphael Bishop to pose as scourge to deflect attention from her so she could work in secret.  In exchange, she's helping Bishop escape the leash of his sire, Seneschal Scheer. Despite working against Scheer, she is a zealous defender of the Third Tradition and she will readily destroy any vampire confirmed to have been Embraced outside the law.\n- The Aristocrat:  An ancilla at the top of Nosferatu status games in the city; he'd be primogen, you've heard, had the prince not disbanded the council once the Beckoning had claimed most of its elders.  The \"Aristocrat\" moniker started as a slur used to mock his presence in Elysium, wearing tailored suits and expensive colognes as if they could distract from his gaunt features, shark-like eyes, and the aroma of fish that hangs off him.  But, in true Nosferatu fashion, he embraced the name and wears it as a badge of pride.\n- Drake:  Drake is a 7th-generation Nosferatu elder of at least six centuries, putting him on par with the city's two autarkes (and a step or two above Scheer).  Unfortunately, he and Scheer are allies --- they both share the conviction that Toronto is and always will be a Camarilla city.  It was Drake who suggested Scheer reach out to the Piece-Taker following the admission of the Banu Haqim into the Camarilla (Scheer, ever the coward, \"delegated\" the task to his childe, Raphael Bishop, who you know from your Detection Project has been doing just that).\n\nYou also know of a Nosferatu Antitribu in the city:\n\n- Sang-Froid:  A French Canadian with a penchant for eating frozen blood, he spends most summers in voluntary torpor and emerges in the winter to terrorize homeless people sleeping in the cold, chasing them from their warm spots over subway grates and harrying them through the city until they die of hypothermia.  He's a rather unpleasant conversationalist, too.\n\nAnd then there are a few things you know through the Nosferatu rumor-mill:\n\n- Sheriff Laz --- Laz is in trouble.  He's gone too far in his overtures to the Anarchs for aid, and wheels are in motion to replace him.  The Nosferatu in general are very much opposed to this, not only because Laz is one of them, but also because he's the only one who seems to give a damn about actually solving the problems in Toronto.  They have reasonably high opinions of the baroness, and approve of the two of them exploring the possibility of working together.\n- The Peerage -- The Nosferatu know exactly what it is, and so do you:  It's a group of elders comprising former primogen under Prince Steeles rule, who went into hiding after the Beckoning halved their number and the prince disbanded the council.  Drake is a member of the Peerage, as are at least two others, although thus far Drake has honored his oath to keep their identities secret even from his kin.\n- The Island Devil --- The Island Devil is an enigma to any Nosferatu willing to talk about him.  Most seem to think he's on the verge of losing it entirely and becoming a wight (which, given his age and skillset, would spell disaster for Toronto).  Others point to his curious inclination to shelter Sabbat as evidence that there's more meaning to his madness than appearances suggest.\n- The Sabbat --- Speaking of Sabbat:  They're currently in a holding pattern.  Up until recently, all of them were contained on Centre Island.  But at least one Lasombra ancilla has managed to infiltrate the city without passing through any of the monitored channels.  The Nosferatu have concluded he received help, but they have no leads as to who.  Regardless, their numbers remain too small to launch any kind of coordinated offensive, with Sang-Froid's count being five, including himself, last he checked.",
+            "max": "",
+            "id": "-LWiCOCKD5MsjgJFuzqX"
+        },
+        {
+            "name": "repeating_beliefs_-LWi6n9Xsqq7rXCHc9o0_conviction",
+            "current": "Hold Back More than you Reveal",
+            "max": "",
+            "id": "-LWiF5EBLieipF6D5iP3"
+        },
+        {
+            "name": "repeating_tenet_-LWiFAqe0HtPdpJd2gUn_tenet",
+            "current": "Take Care Of Our Own",
+            "max": "",
+            "id": "-LWiFCRk7_troV9DSdSd"
+        },
+        {
+            "name": "repeating_tenet_-LWiFCTpzZUWfG93Avxt_tenet",
+            "current": "Don't Kill Without Reason",
+            "max": "",
+            "id": "-LWiFDxY0wlMj1nsDAlS"
+        },
+        {
+            "name": "repeating_tenet_-LWiFFixxyTset91U0fJ_tenet",
+            "current": "Keep The Beast Under Control",
+            "max": "",
+            "id": "-LWiFI9-rjYHPufcnwf2"
+        },
+        {
+            "name": "repeating_beliefs_-LWi6oVjGjiEnXck41Dg_conviction",
+            "current": "Humans are Prey",
+            "max": "",
+            "id": "-LWiGJDgNUWnfqqndtEH"
+        },
+        {
+            "name": "manipulation_flag",
+            "current": 0,
+            "max": "",
+            "id": "-LWiR8HHdQMD5QeY4hXj"
+        },
+        {
+            "name": "rollmod",
+            "current": 0,
+            "max": "",
+            "id": "-LWiR90zYnlneJ2wdnYz"
+        },
+        {
+            "name": "intelligence_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LWiUQnzld_TrTPoCUgh"
+        },
+        {
+            "name": "_reporder_repeating_earnedxp",
+            "current": "-LcRT23MVprTiGRJKWRT,-LfnQ1nAnZhdNSUe4Rwv,-LfnTKMQzsPasjKZho0F,-LcTp0eZtU1trd-WlFHT,-LcTp0g6lVg3NFxFJA0y,-LcTp0hc6uG-R74iILAg,-LcTp0j9t8D0A3Jtmi97,-LcTp0kfZ7yswaMkZkH6",
+            "max": "",
+            "id": "-LWiV29MUKaxfcMC-RZk"
+        },
+        {
+            "name": "Untitled",
+            "current": "1",
+            "max": "",
+            "id": "-LgyFHghgWrmwd6Kv09R"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eleven",
+            "max": "",
+            "id": "-LgyFHgirW_-HdSO2F3P"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award.",
+            "max": "",
+            "id": "-LgyFHgirW_-HdSO2F3Q"
+        },
+        {
+            "name": "date_today",
+            "current": "1543197552140",
+            "max": "",
+            "id": "-LWomUaxKRwdBv4_gN-b"
+        },
+        {
+            "name": "willpower_sdmg",
+            "current": 0,
+            "max": "",
+            "id": "-LWuIP2QxpeIwaq-Gahe"
+        },
+        {
+            "name": "repeating_earnedxp_-LWuYg9OAATZA3rfYmek_xp_award",
+            "current": "59",
+            "max": "",
+            "id": "-LWuYg9HQtBmVHUQCwGg"
+        },
+        {
+            "name": "repeating_earnedxp_-LWuYg9OAATZA3rfYmek_xp_session",
+            "current": "Zero",
+            "max": "",
+            "id": "-LWuYg9LA1i_BPcEX1cK"
+        },
+        {
+            "name": "repeating_earnedxp_-LWuYg9OAATZA3rfYmek_xp_reason",
+            "current": "Previous character's total XP.",
+            "max": "",
+            "id": "-LWuYg9NTNxK5e2JhGhb"
+        },
+        {
+            "name": "Untitled",
+            "current": "1",
+            "max": "",
+            "id": "-LgyFHgjo6amuLIcUe92"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eleven",
+            "max": "",
+            "id": "-LgyFHgjo6amuLIcUe93"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award.",
+            "max": "",
+            "id": "-LgyFHgjo6amuLIcUe94"
+        },
+        {
+            "name": "repeating_earnedxp_-LWuYg9OAATZA3rfYmek_sorttrigger",
+            "current": false,
+            "max": "",
+            "id": "-LWuYgAwF8TyAS08w0MV"
+        },
+        {
+            "name": "repeating_earnedxp_-LWuZ4NVvfCvUFGTmoq9_xp_award",
+            "current": "3",
+            "max": "",
+            "id": "-LWuZ4NOJHE3ZG5Sx-vl"
+        },
+        {
+            "name": "repeating_earnedxp_-LWuZ4NVvfCvUFGTmoq9_xp_session",
+            "current": "Zero",
+            "max": "",
+            "id": "-LWuZ4NSfcStLykcbq3G"
+        },
+        {
+            "name": "repeating_earnedxp_-LWuZ4NVvfCvUFGTmoq9_xp_reason",
+            "current": "Created three Camarilla Nosferatu",
+            "max": "",
+            "id": "-LWuZ4NUZNQrJvWUBHt0"
+        },
+        {
+            "name": "Untitled",
+            "current": "1",
+            "max": "",
+            "id": "-LgyFHgk4OqYrQFFr-ZF"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eleven",
+            "max": "",
+            "id": "-LgyFHgk4OqYrQFFr-ZG"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award.",
+            "max": "",
+            "id": "-LgyFHgk4OqYrQFFr-ZH"
+        },
+        {
+            "name": "investigation_spec",
+            "current": "Profiling",
+            "max": "",
+            "id": "-LXq8k9vcaWbPomPqs3x"
+        },
+        {
+            "name": "investigation_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LXq8rD7skDC2qqcViH0"
+        },
+        {
+            "name": "rolldiff",
+            "current": 0,
+            "max": "",
+            "id": "-LXq9CEyHwTkIHhBVgQ7"
+        },
+        {
+            "name": "applyspecialty",
+            "current": "1",
+            "max": "",
+            "id": "-LXq9FH5FGWjYOPbtDlj"
+        },
+        {
+            "name": "willpower_1",
+            "current": "0",
+            "max": "",
+            "id": "-LXqINYAobQWCLKhaZ6c"
+        },
+        {
+            "name": "willpower_2",
+            "current": 0,
+            "max": "",
+            "id": "-LXqIhBmimXfhbz78mFc"
+        },
+        {
+            "name": "larceny_flag",
+            "current": 0,
+            "max": "",
+            "id": "-LXqNWTPyzYn0Lyu3JeW"
+        },
+        {
+            "name": "applydisc",
+            "current": "0",
+            "max": "",
+            "id": "-LXqNdLtCqisLOnOErHi"
+        },
+        {
+            "name": "willpower_3",
+            "current": 0,
+            "max": "",
+            "id": "-LXqOZ_-y_K6x9OztP7M"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHgmRbuKOdAdyNVt"
+        },
+        {
+            "name": "Untitled",
+            "current": "Twelve",
+            "max": "",
+            "id": "-LgyFHgmRbuKOdAdyNVu"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHgmRbuKOdAdyNVv"
+        },
+        {
+            "name": "Untitled",
+            "current": "1",
+            "max": "",
+            "id": "-LgyFHgnFGh6jk4okIbU"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eleven",
+            "max": "",
+            "id": "-LgyFHgnFGh6jk4okIbV"
+        },
+        {
+            "name": "Untitled",
+            "current": "Playing an NPC during Ava's Memoriam",
+            "max": "",
+            "id": "-LgyFHgnFGh6jk4okIbW"
+        },
+        {
+            "name": "Untitled",
+            "current": false,
+            "max": "",
+            "id": "-LgyFHgnFGh6jk4okIbX"
+        },
+        {
+            "name": "repeating_earnedxp_-LXqZ9pJxyppftSEc7Z6_xp_award",
+            "current": "2",
+            "max": "",
+            "id": "-LXq_9pBdmmnLhlNaqqd"
+        },
+        {
+            "name": "repeating_earnedxp_-LXqZ9pJxyppftSEc7Z6_xp_session",
+            "current": "Eleven",
+            "max": "",
+            "id": "-LXq_9pD4gfcplhUoGR6"
+        },
+        {
+            "name": "repeating_earnedxp_-LXqZ9pJxyppftSEc7Z6_xp_reason",
+            "current": "Session XP award.",
+            "max": "",
+            "id": "-LXq_9pE0xYUiM1of4LH"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHgo3UKiGWQfpyL_"
+        },
+        {
+            "name": "Untitled",
+            "current": "Thirteen",
+            "max": "",
+            "id": "-LgyFHgo3UKiGWQfpyLa"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHgo3UKiGWQfpyLb"
+        },
+        {
+            "name": "Untitled",
+            "current": "1",
+            "max": "",
+            "id": "-LgyFHgphpgBILXvyQk-"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eleven",
+            "max": "",
+            "id": "-LgyFHgphpgBILXvyQk0"
+        },
+        {
+            "name": "Untitled",
+            "current": "Playing an NPC during Ava's Memoriam",
+            "max": "",
+            "id": "-LgyFHgphpgBILXvyQk1"
+        },
+        {
+            "name": "Untitled",
+            "current": false,
+            "max": "",
+            "id": "-LgyFHgphpgBILXvyQk2"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHgphpgBILXvyQk3"
+        },
+        {
+            "name": "Untitled",
+            "current": "Twelve",
+            "max": "",
+            "id": "-LgyFHgphpgBILXvyQk4"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHgqpClKUzTIsqvz"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHgqpClKUzTIsqw-"
+        },
+        {
+            "name": "Untitled",
+            "current": "Thirteen",
+            "max": "",
+            "id": "-LgyFHgqpClKUzTIsqw0"
+        },
+        {
+            "name": "Untitled",
+            "current": "Engaging with the plot",
+            "max": "",
+            "id": "-LgyFHgqpClKUzTIsqw1"
+        },
+        {
+            "name": "Untitled",
+            "current": "1",
+            "max": "",
+            "id": "-LgyFHgqpClKUzTIsqw2"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eleven",
+            "max": "",
+            "id": "-LgyFHgrVdeLHeYWaJpJ"
+        },
+        {
+            "name": "Untitled",
+            "current": "Playing an NPC during Ava's Memoriam",
+            "max": "",
+            "id": "-LgyFHgrVdeLHeYWaJpK"
+        },
+        {
+            "name": "Untitled",
+            "current": false,
+            "max": "",
+            "id": "-LgyFHgrVdeLHeYWaJpL"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHgrVdeLHeYWaJpM"
+        },
+        {
+            "name": "Untitled",
+            "current": "Twelve",
+            "max": "",
+            "id": "-LgyFHgrVdeLHeYWaJpN"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHgsbIg5syjJpM9X"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHgsbIg5syjJpM9Y"
+        },
+        {
+            "name": "Untitled",
+            "current": "Thirteen",
+            "max": "",
+            "id": "-LgyFHgsbIg5syjJpM9Z"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHgsbIg5syjJpM9_"
+        },
+        {
+            "name": "wits_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LYyLDWB6200ThE_hIRR"
+        },
+        {
+            "name": "survival_flag",
+            "current": 0,
+            "max": "",
+            "id": "-LYyLEPVzC_DqmR4k3yP"
+        },
+        {
+            "name": "resolve_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LYyMOsVDmoqMlMYvsoC"
+        },
+        {
+            "name": "repeating_boonsowing_-LYyNk9skCWs-ejszq8P_boonowing_from",
+            "current": "Dr. Arthur Roy",
+            "max": "",
+            "id": "-LYyNlPjDhVn8tH3QX-Z"
+        },
+        {
+            "name": "repeating_boonsowing_-LYyNk9skCWs-ejszq8P_boonowing_type",
+            "current": "Minor",
+            "max": "",
+            "id": "-LYyNl_aH-UnlOtHdHlC"
+        },
+        {
+            "name": "repeating_boonsowing_-LYyNk9skCWs-ejszq8P_boonowing_details",
+            "current": "I debugged his room at Site Lotus. I could also do it at his apartment, but didn't, yet.\n",
+            "max": "",
+            "id": "-LYyNqCgpzi6liXr7AXU"
+        },
+        {
+            "name": "insight_flag",
+            "current": 0,
+            "max": "",
+            "id": "-LYyW3p_XoUsU4kkBQh1"
+        },
+        {
+            "name": "technology_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LYyZaRUW59_yUAk_t91"
+        },
+        {
+            "name": "applybloodsurge",
+            "current": "0",
+            "max": "",
+            "id": "-LYyc9FEdR5DqHlY0IZx"
+        },
+        {
+            "name": "stealth_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LYyiuiwX6K9gOoFyLqB"
+        },
+        {
+            "name": "dexterity_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LYyivZ5eZKcA3T3pqvP"
+        },
+        {
+            "name": "performance_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LYyjNETjZNkTUBwEq_2"
+        },
+        {
+            "name": "charisma_flag",
+            "current": "1",
+            "max": "",
+            "id": "-LYyjYpjhFsbteYHIaNl"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHgv-LioRky8SeNv"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHgv-LioRky8SeNw"
+        },
+        {
+            "name": "Untitled",
+            "current": "The gyrating Nosferatu at the gay bar",
+            "max": "",
+            "id": "-LgyFHgv-LioRky8SeNx"
+        },
+        {
+            "name": "repeating_earnedxp_-LYykADV5HjE6fIgYkgc_xp_award",
+            "current": "1",
+            "max": "",
+            "id": "-LYykADNf6nMLBy9rSlR"
+        },
+        {
+            "name": "repeating_earnedxp_-LYykADV5HjE6fIgYkgc_xp_session",
+            "current": "Eleven",
+            "max": "",
+            "id": "-LYykADPPQ9ZVMvIKmRM"
+        },
+        {
+            "name": "repeating_earnedxp_-LYykADV5HjE6fIgYkgc_xp_reason",
+            "current": "Playing an NPC during Ava's Memoriam",
+            "max": "",
+            "id": "-LYykADR5RVLmzLXOpU0"
+        },
+        {
+            "name": "repeating_earnedxp_-LYykADV5HjE6fIgYkgc_sorttrigger",
+            "current": false,
+            "max": "",
+            "id": "-LYykADSnaqlBYxORRfN"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHgwQ8CXq1jixWGC"
+        },
+        {
+            "name": "Untitled",
+            "current": "Twelve",
+            "max": "",
+            "id": "-LgyFHgwQ8CXq1jixWGD"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHgxTAZH_ZoYmVYo"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHgxTAZH_ZoYmVYp"
+        },
+        {
+            "name": "Untitled",
+            "current": "Thirteen",
+            "max": "",
+            "id": "-LgyFHgxTAZH_ZoYmVYq"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHgyGaMd1fAPdwcB"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHgyGaMd1fAPdwcC"
+        },
+        {
+            "name": "Untitled",
+            "current": "Thirteen",
+            "max": "",
+            "id": "-LgyFHgyGaMd1fAPdwcD"
+        },
+        {
+            "name": "Untitled",
+            "current": "Engaging with the plot",
+            "max": "",
+            "id": "-LgyFHgyGaMd1fAPdwcE"
+        },
+        {
+            "name": "humanitybox_9",
+            "current": "1",
+            "max": "",
+            "id": "-LYym1-II5hl5qQMbEcg"
+        },
+        {
+            "name": "humanitybox_10",
+            "current": "0",
+            "max": "",
+            "id": "-LYym4YDfJfEEZY2TeO_"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHgzDQ6JhLupiPMi"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHgzDQ6JhLupiPMj"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHgzDQ6JhLupiPMk"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHh-mf1LqUcALADH"
+        },
+        {
+            "name": "Untitled",
+            "current": "Twelve",
+            "max": "",
+            "id": "-LgyFHh-mf1LqUcALADI"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHh-mf1LqUcALADJ"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHh-mf1LqUcALADK"
+        },
+        {
+            "name": "Untitled",
+            "current": "Thirteen",
+            "max": "",
+            "id": "-LgyFHh0FtDVM82lWWAk"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHh0FtDVM82lWWAl"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHh0FtDVM82lWWAm"
+        },
+        {
+            "name": "Untitled",
+            "current": "Thirteen",
+            "max": "",
+            "id": "-LgyFHh0FtDVM82lWWAn"
+        },
+        {
+            "name": "Untitled",
+            "current": "Engaging with the plot",
+            "max": "",
+            "id": "-LgyFHh1d2F6TASL6kDq"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHh1d2F6TASL6kDr"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHh1d2F6TASL6kDs"
+        },
+        {
+            "name": "Untitled",
+            "current": "The gyrating Nosferatu at the gay bar",
+            "max": "",
+            "id": "-LgyFHh1d2F6TASL6kDt"
+        },
+        {
+            "name": "craft_flag",
+            "current": 0,
+            "max": "",
+            "id": "-L_59TFflaOf3XD-vZLd"
+        },
+        {
+            "name": "willpower_4",
+            "current": 0,
+            "max": "",
+            "id": "-L_5BSPOpfqBddHbZBt4"
+        },
+        {
+            "name": "awareness_flag",
+            "current": "0",
+            "max": "",
+            "id": "-L_5JPlSiosuBXwSG0Mx"
+        },
+        {
+            "name": "disc1_flag",
+            "current": 0,
+            "max": "",
+            "id": "-L_5KdjYxa5nnTIrVts5"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHh27mI3LBDe2pZH"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHh3ee-4kttRMAtX"
+        },
+        {
+            "name": "Untitled",
+            "current": "RPing your Clan well!",
+            "max": "",
+            "id": "-LgyFHh3ee-4kttRMAtY"
+        },
+        {
+            "name": "repeating_earnedxp_-LZ5T-DdYk-OBpZnugIM_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-L_5T-DXvQkRnyXXsa2o"
+        },
+        {
+            "name": "repeating_earnedxp_-LZ5T-DdYk-OBpZnugIM_xp_session",
+            "current": "Twelve",
+            "max": "",
+            "id": "-L_5T-DZgir8HdQSOleo"
+        },
+        {
+            "name": "repeating_earnedxp_-LZ5T-DdYk-OBpZnugIM_xp_reason",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-L_5T-DahU4MsuIb28lb"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHh48gnrvmW0bTTd"
+        },
+        {
+            "name": "Untitled",
+            "current": "Thirteen",
+            "max": "",
+            "id": "-LgyFHh5jZt9_aPYFjTF"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHh5jZt9_aPYFjTG"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHh6s4z5l0PQrZuQ"
+        },
+        {
+            "name": "Untitled",
+            "current": "Thirteen",
+            "max": "",
+            "id": "-LgyFHh6s4z5l0PQrZuR"
+        },
+        {
+            "name": "Untitled",
+            "current": "Engaging with the plot",
+            "max": "",
+            "id": "-LgyFHh6s4z5l0PQrZuS"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHh6s4z5l0PQrZuT"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHh7X2BnbXdgfVWT"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHh7X2BnbXdgfVWU"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHh7X2BnbXdgfVWV"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHh7X2BnbXdgfVWW"
+        },
+        {
+            "name": "Untitled",
+            "current": "The gyrating Nosferatu at the gay bar",
+            "max": "",
+            "id": "-LgyFHh8pBUyUPKKphPw"
+        },
+        {
+            "name": "subterfuge_flag",
+            "current": "0",
+            "max": "",
+            "id": "-L_5T9JLceC08OVy0Hsj"
+        },
+        {
+            "name": "health_1",
+            "current": "0",
+            "max": "",
+            "id": "-L_5gn3qRIMnpU2shwc_"
+        },
+        {
+            "name": "health_2",
+            "current": "0",
+            "max": "",
+            "id": "-L_5gp2tkPO4Q1PmgYW8"
+        },
+        {
+            "name": "brawl_flag",
+            "current": "0",
+            "max": "",
+            "id": "-L_5j1EROwKy47A4rGgB"
+        },
+        {
+            "name": "health_5",
+            "current": "0",
+            "max": "",
+            "id": "-L_5oRQbfFujkhfSKRMu"
+        },
+        {
+            "name": "health_sdmg",
+            "current": 0,
+            "max": "",
+            "id": "-L_5oUqEbgcwEyUDqHsT"
+        },
+        {
+            "name": "health_3",
+            "current": "0",
+            "max": "",
+            "id": "-L_5oUqYFYt29GtX8nAI"
+        },
+        {
+            "name": "health_4",
+            "current": "0",
+            "max": "",
+            "id": "-L_5oUq_21EdEXwvBQhB"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhAy-ZjtWs-oGJz"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhAy-ZjtWs-oGK-"
+        },
+        {
+            "name": "Untitled",
+            "current": "Being vampires!",
+            "max": "",
+            "id": "-LgyFHhAy-ZjtWs-oGK0"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhBxkuqbfTj8UOY"
+        },
+        {
+            "name": "Untitled",
+            "current": "Thirteen",
+            "max": "",
+            "id": "-LgyFHhBxkuqbfTj8UOZ"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhBxkuqbfTj8UO_"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhBxkuqbfTj8UOa"
+        },
+        {
+            "name": "Untitled",
+            "current": "Thirteen",
+            "max": "",
+            "id": "-LgyFHhBxkuqbfTj8UOb"
+        },
+        {
+            "name": "Untitled",
+            "current": "Engaging with the plot",
+            "max": "",
+            "id": "-LgyFHhCuwnM_SFFb38e"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhCuwnM_SFFb38f"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHhCuwnM_SFFb38g"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhDoixPAq-uP_95"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhDoixPAq-uP_96"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHhEga6wlZjAr0ih"
+        },
+        {
+            "name": "Untitled",
+            "current": "The gyrating Nosferatu at the gay bar",
+            "max": "",
+            "id": "-LgyFHhEga6wlZjAr0ii"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhEga6wlZjAr0ij"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhFYrgQCB78br5x"
+        },
+        {
+            "name": "Untitled",
+            "current": "RPing your Clan well!",
+            "max": "",
+            "id": "-LgyFHhFYrgQCB78br5y"
+        },
+        {
+            "name": "willpower_5",
+            "current": 0,
+            "max": "",
+            "id": "-L_61RRdHJClyG8q5ZGF"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhFYrgQCB78br5z"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhGlIcLKAfgU6t0"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhGlIcLKAfgU6t1"
+        },
+        {
+            "name": "repeating_earnedxp_-LZdlpUjWUDbF9ACeKui_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-L_dlpUcWM3y-h3pwkVD"
+        },
+        {
+            "name": "repeating_earnedxp_-LZdlpUjWUDbF9ACeKui_xp_session",
+            "current": "Thirteen",
+            "max": "",
+            "id": "-L_dlpUetqerODxXP-Qu"
+        },
+        {
+            "name": "repeating_earnedxp_-LZdlpUjWUDbF9ACeKui_xp_reason",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-L_dlpUfmqLTAbpxk4zT"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhHs9NGx7ssvzUo"
+        },
+        {
+            "name": "Untitled",
+            "current": "Thirteen",
+            "max": "",
+            "id": "-LgyFHhHs9NGx7ssvzUp"
+        },
+        {
+            "name": "Untitled",
+            "current": "Engaging with the plot",
+            "max": "",
+            "id": "-LgyFHhIDwh4Cba_u6Mg"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhIDwh4Cba_u6Mh"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHhIDwh4Cba_u6Mi"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhIDwh4Cba_u6Mj"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhJO6DoKogrb3QX"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHhJO6DoKogrb3QY"
+        },
+        {
+            "name": "Untitled",
+            "current": "The gyrating Nosferatu at the gay bar",
+            "max": "",
+            "id": "-LgyFHhJO6DoKogrb3QZ"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhJO6DoKogrb3Q_"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhKwLz0H-gGJVzx"
+        },
+        {
+            "name": "Untitled",
+            "current": "Being vampires!",
+            "max": "",
+            "id": "-LgyFHhKwLz0H-gGJVzy"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhKwLz0H-gGJVzz"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhLGy3UBhvhJiZr"
+        },
+        {
+            "name": "Untitled",
+            "current": "RPing your Clan well!",
+            "max": "",
+            "id": "-LgyFHhLGy3UBhvhJiZs"
+        },
+        {
+            "name": "tab_type",
+            "current": "1",
+            "max": "",
+            "id": "-L_eQYRdk7syiUL2_8kE"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhMbbk8Doep_DrT"
+        },
+        {
+            "name": "Untitled",
+            "current": "Sixteen",
+            "max": "",
+            "id": "-LgyFHhMbbk8Doep_DrU"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhMbbk8Doep_DrV"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhN-jNB2azctqZP"
+        },
+        {
+            "name": "Untitled",
+            "current": "Thirteen",
+            "max": "",
+            "id": "-LgyFHhN-jNB2azctqZQ"
+        },
+        {
+            "name": "Untitled",
+            "current": "Engaging with the plot",
+            "max": "",
+            "id": "-LgyFHhN-jNB2azctqZR"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhN-jNB2azctqZS"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHhOSSuT6k0x8F2l"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhOSSuT6k0x8F2m"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhOSSuT6k0x8F2n"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHhOSSuT6k0x8F2o"
+        },
+        {
+            "name": "Untitled",
+            "current": "The gyrating Nosferatu at the gay bar",
+            "max": "",
+            "id": "-LgyFHhPfum7DRIeHCHT"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhPfum7DRIeHCHU"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhPfum7DRIeHCHV"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhQgbWgvuDkep3y"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhQgbWgvuDkep3z"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhQgbWgvuDkep4-"
+        },
+        {
+            "name": "Untitled",
+            "current": "Being vampires!",
+            "max": "",
+            "id": "-LgyFHhQgbWgvuDkep40"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhRhReHAhuYRFNT"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhRhReHAhuYRFNU"
+        },
+        {
+            "name": "Untitled",
+            "current": "RPing your Clan well!",
+            "max": "",
+            "id": "-LgyFHhRhReHAhuYRFNV"
+        },
+        {
+            "name": "repeating_desire_-LaD7NuqNsR3Z26Gv9Jg_desire",
+            "current": "Have a social interaction with the Ministry",
+            "max": "",
+            "id": "-LaD7PqncFeLlIfGfqCS"
+        },
+        {
+            "name": "repeating_desire_-LaD7ejZO1xOgxcHqPAu_desire",
+            "current": "Look into the Labyrinth",
+            "max": "",
+            "id": "-LaD7euOTpeoA67-3ZkA"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhS0WsnWjmQQY4q"
+        },
+        {
+            "name": "Untitled",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-LgyFHhS0WsnWjmQQY4r"
+        },
+        {
+            "name": "Untitled",
+            "current": "The Vultures Circle",
+            "max": "",
+            "id": "-LgyFHhS0WsnWjmQQY4s"
+        },
+        {
+            "name": "repeating_earnedxp_-LaDZRMRA7UgG187s2Uc_xp_award",
+            "current": 1,
+            "max": "",
+            "id": "-LaDZRMJS8iRR44R5G40"
+        },
+        {
+            "name": "repeating_earnedxp_-LaDZRMRA7UgG187s2Uc_xp_session",
+            "current": "Thirteen",
+            "max": "",
+            "id": "-LaDZRMLPgQdLinp0e-s"
+        },
+        {
+            "name": "repeating_earnedxp_-LaDZRMRA7UgG187s2Uc_xp_reason",
+            "current": "Engaging with the plot",
+            "max": "",
+            "id": "-LaDZRMNKCLCSO2CGC-3"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhU3YPked65HVfN"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHhVjD4oNTTeyx6N"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhVjD4oNTTeyx6O"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhVjD4oNTTeyx6P"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHhWVPIKjI2Vjar1"
+        },
+        {
+            "name": "Untitled",
+            "current": "The gyrating Nosferatu at the gay bar",
+            "max": "",
+            "id": "-LgyFHhWVPIKjI2Vjar2"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhWVPIKjI2Vjar3"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhWVPIKjI2Vjar4"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhX11NMG_M1s435"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhX11NMG_M1s436"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhX11NMG_M1s437"
+        },
+        {
+            "name": "Untitled",
+            "current": "Being vampires!",
+            "max": "",
+            "id": "-LgyFHhY4QQLbACRz5QQ"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhY4QQLbACRz5QR"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhY4QQLbACRz5QS"
+        },
+        {
+            "name": "Untitled",
+            "current": "RPing your Clan well!",
+            "max": "",
+            "id": "-LgyFHhY4QQLbACRz5QT"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhZCJgzogG-mqn_"
+        },
+        {
+            "name": "Untitled",
+            "current": "Sixteen",
+            "max": "",
+            "id": "-LgyFHhZCJgzogG-mqna"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhZCJgzogG-mqnb"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhZCJgzogG-mqnc"
+        },
+        {
+            "name": "Untitled",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-LgyFHh_26mGyUEtBroU"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHh_26mGyUEtBroV"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHh_26mGyUEtBroW"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHh_26mGyUEtBroX"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhaFhpzEMdsOT7e"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhaFhpzEMdsOT7f"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHhaFhpzEMdsOT7g"
+        },
+        {
+            "name": "Untitled",
+            "current": "The gyrating Nosferatu at the gay bar",
+            "max": "",
+            "id": "-LgyFHhbM9Ip_RPd-2dE"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhbM9Ip_RPd-2dF"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhbM9Ip_RPd-2dG"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhcDxiyoL-iUSIg"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhcDxiyoL-iUSIh"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhcDxiyoL-iUSIi"
+        },
+        {
+            "name": "Untitled",
+            "current": "Being vampires!",
+            "max": "",
+            "id": "-LgyFHhdtJCtwJSKiTW4"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhdtJCtwJSKiTW5"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhdtJCtwJSKiTW6"
+        },
+        {
+            "name": "Untitled",
+            "current": "RPing your Clan well!",
+            "max": "",
+            "id": "-LgyFHhdtJCtwJSKiTW7"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhezrPxQqsWrRvB"
+        },
+        {
+            "name": "Untitled",
+            "current": "Sixteen",
+            "max": "",
+            "id": "-LgyFHhezrPxQqsWrRvC"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhezrPxQqsWrRvD"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhfZVRk_ZePS4wN"
+        },
+        {
+            "name": "Untitled",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-LgyFHhfZVRk_ZePS4wO"
+        },
+        {
+            "name": "Untitled",
+            "current": "The Vultures Circle",
+            "max": "",
+            "id": "-LgyFHhfZVRk_ZePS4wP"
+        },
+        {
+            "name": "Untitled",
+            "current": 20,
+            "max": "",
+            "id": "-LgyFHhfZVRk_ZePS4wQ"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eighteen",
+            "max": "",
+            "id": "-LgyFHhg5LMLcrTv2yiO"
+        },
+        {
+            "name": "Untitled",
+            "current": "Award for 15 month time jump.",
+            "max": "",
+            "id": "-LgyFHhg5LMLcrTv2yiP"
+        },
+        {
+            "name": "repeating_earnedxp_-LaJFxapUz0q91QhwLOO_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-LaJFxaiY5lcHQ9uc0Vu"
+        },
+        {
+            "name": "repeating_earnedxp_-LaJFxapUz0q91QhwLOO_xp_session",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LaJFxajOLMcIMTxA_CL"
+        },
+        {
+            "name": "repeating_earnedxp_-LaJFxapUz0q91QhwLOO_xp_reason",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LaJFxalkcSBUt_35iae"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhhGb9CsnJwYTkD"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHhhGb9CsnJwYTkE"
+        },
+        {
+            "name": "Untitled",
+            "current": "The gyrating Nosferatu at the gay bar",
+            "max": "",
+            "id": "-LgyFHhiPnqE1kiM7U-C"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhiPnqE1kiM7U-D"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhiPnqE1kiM7U-E"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhiPnqE1kiM7U-F"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhjzB9ds6bNQzYw"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhjzB9ds6bNQzYx"
+        },
+        {
+            "name": "Untitled",
+            "current": "Being vampires!",
+            "max": "",
+            "id": "-LgyFHhjzB9ds6bNQzYy"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhkuv2_OlZK464K"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhkuv2_OlZK464L"
+        },
+        {
+            "name": "Untitled",
+            "current": "RPing your Clan well!",
+            "max": "",
+            "id": "-LgyFHhlkoYg_qpzqmIQ"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhlkoYg_qpzqmIR"
+        },
+        {
+            "name": "Untitled",
+            "current": "Sixteen",
+            "max": "",
+            "id": "-LgyFHhlkoYg_qpzqmIS"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhlkoYg_qpzqmIT"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhmpr1o1y6b4Sjn"
+        },
+        {
+            "name": "Untitled",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-LgyFHhmpr1o1y6b4Sjo"
+        },
+        {
+            "name": "Untitled",
+            "current": "The Vultures Circle",
+            "max": "",
+            "id": "-LgyFHhmpr1o1y6b4Sjp"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhndwK2g6vQXnoL"
+        },
+        {
+            "name": "Untitled",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-LgyFHhndwK2g6vQXnoM"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhndwK2g6vQXnoN"
+        },
+        {
+            "name": "subterfuge_spec",
+            "current": "Appearing Friendly",
+            "max": "",
+            "id": "-LaTA1zeCyKrMh18U7Um"
+        },
+        {
+            "name": "disc2_3",
+            "current": "Ghost in the Machine",
+            "max": "",
+            "id": "-LaTKxlOJmt5rhocpdEO"
+        },
+        {
+            "name": "repeating_advantage_-LamNMpNp9fGxuZF-Z8j_advantage_type",
+            "current": "Background",
+            "max": "",
+            "id": "-LamNOUHxR8Ug6pAVoLo"
+        },
+        {
+            "name": "repeating_advantage_-LamNMpNp9fGxuZF-Z8j_advantage_name",
+            "current": "Mawla",
+            "max": "",
+            "id": "-LamNPREP2AFzHxiUYP8"
+        },
+        {
+            "name": "repeating_advantage_-LamNMpNp9fGxuZF-Z8j_advantage_details",
+            "current": "Coterie Bonus: Baroness",
+            "max": "",
+            "id": "-LamNQmghdhAUNV_W33W"
+        },
+        {
+            "name": "repeating_advantage_-LamNMpNp9fGxuZF-Z8j_advantage",
+            "current": "4",
+            "max": "",
+            "id": "-LamNVyS6KpnJHpfvbrV"
+        },
+        {
+            "name": "repeating_boonsowing_-LamNlUw0JhcDQn0IFsG_boonowing_from",
+            "current": "Johannes Napier",
+            "max": "",
+            "id": "-LamNmd4b8OB1EPcoJUs"
+        },
+        {
+            "name": "repeating_boonsowing_-LamNlUw0JhcDQn0IFsG_boonowing_type",
+            "current": "Minor",
+            "max": "",
+            "id": "-LamNnPqkJd5fitGPT2U"
+        },
+        {
+            "name": "repeating_boonsowing_-LamNlUw0JhcDQn0IFsG_boonowing_details",
+            "current": "Helping him gain contacts with the aristocrat.",
+            "max": "",
+            "id": "-LamNqUhtk3h1MSiaI4q"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhqMUBOweg3HfRW"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eighteen",
+            "max": "",
+            "id": "-LgyFHhqMUBOweg3HfRX"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhqMUBOweg3HfRY"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhr5bvAGBZmHbEq"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LgyFHhr5bvAGBZmHbEr"
+        },
+        {
+            "name": "Untitled",
+            "current": "The gyrating Nosferatu at the gay bar",
+            "max": "",
+            "id": "-LgyFHhr5bvAGBZmHbEs"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhr5bvAGBZmHbEt"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhsOl29qK9BTkju"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhsOl29qK9BTkjv"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhsOl29qK9BTkjw"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhtmgCfY8fcFxjK"
+        },
+        {
+            "name": "Untitled",
+            "current": "Being vampires!",
+            "max": "",
+            "id": "-LgyFHhtmgCfY8fcFxjL"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHhtmgCfY8fcFxjM"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHhuxDvruv8b5LvO"
+        },
+        {
+            "name": "Untitled",
+            "current": "RPing your Clan well!",
+            "max": "",
+            "id": "-LgyFHhuxDvruv8b5LvP"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhuxDvruv8b5LvQ"
+        },
+        {
+            "name": "Untitled",
+            "current": "Sixteen",
+            "max": "",
+            "id": "-LgyFHhuxDvruv8b5LvR"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhvFAwB3ADeAqD1"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhvFAwB3ADeAqD2"
+        },
+        {
+            "name": "Untitled",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-LgyFHhvFAwB3ADeAqD3"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHhwJyRAHjXXBP-u"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHhwJyRAHjXXBP-v"
+        },
+        {
+            "name": "Untitled",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-LgyFHhwJyRAHjXXBP-w"
+        },
+        {
+            "name": "Untitled",
+            "current": "The Vultures Circle",
+            "max": "",
+            "id": "-LgyFHhx6n1GNd5NfDTc"
+        },
+        {
+            "name": "Untitled",
+            "current": 20,
+            "max": "",
+            "id": "-LgyFHhx6n1GNd5NfDTd"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eighteen",
+            "max": "",
+            "id": "-LgyFHhx6n1GNd5NfDTe"
+        },
+        {
+            "name": "Untitled",
+            "current": "Award for 15 month time jump.",
+            "max": "",
+            "id": "-LgyFHhx6n1GNd5NfDTf"
+        },
+        {
+            "name": "brl",
+            "current": "0",
+            "max": "",
+            "id": "-Lbh2Ni9UaVPQs58GVNW"
+        },
+        {
+            "name": "blood_potency",
+            "current": 1,
+            "max": 3,
+            "id": "-Lbh3wMab4R-CnuY4-Lk"
+        },
+        {
+            "name": "bp",
+            "current": "",
+            "max": 3,
+            "id": "-LbhcTbG5ZlCHm-0p22Y"
+        },
+        {
+            "name": "repeating_timeline_-LbuDfV4EUhkgTsZehCQ_tlstartdate",
+            "current": "Jul 21, 2018",
+            "max": "",
+            "id": "-LbuDfVrXkM5GQ3atuX1"
+        },
+        {
+            "name": "repeating_timeline_-LbuDfV4EUhkgTsZehCQ_tlenddate",
+            "current": "— Jul 31, 2018",
+            "max": "",
+            "id": "-LbuDfVyrYG6cmwap0M1"
+        },
+        {
+            "name": "repeating_timeline_-LbuDfV4EUhkgTsZehCQ_tldetails",
+            "current": "",
+            "max": "",
+            "id": "-LbuDfW3bpot9azxbQc-"
+        },
+        {
+            "name": "repeating_timeline_-LbuDfV4EUhkgTsZehCQ_tlcategory",
+            "current": "PROJECT",
+            "max": "",
+            "id": "-LbuDfW7ztYQfK3LLm9P"
+        },
+        {
+            "name": "repeating_timeline_-LbuDfV4EUhkgTsZehCQ_tldotdisplay",
+            "current": "●●",
+            "max": "",
+            "id": "-LbuDfWDGwhiN8Qs2dux"
+        },
+        {
+            "name": "repeating_timeline_-LbuDfV4EUhkgTsZehCQ_tltitle",
+            "current": "Seneschal Scheer Detection Projects",
+            "max": "",
+            "id": "-LbuDfWICI_47QyOzqm-"
+        },
+        {
+            "name": "repeating_timeline_-LbuDfV4EUhkgTsZehCQ_tlsummary",
+            "current": "Origin: 0, Target: 1, Connections: -1, Subject Matter: 0, Secrecy: 0, Ambition: 2",
+            "max": "",
+            "id": "-LbuDfWN7dvYMJjKcNs7"
+        },
+        {
+            "name": "repeating_timeline_-LbuDg-7Eg5rVvCPLdpZ_tlstartdate",
+            "current": "Aug 4, 2018",
+            "max": "",
+            "id": "-LbuDg-cXk_-iKjGzUqK"
+        },
+        {
+            "name": "repeating_timeline_-LbuDg-7Eg5rVvCPLdpZ_tlenddate",
+            "current": "— Jun 4, 2019",
+            "max": "",
+            "id": "-LbuDg-hr41c6fFFpuon"
+        },
+        {
+            "name": "repeating_timeline_-LbuDg-7Eg5rVvCPLdpZ_tldetails",
+            "current": "",
+            "max": "",
+            "id": "-LbuDg-mUdXYRBVxt3QP"
+        },
+        {
+            "name": "repeating_timeline_-LbuDg-7Eg5rVvCPLdpZ_tlcategory",
+            "current": "PROJECT",
+            "max": "",
+            "id": "-LbuDg-qAKx6mmE7iyc8"
+        },
+        {
+            "name": "repeating_timeline_-LbuDg-7Eg5rVvCPLdpZ_tldotdisplay",
+            "current": "●●●",
+            "max": "",
+            "id": "-LbuDg-wzj6KMF44WXXS"
+        },
+        {
+            "name": "repeating_timeline_-LbuDg-7Eg5rVvCPLdpZ_tltitle",
+            "current": "FAME!",
+            "max": "",
+            "id": "-LbuDg-ztorhJA6ZkPZd"
+        },
+        {
+            "name": "repeating_timeline_-LbuDg-7Eg5rVvCPLdpZ_tlsummary",
+            "current": "+1 Increment for +1 Secrecy, Staking Additional Contacts, Calling in a Boon, District Bonus.",
+            "max": "",
+            "id": "-LbuDg053IFndQLFKkzN"
+        },
+        {
+            "name": "repeating_timeline_-LbuDgRuWAyIIpZZZYaM_tlstartdate",
+            "current": "Aug 5, 2018",
+            "max": "",
+            "id": "-LbuDgSHmIzLPAosRBoQ"
+        },
+        {
+            "name": "repeating_timeline_-LbuDgRuWAyIIpZZZYaM_tlenddate",
+            "current": "— Oct 14, 2018",
+            "max": "",
+            "id": "-LbuDgSNGx2EWSvPA0WP"
+        },
+        {
+            "name": "repeating_timeline_-LbuDgRuWAyIIpZZZYaM_tldetails",
+            "current": "",
+            "max": "",
+            "id": "-LbuDgSRTjMoCxvO2kDX"
+        },
+        {
+            "name": "repeating_timeline_-LbuDgRuWAyIIpZZZYaM_tlcategory",
+            "current": "PROJECT",
+            "max": "",
+            "id": "-LbuDgSVmJ9uHAqXQ3mA"
+        },
+        {
+            "name": "repeating_timeline_-LbuDgRuWAyIIpZZZYaM_tldotdisplay",
+            "current": "●●●",
+            "max": "",
+            "id": "-LbuDgSawJ0GcxVw_1L9"
+        },
+        {
+            "name": "repeating_timeline_-LbuDgRuWAyIIpZZZYaM_tltitle",
+            "current": "Raise Homeless Contacts from 2 to 3",
+            "max": "",
+            "id": "-LbuDgSfK8MiyGoJSq3i"
+        },
+        {
+            "name": "repeating_timeline_-LbuDgRuWAyIIpZZZYaM_tlsummary",
+            "current": "+2 from the Distillery District, +1 Boon, +2 Staked Contact dots.",
+            "max": "",
+            "id": "-LbuDgSk4aq5hE4Em08_"
+        },
+        {
+            "name": "repeating_timeline_-LbuDhZA6zYVE-GJepf2_tlstartdate",
+            "current": "Aug 6, 2018",
+            "max": "",
+            "id": "-LbuDhZbA076jdzwpxL5"
+        },
+        {
+            "name": "repeating_timeline_-LbuDhZA6zYVE-GJepf2_tlenddate",
+            "current": "— Aug 16, 2018",
+            "max": "",
+            "id": "-LbuDhZfyDdVgU2LuHeV"
+        },
+        {
+            "name": "repeating_timeline_-LbuDhZA6zYVE-GJepf2_tldetails",
+            "current": "",
+            "max": "",
+            "id": "-LbuDhZjafkEXfYOgyoV"
+        },
+        {
+            "name": "repeating_timeline_-LbuDhZA6zYVE-GJepf2_tlcategory",
+            "current": "PROJECT",
+            "max": "",
+            "id": "-LbuDhZm4K7ZlI8Kc3wy"
+        },
+        {
+            "name": "repeating_timeline_-LbuDhZA6zYVE-GJepf2_tldotdisplay",
+            "current": "●●",
+            "max": "",
+            "id": "-LbuDhZqIufC6DYTR54u"
+        },
+        {
+            "name": "repeating_timeline_-LbuDhZA6zYVE-GJepf2_tltitle",
+            "current": "Detecting Projects Agains the Coterie",
+            "max": "",
+            "id": "-LbuDhZurwh148zqCCxx"
+        },
+        {
+            "name": "repeating_timeline_-LbuDhZA6zYVE-GJepf2_tlsummary",
+            "current": "Origin: +0, Target +1, Connections: Unlimited, Subject: Unlimited, Ambition: Determined.",
+            "max": "",
+            "id": "-LbuDhZygr3XA9ZVJpKG"
+        },
+        {
+            "name": "repeating_timeline_-LbuDi7uz1EhUkGJqL8q_tlstartdate",
+            "current": "Sep 7, 2018",
+            "max": "",
+            "id": "-LbuDi8Cs9RYfli1C0ka"
+        },
+        {
+            "name": "repeating_timeline_-LbuDi7uz1EhUkGJqL8q_tlenddate",
+            "current": "— Jan 25, 2019",
+            "max": "",
+            "id": "-LbuDi8JjxXwN49Ha_A0"
+        },
+        {
+            "name": "repeating_timeline_-LbuDi7uz1EhUkGJqL8q_tldetails",
+            "current": "",
+            "max": "",
+            "id": "-LbuDi8NZfiloCh8pJMr"
+        },
+        {
+            "name": "repeating_timeline_-LbuDi7uz1EhUkGJqL8q_tlcategory",
+            "current": "PROJECT",
+            "max": "",
+            "id": "-LbuDi8Q3eyrZgOnaCLE"
+        },
+        {
+            "name": "repeating_timeline_-LbuDi7uz1EhUkGJqL8q_tldotdisplay",
+            "current": "●●●",
+            "max": "",
+            "id": "-LbuDi8U32U-01qki-rB"
+        },
+        {
+            "name": "repeating_timeline_-LbuDi7uz1EhUkGJqL8q_tltitle",
+            "current": "Retainer",
+            "max": "",
+            "id": "-LbuDi8Z0bE2QEwD51RH"
+        },
+        {
+            "name": "repeating_timeline_-LbuDi7uz1EhUkGJqL8q_tlsummary",
+            "current": "Force Staked Mawla: Nosferatu (3)",
+            "max": "",
+            "id": "-LbuDi8cQSHN9keSWqcA"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHiDVFc2DU_8k3gV"
+        },
+        {
+            "name": "Untitled",
+            "current": "Nineteen",
+            "max": "",
+            "id": "-LgyFHiDVFc2DU_8k3gW"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHiElxxhxnULHhAc"
+        },
+        {
+            "name": "repeating_earnedxp_-LbuuTc5e35sqGq7N3Kf_xp_award",
+            "current": 1,
+            "max": "",
+            "id": "-LbuuTbzbSVIFjqujwvB"
+        },
+        {
+            "name": "repeating_earnedxp_-LbuuTc5e35sqGq7N3Kf_xp_session",
+            "current": "Fourteen",
+            "max": "",
+            "id": "-LbuuTc0b5eRef-T3dIx"
+        },
+        {
+            "name": "repeating_earnedxp_-LbuuTc5e35sqGq7N3Kf_xp_reason",
+            "current": "The gyrating Nosferatu at the gay bar",
+            "max": "",
+            "id": "-LbuuTc27Kb2iResAwfv"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHiGYSpaf0ADhiin"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHiHe95nSxXqW5p0"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHiIBratndoc-iXF"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHiIBratndoc-iXG"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHiJ_UdTfIlupVc2"
+        },
+        {
+            "name": "Untitled",
+            "current": "Being vampires!",
+            "max": "",
+            "id": "-LgyFHiJ_UdTfIlupVc3"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHiKGbbKQJasC26g"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHiKGbbKQJasC26h"
+        },
+        {
+            "name": "Untitled",
+            "current": "RPing your Clan well!",
+            "max": "",
+            "id": "-LgyFHiKGbbKQJasC26i"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHiLzE3W5itafjjH"
+        },
+        {
+            "name": "Untitled",
+            "current": "Sixteen",
+            "max": "",
+            "id": "-LgyFHiLzE3W5itafjjI"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHiLzE3W5itafjjJ"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHiMrX_XP9SVk3AO"
+        },
+        {
+            "name": "Untitled",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-LgyFHiMrX_XP9SVk3AP"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHiMrX_XP9SVk3AQ"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHiNsXsbRggz81hx"
+        },
+        {
+            "name": "Untitled",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-LgyFHiOmSSA00K1WNU5"
+        },
+        {
+            "name": "Untitled",
+            "current": "The Vultures Circle",
+            "max": "",
+            "id": "-LgyFHiOmSSA00K1WNU6"
+        },
+        {
+            "name": "Untitled",
+            "current": 20,
+            "max": "",
+            "id": "-LgyFHiOmSSA00K1WNU7"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eighteen",
+            "max": "",
+            "id": "-LgyFHiPgnNH4Dic5Qdo"
+        },
+        {
+            "name": "Untitled",
+            "current": "Award for 15 month time jump.",
+            "max": "",
+            "id": "-LgyFHiPgnNH4Dic5Qdp"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHiPgnNH4Dic5Qdq"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eighteen",
+            "max": "",
+            "id": "-LgyFHiQMlTyUE95GuwL"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHiQMlTyUE95GuwM"
+        },
+        {
+            "name": "repeating_project_-LcJnlW5pNAnSVOeYJ8X_projectscope_name",
+            "current": "Improve my Haven",
+            "max": "",
+            "id": "-LcKJQR_Kl5uomDkWfQr"
+        },
+        {
+            "name": "repeating_project_-LcJnlW5pNAnSVOeYJ8X_projectgoal",
+            "current": "The Island Devil has gone silent, and not the silence of death, nor the silence of an Autarkis who couldn't care less about interacting with others. No, he's gone the sort of silent that makes other Nosferatu nervous and causes paranoid thoughts. Why? Yusef suspects that maybe Lucita and Vykos weren't the only monsters to come to Toronto. ",
+            "max": "",
+            "id": "-LcKJeaXFSQzLpRn5nvf"
+        },
+        {
+            "name": "repeating_project_-LcKKSAtrU0XqVv86Cwz_projectscope_name",
+            "current": "Build Relations with the Ministry",
+            "max": "",
+            "id": "-LcKKVOXwlzwpVcHG7PW"
+        },
+        {
+            "name": "repeating_project_-LcKKVWEP1UpKT8Wo9bZ_projectscope_name",
+            "current": "Start Siphoning Funds from the Men in Black",
+            "max": "",
+            "id": "-LcKKXH5W0tETXtYXo-X"
+        },
+        {
+            "name": "repeating_project_-LcKKXbI1pRFgPWKjb18_projectscope_name",
+            "current": "Raise the Coterie's Status",
+            "max": "",
+            "id": "-LcKKZgLfRyizkze-3c-"
+        },
+        {
+            "name": "repeating_project_-LcKMZl4Zs-IZ1-2gozc_projectscope_name",
+            "current": "Attain Humanity 9",
+            "max": "",
+            "id": "-LcKMb6Lcsm-B6OTLgbm"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectscope_name",
+            "current": "Gather Information on the Ministry",
+            "max": "",
+            "id": "-LcKNTTM3RVdDJFczL8D"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKjlEeaIBHyqp5uJn_xp_category",
+            "current": "Clan Discipline",
+            "max": "",
+            "id": "-LcOKkLPZDRGB28LMepR"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKjlEeaIBHyqp5uJn_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOKkNeQCH-c47BbR95"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKjlEeaIBHyqp5uJn_xp_initial_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOKkNhjr62SyToq5hx"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKjlEeaIBHyqp5uJn_xp_new_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOKkNklxL36zQa9UlO"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKjlEeaIBHyqp5uJn_xp_arrow_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOKkNnbV2sGhoBGnEl"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKjlEeaIBHyqp5uJn_xp_trait",
+            "current": "Obfuscate",
+            "max": "",
+            "id": "-LcOKl8l2jrIYLnf5smz"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKjlEeaIBHyqp5uJn_xp_cost",
+            "current": 25,
+            "max": "",
+            "id": "-LcOKlAthNKY3FqtjdB1"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKjlEeaIBHyqp5uJn_xp_initial",
+            "current": "1",
+            "max": "",
+            "id": "-LcOKlLV61JRNxothfOB"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKjlEeaIBHyqp5uJn_xp_new",
+            "current": "3",
+            "max": "",
+            "id": "-LcOKlWnylQZ8yfUgCW4"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKjlEeaIBHyqp5uJn_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOKmkOZJpO6jRAN9au"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKmomAuR8oF1kMnY9_xp_category",
+            "current": "Attribute",
+            "max": "",
+            "id": "-LcOKnX9jolw3gmYKblN"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKmomAuR8oF1kMnY9_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOKnZMGjoGkIT2pZWp"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKmomAuR8oF1kMnY9_xp_initial_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOKnZQMZSL4rSaC2v0"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKmomAuR8oF1kMnY9_xp_new_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOKnZUGPHBlNQ-lrpE"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKmomAuR8oF1kMnY9_xp_arrow_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOKnZWKhrS-b1jlBWm"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKmomAuR8oF1kMnY9_xp_trait",
+            "current": "Strength",
+            "max": "",
+            "id": "-LcOKoXVZJJmN0CN8iyP"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKmomAuR8oF1kMnY9_xp_cost",
+            "current": 10,
+            "max": "",
+            "id": "-LcOKoZbYkUDiHHdqSNj"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKmomAuR8oF1kMnY9_xp_initial",
+            "current": "1",
+            "max": "",
+            "id": "-LcOKofzE36Z7npwYpGb"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKmomAuR8oF1kMnY9_xp_new",
+            "current": "2",
+            "max": "",
+            "id": "-LcOKoyE0JYeFD-xwWwU"
+        },
+        {
+            "name": "repeating_spentxp_-LcOKmomAuR8oF1kMnY9_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOKpDIWEGSvE3cJ1r7"
+        },
+        {
+            "name": "repeating_advantage_-LcOLuIASbqGJlTHPiaF_advantage_type",
+            "current": "Loresheet",
+            "max": "",
+            "id": "-LcOLvmYT70oWpEdKGi5"
+        },
+        {
+            "name": "repeating_advantage_-LcOLuIASbqGJlTHPiaF_advantage_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LcOLvwILgbLQqhUY0p_"
+        },
+        {
+            "name": "repeating_advantage_-LcOLuIASbqGJlTHPiaF_advantage_name",
+            "current": "Descendant of Zelios",
+            "max": "",
+            "id": "-LcOLxf2QnOHIAcWPXqg"
+        },
+        {
+            "name": "repeating_advantage_-LcOLuIASbqGJlTHPiaF_advantage_details",
+            "current": "On Commission: Other vampires know you descend from Zelios and ask for advice on how best to build their own havens. This business ensures you often have a boon or two to collect (roughly one minor boon per story) and that you know where a number of powerful vampires sleep – which, in the end, probably does you more harm than good.",
+            "max": "",
+            "id": "-LcOM0lopLenb6bjVYEO"
+        },
+        {
+            "name": "repeating_advantage_-LcOLuIASbqGJlTHPiaF_advantage",
+            "current": "3",
+            "max": "",
+            "id": "-LcOM9VALoWFhU4tORhw"
+        },
+        {
+            "name": "repeating_advantage_-LcOM9msTSDUtlbkOcXc_advantage_type",
+            "current": "Loresheet",
+            "max": "",
+            "id": "-LcOMAHPDexcb-lOmYc9"
+        },
+        {
+            "name": "repeating_advantage_-LcOM9msTSDUtlbkOcXc_advantage_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LcOMARUHI2YxzYKQ39c"
+        },
+        {
+            "name": "repeating_advantage_-LcOM9msTSDUtlbkOcXc_advantage_name",
+            "current": "Low Clan",
+            "max": "",
+            "id": "-LcOMBF5_H22f7tow_3q"
+        },
+        {
+            "name": "repeating_advantage_-LcOM9msTSDUtlbkOcXc_advantage",
+            "current": "3",
+            "max": "",
+            "id": "-LcOMBnrAH_H2aSHCB7N"
+        },
+        {
+            "name": "repeating_advantage_-LcOM9msTSDUtlbkOcXc_advantage_details",
+            "current": "Uncanny Kinship: Due to persistent persecution from the High Clans, vampires of Low Clans feel inclined to stick together. You often mediate between Low Clan disputants, and you see the merit of the underworld’s Kindred banding together against the hegemony of the High. You can select three dots from among Mawla or Status from other Low Clans in the domain",
+            "max": "",
+            "id": "-LcOMLD3bY1aZxbBH7xz"
+        },
+        {
+            "name": "repeating_advantage_-LcOMLZK8U6kKgUZWSoA_advantage_details",
+            "current": "From Low Clan 3; Uncanny Kinship. A collective of various Nosferatu Ancilla and Neonates.\n",
+            "max": "",
+            "id": "-LcOMSdCLQFUK3sVkT-h"
+        },
+        {
+            "name": "repeating_advantage_-LcOMLZK8U6kKgUZWSoA_advantage",
+            "current": "4",
+            "max": "",
+            "id": "-LcOMSw1ZC0g9ugr15hj"
+        },
+        {
+            "name": "repeating_advantage_-LcOMLZK8U6kKgUZWSoA_advantage_name",
+            "current": "Mawla",
+            "max": "",
+            "id": "-LcOMTlvPzT_hhxdFBrB"
+        },
+        {
+            "name": "repeating_advantage_-LcOMLZK8U6kKgUZWSoA_advantage_type",
+            "current": "Background",
+            "max": "",
+            "id": "-LcOMUIEp_8pFC3TAIzz"
+        },
+        {
+            "name": "repeating_advantage_-LcOMYSeAmqwh6cy6zBL_advantage_details",
+            "current": "Coterie Bonus",
+            "max": "",
+            "id": "-LcOM_D690g_0762uTSS"
+        },
+        {
+            "name": "repeating_advantage_-LcOMYSeAmqwh6cy6zBL_advantage",
+            "current": "2",
+            "max": "",
+            "id": "-LcOM_PBlUGarTcYOrDz"
+        },
+        {
+            "name": "repeating_advantage_-LcOMYSeAmqwh6cy6zBL_advantage_name",
+            "current": "Status",
+            "max": "",
+            "id": "-LcOM_yNINHFKqw_0_Op"
+        },
+        {
+            "name": "repeating_advantage_-LcOMYSeAmqwh6cy6zBL_advantage_type",
+            "current": "Background",
+            "max": "",
+            "id": "-LcONMCYdSbydcEWLUI-"
+        },
+        {
+            "name": "repeating_advantage_-LcONMMQY7F0SLEoSGTY_advantage_name",
+            "current": "Resources",
+            "max": "",
+            "id": "-LcONNlrpYeeNgRbgUz9"
+        },
+        {
+            "name": "repeating_advantage_-LcONMMQY7F0SLEoSGTY_advantage",
+            "current": "4",
+            "max": "",
+            "id": "-LcONNmoQ5vim0UFS6n5"
+        },
+        {
+            "name": "repeating_advantage_-LcONO3CelWuP5-szdUL_advantage_name",
+            "current": "Fame",
+            "max": "",
+            "id": "-LcONP0jzvxBei0mn5Al"
+        },
+        {
+            "name": "repeating_advantage_-LcONO3CelWuP5-szdUL_advantage",
+            "current": "3",
+            "max": "",
+            "id": "-LcONP1kXbgUBUEE5pC5"
+        },
+        {
+            "name": "repeating_advantage_-LcONPTl4V52GTWzUEPR_advantage_name",
+            "current": "Haven",
+            "max": "",
+            "id": "-LcONQnCU4ju1lTNPPHD"
+        },
+        {
+            "name": "repeating_advantage_-LcONPTl4V52GTWzUEPR_advantage",
+            "current": "2",
+            "max": "",
+            "id": "-LcONQo75H2XYn68V1K_"
+        },
+        {
+            "name": "repeating_advantage_-LcONQyuzFtThX38RTce_advantage_name",
+            "current": "Haven Additions",
+            "max": "",
+            "id": "-LcONSCxHbl7WyVotb9H"
+        },
+        {
+            "name": "repeating_advantage_-LcONSNYsZsm6T4Z1hMC_advantage_name",
+            "current": "Contacts",
+            "max": "",
+            "id": "-LcONT4C3pXQwE07pAAi"
+        },
+        {
+            "name": "repeating_advantage_-LcONSNYsZsm6T4Z1hMC_advantage",
+            "current": "3",
+            "max": "",
+            "id": "-LcONTZrsaFLEjj7Wr7j"
+        },
+        {
+            "name": "repeating_advantage_-LcONaEbND20HaTkQzbt_advantage_name",
+            "current": "Retainer",
+            "max": "",
+            "id": "-LcONcGvW1iSixcj50l0"
+        },
+        {
+            "name": "repeating_advantage_-LcONaEbND20HaTkQzbt_advantage",
+            "current": "3",
+            "max": "",
+            "id": "-LcONcI4mK2Wknk1hy0G"
+        },
+        {
+            "name": "repeating_advantage_-LcONQyuzFtThX38RTce_advantage",
+            "current": "5",
+            "max": "",
+            "id": "-LcOO9IJaXVLshdlZMs4"
+        },
+        {
+            "name": "repeating_advantage_-LcOOAwjuE6KailxGlJ0_advantage_name",
+            "current": "Descendant of Zelios",
+            "max": "",
+            "id": "-LcOOCY9MvjyzR-LCtTl"
+        },
+        {
+            "name": "repeating_advantage_-LcOOAwjuE6KailxGlJ0_advantage",
+            "current": "1",
+            "max": "",
+            "id": "-LcOOENbJZpoNsuJULUl"
+        },
+        {
+            "name": "repeating_advantage_-LcOOAwjuE6KailxGlJ0_advantage_details",
+            "current": "Sanctuary: Your haven is a wonder of modern design, possessing security in the form of secret passages, electronic security, and even a self-destruct button, all while looking stylish and comfortable. Split two dots between either or both of the Haven Merits Postern and Security System, but someone, somewhere likely has all the details of the setup",
+            "max": "",
+            "id": "-LcOOGJ_jz1FilGO6U72"
+        },
+        {
+            "name": "repeating_advantage_-LcOOAwjuE6KailxGlJ0_advantage_type",
+            "current": "Loresheet",
+            "max": "",
+            "id": "-LcOOSk3K2zpSmPBIozY"
+        },
+        {
+            "name": "repeating_advantage_-LcONaEbND20HaTkQzbt_advantage_type",
+            "current": "Background",
+            "max": "",
+            "id": "-LcOOT7FOgT-Lp7S9mxU"
+        },
+        {
+            "name": "repeating_advantage_-LcONSNYsZsm6T4Z1hMC_advantage_type",
+            "current": "Background",
+            "max": "",
+            "id": "-LcOOTMrWNU-1BbQq35J"
+        },
+        {
+            "name": "repeating_advantage_-LcONQyuzFtThX38RTce_advantage_type",
+            "current": "Background",
+            "max": "",
+            "id": "-LcOOTgqSzcTan2crFWa"
+        },
+        {
+            "name": "repeating_advantage_-LcONPTl4V52GTWzUEPR_advantage_type",
+            "current": "Background",
+            "max": "",
+            "id": "-LcOOU0VqaVjRCrcfmEM"
+        },
+        {
+            "name": "repeating_advantage_-LcONPTl4V52GTWzUEPR_advantage_details",
+            "current": "Good size, security, or privacy. Examples: a single family home or row house, wolf enclosure at the zoo, branch sewer tunnel.",
+            "max": "",
+            "id": "-LcOO_70y63zv9nPxrj_"
+        },
+        {
+            "name": "repeating_advantage_-LcONQyuzFtThX38RTce_advantage_details",
+            "current": "Security 2: our haven has a better-than-average security system. For each dot of this Merit, add one die to your dice pool to resist (or alert you to) unauthorized entry into your haven. \n\nPostern 1: Your Haven has a rear exit, secret tunnel, grating in the cellar leading into the sewers, or other unobtrusive way out. For each dot of this Merit, add one die to your dice pools to evade or escape surveillance near your haven.\n\nLocation 1: Your haven nestles in one of the most fashionable or otherwise exclusive areas of the city, in the Rack, on a small island, or otherwise in a prime spot. Add two dice (or +2 to foes’ Difficulty) to bonuses on the relevant die rolls from either Chasse (p. 195) or from your base Haven rating (pick one). If neither modifier precisely maps to what you have in mind, work out with your Storyteller when you can expect a two-dice bonus to occur. For example, a Haven close to Elysium might grant a two-dice bonus to Etiquette tests in Elysium and on tests to pick up on court gossip.\n(Provides +2 to foes difficulty to locate or enter the Haven)\n\nLuxury 1:High-definition flat screens, designer furniture, objets d’art, or other expensive details give you a two-dice bonus to Social tests dealing with mortal guests in your haven. If you don’t have at\nleast three dots of Resources (•••), your décor was gained illegally\n",
+            "max": "",
+            "id": "-LcOOfaGQjO1a5ai9XnM"
+        },
+        {
+            "name": "repeating_advantage_-LcONMMQY7F0SLEoSGTY_advantage_type",
+            "current": "Background",
+            "max": "",
+            "id": "-LcOPmuGueSvBsaIVF9N"
+        },
+        {
+            "name": "repeating_advantage_-LcONO3CelWuP5-szdUL_advantage_type",
+            "current": "Background",
+            "max": "",
+            "id": "-LcOPnL0p1RG4XuAxkfs"
+        },
+        {
+            "name": "repeating_advantage_-LcORDHPaEPv4134TOvp_advantage_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LcORDWqHW26McqjHPk5"
+        },
+        {
+            "name": "repeating_advantage_-LcORDHPaEPv4134TOvp_advantage_name",
+            "current": "Mask",
+            "max": "",
+            "id": "-LcOREDXim-nZsdo74h_"
+        },
+        {
+            "name": "repeating_advantage_-LcORDHPaEPv4134TOvp_advantage",
+            "current": "3",
+            "max": "",
+            "id": "-LcOREhmkWVTziTpOm16"
+        },
+        {
+            "name": "repeating_advantage_-LcORDHPaEPv4134TOvp_advantage_details",
+            "current": "Your Mask can pass a background check with the national police: FBI, Scotland Yard, or the equivalent. If you had a military or intelligence record in life, it has been classified.\n\nCobbler: You can make or source Masks. Making a Mask takes three days per dot and possibly exposes you online; sourcing Masks\ntakes one day per dot, but costs something in return. How much depends on your leverage, margin on the Social test, or whatever else\nthe Storyteller decides.",
+            "max": "",
+            "id": "-LcOROyRLE4BkkaP4pgD"
+        },
+        {
+            "name": "repeating_advantage_-LcORDHPaEPv4134TOvp_advantage_type",
+            "current": "Background",
+            "max": "",
+            "id": "-LcORWrN-nYgQwH6UF-h"
+        },
+        {
+            "name": "repeating_negadvantage_-LcORYxtCkMBsPI7xfQw_negadvantage_type",
+            "current": "Flaw",
+            "max": "",
+            "id": "-LcORZKrnWme4wKwzvrP"
+        },
+        {
+            "name": "repeating_negadvantage_-LcORYxtCkMBsPI7xfQw_negadvantage_name",
+            "current": "Hideous",
+            "max": "",
+            "id": "-LcOR_pB4zxKGRALpdvA"
+        },
+        {
+            "name": "repeating_negadvantage_-LcORYxtCkMBsPI7xfQw_negadvantage",
+            "current": "2",
+            "max": "",
+            "id": "-LcOR_qZTEgiW8_-2QLV"
+        },
+        {
+            "name": "repeating_spentxp_-LcORue-XLTDZZUlMhfV_xp_category",
+            "current": "Advantage",
+            "max": "",
+            "id": "-LcORvWSC6iO_KNRzRQL"
+        },
+        {
+            "name": "repeating_spentxp_-LcORue-XLTDZZUlMhfV_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcORvYr0NaelXhBJrIv"
+        },
+        {
+            "name": "repeating_spentxp_-LcORue-XLTDZZUlMhfV_xp_initial_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcORvYvKJr6whu5EMEQ"
+        },
+        {
+            "name": "repeating_spentxp_-LcORue-XLTDZZUlMhfV_xp_new_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcORvYz6EEo6j2Yf-q7"
+        },
+        {
+            "name": "repeating_spentxp_-LcORue-XLTDZZUlMhfV_xp_arrow_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcORvZ2Nn_DKqikoVgZ"
+        },
+        {
+            "name": "repeating_spentxp_-LcORvhDLBtdPVflQcH4_xp_category",
+            "current": "Advantage",
+            "max": "",
+            "id": "-LcORw3I2Y-70wg5hxOy"
+        },
+        {
+            "name": "repeating_spentxp_-LcORvhDLBtdPVflQcH4_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcORw5dOEkWcQiutjis"
+        },
+        {
+            "name": "repeating_spentxp_-LcORvhDLBtdPVflQcH4_xp_initial_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcORw5hCiVe9T9ShX_-"
+        },
+        {
+            "name": "repeating_spentxp_-LcORvhDLBtdPVflQcH4_xp_new_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcORw5l8zLaJwqGTiFO"
+        },
+        {
+            "name": "repeating_spentxp_-LcORvhDLBtdPVflQcH4_xp_arrow_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcORw5proW6XM66xYwh"
+        },
+        {
+            "name": "repeating_spentxp_-LcORwDfXg5X1kwz5Zs7_xp_category",
+            "current": "Advantage",
+            "max": "",
+            "id": "-LcORwaL_8REIGw-cmJX"
+        },
+        {
+            "name": "repeating_spentxp_-LcORwDfXg5X1kwz5Zs7_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcORwcqRtWbRm5y_JzF"
+        },
+        {
+            "name": "repeating_spentxp_-LcORwDfXg5X1kwz5Zs7_xp_initial_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcORwcvwmdHZlpj7Asg"
+        },
+        {
+            "name": "repeating_spentxp_-LcORwDfXg5X1kwz5Zs7_xp_new_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcORwcy3iLNpt7cz4mH"
+        },
+        {
+            "name": "repeating_spentxp_-LcORwDfXg5X1kwz5Zs7_xp_arrow_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcORwd01b0JM9MgAhqr"
+        },
+        {
+            "name": "repeating_spentxp_-LcORue-XLTDZZUlMhfV_xp_trait",
+            "current": "Descendant of Zelios Loresheet 1",
+            "max": "",
+            "id": "-LcORz5oEWfPddZ1fK1K"
+        },
+        {
+            "name": "repeating_spentxp_-LcORue-XLTDZZUlMhfV_xp_cost",
+            "current": 3,
+            "max": "",
+            "id": "-LcORz810paf7blipB8E"
+        },
+        {
+            "name": "repeating_spentxp_-LcORue-XLTDZZUlMhfV_xp_new",
+            "current": "1",
+            "max": "",
+            "id": "-LcORzF0msm0yf2k3Kh1"
+        },
+        {
+            "name": "repeating_spentxp_-LcORue-XLTDZZUlMhfV_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcORzTbCadEi63NLZj2"
+        },
+        {
+            "name": "repeating_spentxp_-LcORvhDLBtdPVflQcH4_xp_trait",
+            "current": "Resources 4",
+            "max": "",
+            "id": "-LcOS-YK5QqzzepVETKc"
+        },
+        {
+            "name": "repeating_spentxp_-LcORvhDLBtdPVflQcH4_xp_cost",
+            "current": 12,
+            "max": "",
+            "id": "-LcOS-_lyTlXhl46I26T"
+        },
+        {
+            "name": "repeating_spentxp_-LcORvhDLBtdPVflQcH4_xp_new",
+            "current": "4",
+            "max": "",
+            "id": "-LcOS-jwrlVOO3XeVhQo"
+        },
+        {
+            "name": "repeating_spentxp_-LcORwDfXg5X1kwz5Zs7_xp_trait",
+            "current": "Melancholic Contacts 2 to 3",
+            "max": "",
+            "id": "-LcOS4-O0uH2LciAZC2a"
+        },
+        {
+            "name": "repeating_spentxp_-LcORwDfXg5X1kwz5Zs7_xp_cost",
+            "current": 9,
+            "max": "",
+            "id": "-LcOS41biiTvXOaBAKTn"
+        },
+        {
+            "name": "repeating_spentxp_-LcORwDfXg5X1kwz5Zs7_xp_new",
+            "current": "3",
+            "max": "",
+            "id": "-LcOS4CrLkOOBVDv4UYm"
+        },
+        {
+            "name": "repeating_spentxp_-LcORvhDLBtdPVflQcH4_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOTFFVpO8vSOsP0j1K"
+        },
+        {
+            "name": "repeating_spentxp_-LcORwDfXg5X1kwz5Zs7_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOTFJKdZ-IiVNs32-s"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTaai6eJkBFnKfFDz_xp_category",
+            "current": "Skill",
+            "max": "",
+            "id": "-LcOTavF3c6JG42zG0uu"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTaai6eJkBFnKfFDz_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTaxkvUsP4CTyje8Q"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTaai6eJkBFnKfFDz_xp_initial_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTaxqRnyD6409FqHG"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTaai6eJkBFnKfFDz_xp_new_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTaxvSkUoC7HkzT-7"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTaai6eJkBFnKfFDz_xp_arrow_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTay0IKnbcrLX3sOr"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTb3f2ofGdDP6t-XT_xp_category",
+            "current": "Skill",
+            "max": "",
+            "id": "-LcOTbWeOzKSKHKWdylH"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTb3f2ofGdDP6t-XT_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTbZGRr4fuQoqLdAR"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTb3f2ofGdDP6t-XT_xp_initial_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTbZLzN6sYjOGLgxj"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTb3f2ofGdDP6t-XT_xp_new_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTbZSsfOfqrC246MJ"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTb3f2ofGdDP6t-XT_xp_arrow_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTbZWCmbQxhzn8ZvY"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTbdx12kFVNz49Cak_xp_category",
+            "current": "Skill",
+            "max": "",
+            "id": "-LcOTc-csN_lPZU2zcB8"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTbdx12kFVNz49Cak_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTc2Jq7C_EQYF0CIl"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTbdx12kFVNz49Cak_xp_initial_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTc2MfoWILqjaSPDZ"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTbdx12kFVNz49Cak_xp_new_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTc2N-iFksHPZPlYI"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTbdx12kFVNz49Cak_xp_arrow_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTc2R7CtCEoePn9nD"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTaai6eJkBFnKfFDz_xp_trait",
+            "current": "Athletics 1",
+            "max": "",
+            "id": "-LcOTdFphAtsveeLCA6y"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTaai6eJkBFnKfFDz_xp_cost",
+            "current": 3,
+            "max": "",
+            "id": "-LcOTdI7CFhS6_QN4f1g"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTb3f2ofGdDP6t-XT_xp_trait",
+            "current": "Insight 1",
+            "max": "",
+            "id": "-LcOTf9XEKHZjyQG2n5k"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTb3f2ofGdDP6t-XT_xp_cost",
+            "current": 3,
+            "max": "",
+            "id": "-LcOTfC87JrdTdQ0tsCg"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTbdx12kFVNz49Cak_xp_trait",
+            "current": "Intimidation 1",
+            "max": "",
+            "id": "-LcOTj4By_4DwWHUd8wG"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTbdx12kFVNz49Cak_xp_cost",
+            "current": 3,
+            "max": "",
+            "id": "-LcOTj6l4vl6vIgWzBhb"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTaai6eJkBFnKfFDz_xp_new",
+            "current": "1",
+            "max": "",
+            "id": "-LcOTjFJqXZ3KHua5KVG"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTb3f2ofGdDP6t-XT_xp_new",
+            "current": "1",
+            "max": "",
+            "id": "-LcOTjWaT2A6mVYzuBM5"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTbdx12kFVNz49Cak_xp_new",
+            "current": "1",
+            "max": "",
+            "id": "-LcOTjnzFITNtN1esogQ"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTaai6eJkBFnKfFDz_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOTk5Cfv2HJtZVmFEb"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTb3f2ofGdDP6t-XT_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOTk9QFbef_39FIA7F"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTbdx12kFVNz49Cak_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOTkFFQgAmyEfp_YRD"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTkxKPZeEo0leUiin_xp_category",
+            "current": "Advantage",
+            "max": "",
+            "id": "-LcOTlpnYg5xDtNDSP5B"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTkxKPZeEo0leUiin_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTlsT4dcPPqxEApft"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTkxKPZeEo0leUiin_xp_initial_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTlsUybYY2_QCN0dY"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTkxKPZeEo0leUiin_xp_new_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTlsXUmUszjO9MWVE"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTkxKPZeEo0leUiin_xp_arrow_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTlsZI-zUD6VBmjTk"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTkxKPZeEo0leUiin_xp_trait",
+            "current": "Fame 3",
+            "max": "",
+            "id": "-LcOTnHQDiQuLW9S9nrj"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTkxKPZeEo0leUiin_xp_cost",
+            "current": 9,
+            "max": "",
+            "id": "-LcOTnKGyvHO9x5eesDD"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTkxKPZeEo0leUiin_xp_new",
+            "current": "3",
+            "max": "",
+            "id": "-LcOTnWZPt3oMxYZVtTH"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTkxKPZeEo0leUiin_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOTnpuZGO3cLmZB5XD"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTo19z7-GcGYTwoy5_xp_category",
+            "current": "Advantage",
+            "max": "",
+            "id": "-LcOTodwi3Mk65tlD0li"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTo19z7-GcGYTwoy5_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTognDrhy3f7JlS5V"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTo19z7-GcGYTwoy5_xp_initial_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTogqj9-lyklMjhvR"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTo19z7-GcGYTwoy5_xp_new_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTogvPkqkRjoYf-ZE"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTo19z7-GcGYTwoy5_xp_arrow_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOTogyTlIPyjsCPhUE"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTo19z7-GcGYTwoy5_xp_trait",
+            "current": "Retainer 3",
+            "max": "",
+            "id": "-LcOTpqcmc1RDhOmtVO5"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTo19z7-GcGYTwoy5_xp_cost",
+            "current": 9,
+            "max": "",
+            "id": "-LcOTptGw4Qn_zJKyzg7"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTo19z7-GcGYTwoy5_xp_new",
+            "current": "3",
+            "max": "",
+            "id": "-LcOTq3lWpNmuCog83ng"
+        },
+        {
+            "name": "repeating_spentxp_-LcOTo19z7-GcGYTwoy5_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOTqbn-aRpvQ1gSc3H"
+        },
+        {
+            "name": "repeating_spentxp_-LcOV01GlHtdEZLkmebC_xp_category",
+            "current": "Advantage",
+            "max": "",
+            "id": "-LcOV0rKCaHkaxgWUEFV"
+        },
+        {
+            "name": "repeating_spentxp_-LcOV01GlHtdEZLkmebC_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOV0uGpQ1Ql2zAIHAc"
+        },
+        {
+            "name": "repeating_spentxp_-LcOV01GlHtdEZLkmebC_xp_initial_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOV0uMeyoz39vk_2MX"
+        },
+        {
+            "name": "repeating_spentxp_-LcOV01GlHtdEZLkmebC_xp_new_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOV0uSDEx7JZCFDMf1"
+        },
+        {
+            "name": "repeating_spentxp_-LcOV01GlHtdEZLkmebC_xp_arrow_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOV0uXT3nK-Uilo8IY"
+        },
+        {
+            "name": "repeating_spentxp_-LcOV01GlHtdEZLkmebC_xp_trait",
+            "current": "Mask",
+            "max": "",
+            "id": "-LcOV1TmoN8_EmwLj4KT"
+        },
+        {
+            "name": "repeating_spentxp_-LcOV01GlHtdEZLkmebC_xp_cost",
+            "current": 6,
+            "max": "",
+            "id": "-LcOV1Wamxc1LBnSr5IG"
+        },
+        {
+            "name": "repeating_spentxp_-LcOV01GlHtdEZLkmebC_xp_new",
+            "current": "2",
+            "max": "",
+            "id": "-LcOV2-iET-27vQjy9SA"
+        },
+        {
+            "name": "repeating_spentxp_-LcOV01GlHtdEZLkmebC_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOV2cRAlzrCGP848NO"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVsoXGP-7ZfsfqcX1_xp_category",
+            "current": "Skill",
+            "max": "",
+            "id": "-LcOVtJro83r7o5kanSE"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVsoXGP-7ZfsfqcX1_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOVtMpx5AAV-C9bJ6q"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVsoXGP-7ZfsfqcX1_xp_initial_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOVtMtCBSnNRt0np8n"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVsoXGP-7ZfsfqcX1_xp_new_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOVtMvzWY8vvjfieTA"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVsoXGP-7ZfsfqcX1_xp_arrow_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOVtMyuB7ibeyUAuSv"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVsoXGP-7ZfsfqcX1_xp_trait",
+            "current": "Technology 3",
+            "max": "",
+            "id": "-LcOVu9surt920v_8yGh"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVsoXGP-7ZfsfqcX1_xp_cost",
+            "current": 9,
+            "max": "",
+            "id": "-LcOVuCni1uxbMGcNixh"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVsoXGP-7ZfsfqcX1_xp_initial",
+            "current": "2",
+            "max": "",
+            "id": "-LcOVvDSZvYl_64SWxYJ"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVsoXGP-7ZfsfqcX1_xp_new",
+            "current": "3",
+            "max": "",
+            "id": "-LcOVvatOaq4e9rexAaw"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVsoXGP-7ZfsfqcX1_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOVw0HQo0W8MJ-ykGl"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVwB2ZtHHG1Q0tD6H_xp_category",
+            "current": "Skill",
+            "max": "",
+            "id": "-LcOWf16zRCn72E17bAy"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVwB2ZtHHG1Q0tD6H_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOWf4nNSEZTElt8csl"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVwB2ZtHHG1Q0tD6H_xp_initial_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOWf5-6WBbNhmtHz1h"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVwB2ZtHHG1Q0tD6H_xp_new_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOWf56Y8Hq1BHqfQ73"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVwB2ZtHHG1Q0tD6H_xp_arrow_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOWf5C8g4llsEl27Dl"
+        },
+        {
+            "name": "stealth_spec",
+            "current": "Against Kindred",
+            "max": "",
+            "id": "-LcOWli8bgllEuY1A_AP"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVwB2ZtHHG1Q0tD6H_xp_initial",
+            "current": "1",
+            "max": "",
+            "id": "-LcOWv_OtQ-NiyMwxobT"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVwB2ZtHHG1Q0tD6H_xp_new",
+            "current": "2",
+            "max": "",
+            "id": "-LcOWwFnxUvvR1zZtQpi"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVwB2ZtHHG1Q0tD6H_xp_trait",
+            "current": "Insight",
+            "max": "",
+            "id": "-LcOWx3Yo-9FwMoGO1OD"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVwB2ZtHHG1Q0tD6H_xp_cost",
+            "current": 6,
+            "max": "",
+            "id": "-LcOWx6_4WqYmQfwCh6n"
+        },
+        {
+            "name": "repeating_spentxp_-LcOVwB2ZtHHG1Q0tD6H_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOWxT-0V1ImfXj_I-j"
+        },
+        {
+            "name": "repeating_spentxp_-LcOWxh0XPAoPl6XLwpN_xp_category",
+            "current": "Specialty",
+            "max": "",
+            "id": "-LcOWy5zrknIDS0Ej_5g"
+        },
+        {
+            "name": "repeating_spentxp_-LcOWxh0XPAoPl6XLwpN_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOWy8wxXw6ZHBNUMRT"
+        },
+        {
+            "name": "repeating_spentxp_-LcOWxh0XPAoPl6XLwpN_xp_arrow_toggle",
+            "current": 0,
+            "max": "",
+            "id": "-LcOWy9-LMm83vPyKoOZ"
+        },
+        {
+            "name": "repeating_spentxp_-LcOWxh0XPAoPl6XLwpN_xp_trait",
+            "current": "Subterfuge: Appearing Friendly",
+            "max": "",
+            "id": "-LcOWzaro1SOT3cFJnNM"
+        },
+        {
+            "name": "repeating_spentxp_-LcOWxh0XPAoPl6XLwpN_xp_cost",
+            "current": 3,
+            "max": "",
+            "id": "-LcOWze-WXESAgleTV-m"
+        },
+        {
+            "name": "repeating_spentxp_-LcOWxh0XPAoPl6XLwpN_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOX-9atzDn5uey2_Q3"
+        },
+        {
+            "name": "science_spec",
+            "current": "Chemistry",
+            "max": "",
+            "id": "-LcOXXNk71VvrlEx7K4k"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXdGDnHuV16ZWKooF_xp_category",
+            "current": "Specialty",
+            "max": "",
+            "id": "-LcOXddgMkxsrOyjy4xS"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXdGDnHuV16ZWKooF_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOXdgln5tfEixWuXO8"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXdGDnHuV16ZWKooF_xp_arrow_toggle",
+            "current": 0,
+            "max": "",
+            "id": "-LcOXdgqvzit_rtz01uZ"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXdlBSyRWlVRkvi6q_xp_category",
+            "current": "Specialty",
+            "max": "",
+            "id": "-LcOXe63euGfJAeFRcMf"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXdlBSyRWlVRkvi6q_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOXe9Dlwq0ujRsaVaw"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXdlBSyRWlVRkvi6q_xp_arrow_toggle",
+            "current": 0,
+            "max": "",
+            "id": "-LcOXe9GdcQ4bdprAO6t"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXeGVljnpgLl8WU96_xp_category",
+            "current": "Skill",
+            "max": "",
+            "id": "-LcOXeZhV3_p14ZMWze7"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXeGVljnpgLl8WU96_xp_trait_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOXebsrVkyTmkfM_Xc"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXeGVljnpgLl8WU96_xp_arrow_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOXebvLTJkRZ2OFkYV"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXdGDnHuV16ZWKooF_xp_trait",
+            "current": "Stealth: Against Kindred",
+            "max": "",
+            "id": "-LcOXgJrJ8jGMVQadhuN"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXdGDnHuV16ZWKooF_xp_cost",
+            "current": 3,
+            "max": "",
+            "id": "-LcOXgN8wqEbKHrBlyVy"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXdlBSyRWlVRkvi6q_xp_trait",
+            "current": "Larceny: Security Systems",
+            "max": "",
+            "id": "-LcOXjze7bvrRi3QiRCt"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXdlBSyRWlVRkvi6q_xp_cost",
+            "current": 3,
+            "max": "",
+            "id": "-LcOXk1or8VNNNsIm8xs"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXdlBSyRWlVRkvi6q_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOXkVfCo0AX5Rus4Qk"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXdGDnHuV16ZWKooF_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOXkhITzOn92o2sEIa"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXeGVljnpgLl8WU96_xp_initial_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOXySvF5JZMMMzBiHy"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXeGVljnpgLl8WU96_xp_new_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LcOXyT-23qKoZRTkkD_"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXeGVljnpgLl8WU96_xp_trait",
+            "current": "Crafts 2",
+            "max": "",
+            "id": "-LcOXzRmTrQ1M8WrRCCC"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXeGVljnpgLl8WU96_xp_cost",
+            "current": 6,
+            "max": "",
+            "id": "-LcOXzVOjm6P6DWen3xd"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXeGVljnpgLl8WU96_xp_new",
+            "current": "2",
+            "max": "",
+            "id": "-LcOXzaj9RxbCWTaL1GJ"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXeGVljnpgLl8WU96_xp_initial",
+            "current": "1",
+            "max": "",
+            "id": "-LcOY-CGC2mDm5G5bkC9"
+        },
+        {
+            "name": "repeating_spentxp_-LcOXeGVljnpgLl8WU96_xp_spent_toggle",
+            "current": "on",
+            "max": "",
+            "id": "-LcOY-YNY_lLXhLG_UI0"
+        },
+        {
+            "name": "repeating_advantage_-LcR5nA2b5SqjIbfKOBH_advantage_name",
+            "current": "Banked Coterie Dots",
+            "max": "",
+            "id": "-LcR5oohm6kIh77bnPB_"
+        },
+        {
+            "name": "repeating_advantage_-LcR5nA2b5SqjIbfKOBH_advantage_type",
+            "current": "Coterie",
+            "max": "",
+            "id": "-LcR5p5atGskbFJWUplY"
+        },
+        {
+            "name": "repeating_advantage_-LcR5nA2b5SqjIbfKOBH_advantage",
+            "current": 6,
+            "max": "",
+            "id": "-LcR5pPquMLJA5KAkxND"
+        },
+        {
+            "name": "_reporder_repeating_advantage",
+            "current": "-LcR5nA2b5SqjIbfKOBH,-LamNMpNp9fGxuZF-Z8j,-LcOLuIASbqGJlTHPiaF,-LcOM9msTSDUtlbkOcXc,-LcOMLZK8U6kKgUZWSoA,-LcOMYSeAmqwh6cy6zBL,-LcONMMQY7F0SLEoSGTY,-LcONO3CelWuP5-szdUL,-LcONPTl4V52GTWzUEPR,-LcONQyuzFtThX38RTce,-LcONSNYsZsm6T4Z1hMC,-LcONaEbND20HaTkQzbt,-LcOOAwjuE6KailxGlJ0,-LcORDHPaEPv4134TOvp",
+            "max": "",
+            "id": "-LcR5uzX_0X8vRifE3oF"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHjg1GWB5lSdDfDo"
+        },
+        {
+            "name": "Untitled",
+            "current": "Nineteen",
+            "max": "",
+            "id": "-LgyFHjg1GWB5lSdDfDp"
+        },
+        {
+            "name": "Untitled",
+            "current": "Camarilla neonate: Philip",
+            "max": "",
+            "id": "-LgyFHjhqC1_PUra2o6x"
+        },
+        {
+            "name": "repeating_earnedxp_-LcRT23MVprTiGRJKWRT_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-LcRT23EOg3-7ULUX9CZ"
+        },
+        {
+            "name": "repeating_earnedxp_-LcRT23MVprTiGRJKWRT_xp_session",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LcRT23MubeU5-VYuIMF"
+        },
+        {
+            "name": "repeating_earnedxp_-LcRT23MVprTiGRJKWRT_xp_reason",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LcRT23SRZbskUxOOj8j"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHji00zaOT9I2jlB"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHjj9kr1NcQYo6hI"
+        },
+        {
+            "name": "Untitled",
+            "current": "Being vampires!",
+            "max": "",
+            "id": "-LgyFHjj9kr1NcQYo6hJ"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHjkfwC31PhhU1yc"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHjkfwC31PhhU1yd"
+        },
+        {
+            "name": "Untitled",
+            "current": "RPing your Clan well!",
+            "max": "",
+            "id": "-LgyFHjlPfOtSnUc04TV"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHjlPfOtSnUc04TW"
+        },
+        {
+            "name": "Untitled",
+            "current": "Sixteen",
+            "max": "",
+            "id": "-LgyFHjlPfOtSnUc04TX"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHjmdA8W-l4C3khj"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHjmdA8W-l4C3khk"
+        },
+        {
+            "name": "Untitled",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-LgyFHjnrPyzcOw-xI2Y"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHjnrPyzcOw-xI2Z"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHjo-QFs9JHJ4OU7"
+        },
+        {
+            "name": "Untitled",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-LgyFHjo-QFs9JHJ4OU8"
+        },
+        {
+            "name": "Untitled",
+            "current": "The Vultures Circle",
+            "max": "",
+            "id": "-LgyFHjo-QFs9JHJ4OU9"
+        },
+        {
+            "name": "Untitled",
+            "current": 20,
+            "max": "",
+            "id": "-LgyFHjqkEYqtRJrxeih"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eighteen",
+            "max": "",
+            "id": "-LgyFHjqkEYqtRJrxeii"
+        },
+        {
+            "name": "Untitled",
+            "current": "Award for 15 month time jump.",
+            "max": "",
+            "id": "-LgyFHjrz-ykI6G0WFNB"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHjrz-ykI6G0WFNC"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eighteen",
+            "max": "",
+            "id": "-LgyFHjsZ0tKeOUGAG48"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHjsZ0tKeOUGAG49"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHjtLZQAd3ehINQ_"
+        },
+        {
+            "name": "Untitled",
+            "current": "Nineteen",
+            "max": "",
+            "id": "-LgyFHjtLZQAd3ehINQa"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHju74BmoUDJl5aO"
+        },
+        {
+            "name": "ambition",
+            "current": "Become world famous\n",
+            "max": "",
+            "id": "-LcTEYqpjxineTxUSn39"
+        },
+        {
+            "name": "repeating_project_-LcTF6uoBjh90df4sYVV_projectscope_name",
+            "current": "Look into the Labyrinth",
+            "max": "",
+            "id": "-LcTF8lMBgIqedcmDea7"
+        },
+        {
+            "name": "drive_flag",
+            "current": "0",
+            "max": "",
+            "id": "-LcTMO4u2DIUseVhYb7N"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHjvDKpTbbCS6guU"
+        },
+        {
+            "name": "Untitled",
+            "current": "Nineteen",
+            "max": "",
+            "id": "-LgyFHjwLGwrU3l5yqBf"
+        },
+        {
+            "name": "Untitled",
+            "current": "Twenty Camarilla neonate: Lazarus",
+            "max": "",
+            "id": "-LgyFHjwLGwrU3l5yqBg"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHjxFbRYvYHYRThv"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHjxFbRYvYHYRThw"
+        },
+        {
+            "name": "Untitled",
+            "current": "Being vampires!",
+            "max": "",
+            "id": "-LgyFHjy2hjHeFeL8U8n"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHjy2hjHeFeL8U8o"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHjz0WIlDoHaI_B2"
+        },
+        {
+            "name": "Untitled",
+            "current": "RPing your Clan well!",
+            "max": "",
+            "id": "-LgyFHjz0WIlDoHaI_B3"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHk-IMs-b_C3ylFK"
+        },
+        {
+            "name": "Untitled",
+            "current": "Sixteen",
+            "max": "",
+            "id": "-LgyFHk-IMs-b_C3ylFL"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHk0S88TUjpl7wYV"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHk0S88TUjpl7wYW"
+        },
+        {
+            "name": "Untitled",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-LgyFHk1KIgkbXEQPFEE"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHk1KIgkbXEQPFEF"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHk2TCDhbBqNbyAf"
+        },
+        {
+            "name": "Untitled",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-LgyFHk2TCDhbBqNbyAg"
+        },
+        {
+            "name": "Untitled",
+            "current": "The Vultures Circle",
+            "max": "",
+            "id": "-LgyFHk2TCDhbBqNbyAh"
+        },
+        {
+            "name": "Untitled",
+            "current": 20,
+            "max": "",
+            "id": "-LgyFHk3YQkLfOa9zKOT"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eighteen",
+            "max": "",
+            "id": "-LgyFHk3YQkLfOa9zKOU"
+        },
+        {
+            "name": "Untitled",
+            "current": "Award for 15 month time jump.",
+            "max": "",
+            "id": "-LgyFHk4JUBWEEQ9tgBp"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHk4JUBWEEQ9tgBq"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eighteen",
+            "max": "",
+            "id": "-LgyFHk543IsAyqeR0OP"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHk543IsAyqeR0OQ"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHk8WY62XKnApFkQ"
+        },
+        {
+            "name": "Untitled",
+            "current": "Nineteen",
+            "max": "",
+            "id": "-LgyFHk9V3QOjz-QOyAA"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHk9V3QOjz-QOyAB"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHkAcDvqUZzrARDu"
+        },
+        {
+            "name": "Untitled",
+            "current": "Nineteen",
+            "max": "",
+            "id": "-LgyFHkBVVJ33Q-5hxG2"
+        },
+        {
+            "name": "Untitled",
+            "current": "Camarilla neonate: Philip",
+            "max": "",
+            "id": "-LgyFHkBVVJ33Q-5hxG3"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHkCZ1PV-b5-rP1l"
+        },
+        {
+            "name": "Untitled",
+            "current": "Twenty",
+            "max": "",
+            "id": "-LgyFHkCZ1PV-b5-rP1m"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHkDhC6o1UeGnVCq"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHkERI0CZa0_gW_z"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHkFpno4FxSJ08MD"
+        },
+        {
+            "name": "Untitled",
+            "current": "Being vampires!",
+            "max": "",
+            "id": "-LgyFHkGVPhhBFIX4R8J"
+        },
+        {
+            "name": "Untitled",
+            "current": 1,
+            "max": "",
+            "id": "-LgyFHkGVPhhBFIX4R8K"
+        },
+        {
+            "name": "Untitled",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LgyFHkHIPzeSE0M-Nkk"
+        },
+        {
+            "name": "Untitled",
+            "current": "RPing your Clan well!",
+            "max": "",
+            "id": "-LgyFHkHIPzeSE0M-Nkl"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHkIrsENNmLya9IR"
+        },
+        {
+            "name": "Untitled",
+            "current": "Sixteen",
+            "max": "",
+            "id": "-LgyFHkIrsENNmLya9IS"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHkJLMbBgNS4oHqP"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHkJLMbBgNS4oHqQ"
+        },
+        {
+            "name": "Untitled",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-LgyFHkKscS1gJuSoGCF"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHkKscS1gJuSoGCG"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHkOTZNLYC8c_IQM"
+        },
+        {
+            "name": "Untitled",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-LgyFHkOTZNLYC8c_IQN"
+        },
+        {
+            "name": "Untitled",
+            "current": "The Vultures Circle",
+            "max": "",
+            "id": "-LgyFHkPRia_5-nF4sgB"
+        },
+        {
+            "name": "Untitled",
+            "current": 20,
+            "max": "",
+            "id": "-LgyFHkQ1LWen95s8w91"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eighteen",
+            "max": "",
+            "id": "-LgyFHkQ1LWen95s8w92"
+        },
+        {
+            "name": "Untitled",
+            "current": "Award for 15 month time jump.",
+            "max": "",
+            "id": "-LgyFHkRm6k7CxLgx_VH"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHkSc9LqqosTk6tL"
+        },
+        {
+            "name": "Untitled",
+            "current": "Eighteen",
+            "max": "",
+            "id": "-LgyFHkSc9LqqosTk6tM"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHkT3OaLZKO0oM-7"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHkT3OaLZKO0oM-8"
+        },
+        {
+            "name": "Untitled",
+            "current": "Nineteen",
+            "max": "",
+            "id": "-LgyFHkUr6t9M__rGyeU"
+        },
+        {
+            "name": "Untitled",
+            "current": "Camarilla neonate: Philip",
+            "max": "",
+            "id": "-LgyFHkVqjGr9FCzZeC1"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHkVqjGr9FCzZeC2"
+        },
+        {
+            "name": "Untitled",
+            "current": "Nineteen",
+            "max": "",
+            "id": "-LgyFHkWvXUxTYSL6HI-"
+        },
+        {
+            "name": "Untitled",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgyFHkWvXUxTYSL6HI0"
+        },
+        {
+            "name": "Untitled",
+            "current": 2,
+            "max": "",
+            "id": "-LgyFHkXmtir5Fqi-in7"
+        },
+        {
+            "name": "Untitled",
+            "current": "Nineteen",
+            "max": "",
+            "id": "-LgyFHkXmtir5Fqi-in8"
+        },
+        {
+            "name": "Untitled",
+            "current": "Twenty Camarilla neonate: Lazarus",
+            "max": "",
+            "id": "-LgyFHkYBis3HxK-V-B1"
+        },
+        {
+            "name": "repeating_earnedxpright_-LcTp0m6mn8grORBGOZY_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-LcTp0m0gBvTV8cBJ9Sv"
+        },
+        {
+            "name": "repeating_earnedxpright_-LcTp0m6mn8grORBGOZY_xp_session",
+            "current": "Nineteen",
+            "max": "",
+            "id": "-LcTp0m4d_lkW0nZGka-"
+        },
+        {
+            "name": "repeating_earnedxpright_-LcTp0m6mn8grORBGOZY_xp_reason",
+            "current": "Twenty Camarilla neonate: Lazarus",
+            "max": "",
+            "id": "-LcTp0m7Z-EVGn6mJHbj"
+        },
+        {
+            "name": "repeating_earnedxpright_-LcTp0nZd8Py1ruSEdLM_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-LcTp0nUCGck_S5Vb_H-"
+        },
+        {
+            "name": "repeating_earnedxpright_-LcTp0nZd8Py1ruSEdLM_xp_session",
+            "current": "Nineteen",
+            "max": "",
+            "id": "-LcTp0nYuO2q3AFsun7f"
+        },
+        {
+            "name": "repeating_earnedxpright_-LcTp0nZd8Py1ruSEdLM_xp_reason",
+            "current": "Camarilla neonate: Philip",
+            "max": "",
+            "id": "-LcTp0naJMQdAdQsvZTS"
+        },
+        {
+            "name": "repeating_earnedxpright_-LcTp0p1xk3zsQnnRbtu_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-LcTp0ovFlfMylu9UT_S"
+        },
+        {
+            "name": "repeating_earnedxpright_-LcTp0p1xk3zsQnnRbtu_xp_session",
+            "current": "Nineteen",
+            "max": "",
+            "id": "-LcTp0ozIOs_K-79CDqk"
+        },
+        {
+            "name": "repeating_earnedxpright_-LcTp0p1xk3zsQnnRbtu_xp_reason",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LcTp0p1yjWPxzDzhYn0"
+        },
+        {
+            "name": "repeating_earnedxpright_-LcTp0qT409TlL2uTtZm_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-LcTp0qM8HZlRrwn0537"
+        },
+        {
+            "name": "repeating_earnedxpright_-LcTp0qT409TlL2uTtZm_xp_session",
+            "current": "Twenty",
+            "max": "",
+            "id": "-LcTp0qSoWhfxBurK-6h"
+        },
+        {
+            "name": "repeating_earnedxpright_-LcTp0qT409TlL2uTtZm_xp_reason",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LcTp0qVHOwS0Ttqxbwa"
+        },
+        {
+            "name": "repeating_project_-LcJnlW5pNAnSVOeYJ8X_projectinccounter",
+            "current": 11,
+            "max": "",
+            "id": "-LdxGpERmqAV_W5n7Z42"
+        },
+        {
+            "name": "repeating_project_-LcKKSAtrU0XqVv86Cwz_projectinccounter",
+            "current": 11,
+            "max": "",
+            "id": "-LdxGpETU9yBglmxnD0Q"
+        },
+        {
+            "name": "repeating_project_-LcKKVWEP1UpKT8Wo9bZ_projectinccounter",
+            "current": 11,
+            "max": "",
+            "id": "-LdxGpEWZTZ8J-u4j21S"
+        },
+        {
+            "name": "repeating_project_-LcKKXbI1pRFgPWKjb18_projectinccounter",
+            "current": 11,
+            "max": "",
+            "id": "-LdxGpEYYJusWA5sDJuU"
+        },
+        {
+            "name": "repeating_project_-LcKMZl4Zs-IZ1-2gozc_projectinccounter",
+            "current": 11,
+            "max": "",
+            "id": "-LdxGpE_6MiNu9zp13AD"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectinccounter",
+            "current": 11,
+            "max": "",
+            "id": "-LdxGpEcNXeUKTKa7YnK"
+        },
+        {
+            "name": "repeating_project_-LcTF6uoBjh90df4sYVV_projectinccounter",
+            "current": 11,
+            "max": "",
+            "id": "-LdxGpEfcldV2JFlf4Gc"
+        },
+        {
+            "name": "repeating_project_-LcJnlW5pNAnSVOeYJ8X_projectfull_toggle",
+            "current": "1",
+            "max": "",
+            "id": "-Le9TSYJCHTkNNlDqk58"
+        },
+        {
+            "name": "repeating_advantage_-LcONO3CelWuP5-szdUL_advantage_flag",
+            "current": 0,
+            "max": "",
+            "id": "-Le9VUUF7eJaZBQMEIm8"
+        },
+        {
+            "name": "humanity_impair_toggle",
+            "current": 0,
+            "max": "",
+            "id": "-Le9W5e8n_R-XyaOF7hd"
+        },
+        {
+            "name": "etiquette_flag",
+            "current": "0",
+            "max": "",
+            "id": "-Le9cLeKF_z0WrEacZ71"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectgoal",
+            "current": "",
+            "max": "",
+            "id": "-Le9guV501Lw-3rvkur7"
+        },
+        {
+            "name": "domain_hunt",
+            "current": "The Waterfront and the Gay Village at the Clubs, generally. ",
+            "max": "",
+            "id": "-Le9hgp9E5ru4-x-p8fF"
+        },
+        {
+            "name": "occult_flag",
+            "current": 0,
+            "max": "",
+            "id": "-Le9odTpAFEAOAG0jVvk"
+        },
+        {
+            "name": "repeating_boonsowing_-Le9qA0InpV9p7aiH77J_boonowing_from",
+            "current": "Leah Hawk",
+            "max": "",
+            "id": "-Le9qAhcEHQ70vA0VWEn"
+        },
+        {
+            "name": "repeating_boonsowing_-Le9qA0InpV9p7aiH77J_boonowing_type",
+            "current": "Minor",
+            "max": "",
+            "id": "-Le9qBU4zOetdRAIuXX2"
+        },
+        {
+            "name": "repeating_boonsowing_-Le9qA0InpV9p7aiH77J_boonowing_details",
+            "current": "Tricked her into thinking I saved her life.",
+            "max": "",
+            "id": "-Le9qDIj5Mp3hhGlR4DK"
+        },
+        {
+            "name": "assets_carried",
+            "current": "Walet on a chain, lockpicks, keychain with various keys, Wallet with a low-value credit card, a decent chunk of cash, and ",
+            "max": "",
+            "id": "-Le9qVB4xxAUz_W58gvc"
+        },
+        {
+            "name": "assets_stashed",
+            "current": "1",
+            "max": "",
+            "id": "-Le9rQ1GaLb4_R6XvyBL"
+        },
+        {
+            "name": "assets_other",
+            "current": "1",
+            "max": "",
+            "id": "-Le9rQBh_YDUwQReHDF_"
+        },
+        {
+            "name": "repeating_earnedxpright_-LfnNrWFqUF1vhjcGT5d_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-LfnNrW81CtduQ-usMhi"
+        },
+        {
+            "name": "repeating_earnedxpright_-LfnNrWFqUF1vhjcGT5d_xp_session",
+            "current": "Twenty-One",
+            "max": "",
+            "id": "-LfnNrWEV9_rTunf9jjC"
+        },
+        {
+            "name": "repeating_earnedxpright_-LfnNrWFqUF1vhjcGT5d_xp_reason",
+            "current": "Your unending patience!",
+            "max": "",
+            "id": "-LfnNrWHLZI0RZoMQOSA"
+        },
+        {
+            "name": "_reporder_repeating_earnedxpright",
+            "current": "-LcTp0m6mn8grORBGOZY,-LcTp0nZd8Py1ruSEdLM,-LcTp0p1xk3zsQnnRbtu,-LcTp0qT409TlL2uTtZm,-LfnNrWFqUF1vhjcGT5d",
+            "max": "",
+            "id": "-LfnNrZXhb0w8vJq2eXD"
+        },
+        {
+            "name": "repeating_earnedxp_-LfnQ1nAnZhdNSUe4Rwv_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-LfnQ1n3Qvna3nDX80mG"
+        },
+        {
+            "name": "repeating_earnedxp_-LfnQ1nAnZhdNSUe4Rwv_xp_session",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LfnQ1n8hhbexwyNlxAT"
+        },
+        {
+            "name": "repeating_earnedxp_-LfnQ1nAnZhdNSUe4Rwv_xp_reason",
+            "current": "Being vampires!",
+            "max": "",
+            "id": "-LfnQ1nBmdoqw7Wu7t1I"
+        },
+        {
+            "name": "repeating_earnedxp_-LfnTKMQzsPasjKZho0F_xp_award",
+            "current": 1,
+            "max": "",
+            "id": "-LfnTKMJKOGBtHxzNkzo"
+        },
+        {
+            "name": "repeating_earnedxp_-LfnTKMQzsPasjKZho0F_xp_session",
+            "current": "Fifteen",
+            "max": "",
+            "id": "-LfnTKMNLPtlQK0jtqYY"
+        },
+        {
+            "name": "repeating_earnedxp_-LfnTKMQzsPasjKZho0F_xp_reason",
+            "current": "RPing your Clan well!",
+            "max": "",
+            "id": "-LfnTKMQFWAWbCHbNS2X"
+        },
+        {
+            "name": "repeating_earnedxpright_-Lfr5KfRkBuyFi0gLy72_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-Lfr5KfJfPAFaEUf2LT_"
+        },
+        {
+            "name": "repeating_earnedxpright_-Lfr5KfRkBuyFi0gLy72_xp_session",
+            "current": "Twenty-One",
+            "max": "",
+            "id": "-Lfr5KfTNPR3VcsHmu8z"
+        },
+        {
+            "name": "repeating_earnedxpright_-Lfr5KfRkBuyFi0gLy72_xp_reason",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-Lfr5KfXXfL4P2kP4ldn"
+        },
+        {
+            "name": "repeating_earnedxpright_-Lfr67BG4WuMvRCe1nDj_xp_award",
+            "current": 1,
+            "max": "",
+            "id": "-Lfr67B9RrnE43IVcqmL"
+        },
+        {
+            "name": "repeating_earnedxpright_-Lfr67BG4WuMvRCe1nDj_xp_session",
+            "current": "Twenty-One",
+            "max": "",
+            "id": "-Lfr67BIGjaleY4b6Vh4"
+        },
+        {
+            "name": "repeating_earnedxpright_-Lfr67BG4WuMvRCe1nDj_xp_reason",
+            "current": "Excellent in-character ghoul play",
+            "max": "",
+            "id": "-Lfr67BMeyLAXh7oyUJr"
+        },
+        {
+            "name": "repeating_earnedxp_-Lfr67FBSQmOe5GUld9H_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-Lfr67F318c0KLXF3hCC"
+        },
+        {
+            "name": "repeating_earnedxp_-Lfr67FBSQmOe5GUld9H_xp_session",
+            "current": "Sixteen",
+            "max": "",
+            "id": "-Lfr67F7SaVdeUgNGD7X"
+        },
+        {
+            "name": "repeating_earnedxp_-Lfr67FBSQmOe5GUld9H_xp_reason",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-Lfr67FBHyrUyo5j-0w-"
+        },
+        {
+            "name": "repeating_earnedxp_-Lfr67Hga0YEX2H61taK_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-Lfr67HZGu9FmTVAH6T6"
+        },
+        {
+            "name": "repeating_earnedxp_-Lfr67Hga0YEX2H61taK_xp_session",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-Lfr67HdEpYrXU39ibxZ"
+        },
+        {
+            "name": "repeating_earnedxp_-Lfr67Hga0YEX2H61taK_xp_reason",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-Lfr67Hgi52xq7AGYOnE"
+        },
+        {
+            "name": "repeating_earnedxp_-Lfr67K6drAB4yflzzPV_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-Lfr67JzC71ZiAJZgSPK"
+        },
+        {
+            "name": "repeating_earnedxp_-Lfr67K6drAB4yflzzPV_xp_session",
+            "current": "Seventeen",
+            "max": "",
+            "id": "-Lfr67K5dyMs9zuREZNy"
+        },
+        {
+            "name": "repeating_earnedxp_-Lfr67K6drAB4yflzzPV_xp_reason",
+            "current": "The Vultures Circle",
+            "max": "",
+            "id": "-Lfr67KAf_kalNAmGT1S"
+        },
+        {
+            "name": "repeating_earnedxp_-Lfr67Maq1laNgBApo84_xp_award",
+            "current": 20,
+            "max": "",
+            "id": "-Lfr67MTIcsJTRqhkI2g"
+        },
+        {
+            "name": "repeating_earnedxp_-Lfr67Maq1laNgBApo84_xp_session",
+            "current": "Eighteen",
+            "max": "",
+            "id": "-Lfr67MXDJ2Eqbk12ofq"
+        },
+        {
+            "name": "repeating_earnedxp_-Lfr67Maq1laNgBApo84_xp_reason",
+            "current": "Award for 15 month time jump.",
+            "max": "",
+            "id": "-Lfr67M_vmOqw-Tfy5S1"
+        },
+        {
+            "name": "repeating_earnedxp_-Lfr67OwjJC4Q9KlOc99_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-Lfr67OobTJJrzsV5dA6"
+        },
+        {
+            "name": "repeating_earnedxp_-Lfr67OwjJC4Q9KlOc99_xp_session",
+            "current": "Eighteen",
+            "max": "",
+            "id": "-Lfr67OsaXpfNyY4pT75"
+        },
+        {
+            "name": "repeating_earnedxp_-Lfr67OwjJC4Q9KlOc99_xp_reason",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-Lfr67Owru6Uubgqj3AQ"
+        },
+        {
+            "name": "_reporder_repeating_earnedxp",
+            "current": "-LcRT23MVprTiGRJKWRT,-LfnQ1nAnZhdNSUe4Rwv,-LfnTKMQzsPasjKZho0F,-LcTp0eZtU1trd-WlFHT,-LcTp0g6lVg3NFxFJA0y,-LcTp0hc6uG-R74iILAg,-LcTp0j9t8D0A3Jtmi97,-LcTp0kfZ7yswaMkZkH6",
+            "max": "",
+            "id": "-Lfr67Qc679YDFHMxP54"
+        },
+        {
+            "name": "xp_earnedtotal",
+            "current": 46,
+            "max": "",
+            "id": "-Lfr67ucv6rCPus5qGXh"
+        },
+        {
+            "name": "xp_summary",
+            "current": "46 XP Earned - 122 XP Spent =  -76 XP Remaining",
+            "max": "",
+            "id": "-Lfr67uqdhefS_UOp628"
+        },
+        {
+            "name": "repeating_project_-LcKKSAtrU0XqVv86Cwz_projectscope",
+            "current": "2",
+            "max": "",
+            "id": "-LgPYkGy1uNoppT_hC3h"
+        },
+        {
+            "name": "repeating_project_-LcKKSAtrU0XqVv86Cwz_projectforcedstakemod",
+            "current": 0,
+            "max": "",
+            "id": "-LgPYkJrcoWA7sXBp6ai"
+        },
+        {
+            "name": "repeating_project_-LcKKSAtrU0XqVv86Cwz_projectforcedstakemodline",
+            "current": "",
+            "max": "",
+            "id": "-LgPYkJwO4xj7PkxPaOW"
+        },
+        {
+            "name": "repeating_project_-LcKKSAtrU0XqVv86Cwz_projectlaunchdiff",
+            "current": 4,
+            "max": "",
+            "id": "-LgPYkJzFCR2AqDjkd8q"
+        },
+        {
+            "name": "repeating_project_-LcKKSAtrU0XqVv86Cwz_projectlaunchroll_toggle",
+            "current": 0,
+            "max": "",
+            "id": "-LgPYkKOklYnfUL4UIQP"
+        },
+        {
+            "name": "repeating_project_-LcJnlW5pNAnSVOeYJ8X_projectincunit",
+            "current": "weeks",
+            "max": "",
+            "id": "-LgPYwgWSTEFfdpczEKw"
+        },
+        {
+            "name": "repeating_project_-LcJnlW5pNAnSVOeYJ8X_projectstartdate",
+            "current": "Nov 25, 2018",
+            "max": "",
+            "id": "-LgPYwk2v0XB9mX60jAk"
+        },
+        {
+            "name": "repeating_project_-LcJnlW5pNAnSVOeYJ8X_projectenddate",
+            "current": "Feb 3, 2019",
+            "max": "",
+            "id": "-LgPYwk9mJNEml2ZZUv3"
+        },
+        {
+            "name": "repeating_project_-LcJnlW5pNAnSVOeYJ8X_projectlaunchroll_toggle",
+            "current": 0,
+            "max": "",
+            "id": "-LgPYwl21OjuX9ksjC2K"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectfull_toggle",
+            "current": "1",
+            "max": "",
+            "id": "-LgPaSLEaNZsB2j_9dtw"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectscope",
+            "current": "2",
+            "max": "",
+            "id": "-LgPaSsGE9WrFw1bl8D2"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectforcedstakemod",
+            "current": 0,
+            "max": "",
+            "id": "-LgPaT8kKKHmc65kA-HM"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectforcedstakemodline",
+            "current": "",
+            "max": "",
+            "id": "-LgPaT8sx5wjOMez7hr4"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectlaunchdiff",
+            "current": 4,
+            "max": "",
+            "id": "-LgPaT8w2RNOkCwTfvJ1"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectlaunchroll_toggle",
+            "current": 1,
+            "max": "",
+            "id": "-LgPaT9B-VEMkIflmHY3"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectdetails",
+            "current": "Origin (+0): up to three unrelated Kindred, a group of related Kindred (e.g. a coterie), a broad category of mortal interests (e.g. \"banking\"), or a collection of neighbouring Districts\nTarget (+1): up to three unrelated Kindred, a group of Kindred (e.g. a coterie), a broad category of mortal interests (e.g. \"banking\"), or a collection of neighbouring Districts\nConnections (0): Unlimited\nSubject Matter (+0): Unlimited\nSecrecy (+0): No Secrecy\nAmbition (+1): Determined - Projects at any stage of completion, unless started in Extreme Secrecy",
+            "max": "",
+            "id": "-LgPabNKpoIIUf3IUCwB"
+        },
+        {
+            "name": "repeating_advantage_-LcONaEbND20HaTkQzbt_advantage_details",
+            "current": "A competent ghoul retainer, capable of handling the basics of an Aide or personal attendant while also being an able defender of Yusef's personage. ",
+            "max": "",
+            "id": "-LgPbUWarMBrawmLYDNP"
+        },
+        {
+            "name": "repeating_project_-LcKMZl4Zs-IZ1-2gozc_projectscope",
+            "current": "5",
+            "max": "",
+            "id": "-LgPbceqi9bxajhp9a3V"
+        },
+        {
+            "name": "repeating_project_-LcKMZl4Zs-IZ1-2gozc_projectforcedstakemod",
+            "current": 0,
+            "max": "",
+            "id": "-LgPbcpRZttPTp6cLR5d"
+        },
+        {
+            "name": "repeating_project_-LcKMZl4Zs-IZ1-2gozc_projectforcedstakemodline",
+            "current": "",
+            "max": "",
+            "id": "-LgPbcpZ0Yj-iVOvfViq"
+        },
+        {
+            "name": "repeating_project_-LcKMZl4Zs-IZ1-2gozc_projectlaunchdiff",
+            "current": 7,
+            "max": "",
+            "id": "-LgPbcpckdweQjko2ejf"
+        },
+        {
+            "name": "repeating_project_-LcKMZl4Zs-IZ1-2gozc_projectlaunchroll_toggle",
+            "current": 0,
+            "max": "",
+            "id": "-LgPbcuVaEa5W1twyBHq"
+        },
+        {
+            "name": "repeating_project_-LcKKXbI1pRFgPWKjb18_projectscope",
+            "current": "2",
+            "max": "",
+            "id": "-LgPbdBNXpk-NeuUB3Lx"
+        },
+        {
+            "name": "repeating_project_-LcKKVWEP1UpKT8Wo9bZ_projectscope",
+            "current": "3",
+            "max": "",
+            "id": "-LgPbdNG5IU4kJXa-aWv"
+        },
+        {
+            "name": "repeating_project_-LcKKXbI1pRFgPWKjb18_projectforcedstakemod",
+            "current": 0,
+            "max": "",
+            "id": "-LgPbdVyF9keTXFXJk1S"
+        },
+        {
+            "name": "repeating_project_-LcKKXbI1pRFgPWKjb18_projectforcedstakemodline",
+            "current": "",
+            "max": "",
+            "id": "-LgPbdW0WzdnjnU03k-R"
+        },
+        {
+            "name": "repeating_project_-LcKKXbI1pRFgPWKjb18_projectlaunchdiff",
+            "current": 4,
+            "max": "",
+            "id": "-LgPbdW36V8oifQSHsQN"
+        },
+        {
+            "name": "repeating_project_-LcKKVWEP1UpKT8Wo9bZ_projectforcedstakemod",
+            "current": 0,
+            "max": "",
+            "id": "-LgPbdW7rRvZX0wwQ90_"
+        },
+        {
+            "name": "repeating_project_-LcKKVWEP1UpKT8Wo9bZ_projectforcedstakemodline",
+            "current": "",
+            "max": "",
+            "id": "-LgPbdW93GJnDh12GYM0"
+        },
+        {
+            "name": "repeating_project_-LcKKVWEP1UpKT8Wo9bZ_projectlaunchdiff",
+            "current": 5,
+            "max": "",
+            "id": "-LgPbdWBj87QsEeFRw9u"
+        },
+        {
+            "name": "repeating_project_-LcKKXbI1pRFgPWKjb18_projectlaunchroll_toggle",
+            "current": 0,
+            "max": "",
+            "id": "-LgPbdWWIY36yVy3waEo"
+        },
+        {
+            "name": "repeating_project_-LcKKVWEP1UpKT8Wo9bZ_projectlaunchroll_toggle",
+            "current": 0,
+            "max": "",
+            "id": "-LgPbdWaf3qoCdLBJalw"
+        },
+        {
+            "name": "repeating_project_-LcTF6uoBjh90df4sYVV_projectscope",
+            "current": "1",
+            "max": "",
+            "id": "-LgPbeiZMtw1NG83jpMD"
+        },
+        {
+            "name": "repeating_project_-LcTF6uoBjh90df4sYVV_projectforcedstakemod",
+            "current": 0,
+            "max": "",
+            "id": "-LgPbf7yYIatiFqVqhak"
+        },
+        {
+            "name": "repeating_project_-LcTF6uoBjh90df4sYVV_projectforcedstakemodline",
+            "current": "",
+            "max": "",
+            "id": "-LgPbf8-8-LNBppQhi1f"
+        },
+        {
+            "name": "repeating_project_-LcTF6uoBjh90df4sYVV_projectlaunchdiff",
+            "current": 3,
+            "max": "",
+            "id": "-LgPbf830OH0Wk7zrOWx"
+        },
+        {
+            "name": "repeating_project_-LcTF6uoBjh90df4sYVV_projectlaunchroll_toggle",
+            "current": 0,
+            "max": "",
+            "id": "-LgPbfERDLkv6KsKZo6Q"
+        },
+        {
+            "name": "repeating_project_-LcKKSAtrU0XqVv86Cwz_projectfull_toggle",
+            "current": "1",
+            "max": "",
+            "id": "-LgPbgLQTBRwgTwrferb"
+        },
+        {
+            "name": "repeating_project_-LcJnlW5pNAnSVOeYJ8X_projectincnum",
+            "current": "1",
+            "max": "",
+            "id": "-LgPbgRsa5SWRwvUVhti"
+        },
+        {
+            "name": "repeating_advantage_-LgPhmeDKM4WjBMZA2cm_advantage_type",
+            "current": "Background",
+            "max": "",
+            "id": "-LgPhrbN9KWKasvJSU9V"
+        },
+        {
+            "name": "repeating_advantage_-LgPhmeDKM4WjBMZA2cm_advantage_name",
+            "current": "Haven",
+            "max": "",
+            "id": "-LgPhswj6PqJBuFNHL2S"
+        },
+        {
+            "name": "repeating_advantage_-LgPhmeDKM4WjBMZA2cm_advantage",
+            "current": "3",
+            "max": "",
+            "id": "-LgPiMk0mVvAmXwC1rKO"
+        },
+        {
+            "name": "repeating_advantage_-LgPhmeDKM4WjBMZA2cm_advantage_details",
+            "current": "Not yet accessible, Project needs to finish. \nWarding 3\n",
+            "max": "",
+            "id": "-LgPiQA-tDgRethwEdN5"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectincnum",
+            "current": "1",
+            "max": "",
+            "id": "-LgPjZUBtrhRBxE8mwIg"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectstartdate",
+            "current": "Nov 25, 2018",
+            "max": "",
+            "id": "-LgPjZY44kokkidS-9xt"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectenddate",
+            "current": "Dec 5, 2018",
+            "max": "",
+            "id": "-LgPjZYBj6tm84E2rKjk"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectincunit",
+            "current": "days",
+            "max": "",
+            "id": "-LgPjZl3lrv20rGs0P2w"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectlaunchtrait1_name",
+            "current": "Retainer",
+            "max": "",
+            "id": "-LgPk_bWeazk8mORN5U2"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectlaunchtrait2_name",
+            "current": "Investigation",
+            "max": "",
+            "id": "-LgPkbjCErqWZ89IHE2k"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectlaunchtrait1",
+            "current": "3",
+            "max": "",
+            "id": "-LgPkbjvJfkRMftPi0IS"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectlaunchtrait2",
+            "current": "4",
+            "max": "",
+            "id": "-LgPkc18SYAj27zmcEuR"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectlaunchrollparams",
+            "current": "@{character_name}|Retainer:3,Investigation:4|4|1|0|-lcknqjbgnfjbpwaayeh",
+            "max": "",
+            "id": "-LgPkc2fpoW3JKw2zDrc"
+        },
+        {
+            "name": "repeating_project_-LcKNQJBGnFJBpwaAyEh_projectlaunchmod",
+            "current": "1",
+            "max": "",
+            "id": "-LgPkcULZzfPhZFF-jX2"
+        },
+        {
+            "name": "persuasion_spec",
+            "current": "Negotiation",
+            "max": "",
+            "id": "-LgQ69jFQPH8T9UQ7uie"
+        },
+        {
+            "name": "persuasion_flag",
+            "current": "1",
+            "max": "",
+            "id": "-LgQ6vsu9-51jNVLW85R"
+        },
+        {
+            "name": "repeating_earnedxpright_-LgQ6yxYF4Lkk3KeHiRs_xp_award",
+            "current": 1,
+            "max": "",
+            "id": "-LgQ6yxQLvMLmQDS1LNT"
+        },
+        {
+            "name": "repeating_earnedxpright_-LgQ6yxYF4Lkk3KeHiRs_xp_session",
+            "current": "Twenty-Two",
+            "max": "",
+            "id": "-LgQ6yxZ5MQrL9yaFpYK"
+        },
+        {
+            "name": "repeating_earnedxpright_-LgQ6yxYF4Lkk3KeHiRs_xp_reason",
+            "current": "RP: Little Character Moments",
+            "max": "",
+            "id": "-LgQ6yxcM66P3LNprzGr"
+        },
+        {
+            "name": "repeating_earnedxpright_-LgQ70yP95XhQtUGRiMw_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-LgQ70yG3JkwL6TxryCn"
+        },
+        {
+            "name": "repeating_earnedxpright_-LgQ70yP95XhQtUGRiMw_xp_session",
+            "current": "Twenty-Two",
+            "max": "",
+            "id": "-LgQ70yNTMeVKiIKQuHZ"
+        },
+        {
+            "name": "repeating_earnedxpright_-LgQ70yP95XhQtUGRiMw_xp_reason",
+            "current": "Session XP award",
+            "max": "",
+            "id": "-LgQ70yRpAqZVYIlie3C"
+        },
+        {
+            "name": "repeating_earnedxpright_-LgQ7SGuUeoS5zCo1UrS_xp_award",
+            "current": 2,
+            "max": "",
+            "id": "-LgQ7SGlPsCKapf9Azcs"
+        },
+        {
+            "name": "repeating_earnedxpright_-LgQ7SGuUeoS5zCo1UrS_xp_session",
+            "current": "Twenty-Two",
+            "max": "",
+            "id": "-LgQ7SGyizkzcYOlOGkh"
+        },
+        {
+            "name": "repeating_earnedxpright_-LgQ7SGuUeoS5zCo1UrS_xp_reason",
+            "current": "Involving others in Ministry plot",
+            "max": "",
+            "id": "-LgQ7SH6pDqkcdLgvLGD"
+        }
+    ],
+    "abilities": []
+}

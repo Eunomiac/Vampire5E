@@ -523,10 +523,10 @@ const TimeTracker = (() => {
 			//D.Alert(`imgSrcName: ${imgSrcName}`)
 			if (isRunningFast) {
 				if (imgSrcName.includes("night") && STATEREF.lastHorizon !== "night") {
-					Images.OrderImages(["Horizon_1", "Horizon_2"], true)
+					Images.OrderImages(["Horizon_1", "Horizon_2", "ComplicationMat"], true)
 					STATEREF.lastHorizon = "night"
 				} else if (!imgSrcName.includes("night") && STATEREF.lastHorizon.includes("night")) {
-					Images.OrderImages(["Horizon_2", "Horizon_1"], true)
+					Images.OrderImages(["Horizon_2", "Horizon_1", "ComplicationMat"], true)
 					STATEREF.lastHorizon = "day"
 				}
 			} else if (isForced || imgSrcName !== STATEREF.lastHorizon) {
