@@ -2,7 +2,7 @@ void MarkStart("Complications")
 const Complications = (() => {
 	// #region INITIALIZATION
     const SCRIPTNAME = "Complications",
-		    STATEREF = state[D.GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+		    STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
     const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
 		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
 	// #endregion
@@ -200,16 +200,16 @@ const Complications = (() => {
             on("chat:message", handleInput)
         },
         checkInstall = () => {
-            state[D.GAMENAME] = state[D.GAMENAME] || {}
-            state[D.GAMENAME].Complications = state[D.GAMENAME].Complications || {}
-            state[D.GAMENAME].Complications.deckID = state[D.GAMENAME].Complications.deckID || ""
-            state[D.GAMENAME].Complications.targetVal = state[D.GAMENAME].Complications.targetVal || {id: "", value: 0}
-            state[D.GAMENAME].Complications.currentVal = state[D.GAMENAME].Complications.currentVal || {id: "", value: 0}
-            state[D.GAMENAME].Complications.remainingVal = state[D.GAMENAME].Complications.remainingVal || {id: "", value: 0}
-            state[D.GAMENAME].Complications.zeroes = state[D.GAMENAME].Complications.zeroes || []
-            state[D.GAMENAME].Complications.cardsDrawn = state[D.GAMENAME].Complications.cardsDrawn || []
+            C.ROOT = C.ROOT || {}
+            C.ROOT.Complications = C.ROOT.Complications || {}
+            C.ROOT.Complications.deckID = C.ROOT.Complications.deckID || ""
+            C.ROOT.Complications.targetVal = C.ROOT.Complications.targetVal || {id: "", value: 0}
+            C.ROOT.Complications.currentVal = C.ROOT.Complications.currentVal || {id: "", value: 0}
+            C.ROOT.Complications.remainingVal = C.ROOT.Complications.remainingVal || {id: "", value: 0}
+            C.ROOT.Complications.zeroes = C.ROOT.Complications.zeroes || []
+            C.ROOT.Complications.cardsDrawn = C.ROOT.Complications.cardsDrawn || []
 
-			//state[D.GAMENAME].Complications.deckID = "-LgAxFN_DO6qSgKROK07"
+			//C.ROOT.Complications.deckID = "-LgAxFN_DO6qSgKROK07"
 
 			/* state.VAMPIRE.Complications.zeroes = []
 			for (let i = 0; i < 10; i++) {

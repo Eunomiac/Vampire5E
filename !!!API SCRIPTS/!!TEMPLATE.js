@@ -6,7 +6,7 @@
 void MarkStart("SCRIPTNAME")
 const SCRIPTNAME = (() => {
 	// #region Configuration
-    const STATEREF = state[D.GAMENAME].SCRIPTNAME
+    const STATEREF = C.ROOT.SCRIPTNAME
 	// #endregion
 
 	// #region GETTERS: Retrieving 
@@ -52,8 +52,8 @@ const SCRIPTNAME = (() => {
             on("chat:message", handleInput)
         },
         checkInstall = () => {
-            state[D.GAMENAME] = state[D.GAMENAME] || {}
-            state[D.GAMENAME].SCRIPTNAME = state[D.GAMENAME].SCRIPTNAME || {}
+            C.ROOT = C.ROOT || {}
+            C.ROOT.SCRIPTNAME = C.ROOT.SCRIPTNAME || {}
         }
 	// #endregion
 

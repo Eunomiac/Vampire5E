@@ -10,7 +10,7 @@ void MarkStart("ChatFuncs")
 const ChatFuncs = (() => {
 	// #region INITIALIZATION
     const SCRIPTNAME = "ChatFuncs",
-		    STATEREF = state[D.GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+		    STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
     const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
 		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
 	// #endregion
@@ -71,7 +71,7 @@ const ChatFuncs = (() => {
 						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
 							<span style="font-weight: bolder; font-family: serif;">
 								!get state [&lt;namespace&gt;]
-							</span> - Gets a stringified list of all items in the given state namespace.  You can omit the first parameter; if you do, it is assumed to be "${D.GAMENAME}".
+							</span> - Gets a stringified list of all items in the given state namespace.  You can omit the first parameter; if you do, it is assumed to be "${C.GAMENAME}".
 						</li>
 						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
 							<span style="font-weight: bolder; font-family: serif;">
@@ -258,8 +258,8 @@ const ChatFuncs = (() => {
         },
         getStateData = (namespace, returnVals) => {
             let stateInfo = state
-            if (namespace[0] !== D.GAMENAME)
-                namespace.unshift(D.GAMENAME)
+            if (namespace[0] !== C.GAMENAME)
+                namespace.unshift(C.GAMENAME)
             const title = `state.${namespace.join(".")}`
 			// eslint-disable-next-line no-unmodified-loop-condition
             while (namespace && namespace.length > 0)
@@ -281,8 +281,8 @@ const ChatFuncs = (() => {
         },
         clearStateData = namespace => {
             let stateInfo = state
-            if (namespace[0] !== D.GAMENAME)
-                namespace.unshift(D.GAMENAME)
+            if (namespace[0] !== C.GAMENAME)
+                namespace.unshift(C.GAMENAME)
             const title = `Clearing state.${namespace.join(".")}`
 			// eslint-disable-next-line no-unmodified-loop-condition
             while (namespace && namespace.length > 1)

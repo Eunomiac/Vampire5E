@@ -53,7 +53,7 @@ module.exports = {
         "no-labels": "error",
         "no-lone-blocks": "warn",
         "no-loop-func": "error",
-        "no-magic-numbers": ["warn", { "ignoreArrayIndexes": true, "ignore": [0, 1], "enforceConst": true } ],
+        //"no-magic-numbers": ["warn", { "ignoreArrayIndexes": true, "ignore": [0, 1], "enforceConst": true } ],
         "no-multi-spaces": "error",
         "no-multi-str": "error",
         "no-new": "error",
@@ -77,6 +77,7 @@ module.exports = {
     },
     "globals": {
         "START": true,
+        "C": true,
         "D": true,
         "Chars": true,
         "Images": true,

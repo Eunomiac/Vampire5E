@@ -2,13 +2,13 @@ void MarkStart("TimeTracker")
 const TimeTracker = (() => {
 // #region INITIALIZATION
     const SCRIPTNAME = "TimeTracker",
-        STATEREF = state[D.GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+        STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
     const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
 	
     const checkInstall = () => {
-            state[D.GAMENAME] = state[D.GAMENAME] || {}
-            state[D.GAMENAME][SCRIPTNAME] = state[D.GAMENAME][SCRIPTNAME] || {}
+            C.ROOT = C.ROOT || {}
+            C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
 
             STATEREF.trackerObj = STATEREF.timeText ? getObj("text", STATEREF.timeText) : null
             STATEREF.trackerShadow = STATEREF.timeTextShadow ? getObj("text", STATEREF.timeTextShadow) : null
@@ -508,8 +508,8 @@ const TimeTracker = (() => {
                 } ), _.values(IMAGETIMES)),
                 curTime = 60 * STATEREF.dateObj.getUTCHours() + STATEREF.dateObj.getUTCMinutes(),
                 curHoriz = imgTimes[_.find(_.keys(imgTimes), v => curTime <= v)]
-          //D.Alert(`Daylighter Check: ${state[D.GAMENAME].Chars.isDaylighterSession} vs. ${state[D.GAMENAME].Chars.isDaylighterSession}, imgSrc: ${curHoriz}`)
-            if (state[D.GAMENAME].Chars.isDaylighterSession && curHoriz === "day")
+          //D.Alert(`Daylighter Check: ${C.ROOT.Chars.isDaylighterSession} vs. ${C.ROOT.Chars.isDaylighterSession}, imgSrc: ${curHoriz}`)
+            if (C.ROOT.Chars.isDaylighterSession && curHoriz === "day")
                 return "daylighters"
             else
                 return curHoriz
@@ -739,7 +739,7 @@ const TimeTracker = (() => {
             const weatherCode = WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()]
             if (STATEREF.dateObj.getUTCMonth() >= 3 && STATEREF.dateObj.getUTCMonth() <= 9)
                 return "blank"
-            if (isDay() && state[D.GAMENAME].Chars.isDaylighterSession) 
+            if (isDay() && C.ROOT.Chars.isDaylighterSession) 
                 if (getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()].charAt(2)) < 1)
                     return "frost"
                 else

@@ -2,7 +2,7 @@ void MarkStart("Handouts")
 const Handouts = (() => {	
     // #region INITIALIZATION
     const SCRIPTNAME = "Handouts",
-		    STATEREF = state[D.GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+		    STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
     const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
 		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
     // #endregion
@@ -176,9 +176,9 @@ const Handouts = (() => {
             on("chat:message", handleInput)
         },
         checkInstall = () => {
-            state[D.GAMENAME] = state[D.GAMENAME] || {}
-            state[D.GAMENAME].Handouts = state[D.GAMENAME].Handouts || {}
-            state[D.GAMENAME].Handouts.noteCounts = state[D.GAMENAME].Handouts.noteCounts || { projects: 0 }
+            C.ROOT = C.ROOT || {}
+            C.ROOT.Handouts = C.ROOT.Handouts || {}
+            C.ROOT.Handouts.noteCounts = C.ROOT.Handouts.noteCounts || { projects: 0 }
         }
     // #endregion
 

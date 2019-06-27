@@ -2,13 +2,13 @@
 const Roller = (() => {
     // #region INITIALIZATION
     const SCRIPTNAME = "Roller",
-		    STATEREF = state[D.GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+		    STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
     const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
 		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
 
     const checkInstall = () => {
-            state[D.GAMENAME] = state[D.GAMENAME] || {}
-            state[D.GAMENAME][SCRIPTNAME] = state[D.GAMENAME][SCRIPTNAME] || {}
+            C.ROOT = C.ROOT || {}
+            C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             STATEREF.rollRecord = STATEREF.rollRecord || []
             STATEREF.selected = STATEREF.selected || {}
             _.each(_.uniq(_.flatten(STATECATS.dice)), v => {
@@ -522,7 +522,7 @@ const Roller = (() => {
                     deltaLeft: padRef.dX,
                     deltaTop: padRef.dY
                 } )
-                D.Alert(`Registered die #${STATEREF[category].length}: ${D.JS(_.values(STATEREF[category] ).slice(-1))}, Added WigglePad #${_.values(state[D.GAMENAME].DragPads.byPad).length}`, "ROLLER: registerDie()")
+                D.Alert(`Registered die #${STATEREF[category].length}: ${D.JS(_.values(STATEREF[category] ).slice(-1))}, Added WigglePad #${_.values(C.ROOT.DragPads.byPad).length}`, "ROLLER: registerDie()")
 
             // D.Alert(`Returning Die Object: ${D.JS(obj)}`)
 
@@ -1040,12 +1040,12 @@ const Roller = (() => {
                 flagData.flagDiceMod++
             }
             if (parseInt(getAttrByName(charObj.id, "applybloodsurge")) > 0) {
-                const bonus = D.BLOODPOTENCY[bloodPot].bp_surge
+                const bonus = C.BLOODPOTENCY[bloodPot].bp_surge
                 flagData.posFlagLines.push(`Blood Surge (${bonus > 0 ? "●".repeat(bonus) : "~"})`)
                 flagData.flagDiceMod += bonus
             }
             if (isDiscRoll) {
-                const bonus = D.BLOODPOTENCY[bloodPot].bp_discbonus
+                const bonus = C.BLOODPOTENCY[bloodPot].bp_discbonus
                 flagData.posFlagLines.push(`Discipline (${bonus > 0 ? "●".repeat(bonus) : "~"})`)
                 flagData.flagDiceMod += bonus
             }
@@ -1060,10 +1060,10 @@ const Roller = (() => {
                 params.args.length > 3 ? params.args[4].split(",") : "",
                 params.args.length > 4 ? params.args[5].split(",") : ""
             ] )), flag => {
-                if (flag === "Health" && _.intersection(traitList, _.map(_.flatten( [D.ATTRIBUTES.physical, D.SKILLS.physical] ), v => v.toLowerCase())).length > 0) {
+                if (flag === "Health" && _.intersection(traitList, _.map(_.flatten( [C.ATTRIBUTES.physical, C.SKILLS.physical] ), v => v.toLowerCase())).length > 0) {
                     flagData.negFlagLines.push("Injured (●●)")
                     flagData.flagDiceMod -= 2
-                } else if (flag === "Willpower" && _.intersection(traitList, _.map(_.flatten( [D.ATTRIBUTES.mental, D.ATTRIBUTES.social, D.SKILLS.mental, D.SKILLS.social] ), v => v.toLowerCase())).length > 0) {
+                } else if (flag === "Willpower" && _.intersection(traitList, _.map(_.flatten( [C.ATTRIBUTES.mental, C.ATTRIBUTES.social, C.SKILLS.mental, C.SKILLS.social] ), v => v.toLowerCase())).length > 0) {
                     flagData.negFlagLines.push("Exhausted (●●)")
                     flagData.flagDiceMod -= 2
                 } else if (flag === "Humanity") {
@@ -1073,10 +1073,10 @@ const Roller = (() => {
                     const customFlag = _.compact(flag.split(":")),
                         mod = parseInt(customFlag[customFlag.length - 1] )
                     if ((customFlag.length === 2 || customFlag.length === 3) && (
-                        customFlag[1].includes("p") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.physical, D.SKILLS.physical] )).length > 0 ||
-						customFlag[1].includes("m") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.mental, D.SKILLS.mental] )).length > 0 ||
-						customFlag[1].includes("s") && _.intersection(traitList, _.flatten( [D.ATTRIBUTES.social, D.SKILLS.social] )).length > 0 ||
-						customFlag[1].includes("d") && _.intersection(traitList, D.DISCIPLINES).length > 0
+                        customFlag[1].includes("p") && _.intersection(traitList, _.flatten( [C.ATTRIBUTES.physical, C.SKILLS.physical] )).length > 0 ||
+						customFlag[1].includes("m") && _.intersection(traitList, _.flatten( [C.ATTRIBUTES.mental, C.SKILLS.mental] )).length > 0 ||
+						customFlag[1].includes("s") && _.intersection(traitList, _.flatten( [C.ATTRIBUTES.social, C.SKILLS.social] )).length > 0 ||
+						customFlag[1].includes("d") && _.intersection(traitList, C.DISCIPLINES).length > 0
                     )) {
                         if (mod >= 0)
                             flagData.posFlagLines.push(`${customFlag[0]} (${mod > 0 ? "●".repeat(mod) : "~"})`)
@@ -2322,17 +2322,17 @@ const Roller = (() => {
                     tracer += "2 PosRes, "
                     if (posRes.charAt(0) === posRes.charAt(1)) {
                         tracer += "Equal: pos2neg"
-                        resProbs = D.RESONANCEODDS.pos2neg
+                        resProbs = C.RESONANCEODDS.pos2neg
                     } else {
                         tracer += "UnEqual: posposneg"
-                        resProbs = D.RESONANCEODDS.posposneg
+                        resProbs = C.RESONANCEODDS.posposneg
                     }
                 } else if (negRes.charAt(0) === negRes.charAt(1)) {
                     tracer += "2 NegRes + Equal: neg2pos"
-                    resProbs = D.RESONANCEODDS.neg2pos
+                    resProbs = C.RESONANCEODDS.neg2pos
                 } else {
                     tracer += "2 NegRes + UnEqual: posnegneg"
-                    resProbs = D.RESONANCEODDS.posnegneg
+                    resProbs = C.RESONANCEODDS.posnegneg
                 }
                 break
             case 2:
@@ -2341,32 +2341,32 @@ const Roller = (() => {
                     tracer += "2 PosRes, "
                     if (posRes.charAt(0) === posRes.charAt(1)) {
                         tracer += "Equal: pos2"
-                        resProbs = D.RESONANCEODDS.pos2
+                        resProbs = C.RESONANCEODDS.pos2
                     } else {
                         tracer += "UnEqual: pospos"
-                        resProbs = D.RESONANCEODDS.pospos
+                        resProbs = C.RESONANCEODDS.pospos
                     }
                 } else if (negRes.length === 2) {
                     tracer += "2 NegRes, "
                     if (negRes.charAt(0) === negRes.charAt(1)) {
                         tracer += "Equal: neg2"
-                        resProbs = D.RESONANCEODDS.neg2
+                        resProbs = C.RESONANCEODDS.neg2
                     } else {
                         tracer += "UnEqual: negneg"
-                        resProbs = D.RESONANCEODDS.negneg
+                        resProbs = C.RESONANCEODDS.negneg
                     }
                 } else {
                     tracer += "Neg & Pos: posneg"
-                    resProbs = D.RESONANCEODDS.posneg
+                    resProbs = C.RESONANCEODDS.posneg
                 }
                 break
             case 1:
                 tracer += "1 Arg, " + (posRes.length === 1 ? "Pos: pos" : "Neg: neg")
-                resProbs = posRes.length === 1 ? D.RESONANCEODDS.pos : D.RESONANCEODDS.neg
+                resProbs = posRes.length === 1 ? C.RESONANCEODDS.pos : C.RESONANCEODDS.neg
                 break
             case 0:
                 tracer += "0 Args, norm"
-                resProbs = D.RESONANCEODDS.norm
+                resProbs = C.RESONANCEODDS.norm
                 break
             default:
                 return D.ThrowError("Too many variables!")

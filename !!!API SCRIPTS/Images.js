@@ -2,7 +2,7 @@ void MarkStart("Media")
 const Images = (() => {
 // #region INITIALIZATION
     const SCRIPTNAME = "Images",
-        STATEREF = state[D.GAMENAME][SCRIPTNAME]	// eslint-disable-line no-unused-vars
+        STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
     const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
     // #endregion
@@ -757,7 +757,7 @@ const Images = (() => {
             let imgObjs
               //D.Alert(`Ordering Images: ${D.JS(imgRefs)}`)
             if (imgRefs === "map")
-                imgObjs = getImageObjs(IMAGELAYERS[TimeTracker.IsDay() && state[D.GAMENAME].Chars.isDaylighterSession ? "daylighterMap" : "map"])
+                imgObjs = getImageObjs(IMAGELAYERS[TimeTracker.IsDay() && C.ROOT.Chars.isDaylighterSession ? "daylighterMap" : "map"])
             else if (imgRefs === "objects")
                 imgObjs = getImageObjs(IMAGELAYERS.objects)
             else
@@ -1081,7 +1081,7 @@ const Images = (() => {
                             D.Alert(D.JS(imgData), "IMAGES, !img get all")
                             break
                         case "names":
-                            D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(state[D.GAMENAME].Images.registry))}`)
+                            D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(C.ROOT.Images.registry))}`)
                             break
                         // no default
                     }
@@ -1098,9 +1098,9 @@ const Images = (() => {
         },
 
         checkInstall = () => {
-            state[D.GAMENAME].Images = state[D.GAMENAME].Images || {}
-            state[D.GAMENAME].Images.registry = state[D.GAMENAME].Images.registry || {}
-            state[D.GAMENAME].Images.areas = state[D.GAMENAME].Images.areas || {}
+            C.ROOT.Images = C.ROOT.Images || {}
+            C.ROOT.Images.registry = C.ROOT.Images.registry || {}
+            C.ROOT.Images.areas = C.ROOT.Images.areas || {}
 
               /*state.VAMPIRE.Images.registry.ComplicationMat_1.srcs = {
 				base: "https://s3.amazonaws.com/files.d20.io/images/82977782/TiSFMIRN70aWyiyQvW55Zw/thumb.jpg?1559488461"
