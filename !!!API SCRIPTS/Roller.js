@@ -11,6 +11,8 @@ const Roller = (() => {
 			state[D.GAMENAME][SCRIPTNAME] = state[D.GAMENAME][SCRIPTNAME] || {}
 			STATEREF.rollRecord = STATEREF.rollRecord || []
 			STATEREF.selected = STATEREF.selected || {}
+			STATEREF.rollEffects = STATEREF.rollEffects || {}
+			STATEREF.charEffects = STATEREF.charEffects || ""
 			_.each(_.uniq(_.flatten(STATECATS.dice)), v => {
 				STATEREF.selected[v] = STATEREF.selected[v] || []
 				STATEREF[v] = STATEREF[v] || []
@@ -131,6 +133,8 @@ const Roller = (() => {
 			dice: {
 				blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
 				selected: "https://s3.amazonaws.com/files.d20.io/images/64173198/T0qdnbmLUCnrs9WlxoGwww/thumb.png?1538710883",
+				selectedFree: "",
+				selectedDouble: "",
 				Bf: "https://s3.amazonaws.com/files.d20.io/images/64173205/DOUwwGcobI4eyu1Wb8ZDxg/thumb.png?1538710883",
 				Bs: "https://s3.amazonaws.com/files.d20.io/images/64173203/ZS04TJE6VRI8_Q-HaJ0r4g/thumb.png?1538710883",
 				Bc: "https://s3.amazonaws.com/files.d20.io/images/64173206/Fbt_6j-k_1oRKPxTKdnIWQ/thumb.png?1538710883",
@@ -141,7 +145,22 @@ const Roller = (() => {
 				Hs: "https://s3.amazonaws.com/files.d20.io/images/64173209/D_4ljxj59UYXPNmgXaZbhA/thumb.png?1538710883",
 				Hc: "https://s3.amazonaws.com/files.d20.io/images/64173202/xsEkLc9DcOslpQoUJwpHMQ/thumb.png?1538710883",
 				HcL: "https://s3.amazonaws.com/files.d20.io/images/64173200/cBsoLkAu15XWexFSNUxoHA/thumb.png?1538710883",
-				HcR: "https://s3.amazonaws.com/files.d20.io/images/64173207/Se7RHT2fJDg2qMGo_x5UhQ/thumb.png?1538710883"
+				HcR: "https://s3.amazonaws.com/files.d20.io/images/64173207/Se7RHT2fJDg2qMGo_x5UhQ/thumb.png?1538710883",
+				BXc: "", // Cancelled Critical Dice
+				BXs: "", // Cancelled Success Dice
+				HXc: "", // Cancelled Critical Hunger Dice
+				HXs: "", // Cancelled Success Hunger Dice
+				HXb: "", // Cancelled Botched Hunger Dice
+				BFf: "", // Free Reroll Failed Dice
+				BFc: "", // Free Reroll Critical Dice
+				BFcL: "", // Free Reroll Left Critical Pair Dice
+				BFcR: "", // Free Reroll Right Critical Pair Dice
+				BDf: "", // Double-Cost Reroll Dice
+				BDc: "", // Double-Cost Reroll Critical Dice
+				BDcL: "", // Double-Cost Reroll Left Critical Pair Dice
+				BDcR: "", // Double-Cost Reroll Right Critical Pair Dice
+				HCb: "" // Cancelling Botched Hunger Dice
+
 			},
 			blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
 			diffFrame: "https://s3.amazonaws.com/files.d20.io/images/64184544/CnzRwB8CwKGg-0jfjCkT6w/thumb.png?1538736404",
@@ -1023,9 +1042,9 @@ const Roller = (() => {
 			const rollEffectString = STATEREF.charEffects
 			if (VAL({string: rollEffectString, list: rollInput}, "applyRollEffects")) {
 				rollInput.appliedRollEffects = rollInput.appliedRollEffects || []
-				const rollEffects = _.without(_.uniq([...rollEffectString.split("|"), ..._.keys(STATEREF.rollEffects), ...(rollInput.rollEffectsToReapply || [])]), ...rollInput.appliedRollEffects),
+				const rollEffects = _.compact(_.without(_.uniq([...rollEffectString.split("|"), ..._.keys(STATEREF.rollEffects), ...(rollInput.rollEffectsToReapply || [])]), ...rollInput.appliedRollEffects)),
 					[rollData, rollResults] = rollInput.rolls ? [null, rollInput] : [rollInput, null]
-				
+				DB(`Roll Effects:<br>${D.JS(rollEffects)}`, "rollEffects")
 				for (const effectString of rollEffects) {
 					// First, check if the global effect state variable holds an exclusion for this character ID AND effect isn't in rollEffectsToReapply.
 					if (STATEREF.rollEffects[effectString] && STATEREF.rollEffects[effectString].includes(rollInput.charID))
@@ -1036,13 +1055,16 @@ const Roller = (() => {
 					[rollMod, rollTarget] = _.map(rollMod.split(":"), v => parseInt(v) || v.toLowerCase())
 					rollRestrictions = _.map(rollRestrictions.split("/"), v => v.toLowerCase())
 					rollTraits = _.object(
-						_.map(_.keys(rollData.traitData), v => v.toLowerCase()),
-						_.map(_.values(rollData.traitData), v => parseInt(v.value) || 0)
+						_.map(_.keys(rollInput.traitData), v => v.toLowerCase()),
+						_.map(_.values(rollInput.traitData), v => parseInt(v.value) || 0)
 					)
 					rollFlags = _.object(
-						_.map([...rollData.posFlagLines, ...rollData.negFlagLines], v => v.toLowerCase().replace(/\s*?\(●*?\)/gu, "")),
-						[..._.map(rollData.posFlagLines, v => v.replace(/[^●]/gu, "").length), ..._.map(rollData.negFlagLines, v => -1 * v.replace(/[^●]/gu, "").length)]
+						_.map([...rollInput.posFlagLines, ...rollInput.negFlagLines], v => v.toLowerCase().replace(/\s*?\(●*?\)/gu, "")),
+						[..._.map(rollInput.posFlagLines, v => v.replace(/[^●]/gu, "").length), ..._.map(rollInput.negFlagLines, v => -1 * v.replace(/[^●]/gu, "").length)]
 					)
+					DB(`Roll Traits: ${D.JS(rollTraits)}
+					
+					RollFlags: ${D.JS(rollFlags)}`, "applyRollEffects")
 
 					// THRESHOLD TEST OF ROLLTARGET: IF TARGET SPECIFIED BUT DOES NOT EXIST, SKIP PROCESSING THIS ROLL EFFECT.
 					if (VAL({string: rollTarget}) && !D.IsIn(rollTarget, _.keys(rollTraits)) && !D.IsIn(rollTarget, _.keys(rollFlags)))
@@ -1099,12 +1121,20 @@ const Roller = (() => {
 						}
 						// TEST: If restriction is a clan, does character clan match?
 						if (D.IsIn(restriction, D.CLANS)) {
-							if (!D.IsIn(getAttrByName(rollData.charID, "clan"), restriction))
+							if (!D.IsIn(getAttrByName(rollInput.charID, "clan"), restriction))
 								isSkipping = true
 						// TEST: If restriction is "physical", "social" or "mental", does an appropriate trait match?
 						} else if (D.IsIn(restriction, ["physical", "mental", "social"])) {
-							if (!_.intersection([...D.ATTRIBUTES[restriction], ...D.SKILLS[restriction]], rollTraits).length > 0)
+							if (!_.intersection(_.map([...D.ATTRIBUTES[restriction], ...D.SKILLS[restriction]], v => v.toLowerCase()), _.keys(rollTraits)).length > 0) {
+								DB(`SKIPPING: Restriction ${D.JS(restriction)} Doesn't Apply
+								
+								ATTRIBUTES/SKILLS MAPPED = ${D.JS(_.map([...D.ATTRIBUTES[restriction], ...D.SKILLS[restriction]], v => v.toLowerCase()))}
+								
+								D.SKILLS[restriction] = ${D.JS(D.SKILLS[restriction])}
+								
+								INTERSECTION = ${D.JS(_.intersection(_.map([...D.ATTRIBUTES[restriction], ...D.SKILLS[restriction]], v => v.toLowerCase()), _.keys(rollTraits)))}`, "applyRollEffects")
 								isSkipping = true
+							}
 						// TEST: If none of the above, does restriction match a trait or a flag?
 						} else {
 							if (!D.IsIn(restriction, [...rollTraits, ...rollFlags]))
@@ -1171,6 +1201,12 @@ const Roller = (() => {
 						if (VAL({number: rollMod}, "applyRollEffects")) {
 							// Adjust dice pool by rollMod (negative totals are okay; displayRoll deals with the one-die minimum)
 							rollData.dicePool += rollMod
+							if (rollData.basePool + rollMod < 0) {
+								rollData.hungerPool += rollData.basePool + rollMod
+								rollData.basePool = 0 
+							} else {
+								rollData.basePool += rollMod
+							}
 							// Parse label for replacements of <*> strings
 							rollLabel = rollLabel.replace(/<●>/gu, "●".repeat(Math.abs(rollMod)))
 								.replace(/<#>/gu, rollMod === 0 ? "~" : rollMod)
@@ -1293,6 +1329,14 @@ const Roller = (() => {
 				}
 
 				// FINISHED!  Return either rollData or rollResults, whichever you have.
+				if (rollData)
+					DB(`ROLL DATA AFTER EFFECTS:
+					
+					${D.JS(rollData)}`, "applyRollEffects")
+				else				
+					DB(`ROLL RESULTS AFTER EFFECTS:
+						
+					${D.JS(rollResults)}`, "applyRollEffects")
 
 				return rollData || rollResults
 			}
@@ -1511,12 +1555,6 @@ const Roller = (() => {
 			
 				${D.JS(rollData)}`, "getRollData")
 
-			rollData = applyRollEffects(rollData)
-
-			DB(`ROLL DATA AFTER APPLIED EFFECTS:
-			
-				${D.JS(rollData)}`, "getRollData")
-
 			return rollData
 		},
 		getCurrentRoll = () => STATEREF.rollRecord[STATEREF.rollIndex],
@@ -1615,7 +1653,9 @@ const Roller = (() => {
 
 				${D.JS(rollData)}`, "buildDicePool")
 
-			return rollData
+			const rollDataEffects = applyRollEffects(rollData)
+
+			return rollDataEffects
 
 			/* Var specialties = [];
 			   _.each(rollData.traits, (trt) => {
@@ -1832,11 +1872,12 @@ const Roller = (() => {
 				const scope = rollData.diff - rollData.diffMod - 2
 				rollResults.commit = Math.max(1, scope + 1 - rollResults.margin)
 			}
+
 			DB(`ROLL RESULTS:
 			
 				${D.JS(rollResults)}`, "rollDice")
 
-			rollResults = applyRollEffects(rollResults)
+			rollResults = applyRollEffects(Object.assign(rollResults, rollData))
 
 			return rollResults
 		},
@@ -1917,7 +1958,10 @@ const Roller = (() => {
 			const {rollData, rollResults} = getCurrentRoll(),
 				[deltaAttrs, txtWidths] = [{}, {}],
 				[mainRollParts, mainRollLog, diceObjs] = [[], [], []],
-				[posFlagLines, negFlagLines] = [ ...(rollData.posFlagLines || []), ...(rollResults.posFlagLines || [])],
+				[posFlagLines, negFlagLines] = [ 
+					_.union(rollData.posFlagLines || [], rollResults.posFlagLines || []),
+					_.union(rollData.negFlagLines || [], rollResults.negFlagLines || [])
+				],
 				yShift = 0,
 				rollLines = {
 					rollerName: {
@@ -2362,25 +2406,9 @@ const Roller = (() => {
 				}
 			} )
 
-			switch (rollData.type) {
-			case "rouse2":
-			case "rouse":
-			case "check":
+			if (["rouse", "rouse2", "check"].includes(rollData.type))
 				diceCats = diceCats.reverse()
-				/* falls through */
-			case "project":
-			case "secret":
-			case "humanity":
-			case "willpower":
-			case "remorse":
-				DragPads.Toggle("selectDie", false)
-				break
-			default:
-				break
-			}
 
-			if (rollResults.isNoWPReroll)
-				DragPads.Toggle("selectDie", false)
 			DB(`SETTING DICE GRAPHICS
 			
 				Category: '${D.JSL(diceCats[0])}' (total dice: ${D.JSL(STATEREF[diceCats[0]].length)})
@@ -2405,6 +2433,9 @@ const Roller = (() => {
 			scaleFrame("bottom", spread)
 			for (let i = 0; i < STATEREF[diceCats[1]].length; i++)
 				setDie(i, diceCats[1], "blank")
+
+			if (["rouse", "rouse2", "check", "project", "secret", "humanity", "willpower", "remorse"].includes(rollData.type) || rollResults.isNoWPReroll)
+				DragPads.Toggle("selectDie", false)
 
 			_.each(rollLines, (args, name) => {
 				const params = setText(name, args)
@@ -2945,10 +2976,11 @@ const Roller = (() => {
 		}
 		case "!setchareffects":
 			STATEREF.charEffects = args.join(" ")
+			D.Alert(`Character Roll Effects:<br><br>${D.JS(STATEREF.charEffects)}<br><br>Global Roll Effects:<br><br>${D.JS(STATEREF.rollEffects)}`, "!setchareffects")
 			break
 		case "!setglobaleffects":
-			delete STATEREF.rollEffects
-			for (const effect of args.join(" ").split("|")) {
+			STATEREF.rollEffects = {}		
+			for (const effect of _.compact(args.join(" ").split("|"))) {
 				STATEREF.rollEffects[effect] = []
 			}
 			D.Alert(`Character Roll Effects:<br><br>${D.JS(STATEREF.charEffects)}<br><br>Global Roll Effects:<br><br>${D.JS(STATEREF.rollEffects)}`, "!setglobaleffects")
