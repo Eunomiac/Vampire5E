@@ -396,22 +396,22 @@ const DragPads = (() => {
                         if (partnerObj)
                             Images.Remove(partnerObj)
                     } )
-                    D.Alert(`<b>IMAGE NAMES AFTER PAD SEARCH:</b><br><br>${D.JS(_.keys(C.ROOT.Images.registry))}`)
+                    D.Alert(`<b>IMAGE NAMES AFTER PAD SEARCH:</b><br><br>${D.JS(_.keys(C.ROOT.Images.imageregistry))}`)
                     delete C.ROOT.DragPads
                     C.ROOT.DragPads = {
                         byPad: {},
                         byGraphic: {}
                     }
-                    _.each(C.ROOT.Images.registry, (imgData, imgName) => {
+                    _.each(C.ROOT.Images.imageregistry, (imgData, imgName) => {
                         if (imgName.includes("Pad_"))
                             Images.Remove(imgName)
                     })
-                    D.Alert(`<b>IMAGE NAMES AFTER REGISTRY SCAN:</b><br><br>${D.JS(_.keys(C.ROOT.Images.registry))}`)
+                    D.Alert(`<b>IMAGE NAMES AFTER REGISTRY SCAN:</b><br><br>${D.JS(_.keys(C.ROOT.Images.imageregistry))}`)
                     _.each(padList, padData => {
                         const hostObj = getObj("graphic", padData.hostID) || getObj("text", padData.hostID)
                         makePad(hostObj, padData.funcName, padData.options)
                     })
-                    D.Alert(`<b>IMAGE NAMES AFTER RESET:</b><br><br>${D.JS(_.keys(C.ROOT.Images.registry))}`)
+                    D.Alert(`<b>IMAGE NAMES AFTER RESET:</b><br><br>${D.JS(_.keys(C.ROOT.Images.imageregistry))}`)
                     D.Alert("Pads Reset!", "!resetpads")
                     break
                 case "!listPads":

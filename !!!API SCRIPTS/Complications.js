@@ -72,7 +72,7 @@ const Complications = (() => {
                     break
                 case "start":
                     isRunning = true
-                    Images.Toggle("ComplicationMat", "on")
+                    Images.Toggle("ComplicationMat", true, "base")
                     imgObj = Images.GetObj("ComplicationMat")
                     imgObj.set("layer", "objects")
                     getObj("deck", STATEREF.deckID).set("shown", true)
@@ -108,7 +108,7 @@ const Complications = (() => {
                     break
                 case "end": case "stop":
                     isRunning = false
-                    Images.Toggle("ComplicationMat", "off")
+                    Images.Toggle("ComplicationMat", false)
                     imgObj = Images.GetObj("ComplicationMat")
                     imgObj.set("layer", "map")
                     getObj("deck", STATEREF.deckID).set("shown", false)

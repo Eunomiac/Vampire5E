@@ -409,15 +409,28 @@ const Chars = (() => {
             return true
         },
         adjustDamage = (charRef, trait, dtype, amount) => {
+            let [minVal, maxVal, targetVal, defaultVal, traitName] = [0, 5, parseInt(amount), 0, ""]
             if (!VAL({char: [charRef], number: [amount]}, "AdjustDamage"))
                 return false
-            if (adjustTrait(charRef,
-                            trait.toLowerCase() + (["superficial", "superficial+", "spent"].includes(dtype) ? "_sdmg" : "_admg"),
-                            parseInt(amount) > 0 && dtype === "superficial" ? parseInt(Math.ceil(amount / 2)) : parseInt(amount),
-                            -Infinity,
-                            Infinity,
-                            0
-            ))
+            switch (trait.toLowerCase()) {
+                case "hum": case "humanity":
+                    [minVal, maxVal, targetVal, defaultVal, traitName] = [0, 10, parseInt(amount), 7, "humanity"]
+                    break
+                case "stain": case "stains":
+                    [minVal, maxVal, targetVal, defaultVal, traitName] = [0, 10, parseInt(amount), 0, "stains"]
+                    break
+                case "health": case "willpower": case "wp":
+                    [minVal, maxVal, targetVal, defaultVal, traitName] = [
+                        -Infinity,
+                        Infinity,
+                        parseInt(amount) > 0 && dtype === "superficial" ? parseInt(Math.ceil(amount / 2)) : parseInt(amount),
+                        0, 
+                        trait.toLowerCase() + (["superficial", "superficial+", "spent"].includes(dtype) ? "_sdmg" : "_admg")
+                    ]
+                    break
+                // no default
+            }
+            if (adjustTrait(charRef, traitName, targetVal, minVal, maxVal, defaultVal))
                 return true
             return false
         },
@@ -430,32 +443,6 @@ const Chars = (() => {
                             isKilling ? 0 : parseInt(D.GetStatVal(charRef, "bp_slakekill") || 1),
                             5,
                             1
-            ))
-                return true
-            return false
-        },
-        adjustHumanity = (charRef, amount) => {
-            if (!VAL({char: [charRef], number: [amount]}, "AdjustHumanity"))
-                return false
-            if (adjustTrait(charRef,
-                            "humanity",
-                            parseInt(amount),
-                            0,
-                            10,
-                            7
-            ))
-                return true
-            return false
-        },
-        adjustStains = (charRef, amount) => {
-            if (!VAL({char: [charRef], number: [amount]}, "AdjustStains"))
-                return false
-            if (adjustTrait(charRef,
-                            "stains",
-                            parseInt(amount),
-                            0,
-                            10,
-                            0
             ))
                 return true
             return false
@@ -700,8 +687,9 @@ const Chars = (() => {
             let [chars, params, attrList] = [[], [], []],
                 [token, famToken, charData, imgData] = [{}, {}, {}, {}],
                 [amount, dmg] = [0, 0],
-                [trait, dtype, attrString, playerObj, macroObjs, charID, alertString, msgString] = new Array(8).fill(""),
-                char = null
+                [trait, dtype, attrString, playerObj, charID, msgString] = new Array(6).fill(""),
+                char = null,
+                isHealing = false
             switch (args.shift().toLowerCase()) {
                 case "!char":
                     if (!playerIsGM(msg.playerid))
@@ -735,15 +723,18 @@ const Chars = (() => {
                                 D.ThrowError("Select character tokens or register characters first!", "CHARS:!char xp")
                             }
                             break
-                        case "dmg":
-                        case "damage":
                         case "heal":
+                            isHealing = true
+                            // falls through
+                        case "dmg": case "damage":
                         case "spend":
                             chars = D.GetChars(msg)
                             if (chars) {
-                                trait = args.shift()
-                                dtype = args.shift()
-                                dmg = parseInt(args.shift()) || 0
+                                trait = args.shift().toLowerCase();
+                                [dtype, dmg] = [
+                                    ["hum", "humanity", "stain", "stains"].includes(trait) ? null : args.shift(),
+                                    (isHealing ? -1 : 1) * parseInt(args.shift()) || 0
+                                ]
                                 _.each(chars, (char) => {
                                     if (adjustDamage(char, trait, dtype, dmg))
                                         D.Alert(`Dealt ${D.JS(dmg)} ${D.JS(dtype)} ${D.JS(trait)} damage to ${D.GetName(char)}`, "CHARS:!char dmg")
@@ -753,12 +744,6 @@ const Chars = (() => {
                             } else {
                                 D.ThrowError("Select character tokens first!", "CHARS!char dmg")
                             }
-                            break
-                        case "hum":
-                            adjustHumanity(msg, parseInt(args.shift()))
-                            break
-                        case "stain":
-                            adjustStains(msg, parseInt(args.shift()))
                             break
                         case "get":
                             if (!playerIsGM(msg.playerid))
@@ -771,20 +756,13 @@ const Chars = (() => {
                                     attrString = params.join("<br>")
                                     D.Alert(attrString, `${D.Capitalize(trait)}:`)
                                     break
-                                case "incap":
-                                    if (msg.selected && msg.selected[0])
-                                        D.Alert(`<span style="display:block; width:100%; height:30px; font-size:18px; background-color: black; line-height:30px; text-align:center; text-align-last:center; color:red; font-weight:bold;">NOT YET IMPLEMENTED</span><br>Incapacitation String for '${D.GetName(D.GetChar(msg))}': <br/><br/>${D.GetStat(msg, "incap").get("current")}<br/><br/>e.g. !setIncap Compulsion (Arrogance):a:-2<br/><br/>OR<br/><br/>!setIncap Compulsion (Arrogance):Strength,Dexterity,Animal Ken,Dominate:-2`, "CHARS:!get incap")
-                                    else 
-                                        D.Alert("Select a character first!", "CHARS:!get incap")
-                                    break
                                 case "charids":
                                     chars = findObjs( {
                                         _type: "character"
                                     } )
                                     msgString = ""
                                     for (const char of chars) 
-                                        msgString += `${D.GetName(char)}<span style="color: red; font-weight:bold;">@T</span>${char.id}<br>`
-						
+                                        msgString += `${D.GetName(char)}<span style="color: red; font-weight:bold;">@T</span>${char.id}<br>`						
                                     D.Alert(D.JS(msgString))
                                     break
                                 case "player":
@@ -792,27 +770,7 @@ const Chars = (() => {
                                     playerObj = getObj("player", charData.playerID)
                                     D.Alert(`<b>NAME:</b> ${charData.playerName} (${charData.playerID})<br><b>PLAYS:</b> ${charData.name} (${charData.id})<br><br><b>DATA:</b><br><br>${D.JS(playerObj)}`, `PLAYER #${args[0]} DATA`)
                                     break
-                                case "macro":
-                                    charData = REGISTRY[args[0]]
-                                    macroObjs = findObjs({_type: "macro"})
-                                    macroObjs = _.filter(macroObjs, v => {
-                                        let visTo = v.get("visibleto")
-                                        return visTo.includes("all") || visTo.includes(charData.playerID) || visTo === "" && v.get("_playerid") === charData.playerID
-                                    })
-						/* macroObjs = _.filter(macroObjs,  v => {
-							let visTo = v.get("visibleto")
-							if (args[1] && !v.get("name").toLowerCase().includes(args[1].toLowerCase()))
-								return false
-							return visTo.includes("all") || visTo.includes(charData.playerID)
-						}) */
-                                    alertString = ""
-                                    for (const macro of macroObjs) 
-							//alertString += `<b>${macro.get("name")}:</b><br>${macro.get("action")}<br><br>`
-                                        alertString += `<b>${macro.get("name")}:</b><br>${D.JS(macro)}<br><br>`
-						
-                                    D.Alert(`${alertString}`, `PLAYER #${args[0]} MACROS`)
-                                    break
-					// no default
+					            // no default
                             }
                             break
                         case "set":
@@ -1012,7 +970,7 @@ const Chars = (() => {
                     Images.Toggle(famToken, famToken.get("layer") !== "objects", "base")
                     break
                 case "!settoken":
-                    Images.ToggleToken(D.GetSelected(msg)[0], args.shift(), args.shift() || "prev")
+                    Images.ToggleToken(D.GetSelected(msg)[0] || args.shift(), args.shift())
                     break
                 case "!startsession":
                     if (playerIsGM(msg.playerid)) startSession()
@@ -1073,8 +1031,6 @@ const Chars = (() => {
         Damage: adjustDamage,
         AdjustTrait: adjustTrait,
         AdjustHunger: adjustHunger,
-        AdjustHumanity: adjustHumanity,
-        AdjustStains: adjustStains,
         DaySleep: daysleep,
         IsDaylighterSession: () => C.ROOT.Chars.isDaylighterSession
     }

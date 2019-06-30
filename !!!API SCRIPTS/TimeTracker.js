@@ -910,7 +910,7 @@ const TimeTracker = (() => {
                             D.Alert(`Changing Date by ${D.JS(delta)} minutes.`)
                 /* falls through */
                         case "add":
-                            delta = delta || parseInt(args.shift())
+                            delta = delta || parseFloat(args.shift())
                             unit = unit || args.shift().toLowerCase()
                             date2 = new Date(STATEREF.dateObj)
                             if (unit.slice(0, 1) === "y")
@@ -1000,10 +1000,6 @@ const TimeTracker = (() => {
                             // no default
                         }
               
-                    break
-                case "!weatherset":
-                case "!setweather":
-                    setWeather(args.join(" ").split("|"))
                     break
                 case "!testground":
             //D.Alert("Received, Testing...")

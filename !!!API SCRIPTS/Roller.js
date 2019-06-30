@@ -2482,7 +2482,7 @@ const Roller = (() => {
 			Params: [${D.JS(params.join(", "))}]
 			
 			Character Object: ${D.JS(charObj)}`, "handleInput")
-                if (!VAL({char: charObj}, "handleInput")) return
+                if (!VAL({charobj: charObj}, "handleInput")) return
                 if (isLocked) return
                 makeNewRoll(charObj, rollType, params, isDiscRoll)
                 delete STATEREF.frenzyRoll

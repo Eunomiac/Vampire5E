@@ -115,7 +115,7 @@ const D = (() => {
             const player = getObj("player", who) ?
                     getObj("player", who).get("_displayname") :
                     who,
-                html = C.CHATHTML.header(jStr(title)) + C.CHATHTML.body(jStr(message))
+                html = jStrHTML(C.CHATHTML.header(jStr(title)) + C.CHATHTML.body(jStr(message)))
             if (player === "all" || player === "")
                 sendChat("", html)
             else
@@ -286,7 +286,7 @@ const D = (() => {
                                 charArray.push(getChar(v))
                             break
                         case "charobj":
-                            if (v === null || !v.get || v.get("_type") !== "character")
+                            if (!v || !v.get || v.get("_type") !== "character")
                                 errorLines.push(`Invalid character object: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
                             else
                                 charArray.push(v)
@@ -296,7 +296,7 @@ const D = (() => {
                                 errorLines.push(`Invalid player reference: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                             break
                         case "playerobj":
-                            if (v === null || !v.get || v.get("_type") !== "player")
+                            if (!v || !v.get || v.get("_type") !== "player")
                                 errorLines.push(`Invalid player object: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
                             break
                         case "trait":
@@ -333,19 +333,19 @@ const D = (() => {
                                 errorLines.push(`Invalid list object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                             break
                         case "text":
-                            if (v === null || !v.get || v.get("_type") !== "text")
+                            if (!v || !v.get || v.get("_type") !== "text")
                                 errorLines.push(`Invalid text object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                             break
                         case "graphic":
-                            if (v === null || !v.get || v.get("_type") !== "graphic")
+                            if (!v || !v.get || v.get("_type") !== "graphic")
                                 errorLines.push(`Invalid graphic object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                             break
                         case "attribute":
-                            if (v === null || !v.get || v.get("_type") !== "attribute")
+                            if (!v || !v.get || v.get("_type") !== "attribute")
                                 errorLines.push(`Invalid attribute object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                             break
                         case "token":
-                            if (v === null || !v.get || v.get("_subtype") !== "token" || v.get("represents") === "")
+                            if (!v || !v.get || v.get("_subtype") !== "token" || v.get("represents") === "")
                                 errorLines.push(`Invalid token object (not a token, or doesn't represent a character): ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                             break
                         case "reprow":
@@ -362,7 +362,7 @@ const D = (() => {
                             }
                             break
                         case "selection":
-                            if (!v.selected || !v.selected[0])
+                            if (!v || !v.selected || !v.selected[0])
                                 errorLines.push("Invalid selection: Select objects first!")
                             break
                         // no default
@@ -445,37 +445,44 @@ const D = (() => {
             } catch (errObj) {
                 return false
             }
-            // D.Alert(`Search Params: ${D.JS(searchParams)}`)
+            //D.Alert(`Search Params: ${D.JS(searchParams)}`)
             _.each(searchParams, val => {
                 // If parameter is a digit corresponding to a REGISTERED CHARACTER:
-                if (_.isNumber(parseInt(val)) && !_.isNaN(parseInt(val)) && Chars.REGISTRY[parseInt(val)])
-                    charObjs.add(getObj("character", Chars.REGISTRY[parseInt(val)].id))
+                if (_.isNumber(parseInt(val)) && !_.isNaN(parseInt(val)) && Chars.REGISTRY[parseInt(val)]) 
+                    //D.Alert(`VAL IS NUMBER: ${D.JS(val)}`)
+                    charObjs.add(getObj("character", Chars.REGISTRY[parseInt(val)].id))                
                 // If parameter is a CHARACTER OBJECT already: */
                 if (D.IsObj(val, "character")) {
+                    //D.Alert(`VAL IS CHARACTER OBJECT ALREADY: ${D.JS(val)}`)
                     charObjs.add(getObj("character", val.id))
                     // If parameter is a CHARACTER ID:
                 } else if (_.isString(val) && getObj("character", val)) {
+                    //D.Alert(`VAL IS CHARACTER ID CODE: ${D.JS(val)}`)
                     charObjs.add(getObj("character", val))
                     // If parameters is a TOKEN OBJECT:
                 } else if (D.IsObj(val, "graphic", "token")) {
+                    //D.Alert(`VAL IS TOKEN OBJECT: ${D.JS(val)}`)
                     const char = getObj("character", val.get("represents"))
                     if (char)
                         charObjs.add(char)
                     // If parameter is "all":
                 } else if (val === "all") {
+                    //D.Alert(`VAL IS "all": ${D.JS(val)}`)
                     _.each(findObjs({
                         _type: "character"
                     }), char => charObjs.add(char))
                     // If parameter calls for REGISTERED CHARACTERS:
                 } else if (val === "registered") {
+                    D.Alert(`VAL IS "registered": ${D.JS(val)}`)
                     _.each(Chars.REGISTRY, v => {
-                        //D.Alert(`Grabbing Character: ${D.JS(v)}<br><br>ID: ${D.JS(v.id)}<br><br>CHAR: ${D.JS(getObj("character", v.id))}`)
+                        D.Alert(`Grabbing Character: ${D.JS(v)}<br><br>ID: ${D.JS(v.id)}<br><br>CHAR: ${D.JS(getObj("character", v.id))}`)
                         if (!getObj("character", v.id).get("name").includes("Jesse,"))
                             charObjs.add(getObj("character", v.id))
                     })
                     //D.Alert(`Registered Characters: ${D.JS(_.map(charObjs, v => v.id))}`)
                     // If parameter is a CHARACTER NAME:
                 } else if (_.isString(val)) {
+                    //D.Alert(`VAL IS CHARACTER NAME: ${D.JS(val)}`)
                     _.each(findObjs({
                         _type: "character"
                     }), char => {
@@ -486,7 +493,8 @@ const D = (() => {
                 if (charObjs.size === 0)
                     throwError(`No Characters Found for Value '${jStr(val)}' in '${jStr(value)}'`, "D.GETCHARS")
             })
-            return charObjs && charObjs.length > 0 ? [...charObjs] : false
+            //D.Alert(`CharObjs Size = ${D.JS(charObjs.size)}<br><br>${D.JS([...charObjs])}`)
+            return charObjs && charObjs.size > 0 ? [...charObjs] : false
         },
         getChar = v => getChars(v)[0],
         getStats = (charRef, searchPattern, isNumOnly = false, isSilent = false) => {

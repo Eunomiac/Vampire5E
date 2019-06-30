@@ -536,6 +536,10 @@ const ChatFuncs = (() => {
                             break
                     }
                     break
+                case "!testalert":
+                    D.Alert("Simple Test")
+                    D.Alert("<b>Simple Bold Test</b>")
+                    break
 			// no default
             }
         },
