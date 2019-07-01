@@ -124,13 +124,14 @@ const D = (() => {
         /* Styling and sending to the Storyteller via whisper (Alert) or to the API console (Log). */
         logEntry = (msg, title = "") => log(`[${jLog(title)}]: ${jLog(msg)}`),
         alertGM = (msg, title = "[ALERT]") => sendToPlayer("Storyteller", msg, title),
-        numToText = num => {
-            const parseThreeDigits = v => {
+        numToText = (num, isTitleCase = false) => {
+            const numString = `${D.JS(num)}`,
+                parseThreeDigits = v => {
                     let result = "",
                         digits = _.map(v.toString().split(""), v => parseInt(v))
                     if (digits.length === 3) {
                         let hundreds = digits.shift()
-                        result += hundreds > 0 ? C.NUMBERWORDS.zeroToTwenty[hundreds] + " hundred" : ""
+                        result += hundreds > 0 ? C.NUMBERWORDS.low[hundreds] + " hundred" : ""
                         if (digits[0] + digits[1] > 0)
                             result += " and "
                         else
@@ -142,13 +143,13 @@ const D = (() => {
                         result += C.NUMBERWORDS.tens[parseInt(digits.shift())] + (parseInt(digits[0]) > 0 ? "-" + C.NUMBERWORDS.low[parseInt(digits[0])] : "")
                     return result.toLowerCase()
                 },
-                isNegative = num.charAt(0) === "-",
-                [integers, decimals] = num.replace(/[,|\s|-]/gu, "").split("."),
+                isNegative = numString.charAt(0) === "-",
+                [integers, decimals] = numString.replace(/[,|\s|-]/gu, "").split("."),
                 intArray = _.map(integers.split("").reverse().join("").match(/.{1,3}/g), v => v.split("").reverse().join("")).reverse(),
                 stringArray = []
             while (intArray.length > 0)
                 stringArray.push(`${parseThreeDigits(intArray.shift())} ${C.NUMBERWORDS.tiers[intArray.length]}`.toLowerCase().trim())
-            return capitalize((isNegative ? "negative " : "") + stringArray.join(", "))
+            return capitalize((isNegative ? "negative " : "") + stringArray.join(", "), isTitleCase)
         },
         ordinal = (num, isFullText = false) => {
             /* Converts any number by adding its appropriate ordinal ("2nd", "3rd", etc.) */
@@ -162,10 +163,12 @@ const D = (() => {
 
             return `${num}${["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"][num % 10]}`
         },
-        capitalize = str => {
-            if (_.isString(str))
-                return str.slice(0, 1).toUpperCase() + str.slice(1)
-
+        capitalize = (str, isTitleCase = false) => {
+            if (VAL({string: str}, "capitalize"))
+                if (isTitleCase)
+                    return _.map(_.map(str.split(" "), v => v.slice(0, 1).toUpperCase() + v.slice(1)).join(" ").split("-"), v => v.slice(0, 1).toUpperCase() + v.slice(1)).join("-").replace(/And/gu, "and")
+                else
+                    return str.slice(0, 1).toUpperCase() + str.slice(1)
             D.ThrowError(`Attempt to capitalize non-string '${jLog(str)}'`, "DATA: CAPITALIZE")
 
             return str
@@ -473,9 +476,9 @@ const D = (() => {
                     }), char => charObjs.add(char))
                     // If parameter calls for REGISTERED CHARACTERS:
                 } else if (val === "registered") {
-                    D.Alert(`VAL IS "registered": ${D.JS(val)}`)
+                    DB(`VAL IS "registered": ${D.JS(val)}`, "getChars")
                     _.each(Chars.REGISTRY, v => {
-                        D.Alert(`Grabbing Character: ${D.JS(v)}<br><br>ID: ${D.JS(v.id)}<br><br>CHAR: ${D.JS(getObj("character", v.id))}`)
+                        DB(`Grabbing Character: ${D.JS(v)}<br><br>ID: ${D.JS(v.id)}<br><br>CHAR: ${D.JS(getObj("character", v.id))}`, "getChars")
                         if (!getObj("character", v.id).get("name").includes("Jesse,"))
                             charObjs.add(getObj("character", v.id))
                     })

@@ -359,15 +359,20 @@ const Images = (() => {
                     horiz: [parseInt(imgObj.get("left")) - parseInt(imgObj.get("width")) / 2, parseInt(imgObj.get("left")) + parseInt(imgObj.get("width")) / 2],
                     vert: [parseInt(imgObj.get("top")) - parseInt(imgObj.get("height")) / 2, parseInt(imgObj.get("top")) + parseInt(imgObj.get("height")) / 2]
                 }
-            return _.filter(findObjs( { _type: "graphic", _pageid: D.PAGEID()}), v => 
+            DB(`boundaries: ${D.JS(boundaries)}`, "getContainedImages")
+            const contImages = _.filter(findObjs( { _type: "graphic", _pageid: D.PAGEID()}), v => 
                 parseInt(v.get("left")) >= boundaries.horiz[0] &&
-                    parseInt(v.get("left")) <= boundaries.horiz[1] &&
-                    parseInt(v.get("top")) >= boundaries.vert[0] &&
-                    parseInt(v.get("top")) <= boundaries.vert[1] &&
-                    v.get("layer") === "objects" &&
-                    parseInt(v.get("height")) <= parseInt(imgObj.get("height")) &&
-                    parseInt(v.get("width")) <= parseInt(imgObj.get("width"))
-            )}
+                parseInt(v.get("left")) <= boundaries.horiz[1] &&
+                parseInt(v.get("top")) >= boundaries.vert[0] &&
+                parseInt(v.get("top")) <= boundaries.vert[1] &&
+                v.get("layer") === "objects" &&
+                v.get("represents").length > 2 &&
+                parseInt(v.get("height")) <= parseInt(imgObj.get("height")) &&
+                parseInt(v.get("width")) <= parseInt(imgObj.get("width"))
+            )
+            DB(`contained images:<br><br>${D.JS(_.map(contImages, v => v.get("name")))}`, "getContainedImages")
+            return contImages
+        }
         // #endregion
 
         // #region SETTERS: Registering & Manipulating Image Objects
@@ -479,10 +484,13 @@ const Images = (() => {
                         return isSilent ? D.ThrowError(`Image object '${D.JSL(imgRef)}' is unregistered or is missing 'srcs' property`, "Images: setImage()") : false
 
                     imgObj.set("imgsrc", srcURL)
-                    if (srcRef === "blank")
+                    if (srcRef === "blank") {
                         imgObj.set("layer", "walls")
-                    else
+                        IMAGEREGISTRY[getImageData(imgRef).name].activeSrc = IMAGEREGISTRY[getImageData(imgRef).name].curSrc
+                    } else {
                         imgObj.set("layer", getImageData(imgRef).activeLayer)
+                        IMAGEREGISTRY[getImageData(imgRef).name].activeSrc = srcRef
+                    }
                     IMAGEREGISTRY[getImageData(imgRef).name].curSrc = srcRef
                     return imgObj
                 }
@@ -707,6 +715,8 @@ const Images = (() => {
                 imgObj.set("layer", imgData.activeLayer)
                 if (srcRef)
                     setImage(imgRef, srcRef)
+                else if (imgData.activeSrc)
+                    setImage(imgData.activeSrc)
             } else if (imgObj && !isActive) {
                 imgObj.set("layer", "walls")
                 setImage(imgRef, "blank")
@@ -1100,34 +1110,25 @@ const Images = (() => {
                                 if (param.includes(":same")) {
                                     const targetHost = param.split(":")[0] + "_1",
                                         targetType = targetHost.includes("District") ? "District" : "Site"
-                                    let imgSrc = getImageSrc(targetHost),
-                                        tokenShift = 0,
-                                        boundedImages = []
+                                    let imgSrc = getImageSrc(targetHost)
                                     if (!isImageActive(targetHost))
                                         switch (targetHost) {
                                             case "DistrictLeft_1":
-                                            case "SiteLeft_1":                                                
+                                            case "SiteLeft_1":
                                             case "DistrictRight_1":
                                             case "SiteRight_1":
                                                 imgSrc = getImageSrc(targetType + "Center_1")
-                                                tokenShift = parseInt(getImageObj(targetHost).get("left")) - parseInt(getImageObj(targetType + "Center_1").get("left"))
-                                                boundedImages = getContainedImages(targetType + "Center_1")
                                                 break
                                             case "DistrictCenter_1":
                                             case "SiteCenter_1":
                                                 imgSrc = getImageSrc(targetType + "Left_1")
-                                                tokenShift = parseInt(getImageObj(targetHost).get("left")) - parseInt(getImageObj(targetType + "Left_1").get("left"))
-                                                boundedImages = getContainedImages(targetType + "Left_1")
                                                 break
                                             // no default
                                         }
                                     setImage(targetHost, imgSrc)
-                                    for (const imgObj of boundedImages)
-                                        imgObj.set("left", parseInt(imgObj.get("left")) + tokenShift)                                    
                                 } else {
                                     setImage(...param.split(":"))
                                 }
-                  
                             break
                         // no default
                     }
@@ -1193,12 +1194,15 @@ const Images = (() => {
                     }
                     break
                 case "toggle":
+                    DB(`TOGGLE COMMAND RECEIVED.  MESSAGE IS AS FOLLOWS:<br><br>${D.JS(msg)}`, "getContainedImages")
                     switch (args.shift().toLowerCase()) {
                         case "on":
+                            DB(`Toggling ON: ${D.JS(args)}`, "getContainedImages")
                             for (const param of args)
-                                toggleImage(param, true, "base")
+                                toggleImage(param, true)
                             break
                         case "off":
+                            DB(`Toggling OFF: ${D.JS(args)}`, "getContainedImages")
                             for (const param of args)
                                 toggleImage(param, false)
                             break
@@ -1286,58 +1290,6 @@ const Images = (() => {
             C.ROOT.Images.imageregistry = C.ROOT.Images.imageregistry || {}
             C.ROOT.Images.textregistry = C.ROOT.Images.textregistry || {}
             C.ROOT.Images.areas = C.ROOT.Images.areas || {}
-
-            if (C.ROOT.Images.imageregistry.SiteCenter_1) 
-                state.VAMPIRE.Images.imageregistry.SiteCenter_1.srcs = {
-                    AnarchBar: "https://s3.amazonaws.com/files.d20.io/images/85273689/6wf9n4_5tItvvEMkQMoqwQ/thumb.png?1561881363",
-                    ArtGallery: "https://s3.amazonaws.com/files.d20.io/images/85273694/sJRhfQznFytCF6POCOVN4A/thumb.png?1561881368",
-                    BackAlley: "https://s3.amazonaws.com/files.d20.io/images/85273699/LINhutevPcaY_IK3hvMNXg/thumb.png?1561881372",
-                    BayTower: "https://s3.amazonaws.com/files.d20.io/images/85273702/m09VLOoDqNpMM3tjAxp9Nw/thumb.png?1561881376",
-                    BBishopFerry: "https://s3.amazonaws.com/files.d20.io/images/85273706/nve30lg2y47HE3SFk0QO7g/thumb.png?1561881381",
-                    CasaLoma: "https://s3.amazonaws.com/files.d20.io/images/85273708/xjCz5_O2nIJYvu5QgK1t6A/thumb.png?1561881385",
-                    Cemetary: "https://s3.amazonaws.com/files.d20.io/images/85273710/WwFHpbrZbYBiRQmPLVT7gg/thumb.png?1561881390",
-                    BrickWorks: "https://s3.amazonaws.com/files.d20.io/images/85273732/zKx1m27X5-6Ie5WJha3hvA/thumb.png?1561881434",
-                    CNTower: "https://s3.amazonaws.com/files.d20.io/images/85273737/r3czPmvdJf5y2PQVoWot2w/thumb.png?1561881441",
-                    CeramicsMuseum: "https://s3.amazonaws.com/files.d20.io/images/85273738/DqiS7F6MbYw9MdJ_AIDqvA/thumb.png?1561881445",
-                    CityApt1: "https://s3.amazonaws.com/files.d20.io/images/85273740/Duc7FjhFdPvtUYLqrVLCVg/thumb.png?1561881451",
-                    CityHall: "https://s3.amazonaws.com/files.d20.io/images/85273744/476qNVDRsiVo1nbLPYPOPQ/thumb.png?1561881456",
-                    CityPark: "https://s3.amazonaws.com/files.d20.io/images/85273749/0tGxKReNAVeE9XTdOocT9A/thumb.png?1561881460",
-                    Distillery: "https://s3.amazonaws.com/files.d20.io/images/85273765/p_Yq-cP0h1y9-46aOma6JQ/thumb.png?1561881478",
-                    Docks: "https://s3.amazonaws.com/files.d20.io/images/85273768/Mv-4UFBqpzDg0vCyMK3OYQ/thumb.png?1561881482",
-                    Drake: "https://s3.amazonaws.com/files.d20.io/images/85273775/dEbqHJWnRxnn1s0IZyLUGQ/thumb.png?1561881490",
-                    Elysium: "https://s3.amazonaws.com/files.d20.io/images/85273783/Uw3UY4mF7zWh-HIJt9ibFw/thumb.png?1561881494",
-                    FightClub: "https://s3.amazonaws.com/files.d20.io/images/85273788/33h8YslBlI9imtcaPGU4aw/thumb.png?1561881499",
-                    GayClub: "https://s3.amazonaws.com/files.d20.io/images/85273791/vQIAO6R9k_6mvuJKla1EcQ/thumb.png?1561881505",
-                    Laboratory: "https://s3.amazonaws.com/files.d20.io/images/85273796/IX_1P6w4LDsNyUsUgaoq1w/thumb.png?1561881509",
-                    LectureHall: "https://s3.amazonaws.com/files.d20.io/images/85273799/V0B-KTntCKLOojWJkTh2kQ/thumb.png?1561881513",
-                    Library: "https://s3.amazonaws.com/files.d20.io/images/85273806/mALvugWqItfwE4UMQqnTHg/thumb.png?1561881521",
-                    MiddleOfRoad: "https://s3.amazonaws.com/files.d20.io/images/85273811/K6jKhkubd29haUXEX3kEVQ/thumb.png?1561881525",
-                    Nightclub: "https://s3.amazonaws.com/files.d20.io/images/85273815/fu4ZlkjiGoTBv6GJWFwhow/thumb.png?1561881531",
-                    Office: "https://s3.amazonaws.com/files.d20.io/images/85273817/aP64GTFDDuGgSPcDNvFOJg/thumb.png?1561881536",
-                    PMHospital: "https://s3.amazonaws.com/files.d20.io/images/85273819/-C-08s4pkfHEHG2N2_4GtQ/thumb.png?1561881540",
-                    ProfOffice: "https://s3.amazonaws.com/files.d20.io/images/85273823/_0pZMHt3xeEzAiAVzYZT5A/thumb.png?1561881545",
-                    ROM: "https://s3.amazonaws.com/files.d20.io/images/85273840/wbfLj8QBt9Nl5UUlhJiBpQ/thumb.png?1561881570",
-                    RedemptionHouse: "https://s3.amazonaws.com/files.d20.io/images/85273844/oqh-NyGBOrqxLyLOUm0KKQ/thumb.png?1561881575",
-                    RogersCentre: "https://s3.amazonaws.com/files.d20.io/images/85273849/A8U70iR0LRo2YrunAvjEEg/thumb.png?1561881580",
-                    Rooftops: "https://s3.amazonaws.com/files.d20.io/images/85273855/6gGGnJwWhTuP700SRrvD1Q/thumb.png?1561881584",
-                    Sidewalk1: "https://s3.amazonaws.com/files.d20.io/images/85273859/D9pE6GVaP89uZmKRalWqbQ/thumb.png?1561881589",
-                    SiteLotus: "https://s3.amazonaws.com/files.d20.io/images/85273860/QHLSJFyEkQAw3av_EKrPRw/thumb.png?1561881593",
-                    SpawningPool: "https://s3.amazonaws.com/files.d20.io/images/85273862/Tnz6IGC4tjkJw6PvdIH1Eg/thumb.png?1561881598",
-                    StMichaelsCathedral: "https://s3.amazonaws.com/files.d20.io/images/85273865/_sCHWSfnT0O2yCC9KKbHDw/thumb.png?1561881604",
-                    StripClub: "https://s3.amazonaws.com/files.d20.io/images/85273912/WG01GunOyn8tW56jJyxu6Q/thumb.png?1561881694",
-                    StudentVillage: "https://s3.amazonaws.com/files.d20.io/images/85273917/u7FCIegkzmgAmPDfgun-Xg/thumb.png?1561881699",
-                    SubwayStation: "https://s3.amazonaws.com/files.d20.io/images/85273919/Pdy30-ngE01gdCWXUH_7TQ/thumb.png?1561881704",
-                    SubwayTunnels: "https://s3.amazonaws.com/files.d20.io/images/85273921/TfVqrAtEWd-Dy5oDP7CTWQ/thumb.png?1561881709",
-                    UndergroundMedClinic: "https://s3.amazonaws.com/files.d20.io/images/85273927/pQaB7uh-Wa0Aon3F6NQzfw/thumb.png?1561881715",
-                    UndergroundMedOffice: "https://s3.amazonaws.com/files.d20.io/images/85273928/ADJzkK3hBi5G3BSlvVVhBA/thumb.png?1561881720",
-                    WarrensAntechamber: "https://s3.amazonaws.com/files.d20.io/images/85273931/Gx-9gBCThGvem4U8aG9L-w/thumb.png?1561881724",
-                    WychwoodPub: "https://s3.amazonaws.com/files.d20.io/images/85273933/O4ITfc8Yfj7OzwyOWMxkmA/thumb.png?1561881729",
-                    YongeDundasSquare: "https://s3.amazonaws.com/files.d20.io/images/85273935/OwBc8wgh33zbenl1PSLwAQ/thumb.png?1561881735",
-                    YorkvilleApt1: "https://s3.amazonaws.com/files.d20.io/images/85273940/Mx73KngseQAN6dnAvpCpwA/thumb.png?1561881742",
-                    YorkvilleApt2: "https://s3.amazonaws.com/files.d20.io/images/85273944/97aYXbS47Et94qKGbK0IqQ/thumb.png?1561881746",
-                    YouthShelter: "https://s3.amazonaws.com/files.d20.io/images/85273947/L7eaE_SJDh6bF_ex638YOw/thumb.png?1561881751"
-                }
-            
         }
     // #endregion
 

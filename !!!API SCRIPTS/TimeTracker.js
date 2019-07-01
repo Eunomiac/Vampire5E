@@ -799,7 +799,7 @@ const TimeTracker = (() => {
                 testString += "<br>"
             }
             if(isTesting)
-                D.Alert(`<b>GROUND COVER:</b><br><br>${testString}<br><br>!testground down10, down0, downneg5, upb, ups`, "GROUND COVER")
+                D.Alert(`${testString}<br><br>!testground down10, down0, downneg5, upb, ups`, "GROUND COVER")
           // END DEBUG TESTING CODE
 			
             if (groundCover > 50)
@@ -840,7 +840,7 @@ const TimeTracker = (() => {
                             let hourMatch = _.findIndex(WEATHERDATA[m][d], (v, k) => { return v.charAt(0) === code && (k <= 5 || k >= 20) })
                             if (hourMatch >= startHour) {
                   //debugString += "... MATCHED!<br>"
-                                weatherStrings[WEATHERCODES[0][code]] = `!time set ${startYear} ${m} ${d} ${hourMatch} (${MONTHS[m].slice(0,3)} ${d}, ${hourMatch > 12 ? `${hourMatch - 12} PM` : `${hourMatch} AM`})`
+                                weatherStrings[WEATHERCODES[0][code]] = `${MONTHS[m].slice(0,3)} ${d}, ${hourMatch > 12 ? `${hourMatch - 12} PM` : `${hourMatch} AM`}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>!time set ${startYear} ${m} ${d} ${hourMatch}</b>`
                                 break
                             }
                             startHour = 0
@@ -853,7 +853,7 @@ const TimeTracker = (() => {
                     startYear++
                 }
             }
-            D.Alert(`WEATHER REPORT:<br><br>${D.JS(weatherStrings)}`)	
+            D.Alert(`${D.JS(_.map(weatherStrings, (v,k) => `${k}: ${v}`).join("<br>"))}`, "WEATHER REPORT")	
         //D.Alert(D.JS(debugString))		
         },
     //#endregion
@@ -1007,7 +1007,8 @@ const TimeTracker = (() => {
                     break
                 case "!weatherreport":
                     checkWeatherReport()
-                    break
+                    D.Alert(`Day -> Night1: ${TWILIGHT[STATEREF.dateObj.getMonth()][1]}<br>Night1 -> Night2: ${_.keys(IMAGETIMES)[0]}<br>Night2 -> Night3: ${_.keys(IMAGETIMES)[1]}<br>Night3 -> Night4: ${_.keys(IMAGETIMES)[2]}<br>Night4 -> Night5: ${TWILIGHT[STATEREF.dateObj.getMonth()][0]} - 1h<br>PDawn5, 4, 3, 2: 30m > 20m > 10m > 5m BEFORE...<br>DAWN: ${TWILIGHT[STATEREF.dateObj.getMonth()][0]}`, "BACKGROUND CHANGE TIMES")
+                    break                    
                 default:
                     break
             }
