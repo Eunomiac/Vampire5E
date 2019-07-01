@@ -344,31 +344,34 @@ const Chars = (() => {
 	
 		// #region Awarding XP,
         awardXP = (charRef, award, reason) => {
+            DB(`Award XP Parameters:<br><br>charRef: ${D.JS(charRef)}<br>award: ${D.JS(award)}<br>reason: ${D.JS(reason)}`, "awardXP")
             if (!D.GetChar(charRef))
                 return D.ThrowError(`No character found given reference ${D.JS(charRef)}`, "CHARS:AwardXP")
-            const char = D.GetChar(charRef),
-				 rowID = D.MakeRow(char.id, "earnedxpright", {
-                    xp_award: award,
-                    xp_session: D.NumToText[STATEREF.SessionNum],
-                    xp_reason: reason,
-                })
+            const char = D.GetChar(charRef)
+            DB(`Award XP Variable Declations:<br><br>char: ${D.JS(char && char.get && char.get("name"))}<br>SessionNum: ${D.JS(STATEREF.SessionNum)}`, "awardXP")
+            DB(`Making Row with Parameters:<br><br>${D.JS(char.id)}<br><br>Award: ${D.JS(award)}<br>Session: ${D.NumToText(STATEREF.SessionNum)}<br>Reason: ${D.JS(reason)}`, "awardXP")
+            const rowID = D.MakeRow(char.id, "earnedxpright", {
+                xp_award: award,
+                xp_session: D.NumToText(STATEREF.SessionNum, true),
+                xp_reason: reason
+            })
+            DB(`Award XP Variable Declations:<br><br>char: ${D.JS(char && char.get && char.get("name"))}<br><br>rowID: ${D.JS(rowID)}`, "awardXP")
             if (rowID) {
                 let xpOrder = {
                     left: D.GetStatVal(char.id, "_reporder_repeating_earnedxp") ? D.GetStatVal(char.id, "_reporder_repeating_earnedxp").split(",") : [],
                     right: D.GetStatVal(char.id, "_reporder_repeating_earnedxpright") ? D.GetStatVal(char.id, "_reporder_repeating_earnedxpright").split(",") : []
                 }
-				//	D.Alert(`Original:<br><br>${D.JS(xpOrder)}`)
+                DB(`Original xpOrder:<br><br>${D.JS(xpOrder)}`, "awardXP")
                 if (xpOrder.left.length > D.GetRepIDs(char.id, "earnedxp").length) 
                     xpOrder.left = xpOrder.left.slice(0,D.GetRepIDs(char.id, "earnedxp").length)
-				 else if (xpOrder.left.length === 0) 
+                else if (xpOrder.left.length === 0) 
                     xpOrder.left = D.GetRepIDs(char.id, "earnedxp")
 								
                 if (xpOrder.right.length > D.GetRepIDs(char.id, "earnedxpright").length) 
                     xpOrder.right = xpOrder.right.slice(0,D.GetRepIDs(char.id, "earnedxpright").length)
-				 else if (xpOrder.right.length === 0) 
-                    xpOrder.right = D.GetRepIDs(char.id, "earnedxpright")
-					
-				//D.Alert(`New:<br><br>${D.JS(xpOrder)}`)
+                else if (xpOrder.right.length === 0) 
+                    xpOrder.right = D.GetRepIDs(char.id, "earnedxpright")					
+                DB(`New xpOrder:<br><br>${D.JS(xpOrder)}`, "awardXP")
                 while (D.GetRepIDs(char.id, "earnedxpright").length > D.GetRepIDs(char.id, "earnedxp").length) {
                     let repID = D.GetRepIDs(char.id, "earnedxpright")[0]
                     xpOrder.left.push(repID)
@@ -453,19 +456,19 @@ const Chars = (() => {
 		// #region Starting/Ending Sessions & Waking Up,
         startSession = () => {
             STATEREF.SessionNum++
-            D.Alert(`Beginning Session ${D.NumToText[STATEREF.SessionNum]}`)
+            D.Alert(`Beginning Session ${D.NumToText(STATEREF.SessionNum)}`)
             TimeTracker.StartClock()
             TimeTracker.StartLights()
 
         },
         setSessionNum = sNum => {
             STATEREF.SessionNum = sNum
-            D.Alert(`Session Number <b>${D.NumToText[STATEREF.SessionNum]}</b> SET.`)
+            D.Alert(`Session Number <b>${D.NumToText(STATEREF.SessionNum)}</b> SET.`)
         },
         endSession = () => {
-            D.Alert(`Concluding Session ${D.NumToText[STATEREF.SessionNum]}`)
+            D.Alert(`Concluding Session ${D.NumToText(STATEREF.SessionNum)}`)
             for (const char of D.GetChars("registered")) 
-                awardXP(char, 2, D.NumToText[STATEREF.SessionNum], "Session XP award.")
+                awardXP(char, 2, "Session XP award.")
 			
             TimeTracker.StopClock()
             TimeTracker.StopLights()
@@ -709,7 +712,8 @@ const Chars = (() => {
 					
                             break					
                         case "xp": // !char xp Cost Session Message, with some character tokens selected.
-                            chars = D.GetChars(msg) || D.GetChars("registered")
+                            chars = _.compact(D.GetChars(msg) || D.GetChars("registered"))
+                            DB(`!char xp COMMAND RECEIVED<br><br>Characters: ${D.JS(_.map(chars, v => v.get("name")))}`, "awardXP")
                             if (chars) {
                                 amount = parseInt(args.shift()) || 0
                                 _.each(chars, (char) => {
@@ -1012,15 +1016,15 @@ const Chars = (() => {
 			//C.ROOT.Chars.registry["1"].playerID = "-LLIBpH_GL5I-9lAOiw9"
 			
 			// Return Player Control:
-            C.ROOT.Chars.registry["4"].playerID = "-LMGDbZCKw4bZk8ztfNf"
-            C.ROOT.Chars.registry["3"].playerID = "-LN7lNnjuWmFuvVPW76H"
-            C.ROOT.Chars.registry["2"].playerID = "-LN6n-fR8cSNR2E_N_3q"
-            C.ROOT.Chars.registry["1"].playerID = "-LMGDQqIvyL87oIfrVDX"
+            //C.ROOT.Chars.registry["4"].playerID = "-LMGDbZCKw4bZk8ztfNf"
+            //C.ROOT.Chars.registry["3"].playerID = "-LN7lNnjuWmFuvVPW76H"
+            //C.ROOT.Chars.registry["2"].playerID = "-LN6n-fR8cSNR2E_N_3q"
+            //C.ROOT.Chars.registry["1"].playerID = "-LMGDQqIvyL87oIfrVDX"
+	        //C.ROOT.Chars.registry["1"].famulusTokenID = "-Li_TTDHnKYob56yfijy"
         }
 
 
 
-	//C.ROOT.Chars.registry["1"].famulusTokenID = "-Lfn-vuWhy4jneRrccox"
 		
 	// #endregion
 	

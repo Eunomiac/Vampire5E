@@ -9,7 +9,7 @@ module.exports = {
         "sourceType": "module"
     },
     "rules": {
-        "complexity": ["warn", 50],
+        //"complexity": ["warn", 50],
         "indent": [
             "error",
             4,

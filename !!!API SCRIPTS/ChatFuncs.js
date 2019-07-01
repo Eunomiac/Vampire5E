@@ -536,10 +536,17 @@ const ChatFuncs = (() => {
                             break
                     }
                     break
-                case "!testalert":
-                    D.Alert("Simple Test")
-                    D.Alert("<b>Simple Bold Test</b>")
-                    break
+                case "!test":
+                    switch (args.shift()) {
+                        case "alert":
+                            D.Alert("Simple Test")
+                            D.Alert("<b>Simple Bold Test</b>")
+                            break
+                        case "num":
+                            D.Alert(`NumToText Test: ${D.JS(args[0])} ---> <br><br>${D.JS(D.NumToText(args[0]))}<br><br>${D.JS(D.NumToText(args[0], true))}`, "!test num")
+                            break
+                        // no default
+                    }
 			// no default
             }
         },

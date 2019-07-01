@@ -10,7 +10,8 @@ const Roller = (() => {
             C.ROOT = C.ROOT || {}
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             STATEREF.rollRecord = STATEREF.rollRecord || []
-            STATEREF.selected = STATEREF.selected || {}
+            STATEREF.selected = STATEREF.selected || {}            
+            STATEREF.rollEffects = STATEREF.rollEffects || {}
             _.each(_.uniq(_.flatten(STATECATS.dice)), v => {
                 STATEREF.selected[v] = STATEREF.selected[v] || []
                 STATEREF[v] = STATEREF[v] || []
@@ -131,6 +132,8 @@ const Roller = (() => {
             dice: {
                 blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
                 selected: "https://s3.amazonaws.com/files.d20.io/images/64173198/T0qdnbmLUCnrs9WlxoGwww/thumb.png?1538710883",
+                selectedFree: "https://s3.amazonaws.com/files.d20.io/images/64173198/T0qdnbmLUCnrs9WlxoGwww/thumb.png?1538710883",
+                selectedDouble: "https://s3.amazonaws.com/files.d20.io/images/64173198/T0qdnbmLUCnrs9WlxoGwww/thumb.png?1538710883",
                 Bf: "https://s3.amazonaws.com/files.d20.io/images/64173205/DOUwwGcobI4eyu1Wb8ZDxg/thumb.png?1538710883",
                 Bs: "https://s3.amazonaws.com/files.d20.io/images/64173203/ZS04TJE6VRI8_Q-HaJ0r4g/thumb.png?1538710883",
                 Bc: "https://s3.amazonaws.com/files.d20.io/images/64173206/Fbt_6j-k_1oRKPxTKdnIWQ/thumb.png?1538710883",
@@ -141,7 +144,21 @@ const Roller = (() => {
                 Hs: "https://s3.amazonaws.com/files.d20.io/images/64173209/D_4ljxj59UYXPNmgXaZbhA/thumb.png?1538710883",
                 Hc: "https://s3.amazonaws.com/files.d20.io/images/64173202/xsEkLc9DcOslpQoUJwpHMQ/thumb.png?1538710883",
                 HcL: "https://s3.amazonaws.com/files.d20.io/images/64173200/cBsoLkAu15XWexFSNUxoHA/thumb.png?1538710883",
-                HcR: "https://s3.amazonaws.com/files.d20.io/images/64173207/Se7RHT2fJDg2qMGo_x5UhQ/thumb.png?1538710883"
+                HcR: "https://s3.amazonaws.com/files.d20.io/images/64173207/Se7RHT2fJDg2qMGo_x5UhQ/thumb.png?1538710883",
+                BXc: "", // Cancelled Critical Dice
+                BXs: "", // Cancelled Success Dice
+                HXc: "", // Cancelled Critical Hunger Dice
+                HXs: "", // Cancelled Success Hunger Dice
+                HXb: "", // Cancelled Botched Hunger Dice
+                BFf: "", // Free Reroll Failed Dice
+                BFc: "", // Free Reroll Critical Dice
+                BFcL: "", // Free Reroll Left Critical Pair Dice
+                BFcR: "", // Free Reroll Right Critical Pair Dice
+                BDf: "", // Double-Cost Reroll Dice
+                BDc: "", // Double-Cost Reroll Critical Dice
+                BDcL: "", // Double-Cost Reroll Left Critical Pair Dice
+                BDcR: "", // Double-Cost Reroll Right Critical Pair Dice
+                HCb: "" // Cancelling Botched Hunger Dice
             },
             blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
             diffFrame: "https://s3.amazonaws.com/files.d20.io/images/64184544/CnzRwB8CwKGg-0jfjCkT6w/thumb.png?1538736404",
@@ -173,7 +190,8 @@ const Roller = (() => {
             brightblue: "rgb(150, 150, 255)",
             blue: "rgb(100, 100, 255)",
             darkblue: "rgb(50, 50, 150)",
-            cyan: "rgb(0, 255, 255)"
+            cyan: "rgb(0, 255, 255)",
+            gold: "#ffee66"
         },
         STATECATS = {
             dice: ["diceList", "bigDice"],
@@ -226,9 +244,25 @@ const Roller = (() => {
                 font_family: "Contrail One",
                 font_size: 32,
                 top: 115,
-                left: 676,
+                left: 476,
                 color: COLORS.red,
                 text: "negMods"
+            },
+            redMods: {
+                font_family: "Contrail One",
+                font_size: 32,
+                top: 115,
+                left: 957,
+                color: COLORS.red,
+                text: "redMods"
+            },
+            goldMods: {
+                font_family: "Contrail One",
+                font_size: 32,
+                top: 75,
+                left: 957,
+                color: COLORS.gold,
+                text: "goldMods"
             },
             summary: {
                 font_family: "Candal",
@@ -746,6 +780,19 @@ const Roller = (() => {
                             default:
                                 break
                         }
+                    } else if (params.shift.imgAnchor) {
+                        const imgObj = Images.GetObj(params.shift.imgAnchor)
+                        if (VAL({graphic: imgObj}))
+                            switch (params.shift.anchorSide) {
+                                case "right":
+                                    params.left = parseInt(imgObj.get("left")) +
+                                        0.5 * parseInt(imgObj.get("width")) +
+                                        0.5 * params.width +
+                                        parseInt(params.shift.amount)
+                                    break
+                                default:
+                                    break
+                            }
                     }
                     params.left += params.shift.left || 0
                     params.top += params.shift.top || 0
@@ -1018,11 +1065,352 @@ const Roller = (() => {
     // #endregion
 
     // #region Getting Information & Setting State Roll Record
-    const parseFlags = (charObj, rollType, params = {}, isDiscRoll = false ) => {
+    const applyRollEffects = rollInput => {
+        // const rollEffectString = getAttrByName(rollInput.charID, "rolleffects")
+            const rollEffectString = getAttrByName(rollInput.charID, "rolleffects")
+            if (VAL({string: rollEffectString, list: rollInput}, "applyRollEffects")) {
+                rollInput.appliedRollEffects = rollInput.appliedRollEffects || []
+                const rollEffects = _.compact(_.without(_.uniq([...rollEffectString.split("|"), ..._.keys(STATEREF.rollEffects), ...rollInput.rollEffectsToReapply || []]), ...rollInput.appliedRollEffects)),
+                    [rollData, rollResults] = rollInput.rolls ? [null, rollInput] : [rollInput, null],
+                    checkRestriction = (input, traits, flags, restr) => {
+                        // TEST: If restriction is a clan, does character clan match?
+                        if (D.IsIn(restr, C.CLANS)) {
+                            if (!D.IsIn(getAttrByName(input.charID, "clan"), restr))
+                                return true
+                        // TEST: If restriction is "physical", "social" or "mental", does an appropriate trait match?
+                        } else if (D.IsIn(restr, ["physical", "mental", "social"])) {
+                            if (!_.intersection(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()), _.keys(traits)).length > 0) {
+                                DB(`SKIPPING: Restriction ${D.JS(restr)} Doesn't Apply<br><br>ATTRIBUTES/SKILLS MAPPED = ${D.JS(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()))}<br><br>C.SKILLS[restriction] = ${D.JS(C.SKILLS[restr])}<br><br>INTERSECTION = ${D.JS(_.intersection(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()), _.keys(traits)))}`, "applyRollEffects")
+                                return true
+                            }
+                        // TEST: If none of the above, does restriction match a trait or a flag?
+                        } else {
+                            if (!D.IsIn(restr, [..._.keys(traits), ..._.keys(flags)]))
+                                return true
+                        }
+                        return false
+                    }
+                DB(`Roll Effects:<br>${D.JS(rollEffects)}`, "applyRollEffects")
+                for (const effectString of rollEffects) {
+                // First, check if the global effect state variable holds an exclusion for this character ID AND effect isn't in rollEffectsToReapply.
+                    if (STATEREF.rollEffects[effectString] && STATEREF.rollEffects[effectString].includes(rollInput.charID))
+                        continue
+                    let [rollRestrictions, rollMod, rollLabel, isOnceOnly] = effectString.split(","),
+                        [rollTarget, rollTraits, rollFlags] = ["", {}, {}],
+                        isSkipping = false;
+                    [rollMod, rollTarget] = _.map(rollMod.split(":"), v => parseInt(v) || v.toLowerCase())
+                    rollRestrictions = _.map(rollRestrictions.split("/"), v => v.toLowerCase())
+                    rollTraits = _.object(
+                        _.map(_.keys(rollInput.traitData), v => v.toLowerCase()),
+                        _.map(_.values(rollInput.traitData), v => parseInt(v.value) || 0)
+                    )
+                    rollFlags = _.object(
+                        _.map([...rollInput.posFlagLines, ...rollInput.negFlagLines, ...rollInput.redFlagLines, ...rollInput.goldFlagLines], v => v.toLowerCase().replace(/\s*?\(●*?\)/gu, "")),
+                        [..._.map(rollInput.posFlagLines, v => v.replace(/[^●]/gu, "").length), ..._.map(rollInput.negFlagLines, v => -1 * v.replace(/[^●]/gu, "").length), ..._.map(rollInput.redFlagLines, () => 0), ..._.map(rollInput.goldFlagLines, () => 0)]
+                    )
+                    DB(`Roll Traits: ${D.JS(rollTraits)}
+                
+                RollFlags: ${D.JS(rollFlags)}`, "applyRollEffects")
+
+                // THRESHOLD TEST OF ROLLTARGET: IF TARGET SPECIFIED BUT DOES NOT EXIST, SKIP PROCESSING THIS ROLL EFFECT.
+                    if (VAL({string: rollTarget}) && !D.IsIn(rollTarget, _.keys(rollTraits)) && !D.IsIn(rollTarget, _.keys(rollFlags)))
+                        continue
+
+                // THRESHOLD TESTS OF RESTRICTION: IF ANY FAIL, SKIP PROCESSING THIS ROLL EFFECT.
+                    for (const restriction of rollRestrictions) {
+                        if (isSkipping) break
+                    // TEST: Is rollInput the appropriate kind for this effect?
+                        if (D.IsIn(restriction, ["success", "failure", "basicfail", "critical", "basiccrit", "messycrit", "bestialfail", "totalfail"]) ||
+                            D.IsIn(rollMod, ["nowpreroll", "doublewpreroll", "freewpreroll", "bestialcancel", "totalfailure"])) {
+                            DB(`Detected RollResult Keyword: ${D.JS(restriction)}<br><br>${D.JS(rollMod)}`, "applyRollEffects")
+                            if (rollData) {
+                                isSkipping = true
+                            } else {
+                            // TEST: If rollResults and rollInput specifies a result restriction, check if it applies.
+                                let effectiveMargin = rollResults.total - (rollResults.diff || 0)
+                                switch (restriction) {
+                                    case "success":
+                                        if (effectiveMargin <= 0)
+                                            isSkipping = true
+                                        break
+                                    case "failure":
+                                        if (effectiveMargin > 0)
+                                            isSkipping = true
+                                        break
+                                    case "basicfail":
+                                        if (effectiveMargin > 0 || rollResults.H.botches > 0 || rollResults.B.succs + rollResults.H.succs === 0)
+                                            isSkipping = true
+                                        break
+                                    case "critical":
+                                        if (effectiveMargin <= 0 || rollResults.critPairs.bb + rollResults.critPairs.hb + rollRestrictions.critPairs.hh === 0)
+                                            isSkipping = true
+                                        break								
+                                    case "basiccrit":
+                                        if (effectiveMargin <= 0 || rollResults.critPairs.bb === 0 || rollResults.critPairs.hh + rollResults.critPairs.hb > 0)
+                                            isSkipping = true
+                                        break
+                                    case "messycrit":
+                                        DB(`Effective Margin: ${effectiveMargin}<br><br>CritPairs: ${D.JS(rollResults.critPairs)} (${D.JS(rollResults.critPairs.hh + rollResults.critPairs.hb)})`, "applyRollEffects")
+                                        if (effectiveMargin <= 0 || rollResults.critPairs.hh + rollResults.critPairs.hb === 0)
+                                            isSkipping = true
+                                        break
+                                    case "bestialfail":
+                                        if (effectiveMargin > 0 || rollResults.H.botches === 0)
+                                            isSkipping = true
+                                        break
+                                    case "totalfail":
+                                        if (rollResults.B.succs + rollResults.H.succs > 0)
+                                            isSkipping = true
+                                        break
+                                    default:
+                                        // If the restriction isn't any of the above, have to do the standard check to see if it applies.
+                                        if (checkRestriction(rollResults, rollTraits, rollFlags, restriction))
+                                            isSkipping = true
+                                        break
+                                }
+                            // TEST: Also check the rollMod to see whether you're applying certain effects.
+                                switch (rollMod) {
+                                    case "doublewpreroll": case "freewpreroll":
+                                        if (_.any(rollEffects, v => v.includes("nowpreroll")))
+                                            isSkipping = true
+                                    // no default
+                                }
+                            }
+                        } else {
+                            if (rollResults)
+                                isSkipping = true
+                            else if (checkRestriction(rollData, rollTraits, rollFlags, restriction))
+                                isSkipping = true
+                        }
+                    }                
+
+                    if (isSkipping)
+                        continue
+
+                // THRESHOLD TESTS PASSED.  CHECK FOR 'ISONCEONLY' AND FIRE IT ACCORDINGLY
+                // If "isOnceOnly" set, add an exclusion to the global state variable OR remove this effect from the character-specific attribute.
+                    if (isOnceOnly === "true") 
+                        if (STATEREF.rollEffects[effectString])
+                            STATEREF.rollEffects[effectString] = _.union(STATEREF.rollEffects[effectString], [rollInput.charID])
+                        else
+                            setAttrs(rollInput.charID, {rolleffects: _.compact(getAttrByName(rollInput.charID, "rolleffects").replace(effectString, "").replace(/\|\|/gu, "|").split("|")).join("|")})
+                
+                
+                // FIRST ROLLMOD PASS: CONVERT TO NUMBER.
+                // Check whether parsing RollData or RollResults
+                    if (VAL({list: rollData})) {
+                        DB(`We have a valid rollData:<br><br>${D.JS(rollData)}`, "applyRollEffects")
+                    // Is rollMod a number?
+                        if (VAL({number: rollMod})) {
+                        // If rollMod is a number, Is there a rollTarget?
+                            if (VAL({string: rollTarget})) 								
+                            // If so, is the rollTarget present in traits?
+                                if (D.IsIn(rollTarget, _.keys(rollTraits)))
+                                // If so, cap any negative modifier to the value of the target trait (i.e. no negative traits)
+                                    rollMod = rollMod < 0 ? Math.max(-1 * rollTraits[rollTarget], rollMod) : rollMod
+                            // If not in traits, rollTarget must be in flags (validation happened above)
+                                else
+                                // Cap any negative modifier to the value of the flag (i.e. no negative flags)
+                                    rollMod = rollMod < 0 ? Math.max(-1 * _.find(rollFlags, (v, k) => k.includes(rollTarget)), rollMod) : rollMod
+                        // (If no rollTarget, apply mod as a straight modifier --- i.e. unchanged until capping, below.)
+                        
+                        } else {
+                        // If rollMod isn't a number, is it adding or subtracting a trait value?
+                            if (rollMod.includes("postrait"))
+                                rollMod = parseInt(getAttrByName(rollData.charID, rollMod.replace(/postrait/gu, ""))) || 0
+                            else if (rollMod.includes("negtrait"))
+                                rollMod = -1 * (parseInt(getAttrByName(rollData.charID, rollMod.replace(/negtrait/gu, ""))) || 0)
+                        // If not postrait/negtrait, is it a multiplier?
+                            else if (rollMod.startsWith("x") && VAL({number: rollMod.replace(/x/gu, "")})) 
+                            // If so, is there a rollTarget?
+                                if (VAL({string: rollTarget})) {
+                                // If so, is the rollTarget present in traits?
+                                    if (D.IsIn(rollTarget, _.keys(rollTraits)))
+                                    // If so, multiply trait accordingly (rounding DOWN to a minimum of one) and set rollMod to the difference.
+                                        rollMod = Math.max(1, Math.floor(rollTraits[rollTarget] * parseFloat(rollMod.replace(/x/gu, "")))) - rollTraits[rollTarget]
+                                    // If not in traits, rollTarget must be in flags (validation happened above)
+                                    else
+                                    // If so, multiply the flag accordingly (rounding DOWN to a minimum of one) and set rollMod to the difference.
+                                        rollMod = Math.max(1, Math.floor(_.find(rollFlags, (v, k) => k.includes(rollTarget)) * parseFloat(rollMod.replace(/x/gu, "")))) - _.find(rollFlags, (v, k) => k.includes(rollTarget))
+                            // Otherwise, multiply the whole dice pool by the multiplier, rounding DOWN to a minimum of one, and set rollMod to the difference.
+                                } else {
+                                    rollMod = Math.max(1, Math.floor(rollData.dicePool * parseFloat(rollMod.replace(/x/gu, "")))) - rollData.dicePool
+                                }
+                        
+                        }
+
+                    // FIRST ROLLMOD PASS COMPLETE: ROLLMOD SHOULD BE AN INTEGER BY THIS POINT.
+
+                        if (VAL({number: rollMod}, "applyRollEffects")) {
+                        // Adjust dice pool by rollMod (negative totals are okay; displayRoll deals with the one-die minimum)
+                            rollData.dicePool += rollMod
+                            if (rollData.basePool + rollMod < 0) {
+                                rollData.hungerPool += rollData.basePool + rollMod
+                                rollData.basePool = 0 
+                            } else {
+                                rollData.basePool += rollMod
+                            }
+                        // Parse label for replacements of <*> strings
+                            rollLabel = rollLabel.replace(/<●>/gu, "●".repeat(Math.abs(rollMod))).
+                                replace(/<#>/gu, rollMod === 0 ? "~" : rollMod).
+                                replace(/<abs>/gu, rollMod === 0 ? "~" : Math.abs(rollMod)).
+                                replace(/<\+>/gu, rollMod < 0 ? "-" : "+")
+                        // Add label to neg- or posFlagLines
+                            if (rollLabel.charAt(0) === "!")
+                                rollData.redFlagLines.push(rollLabel.replace(/^!\s*/gu, ""))
+                            else if (rollLabel.charAt(0) === "*")
+                                rollData.goldFlagLines.push(rollLabel.replace(/^\*\s*/gu, ""))
+                            else if (rollMod > 0 || rollLabel.charAt(0) === "+")
+                                rollData.posFlagLines.push(rollLabel.replace(/^[+-]\s*/gu, ""))
+                            else if (rollMod < 0 || rollLabel.charAt(0) === "-")
+                                rollData.negFlagLines.push(rollLabel.replace(/^[+-]\s*/gu, ""))
+                            else
+                                rollData.goldFlagLines.push(rollLabel)
+                        }
+
+                    // FINISHED!  ADD EFFECT TO APPLIED ROLL EFFECTS.
+
+                        rollData.appliedRollEffects = _.union(rollData.appliedRollEffects, [effectString])
+                    
+                    /* EXAMPLE RESULTS:
+            {
+              total: 10,
+              critPairs: { bb: 1, hb: 0, hh: 0 },
+              B: { crits: 0, succs: 6, fails: 2 },
+              H: { crits: 0, succs: 0, fails: 0, botches: 0 },
+              rolls: [ "B7", "B5", "B7", "B10", "B8", "B8", "B7", "B7", "B5", "B10" ],
+              diceVals: [ "BcL", "BcR", "Bs", "Bs", "Bs", "Bs", "Bs", "Bs", "Bf", "Bf" ],
+              margin: 5,
+              commit: 0
+            }*/
+                    } else if (VAL({list: rollResults}, "applyRollEffects")) {
+                    // RollResults rollMods all contain discrete flags/strings, plus digits; can wipe digits for static flag:
+                        DB(`Roll Results applies!  Testing rollMod replace switch:<br><br>'${rollMod.replace(/\d/gu, "")}'`, "applyRollEffects")
+                        switch (rollMod.replace(/\d/gu, "")) {
+                            case "freewpreroll":
+                                if (rollResults.isNoWPReroll)
+                                    break
+                                rollResults.wpCostAfterReroll = VAL({number: rollResults.wpCost}) ? rollResults.wpCost : 1
+                                rollResults.wpCost = 0
+                                DB(`Setting Roll Results Costs:<br><br>After Reroll: ${rollResults.wpCostAfterReroll}<br><br>WP Cost: ${rollResults.wpCost}`, "applyRollEffects")
+                                break
+                            case "nowpreroll":
+                                rollResults.isNoWPReroll = true
+                                rollResults.wpCostAfterReroll = rollResults.wpCostAfterReroll || rollResults.wpCost
+                                DB(`Setting Roll Results Costs:<br><br>After Reroll: ${rollResults.wpCostAfterReroll}<br><br>WP Cost: ${rollResults.wpCost}`, "applyRollEffects")
+                                break
+                            case "doublewpreroll":
+                                if (rollResults.isNoWPReroll)
+                                    break
+                                if (VAL({number: rollResults.wpCostAfterReroll}))
+                                    rollResults.wpCostAfterReroll = 2
+                                else
+                                    rollResults.wpCost = 2
+                                DB(`Setting Roll Results Costs:<br><br>After Reroll: ${rollResults.wpCostAfterReroll}<br><br>WP Cost: ${rollResults.wpCost}`, "applyRollEffects")
+                                break
+                            case "bestialcancel":
+                                for (let i = 0; i < rollResults.H.botches; i++) {
+                                    const diceValIndex = _.findIndex(rollResults.diceVals, v => v.includes("Bc") || v.includes("Bs")),
+                                        diceVal = rollResults.diceVals[diceValIndex]
+                                    if (diceValIndex < 0)
+                                        break
+                                    switch (diceVal) {
+                                        case "BcL": case "BcR":
+                                            if (diceVal === "BcL") {
+                                                rollResults.diceVals[diceValIndex + 1] = "Bc"
+                                                rollResults.critPairs.bb--
+                                                rollResults.B.crits++
+                                            } else {
+                                                rollResults.diceVals[diceValIndex - 1] = "Hc"
+                                                rollResults.critPairs.hb--
+                                                rollResults.H.crits++
+                                            }
+                                            rollResults.diceVals[diceValIndex] = "BXc"
+                                            rollResults.B.fails++
+                                            rollResults.total -= 3
+                                            break
+                                        case "Bc": case "Bs":
+                                            if (diceVal === "Bc") {
+                                                rollResults.diceVals[diceValIndex] = "BXc"
+                                                rollResults.B.crits--
+                                            } else {
+                                                rollResults.diceVals[diceValIndex] = "BXs"
+                                                rollResults.B.succs--
+                                            }
+                                            rollResults.B.fails++
+                                            rollResults.total--
+                                            break
+                                        default: break
+                                    }
+                                }
+                                break
+                            case "totalfailure":
+                                for (let i = 0; i < rollResults.diceVals; i++) {
+                                    rollResults.diceVals = _.map(rollResults.diceVals, v => {
+                                        v.replace(/([BH])([csb])[LR]*?$/gu, "$1X$2")
+                                    })
+                                    rollResults.total = 0
+                                    rollResults.B = {
+                                        crits: 0,
+                                        succs: 0,
+                                        fails: _.reject(rollResults.rolls, v => v.includes("H")).length
+                                    }
+                                    rollResults.H = {
+                                        crits: 0,
+                                        succs: 0,
+                                        fails: rollResults.total - rollResults.B.fails,
+                                        botches: 0
+                                    }
+                                    rollResults.critPairs = {
+                                        bb: 0,
+                                        hb: 0,
+                                        hh: 0
+                                    }
+                                }
+                                break
+                            default: break
+                        }
+                        if (rollResults.diff && rollResults.diff !== 0)
+                            rollResults.margin = rollResults.total - rollResults.diff    
+                            
+                        DB(`INTERIM Roll Results: ${D.JS(rollResults)}`, "applyRollEffects")                    
+                    // Add label to neg- or posFlagLines
+                        if (rollLabel.charAt(0) === "+")
+                            rollResults.posFlagLines.push(rollLabel.replace(/^[+-]\s*/gu, ""))
+                        else if (rollLabel.charAt(0) === "-")
+                            rollResults.negFlagLines.push(rollLabel.replace(/^[+-]\s*/gu, ""))
+                        else if (rollLabel.charAt(0) === "!")
+                            rollResults.redFlagLines.push(rollLabel.replace(/^!\s*/gu, ""))
+                        else
+                            rollResults.goldFlagLines.push(rollLabel)
+                    
+                    // FINISHED!  ADD EFFECT TO APPLIED ROLL EFFECTS.
+
+                        rollResults.appliedRollEffects = _.union(rollResults.appliedRollEffects, [effectString])
+                    }
+                }
+
+            // FINISHED!  Return either rollData or rollResults, whichever you have.
+                if (rollData)
+                    DB(`ROLL DATA AFTER EFFECTS:
+                
+                ${D.JS(rollData)}`, "applyRollEffects")
+                else				
+                    DB(`ROLL RESULTS AFTER EFFECTS:
+                    
+                ${D.JS(rollResults)}`, "applyRollEffects")
+
+                return rollData || rollResults
+            }
+            return D.ThrowError(`Bad Roll Input!<br><br>${D.JS(rollInput)}`, "applyRollEffects")
+        },
+        parseFlags = (charObj, rollType, params = {}, isDiscRoll = false ) => {
             params.args = params.args || []
             const flagData = {
                     negFlagLines: [],
                     posFlagLines: [],
+                    redFlagLines: [],
+                    goldFlagLines: [],
                     flagDiceMod: 0
                 },
                 traitList = _.compact(
@@ -1067,7 +1455,7 @@ const Roller = (() => {
                     flagData.negFlagLines.push("Exhausted (●●)")
                     flagData.flagDiceMod -= 2
                 } else if (flag === "Humanity") {
-                    flagData.negFlagLines.push("Unsympathetic (●●)")
+                    flagData.negFlagLines.push("Conflicted (●●)")
                     flagData.flagDiceMod -= 2
                 } else if (flag.includes(":")) { // Custom Flags of form Compulsion (Arrogance):psmd:-3 OR Compulsion (Arrogance):-3
                     const customFlag = _.compact(flag.split(":")),
@@ -1162,7 +1550,9 @@ const Roller = (() => {
 				  type: "project",
 				  hunger: 0,
 				  posFlagLines: [],
-				  negFlagLines: [],
+                  negFlagLines: [],
+                  redFlagLines: [],
+                  goldFlagLines: [],
 				  dicePool: 0,
 				  traits: ["Politics", "Resources"],
 				  traitData: {
@@ -1182,21 +1572,24 @@ const Roller = (() => {
 				  diff: 3
 				}*/
             const flagData = parseFlags(charObj, rollType, params, isDiscRoll),
-                traitData = parseTraits(charObj, rollType, params),
-                rollData = {
-                    charID: charObj.id,
-                    type: rollType,
-                    hunger: parseInt(getAttrByName(charObj.id, "hunger")),
-                    posFlagLines: flagData.posFlagLines,
-                    negFlagLines: flagData.negFlagLines,
-                    dicePool: flagData.flagDiceMod + traitData.traitDiceMod,
-                    traits: traitData.traitList,
-                    traitData: traitData.traitData,
-                    diffMod: 0,
-                    prefix: "",
-                    diff: null,
-                    mod: null
-                }
+                traitData = parseTraits(charObj, rollType, params)
+            let rollData = {
+                charID: charObj.id,
+                type: rollType,
+                hunger: parseInt(getAttrByName(charObj.id, "hunger")),
+                posFlagLines: flagData.posFlagLines,
+                negFlagLines: flagData.negFlagLines,
+                redFlagLines: flagData.redFlagLines,
+                goldFlagLines: flagData.goldFlagLines,
+                dicePool: flagData.flagDiceMod + traitData.traitDiceMod,
+                traits: traitData.traitList,
+                traitData: traitData.traitData,
+                diffMod: 0,
+                prefix: "",
+                diff: null,
+                mod: null,
+                appliedRollEffects: []
+            }
             rollData.charName = D.GetName(charObj)
             switch (rollType) {
                 case "remorse":
@@ -1327,9 +1720,11 @@ const Roller = (() => {
             rollData.basePool = Math.max(1, rollData.dicePool) - rollData.hungerPool
             DB(`ROLL DATA: BUILDDICEPOOL():
 
-				${D.JS(rollData)}`, "buildDicePool")
+                ${D.JS(rollData)}`, "buildDicePool")
+                
+            const rollDataEffects = applyRollEffects(rollData)
 
-            return rollData
+            return rollDataEffects
 
         /* Var specialties = [];
 			   _.each(rollData.traits, (trt) => {
@@ -1375,7 +1770,7 @@ const Roller = (() => {
               /* EXAMPLE RESULTS:
 				{
 				  total: 10,
-				  critPairs: { b: 1, hb: 0, hh: 0 },
+				  critPairs: { bb: 1, hb: 0, hh: 0 },
 				  B: { crits: 0, succs: 6, fails: 2 },
 				  H: { crits: 0, succs: 0, fails: 0, botches: 0 },
 				  rolls: [ "B7", "B5", "B7", "B10", "B8", "B8", "B7", "B7", "B5", "B10" ],
@@ -1389,27 +1784,6 @@ const Roller = (() => {
             if (addVals)
                 DB(`ADDED VALS: ${D.JS(addVals)}`, "rollDice")
             const sortBins = [],
-                rollResults = {
-                    total: 0,
-                    critPairs: {
-                        bb: 0,
-                        hb: 0,
-                        hh: 0
-                    },
-                    B: {
-                        crits: 0,
-                        succs: 0,
-                        fails: 0
-                    },
-                    H: {
-                        crits: 0,
-                        succs: 0,
-                        fails: 0,
-                        botches: 0
-                    },
-                    rolls: [],
-                    diceVals: []
-                },
                 roll = dType => {
                     const d10 = randomInteger(10)
                     rollResults.rolls.push(dType + d10)
@@ -1447,6 +1821,29 @@ const Roller = (() => {
                             break
                     }
                 }
+            let rollResults = {
+                total: 0,
+                critPairs: {
+                    bb: 0,
+                    hb: 0,
+                    hh: 0
+                },
+                B: {
+                    crits: 0,
+                    succs: 0,
+                    fails: 0
+                },
+                H: {
+                    crits: 0,
+                    succs: 0,
+                    fails: 0,
+                    botches: 0
+                },
+                rolls: [],
+                diceVals: [],
+                appliedRollEffects: [],
+                wpCost: 1
+            }
 
             if (rollData.rerollAmt) 
                 for (let i = 0; i < rollData.rerollAmt; i++)
@@ -1525,7 +1922,7 @@ const Roller = (() => {
                                 rollResults.diceVals.push(v + bin.slice(0, 1))
                         } )
                     } )
-                    if (rollData.diff !== 0 || rollData.diffMod > 0)
+                    if (rollData.diff && rollData.diff !== 0 || rollData.diffMod > 0)
                         rollResults.margin = rollResults.total - rollData.diff
                     break
                 case "rouse2":
@@ -1548,6 +1945,7 @@ const Roller = (() => {
 			
 				${D.JS(rollResults)}`, "rollDice")
 
+            rollResults = applyRollEffects(Object.assign(rollResults, rollData))
             return rollResults
         },
         formatDiceLine = (rollData = {}, rollResults, split = 15, isSmall = false) => {
@@ -1627,6 +2025,12 @@ const Roller = (() => {
             const {rollData, rollResults} = getCurrentRoll(),
                 [deltaAttrs, txtWidths] = [{}, {}],
                 [mainRollParts, mainRollLog, diceObjs] = [[], [], []],
+                [posFlagLines, negFlagLines, redFlagLines, goldFlagLines] = [ 
+                    _.union(rollData.posFlagLines || [], rollResults.posFlagLines || []),
+                    _.union(rollData.negFlagLines || [], rollResults.negFlagLines || []),
+                    _.union(rollData.redFlagLines || [], rollResults.redFlagLines || []),
+                    _.union(rollData.goldFlagLines || [], rollResults.goldFlagLines || [])
+                ],
                 yShift = 0,
                 rollLines = {
                     rollerName: {
@@ -1674,9 +2078,9 @@ const Roller = (() => {
                     }
                       /* falls through */
                 case "trait":
-                    if (rollData.posFlagLines.length > 0) {
+                    if (posFlagLines.length > 0) {
                         rollLines.posMods = {
-                            text: `+ ${rollData.posFlagLines.join(" + ")}          `,
+                            text: `+ ${posFlagLines.join(" + ")}          `,
                             justified: "left"
                         }
                         rollLines.mainRoll.shift.top = 0
@@ -1687,19 +2091,39 @@ const Roller = (() => {
                             justified: "left"
                         }
                     }
-                    if (rollData.negFlagLines.length > 0) {
+                    if (negFlagLines.length > 0) {
                         rollLines.negMods = {
-                            text: `- ${rollData.negFlagLines.join(" - ")}`,
+                            text: `- ${negFlagLines.join(" - ")}`,
                             justified: "left",
                             shift: {
                                 anchor: "posMods",
                                 anchorSide: "right",
-                                amount: 0
+                                amount: 20
                             }
                         }
                         rollLines.mainRoll.shift.top = 0
                         rollLines.mainRollShadow.shift.top = 0
                     }
+                    if (redFlagLines.length > 0)
+                        rollLines.redMods = {
+                            text: redFlagLines.join(" "),
+                            justified: "left",
+                            shift: {
+                                imgAnchor: "rollerImage_topEnd_1",
+                                anchorSide: "right",
+                                amount: 20
+                            }
+                        }
+                    if (goldFlagLines.length > 0)
+                        rollLines.goldMods = {
+                            text: goldFlagLines.join(" "),
+                            justified: "left",
+                            shift: {
+                                imgAnchor: "rollerImage_topEnd_1",
+                                anchorSide: "right",
+                                amount: 20
+                            }
+                        }
                       /* falls through */
                 case "willpower":
                 case "humanity":
@@ -2071,22 +2495,9 @@ const Roller = (() => {
                 }
             } )
 
-            switch (rollData.type) {
-                case "rouse2":
-                case "rouse":
-                case "check":
-                    diceCats = diceCats.reverse()
-                      /* falls through */
-                case "project":
-                case "secret":
-                case "humanity":
-                case "willpower":
-                case "remorse":
-                    DragPads.Toggle("selectDie", false)
-                    break
-                default:
-                    break
-            }
+            if (["rouse", "rouse2", "check"].includes(rollData.type))
+                diceCats = diceCats.reverse()
+
             DB(`SETTING DICE GRAPHICS
 			
 				Category: '${D.JSL(diceCats[0])}' (total dice: ${D.JSL(STATEREF[diceCats[0]].length)})
@@ -2111,7 +2522,8 @@ const Roller = (() => {
             scaleFrame("bottom", spread)
             for (let i = 0; i < STATEREF[diceCats[1]].length; i++)
                 setDie(i, diceCats[1], "blank")
-
+            if (["rouse", "rouse2", "check", "project", "secret", "humanity", "willpower", "remorse"].includes(rollData.type) || rollResults.isNoWPReroll)
+                DragPads.Toggle("selectDie", false)
             _.each(rollLines, (args, name) => {
                 const params = setText(name, args)
                 txtWidths[name] = params.width
@@ -2160,10 +2572,20 @@ const Roller = (() => {
                     ), v => v.value
                 ),
                 charObj = getObj("character", rollData.charID)
-            if (charObj)
-                Chars.Damage(charObj, "willpower", "spent", 1)
             rollData.rerollAmt = STATEREF.selected[dieCat].length
-            replaceRoll(rollData, rollDice(rollData, _.values(rolledDice)))
+            const rollResults = rollDice(rollData, _.values(rolledDice))
+            rollResults.wpCost = rollRecord.rollResults.wpCost
+            rollResults.wpCostAfterReroll = rollRecord.rollResults.wpCostAfterReroll
+    
+            if (charObj) {
+                Chars.Damage(charObj, "willpower", "spent", rollResults.wpCost)
+                if (VAL({number: rollResults.wpCostAfterReroll})) {
+                    rollResults.wpCost = rollRecord.rollResults.wpCostAfterReroll
+                    delete rollResults.wpCostAfterReroll
+                }
+            }
+    
+            replaceRoll(rollData, rollResults)
             displayRoll()
             lockRoller(false)
             DragPads.Toggle("wpReroll", false)
@@ -2450,15 +2872,12 @@ const Roller = (() => {
                 STATEREF.frenzyRoll = `${args.join(" ").split("|")[0]}|`
                 sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px crimson outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: white; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: red; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${args.join(" ").split("|")[0]}</span><br/></div>`)
                 return
-            case "!discroll": rollType = "trait"
-                isDiscRoll = true
-                /* falls through */
             case "!frenzyroll": rollType = rollType || "frenzy"
                 lockRoller(false)
                 args = `${STATEREF.frenzyRoll} ${args[0]}`.split(" ")
                 DB(`Parsing Frenzy Args: ${D.JSL(args)}`, "!frenzyroll")
                 /* falls through */
-            case "!traitroll": rollType = rollType || "trait"
+            case "!discroll": case "!traitroll": rollType = rollType || "trait"
                 /* falls through */
             case "!rouseroll": rollType = rollType || "rouse"
                 /* falls through */
@@ -2484,7 +2903,7 @@ const Roller = (() => {
 			Character Object: ${D.JS(charObj)}`, "handleInput")
                 if (!VAL({charobj: charObj}, "handleInput")) return
                 if (isLocked) return
-                makeNewRoll(charObj, rollType, params, isDiscRoll)
+                makeNewRoll(charObj, rollType, params, call === "!discroll")
                 delete STATEREF.frenzyRoll
                 break
             case "!buildFrame":
@@ -2640,8 +3059,69 @@ const Roller = (() => {
                     makeSecretRoll(chars, params, isSilent, isHidingTraits)
                 break
             }
-            default:
+            case "!getchareffects":
+            {
+                let char = D.GetChar(msg)
+                if (!char) {
+                    D.ThrowError("Select a character token first!", "ROLLER: !getchareffects")
+                    break
+                }
+                let rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|")),
+                    rollStrings = []
+                for (let i = 0; i < rollEffects.length; i++)
+                    rollStrings.push(`${i+1}: ${rollEffects[i]}`)
+                D.Alert(`Roll Effects on ${D.GetName(char)}:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getchareffects")                    
                 break
+            }
+            case "!delchareffect":
+            {
+                let char = D.GetChar(msg)
+                if (!char) {
+                    D.ThrowError("Select a character token first!", "ROLLER: !getchareffects")
+                    break
+                }
+                let rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|"))
+                rollEffects.splice(Math.max(0, parseInt(args.shift()) - 1), 1)
+                setAttrs(char.id, {rolleffects: rollEffects.join("|")})
+                D.Alert(`Roll Effects on ${D.GetName(char)} revised to:<br><br>${rollEffects.join("<br>")}`, "ROLLER: !delchareffects")                    
+                break
+            }
+            case "!addchareffect":
+            {
+                let chars = D.GetChars(msg)
+                for (const char of chars) {
+                    let rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|"))
+                    rollEffects.push(...args.join(" ").split("|"))
+                    setAttrs(char.id, {rolleffects: _.uniq(rollEffects).join("|")})
+                    D.Alert(`Roll Effects on ${D.GetName(char)} revised to:<br><br>${rollEffects.join("<br>")}`, "ROLLER: !addchareffect")          
+                }
+                break
+            }
+            case "!getglobaleffects":
+            {
+                let rollStrings = []
+                for (let i = 0; i < _.keys(STATEREF.rollEffects).length; i++)
+                    rollStrings.push(`${i+1}: ${_.keys(STATEREF.rollEffects)[i]}`)
+                D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getglobaleffects")                    
+                break
+            }
+            case "!delglobaleffect":
+            {
+                delete STATEREF.rollEffects[_.keys(STATEREF.rollEffects)[Math.max(0, parseInt(args.shift()) - 1)]]
+                D.Alert(`Global Roll Effects revised to:<br><br>${_.keys(STATEREF.rollEffects).join("<br>")}`, "ROLLER: !delglobaleffect")                    
+                break
+            }
+            case "!addglobaleffect":
+            {
+                for (const effect of _.compact(args.join(" ").split("|")))
+                    STATEREF.rollEffects[effect] = []               
+                let rollStrings = []
+                for (let i = 0; i < _.keys(STATEREF.rollEffects).length; i++)
+                    rollStrings.push(`${i+1}: ${_.keys(STATEREF.rollEffects)[i]}`)
+                D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getglobaleffects")      
+                break
+            }
+            // no default
         }
     }
     // #endregion

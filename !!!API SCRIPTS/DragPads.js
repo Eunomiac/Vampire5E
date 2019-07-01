@@ -16,7 +16,7 @@ const DragPads = (() => {
         // #endregion
 
         // #region PERSONAL FUNCTION SETTINGS
-        /* CUSTOM PAD FUNCTIONS: Put functions linked by name to wiggle pads here.
+        /* CUSTOM PAD FUNCTIONS: Put functions linked by name to drag pads here.
 	   Each will be passed an object of form:
 	   {  id: <id of graphic object beneath> } */
         FUNCTIONS = {
@@ -62,9 +62,9 @@ const DragPads = (() => {
             const pads = []
             if (D.IsObj(padRef)) 
                 pads.push(getObj("graphic",
-                                 C.ROOT.DragPads.byGraphic[padRef.id] ?
-                                     C.ROOT.DragPads.byGraphic[padRef.id].id :
-                                     C.ROOT.DragPads.byPad[padRef.id] ?
+                                 STATEREF.byGraphic[padRef.id] ?
+                                     STATEREF.byGraphic[padRef.id].id :
+                                     STATEREF.byPad[padRef.id] ?
                                          padRef.id :
                                          null))
             else if (_.isString(padRef)) 
@@ -72,7 +72,7 @@ const DragPads = (() => {
                     pads.push(
                         ..._.map(
                             _.keys(
-                                _.omit(C.ROOT.DragPads.byPad, pData => {
+                                _.omit(STATEREF.byPad, pData => {
                                     D.Log(`... pData: ${D.JS(pData)}`, "DRAGPADS: GET PAD")
 
                                     return pData.funcName !== padRef
@@ -82,9 +82,9 @@ const DragPads = (() => {
                         )
                     )
                 } else {
-                    pads.push(getObj("graphic", C.ROOT.DragPads.byGraphic[padRef] ?
-                        C.ROOT.DragPads.byGraphic[padRef].id :
-                        C.ROOT.DragPads.byPad[padRef] ?
+                    pads.push(getObj("graphic", STATEREF.byGraphic[padRef] ?
+                        STATEREF.byGraphic[padRef].id :
+                        STATEREF.byPad[padRef] ?
                             padRef :
                             null))
                 }
@@ -153,7 +153,7 @@ const DragPads = (() => {
                 graphicObj = pad
           
             partnerPad = Images.MakeImage(`${funcName}_PartnerPad_#`, _.omit(options, ["startActive", "layer"]), true)
-            C.ROOT.DragPads.byPad[pad.id] = {
+            STATEREF.byPad[pad.id] = {
                 funcName,
                 name: pad.get("name"),
                 left: pad.get("left"),
@@ -163,7 +163,7 @@ const DragPads = (() => {
                 partnerID: partnerPad.id,
                 active: "on"
             }
-            C.ROOT.DragPads.byPad[partnerPad.id] = {
+            STATEREF.byPad[partnerPad.id] = {
                 funcName,
                 name: partnerPad.get("name"),
                 left: partnerPad.get("left"),
@@ -174,12 +174,12 @@ const DragPads = (() => {
                 active: "off"
             }
             if (D.IsObj(graphicObj, "graphic")) {
-                C.ROOT.DragPads.byPad[pad.id].id = graphicObj.id
-                C.ROOT.DragPads.byPad[partnerPad.id].id = graphicObj.id
-                C.ROOT.DragPads.byGraphic[graphicObj.id] = {
+                STATEREF.byPad[pad.id].id = graphicObj.id
+                STATEREF.byPad[partnerPad.id].id = graphicObj.id
+                STATEREF.byGraphic[graphicObj.id] = {
                     id: pad.id,
-                    pad: C.ROOT.DragPads.byPad[pad.id],
-                    partnerPad: C.ROOT.DragPads.byPad[partnerPad.id]
+                    pad: STATEREF.byPad[pad.id],
+                    partnerPad: STATEREF.byPad[partnerPad.id]
                 }
             }
             toFront(pad)
@@ -191,17 +191,17 @@ const DragPads = (() => {
             const pads = getPads(padRef)
             _.each(pads, pad => {
                 try {
-                    if (C.ROOT.DragPads.byPad[pad.id] ) {
-                        padData = C.ROOT.DragPads.byPad[pad.id]
+                    if (STATEREF.byPad[pad.id] ) {
+                        padData = STATEREF.byPad[pad.id]
                         Images.Remove(padData.name)
                         if (Images.GetData(pad.id))
                             Images.Remove(pad.id)
-                        delete C.ROOT.DragPads.byGraphic[padData.id]
+                        delete STATEREF.byGraphic[padData.id]
                         if (padData.partnerID) {
                             Images.Remove(padData.partnerID)
-                            delete C.ROOT.DragPads.byPad[padData.partnerID]
+                            delete STATEREF.byPad[padData.partnerID]
                         }
-                        delete C.ROOT.DragPads.byPad[pad.id]
+                        delete STATEREF.byPad[pad.id]
                     }
                 } catch (errObj) {
                     D.ThrowError(`PadObj: ${D.JS(pad)}<br>PadData: ${D.JS(padData)}<br><br>`, "DRAGPADS.removePad", errObj)
@@ -216,38 +216,39 @@ const DragPads = (() => {
                 } ),
                 pads = _.filter(graphics, v => v.get("name").includes(funcName))
             for (const pad of pads) 
-                if (C.ROOT.DragPads.byPad[pad.id] )
+                if (STATEREF.byPad[pad.id] )
                     removePad(pad.id)
                 else
                     pad.remove()
           
-            _.each(_.omit(C.ROOT.DragPads.byPad, v => v.funcName !== funcName), (val, key) => {
-                delete C.ROOT.DragPads.byPad[key]
+            _.each(_.omit(STATEREF.byPad, v => v.funcName !== funcName), (val, key) => {
+                delete STATEREF.byPad[key]
             } )
         },
         togglePad = (padRef, isActive) => {
+            DB(`PadRef: ${D.JS(padRef)}`, "togglePad")
             const padIDs = []
-            if (C.ROOT.DragPads.byGraphic[padRef] ) 
-                padIDs.push(C.ROOT.DragPads.byGraphic[padRef].id)
-            else if (FUNCTIONS[padRef] ) 
-                for (const padID of _.keys(C.ROOT.DragPads.byPad)) 
-                    if (C.ROOT.DragPads.byPad[padID].funcName === padRef)
-                        padIDs.push(padID)
+            if (STATEREF.byGraphic[padRef] ) 
+                padIDs.push(STATEREF.byGraphic[padRef].id)
+            else if (FUNCTIONS[padRef] )
+                padIDs.push(..._.filter(_.keys(STATEREF.byPad), v => STATEREF.byPad[v].funcName === padRef))
             
-                    else 
-                        return D.ThrowError(`No pad found with ID: '${D.JS(padRef)}'`, "WIGGLEPADS: togglePad()")
+                
+            DB(`Pads Found: ${D.JS(_.map(padIDs, v => STATEREF.byPad[v].name))}`, "togglePad")
+            if (padIDs.length === 0)
+                return D.ThrowError(`No pad found with ID: '${D.JS(padRef)}'`, "DRAGPADS: togglePad()")
           
             for (const pID of padIDs) {
                 const [pad, partner] = [
                     getObj("graphic", pID),
-                    getObj("graphic", C.ROOT.DragPads.byPad[pID].partnerID)
+                    getObj("graphic", STATEREF.byPad[pID].partnerID)
                 ]
                 if (D.IsObj(pad, "graphic") && D.IsObj(partner, "graphic")) {
                     pad.set( {
-                        layer: isActive && C.ROOT.DragPads.byPad[pad.id].active === "on" ? "objects" : "map"
+                        layer: isActive && STATEREF.byPad[pad.id].active === "on" ? "objects" : "map"
                     } )
                     partner.set( {
-                        layer: isActive && C.ROOT.DragPads.byPad[partner.id].active === "on" ? "objects" : "map"
+                        layer: isActive && STATEREF.byPad[partner.id].active === "on" ? "objects" : "map"
                     } )
                     toFront(pad)
                     toFront(partner)
@@ -260,14 +261,14 @@ const DragPads = (() => {
 
         // #region Event Handlers
         handleMove = obj => {
-            if (obj.get("layer") === "map" || !C.ROOT.DragPads.byPad[obj.id] )
+            if (obj.get("layer") === "map" || !STATEREF.byPad[obj.id] )
                 return false
               // toggle object
             obj.set( {
                 layer: "map",
                 controlledby: ""
             } )
-            const objData = C.ROOT.DragPads.byPad[obj.id],
+            const objData = STATEREF.byPad[obj.id],
                 partnerObj = getObj("graphic", objData.partnerID)
             obj.set( {
                 left: objData.left,
@@ -277,8 +278,8 @@ const DragPads = (() => {
                 layer: "objects",
                 controlledby: "all"
             } )
-            C.ROOT.DragPads.byPad[obj.id].active = "off"
-            C.ROOT.DragPads.byPad[partnerObj.id].active = "on"
+            STATEREF.byPad[obj.id].active = "off"
+            STATEREF.byPad[partnerObj.id].active = "on"
               // D.Alert(`Original Pad: ${D.JS(obj)}<br><br>Partner Pad: ${D.JS(partnerObj)}`)
 
             if (!FUNCTIONS[objData.funcName] )
@@ -314,7 +315,7 @@ const DragPads = (() => {
                     break
                 case "!showpad":
                     padName = args.shift().toLowerCase()
-                    _.each(C.ROOT.DragPads.byPad, (v, padID) => {
+                    _.each(STATEREF.byPad, (v, padID) => {
                         obj = getObj("graphic", padID)
                         if (obj && obj.get("name").toLowerCase().includes(padName)) {
                             obj.set("imgsrc", "https://s3.amazonaws.com/files.d20.io/images/64184544/CnzRwB8CwKGg-0jfjCkT6w/thumb.png?1538736404")
@@ -323,7 +324,7 @@ const DragPads = (() => {
                     } )
                     break
                 case "!showpads":
-                    _.each(C.ROOT.DragPads.byPad, (v, padID) => {
+                    _.each(STATEREF.byPad, (v, padID) => {
                         obj = getObj("graphic", padID)
                         if (obj) {
                             obj.set("imgsrc", "https://s3.amazonaws.com/files.d20.io/images/64184544/CnzRwB8CwKGg-0jfjCkT6w/thumb.png?1538736404")
@@ -334,13 +335,13 @@ const DragPads = (() => {
                     } )
                     break
                 case "!hidepads":
-                    _.each(C.ROOT.DragPads.byPad, (v, padID) => {
+                    _.each(STATEREF.byPad, (v, padID) => {
                         obj = getObj("graphic", padID)
                         if (obj) {
                             obj.set("imgsrc", IMAGES.blank)
                             if(
                                 v.active === "on" &&
-							(Images.GetData(v.name).startActive === true || Images.GetData(C.ROOT.DragPads.byPad[v.partnerID].name).startActive === true)
+							(Images.GetData(v.name).startActive === true || Images.GetData(STATEREF.byPad[v.partnerID].name).startActive === true)
                             )
                                 obj.set("layer", "objects")
                         } else {
@@ -350,18 +351,18 @@ const DragPads = (() => {
                     break
                 case "!kill":
                     funcName = args.shift()
-                    for (const padID of _.keys(C.ROOT.DragPads.byPad)) 
-                        if (C.ROOT.DragPads.byPad[padID].funcName === funcName) {
+                    for (const padID of _.keys(STATEREF.byPad)) 
+                        if (STATEREF.byPad[padID].funcName === funcName) {
                             obj = getObj("graphic", padID)
                             if (obj)
                                 obj.remove()
-                            delete C.ROOT.DragPads.byGraphic[C.ROOT.DragPads.byPad[padID].id]
-                            delete C.ROOT.DragPads.byPad[padID]
+                            delete STATEREF.byGraphic[STATEREF.byPad[padID].id]
+                            delete STATEREF.byPad[padID]
                         }
               
                     break
                 case "!resetpads":
-                    _.each(C.ROOT.DragPads.byGraphic, (padData, hostID) => {
+                    _.each(STATEREF.byGraphic, (padData, hostID) => {
                         if (!contCheck)
                             return
                         const hostObj = getObj("graphic", hostID) || getObj("text", hostID),
@@ -386,8 +387,8 @@ const DragPads = (() => {
                             options: {
                                 left: padData.left,
                                 top: padData.top,
-                                height: C.ROOT.DragPads.byPad[padData.id].height,
-                                width: C.ROOT.DragPads.byPad[padData.id].width,
+                                height: STATEREF.byPad[padData.id].height,
+                                width: STATEREF.byPad[padData.id].width,
                                 startActive: padData.pad.active === "on" || padData.partnerPad.active === "on"
                             }
                         })
@@ -415,7 +416,7 @@ const DragPads = (() => {
                     D.Alert("Pads Reset!", "!resetpads")
                     break
                 case "!listPads":
-                    _.each(C.ROOT.DragPads.byGraphic, v => {
+                    _.each(STATEREF.byGraphic, v => {
                         padList.push(v.pad.name)
                     })
                     D.Alert(D.JS(padList))
@@ -423,12 +424,12 @@ const DragPads = (() => {
                 case "!wpCLEAR":
                     arg = args.shift() || "all"
                     if (arg.toLowerCase() === "all") {
-                        _.each(C.ROOT.DragPads.byGraphic, v => {
+                        _.each(STATEREF.byGraphic, v => {
                             obj = getObj("graphic", v.id)
                             if (obj)
                                 obj.remove()
                         } )
-                        _.each(C.ROOT.DragPads.byPad, (v, padID) => {
+                        _.each(STATEREF.byPad, (v, padID) => {
                             obj = getObj("graphic", padID)
                             if (obj)
                                 obj.remove()
@@ -455,8 +456,8 @@ const DragPads = (() => {
         checkInstall = () => {
             C.ROOT = C.ROOT || {}
             C.ROOT.DragPads = C.ROOT.DragPads || {}
-            C.ROOT.DragPads.byPad = C.ROOT.DragPads.byPad || {}
-            C.ROOT.DragPads.byGraphic = C.ROOT.DragPads.byGraphic || {}
+            STATEREF.byPad = STATEREF.byPad || {}
+            STATEREF.byGraphic = STATEREF.byGraphic || {}
         }
     // #endregion
 
