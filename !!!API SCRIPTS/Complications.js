@@ -21,7 +21,7 @@ const Complications = (() => {
     const handleAdd = obj => {
             if (isRunning) {
                 STATEREF.cardsDrawn.push({id: obj.id, value: 0})
-                Images.SetArea(obj.id, `ComplicationDraw${STATEREF.cardsDrawn.length}`)
+                Media.SetArea(obj.id, `ComplicationDraw${STATEREF.cardsDrawn.length}`)
                 sendChat("COMPLICATION", "/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px crimson outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[0](!comp draw 0) [1](!comp draw 1) [2](!comp draw 2) [3](!comp draw 3) [4](!comp draw 4)</span><br/></div>")
             }
         },
@@ -72,8 +72,8 @@ const Complications = (() => {
                     break
                 case "start":
                     isRunning = true
-                    Images.Toggle("ComplicationMat", true, "base")
-                    imgObj = Images.GetObj("ComplicationMat")
+                    Media.Toggle("ComplicationMat", true, "base")
+                    imgObj = Media.GetObj("ComplicationMat")
                     imgObj.set("layer", "objects")
                     getObj("deck", STATEREF.deckID).set("shown", true)
                     toFront(imgObj)
@@ -108,8 +108,8 @@ const Complications = (() => {
                     break
                 case "end": case "stop":
                     isRunning = false
-                    Images.Toggle("ComplicationMat", false)
-                    imgObj = Images.GetObj("ComplicationMat")
+                    Media.Toggle("ComplicationMat", false)
+                    imgObj = Media.GetObj("ComplicationMat")
                     imgObj.set("layer", "map")
                     getObj("deck", STATEREF.deckID).set("shown", false)
                     toBack(imgObj)
@@ -124,7 +124,7 @@ const Complications = (() => {
 			/* falls through */		
                 case "reset":
                     for (const cardData of STATEREF.cardsDrawn) 
-                        Images.Remove(cardData.id)
+                        Media.Remove(cardData.id)
 				
                     STATEREF.cardsDrawn = []
                     STATEREF.cardsDiscarded = []
@@ -159,9 +159,9 @@ const Complications = (() => {
                     getObj("text", STATEREF.currentVal.id).set("text", `${STATEREF.currentVal.value}`)
                     getObj("text", STATEREF.remainingVal.id).set("text", `${STATEREF.remainingVal.value}`)
                     STATEREF.cardsDrawn = _.reject(STATEREF.cardsDrawn, v => v.id === imgObj.id)
-                    Images.Remove(imgObj.id)
+                    Media.Remove(imgObj.id)
                     for (let i = 0; i < STATEREF.cardsDrawn.length; i++) {
-                        Images.SetArea(STATEREF.cardsDrawn[i].id, `ComplicationDraw${i+1}`)
+                        Media.SetArea(STATEREF.cardsDrawn[i].id, `ComplicationDraw${i+1}`)
                         textObj = getObj("text", STATEREF.zeroes[i])
                         if (STATEREF.cardsDrawn[i].isZeroed) {
                             textObj.set({layer: "objects", text: "0"})
@@ -217,8 +217,8 @@ const Complications = (() => {
 					_pageid: D.PAGEID(),
 					font_family: "Candal",
 					font_size: 72,
-					top: state.VAMPIRE.Images.areas[`ComplicationDraw${i + 1}`].top - 241, // 558 - X = 317
-					left: state.VAMPIRE.Images.areas[`ComplicationDraw${i + 1}`].left - 165, // = 1777 - X = 1612
+					top: state.VAMPIRE.Media.areas[`ComplicationDraw${i + 1}`].top - 241, // 558 - X = 317
+					left: state.VAMPIRE.Media.areas[`ComplicationDraw${i + 1}`].left - 165, // = 1777 - X = 1612
 					color: "#FF0000",
 					text: "██",
 					layer: "objects",

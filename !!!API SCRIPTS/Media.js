@@ -1,7 +1,7 @@
 void MarkStart("Media")
-const Images = (() => {
+const Media = (() => {
 // #region INITIALIZATION
-    const SCRIPTNAME = "Images",
+    const SCRIPTNAME = "Media",
         STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
     const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
@@ -481,7 +481,7 @@ const Images = (() => {
                     else if (_.isString(IMGDATA[srcRef]))
                         srcURL = IMGDATA[srcRef]
                     else
-                        return isSilent ? D.ThrowError(`Image object '${D.JSL(imgRef)}' is unregistered or is missing 'srcs' property`, "Images: setImage()") : false
+                        return isSilent ? D.ThrowError(`Image object '${D.JSL(imgRef)}' is unregistered or is missing 'srcs' property`, "Media: setImage()") : false
 
                     imgObj.set("imgsrc", srcURL)
                     if (srcRef === "blank") {
@@ -495,10 +495,10 @@ const Images = (() => {
                     return imgObj
                 }
 
-                return D.ThrowError(`Invalid image object '${D.JSL(imgObj)}'`, "Images: setImage()")
+                return D.ThrowError(`Invalid image object '${D.JSL(imgObj)}'`, "Media: setImage()")
             }
 
-            return D.ThrowError(`Invalid category '${D.JSL(imgRef)}'`, "Images: setImage()")
+            return D.ThrowError(`Invalid category '${D.JSL(imgRef)}'`, "Media: setImage()")
         },
         setImgParams = (imgRef, params) => {
             const imgObj = getImageObj(imgRef)
@@ -727,7 +727,7 @@ const Images = (() => {
 				imgData = getImageData(imgKey),
 				prevSrc = "" + imgData.prevSrc,
 				curSrc = "" + imgData.curSrc */
-            Images.Set(imgKey, newSrc)
+            Media.Set(imgKey, newSrc)
             return
               /* D.Alert(`Registry Storing: <br>prevSrc: ${REGISTRY[imgKey].prevSrc}<br>curSrc: ${REGISTRY[imgKey].curSrc}<br><br>Instructions: <br>toggleRef: ${toggleRef}<br>prevSrc: ${REGISTRY[imgKey].prevSrc}<br>curSrc: ${curSrc}<br>newSrc: ${newSrc}`)
 			REGISTRY[imgKey].prevSrc = REGISTRY[imgKey].curSrc
@@ -735,15 +735,15 @@ const Images = (() => {
 			if (newSrc === curSrc) {
 				if (toggleRef === "prev" && prevSrc) {
 					D.Alert(`toggleRef: ${toggleRef}<br>prevSrc: ${prevSrc}<br>curSrc: ${curSrc}<br>newSrc: ${newSrc}<br><br>... SO Setting To PrevSrc (${prevSrc})`)
-					Images.Set(imgKey, prevSrc)
+					Media.Set(imgKey, prevSrc)
 					REGISTRY[imgKey].curSrc = prevSrc
 				} else if (_.keys(imgData.srcs).includes(toggleRef)) {
-					Images.Set(imgKey, toggleRef)					
+					Media.Set(imgKey, toggleRef)					
 					D.Alert(`toggleRef: ${toggleRef}<br>prevSrc: ${prevSrc}<br>curSrc: ${curSrc}<br>newSrc: ${newSrc}<br><br>... SO Setting To Toggle Ref (${toggleRef})`)
 					REGISTRY[imgKey].curSrc = toggleRef
 				} else {				
 					D.Alert(`toggleRef: ${toggleRef}<br>prevSrc: ${prevSrc}<br>curSrc: ${curSrc}<br>newSrc: ${newSrc}<br><br>... SO Setting To Base`)
-					Images.Set(imgKey, "base")
+					Media.Set(imgKey, "base")
 					REGISTRY[imgKey].curSrc = "base"
 				}
 			} else {								
@@ -782,15 +782,15 @@ const Images = (() => {
         },
         orderImages = (imgRefs, isToBack = false) => {
             let imgObjs
-              //D.Alert(`Ordering Images: ${D.JS(imgRefs)}`)
+              //D.Alert(`Ordering Media: ${D.JS(imgRefs)}`)
             if (imgRefs === "map")
                 imgObjs = getImageObjs(IMAGELAYERS[TimeTracker.IsDay() && C.ROOT.Chars.isDaylighterSession ? "daylighterMap" : "map"])
             else if (imgRefs === "objects")
                 imgObjs = getImageObjs(IMAGELAYERS.objects)
             else
                 imgObjs = getImageObjs(imgRefs)
-              //D.Alert(`Retrieved Images: ${D.JS(imgObjs)}`)
-              //D.Alert(`Retrieved Images: ${D.JS(getImageKeys(imgObjs))}`)
+              //D.Alert(`Retrieved Media: ${D.JS(imgObjs)}`)
+              //D.Alert(`Retrieved Media: ${D.JS(getImageKeys(imgObjs))}`)
             if (!isToBack)
                 imgObjs.reverse()
             for (const imgObj of imgObjs) 
@@ -1064,7 +1064,7 @@ const Images = (() => {
                             break
                         case "source": case "src":
                             if (VAL({ token: D.GetSelected(msg)[0] })) {
-                                hostName = Images.GetData(D.GetSelected(msg)[0]).name
+                                hostName = Media.GetData(D.GetSelected(msg)[0]).name
                                 srcName = args[0]
                             } else {
                                 [hostName, srcName] = args
@@ -1286,10 +1286,10 @@ const Images = (() => {
         },
 
         checkInstall = () => {
-            C.ROOT.Images = C.ROOT.Images || {}
-            C.ROOT.Images.imageregistry = C.ROOT.Images.imageregistry || {}
-            C.ROOT.Images.textregistry = C.ROOT.Images.textregistry || {}
-            C.ROOT.Images.areas = C.ROOT.Images.areas || {}
+            C.ROOT.Media = C.ROOT.Media || {}
+            C.ROOT.Media.imageregistry = C.ROOT.Media.imageregistry || {}
+            C.ROOT.Media.textregistry = C.ROOT.Media.textregistry || {}
+            C.ROOT.Media.areas = C.ROOT.Media.areas || {}
         }
     // #endregion
 
@@ -1329,8 +1329,8 @@ const Images = (() => {
 })()
 
 on("ready", () => {
-    Images.RegisterEventHandlers()
-    Images.CheckInstall()
-    D.Log("Ready!", "Images")
+    Media.RegisterEventHandlers()
+    Media.CheckInstall()
+    D.Log("Ready!", "Media")
 })
 void MarkStop("Media")

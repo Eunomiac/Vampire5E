@@ -541,7 +541,7 @@ const Roller = (() => {
                     name: `rollerDie_${category}_${STATEREF[category].length}`,
                     controlledby: ""
                 } )
-                Images.Register(obj, `rollerDie_${category}_${STATEREF[category].length}`, "Bf", "map", false)
+                Media.Register(obj, `rollerDie_${category}_${STATEREF[category].length}`, "Bf", "map", false)
                 STATEREF[category].push( {
                     id: obj.id,
                     top: obj.get("top"),
@@ -597,7 +597,7 @@ const Roller = (() => {
             } ), obj => obj.get("name").includes("rollerDie") && obj.get("name").includes(category))
             for (const die of diceObjs) {
                 DragPads.DelPad(die.id)
-                Images.Remove(die.id)
+                Media.Remove(die.id)
             }
             STATEREF[category] = []
         },
@@ -781,7 +781,7 @@ const Roller = (() => {
                                 break
                         }
                     } else if (params.shift.imgAnchor) {
-                        const imgObj = Images.GetObj(params.shift.imgAnchor)
+                        const imgObj = Media.GetObj(params.shift.imgAnchor)
                         if (VAL({graphic: imgObj}))
                             switch (params.shift.anchorSide) {
                                 case "right":
@@ -871,8 +871,8 @@ const Roller = (() => {
             STATEREF.imgList = {}
             STATEREF.textList = {}
             DragPads.ClearAllPads("wpReroll")
-            Images.Remove("wpRerollPlaceholder")
-            Images.RemoveAll("rollerImage")
+            Media.Remove("wpRerollPlaceholder")
+            Media.RemoveAll("rollerImage")
             DragPads.ClearAllPads("selectDie")
             for (const cat of STATECATS.dice)
                 clearDice(cat)
@@ -887,7 +887,7 @@ const Roller = (() => {
                     TEXTLINES[textLine].text
                 ))
 			
-            Images.Register(makeImg(
+            Media.Register(makeImg(
                 "frontFrame",
                 IMAGES.frontFrame,
                 POSITIONS.diceFrameFront.top(),
@@ -896,7 +896,7 @@ const Roller = (() => {
                 POSITIONS.diceFrameFront.width()
             ), "rollerImage_frontFrame", "base", "map", true)
             for (let i = 0; i < 9; i++) {
-                Images.Register(makeImg(
+                Media.Register(makeImg(
                     `topMid_${i}`,
                     IMAGES.topMids[i - 3 * Math.floor(i / 3)],
                     POSITIONS.diceFrameMidTop.top(),
@@ -904,7 +904,7 @@ const Roller = (() => {
                     POSITIONS.diceFrameMidTop.height(),
                     POSITIONS.diceFrameMidTop.width()
                 ), `rollerImage_topMid_${i}`, "base", "map", true)
-                Images.Register(makeImg(
+                Media.Register(makeImg(
                     `bottomMid_${i}`,
                     IMAGES.bottomMids[i - 3 * Math.floor(i / 3)],
                     POSITIONS.diceFrameMidBottom.top(),
@@ -913,7 +913,7 @@ const Roller = (() => {
                     POSITIONS.diceFrameMidBottom.width()
                 ), `rollerImage_bottomMid_${i}`, "base", "map", true)
             }
-            Images.Register(makeImg(
+            Media.Register(makeImg(
                 "topEnd",
                 IMAGES.topEnd,
                 POSITIONS.diceFrameEndTop.top(),
@@ -921,7 +921,7 @@ const Roller = (() => {
                 POSITIONS.diceFrameEndTop.height(),
                 POSITIONS.diceFrameEndTop.width()
             ), "rollerImage_topEnd", "base", "map", true)
-            Images.Register(makeImg(
+            Media.Register(makeImg(
                 "bottomEnd",
                 IMAGES.bottomEnd,
                 POSITIONS.diceFrameEndBottom.top(),
@@ -929,7 +929,7 @@ const Roller = (() => {
                 POSITIONS.diceFrameEndBottom.height(),
                 POSITIONS.diceFrameEndBottom.width()
             ), "rollerImage_bottomEnd", "base", "map", true)
-            Images.Register(makeImg(
+            Media.Register(makeImg(
                 "diffFrame",
                 IMAGES.diffFrame,
                 POSITIONS.diceFrameDiffFrame.top(),
@@ -939,7 +939,7 @@ const Roller = (() => {
             ), "rollerImage_diffFrame", "base", "map", true)
 
         //WP REROLL BUTTON
-            Images.Register(makeImg(
+            Media.Register(makeImg(
                 "wpRerollPlaceholder",
                 IMAGES.blank,
                 POSITIONS.diceFrameRerollPad.top(),
@@ -957,9 +957,9 @@ const Roller = (() => {
             DragPads.Toggle("wpReroll", false)
             for (const diceCat of _.keys(SETTINGS.dice))
                 makeAllDice(diceCat, SETTINGS.dice[diceCat] )
-            Images.LayerImages(Images.IMAGELAYERS.map, "map")
-            Images.LayerImages(Images.IMAGELAYERS.objects, "objects")
-            Images.OrderImages("map")			
+            Media.LayerImages(Media.IMAGELAYERS.map, "map")
+            Media.LayerImages(Media.IMAGELAYERS.objects, "objects")
+            Media.OrderImages("map")			
             textList.reverse()
             for (const txt of textList) 
                 if (_.isObject(txt))
@@ -2477,7 +2477,7 @@ const Roller = (() => {
             } )
 
             if (_.isNumber(deltaAttrs.hunger))
-                Images.Toggle(`Hunger${getAttrByName(rollData.charID, "sandboxquadrant")}_1`, true, deltaAttrs.hunger)
+                Media.Toggle(`Hunger${getAttrByName(rollData.charID, "sandboxquadrant")}_1`, true, deltaAttrs.hunger)
 
             logLines.rollerName = `${CHATSTYLES.rollerName + rollData.charName + logLines.rollerName}</div>`
             logLines.mainRoll = `${logLines.mainRoll + logLines.difficulty}</span>${logLines.mainRollSub}</div>`
@@ -2578,7 +2578,7 @@ const Roller = (() => {
             rollResults.wpCostAfterReroll = rollRecord.rollResults.wpCostAfterReroll
     
             if (charObj) {
-                Chars.Damage(charObj, "willpower", "spent", rollResults.wpCost)
+                Char.Damage(charObj, "willpower", "spent", rollResults.wpCost)
                 if (VAL({number: rollResults.wpCostAfterReroll})) {
                     rollResults.wpCost = rollRecord.rollResults.wpCostAfterReroll
                     delete rollResults.wpCostAfterReroll

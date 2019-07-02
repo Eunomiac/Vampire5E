@@ -1,7 +1,7 @@
-void MarkStart("Chars")
-const Chars = (() => {
+void MarkStart("Char")
+const Char = (() => {
 	// #region INITIALIZATION
-    const SCRIPTNAME = "Chars",
+    const SCRIPTNAME = "Char",
 		    STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
     const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
 		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
@@ -334,10 +334,10 @@ const Chars = (() => {
             }
         },
         registerToken = (msg, hostName, srcName) => {
-            if (!Images.GetKey(hostName)) 
+            if (!Media.GetKey(hostName)) 
                 D.ThrowError(`No image registered under ${hostName}`, "CHARS:RegisterToken")
             else
-                Images.AddSrc(msg, hostName, srcName)
+                Media.AddSrc(msg, hostName, srcName)
         },
 	
 		// #endregion
@@ -679,7 +679,7 @@ const Chars = (() => {
 		// #region Event Handlers (handleInput, handleAttribute),
         handleAttr = (obj, prev) => {
             if (obj.get("name") === "hunger" && obj.get("current") !== prev.current)
-                Images.Toggle(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, true, obj.get("current"))
+                Media.Toggle(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, true, obj.get("current"))
         },
         handleInput = (msg) => {
 			//D.Alert(`MSG RECEIVED: ${D.JS(msg)}`)
@@ -852,9 +852,9 @@ const Chars = (() => {
                 case "!daylighters":
                     if (!playerIsGM(msg.playerid))
                         return
-                    C.ROOT.Chars.isDaylighterSession = !C.ROOT.Chars.isDaylighterSession
-                    D.Alert(`Daylighter Session Set To: ${C.ROOT.Chars.isDaylighterSession}`)
-                    DragPads.Toggle("signalLight", !C.ROOT.Chars.isDaylighterSession)
+                    C.ROOT.Char.isDaylighterSession = !C.ROOT.Char.isDaylighterSession
+                    D.Alert(`Daylighter Session Set To: ${C.ROOT.Char.isDaylighterSession}`)
+                    DragPads.Toggle("signalLight", !C.ROOT.Char.isDaylighterSession)
                     TimeTracker.Fix()
                     for (const charData of _.values(REGISTRY).slice(0,4)) {
                         [token] = findObjs( {
@@ -863,18 +863,18 @@ const Chars = (() => {
                             _subtype: "token",
                             represents: charData.id
                         })
-                        imgData = Images.GetData(token)
+                        imgData = Media.GetData(token)
 					
-                        if (C.ROOT.Chars.isDaylighterSession) {											
-                            Images.SetData(token, {isDaylighter: true, unObfSrc: "base"})
-                            Images.ToggleToken(token, "baseDL")
+                        if (C.ROOT.Char.isDaylighterSession) {											
+                            Media.SetData(token, {isDaylighter: true, unObfSrc: "base"})
+                            Media.ToggleToken(token, "baseDL")
                             if (charData.famulusTokenID) {
-                                famToken = Images.GetObj(charData.famulusTokenID)
-                                Images.Toggle(famToken, false)
+                                famToken = Media.GetObj(charData.famulusTokenID)
+                                Media.Toggle(famToken, false)
                             }
                         } else {
-                            Images.SetData(token, {isDaylighter: false, unObfSrc: "base"})
-                            Images.ToggleToken(token, "base")
+                            Media.SetData(token, {isDaylighter: false, unObfSrc: "base"})
+                            Media.ToggleToken(token, "base")
                         }
                     }
                     break
@@ -886,21 +886,21 @@ const Chars = (() => {
                         _subtype: "token",
                         represents: charID
                     })
-                    imgData = Images.GetData(token)								
+                    imgData = Media.GetData(token)								
 				//D.Alert(`ImgData: ${D.JS(token)}`)
                     if (imgData.unObfSrc !== "sense") {
-                        Images.SetData(token, {unObfSrc: "sense"})
+                        Media.SetData(token, {unObfSrc: "sense"})
                         if (imgData.isObf) 
-                            Images.ToggleToken(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
+                            Media.ToggleToken(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
 					 else 
-                            Images.ToggleToken(token, `sense${imgData.isDaylighter ? "DL" : ""}`)
+                            Media.ToggleToken(token, `sense${imgData.isDaylighter ? "DL" : ""}`)
 								
                     } else {
-                        Images.SetData(token, {unObfSrc: "base"})
+                        Media.SetData(token, {unObfSrc: "base"})
                         if (imgData.isObf) 
-                            Images.ToggleToken(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
+                            Media.ToggleToken(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
 					 else 
-                            Images.ToggleToken(token, `base${imgData.isDaylighter ? "DL" : ""}`)
+                            Media.ToggleToken(token, `base${imgData.isDaylighter ? "DL" : ""}`)
 								
                     }
                     break
@@ -914,18 +914,18 @@ const Chars = (() => {
                         represents: charID
                     })					
 				//D.Alert(`Token: ${D.JS(token)}`)
-                    imgData = Images.GetData(token)								
+                    imgData = Media.GetData(token)								
 				//D.Alert(`ImgData: ${D.JS(token)}`)
                     if (imgData.isObf) {
-                        Images.ToggleToken(token, `${imgData.unObfSrc || "base"}${imgData.isDaylighter ? "DL" : ""}`)
-                        Images.SetData(token, {isObf: false})
+                        Media.ToggleToken(token, `${imgData.unObfSrc || "base"}${imgData.isDaylighter ? "DL" : ""}`)
+                        Media.SetData(token, {isObf: false})
                     } else {
                         if (imgData.unObfSrc === "sense") {
-                            Images.ToggleToken(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
-                            Images.SetData(token, {isObf: true})
+                            Media.ToggleToken(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
+                            Media.SetData(token, {isObf: true})
                         } else {
-                            Images.ToggleToken(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
-                            Images.SetData(token, {isObf: true})
+                            Media.ToggleToken(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
+                            Media.SetData(token, {isObf: true})
                         }
                     }
                     break
@@ -937,22 +937,22 @@ const Chars = (() => {
                         _subtype: "token",
                         represents: charID
                     })
-                    imgData = Images.GetData(token)
+                    imgData = Media.GetData(token)
                     if (imgData.isDaylighter)
                         break							
 				//D.Alert(`ImgData: ${D.JS(token)}`)
                     if (imgData.unObfSrc === "mask") {
-                        Images.SetData(token, {unObfSrc: "base"})
+                        Media.SetData(token, {unObfSrc: "base"})
                         if (!imgData.isObf)
-                            Images.ToggleToken(token, "base")
+                            Media.ToggleToken(token, "base")
                     } else {
-                        Images.SetData(token, {unObfSrc: "mask"})
+                        Media.SetData(token, {unObfSrc: "mask"})
                         if (!imgData.isObf)
-                            Images.ToggleToken(token, "mask")
+                            Media.ToggleToken(token, "mask")
                     }				
                     break	
                 case "!famulus":
-                    if (Chars.IsDaylighterSession())
+                    if (Char.IsDaylighterSession())
                         break
                     charData = REGISTRY[_.findKey(REGISTRY, v => v.playerID === msg.playerid)]
                     charID = charData.id;
@@ -964,17 +964,17 @@ const Chars = (() => {
                     })
                     if (!charData.famulusTokenID)
                         break
-                    famToken = Images.GetObj(charData.famulusTokenID)
+                    famToken = Media.GetObj(charData.famulusTokenID)
                     if (famToken.get("layer") !== "objects")
-                        Images.SetParams(famToken, {
+                        Media.SetParams(famToken, {
                             top: token.get("top") - 100,
                             left: token.get("left") + 100
                         })
                     toFront(famToken)
-                    Images.Toggle(famToken, famToken.get("layer") !== "objects", "base")
+                    Media.Toggle(famToken, famToken.get("layer") !== "objects", "base")
                     break
                 case "!settoken":
-                    Images.ToggleToken(D.GetSelected(msg)[0] || args.shift(), args.shift())
+                    Media.ToggleToken(D.GetSelected(msg)[0] || args.shift(), args.shift())
                     break
                 case "!startsession":
                     if (playerIsGM(msg.playerid)) startSession()
@@ -1009,18 +1009,18 @@ const Chars = (() => {
         },
         checkInstall = () => {
             C.ROOT = C.ROOT || {}
-            C.ROOT.Chars = C.ROOT.Chars || {}
-            C.ROOT.Chars.registry = C.ROOT.Chars.registry || {}
+            C.ROOT.Char = C.ROOT.Char || {}
+            C.ROOT.Char.registry = C.ROOT.Char.registry || {}
 
 			// Storyteller Override:
-			//C.ROOT.Chars.registry["1"].playerID = "-LLIBpH_GL5I-9lAOiw9"
+			//C.ROOT.Char.registry["1"].playerID = "-LLIBpH_GL5I-9lAOiw9"
 			
 			// Return Player Control:
-            //C.ROOT.Chars.registry["4"].playerID = "-LMGDbZCKw4bZk8ztfNf"
-            //C.ROOT.Chars.registry["3"].playerID = "-LN7lNnjuWmFuvVPW76H"
-            //C.ROOT.Chars.registry["2"].playerID = "-LN6n-fR8cSNR2E_N_3q"
-            //C.ROOT.Chars.registry["1"].playerID = "-LMGDQqIvyL87oIfrVDX"
-	        //C.ROOT.Chars.registry["1"].famulusTokenID = "-Li_TTDHnKYob56yfijy"
+            //C.ROOT.Char.registry["4"].playerID = "-LMGDbZCKw4bZk8ztfNf"
+            //C.ROOT.Char.registry["3"].playerID = "-LN7lNnjuWmFuvVPW76H"
+            //C.ROOT.Char.registry["2"].playerID = "-LN6n-fR8cSNR2E_N_3q"
+            //C.ROOT.Char.registry["1"].playerID = "-LMGDQqIvyL87oIfrVDX"
+	        //C.ROOT.Char.registry["1"].famulusTokenID = "-Li_TTDHnKYob56yfijy"
         }
 
 
@@ -1036,13 +1036,13 @@ const Chars = (() => {
         AdjustTrait: adjustTrait,
         AdjustHunger: adjustHunger,
         DaySleep: daysleep,
-        IsDaylighterSession: () => C.ROOT.Chars.isDaylighterSession
+        IsDaylighterSession: () => C.ROOT.Char.isDaylighterSession
     }
 })()
 	
 on("ready", () => {
-    Chars.RegisterEventHandlers()
-    Chars.CheckInstall()
-    D.Log("Ready!", "Chars")
+    Char.RegisterEventHandlers()
+    Char.CheckInstall()
+    D.Log("Ready!", "Char")
 })
-void MarkStop("Chars")
+void MarkStop("Char")
