@@ -72,7 +72,7 @@ const MarkStop = (scriptName) => {
 const printScriptRanges = () => {
     scriptRanges.forEach((range) => {
         const msg = range.StopLine > 0
-            ? `[${range.StartLine}, ${range.StopLine}]` 
+            ? `[${range.StartLine}, ${range.StopLine}]`
             : `[${range.StartLine}, ???]`;
         log('Airbag Handling ' + range.Name + ': ' + msg);
     });
@@ -85,7 +85,7 @@ const ConvertGlobalLineToLocal = (gline) => {
         StartLine: -1,
         StopLine: -1
     };
-    for(var i = 0; i < scriptRanges.length; i++) {
+    for (var i = 0; i < scriptRanges.length; i++) {
         let curRange = scriptRanges[i];
         // Checking equals in both directions because of minification
         if (gline >= prevRange.StartLine && gline <= curRange.StartLine) {
@@ -134,7 +134,7 @@ const getAirbagOnHandler = (eventType) => {
     // The master handler that wraps the registrations of the scripts
     const airbagOnHandler = (...handlerArgs) => {
         let type = eventType;
-        try{
+        try {
             // Iterate over the registrations.  If they match the type,
             // execute them.
             onRegistrations.forEach((registration) => {
@@ -157,7 +157,7 @@ const airDelayHandler = (func, params) => {
     if (!codebaseRunning) return;
     try {
         func.apply(null, Array.prototype.slice.call(params));
-    } catch(e) {
+    } catch (e) {
         handleCrash(e);
     }
 };
@@ -173,7 +173,7 @@ on('chat:message', (msg) => {
 const handleCrash = (e) => {
     log('Handling Crash...');
     codebaseRunning = false;
-    
+
     // Kill all internal on() registrations
     onRegistrations = [];
 
@@ -189,15 +189,15 @@ const handleCrash = (e) => {
     let globalLine = GetScriptLine(e, false);
     let src = ConvertGlobalLineToLocal(globalLine);
 
-    let properties = 
+    let properties =
         'MSG: ' + e.message + '\n' +
         '\n====================\n' +
         'STK: ' + e.stack + '\n' +
         '\n====================\n';
-        
+
     if (src.Line > 0) {
         properties = 'SRC: ' + src.Name + ':' + src.Line + '\n' +
-        '\n====================\n' + properties;
+            '\n====================\n' + properties;
     }
 
     const errMsg = "[AIRBAG DEPLOYED]\n" + properties + "[Reboot API](!airbag)";
@@ -224,10 +224,10 @@ let codebase = () => {
         // Add a new registration
         let registration = {
             Type: type,
-            UserHandler: userHandler 
+            UserHandler: userHandler
         };
         onRegistrations.push(registration);
-    
+
         // Airbag registers for the events on behalf of the script calling on() if
         // it hasn't already registered to this type.
         if (!onRegisteredTypes[type]) {
@@ -254,6 +254,6 @@ let codebase = () => {
         airDelays = airDelays.filter(item => item !== delayRef);
         airClearTimeout(delayRef);
     };
-    
+
     try {
         MarkStop('AirbagStart');

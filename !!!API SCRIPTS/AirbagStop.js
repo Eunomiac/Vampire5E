@@ -1,10 +1,10 @@
-        MarkStart('AirbagStop');
-        airLog(runMsg);
+MarkStart('AirbagStop');
+airLog(runMsg);
     } catch (e) {
-        handleCrash(e);
-    }
+    handleCrash(e);
+}
 };
 
 codebase();
-MarkStop('AirbagStop'); 
+MarkStop('AirbagStop');
 printScriptRanges();
