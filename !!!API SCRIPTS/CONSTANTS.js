@@ -67,7 +67,6 @@ const C = (() => {
                 margin-left: -42px;
                 background-color: none;
                 position: relative;
-                height: 25px;
             "></div>`,        
     }
     // #endregion
