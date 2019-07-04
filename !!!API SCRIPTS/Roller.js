@@ -1600,7 +1600,7 @@ const Roller = (() => {
                     rollData.diff = parseInt(params[1] || 0)
                     rollData.mod = parseInt(params[2] || 0)
                     rollData.diffMod = parseInt(params[3] || 0)
-                    rollData.prefix = ["repeating", "project", D.GetRepIDCase(params[4] ), ""].join("_")
+                    rollData.prefix = ["repeating", "project", D.GetRepStat(charObj, "project", params[4]).rowID, ""].join("_")
                     DB(`PROJECT PREFIX: ${D.JSL(rollData.prefix)}`, "getRollData")
                     break
                 case "secret":

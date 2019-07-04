@@ -84,8 +84,11 @@ const D = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
+<<<<<<< HEAD
     // DEPRECATED FUNCTIONS 
 
+=======
+>>>>>>> Almost finished DATA, just need rep sec manipulation
     // #region DECLARATIONS: Reference Variables
     const VALS = {
         PAGEID: () => Campaign().get("playerpageid"),
@@ -243,19 +246,6 @@ const D = (() => {
     // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
     const formatTitle = (funcName, scriptName, prefix = "") => `[${prefix}${funcName || scriptName ? " " : ""}${scriptName ? `${scriptName.toUpperCase()}` : ""}${scriptName && funcName ? ": " : ""}${funcName || ""}]`,
         formatLogLine = (msg, funcName, scriptName, prefix = "", isShortForm = false) => `${formatTitle(funcName, scriptName, prefix)} ${jStrL(msg, isShortForm)}`,
-        //sendToPlayer = (who, message = "", title = "") => {
-            /* Whispers formatted chat message to player given: display name OR player ID. */
-            /* const player = getObj("player", who) ?
-                    getObj("player", who).get("_displayname") :
-                    who,
-                html = jStrH(C.CHATHTML.header(jStr(title)) + C.CHATHTML.body(jStr(message)))
-            if (player === "all" || player === "")
-                sendChat("", html)
-            else if (VAL({ player: player }, "sendToPlayer"))
-                sendChat("", `/w ${player.get("_displayname")} ${html}`)
-        },
-        sendToGM = (msg, title) => sendToPlayer("Storyteller", msg, title || "[ALERT]") */
-        
         sendToPlayer = (who, message = "", title = "") => {
             /* Whispers formatted chat message to player given: display name OR player ID. */
             const player = getObj("player", who) ?
@@ -267,8 +257,6 @@ const D = (() => {
             else
                 sendChat("", `/w ${player} ${html}`)
         },
-        /* Styling and sending to the Storyteller via whisper (Alert) or to the API console (Log). */
-        //logEntry = (msg, title = "") => log(`[${jLog(title)}]: ${jLog(msg)}`),
         sendToGM = (msg, title = "[ALERT]") => sendToPlayer("Storyteller", msg, title)
     // #endregion
 
@@ -958,10 +946,6 @@ const D = (() => {
     }
     // #endregion
 
-    // #region INITIALIZATION
-
-    // #endregion
-
     return {
         CheckInstall: checkInstall,
         RegisterEventHandlers: regHandlers,
@@ -1006,7 +990,6 @@ const D = (() => {
         SetRepStats: setRepStats, SetRepStat: setRepStat,
 
         ParseRepStat: parseRepStat,
-        GetRepIDCase: getCaseRepID,
         CopyToSec: copyToRepSec,
         SortRepSec: sortRepSec,
         SplitRepSec: splitRepSec,
