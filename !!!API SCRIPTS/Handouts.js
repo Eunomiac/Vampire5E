@@ -39,27 +39,16 @@ const Handouts = (() => {
                 return notes[0]
         },
         getProjectData = (charRef) => {
-            const projAttrs = D.GetRepAttrs(charRef, "project", true),
-                projRowIDs = D.GetRepIDs(charRef, "project", true),
+            const projAttrs = D.GetRepStats(charRef, "project", null, null, "rowID"),
                 projData = []
               //D.Alert(`Project Attributes: ${D.JS(projAttrs)}`)
-            for (const rowID of projRowIDs) {
-                let thisData = {
-                    rowID
-                }
-                let testData = {
-                    rowID
-                }
-                  //D.Alert(_.map(projAttrs, (v, k) => D.ParseRepAttr(k).stat))
-                for (const attrKey of _.keys(projAttrs)) 
-                    testData[D.ParseRepAttr(attrKey).stat] = projAttrs[attrKey]
-				
-                for (const attrKey of _.filter(_.keys(projAttrs), v => D.ParseRepAttr(v).rowID.toLowerCase().includes(rowID.toLowerCase()))) 
-                    thisData[D.ParseRepAttr(attrKey).stat] = projAttrs[attrKey]
-				
-                  //D.Alert(D.JS(testData), "TEST DATA")
-                projData.push(thisData)
-            }
+            _.each(projAttrs, (attrDatas, rowID) => {
+                const rowData = {rowID}
+                _.each(attrDatas, attrData => {
+                    rowData[attrData.name] = attrData.val
+                })
+                projData.push(rowData)
+            })
             return projData
         }
     // #endregion

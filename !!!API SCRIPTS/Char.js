@@ -596,21 +596,20 @@ const Char = (() => {
                         }						
                     })					
 				
-                const [repDiscs, sectionCounts] = [{}, {}]
-                _.each(["discleft", "discmid", "discright"], v => {
-                    const discData = D.GetRepAttrs(charID, v),
-						    rowIDs = D.GetRepIDs(charID, v)
-                    sectionCounts[v] = rowIDs.length
-                    _.each(rowIDs, vv => {
-                        if (!_.values(DISCABBVS).includes(discData[`repeating_${v}_${vv}_disc_name`])) 
-                            D.DeleteRow(charID, v, vv)
-						 else 
-                            repDiscs[discData[`repeating_${v}_${vv}_disc_name`]] = {							
-                                sec: v,
-                                rowID: vv,
-                                val: parseInt(discData[`repeating_${v}_${vv}_disc`]) || 0
+                const [repDiscs, rowCount] = [{}, {}]
+                _.each(["discleft", "discmid", "discright"], section => {
+                    const sectionData = D.GetRepStats(charID, section, null, null, "rowID")
+                    rowCount[section] = _.keys(sectionData).length
+                    _.each(sectionData, (rowData, rowID) => {
+                        const discData = _.find(rowData, stat => C.DISCIPLINES.includes(stat.name))
+                        if (discData)
+                            repDiscs[discData.name] = {							
+                                sec: section,
+                                rowID: rowID,
+                                val: parseInt(discData.val) || 0
                             }
-						
+                        else
+                            D.DeleteRow(charID, section, rowID)
                     })
                 })
                 if (charData.otherdiscs) {
@@ -629,7 +628,7 @@ const Char = (() => {
                                     attrList[`repeating_${repDiscs[discName].sec}_${repDiscs[discName].rowID}_disc`] = parseInt(_.findKey(charData.otherdiscs, v => v.includes(discAbv)))
                                 else {
                                     D.DeleteRow(charID, repDiscs[discName].sec, repDiscs[discName].rowID)
-                                    sectionCounts[repDiscs[discName].sec]--
+                                    rowCount[repDiscs[discName].sec]--
                                 }
 							 else if (_.findKey(charData.otherdiscs, v => v.includes(discAbv))) 
                                 otherDiscs.push([discName, parseInt(_.findKey(charData.otherdiscs, v => v.includes(discAbv)))])
@@ -637,9 +636,9 @@ const Char = (() => {
                         }
                         while (otherDiscs.length > 0) {
                             const thisDisc = otherDiscs.pop(),
-                                targetSec = _.min([{sec: "discleft", num: sectionCounts.discleft}, {sec: "discmid", num:sectionCounts.discmid}, {sec: "discright", num:sectionCounts.discright}], v => v.num).sec
+                                targetSec = _.min([{sec: "discleft", num: rowCount.discleft}, {sec: "discmid", num:rowCount.discmid}, {sec: "discright", num:rowCount.discright}], v => v.num).sec
 							//D.Alert(`D.MakeRow(ID, ${targetSec}, {disc_name: ${thisDisc[0]}, disc: ${thisDisc[1]} })`)
-                            sectionCounts[targetSec]++
+                            rowCount[targetSec]++
                             D.MakeRow(charID, targetSec, {disc_name: thisDisc[0], disc: thisDisc[1] })
                         }
                     }
@@ -952,7 +951,7 @@ const Char = (() => {
                     }				
                     break	
                 case "!famulus":
-                    if (Char.IsDaylighterSession())
+                    if (C.ROOT.Char.isDaylighterSession)
                         break
                     charData = REGISTRY[_.findKey(REGISTRY, v => v.playerID === msg.playerid)]
                     charID = charData.id;
@@ -989,10 +988,10 @@ const Char = (() => {
                     charID = REGISTRY[args.shift()].id
                     switch(args.shift()) {
                         case "left":
-                            D.Alert(`${D.JS(D.GetRepAttrs(charID, "earnedxp"))}<br><br>ORDER:<br>${D.GetStatVal(charID, "_reporder_repeating_earnedxp")}`)
+                            D.Alert(`${D.JS(D.GetRepStats(charID, "earnedxp"))}<br><br>ORDER:<br>${D.GetStatVal(charID, "_reporder_repeating_earnedxp")}`)
                             break
                         case "right":
-                            D.Alert(`${D.JS(D.GetRepAttrs(charID, "earnedxpright"))}<br><br>ORDER:<br>${D.GetStatVal(charID, "_reporder_repeating_earnedxpright")}`)
+                            D.Alert(`${D.JS(D.GetRepStats(charID, "earnedxpright"))}<br><br>ORDER:<br>${D.GetStatVal(charID, "_reporder_repeating_earnedxpright")}`)
                             break
                         // no default
                     }

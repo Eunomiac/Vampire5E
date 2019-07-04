@@ -51,10 +51,16 @@ const D = (() => {
             case "debug": case "log": case "dblog":
                 getDebugRecord()
                 break
-            case "rep": { // !get rep section rowRef
-                const attrName = args.shift(),
-                    rowRef = {section: "advantage", [attrName]: 2}
-                D.Alert(`${jStr(getRepAttr(msg, rowRef, attrName))}`, "Testing GetRepAttr")
+            case "rep": { // !get rep section key1:val1,key2:val2 statName groupBy pickProperty  (can be "null")
+                const [section, rowFilter, statName, groupBy, pickProperty] = args
+                D.Alert(`${jStr(getRepStats(
+                    msg,
+                    section,
+                    rowFilter === "null" ? null : parseToObj(rowFilter),
+                    statName === "null" ? null : statName,
+                    groupBy === "null" ? null : groupBy,
+                    pickProperty === "null" ? null : pickProperty
+                ))}`, "Testing GetRepAttr")
                 break
             }
             case "char": {
@@ -79,12 +85,6 @@ const D = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     // DEPRECATED FUNCTIONS 
-
-    const logEntry = (msg, title = "") => log(`[${jStrL(title)}]: ${jStrL(msg)}`),
-        formatDebug = (msg, title) => {
-            logEntry(msg, title)
-            sendToGM(msg, title)
-        }
 
     // #region DECLARATIONS: Reference Variables
     const VALS = {
@@ -186,10 +186,15 @@ const D = (() => {
                 isNegative = numString.charAt(0) === "-",
                 [integers, decimals] = numString.replace(/[,|\s|-]/gu, "").split("."),
                 intArray = _.map(integers.split("").reverse().join("").match(/.{1,3}/g), v => v.split("").reverse().join("")).reverse(),
-                stringArray = []
+                [intStrings, decStrings] = [[], []]
             while (intArray.length > 0)
-                stringArray.push(`${parseThreeDigits(intArray.shift())} ${C.NUMBERWORDS.tiers[intArray.length]}`.toLowerCase().trim())
-            return capitalize((isNegative ? "negative " : "") + stringArray.join(", "), isTitleCase)
+                intStrings.push(`${parseThreeDigits(intArray.shift())} ${C.NUMBERWORDS.tiers[intArray.length]}`.toLowerCase().trim())
+            if (VAL({number: decimals})) {
+                decStrings.push(" point")
+                for (const digit of decimals.split(""))
+                    decStrings.push(C.NUMBERWORDS.low[parseInt(digit)])
+            }
+            return capitalize((isNegative ? "negative " : "") + intStrings.join(", ") + decStrings.join(" "), isTitleCase)
         },
         ordinal = (num, isFullText = false) => {
             /* Converts any number by adding its appropriate ordinal ("2nd", "3rd", etc.) */
@@ -212,19 +217,26 @@ const D = (() => {
             THROW(`Attempt to capitalize non-string '${jStrL(str)}'`, "capitalize")
             return str
         },
-        parseToObj = val => {
-            /* Converts an array or comma-delimited string of parameters ("key:val, key:val, key:val") into an object. */
-            const [obj, args] = [{}, []]
-            if (VAL({ string: val }))
-                args.push(...val.split(/,\s*?/ug))
-            else if (VAL({ array: val }))
-                args.push(...val)
-            else
-                return THROW(`Cannot parse value '${jStrC(val)}' to object.`, "parseToObj")
+        getTextWidth = (obj, text) => {
+            const font = obj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
+                size = obj.get("font_size"),
+                chars = text.split(""),
+                fontRef = state.DATA.CHARWIDTH[font],
+                charRef = fontRef && fontRef[size]
+            let width = 0
+            if (!fontRef || !charRef) {
+                DB(`No font reference for '${font}' at size '${size}', attempting default`, "getTextWidth")
 
-            for (const kvp of _.map(args, v => v.split(/\s*:\s*(?!\/)/u)))
-                obj[kvp[0]] = parseInt(kvp[1]) || kvp[1]
-            return obj
+                return text.length * (parseInt(obj.get("width")) / obj.get("text").length)
+            }
+            _.each(chars, char => {
+                if (!charRef[char] && charRef[char] !== " " && charRef[char] !== 0)
+                    DB(`... MISSING '${char}' in '${font}' at size '${size}'`, "getTextWidth")
+                else
+                    width += parseInt(charRef[char])
+            })
+
+            return width
         }
     // #endregion
 
@@ -266,11 +278,31 @@ const D = (() => {
             _.each(obj, (v, k) => { newObj[kFunc ? kFunc(k, v) : k] = vFunc ? vFunc(v, k) : v })
             return newObj
         },
-        removeFirst = (array, element) => array.splice(array.findIndex(v => v === element))
+        removeFirst = (array, element) => array.splice(array.findIndex(v => v === element)),        
+        parseToObj = val => {
+            /* Converts an array or comma-delimited string of parameters ("key:val, key:val, key:val") into an object. */
+            const [obj, args] = [{}, []]
+            if (VAL({ string: val }))
+                args.push(...val.split(/,\s*?/ug))
+            else if (VAL({ array: val }))
+                args.push(...val)
+            else
+                return THROW(`Cannot parse value '${jStrC(val)}' to object.`, "parseToObj")
+
+            for (const kvp of _.map(args, v => v.split(/\s*:\s*(?!\/)/u)))
+                obj[kvp[0]] = parseInt(kvp[1]) || kvp[1]
+            return obj
+        }
     // #endregion
 
-    // #region SEARCH & VALIDATION: Set membership checking, type validation. 
-    const isIn = (needle, haystack = ALLSTATS) => {
+    // #region SEARCH & VALIDATION: Match checking, Set membership checking, type validation. 
+    const fuzzyMatch = () => {
+            if (arguments.length === 2)
+                return arguments[0].toLowerCase().replace(/\W+/gu, "").includes(arguments[1].toLowerCase().replace(/\W+/gu, "")) ||
+                    arguments[1].toLowerCase().replace(/\W+/gu, "").includes(arguments[0].toLowerCase().replace(/\W+/gu, ""))
+            return THROW(`Must submit exactly two arguments: ${jStr(arguments)}`, "fuzzyMatch")
+        },
+        isIn = (needle, haystack = ALLSTATS) => {
         /* Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. */
             try {
                 const ndl = `\\b${needle.replace(/^g[0-9]/u, "")}\\b`
@@ -339,6 +371,10 @@ const D = (() => {
                             } else {
                                 errorLines.push(`Must validate at least one character before validating traits: ${jStr(varList[cat])}.`)
                             }
+                            break
+                        case "repname":
+                            if (!(_.isString(v) && v.startsWith("repeating")))
+                                errorLines.push(`Invalid repeating attribute name: ${jStr(v)}`)
                             break
                         case "number":
                             if (_.isNaN(parseInt(v)))
@@ -467,7 +503,7 @@ const D = (() => {
             removeFirst(TRACE, "getSelected")
             return selObjs.size > 0 ? [...selObjs] : THROW(`None of the selected objects are of type(s) '${jStrL(types)}'`, "getSelected")
         },
-        getName = (value, isShort) => {
+        getName = (value, isShort = false) => {
             // Returns the NAME of the Graphic, Character or Player (DISPLAYNAME) given: object or ID.
             const obj = VAL({ object: value }) && value ||
                 VAL({ char: value }) && getChar(value) ||
@@ -522,7 +558,7 @@ const D = (() => {
                     charObjs.add(getObj("character", Char.REGISTRY[parseInt(v)].id))
                     DB(`Registry Number: ${jStr(v)}... ${charObjs.size} Characters Found.`, "getChars")
                 // If parameter is a CHARACTER OBJECT already: */
-                } else if (VAL({ object: v }) && v.get("type") === "character") {
+                } else if (VAL({ charObj: v })) {
                     charObjs.add(v)
                     DB(`Character Object: ${jStr(v, true)}... ${charObjs.size} Characters Found.`, "getChars")
                 // If parameter is a CHARACTER ID:
@@ -534,19 +570,30 @@ const D = (() => {
                     charObjs.add(getObj("character", v.get("represents")))
                     DB(`Token: ${jStr(v, true)}... ${charObjs.size} Characters Found.`, "getChars")
                 // If parameter is "all":
-                } else if (v === "all") {
+                } else if (v.toLowerCase() === "all") {
                     _.each(findObjs({ _type: "character" }), char => charObjs.add(char))
                     DB(`All Characters: ${jStr(v)}... ${charObjs.size} Characters Found.`, "getChars")
                 // If parameter calls for REGISTERED CHARACTERS:
-                } else if (v === "registered") {
-                    _.each(Char.REGISTRY, v => { charObjs.add(getObj("character", v.id)) })
+                } else if (v.toLowerCase() === "registered") {
+                    _.each(Char.REGISTRY, charData => { charObjs.add(getObj("character", charData.id)) })
                     DB(`Registered Characters: ${jStr(v)}... ${charObjs.size} Characters Found.`, "getChars")
-                // If parameter is a CHARACTER NAME:
+                // If parameter is a STRING, assume it is a character name to fuzzy-match.
                 } else if (VAL({ string: v })) {
-                    _.each(findObjs({ _type: "character" }), char => {
-                        if (char.get("name").toLowerCase().includes(v.toLowerCase()))
+                    let isCharFound = false
+                    // FIRST look for REGISTERED CHARACTERS:
+                    _.each(Char.REGISTRY, charData => {
+                        const char = getObj("character", charData.id)
+                        if (fuzzyMatch(char.get("name"), v)) {
+                            isCharFound = true
                             charObjs.add(char)
+                        }
                     })
+                    // IF NONE FOUND, look at other characters:
+                    if (!isCharFound)
+                        _.each(findObjs({_type: "character" }), char => {
+                            if (fuzzyMatch(char.get("name"), v))
+                                charObjs.add(char)
+                        })
                     DB(`Character Name: ${jStr(v)}... ${charObjs.size} Characters Found.`, "getChars")
                 }
             })
@@ -554,12 +601,25 @@ const D = (() => {
             return charObjs.size === 0 ?
                 isSilent ? false : throwError(`No Characters Found using Search Parameters:<br><br>${jStr(searchParams)} in Character Reference<br><br>${jStr(charRef)}`, "getChars", SCRIPTNAME)
                 : _.reject([...charObjs], v => { v.get("name").includes("Jesse,") }) // Filtering out my test character, "Jesse, Good Lad That He Is"                  		
-        },
-        getChar = (charRef, isSilent = false) => getChars(charRef, isSilent)[0],
-        getRowIDs = (charRef, section, rowRef, isSilent = false) => {
+        }, getChar = (charRef, isSilent = false) => getChars(charRef, isSilent)[0],
+        getStat = (charRef, statName, isSilent = false) => {
+            const charObj = getChar(charRef)
+            let attrValueObj = null
+            if (VAL({charObj: charObj, string: statName}, "getStat")) {
+                const attrObjs = _.filter(findObjs({_type: "attribute", _characterid: charObj.id}), v => !fuzzyMatch(v.get("name"), "repeating")) // Don't get repeating fieldset attributes.
+                attrValueObj = _.find(attrObjs, v => fuzzyMatch(v.get("name"), statName))
+                if (!attrValueObj) {
+                    const attrNameObj = _.find(attrObjs, v => v.get("name").toLowerCase().endsWith("_name") && fuzzyMatch(v.get("current"), statName))
+                    if (attrNameObj)
+                        attrValueObj = _.find(attrObjs, v => v.get("name") === attrNameObj.get("name").slice(0, -5))
+                }
+            }
+            return attrValueObj ? [attrValueObj.get("current"), attrValueObj] : null
+        },        
+        getRepIDs = (charRef, section, rowFilter, isSilent = false) => {
             // rowRef: rowID (string), stat:value (list, with special "name" entry for shortname), array of either (array), or null (all)
             TRACE.push("getRowIDs")
-            DB(`GetRowIDs(${jStr(charRef, true)}, ${section}, ${jStrL(rowRef)})`, "getRowIDs")
+            DB(`GetRowIDs(${jStr(charRef, true)}, ${section}, ${jStrL(rowFilter)})`, "getRowIDs")
             const charObj = getChar(charRef, isSilent),
                 getUniqIDs = attrObjs => _.uniq(_.map(attrObjs, v => v.get("name").match(`repeating_${section}_(.*?)_`)[1]))
             let validRowIDs = [],
@@ -568,20 +628,21 @@ const D = (() => {
                 const attrObjsInSection = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => v.get("name").toLowerCase().includes(`_${section.toLowerCase()}_`)),
                     rowIDsInSection = getUniqIDs(attrObjsInSection)
                 DB(`attrObjsInSection: ${jStr(_.map(attrObjsInSection, v => v.get("name")))}<br>rowIDsInSection: ${jStr(rowIDsInSection)}`, "getRowIDs")
-                if (VAL({ string: rowRef })) {
+                if (VAL({ string: rowFilter })) {
                     traceRef = "RowRef-String"
                     TRACE.push(traceRef)
                     // RowRef is a rowID (string); use this to find row ID with a case insensitive reference.
-                    validRowIDs.push(_.find(rowIDsInSection, v => v.toLowerCase() === rowRef.toLowerCase()))
+                    validRowIDs.push(_.find(rowIDsInSection, v => v.toLowerCase() === rowFilter.toLowerCase()))
                     DB(`RowRef: STRING.  Valid Row IDs:<br><br>${jStr(validRowIDs)}`, "getRowIDs")
-                } else if (VAL({ list: rowRef })) {
+                } else if (VAL({ list: rowFilter })) {
                     traceRef = "RowRef-List"
                     TRACE.push(traceRef)
                     // RowRef is a key/value list of stat name and value to filter by. Only row IDs referring to ALL matching key/value pairs will be returned.
+                    // If value === "*", any value is accepted (only checks for presence of stat name)
                     validRowIDs = [...rowIDsInSection]
-                    DB(`RowRef: LIST:<br><br>${jStr(rowRef)}`, "getRowIDs")
+                    DB(`RowRef: LIST:<br><br>${jStr(rowFilter)}`, "getRowIDs")
                     TRACE.push("_F1_")
-                    for (const rowData of _.pairs(rowRef)) {
+                    for (const rowData of _.pairs(rowFilter)) {
                         const [key, val] = rowData
                         DB(`RowData: ${key}, ${val}`, "getRowIDs")
                         // Check each row against this filter element: Must satisfy, or remove from validRowIDs
@@ -589,18 +650,17 @@ const D = (() => {
                         for (const rowID of [...validRowIDs]) {
                             const attrObjsInRow = _.filter(attrObjsInSection, v => v.get("name").toLowerCase().includes(rowID.toLowerCase()))
                             dbstring += `RowID: ${rowID}`
-                            if (!_.find(attrObjsInRow, v => v.get("name").toLowerCase().endsWith((key === "name" ? val : key).toLowerCase()) &&
-                                (key === "name" || v.get("current").toString().toLowerCase() === val.toString().toLowerCase()))) {
+                            if (!_.find(attrObjsInRow, v => v.get("name").toLowerCase().endsWith(key).toLowerCase() &&
+                                (val === "*" || v.get("current").toString().toLowerCase() === val.toString().toLowerCase()))) {
                                 // If no direct match is found, check if the row contains a "_name" attribute that matches the key.
                                 const nameAttrObj = _.find(attrObjsInRow, v => v.get("name").endsWith("_name") &&
-                                    v.get("current").toString().toLowerCase() === (key === "name" ? val : key).toString().toLowerCase())
+                                    v.get("current").toString().toLowerCase() === key.toString().toLowerCase())
                                 dbstring += ` -- No Direct Match.<br>NameAttrObj: ${jStr(nameAttrObj, true)}`
                                 // If _name attribute exists, now find corresponding non-name attribute and compare its value to val.
                                 if (nameAttrObj) {
                                     dbstring += " -- <b><u>EXISTS!</u></b>"
-                                    if (key !== "name" &&
-                                        !_.find(attrObjsInRow, v => v.get("name").toLowerCase() === nameAttrObj.get("name").toLowerCase().slice(0, -5) &&
-                                        v.get("current").toString().toLowerCase() === val.toString().toLowerCase())) {
+                                    if (!_.find(attrObjsInRow, v => v.get("name").toLowerCase() === nameAttrObj.get("name").toLowerCase().slice(0, -5) &&
+                                        (val === "*" || v.get("current").toString().toLowerCase() === val.toString().toLowerCase()))) {
                                         // If neither of these tests pass, remove the rowID from the list of valid row IDs.
                                         dbstring += "<br>... But Doesn't Match Value"
                                         validRowIDs = _.without(validRowIDs, rowID)
@@ -616,13 +676,13 @@ const D = (() => {
                         removeFirst(TRACE, "_F2_")
                     }
                     removeFirst(TRACE, "_F1_")
-                } else if (VAL({ array: rowRef })) {
+                } else if (VAL({ array: rowFilter })) {
                     traceRef = "RowRef-Array"
                     TRACE.push(traceRef)
                     // RowRef is an array of nested rowrefs, requiring recursion.
-                    for (const ref of rowRef)
-                        validRowIDs.push(...getRowIDs(charRef, section, ref, isSilent))
-                } else if (!rowRef) {
+                    for (const ref of rowFilter)
+                        validRowIDs.push(...getRepIDs(charRef, section, ref, isSilent))
+                } else if (!rowFilter) {
                     traceRef = "RowRef-All"
                     TRACE.push(traceRef)
                     // No rowRef means the IDs of all section rows are returned.
@@ -634,114 +694,48 @@ const D = (() => {
             removeFirst(TRACE, "getRowIDs")
             return _.uniq(validRowIDs)
         },
-        getAttr = (charRef, attrName, isSilent = false) => {
-
-        },
-        getRepAttr = (charRef, rowFilter = {}, attrName, isSilent = false) => {
-            // rowRef = { section: <string>, rowRef: <number, ID, list of key/value filters, OR null for all>, attrName: <string OR null for all> }
-            // returns array of list objects for each rowID: { charID: <id>, fullName: <fullName>, name: <shortName>, obj: <attrObject holding value>, current: <value> }
+        getRepStats = (charRef, section, rowFilter, statName, groupBy, pickProperty, isSilent = false) => {
             const charObj = getChar(charRef)
-            if (VAL({ char: charObj, string: rowFilter.section }, "getRepAttrs")) {
-                const rowIDs = getRowIDs(charObj, rowFilter.section, Object.assign(rowFilter.rowRef || {}, {name: attrName}), isSilent),
-                    attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => v.get("name").match(`repeating_${rowFilter.section}_(.*?)_`) && rowIDs.includes(v.get("name").match(`repeating_${rowFilter.section}_(.*?)_`)[1])),
-                    attrData = []
+            let rowData = []
+            if (VAL({ charObj: charObj, string: section }, "getRepStats")) {
+                const filter = VAL({string: statName}) ? Object.assign({[statName]: "*"}, rowFilter || {}) : rowFilter,
+                    rowIDs = getRepIDs(charObj, section, filter, isSilent),
+                    attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => v.get("name").match(`repeating_${section}_(.*?)_`) &&
+                                                                                                        rowIDs.includes(v.get("name").match(`repeating_${section}_(.*?)_`)[1]))
                 for (const rowID of rowIDs) {
-                    let attrValueObj = _.find(attrObjs, v => v.get("name").toLowerCase().endsWith(attrName.toLowerCase()))
-                    if (!attrValueObj) {
-                        // If no direct match is found, instead grab the name of the "_name" attribute, and then return the stripped value attribute.
-                        const attrNameObj = _.find(attrObjs, v => v.get("name").toLowerCase().endsWith("_name"))
-                        attrValueObj = _.find(attrObjs, v => v.get("name").toLowerCase() === attrNameObj.get("name").toLowerCase().slice(0, -5))
+                    const rowAttrObjs = _.filter(attrObjs, v => v.get("name").includes(rowID)),
+                        attrValueObjs = []
+                    if (statName) {
+                        attrValueObjs[0] = _.find(rowAttrObjs, v => v.get("name").toLowerCase().endsWith(`${rowID}_${statName}`.toLowerCase()))
+                        if (!attrValueObjs[0]) {
+                            // If no direct match is found, instead grab the name of the "_name" attribute, and then return the stripped value attribute.
+                            const attrNameObj = _.find(rowAttrObjs, v => v.get("name").toLowerCase().endsWith("_name"))
+                            attrValueObjs[0] = _.find(rowAttrObjs, v => v.get("name").toLowerCase() === attrNameObj.get("name").toLowerCase().slice(0, -5))
+                        }
+                    } else {
+                        attrValueObjs.push(...rowAttrObjs)
                     }
-                    if (attrValueObj) 
-                        attrData.push({
+                    for (const attrValueObj of _.compact(attrValueObjs))
+                        rowData.push({
                             charID: charObj.id,
                             rowID: rowID,
                             fullName: attrValueObj.get("name"),
-                            name: attrName,
+                            name: statName,
                             obj: attrValueObj,
-                            current: attrValueObj.get("current")
+                            val: attrValueObj.get("current")
                         })
-                    
                 }
-                return attrData
             }
-            return false
-        },
-        setRepAttrs = (charRef, attrData = [], isSilent = false) => {
-            // attrData = array of { section: <string>, row: <number, ID, list of key/value filters that MUST resolve to one row>, attrName: string, attrValue: value }
-            const charObj = getChar(charRef, isSilent)
-            if (VAL({ char: charObj }, "setRepAttrs")) {
-                const attrList = {}
-                for (const data of _.flatten([attrData])) {
-                    const rowID = getRowIDs(charObj, data.section, data.row, isSilent = false),
-                        attrObj = findObjs({ _type: "attribute", _characterid: charObj.id, name: `repeating_${data.section}_${rowID[0]}_${data.attrName}` })
-                    if (rowID.length === 1 && attrObj.length === 1)
-                        attrList[attrObj[0].get("name")] = data.attrValue
-                    else
-                        THROW(`Invalid filter: '${jStr(data.row)}'.  Found ${rowID.length} rows and ${attrObj.length} attribute objects:<br><br>${jStr(rowID)}<br><br>${jStr(attrObj)}`, "setRepAttrs")
-                }
-                setAttrs(charObj.id, attrList)
+            rowData = _.compact(rowData)
+            if (VAL({string: groupBy}) && ["rowID", "fullName", "name", "val"].includes(groupBy)) {
+                rowData = _.groupBy(rowData, v => v[groupBy])
+                if (VAL({string: pickProperty}) && ["fullName", "name", "obj", "val"].includes(pickProperty))
+                    rowData = _.mapObject(rowData, v => _.map(v, vv => vv[pickProperty]))
+            } else if (VAL({string: pickProperty}) && ["fullName", "name", "obj", "val"].includes(pickProperty)) {
+                rowData = _.map(rowData, v => v[pickProperty])
             }
-        },
-        getStats = (charRef, searchPattern, isNumOnly = false, isSilent = false) => {
-            const charObj = getChar(charRef)
-            let attrObjs = []
-            if (!charObj)
-                return isSilent ? false : D.ThrowError(`Invalid character reference: ${D.JS(charRef)}`, "DATA:GetStats")
-            if (_.isArray(searchPattern)) {
-                let patterns = [...searchPattern]
-                attrObjs.push(...getStats(charRef, patterns.shift(), isNumOnly, isSilent))
-                for (const pattern of patterns)
-                    attrObjs.push(..._.uniq(...attrObjs, ...getStats(charRef, pattern, isNumOnly, isSilent)))
-            } else {
-                // First, attempt to find the exact attribute name.
-                attrObjs = findObjs({
-                    _type: "attribute",
-                    _characterid: getChar(charRef).id,
-                    _name: searchPattern
-                })
-                // ... if not, try a fuzzier search, using the statName as a search parameter.
-                if (attrObjs.length === 0)
-                    attrObjs = _.filter(findObjs({
-                        type: "attribute",
-                        characterid: charObj.id
-                    }), v => v.get("name").toLowerCase().includes(searchPattern.toLowerCase()) || searchPattern.toLowerCase().includes(v.get("name").toLowerCase()))
-                // ... if not, see if 'statName' is included in the "..._name" value of a repeating attribute.
-                if (attrObjs.length === 0) {
-                    let nameStatsAll = getStats(charRef, ["repeating", "_name"]),
-                        nameStats = _.filter(nameStatsAll, v => v.get("current").toLowerCase() === searchPattern.toLowerCase())
-                    if (nameStats.length === 0)
-                        nameStats = _.filter(nameStatsAll, v => v.get("current").toLowerCase().includes(searchPattern.toLowerCase()))
-                    if (nameStats.length > 0)
-                        for (const stat of nameStats)
-                            attrObjs.push(...findObjs({
-                                _type: "attribute",
-                                _characterid: getChar(charRef).id,
-                                _name: stat.get("name").replace(/_name/gu, "")
-                            }))
-                }
-                // If only looking for numerical values, filter out non-numbers.
-                if (attrObjs.length > 0 && isNumOnly)
-                    attrObjs = _.filter(attrObjs, v => _.isNumber(parseInt(v.get("current"))) && !_.isNaN(parseInt(v.get("current"))))
-            }
-            if (attrObjs.length > 0)
-                return attrObjs
-
-            return isSilent ? false : D.ThrowError(`No attributes matched all search patterns: ${D.JS(searchPattern)}`, "DATA:GetStats")
-        },
-        getStat = (charRef, searchPattern, isNumOnly, isSilent = false) => getStats(charRef, searchPattern, isNumOnly, isSilent)[0],
-        getStatData = (charRef, filterArray, isSilent = false) => {
-            const attrList = {}
-            _.each(getStats(charRef, filterArray, false, isSilent), v => {
-                attrList[v.get("name")] = v.get("current")
-            })
-            return attrList
-        },
-        getStatVal = (charRef, trait) => {
-            if (VAL({ char: [charRef], trait: [trait] }, "GetStatVal"))
-                return getStatData(charRef, [trait])[trait]
-            return false
-        },
+            return rowData
+        }, getRepStat = (charRef, section, rowFilter, statName, isSilent = false) => getRepStats(charRef, section, rowFilter, statName, null, null, isSilent)[0],
         getPlayerID = (playerRef, isSilent = false) => {
             TRACE.push("getPlayerID")
             // Returns a PLAYER ID given: display name, token object, character reference.
@@ -782,64 +776,44 @@ const D = (() => {
             }
             removeFirst(TRACE, "getPlayer")
             return isSilent ? false : throwError(`Unable to find a player object for reference '${jStr(playerRef)}`, "getPlayerID")
-        },
-        getPlayerName = (playerRef, isSilent = false) => {
-            TRACE.push("getPlayerName")
-            if (VAL({player: getPlayer(playerRef, true)}, "getPlayerName")) {
-                let displayName = getPlayer(playerRef, true).get("_displayname")
-                removeFirst(TRACE, "getPlayerName")
-                return displayName
-            }
-            removeFirst(TRACE, "getPlayerName")
-            return isSilent ? false : THROW(`Unable to find a player name for reference '${jStr(playerRef)}`, "getPlayerName")
-        },
-        getTextWidth = (obj, text) => {
-            const font = obj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
-                size = obj.get("font_size"),
-                chars = text.split(""),
-                fontRef = state.DATA.CHARWIDTH[font],
-                charRef = fontRef && fontRef[size]
-            let width = 0
-            if (!fontRef || !charRef) {
-                logEntry(`No font reference for '${font}' at size '${size}', attempting default`, "D.GETTEXTWIDTH")
-
-                return text.length * (parseInt(obj.get("width")) / obj.get("text").length)
-            }
-            _.each(chars, char => {
-                if (!charRef[char] && charRef[char] !== " " && charRef[char] !== 0)
-                    logEntry(`... MISSING '${char}' in '${font}' at size '${size}'`)
-                else
-                    width += parseInt(charRef[char])
-            })
-
-            return width
         }
     // #endregion
 
+    // #region SETTERS: Attributes
+    const setStats = (charRef, statList) => {
+            const charObj = getChar(charRef)
+            if (VAL({charObj: charObj, list: statList}, "setStats")) 
+                _.each(statList, (value, statName) => {
+                    const [,attrObj] = getStat(charObj, statName)
+                    if(VAL({object: attrObj}, "setStats"))
+                        attrObj.set("current", value)                    
+                })
+        
+        }, setStat = (charRef, statName, statValue) => setStats(charRef, {[statName]: statValue}),
+        setRepStats = (charRef, section, rowFilter, statList, isSilent = false) => {
+            const charObj = getChar(charRef, isSilent)
+            if (VAL({ char: charObj, string: section, list: [rowFilter, statList] }, "setRepAttrs")) 
+                _.each(statList, (value, statName) => {
+                    const rowData = getRepStat(charObj, section, rowFilter, statName, isSilent)
+                    if (VAL({object: rowData && rowData.obj}, "setRepStat"))
+                        rowData.obj.set("current", value)
+                })
+        
+        }, setRepStat = (charRef, section, rowFilter, statName, statValue, isSilent = false) => setRepStats(charRef, section, rowFilter, {[statName]: statValue}, isSilent)
+    // #endregion
+
     // #region Repeating Section Manipulation
-    const isRepRow = (charRef, rowID) => getStats(charRef, [rowID]).length > 0,
-        getRepRowIDs = (charRef, secName, isSilent = false) =>
-            _.uniq(
-                _.map(
-                    _.keys(
-                        _.pick(
-                            getStatData(charRef, ["repeating", `${secName}_`], isSilent), (v, k) => k.startsWith(`repeating_${secName}_`)
-                        )
-                    ), k => k.replace(`repeating_${secName}_`, "").substr(0, 20)
-                )
-            ),
-        getRepAttrObjs = (charRef, secName, isSilent = false) => _.pick(getStats(charRef, ["repeating", `${secName}_`], isSilent), v => v.get("name").startsWith(`repeating_${secName}`)),
-        getRepAttrData = (charRef, secName, isSilent = false) => _.pick(getStatData(charRef, ["repeating", `${secName}_`], isSilent), (v, k) => k.startsWith(`repeating_${secName}_`)),
-        parseRepAttr = (attrRef) => {
-            let nameParts = (D.IsObj(attrRef, "attribute") ? attrRef.get("name") : attrRef).split("_")
-            if (nameParts.length > 2)
+    const parseRepStat = (repRef) => {
+            const repStatName = VAL({object: repRef}) ? repRef.get("name") : repRef
+            if (VAL({repname: repStatName}, "parseRepAttr")) {
+                const nameParts = repRef.get("name").split("_")
                 return {
                     section: nameParts[1],
                     rowID: nameParts[2],
                     stat: nameParts.slice(3).join("_")
                 }
+            }
             return false
-
         },
         makeRepRow = (charRef, secName, attrs) => {
             const attrList = {},
@@ -893,7 +867,7 @@ const D = (() => {
         deleteRepRow = (charRef, secName, rowID) => {
             if (!D.GetChar(charRef) || !_.isString(secName) || !_.isString(rowID))
                 return D.ThrowError(`Need valid charRef (${D.JSL(charRef)}), secName (${D.JSL(secName)}) and rowID (${D.JSL(rowID)}) to delete a repeating row.`, "DATA.DeleteRepRow")
-            const attrObjs = getStats(charRef, [secName, rowID])
+            const attrObjs = getRepStats(charRef, secName, rowID, null, null, "obj")
             // D.Alert(`deleteRepRow(charRef, ${D.JS(secName)}, ${D.JS(rowID)})<br><br><b>AttrObjs:</b><br>${D.JS(_.map(attrObjs, v => v.get("name")))}`, "DATA:DeleteRepRow")
             if (attrObjs.length === 0)
                 return D.ThrowError(`No row "repeating_${secName}_${rowID}" to delete for ${D.GetName(charRef)}.`, "DATA.DeleteRepRow")
@@ -902,7 +876,7 @@ const D = (() => {
             return true
         },
         copyToRepSec = (charRef, sourceSec, sourceRowID, targetSec) => {
-            const attrList = kvpMap(getStatData(charRef, [sourceSec, sourceRowID]), k => k.replace(`repeating_${sourceSec}_${sourceRowID}_`, ""))
+            const attrList = kvpMap(getRepStats(charRef, sourceSec, sourceRowID), (k, v) => v.name, v => v.val)
             // D.Alert(`copyToRepSec(charRef, ${D.JS(sourceSec)}, ${D.JS(sourceRowID)}, ${D.JS(targetSec)})<br><br><b>AttrList:</b><br>${D.JS(attrList)}`, "DATA:CopyToRepSec")
             makeRepRow(charRef, targetSec, attrList)
             deleteRepRow(charRef, sourceSec, sourceRowID)
@@ -911,13 +885,14 @@ const D = (() => {
             /* Sortfunc must have parameters (charRef, secName, rowID1, rowID2) and return
               POSITIVE INTEGER if row1 should be ABOVE row2. */
             // D.Log(`CharRef: ${D.JSL(charRef)}`)
-            const rowIDs = getRepRowIDs(charRef, secName),
-                sortTrigger = getStatData(charRef, [`repeating_${secName}_${rowIDs[0]}_sorttrigger`])
+            const rowIDs = getRepIDs(charRef, secName),
+                sortTrigger = getRepStat(charRef, secName, null, "sorttrigger")
+                // getStatData(charRef, [`repeating_${secName}_${rowIDs[0]}_sorttrigger`])
             // D.Alert(`RepOrder: ${D.JS(repOrderAttr)}<br><br>${rowIDs.length} Row IDs for ${secName}:<br><br>${D.JS(rowIDs)}`, "DATA.SortRepSec")
             rowIDs.sort((idA, idB) => sortFunc(charRef, secName, idA, idB))
             // D.Alert(`... SORTED?<br><br>${D.JS(rowIDs)}<br><br>TEST ATTR: ${D.JS(sortTrigger)}`, "DATA.SortRepSec")
             setAttrs(D.GetChar(charRef).id, { [`_reporder_repeating_${secName}`]: rowIDs.join(",") })
-            sortTrigger[`repeating_${secName}_${rowIDs[0]}_sorttrigger`] = sortTrigger[`repeating_${secName}_${rowIDs[0]}_sorttrigger`] === "false"
+            setRepStat(charRef, secName, sortTrigger.rowID, "sorttrigger", sortTrigger.val === "false")
             // D.Alert(`sortRepSec(charRef, ${D.JS(secName)}, sortFunc)<br><br><b>RowIDs:</b><br>${D.JS(rowIDs)}<br><br><b>sortTrigger:</b><br>${D.JS(sortTrigger)}`, "DATA:SortRepSec")
             setAttrs(D.GetChar(charRef).id, sortTrigger)
 
@@ -933,7 +908,7 @@ const D = (() => {
             // D.Alert(`splitRepSec(charRef, ${D.JS(sourceSec)}, ${D.JS(targetSec)}, sortFunc, ${D.JS(mode)})`, "DATA:SplitRepSec")
 
             // D.Alert("@@@ STARTING _.EACH COPYTOREPSEC @@@", "DATA:SplitRepSec")
-            _.each(getRepRowIDs(charRef, targetSec), id => {
+            _.each(getRepIDs(charRef, targetSec), id => {
                 copyToRepSec(charRef, targetSec, id, sourceSec)
             })
             const sortedIDs = sortRepSec(charRef, sourceSec, sortFunc)
@@ -991,116 +966,54 @@ const D = (() => {
         CheckInstall: checkInstall,
         RegisterEventHandlers: regHandlers,
 
-        GMID: getGMID,
-
         PAGEID: VALS.PAGEID,
         CELLSIZE: VALS.CELLSIZE,
 
-        JS: jStr,
-        // D.JS(obj, isLog): Parses a string. If isLog, will not use HTML.
-        JSL: jStrL,
-        // D.JSL(obj):  Parses a string, for output to the console log.
-        JSH: jStrH,
-
-        JSC: jStrC,
-
-        /* D.JSH(string):  Strips a multiline string of linebreaks, typically used for HTML
-		code (so you can format your code) for easy reading without including the incidental
-		linebreaks as <br> tags in a subsequent jStr call. */
+        JS: jStr, JSL: jStrL, JSH: jStrH, JSC: jStrC,
+        NumToText: numToText,
         Ordinal: ordinal,
-        // D.Ordinal(num): Returns ordinalized number (e.g. 1 -> "1st")
         Capitalize: capitalize,
-        // D.Capitalize(str): Capitalizes the first character in the string.
+        GetTextWidth: getTextWidth,
+
+        SendToPlayer: sendToPlayer,
+        Alert: sendToGM,
+        
+        RemoveFirst: removeFirst,
+        KeyMapObj: kvpMap,
         ParseToObj: parseToObj,
 
-        KeyMapObj: kvpMap,
-
-        /* D.ParseToObj(string): Returns object with parameters given by
-								  a string of form 'key:val, key:val,' */
-        GetSelected: getSelected,
-        // D.GetSelected(msg): Returns selected objects in message.
-        Validate: validate,
-        /* D.Validate(varList, funcName, scriptName):  Validates variables passed to it via varList, and
-			sends error message formatted with namespace and funcName.  VarList must be in form:
-			{
-				<category>: [<array of references>], ...
-			} 
-			Valid categories: 
-				char, player, trait,  text, graphic, token, reprow,
-				number, string, function, array, list  */
-        Log: logEntry,
-        // D.Log(msg, title): Formats log message, with title.
+        FuzzyMatch: fuzzyMatch,
         IsIn: isIn,
+        Validate: validate,
 
-        /* D.IsIn(needle, [haystack]): Returns formatted needle if found in
-										haystack (= all traits by default) */
+        SetDebugWatchList: setWatchList,
+        GetDebugWatchList: getWatchList,
+        Log: logDebugAlert,
+        ThrowError: throwError,
+        DBAlert: sendDebugAlert,
+        GetDebugRecord: getDebugRecord,
+        
+        GMID: getGMID,
+        GetSelected: getSelected,
         GetName: getName,
-        GetPlayer: getPlayer,
-        GetPlayerID: getPlayerID,
-        GetPlayerName: getPlayerName,
-
-        /* D.GetName(id): Returns name of graphic, character or player's
-							display name. If isShort, returns name without quoteparts
-       						OR only last name if no quotes. */
-        GetChars: getChars,
-
-        /* D.GetChars(val): Returns array of matching characters, given
-							"all", a chat message with selected token(s), character ID,
-       						player ID, character name OR array of those params. */
-        GetChar: getChar,
-
-        /* D.GetChar(val): As above, but returns only the first character
-		       				object found.*/
-        GetStats: getStats,
+        GetChars: getChars, GetChar: getChar,
         GetStat: getStat,
-        GetStatData: getStatData,
-        GetStatVal: getStatVal,
+        GetRepIDs: getRepIDs,
+        GetRepStats: getRepStats, GetRepStat: getRepStat,
+        GetPlayerID: getPlayerID, GetPlayer: getPlayer,
 
-        /* D.GetStat(char, name):  Given any valid character value, returns the
-									attribute object described by name. */
-        IsRepRow: isRepRow,
-        GetRepAttrObjs: getRepAttrObjs,
-        GetRepAttrs: getRepAttrData,
-        GetRepIDs: getRepRowIDs,
-        ParseRepAttr: parseRepAttr,
+        SetStat: setStat,
+        SetRepStats: setRepStats, SetRepStat: setRepStat,
+
+        ParseRepStat: parseRepStat,
         GetRepIDCase: getCaseRepID,
         CopyToSec: copyToRepSec,
         SortRepSec: sortRepSec,
         SplitRepSec: splitRepSec,
-
-        /* D.GetPlayerID(val):  Returns player ID given: display name, token
-                                    object, character object.*/
-        NumToText: numToText,
-        GetTextWidth: getTextWidth,
-
-        /* D.GetTextWidth(obj, text):  Returns width of given text object if
-			       					    it held supplied text. */
         MakeRow: makeRepRow,
         DeleteRow: deleteRepRow,
 
-        /* D.MakeRow(charID/obj, secName, attrs):  Creates repeating fieldset row in
-													secName with attrs for character
-													given by object or ID.*/
-        RunFX: runFX,
-
-        /* D.RunFX(name, {top: y, left: x}):  Runs a special effect at
-											   the given location. */
-        ThrowError: throwError,
-        // D.ThrowError(errObj, title, errObj): Logs an error and messages GM.
-        GetDebugInfo: getWatchList,
-        // D.GetDebugInfo(): Displays the debug level, alert level, and categories.
-        SetDebugWatchList: setWatchList,
-
-        DB: formatDebug,
-        DBAlert: sendDebugAlert,
-
-        Alert: sendToGM,
-        // D.Alert(msg, title): Sends alert message to GM.
-        SendToPlayer: sendToPlayer
-
-        /* D.SendToPlayer(who, msg, title): Sends chat message as 'who' with
-                                                message and title. Message can be an array of strings OR
-                                                        objects, of form: { message: <message>, title: <title> } */
+        RunFX: runFX
     }
 })()
 

@@ -424,7 +424,7 @@ const Chat = (() => {
                             D.Alert(D.JS(Campaign().get("playerpageid")), "Page ID")
                             break
                         case "debug":
-                            D.Alert(D.GetDebugInfo(), "DEBUG SETTINGS")
+                            D.Alert(D.GetDebugWatchList(), "DEBUG SETTINGS")
                             break
                         default:
                             sendHelpMsg()
