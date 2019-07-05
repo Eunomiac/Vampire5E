@@ -735,7 +735,7 @@ const D = (() => {
                             name: attrNameObjs.valObj && attrNameObjs.valObj.get("name") === attrValueObj.get("name") && attrNameObjs.name || 
                                     attrValueObj.get("name").match("repeating_.*?_.*?_(.+)")[1],
                             obj: attrValueObj,
-                            val: attrValueObj.get("current")
+                            val: VAL({number: attrValueObj.get("current")}) ? parseInt(attrValueObj.get("current")) : attrValueObj.get("current")
                         })
                 }
             }
