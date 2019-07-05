@@ -217,7 +217,7 @@ const Chat = (() => {
                     id: v.id
                 } )),
                 attrsLines = []
-            if (filter.length > 0)
+            if (filter.length)
                 sortedAttrs = _.sortBy(_.pick(_.uniq(allAttrs), v => filter.includes(v.name)), "name")
             else
                 sortedAttrs = _.sortBy(_.uniq(allAttrs), "name")
@@ -262,7 +262,7 @@ const Chat = (() => {
                 namespace.unshift(C.GAMENAME)
             const title = `state.${namespace.join(".")}`
 			// eslint-disable-next-line no-unmodified-loop-condition
-            while (namespace && namespace.length > 0)
+            while (namespace && namespace.length)
                 stateInfo = stateInfo[namespace.shift()]
             if (returnVals) {
                 const returnInfo = {}
@@ -460,7 +460,7 @@ const Chat = (() => {
                 case "!clear":
                     switch (args.shift()) {
                         case "dbfilter":
-                            if (args.length > 0)
+                            if (args.length)
                                 D.RemoveDBFilter(args.join(" "))
                             else
                                 D.ClearDBFilters()

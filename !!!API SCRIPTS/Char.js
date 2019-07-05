@@ -587,7 +587,7 @@ const Char = (() => {
                 }
                 if (charData.clandiscs) 
                     _.each(["disc1", "disc2", "disc3"], discnum => {
-                        if (charData.clandiscs[discnum].length > 0) {
+                        if (charData.clandiscs[discnum].length) {
                             attrList[`${discnum}_name`] = charData.clandiscs[discnum][0]
                             attrList[discnum] = charData.clandiscs[discnum][1]
                         } else {
@@ -634,7 +634,7 @@ const Char = (() => {
                                 otherDiscs.push([discName, parseInt(_.findKey(charData.otherdiscs, v => v.includes(discAbv)))])
 							
                         }
-                        while (otherDiscs.length > 0) {
+                        while (otherDiscs.length) {
                             const thisDisc = otherDiscs.pop(),
                                 targetSec = _.min([{sec: "discleft", num: rowCount.discleft}, {sec: "discmid", num:rowCount.discmid}, {sec: "discright", num:rowCount.discright}], v => v.num).sec
 							//D.Alert(`D.MakeRow(ID, ${targetSec}, {disc_name: ${thisDisc[0]}, disc: ${thisDisc[1]} })`)

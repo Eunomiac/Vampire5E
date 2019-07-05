@@ -760,7 +760,7 @@ const Roller = (() => {
                 params.top = top
                 params.left = left
                 if (params.justified && params.justified === "left") {
-                    params.width = D.GetTextWidth(obj, params.text)
+                    params.width = Media.GetTextWidth(obj, params.text)
                     params.left = left + params.width / 2 - width / 2
                 }
                 if (params.shift) {
@@ -1048,7 +1048,7 @@ const Roller = (() => {
                 if (STATEREF.selected[dieCat].length > 3)
                     selectDie(STATEREF.selected[dieCat][0], dieCat)
             }
-            if (STATEREF.selected[dieCat].length > 0 && !isRerollFXOn) {
+            if (STATEREF.selected[dieCat].length && !isRerollFXOn) {
                 isRerollFXOn = true
                 lockRoller(true)
                 D.RunFX("bloodCloud1", POSITIONS.bloodCloudFX)
@@ -1079,7 +1079,7 @@ const Roller = (() => {
                                 return true
                         // TEST: If restriction is "physical", "social" or "mental", does an appropriate trait match?
                         } else if (D.IsIn(restr, ["physical", "mental", "social"])) {
-                            if (!_.intersection(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()), _.keys(traits)).length > 0) {
+                            if (!_.intersection(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()), _.keys(traits)).length) {
                                 DB(`SKIPPING: Restriction ${D.JS(restr)} Doesn't Apply<br><br>ATTRIBUTES/SKILLS MAPPED = ${D.JS(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()))}<br><br>C.SKILLS[restriction] = ${D.JS(C.SKILLS[restr])}<br><br>INTERSECTION = ${D.JS(_.intersection(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()), _.keys(traits)))}`, "applyRollEffects")
                                 return true
                             }
@@ -1448,10 +1448,10 @@ const Roller = (() => {
                 params.args.length > 3 ? params.args[4].split(",") : "",
                 params.args.length > 4 ? params.args[5].split(",") : ""
             ] )), flag => {
-                if (flag === "Health" && _.intersection(traitList, _.map(_.flatten( [C.ATTRIBUTES.physical, C.SKILLS.physical] ), v => v.toLowerCase())).length > 0) {
+                if (flag === "Health" && _.intersection(traitList, _.map(_.flatten( [C.ATTRIBUTES.physical, C.SKILLS.physical] ), v => v.toLowerCase())).length) {
                     flagData.negFlagLines.push("Injured (●●)")
                     flagData.flagDiceMod -= 2
-                } else if (flag === "Willpower" && _.intersection(traitList, _.map(_.flatten( [C.ATTRIBUTES.mental, C.ATTRIBUTES.social, C.SKILLS.mental, C.SKILLS.social] ), v => v.toLowerCase())).length > 0) {
+                } else if (flag === "Willpower" && _.intersection(traitList, _.map(_.flatten( [C.ATTRIBUTES.mental, C.ATTRIBUTES.social, C.SKILLS.mental, C.SKILLS.social] ), v => v.toLowerCase())).length) {
                     flagData.negFlagLines.push("Exhausted (●●)")
                     flagData.flagDiceMod -= 2
                 } else if (flag === "Humanity") {
@@ -1461,10 +1461,10 @@ const Roller = (() => {
                     const customFlag = _.compact(flag.split(":")),
                         mod = parseInt(customFlag[customFlag.length - 1] )
                     if ((customFlag.length === 2 || customFlag.length === 3) && (
-                        customFlag[1].includes("p") && _.intersection(traitList, _.flatten( [C.ATTRIBUTES.physical, C.SKILLS.physical] )).length > 0 ||
-						customFlag[1].includes("m") && _.intersection(traitList, _.flatten( [C.ATTRIBUTES.mental, C.SKILLS.mental] )).length > 0 ||
-						customFlag[1].includes("s") && _.intersection(traitList, _.flatten( [C.ATTRIBUTES.social, C.SKILLS.social] )).length > 0 ||
-						customFlag[1].includes("d") && _.intersection(traitList, C.DISCIPLINES).length > 0
+                        customFlag[1].includes("p") && _.intersection(traitList, _.flatten( [C.ATTRIBUTES.physical, C.SKILLS.physical] )).length ||
+						customFlag[1].includes("m") && _.intersection(traitList, _.flatten( [C.ATTRIBUTES.mental, C.SKILLS.mental] )).length ||
+						customFlag[1].includes("s") && _.intersection(traitList, _.flatten( [C.ATTRIBUTES.social, C.SKILLS.social] )).length ||
+						customFlag[1].includes("d") && _.intersection(traitList, C.DISCIPLINES).length
                     )) {
                         if (mod >= 0)
                             flagData.posFlagLines.push(`${customFlag[0]} (${mod > 0 ? "●".repeat(mod) : "~"})`)
@@ -1753,7 +1753,7 @@ const Roller = (() => {
 			   };
 			   RollData.dicePool += rollData.traitData[trt].value;
 			   });
-			   If (specialties.length > 0) {
+			   If (specialties.length) {
 			   RollData.posFlagLines.push("Specialty: " + specialties.join(", ") + " (●)");
 			   RollData.dicePool++;
 			   }
@@ -2078,7 +2078,7 @@ const Roller = (() => {
                     }
                       /* falls through */
                 case "trait":
-                    if (posFlagLines.length > 0) {
+                    if (posFlagLines.length) {
                         rollLines.posMods = {
                             text: `+ ${posFlagLines.join(" + ")}          `,
                             justified: "left"
@@ -2091,7 +2091,7 @@ const Roller = (() => {
                             justified: "left"
                         }
                     }
-                    if (negFlagLines.length > 0) {
+                    if (negFlagLines.length) {
                         rollLines.negMods = {
                             text: `- ${negFlagLines.join(" - ")}`,
                             justified: "left",
@@ -2104,7 +2104,7 @@ const Roller = (() => {
                         rollLines.mainRoll.shift.top = 0
                         rollLines.mainRollShadow.shift.top = 0
                     }
-                    if (redFlagLines.length > 0)
+                    if (redFlagLines.length)
                         rollLines.redMods = {
                             text: redFlagLines.join(" "),
                             justified: "left",
@@ -2114,7 +2114,7 @@ const Roller = (() => {
                                 amount: 20
                             }
                         }
-                    if (goldFlagLines.length > 0)
+                    if (goldFlagLines.length)
                         rollLines.goldMods = {
                             text: goldFlagLines.join(" "),
                             justified: "left",
@@ -2534,7 +2534,7 @@ const Roller = (() => {
             scaleFrame("top", spread)
 
             D.RunFX("bloodBolt", POSITIONS.bloodBoltFX)
-            if (_.values(deltaAttrs).length > 0) {
+            if (_.values(deltaAttrs).length) {
                 DB(`CHANGING ATTRIBUTES:
 				
 					${D.JS(deltaAttrs)}`, "displayRoll")
@@ -2645,7 +2645,7 @@ const Roller = (() => {
                 playerLine += `${(rollData.mod > 0 ? CHATSTYLES.secret.greyPlus : "") + (rollData.mod < 0 ? CHATSTYLES.secret.greyMinus : "") + CHATSTYLES.secret.white + Math.abs(rollData.mod)}</span>`
         }
 
-        if (rollData.traits.length > 0) {
+        if (rollData.traits.length) {
             traitLine = _.keys(rollData.traitData).join(" + ")
             if (rollData.mod !== 0)
                 traitLine += (dicePool > 0 ? " + " : "") + (dicePool < 0 ? " - " : "") + Math.abs(rollData.mod)

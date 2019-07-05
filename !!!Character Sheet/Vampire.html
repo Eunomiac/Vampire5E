@@ -7649,10 +7649,10 @@
                             if (pI("sdmg") !== 0) {
                                 attrList[p("sdmg")] = pI("sdmg")
                                 while (attrList[p("sdmg")] > 0) {
-                                    if (dmgBins[0].length > 0) { // There's enough blank boxes for the superficial hit.
+                                    if (dmgBins[0].length) { // There's enough blank boxes for the superficial hit.
                                         dmgBins[1].push(dmgBins[0].shift())
                                         attrList[p("sdmg")]--
-                                    } else if (dmgBins[1].length > 0) { // Boxes are filled, try to upgrade to aggravated.
+                                    } else if (dmgBins[1].length) { // Boxes are filled, try to upgrade to aggravated.
                                         dmgBins[2].push(dmgBins[1].shift())
                                         attrList[p("sdmg")]-- // All boxes are filled with Aggravated: Death.
                                     } else {
@@ -7660,7 +7660,7 @@
                                     }
                                 }
                                 while (attrList[p("sdmg")] < 0) {
-                                    if (dmgBins[1].length > 0) { // Superficial damage present, so heal.
+                                    if (dmgBins[1].length) { // Superficial damage present, so heal.
                                         dmgBins[0].push(dmgBins[1].pop())
                                         attrList[p("sdmg")]++
                                     } else {
@@ -7671,10 +7671,10 @@
                             if (pI("admg") !== 0) {
                                 attrList[p("admg")] = pI("admg")
                                 while (attrList[p("admg")] > 0) {
-                                    if (dmgBins[0].length > 0) {
+                                    if (dmgBins[0].length) {
                                         dmgBins[2].push(dmgBins[0].shift())
                                         attrList[p("admg")]--
-                                    } else if (dmgBins[1].length > 0) {
+                                    } else if (dmgBins[1].length) {
                                         dmgBins[2].push(dmgBins[1].shift())
                                         attrList[p("admg")]--
                                     } else {
@@ -7682,7 +7682,7 @@
                                     }
                                 }
                                 while (attrList[p("admg")] < 0) {
-                                    if (dmgBins[2].length > 0) {
+                                    if (dmgBins[2].length) {
                                         dmgBins[0].push(dmgBins[2].pop())
                                         attrList[p("admg")]--
                                     } else {

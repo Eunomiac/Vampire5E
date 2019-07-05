@@ -274,7 +274,7 @@ const Media = (() => {
                 let imgObj = null
                 //D.Alert(`VALIDATIONS: GRAPHIC --> ${D.JS(VAL({ graphic: imgRef }))}
 				//VALIDATION STRING: ${VAL({ string: imgRef })}`)
-                if (VAL({ graphic: imgRef }))
+                if (VAL({ graphicObj: imgRef }))
                     imgObj = imgRef
                 else if (VAL({ string: imgRef })) 
                     if (getImageKey(imgRef))
@@ -839,10 +839,34 @@ const Media = (() => {
 
         // #region TEXT OBJECTS: Registering & Manipulating Text Objects //(textObj, hostName, objLayer, !isStartActive || isStartActive !== "false", !isShadow || isShadow !== "false", D.ParseToObj(args.join(" ")))
     const getTextObj = (textRef) => {
-
+            return textRef
         },
         getTextData = (textRef) => {
 
+        },
+        getTextWidth = (textRef, text) => {
+            const textObj = getTextObj(textRef)
+            if (VAL({text: textObj}, "getTextWidth")) {
+                const font = textObj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
+                    size = textObj.get("font_size"),
+                    chars = text.split(""),
+                    fontRef = state.DATA.CHARWIDTH[font],
+                    charRef = fontRef && fontRef[size]
+                let width = 0
+                if (!fontRef || !charRef) {
+                    DB(`No font reference for '${font}' at size '${size}', attempting default`, "getTextWidth")
+
+                    return text.length * (parseInt(textObj.get("width")) / textObj.get("text").length)
+                }
+                _.each(chars, char => {
+                    if (!charRef[char] && charRef[char] !== " " && charRef[char] !== 0)
+                        DB(`... MISSING '${char}' in '${font}' at size '${size}'`, "getTextWidth")
+                    else
+                        width += parseInt(charRef[char])
+                })
+                return width
+            }
+            return false
         },
         regText = (textRef, hostName, activeLayer, startActive, isNeedingShadow, options = {}, isSilent = false) => {
         // D.Alert(`Options for '${D.JS(imgName)}': ${D.JS(options)}`, "IMAGES: regImage")
@@ -1083,13 +1107,13 @@ const Media = (() => {
                             break
                         case "layer":
                             objLayer = args.pop()
-                            layerImages(args.length > 0 ? args : msg, objLayer)
+                            layerImages(args.length ? args : msg, objLayer)
                             break
                         case "tofront":
-                            orderImages(args.length > 0 ? args : msg)
+                            orderImages(args.length ? args : msg)
                             break
                         case "toback":
-                            orderImages(args.length > 0 ? args : msg, true)
+                            orderImages(args.length ? args : msg, true)
                             break
                         case "params":
                             if (getImageData(args[0]))
@@ -1163,7 +1187,7 @@ const Media = (() => {
                         for (hostName of _.keys(IMAGEREGISTRY))
                             if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
                                 removeImage(hostName)
-                    } else if (getImageObjs(msg).length > 0) {
+                    } else if (getImageObjs(msg).length) {
                         for (const obj of getImageObjs(msg)) 
                             removeImage(obj)
                 
@@ -1181,7 +1205,7 @@ const Media = (() => {
                         for (hostName of _.keys(IMAGEREGISTRY))
                             if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
                                 removeImage(hostName, true)
-                    } else if (_.compact(getImageObjs(msg)).length > 0) {
+                    } else if (_.compact(getImageObjs(msg)).length) {
                         for (const obj of getImageObjs(msg)) 
                             removeImage(obj, true)
                 
@@ -1317,6 +1341,7 @@ const Media = (() => {
 
         GetTextObj: getTextObj,
         GetTextData: getTextData,
+        GetTextWidth: getTextWidth,
         MakeText: makeText,
         RegText: regText,
         RemoveText: removeText,

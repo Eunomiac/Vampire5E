@@ -37,7 +37,7 @@ const DragPads = (() => {
                 let dieCat = ""
                 do {
                     dieCat = diceCats.pop()
-                    dieCat = stateVar[dieCat] && stateVar[dieCat].length > 0 ? dieCat : 0
+                    dieCat = stateVar[dieCat] && stateVar[dieCat].length ? dieCat : 0
                 } while (dieCat === 0)
                 Roller.Reroll(dieCat)
             },
