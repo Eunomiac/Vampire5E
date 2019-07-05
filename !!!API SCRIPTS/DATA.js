@@ -722,7 +722,7 @@ const D = (() => {
                         DB(`Name Object Found: ${jStr(attrNameObjs)}`, "getRepStats")
                     }
                     if (statName)
-                        attrValueObjs[0] = _.find(rowAttrObjs, v => v.get("name").toLowerCase().endsWith(`${rowID}_${statName}`.toLowerCase())) ||
+                        attrValueObjs[0] = _.find(rowAttrObjs, v => v.get("name").toLowerCase().includes(`_${rowID.toLowerCase()}_`) && v.get("name").toLowerCase().endsWith(`_${statName.toLowerCase()}`)) ||
                                            attrNameObjs.name && attrNameObjs.name.toLowerCase() === statName.toLowerCase() && attrNameObjs.valObj
                     else
                         attrValueObjs.push(...rowAttrObjs)
