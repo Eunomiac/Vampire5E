@@ -1356,6 +1356,6 @@ const Media = (() => {
 on("ready", () => {
     Media.RegisterEventHandlers()
     Media.CheckInstall()
-    D.Log("Ready!", "Media")
+    D.Log("Media Ready!")
 })
 void MarkStop("Media")

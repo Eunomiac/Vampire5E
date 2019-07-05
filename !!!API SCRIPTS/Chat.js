@@ -565,6 +565,6 @@ const Chat = (() => {
 
 on("ready", () => {
     Chat.RegisterEventHandlers()
-    D.Log("Ready!", "Chat")
+    D.Log("Chat Ready!")
 } )
 void MarkStop("Chat")

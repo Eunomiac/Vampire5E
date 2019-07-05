@@ -476,6 +476,6 @@ const DragPads = (() => {
 on("ready", () => {
     DragPads.RegisterEventHandlers()
     DragPads.CheckInstall()
-    D.Log("Ready!", "DragPads")
+    D.Log("DragPads Ready!")
 } )
 void MarkStop("DragPads")

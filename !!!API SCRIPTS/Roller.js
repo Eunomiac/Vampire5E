@@ -3137,6 +3137,6 @@ const Roller = (() => {
 on("ready", () => {
     Roller.RegisterEventHandlers()
     Roller.CheckInstall()
-    D.Log("Ready!", "Roller")
+    D.Log("Roller Ready!")
 } )
 void MarkStop("Roller")

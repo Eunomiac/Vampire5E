@@ -32,8 +32,7 @@ const C = (() => {
 
     // #region HTML FORMATS
     const CHATHTML = {        
-        header: content => 
-            `<div style="
+            header: content => `<div style="
                 display: block;
                 height: 20px;
                 width: auto;
@@ -48,8 +47,7 @@ const C = (() => {
                 border: 2px solid black;
                 position: relative;
             ">${content}</div>`,
-        body: content => 
-            `<div style="
+            body: content => `<div style="
                 display: block;
                 width: auto;
                 padding: 5px 5px;
@@ -60,15 +58,156 @@ const C = (() => {
                 border: 2px solid black;
                 line-height: 14px;
                 position: relative;
-            ">${content}</div>
-            <div style="
+            ">${content}</div><div style="
                 display: block;
                 width: auto;
                 margin-left: -42px;
                 background-color: none;
                 position: relative;
             "></div>`,        
-    }
+        },
+        HANDOUTHTML = {
+            main: content => `<div style="
+                display: block;
+                width: 600px;
+            ">${content}</div>`,
+            boxTitle: content => `<span style="
+                display: block;
+                width: 602px;
+                height: 16px;
+                line-height: 16px;
+                background-color: #888;
+                font-family: 'Century Gothic';
+                font-size: 14px;
+                font-weight: bold;
+                padding: 3px 3px;
+                box-sizing: border-box;
+                margin-top: 10px;
+            ">${content}</span>`,
+            subTitle: content => `<span style="
+                display: block;
+                width: 600px;
+                height: 12px;
+                line-height: 12px;
+                margin: 5px 0px 5px -6px;
+                font-weight: bold;
+                border-bottom: 1px solid black;
+                font-family: 'Century Gothic';
+                font-size: 12px;
+                padding-bottom: 3px;
+            ">${content}</span>`,
+            greyParagraph: content => `<span style="
+                display: block;
+                width: 586px;
+                font-family: 'Trebuchet MS';
+                font-size: 12px;
+                background-color: #DDD;
+                border-left: 1px solid #999;
+                border-right: 1px solid #999;
+                padding: 3px 10px;
+            ">${content}</span>`,
+            charName: content => `<span style="
+                display: block; 
+                width: 600px;
+                font-size: 32px; 
+                color: rgb(99,00,00); 
+                font-family: Voltaire; 
+                font-variant: small-caps;
+            ">${content}</span>`,
+            projectGoal: content => `<span style="
+                display: block; 
+                width: 600px; 
+                height: 24px; 
+                background-color: rgb( 206 , 198 , 206 ); 
+                font-size: 16px; 
+                color: black; 
+                font-family: 'Alice Regular'; 
+                font-weight: bold; 
+                font-variant: small-caps; 
+                border-bottom: 1px solid black; 
+                border-top: 1px solid black;
+            ">${content}</span>`,
+            smallNote: content => `<span style="
+                display:block; 
+                width: 580px; 
+                font-size: 10px; 
+                font-family: Goudy; 
+                margin-left: 20px;
+            ">${content}</span>`,
+            subheader: content => `<span style="
+                display:inline-block; 
+                width: 60px; 
+                font-size: 14px; 
+                color: black; 
+                font-family: Voltaire; 
+                font-variant: small-caps; 
+                font-weight: bold; 
+                text-align: right; 
+                margin-right: 10px;
+            ">${content}</span>`,
+            projectScope: content => `<span style="
+                display:inline-block; 
+                width: 530px; 
+                font-size: 12px; 
+                color: black; 
+                font-family: 'Alice Regular'; 
+                vertical-align: top; 
+                padding-top: 2px;
+            ">${content}</span>`,
+            critSucc: content => `<span style="
+                display: inline-block; 
+                width: 300px; 
+                font-size: 20px; 
+                color: purple; 
+                font-family: Voltaire; 
+                font-weight: bold;
+            ">${content}</span>`,
+            succ: content => `<span style="
+                display: inline-block; 
+                width: 300px; 
+                font-size: 20px; 
+                color: black; 
+                font-family: goodfish; 
+                font-weight: bold;
+            ">${content}</span>`,
+            endDate: content => `<span style="
+                display: inline-block; 
+                width: 300px; 
+                font-size: 20px; 
+                color: black; 
+                font-family: Voltaire; 
+                font-weight: bold; 
+                text-align: right;
+            ">${content}</span>`,
+            daysleft: content => `<span style="
+                display: inline-block; 
+                width: 600px; 
+                font-size: 14px; 
+                color: black; 
+                font-family: 'Alice Regular'; 
+                font-style: italic; 
+                text-align: right;
+            ">${content}</span>`,
+            projectStake: content => `<span style="
+                display: inline-block; 
+                width: 530px; 
+                font-family: 'Alice Regular';
+            ">${content}</span>`,
+            forcedStake: content => `<span style="
+                display: inline-block; 
+                width: 530px; 
+                font-family: 'Alice Regular'; 
+                color: #990000; 
+                font-weight: bold;
+            ">${content}</span>`,
+            teamwork: content => `<span style="
+                display: inline-block; 
+                width: 530px; 
+                font-family: 'Alice Regular'; 
+                color: blue; 
+                font-weight: bold;
+            ">${content}</span>`
+        }
     // #endregion
 
     // #region VAMPIRE ATTRIBUTES, STATS & TRAITS
@@ -256,6 +395,7 @@ const C = (() => {
         ATTRIBUTES,
         BLOODPOTENCY,
         CHATHTML,
+        HANDOUTHTML,
         CLANS,
         DISCIPLINES,
         FX,
@@ -273,6 +413,6 @@ const C = (() => {
 
 on("ready", () => {
     D.CheckInstall()
-    D.Log("Ready!", "CONSTANTS")
+    D.Log("CONSTANTS Ready!")
 })
 void MarkStop("CONSTANTS")

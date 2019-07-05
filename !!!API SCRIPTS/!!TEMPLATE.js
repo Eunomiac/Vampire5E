@@ -81,6 +81,6 @@ const XX_SCRIPTNAME_XX = (() => {
 on("ready", () => {
     XX_SCRIPTNAME_XX.RegisterEventHandlers()
     XX_SCRIPTNAME_XX.CheckInstall()
-    D.Log("Ready!", "XX_SCRIPTNAME_XX")
+    D.Log("XX_SCRIPTNAME_XX Ready!")
 } )
 void MarkStop("XX_SCRIPTNAME_XX")

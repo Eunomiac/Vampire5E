@@ -46,7 +46,7 @@ const D = (() => {
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
         TRACE.push("handleInput")
-        DB(`MESSAGE (DATA): ${jStr(msg)}<br><br>handleInput(msg, ${jStr(who)}, ${jStr(call)}, ${jStr(args.join(", "))})`, "DATAinput")
+        //DB(`MESSAGE (DATA): ${jStr(msg)}<br><br>handleInput(msg, ${jStr(who)}, ${jStr(call)}, ${jStr(args.join(", "))})`, "DATAinput")
         switch (call) {
             case "debug": case "log": case "dblog":
                 getDebugRecord()
@@ -56,7 +56,7 @@ const D = (() => {
                 D.Alert(`${jStr(getRepStats(
                     msg,
                     section,
-                    rowFilter === "null" ? null : parseToObj(rowFilter),
+                    rowFilter === "null" || !rowFilter ? null : parseToObj(rowFilter),
                     statName === "null" ? null : statName,
                     groupBy === "null" ? null : groupBy,
                     pickProperty === "null" ? null : pickProperty
@@ -110,7 +110,7 @@ const D = (() => {
                     return _.escape("<UNDEFINED>")
                 if (data && isShortForm)
                     if (VAL({ object: data }))
-                        returnObj = `${data.get("_type") || "object"}: ${data.get("name") || data.id || jStr(data)}`
+                        returnObj = `${data.get("_type") || "object"}: ${data.get("name") || data.id || data}`
                     else
                         returnObj = data.name ? { name: data.name } : data.id ? { id: data.id } : data
                 else
@@ -126,7 +126,7 @@ const D = (() => {
                     replace(/\\"/gu, "\""). // Escapes quote marks
                     replace(/(^"|"$)/gu, "") // Removes quote marks from the beginning and end of the string
             } catch (errObj) {
-                return THROW("", "jStr", errObj)
+                return jStr(errObj)
             }
         },
         jStrH = (data, isShortForm = false) => {
@@ -219,7 +219,7 @@ const D = (() => {
 
     // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
     const formatTitle = (funcName, scriptName, prefix = "") => `[${prefix}${funcName || scriptName ? " " : ""}${scriptName ? `${scriptName.toUpperCase()}` : ""}${scriptName && funcName ? ": " : ""}${funcName || ""}]`,
-        formatLogLine = (msg, funcName, scriptName, prefix = "", isShortForm = false) => `${formatTitle(funcName, scriptName, prefix)} ${jStrL(msg, isShortForm)}`,
+        formatLogLine = (msg, funcName, scriptName, prefix = "", isShortForm = false) => `${formatTitle(funcName, scriptName, prefix)} ${jStrL(msg, isShortForm, true)}`,
         sendToPlayer = (who, message = "", title = "") => {
             /* Whispers formatted chat message to player given: display name OR player ID. */
             const player = getObj("player", who) ?
@@ -444,16 +444,41 @@ const D = (() => {
             sendToGM(`Currently displaying debug information tagged with:<br><br>${jStr(STATEREF.WATCHLIST.join("<br>"))}`, formatTitle("setWatchList", SCRIPTNAME))
         },
         getWatchList = () => sendToGM(`${jStr(STATEREF.WATCHLIST)}`, "DEBUG WATCH LIST"),
-        logDebugAlert = (msg, funcName, scriptName, prefix = "DB") => STATEREF.DEBUGLOG.push(formatLogLine(msg, funcName, scriptName, prefix)),
+        logDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
+            if (funcName)
+                STATEREF.DEBUGLOG.push({
+                    timeStamp: (new Date()).getTime(),
+                    title: formatTitle(funcName, scriptName, prefix),
+                    contents: msg
+                })                
+            log(formatLogLine(msg, funcName, scriptName, prefix))
+        },
         throwError = (msg, funcName, scriptName, errObj) => sendDebugAlert(`${msg}${errObj ? `${errObj.name}<br>${errObj.message}<br><br>${errObj.stack}` : ""}`, funcName, scriptName, "ERROR"),
         sendDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
-            const trace = TRACE.length ? `<span style="display: block; width: 100%; font-size: 10px; margin-top: -5px; background-color: #AAAAAA; color: grey; font-family: Voltaire; font-weight: bold;">${jStr(TRACE.join(" ► "))}</span>` : ""
-            logDebugAlert(msg, formatTitle(funcName, scriptName, prefix))
+            const trace = TRACE.length ? `<span style="display: block; width: 100%; font-size: 10px; margin-top: -5px; background-color: #AAAAAA; color: grey; font-family: Voltaire; font-weight: bold;">${TRACE.join(" ► ")}</span>` : ""
+            logDebugAlert(msg, funcName, scriptName, prefix)
             if (funcName && STATEREF.WATCHLIST.includes(funcName) || scriptName && STATEREF.WATCHLIST.includes(scriptName) || !funcName && !scriptName)
                 sendToGM(trace + (isTraceOnly ? "" : msg), formatTitle(funcName, scriptName, prefix))
         },
         getDebugRecord = () => {
-            sendToGM(jStr(STATEREF.DEBUGLOG.join("<br>")), "DEBUG LOG")
+            const logLines = []
+            let lastTimeStamp
+            for (const logData of STATEREF.DEBUGLOG) {
+                if (!lastTimeStamp || logData.timeStamp - lastTimeStamp > 1000) {
+                    let [logDate, ampm] = [new Date(logData.timeStamp), "A.M."]
+                    logDate.setUTCHours(logDate.getUTCHours() - 4)
+                    if (logDate.getUTCHours() >= 12) {
+                        ampm = "P.M."
+                        if (logDate.getUTCHours() > 12)
+                            logDate.setUTCHours(logDate.getUTCHours() - 12)
+                    }                
+                    logLines.push("</div>", C.HANDOUTHTML.main(C.HANDOUTHTML.boxTitle((new Date(logDate)).toUTCString().replace("GMT", ampm))).replace("</div>", ""))
+                }
+                logLines.push(C.HANDOUTHTML.greyParagraph(C.HANDOUTHTML.subTitle(logData.title.replace("DB ", "")) + jStr(logData.contents)))
+                lastTimeStamp = logData.timeStamp
+            }
+            logLines.push("</div>")
+            Handouts.Make("Debug Log", "debug", logLines.join(""))
             STATEREF.DEBUGLOG.length = 0
         }
     // #endregion
@@ -633,7 +658,7 @@ const D = (() => {
                         for (const rowID of [...validRowIDs]) {
                             const attrObjsInRow = _.filter(attrObjsInSection, v => v.get("name").toLowerCase().includes(rowID.toLowerCase()))
                             dbstring += `RowID: ${rowID}`
-                            if (!_.find(attrObjsInRow, v => v.get("name").toLowerCase().endsWith(key).toLowerCase() &&
+                            if (!_.find(attrObjsInRow, v => v.get("name").toLowerCase().endsWith(key) &&
                                 (val === "*" || v.get("current").toString().toLowerCase() === val.toString().toLowerCase()))) {
                                 // If no direct match is found, check if the row contains a "_name" attribute that matches the key.
                                 const nameAttrObj = _.find(attrObjsInRow, v => v.get("name").endsWith("_name") &&
@@ -678,6 +703,7 @@ const D = (() => {
             return _.uniq(validRowIDs)
         },
         getRepStats = (charRef, section, rowFilter, statName, groupBy, pickProperty, isSilent = false) => {
+            DB(`getRepStats(${jStrL([getChar(charRef).get("name"), section, rowFilter, statName, groupBy, pickProperty])})`, "getRepStats")
             const charObj = getChar(charRef)
             let rowData = []
             if (VAL({ charObj: charObj, string: section }, "getRepStats")) {
@@ -687,23 +713,27 @@ const D = (() => {
                                                                                                         rowIDs.includes(v.get("name").match(`repeating_${section}_(.*?)_`)[1]))
                 for (const rowID of rowIDs) {
                     const rowAttrObjs = _.filter(attrObjs, v => v.get("name").includes(rowID)),
-                        attrValueObjs = []
-                    if (statName) {
-                        attrValueObjs[0] = _.find(rowAttrObjs, v => v.get("name").toLowerCase().endsWith(`${rowID}_${statName}`.toLowerCase()))
-                        if (!attrValueObjs[0]) {
-                            // If no direct match is found, instead grab the name of the "_name" attribute, and then return the stripped value attribute.
-                            const attrNameObj = _.find(rowAttrObjs, v => v.get("name").toLowerCase().endsWith("_name"))
-                            attrValueObjs[0] = _.find(rowAttrObjs, v => v.get("name").toLowerCase() === attrNameObj.get("name").toLowerCase().slice(0, -5))
-                        }
-                    } else {
-                        attrValueObjs.push(...rowAttrObjs)
+                        attrValueObjs = [],
+                        attrNameObjs = { nameObj: _.find(rowAttrObjs, v => v.get("name").toLowerCase().endsWith("_name")) }
+                    if (attrNameObjs.nameObj) {
+                        attrNameObjs.name = attrNameObjs.nameObj.get("current")
+                        attrNameObjs.valObj = _.find(rowAttrObjs, v => v.get("name").toLowerCase() === attrNameObjs.nameObj.get("name").toLowerCase().slice(0, -5))
+                        attrNameObjs.val = attrNameObjs.valObj.get("current")
+                        DB(`Name Object Found: ${jStr(attrNameObjs)}`, "getRepStats")
                     }
+                    if (statName)
+                        attrValueObjs[0] = _.find(rowAttrObjs, v => v.get("name").toLowerCase().endsWith(`${rowID}_${statName}`.toLowerCase())) ||
+                                           attrNameObjs.name && attrNameObjs.name.toLowerCase() === statName.toLowerCase() && attrNameObjs.valObj
+                    else
+                        attrValueObjs.push(...rowAttrObjs)
+                    DB(`AttrValueObjs: ${jStr(attrValueObjs)}`, "getRepStats")
                     for (const attrValueObj of _.compact(attrValueObjs))
                         rowData.push({
                             charID: charObj.id,
                             rowID: rowID,
                             fullName: attrValueObj.get("name"),
-                            name: statName,
+                            name: attrNameObjs.valObj && attrNameObjs.valObj.get("name") === attrValueObj.get("name") && attrNameObjs.name || 
+                                    attrValueObj.get("name").match("repeating_.*?_.*?_(.+)")[1],
                             obj: attrValueObj,
                             val: attrValueObj.get("current")
                         })
@@ -994,6 +1024,6 @@ const D = (() => {
 on("ready", () => {
     D.CheckInstall()
     D.RegisterEventHandlers()
-    D.Log("Ready!", "DATA")
+    D.Log("DATA Ready!")
 })
 void MarkStop("DATA")

@@ -81,6 +81,6 @@ const Player = (() => {
 on("ready", () => {
     Player.RegisterEventHandlers()
     Player.CheckInstall()
-    D.Log("Ready!", "Player")
+    D.Log("Player Ready!")
 } )
 void MarkStop("Player")

@@ -1042,6 +1042,6 @@ const Char = (() => {
 on("ready", () => {
     Char.RegisterEventHandlers()
     Char.CheckInstall()
-    D.Log("Ready!", "Char")
+    D.Log("Char Ready!")
 })
 void MarkStop("Char")

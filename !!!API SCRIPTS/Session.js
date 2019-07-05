@@ -76,6 +76,6 @@ const Session = (() => {
 on("ready", () => {
     Session.RegisterEventHandlers()
     Session.CheckInstall()
-    D.Log("Ready!", "Session")
+    D.Log("Session Ready!")
 } )
 void MarkStop("Session")

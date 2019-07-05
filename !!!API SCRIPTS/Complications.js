@@ -238,6 +238,6 @@ const Complications = (() => {
 on("ready", () => {
     Complications.RegisterEventHandlers()
     Complications.CheckInstall()
-    D.Log("Ready!", "Complications")
+    D.Log("Complications Ready!")
 } )
 void MarkStop("Complications")

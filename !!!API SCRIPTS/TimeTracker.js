@@ -1033,6 +1033,6 @@ const TimeTracker = (() => {
 on("ready", () => {
     TimeTracker.RegisterEventHandlers()
     TimeTracker.CheckInstall()
-    D.Log("Ready!", "TimeTracker")
+    D.Log("TimeTracker Ready!")
 } )
 void MarkStop("TimeTracker")

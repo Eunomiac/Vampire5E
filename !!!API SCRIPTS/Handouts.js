@@ -54,10 +54,12 @@ const Handouts = (() => {
     // #endregion
 
     // #region SETTERS: Setting Notes
-    const makeHandoutObj = (title, category) => {
+    const makeHandoutObj = (title, category, contents) => {
         if (category)
             STATEREF.noteCounts[category] = STATEREF.noteCounts[category] ? STATEREF.noteCounts[category] + 1 : 1
-        const noteObj = createObj("handout", {name: title})
+        const noteObj = createObj("handout", {name: `${title} ${category && STATEREF.noteCounts[category] ? STATEREF.noteCounts[category] - 1 : ""}`})
+        if (contents)
+            noteObj.set("notes", `<div style="${HTMLStyle.divwrapper}">${D.JS(contents)}</div>`)
         return noteObj		
     }
     // #endregion
@@ -173,13 +175,15 @@ const Handouts = (() => {
 
     return {
         RegisterEventHandlers: regHandlers,
-        CheckInstall: checkInstall
+        CheckInstall: checkInstall,
+
+        Make: makeHandoutObj
     }
 } )()
 
 on("ready", () => {
     Handouts.RegisterEventHandlers()
     Handouts.CheckInstall()
-    D.Log("Ready!", "Handouts")
+    D.Log("Handouts Ready!")
 } )
 void MarkStop("Handouts")
