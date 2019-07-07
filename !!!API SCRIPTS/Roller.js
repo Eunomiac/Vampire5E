@@ -1066,7 +1066,6 @@ const Roller = (() => {
 
     // #region Getting Information & Setting State Roll Record
     const applyRollEffects = rollInput => {
-        // const rollEffectString = getAttrByName(rollInput.charID, "rolleffects")
             const rollEffectString = getAttrByName(rollInput.charID, "rolleffects")
             if (VAL({string: rollEffectString, list: rollInput}, "applyRollEffects")) {
                 rollInput.appliedRollEffects = rollInput.appliedRollEffects || []
