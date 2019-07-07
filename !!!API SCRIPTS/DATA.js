@@ -878,6 +878,8 @@ const D = (() => {
             if (!D.GetChar(charRef) || !_.isString(secName) || !_.isString(rowID))
                 return D.ThrowError(`Need valid charRef (${D.JSL(charRef)}), secName (${D.JSL(secName)}) and rowID (${D.JSL(rowID)}) to delete a repeating row.`, "DATA.DeleteRepRow")
             const attrObjs = getRepStats(charRef, secName, rowID, null, null, "obj")
+            DB(`AttrObjs to Delete:<br><br>${jStr(attrObjs)}`, "deleteRepRow")
+            return
             // D.Alert(`deleteRepRow(charRef, ${D.JS(secName)}, ${D.JS(rowID)})<br><br><b>AttrObjs:</b><br>${D.JS(_.map(attrObjs, v => v.get("name")))}`, "DATA:DeleteRepRow")
             if (attrObjs.length === 0)
                 return D.ThrowError(`No row "repeating_${secName}_${rowID}" to delete for ${D.GetName(charRef)}.`, "DATA.DeleteRepRow")
@@ -942,22 +944,6 @@ const D = (() => {
                 // no default
             }
             return
-        },
-        getCaseRepID = (lowCaseID, charRef) => {
-            // Given a lower-case row ID (from sheetworker), converts it to proper case.
-            const charObj = getChar(charRef),
-                attrObjs = _.filter(
-                    findObjs(charObj ?
-                        { type: "attribute", characterid: charObj.id } :
-                        { type: "attribute" }),
-                    v => v.get("name").
-                        toLowerCase().
-                        includes(lowCaseID.toLowerCase())
-                )
-            if (!attrObjs || attrObjs.length === 0)
-                return throwError(`No attributes found with id '${JSON.stringify(lowCaseID)}${charObj ? `' for char '${getName(charObj)}` : ""}'`)
-
-            return attrObjs[0].get("name").split("_")[2]
         }
     // #endregion
 
