@@ -41,7 +41,7 @@ const Handouts = (() => {
             STATEREF.noteCounts[category] = STATEREF.noteCounts[category] ? STATEREF.noteCounts[category] + 1 : 1
         const noteObj = createObj("handout", {name: `${title} ${category && STATEREF.noteCounts[category] ? STATEREF.noteCounts[category] - 1 : ""}`})
         if (contents)
-            noteObj.set("notes", `<div style="${C.HANDOUTHTML.projects.main}">${D.JS(contents)}</div>`)
+            noteObj.set("notes", C.HANDOUTHTML.projects.main(D.JS(contents)))
         return noteObj		
     }
     // #endregion
@@ -52,7 +52,7 @@ const Handouts = (() => {
         const noteObj = makeHandoutObj(title, "projects"),
             noteSections = []
         for (const char of charObjs) {
-            let thisCharSec = `<span style="${C.HANDOUTHTML.projects.charName}">${D.GetName(char).toUpperCase()}</span>`
+            const charLines = []
             for (let projectData of getProjectData(char)) {
                 //D.Alert(D.JS(projectData), "Project Data")
                 /* for (const item of ["projectdetails", "projectgoal", "projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectscope_name", "projectscope", ]) {
@@ -60,55 +60,55 @@ const Handouts = (() => {
 				} */
                 if (projectData.projectenddate && TimeTracker.ParseDate(projectData.projectenddate) < TimeTracker.CurrentDate())
                     continue
-                let thisSection = `<div style="${C.HANDOUTHTML.projects.main}"><span style="${C.HANDOUTHTML.projects.goal}">`
+                const projLines = []
+                let projGoal = ""
                 if (parseInt(projectData.projectscope) > 0)
-                    thisSection += `${"●".repeat(parseInt(projectData.projectscope))} `
+                    projGoal += `${"●".repeat(parseInt(projectData.projectscope))} `
                 if (projectData.projectscope_name && projectData.projectscope_name.length > 2)
-                    thisSection += projectData.projectscope_name
-                thisSection += "</span>"
+                    projGoal += projectData.projectscope_name
+                projLines.push(C.HANDOUTHTML.projects.goal(projGoal))
                 if (projectData.projectgoal && projectData.projectgoal.length > 2)
-                    thisSection += `<span style="${C.HANDOUTHTML.projects.tag}">HOOK:</span><span style="${C.HANDOUTHTML.projects.hook}">${projectData.projectgoal}</span>`
+                    projLines.push(`${C.HANDOUTHTML.projects.tag("HOOK:")}${C.HANDOUTHTML.projects.hook(projectData.projectgoal)}`)
                 if (projectData.projectdetails && projectData.projectdetails.length > 2)
-                    thisSection += `<span style="${C.HANDOUTHTML.smallNote}">${projectData.projectdetails}</span>`
-                if (projectData.projectforcedstake1_name && projectData.projectforcedstake1_name.length > 2) 
-                    thisSection += `<span style="${C.HANDOUTHTML.projects.tag} color: #990000;">FORCED:</span><span style="${C.HANDOUTHTML.projects.forcedStake}">${projectData.projectforcedstake1_name} ${"●".repeat(parseInt(projectData.projectforcedstake1) || 0)}</span>`
+                    projLines.push(C.HANDOUTHTML.smallNote(projectData.projectdetails))
                 if ((parseInt(projectData.projectteamwork1)||0) + (parseInt(projectData.projectteamwork2)||0) + (parseInt(projectData.projectteamwork3)||0) > 0)
-                    thisSection += `<span style="${C.HANDOUTHTML.projects.tag} color: #0000FF;">TEAMWORK:</span><span style="${C.HANDOUTHTML.projects.teamwork}">${"●".repeat((parseInt(projectData.projectteamwork1)||0) + (parseInt(projectData.projectteamwork2)||0) + (parseInt(projectData.projectteamwork3)||0) || 0)}</span>`
+                    projLines.push(`${C.HANDOUTHTML.projects.tag("TEAMWORK:", "0000FF")}${C.HANDOUTHTML.projects.teamwork("●".repeat((parseInt(projectData.projectteamwork1)||0) + (parseInt(projectData.projectteamwork2)||0) + (parseInt(projectData.projectteamwork3)||0) || 0))}`)
                 if (projectData.projectlaunchresults && projectData.projectlaunchresults.length > 2)
-                    thisSection += `<span style="${projectData.projectlaunchresults.includes("CRITICAL") ? C.HANDOUTHTML.projects.critSucc : C.HANDOUTHTML.projects.succ}">${projectData.projectlaunchresults.includes("CRITICAL") ? "CRITICAL" : `Success (+${projectData.projectlaunchresultsmargin})`}</span>`
+                    if (projectData.projectlaunchresults.includes("CRITICAL"))
+                        projLines.push(C.HANDOUTHTML.projects.critSucc("CRITICAL"))
+                    else 
+                        projLines.push(C.HANDOUTHTML.projects.succ(`Success (+${projectData.projectlaunchresultsmargin})`))
                 else
-                    thisSection += `<span style="${C.HANDOUTHTML.projects.succ}"></span>`
-                if (projectData.projectenddate) 
-                    thisSection += `<span style="${C.HANDOUTHTML.projects.endDate}">Ends ${projectData.projectenddate.toUpperCase()}</span>${parseInt(projectData.projectinccounter) > 0 ? `<br><span style="${C.HANDOUTHTML.projects.daysLeft}">${parseInt(projectData.projectincnum) * parseInt(projectData.projectinccounter)} ${projectData.projectincunits} left)</span>` : ""}`
-					//thisSection += `<span style="display: block;">CUR: ${JSON.stringify(TimeTracker.CurrentDate())}, END: ${JSON.stringify(TimeTracker.ParseDate(projectData.projectenddate))}, BOOL: ${Boolean(TimeTracker.ParseDate(projectData.projectenddate) < TimeTracker.CurrentDate())}`
-				
+                    projLines.push(C.HANDOUTHTML.projects.succ(""))
+                if (projectData.projectenddate) {
+                    projLines.push(C.HANDOUTHTML.projects.endDate(`Ends ${projectData.projectenddate.toUpperCase()}`))
+                    if (parseInt(projectData.projectinccounter) > 0)
+                        projLines.push(`<br>${C.HANDOUTHTML.projects.daysLeft(`(${parseInt(projectData.projectincnum) * parseInt(projectData.projectinccounter)} ${projectData.projectincunits} left)`)}`)				
                 let stakeCheck = false
                 for (const stakeVar of ["projectstake1_name", "projectstake1", "projectstake2_name", "projectstake2", "projectstake3_name", "projectstake3"])
                     if (projectData[stakeVar] && (!_.isNaN(parseInt(projectData[stakeVar])) && parseInt(projectData[stakeVar]) > 0 || projectData[stakeVar].length > 2)) 
                         stakeCheck = true
-						//thisSection += `<span style="display: block;">${stakeVar} Triggered Table: Number = ${parseInt(projectData[stakeVar])}, String = ${projectData[stakeVar]}</span>`
-											
+						//thisSection += `<span style="display: block;">${stakeVar} Triggered Table: Number = ${parseInt(projectData[stakeVar])}, String = ${projectData[stakeVar]}</span>`					
                 if (stakeCheck) {
-                    thisSection += `<span style="${C.HANDOUTHTML.projects.tag}">STAKED:</span><span style="${C.HANDOUTHTML.projects.stake}">`
-                    let stakeStrings = []
+                    const stakeStrings = []
                     for (let i = 1; i <= 3; i++) {
                         const [attr, val] = [projectData[`projectstake${i}_name`], parseInt(projectData[`projectstake${i}`])]
                         if (attr && attr.length > 2 && !_.isNaN(val))
                             stakeStrings.push(`${attr} ${"●".repeat(val)}`)
-                    }
-                    thisSection += `${stakeStrings.join(", ")}</span>`
+                    }                    
+                    projLines.push(`${C.HANDOUTHTML.projects.tag("STAKED:")}${C.HANDOUTHTML.projects.stake(stakeStrings.join(", "))}`)
                 }
-                thisSection += "</div>"
-                if (thisSection === `<div style="${C.HANDOUTHTML.projects.main}"><span style="${C.HANDOUTHTML.projects.goal}"></span>`)
+                if (projLines.length === 1 && projLines[0] === C.HANDOUTHTML.projects.goal(""))
                     continue
-                thisCharSec += thisSection
+                charLines.push(C.HANDOUTHTML.projects.main(projLines.join("")))
             }
-            if (thisCharSec === `<span style="${C.HANDOUTHTML.projects.charName}">${D.GetName(char).toUpperCase()}</span>`)
+            if (charLines.length === 0)
                 continue
-            noteSections.push(thisCharSec)
+            charLines.unshift(C.HANDOUTHTML.projects.charName(D.GetName(char).toUpperCase()))
+            noteSections.push(charLines.join(""))
         }
         //noteObj.set("notes", "This works!")
-        noteObj.set("notes", `<div style="${C.HANDOUTHTML.projects.main}">${noteSections.join("<br>")}</div>`)
+        noteObj.set("notes", C.HANDOUTHTML.projects.main(noteSections.join("<br>")))
         return noteObj
     }
     // #endregion
