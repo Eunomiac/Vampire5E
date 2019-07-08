@@ -492,7 +492,7 @@ const TimeTracker = (() => {
         fixDate = () => {
             setHorizon(true)
             setWeather()
-            Images.OrderImages("map", true)
+            Media.OrderImages("map", true)
         },
         getHorizon = () => {
             const [dawn, dusk] = TWILIGHTMINS[STATEREF.dateObj.getMonth()],
@@ -523,16 +523,16 @@ const TimeTracker = (() => {
           //D.Alert(`imgSrcName: ${imgSrcName}`)
             if (isRunningFast) {
                 if (imgSrcName.includes("night") && STATEREF.lastHorizon !== "night") {
-                    Images.OrderImages(["Horizon_1", "Horizon_2"], true)
+                    Media.OrderImages(["Horizon_1", "Horizon_2"], true)
                     STATEREF.lastHorizon = "night"
                 } else if (!imgSrcName.includes("night") && STATEREF.lastHorizon.includes("night")) {
-                    Images.OrderImages(["Horizon_2", "Horizon_1"], true)
+                    Media.OrderImages(["Horizon_2", "Horizon_1"], true)
                     STATEREF.lastHorizon = "day"
                 }
             } else if (isForced || imgSrcName !== STATEREF.lastHorizon) {
                 STATEREF.lastHorizon = imgSrcName
-                Images.OrderImages("map", true)
-                Images.Set("Horizon_1", imgSrcName)
+                Media.OrderImages("map", true)
+                Media.Set("Horizon_1", imgSrcName)
             }
         },
         setCurrentDate = () => {
@@ -549,11 +549,11 @@ const TimeTracker = (() => {
         },
         setIsRunning = runStatus => {
             isRunning = runStatus
-            Images.OrderImages("map", true)
+            Media.OrderImages("map", true)
             if (isRunning) {
-                Images.LayerImages(_.reject(Images.IMAGELAYERS.map, v => v.includes("Horizon")), "objects")
+                Media.LayerImages(_.reject(Media.IMAGELAYERS.map, v => v.includes("Horizon")), "objects")
             } else {
-                Images.LayerImages(_.reject(Images.IMAGELAYERS.map, v => v.includes("Horizon")), "map")
+                Media.LayerImages(_.reject(Media.IMAGELAYERS.map, v => v.includes("Horizon")), "map")
                 const lastDate = new Date(parseInt(STATEREF.currentDate)),
 					   groundCover = getGroundCover()
                 STATEREF.currentDate = STATEREF.dateObj.getTime()
@@ -573,7 +573,7 @@ const TimeTracker = (() => {
 					STATEREF.dateObj.getUTCHours() !== lastDate.getUTCHours()
                 ) {
                     setWeather()
-                    Images.Set("WeatherGround", groundCover)
+                    Media.Set("WeatherGround", groundCover)
                 }
                 setHorizon()
             }			
@@ -581,12 +581,12 @@ const TimeTracker = (() => {
         setIsRunningFast = runStatus => {
             if (runStatus && !isRunningFast) {
                 isRunningFast = runStatus
-                Images.Set("WeatherMain", "blank")
-                Images.Set("WeatherClouds", "blank")
-                Images.Set("WeatherFog", "blank")
-                Images.Set("ComplicationMat", "blank")
-                Images.Set("Horizon_1", "night3")
-                Images.OrderImages(["Horizon_2", "Horizon_1"], true)
+                Media.Set("WeatherMain", "blank")
+                Media.Set("WeatherClouds", "blank")
+                Media.Set("WeatherFog", "blank")
+                Media.Set("ComplicationMat", "blank")
+                Media.Set("Horizon_1", "night3")
+                Media.OrderImages(["Horizon_2", "Horizon_1"], true)
           //STATEREF.lastHorizon = "day"
             } else if (!runStatus && isRunningFast) {
                 isRunningFast = runStatus
@@ -681,48 +681,48 @@ const TimeTracker = (() => {
             switch(getHorizon() === "day" || getHorizon() === "daylighters" ? "x" : weatherCode.charAt(0)) {
           // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
                 case "b":
-                    Images.Set("WeatherMain", "heavysnow")
-                    Images.Set("WeatherFog", "blank")
-                    Images.Set("WeatherClouds", "stormy")
+                    Media.Set("WeatherMain", "heavysnow")
+                    Media.Set("WeatherFog", "blank")
+                    Media.Set("WeatherClouds", "stormy")
                     break
                 case "c":
-                    Images.Set("WeatherMain", "blank")
-                    Images.Set("WeatherFog", "blank")
-                    Images.Set("WeatherClouds", getCloudSrc())
+                    Media.Set("WeatherMain", "blank")
+                    Media.Set("WeatherFog", "blank")
+                    Media.Set("WeatherClouds", getCloudSrc())
                     break			
                 case "f":
-                    Images.Set("WeatherMain", "blank")
-                    Images.Set("WeatherFog", "fog")
-                    Images.Set("WeatherClouds", getCloudSrc())
+                    Media.Set("WeatherMain", "blank")
+                    Media.Set("WeatherFog", "fog")
+                    Media.Set("WeatherClouds", getCloudSrc())
                     break			
                 case "p":
-                    Images.Set("WeatherMain", "heavyrain")
-                    Images.Set("WeatherFog", "blank")
-                    Images.Set("WeatherClouds", getCloudSrc())
+                    Media.Set("WeatherMain", "heavyrain")
+                    Media.Set("WeatherFog", "blank")
+                    Media.Set("WeatherClouds", getCloudSrc())
                     break					
                 case "s":
-                    Images.Set("WeatherMain", "lightsnow")
-                    Images.Set("WeatherFog", "blank")
-                    Images.Set("WeatherClouds", getCloudSrc())
+                    Media.Set("WeatherMain", "lightsnow")
+                    Media.Set("WeatherFog", "blank")
+                    Media.Set("WeatherClouds", getCloudSrc())
                     break						
                 case "t":
-                    Images.Set("WeatherMain", "heavyrain")
-                    Images.Set("WeatherFog", "blank")
-                    Images.Set("WeatherClouds", "stormy")
+                    Media.Set("WeatherMain", "heavyrain")
+                    Media.Set("WeatherFog", "blank")
+                    Media.Set("WeatherClouds", "stormy")
               // Lightning Animations
                     break					
                 case "w":
-                    Images.Set("WeatherMain", "lightrain")
-                    Images.Set("WeatherFog", "blank")
-                    Images.Set("WeatherClouds", getCloudSrc())
+                    Media.Set("WeatherMain", "lightrain")
+                    Media.Set("WeatherFog", "blank")
+                    Media.Set("WeatherClouds", getCloudSrc())
                     break
                 case "x":
-                    Images.Set("WeatherMain", "blank")
-                    Images.Set("WeatherClouds", "blank")
+                    Media.Set("WeatherMain", "blank")
+                    Media.Set("WeatherClouds", "blank")
                     if (getHorizon() !== "day" && weatherCode.charAt(1) === "f")
-                        Images.Set("WeatherFog", "fog")
+                        Media.Set("WeatherFog", "fog")
                     else
-                        Images.Set("WeatherFog", "blank")
+                        Media.Set("WeatherFog", "blank")
                     break
           //no default
             }
@@ -732,7 +732,7 @@ const TimeTracker = (() => {
             forecastLines.push(weatherData.tempC < WINTERTEMP ? WEATHERCODES[2][weatherCode.charAt(4)][1] : WEATHERCODES[2][weatherCode.charAt(4)][0])
             forecastObj.set("text", `${forecastLines.join(" ♦ ")}`)
             forecastShadow.set("text", `${forecastLines.join(" ♦ ")}`)
-            Images.Set("WeatherFrost", weatherData.tempC > 0 ? "blank" : weatherData.tempC > -6 ? "frost1" : weatherData.tempC > -12 ? "frost2" : "frost3")
+            Media.Set("WeatherFrost", weatherData.tempC > 0 ? "blank" : weatherData.tempC > -6 ? "frost1" : weatherData.tempC > -12 ? "frost2" : "frost3")
         },
         getGroundCover = (isTesting = false, downVal = 0.3, upb = 1, ups = 0.5) => {			
         //D.Alert(`IsTesting = ${D.JS(isTesting)}`)
@@ -866,15 +866,15 @@ const TimeTracker = (() => {
                     delete airLights[alight]
                 }
                 for (const alight of _.keys(AIRLIGHTS)) 
-                    Images.Set(alight, "off")
+                    Media.Set(alight, "off")
             
             } else {
                 const curTime = airTimes[alight].shift()
                 const [curSrc, curDur] = _.map(curTime.split(":"), v => _.isNaN(parseInt(v)) ? v : parseInt(v))
                 if (!isStartup)
                     airTimes[alight].push(curTime)
-                if (curSrc !== Images.GetData(alight).curSrc)
-                    Images.Toggle(alight, true, curSrc)
+                if (curSrc !== Media.GetData(alight).curSrc)
+                    Media.Toggle(alight, true, curSrc)
                 airLights[alight] = setTimeout(() => { tickAirLight(alight) }, curDur )
             }
         },
@@ -899,7 +899,7 @@ const TimeTracker = (() => {
                     if (!STATEREF.timeText) {
                         D.Alert("Register a text object first, with '!regTime'", "TIMETRACKER")
                         break
-                    } else if (!Images.GetData("Horizon_1") || !Images.GetData("Horizon_2")) {
+                    } else if (!Media.GetData("Horizon_1") || !Media.GetData("Horizon_2")) {
                         D.Alert("Register horizon image objects first, with '!img reg Horizon_1' and '!img reg Horizon_2'", "TIMETRACKER")
                         break
                     }
@@ -1034,6 +1034,6 @@ const TimeTracker = (() => {
 on("ready", () => {
     TimeTracker.RegisterEventHandlers()
     TimeTracker.CheckInstall()
-    D.Log("Ready!", "TimeTracker")
+    D.Log("TimeTracker Ready!")
 } )
 void MarkStop("TimeTracker")

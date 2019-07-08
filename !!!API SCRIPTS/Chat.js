@@ -1,15 +1,15 @@
-void MarkStart("ChatFuncs")
-/* ChatFuncs.js, "ChatFuncs".  No exposure to other scripts in the API.
-   >>> ChatFuncs is a library of commands that can be triggered from within roll20 chat.  You can view the properties
+void MarkStart("Chat")
+/* Chat.js, "Chat".  No exposure to other scripts in the API.
+   >>> Chat is a library of commands that can be triggered from within roll20 chat.  You can view the properties
    of selected objects and the state variable; run text-sizing tests to be used in scripts like Roller;   is both a
    library of handy resources for other scripts to use, and a master configuration file for your game.  You can find
    a list of all of the available methods at the end of the script.  Configuration is a bit trickier, but is contained
    to the CONFIGURATION and DECLARATIONS #regions. Strictly a utility script: Doesn't set things or return information
    to other API objects — use DATA and SET for that. */
 
-const ChatFuncs = (() => {
+const Chat = (() => {
 	// #region INITIALIZATION
-    const SCRIPTNAME = "ChatFuncs",
+    const SCRIPTNAME = "Chat",
 		    STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
     const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
 		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
@@ -217,7 +217,7 @@ const ChatFuncs = (() => {
                     id: v.id
                 } )),
                 attrsLines = []
-            if (filter.length > 0)
+            if (filter.length)
                 sortedAttrs = _.sortBy(_.pick(_.uniq(allAttrs), v => filter.includes(v.name)), "name")
             else
                 sortedAttrs = _.sortBy(_.uniq(allAttrs), "name")
@@ -262,7 +262,7 @@ const ChatFuncs = (() => {
                 namespace.unshift(C.GAMENAME)
             const title = `state.${namespace.join(".")}`
 			// eslint-disable-next-line no-unmodified-loop-condition
-            while (namespace && namespace.length > 0)
+            while (namespace && namespace.length)
                 stateInfo = stateInfo[namespace.shift()]
             if (returnVals) {
                 const returnInfo = {}
@@ -414,7 +414,7 @@ const ChatFuncs = (() => {
                             if (!getStateData(args, true))
                                 sendHelpMsg()
                             break
-                        case "statevals": // !get statevals name, id|VAMPIRE Images ...
+                        case "statevals": // !get statevals name, id|VAMPIRE Media ...
                             returnVals = args.join(" ").split("|")[0].replace(/\s+/gu, "").split(","),
                             theseArgs = args.join(" ").split("|")[1].split(/\s+/gu)
                             if (!getStateData(theseArgs, returnVals))
@@ -424,7 +424,7 @@ const ChatFuncs = (() => {
                             D.Alert(D.JS(Campaign().get("playerpageid")), "Page ID")
                             break
                         case "debug":
-                            D.Alert(D.GetDebugInfo(), "DEBUG SETTINGS")
+                            D.Alert(D.GetDebugWatchList(), "DEBUG SETTINGS")
                             break
                         default:
                             sendHelpMsg()
@@ -460,7 +460,7 @@ const ChatFuncs = (() => {
                 case "!clear":
                     switch (args.shift()) {
                         case "dbfilter":
-                            if (args.length > 0)
+                            if (args.length)
                                 D.RemoveDBFilter(args.join(" "))
                             else
                                 D.ClearDBFilters()
@@ -564,7 +564,7 @@ const ChatFuncs = (() => {
 } )()
 
 on("ready", () => {
-    ChatFuncs.RegisterEventHandlers()
-    D.Log("Ready!", "ChatFuncs")
+    Chat.RegisterEventHandlers()
+    D.Log("Chat Ready!")
 } )
-void MarkStop("ChatFuncs")
+void MarkStop("Chat")

@@ -1,13 +1,13 @@
 /* SETTING UP TEMPLATE:
-    1) Replace "XX_SCRIPTNAME_XX" with name of script (e.g. "Chars")
-    2) Replace "XX_SCRIPTCOMMAND_XX" with api chat command trigger (e.g. "!char")
+    1) Replace "Player" with name of script (e.g. "Chars")
+    2) Replace "null" with api chat command trigger (e.g. "!char")
     3) Delete these instructions, so "void MarkStart()" is the very first line.
 */
-void MarkStart("XX_SCRIPTNAME_XX")
-const XX_SCRIPTNAME_XX = (() => {
+void MarkStart("Player")
+const Player = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
-    const SCRIPTNAME = "XX_SCRIPTNAME_XX",
-        CHATCOMMAND = "XX_SCRIPTCOMMAND_XX",
+    const SCRIPTNAME = "Player",
+        CHATCOMMAND = null,
         GMONLY = true
         
     // #region COMMON INITIALIZATION
@@ -79,8 +79,8 @@ const XX_SCRIPTNAME_XX = (() => {
 } )()
 
 on("ready", () => {
-    XX_SCRIPTNAME_XX.RegisterEventHandlers()
-    XX_SCRIPTNAME_XX.CheckInstall()
-    D.Log("XX_SCRIPTNAME_XX Ready!")
+    Player.RegisterEventHandlers()
+    Player.CheckInstall()
+    D.Log("Player Ready!")
 } )
-void MarkStop("XX_SCRIPTNAME_XX")
+void MarkStop("Player")

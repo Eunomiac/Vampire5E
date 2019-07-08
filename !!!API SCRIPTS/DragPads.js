@@ -37,7 +37,7 @@ const DragPads = (() => {
                 let dieCat = ""
                 do {
                     dieCat = diceCats.pop()
-                    dieCat = stateVar[dieCat] && stateVar[dieCat].length > 0 ? dieCat : 0
+                    dieCat = stateVar[dieCat] && stateVar[dieCat].length ? dieCat : 0
                 } while (dieCat === 0)
                 Roller.Reroll(dieCat)
             },
@@ -48,10 +48,10 @@ const DragPads = (() => {
                 } )
                 if (!light)
                     D.ThrowError(`No signal light found with id ${JSON.stringify(args.id)}.`)
-                else if (Images.GetSrc(light) === "off") 
-                    Images.Set(light, "on")
+                else if (Media.GetSrc(light) === "off") 
+                    Media.Set(light, "on")
                 else 
-                    Images.Set(light, "off")
+                    Media.Set(light, "off")
             
             }
         },
@@ -148,11 +148,11 @@ const DragPads = (() => {
             delete options.deltaTop
             delete options.deltaWidth
             delete options.deltaHeight
-            pad = Images.MakeImage(`${funcName}_Pad_#`, options, true)
+            pad = Media.MakeImage(`${funcName}_Pad_#`, options, true)
             if (!graphicObj) 
                 graphicObj = pad
           
-            partnerPad = Images.MakeImage(`${funcName}_PartnerPad_#`, _.omit(options, ["startActive", "layer"]), true)
+            partnerPad = Media.MakeImage(`${funcName}_PartnerPad_#`, _.omit(options, ["startActive", "layer"]), true)
             STATEREF.byPad[pad.id] = {
                 funcName,
                 name: pad.get("name"),
@@ -193,12 +193,12 @@ const DragPads = (() => {
                 try {
                     if (STATEREF.byPad[pad.id] ) {
                         padData = STATEREF.byPad[pad.id]
-                        Images.Remove(padData.name)
-                        if (Images.GetData(pad.id))
-                            Images.Remove(pad.id)
+                        Media.Remove(padData.name)
+                        if (Media.GetData(pad.id))
+                            Media.Remove(pad.id)
                         delete STATEREF.byGraphic[padData.id]
                         if (padData.partnerID) {
-                            Images.Remove(padData.partnerID)
+                            Media.Remove(padData.partnerID)
                             delete STATEREF.byPad[padData.partnerID]
                         }
                         delete STATEREF.byPad[pad.id]
@@ -341,7 +341,7 @@ const DragPads = (() => {
                             obj.set("imgsrc", IMAGES.blank)
                             if(
                                 v.active === "on" &&
-							(Images.GetData(v.name).startActive === true || Images.GetData(STATEREF.byPad[v.partnerID].name).startActive === true)
+							(Media.GetData(v.name).startActive === true || Media.GetData(STATEREF.byPad[v.partnerID].name).startActive === true)
                             )
                                 obj.set("layer", "objects")
                         } else {
@@ -376,9 +376,9 @@ const DragPads = (() => {
                         if (!hostObj) {
                             D.ThrowError(`No graphic with id '${D.JSL(hostID)}' for function '${D.JSL(padData.pad.funcName)}`, "!resetPads")
                             if (padObj)
-                                Images.Remove(padObj)
+                                Media.Remove(padObj)
                             if (partnerObj)
-                                Images.Remove(partnerObj)
+                                Media.Remove(partnerObj)
                             return
                         }
                         padList.push({
@@ -393,26 +393,26 @@ const DragPads = (() => {
                             }
                         })
                         if (padObj)
-                            Images.Remove(padObj)
+                            Media.Remove(padObj)
                         if (partnerObj)
-                            Images.Remove(partnerObj)
+                            Media.Remove(partnerObj)
                     } )
-                    D.Alert(`<b>IMAGE NAMES AFTER PAD SEARCH:</b><br><br>${D.JS(_.keys(C.ROOT.Images.imageregistry))}`)
+                    D.Alert(`<b>IMAGE NAMES AFTER PAD SEARCH:</b><br><br>${D.JS(_.keys(C.ROOT.Media.imageregistry))}`)
                     delete C.ROOT.DragPads
                     C.ROOT.DragPads = {
                         byPad: {},
                         byGraphic: {}
                     }
-                    _.each(C.ROOT.Images.imageregistry, (imgData, imgName) => {
+                    _.each(C.ROOT.Media.imageregistry, (imgData, imgName) => {
                         if (imgName.includes("Pad_"))
-                            Images.Remove(imgName)
+                            Media.Remove(imgName)
                     })
-                    D.Alert(`<b>IMAGE NAMES AFTER REGISTRY SCAN:</b><br><br>${D.JS(_.keys(C.ROOT.Images.imageregistry))}`)
+                    D.Alert(`<b>IMAGE NAMES AFTER REGISTRY SCAN:</b><br><br>${D.JS(_.keys(C.ROOT.Media.imageregistry))}`)
                     _.each(padList, padData => {
                         const hostObj = getObj("graphic", padData.hostID) || getObj("text", padData.hostID)
                         makePad(hostObj, padData.funcName, padData.options)
                     })
-                    D.Alert(`<b>IMAGE NAMES AFTER RESET:</b><br><br>${D.JS(_.keys(C.ROOT.Images.imageregistry))}`)
+                    D.Alert(`<b>IMAGE NAMES AFTER RESET:</b><br><br>${D.JS(_.keys(C.ROOT.Media.imageregistry))}`)
                     D.Alert("Pads Reset!", "!resetpads")
                     break
                 case "!listPads":
@@ -476,6 +476,6 @@ const DragPads = (() => {
 on("ready", () => {
     DragPads.RegisterEventHandlers()
     DragPads.CheckInstall()
-    D.Log("Ready!", "DragPads")
+    D.Log("DragPads Ready!")
 } )
 void MarkStop("DragPads")

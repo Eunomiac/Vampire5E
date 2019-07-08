@@ -1,7 +1,7 @@
-void MarkStart("Chars")
-const Chars = (() => {
+void MarkStart("Char")
+const Char = (() => {
 	// #region INITIALIZATION
-    const SCRIPTNAME = "Chars",
+    const SCRIPTNAME = "Char",
 		    STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
     const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
 		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
@@ -334,10 +334,10 @@ const Chars = (() => {
             }
         },
         registerToken = (msg, hostName, srcName) => {
-            if (!Images.GetKey(hostName)) 
+            if (!Media.GetKey(hostName)) 
                 D.ThrowError(`No image registered under ${hostName}`, "CHARS:RegisterToken")
             else
-                Images.AddSrc(msg, hostName, srcName)
+                Media.AddSrc(msg, hostName, srcName)
         },
 	
 		// #endregion
@@ -587,7 +587,7 @@ const Chars = (() => {
                 }
                 if (charData.clandiscs) 
                     _.each(["disc1", "disc2", "disc3"], discnum => {
-                        if (charData.clandiscs[discnum].length > 0) {
+                        if (charData.clandiscs[discnum].length) {
                             attrList[`${discnum}_name`] = charData.clandiscs[discnum][0]
                             attrList[discnum] = charData.clandiscs[discnum][1]
                         } else {
@@ -596,21 +596,20 @@ const Chars = (() => {
                         }						
                     })					
 				
-                const [repDiscs, sectionCounts] = [{}, {}]
-                _.each(["discleft", "discmid", "discright"], v => {
-                    const discData = D.GetRepAttrs(charID, v),
-						    rowIDs = D.GetRepIDs(charID, v)
-                    sectionCounts[v] = rowIDs.length
-                    _.each(rowIDs, vv => {
-                        if (!_.values(DISCABBVS).includes(discData[`repeating_${v}_${vv}_disc_name`])) 
-                            D.DeleteRow(charID, v, vv)
-						 else 
-                            repDiscs[discData[`repeating_${v}_${vv}_disc_name`]] = {							
-                                sec: v,
-                                rowID: vv,
-                                val: parseInt(discData[`repeating_${v}_${vv}_disc`]) || 0
+                const [repDiscs, rowCount] = [{}, {}]
+                _.each(["discleft", "discmid", "discright"], section => {
+                    const sectionData = D.GetRepStats(charID, section, null, null, "rowID")
+                    rowCount[section] = _.keys(sectionData).length
+                    _.each(sectionData, (rowData, rowID) => {
+                        const discData = _.find(rowData, stat => C.DISCIPLINES.includes(stat.name))
+                        if (discData)
+                            repDiscs[discData.name] = {							
+                                sec: section,
+                                rowID: rowID,
+                                val: parseInt(discData.val) || 0
                             }
-						
+                        else
+                            D.DeleteRow(charID, section, rowID)
                     })
                 })
                 if (charData.otherdiscs) {
@@ -629,17 +628,17 @@ const Chars = (() => {
                                     attrList[`repeating_${repDiscs[discName].sec}_${repDiscs[discName].rowID}_disc`] = parseInt(_.findKey(charData.otherdiscs, v => v.includes(discAbv)))
                                 else {
                                     D.DeleteRow(charID, repDiscs[discName].sec, repDiscs[discName].rowID)
-                                    sectionCounts[repDiscs[discName].sec]--
+                                    rowCount[repDiscs[discName].sec]--
                                 }
 							 else if (_.findKey(charData.otherdiscs, v => v.includes(discAbv))) 
                                 otherDiscs.push([discName, parseInt(_.findKey(charData.otherdiscs, v => v.includes(discAbv)))])
 							
                         }
-                        while (otherDiscs.length > 0) {
+                        while (otherDiscs.length) {
                             const thisDisc = otherDiscs.pop(),
-                                targetSec = _.min([{sec: "discleft", num: sectionCounts.discleft}, {sec: "discmid", num:sectionCounts.discmid}, {sec: "discright", num:sectionCounts.discright}], v => v.num).sec
+                                targetSec = _.min([{sec: "discleft", num: rowCount.discleft}, {sec: "discmid", num:rowCount.discmid}, {sec: "discright", num:rowCount.discright}], v => v.num).sec
 							//D.Alert(`D.MakeRow(ID, ${targetSec}, {disc_name: ${thisDisc[0]}, disc: ${thisDisc[1]} })`)
-                            sectionCounts[targetSec]++
+                            rowCount[targetSec]++
                             D.MakeRow(charID, targetSec, {disc_name: thisDisc[0], disc: thisDisc[1] })
                         }
                     }
@@ -677,9 +676,14 @@ const Chars = (() => {
 		// #endregion
 	
 		// #region Event Handlers (handleInput, handleAttribute),
-        handleAttr = (obj, prev) => {
-            if (obj.get("name") === "hunger" && obj.get("current") !== prev.current)
-                Images.Toggle(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, true, obj.get("current"))
+        handleChangeAttr = (obj, prev) => {
+            if (obj.get("name").toLowerCase() === "hunger" && obj.get("current") !== prev.current)
+                Media.Toggle(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, true, obj.get("current"))
+        },
+        handleAddAttr = obj => {
+            if (obj.get("name").toLowerCase().match(/repeating_timeline_.*?_tlenddate/gu))
+                //D.SortRepSec(obj.get("_characterid"), "timeline", (charRef, secName, rowID1, rowID2) => TimeTracker.ParseDate(D.GetRepStat(charRef, secName, rowID1, "tlenddate").val).getTime() - TimeTracker.ParseDate(D.GetRepStat(charRef, secName, rowID2, "tlenddate").val).getTime())             
+                D.Alert("Add Timeline Row TRIGGERED.")
         },
         handleInput = (msg) => {
 			//D.Alert(`MSG RECEIVED: ${D.JS(msg)}`)
@@ -852,9 +856,9 @@ const Chars = (() => {
                 case "!daylighters":
                     if (!playerIsGM(msg.playerid))
                         return
-                    C.ROOT.Chars.isDaylighterSession = !C.ROOT.Chars.isDaylighterSession
-                    D.Alert(`Daylighter Session Set To: ${C.ROOT.Chars.isDaylighterSession}`)
-                    DragPads.Toggle("signalLight", !C.ROOT.Chars.isDaylighterSession)
+                    C.ROOT.Char.isDaylighterSession = !C.ROOT.Char.isDaylighterSession
+                    D.Alert(`Daylighter Session Set To: ${C.ROOT.Char.isDaylighterSession}`)
+                    DragPads.Toggle("signalLight", !C.ROOT.Char.isDaylighterSession)
                     TimeTracker.Fix()
                     for (const charData of _.values(REGISTRY).slice(0,4)) {
                         [token] = findObjs( {
@@ -863,18 +867,18 @@ const Chars = (() => {
                             _subtype: "token",
                             represents: charData.id
                         })
-                        imgData = Images.GetData(token)
+                        imgData = Media.GetData(token)
 					
-                        if (C.ROOT.Chars.isDaylighterSession) {											
-                            Images.SetData(token, {isDaylighter: true, unObfSrc: "base"})
-                            Images.ToggleToken(token, "baseDL")
+                        if (C.ROOT.Char.isDaylighterSession) {											
+                            Media.SetData(token, {isDaylighter: true, unObfSrc: "base"})
+                            Media.ToggleToken(token, "baseDL")
                             if (charData.famulusTokenID) {
-                                famToken = Images.GetObj(charData.famulusTokenID)
-                                Images.Toggle(famToken, false)
+                                famToken = Media.GetObj(charData.famulusTokenID)
+                                Media.Toggle(famToken, false)
                             }
                         } else {
-                            Images.SetData(token, {isDaylighter: false, unObfSrc: "base"})
-                            Images.ToggleToken(token, "base")
+                            Media.SetData(token, {isDaylighter: false, unObfSrc: "base"})
+                            Media.ToggleToken(token, "base")
                         }
                     }
                     break
@@ -886,21 +890,21 @@ const Chars = (() => {
                         _subtype: "token",
                         represents: charID
                     })
-                    imgData = Images.GetData(token)								
+                    imgData = Media.GetData(token)								
 				//D.Alert(`ImgData: ${D.JS(token)}`)
                     if (imgData.unObfSrc !== "sense") {
-                        Images.SetData(token, {unObfSrc: "sense"})
+                        Media.SetData(token, {unObfSrc: "sense"})
                         if (imgData.isObf) 
-                            Images.ToggleToken(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
+                            Media.ToggleToken(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
 					 else 
-                            Images.ToggleToken(token, `sense${imgData.isDaylighter ? "DL" : ""}`)
+                            Media.ToggleToken(token, `sense${imgData.isDaylighter ? "DL" : ""}`)
 								
                     } else {
-                        Images.SetData(token, {unObfSrc: "base"})
+                        Media.SetData(token, {unObfSrc: "base"})
                         if (imgData.isObf) 
-                            Images.ToggleToken(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
+                            Media.ToggleToken(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
 					 else 
-                            Images.ToggleToken(token, `base${imgData.isDaylighter ? "DL" : ""}`)
+                            Media.ToggleToken(token, `base${imgData.isDaylighter ? "DL" : ""}`)
 								
                     }
                     break
@@ -914,18 +918,18 @@ const Chars = (() => {
                         represents: charID
                     })					
 				//D.Alert(`Token: ${D.JS(token)}`)
-                    imgData = Images.GetData(token)								
+                    imgData = Media.GetData(token)								
 				//D.Alert(`ImgData: ${D.JS(token)}`)
                     if (imgData.isObf) {
-                        Images.ToggleToken(token, `${imgData.unObfSrc || "base"}${imgData.isDaylighter ? "DL" : ""}`)
-                        Images.SetData(token, {isObf: false})
+                        Media.ToggleToken(token, `${imgData.unObfSrc || "base"}${imgData.isDaylighter ? "DL" : ""}`)
+                        Media.SetData(token, {isObf: false})
                     } else {
                         if (imgData.unObfSrc === "sense") {
-                            Images.ToggleToken(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
-                            Images.SetData(token, {isObf: true})
+                            Media.ToggleToken(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
+                            Media.SetData(token, {isObf: true})
                         } else {
-                            Images.ToggleToken(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
-                            Images.SetData(token, {isObf: true})
+                            Media.ToggleToken(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
+                            Media.SetData(token, {isObf: true})
                         }
                     }
                     break
@@ -937,22 +941,22 @@ const Chars = (() => {
                         _subtype: "token",
                         represents: charID
                     })
-                    imgData = Images.GetData(token)
+                    imgData = Media.GetData(token)
                     if (imgData.isDaylighter)
                         break							
 				//D.Alert(`ImgData: ${D.JS(token)}`)
                     if (imgData.unObfSrc === "mask") {
-                        Images.SetData(token, {unObfSrc: "base"})
+                        Media.SetData(token, {unObfSrc: "base"})
                         if (!imgData.isObf)
-                            Images.ToggleToken(token, "base")
+                            Media.ToggleToken(token, "base")
                     } else {
-                        Images.SetData(token, {unObfSrc: "mask"})
+                        Media.SetData(token, {unObfSrc: "mask"})
                         if (!imgData.isObf)
-                            Images.ToggleToken(token, "mask")
+                            Media.ToggleToken(token, "mask")
                     }				
                     break	
                 case "!famulus":
-                    if (Chars.IsDaylighterSession())
+                    if (C.ROOT.Char.isDaylighterSession)
                         break
                     charData = REGISTRY[_.findKey(REGISTRY, v => v.playerID === msg.playerid)]
                     charID = charData.id;
@@ -964,17 +968,17 @@ const Chars = (() => {
                     })
                     if (!charData.famulusTokenID)
                         break
-                    famToken = Images.GetObj(charData.famulusTokenID)
+                    famToken = Media.GetObj(charData.famulusTokenID)
                     if (famToken.get("layer") !== "objects")
-                        Images.SetParams(famToken, {
+                        Media.SetParams(famToken, {
                             top: token.get("top") - 100,
                             left: token.get("left") + 100
                         })
                     toFront(famToken)
-                    Images.Toggle(famToken, famToken.get("layer") !== "objects", "base")
+                    Media.Toggle(famToken, famToken.get("layer") !== "objects", "base")
                     break
                 case "!settoken":
-                    Images.ToggleToken(D.GetSelected(msg)[0] || args.shift(), args.shift())
+                    Media.ToggleToken(D.GetSelected(msg)[0] || args.shift(), args.shift())
                     break
                 case "!startsession":
                     if (playerIsGM(msg.playerid)) startSession()
@@ -989,10 +993,10 @@ const Chars = (() => {
                     charID = REGISTRY[args.shift()].id
                     switch(args.shift()) {
                         case "left":
-                            D.Alert(`${D.JS(D.GetRepAttrs(charID, "earnedxp"))}<br><br>ORDER:<br>${D.GetStatVal(charID, "_reporder_repeating_earnedxp")}`)
+                            D.Alert(`${D.JS(D.GetRepStats(charID, "earnedxp"))}<br><br>ORDER:<br>${D.GetStatVal(charID, "_reporder_repeating_earnedxp")}`)
                             break
                         case "right":
-                            D.Alert(`${D.JS(D.GetRepAttrs(charID, "earnedxpright"))}<br><br>ORDER:<br>${D.GetStatVal(charID, "_reporder_repeating_earnedxpright")}`)
+                            D.Alert(`${D.JS(D.GetRepStats(charID, "earnedxpright"))}<br><br>ORDER:<br>${D.GetStatVal(charID, "_reporder_repeating_earnedxpright")}`)
                             break
                         // no default
                     }
@@ -1005,22 +1009,23 @@ const Chars = (() => {
 		// #region Public Functions: regHandlers,
         regHandlers = () => {
             on("chat:message", handleInput)
-            on("change:attribute:current", handleAttr)
+            on("change:attribute:current", handleChangeAttr)
+            on("add:attribute", handleAddAttr)
         },
         checkInstall = () => {
             C.ROOT = C.ROOT || {}
-            C.ROOT.Chars = C.ROOT.Chars || {}
-            C.ROOT.Chars.registry = C.ROOT.Chars.registry || {}
+            C.ROOT.Char = C.ROOT.Char || {}
+            C.ROOT.Char.registry = C.ROOT.Char.registry || {}
 
 			// Storyteller Override:
-			//C.ROOT.Chars.registry["1"].playerID = "-LLIBpH_GL5I-9lAOiw9"
+			//C.ROOT.Char.registry["1"].playerID = "-LLIBpH_GL5I-9lAOiw9"
 			
 			// Return Player Control:
-            //C.ROOT.Chars.registry["4"].playerID = "-LMGDbZCKw4bZk8ztfNf"
-            //C.ROOT.Chars.registry["3"].playerID = "-LN7lNnjuWmFuvVPW76H"
-            //C.ROOT.Chars.registry["2"].playerID = "-LN6n-fR8cSNR2E_N_3q"
-            //C.ROOT.Chars.registry["1"].playerID = "-LMGDQqIvyL87oIfrVDX"
-	        //C.ROOT.Chars.registry["1"].famulusTokenID = "-Li_TTDHnKYob56yfijy"
+            //C.ROOT.Char.registry["4"].playerID = "-LMGDbZCKw4bZk8ztfNf"
+            //C.ROOT.Char.registry["3"].playerID = "-LN7lNnjuWmFuvVPW76H"
+            //C.ROOT.Char.registry["2"].playerID = "-LN6n-fR8cSNR2E_N_3q"
+            //C.ROOT.Char.registry["1"].playerID = "-LMGDQqIvyL87oIfrVDX"
+	        //C.ROOT.Char.registry["1"].famulusTokenID = "-Li_TTDHnKYob56yfijy"
         }
 
 
@@ -1036,13 +1041,13 @@ const Chars = (() => {
         AdjustTrait: adjustTrait,
         AdjustHunger: adjustHunger,
         DaySleep: daysleep,
-        IsDaylighterSession: () => C.ROOT.Chars.isDaylighterSession
+        IsDaylighterSession: () => C.ROOT.Char.isDaylighterSession
     }
 })()
 	
 on("ready", () => {
-    Chars.RegisterEventHandlers()
-    Chars.CheckInstall()
-    D.Log("Ready!", "Chars")
+    Char.RegisterEventHandlers()
+    Char.CheckInstall()
+    D.Log("Char Ready!")
 })
-void MarkStop("Chars")
+void MarkStop("Char")

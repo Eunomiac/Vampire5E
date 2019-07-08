@@ -1,7 +1,7 @@
 void MarkStart("Media")
-const Images = (() => {
+const Media = (() => {
 // #region INITIALIZATION
-    const SCRIPTNAME = "Images",
+    const SCRIPTNAME = "Media",
         STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
     const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
@@ -274,7 +274,7 @@ const Images = (() => {
                 let imgObj = null
                 //D.Alert(`VALIDATIONS: GRAPHIC --> ${D.JS(VAL({ graphic: imgRef }))}
 				//VALIDATION STRING: ${VAL({ string: imgRef })}`)
-                if (VAL({ graphic: imgRef }))
+                if (VAL({ graphicObj: imgRef }))
                     imgObj = imgRef
                 else if (VAL({ string: imgRef })) 
                     if (getImageKey(imgRef))
@@ -481,7 +481,7 @@ const Images = (() => {
                     else if (_.isString(IMGDATA[srcRef]))
                         srcURL = IMGDATA[srcRef]
                     else
-                        return isSilent ? D.ThrowError(`Image object '${D.JSL(imgRef)}' is unregistered or is missing 'srcs' property`, "Images: setImage()") : false
+                        return isSilent ? D.ThrowError(`Image object '${D.JSL(imgRef)}' is unregistered or is missing 'srcs' property`, "Media: setImage()") : false
 
                     imgObj.set("imgsrc", srcURL)
                     if (srcRef === "blank") {
@@ -495,10 +495,10 @@ const Images = (() => {
                     return imgObj
                 }
 
-                return D.ThrowError(`Invalid image object '${D.JSL(imgObj)}'`, "Images: setImage()")
+                return D.ThrowError(`Invalid image object '${D.JSL(imgObj)}'`, "Media: setImage()")
             }
 
-            return D.ThrowError(`Invalid category '${D.JSL(imgRef)}'`, "Images: setImage()")
+            return D.ThrowError(`Invalid category '${D.JSL(imgRef)}'`, "Media: setImage()")
         },
         setImgParams = (imgRef, params) => {
             const imgObj = getImageObj(imgRef)
@@ -727,7 +727,7 @@ const Images = (() => {
 				imgData = getImageData(imgKey),
 				prevSrc = "" + imgData.prevSrc,
 				curSrc = "" + imgData.curSrc */
-            Images.Set(imgKey, newSrc)
+            Media.Set(imgKey, newSrc)
             return
               /* D.Alert(`Registry Storing: <br>prevSrc: ${REGISTRY[imgKey].prevSrc}<br>curSrc: ${REGISTRY[imgKey].curSrc}<br><br>Instructions: <br>toggleRef: ${toggleRef}<br>prevSrc: ${REGISTRY[imgKey].prevSrc}<br>curSrc: ${curSrc}<br>newSrc: ${newSrc}`)
 			REGISTRY[imgKey].prevSrc = REGISTRY[imgKey].curSrc
@@ -735,15 +735,15 @@ const Images = (() => {
 			if (newSrc === curSrc) {
 				if (toggleRef === "prev" && prevSrc) {
 					D.Alert(`toggleRef: ${toggleRef}<br>prevSrc: ${prevSrc}<br>curSrc: ${curSrc}<br>newSrc: ${newSrc}<br><br>... SO Setting To PrevSrc (${prevSrc})`)
-					Images.Set(imgKey, prevSrc)
+					Media.Set(imgKey, prevSrc)
 					REGISTRY[imgKey].curSrc = prevSrc
 				} else if (_.keys(imgData.srcs).includes(toggleRef)) {
-					Images.Set(imgKey, toggleRef)					
+					Media.Set(imgKey, toggleRef)					
 					D.Alert(`toggleRef: ${toggleRef}<br>prevSrc: ${prevSrc}<br>curSrc: ${curSrc}<br>newSrc: ${newSrc}<br><br>... SO Setting To Toggle Ref (${toggleRef})`)
 					REGISTRY[imgKey].curSrc = toggleRef
 				} else {				
 					D.Alert(`toggleRef: ${toggleRef}<br>prevSrc: ${prevSrc}<br>curSrc: ${curSrc}<br>newSrc: ${newSrc}<br><br>... SO Setting To Base`)
-					Images.Set(imgKey, "base")
+					Media.Set(imgKey, "base")
 					REGISTRY[imgKey].curSrc = "base"
 				}
 			} else {								
@@ -782,15 +782,15 @@ const Images = (() => {
         },
         orderImages = (imgRefs, isToBack = false) => {
             let imgObjs
-              //D.Alert(`Ordering Images: ${D.JS(imgRefs)}`)
+              //D.Alert(`Ordering Media: ${D.JS(imgRefs)}`)
             if (imgRefs === "map")
                 imgObjs = getImageObjs(IMAGELAYERS[TimeTracker.IsDay() && C.ROOT.Chars.isDaylighterSession ? "daylighterMap" : "map"])
             else if (imgRefs === "objects")
                 imgObjs = getImageObjs(IMAGELAYERS.objects)
             else
                 imgObjs = getImageObjs(imgRefs)
-              //D.Alert(`Retrieved Images: ${D.JS(imgObjs)}`)
-              //D.Alert(`Retrieved Images: ${D.JS(getImageKeys(imgObjs))}`)
+              //D.Alert(`Retrieved Media: ${D.JS(imgObjs)}`)
+              //D.Alert(`Retrieved Media: ${D.JS(getImageKeys(imgObjs))}`)
             if (!isToBack)
                 imgObjs.reverse()
             for (const imgObj of imgObjs) 
@@ -839,10 +839,34 @@ const Images = (() => {
 
         // #region TEXT OBJECTS: Registering & Manipulating Text Objects //(textObj, hostName, objLayer, !isStartActive || isStartActive !== "false", !isShadow || isShadow !== "false", D.ParseToObj(args.join(" ")))
     const getTextObj = (textRef) => {
-
+            return textRef
         },
         getTextData = (textRef) => {
 
+        },
+        getTextWidth = (textRef, text) => {
+            const textObj = getTextObj(textRef)
+            if (VAL({text: textObj}, "getTextWidth")) {
+                const font = textObj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
+                    size = textObj.get("font_size"),
+                    chars = text.split(""),
+                    fontRef = state.DATA.CHARWIDTH[font],
+                    charRef = fontRef && fontRef[size]
+                let width = 0
+                if (!fontRef || !charRef) {
+                    DB(`No font reference for '${font}' at size '${size}', attempting default`, "getTextWidth")
+
+                    return text.length * (parseInt(textObj.get("width")) / textObj.get("text").length)
+                }
+                _.each(chars, char => {
+                    if (!charRef[char] && charRef[char] !== " " && charRef[char] !== 0)
+                        DB(`... MISSING '${char}' in '${font}' at size '${size}'`, "getTextWidth")
+                    else
+                        width += parseInt(charRef[char])
+                })
+                return width
+            }
+            return false
         },
         regText = (textRef, hostName, activeLayer, startActive, isNeedingShadow, options = {}, isSilent = false) => {
         // D.Alert(`Options for '${D.JS(imgName)}': ${D.JS(options)}`, "IMAGES: regImage")
@@ -1064,7 +1088,7 @@ const Images = (() => {
                             break
                         case "source": case "src":
                             if (VAL({ token: D.GetSelected(msg)[0] })) {
-                                hostName = Images.GetData(D.GetSelected(msg)[0]).name
+                                hostName = Media.GetData(D.GetSelected(msg)[0]).name
                                 srcName = args[0]
                             } else {
                                 [hostName, srcName] = args
@@ -1083,13 +1107,13 @@ const Images = (() => {
                             break
                         case "layer":
                             objLayer = args.pop()
-                            layerImages(args.length > 0 ? args : msg, objLayer)
+                            layerImages(args.length ? args : msg, objLayer)
                             break
                         case "tofront":
-                            orderImages(args.length > 0 ? args : msg)
+                            orderImages(args.length ? args : msg)
                             break
                         case "toback":
-                            orderImages(args.length > 0 ? args : msg, true)
+                            orderImages(args.length ? args : msg, true)
                             break
                         case "params":
                             if (getImageData(args[0]))
@@ -1163,7 +1187,7 @@ const Images = (() => {
                         for (hostName of _.keys(IMAGEREGISTRY))
                             if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
                                 removeImage(hostName)
-                    } else if (getImageObjs(msg).length > 0) {
+                    } else if (getImageObjs(msg).length) {
                         for (const obj of getImageObjs(msg)) 
                             removeImage(obj)
                 
@@ -1181,7 +1205,7 @@ const Images = (() => {
                         for (hostName of _.keys(IMAGEREGISTRY))
                             if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
                                 removeImage(hostName, true)
-                    } else if (_.compact(getImageObjs(msg)).length > 0) {
+                    } else if (_.compact(getImageObjs(msg)).length) {
                         for (const obj of getImageObjs(msg)) 
                             removeImage(obj, true)
                 
@@ -1286,10 +1310,10 @@ const Images = (() => {
         },
 
         checkInstall = () => {
-            C.ROOT.Images = C.ROOT.Images || {}
-            C.ROOT.Images.imageregistry = C.ROOT.Images.imageregistry || {}
-            C.ROOT.Images.textregistry = C.ROOT.Images.textregistry || {}
-            C.ROOT.Images.areas = C.ROOT.Images.areas || {}
+            C.ROOT.Media = C.ROOT.Media || {}
+            C.ROOT.Media.imageregistry = C.ROOT.Media.imageregistry || {}
+            C.ROOT.Media.textregistry = C.ROOT.Media.textregistry || {}
+            C.ROOT.Media.areas = C.ROOT.Media.areas || {}
         }
     // #endregion
 
@@ -1317,6 +1341,7 @@ const Images = (() => {
 
         GetTextObj: getTextObj,
         GetTextData: getTextData,
+        GetTextWidth: getTextWidth,
         MakeText: makeText,
         RegText: regText,
         RemoveText: removeText,
@@ -1329,8 +1354,8 @@ const Images = (() => {
 })()
 
 on("ready", () => {
-    Images.RegisterEventHandlers()
-    Images.CheckInstall()
-    D.Log("Ready!", "Images")
+    Media.RegisterEventHandlers()
+    Media.CheckInstall()
+    D.Log("Media Ready!")
 })
 void MarkStop("Media")

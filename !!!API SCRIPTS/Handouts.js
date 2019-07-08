@@ -7,24 +7,6 @@ const Handouts = (() => {
 		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
     // #endregion
 
-    // #region Configuration
-    const HTMLStyle = {
-        divwrapper: "display: block; width: 600px;",
-        charName: "display: block; width: 600px; font-size: 32px; color: rgb(99,00,00); font-family: Voltaire; font-variant: small-caps;",
-        projectGoal: "display: block; width: 600px; height: 24px; background-color: rgb( 206 , 198 , 206 ); font-size: 16px; color: black; font-family: 'Alice Regular'; font-weight: bold; font-variant: small-caps; border-bottom: 1px solid black; border-top: 1px solid black;",
-        smallNote: "display:block; width: 580px; font-size: 10px; font-family: Goudy; margin-left: 20px;",
-        subheader: "display:inline-block; width: 60px; font-size: 14px; color: black; font-family: Voltaire; font-variant: small-caps; font-weight: bold; text-align: right; margin-right: 10px;",
-        projectScope: "display:inline-block; width: 530px; font-size: 12px; color: black; font-family: 'Alice Regular'; vertical-align: top; padding-top: 2px;",
-        critSucc: "display: inline-block; width: 300px; font-size: 20px; color: purple; font-family: Voltaire; font-weight: bold;",
-        succ: "display: inline-block; width: 300px; font-size: 20px; color: black; font-family: goodfish; font-weight: bold;",
-        endDate: "display: inline-block; width: 300px; font-size: 20px; color: black; font-family: Voltaire; font-weight: bold; text-align: right;",
-        daysleft: "display: inline-block; width: 600px; font-size: 14px; color: black; font-family: 'Alice Regular'; font-style: italic; text-align: right;",
-        projectStake: "display: inline-block; width: 530px; font-family: 'Alice Regular';",
-        forcedStake: "display: inline-block; width: 530px; font-family: 'Alice Regular'; color: #990000; font-weight: bold;",
-        teamwork: "display: inline-block; width: 530px; font-family: 'Alice Regular'; color: blue; font-weight: bold;"
-    }
-    // #endregion
-
     // #region GETTERS: Retrieving Notes, Data
     const getHandoutObj = (title, charRef) => {
             const notes = findObjs({
@@ -39,36 +21,27 @@ const Handouts = (() => {
                 return notes[0]
         },
         getProjectData = (charRef) => {
-            const projAttrs = D.GetRepAttrs(charRef, "project", true),
-                projRowIDs = D.GetRepIDs(charRef, "project", true),
+            const projAttrs = D.GetRepStats(charRef, "project", null, null, "rowID"),
                 projData = []
               //D.Alert(`Project Attributes: ${D.JS(projAttrs)}`)
-            for (const rowID of projRowIDs) {
-                let thisData = {
-                    rowID
-                }
-                let testData = {
-                    rowID
-                }
-                  //D.Alert(_.map(projAttrs, (v, k) => D.ParseRepAttr(k).stat))
-                for (const attrKey of _.keys(projAttrs)) 
-                    testData[D.ParseRepAttr(attrKey).stat] = projAttrs[attrKey]
-				
-                for (const attrKey of _.filter(_.keys(projAttrs), v => D.ParseRepAttr(v).rowID.toLowerCase().includes(rowID.toLowerCase()))) 
-                    thisData[D.ParseRepAttr(attrKey).stat] = projAttrs[attrKey]
-				
-                  //D.Alert(D.JS(testData), "TEST DATA")
-                projData.push(thisData)
-            }
+            _.each(projAttrs, (attrDatas, rowID) => {
+                const rowData = {rowID}
+                _.each(attrDatas, attrData => {
+                    rowData[attrData.name] = attrData.val
+                })
+                projData.push(rowData)
+            })
             return projData
         }
     // #endregion
 
     // #region SETTERS: Setting Notes
-    const makeHandoutObj = (title, category) => {
+    const makeHandoutObj = (title, category, contents) => {
         if (category)
             STATEREF.noteCounts[category] = STATEREF.noteCounts[category] ? STATEREF.noteCounts[category] + 1 : 1
-        const noteObj = createObj("handout", {name: title})
+        const noteObj = createObj("handout", {name: `${title} ${category && STATEREF.noteCounts[category] ? STATEREF.noteCounts[category] - 1 : ""}`})
+        if (contents)
+            noteObj.set("notes", C.HANDOUTHTML.projects.main(D.JS(contents)))
         return noteObj		
     }
     // #endregion
@@ -79,7 +52,7 @@ const Handouts = (() => {
         const noteObj = makeHandoutObj(title, "projects"),
             noteSections = []
         for (const char of charObjs) {
-            let thisCharSec = `<span style="${HTMLStyle.charName}">${D.GetName(char).toUpperCase()}</span>`
+            const charLines = []
             for (let projectData of getProjectData(char)) {
                 //D.Alert(D.JS(projectData), "Project Data")
                 /* for (const item of ["projectdetails", "projectgoal", "projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectscope_name", "projectscope", ]) {
@@ -87,55 +60,55 @@ const Handouts = (() => {
 				} */
                 if (projectData.projectenddate && TimeTracker.ParseDate(projectData.projectenddate) < TimeTracker.CurrentDate())
                     continue
-                let thisSection = `<div style="${HTMLStyle.divwrapper}"><span style="${HTMLStyle.projectGoal}">`
+                const projLines = []
+                let projGoal = ""
                 if (parseInt(projectData.projectscope) > 0)
-                    thisSection += `${"●".repeat(parseInt(projectData.projectscope))} `
+                    projGoal += `${"●".repeat(parseInt(projectData.projectscope))} `
                 if (projectData.projectscope_name && projectData.projectscope_name.length > 2)
-                    thisSection += projectData.projectscope_name
-                thisSection += "</span>"
+                    projGoal += projectData.projectscope_name
+                projLines.push(C.HANDOUTHTML.projects.goal(projGoal))
                 if (projectData.projectgoal && projectData.projectgoal.length > 2)
-                    thisSection += `<span style="${HTMLStyle.subheader}">HOOK:</span><span style="${HTMLStyle.projectScope}">${projectData.projectgoal}</span>`
+                    projLines.push(`${C.HANDOUTHTML.projects.tag("HOOK:")}${C.HANDOUTHTML.projects.hook(projectData.projectgoal)}`)
                 if (projectData.projectdetails && projectData.projectdetails.length > 2)
-                    thisSection += `<span style="${HTMLStyle.smallNote}">${projectData.projectdetails}</span>`
-                if (projectData.projectforcedstake1_name && projectData.projectforcedstake1_name.length > 2) 
-                    thisSection += `<span style="${HTMLStyle.subheader} color: #990000;">FORCED:</span><span style="${HTMLStyle.forcedStake}">${projectData.projectforcedstake1_name} ${"●".repeat(parseInt(projectData.projectforcedstake1) || 0)}</span>`
+                    projLines.push(C.HANDOUTHTML.smallNote(projectData.projectdetails))
                 if ((parseInt(projectData.projectteamwork1)||0) + (parseInt(projectData.projectteamwork2)||0) + (parseInt(projectData.projectteamwork3)||0) > 0)
-                    thisSection += `<span style="${HTMLStyle.subheader} color: #0000FF;">TEAMWORK:</span><span style="${HTMLStyle.teamwork}">${"●".repeat((parseInt(projectData.projectteamwork1)||0) + (parseInt(projectData.projectteamwork2)||0) + (parseInt(projectData.projectteamwork3)||0) || 0)}</span>`
+                    projLines.push(`${C.HANDOUTHTML.projects.tag("TEAMWORK:", "0000FF")}${C.HANDOUTHTML.projects.teamwork("●".repeat((parseInt(projectData.projectteamwork1)||0) + (parseInt(projectData.projectteamwork2)||0) + (parseInt(projectData.projectteamwork3)||0) || 0))}`)
                 if (projectData.projectlaunchresults && projectData.projectlaunchresults.length > 2)
-                    thisSection += `<span style="${projectData.projectlaunchresults.includes("CRITICAL") ? HTMLStyle.critSucc : HTMLStyle.succ}">${projectData.projectlaunchresults.includes("CRITICAL") ? "CRITICAL" : `Success (+${projectData.projectlaunchresultsmargin})`}</span>`
+                    if (projectData.projectlaunchresults.includes("CRITICAL"))
+                        projLines.push(C.HANDOUTHTML.projects.critSucc("CRITICAL"))
+                    else 
+                        projLines.push(C.HANDOUTHTML.projects.succ(`Success (+${projectData.projectlaunchresultsmargin})`))
                 else
-                    thisSection += `<span style="${HTMLStyle.succ}"></span>`
-                if (projectData.projectenddate) 
-                    thisSection += `<span style="${HTMLStyle.endDate}">Ends ${projectData.projectenddate.toUpperCase()}</span>${parseInt(projectData.projectinccounter) > 0 ? `<br><span style="${HTMLStyle.daysleft}">${parseInt(projectData.projectincnum) * parseInt(projectData.projectinccounter)} ${projectData.projectincunits} left)</span>` : ""}`
-					//thisSection += `<span style="display: block;">CUR: ${JSON.stringify(TimeTracker.CurrentDate())}, END: ${JSON.stringify(TimeTracker.ParseDate(projectData.projectenddate))}, BOOL: ${Boolean(TimeTracker.ParseDate(projectData.projectenddate) < TimeTracker.CurrentDate())}`
-				
+                    projLines.push(C.HANDOUTHTML.projects.succ(""))
+                if (projectData.projectenddate) {
+                    projLines.push(C.HANDOUTHTML.projects.endDate(`Ends ${projectData.projectenddate.toUpperCase()}`))
+                    if (parseInt(projectData.projectinccounter) > 0)
+                        projLines.push(`<br>${C.HANDOUTHTML.projects.daysLeft(`(${parseInt(projectData.projectincnum) * parseInt(projectData.projectinccounter)} ${projectData.projectincunits} left)`)}`)				
                 let stakeCheck = false
                 for (const stakeVar of ["projectstake1_name", "projectstake1", "projectstake2_name", "projectstake2", "projectstake3_name", "projectstake3"])
                     if (projectData[stakeVar] && (!_.isNaN(parseInt(projectData[stakeVar])) && parseInt(projectData[stakeVar]) > 0 || projectData[stakeVar].length > 2)) 
                         stakeCheck = true
-						//thisSection += `<span style="display: block;">${stakeVar} Triggered Table: Number = ${parseInt(projectData[stakeVar])}, String = ${projectData[stakeVar]}</span>`
-											
+						//thisSection += `<span style="display: block;">${stakeVar} Triggered Table: Number = ${parseInt(projectData[stakeVar])}, String = ${projectData[stakeVar]}</span>`					
                 if (stakeCheck) {
-                    thisSection += `<span style="${HTMLStyle.subheader}">STAKED:</span><span style="${HTMLStyle.projectStake}">`
-                    let stakeStrings = []
+                    const stakeStrings = []
                     for (let i = 1; i <= 3; i++) {
                         const [attr, val] = [projectData[`projectstake${i}_name`], parseInt(projectData[`projectstake${i}`])]
                         if (attr && attr.length > 2 && !_.isNaN(val))
                             stakeStrings.push(`${attr} ${"●".repeat(val)}`)
-                    }
-                    thisSection += `${stakeStrings.join(", ")}</span>`
+                    }                    
+                    projLines.push(`${C.HANDOUTHTML.projects.tag("STAKED:")}${C.HANDOUTHTML.projects.stake(stakeStrings.join(", "))}`)
                 }
-                thisSection += "</div>"
-                if (thisSection === `<div style="${HTMLStyle.divwrapper}"><span style="${HTMLStyle.projectGoal}"></span>`)
+                if (projLines.length === 1 && projLines[0] === C.HANDOUTHTML.projects.goal(""))
                     continue
-                thisCharSec += thisSection
+                charLines.push(C.HANDOUTHTML.projects.main(projLines.join("")))
             }
-            if (thisCharSec === `<span style="${HTMLStyle.charName}">${D.GetName(char).toUpperCase()}</span>`)
+            if (charLines.length === 0)
                 continue
-            noteSections.push(thisCharSec)
+            charLines.unshift(C.HANDOUTHTML.projects.charName(D.GetName(char).toUpperCase()))
+            noteSections.push(charLines.join(""))
         }
         //noteObj.set("notes", "This works!")
-        noteObj.set("notes", `<div style="${HTMLStyle.divwrapper}">${noteSections.join("<br>")}</div>`)
+        noteObj.set("notes", C.HANDOUTHTML.projects.main(noteSections.join("<br>")))
         return noteObj
     }
     // #endregion
@@ -184,13 +157,15 @@ const Handouts = (() => {
 
     return {
         RegisterEventHandlers: regHandlers,
-        CheckInstall: checkInstall
+        CheckInstall: checkInstall,
+
+        Make: makeHandoutObj
     }
 } )()
 
 on("ready", () => {
     Handouts.RegisterEventHandlers()
     Handouts.CheckInstall()
-    D.Log("Ready!", "Handouts")
+    D.Log("Handouts Ready!")
 } )
 void MarkStop("Handouts")

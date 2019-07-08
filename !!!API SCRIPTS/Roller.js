@@ -541,7 +541,7 @@ const Roller = (() => {
                     name: `rollerDie_${category}_${STATEREF[category].length}`,
                     controlledby: ""
                 } )
-                Images.Register(obj, `rollerDie_${category}_${STATEREF[category].length}`, "Bf", "map", false)
+                Media.Register(obj, `rollerDie_${category}_${STATEREF[category].length}`, "Bf", "map", false)
                 STATEREF[category].push( {
                     id: obj.id,
                     top: obj.get("top"),
@@ -597,7 +597,7 @@ const Roller = (() => {
             } ), obj => obj.get("name").includes("rollerDie") && obj.get("name").includes(category))
             for (const die of diceObjs) {
                 DragPads.DelPad(die.id)
-                Images.Remove(die.id)
+                Media.Remove(die.id)
             }
             STATEREF[category] = []
         },
@@ -760,7 +760,7 @@ const Roller = (() => {
                 params.top = top
                 params.left = left
                 if (params.justified && params.justified === "left") {
-                    params.width = D.GetTextWidth(obj, params.text)
+                    params.width = Media.GetTextWidth(obj, params.text)
                     params.left = left + params.width / 2 - width / 2
                 }
                 if (params.shift) {
@@ -781,7 +781,7 @@ const Roller = (() => {
                                 break
                         }
                     } else if (params.shift.imgAnchor) {
-                        const imgObj = Images.GetObj(params.shift.imgAnchor)
+                        const imgObj = Media.GetObj(params.shift.imgAnchor)
                         if (VAL({graphic: imgObj}))
                             switch (params.shift.anchorSide) {
                                 case "right":
@@ -871,8 +871,8 @@ const Roller = (() => {
             STATEREF.imgList = {}
             STATEREF.textList = {}
             DragPads.ClearAllPads("wpReroll")
-            Images.Remove("wpRerollPlaceholder")
-            Images.RemoveAll("rollerImage")
+            Media.Remove("wpRerollPlaceholder")
+            Media.RemoveAll("rollerImage")
             DragPads.ClearAllPads("selectDie")
             for (const cat of STATECATS.dice)
                 clearDice(cat)
@@ -887,7 +887,7 @@ const Roller = (() => {
                     TEXTLINES[textLine].text
                 ))
 			
-            Images.Register(makeImg(
+            Media.Register(makeImg(
                 "frontFrame",
                 IMAGES.frontFrame,
                 POSITIONS.diceFrameFront.top(),
@@ -896,7 +896,7 @@ const Roller = (() => {
                 POSITIONS.diceFrameFront.width()
             ), "rollerImage_frontFrame", "base", "map", true)
             for (let i = 0; i < 9; i++) {
-                Images.Register(makeImg(
+                Media.Register(makeImg(
                     `topMid_${i}`,
                     IMAGES.topMids[i - 3 * Math.floor(i / 3)],
                     POSITIONS.diceFrameMidTop.top(),
@@ -904,7 +904,7 @@ const Roller = (() => {
                     POSITIONS.diceFrameMidTop.height(),
                     POSITIONS.diceFrameMidTop.width()
                 ), `rollerImage_topMid_${i}`, "base", "map", true)
-                Images.Register(makeImg(
+                Media.Register(makeImg(
                     `bottomMid_${i}`,
                     IMAGES.bottomMids[i - 3 * Math.floor(i / 3)],
                     POSITIONS.diceFrameMidBottom.top(),
@@ -913,7 +913,7 @@ const Roller = (() => {
                     POSITIONS.diceFrameMidBottom.width()
                 ), `rollerImage_bottomMid_${i}`, "base", "map", true)
             }
-            Images.Register(makeImg(
+            Media.Register(makeImg(
                 "topEnd",
                 IMAGES.topEnd,
                 POSITIONS.diceFrameEndTop.top(),
@@ -921,7 +921,7 @@ const Roller = (() => {
                 POSITIONS.diceFrameEndTop.height(),
                 POSITIONS.diceFrameEndTop.width()
             ), "rollerImage_topEnd", "base", "map", true)
-            Images.Register(makeImg(
+            Media.Register(makeImg(
                 "bottomEnd",
                 IMAGES.bottomEnd,
                 POSITIONS.diceFrameEndBottom.top(),
@@ -929,7 +929,7 @@ const Roller = (() => {
                 POSITIONS.diceFrameEndBottom.height(),
                 POSITIONS.diceFrameEndBottom.width()
             ), "rollerImage_bottomEnd", "base", "map", true)
-            Images.Register(makeImg(
+            Media.Register(makeImg(
                 "diffFrame",
                 IMAGES.diffFrame,
                 POSITIONS.diceFrameDiffFrame.top(),
@@ -939,7 +939,7 @@ const Roller = (() => {
             ), "rollerImage_diffFrame", "base", "map", true)
 
         //WP REROLL BUTTON
-            Images.Register(makeImg(
+            Media.Register(makeImg(
                 "wpRerollPlaceholder",
                 IMAGES.blank,
                 POSITIONS.diceFrameRerollPad.top(),
@@ -957,9 +957,9 @@ const Roller = (() => {
             DragPads.Toggle("wpReroll", false)
             for (const diceCat of _.keys(SETTINGS.dice))
                 makeAllDice(diceCat, SETTINGS.dice[diceCat] )
-            Images.LayerImages(Images.IMAGELAYERS.map, "map")
-            Images.LayerImages(Images.IMAGELAYERS.objects, "objects")
-            Images.OrderImages("map")			
+            Media.LayerImages(Media.IMAGELAYERS.map, "map")
+            Media.LayerImages(Media.IMAGELAYERS.objects, "objects")
+            Media.OrderImages("map")			
             textList.reverse()
             for (const txt of textList) 
                 if (_.isObject(txt))
@@ -1048,7 +1048,7 @@ const Roller = (() => {
                 if (STATEREF.selected[dieCat].length > 3)
                     selectDie(STATEREF.selected[dieCat][0], dieCat)
             }
-            if (STATEREF.selected[dieCat].length > 0 && !isRerollFXOn) {
+            if (STATEREF.selected[dieCat].length && !isRerollFXOn) {
                 isRerollFXOn = true
                 lockRoller(true)
                 D.RunFX("bloodCloud1", POSITIONS.bloodCloudFX)
@@ -1066,7 +1066,6 @@ const Roller = (() => {
 
     // #region Getting Information & Setting State Roll Record
     const applyRollEffects = rollInput => {
-        // const rollEffectString = getAttrByName(rollInput.charID, "rolleffects")
             const rollEffectString = getAttrByName(rollInput.charID, "rolleffects")
             if (VAL({string: rollEffectString, list: rollInput}, "applyRollEffects")) {
                 rollInput.appliedRollEffects = rollInput.appliedRollEffects || []
@@ -1079,7 +1078,7 @@ const Roller = (() => {
                                 return true
                         // TEST: If restriction is "physical", "social" or "mental", does an appropriate trait match?
                         } else if (D.IsIn(restr, ["physical", "mental", "social"])) {
-                            if (!_.intersection(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()), _.keys(traits)).length > 0) {
+                            if (!_.intersection(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()), _.keys(traits)).length) {
                                 DB(`SKIPPING: Restriction ${D.JS(restr)} Doesn't Apply<br><br>ATTRIBUTES/SKILLS MAPPED = ${D.JS(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()))}<br><br>C.SKILLS[restriction] = ${D.JS(C.SKILLS[restr])}<br><br>INTERSECTION = ${D.JS(_.intersection(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()), _.keys(traits)))}`, "applyRollEffects")
                                 return true
                             }
@@ -1448,10 +1447,10 @@ const Roller = (() => {
                 params.args.length > 3 ? params.args[4].split(",") : "",
                 params.args.length > 4 ? params.args[5].split(",") : ""
             ] )), flag => {
-                if (flag === "Health" && _.intersection(traitList, _.map(_.flatten( [C.ATTRIBUTES.physical, C.SKILLS.physical] ), v => v.toLowerCase())).length > 0) {
+                if (flag === "Health" && _.intersection(traitList, _.map(_.flatten( [C.ATTRIBUTES.physical, C.SKILLS.physical] ), v => v.toLowerCase())).length) {
                     flagData.negFlagLines.push("Injured (●●)")
                     flagData.flagDiceMod -= 2
-                } else if (flag === "Willpower" && _.intersection(traitList, _.map(_.flatten( [C.ATTRIBUTES.mental, C.ATTRIBUTES.social, C.SKILLS.mental, C.SKILLS.social] ), v => v.toLowerCase())).length > 0) {
+                } else if (flag === "Willpower" && _.intersection(traitList, _.map(_.flatten( [C.ATTRIBUTES.mental, C.ATTRIBUTES.social, C.SKILLS.mental, C.SKILLS.social] ), v => v.toLowerCase())).length) {
                     flagData.negFlagLines.push("Exhausted (●●)")
                     flagData.flagDiceMod -= 2
                 } else if (flag === "Humanity") {
@@ -1461,10 +1460,10 @@ const Roller = (() => {
                     const customFlag = _.compact(flag.split(":")),
                         mod = parseInt(customFlag[customFlag.length - 1] )
                     if ((customFlag.length === 2 || customFlag.length === 3) && (
-                        customFlag[1].includes("p") && _.intersection(traitList, _.flatten( [C.ATTRIBUTES.physical, C.SKILLS.physical] )).length > 0 ||
-						customFlag[1].includes("m") && _.intersection(traitList, _.flatten( [C.ATTRIBUTES.mental, C.SKILLS.mental] )).length > 0 ||
-						customFlag[1].includes("s") && _.intersection(traitList, _.flatten( [C.ATTRIBUTES.social, C.SKILLS.social] )).length > 0 ||
-						customFlag[1].includes("d") && _.intersection(traitList, C.DISCIPLINES).length > 0
+                        customFlag[1].includes("p") && _.intersection(traitList, _.flatten( [C.ATTRIBUTES.physical, C.SKILLS.physical] )).length ||
+						customFlag[1].includes("m") && _.intersection(traitList, _.flatten( [C.ATTRIBUTES.mental, C.SKILLS.mental] )).length ||
+						customFlag[1].includes("s") && _.intersection(traitList, _.flatten( [C.ATTRIBUTES.social, C.SKILLS.social] )).length ||
+						customFlag[1].includes("d") && _.intersection(traitList, C.DISCIPLINES).length
                     )) {
                         if (mod >= 0)
                             flagData.posFlagLines.push(`${customFlag[0]} (${mod > 0 ? "●".repeat(mod) : "~"})`)
@@ -1600,7 +1599,7 @@ const Roller = (() => {
                     rollData.diff = parseInt(params[1] || 0)
                     rollData.mod = parseInt(params[2] || 0)
                     rollData.diffMod = parseInt(params[3] || 0)
-                    rollData.prefix = ["repeating", "project", D.GetRepIDCase(params[4] ), ""].join("_")
+                    rollData.prefix = ["repeating", "project", D.GetRepStat(charObj, "project", params[4]).rowID, ""].join("_")
                     DB(`PROJECT PREFIX: ${D.JSL(rollData.prefix)}`, "getRollData")
                     break
                 case "secret":
@@ -1753,7 +1752,7 @@ const Roller = (() => {
 			   };
 			   RollData.dicePool += rollData.traitData[trt].value;
 			   });
-			   If (specialties.length > 0) {
+			   If (specialties.length) {
 			   RollData.posFlagLines.push("Specialty: " + specialties.join(", ") + " (●)");
 			   RollData.dicePool++;
 			   }
@@ -2078,7 +2077,7 @@ const Roller = (() => {
                     }
                       /* falls through */
                 case "trait":
-                    if (posFlagLines.length > 0) {
+                    if (posFlagLines.length) {
                         rollLines.posMods = {
                             text: `+ ${posFlagLines.join(" + ")}          `,
                             justified: "left"
@@ -2091,7 +2090,7 @@ const Roller = (() => {
                             justified: "left"
                         }
                     }
-                    if (negFlagLines.length > 0) {
+                    if (negFlagLines.length) {
                         rollLines.negMods = {
                             text: `- ${negFlagLines.join(" - ")}`,
                             justified: "left",
@@ -2104,7 +2103,7 @@ const Roller = (() => {
                         rollLines.mainRoll.shift.top = 0
                         rollLines.mainRollShadow.shift.top = 0
                     }
-                    if (redFlagLines.length > 0)
+                    if (redFlagLines.length)
                         rollLines.redMods = {
                             text: redFlagLines.join(" "),
                             justified: "left",
@@ -2114,7 +2113,7 @@ const Roller = (() => {
                                 amount: 20
                             }
                         }
-                    if (goldFlagLines.length > 0)
+                    if (goldFlagLines.length)
                         rollLines.goldMods = {
                             text: goldFlagLines.join(" "),
                             justified: "left",
@@ -2477,7 +2476,7 @@ const Roller = (() => {
             } )
 
             if (_.isNumber(deltaAttrs.hunger))
-                Images.Toggle(`Hunger${getAttrByName(rollData.charID, "sandboxquadrant")}_1`, true, deltaAttrs.hunger)
+                Media.Toggle(`Hunger${getAttrByName(rollData.charID, "sandboxquadrant")}_1`, true, deltaAttrs.hunger)
 
             logLines.rollerName = `${CHATSTYLES.rollerName + rollData.charName + logLines.rollerName}</div>`
             logLines.mainRoll = `${logLines.mainRoll + logLines.difficulty}</span>${logLines.mainRollSub}</div>`
@@ -2534,7 +2533,7 @@ const Roller = (() => {
             scaleFrame("top", spread)
 
             D.RunFX("bloodBolt", POSITIONS.bloodBoltFX)
-            if (_.values(deltaAttrs).length > 0) {
+            if (_.values(deltaAttrs).length) {
                 DB(`CHANGING ATTRIBUTES:
 				
 					${D.JS(deltaAttrs)}`, "displayRoll")
@@ -2578,7 +2577,7 @@ const Roller = (() => {
             rollResults.wpCostAfterReroll = rollRecord.rollResults.wpCostAfterReroll
     
             if (charObj) {
-                Chars.Damage(charObj, "willpower", "spent", rollResults.wpCost)
+                Char.Damage(charObj, "willpower", "spent", rollResults.wpCost)
                 if (VAL({number: rollResults.wpCostAfterReroll})) {
                     rollResults.wpCost = rollRecord.rollResults.wpCostAfterReroll
                     delete rollResults.wpCostAfterReroll
@@ -2645,7 +2644,7 @@ const Roller = (() => {
                 playerLine += `${(rollData.mod > 0 ? CHATSTYLES.secret.greyPlus : "") + (rollData.mod < 0 ? CHATSTYLES.secret.greyMinus : "") + CHATSTYLES.secret.white + Math.abs(rollData.mod)}</span>`
         }
 
-        if (rollData.traits.length > 0) {
+        if (rollData.traits.length) {
             traitLine = _.keys(rollData.traitData).join(" + ")
             if (rollData.mod !== 0)
                 traitLine += (dicePool > 0 ? " + " : "") + (dicePool < 0 ? " - " : "") + Math.abs(rollData.mod)
@@ -3137,6 +3136,6 @@ const Roller = (() => {
 on("ready", () => {
     Roller.RegisterEventHandlers()
     Roller.CheckInstall()
-    D.Log("Ready!", "Roller")
+    D.Log("Roller Ready!")
 } )
 void MarkStop("Roller")
