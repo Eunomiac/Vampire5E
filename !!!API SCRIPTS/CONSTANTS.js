@@ -106,10 +106,11 @@ const C = (() => {
                 border-right: 1px solid #999;
                 padding: 3px 10px;
             ">${content}</span>`,            
-            smallNote: content => `<span style="
+            smallNote: (content, color = "#000000") => `<span style="
                 display:block; 
                 width: 580px; 
-                font-size: 10px; 
+                font-size: 10px;
+                color: ${color};
                 font-family: Goudy; 
                 margin-left: 20px;
             ">${content}</span>`,
@@ -135,11 +136,11 @@ const C = (() => {
                     border-bottom: 1px solid black; 
                     border-top: 1px solid black;
                 ">${content}</span>`,
-                tag: content => `<span style="
+                tag: (content, color = "#000000") => `<span style="
                     display:inline-block; 
                     width: 60px; 
                     font-size: 14px; 
-                    color: black; 
+                    color: ${color}; 
                     font-family: Voltaire; 
                     font-variant: small-caps; 
                     font-weight: bold; 
