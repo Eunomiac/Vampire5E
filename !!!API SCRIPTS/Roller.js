@@ -2864,7 +2864,7 @@ const Roller = (() => {
     const handleInput = (msg, who, call, args) => {
         let [rollType, charObj, diceNums, resonance, resDetails, resIntLine, params] = new Array(7),
             name = "",
-            [isSilent, isHidingTraits, isDiscRoll] = [false, false, false]
+            [isSilent, isHidingTraits] = [false, false]
         switch (call) { 		// !traitroll @{character_name}|Strength,Resolve|3|5|0|ICompulsion:3,IPhysical:2
             case "!frenzyinitroll":	// !projectroll @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
                 lockRoller(true)

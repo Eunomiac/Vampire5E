@@ -84,6 +84,7 @@ const Handouts = (() => {
                     projLines.push(C.HANDOUTHTML.projects.endDate(`Ends ${projectData.projectenddate.toUpperCase()}`))
                     if (parseInt(projectData.projectinccounter) > 0)
                         projLines.push(`<br>${C.HANDOUTHTML.projects.daysLeft(`(${parseInt(projectData.projectincnum) * parseInt(projectData.projectinccounter)} ${projectData.projectincunits} left)`)}`)				
+                }
                 let stakeCheck = false
                 for (const stakeVar of ["projectstake1_name", "projectstake1", "projectstake2_name", "projectstake2", "projectstake3_name", "projectstake3"])
                     if (projectData[stakeVar] && (!_.isNaN(parseInt(projectData[stakeVar])) && parseInt(projectData[stakeVar]) > 0 || projectData[stakeVar].length > 2)) 
@@ -119,9 +120,7 @@ const Handouts = (() => {
             return
         /* API chat command parameters can contain spaces, but multiple parameters must be comma-delimited.
                 e.g. "!test subcommand1 subcommand2 param1 with spaces, param2,param3" */
-        const [command, ...args] = msg.content.split(/\s+/u),
-            getParams = argArray => _.map(argArray.join(" ").replace(/\\,/gu, "@@@").split(","), v => v.trim().replace(/@@@/gu, ","))
-        let params = []
+        const [command, ...args] = msg.content.split(/\s+/u)
         switch (command.toLowerCase()) {
             case "!handouts":
                 if (!args[0])
@@ -159,7 +158,8 @@ const Handouts = (() => {
         RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
 
-        Make: makeHandoutObj
+        Make: makeHandoutObj,
+        GetHandout: getHandoutObj
     }
 } )()
 
