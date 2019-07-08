@@ -71,6 +71,8 @@ const Handouts = (() => {
                     projLines.push(`${C.HANDOUTHTML.projects.tag("HOOK:")}${C.HANDOUTHTML.projects.hook(projectData.projectgoal)}`)
                 if (projectData.projectdetails && projectData.projectdetails.length > 2)
                     projLines.push(C.HANDOUTHTML.smallNote(projectData.projectdetails))
+                if (projectData.projectforcedstake1_name && projectData.projectforcedstake1_name.length > 2)
+                    projLines.push(`${C.HANDOUTHTML.projects.tag("FORCED:","#990000")}${C.HANDOUTHTML.projects.forcedStake(`${projectData.projectforcedstake1_name} ${"●".repeat(parseInt(projectData.projectforcedstake1) || 0)}`)}`)
                 if ((parseInt(projectData.projectteamwork1)||0) + (parseInt(projectData.projectteamwork2)||0) + (parseInt(projectData.projectteamwork3)||0) > 0)
                     projLines.push(`${C.HANDOUTHTML.projects.tag("TEAMWORK:", "0000FF")}${C.HANDOUTHTML.projects.teamwork("●".repeat((parseInt(projectData.projectteamwork1)||0) + (parseInt(projectData.projectteamwork2)||0) + (parseInt(projectData.projectteamwork3)||0) || 0))}`)
                 if (projectData.projectlaunchresults && projectData.projectlaunchresults.length > 2)
