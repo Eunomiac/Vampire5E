@@ -1007,6 +1007,7 @@ const TimeTracker = (() => {
                     break
                 case "!weatherreport":
                     checkWeatherReport()
+                    
                     D.Alert(`Day -> Night1: ${TWILIGHT[STATEREF.dateObj.getMonth()][1]}<br>Night1 -> Night2: ${_.keys(IMAGETIMES)[0]}<br>Night2 -> Night3: ${_.keys(IMAGETIMES)[1]}<br>Night3 -> Night4: ${_.keys(IMAGETIMES)[2]}<br>Night4 -> Night5: ${TWILIGHT[STATEREF.dateObj.getMonth()][0]} - 1h<br>PDawn5, 4, 3, 2: 30m > 20m > 10m > 5m BEFORE...<br>DAWN: ${TWILIGHT[STATEREF.dateObj.getMonth()][0]}`, "BACKGROUND CHANGE TIMES")
                     break                    
                 default:
