@@ -472,9 +472,9 @@ const D = (() => {
                         if (logDate.getUTCHours() > 12)
                             logDate.setUTCHours(logDate.getUTCHours() - 12)
                     }                
-                    logLines.push("</div>", C.HANDOUTHTML.main(C.HANDOUTHTML.boxTitle((new Date(logDate)).toUTCString().replace("GMT", ampm))).replace("</div>", ""))
+                    logLines.push("</div>", C.HANDOUTHTML.main(C.HANDOUTHTML.title((new Date(logDate)).toUTCString().replace("GMT", ampm))).replace("</div>", ""))
                 }
-                logLines.push(C.HANDOUTHTML.greyParagraph(C.HANDOUTHTML.subTitle(logData.title.replace("DB ", "")) + jStr(logData.contents)))
+                logLines.push(C.HANDOUTHTML.bodyParagraph(C.HANDOUTHTML.subTitle(logData.title.replace("DB ", "")) + jStr(logData.contents)))
                 lastTimeStamp = logData.timeStamp
             }
             logLines.push("</div>")

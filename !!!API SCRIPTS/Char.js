@@ -676,9 +676,14 @@ const Char = (() => {
 		// #endregion
 	
 		// #region Event Handlers (handleInput, handleAttribute),
-        handleAttr = (obj, prev) => {
-            if (obj.get("name") === "hunger" && obj.get("current") !== prev.current)
+        handleChangeAttr = (obj, prev) => {
+            if (obj.get("name").toLowerCase() === "hunger" && obj.get("current") !== prev.current)
                 Media.Toggle(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, true, obj.get("current"))
+        },
+        handleAddAttr = obj => {
+            if (obj.get("name").toLowerCase().match(/repeating_timeline_.*?_tlenddate/gu))
+                //D.SortRepSec(obj.get("_characterid"), "timeline", (charRef, secName, rowID1, rowID2) => TimeTracker.ParseDate(D.GetRepStat(charRef, secName, rowID1, "tlenddate").val).getTime() - TimeTracker.ParseDate(D.GetRepStat(charRef, secName, rowID2, "tlenddate").val).getTime())             
+                D.Alert("Add Timeline Row TRIGGERED.")
         },
         handleInput = (msg) => {
 			//D.Alert(`MSG RECEIVED: ${D.JS(msg)}`)
@@ -1004,7 +1009,8 @@ const Char = (() => {
 		// #region Public Functions: regHandlers,
         regHandlers = () => {
             on("chat:message", handleInput)
-            on("change:attribute:current", handleAttr)
+            on("change:attribute:current", handleChangeAttr)
+            on("add:attribute", handleAddAttr)
         },
         checkInstall = () => {
             C.ROOT = C.ROOT || {}

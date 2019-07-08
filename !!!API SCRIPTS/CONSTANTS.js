@@ -71,7 +71,7 @@ const C = (() => {
                 display: block;
                 width: 600px;
             ">${content}</div>`,
-            boxTitle: content => `<span style="
+            title: content => `<span style="
                 display: block;
                 width: 602px;
                 height: 16px;
@@ -96,7 +96,7 @@ const C = (() => {
                 font-size: 12px;
                 padding-bottom: 3px;
             ">${content}</span>`,
-            greyParagraph: content => `<span style="
+            bodyParagraph: content => `<span style="
                 display: block;
                 width: 586px;
                 font-family: 'Trebuchet MS';
@@ -105,28 +105,7 @@ const C = (() => {
                 border-left: 1px solid #999;
                 border-right: 1px solid #999;
                 padding: 3px 10px;
-            ">${content}</span>`,
-            charName: content => `<span style="
-                display: block; 
-                width: 600px;
-                font-size: 32px; 
-                color: rgb(99,00,00); 
-                font-family: Voltaire; 
-                font-variant: small-caps;
-            ">${content}</span>`,
-            projectGoal: content => `<span style="
-                display: block; 
-                width: 600px; 
-                height: 24px; 
-                background-color: rgb( 206 , 198 , 206 ); 
-                font-size: 16px; 
-                color: black; 
-                font-family: 'Alice Regular'; 
-                font-weight: bold; 
-                font-variant: small-caps; 
-                border-bottom: 1px solid black; 
-                border-top: 1px solid black;
-            ">${content}</span>`,
+            ">${content}</span>`,            
             smallNote: content => `<span style="
                 display:block; 
                 width: 580px; 
@@ -134,79 +113,102 @@ const C = (() => {
                 font-family: Goudy; 
                 margin-left: 20px;
             ">${content}</span>`,
-            subheader: content => `<span style="
-                display:inline-block; 
-                width: 60px; 
-                font-size: 14px; 
-                color: black; 
-                font-family: Voltaire; 
-                font-variant: small-caps; 
-                font-weight: bold; 
-                text-align: right; 
-                margin-right: 10px;
-            ">${content}</span>`,
-            projectScope: content => `<span style="
-                display:inline-block; 
-                width: 530px; 
-                font-size: 12px; 
-                color: black; 
-                font-family: 'Alice Regular'; 
-                vertical-align: top; 
-                padding-top: 2px;
-            ">${content}</span>`,
-            critSucc: content => `<span style="
-                display: inline-block; 
-                width: 300px; 
-                font-size: 20px; 
-                color: purple; 
-                font-family: Voltaire; 
-                font-weight: bold;
-            ">${content}</span>`,
-            succ: content => `<span style="
-                display: inline-block; 
-                width: 300px; 
-                font-size: 20px; 
-                color: black; 
-                font-family: goodfish; 
-                font-weight: bold;
-            ">${content}</span>`,
-            endDate: content => `<span style="
-                display: inline-block; 
-                width: 300px; 
-                font-size: 20px; 
-                color: black; 
-                font-family: Voltaire; 
-                font-weight: bold; 
-                text-align: right;
-            ">${content}</span>`,
-            daysleft: content => `<span style="
-                display: inline-block; 
-                width: 600px; 
-                font-size: 14px; 
-                color: black; 
-                font-family: 'Alice Regular'; 
-                font-style: italic; 
-                text-align: right;
-            ">${content}</span>`,
-            projectStake: content => `<span style="
-                display: inline-block; 
-                width: 530px; 
-                font-family: 'Alice Regular';
-            ">${content}</span>`,
-            forcedStake: content => `<span style="
-                display: inline-block; 
-                width: 530px; 
-                font-family: 'Alice Regular'; 
-                color: #990000; 
-                font-weight: bold;
-            ">${content}</span>`,
-            teamwork: content => `<span style="
-                display: inline-block; 
-                width: 530px; 
-                font-family: 'Alice Regular'; 
-                color: blue; 
-                font-weight: bold;
-            ">${content}</span>`
+            projects: {                
+                charName: content => `<span style="
+                    display: block; 
+                    width: 600px;
+                    font-size: 32px; 
+                    color: rgb(99,00,00); 
+                    font-family: Voltaire; 
+                    font-variant: small-caps;
+                ">${content}</span>`,
+                goal: content => `<span style="
+                    display: block; 
+                    width: 600px; 
+                    height: 24px; 
+                    background-color: rgb( 206 , 198 , 206 ); 
+                    font-size: 16px; 
+                    color: black; 
+                    font-family: 'Alice Regular'; 
+                    font-weight: bold; 
+                    font-variant: small-caps; 
+                    border-bottom: 1px solid black; 
+                    border-top: 1px solid black;
+                ">${content}</span>`,
+                tag: content => `<span style="
+                    display:inline-block; 
+                    width: 60px; 
+                    font-size: 14px; 
+                    color: black; 
+                    font-family: Voltaire; 
+                    font-variant: small-caps; 
+                    font-weight: bold; 
+                    text-align: right; 
+                    margin-right: 10px;
+                ">${content}</span>`,
+                hook: content => `<span style="
+                    display:inline-block; 
+                    width: 530px; 
+                    font-size: 12px; 
+                    color: black; 
+                    font-family: 'Alice Regular'; 
+                    vertical-align: top; 
+                    padding-top: 2px;
+                ">${content}</span>`,
+                critSucc: content => `<span style="
+                    display: inline-block; 
+                    width: 300px; 
+                    font-size: 20px; 
+                    color: purple; 
+                    font-family: Voltaire; 
+                    font-weight: bold;
+                ">${content}</span>`,
+                succ: content => `<span style="
+                    display: inline-block; 
+                    width: 300px; 
+                    font-size: 20px; 
+                    color: black; 
+                    font-family: goodfish; 
+                    font-weight: bold;
+                ">${content}</span>`,
+                endDate: content => `<span style="
+                    display: inline-block; 
+                    width: 300px; 
+                    font-size: 20px; 
+                    color: black; 
+                    font-family: Voltaire; 
+                    font-weight: bold; 
+                    text-align: right;
+                ">${content}</span>`,
+                daysLeft: content => `<span style="
+                    display: inline-block; 
+                    width: 600px; 
+                    font-size: 14px; 
+                    color: black; 
+                    font-family: 'Alice Regular'; 
+                    font-style: italic; 
+                    text-align: right;
+                ">${content}</span>`,
+                stake: content => `<span style="
+                    display: inline-block; 
+                    width: 530px; 
+                    font-family: 'Alice Regular';
+                ">${content}</span>`,
+                forcedStake: content => `<span style="
+                    display: inline-block; 
+                    width: 530px; 
+                    font-family: 'Alice Regular'; 
+                    color: #990000; 
+                    font-weight: bold;
+                ">${content}</span>`,
+                teamwork: content => `<span style="
+                    display: inline-block; 
+                    width: 530px; 
+                    font-family: 'Alice Regular'; 
+                    color: blue; 
+                    font-weight: bold;
+                ">${content}</span>`
+            },
         }
     // #endregion
 
