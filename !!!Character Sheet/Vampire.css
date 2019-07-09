@@ -859,7 +859,7 @@
 		box-shadow: -1px -1px 0px #000, 0px -1px 0px #999, 1px -1px 0px #aaa, 0px 0px 2px #000, 1px 0px 0px #fff, 0px 1px 0px #ccc, 1px 1px 0px #fff;
 	}
 
-	.charsheet div.sheet-dotline input.sheet-zero:checked:not(.sheet-highdot)+span::before {
+		.charsheet div.sheet-dotline input.sheet-zero:checked:not(.sheet-highdot)+span::before {
 		opacity: 0;
 	}
 
@@ -1332,6 +1332,21 @@
 
 	/* #endregion */
 
+	/* #region Content-Aware Indications */
+	.charsheet input::placeholder {
+		color: rgba(150, 0, 0, 1);
+		opacity: 0.75;
+		/* text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc; */
+	}
+
+	.charsheet div.sheet-dotline input.sheet-dot:checked:not(.sheet-highdot)~input.sheet-dot:required:invalid+span::before,
+	.charsheet select:required:invalid,
+	.charsheet input:required:invalid {
+		border: 1px inset #990000;
+		background-color: rgba(150, 0, 0, 0.25);
+	}
+	/* #endregion */
+
 	/* #region SECTION: Settings */
 	/*.charsheet div.sheet-settings div.sheet-header2 {
 	margin-top: 90px;
@@ -1714,7 +1729,7 @@
 	.charsheet div.sheet-rollflagscol {
 		height: calc(100% - 10px);
 		width: 87px;
-		margin-top: 15px;
+		margin-top: 27px;
 	}
 
 	.charsheet div.sheet-rollflagscol input,
@@ -1871,6 +1886,7 @@
 
 		text-shadow: -1px -1px 1px #000, -1px -1px 1px #333, 1px 1px 1px #fff;
 		box-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 2px #ccc;
+		text-shadow: none;
 	}
 
 	.charsheet div.sheet-titleblock div.sheet-dotline {
@@ -2320,6 +2336,10 @@
 		font-family: 'Bodoni SvtyTwo ITC TT' !important;
 	}
 
+	.charsheet div.sheet-projects hr {
+		margin: 5px 0px;
+	}
+
 	.charsheet div.sheet-projects textarea {
 		padding: 0px 0px;
 	}
@@ -2337,6 +2357,7 @@
 		width: 95px;
 		margin-right: 5px;
 	}
+
 
 	.charsheet div.sheet-projects .sheet-doublerow {
 		height: 45px;
@@ -2407,7 +2428,7 @@
 	.charsheet div.sheet-projects div.sheet-launchrollmain {
 		width: 295px;
 		height: 250px;
-		margin-top: -110px;
+		margin-top: -115px;
 		margin-right: -68px;
 	}
 
@@ -2531,8 +2552,12 @@
 		margin-bottom: 2px;
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectforcedstake {
+	.charsheet div.sheet-projects div.sheet-projectteamwork {
 		width: calc(50% - 90px - 25px);
+		margin-bottom: 0px;
+		height: 17px;
+		text-align: center;
+		text-align-last: center;
 	}
 
 	.charsheet div.sheet-projects input.sheet-projectgoal {
@@ -2549,7 +2574,7 @@
 		width: calc(100% - 40px - 25px);
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectforcedstake input.sheet-dotlinename,
+	.charsheet div.sheet-projects div.sheet-projectteamwork input.sheet-dotlinename,
 	.charsheet div.sheet-projects div.sheet-projectstake input.sheet-dotlinename {
 		width: calc(100% - 96px);
 		height: 16px;

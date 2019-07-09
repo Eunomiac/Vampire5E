@@ -1,46 +1,58 @@
 void MarkStart("Complications")
 const Complications = (() => {
-	// #region INITIALIZATION
+    // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Complications",
-		    STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-		   DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME) // eslint-disable-line no-unused-vars
-	// #endregion
+        CHATCOMMAND = "!comp",
+        GMONLY = true
 
+    // #region COMMON INITIALIZATION
+    const STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
+    const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+        DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+        LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
+
+    const checkInstall = () => {
+            C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
+            initialize()
+        },
+        regHandlers = () => {
+            on("chat:message", msg => {
+                const args = msg.content.split(/\s+/u)
+                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid)) && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
+                    const who = msg.who || "API",
+                        call = args.shift()
+                    handleInput(msg, who, call, args)
+                }
+            })
+            on("add:graphic", handleAdd)
+        }
+    // #endregion
+
+    // #region LOCAL INITIALIZATION
+    const initialize = () => {
+        STATEREF.deckID = STATEREF.deckID || ""
+        STATEREF.targetVal = STATEREF.targetVal || { id: "", value: 0 }
+        STATEREF.currentVal = STATEREF.currentVal || { id: "", value: 0 }
+        STATEREF.remainingVal = STATEREF.remainingVal || { id: "", value: 0 }
+        STATEREF.zeroes = STATEREF.zeroes || []
+        STATEREF.cardsDrawn = STATEREF.cardsDrawn || []
+    }
+    // #endregion
     let isRunning = false
 
-	// #region GETTERS: Retrieving Notes, Data
-	
-	// #endregion
-
-	// #region SETTERS:
-    
-	// #endregion
-
-	// #region Event Handlers (handleInput, handleAdd)
-    const handleAdd = obj => {
-            if (isRunning) {
-                STATEREF.cardsDrawn.push({id: obj.id, value: 0})
-                Media.SetArea(obj.id, `ComplicationDraw${STATEREF.cardsDrawn.length}`)
-                sendChat("COMPLICATION", "/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px crimson outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[0](!comp draw 0) [1](!comp draw 1) [2](!comp draw 2) [3](!comp draw 3) [4](!comp draw 4)</span><br/></div>")
-            }
-        },
-        handleInput = msg => {
-            if (msg.type !== "api" || !playerIsGM(msg.playerid) || !msg.content.startsWith("!comp"))
-                return
-			/* API chat command parameters can contain spaces, but multiple parameters must be comma-delimited.
-                e.g. "!test subcommand1 subcommand2 param1 with spaces, param2,param3" */
-            const [, command, ...args] = msg.content.split(/\s+/u),
-                targetTextObj = getObj("text", STATEREF.targetVal.id) || null,
+    // #region EVENT HANDLERS: (HANDLEINPUT)
+    const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
+            const targetTextObj = getObj("text", STATEREF.targetVal.id) || null,
                 currentTextObj = getObj("text", STATEREF.currentVal.id) || null,
                 remainingTextObj = getObj("text", STATEREF.remainingVal.id) || null
             let [textObj, imgObj, cardVal, cardIndex] = [null, null, null, null]
-            switch (command.toLowerCase()) {
-                case "reg": case "regtext":				
+            switch (call) {
+                case "reg": case "regtext":
                     textObj = D.GetSelected(msg)[0]
-                    if (!textObj) 
+                    if (!textObj)
                         D.Alert("Select a text object first!", "COMPLICATIONS: !comp reg")
-                    else 
+                    else
                         switch (args.shift().toLowerCase()) {
                             case "target": case "targetval":
                                 STATEREF.targetVal.id = textObj.id
@@ -55,13 +67,13 @@ const Complications = (() => {
                                 STATEREF.zeroes[parseInt(args.shift()) - 1] = textObj.id
                                 textObj.set("text", "")
                                 break
-                            // no default
-                        }				
+                        // no default
+                        }
                     break
                 case "target":
                     STATEREF.targetVal.value = parseInt(args.shift() || 0)
                     targetTextObj.set("text", `${STATEREF.targetVal.value}`)
-                    STATEREF.remainingVal.value = Math.max(0,STATEREF.targetVal.value - STATEREF.currentVal.value)
+                    STATEREF.remainingVal.value = Math.max(0, STATEREF.targetVal.value - STATEREF.currentVal.value)
                     remainingTextObj.set("text", `${STATEREF.remainingVal.value}`)
                     break
                 case "add": case "addval": case "addvalue":
@@ -96,14 +108,14 @@ const Complications = (() => {
 				/*D.Alert(`TARGET: ${D.JS(targetTextObj)}
 			CURRENT: ${D.JS(currentTextObj)}
 			REMAINING: ${D.JS(remainingTextObj)}`)*/
-                    for (let i = 0; i < 10; i++) 
+                    for (let i = 0; i < 10; i++)
                         getObj("text", STATEREF.zeroes[i]).set("layer", "objects")
-				
-				//getObj("text", STATEREF.targetVal.id).set("text", cardVal)
+
+                //getObj("text", STATEREF.targetVal.id).set("text", cardVal)
                     STATEREF.targetVal.value = cardVal
-				//getObj("text", STATEREF.remainingVal.id).set("text", `${cardVal}`)
+                //getObj("text", STATEREF.remainingVal.id).set("text", `${cardVal}`)
                     STATEREF.remainingVal.value = cardVal
-				//getObj("text", STATEREF.currentVal.id).set("text", "0")
+                //getObj("text", STATEREF.currentVal.id).set("text", "0")
                     STATEREF.currentVal.value = 0
                     break
                 case "end": case "stop":
@@ -121,23 +133,23 @@ const Complications = (() => {
                         getObj("text", STATEREF.zeroes[i]).set("layer", "map")
                         toBack(getObj("text", STATEREF.zeroes[i]))
                     }
-			/* falls through */		
+            /* falls through */
                 case "reset":
-                    for (const cardData of STATEREF.cardsDrawn) 
+                    for (const cardData of STATEREF.cardsDrawn)
                         Media.Remove(cardData.id)
-				
+
                     STATEREF.cardsDrawn = []
                     STATEREF.cardsDiscarded = []
                     for (const numRef of ["targetVal", "currentVal", "remainingVal"]) {
                         STATEREF[numRef].value = 0
                         getObj("text", STATEREF[numRef].id).set("text", "")
                     }
-                    for (let i = 0; i < 10; i++) 
+                    for (let i = 0; i < 10; i++)
                         getObj("text", STATEREF.zeroes[i]).set("text", "")
-				
+
                     break
                 case "draw":
-                    imgObj = getObj("graphic",STATEREF.cardsDrawn[STATEREF.cardsDrawn.length - 1].id)
+                    imgObj = getObj("graphic", STATEREF.cardsDrawn[STATEREF.cardsDrawn.length - 1].id)
                     if (!imgObj) {
                         D.Alert("No image object found in STATEREF.cardsDrawn.", "COMPLICATIONS: !comp draw")
                     } else {
@@ -149,11 +161,11 @@ const Complications = (() => {
                         getObj("text", STATEREF.remainingVal.id).set("text", `${STATEREF.remainingVal.value}`)
                     }
                     break
-                case "discard":			
+                case "discard":
                     cardIndex = parseInt(args.shift()) - 1
                     imgObj = getObj("graphic", STATEREF.cardsDrawn[cardIndex].id)
                     cardVal = STATEREF.cardsDrawn[cardIndex].value
-				//D.Alert(`Card Value is ${D.JS(cardVal)}`)
+                //D.Alert(`Card Value is ${D.JS(cardVal)}`)
                     STATEREF.currentVal.value = Math.max(0, STATEREF.currentVal.value - cardVal)
                     STATEREF.remainingVal.value = Math.max(0, STATEREF.targetVal.value - STATEREF.currentVal.value)
                     getObj("text", STATEREF.currentVal.id).set("text", `${STATEREF.currentVal.value}`)
@@ -161,19 +173,19 @@ const Complications = (() => {
                     STATEREF.cardsDrawn = _.reject(STATEREF.cardsDrawn, v => v.id === imgObj.id)
                     Media.Remove(imgObj.id)
                     for (let i = 0; i < STATEREF.cardsDrawn.length; i++) {
-                        Media.SetArea(STATEREF.cardsDrawn[i].id, `ComplicationDraw${i+1}`)
+                        Media.SetArea(STATEREF.cardsDrawn[i].id, `ComplicationDraw${i + 1}`)
                         textObj = getObj("text", STATEREF.zeroes[i])
                         if (STATEREF.cardsDrawn[i].isZeroed) {
-                            textObj.set({layer: "objects", text: "0"})
+                            textObj.set({ layer: "objects", text: "0" })
                             toFront(textObj)
                         } else {
-                            textObj.set({layer: "map", text: ""})
+                            textObj.set({ layer: "map", text: "" })
                             toBack(textObj)
                         }
                     }
                     textObj = getObj("text", STATEREF.zeroes[STATEREF.cardsDrawn.length])
                     if (textObj) {
-                        textObj.set({layer: "map", text: ""})
+                        textObj.set({ layer: "map", text: "" })
                         toBack(textObj)
                     }
                     break
@@ -185,59 +197,40 @@ const Complications = (() => {
                     STATEREF.remainingVal.value = Math.min(STATEREF.targetVal.value, STATEREF.remainingVal.value + cardVal)
                     getObj("text", STATEREF.currentVal.id).set("text", `${STATEREF.currentVal.value}`)
                     getObj("text", STATEREF.remainingVal.id).set("text", `${STATEREF.remainingVal.value}`)
-                    textObj.set({layer: "objects", text: "██"})
+                    textObj.set({ layer: "objects", text: "██" })
                     toFront(textObj)
                     STATEREF.cardsDrawn[cardIndex].value = 0
                     break
-                // no default
+            // no default
+            }
+        },
+        handleAdd = obj => {
+            if (isRunning) {
+                STATEREF.cardsDrawn.push({ id: obj.id, value: 0 })
+                Media.SetArea(obj.id, `ComplicationDraw${STATEREF.cardsDrawn.length}`)
+                sendChat("COMPLICATION", "/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px crimson outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[0](!comp draw 0) [1](!comp draw 1) [2](!comp draw 2) [3](!comp draw 3) [4](!comp draw 4)</span><br/></div>")
             }
         }
-	// #endregion
+    // #endregion
+    // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-	// #region Public Functions: regHandlers
-    const regHandlers = () => {
-            on("add:graphic", handleAdd)
-            on("chat:message", handleInput)
-        },
-        checkInstall = () => {
-            C.ROOT = C.ROOT || {}
-            C.ROOT.Complications = C.ROOT.Complications || {}
-            C.ROOT.Complications.deckID = C.ROOT.Complications.deckID || ""
-            C.ROOT.Complications.targetVal = C.ROOT.Complications.targetVal || {id: "", value: 0}
-            C.ROOT.Complications.currentVal = C.ROOT.Complications.currentVal || {id: "", value: 0}
-            C.ROOT.Complications.remainingVal = C.ROOT.Complications.remainingVal || {id: "", value: 0}
-            C.ROOT.Complications.zeroes = C.ROOT.Complications.zeroes || []
-            C.ROOT.Complications.cardsDrawn = C.ROOT.Complications.cardsDrawn || []
+    // #region GETTERS: Retrieving Notes, Data
 
-			//C.ROOT.Complications.deckID = "-LgAxFN_DO6qSgKROK07"
+    // #endregion
 
-			/* state.VAMPIRE.Complications.zeroes = []
-			for (let i = 0; i < 10; i++) {
-				let zeroObj = createObj("text", {
-					_pageid: D.PAGEID(),
-					font_family: "Candal",
-					font_size: 72,
-					top: state.VAMPIRE.Media.areas[`ComplicationDraw${i + 1}`].top - 241, // 558 - X = 317
-					left: state.VAMPIRE.Media.areas[`ComplicationDraw${i + 1}`].left - 165, // = 1777 - X = 1612
-					color: "#FF0000",
-					text: "██",
-					layer: "objects",
-					controlledby: ""
-				} )	
-				state.VAMPIRE.Complications.zeroes[i] = zeroObj.id 
-			} */
-        }
-	// #endregion
+    // #region SETTERS:
+
+    // #endregion
 
     return {
         RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall
     }
-} )()
+})()
 
 on("ready", () => {
     Complications.RegisterEventHandlers()
     Complications.CheckInstall()
     D.Log("Complications Ready!")
-} )
+})
 void MarkStop("Complications")

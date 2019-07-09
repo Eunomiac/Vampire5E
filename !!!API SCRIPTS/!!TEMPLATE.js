@@ -9,7 +9,7 @@ const XX_SCRIPTNAME_XX = (() => {
     const SCRIPTNAME = "XX_SCRIPTNAME_XX",
         CHATCOMMAND = "XX_SCRIPTCOMMAND_XX",
         GMONLY = true
-        
+
     // #region COMMON INITIALIZATION
     const STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
     const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
@@ -25,27 +25,26 @@ const XX_SCRIPTNAME_XX = (() => {
             on("chat:message", msg => {
                 const args = msg.content.split(/\s+/u)
                 if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid)) && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
-                    const who = D.GetPlayerName(msg) || "API",
+                    const who = msg.who || "API",
                         call = args.shift()
                     handleInput(msg, who, call, args)
                 }
             })
         }
     // #endregion
-    
+
     // #region LOCAL INITIALIZATION
-    const initialize = () => { // eslint-disable-line no-empty-function
+    const initialize = () => {
     }
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
-        // const 
+        // const
         switch (call) {
             case "":
-
                 break
-            default: break
+            // no default
         }
     }
     // #endregion

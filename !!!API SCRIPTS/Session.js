@@ -1,10 +1,11 @@
 void MarkStart("Session")
 const Session = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
+
     const SCRIPTNAME = "Session",
         CHATCOMMAND = "!sess",
         GMONLY = true
-        
+
     // #region COMMON INITIALIZATION
     const STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
     const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
@@ -27,7 +28,7 @@ const Session = (() => {
             })
         }
     // #endregion
-    
+
     // #region LOCAL INITIALIZATION
     const initialize = () => { // eslint-disable-line no-empty-function
     }
@@ -36,7 +37,43 @@ const Session = (() => {
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
         // const 
+        let [token, famToken] = []
         switch (call) {
+            case "start":
+                startSession()
+                break
+            case "setnum":
+                setSessionNum(args.shift())
+                break
+            case "end":
+                endSession()
+                break
+            case "daylighters":
+                STATEREF.isDaylighterSession = !STATEREF.isDaylighterSession
+                D.Alert(`Daylighter Session Set To: ${STATEREF.isDaylighterSession}`)
+                DragPads.Toggle("signalLight", !STATEREF.isDaylighterSession)
+                TimeTracker.Fix()
+                for (const charData of _.values(Char.REGISTRY).slice(0, 4)) {
+                    [token] = findObjs({
+                        _pageid: D.PAGEID(),
+                        _type: "graphic",
+                        _subtype: "token",
+                        represents: charData.id
+                    })
+
+                    if (STATEREF.isDaylighterSession) {
+                        Media.SetData(token, { isDaylighter: true, unObfSrc: "base" })
+                        Media.ToggleToken(token, "baseDL")
+                        if (charData.famulusTokenID) {
+                            famToken = Media.GetObj(charData.famulusTokenID)
+                            Media.Toggle(famToken, false)
+                        }
+                    } else {
+                        Media.SetData(token, { isDaylighter: false, unObfSrc: "base" })
+                        Media.ToggleToken(token, "base")
+                    }
+                }
+                break
             case "":
 
                 break
@@ -46,36 +83,39 @@ const Session = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-    /*
-    *
-    *
-    *
-    * 
-    * 
-    * 
-    * 
-    * 
-    * 
-    *   SCRIPT BODY
-    * 
-    * 
-    * 
-    * 
-    * 
-    * 
-    * 
-    * 
-    */
+    // #region Starting/Ending Sessions & Waking Up,
+    const startSession = () => {
+            STATEREF.SessionNum++
+            D.Alert(`Beginning Session ${D.NumToText(STATEREF.SessionNum)}`)
+            TimeTracker.StartClock()
+            TimeTracker.StartLights()
+
+        },
+        setSessionNum = sNum => {
+            STATEREF.SessionNum = sNum
+            D.Alert(`Session Number <b>${D.NumToText(STATEREF.SessionNum)}</b> SET.`)
+        },
+        endSession = () => {
+            D.Alert(`Concluding Session ${D.NumToText(STATEREF.SessionNum)}`)
+            for (const char of D.GetChars("registered"))
+                Char.AwardXP(char, 2, "Session XP award.")
+
+            TimeTracker.StopClock()
+            TimeTracker.StopLights()
+        }
 
     return {
         RegisterEventHandlers: regHandlers,
-        CheckInstall: checkInstall
+        CheckInstall: checkInstall,
+
+        IsDaylighterSession: () => STATEREF.isDaylighterSession
     }
-} )()
+})()
 
 on("ready", () => {
     Session.RegisterEventHandlers()
     Session.CheckInstall()
+    state.VAMPIRE.Session.SessionNum = state.VAMPIRE.Char.SessionNum
     D.Log("Session Ready!")
-} )
+})
 void MarkStop("Session")
