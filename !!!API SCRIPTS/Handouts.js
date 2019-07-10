@@ -7,7 +7,7 @@ const Handouts = (() => {
 
     // #region COMMON INITIALIZATION
     const STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
@@ -80,20 +80,38 @@ const Handouts = (() => {
         }
     // #endregion
 
-    // #region SETTERS: Setting Notes
+    // #region SETTERS: Setting Notes, Deleting Handouts, Appending to Handouts
     const makeHandoutObj = (title, category, contents) => {
-        if (category)
-            STATEREF.noteCounts[category] = STATEREF.noteCounts[category] ? STATEREF.noteCounts[category] + 1 : 1
-        const noteObj = createObj("handout", { name: `${title} ${category && STATEREF.noteCounts[category] ? STATEREF.noteCounts[category] - 1 : ""}` })
-        if (contents)
-            noteObj.set("notes", C.HANDOUTHTML.main(D.JS(contents)))
-        return noteObj
-    }
+            if (category)
+                STATEREF.noteCounts[category] = STATEREF.noteCounts[category] ? STATEREF.noteCounts[category] + 1 : 1
+            const noteObj = createObj("handout", { name: `${title} ${category && STATEREF.noteCounts[category] && STATEREF.noteCounts[category] > 1 ? STATEREF.noteCounts[category] - 1 : ""}` })
+            if (contents)
+                noteObj.set("notes", C.HANDOUTHTML.main(D.JS(contents)))
+            return noteObj
+        },
+        delHandoutObjs = (titleRef, category) => {
+            for (const handout of _.filter(findObjs({_type: "handout", inplayerjournals: "", archived: false}), v => D.FuzzyMatch(v.get("name"), titleRef)))
+                handout.remove()
+            if (category)
+                STATEREF.noteCounts[category] = 0
+        },
+        delHandoutObj = (title, category) => {
+            const handoutObj = _.find(findObjs({_type: "handout", inplayerjournals: "", archived: false}), v => v.get("name").toLowerCase().startsWith(title.toLowerCase()))
+            if (VAL({object: handoutObj})) {
+                if (category && STATEREF.noteCounts[category]) {
+                    let matcher = handoutObj.get("name").match(/\d+$/u)
+                    if (matcher && parseInt(matcher[0]) === STATEREF.noteCounts[category])
+                        STATEREF.noteCounts[category]--
+                }
+                handoutObj.remove()
+            }                
+        }
     // #endregion
 
     // #region PROJECT SUMMARIES
 
     const summarizeProjects = (title, charObjs) => {
+        delHandoutObjs("Project Summary", "projects")
         const noteObj = makeHandoutObj(title, "projects"),
             noteSections = []
         for (const char of charObjs) {
@@ -116,8 +134,27 @@ const Handouts = (() => {
                     projLines.push(`${C.HANDOUTHTML.projects.tag("HOOK:")}${C.HANDOUTHTML.projects.hook(projectData.projectgoal)}`)
                 if (projectData.projectdetails && projectData.projectdetails.length > 2)
                     projLines.push(C.HANDOUTHTML.smallNote(projectData.projectdetails))
+                let [stakeCheck, teamworkCheck] = [false, false]
+                for (const stakeVar of ["projectstake1_name", "projectstake1", "projectstake2_name", "projectstake2", "projectstake3_name", "projectstake3"])
+                    if (projectData[stakeVar] && (!_.isNaN(parseInt(projectData[stakeVar])) && parseInt(projectData[stakeVar]) > 0 || projectData[stakeVar].length > 2))
+                        stakeCheck = true
                 if ((parseInt(projectData.projectteamwork1) || 0) + (parseInt(projectData.projectteamwork2) || 0) + (parseInt(projectData.projectteamwork3) || 0) > 0)
-                    projLines.push(`${C.HANDOUTHTML.projects.tag("TEAMWORK:", "0000FF")}${C.HANDOUTHTML.projects.teamwork("●".repeat((parseInt(projectData.projectteamwork1) || 0) + (parseInt(projectData.projectteamwork2) || 0) + (parseInt(projectData.projectteamwork3) || 0) || 0))}`)
+                    teamworkCheck = true
+                if (teamworkCheck)
+                    projLines.push(`${C.HANDOUTHTML.projects.tag("TEAMWORK:", "#0000FF")}${C.HANDOUTHTML.projects.teamwork("●".repeat((parseInt(projectData.projectteamwork1) || 0) + (parseInt(projectData.projectteamwork2) || 0) + (parseInt(projectData.projectteamwork3) || 0) || 0))}`)
+                if (stakeCheck) {
+                    const stakeStrings = []
+                    for (let i = 1; i <= 3; i++) {
+                        const [attr, val] = [projectData[`projectstake${i}_name`], parseInt(projectData[`projectstake${i}`])]
+                        if (attr && attr.length > 2 && !_.isNaN(val))
+                            stakeStrings.push(`${attr} ${"●".repeat(val)}`)
+                    }
+                    projLines.push(`${C.HANDOUTHTML.projects.tag("STAKED:")}${C.HANDOUTHTML.projects.stake(stakeStrings.join(", "))}`)
+                    if (!teamworkCheck)
+                        projLines.push(`${C.HANDOUTHTML.projects.tag("")}${C.HANDOUTHTML.projects.teamwork("")}`)
+                } else if (teamworkCheck) {
+                    projLines.push(`${C.HANDOUTHTML.projects.tag("")}${C.HANDOUTHTML.projects.stake("")}`)
+                }          
                 if (projectData.projectlaunchresults && projectData.projectlaunchresults.length > 2)
                     if (projectData.projectlaunchresults.includes("CRITICAL"))
                         projLines.push(C.HANDOUTHTML.projects.critSucc("CRITICAL"))
@@ -128,21 +165,7 @@ const Handouts = (() => {
                 if (projectData.projectenddate) {
                     projLines.push(C.HANDOUTHTML.projects.endDate(`Ends ${projectData.projectenddate.toUpperCase()}`))
                     if (parseInt(projectData.projectinccounter) > 0)
-                        projLines.push(`<br>${C.HANDOUTHTML.projects.daysLeft(`(${parseInt(projectData.projectincnum) * parseInt(projectData.projectinccounter)} ${projectData.projectincunits} left)`)}`)
-                }
-                let stakeCheck = false
-                for (const stakeVar of ["projectstake1_name", "projectstake1", "projectstake2_name", "projectstake2", "projectstake3_name", "projectstake3"])
-                    if (projectData[stakeVar] && (!_.isNaN(parseInt(projectData[stakeVar])) && parseInt(projectData[stakeVar]) > 0 || projectData[stakeVar].length > 2))
-                        stakeCheck = true
-                //thisSection += `<span style="display: block;">${stakeVar} Triggered Table: Number = ${parseInt(projectData[stakeVar])}, String = ${projectData[stakeVar]}</span>`					
-                if (stakeCheck) {
-                    const stakeStrings = []
-                    for (let i = 1; i <= 3; i++) {
-                        const [attr, val] = [projectData[`projectstake${i}_name`], parseInt(projectData[`projectstake${i}`])]
-                        if (attr && attr.length > 2 && !_.isNaN(val))
-                            stakeStrings.push(`${attr} ${"●".repeat(val)}`)
-                    }
-                    projLines.push(`${C.HANDOUTHTML.projects.tag("STAKED:")}${C.HANDOUTHTML.projects.stake(stakeStrings.join(", "))}`)
+                        projLines.push(`<br>${C.HANDOUTHTML.projects.daysLeft(`(${parseInt(projectData.projectincnum) * parseInt(projectData.projectinccounter)} ${projectData.projectincunit.slice(0, -1)}(s) left)`)}`)
                 }
                 if (projLines.length === 1 && projLines[0] === C.HANDOUTHTML.projects.goal(""))
                     continue
@@ -165,7 +188,9 @@ const Handouts = (() => {
         CheckInstall: checkInstall,
 
         Make: makeHandoutObj,
-        GetHandout: getHandoutObj
+        Remove: delHandoutObj,
+        RemoveAll: delHandoutObjs,
+        Get: getHandoutObj
     }
 })()
 

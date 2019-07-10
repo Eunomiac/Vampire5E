@@ -12,7 +12,7 @@ const D = (() => {
 
     // #region COMMON INITIALIZATION
     const STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
@@ -50,6 +50,15 @@ const D = (() => {
         switch (call) {
             case "debug": case "log": case "dblog":
                 getDebugRecord()
+                break
+            case "reset": 
+                switch(args.shift().toLowerCase()) {
+                    case "debug": case "log": case "dblog":
+                        Handouts.RemoveAll("Debug Log", "debug")
+                        Handouts.RemoveAll("... DBLog", "debug")
+                        break
+                    /* no default */
+                }
                 break
             case "rep": { // !get rep section key1:val1,key2:val2 statName groupBy pickProperty  (can be "null")
                 const [section, rowFilter, statName, groupBy, pickProperty] = args
@@ -101,66 +110,92 @@ const D = (() => {
     // #endregion
 
     // #region PARSING & STRING MANIPULATION: Converting data types to strings, formatting strings, converting strings into objects.
-    const jStr = (data, isShortForm = false) => {
+    const jStr = data => {
         /* Parses a value of any type via JSON.stringify, and then further styles it for display either
           in Roll20 chat, in the API console log, or both. */
             try {
-                let returnObj
                 if (_.isUndefined(data))
                     return _.escape("<UNDEFINED>")
-                if (data && isShortForm)
-                    if (VAL({ object: data }))
-                        returnObj = `${data.get("_type") || "object"}: ${data.get("name") || data.id || data}`
-                    else
-                        returnObj = data.name ? { name: data.name } : data.id ? { id: data.id } : data
-                else
-                    returnObj = data
+                const parser = val => {
+                    if (val && val.get) {
+                        return `▌${data.get("_type") && data.get("_type").toUpperCase().slice(0, 3) || "OBJ"}</b>: ${data.get("name") || data.id || data}▐`
+                    } else if (_.isArray(val)) {
+                        const newArray = []
+                        for (const v of val)
+                            newArray.push(parser(v))
+                        if (JSON.stringify(newArray).length < 200) 
+                            return `[ ${_.map(newArray, v => _.isString(v) ? `"${v}"` : v).join(", ")} ]`.
+                                replace(/\]"/gu, "]").replace(/"\[/gu, "[").
+                                replace(/\[\s+\]/gu, "[]")
+                        return _.clone(newArray)
+                    } else if (_.keys(val).length > 0) {
+                        const newVal = {}
+                        for (const k of _.keys(val))
+                            newVal[k] = parser(val[k])
+                        if (JSON.stringify(newVal).length < 60)
+                            return _.escape(JSON.stringify(newVal, null, 1).
+                                replace(/\n/g,"").
+                                replace(/"([^(")"]+)":/g,"$1:")).
+                                replace(/\}/gu, " }").
+                                replace(/\s\s+/gu, " ")
+                        return _.clone(newVal)
+                    } else {
+                        return val
+                    }
+                }
 
                 const replacer = (k, v) => typeof v === "string" ? v.replace(/\\/gu, "") : v
 
-                return JSON.stringify(returnObj, replacer, 2).
+                return JSON.stringify(parser(data), replacer, 4).
+                    replace(/"\{/gu, "{").replace(/\}"/gu, "}").
                     replace(/(\s*?)"([^"]*?)"\s*?:/gu, "$1$2:"). // Removes quotes from keys of a list or object.
-                    replace(/\\n/gu, "<br/>"). // Converts line break code into '<br/>'
+                    replace(/\\n/gu, "<br>"). // Converts line break code into '<br/>'
                     replace(/\\t/gu, ""). // Strips tab code
                     replace(/ (?= )/gu, "&nbsp;"). // Replaces any length of whitespace with one '&nbsp;'
-                    replace(/\\"/gu, "\""). // Escapes quote marks
+                    replace(/@T@/gu, "&nbsp;&nbsp;&nbsp;&nbsp;"). // Converts custom '@T@' tab character to four spaces
+                    replace(/"\[/gu, "[").replace(/\]"/gu, "]"). // Removes quotes from around array strings.
+                    replace(/\\"/gu, "\""). // Escapes quote marks                
                     replace(/(^"|"$)/gu, "") // Removes quote marks from the beginning and end of the string
             } catch (errObj) {
-                return jStr(errObj)
+                return JSON.stringify(errObj)
             }
         },
-        jStrH = (data, isShortForm = false) => {
+        jStrH = (data, isShortForm = false, properties = []) => {
             /* Parses data as above, but removes raw line breaks instead of converting them to <br>.
                 Line breaks must be specified in the code with '<br>' to be parsed as such.  */
             if (_.isUndefined(data))
                 return _.escape("<UNDEFINED>")
-            if (VAL({ string: data }))
-                data = data.replace(/\n/gu, "")
+            /* if (VAL({ string: data }))
+                data = data.replace(/(\r\n|\n|\r)/gu, " ") */
 
-            return jStr(VAL({ string: data }) ? data.replace(/<br\/?>/gu, "<br>") : data, isShortForm).
+            return jStr(VAL({ string: data }) ? data.replace(/<br\/?>/gu, "<br>") : data).
                 replace(/<br\/>/gu, "").
                 replace(/<br>/gu, "<br/>")
         },
-        jStrL = (data, isShortForm = false) => {
+        jStrL = (data, isShortForm = false, properties = []) => {
             /* Parses data in a way that is appropriate to the console log, removing line breaks and redundant characters. */
             if (_.isUndefined(data))
                 return "<UNDEFINED>"
 
-            return jStr(data, isShortForm).
-                replace(/<br\/>/gu, ""). // Removes all line breaks
+            return jStrH(data, isShortForm, properties).
+                replace(/(\r\n|\n|\r|<br\/?>)/gu, " "). // Removes all line breaks
                 replace(/(&nbsp;)+/gu, " "). // Converts &nbsp; back to whitespace
+                replace(/(&amp;nbsp;)+/gu, " "). // Converts escaped &nbsp; to whitespace
+                replace(/&quot;/gu, "'"). // Converts escaped double-quotes to single-quotes
                 replace(/\\"\\"/gu, "'"). // Converts escaped double-quotes to single-quotes
+                replace(/(<b>|<\/b>)/gu, ""). // Removes bold tagging
+                replace(/&gt;/gu, ">").replace(/&lt;/gu, "<"). // Converts < and > back to symbols
                 replace(/"/gu, "") // Removes all remaining double-quotes
         },
-        jStrC = (data, isShortForm = false) => {
+        jStrC = (data, isShortForm = false, properties = []) => {
 			/* Parses data to show all HTML code raw, rather than parsing it for formatting.
 				Can override this for specific tags by double-bracketing them (e.g. "<<b>>") */
             if (_.isUndefined(data))
                 return _.escape("<UNDEFINED>")
 
-            return _.escape(jStr(data, isShortForm)).
+            return `<pre>${_.escape(jStr(data, isShortForm, properties)).
                 replace(/&gt;&gt;/gu, ">"). // Restores doubled right brackets to code.
-                replace(/&lt;&lt;/gu, "<") // Restores doubled left brackets to code.
+                replace(/&lt;&lt;/gu, "<")}</pre>` // Restores doubled left brackets to code.
         },
         numToText = (num, isTitleCase = false) => {
             const numString = `${jStr(num)}`,
@@ -219,20 +254,20 @@ const D = (() => {
                     return _.map(_.map(str.split(" "), v => v.slice(0, 1).toUpperCase() + v.slice(1)).join(" ").split("-"), v => v.slice(0, 1).toUpperCase() + v.slice(1)).join("-").replace(/And/gu, "and")
                 else
                     return str.slice(0, 1).toUpperCase() + str.slice(1)
-            THROW(`Attempt to capitalize non-string '${jStrL(str)}'`, "capitalize")
+            THROW(`Attempt to capitalize non-string '${jStr(str)}'`, "capitalize")
             return str
         }
     // #endregion
 
     // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
-    const formatTitle = (funcName, scriptName, prefix = "") => `[${prefix}${VAL({string: funcName}) || VAL({string: scriptName}) ? " " : ""}${VAL({string: scriptName}) ? `${scriptName.toUpperCase()}` : ""}${VAL({string: [scriptName, funcName]}) ? ": " : ""}${funcName || ""}]`,
+    const formatTitle = (funcName, scriptName, prefix = "") => `[${prefix}${VAL({string: funcName}) || VAL({string: scriptName}) ? " " : ""}${VAL({string: scriptName}) ? `${scriptName.toUpperCase()}` : ""}${VAL({string: [scriptName, funcName]}, null, true) ? ": " : ""}${funcName || ""}]`,
         formatLogLine = (msg, funcName, scriptName, prefix = "", isShortForm = false) => `${formatTitle(funcName, scriptName, prefix)} ${jStrL(msg, isShortForm, true)}`,
         sendToPlayer = (who, message = "", title = "") => {
             /* Whispers formatted chat message to player given: display name OR player ID. */
             const player = getObj("player", who) ?
                     getObj("player", who).get("_displayname") :
                     who,
-                html = jStrH(C.CHATHTML.header(jStr(title)) + C.CHATHTML.body(jStr(message)))
+                html = jStrH(C.CHATHTML.header(title) + C.CHATHTML.body(jStr(message)))
             if (player === "all" || player === "")
                 sendChat("", html)
             else
@@ -266,7 +301,7 @@ const D = (() => {
 
     // #region SEARCH & VALIDATION: Match checking, Set membership checking, type validation. 
     const fuzzyMatch = (first, second) => {
-            if (VAL({string: [first, second]}, "fuzzyMatch"))
+            if (VAL({string: [first, second]}, "fuzzyMatch", true))
                 return first.toLowerCase().replace(/\W+/gu, "").includes(second.toLowerCase().replace(/\W+/gu, "")) ||
                 second.toLowerCase().replace(/\W+/gu, "").includes(first.toLowerCase().replace(/\W+/gu, ""))
             return false
@@ -274,7 +309,7 @@ const D = (() => {
         isIn = (needle, haystack = ALLSTATS) => {
             /* Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. */
             try {
-                const ndl = `\\b${needle.replace(/^g[0-9]/u, "")}\\b`
+                const ndl = `\\b${needle}\\b`
                 if (VAL({ array: haystack })) {
                     const index = _.findIndex(_.flatten(haystack),
                                               v => v.match(new RegExp(ndl, "iu")) !== null ||
@@ -293,14 +328,14 @@ const D = (() => {
             }
             return false
         },
-        validate = (varList, funcName, scriptName) => {
+        validate = (varList, funcName, scriptName, isArray = false) => {
             //TRACE.push(`VAL(${jStrL(_.keys(varList).join(", "))}, ${jStr(funcName)})`)
             // NOTE: To avoid accidental recursion, DO NOT use validate to confirm a type within the getter of that type.
             //		(E.g do not use VAL{char} inside any of the getChar() functions.)
             const [errorLines, valArray, charArray] = [[], [], []]
             _.each(varList, (val, cat) => {
                 valArray.length = 0
-                valArray.push(...cat === "array" ? [val] : _.flatten([val]))
+                valArray.push(...isArray ? val : [val])
                 _.each(valArray, v => {
                     let errorCheck = null
                     switch (cat.toLowerCase()) {
@@ -427,9 +462,9 @@ const D = (() => {
             if (errorLines.length) {
                 if (!funcName || !scriptName)
                     return false
-                return throwError(`[From ${jStr(scriptName).toUpperCase()}:${jStr(funcName)}]
+                return THROW(`[From ${jStr(scriptName).toUpperCase()}:${jStr(funcName)}]
                                         
-                                        ${errorLines.join("<br>")}`, "validate", SCRIPTNAME)
+                                        ${errorLines.join("<br>")}`, "validate")
             }
             return true
         }
@@ -452,12 +487,15 @@ const D = (() => {
         },
         getWatchList = () => sendToGM(`${jStr(STATEREF.WATCHLIST)}`, "DEBUG WATCH LIST"),
         logDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
-            if (funcName)
+            if (funcName) {
                 STATEREF.DEBUGLOG.push({
                     timeStamp: (new Date()).getTime(),
                     title: formatTitle(funcName, scriptName, prefix),
                     contents: msg
                 })
+                if (STATEREF.DEBUGLOG.length > 100)
+                    getDebugRecord("... DBLog")
+            }
             log(formatLogLine(msg, funcName, scriptName, prefix))
         },
         throwError = (msg, funcName, scriptName, errObj) => sendDebugAlert(`${msg}${errObj ? `${errObj.name}<br>${errObj.message}<br><br>${errObj.stack}` : ""}`, funcName, scriptName, "ERROR"),
@@ -467,9 +505,11 @@ const D = (() => {
             if (funcName && STATEREF.WATCHLIST.includes(funcName) || scriptName && STATEREF.WATCHLIST.includes(scriptName) || !funcName && !scriptName)
                 sendToGM(trace + (isTraceOnly ? "" : msg), formatTitle(funcName, scriptName, prefix))
         },
-        getDebugRecord = () => {
+        getDebugRecord = (title = "Debug Log", isClearing = false) => {
             const logLines = []
-            let lastTimeStamp
+            let lastTimeStamp, lastTitle
+            if (isClearing)              
+                Handouts.RemoveAll("Debug Log", "debug")
             for (const logData of STATEREF.DEBUGLOG) {
                 if (!lastTimeStamp || logData.timeStamp - lastTimeStamp > 1000) {
                     let [logDate, ampm] = [new Date(logData.timeStamp), "A.M."]
@@ -481,11 +521,15 @@ const D = (() => {
                     }
                     logLines.push("</div>", C.HANDOUTHTML.main(C.HANDOUTHTML.title((new Date(logDate)).toUTCString().replace("GMT", ampm))).replace("</div>", ""))
                 }
-                logLines.push(C.HANDOUTHTML.bodyParagraph(C.HANDOUTHTML.subTitle(logData.title.replace("DB ", "")) + jStr(logData.contents)))
+                if (lastTitle === logData.title)
+                    logLines.push(C.HANDOUTHTML.bodyParagraph(jStr(logData.contents), {["border-top"]: "1px solid black"}))
+                else
+                    logLines.push(C.HANDOUTHTML.bodyParagraph(C.HANDOUTHTML.subTitle(logData.title.replace("DB ", "")) + jStr(logData.contents)))
                 lastTimeStamp = logData.timeStamp
+                lastTitle = logData.title
             }
             logLines.push("</div>")
-            Handouts.Make("Debug Log", "debug", logLines.join(""))
+            Handouts.Make(title, "debug", logLines.join(""))
             STATEREF.DEBUGLOG.length = 0
         }
     // #endregion
@@ -542,24 +586,23 @@ const D = (() => {
 				a token object, a message with selected tokens, OR an array of such parameters. */
             const charObjs = new Set()
             let [searchParams, traceRef] = [[], ""]
-            DB(`charRef: ${jStr(charRef, true)}`, "getChars")
             try {
                 if (charRef.who) {
                     TRACE.push("getChars(msg)")
                     _.each(getSelected(charRef, "character"), charObj => { charObjs.add(charObj) })
-                    DB(`From Message:<br><br>${jStr(...charObjs, true)}`, "getChars")
+                    DB(`REFERENCE: Chat Message<br>RETURNING: ${jStr(...charObjs)}`, "getChars")
                     removeFirst(TRACE, "getChars(msg)")
                     return charObjs.size > 0 ? [...charObjs] : isSilent ? false : THROW("Must Select a Token!", "getChars")
                 } else if (VAL({ array: charRef })) {
                     traceRef = `getChars([${jStr(charRef.length)}...])`
                     TRACE.push(traceRef)
                     searchParams = charRef
-                    DB(`Array (Search Params)<br><br>${jStr(...searchParams, true)}`, "getChars")
+                    DB(`REFERENCE: Array<br>SEARCH PARAMS: ${jStr(...searchParams)}`, "getChars")
                 } else if (VAL({ string: charRef }) || VAL({ object: charRef }) || VAL({ number: charRef })) {
                     traceRef = "getChars(S/O/N)"
                     TRACE.push(traceRef)
                     searchParams.push(charRef)
-                    DB(`String, Object or Number (${jStr(charRef, true)})<br><br>${jStr(...searchParams, true)}`, "getChars")
+                    DB(`REFERENCE: String/Object/Number = ${jStr(charRef)}<br>SEARCH PARAMS: ${jStr(...searchParams)}`, "getChars")
                 } else {
                     return isSilent ? false : THROW(`Invalid character reference: ${jStr(charRef)}`, "getChars")
                 }
@@ -571,27 +614,27 @@ const D = (() => {
                 // If parameter is a digit corresponding to a REGISTERED CHARACTER:
                 if (VAL({ number: v }) && Char.REGISTRY[parseInt(v)]) {
                     charObjs.add(getObj("character", Char.REGISTRY[parseInt(v)].id))
-                    DB(`Registry Number: ${jStr(v)}... ${charObjs.size} Characters Found.`, "getChars")
+                    DB(`@T@[PARAM] Registry Number = ${jStr(v)}<br>@T@@T@... ${charObjs.size} Characters Found.`, "getChars")
                     // If parameter is a CHARACTER OBJECT already: */
                 } else if (VAL({ charObj: v })) {
                     charObjs.add(v)
-                    DB(`Character Object: ${jStr(v, true)}... ${charObjs.size} Characters Found.`, "getChars")
+                    DB(`@T@[PARAM] Character Object = ${jStr(v)}<br>@T@@T@... ${charObjs.size} Characters Found.`, "getChars")
                     // If parameter is a CHARACTER ID:
                 } else if (VAL({ string: v }) && getObj("character", v)) {
                     charObjs.add(getObj("character", v))
-                    DB(`Character ID: ${jStr(v)}... ${charObjs.size} Characters Found.`, "getChars")
+                    DB(`@T@[PARAM] Character ID: ${jStr(v)}<br>@T@@T@... ${charObjs.size} Characters Found.`, "getChars")
                     // If parameters is a TOKEN OBJECT:
                 } else if (VAL({ token: v }) && getObj("character", v.get("represents"))) {
                     charObjs.add(getObj("character", v.get("represents")))
-                    DB(`Token: ${jStr(v, true)}... ${charObjs.size} Characters Found.`, "getChars")
+                    DB(`@T@[PARAM] Token: ${jStr(v, true)}<br>@T@@T@... ${charObjs.size} Characters Found.`, "getChars")
                     // If parameter is "all":
                 } else if (v.toLowerCase() === "all") {
                     _.each(findObjs({ _type: "character" }), char => charObjs.add(char))
-                    DB(`All Characters: ${jStr(v)}... ${charObjs.size} Characters Found.`, "getChars")
+                    DB(`@T@[PARAM] "${jStr(v)}"<br>@T@@T@... ${charObjs.size} Characters Found.`, "getChars")
                     // If parameter calls for REGISTERED CHARACTERS:
                 } else if (v.toLowerCase() === "registered") {
                     _.each(Char.REGISTRY, charData => { if (!charData.name.toLowerCase().includes("Good Lad")) charObjs.add(getObj("character", charData.id)) })
-                    DB(`Registered Characters: ${jStr(v)}... ${charObjs.size} Characters Found.`, "getChars")
+                    DB(`@T@[PARAM] "${jStr(v)}"<br>@T@@T@... ${charObjs.size} Characters Found.`, "getChars")
                     // If parameter is a STRING, assume it is a character name to fuzzy-match.
                 } else if (VAL({ string: v })) {
                     let isCharFound = false
@@ -609,12 +652,12 @@ const D = (() => {
                             if (fuzzyMatch(char.get("name"), v))
                                 charObjs.add(char)
                         })
-                    DB(`Character Name: ${jStr(v)}... ${charObjs.size} Characters Found.`, "getChars")
+                    DB(`@T@[PARAM] String: ${jStr(v)}<br>@T@@T@... ${charObjs.size} Characters Found.`, "getChars")
                 }
             })
             removeFirst(TRACE, traceRef)
             return charObjs.size === 0 ?
-                isSilent ? false : throwError(`No Characters Found using Search Parameters:<br><br>${jStr(searchParams)} in Character Reference<br><br>${jStr(charRef)}`, "getChars", SCRIPTNAME)
+                isSilent ? false : THROW(`No Characters Found using Search Parameters:<br>${jStr(searchParams)} in Character Reference<br>${jStr(charRef)}`, "getChars")
                 : [...charObjs]		
         }, getChar = (charRef, isSilent = false) => getChars(charRef, isSilent)[0],
         getCharData = (charRef, isSilent = false) => {
@@ -639,34 +682,34 @@ const D = (() => {
         },
         getRepIDs = (charRef, section, rowFilter, isSilent = false) => {
             // rowRef: rowID (string), stat:value (list, with special "name" entry for shortname), array of either (array), or null (all)
-            TRACE.push("getRowIDs")
-            DB(`GetRowIDs(${jStr(charRef, true)}, ${section}, ${jStrL(rowFilter)})`, "getRowIDs")
+            TRACE.push("getRepIDs")
+            DB(`GetRowIDs(${jStr(charRef, true)}, ${section}, ${jStr(rowFilter)})`, "getRepIDs")
             const charObj = getChar(charRef, isSilent),
                 getUniqIDs = attrObjs => _.uniq(_.map(attrObjs, v => v.get("name").match("repeating_[^_]*?_(.*?)_")[1]))
             let validRowIDs = [],
                 [traceRef, dbstring] = ["", ""]
-            if (VAL({ char: charObj, string: section }, "getRowIDs")) {
+            if (VAL({ char: charObj, string: section }, "getRepIDs")) {
                 const attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => v.get("name").toLowerCase().startsWith(section === "*" ? "repeating_" : `repeating_${section.toLowerCase()}_`))
                 //D.Alert(`attrObjs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
                 const rowIDs = getUniqIDs(attrObjs)
-                DB(`attrObjsInSection: ${jStr(_.map(attrObjs, v => v.get("name")))}<br>rowIDsInSection: ${jStr(rowIDs)}`, "getRowIDs")
+                DB(`attrObjsInSection: ${jStr(_.map(attrObjs, v => v.get("name")))}<br><br>rowIDsInSection: ${jStr(rowIDs)}`, "getRepIDs")
                 if (VAL({ string: rowFilter })) {
                     traceRef = "RowRef-String"
                     TRACE.push(traceRef)
                     // RowRef is a rowID (string); use this to find row ID with a case insensitive reference.
                     validRowIDs.push(_.find(rowIDs, v => v.toLowerCase() === rowFilter.toLowerCase()))
-                    DB(`RowRef: STRING.  Valid Row IDs:<br><br>${jStr(validRowIDs)}`, "getRowIDs")
+                    DB(`RowRef: STRING.  Valid Row IDs: ${jStr(validRowIDs)}`, "getRepIDs")
                 } else if (VAL({ list: rowFilter })) {
                     traceRef = "RowRef-List"
                     TRACE.push(traceRef)
                     // RowRef is a key/value list of stat name and value to filter by. Only row IDs referring to ALL matching key/value pairs will be returned.
                     // If value === "*", any value is accepted (only checks for presence of stat name)
                     validRowIDs = [...rowIDs]
-                    DB(`RowRef: LIST:<br><br>${jStr(rowFilter)}`, "getRowIDs")
+                    DB(`RowRef: LIST:<br><br>${jStr(rowFilter)}`, "getRepIDs")
                     TRACE.push("_F1_")
                     for (const rowData of _.pairs(rowFilter)) {
                         const [key, val] = rowData
-                        DB(`RowData: ${key}, ${val}`, "getRowIDs")
+                        DB(`RowData: ${key}, ${val}`, "getRepIDs")
                         // Check each row against this filter element: Must satisfy, or remove from validRowIDs
                         TRACE.push("_F2_")
                         for (const rowID of [...validRowIDs]) {
@@ -694,7 +737,7 @@ const D = (() => {
                             }
                             dbstring += "<br>"
                         }
-                        DB(dbstring, "getRowIDs")
+                        DB(dbstring, "getRepIDs")
                         removeFirst(TRACE, "_F2_")
                     }
                     removeFirst(TRACE, "_F1_")
@@ -710,15 +753,15 @@ const D = (() => {
                     // No rowRef means the IDs of all section rows are returned.
                     validRowIDs.push(...rowIDs)
                 }
-                DB(`Valid Row IDs:<br><br>${jStr(validRowIDs)}`, "getRowIDs")
+                DB(`Valid Row IDs: ${jStr(validRowIDs)}`, "getRepIDs")
                 removeFirst(TRACE, traceRef)
             }
-            removeFirst(TRACE, "getRowIDs")
+            removeFirst(TRACE, "getRepIDs")
             return _.uniq(validRowIDs)
         },
         getRepStats = (charRef, section, rowFilter, statName, groupBy, pickProperty, isSilent = false) => {
-            DB(`getRepStats(${jStrL([getChar(charRef).get("name"), section, rowFilter, statName, groupBy, pickProperty])})`, "getRepStats")
             const charObj = getChar(charRef)
+            DB(`getRepStats(${jStr([charObj.get("name"), section, rowFilter, statName, groupBy, pickProperty])})`, "getRepStats")
             let rowData = []
             if (VAL({ charObj: charObj, string: section }, "getRepStats")) {
                 const filter = VAL({ string: statName }) ? Object.assign({ [statName]: "*" }, rowFilter || {}) : rowFilter,
@@ -735,14 +778,14 @@ const D = (() => {
                         if (_.isUndefined(attrNameObjs.valObj))
                             continue
                         attrNameObjs.val = attrNameObjs.valObj.get("current")
-                        DB(`Name Object Found: ${jStr(attrNameObjs)}`, "getRepStats")
+                        DB(`AttrNameObjs: ${jStr(attrNameObjs)} (${_.keys(attrNameObjs).length} entries)`, "getRepStats")
                     }
                     if (statName)
                         attrValueObjs[0] = _.find(rowAttrObjs, v => v.get("name").toLowerCase().includes(`_${rowID.toLowerCase()}_`) && fuzzyMatch(parseRepStat(v.get("name").toLowerCase())[2], statName.toLowerCase())) ||
                             attrNameObjs.name && fuzzyMatch(attrNameObjs.name.toLowerCase(), statName.toLowerCase()) && attrNameObjs.valObj
                     else
                         attrValueObjs.push(...rowAttrObjs)
-                    DB(`AttrValueObjs: ${jStr(attrValueObjs)}`, "getRepStats")
+                    DB(`AttrValueObjs: ${jStr(_.map(attrValueObjs, v => v.get("name")))}`, "getRepStats")
                     for (const attrValueObj of _.compact(attrValueObjs))
                         rowData.push({
                             charID: charObj.id,
@@ -773,7 +816,7 @@ const D = (() => {
                 if (VAL({ char: playerRef })) {
                     playerID = _.filter(playerRef.get("controlledby").split(","), v => v !== "all")
                     if (playerID.length > 1 && !isSilent)
-                        throwError(`WARNING: Finding MULTIPLE player IDs connected to character reference '${jStr(playerRef)}':<br><br>${jStr(playerID)}`, "DATA: GetPlayerID")
+                        THROW(`WARNING: Finding MULTIPLE player IDs connected to character reference '${jStr(playerRef)}':<br><br>${jStr(playerID)}`, "getPlayerID")
                     removeFirst(TRACE, "getPlayerID")
                     return playerID[0]
                 }
@@ -785,26 +828,27 @@ const D = (() => {
                             _displayname: playerRef
                         })[0].id
                     } catch (errObj) {
-                        return isSilent ? false : throwError(`Unable to find player connected to player reference '${jStr(playerRef)}'`, "DATA: GetPlayerID")
+                        return isSilent ? false : THROW(`Unable to find player connected to player reference '${jStr(playerRef)}'`, "getPlayerID")
                     }
 
                 if (VAL({ token: playerRef }))
                     playerID = getPlayerID(playerRef.get("represents"))
                 removeFirst(TRACE, "getPlayerID")
-                return playerID || (isSilent ? false : throwError(`Unable to find player connected to character token '${jStr(playerRef)}'`, "DATA: GetPlayerID"))
+                return playerID || (isSilent ? false : THROW(`Unable to find player connected to character token '${jStr(playerRef)}'`, "getPlayerID"))
             } catch (errObj) {
                 removeFirst(TRACE, "getPlayerID")
-                return isSilent ? false : throwError(`Unable to find player connected to reference '${jStr(playerRef)}'.<br><br>${jStr(errObj)}`, "DATA: GetPlayerID")
+                return isSilent ? false : THROW(`Unable to find player connected to reference '${jStr(playerRef)}'.<br><br>${jStr(errObj)}`, "getPlayerID")
             }
         },
         getPlayer = (playerRef, isSilent = false) => {
             TRACE.push("getPlayer")
-            if (VAL({ string: getPlayerID(playerRef, true) }) && VAL({ object: getObj("player", playerRef) })) {
+            let playerID = getPlayerID(playerRef, true)
+            if (VAL({ string: playerID }) && VAL({ object: getObj("player", playerID) })) {
                 removeFirst(TRACE, "getPlayer")
                 return getObj("player", playerRef)
             }
             removeFirst(TRACE, "getPlayer")
-            return isSilent ? false : throwError(`Unable to find a player object for reference '${jStr(playerRef)}`, "getPlayerID")
+            return isSilent ? false : THROW(`Unable to find a player object for reference '${jStr(playerRef)}`, "getPlayerID")
         }
     // #endregion
 
@@ -821,7 +865,7 @@ const D = (() => {
         }, setStat = (charRef, statName, statValue) => setStats(charRef, { [statName]: statValue }),
         setRepStats = (charRef, section, rowFilter, statList, isSilent = false) => {
             const charObj = getChar(charRef, isSilent)
-            if (VAL({ char: charObj, string: section, list: [rowFilter, statList] }, "setRepAttrs"))
+            if (VAL({ char: [charObj], string: [section], list: [rowFilter, statList] }, "setRepAttrs", true))
                 _.each(statList, (value, statName) => {
                     const rowData = getRepStat(charObj, section, rowFilter, statName, isSilent)
                     if (VAL({ object: rowData && rowData.obj }, "setRepStat"))
@@ -883,7 +927,7 @@ const D = (() => {
                     })
                     attrList[prefix + k] = v
                 } else {
-                    throwError(`Failure at makeRepRow(charRef, ${D.JSL(secName)}, ${D.JSL(attrs)})<br><br>Prefix (${D.JSL(prefix)}) + K (${D.JSL(k)}) is NOT A STRING asd})`, "DATA: makeRepRow()")
+                    THROW(`Failure at makeRepRow(charRef, ${D.JSL(secName)}, ${D.JSL(attrs)})<br>...Prefix (${D.JSL(prefix)}) + K (${D.JSL(k)}) is NOT A STRING)`, "makeRepRow")
                 }
             })
             setAttrs(charID, attrList)

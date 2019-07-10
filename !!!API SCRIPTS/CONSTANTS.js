@@ -7,7 +7,7 @@ const C = (() => {
 
     // #region COMMON INITIALIZATION
     const STATEREF = ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
@@ -113,23 +113,27 @@ const C = (() => {
                 font-size: 12px;
                 padding-bottom: 3px;
             ">${content}</span>`,
-            bodyParagraph: content => `<span style="
+            bodyParagraph: (content, params = {}) => `<span style="
                 display: block;
                 width: 586px;
                 font-family: 'Trebuchet MS';
                 font-size: 12px;
                 background-color: #DDD;
+                ${params["border-top"] ? `border-top: ${params["border-top"]};` : ""}
+                ${params["border-bottom"] ? `border-top: ${params["border-bottom"]};` : ""}
                 border-left: 1px solid #999;
                 border-right: 1px solid #999;
                 padding: 3px 10px;
             ">${content}</span>`,
             smallNote: (content, color = "#000000") => `<span style="
                 display:block; 
-                width: 580px; 
+                width: 560px; 
                 font-size: 10px;
                 color: ${color};
                 font-family: Goudy; 
-                margin-left: 20px;
+                margin: 0px 20px;
+                padding: 0px 3px;
+                background-color: rgba(0,0,0,0.25);
             ">${content}</span>`,
             projects: {
                 charName: content => `<span style="
@@ -163,6 +167,8 @@ const C = (() => {
                     font-weight: bold; 
                     text-align: right; 
                     margin-right: 10px;
+                    height: 20px;
+                    line-height: 20px;
                 ">${content}</span>`,
                 hook: content => `<span style="
                     display:inline-block; 
@@ -209,22 +215,20 @@ const C = (() => {
                 ">${content}</span>`,
                 stake: content => `<span style="
                     display: inline-block; 
-                    width: 530px; 
+                    width: 410px; 
                     font-family: 'Alice Regular';
-                ">${content}</span>`,
-                forcedStake: content => `<span style="
-                    display: inline-block; 
-                    width: 530px; 
-                    font-family: 'Alice Regular'; 
-                    color: #990000; 
-                    font-weight: bold;
+                    height: 20px;
+                    line-height: 20px;
                 ">${content}</span>`,
                 teamwork: content => `<span style="
                     display: inline-block; 
-                    width: 530px; 
+                    width: 50px; 
                     font-family: 'Alice Regular'; 
                     color: blue; 
                     font-weight: bold;
+                    height: 20px;
+                    line-height: 20px;
+                    font-size: 16px;
                 ">${content}</span>`
             },
         },

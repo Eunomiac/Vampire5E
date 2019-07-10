@@ -7,7 +7,7 @@ const Roller = (() => {
 
     // #region COMMON INITIALIZATION
     const STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
@@ -62,7 +62,7 @@ const Roller = (() => {
             case "!frenzyroll": rollType = rollType || "frenzy"
                 lockRoller(false)
                 args = `${STATEREF.frenzyRoll} ${args[0]}`.split(" ")
-                DB(`Parsing Frenzy Args: ${D.JSL(args)}`, "!frenzyroll")
+                DB(`Parsing Frenzy Args: ${D.JS(args)}`, "!frenzyroll")
             /* falls through */
             case "!discroll": case "!traitroll": rollType = rollType || "trait"
             /* falls through */
@@ -83,9 +83,9 @@ const Roller = (() => {
                 params = _.map(args.join(" ").split("|"), v => v.trim())
                 name = params.shift()
                 charObj = D.GetChar(name)
-                DB(`Received Roll: ${D.JSL(call)} ${name}|${params.join("|")}`, "handleInput")
-                DB(`... PARAMS: [${D.JS(params.join(", "))}]`, "handleInput")
-                DB(`... CHAROBJ: ${D.JS(charObj, true)}`, "handleInput")
+                DB(`Received Roll: ${D.JS(call)} ${name}|${params.join("|")}
+                    ... PARAMS: [${D.JS(params.join(", "))}]
+                    ... CHAROBJ: ${D.JS(charObj)}`, "handleInput")
                 if (!VAL({ charobj: charObj }, "handleInput")) return
                 if (STATEREF.isNextRollNPC && playerIsGM(msg.playerid)) {
                     STATEREF.isNextRollNPC = false
@@ -258,7 +258,7 @@ const Roller = (() => {
                 else
                     chars = D.GetChars(msg)
                 if (params.length < 1 || params.length > 3)
-                    THROW(`Syntax Error: ![x][n]sroll: <trait1>[,<trait2>,<mod>] (${D.JSL(params)})`, "!sroll")
+                    THROW(`Syntax Error: ![x][n]sroll: <trait1>[,<trait2>,<mod>] (${D.JS(params)})`, "!sroll")
                 else
                     makeSecretRoll(chars, params, isSilent, isHidingTraits)
                 break
@@ -863,7 +863,7 @@ const Roller = (() => {
                 return obj
             }
 
-            return THROW(`Invalid object: ${D.JSL(obj)}`, "registerDie()")
+            return THROW(`Invalid object: ${D.JS(obj)}`, "registerDie()")
         },
         makeDie = (category, isActive = false) => {
             STATEREF[category] = STATEREF[category] || []
@@ -927,7 +927,7 @@ const Roller = (() => {
                 return true
             }
 
-            return THROW(`Invalid object: ${D.JSL(obj)}`, "registerText()")
+            return THROW(`Invalid object: ${D.JS(obj)}`, "registerText()")
         },
         registerImg = (obj, objName, params = {}) => {
             if (VAL({ string: params })) {
@@ -1098,7 +1098,7 @@ const Roller = (() => {
                     params.top += params.shift.top || 0
                 }
                 if (_.isNaN(params.left) || _.isNaN(params.top) || _.isNaN(params.width))
-                    // if (!VAL({number: [params.left, params.top, params.width]}))
+                    // if (!VAL({number: [params.left, params.top, params.width]}, null, true))
                     return THROW(`Bad top, left or width given for '${D.JS(objName)}': ${D.JS(params)}`, "setText()")
                 obj.set(_.omit(params, ["justified", "shift"]))
 
@@ -1319,7 +1319,7 @@ const Roller = (() => {
                 die = getObj("graphic", dieParams.id)
             if (!die)
                 return THROW(`ROLLER: SETDIE(${dieNum}, ${dieCat}, ${dieVal}) >> No die registered.`, "setDie")
-        // D.DBAlert(`Setting die ${D.JSL(dieNum)} (dieVal: ${D.JSL(dieVal)}, params: ${D.JSL(params)})`, funcName, SCRIPTNAME)
+        // D.DBAlert(`Setting die ${D.JS(dieNum)} (dieVal: ${D.JS(dieVal)}, params: ${D.JS(params)})`, funcName, SCRIPTNAME)
 
             if (dieVal !== "selected") {
                 dieRef.value = dieVal
@@ -1332,7 +1332,7 @@ const Roller = (() => {
                 if (die.get(dir) !== dieRef[dir] || params.shift && params.shift[dir])
                     dieParams[dir] = dieRef[dir] + (params.shift && params.shift[dir] ? params.shift[dir] : 0)
             })
-        // D.DBAlert("Setting '" + D.JSL(dieVal) + "' in " + D.JSL(dieCat) + " to '" + D.JSL(dieParams) + "'", , funcName, SCRIPTNAME)
+        // D.DBAlert("Setting '" + D.JS(dieVal) + "' in " + D.JS(dieCat) + " to '" + D.JS(dieParams) + "'", , funcName, SCRIPTNAME)
             die.set(dieParams)
 
             return die
@@ -1379,7 +1379,7 @@ const Roller = (() => {
                         // TEST: If restriction is "physical", "social" or "mental", does an appropriate trait match?
                         } else if (D.IsIn(restr, ["physical", "mental", "social"])) {
                             if (!_.intersection(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()), _.keys(traits)).length) {
-                                DB(`SKIPPING: Restriction ${D.JS(restr)} Doesn't Apply<br><br>ATTRIBUTES/SKILLS MAPPED = ${D.JS(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()))}<br><br>C.SKILLS[restriction] = ${D.JS(C.SKILLS[restr])}<br><br>INTERSECTION = ${D.JS(_.intersection(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()), _.keys(traits)))}`, "applyRollEffects")
+                                DB(`SKIPPING: Restriction ${D.JS(restr)} Doesn't Apply<br>... ATTRIBUTES/SKILLS MAPPED: ${D.JS(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()))}<br><br>C.SKILLS[restriction] = ${D.JS(C.SKILLS[restr])}<br><br>INTERSECTION = ${D.JS(_.intersection(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()), _.keys(traits)))}`, "applyRollEffects")
                                 return true
                             }
                         // TEST: If none of the above, does restriction match a trait or a flag?
@@ -1389,7 +1389,7 @@ const Roller = (() => {
                         }
                         return false
                     }
-                DB(`Roll Effects:<br>${D.JS(rollEffects)}`, "applyRollEffects")
+                DB(`Roll Effects: ${D.JS(rollEffects)}`, "applyRollEffects")
                 for (const effectString of rollEffects) {
                 // First, check if the global effect state variable holds an exclusion for this character ID AND effect isn't in rollEffectsToReapply.
                     if (STATEREF.rollEffects[effectString] && STATEREF.rollEffects[effectString].includes(rollInput.charID))
@@ -1404,10 +1404,10 @@ const Roller = (() => {
                         _.map(_.values(rollInput.traitData), v => parseInt(v.value) || 0)
                     )
                     rollFlags = _.object(
-                        _.map([...rollInput.posFlagLines, ...rollInput.negFlagLines, ...rollInput.redFlagLines, ...rollInput.goldFlagLines], v => v.toLowerCase().replace(/\s*?\(●*?\)/gu, "")),
-                        [..._.map(rollInput.posFlagLines, v => v.replace(/[^●]/gu, "").length), ..._.map(rollInput.negFlagLines, v => -1 * v.replace(/[^●]/gu, "").length), ..._.map(rollInput.redFlagLines, () => 0), ..._.map(rollInput.goldFlagLines, () => 0)]
+                        _.map([...rollInput.posFlagLines, ...rollInput.negFlagLines, ...rollInput.redFlagLines, ...rollInput.goldFlagLines], v => v[1].toLowerCase().replace(/\s*?\(●*?\)/gu, "")),
+                        _.map([...rollInput.posFlagLines, ...rollInput.negFlagLines, ...rollInput.redFlagLines, ...rollInput.goldFlagLines], v => v[0])
                     )
-                    DB(`Roll Traits: ${D.JS(rollTraits)}<br><br>RollFlags: ${D.JS(rollFlags)}`, "applyRollEffects")
+                    DB(`Roll Traits: ${D.JS(rollTraits)}<br>Roll Flags: ${D.JSH(rollFlags)}`, "applyRollEffects")
 
                 // THRESHOLD TEST OF ROLLTARGET: IF TARGET SPECIFIED BUT DOES NOT EXIST, SKIP PROCESSING THIS ROLL EFFECT.
                     if (VAL({ string: rollTarget }) && !D.IsIn(rollTarget, _.keys(rollTraits)) && !D.IsIn(rollTarget, _.keys(rollFlags)))
@@ -1419,7 +1419,7 @@ const Roller = (() => {
                     // TEST: Is rollInput the appropriate kind for this effect?
                         if (D.IsIn(restriction, ["success", "failure", "basicfail", "critical", "basiccrit", "messycrit", "bestialfail", "totalfail"]) ||
                         D.IsIn(rollMod, ["nowpreroll", "doublewpreroll", "freewpreroll", "bestialcancel", "totalfailure"])) {
-                            DB(`Detected RollResult Keyword: ${D.JS(restriction)}<br><br>${D.JS(rollMod)}`, "applyRollEffects")
+                            DB(`Detected RollResult Keyword: ${D.JS(restriction)}<br>... RollMod: ${D.JS(rollMod)}`, "applyRollEffects")
                             if (rollData) {
                                 isSkipping = true
                             } else {
@@ -1447,7 +1447,7 @@ const Roller = (() => {
                                             isSkipping = true
                                         break
                                     case "messycrit":
-                                        DB(`Effective Margin: ${effectiveMargin}<br><br>CritPairs: ${D.JS(rollResults.critPairs)} (${D.JS(rollResults.critPairs.hh + rollResults.critPairs.hb)})`, "applyRollEffects")
+                                        DB(`Effective Margin: ${effectiveMargin}<br>... CritPairs: ${D.JS(rollResults.critPairs)} (${D.JS(rollResults.critPairs.hh + rollResults.critPairs.hb)})`, "applyRollEffects")
                                         if (effectiveMargin <= 0 || rollResults.critPairs.hh + rollResults.critPairs.hb === 0)
                                             isSkipping = true
                                         break
@@ -1492,7 +1492,7 @@ const Roller = (() => {
                 // FIRST ROLLMOD PASS: CONVERT TO NUMBER.
                 // Check whether parsing RollData or RollResults
                     if (VAL({ list: rollData })) {
-                        DB(`We have a valid rollData:<br><br>${D.JS(rollData)}`, "applyRollEffects")
+                        DB(`Validated RollData: ${D.JS(rollData)}`, "applyRollEffects")
                     // Is rollMod a number?
                         if (VAL({ number: rollMod })) {
                         // If rollMod is a number, Is there a rollTarget?
@@ -1544,13 +1544,16 @@ const Roller = (() => {
                             // Check to see if rollLabel is calling for a RegEx replacement, and perform the calculations.
                             if (rollLabel.charAt(0) === "*") {
                                 const regexData = _.object(["traitString", "regexString", "replaceString"], rollLabel.split("~"))
+                                DB(`RegExData: ${D.JS(regexData)}`, "applyRollEffects")
                                 let isContinuing = true
                                 // Identify the target: either a trait or a flag. Start with traits (since flags will sometimes reference them,
                                 // and if they do, you want to apply the effect to the trait).
                                 for (const trait of _.keys(rollData.traitData)) 
                                     if (D.FuzzyMatch(rollData.traitData[trait].display, regexData.traitString)) {
+                                        DB(`... Trait Found: ${D.JS(rollData.traitData[trait])}`, "applyRollEffects")
                                         rollData.traitData[trait].display = rollData.traitData[trait].display.replace(new RegExp(regexData.regexString, "gu"), regexData.replaceString)
                                         rollData.traitData[trait].value = Math.max(0, rollData.traitData[trait].value + rollMod)
+                                        DB(`... Changed To: ${D.JS(rollData.traitData[trait])}`, "applyRollEffects")
                                         isContinuing = false
                                         break
                                     }                                
@@ -1559,11 +1562,13 @@ const Roller = (() => {
                                     if (!isContinuing) break
                                     for (let i = 0; i < rollData[flagType].length; i++) 
                                         if (D.FuzzyMatch(rollData[flagType][i][1], regexData.traitString)) {
+                                            DB(`... Flag Found: ${D.JS(rollData[flagType][i][1])}`, "applyRollEffects")
                                             isContinuing = false
                                             rollData[flagType][i] = [
                                                 rollData[flagType][i][0] + rollMod,
                                                 rollData[flagType][i][1].replace(new RegExp(regexData.regexString, "gu"), regexData.replaceString)
                                             ]
+                                            DB(`... Changed To: ${D.JS(rollData[flagType][i][1])}`, "applyRollEffects")
                                             break
                                         }
                                 }
@@ -1584,19 +1589,19 @@ const Roller = (() => {
                         rollData.appliedRollEffects = _.union(rollData.appliedRollEffects, [effectString])
                     } else if (VAL({ list: rollResults }, "applyRollEffects")) {
                     // RollResults rollMods all contain discrete flags/strings, plus digits; can wipe digits for static flag:
-                        DB(`Roll Results applies!  Testing rollMod replace switch:<br><br>'${rollMod.replace(/\d/gu, "")}'`, "applyRollEffects")
+                        DB(`Roll Results applies!  Testing rollMod replace switch: ${rollMod.replace(/\d/gu, "")}`, "applyRollEffects")
                         switch (rollMod.replace(/\d/gu, "")) {
                             case "freewpreroll":
                                 if (rollResults.isNoWPReroll)
                                     break
                                 rollResults.wpCostAfterReroll = VAL({ number: rollResults.wpCost }) ? rollResults.wpCost : 1
                                 rollResults.wpCost = 0
-                                DB(`Setting Roll Results Costs:<br><br>After Reroll: ${rollResults.wpCostAfterReroll}<br><br>WP Cost: ${rollResults.wpCost}`, "applyRollEffects")
+                                DB(`Setting Roll Results Costs:<br>... After Reroll: ${rollResults.wpCostAfterReroll}<br>... WP Cost: ${rollResults.wpCost}`, "applyRollEffects")
                                 break
                             case "nowpreroll":
                                 rollResults.isNoWPReroll = true
                                 rollResults.wpCostAfterReroll = rollResults.wpCostAfterReroll || rollResults.wpCost
-                                DB(`Setting Roll Results Costs:<br><br>After Reroll: ${rollResults.wpCostAfterReroll}<br><br>WP Cost: ${rollResults.wpCost}`, "applyRollEffects")
+                                DB(`Setting Roll Results Costs:<br>... After Reroll: ${rollResults.wpCostAfterReroll}<br>... WP Cost: ${rollResults.wpCost}`, "applyRollEffects")
                                 break
                             case "doublewpreroll":
                                 if (rollResults.isNoWPReroll)
@@ -1605,7 +1610,7 @@ const Roller = (() => {
                                     rollResults.wpCostAfterReroll = 2
                                 else
                                     rollResults.wpCost = 2
-                                DB(`Setting Roll Results Costs:<br><br>After Reroll: ${rollResults.wpCostAfterReroll}<br><br>WP Cost: ${rollResults.wpCost}`, "applyRollEffects")
+                                DB(`Setting Roll Results Costs:<br>... After Reroll: ${rollResults.wpCostAfterReroll}<br>... WP Cost: ${rollResults.wpCost}`, "applyRollEffects")
                                 break
                             case "bestialcancel":
                                 for (let i = 0; i < rollResults.H.botches; i++) {
@@ -1675,6 +1680,11 @@ const Roller = (() => {
                         DB(`INTERIM Roll Results: ${D.JS(rollResults)}`, "applyRollEffects")
 
                         // Roll flags are PRE-PARSED for rollResults (they get parsed in between rollData and rollResults creation, in other functions)
+                        rollLabel = rollLabel.
+                            replace(/<\.>/gu, "●".repeat(Math.abs(rollMod))).
+                            replace(/<#>/gu, rollMod === 0 ? "~" : rollMod).
+                            replace(/<abs>/gu, rollMod === 0 ? "~" : Math.abs(rollMod)).
+                            replace(/<\+>/gu, rollMod < 0 ? "-" : "+")
                         if (rollLabel.charAt(0) === "!") 
                             rollResults.redFlagLines.push(rollLabel.replace(/^!\s*/gu, ""))
                         else if (rollMod > 0 || rollLabel.charAt(0) === "+") 
@@ -1692,26 +1702,20 @@ const Roller = (() => {
                 // FINISHED!  Return either rollData or rollResults, whichever you have.
                 // Make sure to map the flagLines to Strings before returning.
                 if (rollData) {
-                    DB(`ROLL DATA AFTER EFFECTS:<br><br>${D.JS(rollData)}`, "applyRollEffects")
                     for (const flagType of ["posFlagLines", "negFlagLines", "redFlagLines", "goldFlagLines"])
                         rollData[flagType] = _.map(rollData[flagType], v => v[1].
-                            replace(/<.>/gu, "●".repeat(Math.abs(v[0]))).
+                            replace(/<\.>/gu, "●".repeat(Math.abs(v[0]))).
                             replace(/<#>/gu, v[0] === 0 ? "~" : v[0]).
                             replace(/<abs>/gu, v[0] === 0 ? "~" : Math.abs(v[0])).
-                            replace(/<\+>/gu, v[0] < 0 ? "-" : "+"))
+                            replace(/<\+>/gu, v[0] < 0 ? "-" : "+"))                    
+                    DB(`ROLL DATA AFTER EFFECTS: ${D.JS(rollData)}`, "applyRollEffects")
                     return rollData
                 } else {
-                    DB(`ROLL RESULTS AFTER EFFECTS:<br><br>${D.JS(rollResults)}`, "applyRollEffects")
-                    for (const flagType of ["posFlagLines", "negFlagLines", "redFlagLines", "goldFlagLines"])
-                        rollResults[flagType] = _.map(rollResults[flagType], v => v[1].
-                            replace(/<.>/gu, "●".repeat(Math.abs(v[0]))).
-                            replace(/<#>/gu, v[0] === 0 ? "~" : v[0]).
-                            replace(/<abs>/gu, v[0] === 0 ? "~" : Math.abs(v[0])).
-                            replace(/<\+>/gu, v[0] < 0 ? "-" : "+"))
+                    DB(`ROLL RESULTS AFTER EFFECTS: ${D.JS(rollResults)}`, "applyRollEffects")
                     return rollResults
                 }
             }
-            return THROW(`Bad Roll Input!<br><br>${D.JS(rollInput)}`, "applyRollEffects")
+            return THROW(`Bad Roll Input!${D.JS(rollInput)}`, "applyRollEffects")
         },
         parseFlags = (charObj, rollType, params = {}, isDiscRoll = false) => {
             params.args = params.args || []
@@ -1737,11 +1741,11 @@ const Roller = (() => {
             if (isDiscRoll)
                 flagData.posFlagLines.push([C.BLOODPOTENCY[bloodPot].bp_discbonus, "Discipline (<.>)"])
 
-            /* D.Log(D.JSL(getAttrByName(charObj.id, "incap")), "INCAPACITATION");
-                   D.Log("PARAMS: " + D.JSL(params), "PARAMS");
-                   D.Log("PARAMS DATA: " + D.JSL(params.args), "PARAMS DATA");
+            /* D.Log(D.JS(getAttrByName(charObj.id, "incap")), "INCAPACITATION");
+                   D.Log("PARAMS: " + D.JS(params), "PARAMS");
+                   D.Log("PARAMS DATA: " + D.JS(params.args), "PARAMS DATA");
                    Return;
-                   D.Log(D.JSL(params.args[4]), "PARAMS DATA 4"); */
+                   D.Log(D.JS(params.args[4]), "PARAMS DATA 4"); */
             _.each(_.compact(_.flatten([
                 getAttrByName(charObj.id, "incap") ? getAttrByName(charObj.id, "incap").split(",") : [],
                 params.args.length > 3 ? params.args[4].split(",") : "",
@@ -1755,7 +1759,13 @@ const Roller = (() => {
                     flagData.negFlagLines.push([-2, "Inhuman (<.>)"])
             })
 
-            flagData.flagDiceMod = _.reduce(_.unzip([flagData.posFlagLines, flagData.negFlagLines, flagData.redFlagLines, flagData.goldFlagLines])[0], (sum, mod) => sum + mod)
+            if (flagData.posFlagLines.length || flagData.negFlagLines.length || flagData.redFlagLines.length || flagData.goldFlagLines.length) {
+                const zipped = _.compact([...flagData.posFlagLines, ...flagData.negFlagLines, ...flagData.redFlagLines, ...flagData.goldFlagLines]),
+                    unzipped = _.unzip(zipped),
+                    reduced = _.reduce(unzipped[0], (sum, mod) => sum + mod, 0)
+                DB(`Flag Data: ${D.JS(flagData)}<br>... ZIPPED: ${D.JS(zipped)}<br>... UNZIPPED: ${D.JS(unzipped)}<br>... REDUCED: ${D.JS(reduced)}`, "parseFlags")
+                flagData.flagDiceMod = reduced
+            }           
 
             return flagData
         },
@@ -1882,7 +1892,7 @@ const Roller = (() => {
                     rollData.mod = parseInt(params[2] || 0)
                     rollData.diffMod = parseInt(params[3] || 0)
                     rollData.prefix = ["repeating", "project", D.GetRepStat(charObj, "project", params[4]).rowID, ""].join("_")
-                    DB(`PROJECT PREFIX: ${D.JSL(rollData.prefix)}`, "getRollData")
+                    DB(`PROJECT PREFIX: ${D.JS(rollData.prefix)}`, "getRollData")
                     break
                 case "secret":
                     rollData.diff = 0
@@ -1901,9 +1911,7 @@ const Roller = (() => {
             if (["remorse", "project", "humanity", "frenzy", "willpower", "check", "rouse", "rouse2"].includes(rollType))
                 rollData.hunger = 0
 
-            DB(`INITIAL ROLL DATA:
-			
-				${D.JS(rollData)}`, "getRollData")
+            DB(`INITIAL ROLL DATA: ${D.JS(rollData)}`, "getRollData")
 
             return rollData
         },
@@ -1924,13 +1932,7 @@ const Roller = (() => {
                 rollResults: _.clone(rollResults)
             })
             recordRef.rollIndex = 0
-            DB(`FINAL ROLL DATA RECORDED IN STATEREF:
-
-				ROLL DATA: 
-				${D.JS(recordRef.rollRecord[0].rollData)}
-
-				ROLL RESULTS:
-				${D.JS(recordRef.rollRecord[0].rollResults)}`, "recordRoll")
+            DB(`FINAL ROLL DATA: ${D.JS(recordRef.rollRecord[0].rollData)}<br><br>FINAL ROLL RESULTS: ${D.JS(recordRef.rollRecord[0].rollResults)}`, "recordRoll")
             if (recordRef.rollRecord.length > 10)
                 recordRef.rollRecord.pop()
         }
@@ -2001,9 +2003,7 @@ const Roller = (() => {
             }
             rollData.hungerPool = Math.min(rollData.hunger, Math.max(1, rollData.dicePool))
             rollData.basePool = Math.max(1, rollData.dicePool) - rollData.hungerPool
-            DB(`ROLL DATA: BUILDDICEPOOL():
-
-                ${D.JS(rollData)}`, "buildDicePool")
+            DB(`ROLL DATA: ${D.JS(rollData)}`, "buildDicePool")
 
             const rollDataEffects = applyRollEffects(rollData)
 
@@ -2061,9 +2061,7 @@ const Roller = (() => {
                 margin: 5,
                 commit: 0
               }*/
-            DB(`ROLL DATA: ROLLDICE()
-			
-				${D.JS(rollData)}`, "rollDice")
+            DB(`ROLL DATA: ${D.JS(rollData)}`, "rollDice")
             if (addVals)
                 DB(`ADDED VALS: ${D.JS(addVals)}`, "rollDice")
             const sortBins = [],
@@ -2225,9 +2223,7 @@ const Roller = (() => {
                 const scope = rollData.diff - rollData.diffMod - 2
                 rollResults.commit = Math.max(1, scope + 1 - rollResults.margin)
             }
-            DB(`ROLL RESULTS:
-			
-				${D.JS(rollResults)}`, "rollDice")
+            DB(`ROLL RESULTS: ${D.JS(rollResults)}`, "rollDice")
 
             rollResults = applyRollEffects(Object.assign(rollResults, rollData))
             return rollResults
@@ -2315,14 +2311,6 @@ const Roller = (() => {
                     _.union(rollData.redFlagLines || [], rollResults.redFlagLines || []),
                     _.union(rollData.goldFlagLines || [], rollResults.goldFlagLines || [])
                 ],
-                replacer = str => {
-                    let newStr = str
-                    _.each(_.compact([rollData.replacer, rollResults.replacer]), v => {
-                        if (D.FuzzyMatch(v.traitString, str))
-                            newStr = newStr.replace(v.regex, v.replace)
-                    })
-                    return newStr
-                },
                 yShift = 0,
                 rollLines = {
                     rollerName: {
@@ -2372,7 +2360,7 @@ const Roller = (() => {
                 case "trait":
                     if (posFlagLines.length) {
                         rollLines.posMods = {
-                            text: `+ ${_.map(posFlagLines, v => replacer(v)).join(" + ")}          `,
+                            text: `+ ${posFlagLines.join(" + ")}          `,
                             justified: "left"
                         }
                         rollLines.mainRoll.shift.top = 0
@@ -2452,7 +2440,7 @@ const Roller = (() => {
                     }
                     break
                 default:
-                    return THROW(`Unrecognized rollType: ${D.JSL(rollData.rollType)}`, "APPLYROLL: START")
+                    return THROW(`Unrecognized rollType: ${D.JS(rollData.rollType)}`, "APPLYROLL: START")
             }
 
 
@@ -2466,13 +2454,7 @@ const Roller = (() => {
 
             blankLines = _.keys(_.omit(STATEREF.textList, _.keys(rollLines)))
 
-            DB(`ROLL LINES:
-			
-				${D.JS(_.keys(rollLines))}
-				
-				BLANKING LINES:
-				
-				${D.JS(blankLines)}`, "displayRoll")
+            DB(`ROLL LINES:<br>@T@${D.JS(_.keys(rollLines))}<br>BLANKING LINES:<br>@T@${D.JS(blankLines)}`, "displayRoll")
 
             _.each(rollLines, (content, name) => {
                 switch (name) {
@@ -2763,7 +2745,7 @@ const Roller = (() => {
                                 }
                                 break
                             default:
-                                THROW(`Unrecognized rollType: ${D.JSL(rollData.rollType)}`, "APPLYROLL: MID")
+                                THROW(`Unrecognized rollType: ${D.JS(rollData.rollType)}`, "APPLYROLL: MID")
                         }
                         break
                     default:
@@ -2780,9 +2762,7 @@ const Roller = (() => {
             logString = `${logLines.fullBox + logLines.rollerName + logLines.mainRoll + logLines.resultDice +
                 logLines.outcome + logLines.subOutcome}</div>`
 
-            DB(`Chat Frame (LogLine) HTML:
-			
-                ${D.JS(logLines)}`, "displayRoll")
+            DB(`Chat Frame (LogLine) HTML:<br>${D.JSC(logLines)}`, "displayRoll")
 
             _.each(blankLines, line => {
                 rollLines[line] = {
@@ -2793,10 +2773,7 @@ const Roller = (() => {
                 diceCats = diceCats.reverse()
                 
             if (!rollResults.isNPCRoll) {
-                DB(`SETTING DICE GRAPHICS
-                
-                    Category: '${D.JSL(diceCats[0])}' (total dice: ${D.JSL(STATEREF[diceCats[0]].length)})
-                    Showing Dice: [${D.JSL(_.reject(_.map(STATEREF[diceCats[0]], vv => vv.value), v => v === "blank").join(", "))}]`, "displayRoll")
+                DB(`Setting Category: '${D.JS(diceCats[0])}' (total dice: ${D.JS(STATEREF[diceCats[0]].length)})<br>Showing Dice: [${D.JS(_.reject(_.map(STATEREF[diceCats[0]], vv => vv.value), v => v === "blank").join(", "))}]`, "displayRoll")
 
                 for (let i = 0; i < STATEREF[diceCats[0]].length; i++)
                     diceObjs.push(setDie(i, diceCats[0], rollResults.diceVals[i] || "blank", {
@@ -2810,7 +2787,7 @@ const Roller = (() => {
                 bookends = [diceObjs[0], diceObjs[rollResults.diceVals.length - 1]]
 
                 if (!bookends || bookends.length < 2 || _.isUndefined(bookends[0]) || _.isUndefined(bookends[1]))
-                    return THROW(`Bookends Not Found.  DiceObjs.length is ${diceObjs.length}, rollResults.diceVals is ${rollResults.diceVals.length}: ${D.JSL(diceObjs)}`, "displayRoll")
+                    return THROW(`Bookends Not Found.  DiceObjs.length is ${diceObjs.length}, rollResults.diceVals is ${rollResults.diceVals.length}: ${D.JS(diceObjs)}`, "displayRoll")
 
                 spread = bookends[1].get("left") - bookends[0].get("left")
 
@@ -2842,16 +2819,13 @@ const Roller = (() => {
 
             return deltaAttrs
         },
-        makeNewRoll = (charObj, rollType, params, isDiscRoll, isNPCRoll) => {
+        makeNewRoll = (charObj, rollType, params, isDiscRoll = false, isNPCRoll = false) => {
             DB(`BEGINNING ROLL:
-			
-				CHAR: ${D.JS(charObj.get("name"))}
+                CHAR: ${D.JS(charObj.get("name"))}
 				ROLL TYPE: ${D.JS(rollType)}
-                IS DISC ROLL? ${D.JS(isDiscRoll)}
-                IS NPC ROLL? ${D.JS(isNPCRoll)}
-
-				PARAMS: [${D.JS(params.join(", "))}]
-				(length: ${params.length})`, "makeNewRoll")
+                ... DISC ROLL? ${D.JS(isDiscRoll)}
+                ... NPC ROLL? ${D.JS(isNPCRoll)}
+				PARAMS: [${D.JS(params.join(", "))}] (length: ${params.length})`, "makeNewRoll")
             const rollData = buildDicePool(getRollData(charObj, rollType, params, isDiscRoll))
             recordRoll(rollData, rollDice(rollData, null, isNPCRoll))
             displayRoll(true, isNPCRoll)
@@ -2896,7 +2870,7 @@ const Roller = (() => {
                 for (let i = 0; i > deltaDice; i--) {
                     const cutIndex = rollResults.diceVals.findIndex(v => v.startsWith("B"))
                     if (cutIndex === -1)
-                        return THROW(`Not enough base dice to remove in: ${D.JSL(rollResults.diceVals)}`, "changeRoll()")
+                        return THROW(`Not enough base dice to remove in: ${D.JS(rollResults.diceVals)}`, "changeRoll()")
                     rollResults.diceVals.splice(cutIndex, 1)
                 }
             }
@@ -3141,7 +3115,7 @@ const Roller = (() => {
                 record[k].PER = `${Math.round(data.TOT / parseInt(testCycles) * 10000) / 100}%`
                 record[k] = `${data.TOT} (${record[k].PER})`
             })
-            D.Alert(`Trace: ${D.JSL(tracer)}<br><br>testProbs: ${D.JSL(theseProbs)}<br><br>Resonances: ${D.JSL(resList)}<br><br>${D.JS(record)}`)
+            D.Alert(`Trace: ${D.JS(tracer)}<br><br>testProbs: ${D.JS(theseProbs)}<br><br>Resonances: ${D.JS(resList)}<br><br>${D.JS(record)}`)
         }
 
         randNum = Math.random()

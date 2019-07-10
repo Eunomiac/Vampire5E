@@ -8,7 +8,7 @@ const Media = (() => {
 
     // #region COMMON INITIALIZATION
     const STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
@@ -590,7 +590,7 @@ const Media = (() => {
                 // Getting Name: ${imgRef.get("name")}`, "IMAGE NAME")
                 //D.Alert(`RETRIEVED NAME: ${D.JS(imgName)}`)
                 if (!imgName)
-                    return !isSilent && THROW(`Cannot find name of image from reference '${D.JSL(imgRef, true)}'`, "GetImageKey")
+                    return !isSilent && THROW(`Cannot find name of image from reference '${D.JSL(imgRef)}'`, "GetImageKey")
                 else if (_.find(_.keys(IMAGEREGISTRY), v => v.toLowerCase().startsWith(imgName.toLowerCase())))
                     //D.Alert(`... returning: ${D.JS(_.keys(REGISTRY)[
                     //	_.findIndex(_.keys(REGISTRY), v => v.toLowerCase().startsWith(imgName.toLowerCase()))
@@ -599,10 +599,10 @@ const Media = (() => {
                         _.findIndex(_.keys(IMAGEREGISTRY), v => v.toLowerCase().startsWith(imgName.toLowerCase()))
                     ]
                 else
-                    return !isSilent && THROW(`Cannot find image with name '${D.JSL(imgName)}' from reference ${D.JSL(imgRef, true)}`, "GetImageKey")
+                    return !isSilent && THROW(`Cannot find image with name '${D.JSL(imgName)}' from reference ${D.JSL(imgRef)}`, "GetImageKey")
 
             } catch (errObj) {
-                return !isSilent && THROW(`Cannot locate image with search value '${D.JSL(imgRef, true)}'`, "GetImageKey", errObj)
+                return !isSilent && THROW(`Cannot locate image with search value '${D.JSL(imgRef)}'`, "GetImageKey", errObj)
             }
         },
         /* getImageKeys = imgRefs => {

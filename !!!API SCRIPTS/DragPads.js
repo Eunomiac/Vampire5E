@@ -7,7 +7,7 @@ const DragPads = (() => {
 
     // #region COMMON INITIALIZATION
     const STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
@@ -110,7 +110,7 @@ const DragPads = (() => {
                             padObj = getObj("graphic", padData.id),
                             partnerObj = getObj("graphic", padData.pad.partnerID)
                         if (padObj && !padObj.get("name").includes("Pad_") || partnerObj && !partnerObj.get("name").includes("PartnerPad_")) {
-                            D.Alert(`ERROR FINDING PADS:<br><br>GRAPHIC ID: ${D.JSL(hostObj, true)}<br>PAD ID: ${D.JSL(padObj, true)}<br>PARTNER ID: ${D.JSL(partnerObj, true)}`)
+                            D.Alert(`ERROR FINDING PADS:<br><br>GRAPHIC ID: ${D.JSL(hostObj)}<br>PAD ID: ${D.JSL(padObj)}<br>PARTNER ID: ${D.JSL(partnerObj)}`)
                             contCheck = false
                             return
                         }
@@ -287,7 +287,7 @@ const DragPads = (() => {
                         ..._.map(
                             _.keys(
                                 _.omit(STATEREF.byPad, pData => {
-                                    D.Log(`... pData: ${D.JS(pData)}`, "DRAGPADS: GET PAD")
+                                    DB(`... pData: ${D.JS(pData)}`, "getPad")
 
                                     return pData.funcName !== padRef
                                 })
@@ -338,7 +338,7 @@ const DragPads = (() => {
             else if (VAL({object: params}))
                 Object.assign(options, params)
             else
-                return THROW(`Bad parameters: ${D.JS(params)}`, "DRAGPADS:MakePad")
+                return THROW(`Bad parameters: ${D.JS(params)}`, "makePad")
 
             // D.Alert(`makePad Options: ${D.JS(options)}`, "DRAGPADS.MakePad")
             if (VAL({graphicObj: graphicObj})) {
@@ -352,7 +352,7 @@ const DragPads = (() => {
 
             }
             if (!options.left || !options.top || !options.width || !options.height)
-                return THROW(`Invalid Options: ${D.JS(options)}.<br><br>Must include reference object OR positions & dimensions to make pad.`, "DRAGPADS:MakePad")
+                return THROW(`Invalid Options: ${D.JS(options)}.<br><br>Must include reference object OR positions & dimensions to make pad.`, "makePad")
             options._pageid = options._pageid || D.PAGEID()
             options.left += parseInt(options.deltaLeft || 0)
             options.top += parseInt(options.deltaTop || 0)
@@ -440,17 +440,15 @@ const DragPads = (() => {
             })
         },
         togglePad = (padRef, isActive) => {
-            DB(`PadRef: ${D.JS(padRef)}`, "togglePad")
             const padIDs = []
+            let dbString = `PadRef: ${D.JS(padRef)}`
             if (STATEREF.byGraphic[padRef])
                 padIDs.push(STATEREF.byGraphic[padRef].id)
             else if (FUNCTIONS[padRef])
                 padIDs.push(..._.filter(_.keys(STATEREF.byPad), v => STATEREF.byPad[v].funcName === padRef))
-
-
-            DB(`Pads Found: ${D.JS(_.map(padIDs, v => STATEREF.byPad[v].name))}`, "togglePad")
+            DB(`${dbString} ... Found: ${D.JSL(_.map(padIDs, v => STATEREF.byPad[v].name))}`)
             if (padIDs.length === 0)
-                return THROW(`No pad found with ID: '${D.JS(padRef)}'`, "DRAGPADS: togglePad()")
+                return THROW(`No pad found with ID: '${D.JS(padRef)}'`, "togglePad")
 
             for (const pID of padIDs) {
                 const [pad, partner] = [

@@ -7,7 +7,7 @@ const Char = (() => {
 
     // #region COMMON INITIALIZATION
     const STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
@@ -33,16 +33,6 @@ const Char = (() => {
     // #region LOCAL INITIALIZATION
     const initialize = () => {
         STATEREF.registry = STATEREF.registry || {}
-        STATEREF.registry["1"].shortName = "Yusef"
-        STATEREF.registry["2"].shortName = "Roy"
-        STATEREF.registry["3"].shortName = "Napier"
-        STATEREF.registry["4"].shortName = "Ava"
-        STATEREF.registry["5"].shortName = "Jesse"
-        STATEREF.registry["1"].initial = "Y"
-        STATEREF.registry["2"].initial = "R"
-        STATEREF.registry["3"].initial = "N"
-        STATEREF.registry["4"].initial = "A"
-        STATEREF.registry["5"].initial = "J"
 
         // Storyteller Override:
         //C.ROOT.Char.registry["1"].playerID = "-LLIBpH_GL5I-9lAOiw9"
@@ -84,6 +74,9 @@ const Char = (() => {
                     else
                         THROW("Select character tokens first!", "!char reg")
                     break
+                case "unreg":
+                    unregisterChar(args.shift())
+                    break
                 case "xp": // !char xp Cost Session Message, with some character tokens selected.
                     chars = _.compact(D.GetChars(msg) || D.GetChars("registered"))
                     DB(`!char xp COMMAND RECEIVED<br><br>Characters: ${D.JS(_.map(chars, v => v.get("name")))}`, "awardXP")
@@ -123,6 +116,9 @@ const Char = (() => {
                     break
                 case "get":
                     switch (args.shift().toLowerCase()) {
+                        case "reg": case "registry": case "registered":
+                            D.Alert(REGISTRY, "Registered Player Characters")
+                            break
                         case "stat":
                             trait = args.shift()
                             for (const char of D.GetChars("registered")) {
@@ -211,24 +207,6 @@ const Char = (() => {
                 case "changeattr":
                     changeAttrName(args.shift(), args.shift())
                     break
-                case "testname": {
-                    const [attrData, finalAttrs, allNames] = [{}, {}, []]
-                    for (const charObj of D.GetChars("registered")) {
-                        const attrObjs = findObjs({_type: "attribute", _characterid: charObj.id}),
-                            nameAttrs = _.filter(attrObjs, v => v.get("name").endsWith("_name") && _.find(attrObjs, vv => vv.get("name") === v.get("name").slice(0, -5)))
-                        _.each(nameAttrs, v => {
-                            attrData[`${v.get("name").replace(/repeating_.*?_.*?_/gu, "REP:")} --> ${_.find(attrObjs, vv => vv.get("name") === v.get("name").slice(0, -5)).get("name").replace(/repeating_.*?_.*?_/gu, "REP:")}`] = _.find(attrObjs, vv => vv.get("name") === v.get("name").slice(0, -5)).get("current")
-                        })
-                        allNames.push(..._.map(attrObjs, v => v.get("name").replace(/repeating_.*?_.*?_/gu, "REP:")))
-                    }                    
-                    _.each(_.uniq(_.keys(attrData)), v => {
-                        finalAttrs[v] = attrData[v]
-                    })
-                    D.Alert(D.JS(_.uniq(allNames)))
-                    D.Alert(D.JS(_.filter(_.uniq(allNames), v => v.endsWith("_name") && allNames.includes(v.replace(/_name$/gu, "")))))
-                    D.Alert(D.JS(finalAttrs))
-                    break
-                }
             // no default
             }
         },
@@ -238,17 +216,9 @@ const Char = (() => {
                     case "hunger":
                         Media.Toggle(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, true, obj.get("current"))
                         break
-                 /*   case "_reporder_repeating_timeline":
-                        D.Alert("Timeline Order CHANGED.")
-                        break */
-                    // no default
+                    /* no default */
                 }
         }
-    /*    handleAddAttr = obj => {
-            if (obj.get("name").toLowerCase().match(/repeating_timeline_.*?_tlenddate/gu))
-                //D.SortRepSec(obj.get("_characterid"), "timeline", (charRef, secName, rowID1, rowID2) => TimeTracker.ParseDate(D.GetRepStat(charRef, secName, rowID1, "tlenddate").val).getTime() - TimeTracker.ParseDate(D.GetRepStat(charRef, secName, rowID2, "tlenddate").val).getTime())             
-                
-        } */
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
     const REGISTRY = STATEREF.registry
@@ -294,6 +264,14 @@ const Char = (() => {
                 THROW(`No image registered under ${hostName}`, "RegisterToken")
             else
                 Media.AddSrc(msg, hostName, srcName)
+        },
+        unregisterChar = (nameRef) => {
+            if (VAL({string: nameRef}, "unregisterChar")) {
+                const regKey = _.findKey(REGISTRY, v => D.FuzzyMatch(v.name, nameRef))
+                D.Alert(`nameRef: ${nameRef}<br>regKey: ${D.JS(regKey)}`, "unregisterChar")
+                if (regKey >= 0 && REGISTRY[regKey])
+                    delete REGISTRY[regKey]
+            }
         }
     // #endregion
 
@@ -345,10 +323,10 @@ const Char = (() => {
     // #region Manipulating Stats on Sheet,
     const adjustTrait = (charRef, trait, amount, min, max, defaultTraitVal) => {
             if (VAL({ number: defaultTraitVal })) {
-                if (!VAL({ char: [charRef], number: amount }, "AdjustTrait"))
+                if (!VAL({ char: [charRef], number: [amount] }, "AdjustTrait", true))
                     return false
             } else {
-                if (!VAL({ char: [charRef], trait: [trait], number: amount }, "AdjustTrait"))
+                if (!VAL({ char: [charRef], trait: [trait], number: [amount] }, "AdjustTrait", true))
                     return false
             }
 
@@ -366,7 +344,7 @@ const Char = (() => {
         },
         adjustDamage = (charRef, trait, dtype, amount) => {
             let [minVal, maxVal, targetVal, defaultVal, traitName] = [0, 5, parseInt(amount), 0, ""]
-            if (!VAL({ char: [charRef], number: [amount] }, "AdjustDamage"))
+            if (!VAL({ char: [charRef], number: [amount] }, "AdjustDamage", true))
                 return false
             switch (trait.toLowerCase()) {
                 case "hum": case "humanity":
@@ -379,7 +357,7 @@ const Char = (() => {
                     [minVal, maxVal, targetVal, defaultVal, traitName] = [
                         -Infinity,
                         Infinity,
-                        parseInt(amount) > 0 && dtype === "superficial" ? parseInt(Math.ceil(amount / 2)) : parseInt(amount),
+                        parseInt(amount) >= 0 && dtype === "superficial" ? parseInt(Math.ceil(amount / 2)) : parseInt(amount),
                         0,
                         trait.toLowerCase() + (["superficial", "superficial+", "spent"].includes(dtype) ? "_sdmg" : "_admg")
                     ]
@@ -391,7 +369,7 @@ const Char = (() => {
             return false
         },
         adjustHunger = (charRef, amount, isKilling = false) => {
-            if (!VAL({ char: [charRef], number: [amount], trait: ["bp_slakekill"] }, "AdjustHunger"))
+            if (!VAL({ char: [charRef], number: [amount], trait: ["bp_slakekill"] }, "AdjustHunger", true))
                 return false
             if (adjustTrait(charRef,
                             "hunger",

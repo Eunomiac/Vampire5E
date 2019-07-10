@@ -15,7 +15,7 @@ const Chat = (() => {
 
     // #region COMMON INITIALIZATION
     const STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName) => D.Validate(varList, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
@@ -231,17 +231,6 @@ const Chat = (() => {
                         break
                 }
                 break
-            case "!test":
-                switch (args.shift()) {
-                    case "alert":
-                        D.Alert("Simple Test")
-                        D.Alert("<b>Simple Bold Test</b>")
-                        break
-                    case "num":
-                        D.Alert(`NumToText Test: ${D.JS(args[0])} ---> <br><br>${D.JS(D.NumToText(args[0]))}<br><br>${D.JS(D.NumToText(args[0], true))}`, "!test num")
-                        break
-                    // no default
-                }
             // no default
         }
     }
