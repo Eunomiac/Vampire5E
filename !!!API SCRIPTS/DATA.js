@@ -671,9 +671,10 @@ const D = (() => {
             let attrValueObj = null
             if (VAL({ charObj: charObj, string: statName }, isSilent ? null : "getStat")) {
                 const attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => !fuzzyMatch(v.get("name"), "repeating")) // Don't get repeating fieldset attributes.
-                attrValueObj = _.find(attrObjs, v => fuzzyMatch(v.get("name"), statName))
+                // First try for a direct match, then a fuzzy match:
+                attrValueObj = _.find(attrObjs, v => v.get("name").toLowerCase() === statName.toLowerCase()) || _.find(attrObjs, v => fuzzyMatch(v.get("name"), statName))
                 if (!attrValueObj) {
-                    const attrNameObj = _.find(attrObjs, v => v.get("name").toLowerCase().endsWith("_name") && fuzzyMatch(v.get("current"), statName))
+                    const attrNameObj = _.find(attrObjs, v => v.get("name").toLowerCase().endsWith("_name") && v.get("current").toLowerCase() === statName.toLowerCase())
                     if (attrNameObj)
                         attrValueObj = _.find(attrObjs, v => v.get("name") === attrNameObj.get("name").slice(0, -5))
                 }

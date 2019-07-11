@@ -2810,6 +2810,7 @@ const Roller = (() => {
                     ), v => v.value
                 ),
                 charObj = getObj("character", rollData.charID)
+            DB(`RETRIEVED ROLL RECORD: ${D.JS(rollRecord)}`, "wpReroll")
             rollData.rerollAmt = STATEREF.selected[dieCat].length
             const rollResults = rollDice(rollData, _.values(rolledDice), isNPCRoll)
             rollResults.wpCost = rollRecord.rollResults.wpCost

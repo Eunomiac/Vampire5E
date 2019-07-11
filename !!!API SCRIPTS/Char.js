@@ -330,10 +330,10 @@ const Char = (() => {
                     return false
             }
 
-            LOG(`${D.JS(Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStat(charRef, trait) || 0) + parseInt(amount))))}
-                STATVAL: ${D.GetStat(charRef, trait) && D.GetStat(charRef, trait)[0]}, AMOUNT: ${amount}
-                COMBINED: ${parseInt(D.GetStat(charRef, trait) && D.GetStat(charRef, trait)[0] || 0) + parseInt(amount)}
-                ACTUAL: ${Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStat(charRef, trait) && D.GetStat(charRef, trait)[0] || defaultTraitVal || 0) + parseInt(amount)))}`, "adjustTrait")
+            LOG(`Adjusting Trait: (${D.JS(trait)}, ${D.JS(amount)}, ${D.JS(min)}, ${D.JS(max)}, ${D.JS(defaultTraitVal)})
+                ... Getting Value: ${D.GetStat(charRef, trait, true)[0]}, Adding Amount (${D.JS(amount)})
+                ... EQUALS: ${D.JS(Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStat(charRef, trait, true)[0] || defaultTraitVal || 0) + parseInt(amount))))} ... MIN/MAX'd: ${Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStat(charRef, trait, true) && D.GetStat(charRef, trait, true)[0] || defaultTraitVal || 0) + parseInt(amount)))}
+                ... SetAttrs: ${D.JS({[trait.toLowerCase()]: Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStat(charRef, trait) && D.GetStat(charRef, trait)[0] || defaultTraitVal || 0) + parseInt(amount)))})}`, "adjustTrait")
             setAttrs(D.GetChar(charRef).id,
                      {[trait.toLowerCase()]: Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStat(charRef, trait) && D.GetStat(charRef, trait)[0] || defaultTraitVal || 0) + parseInt(amount)))}
             )
@@ -361,6 +361,7 @@ const Char = (() => {
                     break
                 // no default
             }
+            LOG(`Adjusting Damage: (${D.JS(trait)}, ${D.JS(dtype)}, ${D.JS(amount)})`, "adjustDamage")
             if (adjustTrait(charRef, traitName, targetVal, minVal, maxVal, defaultVal))
                 return true
             return false
