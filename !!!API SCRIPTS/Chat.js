@@ -246,37 +246,37 @@ const Chat = (() => {
 				<div style="padding-left:10px;">
 					<h4 style="font-variant: small-caps;">!GET:</h4>
 					<ul>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!get all
 							</span> - Gets a JSON stringified list of all the object's properties
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!get char
 							</span> - Gets the name, character ID, and player ID represented by the selected token.
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!get chars
 							</span> - Gets the names and IDs of all character objects
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!get gm
 							</span> - Gets the player ID of the GM.
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!get img
 							</span> - Gets the graphic ID and img source of the selected graphic.
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!get pos
 							</span> - Gets the position and dimensions of the selected object, in both grid and pixel units.
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!get attrs
 							</span> - Gets all attribute objects attached to the selected character token.<br>
@@ -284,22 +284,22 @@ const Chat = (() => {
 								!get attr attr1 [attr2] [attr3]...
 							</span> - Gets only the specified attributes attached to the selected character token.
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!get prop [&lt;id&gt;] &lt;property&gt;
 							</span> - Gets the contents of the specified property on the selected object, or the object ID.
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!get state [&lt;namespace&gt;]
 							</span> - Gets a stringified list of all items in the given state namespace.  You can omit the first parameter; if you do, it is assumed to be "${C.GAMENAME}".
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!get page
 							</span> - Gets the page ID the player tab is set to.
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!get debug
 							</span> - Gets the current debug settings.
@@ -307,17 +307,17 @@ const Chat = (() => {
 					</ul>
 					<h4 style="font-variant: small-caps;">!SET:</h4>
 					<ul>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!set dblvl
 							</span> - 
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!set dbfilter
 							</span> - 
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!set size height:#, width:#
 							</span> - Sets the size of all selected objects to the given dimensions.
@@ -325,17 +325,17 @@ const Chat = (() => {
 					</ul>
 					<h4 style="font-variant: small-caps;">!CLEAR:</h4>
 					<ul>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!clear dbfilter
 							</span> - 
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!clear obj &lt;type&gt; &lt;pattern&gt;
 							</span> - Removes all objects of the given type that contain &lt;pattern&gt; in the name.
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!clear state [&lt;namespace&gt;]
 							</span> - Clears the given state values.
@@ -343,22 +343,22 @@ const Chat = (() => {
 					</ul>
 					<h4 style="font-variant: small-caps;">!TEXT:</h4>
 					<ul>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!text prep &lt;character&gt;
 							</span> - Sets all selected text strings to 20 copies of the given character.  (Use with !text resolve to get the necessary information for measuring text widths.)
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!text resolve
 							</span> - Measures the width of selected text strings (prepared with !text prep).
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.20);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!text check
 							</span> - Checks recorded width data for text in the selected formats.
 						</li>
-						<li style="margin-bottom: 4px; background-color: rgba(0,0,0,0.10);">
+						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
 							<span style="font-weight: bolder; font-family: serif;">
 								!text upper/lower
 							</span> - Changes the case of selected text object(s).

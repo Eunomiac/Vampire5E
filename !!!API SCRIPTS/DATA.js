@@ -160,7 +160,7 @@ const D = (() => {
                 return JSON.stringify(errObj)
             }
         },
-        jStrH = (data, isShortForm = false, properties = []) => {
+        jStrH = data => {
             /* Parses data as above, but removes raw line breaks instead of converting them to <br>.
                 Line breaks must be specified in the code with '<br>' to be parsed as such.  */
             if (_.isUndefined(data))
@@ -172,12 +172,12 @@ const D = (() => {
                 replace(/<br\/>/gu, "").
                 replace(/<br>/gu, "<br/>")
         },
-        jStrL = (data, isShortForm = false, properties = []) => {
+        jStrL = data => {
             /* Parses data in a way that is appropriate to the console log, removing line breaks and redundant characters. */
             if (_.isUndefined(data))
                 return "<UNDEFINED>"
 
-            return jStrH(data, isShortForm, properties).
+            return jStrH(data).
                 replace(/(\r\n|\n|\r|<br\/?>)/gu, " "). // Removes all line breaks
                 replace(/(&nbsp;)+/gu, " "). // Converts &nbsp; back to whitespace
                 replace(/(&amp;nbsp;)+/gu, " "). // Converts escaped &nbsp; to whitespace
@@ -500,7 +500,7 @@ const D = (() => {
         },
         throwError = (msg, funcName, scriptName, errObj) => sendDebugAlert(`${msg}${errObj ? `${errObj.name}<br>${errObj.message}<br><br>${errObj.stack}` : ""}`, funcName, scriptName, "ERROR"),
         sendDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
-            const trace = TRACE.length ? `<span style="display: block; width: 100%; font-size: 10px; margin-top: -5px; background-color: #AAAAAA; color: grey; font-family: Voltaire; font-weight: bold;">${TRACE.join(" ► ")}</span>` : ""
+            const trace = TRACE.length ? `<span style="display: block; width: 100%; font-size: 10px; margin-top: -5px; background-color: ${C.COLORS.brightgrey}; color: ${C.COLORS.grey}; font-family: Voltaire; font-weight: bold;">${TRACE.join(" ► ")}</span>` : ""
             logDebugAlert(msg, funcName, scriptName, prefix)
             if (funcName && STATEREF.WATCHLIST.includes(funcName) || scriptName && STATEREF.WATCHLIST.includes(scriptName) || !funcName && !scriptName)
                 sendToGM(trace + (isTraceOnly ? "" : msg), formatTitle(funcName, scriptName, prefix))
@@ -522,7 +522,7 @@ const D = (() => {
                     logLines.push("</div>", C.HANDOUTHTML.main(C.HANDOUTHTML.title((new Date(logDate)).toUTCString().replace("GMT", ampm))).replace("</div>", ""))
                 }
                 if (lastTitle === logData.title)
-                    logLines.push(C.HANDOUTHTML.bodyParagraph(jStr(logData.contents), {["border-top"]: "1px solid black"}))
+                    logLines.push(C.HANDOUTHTML.bodyParagraph(jStr(logData.contents), {["border-top"]: `1px solid ${C.COLORS.black}`}))
                 else
                     logLines.push(C.HANDOUTHTML.bodyParagraph(C.HANDOUTHTML.subTitle(logData.title.replace("DB ", "")) + jStr(logData.contents)))
                 lastTimeStamp = logData.timeStamp
@@ -662,14 +662,14 @@ const D = (() => {
         }, getChar = (charRef, isSilent = false) => getChars(charRef, isSilent)[0],
         getCharData = (charRef, isSilent = false) => {
             const charObj = getChar(charRef)
-            if (VAL({charObj: charObj}, "getCharData"))
+            if (VAL({charObj: charObj}, isSilent ? null : "getCharData"))
                 return _.find(_.values(Char.REGISTRY), v => v.id === charObj.id)
             return false
         },
         getStat = (charRef, statName, isSilent = false) => {
             const charObj = getChar(charRef)
             let attrValueObj = null
-            if (VAL({ charObj: charObj, string: statName }, "getStat")) {
+            if (VAL({ charObj: charObj, string: statName }, isSilent ? null : "getStat")) {
                 const attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => !fuzzyMatch(v.get("name"), "repeating")) // Don't get repeating fieldset attributes.
                 attrValueObj = _.find(attrObjs, v => fuzzyMatch(v.get("name"), statName))
                 if (!attrValueObj) {
@@ -954,7 +954,6 @@ const D = (() => {
         sortRepSec = (charRef, secName, sortFunc) => {
             /* Sortfunc must have parameters (charRef, secName, rowID1, rowID2) and return
               POSITIVE INTEGER if row1 should be ABOVE row2. */
-            // D.Log(`CharRef: ${D.JSL(charRef)}`)
             const rowIDs = getRepIDs(charRef, secName),
                 sortTrigger = getRepStat(charRef, secName, null, "sorttrigger")
             // getStatData(charRef, [`repeating_${secName}_${rowIDs[0]}_sorttrigger`])

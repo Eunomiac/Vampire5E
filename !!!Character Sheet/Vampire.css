@@ -1527,7 +1527,7 @@
 		content: "";
 
 		/*border: solid 2px #74121e;*/
-		/*border: solid 1px red;*/
+		/*border: solid 1px ${C.COLORS.brightred};*/
 		border: none;
 
 		-moz-border-radius: 50%;

@@ -139,7 +139,7 @@ const Char = (() => {
                             })
                             msgString = ""
                             for (const char of chars)
-                                msgString += `${D.GetName(char)}<span style="color: red; font-weight:bold;">@T</span>${char.id}<br>`
+                                msgString += `${D.GetName(char)}<span style="color: ${C.COLORS.brightred}; font-weight:bold;">@T</span>${char.id}<br>`
                             D.Alert(D.JS(msgString))
                             break
                         case "player":
@@ -330,15 +330,12 @@ const Char = (() => {
                     return false
             }
 
-            D.Log(D.JS(Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStat(charRef, trait) || 0) + parseInt(amount)))))
-            D.Log("STATVAL:" + D.GetStat(charRef, trait) && D.GetStat(charRef, trait)[0] + ", AMOUNT: " + amount)
-            D.Log("COMBINED:" + (parseInt(D.GetStat(charRef, trait) && D.GetStat(charRef, trait)[0] || 0) + parseInt(amount)))
-            D.Log("ACTUAL: " + Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStat(charRef, trait) && D.GetStat(charRef, trait)[0] || defaultTraitVal || 0) + parseInt(amount))))
-            setAttrs(
-                D.GetChar(charRef).id,
-                {
-                    [trait.toLowerCase()]: Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStat(charRef, trait) && D.GetStat(charRef, trait)[0] || defaultTraitVal || 0) + parseInt(amount)))
-                }
+            LOG(`${D.JS(Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStat(charRef, trait) || 0) + parseInt(amount))))}
+                STATVAL: ${D.GetStat(charRef, trait) && D.GetStat(charRef, trait)[0]}, AMOUNT: ${amount}
+                COMBINED: ${parseInt(D.GetStat(charRef, trait) && D.GetStat(charRef, trait)[0] || 0) + parseInt(amount)}
+                ACTUAL: ${Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStat(charRef, trait) && D.GetStat(charRef, trait)[0] || defaultTraitVal || 0) + parseInt(amount)))}`, "adjustTrait")
+            setAttrs(D.GetChar(charRef).id,
+                     {[trait.toLowerCase()]: Math.min(max || Infinity, Math.max(min || -Infinity, parseInt(D.GetStat(charRef, trait) && D.GetStat(charRef, trait)[0] || defaultTraitVal || 0) + parseInt(amount)))}
             )
             return true
         },

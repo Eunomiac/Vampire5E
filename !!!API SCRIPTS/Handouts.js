@@ -141,7 +141,7 @@ const Handouts = (() => {
                 if ((parseInt(projectData.projectteamwork1) || 0) + (parseInt(projectData.projectteamwork2) || 0) + (parseInt(projectData.projectteamwork3) || 0) > 0)
                     teamworkCheck = true
                 if (teamworkCheck)
-                    projLines.push(`${C.HANDOUTHTML.projects.tag("TEAMWORK:", "#0000FF")}${C.HANDOUTHTML.projects.teamwork("●".repeat((parseInt(projectData.projectteamwork1) || 0) + (parseInt(projectData.projectteamwork2) || 0) + (parseInt(projectData.projectteamwork3) || 0) || 0))}`)
+                    projLines.push(`${C.HANDOUTHTML.projects.tag("TEAMWORK:", C.COLORS.blue)}${C.HANDOUTHTML.projects.teamwork("●".repeat((parseInt(projectData.projectteamwork1) || 0) + (parseInt(projectData.projectteamwork2) || 0) + (parseInt(projectData.projectteamwork3) || 0) || 0))}`)
                 if (stakeCheck) {
                     const stakeStrings = []
                     for (let i = 1; i <= 3; i++) {

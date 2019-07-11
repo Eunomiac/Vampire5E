@@ -19,7 +19,6 @@ const C = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     // #region CORE CONFIGURATION & BASIC REFERENCES
-    
     const PIXELSPERSQUARE = 70,
         NUMBERWORDS = {
             low: ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen", "Twenty"],
@@ -44,6 +43,30 @@ const C = (() => {
             seventy: "seventieth",
             eighty: "eightieth",
             ninety: "ninetieth"
+        },
+        COLORS = {
+            white: "rgb(255, 255, 255)",
+            black: "rgb(0, 0, 0)",
+            brightgrey: "rgb(175, 175, 175)",
+            grey: "rgb(130, 130, 130)",
+            darkgrey: "rgb(80, 80, 80)",
+            brightred: "rgb(255, 0, 0)",
+            red: "rgb(200, 0, 0)",
+            darkred: "rgb(150, 0, 0)",
+            green: "rgb(0, 200, 0)",
+            yellow: "rgb(200, 200, 0)",
+            orange: "rgb(200, 100, 0)",
+            brightpurple: "rgb(200, 0, 200)",
+            purple: "rgb(150, 0, 150)",
+            darkpurple: "rgb(100, 0, 100)",
+            brightblue: "rgb(150, 150, 255)",
+            blue: "rgb(100, 100, 255)",
+            darkblue: "rgb(50, 50, 150)",
+            cyan: "rgb(0, 255, 255)",
+            gold: "#FFEE66",
+            fadedblack: "rgba(0, 0, 0, 0.2)",
+            fadedgrey: "rgba(0, 0, 0, 0.1)",
+            crimson: "rgb(220, 20, 60)"
         }
     // #endregion
 
@@ -59,9 +82,9 @@ const C = (() => {
                 font-family: 'copperplate gothic';
                 font-variant: small-caps;
                 font-size: 16px;
-                background-color: #333;
-                color: white;
-                border: 2px solid black;
+                background-color: ${COLORS.darkgrey};
+                color: ${COLORS.white};
+                border: 2px solid ${COLORS.black};
                 position: relative;
             ">${content}</div>`,
             body: content => `<div style="
@@ -71,8 +94,8 @@ const C = (() => {
                 margin-left: -42px;
                 font-family: input, verdana, sans-serif;
                 font-size: 10px;
-                background-color: white;
-                border: 2px solid black;
+                background-color: ${COLORS.white};
+                border: 2px solid ${COLORS.black};
                 line-height: 14px;
                 position: relative;
             ">${content}</div><div style="
@@ -93,7 +116,7 @@ const C = (() => {
                 width: 602px;
                 height: 16px;
                 line-height: 16px;
-                background-color: #888;
+                background-color: ${COLORS.grey};
                 font-family: 'Century Gothic';
                 font-size: 14px;
                 font-weight: bold;
@@ -108,7 +131,7 @@ const C = (() => {
                 line-height: 12px;
                 margin: 5px 0px 5px -6px;
                 font-weight: bold;
-                border-bottom: 1px solid black;
+                border-bottom: 1px solid ${COLORS.black};
                 font-family: 'Century Gothic';
                 font-size: 12px;
                 padding-bottom: 3px;
@@ -118,14 +141,14 @@ const C = (() => {
                 width: 586px;
                 font-family: 'Trebuchet MS';
                 font-size: 12px;
-                background-color: #DDD;
+                background-color: ${COLORS.brightgrey};
                 ${params["border-top"] ? `border-top: ${params["border-top"]};` : ""}
                 ${params["border-bottom"] ? `border-top: ${params["border-bottom"]};` : ""}
-                border-left: 1px solid #999;
-                border-right: 1px solid #999;
+                border-left: 1px solid ${COLORS.grey};
+                border-right: 1px solid ${COLORS.grey};
                 padding: 3px 10px;
             ">${content}</span>`,
-            smallNote: (content, color = "#000000") => `<span style="
+            smallNote: (content, color = COLORS.black) => `<span style="
                 display:block; 
                 width: 560px; 
                 font-size: 10px;
@@ -133,14 +156,14 @@ const C = (() => {
                 font-family: Goudy; 
                 margin: 0px 20px;
                 padding: 0px 3px;
-                background-color: rgba(0,0,0,0.25);
+                background-color: ${COLORS.fadedblack};
             ">${content}</span>`,
             projects: {
                 charName: content => `<span style="
                     display: block; 
                     width: 600px;
                     font-size: 32px; 
-                    color: rgb(99,00,00); 
+                    color: ${COLORS.darkred}; 
                     font-family: Voltaire; 
                     font-variant: small-caps;
                 ">${content}</span>`,
@@ -148,16 +171,16 @@ const C = (() => {
                     display: block; 
                     width: 600px; 
                     height: 24px; 
-                    background-color: rgb( 206 , 198 , 206 ); 
+                    background-color: ${COLORS.brightgrey}; 
                     font-size: 16px; 
-                    color: black; 
+                    color: ${COLORS.black}; 
                     font-family: 'Alice Regular'; 
                     font-weight: bold; 
                     font-variant: small-caps; 
-                    border-bottom: 1px solid black; 
-                    border-top: 1px solid black;
+                    border-bottom: 1px solid ${COLORS.black}; 
+                    border-top: 1px solid ${COLORS.black};
                 ">${content}</span>`,
-                tag: (content, color = "#000000") => `<span style="
+                tag: (content, color = COLORS.black) => `<span style="
                     display:inline-block; 
                     width: 60px; 
                     font-size: 14px; 
@@ -174,7 +197,7 @@ const C = (() => {
                     display:inline-block; 
                     width: 530px; 
                     font-size: 12px; 
-                    color: black; 
+                    color: ${COLORS.black}; 
                     font-family: 'Alice Regular'; 
                     vertical-align: top; 
                     padding-top: 2px;
@@ -183,7 +206,7 @@ const C = (() => {
                     display: inline-block; 
                     width: 300px; 
                     font-size: 20px; 
-                    color: purple; 
+                    color: ${COLORS.purple}; 
                     font-family: Voltaire; 
                     font-weight: bold;
                 ">${content}</span>`,
@@ -191,7 +214,7 @@ const C = (() => {
                     display: inline-block; 
                     width: 300px; 
                     font-size: 20px; 
-                    color: black; 
+                    color: ${COLORS.black}; 
                     font-family: goodfish; 
                     font-weight: bold;
                 ">${content}</span>`,
@@ -199,7 +222,7 @@ const C = (() => {
                     display: inline-block; 
                     width: 300px; 
                     font-size: 20px; 
-                    color: black; 
+                    color: ${COLORS.black}; 
                     font-family: Voltaire; 
                     font-weight: bold; 
                     text-align: right;
@@ -208,7 +231,7 @@ const C = (() => {
                     display: inline-block; 
                     width: 600px; 
                     font-size: 14px; 
-                    color: black; 
+                    color: ${COLORS.black}; 
                     font-family: 'Alice Regular'; 
                     font-style: italic; 
                     text-align: right;
@@ -224,7 +247,7 @@ const C = (() => {
                     display: inline-block; 
                     width: 50px; 
                     font-family: 'Alice Regular'; 
-                    color: blue; 
+                    color: ${COLORS.blue}; 
                     font-weight: bold;
                     height: 20px;
                     line-height: 20px;
@@ -233,43 +256,43 @@ const C = (() => {
             },
         },
         HTML = {
-            start: "<div style=\"display: block; width: 100%; padding: 5px 5px; margin-left: -10px; margin-top: -20px; margin-bottom: -5px; color: white; font-variant: small-caps; font-family: 'Bodoni SvtyTwo ITC TT'; text-align: left; font-size: 16px;  border: 3px outset darkred; background: url('https://imgur.com/kBl8aTO.jpg') top; bg-color: black; z-index: 100; position: relative;\">",
+            start: `<div style="display: block; width: 100%; padding: 5px 5px; margin-left: -10px; margin-top: -20px; margin-bottom: -5px; color: ${COLORS.white}; font-variant: small-caps; font-family: 'Bodoni SvtyTwo ITC TT'; text-align: left; font-size: 16px;  border: 3px outset ${COLORS.darkred}; background: url('https://imgur.com/kBl8aTO.jpg') top; bg-color: ${COLORS.black}; z-index: 100; position: relative;">`,
             stop: "</div>",
         },
         bHTML = {
             div: {
                 title: {
-                    start: "<div style=\"" +
-                        "display:block; " +
-                        "width: 120%; " +
-                        "margin: 10px -10%;" +
-                        "color: white; " +
-                        "text-align: center; " +
-                        "font: normal normal 22px/22px Effloresce; " +
-                        "border-bottom: 1px white solid;" +
-                        "\" >",
+                    start: `<div style="
+                        display:block;
+                        width: 120%;
+                        margin: 10px -10%;
+                        color: ${COLORS.white};
+                        text-align: center;
+                        font: normal normal 22px/22px Effloresce;
+                        border-bottom: 1px ${COLORS.white} solid;
+                        ">`,
                     stop: "</div>",
                 },
                 header: {
-                    start: "<div style=\"" +
-                        "display:block; " +
-                        "width: 120%; " +
-                        "margin: 0px -10% 0px -10%;" +
-                        "color: white; " +
-                        "text-align: center; " +
-                        "font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT'; " +
-                        "\" >",
+                    start: `<div style="
+                        display:block; 
+                        width: 120%; 
+                        margin: 0px -10% 0px -10%;
+                        color: ${COLORS.white}; 
+                        text-align: center; 
+                        font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT'; 
+                        ">`,
                     stop: "</div>",
                 },
                 headerL: {
-                    start: "<div style=\"" +
-                        "display:inline-block; " +
-                        "width: 120%; " +
-                        "margin: 5% -10% 0px -10%;" +
-                        "color: white; " +
-                        "text-align: center; " +
-                        "font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT';" +
-                        "\" >",
+                    start: `<div style="
+                        display:inline-block; 
+                        width: 120%; 
+                        margin: 5% -10% 0px -10%;
+                        color: ${COLORS.white}; 
+                        text-align: center; 
+                        font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT';
+                        ">`,
                     stop: "",
                 },
                 headerR: {
@@ -277,25 +300,25 @@ const C = (() => {
                     stop: "</div>",
                 },
                 para: {
-                    start: "<div style=\"" +
-                        "display:block; " +
-                        "width: 103%; " +
-                        "margin: 5px 0px;" +
-                        "color: white; " +
-                        "text-align: left; " +
-                        "font: normal normal 12px/14px Rockwell; " +
-                        "\" >",
+                    start: `<div style="
+                        display:block; 
+                        width: 103%; 
+                        margin: 5px 0px;
+                        color: ${COLORS.white}; 
+                        text-align: left; 
+                        font: normal normal 12px/14px Rockwell; 
+                        ">`,
                     stop: "</div>",
                 },
                 paraStart: {
-                    start: "<div style=\"" +
-                        "display:block; " +
-                        "width: 100%; " +
-                        "margin: 5px 0px;" +
-                        "color: white; " +
-                        "text-align: left; " +
-                        "font: normal normal 12px/14px Rockwell; " +
-                        "\" >",
+                    start: `<div style="
+                        display:block; 
+                        width: 100%; 
+                        margin: 5px 0px;
+                        color: ${COLORS.white}; 
+                        text-align: left; 
+                        font: normal normal 12px/14px Rockwell; 
+                        ">`,
                     stop: "",
                 },
                 paraMid: {
@@ -670,25 +693,29 @@ const C = (() => {
     return {
         CheckInstall: checkInstall,
 
-        ATTRIBUTES,
-        BLOODPOTENCY,
-        CHATHTML,
-        HANDOUTHTML,
-        CLANS,
-        DISCIPLINES, DISCABBVS,
-        FX,
         GAMENAME,
-        MISCATTRS,
+        ROOT,
+        PIXELSPERSQUARE,
+
         NUMBERWORDS,
         ORDINALSUFFIX,
-        PIXELSPERSQUARE,
-        RESONANCEODDS,
-        ROOT,
+        COLORS,
+
+        CHATHTML,
+        HANDOUTHTML,
+        HTML, bHTML,
+
+        ATTRIBUTES,
         SKILLS, SKILLABBVS,
+        DISCIPLINES, DISCABBVS,
         TRACKERS,
+        CLANS,
+        MISCATTRS,
+        BLOODPOTENCY,
+
+        RESONANCEODDS,
         MVCVALS,
-        HTML,
-        bHTML
+        FX
     }
 })()
 

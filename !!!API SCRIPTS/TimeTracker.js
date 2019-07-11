@@ -654,11 +654,7 @@ const TimeTracker = (() => {
         },
         isDay = () => getHorizon().includes("day"),
         setHorizon = (isForced = false) => {
-            /* D.Log(`Date Obj? ${Boolean(dateObj)}, state val: ${D.JSL(STATEREF.currentDate)}`)
-                   dateObj = dateObj || new Date(STATEREF.currentDate) */
             let imgSrcName = getHorizon()
-            // D.Log(`DATE OBJECT: ${D.JSL(dateObj)}`)
-            //D.Alert(`imgSrcName: ${imgSrcName}`)
             if (isRunningFast) {
                 if (imgSrcName.includes("night") && STATEREF.lastHorizon !== "night") {
                     Media.OrderImages(["Horizon_1", "Horizon_2"], true)
@@ -747,7 +743,6 @@ const TimeTracker = (() => {
                     }
                     const newDelta = easeInOutSine(curTime, 0, deltaTime, duration)
                     setIsRunningFast(Math.abs(newDelta - lastTime) > RUNNINGFASTAT)
-                    // D.Log(`Setting Date.  lastTime = ${newDelta - lastTime}, IsRunning = ${isRunning}, IsRunningFast = ${isRunningFast}`)
                     lastTime = newDelta
                     STATEREF.dateObj.setTime(startTime + newDelta)
                     setCurrentDate()
@@ -905,20 +900,6 @@ const TimeTracker = (() => {
                         groundCover -= Math.sqrt(Math.max(0, tempC * downVal))
                     groundCover = Math.round(Math.max(0, groundCover))
                     let testStyles = "box-sizing: border-box; display: inline-block; text-align: center; width: 30px;"
-
-                    /* if (weatherCode === "b")
-                              testStyles += " color: #0055FF; font-weight: bold; text-shadow: 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white; box-shadow: 0px 0px 4px #00F inset, 0px 0px 4px #00F inset, 0px 0px 4px #00F inset, 0px 0px 4px #00F inset; border: 2px solid blue;"
-                          else if (weatherCode === "s")
-                              testStyles += " color: black; text-shadow: 0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white; box-shadow: 0px 0px 2px #00F inset; border: 2px solid #ACF;"
-                          else
-                              testStyles += " border: 2px solid white;"
-                          */
-                    /*if (groundCover > 40)
-                              testStyles += " color: #0055FF; font-weight: bold; text-shadow: 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white, 0px 0px 4px white; box-shadow: 0px 0px 4px #00F inset, 0px 0px 4px #00F inset, 0px 0px 4px #00F inset, 0px 0px 4px #00F inset; border: 2px solid blue;"
-                          else if (groundCover > 1)
-                              testStyles += " color: black; text-shadow: 0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white; box-shadow: 0px 0px 2px #00F inset; border: 2px solid #ACF;"
-                          else
-                              testStyles += " border: 2px solid white;"*/
                     if (groundCover === 0)
                         testStyles += " color: #999999; font-weight: normal; font-style: italic;"
                     else if (groundCover > 50)

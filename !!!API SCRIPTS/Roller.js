@@ -57,7 +57,7 @@ const Roller = (() => {
             case "!frenzyinitroll":	// !projectroll @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
                 lockRoller(true)
                 STATEREF.frenzyRoll = `${args.join(" ").split("|")[0]}|`
-                sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px crimson outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: white; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: red; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${args.join(" ").split("|")[0]}</span><br/></div>`)
+                sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px ${C.COLORS.crimson} outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: ${C.COLORS.white}; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: ${C.COLORS.brightred}; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${args.join(" ").split("|")[0]}</span><br/></div>`)
                 return
             case "!frenzyroll": rollType = rollType || "frenzy"
                 lockRoller(false)
@@ -229,11 +229,11 @@ const Roller = (() => {
                         break
                     // no default
                 }
-                sendChat("Resonance Check", D.JSH(`<div style="display: block; margin-left: -40px; height: auto; background: url(https://i.imgur.com/kBl8aTO.jpg);text-align: center;border: 4px crimson outset; padding: 5px; width: 255px;"><span style="display: block; font-weight: bold; color: red; text-align: center; width: 100%; font-family: sexsmith; font-size: 32px; height: 45px; line-height: 45px;">${
+                sendChat("Resonance Check", D.JSH(`<div style="display: block; margin-left: -40px; height: auto; background: url(https://i.imgur.com/kBl8aTO.jpg);text-align: center;border: 4px ${C.COLORS.crimson} outset; padding: 5px; width: 255px;"><span style="display: block; font-weight: bold; color: ${C.COLORS.brightred}; text-align: center; width: 100%; font-family: sexsmith; font-size: 32px; height: 45px; line-height: 45px;">${
                     _.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")
-                }</span><span style="display: block; width: 100%; text-align: center; font-family: Voltaire; color: black; background-color: red; font-size: 16px; margin-bottom: 7px; border-top: 1px solid red; border-bottom: 1px solid red; height: 20px; line-height: 20px; font-weight: bold;">${
+                }</span><span style="display: block; width: 100%; text-align: center; font-family: Voltaire; color: ${C.COLORS.black}; background-color: ${C.COLORS.brightred}; font-size: 16px; margin-bottom: 7px; border-top: 1px solid ${C.COLORS.brightred}; border-bottom: 1px solid ${C.COLORS.brightred}; height: 20px; line-height: 20px; font-weight: bold;">${
                     resDetails
-                }</span><span style="display: block; color: red; font-size: 18px; text-align: center; width: 100%; font-family: sexsmith; font-weight: bold; text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black; line-height: 22px;">${
+                }</span><span style="display: block; color: ${C.COLORS.brightred}; font-size: 18px; text-align: center; width: 100%; font-family: sexsmith; font-weight: bold; text-shadow: 0px 0px 1px ${C.COLORS.black}, 0px 0px 1px ${C.COLORS.black}, 0px 0px 1px ${C.COLORS.black}, 0px 0px 1px ${C.COLORS.black}, 0px 0px 1px ${C.COLORS.black}; line-height: 22px;">${
                     resIntLine
                 }</span></div>`)
                 )
@@ -430,35 +430,30 @@ const Roller = (() => {
         },
         IMAGES = {
             dice: {
-                blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
-                selected: "https://s3.amazonaws.com/files.d20.io/images/64173198/T0qdnbmLUCnrs9WlxoGwww/thumb.png?1538710883",
-                selectedFree: "https://s3.amazonaws.com/files.d20.io/images/64173198/T0qdnbmLUCnrs9WlxoGwww/thumb.png?1538710883",
-                selectedDouble: "https://s3.amazonaws.com/files.d20.io/images/64173198/T0qdnbmLUCnrs9WlxoGwww/thumb.png?1538710883",
-                Bf: "https://s3.amazonaws.com/files.d20.io/images/64173205/DOUwwGcobI4eyu1Wb8ZDxg/thumb.png?1538710883",
-                Bs: "https://s3.amazonaws.com/files.d20.io/images/64173203/ZS04TJE6VRI8_Q-HaJ0r4g/thumb.png?1538710883",
-                Bc: "https://s3.amazonaws.com/files.d20.io/images/64173206/Fbt_6j-k_1oRKPxTKdnIWQ/thumb.png?1538710883",
-                BcL: "https://s3.amazonaws.com/files.d20.io/images/64173208/cIP4B1Y14gVdYrS3YPYNbQ/thumb.png?1538710883",
-                BcR: "https://s3.amazonaws.com/files.d20.io/images/64173199/1thrJQz9Hmzv0tQ6awSOGw/thumb.png?1538710883",
-                Hb: "https://s3.amazonaws.com/files.d20.io/images/64173201/mYkpkP6l9WX9BKt5fjTrtw/thumb.png?1538710883",
-                Hf: "https://s3.amazonaws.com/files.d20.io/images/64173204/AacOfDpF2jMCn1pYPmqlUQ/thumb.png?1538710882",
-                Hs: "https://s3.amazonaws.com/files.d20.io/images/64173209/D_4ljxj59UYXPNmgXaZbhA/thumb.png?1538710883",
-                Hc: "https://s3.amazonaws.com/files.d20.io/images/64173202/xsEkLc9DcOslpQoUJwpHMQ/thumb.png?1538710883",
-                HcL: "https://s3.amazonaws.com/files.d20.io/images/64173200/cBsoLkAu15XWexFSNUxoHA/thumb.png?1538710883",
-                HcR: "https://s3.amazonaws.com/files.d20.io/images/64173207/Se7RHT2fJDg2qMGo_x5UhQ/thumb.png?1538710883",
-                BXc: "", // Cancelled Critical Dice
-                BXs: "", // Cancelled Success Dice
-                HXc: "", // Cancelled Critical Hunger Dice
-                HXs: "", // Cancelled Success Hunger Dice
-                HXb: "", // Cancelled Botched Hunger Dice
-                BFf: "", // Free Reroll Failed Dice
-                BFc: "", // Free Reroll Critical Dice
-                BFcL: "", // Free Reroll Left Critical Pair Dice
-                BFcR: "", // Free Reroll Right Critical Pair Dice
-                BDf: "", // Double-Cost Reroll Dice
-                BDc: "", // Double-Cost Reroll Critical Dice
-                BDcL: "", // Double-Cost Reroll Left Critical Pair Dice
-                BDcR: "", // Double-Cost Reroll Right Critical Pair Dice
-                HCb: "" // Cancelling Botched Hunger Dice
+                blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511", // Simple Blank PNG
+                selected: "https://s3.amazonaws.com/files.d20.io/images/64173198/T0qdnbmLUCnrs9WlxoGwww/thumb.png?1538710883", // Selected for WP Reroll
+                selectedFree: "https://s3.amazonaws.com/files.d20.io/images/86144163/tM6wdGvZhjSGnifQFikZGA/thumb.png?1562820747", // Selected for WP Reroll, Free
+                selectedDouble: "https://s3.amazonaws.com/files.d20.io/images/86144159/08IX_BRm9MjEeZEerHhgWQ/thumb.png?1562820743", // Selected for WP Reroll, Costly
+                Bf: "https://s3.amazonaws.com/files.d20.io/images/64173205/DOUwwGcobI4eyu1Wb8ZDxg/thumb.png?1538710883", // Base Fail
+                Bs: "https://s3.amazonaws.com/files.d20.io/images/64173203/ZS04TJE6VRI8_Q-HaJ0r4g/thumb.png?1538710883", // Base Success
+                Bc: "https://s3.amazonaws.com/files.d20.io/images/64173206/Fbt_6j-k_1oRKPxTKdnIWQ/thumb.png?1538710883", // Base Crit
+                BcL: "https://s3.amazonaws.com/files.d20.io/images/64173208/cIP4B1Y14gVdYrS3YPYNbQ/thumb.png?1538710883", // Base Crit-Pair Left
+                BcR: "https://s3.amazonaws.com/files.d20.io/images/64173199/1thrJQz9Hmzv0tQ6awSOGw/thumb.png?1538710883", // Base Crit-Pair Right
+                Hb: "https://s3.amazonaws.com/files.d20.io/images/64173201/mYkpkP6l9WX9BKt5fjTrtw/thumb.png?1538710883", // Hunger Botch
+                Hf: "https://s3.amazonaws.com/files.d20.io/images/64173204/AacOfDpF2jMCn1pYPmqlUQ/thumb.png?1538710882", // Hunger Fail
+                Hs: "https://s3.amazonaws.com/files.d20.io/images/64173209/D_4ljxj59UYXPNmgXaZbhA/thumb.png?1538710883", // Hunger Success
+                Hc: "https://s3.amazonaws.com/files.d20.io/images/64173202/xsEkLc9DcOslpQoUJwpHMQ/thumb.png?1538710883", // Hunger Crit
+                HcL: "https://s3.amazonaws.com/files.d20.io/images/64173200/cBsoLkAu15XWexFSNUxoHA/thumb.png?1538710883", // Hunger Crit-Pair Left
+                HcR: "https://s3.amazonaws.com/files.d20.io/images/64173207/Se7RHT2fJDg2qMGo_x5UhQ/thumb.png?1538710883", // Hunger Crit-Pair Right
+                HcRb: "https://s3.amazonaws.com/files.d20.io/images/86144181/qkNvGzlfO3rvh0cJfpOUZg/thumb.png?1562820773", // Hunger Crit-Pair Right, No Messy Crit
+                HcLb: "https://s3.amazonaws.com/files.d20.io/images/86144183/6vLwAqmASYunFKL8Ja5s7A/thumb.png?1562820778", // Hunger Crit-Pair Left, No Messy Crit
+                BXc: "https://s3.amazonaws.com/files.d20.io/images/86144155/Qa5ujL7sNl6t3ivdrwwJgw/thumb.png?1562820732", // Cancelled Critical Dice
+                BXs: "https://s3.amazonaws.com/files.d20.io/images/86144169/ZcOUNB-JbR-RipGUxZL4rQ/thumb.png?1562820751", // Cancelled Success Dice
+                HXc: "https://s3.amazonaws.com/files.d20.io/images/86144188/FYm9ypaLBXudXND_ttLQng/thumb.png?1562820782", // Cancelled Critical Hunger Dice
+                HXs: "https://s3.amazonaws.com/files.d20.io/images/86144189/69O5B4yRk-QuQC-plv6gCQ/thumb.png?1562820786", // Cancelled Success Hunger Dice
+                HXb: "https://s3.amazonaws.com/files.d20.io/images/86144175/cXh5vEyXnHP-xPRGT73oVA/thumb.png?1562820759", // Cancelled Botched Hunger Dice
+                HCb: "https://s3.amazonaws.com/files.d20.io/images/86144172/SMd96HHr3KveKr-sqoWLbQ/thumb.png?1562820756", // Cancelling Botched Hunger Dice
+                Ob: "https://s3.amazonaws.com/files.d20.io/images/86144193/nnCZhpsceiWlkhofsQCzQw/thumb.png?1562820789" // Oblivion Botch
             },
             blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
             diffFrame: "https://s3.amazonaws.com/files.d20.io/images/64184544/CnzRwB8CwKGg-0jfjCkT6w/thumb.png?1538736404",
@@ -472,27 +467,6 @@ const Roller = (() => {
             topEnd: "https://s3.amazonaws.com/files.d20.io/images/64683713/4IwPjcY7x5ZCLJ9ey2lICA/thumb.png?1539327926",
             bottomEnd: "https://s3.amazonaws.com/files.d20.io/images/64683710/rJDVNhm6wMNhmQx1uIp13w/thumb.png?1539327926"
         },
-        COLORS = {
-            white: "rgb(255, 255, 255)",
-            black: "rgb(0, 0, 0)",
-            brightgrey: "rgb(175, 175, 175)",
-            grey: "rgb(130, 130, 130)",
-            darkgrey: "rgb(80, 80, 80)",
-            brightred: "rgb(255, 0, 0)",
-            red: "rgb(200, 0, 0)",
-            darkred: "rgb(150, 0, 0)",
-            green: "rgb(0, 200, 0)",
-            yellow: "rgb(200, 200, 0)",
-            orange: "rgb(200, 100, 0)",
-            brightpurple: "rgb(200, 0, 200)",
-            purple: "rgb(150, 0, 150)",
-            darkpurple: "rgb(100, 0, 100)",
-            brightblue: "rgb(150, 150, 255)",
-            blue: "rgb(100, 100, 255)",
-            darkblue: "rgb(50, 50, 150)",
-            cyan: "rgb(0, 255, 255)",
-            gold: "#ffee66"
-        },
         STATECATS = {
             dice: ["diceList", "bigDice"],
             graphic: ["imgList", "diceList", "bigDice"],
@@ -505,7 +479,7 @@ const Roller = (() => {
                 font_size: 32,
                 top: 20,
                 left: 45,
-                color: COLORS.white,
+                color: C.COLORS.white,
                 text: "rollerName"
             },
             rollerNameShadow: {
@@ -513,7 +487,7 @@ const Roller = (() => {
                 font_size: 32,
                 top: 25,
                 left: 50,
-                color: COLORS.black,
+                color: C.COLORS.black,
                 text: "rollerName"
             },
             mainRoll: {
@@ -521,7 +495,7 @@ const Roller = (() => {
                 font_size: 40,
                 top: 73,
                 left: 135,
-                color: COLORS.white,
+                color: C.COLORS.white,
                 text: "mainRoll"
             },
             mainRollShadow: {
@@ -529,7 +503,7 @@ const Roller = (() => {
                 font_size: 40,
                 top: 78,
                 left: 140,
-                color: COLORS.black,
+                color: C.COLORS.black,
                 text: "mainRoll"
             },
             posMods: {
@@ -537,7 +511,7 @@ const Roller = (() => {
                 font_size: 32,
                 top: 115,
                 left: 157,
-                color: COLORS.white,
+                color: C.COLORS.white,
                 text: "posMods"
             },
             negMods: {
@@ -545,7 +519,7 @@ const Roller = (() => {
                 font_size: 32,
                 top: 115,
                 left: 476,
-                color: COLORS.red,
+                color: C.COLORS.red,
                 text: "negMods"
             },
             redMods: {
@@ -553,7 +527,7 @@ const Roller = (() => {
                 font_size: 32,
                 top: 115,
                 left: 957,
-                color: COLORS.red,
+                color: C.COLORS.red,
                 text: "redMods"
             },
             goldMods: {
@@ -561,7 +535,7 @@ const Roller = (() => {
                 font_size: 32,
                 top: 75,
                 left: 957,
-                color: COLORS.gold,
+                color: C.COLORS.gold,
                 text: "goldMods"
             },
             summary: {
@@ -569,7 +543,7 @@ const Roller = (() => {
                 font_size: 56,
                 top: 91,
                 left: 75,
-                color: COLORS.white,
+                color: C.COLORS.white,
                 text: "SS"
             },
             summaryShadow: {
@@ -577,7 +551,7 @@ const Roller = (() => {
                 font_size: 56,
                 top: 96,
                 left: 80,
-                color: COLORS.black,
+                color: C.COLORS.black,
                 text: "SS"
             },
             difficulty: {
@@ -585,7 +559,7 @@ const Roller = (() => {
                 font_size: 32,
                 top: 253,
                 left: 96,
-                color: COLORS.white,
+                color: C.COLORS.white,
                 text: "D"
             },
             resultCount: {
@@ -593,7 +567,7 @@ const Roller = (() => {
                 font_size: 56,
                 top: 185,
                 left: 75,
-                color: COLORS.white,
+                color: C.COLORS.white,
                 text: "RC"
             },
             resultCountShadow: {
@@ -601,7 +575,7 @@ const Roller = (() => {
                 font_size: 56,
                 top: 190,
                 left: 80,
-                color: COLORS.black,
+                color: C.COLORS.black,
                 text: "RC"
             },
             margin: {
@@ -609,7 +583,7 @@ const Roller = (() => {
                 font_size: 72,
                 top: 294,
                 left: 133,
-                color: COLORS.white,
+                color: C.COLORS.white,
                 text: "M"
             },
             outcome: {
@@ -617,7 +591,7 @@ const Roller = (() => {
                 font_size: 100,
                 top: 297,
                 left: 200,
-                color: COLORS.white,
+                color: C.COLORS.white,
                 text: "outcome"
             },
             subOutcome: {
@@ -625,206 +599,206 @@ const Roller = (() => {
                 font_size: 32,
                 top: 341,
                 left: 360,
-                color: COLORS.white,
+                color: C.COLORS.white,
                 text: "subOutcome"
             }
         },
         COLORSCHEMES = {
             project: {
-                rollerName: COLORS.white,
-                mainRoll: COLORS.white,
-                posMods: COLORS.white,
-                negMods: COLORS.brightred,
-                summary: COLORS.white,
-                difficulty: COLORS.white,
-                resultCount: COLORS.white,
+                rollerName: C.COLORS.white,
+                mainRoll: C.COLORS.white,
+                posMods: C.COLORS.white,
+                negMods: C.COLORS.brightred,
+                summary: C.COLORS.white,
+                difficulty: C.COLORS.white,
+                resultCount: C.COLORS.white,
                 margin: {
-                    good: COLORS.white,
-                    bad: COLORS.brightred
+                    good: C.COLORS.white,
+                    bad: C.COLORS.brightred
                 },
                 outcome: {
-                    best: COLORS.white,
-                    good: COLORS.white,
-                    bad: COLORS.orange,
-                    worst: COLORS.brightred
+                    best: C.COLORS.white,
+                    good: C.COLORS.white,
+                    bad: C.COLORS.orange,
+                    worst: C.COLORS.brightred
                 },
                 subOutcome: {
-                    best: COLORS.white,
-                    good: COLORS.white,
-                    bad: COLORS.orange,
-                    worst: COLORS.brightred
+                    best: C.COLORS.white,
+                    good: C.COLORS.white,
+                    bad: C.COLORS.orange,
+                    worst: C.COLORS.brightred
                 }
             },
             trait: {
-                rollerName: COLORS.white,
-                mainRoll: COLORS.white,
-                posMods: COLORS.white,
-                negMods: COLORS.brightred,
-                summary: COLORS.white,
-                difficulty: COLORS.white,
-                resultCount: COLORS.white,
+                rollerName: C.COLORS.white,
+                mainRoll: C.COLORS.white,
+                posMods: C.COLORS.white,
+                negMods: C.COLORS.brightred,
+                summary: C.COLORS.white,
+                difficulty: C.COLORS.white,
+                resultCount: C.COLORS.white,
                 margin: {
-                    good: COLORS.white,
-                    bad: COLORS.brightred
+                    good: C.COLORS.white,
+                    bad: C.COLORS.brightred
                 },
                 outcome: {
-                    best: COLORS.white,
-                    good: COLORS.white,
-                    bad: COLORS.orange,
-                    worst: COLORS.brightred
+                    best: C.COLORS.white,
+                    good: C.COLORS.white,
+                    bad: C.COLORS.orange,
+                    worst: C.COLORS.brightred
                 }
             },
             willpower: {
-                rollerName: COLORS.white,
-                mainRoll: COLORS.white,
-                posMods: COLORS.white,
-                negMods: COLORS.brightred,
-                summary: COLORS.white,
-                difficulty: COLORS.white,
-                resultCount: COLORS.white,
+                rollerName: C.COLORS.white,
+                mainRoll: C.COLORS.white,
+                posMods: C.COLORS.white,
+                negMods: C.COLORS.brightred,
+                summary: C.COLORS.white,
+                difficulty: C.COLORS.white,
+                resultCount: C.COLORS.white,
                 margin: {
-                    good: COLORS.white,
-                    bad: COLORS.brightred
+                    good: C.COLORS.white,
+                    bad: C.COLORS.brightred
                 },
                 outcome: {
-                    best: COLORS.white,
-                    good: COLORS.white,
-                    bad: COLORS.orange,
-                    worst: COLORS.brightred
+                    best: C.COLORS.white,
+                    good: C.COLORS.white,
+                    bad: C.COLORS.orange,
+                    worst: C.COLORS.brightred
                 }
             },
             humanity: {
-                rollerName: COLORS.white,
-                mainRoll: COLORS.white,
-                posMods: COLORS.white,
-                negMods: COLORS.brightred,
-                summary: COLORS.white,
-                difficulty: COLORS.white,
-                resultCount: COLORS.white,
+                rollerName: C.COLORS.white,
+                mainRoll: C.COLORS.white,
+                posMods: C.COLORS.white,
+                negMods: C.COLORS.brightred,
+                summary: C.COLORS.white,
+                difficulty: C.COLORS.white,
+                resultCount: C.COLORS.white,
                 margin: {
-                    good: COLORS.white,
-                    bad: COLORS.brightred
+                    good: C.COLORS.white,
+                    bad: C.COLORS.brightred
                 },
                 outcome: {
-                    best: COLORS.white,
-                    good: COLORS.white,
-                    bad: COLORS.orange,
-                    worst: COLORS.brightred
+                    best: C.COLORS.white,
+                    good: C.COLORS.white,
+                    bad: C.COLORS.orange,
+                    worst: C.COLORS.brightred
                 }
             },
             frenzy: {
-                rollerName: COLORS.white,
-                mainRoll: COLORS.white,
-                posMods: COLORS.white,
-                negMods: COLORS.brightred,
-                summary: COLORS.white,
-                difficulty: COLORS.white,
-                resultCount: COLORS.white,
+                rollerName: C.COLORS.white,
+                mainRoll: C.COLORS.white,
+                posMods: C.COLORS.white,
+                negMods: C.COLORS.brightred,
+                summary: C.COLORS.white,
+                difficulty: C.COLORS.white,
+                resultCount: C.COLORS.white,
                 outcome: {
-                    best: COLORS.white,
-                    good: COLORS.white,
-                    bad: COLORS.orange,
-                    worst: COLORS.brightred
+                    best: C.COLORS.white,
+                    good: C.COLORS.white,
+                    bad: C.COLORS.orange,
+                    worst: C.COLORS.brightred
                 }
             },
             remorse: {
-                rollerName: COLORS.white,
-                mainRoll: COLORS.white,
-                summary: COLORS.white,
-                difficulty: COLORS.white,
-                resultCount: COLORS.white,
+                rollerName: C.COLORS.white,
+                mainRoll: C.COLORS.white,
+                summary: C.COLORS.white,
+                difficulty: C.COLORS.white,
+                resultCount: C.COLORS.white,
                 outcome: {
-                    best: COLORS.white,
-                    good: COLORS.white,
-                    bad: COLORS.orange,
-                    worst: COLORS.brightred
+                    best: C.COLORS.white,
+                    good: C.COLORS.white,
+                    bad: C.COLORS.orange,
+                    worst: C.COLORS.brightred
                 }
             },
             rouse: {
-                rollerName: COLORS.white,
-                mainRoll: COLORS.white,
+                rollerName: C.COLORS.white,
+                mainRoll: C.COLORS.white,
                 outcome: {
-                    best: COLORS.white,
-                    good: COLORS.white,
-                    bad: COLORS.brightred,
-                    worst: COLORS.brightred
+                    best: C.COLORS.white,
+                    good: C.COLORS.white,
+                    bad: C.COLORS.brightred,
+                    worst: C.COLORS.brightred
                 }
             },
             rouse2: {
-                rollerName: COLORS.white,
-                mainRoll: COLORS.white,
+                rollerName: C.COLORS.white,
+                mainRoll: C.COLORS.white,
                 outcome: {
-                    best: COLORS.white,
-                    good: COLORS.white,
-                    bad: COLORS.brightred,
-                    worst: COLORS.brightred
+                    best: C.COLORS.white,
+                    good: C.COLORS.white,
+                    bad: C.COLORS.brightred,
+                    worst: C.COLORS.brightred
                 }
             },
             check: {
-                rollerName: COLORS.white,
-                mainRoll: COLORS.white,
+                rollerName: C.COLORS.white,
+                mainRoll: C.COLORS.white,
                 outcome: {
-                    best: COLORS.white,
-                    good: COLORS.white,
-                    bad: COLORS.brightred,
-                    worst: COLORS.brightred
+                    best: C.COLORS.white,
+                    good: C.COLORS.white,
+                    bad: C.COLORS.brightred,
+                    worst: C.COLORS.brightred
                 }
             }
         },
         CHATSTYLES = {
-            fullBox: "<div style=\"display: block;width: 259px;padding: 5px 5px;margin-left: -42px;color: white;font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset darkred;background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;\">",
+            fullBox: `<div style="display: block;width: 259px;padding: 5px 5px;margin-left: -42px;color: ${C.COLORS.white};font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset ${C.COLORS.darkred};background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;">`,
             space10: "<span style=\"display: inline-block; width: 10px;\"></span>",
             space30: "<span style=\"display: inline-block; width: 30px;\"></span>",
             space40: "<span style=\"display: inline-block; width: 40px;\"></span>",
-            rollerName: "<div style=\"display: block; width: 100%; font-variant: small-caps; font-size: 16px; height: 15px; padding-bottom: 5px; border-bottom: 1px solid white; overflow: hidden;\">",
-            mainRoll: "<div style=\"display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid white;\"><span style=\"display: block; height: 16px; line-height: 16px; width: 100%; font-size: 14px; \">",
+            rollerName: `<div style="display: block; width: 100%; font-variant: small-caps; font-size: 16px; height: 15px; padding-bottom: 5px; border-bottom: 1px solid ${C.COLORS.white}; overflow: hidden;">`,
+            mainRoll: `<div style="display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid ${C.COLORS.white};"><span style="display: block; height: 16px; line-height: 16px; width: 100%; font-size: 14px; ">`,
             mainRollSub: "<span style=\"display: block; height: 12px; line-height: 12px; width: 100%; margin-left: 24px; font-size: 10px; font-variant: italic;\">",
-            check: "<div style=\"display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid white;\"><span style=\"display: block; height: 20px;  line-height: 20px; width: 100%; margin-left: 10%;\">",
+            check: `<div style="display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid ${C.COLORS.white};"><span style="display: block; height: 20px;  line-height: 20px; width: 100%; margin-left: 10%;">`,
             summary: "<div style=\"display: block; width: 100%; padding: 3px 0px; height: auto; \"><span style=\"display: block; height: 16px; width: 100%; margin-left: 5%; line-height: 16px; font-size: 14px;\">",
             resultBlock: "<div style=\"display: block; width: 100%; height: auto; \">",
             resultCount: "<div style=\"display: inline-block; width: YYYpx; margin-top:ZZZpx; vertical-align: top; text-align: right; height: 100%; \"><span style=\"display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none; height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: right; margin-right: 10px; font-size: 12px;\">",
             margin: "<div style=\"display: inline-block; width: YYYpx; vertical-align: top; margin-top:ZZZpx; text-align: left; height: 100%; \"><span style=\"display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none; height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: left; margin-left: 10px; font-size: 12px;\">",
-            outcomeRed: "<div style=\"display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;\"><span style=\"color: red; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
-            outcomeRedSmall: "<div style=\"display: block; width: 100%; margin-top: 5px; height: 14px; line-height: 14px; text-align: center; font-weight: bold;\"><span style=\"color: red; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
+            outcomeRed: `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.brightred}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
+            outcomeRedSmall: `<div style="display: block; width: 100%; margin-top: 5px; height: 14px; line-height: 14px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.brightred}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
             outcomeOrange: "<div style=\"display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;\"><span style=\"color: orange; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
-            outcomeWhite: "<div style=\"display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;\"><span style=\"color: white; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
-            outcomeWhiteSmall: "<div style=\"display: block; margin-top: 5px; width: 100%; height: 14px; line-height: 14px; text-align: center; font-weight: bold;\"><span style=\"color: white; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
-            subOutcomeRed: "<div style=\"display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;\"><span style=\"color: red; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
+            outcomeWhite: `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.white}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
+            outcomeWhiteSmall: `<div style="display: block; margin-top: 5px; width: 100%; height: 14px; line-height: 14px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.white}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
+            subOutcomeRed: `<div style="display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.brightred}; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
             subOutcomeOrange: "<div style=\"display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;\"><span style=\"color: orange; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
-            subOutcomeWhite: "<div style=\"display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;\"><span style=\"color: white; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
+            subOutcomeWhite: `<div style="display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.white}; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
             resultDice: { // ♦◊
                 colStart: "<div style=\"display: inline-block ; width: XXXpx ; height: auto; margin-bottom: 5px\">",
-                lineStart: "<div style=\"display: block ; width: 100% ; height: 24px ; line-height: 20px ; text-align: center ; font-weight: bold ; text-shadow: 0px 0px 2px white , 0px 0px 2px white , 0px 0px 2px white , 0px 0px 2px white ; \">",
-                lineBreak: "</div><div style=\"display: block ; width: 100% ; height: 24px ; margin-top: -10px; line-height: 20px ; text-align: center ; font-weight: bold ; text-shadow: 0px 0px 2px white , 0px 0px 2px white , 0px 0px 2px white , 0px 0px 2px white ; \">",
-                BcL: "<span style=\"margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: white; display: inline-block; font-size: 18px; font-family: 'Arial';\">♦</span><span style=\"width: 10px; text-align: center; height: 20px; vertical-align: middle; color: white; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; text-shadow: none; \">+</span>",
-                BcR: "<span style=\"width: 10px; text-align: center; height: 20px; vertical-align: middle; color: white; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; margin-right: -3px; text-shadow: none; \">+</span><span style=\"margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: white; display: inline-block; font-size: 18px; font-family: 'Arial';\">♦</span>",
-                HcL: "<span style=\"margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: red; display: inline-block; font-size: 18px; font-family: 'Arial';\">♦</span><span style=\"width: 10px; text-align: center; height: 20px; vertical-align: middle; color: red; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; text-shadow: none; \">+</span>",
-                HcR: "<span style=\"width: 10px; text-align: center; height: 20px; vertical-align: middle; color: red; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; margin-right: -3px; text-shadow: none; \">+</span><span style=\"margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: red; display: inline-block; font-size: 18px; font-family: 'Arial';\">♦</span>",
-                Bc: "<span style=\"margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: white; display: inline-block; font-size: 18px; font-family: 'Arial';\">♦</span>",
-                Hc: "<span style=\"margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: red; display: inline-block; font-size: 18px; font-family: 'Arial';\">♦</span>",
-                Bs: "<span style=\"margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle; color: white; display: inline-block; font-size: 18px; font-family: 'Arial';\">■</span>",
-                Hs: "<span style=\"margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: red; display: inline-block; font-size: 18px; font-family: 'Arial';\">■</span>",
-                Bf: "<span style=\"margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: white; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: none;\">■</span><span style=\"margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: black; display: inline-block; margin-left: -12px; font-size: 18px; font-family: 'Arial'; margin-bottom: -4px; text-shadow: none;\">×</span>",
-                Hf: "<span style=\"margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: red; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: none;\">■</span><span style=\"margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: black; display: inline-block; margin-left: -12px; font-size: 18px; font-family: 'Arial'; margin-bottom: -4px; text-shadow: none;\">×</span>",
-                Hb: "<span style=\"margin-right: 2px; width: 10px; text-align: center; color: black; height: 24px; vertical-align: middle; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: 0px 0px 2px red, 0px 0px 2px red, 0px 0px 2px red, 0px 0px 2px red, 0px 0px 2px red, 0px 0px 2px red, 0px 0px 2px red, 0px 0px 2px red, 0px 0px 2px red, 0px 0px 2px red, 0px 0px 2px red, 0px 0px 2px red; line-height: 22px;\">♠</span>"
+                lineStart: `<div style="display: block ; width: 100% ; height: 24px ; line-height: 20px ; text-align: center ; font-weight: bold ; text-shadow: 0px 0px 2px ${C.COLORS.white} , 0px 0px 2px ${C.COLORS.white} , 0px 0px 2px ${C.COLORS.white} , 0px 0px 2px ${C.COLORS.white} ; ">`,
+                lineBreak: `</div><div style="display: block ; width: 100% ; height: 24px ; margin-top: -10px; line-height: 20px ; text-align: center ; font-weight: bold ; text-shadow: 0px 0px 2px ${C.COLORS.white} , 0px 0px 2px ${C.COLORS.white} , 0px 0px 2px ${C.COLORS.white} , 0px 0px 2px ${C.COLORS.white} ; ">`,
+                BcL: `<span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${C.COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span><span style="width: 10px; text-align: center; height: 20px; vertical-align: middle; color: ${C.COLORS.white}; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; text-shadow: none; ">+</span>`,
+                BcR: `<span style="width: 10px; text-align: center; height: 20px; vertical-align: middle; color: ${C.COLORS.white}; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; margin-right: -3px; text-shadow: none; ">+</span><span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${C.COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span>`,
+                HcL: `<span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${C.COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span><span style="width: 10px; text-align: center; height: 20px; vertical-align: middle; color: ${C.COLORS.brightred}; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; text-shadow: none; ">+</span>`,
+                HcR: `<span style="width: 10px; text-align: center; height: 20px; vertical-align: middle; color: ${C.COLORS.brightred}; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; margin-right: -3px; text-shadow: none; ">+</span><span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${C.COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span>`,
+                Bc: `<span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${C.COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span>`,
+                Hc: `<span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${C.COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span>`,
+                Bs: `<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle; color: ${C.COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial';">■</span>`,
+                Hs: `<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${C.COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial';">■</span>`,
+                Bf: `<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${C.COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: none;">■</span><span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${C.COLORS.black}; display: inline-block; margin-left: -12px; font-size: 18px; font-family: 'Arial'; margin-bottom: -4px; text-shadow: none;">×</span>`,
+                Hf: `<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${C.COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: none;">■</span><span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${C.COLORS.black}; display: inline-block; margin-left: -12px; font-size: 18px; font-family: 'Arial'; margin-bottom: -4px; text-shadow: none;">×</span>`,
+                Hb: `<span style="margin-right: 2px; width: 10px; text-align: center; color: ${C.COLORS.black}; height: 24px; vertical-align: middle; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}; line-height: 22px;">♠</span>`
             },
             secret: {
-                topLineStart: "<div style=\"display: block; width: 100%; font-size: 18px; height: 16px; padding: 3px 0px; border-bottom: 1px solid white;\">",
-                traitLineStart: "<div style=\"width: 100%; height: 20px; line-height: 20px; display: block; text-align: center; color: white; font-variant: small-caps; border-bottom: 1px solid white;\">",
-                diceStart: "<div style=\"display: block ; width: 100% ; margin-left: 0% ; height: auto; line-height: 20px ; text-align: center ; font-weight: bold ; text-shadow: 0px 0px 2px white , 0px 0px 2px white , 0px 0px 2px white , 0px 0px 2px white ; margin-bottom: 0px\">",
+                topLineStart: `<div style="display: block; width: 100%; font-size: 18px; height: 16px; padding: 3px 0px; border-bottom: 1px solid ${C.COLORS.white};">`,
+                traitLineStart: `<div style="width: 100%; height: 20px; line-height: 20px; display: block; text-align: center; color: ${C.COLORS.white}; font-variant: small-caps; border-bottom: 1px solid ${C.COLORS.white};">`,
+                diceStart: `<div style="display: block ; width: 100% ; margin-left: 0% ; height: auto; line-height: 20px ; text-align: center ; font-weight: bold ; text-shadow: 0px 0px 2px ${C.COLORS.white} , 0px 0px 2px ${C.COLORS.white} , 0px 0px 2px ${C.COLORS.white} , 0px 0px 2px ${C.COLORS.white} ; margin-bottom: 0px">`,
                 blockStart: "<div style=\"width: 100%; display: block; text-align: center;\">",
                 startBlock: "<div style=\"display: inline-block; width: 48%; margin: 0% 1%; text-align: center;\">",
                 blockNameStart: "<div style=\"display: block; width: 100%; font-size: 13px; margin-bottom: -5px; margin-top: 10px;\">",
                 lineStart: "<div style=\"display: block; width: 100%; font-size: 12px;\">",
-                startPlayerBlock: "<div style=\"display: block; width: 280px; padding: 45px 5px; margin-left: -58px; margin-top: -22px; margin-bottom: -5px; color: white; font-family: Percolator; text-align: left; font-size: 16px; background: url('https://t4.ftcdn.net/jpg/00/78/66/11/240_F_78661103_aowhE8PWKrHRtoCUogPvkfWs22U54SuU.jpg') center no-repeat; background-size: 100% 100%; z-index: 100; position: relative;\">",
+                startPlayerBlock: `<div style="display: block; width: 280px; padding: 45px 5px; margin-left: -58px; margin-top: -22px; margin-bottom: -5px; color: ${C.COLORS.white}; font-family: Percolator; text-align: left; font-size: 16px; background: url('https://t4.ftcdn.net/jpg/00/78/66/11/240_F_78661103_aowhE8PWKrHRtoCUogPvkfWs22U54SuU.jpg') center no-repeat; background-size: 100% 100%; z-index: 100; position: relative;">`,
                 playerTopLineStart: "<div style=\"display: block; margin-left: 28px;  width: 100%; font-size: 24px; font-family: Percolator; height: 12px; padding: 3px 0px; text-align: left;  margin-top: -16px;\">",
-                playerBotLineStart: "<div style=\"width: 100%; margin-left: 48px; height: auto; line-height: 15px; display: block;  text-align: left; color: white; margin-top: 8px;\">",
-                grey: "<span style=\"display:inline-block; color: #A0A0A0; font-size: 24px; font-weight: bold;\">",
-                greyS: "<span style=\"display:inline-block; color: #A0A0A0; display: inline-block; line-height: 14px; font-family: Percolator; vertical-align: top; margin-right: 5px; margin-left: -5px;\">",
-                white: "<span style=\"display:inline-block; color: white; font-size: 24px; font-weight: bold;\">",
-                whiteB: "<span style=\"display:inline-block; color: white; font-size: 30px; font-weight: bold;\">",
-                greyPlus: "<span style=\"color: #A0A0A0; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 20px; vertical-align: top; line-height: 14px;\"> + </span>",
-                greyMinus: "<span style=\"color: #A0A0A0; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 20px; vertical-align: top; line-height: 14px;\"> - </span>"
+                playerBotLineStart: `<div style="width: 100%; margin-left: 48px; height: auto; line-height: 15px; display: block;  text-align: left; color: ${C.COLORS.white}; margin-top: 8px;">`,
+                grey: `<span style="display:inline-block; color: ${C.COLORS.brightgrey}; font-size: 24px; font-weight: bold;">`,
+                greyS: `<span style="display:inline-block; color: ${C.COLORS.brightgrey}; display: inline-block; line-height: 14px; font-family: Percolator; vertical-align: top; margin-right: 5px; margin-left: -5px;">`,
+                white: `<span style="display:inline-block; color: ${C.COLORS.white}; font-size: 24px; font-weight: bold;">`,
+                whiteB: `<span style="display:inline-block; color: ${C.COLORS.white}; font-size: 30px; font-weight: bold;">`,
+                greyPlus: `<span style="color: ${C.COLORS.brightgrey}; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 20px; vertical-align: top; line-height: 14px;"> + </span>`,
+                greyMinus: `<span style="color: ${C.COLORS.brightgrey}; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 20px; vertical-align: top; line-height: 14px;"> - </span>`
             }
         }
     // #endregion
@@ -1319,7 +1293,6 @@ const Roller = (() => {
                 die = getObj("graphic", dieParams.id)
             if (!die)
                 return THROW(`ROLLER: SETDIE(${dieNum}, ${dieCat}, ${dieVal}) >> No die registered.`, "setDie")
-        // D.DBAlert(`Setting die ${D.JS(dieNum)} (dieVal: ${D.JS(dieVal)}, params: ${D.JS(params)})`, funcName, SCRIPTNAME)
 
             if (dieVal !== "selected") {
                 dieRef.value = dieVal
@@ -1332,7 +1305,6 @@ const Roller = (() => {
                 if (die.get(dir) !== dieRef[dir] || params.shift && params.shift[dir])
                     dieParams[dir] = dieRef[dir] + (params.shift && params.shift[dir] ? params.shift[dir] : 0)
             })
-        // D.DBAlert("Setting '" + D.JS(dieVal) + "' in " + D.JS(dieCat) + " to '" + D.JS(dieParams) + "'", , funcName, SCRIPTNAME)
             die.set(dieParams)
 
             return die
@@ -1741,11 +1713,6 @@ const Roller = (() => {
             if (isDiscRoll)
                 flagData.posFlagLines.push([C.BLOODPOTENCY[bloodPot].bp_discbonus, "Discipline (<.>)"])
 
-            /* D.Log(D.JS(getAttrByName(charObj.id, "incap")), "INCAPACITATION");
-                   D.Log("PARAMS: " + D.JS(params), "PARAMS");
-                   D.Log("PARAMS DATA: " + D.JS(params.args), "PARAMS DATA");
-                   Return;
-                   D.Log(D.JS(params.args[4]), "PARAMS DATA 4"); */
             _.each(_.compact(_.flatten([
                 getAttrByName(charObj.id, "incap") ? getAttrByName(charObj.id, "incap").split(",") : [],
                 params.args.length > 3 ? params.args[4].split(",") : "",
@@ -2952,7 +2919,7 @@ const Roller = (() => {
             blocks.push(`${CHATSTYLES.secret.startBlock + CHATSTYLES.secret.blockNameStart + rollData.charName}</div>${
                 CHATSTYLES.secret.diceStart}${formatDiceLine(rollData, rollResults, 9, true).replace(/text-align: center; height: 20px/gu, "text-align: center; height: 20px; line-height: 25px").
                 replace(/margin-bottom: 5px;/gu, "margin-bottom: 0px;").
-                replace(/color: black; height: 24px/gu, "color: black; height: 18px").
+                replace(/(color: [^\s]*?; height:) 24px/gu, "$1 18px").
                 replace(/height: 24px/gu, "height: 20px").
                 replace(/height: 22px/gu, "height: 18px")}</div>${
                 CHATSTYLES.secret.lineStart}${outcomeLine}</div></div></div>`)

@@ -347,7 +347,7 @@ const Media = (() => {
         },
         handleAdd = obj => {
             if (imgRecord)
-                D.Log(obj.get("imgsrc"), "IMG")
+                LOG(obj.get("imgsrc"))
             if (imgResize)
                 obj.set(imgResizeDims)
         }
@@ -648,13 +648,12 @@ const Media = (() => {
             return false
         },
         getImageData = imgRef => {
-            const funcName = "getImageData"
             try {
                 if (getImageKey(imgRef)) {
                     return IMAGEREGISTRY[getImageKey(imgRef)]
                 } else if (getImageObj(imgRef)) {
                     const imgObj = getImageObj(imgRef)
-                    D.DBAlert(`Retrieving data for UNREGISTERED Image Object ${D.JSL(imgRef)}`, funcName, SCRIPTNAME)
+                    DB(`Retrieving data for UNREGISTERED Image Object ${D.JSL(imgRef)}`, "getImageData")
 
                     return {
                         id: imgObj.id,
@@ -689,7 +688,6 @@ const Media = (() => {
                     leftX: imgData.left - 0.5 * imgData.width,
                     rightX: imgData.left + 0.5 * imgData.width
                 }
-                //D.Log(`[BOUNDS]: ${D.JSL(bounds)}`)
             }
             return THROW(`Image reference '${imgRef}' does not refer to a registered image object.`, "GetBounds")
         },
@@ -1250,7 +1248,7 @@ const Media = (() => {
                     const shadowParams = Object.assign({}, params)
                     shadowParams.left += 5
                     shadowParams.top += 5
-                    shadowParams.color = "rgb(0, 0, 0, 0)"
+                    shadowParams.color = C.COLORS.black
                     shadowParams.shadowMaster = textObj.id
                     shadowParams.shadow = undefined
                     const shadowObj = makeText(hostName + "Shadow", false, shadowParams, isSilent)
@@ -1278,7 +1276,7 @@ const Media = (() => {
                     left: options.left || 200,
                     top: options.top || 200,
                     font_size: options.font_size || 24,
-                    color: options.color || "rgb(255,0,0)",
+                    color: options.color || C.COLORS.brightred,
                     font_family: options.font_family || "Candal",
                     layer: options.layer || options.activeLayer || "objects",
                     controlledby: options.controlledby || ""

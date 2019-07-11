@@ -208,7 +208,7 @@ const Complications = (() => {
             if (isRunning) {
                 STATEREF.cardsDrawn.push({ id: obj.id, value: 0 })
                 Media.SetArea(obj.id, `ComplicationDraw${STATEREF.cardsDrawn.length}`)
-                sendChat("COMPLICATION", "/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px crimson outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[0](!comp draw 0) [1](!comp draw 1) [2](!comp draw 2) [3](!comp draw 3) [4](!comp draw 4)</span><br/></div>")
+                sendChat("COMPLICATION", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px ${C.COLORS.crimson} outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[0](!comp draw 0) [1](!comp draw 1) [2](!comp draw 2) [3](!comp draw 3) [4](!comp draw 4)</span><br/></div>`)
             }
         }
     // #endregion
