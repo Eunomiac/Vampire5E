@@ -494,7 +494,7 @@
 	}
 
 	.charsheet input.sheet-hoverpopup:not(:checked):hover+span::before {
-		background: url("https://i.imgur.com/bGSrWIX.png");
+		background: url("https://i.imgur.com/rzwwQ2Q.png");
 		background-size: 100%;
 	}
 
@@ -626,7 +626,7 @@
 	.charsheet input.sheet-tab,
 	.charsheet input.sheet-tab+span {
 		height: 46px;
-		width: 118px;
+		width: 137px;
 		position: relative;
 		top: 45px;
 
@@ -641,7 +641,13 @@
 	}
 
 	.charsheet input.sheet-tab+span {
-		margin-left: -118px;
+		margin-left: -137px;
+	}
+
+	.charsheet input.sheet-blanktab,
+	.charsheet input.sheet-blanktab+span {
+		pointer-events: none;
+		display: none;
 	}
 
 	.charsheet input.sheet-tab0,
@@ -654,7 +660,7 @@
 	}
 
 	.charsheet input.sheet-tab1 {
-		margin-left: calc((100% - (7 * 118px)) / 2);
+		margin-left: calc((100% - (6 * 137px)) / 2);
 	}
 
 	.charsheet input.sheet-tab0+span {
@@ -691,11 +697,11 @@
 	}
 
 	.charsheet input.sheet-tab4+span {
-		background: url('https://imgur.com/SjbaEvs.png') no-repeat center;
+		background: url('https://i.imgur.com/G35HEdC.png') no-repeat center;
 	}
 
 	.charsheet input.sheet-tab4:checked+span {
-		background: url('https://imgur.com/jfwuABe.png') no-repeat center;
+		background: url('https://i.imgur.com/sgt3kyQ.png') no-repeat center;
 	}
 
 	.charsheet input.sheet-tab5+span {
@@ -1125,23 +1131,23 @@
 		margin-top: -4px;
 		margin-left: -5px;
 
-		background: url("https://i.imgur.com/XBoDQCh.png");
-		/* background: url("https://i.imgur.com/HWWfNcX.png"); */
+		background: url("https://i.imgur.com/7IcxmJf.png");
+		/* background: url("https://i.imgur.com/XGi10c2.png"); */
 		background-size: 100%;
 	}
 
 	.charsheet input.sheet-hoverpopup:not(:checked):hover+span::before {
-		background: url("https://i.imgur.com/bGSrWIX.png");
+		background: url("https://i.imgur.com/rzwwQ2Q.png");
 		background-size: 100%;
 	}
 
 	.charsheet input.sheet-hoverpopup:checked+span::before {
-		background: url("https://i.imgur.com/Uap12Oh.png");
+		background: url("https://i.imgur.com/qZgs8G0.png");
 		background-size: 100%;
 	}
 
 	.charsheet input.sheet-hoverpopup:checked:hover+span::before {
-		background: url("https://i.imgur.com/ilsagfG.png");
+		background: url("https://i.imgur.com/I6EGpCq.png");
 		background-size: 100%;
 	}
 
