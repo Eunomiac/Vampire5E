@@ -29,6 +29,7 @@ const Player = (() => {
     // #endregion
 
     // #region LOCAL INITIALIZATION
+    // eslint-disable-next-line no-empty-function
     const initialize = () => {
     }
     // #endregion	

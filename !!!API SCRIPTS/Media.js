@@ -1,4 +1,6 @@
 void MarkStart("Media")
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-empty-function */
 const Media = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     state.VAMPIRE.Media = Object.assign({}, state.VAMPIRE.Images)
