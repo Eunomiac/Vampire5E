@@ -704,19 +704,19 @@
 		background: url('https://i.imgur.com/sgt3kyQ.png') no-repeat center;
 	}
 
-	.charsheet input.sheet-tab5+span {
+	/* .charsheet input.sheet-tab5+span {
 		background: url('https://imgur.com/0tZn5fi.png') no-repeat center;
 	}
 
 	.charsheet input.sheet-tab5:checked+span {
 		background: url('https://imgur.com/hzE9fjl.png') no-repeat center;
-	}
+	} */
 
-	.charsheet input.sheet-tab6+span {
+	.charsheet input.sheet-tab5+span {
 		background: url('https://imgur.com/Fe8tW8v.png') no-repeat center;
 	}
 
-	.charsheet input.sheet-tab6:checked+span {
+	.charsheet input.sheet-tab5:checked+span {
 		background: url('https://imgur.com/c29Guhd.png') no-repeat center;
 	}
 
@@ -1822,11 +1822,6 @@
 		width: 42%;
 	}
 
-	.charsheet div.sheet-titleblock input.sheet-hoverpopup+span+div {
-		height: 130px !important;
-		bottom: 35px;
-	}
-
 	.charsheet div.sheet-toptitleblock span.sheet-titleheader,
 	.charsheet div.sheet-toptitleblock select {
 		width: calc(33% - 15px);
@@ -1938,6 +1933,11 @@
 		width: 16px !important;
 		margin: -2px 0px 0px 0px;
 	}
+	
+	.charsheet div.sheet-titleblock input.sheet-hoverpopup + span + div.sheet-bppopup {
+		height: 130px !important;
+		bottom: 35px;
+	}
 
 	.charsheet div.sheet-bpdetails,
 	.charsheet div.sheet-bpfeeding {
@@ -1977,6 +1977,103 @@
 	.charsheet div.sheet-bpfeeding textarea {
 		height: calc(3 * 16px);
 	}
+
+	.charsheet div.sheet-bpdetails,
+	.charsheet div.sheet-bpfeeding {
+		height: auto !important;
+	}
+
+	.charsheet div.sheet-bpdetails {
+		margin-top: 12px;
+	}
+
+	.charsheet div.sheet-titleblock input.sheet-hoverpopup + span + div.sheet-humanitypopup {
+		height: auto !important;
+		left: -120%;
+		width: 200%;
+		bottom: 35px;
+	}
+
+	.charsheet div.sheet-humanitybox {
+		height: auto;
+		padding-bottom: 10px;
+	}
+
+	.charsheet div.sheet-humanitybox span.sheet-humheader,
+	.charsheet div.sheet-humanitybox span.sheet-humheader textarea {
+		display: inline-block;
+		height: 24px;
+		line-height: 24px;
+		width: 50%;
+		color: white;
+		font-family: 'Bodoni SvtyTwo ITC TT';
+		font-variant: small-caps;
+		font-size: 20px;
+
+		text-shadow: -1px -1px 0px #000, -1px -1px 0px #200, -1px -1px 2px #300, 1px 1px 0px #700, 1px 1px 0px #700, 1px 1px 0px #600;
+		text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc;
+	}
+
+	.charsheet div.sheet-humanitybox span.sheet-humheader {
+		margin: 5px 0px;
+	}
+
+	.charsheet div.sheet-humanitybox span:not(.sheet-humheader),
+	.charsheet div.sheet-humanitybox textarea {
+		height: 20px;
+		width: 100%;
+		line-height: 14px;
+		text-align: left;
+		text-align-last: left;
+
+		color: white;
+		font-family: 'Bodoni SvtyTwo ITC TT';
+		font-variant: small-caps;
+		font-size: 14px;
+
+		text-shadow: -1px -1px 0px #000, -1px -1px 0px #200, -1px -1px 2px #300, 1px 1px 0px #700, 1px 1px 0px #700, 1px 1px 0px #600;
+	}
+
+	.charsheet div.sheet-humanitybox textarea {
+		padding: 0px 0px;
+
+		color: white;
+
+		font-variant: normal;
+	}
+
+	.charsheet div.sheet-humanitybox div.sheet-humanitydetails textarea {
+		height: 120px;
+		line-height: unset;
+	}
+
+	.charsheet div.sheet-humanitybox div.sheet-humanitydetails {
+		margin-bottom: -10px;
+	}
+	.charsheet div.sheet-humanitybox div.sheet-humanitybullets {
+		margin-top: -17px;
+		margin-left: 20px;
+		margin-bottom: -17px;
+	}
+
+	.charsheet div.sheet-humanitybox div.sheet-humanitybullets textarea {
+		height: 100%;
+		line-height: 17px;
+		text-shadow: 1px 1px 1px black, 1px -1px 1px black, -1px 1px 1px black, -1px -1px 1px black;
+	}
+
+	.charsheet div.sheet-humanitybox div.sheet-humanitybullets.sheet-posbullets textarea {
+		color: gold !important;
+	}	
+
+	.charsheet div.sheet-humanitybox div.sheet-humanitybullets.sheet-neutralbullets textarea {
+		color: white !important;
+	}	
+
+	.charsheet div.sheet-humanitybox div.sheet-humanitybullets.sheet-negbullets textarea {
+		color: #FF3333 !important;
+		font-weight: bold;
+	}	
 
 	/* #endregion */
 	/* #region SECTION: Attributes & Skills */
@@ -3328,23 +3425,12 @@
 	display: none !important;
 }*/
 
-/* Enable below to disable COMBAT tab */
-.charsheet input.sheet-tab5 {
-	opacity: 0 !important;
-	pointer-events: none !important;
-}
-
-.charsheet input.sheet-tab5+span,
-.charsheet div.sheet-section-5 {
-	display: none !important;
-}
-
 /* Enable below to disable EXPERIENCE tab */
-/*.charsheet input.sheet-tab6 {
+/*.charsheet input.sheet-tab5 {
 	opacity: 0 !important;
 	pointer-events: none !important;
 }
-.charsheet input.sheet-tab6 + span,
+.charsheet input.sheet-tab5 + span,
 .charsheet div.sheet-section-6 {
 	display: none !important;
 }*/

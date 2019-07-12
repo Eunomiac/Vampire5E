@@ -36,6 +36,7 @@ const D = (() => {
     // #region LOCAL INITIALIZATION
     const initialize = () => {
         STATEREF.WATCHLIST = STATEREF.WATCHLIST || []
+        STATEREF.BLACKLIST = STATEREF.BLACKLIST || []
         STATEREF.CHARWIDTH = STATEREF.CHARWIDTH || {}
         STATEREF.DEBUGLOG = STATEREF.DEBUGLOG || []
     }
@@ -48,11 +49,39 @@ const D = (() => {
         TRACE.push("handleInput")
         //DB(`MESSAGE (DATA): ${jStr(msg)}<br><br>handleInput(msg, ${jStr(who)}, ${jStr(call)}, ${jStr(args.join(", "))})`, "DATAinput")
         switch (call) {
-            case "debug": case "log": case "dblog":
-                getDebugRecord()
-                break
-            case "reset": 
+            case "add": case "set":
                 switch(args.shift().toLowerCase()) {
+                    case "blacklist":
+                        setBlackList(args)
+                        break
+                    case "watch": case "dbwatch": case "watchlist":
+                        setWatchList(args)
+                        break
+                    /* no default */
+                }
+                break
+            case "get":
+                switch(args.shift().toLowerCase()) {
+                    case "blacklist":
+                        sendToGM(getBlackList(), "DEBUG BLACKLIST")
+                        break
+                    case "watch": case "dbwatch": case "watchlist":
+                        sendToGM(getWatchList(), "DEBUG SETTINGS")
+                        break
+                    case "debug": case "log": case "dblog":
+                        getDebugRecord()
+                        break
+                    /* no default */
+                }
+                break
+            case "clear": case "reset":
+                switch(args.shift().toLowerCase()) {
+                    case "watch": case "dbwatch": case "watchlist":
+                        setWatchList("clear")
+                        break
+                    case "blacklist":
+                        setBlackList("clear")
+                        break
                     case "debug": case "log": case "dblog":
                         Handouts.RemoveAll("Debug Log", "debug")
                         Handouts.RemoveAll("... DBLog", "debug")
@@ -372,10 +401,10 @@ const D = (() => {
                                 errorLines.push("Invalid selection: Select objects first!")
                             break
                         case "char": case "charref":
-                            if (!getChar(v))
+                            if (!getChar(v, true))
                                 errorLines.push(`Invalid character reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
                             else
-                                charArray.push(getChar(v))
+                                charArray.push(getChar(v, true))
                             break
                         case "charobj":
                             if (!v || !v.get || v.get("_type") !== "character")
@@ -384,7 +413,7 @@ const D = (() => {
                                 charArray.push(v)
                             break
                         case "player": case "playerref":
-                            if (!getPlayer(v))
+                            if (!getPlayer(v, true))
                                 errorLines.push(`Invalid player reference: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                             break
                         case "playerobj":
@@ -486,6 +515,21 @@ const D = (() => {
             sendToGM(`Currently displaying debug information tagged with:<br><br>${jStr(STATEREF.WATCHLIST.join("<br>"))}`, formatTitle("setWatchList", SCRIPTNAME))
         },
         getWatchList = () => sendToGM(`${jStr(STATEREF.WATCHLIST)}`, "DEBUG WATCH LIST"),
+        setBlackList = keywords => {
+            if (keywords === "clear") {
+                STATEREF.BLACKLIST = []
+            } else {
+                const watchwords = _.flatten([keywords])
+                _.each(watchwords, v => {
+                    if (v.startsWith("!"))
+                        STATEREF.BLACKLIST = _.without(STATEREF.BLACKLIST, v.slice(1))
+                    else
+                        STATEREF.BLACKLIST = _.uniq([...STATEREF.BLACKLIST, v])
+                })
+            }
+            sendToGM(`Currently NOT logging debug information tagged with:<br><br>${jStr(STATEREF.BLACKLIST.join("<br>"))}`, formatTitle("setBlackList", SCRIPTNAME))
+        },
+        getBlackList = () => sendToGM(`${jStr(STATEREF.BLACKLIST)}`, "DEBUG BLACKLIST"),
         logDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
             if (funcName) {
                 STATEREF.DEBUGLOG.push({
@@ -500,10 +544,12 @@ const D = (() => {
         },
         throwError = (msg, funcName, scriptName, errObj) => sendDebugAlert(`${msg}${errObj ? `${errObj.name}<br>${errObj.message}<br><br>${errObj.stack}` : ""}`, funcName, scriptName, "ERROR"),
         sendDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
-            const trace = TRACE.length ? `<span style="display: block; width: 100%; font-size: 10px; margin-top: -5px; background-color: ${C.COLORS.brightgrey}; color: ${C.COLORS.grey}; font-family: Voltaire; font-weight: bold;">${TRACE.join(" ► ")}</span>` : ""
-            logDebugAlert(msg, funcName, scriptName, prefix)
-            if (funcName && STATEREF.WATCHLIST.includes(funcName) || scriptName && STATEREF.WATCHLIST.includes(scriptName) || !funcName && !scriptName)
-                sendToGM(trace + (isTraceOnly ? "" : msg), formatTitle(funcName, scriptName, prefix))
+            if (!STATEREF.BLACKLIST.includes(funcName) && !STATEREF.BLACKLIST.includes(scriptName)) {
+                const trace = TRACE.length ? `<span style="display: block; width: 100%; font-size: 10px; margin-top: -5px; background-color: ${C.COLORS.brightgrey}; color: ${C.COLORS.grey}; font-family: Voltaire; font-weight: bold;">${TRACE.join(" ► ")}</span>` : ""
+                logDebugAlert(msg, funcName, scriptName, prefix)
+                if (funcName && STATEREF.WATCHLIST.includes(funcName) || scriptName && STATEREF.WATCHLIST.includes(scriptName) || !funcName && !scriptName)
+                    sendToGM(trace + (isTraceOnly ? "" : msg), formatTitle(funcName, scriptName, prefix))
+            }
         },
         getDebugRecord = (title = "Debug Log", isClearing = false) => {
             const logLines = []
@@ -585,24 +631,24 @@ const D = (() => {
 			/* Returns an ARRAY OF CHARACTERS given: "all", "registered", a character ID, a character Name,
 				a token object, a message with selected tokens, OR an array of such parameters. */
             const charObjs = new Set()
-            let [searchParams, traceRef] = [[], ""]
+            let [searchParams, traceRef, dbstring] = [[], "", ""]
             try {
                 if (charRef.who) {
                     TRACE.push("getChars(msg)")
                     _.each(getSelected(charRef, "character"), charObj => { charObjs.add(charObj) })
-                    DB(`REFERENCE: Chat Message<br>RETURNING: ${jStr(...charObjs)}`, "getChars")
+                    dbstring += `REF: Msg.  RETURNING: ${jStr(...charObjs)}`
                     removeFirst(TRACE, "getChars(msg)")
                     return charObjs.size > 0 ? [...charObjs] : isSilent ? false : THROW("Must Select a Token!", "getChars")
                 } else if (VAL({ array: charRef })) {
                     traceRef = `getChars([${jStr(charRef.length)}...])`
                     TRACE.push(traceRef)
                     searchParams = charRef
-                    DB(`REFERENCE: Array<br>SEARCH PARAMS: ${jStr(...searchParams)}`, "getChars")
+                    dbstring += `REF: [${jStr(...searchParams)}] `
                 } else if (VAL({ string: charRef }) || VAL({ object: charRef }) || VAL({ number: charRef })) {
                     traceRef = "getChars(S/O/N)"
                     TRACE.push(traceRef)
                     searchParams.push(charRef)
-                    DB(`REFERENCE: String/Object/Number = ${jStr(charRef)}<br>SEARCH PARAMS: ${jStr(...searchParams)}`, "getChars")
+                    dbstring += `REF: ${capitalize(jStr(typeof charRef), true)} `
                 } else {
                     return isSilent ? false : THROW(`Invalid character reference: ${jStr(charRef)}`, "getChars")
                 }
@@ -611,30 +657,32 @@ const D = (() => {
                 return isSilent ? false : THROW("", "getChars", errObj)
             }
             _.each(searchParams, v => {
+                if (searchParams.length > 1)
+                    dbstring += "<br>"
                 // If parameter is a digit corresponding to a REGISTERED CHARACTER:
                 if (VAL({ number: v }) && Char.REGISTRY[parseInt(v)]) {
                     charObjs.add(getObj("character", Char.REGISTRY[parseInt(v)].id))
-                    DB(`@T@[PARAM] Registry Number = ${jStr(v)}<br>@T@@T@... ${charObjs.size} Characters Found.`, "getChars")
+                    dbstring += " ... Registry #: "
                     // If parameter is a CHARACTER OBJECT already: */
                 } else if (VAL({ charObj: v })) {
                     charObjs.add(v)
-                    DB(`@T@[PARAM] Character Object = ${jStr(v)}<br>@T@@T@... ${charObjs.size} Characters Found.`, "getChars")
+                    dbstring += " ... CharObj "
                     // If parameter is a CHARACTER ID:
                 } else if (VAL({ string: v }) && getObj("character", v)) {
                     charObjs.add(getObj("character", v))
-                    DB(`@T@[PARAM] Character ID: ${jStr(v)}<br>@T@@T@... ${charObjs.size} Characters Found.`, "getChars")
+                    dbstring += " ... CharID: "
                     // If parameters is a TOKEN OBJECT:
                 } else if (VAL({ token: v }) && getObj("character", v.get("represents"))) {
                     charObjs.add(getObj("character", v.get("represents")))
-                    DB(`@T@[PARAM] Token: ${jStr(v, true)}<br>@T@@T@... ${charObjs.size} Characters Found.`, "getChars")
+                    dbstring += " ... Token: "
                     // If parameter is "all":
                 } else if (v.toLowerCase() === "all") {
                     _.each(findObjs({ _type: "character" }), char => charObjs.add(char))
-                    DB(`@T@[PARAM] "${jStr(v)}"<br>@T@@T@... ${charObjs.size} Characters Found.`, "getChars")
+                    dbstring += ` ... "${jStr(v)}": `
                     // If parameter calls for REGISTERED CHARACTERS:
                 } else if (v.toLowerCase() === "registered") {
                     _.each(Char.REGISTRY, charData => { if (!charData.name.toLowerCase().includes("Good Lad")) charObjs.add(getObj("character", charData.id)) })
-                    DB(`@T@[PARAM] "${jStr(v)}"<br>@T@@T@... ${charObjs.size} Characters Found.`, "getChars")
+                    dbstring += ` ... "${jStr(v)}": `
                     // If parameter is a STRING, assume it is a character name to fuzzy-match.
                 } else if (VAL({ string: v })) {
                     let isCharFound = false
@@ -652,9 +700,12 @@ const D = (() => {
                             if (fuzzyMatch(char.get("name"), v))
                                 charObjs.add(char)
                         })
-                    DB(`@T@[PARAM] String: ${jStr(v)}<br>@T@@T@... ${charObjs.size} Characters Found.`, "getChars")
+                    dbstring += " ... String: "
                 }
+                dbstring += `${charObjs.size} Characters Found.`
             })
+            if (!STATEREF.BLACKLIST.includes("getChars"))
+                DB(dbstring, "getChars")
             removeFirst(TRACE, traceRef)
             return charObjs.size === 0 ?
                 isSilent ? false : THROW(`No Characters Found using Search Parameters:<br>${jStr(searchParams)} in Character Reference<br>${jStr(charRef)}`, "getChars")

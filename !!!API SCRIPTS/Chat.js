@@ -118,11 +118,6 @@ const Chat = (() => {
                     case "page":
                         D.Alert(D.JS(Campaign().get("playerpageid")), "Page ID")
                         break
-                    case "debug":
-                    case "dbwatch":
-                    case "watchlist":
-                        D.Alert(D.GetDebugWatchList(), "DEBUG SETTINGS")
-                        break
                     default:
                         sendHelpMsg()
                         break
@@ -132,10 +127,6 @@ const Chat = (() => {
             case "!set":
             {
                 switch (args.shift()) {
-                    case "dbwatch":
-                    case "watchlist":
-                        D.SetDebugWatchList(args)
-                        break
                     case "params":
                         if (msg.selected && msg.selected[0])
                             for (const objData of msg.selected) {
@@ -156,10 +147,6 @@ const Chat = (() => {
             }
             case "!clear":
                 switch (args.shift()) {
-                    case "dbwatch":
-                    case "watchlist":
-                        D.SetDebugWatchList("clear")
-                        break
                     case "obj":
                         [objType, pattern] = [args.shift(), args.shift()]
                         objsToKill = _.filter(findObjs({

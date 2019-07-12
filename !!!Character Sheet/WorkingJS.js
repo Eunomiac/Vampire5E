@@ -118,6 +118,114 @@
             { bp_surge: 5, bp_mend: 5, bp_discbonus: 5, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -3, bp_slakekill: 3 },
             { bp_surge: 10, bp_mend: 10, bp_discbonus: 10, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -4, bp_slakekill: 4 }
         ],
+        humanityText = {
+            mainText: [
+                "\tYou have become the Beast. Your last urges express themselves in a final Rötschreck called the wassail (see Losing the Last Drop, p. 241). A puppet of the Blood, you are a wight, under Storyteller control forever.",
+                "\tYou are only nominally sentient, a hair's breadth from giving into the Beast entirely, teetering precariously on the edge of oblivion.  Very little matters at all to you anymore, even your own desires beyond sustenance and rest. You might do anything at all, or nothing. Only a few tattered shreds of ego stand between you and complete devolution. You need no speech, no art, nothing but gibbers and splatters of dried gore.",
+                "\tNobody counts but you. Idiots try your patience; worms vie for your attention; mortal meat sacks get in your way and delay your feeding. Only servants and feeding stock exist, and everyone needs to decide which one they are before you decide for them. You fill your nights with twisted pleasures, decadent whims, perverse atrocities and callous murder. By now, every human and most Kindred recoil from your presence.",
+                "\tAt this level, cynical and jaded describes you on a good day. You callously step over anyone and anything, stopping only to indulge a new hobby for cruelty. You're a survivor who always take the safe route, the pragmatic route: kill witnesses and don’t risk trusting anyone you haven’t got your talons into somehow. Your mortal life is all but forgotten, and you genuinely look monstrous --- even under the most flattering light.",
+                "\tHey, some people gotta die. You have finally begun, even accepted, your inevitable slide into moral sloth and self-indulgence. Killing is more than fine:  Ask the elders, they’ve been around long enough to see whole genocides ignored. Destruction, theft, injury – these are all tools, not taboos. Physical changes become quite evident as “ashen pallor” shades more firmly into “corpse-like.”",
+                "\tYou’ve been around the block, and are as humane as a typical ancilla.  You’ve accepted pain and anguish, and are adapting to it as part of existence. You don’t care about most mortals one way or the other; after all, you’re never going to be mortal again, so why bother? You’re selfish, and you lie like its second nature. You may manifest some minor physical eeriness or malformation, such as an unnatural hue to the eyes.",
+                "\tHey, shit happens.  People die, stuff breaks, backs get stabbed. You have little difficulty with the fact that you need blood to survive and that you do what needs to be done to get it. Virtues are starting to feel like anchors: You might not go out of your way to wreck things or kill people, but you don’t cry bloody tears over it either. You're not automatically horrid, but you're not about to win any prizes for congeniality either.",
+                "\tYou can usually manage to pass for a human, as your moral code is on par with that of the average mortal.  You subscribe to typical social mores - sure, sin is wrong, but dodging taxes and speed limits are not sins. You feel some connection to other beings, even human beings, though more than a little selfishness shines through – just like everyone else in the world, whether they're mortal or not.",
+                "\tYou still feel pain for the hurts you and your kind inflict. Your human guise remains passable: either your memories remain fresh, or new instincts for community spring up like green shoots from your long-dead soul.  Something inside you still pines for the sunlight and for the mortal life you knew: only by losing them both did you come to realize just how much you took for granted.",
+                "\tYou act more humanely than most humans, and fit in naturally among the kine.  You think and act much as they do: Killing feels horrible, almost as gut-wrenchingly so as the Hunger in full cry.  You likely hold to codes more rigorous than you ever held in life, as a defense against becoming a predator.  Elder kindred scoff at your lofty behavior, either out of callous disdain or to muffle their own regrets.",
+                "\tRare even among the living, this degree of humanity is all but unheard of among vampires.  You lead a saintly, veritably ascetic life, one that you must tightly control with principles and codes of ethics painstakingly assembled and rigidly adhered to: The merest selfish deed or thought is enough to topple you from this state of grace.  You didn't get here by accident, and may even be in pursuit of the mythical state of Golconda."
+            ],
+            bulletText: {
+                neg: [
+                    [],
+                    [" ",
+                     "●  -8 penalty to Social rolls to interact with mortals.",
+                     "\t(Does not apply to fear, predation, or seduction.)",
+                     "●  -8 penalty to rolls relating to art and the humanities.",
+                     "\tWith Blush of Life, both of these penalties are reduced to -5.",
+                     "●  You cannot keep mortal food and drink down.",
+                     "●  Even faking sexual activity is impossible."],
+                    [" ",
+                     "●  -6 penalty to Social rolls to interact with mortals.",
+                     "\t(Does not apply to fear, predation, or seduction.)",
+                     "●  -6 penalty to rolls relating to art and the humanities.",
+                     "\tWith Blush of Life, both of these penalties are reduced to -4.",
+                     "●  You cannot keep mortal food and drink down.",
+                     "●  Even faking sexual activity is impossible."],
+                    [" ",
+                     "●  -4 penalty to Social rolls to interact with mortals.",
+                     "\t(Does not apply to fear, predation, or seduction.)",
+                     "●  -4 penalty to rolls relating to art and the humanities.",
+                     "●  You cannot keep mortal food and drink down.",
+                     "●  Even faking sexual activity is impossible."],
+                    [" ",
+                     "●  -2 penalty to Social rolls to interact with mortals.",
+                     "\t(Does not apply to fear, predation, or seduction.)",
+                     "●  -2 penalty to rolls relating to art and the humanities.",
+                     "●  You cannot keep mortal food and drink down.",
+                     "●  You don't enjoy sex, but you can roll to fake it with a -2 penalty."],
+                    [" ",
+                     "●  -1 penalty to Social rolls to interact with mortals.",
+                     "\t(Does not apply to fear, predation, or seduction.)",
+                     "●  -1 penalty to rolls relating to art and the humanities.",
+                     "●  You don't enjoy sex, but you can roll to fake it with a -2 penalty."],
+                    [" ",
+                     "●  You don't enjoy sex, but you can roll to fake it with a -1 penalty."],
+                    [],
+                    [],
+                    [],
+                    []
+                ],
+                neutral: [
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [" ",
+                     "●  You cannot keep mortal food and drink down.",
+                     "\tWith Blush of Life, you can roll to resist vomiting."],
+                    [" ",
+                     "●  You cannot keep mortal food and drink down.",
+                     "\tWith Blush of Life, you can roll to resist vomiting."],
+                    [" ",
+                     "●  You must roll to keep mortal food and drink down.",
+                     "\tWith Blush of Life, you can digest (but not enjoy) mortal food/drink.",
+                     "●  You don't enjoy sex, but you can roll to fake it."],
+                    [],
+                    [],
+                    []
+                ],
+                pos: [
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [" ",
+                     "●  You roll twice on Rouse Checks to activate Blush of Life.",
+                     "●  You must roll to keep mortal food and drink down.",
+                     "\tWith Blush of Life, you can digest mortal food, and even enjoy wine.",
+                     "●  With Blush of Life, you can enjoy sex as if you were mortal.",
+                     "●  You awaken one hour before sunset."],
+                    [" ",
+                     "●  Blush of Life is unnecessary: You always appear alive and human.",
+                     "●  You can enjoy liquids as if you were mortal.",
+                     "●  You can enjoy raw (or very rare) meat as if you were mortal.",
+                     "●  You can enjoy sexual intercourse as if you were mortal.",
+                     "●  You heal naturally as if you were mortal.",
+                     "●  You awaken one hour before sunset.",
+                     "●  You can remain awake for up to one hour after sunrise."],
+                    [" ",
+                     "●  You take half damage from sunlight.",
+                     "●  Blush of Life is unnecessary: You always appear alive and human.",
+                     "●  You can enjoy all food and drink as if you were mortal.",
+                     "●  You can enjoy sexual intercourse as if you were mortal.",
+                     "●  You heal naturally as if you were mortal.",
+                     "●  You can remain awake during the day as if you were mortal."]
+                ]
+            }
+        },
         marqueeTips = [
             ["Caine the First",
              "Caine, son of Adam, was the First vampire.",
@@ -931,7 +1039,7 @@
                     $funcs.push($binCheck(tracker))
                     break
                 case "blood potency full":
-                case "blood potency":
+                case "blood potency": {
                     $funcs.push(cbk => {
                         getAttrs(["clan", "blood_potency"], ATTRS => {
                             _.each(bpDependants[ATTRS.blood_potency], (v, k) => {
@@ -984,6 +1092,7 @@
                         })
                     })
                     break
+                }
                 case "humanity":
                     $funcs.push(cbk => {
                         if (eInfo.sourceType !== "sheetworker") {
@@ -998,11 +1107,26 @@
                                 humArray.fill(2, 0, Math.max(humanity, 0))
                                 humArray.fill(1, humanity, 10 - stains)
                                 log(`... humArray: ${JSON.stringify(humArray)}`)
+                                log(`... attrArray: ${JSON.stringify(attrArray)}`)
+                                log(`... attrArray[4]: ${JSON.stringify(attrArray[4])}`)
                                 for (let i = 0; i < humArray.length; i++)
                                     attrList[attrArray[i]] = humArray[i]
-
+                                
                                 attrList.stains = humArray.filter(v => v === 3).length
                                 log(`... attrList: ${JSON.stringify(attrList)}`)
+                                // humanity, hum_details, hum_posbullets_toggle, hum_posbullets, neutralbullets, negbullets
+                                log(`... humText: ${JSON.stringify(humanityText.mainText)}`)
+                                log(`... humDetails (humText[${JSON.stringify(humanity)}]): ${JSON.stringify(humanityText.mainText[humanity])}`)
+                                attrList.hum_details = humanityText.mainText[humanity]
+                                for (const bulletType of ["pos", "neutral", "neg"]) {
+                                    log(`... ${bulletType}: : ${JSON.stringify(humanityText.bulletText[bulletType][humanity])}`)
+                                    attrList[`hum_${bulletType}bullets`] = humanityText.bulletText[bulletType][humanity].join("\n")
+                                    attrList[`hum_${bulletType}bullets_toggle`] = humanityText.bulletText[bulletType][humanity].length
+                                }
+
+
+                                log(`... attrList: ${JSON.stringify(attrList)}`)
+
                                 cbk(null, attrList)
                             })
                         }
@@ -1659,7 +1783,7 @@
                                             break
                                         case 4:
                                             flagArray.shift()
-                                            /* falls through */
+                                        /* falls through */
                                         case 3:
                                             if (_.map(THREEROLLTRAITS, v => v.toLowerCase()).includes(realName(flagArray[2], ATTRS).toLowerCase()))
                                                 break

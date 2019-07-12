@@ -1375,9 +1375,11 @@ const Roller = (() => {
                         _.map(_.keys(rollInput.traitData), v => v.toLowerCase()),
                         _.map(_.values(rollInput.traitData), v => parseInt(v.value) || 0)
                     )
+                    // Before parsing rollFlags, filter out the ones that have already been converted into strings:
+                    let filteredFlags = _.reject([...rollInput.posFlagLines, ...rollInput.negFlagLines, ...rollInput.redFlagLines, ...rollInput.goldFlagLines], v => _.isString(v))
                     rollFlags = _.object(
-                        _.map([...rollInput.posFlagLines, ...rollInput.negFlagLines, ...rollInput.redFlagLines, ...rollInput.goldFlagLines], v => v[1].toLowerCase().replace(/\s*?\(●*?\)/gu, "")),
-                        _.map([...rollInput.posFlagLines, ...rollInput.negFlagLines, ...rollInput.redFlagLines, ...rollInput.goldFlagLines], v => v[0])
+                        _.map(filteredFlags, v => v[1].toLowerCase().replace(/\s*?\(●*?\)/gu, "")),
+                        _.map(filteredFlags, v => v[0])
                     )
                     DB(`Roll Traits: ${D.JS(rollTraits)}<br>Roll Flags: ${D.JSH(rollFlags)}`, "applyRollEffects")
 
@@ -1894,6 +1896,9 @@ const Roller = (() => {
         },
         recordRoll = (rollData, rollResults) => {
             const recordRef = rollResults.isNPCRoll ? STATEREF.NPC : STATEREF
+            // Make sure appliedRollEffects in both rollData and rollResults contains all of the applied effects:
+            rollData.appliedRollEffects = _.uniq([...rollData.appliedRollEffects, ...rollResults.appliedRollEffects])
+            rollResults.appliedRollEffects = [...rollData.appliedRollEffects]
             recordRef.rollRecord.unshift({
                 rollData: _.clone(rollData),
                 rollResults: _.clone(rollResults)
