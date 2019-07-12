@@ -20,6 +20,10 @@ const C = (() => {
 
     // #region CORE CONFIGURATION & BASIC REFERENCES
     const PIXELSPERSQUARE = 70,
+        SANDBOX = {
+            height: 2680,
+            width: 1664
+        },
         NUMBERWORDS = {
             low: ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen", "Twenty"],
             tens: ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"],
@@ -63,10 +67,19 @@ const C = (() => {
             blue: "rgb(100, 100, 255)",
             darkblue: "rgb(50, 50, 150)",
             cyan: "rgb(0, 255, 255)",
-            gold: "#FFEE66",
+            gold: "rgb(255, 238, 102)",
             fadedblack: "rgba(0, 0, 0, 0.2)",
             fadedgrey: "rgba(0, 0, 0, 0.1)",
             crimson: "rgb(220, 20, 60)"
+        },
+        IMAGES = {
+            blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
+            defaults: {
+                top: 200,
+                left: 200,
+                height: 200,
+                width: 200
+            }
         }
     // #endregion
 
@@ -333,6 +346,12 @@ const C = (() => {
         }
     // #endregion
 
+    // #region ROLL20 OBJECT PROPERTIES
+    const IMAGEPROPS = ["imgsrc", "bar1_link", "bar2_link", "bar3_link", "represents", "left", "top", "width", "height", "rotation", "layer", "isdrawing", "flipv", "fliph", "name", "gmnotes", "controlledby", "bar1_value", "bar2_value", "bar3_value", "bar1_max", "bar2_max", "bar3_max", "aura1_radius", "aura2_radius", "tint_color", "statusmarkers", "showname", "showplayers_name", "showplayers_bar1", "showplayers_bar2", "showplayers_bar3", "showplayers_aura1", "showplayers_aura2", "playersedit_name", "playersedit_bar1", "playersedit_bar2", "playersedit_bar3", "playersedit_aura1", "playersedit_aura2", "light_radius", "light_dimradius", "light_otherplayers", "light_hassight", "light_angle", "light_losangle", "lastmove", "light_multiplier", "adv_fow_view_distance"],
+        TEXTPROPS = ["top", "left", "width", "height", "text", "font_size", "rotation", "color", "font_family", "layer", "controlledby"],
+        ATTRPROPS = ["name", "current", "max"],
+        HANDOUTPROPS = ["avatar", "name", "notes", "gmnotes", "inplayerjournals", "archived", "controlledby"]
+    // #endregion
     // #region VAMPIRE ATTRIBUTES, STATS & TRAITS
     const ATTRIBUTES = {
             physical: ["Strength", "Dexterity", "Stamina"],
@@ -696,14 +715,21 @@ const C = (() => {
         GAMENAME,
         ROOT,
         PIXELSPERSQUARE,
+        SANDBOX,
 
         NUMBERWORDS,
         ORDINALSUFFIX,
         COLORS,
+        IMAGES,
 
         CHATHTML,
         HANDOUTHTML,
         HTML, bHTML,
+
+        IMAGEPROPS,
+        TEXTPROPS,
+        ATTRPROPS, 
+        HANDOUTPROPS,
 
         ATTRIBUTES,
         SKILLS, SKILLABBVS,

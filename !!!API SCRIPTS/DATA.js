@@ -1079,6 +1079,7 @@ const D = (() => {
         KeyMapObj: kvpMap,
         ParseToObj: parseToObj,
 
+        //LooseMatch: looseMatch, // more strict than fuzzyMatch: case-insensitive matching but everything else is still required
         FuzzyMatch: fuzzyMatch,
         IsIn: isIn,
         Validate: validate,

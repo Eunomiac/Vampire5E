@@ -41,8 +41,6 @@ const Chat = (() => {
         switch (call) {
             case "!get":
             {
-                D.Alert(`Page ID: ${D.PAGEID}
-                Cell Size: ${D.CELLSIZE}`)
                 if (D.GetSelected(msg))
                     [obj] = D.GetSelected(msg)
                 else
