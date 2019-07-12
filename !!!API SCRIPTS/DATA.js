@@ -85,6 +85,7 @@ const D = (() => {
                     case "debug": case "log": case "dblog":
                         Handouts.RemoveAll("Debug Log", "debug")
                         Handouts.RemoveAll("... DBLog", "debug")
+                        STATEREF.DEBUGLOG = STATEREF.DEBUGLOG || []
                         break
                     /* no default */
                 }

@@ -186,7 +186,7 @@ const Chat = (() => {
                         if (!msg.selected || !msg.selected[0])
                             break
                         prepText(msg.selected, args.shift())
-                        D.Alert("Move the text object around, and type '!resText' when you have.")
+                        D.Alert("Move the text object(s) around, and type '!text res' when you have.")
                         break
                     case "res":
                     case "resolve":
