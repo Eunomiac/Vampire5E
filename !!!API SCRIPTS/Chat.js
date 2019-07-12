@@ -41,6 +41,8 @@ const Chat = (() => {
         switch (call) {
             case "!get":
             {
+                D.Alert(`Page ID: ${D.PAGEID}
+                Cell Size: ${D.CELLSIZE}`)
                 if (D.GetSelected(msg))
                     [obj] = D.GetSelected(msg)
                 else
@@ -437,10 +439,10 @@ const Chat = (() => {
         getPos = obj => {
             if (!obj)
                 return false
-            const gridInfo = `<b>Center:</b> ${obj.get("left") / D.CELLSIZE()}, ${obj.get("top") / D.CELLSIZE()
-                }<br/> <b>Left:</b> ${(obj.get("left") - 0.5 * obj.get("width")) / D.CELLSIZE()
-                }<br/> <b>Top:</b> ${(obj.get("top") - 0.5 * obj.get("height")) / D.CELLSIZE()
-                }<br/> <b>Dimensions:</b> ${obj.get("width") / D.CELLSIZE()} x ${obj.get("height") / D.CELLSIZE()}`,
+            const gridInfo = `<b>Center:</b> ${obj.get("left") / D.CELLSIZE}, ${obj.get("top") / D.CELLSIZE
+                }<br/> <b>Left:</b> ${(obj.get("left") - 0.5 * obj.get("width")) / D.CELLSIZE
+                }<br/> <b>Top:</b> ${(obj.get("top") - 0.5 * obj.get("height")) / D.CELLSIZE
+                }<br/> <b>Dimensions:</b> ${obj.get("width") / D.CELLSIZE} x ${obj.get("height") / D.CELLSIZE}`,
                 pixelInfo = ` Center:</b> ${obj.get("left")}, ${obj.get("top")
                 }<br/> <b>Left:</b> ${obj.get("left") - 0.5 * obj.get("width")
                 }<br/> <b>Top:</b> ${obj.get("top") - 0.5 * obj.get("height")

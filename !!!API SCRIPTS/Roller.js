@@ -843,7 +843,7 @@ const Roller = (() => {
             STATEREF[category] = STATEREF[category] || []
             const posRef = POSITIONS.dice[category],
                 die = createObj("graphic", {
-                    _pageid: D.PAGEID(),
+                    _pageid: D.PAGEID,
                     imgsrc: IMAGES.dice.Bf,
                     left: posRef.left + posRef.spread * STATEREF[category].length,
                     top: posRef.top,
@@ -966,7 +966,7 @@ const Roller = (() => {
     // #region Graphic & Text Control
     const makeImg = (name, imgsrc, top, left, height, width, layer = "objects") => {
             const img = createObj("graphic", {
-                _pageid: D.PAGEID(),
+                _pageid: D.PAGEID,
                 imgsrc,
                 top,
                 left,
@@ -1006,7 +1006,7 @@ const Roller = (() => {
         },
         makeText = (name, font_family, font_size, top, left, color, text = "") => {
             const txt = createObj("text", {
-                _pageid: D.PAGEID(),
+                _pageid: D.PAGEID,
                 font_family,
                 font_size,
                 top,

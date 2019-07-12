@@ -102,10 +102,6 @@ const D = (() => {
                 ))}`, "Testing GetRepAttr")
                 break
             }
-            case "char": {
-                D.Alert(`${jStr(getChars(msg, true))}`, "Testing GetChars")
-                break
-            }
             case "toggle": {
                 switch (args.shift().toLowerCase()) {
                     case "traceonly":
@@ -1068,8 +1064,8 @@ const D = (() => {
         CheckInstall: checkInstall,
         RegisterEventHandlers: regHandlers,
 
-        PAGEID: VALS.PAGEID,
-        CELLSIZE: VALS.CELLSIZE,
+        get PAGEID() { return VALS.PAGEID() },
+        get CELLSIZE() { return VALS.CELLSIZE() },
 
         JS: jStr, JSL: jStrL, JSH: jStrH, JSC: jStrC,
         NumToText: numToText, TextToNum: textToNum,

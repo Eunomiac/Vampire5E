@@ -708,7 +708,7 @@ const Media = (() => {
                     vert: [parseInt(imgObj.get("top")) - parseInt(imgObj.get("height")) / 2, parseInt(imgObj.get("top")) + parseInt(imgObj.get("height")) / 2]
                 }
             DB(`boundaries: ${D.JS(boundaries)}`, "getContainedImages")
-            const contImages = _.filter(findObjs({ _type: "graphic", _pageid: D.PAGEID() }), v =>
+            const contImages = _.filter(findObjs({ _type: "graphic", _pageid: D.PAGEID }), v =>
                 parseInt(v.get("left")) >= boundaries.horiz[0] &&
                 parseInt(v.get("left")) <= boundaries.horiz[1] &&
                 parseInt(v.get("top")) >= boundaries.vert[0] &&
@@ -791,7 +791,7 @@ const Media = (() => {
         makeImage = (imgName = "", params = {}, isSilent = false) => {
             const dataRef = IMGDATA[imgName] || IMGDATA["default"],
                 imgObj = createObj("graphic", {
-                    _pageid: params._pageID || D.PAGEID(),
+                    _pageid: params._pageID || D.PAGEID,
                     imgsrc: params.imgsrc || IMGDATA.blank,
                     left: params.left || dataRef.left,
                     top: params.top || dataRef.top,
@@ -1348,7 +1348,7 @@ const Media = (() => {
         },
         makeText = (hostName, hasShadow, options = {}, isSilent = false) => {
             const textObj = createObj("text", {
-                    _pageid: options._pageID || D.PAGEID(),
+                    _pageid: options._pageID || D.PAGEID,
                     text: options.text || "",
                     left: options.left || 200,
                     top: options.top || 200,

@@ -353,7 +353,7 @@ const DragPads = (() => {
             }
             if (!options.left || !options.top || !options.width || !options.height)
                 return THROW(`Invalid Options: ${D.JS(options)}.<br><br>Must include reference object OR positions & dimensions to make pad.`, "makePad")
-            options._pageid = options._pageid || D.PAGEID()
+            options._pageid = options._pageid || D.PAGEID
             options.left += parseInt(options.deltaLeft || 0)
             options.top += parseInt(options.deltaTop || 0)
             options.width += parseInt(options.deltaWidth || 0)
@@ -424,7 +424,7 @@ const DragPads = (() => {
         },
         clearAllPads = funcName => {
             const graphics = findObjs({
-                    _pageid: D.PAGEID(),
+                    _pageid: D.PAGEID,
                     _type: "graphic",
                     imgsrc: IMAGES.blank
                 }),

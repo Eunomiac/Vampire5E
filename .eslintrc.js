@@ -30,7 +30,7 @@ module.exports = {
         "dot-notation": ["error", { "allowKeywords": false }],
         "no-extra-parens": "error",
         "no-template-curly-in-string": "warn",
-        "accessor-pairs": ["error", { "getWithoutSet": true }],
+        "accessor-pairs": ["error"],
         "array-callback-return": "error",
         "block-scoped-var": "error",
         "class-methods-use-this": "error",

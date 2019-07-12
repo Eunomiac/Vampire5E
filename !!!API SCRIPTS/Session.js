@@ -55,7 +55,7 @@ const Session = (() => {
                 TimeTracker.Fix()
                 for (const charData of _.values(Char.REGISTRY).slice(0, 4)) {
                     [token] = findObjs({
-                        _pageid: D.PAGEID(),
+                        _pageid: D.PAGEID,
                         _type: "graphic",
                         _subtype: "token",
                         represents: charData.id

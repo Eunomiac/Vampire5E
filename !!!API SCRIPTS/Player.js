@@ -44,7 +44,7 @@ const Player = (() => {
             case "!sense":
                 charID = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)].id;
                 [token] = findObjs({
-                    _pageid: D.PAGEID(),
+                    _pageid: D.PAGEID,
                     _type: "graphic",
                     _subtype: "token",
                     represents: charID
@@ -69,7 +69,7 @@ const Player = (() => {
                 charID = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)].id;
                 //D.Alert(`Char ID[${D.JS(_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid))}] = ${D.JS(charID)}`);
                 [token] = findObjs({
-                    _pageid: D.PAGEID(),
+                    _pageid: D.PAGEID,
                     _type: "graphic",
                     _subtype: "token",
                     represents: charID
@@ -93,7 +93,7 @@ const Player = (() => {
             case "!mask":
                 charID = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)].id;
                 [token] = findObjs({
-                    _pageid: D.PAGEID(),
+                    _pageid: D.PAGEID,
                     _type: "graphic",
                     _subtype: "token",
                     represents: charID
@@ -118,7 +118,7 @@ const Player = (() => {
                 charData = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)]
                 charID = charData.id;
                 [token] = findObjs({
-                    _pageid: D.PAGEID(),
+                    _pageid: D.PAGEID,
                     _type: "graphic",
                     _subtype: "token",
                     represents: charID
