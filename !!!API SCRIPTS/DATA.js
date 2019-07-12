@@ -397,7 +397,7 @@ const D = (() => {
                             if (!_.isDate(v))
                                 errorLines.push(`Invalid date object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                             break
-                        case "selection":
+                        case "msg": case "selection": case "selected":
                             if (!v || !v.selected || !v.selected[0])
                                 errorLines.push("Invalid selection: Select objects first!")
                             break

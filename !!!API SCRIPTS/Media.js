@@ -1,6 +1,4 @@
 void MarkStart("Media")
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-empty-function */
 const Media = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     state.VAMPIRE.Media = Object.assign({}, state.VAMPIRE.Images)
@@ -36,6 +34,7 @@ const Media = (() => {
     const initialize = () => {
         STATEREF.imageregistry = STATEREF.imageregistry || {}
         STATEREF.textregistry = STATEREF.textregistry || {}
+        STATEREF.textidregistry = STATEREF.textidregistry || {}
         STATEREF.areas = STATEREF.areas || {}
     }
     // #endregion	
@@ -362,6 +361,7 @@ const Media = (() => {
     // #region CONFIGURATION
     const IMAGEREGISTRY = STATEREF.imageregistry,
         TEXTREGISTRY = STATEREF.textregistry,
+        TEXTIDREGISTRY = STATEREF.textidregistry,
         AREAS = STATEREF.areas,
         SANDBOX = {
             height: 2680,
@@ -700,6 +700,7 @@ const Media = (() => {
                 return true
             return false
         },
+        /* eslint-disable-next-line no-unused-vars */
         getContainedImages = (imgRef) => {
             const imgObj = getImageObj(imgRef),
                 boundaries = {
@@ -1115,10 +1116,10 @@ const Media = (() => {
             }
             return THROW(`Invalid image reference ${D.JSL(imgRef)}`, "removeImage")
         },
-        removeImages = (imgString, isRegOnly) => {
+        removeImages = (imgString, isUnregOnly) => {
             const imgNames = _.filter(_.keys(IMAGEREGISTRY), v => v.includes(imgString))
             for (const imgName of imgNames)
-                removeImage(imgName, isRegOnly)
+                removeImage(imgName, isUnregOnly)
 
         },
         cleanRegistry = () => {
@@ -1159,7 +1160,6 @@ const Media = (() => {
                     imgObj.set({ layer: layer })
                 else
                     D.Alert(`No image found for reference ${D.JS(imgObj)}`, "IMAGES: OrderImages")
-
         },
         setImageArea = (imgRef, areaRef) => {
             const imgObj = getImageObj(imgRef)
@@ -1185,15 +1185,90 @@ const Media = (() => {
     // #endregion
 
     // #region TEXT OBJECTS: Registering & Manipulating Text Objects //(textObj, hostName, objLayer, !isStartActive || isStartActive !== "false", !isShadow || isShadow !== "false", D.ParseToObj(args.join(" ")))
-    const getTextObj = (textRef) => {
-            return textRef
+    const getTextKey = (textRef, isSilent = false) => {
+            try {
+                let textObj
+                if (VAL({string: textRef})) {
+                    if (TEXTREGISTRY[textRef])
+                        return textRef
+                    if (TEXTREGISTRY[`${textRef}_1`])
+                        return `${textRef}_1`
+                    if (TEXTIDREGISTRY[textRef])
+                        return TEXTIDREGISTRY[textRef]
+                }
+                if (VAL({selected: textRef}))
+                    textObj = D.GetSelected(textRef)
+                if (VAL({textObj: textRef}))
+                    textObj = textRef
+                if (VAL({textObj: textObj}, "getTextKey"))
+                    if (TEXTIDREGISTRY[textObj.id])
+                        return TEXTIDREGISTRY[textObj.id]
+                return !isSilent && THROW(`Cannot locate text key with search value '${D.JS(textRef)}'`, "getTextKey")
+            } catch (errObj) {
+                return !isSilent && THROW(`Cannot locate text key with search value '${D.JS(textRef)}'`, "getTextKey", errObj)
+            }
         },
-        getTextData = (textRef) => {
-
+        getTextObj = (textRef, isSilent = false) => {
+            try {
+                let textObj
+                if (VAL({ textObj: textRef }))
+                    textObj = textRef
+                else if (VAL({ string: textRef }))
+                    if (getTextKey(textRef, isSilent))
+                        textObj = getObj("text", TEXTREGISTRY[getTextKey(textRef)].id)
+                    else
+                        textObj = getObj("text", textRef) || null
+                else if (VAL({ selected: textRef}))
+                    textObj = D.GetSelected(textRef)[0]
+                return textObj || !isSilent && THROW(`Bad text reference: ${D.JS(textRef)}`, "getTextObj")
+            } catch (errObj) {
+                return !isSilent && THROW(`Bad text reference: ${D.JS(textRef)}`, "getTextObj", errObj)
+            }
+        },
+        getTextObjs = textRefs => {
+            const txtRefs = VAL({ msg: textRefs }) ? D.GetSelected(textRefs) || [] : textRefs,
+                textObjs = []
+            if (VAL({ array: txtRefs })) {
+                for (const txtRef of txtRefs)
+                    textObjs.push(getTextObj(txtRef))
+                return textObjs
+            }
+            return false
+        },
+        hasShadowObj = textRef => Boolean((getTextData(textRef) || {shadow: false}).shadow),
+        getTextShadowObj = (textRef, isSilent = false) => {
+            const textKey = getTextKey(textRef, isSilent)
+            if (textKey)
+                return getTextObj(TEXTREGISTRY[textKey].shadow, true) || !isSilent && THROW(`No shadow text object registered for ${D.JS(textKey)}`, "getTextShadowObj")
+            return !isSilent && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, "getTextShadowObj")
+        },
+        getTextData = (textRef, isSilent = false) => {
+            try {
+                if (getTextKey(textRef, isSilent)) {
+                    return TEXTREGISTRY[getTextKey(textRef, isSilent)]
+                } else if (getTextObj(textRef, isSilent)) {
+                    const textObj = getTextObj(textRef, isSilent)
+                    DB(`Retrieving data for UNREGISTERED Text Object ${D.JS(textRef)}`, "getTextData")
+                    return {
+                        id: textObj.id,
+                        left: parseInt(textObj.get("left")),
+                        top: parseInt(textObj.get("top")),
+                        height: parseInt(textObj.get("height")),
+                        width: parseInt(textObj.get("width")),
+                        font: textObj.get("font_family"),
+                        fontSize: textObj.get("font_size"),
+                        color: textObj.get("color"),
+                        text: textObj.get("text")
+                    }
+                }
+                return !isSilent && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, "getTextData")
+            } catch (errObj) {
+                return !isSilent && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, "getTextData", errObj)
+            }
         },
         getTextWidth = (textRef, text) => {
             const textObj = getTextObj(textRef)
-            if (VAL({ text: textObj }, "getTextWidth")) {
+            if (VAL({ textObj: textObj }, "getTextWidth")) {
                 const font = textObj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
                     size = textObj.get("font_size"),
                     chars = text.split(""),
@@ -1202,7 +1277,6 @@ const Media = (() => {
                 let width = 0
                 if (!fontRef || !charRef) {
                     DB(`No font reference for '${font}' at size '${size}', attempting default`, "getTextWidth")
-
                     return text.length * (parseInt(textObj.get("width")) / textObj.get("text").length)
                 }
                 _.each(chars, char => {
@@ -1215,7 +1289,7 @@ const Media = (() => {
             }
             return false
         },
-        regText = (textRef, hostName, activeLayer, startActive, isNeedingShadow, options = {}, isSilent = false) => {
+        regText = (textRef, hostName, activeLayer, startActive, hasShadow, options = {}, isSilent = false) => {
             // D.Alert(`Options for '${D.JS(imgName)}': ${D.JS(options)}`, "IMAGES: regImage")
             const textObj = getTextObj(textRef)
             if (VAL({ text: textObj })) {
@@ -1246,7 +1320,8 @@ const Media = (() => {
                     activeLayer: activeLayer,
                     startActive: !(startActive === "false" || startActive === false)
                 }
-                if (isNeedingShadow) {
+                TEXTIDREGISTRY[textObj.id] = name
+                if (hasShadow) {
                     const shadowParams = Object.assign({}, params)
                     shadowParams.left += 5
                     shadowParams.top += 5
@@ -1254,8 +1329,10 @@ const Media = (() => {
                     shadowParams.shadowMaster = textObj.id
                     shadowParams.shadow = undefined
                     const shadowObj = makeText(hostName + "Shadow", false, shadowParams, isSilent)
+                    toFront(shadowObj)
                     TEXTREGISTRY[name].shadow = shadowObj.id
-                }
+                }                
+                toFront(textObj)
                 if (!TEXTREGISTRY[name].startActive) {
                     setText(name, "")
                     layerText([name], "gmlayer")
@@ -1264,14 +1341,12 @@ const Media = (() => {
                     layerText([name], TEXTREGISTRY[name].activeLayer)
                 }
                 if (!isSilent)
-                    D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(TEXTREGISTRY[name])}`, "IMAGES: regText")
-
+                    D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(TEXTREGISTRY[name])}`, "regText")
                 return getTextData(name)
             }
-
-            return THROW(`Invalid text reference '${D.JSL(textRef)}'`, "regText")
+            return !isSilent && THROW(`Invalid text reference '${D.JS(textRef)}'`, "regText")
         },
-        makeText = (hostName, isNeedingShadow, options = {}, isSilent = false) => {
+        makeText = (hostName, hasShadow, options = {}, isSilent = false) => {
             const textObj = createObj("text", {
                     _pageid: options._pageID || D.PAGEID(),
                     text: options.text || "",
@@ -1286,29 +1361,33 @@ const Media = (() => {
                 activeLayer = options.activeLayer || "gmlayer",
                 isStartingActive = !(options.startActive === "false" || options.startActive === false),
                 params = _.omit(options, ["activeLayer", "startActive"])
-            regText(textObj, hostName, activeLayer, isStartingActive, isNeedingShadow, params, isSilent)
-
+            regText(textObj, hostName, activeLayer, isStartingActive, hasShadow, params, isSilent)
             return textObj
         },
         setText = (textRef, text, params = {}) => {
             const textObj = getTextObj(textRef),
-                textData = getTextData(textRef)
-            params.text = text
-            textObj.set(params)
-            for (const key of _.intersection(_.keys(params), _.keys(TEXTREGISTRY[name])))
-                TEXTREGISTRY[name][key] = params[key]
+                textData = getTextData(textRef),
+                textParams = Object.assign({text: text}, _.omit(params, ["shiftleft", "shifttop"]))
+            for (const key of _.intersection(_.keys(params), ["shiftleft", "shifttop"]))
+                textParams[key.replace(/shift/gu, "")] = parseInt(textObj.get(key.replace(/shift/gu, ""))) + parseInt(params[key])
+            for (const key of _.intersection(_.keys(params), _.keys(TEXTREGISTRY[textData.name])))
+                TEXTREGISTRY[name][key] = params[key]            
+            textObj.set(textParams)
             if (textData.shadow) {
                 const shadowObj = getTextObj(textData.shadow),
-                    shadowParams = _.omit(params, ["height", "width", "color"])
-                for (const key of _.intersection(_.keys(params), ["left", "top"]))
-                    shadowParams[key] = params[key] + 5
+                    shadowParams = _.omit(params, ["height", "width", "color", "shiftleft", "shifttop"])
+                for (const key of _.intersection(shadowParams, _.keys(TEXTREGISTRY[`${textData.name}Shadow`])))
+                    TEXTREGISTRY[`${textData.name}Shadow`][key] = shadowParams[key]
+                for (const key of _.intersection(_.keys(textParams), ["left", "top"]))
+                    shadowParams[key] = textParams[key] + 5
                 shadowObj.set(shadowParams)
-                //toFront(shadowObj)
             }
-            //toFront(textObj)
         },
-        setTextData = (textRef, params = {}) => {
-
+        setTextData = (textRef, params) => {
+            _.each(params, (v, k) => {
+                TEXTREGISTRY[getTextKey(textRef)][k] = v
+            })
+            return TEXTREGISTRY[getTextKey(textRef)]
         },
         toggleText = (textRef, isActive, text) => {
             const textObj = getTextObj(textRef),
@@ -1322,14 +1401,34 @@ const Media = (() => {
                 setText(textRef, "")
             }
         },
-        removeText = (textRef, isUnregOnly = true) => {
-
+        removeText = (textRef, isUnregOnly) => {
+            const txtObj = getTextObj(textRef),
+                textData = getTextData(textRef)
+            if (hasShadowObj(txtObj))
+                removeText(`${textData.name}Shadow`, isUnregOnly)
+            if (txtObj && !isUnregOnly)
+                txtObj.remove()
+            if (textData) {
+                if (TEXTIDREGISTRY[textData.id])
+                    delete TEXTIDREGISTRY[textData.id]
+                if (TEXTREGISTRY[textData.name])
+                    delete TEXTREGISTRY[textData.name]
+                return true
+            }
+            return THROW(`Invalid text reference ${D.JSL(textRef)}`, "removeText")
         },
-        removeTexts = (textRefs, isUnregOnly = true) => {
-
+        removeTexts = (textString, isUnregOnly) => {
+            const txtNames = _.filter(_.keys(TEXTREGISTRY), v => v.includes(textString))
+            for (const txtName of txtNames)
+                removeText(txtName, isUnregOnly)
         },
         layerText = (textRefs, layer) => {
-
+            const textObjs = getTextObjs(textRefs, true)
+            for (const textObj of textObjs) {
+                textObj.set({layer: layer})
+                if (hasShadowObj(textObj))
+                    getTextShadowObj(textObj, true).set({layer: layer})
+            }
         }
     // #endregion
 
