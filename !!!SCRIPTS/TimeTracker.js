@@ -671,15 +671,13 @@ const TimeTracker = (() => {
         },
         setCurrentDate = () => {
             // dateObj = dateObj || new Date(parseInt(STATEREF.currentDate))
-            const timeText = `${
+            Media.SetText("TimeTracker", `${
                 DAYSOFWEEK[STATEREF.dateObj.getUTCDay()]}, ${
                 MONTHS[STATEREF.dateObj.getUTCMonth()]} ${
                 D.Ordinal(STATEREF.dateObj.getUTCDate())}, ${
                 (STATEREF.dateObj.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
                 STATEREF.dateObj.getUTCMinutes() < 10 ? "0" : ""}${STATEREF.dateObj.getUTCMinutes().toString()} ${
-                Math.floor(STATEREF.dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`
-            STATEREF.trackerObj.set("text", timeText)
-            STATEREF.trackerShadow.set("text", timeText)
+                Math.floor(STATEREF.dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`)
         },
         setIsRunning = runStatus => {
             isRunning = runStatus
@@ -778,14 +776,6 @@ const TimeTracker = (() => {
         setWeather = () => {
             const weatherCode = WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()],
                 weatherData = {},
-                [tempCObj, tempFObj, forecastObj, tempCShadow, tempFShadow, forecastShadow] = [
-                    getObj("text", STATEREF.tempCText),
-                    getObj("text", STATEREF.tempFText),
-                    getObj("text", STATEREF.weatherText),
-                    getObj("text", STATEREF.tempCShadow),
-                    getObj("text", STATEREF.tempFShadow),
-                    getObj("text", STATEREF.weatherShadow)
-                ],
                 getCloudSrc = () => {
                     switch (getHorizon()) {
                         case "night1":
@@ -808,10 +798,8 @@ const TimeTracker = (() => {
             let forecastLines = []
             //D.Alert(`Weather Code: ${D.JS(weatherCode)}<br>Month Temp: ${D.JS(getTemp(MONTHTEMP[dateObj.getUTCMonth()]))}<br><br>Delta Temp: ${D.JS(getTemp(weatherCode.charAt(2)))} (Code: ${weatherCode.charAt(2)})`)
             weatherData.tempC = getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(weatherCode.charAt(2))
-            tempCObj.set("text", `${getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(weatherCode.charAt(2))}°C`)
-            tempFObj.set("text", `(${Math.round(Math.round(9 / 5 * weatherData.tempC + 32))}°F)`)
-            tempCShadow.set("text", `${getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(weatherCode.charAt(2))}°C`)
-            tempFShadow.set("text", `(${Math.round(Math.round(9 / 5 * weatherData.tempC + 32))}°F)`)
+            Media.SetText("tempC", `${weatherData.tempC}°C`)
+            Media.SetText("tempF", `(${Math.round(Math.round(9 / 5 * weatherData.tempC + 32))}°F)`)
             switch (getHorizon() === "day" || getHorizon() === "daylighters" ? "x" : weatherCode.charAt(0)) {
                 // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
                 case "b":
@@ -864,8 +852,7 @@ const TimeTracker = (() => {
             if (weatherCode.charAt(3) !== "x")
                 forecastLines.push(WEATHERCODES[1][weatherCode.charAt(3)])
             forecastLines.push(weatherData.tempC < WINTERTEMP ? WEATHERCODES[2][weatherCode.charAt(4)][1] : WEATHERCODES[2][weatherCode.charAt(4)][0])
-            forecastObj.set("text", `${forecastLines.join(" ♦ ")}`)
-            forecastShadow.set("text", `${forecastLines.join(" ♦ ")}`)
+            Media.SetText("weather", `${forecastLines.join(" ♦ ")}`)
             Media.Set("WeatherFrost", weatherData.tempC > 0 ? "blank" : weatherData.tempC > -6 ? "frost1" : weatherData.tempC > -12 ? "frost2" : "frost3")
         },
         getGroundCover = (isTesting = false, downVal = 0.3, upb = 1, ups = 0.5) => {

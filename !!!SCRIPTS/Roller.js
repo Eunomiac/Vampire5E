@@ -140,10 +140,6 @@ const Roller = (() => {
                         case "text":
                             registerText(getObj("text", msg.selected[0]._id), args.shift())
                             break
-                        case "shape":
-                            name = args.shift()
-                            registerShape(getObj("path", msg.selected[0]._id), name, args.shift())
-                            break
                         case "image":
                         case "img":
                             name = args.shift()
@@ -538,7 +534,7 @@ const Roller = (() => {
                 color: C.COLORS.gold,
                 text: "goldMods"
             },
-            summary: {
+            dicePool: {
                 font_family: "Candal",
                 font_size: 56,
                 top: 91,
@@ -609,7 +605,7 @@ const Roller = (() => {
                 mainRoll: C.COLORS.white,
                 posMods: C.COLORS.white,
                 negMods: C.COLORS.brightred,
-                summary: C.COLORS.white,
+                dicePool: C.COLORS.white,
                 difficulty: C.COLORS.white,
                 resultCount: C.COLORS.white,
                 margin: {
@@ -634,7 +630,7 @@ const Roller = (() => {
                 mainRoll: C.COLORS.white,
                 posMods: C.COLORS.white,
                 negMods: C.COLORS.brightred,
-                summary: C.COLORS.white,
+                dicePool: C.COLORS.white,
                 difficulty: C.COLORS.white,
                 resultCount: C.COLORS.white,
                 margin: {
@@ -653,7 +649,7 @@ const Roller = (() => {
                 mainRoll: C.COLORS.white,
                 posMods: C.COLORS.white,
                 negMods: C.COLORS.brightred,
-                summary: C.COLORS.white,
+                dicePool: C.COLORS.white,
                 difficulty: C.COLORS.white,
                 resultCount: C.COLORS.white,
                 margin: {
@@ -672,7 +668,7 @@ const Roller = (() => {
                 mainRoll: C.COLORS.white,
                 posMods: C.COLORS.white,
                 negMods: C.COLORS.brightred,
-                summary: C.COLORS.white,
+                dicePool: C.COLORS.white,
                 difficulty: C.COLORS.white,
                 resultCount: C.COLORS.white,
                 margin: {
@@ -691,7 +687,7 @@ const Roller = (() => {
                 mainRoll: C.COLORS.white,
                 posMods: C.COLORS.white,
                 negMods: C.COLORS.brightred,
-                summary: C.COLORS.white,
+                dicePool: C.COLORS.white,
                 difficulty: C.COLORS.white,
                 resultCount: C.COLORS.white,
                 outcome: {
@@ -704,7 +700,7 @@ const Roller = (() => {
             remorse: {
                 rollerName: C.COLORS.white,
                 mainRoll: C.COLORS.white,
-                summary: C.COLORS.white,
+                dicePool: C.COLORS.white,
                 difficulty: C.COLORS.white,
                 resultCount: C.COLORS.white,
                 outcome: {
@@ -754,7 +750,7 @@ const Roller = (() => {
             mainRoll: `<div style="display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid ${C.COLORS.white};"><span style="display: block; height: 16px; line-height: 16px; width: 100%; font-size: 14px; ">`,
             mainRollSub: "<span style=\"display: block; height: 12px; line-height: 12px; width: 100%; margin-left: 24px; font-size: 10px; font-variant: italic;\">",
             check: `<div style="display: block; width: 100%; height: auto; padding: 3px 0px; border-bottom: 1px solid ${C.COLORS.white};"><span style="display: block; height: 20px;  line-height: 20px; width: 100%; margin-left: 10%;">`,
-            summary: "<div style=\"display: block; width: 100%; padding: 3px 0px; height: auto; \"><span style=\"display: block; height: 16px; width: 100%; margin-left: 5%; line-height: 16px; font-size: 14px;\">",
+            dicePool: "<div style=\"display: block; width: 100%; padding: 3px 0px; height: auto; \"><span style=\"display: block; height: 16px; width: 100%; margin-left: 5%; line-height: 16px; font-size: 14px;\">",
             resultBlock: "<div style=\"display: block; width: 100%; height: auto; \">",
             resultCount: "<div style=\"display: inline-block; width: YYYpx; margin-top:ZZZpx; vertical-align: top; text-align: right; height: 100%; \"><span style=\"display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none; height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: right; margin-right: 10px; font-size: 12px;\">",
             margin: "<div style=\"display: inline-block; width: YYYpx; vertical-align: top; margin-top:ZZZpx; text-align: left; height: 100%; \"><span style=\"display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none; height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: left; margin-left: 10px; font-size: 12px;\">",
@@ -940,26 +936,6 @@ const Roller = (() => {
                 images: params.images || [obj.get("imgsrc")]
             }
             D.Alert(`Registered image '${objName}: ${D.JS(_.values(STATEREF.imgList).slice(-1))}`, "ROLLER: registerImg()")
-        },
-        registerShape = (obj, objName, params = {}) => {
-            STATEREF.shapeList = params.isResetting ? {} : STATEREF.shapeList || {}
-            if (obj === null)
-                return
-            obj.set({
-                layer: "objects",
-                name: `rollerShape_${objName}`,
-                controlledby: ""
-            })
-            STATEREF.shapeList[objName] = {
-                id: obj.id,
-                type: obj.get("_type"),
-                subType: params.subType || "line",
-                top: obj.get("top"),
-                left: obj.get("left"),
-                height: obj.get("height"),
-                width: obj.get("width")
-            }
-            D.Alert(`Registered shape '${objName}: ${D.JS(_.values(STATEREF.shapeList).slice(-1))}`, "ROLLER: registerShape()")
         }
     // #endregion
 
@@ -2394,7 +2370,7 @@ const Roller = (() => {
                 case "rouse2":
                 case "rouse":
                 case "check":
-                    rollLines.summary = {
+                    rollLines.dicePool = {
                         text: ""
                     }
                     rollLines.summaryShadow = {
@@ -2531,9 +2507,9 @@ const Roller = (() => {
                         rollLines.rollerNameShadow.text = rollLines.rollerName.text
                         rollLines.mainRollShadow.text = rollLines.mainRoll.text
                         break
-                    case "summary":
-                        rollLines.summary.text = JSON.stringify(rollData.dicePool)
-                        rollLines.summaryShadow.text = rollLines.summary.text
+                    case "dicePool":
+                        rollLines.dicePool.text = JSON.stringify(rollData.dicePool)
+                        rollLines.summaryShadow.text = rollLines.dicePool.text
                         break
                     case "difficulty":
                         if (!rollResults.isNPCRoll) {

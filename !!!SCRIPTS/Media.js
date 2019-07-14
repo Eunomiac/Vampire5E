@@ -1423,15 +1423,16 @@ const Media = (() => {
         setText = (textRef, options = {}) => {
             const textObj = getTextObj(textRef),
                 textData = getTextData(textRef),
-                objParams = Object.assign(_.pick(options, C.TEXTPROPS))
-            for (const key of _.intersection(_.keys(options), ["shiftleft", "shifttop"]))
-                objParams[key.slice(5)] = textData[key.slice(5)] + parseInt(options[key])
-            for (const key of _.intersection(_.keys(options), _.keys(textData)))
-                TEXTREGISTRY[textData.name][key] = options[key]            
+                textOptions = VAL({string: options}) ? {text: options} : options, 
+                objParams = Object.assign(_.pick(textOptions, C.TEXTPROPS))
+            for (const key of _.intersection(_.keys(textOptions), ["shiftleft", "shifttop"]))
+                objParams[key.slice(5)] = textData[key.slice(5)] + parseInt(textOptions[key])
+            for (const key of _.intersection(_.keys(textOptions), _.keys(textData)))
+                TEXTREGISTRY[textData.name][key] = textOptions[key]            
             textObj.set(objParams)
             if (textData.shadow) {
                 const shadowObj = getTextShadowObj(textRef),
-                    shadowOptions = _.omit(options, ["color", "shadow"]),
+                    shadowOptions = _.omit(textOptions, ["color", "shadow"]),
                     shadowData = getTextData(textData.shadow),
                     shadowObjParams = Object.assign(_.pick(shadowOptions, C.TEXTPROPS))
                 for (const key of _.intersection(_.keys(shadowObjParams), ["left", "top"]))
