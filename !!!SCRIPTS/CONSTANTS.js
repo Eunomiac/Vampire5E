@@ -20,6 +20,8 @@ const C = (() => {
 
     // #region CORE CONFIGURATION & BASIC REFERENCES
     const PIXELSPERSQUARE = 70,
+        TEXTCHARS = "0123456789LMNQSOPRUWXTVZY-=●(+ABCFHDEGJIKalmnqsopruwxtvzyfhdegjikbc )?![]:;,.○~♠◌‡⅓°♦",
+        TEXTPAGEID = "-LNoXCt3hlI0Rz_Snw1s",
         SANDBOX = {
             height: 2680,
             width: 1664
@@ -362,6 +364,17 @@ const C = (() => {
             physical: ["Athletics", "Brawl", "Craft", "Drive", "Firearms", "Melee", "Larceny", "Stealth", "Survival"],
             social: ["Animal Ken", "Etiquette", "Insight", "Intimidation", "Leadership", "Performance", "Persuasion", "Streetwise", "Subterfuge"],
             mental: ["Academics", "Awareness", "Finance", "Investigation", "Medicine", "Occult", "Politics", "Science", "Technology"]
+        },
+        ATTRABBVS = {
+            STR: "strength",
+            DEX: "dexterity",
+            STA: "stamina",
+            CHA: "charisma",
+            MAN: "manipulation",
+            COM: "composure",
+            INT: "intelligence",
+            WIT: "wits",
+            RES: "resolve"
         },
         SKILLABBVS = {
             ATH: "athletics",
@@ -715,6 +728,7 @@ const C = (() => {
         GAMENAME,
         ROOT,
         PIXELSPERSQUARE,
+        TEXTCHARS, TEXTPAGEID,
         SANDBOX,
 
         NUMBERWORDS,
@@ -731,7 +745,7 @@ const C = (() => {
         ATTRPROPS, 
         HANDOUTPROPS,
 
-        ATTRIBUTES,
+        ATTRIBUTES, ATTRABBVS,
         SKILLS, SKILLABBVS,
         DISCIPLINES, DISCABBVS,
         TRACKERS,

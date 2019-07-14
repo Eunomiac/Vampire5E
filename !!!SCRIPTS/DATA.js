@@ -39,6 +39,8 @@ const D = (() => {
         STATEREF.BLACKLIST = STATEREF.BLACKLIST || []
         STATEREF.CHARWIDTH = STATEREF.CHARWIDTH || {}
         STATEREF.DEBUGLOG = STATEREF.DEBUGLOG || []
+
+        //delete state.VAMPIRE.DATA.CHARWIDTH
     }
     const TRACE = []
     let isTraceOnly = false
@@ -136,7 +138,7 @@ const D = (() => {
     // #endregion
 
     // #region PARSING & STRING MANIPULATION: Converting data types to strings, formatting strings, converting strings into objects.
-    const jStr = data => {
+    const jStr = (data, isVerbose = false) => {
         /* Parses a value of any type via JSON.stringify, and then further styles it for display either
           in Roll20 chat, in the API console log, or both. */
             try {
@@ -144,7 +146,10 @@ const D = (() => {
                     return _.escape("<UNDEFINED>")
                 const parser = val => {
                     if (val && val.get) {
-                        return `▌${data.get("_type") && data.get("_type").toUpperCase().slice(0, 3) || "OBJ"}</b>: ${data.get("name") || data.id || data}▐`
+                        if (isVerbose)
+                            return val
+                        else
+                            return `▌${data.get("_type") && data.get("_type").toUpperCase().slice(0, 3) || "OBJ"}</b>: ${data.get("name") || data.id || data}▐`
                     } else if (_.isArray(val)) {
                         const newArray = []
                         for (const v of val)
@@ -593,7 +598,7 @@ const D = (() => {
                 types = _.flatten([typeFilter])
             if (VAL({ selection: msg }, "getSelected"))
                 _.each(_.compact(msg.selected), v => {
-                    DB(`MSG Iteration:<br><br>Selected (${msg.selected.length}): ${jStr(msg.selected, true)}<br><br>Current V: ${jStr(v)}`, "getSelected")
+                    //DB(`MSG Iteration:<br><br>Selected (${msg.selected.length}): ${jStr(msg.selected, true)}<br><br>Current V: ${jStr(v)}`, "getSelected")
                     if (types.length === 0 || types.includes(v._type))
                         selObjs.add(getObj(v._type, v._id))
                     else if (v._type === "graphic" && VAL({ token: getObj("graphic", v._id) }))
@@ -1067,6 +1072,7 @@ const D = (() => {
         get PAGEID() { return VALS.PAGEID() },
         get CELLSIZE() { return VALS.CELLSIZE() },
 
+        CHARWIDTH: STATEREF.CHARWIDTH,
         JS: jStr, JSL: jStrL, JSH: jStrH, JSC: jStrC,
         NumToText: numToText, TextToNum: textToNum,
         Ordinal: ordinal,

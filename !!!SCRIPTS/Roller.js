@@ -44,6 +44,31 @@ const Roller = (() => {
         _.each(_.without(_.uniq(_.flatten(_.values(STATECATS))), ...STATECATS.dice), v => {
             STATEREF[v] = STATEREF[v] || {}
         })
+
+        /* delete state.VAMPIRE.Roller.textList
+        delete state.VAMPIRE.Roller.imgList
+        delete state.VAMPIRE.Roller.shapeList
+        delete state.VAMPIRE.Roller.charEffects
+        delete state.VAMPIRE.TimeTracker.timeText
+        delete state.VAMPIRE.TimeTracker.horizonImage
+        delete state.VAMPIRE.TimeTracker.timeTextShadow
+        delete state.VAMPIRE.TimeTracker.tempCText
+        delete state.VAMPIRE.TimeTracker.tempFText
+        delete state.VAMPIRE.TimeTracker.weatherText
+        delete state.VAMPIRE.TimeTracker.tempCShadow
+        delete state.VAMPIRE.TimeTracker.tempFShadow
+        delete state.VAMPIRE.TimeTracker.weatherShadow
+        delete state.VAMPIRE.TimeTracker.trackerObj
+
+        delete state.VAMPIRE.DATA.jStrTest
+        delete state.VAMPIRE.Chars */
+
+        /*setText("negMods", {text: "Neg Mods"})
+        setText("redMods", {text: "Red Mods"})
+        setText("goldMods", {text: "Gold Mods"})
+        setText("difficulty", {text: "DD"})
+        setText("margin", {text: "MM"})
+        setText("subOutcome", {text: "subOutcome"}) */
     }
 
     // #endregion	
@@ -54,6 +79,8 @@ const Roller = (() => {
             name = "",
             [isSilent, isHidingTraits] = [false, false]
         switch (call) { 		// !traitroll @{character_name}|Strength,Resolve|3|5|0|ICompulsion:3,IPhysical:2
+            //case "!setrollertext":
+                //setText(args.shift(), )
             case "!frenzyinitroll":	// !projectroll @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
                 lockRoller(true)
                 STATEREF.frenzyRoll = `${args.join(" ").split("|")[0]}|`
@@ -101,6 +128,9 @@ const Roller = (() => {
                 if (!playerIsGM(msg.playerid)) return
                 STATEREF.isNextRollNPC = true
                 break
+            case "!cleanRoller":
+                cleanRoller()
+                break
             case "!buildFrame":
                 initFrame()
                 break
@@ -128,32 +158,6 @@ const Roller = (() => {
                         thisDie.set("isdrawing", false)
                     }
                 })
-                break
-            case "!reg": case "!register":
-                if (!msg.selected || !msg.selected[0])
-                    THROW("Select a Graphic!", "!reg")
-                else
-                    switch (args.shift()) {
-                        case "die":
-                            registerDie(getObj("graphic", msg.selected[0]._id), args.shift())
-                            break
-                        case "text":
-                            registerText(getObj("text", msg.selected[0]._id), args.shift())
-                            break
-                        case "image":
-                        case "img":
-                            name = args.shift()
-                            registerImg(getObj("graphic", msg.selected[0]._id), name, args.join(","))
-                            break
-                        case "repo":
-                        case "reposition":
-                            reposition(msg.selected)
-                            break
-                        default:
-                            THROW("Bad registration code.", "!reg repo")
-                            break
-                    }
-
                 break
             case "!changeRoll":
                 changeRoll(parseInt(args.shift()))
@@ -469,21 +473,13 @@ const Roller = (() => {
             text: ["textList"],
             path: ["shapeList"]
         },
-        TEXTLINES = {
+        TEXTLINES = { 
             rollerName: {
                 font_family: "Candal",
                 font_size: 32,
                 top: 20,
                 left: 45,
                 color: C.COLORS.white,
-                text: "rollerName"
-            },
-            rollerNameShadow: {
-                font_family: "Candal",
-                font_size: 32,
-                top: 25,
-                left: 50,
-                color: C.COLORS.black,
                 text: "rollerName"
             },
             mainRoll: {
@@ -494,19 +490,11 @@ const Roller = (() => {
                 color: C.COLORS.white,
                 text: "mainRoll"
             },
-            mainRollShadow: {
-                font_family: "Contrail One",
-                font_size: 40,
-                top: 78,
-                left: 140,
-                color: C.COLORS.black,
-                text: "mainRoll"
-            },
             posMods: {
                 font_family: "Contrail One",
                 font_size: 32,
                 top: 115,
-                left: 157,
+                left: 205,
                 color: C.COLORS.white,
                 text: "posMods"
             },
@@ -514,23 +502,23 @@ const Roller = (() => {
                 font_family: "Contrail One",
                 font_size: 32,
                 top: 115,
-                left: 476,
+                left: 205,
                 color: C.COLORS.red,
                 text: "negMods"
             },
             redMods: {
                 font_family: "Contrail One",
                 font_size: 32,
-                top: 115,
-                left: 957,
+                top: 166,
+                left: 595,
                 color: C.COLORS.red,
                 text: "redMods"
             },
             goldMods: {
                 font_family: "Contrail One",
                 font_size: 32,
-                top: 75,
-                left: 957,
+                top: 166,
+                left: 595,
                 color: C.COLORS.gold,
                 text: "goldMods"
             },
@@ -540,14 +528,6 @@ const Roller = (() => {
                 top: 91,
                 left: 75,
                 color: C.COLORS.white,
-                text: "SS"
-            },
-            summaryShadow: {
-                font_family: "Candal",
-                font_size: 56,
-                top: 96,
-                left: 80,
-                color: C.COLORS.black,
                 text: "SS"
             },
             difficulty: {
@@ -564,14 +544,6 @@ const Roller = (() => {
                 top: 185,
                 left: 75,
                 color: C.COLORS.white,
-                text: "RC"
-            },
-            resultCountShadow: {
-                font_family: "Candal",
-                font_size: 56,
-                top: 190,
-                left: 80,
-                color: C.COLORS.black,
                 text: "RC"
             },
             margin: {
@@ -876,198 +848,11 @@ const Roller = (() => {
             for (let i = 0; i < amount; i++)
                 makeDie(category, category === STATECATS.dice[0])
 
-        },
-        registerText = (obj, objName) => {
-            STATEREF.textList = STATEREF.textList || {}
-            if (obj) {
-                obj.set({
-                    layer: "objects",
-                    name: `rollerText_${objName}`,
-                    controlledby: ""
-                })
-                STATEREF.textList[objName] = {
-                    id: obj.id,
-                    top: obj.get("top"),
-                    left: obj.get("left"),
-                    height: obj.get("height"),
-                    width: obj.get("width")
-                }
-                D.Alert(`Registered text box '${objName}: ${D.JS(_.values(STATEREF.textList).slice(-1))}`, "ROLLER: registerText()")
-
-                return true
-            }
-
-            return THROW(`Invalid object: ${D.JS(obj)}`, "registerText()")
-        },
-        registerImg = (obj, objName, params = {}) => {
-            if (VAL({ string: params })) {
-                const kvpairs = params.split(","),
-                    imgInfo = {
-                        images: []
-                    }
-                _.each(kvpairs, kvp => {
-                    if (kvp.includes("|")) {
-                        const [k, v] = kvp.split("|")
-                        imgInfo[k] = v
-                    } else {
-                        imgInfo.images.push(kvp)
-                    }
-                })
-            }
-            if (STATEREF.imgList[objName]) {
-                const remObj = getObj("graphic", STATEREF.imgList[objName].id)
-                if (remObj)
-                    remObj.remove()
-            }
-            if (obj === null)
-                return
-            obj.set({
-                layer: "objects",
-                name: `rollerImage_${objName}`,
-                controlledby: ""
-            })
-            STATEREF.imgList[objName] = {
-                id: obj.id,
-                top: obj.get("top"),
-                left: obj.get("left"),
-                height: obj.get("height"),
-                width: obj.get("width"),
-                imgsrc: params.images && params.images[0] || obj.get("imgsrc"),
-                images: params.images || [obj.get("imgsrc")]
-            }
-            D.Alert(`Registered image '${objName}: ${D.JS(_.values(STATEREF.imgList).slice(-1))}`, "ROLLER: registerImg()")
         }
     // #endregion
 
     // #region Graphic & Text Control
-    const makeImg = (name, imgsrc, top, left, height, width, layer = "objects") => {
-            const img = createObj("graphic", {
-                _pageid: D.PAGEID,
-                imgsrc,
-                top,
-                left,
-                width,
-                height,
-                layer,
-                isdrawing: true,
-                controlledby: ""
-            })
-            D.Alert(`Registering image '${name}'.`, "ROLLER: makeImg")
-            registerImg(img, name)
-            toFront(img)
-
-            return img
-        },
-        setImg = (objName, image) => {
-            const obj = getObj("graphic", STATEREF.imgList[objName].id)
-            if (VAL({ graphic: obj }, "setImg")) {
-                obj.set("imgsrc", IMAGES[image])
-                return true
-            }
-
-            return false
-        },
-        clearImg = imgName => {
-            if (!STATEREF.imgList[imgName])
-                return THROW(`NO IMAGE REGISTERED AS ${imgName}`, "clearImg")
-            const obj = getObj("graphic", STATEREF.imgList[imgName].id)
-            if (VAL({ graphic: obj }, "clearImg")) {
-                DragPads.DelPad(obj.id)
-                obj.remove()
-                STATEREF.imgList = _.omit(STATEREF.imgList, imgName)
-                return true
-            }
-
-            return false
-        },
-        makeText = (name, font_family, font_size, top, left, color, text = "") => {
-            const txt = createObj("text", {
-                _pageid: D.PAGEID,
-                font_family,
-                font_size,
-                top,
-                left,
-                color,
-                text,
-                layer: "objects",
-                controlledby: ""
-            })
-            D.Alert(`Registering text '${name}'.`, "ROLLER: makeText")
-            registerText(txt, name)
-
-            return txt
-        },
-        setText = (objName, params) => {
-            if (!STATEREF.textList[objName])
-                return THROW(`No text object registered with name '${D.JS(objName)}'.`, "setText()")
-            const obj = getObj("text", STATEREF.textList[objName].id),
-                {
-                    width,
-                    left,
-                    top
-                } = STATEREF.textList[objName]
-            if (VAL({ text: obj }, "setText")) {
-                params.top = top
-                params.left = left
-                if (params.justified && params.justified === "left") {
-                    params.width = Media.GetTextWidth(obj, params.text)
-                    params.left = left + params.width / 2 - width / 2
-                }
-                if (params.shift) {
-                    if (params.shift.anchor) {
-                        if (!STATEREF.textList[params.shift.anchor])
-                            return THROW(`No anchored object registered with name '${D.JS(params.shift.anchor)}' in params set:<br><br>${D.JS(params)}.`, "setText()")
-                        const anchorObj = getObj("text", STATEREF.textList[params.shift.anchor].id),
-                            anchorWidth = parseInt(anchorObj.get("width")),
-                            anchorLeft = parseInt(anchorObj.get("left"))
-                        switch (params.shift.anchorSide) {
-                            case "right":
-                                params.left = anchorLeft +
-                                    0.5 * anchorWidth +
-                                    0.5 * params.width +
-                                    parseInt(params.shift.amount)
-                                break
-                            default:
-                                break
-                        }
-                    } else if (params.shift.imgAnchor) {
-                        const imgObj = Media.GetObj(params.shift.imgAnchor)
-                        if (VAL({ graphic: imgObj }))
-                            switch (params.shift.anchorSide) {
-                                case "right":
-                                    params.left = parseInt(imgObj.get("left")) +
-                                        0.5 * parseInt(imgObj.get("width")) +
-                                        0.5 * params.width +
-                                        parseInt(params.shift.amount)
-                                    break
-                                default:
-                                    break
-                            }
-                    }
-                    params.left += params.shift.left || 0
-                    params.top += params.shift.top || 0
-                }
-                if (_.isNaN(params.left) || _.isNaN(params.top) || _.isNaN(params.width))
-                    // if (!VAL({number: [params.left, params.top, params.width]}, null, true))
-                    return THROW(`Bad top, left or width given for '${D.JS(objName)}': ${D.JS(params)}`, "setText()")
-                obj.set(_.omit(params, ["justified", "shift"]))
-
-                return params
-            }
-
-            return THROW(`Failure to recover object '${D.JS(objName)}': ${D.JS(STATEREF.textList)}`, "setText()")
-        },
-        clearText = txtName => {
-            const obj = getObj("text", STATEREF.textList[txtName].id)
-            if (VAL({ text: obj }, "clearText")) {
-                obj.remove()
-                STATEREF.textList = _.omit(STATEREF.textList, txtName)
-                return true
-            }
-
-            return false
-        },
-        setColor = (line, type, params, level) => {
+    const setColor = (line, type, params, level) => {
             if (VAL({ string: type }, "setColor")) {
                 if (type && !COLORSCHEMES[type])
                     THROW(`No Color Scheme for type '${D.JS(type)}'`, "setColor()")
@@ -1084,42 +869,24 @@ const Roller = (() => {
 
             return false
         },
-        reposition = (selObjs = []) => {
-            // D.Alert(`Selected Objects: ${selObjs}`, "ROLLER: Reposition")
-            for (const sel of selObjs) {
-                const obj = getObj(sel._type, sel._id)
-                _.find(_.pick(STATEREF, STATECATS[sel._type]),
-                       (val, key) => _.find(val,
-                                            (v, k) => {
-                                                if (v.id === obj.id) {
-                                                    STATEREF[key][k].left = obj.get("left")
-                                                    STATEREF[key][k].top = obj.get("top")
-                                                    STATEREF[key][k].height = obj.get("height")
-                                                    STATEREF[key][k].width = obj.get("width")
-                                                    D.Alert(`Repositioned '${obj.id}' at [${D.JS(key)}/${D.JS(k)}] to: ${D.JS(STATEREF[key][k])}`, "ROLLER: reposition()")
-
-                                                    return true
-                                                }
-
-                                                return false
-                                            }
-                       )
-                )
-            }
+        cleanRoller = () => {
+            for (const textLine of _.keys(TEXTLINES))            
+                Media.SetText(textLine, " ")
+            _.each(STATEREF.diceList, (v, dNum) => {
+                setDie(dNum, "diceList", "blank")
+            })  
+            _.each(STATEREF.bigDice, (v, dNum) => {
+                setDie(dNum, "bigDice", "blank")
+            })                      
+            scaleFrame("top", -1)
         }
     // #endregion
 
     // #region Dice Frame
     const initFrame = () => {
-            const textList = []
             let workingImg = null
-            for (const name of _.keys(STATEREF.textList))
-                clearText(name)
-            for (const name of _.keys(STATEREF.imgList))
-                clearImg(name)
-
-            STATEREF.imgList = {}
-            STATEREF.textList = {}
+            for (const name of _.keys(TEXTLINES))
+                Media.RemoveText(name)
             DragPads.ClearAllPads("wpReroll")
             Media.Remove("wpRerollPlaceholder")
             Media.RemoveAll("rollerImage")
@@ -1127,77 +894,73 @@ const Roller = (() => {
             for (const cat of STATECATS.dice)
                 clearDice(cat)
             for (const textLine of _.keys(TEXTLINES))
-                textList.push(makeText(
-                    textLine,
-                    TEXTLINES[textLine].font_family,
-                    TEXTLINES[textLine].font_size,
-                    TEXTLINES[textLine].top,
-                    TEXTLINES[textLine].left,
-                    TEXTLINES[textLine].color,
-                    TEXTLINES[textLine].text
-                ))
-
-            Media.Register(makeImg(
-                "frontFrame",
-                IMAGES.frontFrame,
-                POSITIONS.diceFrameFront.top(),
-                POSITIONS.diceFrameFront.left(),
-                POSITIONS.diceFrameFront.height(),
-                POSITIONS.diceFrameFront.width()
-            ), "rollerImage_frontFrame", "base", "map", true)
+                Media.MakeText(textLine, "objects", true, true, null, TEXTLINES[textLine])
+            Media.MakeImg("rollerImage_frontFrame", {
+                imgsrc: IMAGES.frontFrame,
+                top: POSITIONS.diceFrameFront.top(),
+                left: POSITIONS.diceFrameFront.left(),
+                height: POSITIONS.diceFrameFront.height(),
+                width: POSITIONS.diceFrameFront.width(),
+                activeLayer: "map",
+                startActive: true
+            })
             for (let i = 0; i < 9; i++) {
-                Media.Register(makeImg(
-                    `topMid_${i}`,
-                    IMAGES.topMids[i - 3 * Math.floor(i / 3)],
-                    POSITIONS.diceFrameMidTop.top(),
-                    POSITIONS.diceFrameMidTop.left() + i * POSITIONS.diceFrameMidTop.xShift(),
-                    POSITIONS.diceFrameMidTop.height(),
-                    POSITIONS.diceFrameMidTop.width()
-                ), `rollerImage_topMid_${i}`, "base", "map", true)
-                Media.Register(makeImg(
-                    `bottomMid_${i}`,
-                    IMAGES.bottomMids[i - 3 * Math.floor(i / 3)],
-                    POSITIONS.diceFrameMidBottom.top(),
-                    POSITIONS.diceFrameMidBottom.left() + i * POSITIONS.diceFrameMidBottom.xShift(),
-                    POSITIONS.diceFrameMidBottom.height(),
-                    POSITIONS.diceFrameMidBottom.width()
-                ), `rollerImage_bottomMid_${i}`, "base", "map", true)
+                Media.MakeImg(`rollerImage_topMid_${i}`, {
+                    imgsrc: IMAGES.topMids[i - 3 * Math.floor(i / 3)],
+                    top: POSITIONS.diceFrameMidTop.top(),
+                    left: POSITIONS.diceFrameMidTop.left() + i * POSITIONS.diceFrameMidTop.xShift(),
+                    height: POSITIONS.diceFrameMidTop.height(),
+                    width: POSITIONS.diceFrameMidTop.width(),
+                    activeLayer: "map",
+                    startActive: true
+                })
+                Media.MakeImg(`rollerImage_bottomMid_${i}`, {
+                    imgsrc: IMAGES.bottomMids[i - 3 * Math.floor(i / 3)],
+                    top: POSITIONS.diceFrameMidBottom.top(),
+                    left: POSITIONS.diceFrameMidBottom.left() + i * POSITIONS.diceFrameMidBottom.xShift(),
+                    height: POSITIONS.diceFrameMidBottom.height(),
+                    width: POSITIONS.diceFrameMidBottom.width(),
+                    activeLayer: "map",
+                    startActive: true
+                })
             }
-            Media.Register(makeImg(
-                "topEnd",
-                IMAGES.topEnd,
-                POSITIONS.diceFrameEndTop.top(),
-                POSITIONS.diceFrameEndTop.left(),
-                POSITIONS.diceFrameEndTop.height(),
-                POSITIONS.diceFrameEndTop.width()
-            ), "rollerImage_topEnd", "base", "map", true)
-            Media.Register(makeImg(
-                "bottomEnd",
-                IMAGES.bottomEnd,
-                POSITIONS.diceFrameEndBottom.top(),
-                POSITIONS.diceFrameEndBottom.left(),
-                POSITIONS.diceFrameEndBottom.height(),
-                POSITIONS.diceFrameEndBottom.width()
-            ), "rollerImage_bottomEnd", "base", "map", true)
-            Media.Register(makeImg(
-                "diffFrame",
-                IMAGES.diffFrame,
-                POSITIONS.diceFrameDiffFrame.top(),
-                POSITIONS.diceFrameDiffFrame.left(),
-                POSITIONS.diceFrameDiffFrame.height(),
-                POSITIONS.diceFrameDiffFrame.width()
-            ), "rollerImage_diffFrame", "base", "map", true)
-
+            Media.MakeImg("rollerImage_topEnd", {
+                imgsrc: IMAGES.topEnd,
+                top: POSITIONS.diceFrameEndTop.top(),
+                left: POSITIONS.diceFrameEndTop.left(),
+                height: POSITIONS.diceFrameEndTop.height(),
+                width: POSITIONS.diceFrameEndTop.width(),
+                activeLayer: "map",
+                startActive: true
+            })
+            Media.MakeImg("rollerImage_bottomEnd", {
+                imgsrc: IMAGES.bottomEnd,
+                top: POSITIONS.diceFrameEndBottom.top(),
+                left: POSITIONS.diceFrameEndBottom.left(),
+                height: POSITIONS.diceFrameEndBottom.height(),
+                width: POSITIONS.diceFrameEndBottom.width(),
+                activeLayer: "map",
+                startActive: true
+            })
+            Media.MakeImg("rollerImage_diffFrame", {
+                imgsrc: IMAGES.diffFrame,
+                top: POSITIONS.diceFrameDiffFrame.top(),
+                left: POSITIONS.diceFrameDiffFrame.left(),
+                height: POSITIONS.diceFrameDiffFrame.height(),
+                width: POSITIONS.diceFrameDiffFrame.width(),
+                activeLayer: "map",
+                startActive: false
+            })
         //WP REROLL BUTTON
-            Media.Register(makeImg(
-                "wpRerollPlaceholder",
-                IMAGES.blank,
-                POSITIONS.diceFrameRerollPad.top(),
-                POSITIONS.diceFrameRerollPad.left(),
-                POSITIONS.diceFrameRerollPad.height(),
-                POSITIONS.diceFrameRerollPad.width(),
-                "gmlayer"
-            ), "wpRerollPlaceholder", "blank", "map", false)
+            Media.MakeImg("wpRerollPlaceholder", {
+                imgsrc: IMAGES.blank,
+                top: POSITIONS.diceFrameRerollPad.top(),
+                left: POSITIONS.diceFrameRerollPad.left(),
+                height: POSITIONS.diceFrameRerollPad.height(),
+                width: POSITIONS.diceFrameRerollPad.width(),
+                activeLayer: "map",
+                startActive: false
+            })
             DragPads.MakePad(workingImg, "wpReroll", {
                 top: POSITIONS.diceFrameRerollPad.top(),
                 left: POSITIONS.diceFrameRerollPad.left(),
@@ -1210,52 +973,62 @@ const Roller = (() => {
             Media.LayerImages(Media.IMAGELAYERS.map, "map")
             Media.LayerImages(Media.IMAGELAYERS.objects, "objects")
             Media.OrderImages("map")
-            textList.reverse()
-            for (const txt of textList)
-                if (_.isObject(txt))
-                    toFront(txt)
-                else
-                    D.Alert("Not a text object.")
 
         },
         scaleFrame = (row, width) => {
-            const stretchWidth = Math.max(width, 120),
-                imgs = [getObj("graphic", STATEREF.imgList[`${row}End`].id)],
-                blanks = [],
-                dbLines = []
-            let [midCount, endImg, stretchPer, left] = [0, null, 0, null]
-            while (stretchWidth > 225 * (imgs.length - 1)) {
-                imgs.push(getObj("graphic", STATEREF.imgList[`${row}Mid_${midCount}`].id))
-                midCount++
-                if (midCount >= IMAGES[`${row}Mids`].length * 3) {
-                    dbLines.push(`Need ${midCount - imgs.length + 2} more mid sections for ${row}`)
-                    break
+            if (width < 0) {
+                for (let i = 0; i < 9; i++) {
+                    Media.Set(`rollerImage_topMid_${i+1}`, "blank")
+                    Media.Set(`rollerImage_bottomMid_${i+1}`, "blank")                    
                 }
-            }
-            while (midCount < IMAGES[`${row}Mids`].length * 3) {
-                blanks.push(getObj("graphic", STATEREF.imgList[`${row}Mid_${midCount}`].id))
-                midCount++
-            }
-            stretchPer = stretchWidth / imgs.length
-            dbLines.push(`${row} stretchWidth: ${stretchWidth}, imgs Length: ${imgs.length}, x225 ${imgs.length * 225}, stretch per: ${stretchPer}`)
-            dbLines.push(`${row} midCount: ${midCount}, blanks length: ${blanks.length}`)
-            endImg = imgs.shift()
-            left = POSITIONS.diceFrameFront.left() + 120
-            dbLines.push(`${row}Start at ${POSITIONS.diceFrameFront.left()}, + 120 to ${left}`)
-            for (let i = 0; i < imgs.length; i++) {
-                dbLines.push(`Setting ${row}Mid${i} to ${left}`)
-                imgs[i].set({
-                    left,
-                    imgsrc: IMAGES[`${row}Mids`][i - 3 * Math.floor(i / 3)]
-                })
-                left += stretchPer
-            }
-            dbLines.push(`Setting ${row}End to ${left}`)
-            endImg.set("left", left)
-            for (let j = 0; j < blanks.length; j++)
-                blanks[j].set("imgsrc", IMAGES.blank)
+                Media.SetParams("rollerImage_topEnd_1", {left: 300})
+                Media.SetParams("rollerImage_bottomEnd_1", {left: 300})
+            } else {
+                const stretchWidth = Math.max(width, 120),
+                    imgs = [Media.GetObj(`rollerImage_${row}End`)],
+                    blanks = [],
+                    dbLines = []
+                let [midCount, endImg, stretchPer, left] = [0, null, 0, null]
+                while (stretchWidth > 225 * (imgs.length - 1)) {
+                    imgs.push(Media.GetObj(`rollerImage_${row}Mid_${midCount+1}`))
+                    midCount++
+                    if (midCount >= IMAGES[`${row}Mids`].length * 3) {
+                        dbLines.push(`Need ${midCount - imgs.length + 2} more mid sections for ${row}`)
+                        break
+                    }
+                }
+                while (midCount < IMAGES[`${row}Mids`].length * 3) {
+                    blanks.push(Media.GetObj(`rollerImage_${row}Mid_${midCount+1}`))
+                    midCount++
+                }
+                stretchPer = stretchWidth / imgs.length
+                dbLines.push(`${row} stretchWidth: ${stretchWidth}, imgs Length: ${imgs.length}, x225 ${imgs.length * 225}, stretch per: ${stretchPer}`)
+                dbLines.push(`${row} midCount: ${midCount}, blanks length: ${blanks.length}`)
+                endImg = imgs.shift()
+                left = POSITIONS.diceFrameFront.left() + (row === "top" ? 30 : 100)
+                dbLines.push(`${row}Start at ${POSITIONS.diceFrameFront.left()}, + 120 to ${left}`)
+                for (let i = 0; i < imgs.length; i++) {
+                    dbLines.push(`Setting ${row}Mid${i+1} to ${left}`)
+                    /* Media.SetParams(`rollerImage_${row}Mid_${i+1}`, {left: left})
+                    Media.Set(`rollerImage_${row}Mid_${i+1}`, "base") */
+                    Media.SetParams(imgs[i], {left: left})
+                    Media.Set(imgs[i], "base")
+                    left += stretchPer
+                }
+                dbLines.push(`Setting ${row}End to ${left}`)
+                Media.SetParams(endImg, {left: left})
+                for (let j = 0; j < blanks.length; j++)
+                    Media.Set(blanks[j], "blank")
 
-            //DB(dbLines.join("<br>"), "scaleFrame")
+                /* const frameEndObj = Media.GetObj("rollerImage_bottomEnd_1"),
+                    frameRightSide = frameEndObj.get("left") + 0.5 * frameEndObj.get("width")
+                if (row === "bottom") {
+                    Media.SetText("redMods", {left: frameRightSide, shiftleft: 20 })
+                    Media.SetText("goldMods", {left: frameRightSide, shiftleft: Media.GetTextWidth("redMods") + 40 })
+                } */
+
+                DB(dbLines.join("<br>"), "scaleFrame")
+            }
         }
     // #endregion
 
@@ -2262,26 +2035,10 @@ const Roller = (() => {
                 yShift = 0,
                 rollLines = {
                     rollerName: {
-                        text: "",
-                        justified: "left"
-                    },
-                    rollerNameShadow: {
-                        text: "",
-                        justified: "left"
+                        text: ""
                     },
                     mainRoll: {
-                        text: "",
-                        justified: "left",
-                        shift: {
-                            top: 20
-                        }
-                    },
-                    mainRollShadow: {
-                        text: "",
-                        justified: "left",
-                        shift: {
-                            top: 20
-                        }
+                        text: ""
                     }
                 },
                 logLines = {
@@ -2308,50 +2065,32 @@ const Roller = (() => {
                 case "trait":
                     if (posFlagLines.length) {
                         rollLines.posMods = {
-                            text: `+ ${posFlagLines.join(" + ")}          `,
-                            justified: "left"
+                            text: `+ ${posFlagLines.join(" + ")}`,
                         }
-                        rollLines.mainRoll.shift.top = 0
-                        rollLines.mainRollShadow.shift.top = 0
+                        rollLines.mainRoll.shifttop = -20
                     } else {
                         rollLines.posMods = {
-                            text: "  ",
-                            justified: "left"
+                            text: "",
                         }
                     }
                     if (negFlagLines.length) {
                         rollLines.negMods = {
                             text: `- ${negFlagLines.join(" - ")}`,
-                            justified: "left",
-                            shift: {
-                                anchor: "posMods",
-                                anchorSide: "right",
-                                amount: 20
-                            }
+                            shiftleft: 20 + Media.GetTextWidth("posMods", rollLines.posMods.text)
                         }
-                        rollLines.mainRoll.shift.top = 0
-                        rollLines.mainRollShadow.shift.top = 0
+                        rollLines.mainRoll.shifttop = -20
                     }
                     if (redFlagLines.length)
                         rollLines.redMods = {
-                            text: redFlagLines.join(" "),
-                            justified: "left",
-                            shift: {
-                                imgAnchor: "rollerImage_topEnd_1",
-                                anchorSide: "right",
-                                amount: 20
-                            }
+                            text: redFlagLines.join(" ")
                         }
-                    if (goldFlagLines.length)
+                    if (goldFlagLines.length) {
                         rollLines.goldMods = {
-                            text: goldFlagLines.join(" "),
-                            justified: "left",
-                            shift: {
-                                imgAnchor: "rollerImage_topEnd_1",
-                                anchorSide: "right",
-                                amount: 20
-                            }
+                            text: goldFlagLines.join(" ")
                         }
+                        if (redFlagLines.length)
+                            rollLines.redMods.shifttop = 40
+                    }
                 /* falls through */
                 case "willpower":
                 case "humanity":
@@ -2373,13 +2112,7 @@ const Roller = (() => {
                     rollLines.dicePool = {
                         text: ""
                     }
-                    rollLines.summaryShadow = {
-                        text: ""
-                    }
                     rollLines.resultCount = {
-                        text: ""
-                    }
-                    rollLines.resultCountShadow = {
                         text: ""
                     }
                     rollLines.outcome = {
@@ -2393,14 +2126,14 @@ const Roller = (() => {
 
 
             if (rollData.diff === 0)
-                setImg("diffFrame", "blank")
+                Media.Set("rollerImage_diffFrame", "blank")
 
             _.each(_.keys(rollLines), line => {
                 if (_.isString(COLORSCHEMES[rollData.type][line]))
                     rollLines[line] = setColor(line, rollData.type, rollLines[line])
             })
 
-            blankLines = _.keys(_.omit(STATEREF.textList, _.keys(rollLines)))
+            blankLines = _.without(_.keys(TEXTLINES), ..._.keys(rollLines))
 
             DB(`ROLL LINES:<br>@T@${D.JS(_.keys(rollLines))}<br>BLANKING LINES:<br>@T@${D.JS(blankLines)}`, "displayRoll")
 
@@ -2504,23 +2237,20 @@ const Roller = (() => {
                         }
                         logLines.rollerName = logPhrase
                         rollLines.rollerName.text = introPhrase || ""
-                        rollLines.rollerNameShadow.text = rollLines.rollerName.text
-                        rollLines.mainRollShadow.text = rollLines.mainRoll.text
                         break
                     case "dicePool":
                         rollLines.dicePool.text = JSON.stringify(rollData.dicePool)
-                        rollLines.summaryShadow.text = rollLines.dicePool.text
                         break
                     case "difficulty":
                         if (!rollResults.isNPCRoll) {
                             if (rollData.diff === 0 && rollData.diffMod === 0) {
                                 // D.Alert("Difficulty Is BLANK!")
                                 rollLines.difficulty.text = " "
-                                setImg("diffFrame", "blank")
+                                Media.Set("rollerImage_diffFrame", "blank")
                                 break
                             }
                             // D.Alert(`Setting Difficulty to ${rollData.diff}`)
-                            setImg("diffFrame", "diffFrame")
+                            Media.Set("rollerImage_diffFrame", "base")
                             rollLines.difficulty = {
                                 text: rollData.diff.toString()
                             }
@@ -2534,7 +2264,6 @@ const Roller = (() => {
                         break
                     case "resultCount":
                         rollLines.resultCount.text = JSON.stringify(rollResults.total)
-                        rollLines.resultCountShadow.text = rollLines.resultCount.text
                         break
                     case "margin":
                         ({
@@ -2705,6 +2434,12 @@ const Roller = (() => {
                 Media.Toggle(`Hunger${getAttrByName(rollData.charID, "sandboxquadrant")}_1`, true, deltaAttrs.hunger)
 
             logLines.rollerName = `${CHATSTYLES.rollerName + rollData.charName + logLines.rollerName}</div>`
+            if ((logLines.mainRoll + logLines.difficulty).replace(/<div.*?span.*?>/gu, "").length > 40) 
+                for(const abbv of _.keys(C.ATTRABBVS)) 
+                    logLines.mainRoll = logLines.mainRoll.replace(new RegExp(C.ATTRABBVS[abbv], "gui"), abbv)
+            if ((logLines.mainRoll + logLines.difficulty).replace(/<div.*?span.*?>/gu, "").length > 40) 
+                for(const abbv of _.keys(C.SKILLABBVS)) 
+                    logLines.mainRoll = logLines.mainRoll.replace(new RegExp(C.SKILLABBVS[abbv], "gui"), abbv)
             logLines.mainRoll = `${logLines.mainRoll + logLines.difficulty}</span>${logLines.mainRollSub}</div>`
             logLines.resultDice = formatDiceLine(rollData, rollResults, 13)
             logString = `${logLines.fullBox + logLines.rollerName + logLines.mainRoll + logLines.resultDice +
@@ -2745,14 +2480,15 @@ const Roller = (() => {
                 if (["rouse", "rouse2", "check", "project", "secret", "humanity", "willpower", "remorse"].includes(rollData.type) || rollResults.isNoWPReroll)
                     DragPads.Toggle("selectDie", false)
                 _.each(rollLines, (args, name) => {
-                    const params = setText(name, args)
-                    txtWidths[name] = params.width
+                    Media.SetText(name, args)
+                    txtWidths[name] = Media.GetTextWidth(name)
                 })
                 spread = txtWidths.posMods || 0 + txtWidths.negMods || 0
-                spread += txtWidths.posMods && txtWidths.negMods ? 100 : 0
+                Media.SetText("goldMods", {shiftleft: txtWidths.outcome + 20})
+                Media.SetText("redMods", {shiftleft: txtWidths.outcome + 20})
+                //spread += txtWidths.posMods && txtWidths.negMods ? 100 : 0
                 spread = Math.max(spread, txtWidths.mainRoll)
                 scaleFrame("top", spread)
-
                 D.RunFX("bloodBolt", POSITIONS.bloodBoltFX)
             }
             if (_.values(deltaAttrs).length) {
@@ -3087,7 +2823,8 @@ const Roller = (() => {
         RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
         Select: selectDie,
-        Reroll: wpReroll
+        Reroll: wpReroll,
+        Clean: cleanRoller
     }
 })()
 

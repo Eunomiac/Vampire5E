@@ -83,7 +83,7 @@ const Chat = (() => {
                         if (!getChar(obj))
                             sendHelpMsg()
                         break
-                    case "pos":
+                    case "pos": case "position":
                         if (!getPos(obj))
                             sendHelpMsg()
                         break
@@ -182,17 +182,20 @@ const Chat = (() => {
                 break
             case "!text":
                 switch (args.shift()) {
-                    case "prep":
-                        if (!msg.selected || !msg.selected[0])
-                            break
-                        prepText(msg.selected, args.shift())
-                        D.Alert("Move the text object(s) around, and type '!text res' when you have.")
+                    case "find":
+                        D.Alert(`Found ${D.GetSelected(msg, "text").length} objects.`)
                         break
+                    case "prep": {
+                        const font = VAL({number: args[0]}) ? ["Candal", "Contrail One", "Arial", "Patrick Hand", "Light"][parseInt(args.shift())] : args.shift(),
+                            sizes = _.map(args, v => parseInt(v)) || [20, 22, 26, 32, 40, 56, 72, 100]                        
+                        prepText(font, sizes)
+                        break
+                    }
                     case "res":
                     case "resolve":
                         if (!msg.selected || !msg.selected[0])
                             break
-                        resolveText(msg.selected)
+                        resolveText(D.GetSelected(msg, "text"))
                         break
                     case "upper":
                         if (!msg.selected || !msg.selected[0])
@@ -361,7 +364,7 @@ const Chat = (() => {
     const getSelected = (obj, isGettingAll) => {
             if (!VAL({object: obj}))
                 return false
-            D.Alert(isGettingAll ? D.JS(obj) : obj.id)
+            D.Alert(isGettingAll ? D.JS(obj, true) : obj.id)
 
             return true
         },
@@ -441,10 +444,10 @@ const Chat = (() => {
                 }<br/> <b>Left:</b> ${(obj.get("left") - 0.5 * obj.get("width")) / D.CELLSIZE
                 }<br/> <b>Top:</b> ${(obj.get("top") - 0.5 * obj.get("height")) / D.CELLSIZE
                 }<br/> <b>Dimensions:</b> ${obj.get("width") / D.CELLSIZE} x ${obj.get("height") / D.CELLSIZE}`,
-                pixelInfo = ` Center:</b> ${obj.get("left")}, ${obj.get("top")
-                }<br/> <b>Left:</b> ${obj.get("left") - 0.5 * obj.get("width")
-                }<br/> <b>Top:</b> ${obj.get("top") - 0.5 * obj.get("height")
-                }<br/> <b>Dimensions:</b> ${obj.get("width")} x ${obj.get("height")}`
+                pixelInfo = ` Center (Base Left, Top):</b> ${obj.get("left")}, ${obj.get("top")
+                }<br/> <b>Left Edge:</b> ${obj.get("left") - 0.5 * obj.get("width")
+                }<br/> <b>Top Edge:</b> ${obj.get("top") - 0.5 * obj.get("height")
+                }<br/> <b>Dimensions (Width x Height):</b> ${obj.get("width")} x ${obj.get("height")}`
             D.Alert(`<b><u>GRID</u>:</b><br/>${gridInfo}<br/><b><u>PIXELS</u>:</b><br/>${pixelInfo}`, "Position Data")
 
             return true
@@ -463,9 +466,13 @@ const Chat = (() => {
             return true
         },
         getStateData = (namespace, returnVals) => {
-            let stateInfo = state
-            if (namespace[0] !== C.GAMENAME)
-                namespace.unshift(C.GAMENAME)
+            let [stateInfo, isVerbose] = [state, false]
+            //if (namespace[0] !== C.GAMENAME)
+              //  namespace.unshift(C.GAMENAME)
+            if (namespace[0] === "full") {
+                isVerbose = true
+                namespace.shift()
+            }
             const title = `state.${namespace.join(".")}`
             // eslint-disable-next-line no-unmodified-loop-condition
             while (namespace && namespace.length)
@@ -479,8 +486,8 @@ const Chat = (() => {
                     })
                     returnInfo[key] = _.clone(returnData)
                 })
-                D.Alert(D.JS(returnInfo), title)
-            } else { D.Alert(D.JS(stateInfo), title) }
+                D.Alert(D.JS(returnInfo, isVerbose), title)
+            } else { D.Alert(D.JS(stateInfo, isVerbose), title) }
 
             return true
         },
@@ -502,34 +509,59 @@ const Chat = (() => {
     // #endregion
 
     // #region Text Length Testing
-    const prepText = (objIDs, string) => {
-            for (let i = 0; i < objIDs.length; i++) {
-                const char = string.charAt(i),
-                    [obj] = findObjs({
-                        _id: objIDs[i]._id
-                    })
-                obj.set("text", char.repeat(20))
+    const prepText = (font, sizes) => {
+            const [textObjs, newTextObjs] = [
+                findObjs({ _pageid: C.TEXTPAGEID, _type: "text" }),
+                {}
+            ]
+            let [left, top] = [300, 100]
+            for (const obj of textObjs)
+                obj.remove()
+            newTextObjs[font] = {}
+            for (const size of sizes) {
+                newTextObjs[font][size] = []
+                for (const char of C.TEXTCHARS.split("")) {
+                    newTextObjs[font][size].push(createObj("text", {
+                        _pageid: C.TEXTPAGEID,
+                        top: top,
+                        left: left,
+                        text: char.repeat(40),
+                        font_size: size,
+                        font_family: font,
+                        color: "rgb(255,255,255)",
+                        layer: "objects"
+                    }))
+                    top += 25
+                    if (top > 3400) {
+                        left += 100
+                        top = 100
+                    }
+                }
             }
+            D.Alert("Move the text object(s) around, and type '!text res' while all are selected when you have.")
         },
-        resolveText = objIDs => {
-            let stateRef = null
-            for (const objID of objIDs) {
-                const [obj] = findObjs({
-                        _id: objID._id
-                    }),
-                    width = obj.get("width"),
+        resolveText = objs => {
+            for (const obj of objs) {
+                const width = obj.get("width"),
                     char = obj.get("text").charAt(0),
                     [font] = obj.get("font_family").split(" "),
                     size = obj.get("font_size")
-                state.DATA = state.DATA || {}
-                state.DATA.CHARWIDTH = state.DATA.CHARWIDTH || {}
-                state.DATA.CHARWIDTH[font] = state.DATA.CHARWIDTH[font] || {}
-                state.DATA.CHARWIDTH[font][size] = state.DATA.CHARWIDTH[font][size] || {}
-                state.DATA.CHARWIDTH[font][size][char] = width / 20
-                stateRef = state.DATA.CHARWIDTH[font][size]
-                // D.Alert("Total Width: " + width + ", Char Width: " + (width / 20), "Text Width of '" + character + "'");
+                D.CHARWIDTH[font] = D.CHARWIDTH[font] || {}
+                D.CHARWIDTH[font][size] = D.CHARWIDTH[font][size] || {}
+                D.CHARWIDTH[font][size][char] = width / 40
             }
-            D.Alert(`Current Widths:   ${D.JS(stateRef)}`)
+            const charCount = {}
+            for (const fontName of _.keys(D.CHARWIDTH)) {
+                charCount[fontName] = {}
+                for (const fontSize of _.keys(D.CHARWIDTH[fontName])) {
+                    charCount[fontName][fontSize] = `${_.keys(D.CHARWIDTH[fontName][fontSize]).length}: `
+                    let colorList = ["red", "blue", "green", "purple"]
+                    for (const char of ["M", "t", " ", "0"])
+                        charCount[fontName][fontSize] += `<span style="color: ${C.COLORS[colorList.pop()]};"><b>${char}</b>: ${parseInt(D.CHARWIDTH[fontName][fontSize][char] * 100)/100}</span>, `
+                    charCount[fontName][fontSize] = charCount[fontName][fontSize].slice(0, -2)
+                }
+            }
+            D.Alert(D.JS(charCount), "CHARACTER WIDTH TALLY")
         },
         caseText = (objs, textCase) => {
             objs.forEach(obj => {

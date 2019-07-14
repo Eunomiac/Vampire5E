@@ -1,8 +1,25 @@
 void MarkStart("Media")
+
+/*
+Update character width lookup to contain all missing characters (like the diamond)
+Add "justification" parameter to registration.
+    justification = "center"        No changes.
+    justification = "left"/"right"...
+        Take current width value and current text string.
+        Determine width of text string.
+        Set "left" value to what it would be if there was no text.
+
+Update Roller by removing all justification references (instead they'll be stored at registration)
+Update registered text data values for all text objects to contain registration info.
+    ... by adding "!text set justification <hostName> <center/left/right>""
+*/
+
+
+
 const Media = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Media",
-        CHATCOMMAND = ["!img", "!txt"],
+        CHATCOMMAND = ["!img", "!text"],
         GMONLY = true
 
     // #region COMMON INITIALIZATION
@@ -31,26 +48,24 @@ const Media = (() => {
 
     // #region LOCAL INITIALIZATION
     const initialize = () => {
-        //D.Alert(`Initial STATEREF: ${D.JS(_.keys(STATEREF))}`)
         STATEREF.imageregistry = STATEREF.imageregistry || {}
         STATEREF.textregistry = STATEREF.textregistry || {}
         STATEREF.idregistry = STATEREF.idregistry || {}
         STATEREF.areas = STATEREF.areas || {}
         STATEREF.imgResizeDims = STATEREF.imgResizeDims || { height: 100, width: 100 }
-        //D.Alert(`Initial STATEREF.textregistry: ${D.JS(_.keys(STATEREF.textregistry))}`)
     }
     // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
-            let [srcName, hostName, txtObj, textObj, objLayer, objData, isStartActive, isShadow] = new Array(8),
+            let [srcName, hostName, textObj, objLayer, objData, isStartActive, isShadow, justification] = new Array(9),
                 params = {}
             switch (call.shift().toLowerCase()) {
                 case "!img":
                     switch (call.shift().toLowerCase()) {
                         case "adjust":
-                            txtObj = getImageObj(msg)
-                            txtObj.set(args.shift(), parseInt(args.shift()))
+                            textObj = getImageObj(msg)
+                            textObj.set(args.shift(), parseInt(args.shift()))
                             break
                         case "reg": case "register":
                             if (!args[0])
@@ -63,15 +78,15 @@ const Media = (() => {
                                             D.Alert("Syntax: !img reg area &lt;areaName&gt;", "IMAGES: !img reg area")
                                         } else {
                                             hostName = args.shift()
-                                            txtObj = getImageObj(msg)
-                                            if (!txtObj) {
+                                            textObj = getImageObj(msg)
+                                            if (!textObj) {
                                                 D.Alert("Select an image first!", "IMAGES: !img reg area")
                                             } else {
                                                 AREAS[hostName] = {
-                                                    top: parseInt(txtObj.get("top")),
-                                                    left: parseInt(txtObj.get("left")),
-                                                    height: parseInt(txtObj.get("height")),
-                                                    width: parseInt(txtObj.get("width"))
+                                                    top: parseInt(textObj.get("top")),
+                                                    left: parseInt(textObj.get("left")),
+                                                    height: parseInt(textObj.get("height")),
+                                                    width: parseInt(textObj.get("width"))
                                                 }
                                                 D.Alert(`Area Registered: ${hostName}<br><br><pre>${D.JS(AREAS[hostName])}</pre>`, "IMAGES: !img reg area")
                                             }
@@ -81,14 +96,14 @@ const Media = (() => {
                                         if (!args[0]) {
                                             D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; [params (\"key:value, key:value\")]", "IMAGES: !img reg")
                                         } else {
-                                            txtObj = getImageObj(msg)
+                                            textObj = getImageObj(msg)
                                             DB(`Image Object: ${D.JS(getImageObj(msg))}<br><br><br>MSG:<br><br>${D.JS(msg)}`, "IMAGES: !img reg")
-                                            if (!txtObj) {
+                                            if (!textObj) {
                                                 D.Alert("Select an image object first!", "IMAGES: !img reg")
                                             } else {
                                                 [hostName, srcName, objLayer, isStartActive] = [args.shift(), args.shift(), args.shift(), args.shift()]
                                                 if (hostName && srcName && objLayer && isStartActive)
-                                                    regImage(txtObj, hostName, srcName, objLayer, !isStartActive || isStartActive !== "false", D.ParseToObj(args.join(" ")))
+                                                    regImage(textObj, hostName, srcName, objLayer, !isStartActive || isStartActive !== "false", D.ParseToObj(args.join(" ")))
                                                 else
                                                     D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; [params (\"key:value, key:value\")]", "IMAGES: !img reg")
                                             }
@@ -99,20 +114,20 @@ const Media = (() => {
                         case "set":
                             switch (args.shift().toLowerCase()) {
                                 case "pos": case "position":
-                                    txtObj = getImageObj(msg)
-                                    if (!txtObj) {
+                                    textObj = getImageObj(msg)
+                                    if (!textObj) {
                                         D.Alert("Select an image first!", "IMAGES: !img set position")
                                     } else if (!isRegImg(msg)) {
                                         D.Alert(`Image not registered.  To register selected image:
                         
                             <pre>!img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; [params ("key:value, key:value")]</pre>`, "IMAGES: !img set position")
                                     } else {
-                                        [txtObj, hostName] = [getImageObj(msg), getImageKey(msg)]
+                                        [textObj, hostName] = [getImageObj(msg), getImageKey(msg)]
                                         IMAGEREGISTRY[hostName] = IMAGEREGISTRY[hostName] || {}
-                                        IMAGEREGISTRY[hostName].top = parseInt(txtObj.get("top"))
-                                        IMAGEREGISTRY[hostName].left = parseInt(txtObj.get("left"))
-                                        IMAGEREGISTRY[hostName].height = parseInt(txtObj.get("height"))
-                                        IMAGEREGISTRY[hostName].width = parseInt(txtObj.get("width"))
+                                        IMAGEREGISTRY[hostName].top = parseInt(textObj.get("top"))
+                                        IMAGEREGISTRY[hostName].left = parseInt(textObj.get("left"))
+                                        IMAGEREGISTRY[hostName].height = parseInt(textObj.get("height"))
+                                        IMAGEREGISTRY[hostName].width = parseInt(textObj.get("width"))
                                         D.Alert(`Position Set for Image ${hostName}<br><br><pre>${D.JS(IMAGEREGISTRY[hostName])}</pre>`)
                                     }
                                     break
@@ -129,11 +144,11 @@ const Media = (() => {
                                         D.Alert(`Image name ${D.JS(hostName)} is not registered.`, "IMAGES: !img set src")
                                     break
                                 case "area":
-                                    txtObj = getImageObj(msg)
-                                    if (!txtObj)
+                                    textObj = getImageObj(msg)
+                                    if (!textObj)
                                         D.Alert("Select an image first!", "IMAGES: !img set area")
                                     else
-                                        setImageArea(txtObj, args.shift())
+                                        setImageArea(textObj, args.shift())
                                     break
                                 case "layer":
                                     objLayer = args.pop()
@@ -146,8 +161,8 @@ const Media = (() => {
                                     orderImages(args.length ? args : msg, true)
                                     break
                                 case "params":
-                                    if (getImageData(args[0])) { txtObj = getImageObj(args.shift()) }
-                                    else if (getImageObj(msg)) { txtObj = getImageObj(msg) }
+                                    if (getImageData(args[0])) { textObj = getImageObj(args.shift()) }
+                                    else if (getImageObj(msg)) { textObj = getImageObj(msg) }
                                     else {
                                         THROW("Bad image reference.", "!img set params")
                                         break
@@ -155,7 +170,7 @@ const Media = (() => {
                                     for (const param of args)
                                         params[param.split(":")[0]] = param.split(":")[1]
 
-                                    setImgParams(txtObj, params)
+                                    setImgParams(textObj, params)
                                     break
                                 case "token":
                                     toggleToken(D.GetSelected(msg)[0] || args.shift(), args.shift())
@@ -296,17 +311,17 @@ const Media = (() => {
                                 alignImages(msg, ...args)
                             break
                         case "copy":
-                            txtObj = getImageObj(args.shift())
-                            srcName = txtObj.get("imgsrc")
-                            txtObj = getImageObj(args.shift())
-                            txtObj.set("imgsrc", srcName)
+                            textObj = getImageObj(args.shift())
+                            srcName = textObj.get("imgsrc")
+                            textObj = getImageObj(args.shift())
+                            textObj.set("imgsrc", srcName)
                             break
                         case "get":
                             switch (args.shift().toLowerCase()) {
                                 case "data":
-                                    txtObj = getImageObj(msg)
-                                    if (txtObj) {
-                                        D.Alert(getImageData(txtObj), "IMAGES, !img getData")
+                                    textObj = getImageObj(msg)
+                                    if (textObj) {
+                                        D.Alert(getImageData(textObj), "IMAGES, !img getData")
                                     } else {
                                         hostName = args.shift()
                                         if (hostName && IMAGEREGISTRY[hostName])
@@ -328,25 +343,63 @@ const Media = (() => {
                     // no default
                     }
                     break
-                case "!txt":
+                case "!text":
                     switch (call.shift().toLowerCase()) {
+                        case "checkregistry":
+                            D.Alert(`${D.JS(_.keys(TEXTREGISTRY))}`)
+                            break
                         case "clearregistry":
                             STATEREF.textregistry = {}
                             STATEREF.idregistry = {}
                             break
+                        case "checkwidths": {
+                            const dbStrings = []
+                            for (const textData of _.values(STATEREF.textregistry)) {
+                                textData.justification = "left"
+                                const textObj = getObj("text", textData.id)
+                                if (textObj) {
+                                    let width = textObj.get("width"),
+                                        text = textObj.get("text"),
+                                        left = textObj.get("left"),
+                                        textWidth = getTextWidth(textObj, text)
+                                    if (width === 0) {
+                                        textObj.set("left", left + 10)
+                                        width = textObj.get("width")
+                                        textObj.set("left", left)
+                                    }
+                                    dbStrings.push(`${textData.name}: width: ${width} --> ${textWidth}`)
+                                }
+                            }
+                            D.Alert(`${dbStrings.join("<br>")}`, "Text Width Check")
+                            break
+                        }
+                        case "justify": {
+                            const justification = args.shift() || "center"
+                            if (VAL({selection: msg})) 
+                                for(const textObj of D.GetSelected(msg))
+                                    justifyText(textObj, justification)
+                            else 
+                                for (const textKey of args)
+                                    justifyText(textKey, justification)                            
+                            break
+                        }
+                        case "rereg": case "reregister":                            
+                            if (VAL({selection: msg}))
+                                removeText(msg, true, true)
+                            /* falls through */
                         case "reg": case "register":
                             if (!args[0]) {
-                                D.Alert("Syntax: !txt reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; [params (\"key:value, key:value\")]", "MEDIA: !txt reg")
+                                D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
                             } else {
                                 textObj = getTextObj(msg)
                                 if (!textObj) {
-                                    D.Alert("Select a text object first!", "MEDIA: !txt reg")
+                                    D.Alert("Select a text object first!", "MEDIA: !text reg")
                                 } else {
-                                    [hostName, objLayer, isStartActive, isShadow] = [args.shift(), args.shift(), args.shift(), args.shift()]
+                                    [hostName, objLayer, isStartActive, isShadow, justification] = [args.shift(), args.shift(), args.shift(), args.shift(), args.shift()]
                                     if (hostName && objLayer)
-                                        regText(textObj, hostName, objLayer, !isStartActive || isStartActive !== "false", !isShadow || isShadow !== "false", D.ParseToObj(args.join(" ")))
+                                        regText(textObj, hostName, objLayer, !isStartActive || isStartActive !== "false", !isShadow || isShadow !== "false", justification || "center", D.ParseToObj(args.join(" ")))
                                     else
-                                        D.Alert("Syntax: !txt reg &lt;hostName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; [params (\"key:value, key:value\")]", "MEDIA: !txt reg")
+                                        D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
                                 }
                             }
                             break
@@ -354,36 +407,36 @@ const Media = (() => {
                             switch (args[0].toLowerCase()) {
                                 case "pos": case "position":
                                     args.shift()
-                                    txtObj = getTextObj(msg)
-                                    if (!txtObj) {
-                                        D.Alert("Select a text object first!", "MEDIA: !txt set position")
-                                    } else if (!IDREGISTRY[txtObj.id]) {
+                                    textObj = getTextObj(msg)
+                                    if (!textObj) {
+                                        D.Alert("Select a text object first!", "MEDIA: !text set position")
+                                    } else if (!IDREGISTRY[textObj.id]) {
                                         D.Alert(`Text not registered.  To register selected text:
                         
-                            <pre>!txt reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; [params ("key:value, key:value")]"</pre>`, "MEDIA: !txt set position")
+                            <pre>!text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; [params ("key:value, key:value")]"</pre>`, "MEDIA: !text set position")
                                     } else {
-                                        [txtObj, hostName] = [getTextObj(msg), getTextKey(msg)]
-                                        setText(textObj, {top: parseInt(txtObj.get("top")), left: parseInt(txtObj.get("left")), layer: textObj.get("layer")})
+                                        hostName = getTextKey(msg)
+                                        setText(textObj, {top: parseInt(textObj.get("top")), left: getBlankLeft(textObj), layer: textObj.get("layer")})
                                         D.Alert(`Position Set for Text ${hostName}<br><br><pre>${D.JS(TEXTREGISTRY[hostName])}</pre>`)
                                     }
                                     break
                                 case "params":
                                     args.shift()
-                                    txtObj = getTextObj(args[0]) || getTextObj(msg)
-                                    if (VAL({textObj: txtObj}, "!txt set params")) {
+                                    textObj = getTextObj(args[0]) || getTextObj(msg)
+                                    if (VAL({textObj: textObj}, "!text set params")) {
                                         for (const param of args)
                                             params[param.split(":")[0]] = param.split(":")[1]
-                                        setText(txtObj, params)
+                                        setText(textObj, params)
                                     }
                                     break
                                 default:
-                                    txtObj = getTextObj(args[0], true)
-                                    if (!txtObj)
-                                        txtObj = D.GetSelected(msg)[0]
+                                    textObj = getTextObj(args[0], true)
+                                    if (!textObj)
+                                        textObj = D.GetSelected(msg)[0]
                                     else
                                         args.shift()
-                                    if (VAL({textObj: txtObj}, "!txt set"))
-                                        setText(txtObj, {text: args.join(" ")})
+                                    if (VAL({textObj: textObj}, "!text set"))
+                                        setText(textObj, {text: args.join(" ")})
                                     break
                             // no default                                    
                             }
@@ -403,39 +456,39 @@ const Media = (() => {
                             } else if (args[0] && getTextObj(args.join(" "))) {
                                 removeText(args.join(" "))
                             } else {
-                                D.Alert(`Provide "all" (plus an optional host name substring), a registered host name, or select text objects. <b>Syntax:</b><br><br><pre>!txt del all <hostSubstring>
-                    !txt del <hostName></pre>`, "MEDIA: !txt del")
+                                D.Alert(`Provide "all" (plus an optional host name substring), a registered host name, or select text objects. <b>Syntax:</b><br><br><pre>!text del all <hostSubstring>
+                    !text del <hostName></pre>`, "MEDIA: !text del")
                             }
                             break
                         case "unreg": case "unregister":
-                            if (args[0].toLowerCase() === "all") {
+                            if (args[0] && args[0].toLowerCase() === "all") {
                                 args.shift()
                                 for (hostName of _.keys(TEXTREGISTRY))
                                     if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
-                                        removeText(hostName, true)
+                                        removeText(hostName, true, true)
+                            } else if (args[0]) {
+                                removeText(args.join(" "), true, true)
                             } else if (_.compact(getTextObjs(msg)).length) {
                                 for (const obj of getTextObjs(msg))
-                                    removeText(obj, true)
-                            } else if (args[0]) {
-                                removeText(args.join(" "), true)
+                                    removeText(obj, true, true)
                             } else {
-                                D.Alert("Provide \"all\", a registered host name, or select text objects. <b>Syntax:</b><br><br><pre>!txt unreg all/<<hostName>>")
+                                D.Alert("Provide \"all\", a registered host name, or select text objects. <b>Syntax:</b><br><br><pre>!text unreg all/<<hostName>>")
                             }
                             break
                         case "toggle":
                             switch (args.shift().toLowerCase()) {
                                 case "on":
-                                    DB(`Toggling ON: ${D.JS(args)}`, "!txt toggle")
+                                    DB(`Toggling ON: ${D.JS(args)}`, "!text toggle")
                                     for (const param of args)
                                         toggleText(param, true)
                                     break
                                 case "off":
-                                    DB(`Toggling OFF: ${D.JS(args)}`, "!txt toggle")
+                                    DB(`Toggling OFF: ${D.JS(args)}`, "!text toggle")
                                     for (const param of args)
                                         toggleText(param, false)
                                     break
                                 default:
-                                    D.Alert("Must state either 'on' or 'off'.  <b>Syntax:</b><br><br><pre>!txt toggle &lt;on/off&gt; &lt;hostnames&gt;</pre>", "MEDIA: !txt toggle")
+                                    D.Alert("Must state either 'on' or 'off'.  <b>Syntax:</b><br><br><pre>!text toggle &lt;on/off&gt; &lt;hostnames&gt;</pre>", "MEDIA: !text toggle")
                                     break
                             }
                             break
@@ -447,15 +500,15 @@ const Media = (() => {
                         case "get":
                             switch (args.shift().toLowerCase()) {
                                 case "data":
-                                    txtObj = getTextObj(msg)
-                                    if (txtObj) {
-                                        D.Alert(getTextData(txtObj), "!txt get data")
+                                    textObj = getTextObj(msg)
+                                    if (textObj) {
+                                        D.Alert(getTextData(textObj), "!text get data")
                                     } else {
                                         hostName = args.shift()
                                         if (hostName && TEXTREGISTRY[hostName])
                                             D.Alert(D.JS(TEXTREGISTRY[hostName]), `MEDIA: '${D.JS(hostName)}'`)
                                         else
-                                            D.Alert("Syntax: !txt get data [<category> <name>] (or select a text object object)", "!txt get data")
+                                            D.Alert("Syntax: !text get data [<category> <name>] (or select a text object object)", "!text get data")
                                     }
                                     break
                             // no default
@@ -917,8 +970,11 @@ const Media = (() => {
         },
         setImgParams = (imgRef, params) => {
             const imgObj = getImageObj(imgRef)
-            imgObj.set(params)
-            return imgObj
+            if (VAL({imgObj: imgObj}, "setImgParams")) {
+                imgObj.set(params)
+                return imgObj
+            }
+            return false
         },
         setImgData = (imgRef, params) => {
             _.each(params, (v, k) => {
@@ -1199,7 +1255,7 @@ const Media = (() => {
             let imgObjs
             //D.Alert(`Ordering Media: ${D.JS(imgRefs)}`)
             if (imgRefs === "map")
-                imgObjs = getImageObjs(IMAGELAYERS[TimeTracker.IsDay() && C.ROOT.Chars.isDaylighterSession ? "daylighterMap" : "map"])
+                imgObjs = getImageObjs(IMAGELAYERS[TimeTracker.IsDay() && Session.IsDaylighterSession ? "daylighterMap" : "map"])
             else if (imgRefs === "objects")
                 imgObjs = getImageObjs(IMAGELAYERS.objects)
             else
@@ -1258,13 +1314,13 @@ const Media = (() => {
                 if (VAL({string: textRef})) {
                     if (TEXTREGISTRY[textRef])
                         return textRef
-                    if (TEXTREGISTRY[`${textRef}_1`])
-                        return `${textRef}_1`
+                    /* if (TEXTREGISTRY[`${textRef}_1`])
+                        return `${textRef}_1` */
                     if (IDREGISTRY[textRef])
                         return IDREGISTRY[textRef]
                 }
                 if (VAL({selected: textRef}))
-                    textObj = D.GetSelected(textRef)
+                    textObj = D.GetSelected(textRef)[0]
                 if (VAL({textObj: textRef}))
                     textObj = textRef
                 if (VAL({textObj: textObj}, "getTextKey"))
@@ -1293,11 +1349,11 @@ const Media = (() => {
             }
         },
         getTextObjs = textRefs => {
-            const txtRefs = VAL({ msg: textRefs }) ? D.GetSelected(textRefs) || [] : textRefs,
+            const tRefs = VAL({ msg: textRefs }) ? D.GetSelected(textRefs) || [] : textRefs,
                 textObjs = []
-            if (VAL({ array: txtRefs })) {
-                for (const txtRef of txtRefs)
-                    textObjs.push(getTextObj(txtRef))
+            if (VAL({ array: tRefs })) {
+                for (const tRef of tRefs)
+                    textObjs.push(getTextObj(tRef))
                 return textObjs
             }
             return false
@@ -1338,59 +1394,99 @@ const Media = (() => {
             if (VAL({ textObj: textObj }, "getTextWidth")) {
                 const font = textObj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
                     size = textObj.get("font_size"),
-                    chars = text.split(""),
-                    fontRef = state.DATA.CHARWIDTH[font],
+                    textString = text || textObj.get("text"),
+                    chars = textString.split(""),
+                    fontRef = D.CHARWIDTH[font],
                     charRef = fontRef && fontRef[size]
                 let width = 0
                 if (!fontRef || !charRef) {
                     DB(`No font reference for '${font}' at size '${size}', attempting default`, "getTextWidth")
-                    return text.length * (parseInt(textObj.get("width")) / textObj.get("text").length)
+                    return textString.length * (parseInt(textObj.get("width")) / textObj.get("text").length)
                 }
                 _.each(chars, char => {
                     if (!charRef[char] && charRef[char] !== " " && charRef[char] !== 0)
                         DB(`... MISSING '${char}' in '${font}' at size '${size}'`, "getTextWidth")
                     else
-                        width += parseInt(charRef[char])
+                        width += charRef[char]
                 })
                 return width
             }
             return false
         },
-        regText = (textRef, hostName, activeLayer, startActive, hasShadow, options = {}, isSilent = false) => {
+        getBlankLeft = (textRef, justification) => {
+            const textObj = getTextObj(textRef),
+                justify = justification || getTextData(textRef).justification
+            if (VAL({textObj: textObj}, "getBaseLeft"))
+                return textObj.get("left") + (justify === "left" ? -0.5 : justify === "right" ? 0.5 : 0) * getTextWidth(textObj, textObj.get("text"))
+            return false
+        },
+        getRealLeft = (textRef, params = {}) => {
+            const textObj = getTextObj(textRef),
+                textData = getTextData(textRef)
+            if (VAL({textObj: textObj}, "getRealLeft")) {
+                params.left = params.left || textData.left
+                params.text = params.text || textObj.get("text")
+                params.justification = params.justification || textData.justification
+                return params.left + (params.justification === "left" ? 0.5 : params.justification === "right" ? -0.5 : 0) * getTextWidth(textObj, params.text)
+            }
+            return false            
+        },
+        justifyText = (textRef, justification) => {
+            const textObj = getTextObj(textRef)
+            D.Alert(`Justifying ${D.JS(getTextKey(textObj))}.  Reference: ${D.JS(textRef)}, Object: ${D.JS(textObj)}`, "justifyText")
+            if (VAL({textObj: textObj})) {
+                TEXTREGISTRY[getTextKey(textObj)].justification = justification || "center"
+                TEXTREGISTRY[getTextKey(textObj)].left = getBlankLeft(textObj)
+                TEXTREGISTRY[getTextKey(textObj)].width = getTextWidth(textObj, textObj.get("text"))
+                if (hasShadowObj(textObj)) {
+                    const shadowKey = getTextData(textObj).shadow,
+                        shadowObj = getTextObj(shadowKey)
+                    TEXTREGISTRY[shadowKey].justification = justification || "center"
+                    TEXTREGISTRY[shadowKey].left = getBlankLeft(shadowObj)
+                    TEXTREGISTRY[shadowKey].width = getTextWidth(shadowObj, shadowObj.get("text"))
+                }
+                D.Alert(`${getTextKey(textRef)} Updated: ${D.JS(TEXTREGISTRY[getTextKey(textObj)])}`, "justifyText")
+            }
+        },
+        regText = (textRef, hostName, activeLayer, startActive, hasShadow, justification, options = {}, isSilent = false) => {
             const textObj = getTextObj(textRef)
             DB(`regText(textRef, ${D.JS(hostName)}, ${D.JS(activeLayer)}, ${D.JS(startActive)}, ${D.JS(hasShadow)}, ${D.JS(options)}`, "regText")
             if (VAL({ text: textObj })) {
                 if (!(hostName && activeLayer))
                     return THROW("Must supply host name and active layer for regText.", "RegText")
-                const name = options.name && !TEXTREGISTRY[options.name] ? options.name : `${hostName.replace(/(_|\d|#)+$/gu, "")}_${_.filter(_.keys(TEXTREGISTRY), k => k.includes(hostName.replace(/(_|\d|#)+$/gu, ""))).length + 1}`,
+                const name = options.name && !TEXTREGISTRY[options.name] ? options.name : !TEXTREGISTRY[hostName] ? hostName : `${hostName.replace(/(_|\d|#)+$/gu, "")}_${_.filter(_.keys(TEXTREGISTRY), k => k.includes(hostName.replace(/(_|\d|#)+$/gu, ""))).length + 1}`,
                     curTextParams = {
                         left: textObj.get("left"),
                         top: textObj.get("top"),
+                        width: getTextWidth(textObj, textObj.get("text")),
                         font_size: textObj.get("font_size"),
                         color: textObj.get("color"),
                         font_family: textObj.get("font_family"),
                         text: textObj.get("text"),
                         layer: !(startActive === "false" || startActive === false) ? activeLayer : "gmlayer"
                     }
-                setText(textObj, Object.assign(_.filter(_.pick(options, C.TEXTPROPS), (v, k) => curTextParams[k] !== v), {layer: curTextParams.layer}))
                 TEXTREGISTRY[name] = Object.assign(
                     Object.assign(curTextParams, {
                         id: textObj.id,
                         name: name,
                         activeLayer: activeLayer,
-                        startActive: !(startActive === "false" || startActive === false)                    
+                        startActive: !(startActive === "false" || startActive === false),
+                        justification: justification || "center"                
                     }), options)
+                TEXTREGISTRY[name].left = getBlankLeft(textObj)
                 IDREGISTRY[textObj.id] = name
+                setText(textObj, Object.assign(_.filter(_.pick(options, C.TEXTPROPS), (v, k) => curTextParams[k] !== v), {left: getBlankLeft(textObj, justification || "center"), layer: curTextParams.layer}))                
                 if (hasShadow) {
                     const shadowOptions = Object.assign(_.omit(_.clone(TEXTREGISTRY[name]), "id"), {
                         name: `${name}Shadow`,
                         color: "rgb(0,0,0)",
                         left: TEXTREGISTRY[name].left + Math.round(TEXTREGISTRY[name].font_size/10),
                         top: TEXTREGISTRY[name].top + Math.round(TEXTREGISTRY[name].font_size/10),
+                        justification: justification || "center",          
                         shadowMaster: name
                     })
                     DB(`Shadow Options: ${D.JS(shadowOptions)}`, "regText")
-                    const shadowObj = makeText(shadowOptions.name, TEXTREGISTRY[name].activeLayer, TEXTREGISTRY[name].startActive, false, shadowOptions, isSilent)
+                    const shadowObj = makeText(shadowOptions.name, TEXTREGISTRY[name].activeLayer, TEXTREGISTRY[name].startActive, false, justification, shadowOptions, isSilent)
                     shadowOptions.id = shadowObj.id
                     toFront(shadowObj)
                     TEXTREGISTRY[name].shadow = shadowOptions.name
@@ -1401,7 +1497,7 @@ const Media = (() => {
             }
             return !isSilent && THROW(`Invalid text reference '${D.JS(textRef)}'`, "regText")
         },
-        makeText = (hostName, activeLayer, startActive, hasShadow, options = {}, isSilent = false) => {
+        makeText = (hostName, activeLayer, startActive, hasShadow, justification, options = {}, isSilent = false) => {
             DB(`makeText(${D.JS(hostName)}, ${D.JS(activeLayer)}, ${D.JS(startActive)}, ${D.JS(hasShadow)}, ${D.JS(options)}`, "makeText")
             const isStartingActive = startActive || !(options.startActive === "false" || options.startActive === false),
                 actLayer = activeLayer || options.activeLayer || options.layer || "objects",
@@ -1415,36 +1511,37 @@ const Media = (() => {
                     font_family: "Candal",
                     layer: isStartingActive ? actLayer : "gmlayer",
                     controlledby: ""
-                }, _.pick(options, ...C.TEXTPROPS)),     
+                }, _.pick(options, ...C.TEXTPROPS)),   
                 textObj = createObj("text", objParams)
-            regText(textObj, hostName, actLayer, isStartingActive, hasShadow, options, isSilent)
+            textObj.set("left", getRealLeft(textObj, {left: textObj.get("left"), justification: justification || "center"}))
+            regText(textObj, hostName, actLayer, isStartingActive, hasShadow, justification, options, isSilent)
             return textObj
         },
         setText = (textRef, options = {}) => {
             const textObj = getTextObj(textRef),
                 textData = getTextData(textRef),
-                textOptions = VAL({string: options}) ? {text: options} : options, 
-                objParams = Object.assign(_.pick(textOptions, C.TEXTPROPS))
-            for (const key of _.intersection(_.keys(textOptions), ["shiftleft", "shifttop"]))
-                objParams[key.slice(5)] = textData[key.slice(5)] + parseInt(textOptions[key])
-            for (const key of _.intersection(_.keys(textOptions), _.keys(textData)))
-                TEXTREGISTRY[textData.name][key] = textOptions[key]            
-            textObj.set(objParams)
-            if (textData.shadow) {
-                const shadowObj = getTextShadowObj(textRef),
-                    shadowOptions = _.omit(textOptions, ["color", "shadow"]),
-                    shadowData = getTextData(textData.shadow),
-                    shadowObjParams = Object.assign(_.pick(shadowOptions, C.TEXTPROPS))
-                for (const key of _.intersection(_.keys(shadowObjParams), ["left", "top"]))
-                    shadowOptions[key] = TEXTREGISTRY[textData.name][key] + Math.round(shadowData.font_size/10)
-                for (const key of _.intersection(_.keys(shadowOptions), _.keys(shadowData)))
-                    TEXTREGISTRY[shadowData.name][key] = shadowOptions[key]
-                for (const key of _.intersection(_.keys(shadowOptions), ["shiftleft", "shifttop"]))
-                    shadowObjParams[key.slice(5)] = TEXTREGISTRY[shadowData.name][key.slice(5)] + parseInt(shadowOptions[key])
-                shadowObj.set(shadowObjParams)
-                toFront(shadowObj)
+                textOptions = VAL({string: options}) ? {text: options} : options
+            if (VAL({textObj: textObj}, "setText")) {
+                textOptions.left = textOptions && textOptions.left || textData && textData.left || getBlankLeft(textObj, textObj.get("text"))
+                textOptions.top = textOptions && textOptions.top || textData && textData.top || textObj.get("top")
+                textOptions.text = textOptions && textOptions.text || textData && textData.text || textObj.get("text")
+                const objParams = Object.assign(_.pick(textOptions, C.TEXTPROPS))
+                for (const key of _.intersection(_.keys(textOptions), ["shiftleft", "shifttop"]))
+                    objParams[key.slice(5)] = textData[key.slice(5)] + parseInt(textOptions[key])
+                for (const key of _.intersection(_.keys(textOptions), _.keys(textData)))
+                    TEXTREGISTRY[textData.name][key] = textOptions[key]
+                objParams.left = getRealLeft(textObj, {left: objParams.left, text: textOptions.text, justification: textData.justification})               
+                textObj.set(objParams)
+                if (textData.shadow) {
+                    const shadowObj = getTextShadowObj(textRef),
+                        shadowObjParams = _.omit(objParams, ["color"])
+                    shadowObjParams.left += Math.round(textData.font_size/10)
+                    shadowObjParams.top += Math.round(textData.font_size/10)
+                    shadowObj.set(shadowObjParams)
+                    toFront(shadowObj)
+                }
+                toFront(textObj)
             }
-            toFront(textObj)
         },
         setTextData = (textRef, params) => {
             _.each(params, (v, k) => {
@@ -1460,13 +1557,13 @@ const Media = (() => {
                 textParams.text = text
             setText(textObj, textParams)
         },
-        removeText = (textRef, isUnregOnly) => {
-            const txtObj = getTextObj(textRef),
+        removeText = (textRef, isUnregOnly, isStillKillingShadow) => {
+            const textObj = getTextObj(textRef),
                 textData = getTextData(textRef)
-            if (hasShadowObj(txtObj))
-                removeText(`${textData.name}Shadow`, isUnregOnly)
-            if (txtObj && !isUnregOnly)
-                txtObj.remove()
+            if (hasShadowObj(textObj))
+                removeText(`${textData.name}Shadow`, isUnregOnly && !isStillKillingShadow)
+            if (textObj && !isUnregOnly)
+                textObj.remove()
             if (textData) {
                 if (IDREGISTRY[textData.id])
                     delete IDREGISTRY[textData.id]
@@ -1477,14 +1574,14 @@ const Media = (() => {
             return THROW(`Invalid text reference ${D.JSL(textRef)}`, "removeText")
         },
         removeTexts = (textString, isUnregOnly) => {
-            const txtNames = _.filter(_.keys(TEXTREGISTRY), v => v.includes(textString))
-            for (const txtName of txtNames)
-                removeText(txtName, isUnregOnly)
+            const textNames = _.filter(_.keys(TEXTREGISTRY), v => v.includes(textString))
+            for (const textName of textNames)
+                removeText(textName, isUnregOnly)
         },        
         cleanTextRegistry = () => {
-            for (const txtName of _.keys(TEXTREGISTRY))
-                if (!getTextObj(txtName))
-                    removeText(txtName)
+            for (const textName of _.keys(TEXTREGISTRY))
+                if (!getTextObj(textName))
+                    removeText(textName)
         },
         layerText = (textRefs, layer) => {
             const textObjs = getTextObjs(textRefs, true)

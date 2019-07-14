@@ -41,6 +41,7 @@ const Session = (() => {
         switch (call) {
             case "start":
                 startSession()
+                Roller.Clean()
                 break
             case "setnum":
                 setSessionNum(args.shift())
@@ -108,7 +109,7 @@ const Session = (() => {
         RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
 
-        IsDaylighterSession: () => STATEREF.isDaylighterSession
+        get IsDaylighterSession() { return STATEREF.isDaylighterSession }
     }
 })()
 
