@@ -33,6 +33,9 @@ const Char = (() => {
     // #region LOCAL INITIALIZATION
     const initialize = () => {
         STATEREF.registry = STATEREF.registry || {}
+        STATEREF.weeklyResources = STATEREF.weeklyResources || {}
+
+        C.ROOT.Char.registry[3].playerName = "Thaumaterge"
 
         // Storyteller Override:
         //C.ROOT.Char.registry["1"].playerID = "-LLIBpH_GL5I-9lAOiw9"
@@ -63,19 +66,40 @@ const Char = (() => {
                 isHealing = false
             switch (call) {
                 case "reg":
-                    if (args.shift().toLowerCase() === "token")
-                        if (msg.selected && msg.selected.length === 1 && args.length === 2)
-                            registerToken(msg, args.shift(), "base")
-                        else
-                            THROW("Select a graphic object. Syntax: !char reg token <hostName> <srcName>", "!char reg")
-                    else
-                    if (msg.selected && msg.selected[0])
-                        registerChar(msg)
-                    else
-                        THROW("Select character tokens first!", "!char reg")
+                    switch(args.shift().toLowerCase()) {
+                        case "token":
+                            if (msg.selected && msg.selected.length === 1 && args.length === 2)
+                                registerToken(msg, args.shift(), "base")
+                            else
+                                THROW("Select a graphic object. Syntax: !char reg token <hostName> <srcName>", "!char reg")
+                            break
+                        case "weekly": case "resource": case "weeklyresource": {
+                            const resInitial = args.shift().toUpperCase(),
+                                resAmount = parseInt(args.pop()),
+                                resName = args.join(" ")
+                            regResource(resInitial, resName, resAmount)
+                            break
+                        }
+                        case "char":
+                            if (msg.selected && msg.selected[0])
+                                registerChar(msg, parseInt(args.shift()), args.shift(), args.shift())
+                            else
+                                THROW("Select character tokens first!", "!char reg")
+                            break
+                        /* no default */
+                    }
                     break
                 case "unreg":
-                    unregisterChar(args.shift())
+                    switch(args[0].toLowerCase()) {                        
+                        case "weekly": case "resource": case "weeklyresource":
+                            args.shift()
+                            unregResource(args.shift(), parseInt(args.shift()))
+                            break
+                        case "char":
+                            unregisterChar(args.shift())
+                            break
+                        /* no default */
+                    }
                     break
                 case "xp": // !char xp Cost Session Message, with some character tokens selected.
                     chars = _.compact(D.GetChars(msg) || D.GetChars("registered"))
@@ -152,6 +176,13 @@ const Char = (() => {
                     break
                 case "set":
                     switch (args.shift().toLowerCase()) {
+                        case "desire":
+                            for (const charData of _.values(Char.REGISTRY)) {
+                                const desireObj = Media.GetTextObj(`${charData.shortName}Desire`)
+                                if (VAL({textObj: desireObj}))
+                                    Media.SetText(desireObj, (D.GetRepStat(charData.id, "desire", null, "desire") || {val: ""}).val)
+                            }
+                            break
                         case "attr":
                         case "attrs":
                         case "stat":
@@ -197,6 +228,17 @@ const Char = (() => {
                             break
                     // no default
                     }
+                    break                                
+                case "weekly": case "resource": case "weeklyresource":
+                    switch (args.shift().toLowerCase()) {
+                        case "reset":
+                            resetResources()
+                            break
+                        case "change": case "adjust": case "spend": case "restore": case "refund":
+                            adjustResource(args.shift().toUpperCase(), parseInt(args.shift()), parseInt(args.shift()))
+                            break
+                        /* no default */
+                    }
                     break
                 case "defaults":
                     populateDefaults(args.shift())
@@ -212,10 +254,19 @@ const Char = (() => {
         },
         handleChangeAttr = (obj, prev) => {
             if (obj.get("current") !== prev.current)
-                switch (obj.get("name").toLowerCase()) {
+                switch (obj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")) {
                     case "hunger":
                         Media.Toggle(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, true, obj.get("current"))
                         break
+                    case "desire":
+                    case "_reporder_repeating_desire": {
+                        try {
+                            Media.SetText(`${D.GetName(obj.get("_characterid"), true)}Desire`, D.GetRepStat(obj.get("_characterid"), "desire", (D.GetStat(obj.get("_characterid"), "_reporder_repeating_desire") || [""])[0].split(",")[0], "desire").val)
+                        } catch (errObj) {
+                            THROW(`Bad Desire Attribute: ${D.JS(obj)}`, "handleChangeAttr", errObj)
+                        }
+                        break
+                    }
                     /* no default */
                 }
         }
@@ -231,7 +282,7 @@ const Char = (() => {
     // #endregion
 
     // #region Register Characters & Token Image Alternates,
-    const registerChar = (msg, num) => {
+    const registerChar = (msg, num, shortName, initial) => {
             if (D.GetSelected(msg).length > 1) {
                 THROW("Please select only one token.", "RegisterChar")
             } else {
@@ -241,7 +292,7 @@ const Char = (() => {
                     charID = char.id,
                     charName = D.GetName(char),
                     playerID = D.GetPlayerID(char),
-                    playerName = D.GetName(playerID)
+                    playerName = D.GetName(D.GetPlayer(playerID))
 
                 if (!char) {
                     THROW("No character found!", "RegisterChar")
@@ -253,7 +304,9 @@ const Char = (() => {
                         name: charName,
                         playerID: playerID,
                         playerName: playerName,
-                        tokenName: charName.replace(/["'\s]*/gu, "") + "Token"
+                        tokenName: charName.replace(/["'\s]*/gu, "") + "Token",
+                        shortName: shortName,
+                        initial: initial
                     }
                     D.Alert(`Character #${D.JSL(charNum)} Registered:<br><br>${D.JS(REGISTRY[charNum])}`, "CHARS:RegisterChar")
                 }
@@ -281,11 +334,11 @@ const Char = (() => {
         if (!D.GetChar(charRef))
             return THROW(`No character found given reference ${D.JS(charRef)}`, "AwardXP")
         const char = D.GetChar(charRef)
-        DB(`Award XP Variable Declations:<br><br>char: ${D.JS(char && char.get && char.get("name"))}<br>SessionNum: ${D.JS(STATEREF.SessionNum)}`, "awardXP")
-        DB(`Making Row with Parameters:<br><br>${D.JS(char.id)}<br><br>Award: ${D.JS(award)}<br>Session: ${D.NumToText(STATEREF.SessionNum)}<br>Reason: ${D.JS(reason)}`, "awardXP")
+        DB(`Award XP Variable Declations:<br><br>char: ${D.JS(char && char.get && char.get("name"))}<br>SessionNum: ${D.JS(Session.SessionNum)}`, "awardXP")
+        DB(`Making Row with Parameters:<br><br>${D.JS(char.id)}<br><br>Award: ${D.JS(award)}<br>Session: ${D.NumToText(Session.SessionNum)}<br>Reason: ${D.JS(reason)}`, "awardXP")
         const rowID = D.MakeRow(char.id, "earnedxpright", {
             xp_award: award,
-            xp_session: D.NumToText(STATEREF.SessionNum, true),
+            xp_session: D.NumToText(Session.SessionNum, true),
             xp_reason: reason
         })
         DB(`Award XP Variable Declations:<br><br>char: ${D.JS(char && char.get && char.get("name"))}<br><br>rowID: ${D.JS(rowID)}`, "awardXP")
@@ -320,6 +373,51 @@ const Char = (() => {
     }
     // #endregion
 
+    // #region Advantages & Weekly Resources Display
+    const regResource = (initial, name, amount) => {
+            STATEREF.weeklyResources[initial.toUpperCase()] = STATEREF.weeklyResources[initial.toUpperCase()] || []
+            STATEREF.weeklyResources[initial.toUpperCase()].push([name, 0, amount])
+            displayResources()
+        },
+        unregResource = (initial, rowNum) => {
+            if (STATEREF.weeklyResources[initial.toUpperCase()].length <= 1 && rowNum === 1)
+                delete STATEREF.weeklyResources[initial.toUpperCase()]
+            else
+                STATEREF.weeklyResources[initial.toUpperCase()] = [..._.first(STATEREF.weeklyResources[initial.toUpperCase()], rowNum - 1), ..._.rest(STATEREF.weeklyResources[initial.toUpperCase()], rowNum)]
+            displayResources()
+        },
+        adjustResource = (initial, rowNum, amount) => {
+            const entry = STATEREF.weeklyResources[initial.toUpperCase()] && STATEREF.weeklyResources[initial.toUpperCase()][rowNum - 1]
+            if (entry)
+                entry[1] = Math.max(0, Math.min(entry[2], entry[1] + amount))
+            displayResources()
+        },
+        resetResources = () => {
+            _.each(STATEREF.weeklyResources, (data, init) => {
+                STATEREF.weeklyResources[init] = _.map(STATEREF.weeklyResources[init], v => v[1] = 0)
+            })
+            displayResources()
+        },
+        displayResources = () => {
+            const [col1Width, col2Width] = [35, 200],
+                textObj = Media.GetTextObj("weeklyResources")
+            let resStrings = []
+            if (_.flatten(_.values(STATEREF.weeklyResources)).length === 0) {
+                Media.SetText("weeklyResources", {text: " "})
+            } else {
+                _.each(STATEREF.weeklyResources, (data, init) => {
+                    let thisString = `[${init}]`
+                    _.each(data, v => {
+                        DB(`thisString: ${D.JS(thisString)}, col1width: ${Media.GetTextWidth(textObj, thisString, false)}, col2width: ${Media.GetTextWidth(textObj, v[0], false)}`)
+                        thisString += `${Media.Buffer(textObj, Math.max(0, col1Width - Media.GetTextWidth(textObj, thisString, false)))}${v[0]}${Media.Buffer(textObj, Math.max(0,col2Width - Media.GetTextWidth(textObj, v[0], false)))}${"●".repeat(v[2]-v[1])}${"○".repeat(v[1])}`
+                        resStrings.push(thisString)
+                        thisString = ""
+                    })
+                })            
+                Media.SetText("weeklyResources", resStrings.join("\n"))
+            }
+        }
+    // #endregion
     // #region Manipulating Stats on Sheet,
     const adjustTrait = (charRef, trait, amount, min, max, defaultTraitVal) => {
             if (VAL({ number: defaultTraitVal })) {

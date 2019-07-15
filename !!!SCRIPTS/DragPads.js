@@ -441,12 +441,12 @@ const DragPads = (() => {
         },
         togglePad = (padRef, isActive) => {
             const padIDs = []
-            let dbString = `PadRef: ${D.JS(padRef)}`
+            //let dbString = `PadRef: ${D.JS(padRef)}`
             if (STATEREF.byGraphic[padRef])
                 padIDs.push(STATEREF.byGraphic[padRef].id)
             else if (FUNCTIONS[padRef])
                 padIDs.push(..._.filter(_.keys(STATEREF.byPad), v => STATEREF.byPad[v].funcName === padRef))
-            DB(`${dbString} ... Found: ${D.JSL(_.map(padIDs, v => STATEREF.byPad[v].name))}`)
+            //DB(`${dbString} ... Found: ${D.JSL(_.map(padIDs, v => STATEREF.byPad[v].name))}`)
             if (padIDs.length === 0)
                 return THROW(`No pad found with ID: '${D.JS(padRef)}'`, "togglePad")
 

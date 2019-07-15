@@ -3,7 +3,7 @@ const Roller = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Roller",
         CHATCOMMAND = null,
-        GMONLY = true
+        GMONLY = false
 
     // #region COMMON INITIALIZATION
     const STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
@@ -229,14 +229,11 @@ const Roller = (() => {
                         break
                     // no default
                 }
-                sendChat("Resonance Check", D.JSH(`<div style="display: block; margin-left: -40px; height: auto; background: url(https://i.imgur.com/kBl8aTO.jpg);text-align: center;border: 4px ${C.COLORS.crimson} outset; padding: 5px; width: 255px;"><span style="display: block; font-weight: bold; color: ${C.COLORS.brightred}; text-align: center; width: 100%; font-family: sexsmith; font-size: 32px; height: 45px; line-height: 45px;">${
-                    _.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")
-                }</span><span style="display: block; width: 100%; text-align: center; font-family: Voltaire; color: ${C.COLORS.black}; background-color: ${C.COLORS.brightred}; font-size: 16px; margin-bottom: 7px; border-top: 1px solid ${C.COLORS.brightred}; border-bottom: 1px solid ${C.COLORS.brightred}; height: 20px; line-height: 20px; font-weight: bold;">${
-                    resDetails
-                }</span><span style="display: block; color: ${C.COLORS.brightred}; font-size: 18px; text-align: center; width: 100%; font-family: sexsmith; font-weight: bold; text-shadow: 0px 0px 1px ${C.COLORS.black}, 0px 0px 1px ${C.COLORS.black}, 0px 0px 1px ${C.COLORS.black}, 0px 0px 1px ${C.COLORS.black}, 0px 0px 1px ${C.COLORS.black}; line-height: 22px;">${
-                    resIntLine
-                }</span></div>`)
-                )
+                sendChat("Resonance Check", C.CHATHTML.colorBlock([
+                    C.CHATHTML.colorTitle(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
+                    C.CHATHTML.colorHeader(resDetails),
+                    C.CHATHTML.colorBody(resIntLine)
+                ]))
                 break
             case "!nxsroll":
             case "!xnsroll":
@@ -972,7 +969,7 @@ const Roller = (() => {
                 makeAllDice(diceCat, SETTINGS.dice[diceCat])
             Media.LayerImages(Media.IMAGELAYERS.map, "map")
             Media.LayerImages(Media.IMAGELAYERS.objects, "objects")
-            Media.OrderImages("map")
+            //Media.OrderImages("map")
 
         },
         scaleFrame = (row, width) => {
@@ -1088,6 +1085,7 @@ const Roller = (() => {
     // #region Getting Information & Setting State Roll Record
     const applyRollEffects = rollInput => {
             const rollEffectString = getAttrByName(rollInput.charID, "rolleffects") || ""
+            let isReapplying = false
             if (VAL({ string: rollEffectString, list: rollInput }, "applyRollEffects")) {
                 rollInput.appliedRollEffects = rollInput.appliedRollEffects || []
                 const rollEffects = _.compact(_.without(_.uniq([...rollEffectString.split("|"), ..._.keys(STATEREF.rollEffects), ...rollInput.rollEffectsToReapply || []]), ...rollInput.appliedRollEffects)),
@@ -1308,8 +1306,9 @@ const Roller = (() => {
                                 
                             }
                         }
-                        // FINISHED!  ADD EFFECT TO APPLIED ROLL EFFECTS.
-                        rollData.appliedRollEffects = _.union(rollData.appliedRollEffects, [effectString])
+                        // FINISHED!  ADD EFFECT TO APPLIED ROLL EFFECTS UNLESS EFFECT SAYS NOT TO.
+                        if (!isReapplying)
+                            rollData.appliedRollEffects = _.union(rollData.appliedRollEffects, [effectString])
                     } else if (VAL({ list: rollResults }, "applyRollEffects")) {
                     // RollResults rollMods all contain discrete flags/strings, plus digits; can wipe digits for static flag:
                         DB(`Roll Results applies!  Testing rollMod replace switch: ${rollMod.replace(/\d/gu, "")}`, "applyRollEffects")
@@ -1395,6 +1394,10 @@ const Roller = (() => {
                                     }
                                 }
                                 break
+                            case "nomessycrit":
+                                rollResults.noMessyCrit = true
+                                isReapplying = true
+                                break
                             default: break
                         }
                         if (rollResults.diff && rollResults.diff !== 0)
@@ -1418,7 +1421,8 @@ const Roller = (() => {
                             rollResults.goldFlagLines.push(rollLabel.trim())                        
 
                         // FINISHED!  ADD EFFECT TO APPLIED ROLL EFFECTS.
-                        rollResults.appliedRollEffects = _.union(rollResults.appliedRollEffects, [effectString])
+                        if (!isReapplying)
+                            rollResults.appliedRollEffects = _.union(rollResults.appliedRollEffects, [effectString])
                     }
                 }
 
@@ -1974,6 +1978,7 @@ const Roller = (() => {
             let logLine = `${CHATSTYLES.resultBlock}${CHATSTYLES.resultCount}${rollResults.total}:</span></div>${
                     CHATSTYLES.resultDice.colStart}${CHATSTYLES.resultDice.lineStart}`,
                 counter = 0
+            // let logLine = 
             if (isSmall)
                 logLine = CHATSTYLES.resultDice.lineStart
             if (rollData.isReroll) {
@@ -2063,30 +2068,27 @@ const Roller = (() => {
                     }
                 /* falls through */
                 case "trait":
+                    //D.Alert(`posFlagLines.length: ${posFlagLines.length}<br>${D.JS(posFlagLines)}`)
                     if (posFlagLines.length) {
                         rollLines.posMods = {
                             text: `+ ${posFlagLines.join(" + ")}`,
                         }
                         rollLines.mainRoll.shifttop = -20
-                    } else {
-                        rollLines.posMods = {
-                            text: "",
-                        }
                     }
                     if (negFlagLines.length) {
                         rollLines.negMods = {
                             text: `- ${negFlagLines.join(" - ")}`,
-                            shiftleft: 20 + Media.GetTextWidth("posMods", rollLines.posMods.text)
+                            shiftleft: 20 + Media.GetTextWidth("posMods", rollLines.posMods ? rollLines.posMods.text : "")
                         }
                         rollLines.mainRoll.shifttop = -20
                     }
                     if (redFlagLines.length)
                         rollLines.redMods = {
-                            text: redFlagLines.join(" ")
+                            text: redFlagLines.join(", ")
                         }
                     if (goldFlagLines.length) {
                         rollLines.goldMods = {
-                            text: goldFlagLines.join(" ")
+                            text: goldFlagLines.join(", ")
                         }
                         if (redFlagLines.length)
                             rollLines.redMods.shifttop = 40
@@ -2340,6 +2342,7 @@ const Roller = (() => {
                                     rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "worst")
                                     break
                                 } else if (
+                                    !rollResults.noMessyCrit &&
                                     (!margin || margin >= 0) &&
                                     rollResults.critPairs.hb + rollResults.critPairs.hh > 0
                                 ) {
@@ -2359,7 +2362,7 @@ const Roller = (() => {
                                     logLines.outcome = `${CHATSTYLES.outcomeOrange}COSTLY SUCCESS?</span></div>`
                                     rollLines.outcome.text = "COSTLY SUCCESS?"
                                     rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "bad")
-                                } else if (rollResults.critPairs.bb > 0) {
+                                } else if (rollResults.critPairs.hh + rollResults.critPairs.bb + rollResults.critPairs.hb > 0) {
                                     logLines.outcome = `${CHATSTYLES.outcomeWhite}CRITICAL WIN!</span></div>`
                                     rollLines.outcome.text = "CRITICAL WIN!"
                                     rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "best")
@@ -2543,6 +2546,7 @@ const Roller = (() => {
 
             replaceRoll(rollData, rollResults)
             displayRoll(true, isNPCRoll)
+            //Media.SetText("goldMods", Media.GetTextData("goldMods").text.replace(/District Bonus \(Free Reroll\)/gu, ""))
             lockRoller(false)
             DragPads.Toggle("wpReroll", false)
         },

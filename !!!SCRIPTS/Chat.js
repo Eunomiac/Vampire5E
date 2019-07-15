@@ -127,12 +127,25 @@ const Chat = (() => {
             case "!set":
             {
                 switch (args.shift()) {
+                    case "pos": case "position":
+                        if (D.GetSelected(msg)) {
+                            let [left, top] = [args.shift(), args.shift()]
+                            left = parseInt(left) || null
+                            top = parseInt(top) || null
+                            for (const obj of D.GetSelected(msg)) {
+                                if (left)
+                                    obj.set({left: left})
+                                if (top)
+                                    obj.set({top: top})
+                            }
+                        }
+                        break
                     case "params":
                         if (msg.selected && msg.selected[0])
                             for (const objData of msg.selected) {
                                 obj = getObj(objData._type, objData._id)
                                 if (obj) {
-                                    attrList = args.join("").split(",")
+                                    attrList = args.join(" ").split(/|\s*/gu)
                                     _.each(attrList, v => {
                                         params[v.split(":")[0]] = parseInt(v.split(":")[1]) || v.split(":")[1]
                                     })
@@ -141,7 +154,7 @@ const Chat = (() => {
                             }
 
                         break
-                        // no default
+                        // no default 
                 }
                 break
             }

@@ -31,13 +31,30 @@ const TimeTracker = (() => {
     // #region LOCAL INITIALIZATION
     const initialize = () => {        
         STATEREF.dateObj = STATEREF.currentDate ? new Date(STATEREF.currentDate) : null
+        STATEREF.Alarms = STATEREF.Alarms || {}
+        STATEREF.Alarms.Ahead = STATEREF.Alarms.Ahead || []
+        STATEREF.Alarms.Behind = STATEREF.Alarms.Behind || []
+
+        if (Session.IsSessionActive) {
+            startClock()
+            startAirLights()
+        }        
     }
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => {
-        let [date2, delta, unit] = [null, null, null]
+        let [delta, unit] = [null, null]
         switch (call.toLowerCase()) {
+            case "get":
+                switch (args.shift().toLowerCase()) {
+                    case "alarms":
+                        getNextAlarms()
+                        getPastAlarms()
+                        break
+                    /* no default */
+                }
+                break
             case "set":
                 unit = "m"
                 delta = Math.ceil(((new Date(Date.UTC(..._.map(args, v => parseInt(v))))).getTime() - STATEREF.dateObj.getTime()) / (1000 * 60))
@@ -46,21 +63,11 @@ const TimeTracker = (() => {
             case "add":
                 delta = delta || parseFloat(args.shift())
                 unit = unit || args.shift().toLowerCase()
-                date2 = new Date(STATEREF.dateObj)
-                if (unit.slice(0, 1) === "y")
-                    date2.setUTCFullYear(date2.getUTCFullYear() + delta)
-                else if (unit.includes("mo"))
-                    date2.setUTCMonth(date2.getUTCMonth() + delta)
-                else if (unit.slice(0, 1) === "w")
-                    date2.setUTCDate(date2.getUTCDate() + 7 * delta)
-                else if (unit.slice(0, 1) === "d")
-                    date2.setUTCDate(date2.getUTCDate() + delta)
-                else if (unit.slice(0, 1) === "h")
-                    date2.setUTCHours(date2.getUTCHours() + delta)
-                else if (unit.includes("m"))
-                    date2.setUTCMinutes(date2.getUTCMinutes() + delta)
-                tweenClock(date2)
+                tweenClock(addTime(STATEREF.dateObj, delta, unit))
                 return
+            case "setalarm": // !time setalarm 2 d alarmName message ending in a pipe|space-delim'd list of people to display to
+                setAlarm(addTime(STATEREF.dateObj, parseInt(args.shift()), args.shift()), args.shift(), args.join(" ").split("|")[0], null, args.join(" ").split("|")[1].split(" "))
+                break
             case "run":
                 startClock()
                 break
@@ -74,6 +81,12 @@ const TimeTracker = (() => {
                 //D.Alert("Received, Testing...")
                 getGroundCover(true, ...args)
                 break
+            case "testalarm":
+                setAlarm(args.shift())
+                break
+            case "testfirealarm":
+                fireNextAlarm()
+                break
             case "weatherreport":
                 checkWeatherReport()
 
@@ -82,7 +95,6 @@ const TimeTracker = (() => {
             default:
                 D.Alert("Commands are 'add', 'set', 'run' and 'stop'.<br><br>To set: <b>!time set [year] [month] [day] [hour] [min]</b><br><br>Weather: <b>!setweather 32|p|h|g</b>")
                 return
-            break
         }
     }
     // #endregion
@@ -543,20 +555,49 @@ const TimeTracker = (() => {
     // #endregion
 
     // #region Date Functions
-    const parseDString = str => {
-            if (parseInt(str))
-                return new Date(parseInt(str))
-            if (_.isString(str) && str !== "") {
-                const strArray = _.compact(str.split(/[\s,]+?/gu))
+    const getDate = dateRef => {
+            if (_.isDate(dateRef))
+                return new Date(dateRef)
+            if (parseInt(dateRef))
+                return new Date(parseInt(dateRef))
+            if (_.isString(dateRef) && dateRef !== "") {
+                const strArray = _.compact(dateRef.split(/[\s,]+?/gu))
                 return new Date(`${strArray[2]}-${["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(strArray[0].slice(0, 3).toLowerCase()) + 1}-${strArray[1]}`)
             }
-            return str
+            return dateRef
         },
-        formatDString = date => `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`,
+        formatTimeString = date => {
+            if (date.getUTCHours() === 0 || date.getUTCHours() === 12)
+                return `12:${date.getUTCMinutes()} ${date.getUTCHours() === 0 ? "A.M." : "P.M."}`
+            else if (date.getUTCHours() > 12)
+                return `${date.getUTCHours() - 12}:${date.getUTCMinutes()} P.M.`
+            else
+                return `${date.getUTCHours()}:${date.getUTCMinutes()} A.M.`
+        },
+        formatDString = (date, isIncludingTime = false) => `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}${isIncludingTime ? `, ${formatTimeString(date)}` : ""}`,
         fixDate = () => {
             setHorizon(true)
             setWeather()
-            Media.OrderImages("map", true)
+            //Media.OrderImages("map", true)
+        },
+        addTime = (dateRef, delta, unit) => {
+            if (VAL({date: dateRef}, "addTime")) {
+                const newDate = new Date(getDate(dateRef))
+                if (unit.toLowerCase().slice(0, 1) === "y")
+                    newDate.setUTCFullYear(newDate.getUTCFullYear() + delta)
+                else if (unit.toLowerCase().includes("mo"))
+                    newDate.setUTCMonth(newDate.getUTCMonth() + delta)
+                else if (unit.toLowerCase().slice(0, 1) === "w")
+                    newDate.setUTCDate(newDate.getUTCDate() + 7 * delta)
+                else if (unit.toLowerCase().slice(0, 1) === "d")
+                    newDate.setUTCDate(newDate.getUTCDate() + delta)
+                else if (unit.toLowerCase().slice(0, 1) === "h")
+                    newDate.setUTCHours(newDate.getUTCHours() + delta)
+                else if (unit.toLowerCase().includes("m"))
+                    newDate.setUTCMinutes(newDate.getUTCMinutes() + delta)
+                return newDate
+            }
+            return false            
         },
         getHorizon = () => {
             const [dawn, dusk] = TWILIGHTMINS[STATEREF.dateObj.getMonth()],
@@ -591,12 +632,13 @@ const TimeTracker = (() => {
                 }
             } else if (isForced || imgSrcName !== STATEREF.lastHorizon) {
                 STATEREF.lastHorizon = imgSrcName
-                Media.OrderImages("map", true)
+                //Media.OrderImages("map", true)
                 Media.Set("Horizon_1", imgSrcName)
             }
         },
         setCurrentDate = () => {
             // dateObj = dateObj || new Date(parseInt(STATEREF.currentDate))
+            checkAlarm(STATEREF.lastDateStep, STATEREF.dateObj.getTime())
             Media.SetText("TimeTracker", `${
                 DAYSOFWEEK[STATEREF.dateObj.getUTCDay()]}, ${
                 MONTHS[STATEREF.dateObj.getUTCMonth()]} ${
@@ -604,10 +646,11 @@ const TimeTracker = (() => {
                 (STATEREF.dateObj.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
                 STATEREF.dateObj.getUTCMinutes() < 10 ? "0" : ""}${STATEREF.dateObj.getUTCMinutes().toString()} ${
                 Math.floor(STATEREF.dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`)
+            STATEREF.lastDateStep = STATEREF.dateObj.getTime()
         },
         setIsRunning = runStatus => {
             isRunning = runStatus
-            Media.OrderImages("map", true)
+            //Media.OrderImages("map", true)
             if (isRunning) {
                 Media.LayerImages(_.reject(Media.IMAGELAYERS.map, v => v.includes("Horizon")), "objects")
             } else {
@@ -645,7 +688,7 @@ const TimeTracker = (() => {
                 Media.Set("WeatherFog", "blank")
                 Media.Set("ComplicationMat", "blank")
                 Media.Set("Horizon_1", "night3")
-                Media.OrderImages(["Horizon_2", "Horizon_1"], true)
+                //Media.OrderImages(["Horizon_2", "Horizon_1"], true)
                 //STATEREF.lastHorizon = "day"
             } else if (!runStatus && isRunningFast) {
                 isRunningFast = runStatus
@@ -685,15 +728,15 @@ const TimeTracker = (() => {
             clearInterval(timeTimer)
             isTimeRunning = true
             timeTimer = setInterval(tickClock, parseInt(secsPerMin) * 1000)
-            D.Alert(`Auto clock ticking ENABLED at:
+            //D.Alert(`Auto clock ticking ENABLED at:
 			
-			!time set ${STATEREF.dateObj.getUTCFullYear()} ${STATEREF.dateObj.getUTCMonth() + 1} ${STATEREF.dateObj.getUTCDate()} ${STATEREF.dateObj.getUTCHours()}:${STATEREF.dateObj.getUTCMinutes()}`, "TIMETRACKER !TIME")
+			//!time set ${STATEREF.dateObj.getUTCFullYear()} ${STATEREF.dateObj.getUTCMonth() + 1} ${STATEREF.dateObj.getUTCDate()} ${STATEREF.dateObj.getUTCHours()}:${STATEREF.dateObj.getUTCMinutes()}`, "TIMETRACKER !TIME")
         },
         stopClock = () => {
             clearInterval(timeTimer)
             timeTimer = null
             isTimeRunning = false
-            D.Alert("Auto clock ticking DISABLED", "TIMETRACKER !TIME")
+            //D.Alert("Auto clock ticking DISABLED", "TIMETRACKER !TIME")
         }
     //#endregion
 
@@ -891,6 +934,85 @@ const TimeTracker = (() => {
         }
     //#endregion
 
+    // #region Alarms
+    const setAlarm = (dateString, name, message, actions = [], displayTo = []) => {
+            const [curDate, curMins] = [STATEREF.dateObj, 60 * STATEREF.dateObj.getUTCHours() + STATEREF.dateObj.getUTCMinutes()]
+            let [targetDate, targetMins] = [new Date(STATEREF.dateObj), curMins]
+            displayTo.push("Storyteller")
+            if (VAL({string: dateString})) {
+                switch (dateString.toLowerCase()) {
+                    case "dawn":
+                        targetMins = TWILIGHTMINS[curDate.getUTCMonth()][0]             
+                        break
+                    case "nextfullnight":
+                    case "dusk":
+                        targetMins = TWILIGHTMINS[curDate.getUTCMonth()][1]   
+                        break
+                    case "noon":
+                        targetMins = 12 * 60
+                        break
+                    /* no default */
+                }
+                targetDate.setUTCHours(0)
+                if (curMins >= targetMins)
+                    targetDate.setUTCDate(targetDate.getUTCDate() + 1)
+                targetDate.setUTCMinutes(targetMins)
+                if (dateString.toLowerCase() === "nextfullnight") {
+                    targetDate.setUTCDate(targetDate.getUTCDate() + 1)
+                    targetDate.setUTCHours(0)
+                    targetDate.setUTCMinutes(TWILIGHTMINS[curDate.getUTCMonth()][0])
+                }
+            } else if (VAL({date: dateString}, "setAlarm")) {
+                targetDate = getDate(dateString)
+            } else {
+                return false
+            }
+            STATEREF.Alarms.Ahead.push({
+                time: targetDate.getTime(),
+                name,
+                message,
+                actions,
+                displayTo: _.uniq(displayTo)
+            })
+            STATEREF.Alarms.Ahead = _.sortBy(STATEREF.Alarms.Ahead, "time")
+            D.Alert(`Sorted: ${D.JS(_.map(STATEREF.Alarms.Ahead, v => new Date(v.time).toDateString()))}`)
+            return true
+            //D.Alert(`curMins: ${curMins}, targetMins: ${targetMins}<br>Next ${dateString} is ${formatDString(targetDate, true)}`)            
+        },
+        checkAlarm = (lastDateStep, thisDateStep) => {
+            if (lastDateStep < thisDateStep && STATEREF.Alarms.Ahead[0]) {
+                if (STATEREF.Alarms.Ahead[0].time >= lastDateStep && STATEREF.Alarms.Ahead[0].time <= thisDateStep)
+                    fireNextAlarm()
+            } else if (lastDateStep > thisDateStep && STATEREF.Alarms.Behind[0]) {
+                if (STATEREF.Alarms.Behind[0].time <= lastDateStep && STATEREF.Alarms.Behind[0].time >= thisDateStep)
+                    unfireLastAlarm()
+            }
+        },
+        getNextAlarms = () => D.Alert(`Next Alarms: ${D.JS(_.map(STATEREF.Alarms.Ahead, v => `${D.JS(v.name)}: ${formatDString(new Date(v.time), true)}<br>... ${D.JS(v.message)}<br>... to: ${D.JSL(v.displayTo)}`))}`, "Upcoming Alarms"),
+        getPastAlarms = () => D.Alert(`Past Alarms: ${D.JS(_.map(STATEREF.Alarms.Behind, v => `${D.JS(v.name)}: ${formatDString(new Date(v.time), true)}<br>... ${D.JS(v.message)}<br>... to: ${D.JSL(v.displayTo)}`))}`, "Past Alarms"),
+        fireNextAlarm = () => {
+            const thisAlarm = STATEREF.Alarms.Ahead.shift()
+            if (Session.IsTesting || Session.IsSessionActive) {
+                for (const action of thisAlarm.actions)
+                    if (_.isFunction(action))
+                        action()
+                if (thisAlarm.displayTo.includes("all"))
+                    sendChat("Alarm", thisAlarm.message)
+                else
+                    for (const player of thisAlarm.displayTo)
+                        sendChat("Alarm", `/w ${D.GetName(player)} ${thisAlarm.message}`)
+            }
+            STATEREF.Alarms.Behind.unshift(thisAlarm)
+        },
+        unfireLastAlarm = () => {
+            const thisAlarm = STATEREF.Alarms.Behind.shift()
+            if (Session.IsTesting || Session.IsSessionActive) {
+                D.Alert(`Unfiring Alarm: ${D.JS(thisAlarm)}`, "unfireLastAlarm")
+                STATEREF.Alarms.Ahead.unshift(thisAlarm)
+            }
+        }
+    // #endregion
+
     // #region Airplane Lights
     const tickAirLight = (alight, isStartup) => {
             if (!isAirlights || (getHorizon() === "day" || getHorizon() === "daylighters")) {
@@ -932,7 +1054,7 @@ const TimeTracker = (() => {
         StartLights: startAirLights,
         StopLights: stopAirLights,
         CurrentDate: () => new Date(STATEREF.dateObj),
-        ParseDate: parseDString,
+        GetDate: getDate,
         FormatDate: formatDString,
         Fix: fixDate,
         IsDay: isDay

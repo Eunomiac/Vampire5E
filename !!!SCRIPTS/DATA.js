@@ -165,7 +165,7 @@ const D = (() => {
                             newVal[k] = parser(val[k])
                         if (JSON.stringify(newVal).length < 60)
                             return _.escape(JSON.stringify(newVal, null, 1).
-                                replace(/\n/g,"").
+                                replace(/\\n/g,"").
                                 replace(/"([^(")"]+)":/g,"$1:")).
                                 replace(/\}/gu, " }").
                                 replace(/\s\s+/gu, " ")
@@ -395,7 +395,7 @@ const D = (() => {
                                 errorLines.push(`Invalid list object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                             break
                         case "date":
-                            if (!_.isDate(v))
+                            if (!_.isDate(TimeTracker.GetDate(v)))
                                 errorLines.push(`Invalid date object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                             break
                         case "msg": case "selection": case "selected":
@@ -533,16 +533,18 @@ const D = (() => {
         },
         getBlackList = () => sendToGM(`${jStr(STATEREF.BLACKLIST)}`, "DEBUG BLACKLIST"),
         logDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
-            if (funcName) {
-                STATEREF.DEBUGLOG.push({
-                    timeStamp: (new Date()).getTime(),
-                    title: formatTitle(funcName, scriptName, prefix),
-                    contents: msg
-                })
-                if (STATEREF.DEBUGLOG.length > 100)
-                    getDebugRecord("... DBLog")
+            if (Session.IsTesting || !Session.IsSessionActive) {                
+                if (funcName) {
+                    STATEREF.DEBUGLOG.push({
+                        timeStamp: (new Date()).getTime(),
+                        title: formatTitle(funcName, scriptName, prefix),
+                        contents: msg
+                    })
+                    if (STATEREF.DEBUGLOG.length > 100)
+                        getDebugRecord("... DBLog")
+                }
+                log(formatLogLine(msg, funcName, scriptName, prefix))
             }
-            log(formatLogLine(msg, funcName, scriptName, prefix))
         },
         throwError = (msg, funcName, scriptName, errObj) => sendDebugAlert(`${msg}${errObj ? `${errObj.name}<br>${errObj.message}<br><br>${errObj.stack}` : ""}`, funcName, scriptName, "ERROR"),
         sendDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
@@ -621,7 +623,9 @@ const D = (() => {
 
             if (VAL({ string: name }, "getName")) {
                 if (isShort)						// SHORTENING NAME:
-                    if (name.includes("\""))		// If name contains quotes, remove everything except the quoted portion of the name.
+                    if (_.find(_.values(Char.REGISTRY), v => v.name === name)) // If this is a registered character, return its short name.
+                        return _.find(_.values(Char.REGISTRY), v => v.name === name).shortName
+                    else if (name.includes("\""))		// If name contains quotes, remove everything except the quoted portion of the name.
                         name = name.replace(/.*?["]/iu, "").replace(/["].*/iu, "")
                     else							// Otherwise, remove the first word.				
                         name = name.replace(/.*\s/iu, "")
@@ -685,6 +689,12 @@ const D = (() => {
                 } else if (v.toLowerCase() === "registered") {
                     _.each(Char.REGISTRY, charData => { if (!charData.name.toLowerCase().includes("Good Lad")) charObjs.add(getObj("character", charData.id)) })
                     dbstring += ` ... "${jStr(v)}": `
+                    // If parameter is a SINGLE CHARACTER, assume it is an INITIAL and search the registry for it.
+                } else if (VAL({string: v}) && v.length === 1) {
+                    const charData = _.find(Char.REGISTRY, charData => charData.initial.toLowerCase() === v.toLowerCase())
+                    if (charData)
+                        charObjs.add(getObj("character", charData.id))
+                    dbstring += ` ... "${jStr(v)}": `                    
                     // If parameter is a STRING, assume it is a character name to fuzzy-match.
                 } else if (VAL({ string: v })) {
                     let isCharFound = false
@@ -723,7 +733,8 @@ const D = (() => {
             const charObj = getChar(charRef)
             let attrValueObj = null
             if (VAL({ charObj: charObj, string: statName }, isSilent ? null : "getStat")) {
-                const attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => !fuzzyMatch(v.get("name"), "repeating")) // Don't get repeating fieldset attributes.
+                const attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => statName.includes("repeating_") || !fuzzyMatch("repeating", v.get("name"))) // UNLESS "statName" includes "repeating_", don't return repeating fieldset attributes.
+                //D.Alert(`All Attr Objs: ${D.JS(_.map(allAttrObjs, v => v.get("name")))}<br><br>Filtered Attr Objs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
                 // First try for a direct match, then a fuzzy match:
                 attrValueObj = _.find(attrObjs, v => v.get("name").toLowerCase() === statName.toLowerCase()) || _.find(attrObjs, v => fuzzyMatch(v.get("name"), statName))
                 if (!attrValueObj) {
@@ -731,6 +742,10 @@ const D = (() => {
                     if (attrNameObj)
                         attrValueObj = _.find(attrObjs, v => v.get("name") === attrNameObj.get("name").slice(0, -5))
                 }
+                DB(`AttrValueObj: ${D.JS(attrValueObj, true)}
+                Boolean: ${Boolean(attrValueObj)}
+                Current: ${D.JS(attrValueObj.get("current"))}
+                So, returning: ${D.JS(attrValueObj ? [attrValueObj.get("current"), attrValueObj] : null, true)}`, "getStat")
             }
             return attrValueObj ? [attrValueObj.get("current"), attrValueObj] : null
         },
@@ -750,9 +765,9 @@ const D = (() => {
                 if (VAL({ string: rowFilter })) {
                     traceRef = "RowRef-String"
                     TRACE.push(traceRef)
-                    // RowRef is a rowID (string); use this to find row ID with a case insensitive reference.
-                    validRowIDs.push(_.find(rowIDs, v => v.toLowerCase() === rowFilter.toLowerCase()))
-                    DB(`RowRef: STRING.  Valid Row IDs: ${jStr(validRowIDs)}`, "getRepIDs")
+                    // RowRef is a rowID (string); use this to find row ID with a case insensitive reference and simply return that.
+                    DB(`RowRef: STRING.  Valid Row IDs: ${jStr(_.find(rowIDs, v => v.toLowerCase() === rowFilter.toLowerCase()))}`, "getRepIDs")
+                    return [_.find(rowIDs, v => v.toLowerCase() === rowFilter.toLowerCase())]
                 } else if (VAL({ list: rowFilter })) {
                     traceRef = "RowRef-List"
                     TRACE.push(traceRef)
@@ -818,7 +833,7 @@ const D = (() => {
             DB(`getRepStats(${jStr([charObj.get("name"), section, rowFilter, statName, groupBy, pickProperty])})`, "getRepStats")
             let rowData = []
             if (VAL({ charObj: charObj, string: section }, "getRepStats")) {
-                const filter = VAL({ string: statName }) ? Object.assign({ [statName]: "*" }, rowFilter || {}) : rowFilter,
+                const filter = VAL({string: rowFilter}) ? rowFilter : VAL({ string: statName, list: rowFilter || {} }) ? Object.assign({ [statName]: "*" }, rowFilter || {}) : rowFilter,
                     rowIDs = getRepIDs(charObj, section, filter, isSilent),
                     attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`) &&
                         rowIDs.includes(v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`)[1]))
@@ -867,28 +882,49 @@ const D = (() => {
             // Returns a PLAYER ID given: display name, token object, character reference.
             let playerID = null
             try {
+                if (VAL({object: playerRef}) && playerRef.get("_type") === "player") {
+                    removeFirst(TRACE, "getPlayerID")
+                    return playerRef.id
+                }
                 if (VAL({ char: playerRef })) {
-                    playerID = _.filter(playerRef.get("controlledby").split(","), v => v !== "all")
+                    const charObj = getChar(playerRef, true)
+                    playerID = _.filter(charObj.get("controlledby").split(","), v => v !== "all")
                     if (playerID.length > 1 && !isSilent)
                         THROW(`WARNING: Finding MULTIPLE player IDs connected to character reference '${jStr(playerRef)}':<br><br>${jStr(playerID)}`, "getPlayerID")
                     removeFirst(TRACE, "getPlayerID")
                     return playerID[0]
                 }
-                if (VAL({ string: playerRef }))
-                    try {
-                        removeFirst(TRACE, "getPlayerID")
+                if (VAL({ string: playerRef })) {
+                    if (getObj("player", playerRef))
+                        return getObj("player", playerRef).id
+                    else if (findObjs({
+                        _type: "player",
+                        _displayname: playerRef
+                    }, {caseInsensitive: true}).length > 0)
                         return findObjs({
                             _type: "player",
                             _displayname: playerRef
-                        })[0].id
-                    } catch (errObj) {
-                        return isSilent ? false : THROW(`Unable to find player connected to player reference '${jStr(playerRef)}'`, "getPlayerID")
-                    }
-
-                if (VAL({ token: playerRef }))
-                    playerID = getPlayerID(playerRef.get("represents"))
+                        }, {caseInsensitive: true})[0].id
+                    else if (findObjs({
+                        _type: "player",
+                        speakingas: playerRef
+                    }, {caseInsensitive: true}).length > 0)
+                        return findObjs({
+                            _type: "player",
+                            speakingas: playerRef
+                        }, {caseInsensitive: true})[0].id
+                    else if (findObjs({
+                        _type: "player",
+                        _d20userid: playerRef
+                    }, {caseInsensitive: true}).length > 0)
+                        return findObjs({
+                            _type: "player",
+                            _d20userid: playerRef
+                        }, {caseInsensitive: true})[0].id
+                    return isSilent ? false : THROW(`Unable to find player connected to reference '${jStr(playerRef)}'`, "getPlayerID")
+                }
                 removeFirst(TRACE, "getPlayerID")
-                return playerID || (isSilent ? false : THROW(`Unable to find player connected to character token '${jStr(playerRef)}'`, "getPlayerID"))
+                return isSilent ? false : THROW(`Unable to find player connected to character token '${jStr(playerRef)}'`, "getPlayerID")
             } catch (errObj) {
                 removeFirst(TRACE, "getPlayerID")
                 return isSilent ? false : THROW(`Unable to find player connected to reference '${jStr(playerRef)}'.<br><br>${jStr(errObj)}`, "getPlayerID")
@@ -897,12 +933,16 @@ const D = (() => {
         getPlayer = (playerRef, isSilent = false) => {
             TRACE.push("getPlayer")
             let playerID = getPlayerID(playerRef, true)
+            D.Alert(`Searching for Player with Player Ref: ${playerRef}
+                ... playerID: ${jStr(playerID)}
+                .. String? ${VAL({string: playerID})}
+                .. Player Object? ${jStr(getObj("player", playerID))}`, "getPlayer")
             if (VAL({ string: playerID }) && VAL({ object: getObj("player", playerID) })) {
                 removeFirst(TRACE, "getPlayer")
-                return getObj("player", playerRef)
+                return getObj("player", playerID)
             }
             removeFirst(TRACE, "getPlayer")
-            return isSilent ? false : THROW(`Unable to find a player object for reference '${jStr(playerRef)}`, "getPlayerID")
+            return isSilent ? false : THROW(`Unable to find a player object for reference '${jStr(playerRef)}`, "getPlayer")
         }
     // #endregion
 

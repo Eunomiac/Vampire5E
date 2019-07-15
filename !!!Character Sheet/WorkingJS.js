@@ -785,7 +785,7 @@
     })
     // #endregion
 
-    // #region UPDATE: Clan, Discipline, Resonance, DOB/DOE, Marquee Rotating
+    // #region UPDATE: Clan, Discipline, Resonance, DOB/DOE, Marquee Rotating, Desires
     const $checkRituals = () => cback => {
             const attrList = {},
                 $funcs = [
