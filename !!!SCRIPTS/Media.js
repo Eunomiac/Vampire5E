@@ -327,63 +327,41 @@ const Media = (() => {
                     }
                     break
                 case "!text":
-                    switch (call.shift().toLowerCase()) {
-                        case "checkregistry":
-                            D.Alert(`${D.JS(_.keys(TEXTREGISTRY))}`)
-                            break
-                        case "clearregistry":
-                            STATEREF.textregistry = {}
-                            STATEREF.idregistry = {}
-                            break
-                        case "checkwidths": {
-                            const dbStrings = []
-                            for (const textData of _.values(STATEREF.textregistry)) {
-                                textData.justification = "left"
-                                const textObj = getObj("text", textData.id)
-                                if (textObj) {
-                                    let width = textObj.get("width"),
-                                        text = textObj.get("text"),
-                                        left = textObj.get("left"),
-                                        textWidth = getTextWidth(textObj, text)
-                                    if (width === 0) {
-                                        textObj.set("left", left + 10)
-                                        width = textObj.get("width")
-                                        textObj.set("left", left)
-                                    }
-                                    dbStrings.push(`${textData.name}: width: ${width} --> ${textWidth}`)
-                                }
-                            }
-                            D.Alert(`${dbStrings.join("<br>")}`, "Text Width Check")
-                            break
-                        }
-                        case "justify": {
-                            const justification = args.shift() || "center"
-                            if (VAL({selection: msg})) 
-                                for(const textObj of D.GetSelected(msg))
-                                    justifyText(textObj, justification)
-                            else 
-                                for (const textKey of args)
-                                    justifyText(textKey, justification)                            
-                            break
-                        }
-                        case "rereg": case "reregister":                            
-                            if (VAL({selection: msg}))
-                                removeText(msg, true, true)
-                            /* falls through */
-                        case "reg": case "register":
-                            if (!args[0]) {
-                                D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
-                            } else {
-                                textObj = getTextObj(msg)
-                                if (!textObj) {
-                                    D.Alert("Select a text object first!", "MEDIA: !text reg")
-                                } else {
-                                    [hostName, objLayer, isStartActive, isShadow, justification] = [args.shift(), args.shift(), args.shift(), args.shift(), args.shift()]
-                                    if (hostName && objLayer)
-                                        regText(textObj, hostName, objLayer, !isStartActive || isStartActive !== "false", !isShadow || isShadow !== "false", justification || "center", D.ParseToObj(args.join(" ")))
+                    switch (call.shift().toLowerCase()) {                                                
+                        case "get":
+                            switch (args.shift().toLowerCase()) {
+                                case "data":
+                                    textObj = VAL({selection: msg}) ? getTextObj(msg) : getTextObj(args.shift())
+                                    if (textObj)
+                                        D.Alert(getTextData(textObj), "!text get data")
                                     else
-                                        D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
+                                        D.Alert("Syntax: !text get data [<name>] (or select a text object object)", "!text get data")
+                                    break
+                                case "names":
+                                    D.Alert(D.JS(_.keys(TEXTREGISTRY)), "!text get names")
+                                    break
+                                case "widths": {
+                                    const dbStrings = []
+                                    for (const textData of _.values(STATEREF.textregistry)) {
+                                        textData.justification = "left"
+                                        const textObj = getObj("text", textData.id)
+                                        if (textObj) {
+                                            let width = textObj.get("width"),
+                                                text = textObj.get("text"),
+                                                left = textObj.get("left"),
+                                                textWidth = getTextWidth(textObj, text)
+                                            if (width === 0) {
+                                                textObj.set("left", left + 10)
+                                                width = textObj.get("width")
+                                                textObj.set("left", left)
+                                            }
+                                            dbStrings.push(`${textData.name}: width: ${width} --> ${textWidth}`)
+                                        }
+                                    }
+                                    D.Alert(`${dbStrings.join("<br>")}`, "Text Width Check")
+                                    break
                                 }
+                                // no default
                             }
                             break
                         case "set":
@@ -394,15 +372,24 @@ const Media = (() => {
                                     if (!textObj) {
                                         D.Alert("Select a text object first!", "MEDIA: !text set position")
                                     } else if (!IDREGISTRY[textObj.id]) {
-                                        D.Alert(`Text not registered.  To register selected text:
-                        
-                            <pre>!text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; [params ("key:value, key:value")]"</pre>`, "MEDIA: !text set position")
+                                        D.Alert("Text not registered.  To register selected text:<br><br><pre>!text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; [params (\"key:value, key:value\")]</pre>", "!text set position")
                                     } else {
                                         hostName = getTextKey(msg)
                                         setText(textObj, {top: parseInt(textObj.get("top")), left: getBlankLeft(textObj), layer: textObj.get("layer")})
                                         D.Alert(`Position Set for Text ${hostName}<br><br><pre>${D.JS(TEXTREGISTRY[hostName])}</pre>`)
                                     }
                                     break
+                                case "justify": case "justification": case "just": {
+                                    args.shift()
+                                    const justification = args.shift() || "center"
+                                    if (VAL({selection: msg})) 
+                                        for(const textObj of D.GetSelected(msg))
+                                            justifyText(textObj, justification)
+                                    else 
+                                        for (const textKey of args)
+                                            justifyText(textKey, justification)                            
+                                    break
+                                }
                                 case "params":
                                     args.shift()
                                     textObj = getTextObj(args[0]) || getTextObj(msg)
@@ -427,6 +414,9 @@ const Media = (() => {
                         case "clean": case "cleanreg": case "cleanregistry":
                             cleanTextRegistry()
                             break
+                        case "reset": case "resetreg": case "resetregistry":
+                            resetTextRegistry()
+                            break
                         case "del": case "delete":
                             if (args[0].toLowerCase() === "all") {
                                 args.shift()
@@ -440,7 +430,27 @@ const Media = (() => {
                                 removeText(args.join(" "))
                             } else {
                                 D.Alert(`Provide "all" (plus an optional host name substring), a registered host name, or select text objects. <b>Syntax:</b><br><br><pre>!text del all <hostSubstring>
-                    !text del <hostName></pre>`, "MEDIA: !text del")
+                    !text del <hostName></pre>`, "!text del")
+                            }
+                            break
+                        case "rereg": case "reregister":                            
+                            if (VAL({selection: msg}))
+                                removeText(msg, true, true)
+                            /* falls through */
+                        case "reg": case "register":
+                            if (!args[0]) {
+                                D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
+                            } else {
+                                textObj = getTextObj(msg)
+                                if (!textObj) {
+                                    D.Alert("Select a text object first!", "MEDIA: !text reg")
+                                } else {
+                                    [hostName, objLayer, isStartActive, isShadow, justification] = [args.shift(), args.shift(), args.shift(), args.shift(), args.shift()]
+                                    if (hostName && objLayer)
+                                        regText(textObj, hostName, objLayer, !isStartActive || isStartActive !== "false", !isShadow || isShadow !== "false", justification || "center", D.ParseToObj(args.join(" ")))
+                                    else
+                                        D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
+                                }
                             }
                             break
                         case "unreg": case "unregister":
@@ -473,28 +483,6 @@ const Media = (() => {
                                 default:
                                     D.Alert("Must state either 'on' or 'off'.  <b>Syntax:</b><br><br><pre>!text toggle &lt;on/off&gt; &lt;hostnames&gt;</pre>", "MEDIA: !text toggle")
                                     break
-                            }
-                            break
-                        case "align":
-                            if (D.GetSelected(msg))
-                                //alignTexts(msg, ...args)
-                                break
-                            break
-                        case "get":
-                            switch (args.shift().toLowerCase()) {
-                                case "data":
-                                    textObj = getTextObj(msg)
-                                    if (textObj) {
-                                        D.Alert(getTextData(textObj), "!text get data")
-                                    } else {
-                                        hostName = args.shift()
-                                        if (hostName && TEXTREGISTRY[hostName])
-                                            D.Alert(D.JS(TEXTREGISTRY[hostName]), `MEDIA: '${D.JS(hostName)}'`)
-                                        else
-                                            D.Alert("Syntax: !text get data [<category> <name>] (or select a text object object)", "!text get data")
-                                    }
-                                    break
-                            // no default
                             }
                             break
                     // no default
@@ -1366,7 +1354,7 @@ const Media = (() => {
                 return !isSilent && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, "getTextData", errObj)
             }
         },
-        buffer = (textRef, width) => " ".repeat(Math.round(width/getTextWidth(textRef, " ", false))),
+        buffer = (textRef, width) => " ".repeat(Math.max(0, Math.round(width/getTextWidth(textRef, " ", false)))),
         splitTextLines = (textRef, text, maxWidth, justification = "left") => {
             const textObj = getTextObj(textRef)
             let textStrings = _.without(text.split(/(\s|-)/gu), " "),
@@ -1396,8 +1384,6 @@ const Media = (() => {
             return splitStrings
         },
         getTextWidth = (textRef, text, maxWidth = 0) => {
-            if (!text || text === "" || text.length === 0)
-                return 0
             const textObj = getTextObj(textRef),
                 textData = getTextData(textObj),
                 maxW = textData && textData.maxWidth || maxWidth || 0
@@ -1409,6 +1395,8 @@ const Media = (() => {
                     fontRef = D.CHARWIDTH[font],
                     charRef = fontRef && fontRef[size]
                 let width = 0
+                if (!textString || textString === "" || textString.length === 0)
+                    return 0
                 if (!fontRef || !charRef) {
                     DB(`No font reference for '${font}' at size '${size}', attempting default`, "getTextWidth")
                     return textString.length * (parseInt(textObj.get("width")) / textObj.get("text").length)
@@ -1549,7 +1537,7 @@ const Media = (() => {
             regText(textObj, hostName, actLayer, isStartingActive, hasShadow, justification, options, isSilent)
             return textObj
         },
-        setText = (textRef, options = {}) => {
+        setText = (textRef, options = {}, isTemporary = false) => {
             const textObj = getTextObj(textRef),
                 textData = getTextData(textRef),
                 textOptions = VAL({string: options}) ? {text: options} : options
@@ -1575,8 +1563,9 @@ const Media = (() => {
                     }         
                 for (const key of _.intersection(_.keys(textOptions), ["shiftleft", "shifttop"]))
                     objParams[key.slice(5)] = textData[key.slice(5)] + parseInt(textOptions[key])
-                for (const key of _.intersection(_.keys(textOptions), _.keys(textData)))
-                    TEXTREGISTRY[textData.name][key] = textOptions[key]
+                if (!isTemporary)
+                    for (const key of _.intersection(_.keys(textOptions), _.keys(textData)))
+                        TEXTREGISTRY[textData.name][key] = textOptions[key]
                 objParams.left = getRealLeft(textObj, {left: objParams.left, text: textOptions.text, justification: textData.justification, maxWidth: textOptions.maxWidth})
                 textObj.set(objParams)
                 if (textData.shadow) {
@@ -1629,6 +1618,10 @@ const Media = (() => {
             for (const textName of _.keys(TEXTREGISTRY))
                 if (!getTextObj(textName))
                     removeText(textName)
+        },
+        resetTextRegistry = () => {
+            STATEREF.textregistry = {}
+            STATEREF.idregistry = {}
         },
         layerText = (textRefs, layer) => {
             const textObjs = getTextObjs(textRefs, true)

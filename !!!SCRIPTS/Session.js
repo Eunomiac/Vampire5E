@@ -51,6 +51,7 @@ const Session = (() => {
                 break
             case "test":
                 STATEREF.isTestingActive = !STATEREF.isTestingActive
+                Media.SetText("testSessionNotice", STATEREF.isTestingActive ? "TEST SESSION ACTIVE" : " ")
                 D.Alert(`Testing Set to ${STATEREF.isTestingActive}`, "!sess test")
                 break
             case "daylighters":
@@ -104,14 +105,17 @@ const Session = (() => {
                 C.CHATHTML.colorHeader(`Session Scribe: ${sessionScribe}`),
                 C.CHATHTML.colorBody("Thank you for your service!")
             ]))
-            if (STATEREF.isTestingActive)            
-                D.Alert(`Keeping Session Number at ${D.NumToText(STATEREF.SessionNum, true)}: Test Session Active<br><br>Type <b>!sess test</b> to disable,<br>then <b>!sess num ${STATEREF.SessionNum + 1}</b> to set session number.`, "startSession")
-            else
+            if (!STATEREF.isTestingActive)            
+                //D.Alert(`Keeping Session Number at ${D.NumToText(STATEREF.SessionNum, true)}: Test Session Active<br><br>Type <b>!sess test</b> to disable,<br>then <b>!sess num ${STATEREF.SessionNum + 1}</b> to set session number.`, "startSession")
+            //else
                 STATEREF.SessionNum++
             Roller.Clean()
-            Media.SetText("TimeTracker", {color: C.COLORS.brightred})
+            const desireKeys = _.map(D.GetCharVals("registered", "shortName"), v => `${v}Desire`)
+            for (const textKey of [...desireKeys, "TimeTracker", "tempF", "tempC", "weather", "stakedAdvantages", "weeklyResources"])
+                Media.SetText(textKey, {color: Media.GetTextData(textKey).color} )
             TimeTracker.StartClock()
             TimeTracker.StartLights()
+            Char.RefreshDisplays()
 
         },
         setSessionNum = sNum => {
@@ -126,12 +130,14 @@ const Session = (() => {
                 C.CHATHTML.colorTitle("See you next week!", 28),
             ]))
             STATEREF.isSessionActive = false
-            if (STATEREF.isTestingActive)
-                D.Alert("Skipping XP awards: Test Session Active<br>(Toggle off with '!sess test', then Stop the session again to reward XP.)", "awardXP")
-            else
+            if (!STATEREF.isTestingActive)
+               // D.Alert("Skipping XP awards: Test Session Active<br>(Toggle off with '!sess test', then Stop the session again to reward XP.)", "awardXP")
+            //else
                 for (const char of D.GetChars(D.GetSelected(selection) ? selection : "registered"))
                     Char.AwardXP(char, 2, "Session XP award.")
-            Media.SetText("TimeTracker", {color: C.COLORS.darkgrey})
+            const desireKeys = _.map(D.GetCharVals("registered", "shortName"), v => `${v}Desire`)
+            for (const textKey of [...desireKeys, "TimeTracker", "tempF", "tempC", "weather", "stakedAdvantages", "weeklyResources"])
+                Media.SetText(textKey, {color: C.COLORS.darkgrey}, true )
             TimeTracker.StopClock()
             TimeTracker.StopLights()
         }

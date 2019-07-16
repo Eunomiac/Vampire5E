@@ -101,6 +101,74 @@ const Char = (() => {
                         /* no default */
                     }
                     break
+                case "get":
+                    switch (args.shift().toLowerCase()) {
+                        case "reg": case "registry": case "registered":
+                            D.Alert(REGISTRY, "Registered Player Characters")
+                            break
+                        case "stat":
+                            trait = args.shift()
+                            for (const char of D.GetChars("registered")) {
+                                const statData = D.GetStat(char, trait, true) || D.GetRepStat(char, "*", null, trait, true)
+                                if (VAL({array: statData}))
+                                    params.push(`<span style="display: inline-block; width: 15%; margin-right: 3%;">${D.GetCharData(char).shortName}</span><span style="display: inline-block; width: 60%; margin-right: 3%;">${D.Capitalize(statData[1].get("name"), true)}</span><span style="display: inline-block; width: 15%; margin-right: 3%;">${parseInt(statData[0]) ? "●".repeat(parseInt(statData[0])) : "~"}</span>`)
+                                else if (VAL({list: statData}))
+                                    params.push(`<span style="display: inline-block; width: 15%; margin-right: 3%;">${D.GetCharData(char).shortName}</span><span style="display: inline-block; width: 60%; margin-right: 3%;">${D.Capitalize(statData.name, true)}</span><span style="display: inline-block; width: 15%; margin-right: 3%;">${parseInt(statData.val) ? "●".repeat(parseInt(statData.val)) : "~"}</span>`)
+                                else
+                                    params.push(`<span style="display: inline-block; width: 15%; margin-right: 3%;">${D.GetCharData(char).shortName}</span><span style="display: inline-block; width: 60%; margin-right: 3%;">~</span><span style="display: inline-block; width: 15%; margin-right: 3%;">~</span>`)
+                            }
+                            attrString = params.join("<br>")
+                            D.Alert(attrString, `${D.Capitalize(trait)}:`)
+                            break
+                        case "charids":
+                            chars = findObjs({
+                                _type: "character"
+                            })
+                            msgString = ""
+                            for (const char of chars)
+                                msgString += `${D.GetName(char)}<span style="color: ${C.COLORS.brightred}; font-weight:bold;">@T</span>${char.id}<br>`
+                            D.Alert(D.JS(msgString))
+                            break
+                        case "player":
+                            charData = REGISTRY[args[0]]
+                            playerObj = getObj("player", charData.playerID)
+                            D.Alert(`<b>NAME:</b> ${charData.playerName} (${charData.playerID})<br><b>PLAYS:</b> ${charData.name} (${charData.id})<br><br><b>DATA:</b><br><br>${D.JS(playerObj)}`, `PLAYER #${args[0]} DATA`)
+                            break
+                            // no default
+                    }
+                    break
+                case "set":
+                    switch (args.shift().toLowerCase()) {
+                        case "stakes":
+                            displayStakes()
+                            break
+                        case "desire":
+                            displayDesires()
+                            break
+                        case "attr":
+                        case "attrs":
+                        case "stat":
+                        case "stats":
+                            if (args[0].includes(":") && msg.selected && msg.selected[0]) {
+                                char = D.GetChar(msg)
+                            } else if (!args[0].includes(":")) {
+                                char = D.GetChar(args.shift())
+                            } else {
+                                D.Alert("Select a character or provide a character reference first!", "CHARS:!set attr")
+                                return
+                            }
+                            if (char) {
+                                D.Alert(`Setting the following stats on ${char.get("name")}:<br><br>${D.JS(args.join(" ").replace(/[,|\s]\s*?/gu, "|").split("|"))}`)
+                                for (const statpair of args.join(" ").replace(/[,|\s]\s*?/gu, "|").split("|"))
+                                    attrList[statpair.split(":")[0]] = parseInt(statpair.split(":")[1]) || 0
+                                setAttrs(char.id, attrList)
+                            } else {
+                                D.Alert("Unable to find character.", "CHARS:!set attr")
+                            }
+                            break
+                            // no default
+                    }
+                    break
                 case "xp": // !char xp Cost Session Message, with some character tokens selected.
                     chars = _.compact(D.GetChars(msg) || D.GetChars("registered"))
                     DB(`!char xp COMMAND RECEIVED<br><br>Characters: ${D.JS(_.map(chars, v => v.get("name")))}`, "awardXP")
@@ -138,75 +206,7 @@ const Char = (() => {
                         THROW("Select character tokens first!", "!char dmg")
                     }
                     break
-                case "get":
-                    switch (args.shift().toLowerCase()) {
-                        case "reg": case "registry": case "registered":
-                            D.Alert(REGISTRY, "Registered Player Characters")
-                            break
-                        case "stat":
-                            trait = args.shift()
-                            for (const char of D.GetChars("registered")) {
-                                const statData = D.GetStat(char, trait, true) || D.GetRepStat(char, "*", null, trait, true)
-                                if (VAL({array: statData}))
-                                    params.push(`<span style="display: inline-block; width: 15%; margin-right: 3%;">${D.GetCharData(char).shortName}</span><span style="display: inline-block; width: 60%; margin-right: 3%;">${D.Capitalize(statData[1].get("name"), true)}</span><span style="display: inline-block; width: 15%; margin-right: 3%;">${parseInt(statData[0]) ? "●".repeat(parseInt(statData[0])) : "~"}</span>`)
-                                else if (VAL({list: statData}))
-                                    params.push(`<span style="display: inline-block; width: 15%; margin-right: 3%;">${D.GetCharData(char).shortName}</span><span style="display: inline-block; width: 60%; margin-right: 3%;">${D.Capitalize(statData.name, true)}</span><span style="display: inline-block; width: 15%; margin-right: 3%;">${parseInt(statData.val) ? "●".repeat(parseInt(statData.val)) : "~"}</span>`)
-                                else
-                                    params.push(`<span style="display: inline-block; width: 15%; margin-right: 3%;">${D.GetCharData(char).shortName}</span><span style="display: inline-block; width: 60%; margin-right: 3%;">~</span><span style="display: inline-block; width: 15%; margin-right: 3%;">~</span>`)
-                            }
-                            attrString = params.join("<br>")
-                            D.Alert(attrString, `${D.Capitalize(trait)}:`)
-                            break
-                        case "charids":
-                            chars = findObjs({
-                                _type: "character"
-                            })
-                            msgString = ""
-                            for (const char of chars)
-                                msgString += `${D.GetName(char)}<span style="color: ${C.COLORS.brightred}; font-weight:bold;">@T</span>${char.id}<br>`
-                            D.Alert(D.JS(msgString))
-                            break
-                        case "player":
-                            charData = REGISTRY[args[0]]
-                            playerObj = getObj("player", charData.playerID)
-                            D.Alert(`<b>NAME:</b> ${charData.playerName} (${charData.playerID})<br><b>PLAYS:</b> ${charData.name} (${charData.id})<br><br><b>DATA:</b><br><br>${D.JS(playerObj)}`, `PLAYER #${args[0]} DATA`)
-                            break
-                    // no default
-                    }
-                    break
-                case "set":
-                    switch (args.shift().toLowerCase()) {
-                        case "desire":
-                            for (const charData of _.values(Char.REGISTRY)) {
-                                const desireObj = Media.GetTextObj(`${charData.shortName}Desire`)
-                                if (VAL({textObj: desireObj}))
-                                    Media.SetText(desireObj, (D.GetRepStat(charData.id, "desire", null, "desire") || {val: ""}).val)
-                            }
-                            break
-                        case "attr":
-                        case "attrs":
-                        case "stat":
-                        case "stats":
-                            if (args[0].includes(":") && msg.selected && msg.selected[0]) {
-                                char = D.GetChar(msg)
-                            } else if (!args[0].includes(":")) {
-                                char = D.GetChar(args.shift())
-                            } else {
-                                D.Alert("Select a character or provide a character reference first!", "CHARS:!set attr")
-                                return
-                            }
-                            if (char) {
-                                D.Alert(`Setting the following stats on ${char.get("name")}:<br><br>${D.JS(args.join(" ").replace(/[,|\s]\s*?/gu, "|").split("|"))}`)
-                                for (const statpair of args.join(" ").replace(/[,|\s]\s*?/gu, "|").split("|"))
-                                    attrList[statpair.split(":")[0]] = parseInt(statpair.split(":")[1]) || 0
-                                setAttrs(char.id, attrList)
-                            } else {
-                                D.Alert("Unable to find character.", "CHARS:!set attr")
-                            }
-                            break
-                    // no default
-                    }
-                    break
+                
                 case "rep":
                 case "repeating":
                 case "repeat":
@@ -230,15 +230,18 @@ const Char = (() => {
                     }
                     break                                
                 case "weekly": case "resource": case "weeklyresource":
-                    switch (args.shift().toLowerCase()) {
-                        case "reset":
-                            resetResources()
-                            break
-                        case "change": case "adjust": case "spend": case "restore": case "refund":
-                            adjustResource(args.shift().toUpperCase(), parseInt(args.shift()), parseInt(args.shift()))
-                            break
-                        /* no default */
-                    }
+                    if (args[0] && args[0].length > 2)
+                        switch (args.shift().toLowerCase()) {
+                            case "reset":
+                                resetResources()
+                                break
+                            case "change": case "adjust": case "spend": case "restore": case "refund":
+                                adjustResource(args.shift().toUpperCase(), parseInt(args.shift()), parseInt(args.shift()))
+                                break
+                            default:
+                                break
+                        }
+                    displayResources()
                     break
                 case "defaults":
                     populateDefaults(args.shift())
@@ -373,8 +376,14 @@ const Char = (() => {
     }
     // #endregion
 
-    // #region Advantages & Weekly Resources Display
-    const regResource = (initial, name, amount) => {
+    // #region Sandbox Displays: Desires, Advantages & Weekly Resources
+    const displayDesires = () => {        
+            for (const charData of _.values(Char.REGISTRY)) {
+                const desireObj = Media.GetTextObj(`${charData.shortName}Desire`)
+                if (VAL({textObj: desireObj}))
+                    Media.SetText(desireObj, (D.GetRepStat(charData.id, "desire", null, "desire") || {val: ""}).val)
+            }
+        },regResource = (initial, name, amount) => {
             STATEREF.weeklyResources[initial.toUpperCase()] = STATEREF.weeklyResources[initial.toUpperCase()] || []
             STATEREF.weeklyResources[initial.toUpperCase()].push([name, 0, amount])
             displayResources()
@@ -399,7 +408,7 @@ const Char = (() => {
             displayResources()
         },
         displayResources = () => {
-            const [col1Width, col2Width] = [35, 200],
+            const [col1Width, col2Width] = [35, 250],
                 textObj = Media.GetTextObj("weeklyResources")
             let resStrings = []
             if (_.flatten(_.values(STATEREF.weeklyResources)).length === 0) {
@@ -408,13 +417,49 @@ const Char = (() => {
                 _.each(STATEREF.weeklyResources, (data, init) => {
                     let thisString = `[${init}]`
                     _.each(data, v => {
-                        DB(`thisString: ${D.JS(thisString)}, col1width: ${Media.GetTextWidth(textObj, thisString, false)}, col2width: ${Media.GetTextWidth(textObj, v[0], false)}`)
-                        thisString += `${Media.Buffer(textObj, Math.max(0, col1Width - Media.GetTextWidth(textObj, thisString, false)))}${v[0]}${Media.Buffer(textObj, Math.max(0,col2Width - Media.GetTextWidth(textObj, v[0], false)))}${"●".repeat(v[2]-v[1])}${"○".repeat(v[1])}`
-                        resStrings.push(thisString)
-                        thisString = ""
+                        DB(`thisString: ${D.JS(thisString)}, col1width: ${Media.GetTextWidth(textObj, thisString, false)}, col2width: ${Media.GetTextWidth(textObj, v[0], false)}`, "displayResources")
+                        resStrings.push(`${thisString}${Media.Buffer(textObj, col1Width - Media.GetTextWidth(textObj, thisString, false))}${
+                            v[0]}${Media.Buffer(textObj, col2Width - Media.GetTextWidth(textObj, v[0], false))}${
+                            "●".repeat(v[2]-v[1])}${"○".repeat(v[1])}`)
+                        thisString = " "
                     })
                 })            
                 Media.SetText("weeklyResources", resStrings.join("\n"))
+            }
+        },
+        displayStakes = () => {
+            const [col1Width, col2Width, col3Width] = [35, 250, 190],
+                textObj = Media.GetTextObj("stakedAdvantages"),
+                stakeData = [],
+                stakeStrings = []
+            for (const charObj of D.GetChars("registered")) {
+                const projectStakes = []
+                for (const attrName of ["projectstake1", "projectstake2", "projectstake3"])
+                    projectStakes.push(...D.GetRepStats(charObj, "project", {projectstakes_toggle: "1"}, attrName))
+                for (const stake of projectStakes) {
+                    const advMax = (D.GetRepStat(charObj, "advantage", null, stake.name) || {val: null}).val,
+                        endDate = (D.GetRepStat(charObj, "project", stake.rowID, "projectenddate") || {val: null}).val
+                    if (advMax)
+                        stakeData.push([_.values(D.GetCharVals(charObj, "initial"))[0], stake.name, parseInt(stake.val), parseInt(advMax), endDate])
+                }
+            }
+            if (_.flatten(_.values(STATEREF.weeklyResources)).length === 0) {
+                Media.SetText("stakedAdvantages", {text: " "})
+            } else {
+                let lastInit = ""
+                for (const data of stakeData) {
+                    const [init, name, staked, max, endDate] = data
+                    let thisString = ""
+                    if (init !== lastInit) {
+                        thisString = `[${init}]`
+                        lastInit = init
+                    }
+                    stakeStrings.push(`${thisString}${Media.Buffer(textObj, col1Width - Media.GetTextWidth(textObj, thisString, false))}${
+                        name}${Media.Buffer(textObj, col2Width - Media.GetTextWidth(textObj, name, false))}${
+                        "○".repeat(staked)}${"●".repeat(max - staked)}${Media.Buffer(textObj, col3Width - Media.GetTextWidth(textObj, `${
+                        "○".repeat(staked)}${"●".repeat(max - staked)}`, false))}${endDate}`)
+                }        
+                Media.SetText("stakedAdvantages", stakeStrings.join("\n"))
             }
         }
     // #endregion
@@ -668,7 +713,8 @@ const Char = (() => {
         AdjustTrait: adjustTrait,
         AdjustHunger: adjustHunger,
         DaySleep: daysleep,
-        AwardXP: awardXP
+        AwardXP: awardXP,
+        RefreshDisplays: () => { displayDesires(); displayResources(); displayStakes() }
     }
 })()
 

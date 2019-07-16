@@ -147,7 +147,7 @@ const D = (() => {
                 const parser = val => {
                     if (val && val.get) {
                         if (isVerbose)
-                            return val
+                            return JSON.stringify(val)
                         else
                             return `▌${data.get("_type") && data.get("_type").toUpperCase().slice(0, 3) || "OBJ"}</b>: ${data.get("name") || data.id || data}▐`
                     } else if (_.isArray(val)) {
@@ -158,18 +158,19 @@ const D = (() => {
                             return `[ ${_.map(newArray, v => _.isString(v) ? `"${v}"` : v).join(", ")} ]`.
                                 replace(/\]"/gu, "]").replace(/"\[/gu, "[").
                                 replace(/\[\s+\]/gu, "[]")
-                        return _.clone(newArray)
-                    } else if (_.keys(val).length > 0) {
+                        return [...newArray]
+                    } else if (_.isObject(val) && !_.isEmpty(val)) {
                         const newVal = {}
-                        for (const k of _.keys(val))
-                            newVal[k] = parser(val[k])
+                        _.each(val, (v, k) => {
+                            newVal[k] = parser(v)
+                        })  
                         if (JSON.stringify(newVal).length < 60)
                             return _.escape(JSON.stringify(newVal, null, 1).
                                 replace(/\\n/g,"").
                                 replace(/"([^(")"]+)":/g,"$1:")).
                                 replace(/\}/gu, " }").
                                 replace(/\s\s+/gu, " ")
-                        return _.clone(newVal)
+                        return newVal
                     } else {
                         return val
                     }
@@ -331,7 +332,12 @@ const D = (() => {
     // #endregion
 
     // #region SEARCH & VALIDATION: Match checking, Set membership checking, type validation. 
-    const fuzzyMatch = (first, second) => {
+    const looseMatch = (first, second) => {
+            if (VAL({string: [first, second]}, "looseMatch", true))
+                return first.toLowerCase() === second.toLowerCase()
+            return false
+        }, 
+        fuzzyMatch = (first, second) => {
             if (VAL({string: [first, second]}, "fuzzyMatch", true))
                 return first.toLowerCase().replace(/\W+/gu, "").includes(second.toLowerCase().replace(/\W+/gu, "")) ||
                 second.toLowerCase().replace(/\W+/gu, "").includes(first.toLowerCase().replace(/\W+/gu, ""))
@@ -721,7 +727,7 @@ const D = (() => {
             removeFirst(TRACE, traceRef)
             return charObjs.size === 0 ?
                 isSilent ? false : THROW(`No Characters Found using Search Parameters:<br>${jStr(searchParams)} in Character Reference<br>${jStr(charRef)}`, "getChars")
-                : [...charObjs]		
+                : _.reject([...charObjs], v => v.get("name") === "Jesse, Good Lad That He Is")
         }, getChar = (charRef, isSilent = false) => getChars(charRef, isSilent)[0],
         getCharData = (charRef, isSilent = false) => {
             const charObj = getChar(charRef)
@@ -729,14 +735,21 @@ const D = (() => {
                 return _.find(_.values(Char.REGISTRY), v => v.id === charObj.id)
             return false
         },
+        getCharsProps = (charRefs, property, isSilent = false) => {
+            const charObjs = getChars(charRefs, isSilent),
+                propData = {}
+            for (const char of charObjs)
+                propData[char.id] = getCharData(char, isSilent)[property]
+            return propData
+        },
         getStat = (charRef, statName, isSilent = false) => {
             const charObj = getChar(charRef)
             let attrValueObj = null
             if (VAL({ charObj: charObj, string: statName }, isSilent ? null : "getStat")) {
-                const attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => statName.includes("repeating_") || !fuzzyMatch("repeating", v.get("name"))) // UNLESS "statName" includes "repeating_", don't return repeating fieldset attributes.
+                const attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => statName.includes("repeating") || !fuzzyMatch("repeating", v.get("name"))) // UNLESS "statName" includes "repeating_", don't return repeating fieldset attributes.
                 //D.Alert(`All Attr Objs: ${D.JS(_.map(allAttrObjs, v => v.get("name")))}<br><br>Filtered Attr Objs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
                 // First try for a direct match, then a fuzzy match:
-                attrValueObj = _.find(attrObjs, v => v.get("name").toLowerCase() === statName.toLowerCase()) || _.find(attrObjs, v => fuzzyMatch(v.get("name"), statName))
+                attrValueObj = _.find(attrObjs, v => v.get("name").toLowerCase() === statName.toLowerCase()) || _.find(attrObjs, v => looseMatch(v.get("name"), statName))
                 if (!attrValueObj) {
                     const attrNameObj = _.find(attrObjs, v => v.get("name").toLowerCase().endsWith("_name") && v.get("current").toLowerCase() === statName.toLowerCase())
                     if (attrNameObj)
@@ -761,7 +774,7 @@ const D = (() => {
                 const attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => v.get("name").toLowerCase().startsWith(section === "*" ? "repeating_" : `repeating_${section.toLowerCase()}_`))
                 //D.Alert(`attrObjs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
                 const rowIDs = getUniqIDs(attrObjs)
-                DB(`attrObjsInSection: ${jStr(_.map(attrObjs, v => v.get("name")))}<br><br>rowIDsInSection: ${jStr(rowIDs)}`, "getRepIDs")
+                DB(`attrObjsInSection: ${jStr(_.map(attrObjs, v => parseRepStat(v.get("name"))[2]))}<br><br>rowIDsInSection: ${jStr(rowIDs)}`, "getRepIDs")
                 if (VAL({ string: rowFilter })) {
                     traceRef = "RowRef-String"
                     TRACE.push(traceRef)
@@ -784,25 +797,32 @@ const D = (() => {
                         for (const rowID of [...validRowIDs]) {
                             const attrObjsInRow = _.filter(attrObjs, v => v.get("name").toLowerCase().includes(rowID.toLowerCase()))
                             dbstring += `RowID: ${rowID}`
-                            if (!_.find(attrObjsInRow, v => fuzzyMatch(v.get("name").toLowerCase(), key.toLowerCase()) &&
-                                (val === "*" || fuzzyMatch(v.get("current").toString().toLowerCase(), val.toString().toLowerCase())))) {
+                            if (!_.find(attrObjsInRow, v => fuzzyMatch(v.get("name"), key) &&
+                                (val === "*" || looseMatch(v.get("current").toString(), val.toString())))) {
                                 // If no direct match is found, check if the row contains a "_name" attribute that matches the key.
                                 const nameAttrObj = _.find(attrObjsInRow, v => v.get("name").endsWith("_name") &&
-                                    fuzzyMatch(v.get("current").toString().toLowerCase(), key.toString().toLowerCase()))
+                                    looseMatch(v.get("current").toString(), key.toString()))
                                 dbstring += " -- No Direct Match."
                                 // If _name attribute exists, now find corresponding non-name attribute and compare its value to val.
                                 if (nameAttrObj) {
                                     dbstring += `<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${parseRepStat(nameAttrObj.get("name"))[2]} -- <b><u>EXISTS!</u></b>`
-                                    if (!_.find(attrObjsInRow, v => v.get("name").toLowerCase() === nameAttrObj.get("name").toLowerCase().slice(0, -5) &&
-                                        (val === "*" || fuzzyMatch(v.get("current").toString().toLowerCase(), val.toString().toLowerCase())))) {
+                                    if (!_.find(attrObjsInRow, v => looseMatch(v.get("name"), nameAttrObj.get("name").slice(0, -5)) &&
+                                        (val === "*" || looseMatch(v.get("current").toString(), val.toString())))) {
                                         // If neither of these tests pass, remove the rowID from the list of valid row IDs.
                                         dbstring += ". . .  But Doesn't Match Value"
                                         validRowIDs = _.without(validRowIDs, rowID)
+                                    } else {
+                                        let obj = _.find(attrObjsInRow, v => looseMatch(v.get("name"), nameAttrObj.get("name").slice(0, -5)) &&
+                                        (val === "*" || looseMatch(v.get("current").toString(), val.toString())))
+                                        dbstring += `. . .  NAME+VALUE MATCH: VAL[${val}] = ${obj.get("current")}, VALNAME[${parseRepStat(obj.get("name"))[2]}], NAMEOBJ[${parseRepStat(nameAttrObj.get("name"))[2]}]`
                                     }
                                 } else {
                                     dbstring += " No Name Attribute."
                                     validRowIDs = _.without(validRowIDs, rowID)
                                 }
+                            } else {
+                                const matchedAttr = _.find(attrObjsInRow, v => fuzzyMatch(v.get("name"), key) && (val === "*" || looseMatch(v.get("current").toString(), val.toString())))
+                                dbstring += ` -- DIRECT MATCH! ${matchedAttr.get("name")}: ${matchedAttr.get("current")}`
                             }
                             dbstring += "<br>"
                         }
@@ -831,51 +851,86 @@ const D = (() => {
         getRepStats = (charRef, section, rowFilter, statName, groupBy, pickProperty, isSilent = false) => {
             const charObj = getChar(charRef)
             DB(`getRepStats(${jStr([charObj.get("name"), section, rowFilter, statName, groupBy, pickProperty])})`, "getRepStats")
-            let rowData = []
+            let finalRepData = []
             if (VAL({ charObj: charObj, string: section }, "getRepStats")) {
-                const filter = VAL({string: rowFilter}) ? rowFilter : VAL({ string: statName, list: rowFilter || {} }) ? Object.assign({ [statName]: "*" }, rowFilter || {}) : rowFilter,
+                // STEP ONE: USE THE ROW FILTER TO GET VALID ROW IDS TO SEARCH
+                const filter = VAL({string: rowFilter}) ? rowFilter :
+                        VAL({string: statName, list: rowFilter || {} }) ? Object.assign({ [statName]: "*" }, rowFilter || {}) :
+                            rowFilter,
                     rowIDs = getRepIDs(charObj, section, filter, isSilent),
                     attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`) &&
-                        rowIDs.includes(v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`)[1]))
+                                                                                                         rowIDs.includes(v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`)[1]))
+                // STEP TWO: ITERATE THROUGH EACH ROW TO LOOK FOR REQUESTED STAT(S)
                 for (const rowID of rowIDs) {
-                    const rowAttrObjs = _.filter(attrObjs, v => v.get("name").includes(rowID)),
-                        attrValueObjs = [],
-                        attrNameObjs = { nameObj: _.find(rowAttrObjs, v => v.get("name").toLowerCase().endsWith("_name")) }
-                    if (attrNameObjs.nameObj) {
-                        attrNameObjs.name = attrNameObjs.nameObj.get("current")
-                        attrNameObjs.valObj = _.find(rowAttrObjs, v => v.get("name").toLowerCase() === attrNameObjs.nameObj.get("name").toLowerCase().slice(0, -5))
-                        if (_.isUndefined(attrNameObjs.valObj))
-                            continue
-                        attrNameObjs.val = attrNameObjs.valObj.get("current")
-                        DB(`AttrNameObjs: ${jStr(attrNameObjs)} (${_.keys(attrNameObjs).length} entries)`, "getRepStats")
-                    }
-                    if (statName)
-                        attrValueObjs[0] = _.find(rowAttrObjs, v => v.get("name").toLowerCase().includes(`_${rowID.toLowerCase()}_`) && fuzzyMatch(parseRepStat(v.get("name").toLowerCase())[2], statName.toLowerCase())) ||
-                            attrNameObjs.name && fuzzyMatch(attrNameObjs.name.toLowerCase(), statName.toLowerCase()) && attrNameObjs.valObj
-                    else
-                        attrValueObjs.push(...rowAttrObjs)
-                    DB(`AttrValueObjs: ${jStr(_.map(attrValueObjs, v => v.get("name")))}`, "getRepStats")
-                    for (const attrValueObj of _.compact(attrValueObjs))
-                        rowData.push({
+                    const rowAttrObjs = _.filter(attrObjs, v => v.get("name").toLowerCase().includes(rowID.toLowerCase())), // Select the attribute objects from this row.
+                        attrNameObjs = _.filter(rowAttrObjs, v => v.get("name").toLowerCase().endsWith("_name")), // Select ALL row attribute objects that end with "_name"
+                        attrNameData = _.compact(_.map(attrNameObjs, v => { // ... and compile their data by linking them to their value objects.
+                            const data = {
+                                charID: charObj.id,
+                                rowID: rowID,
+                                name: v.get("current"),
+                                fullName: v.get("name").replace(/_name$/gu, ""),
+                                obj: _.find(rowAttrObjs, vv => vv.get("name").toLowerCase() === v.get("name").toLowerCase().slice(0,-5))
+                            }
+                            if (data.obj) {
+                                data.val = data.obj.get("current")
+                                data.attrName = parseRepStat(data.obj.get("name"))[2]
+                                DB(`NameData --> ValObject: NAME: ${data.name}, VAL: ${data.val}, OBJ: ${jStr(data.obj)}`, "getRepStats")
+                                return data
+                            } else {
+                                return false
+                            }
+                        }))
+                    DB("Moving Onto Next Step ...", "parseRepStats")
+                    // IF a STATNAME has been specified...
+                    if (statName) {
+                        const foundStat = 
+                            _.find(attrNameData, v => looseMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) || // FIRST match it against an EXACT ATTRIBUTE NAME already found above.
+                            _.find(attrNameData, v => looseMatch(parseRepStat(v.name)[2], statName)) || // SECOND try to match with the EXACT "FOUND" NAME of a NAME/VALUE link.
+                            _.find(rowAttrObjs, v => looseMatch(parseRepStat(v.get("name"))[2], statName)) || // NEXT, check to see if it EXACTLY matches any of the rowAttrObjs.
+                            _.find(attrNameData, v => fuzzyMatch(parseRepStat(v.fullName)[2], statName.replace(/_name$/gu, ""))) || // FINALLY repeat the above but with fuzzy matching. match it against an EXACT ATTRIBUTE NAME already found above.
+                            _.find(attrNameData, v => fuzzyMatch(parseRepStat(v.name)[2], statName)) || 
+                            _.find(rowAttrObjs, v => fuzzyMatch(parseRepStat(v.get("name"))[2], statName))
+                        if (foundStat) { // If a stat was found, change it to a data set if it isn't one already
+                            finalRepData.push(foundStat.fullName ? foundStat : {
+                                charID: charObj.id,
+                                rowID: rowID,
+                                name: parseRepStat(foundStat.get("name"))[2],
+                                attrName: parseRepStat(foundStat.get("name"))[2],
+                                fullName: foundStat.get("name"),
+                                obj: foundStat,
+                                val: foundStat.get("current")
+                            })
+                            DB(`FinalRepData: ${D.JS(finalRepData, true)}`, "getRepStats")
+                        } else {
+                            DB(`No matches to statName ${statName}`, "getRepStats")
+                        }
+                    // IF a STATEMENT has NOT been specified, return ALL the row attribute objects (after parsing them into data sets)
+                    } else {
+                        finalRepData.push(...attrNameData)
+                        finalRepData.push(..._.map(rowAttrObjs, v => ({
                             charID: charObj.id,
                             rowID: rowID,
-                            fullName: attrValueObj.get("name"),
-                            name: attrNameObjs.valObj && attrNameObjs.valObj.get("name") === attrValueObj.get("name") && attrNameObjs.name ||
-                                attrValueObj.get("name").match("repeating_[^_]*?_[^_]*?_(.+)")[1],
-                            obj: attrValueObj,
-                            val: VAL({ number: attrValueObj.get("current") }) ? parseInt(attrValueObj.get("current")) : attrValueObj.get("current")
-                        })
+                            name: parseRepStat(v.get("name"))[2],
+                            attrName: parseRepStat(v.get("name"))[2],
+                            fullName: v.get("name"),
+                            obj: v,
+                            val: v.get("current")
+                        })))
+                    }
+                }
+                // Compactify the data to remove false values:
+                finalRepData = _.compact(finalRepData)
+                // Check for grouping and property-picking, and transform the data accordingly:
+                if (VAL({ string: groupBy }) && ["rowID", "fullName", "attrName", "name", "val"].includes(groupBy)) {
+                    finalRepData = _.groupBy(finalRepData, v => v[groupBy])
+                    if (VAL({ string: pickProperty }) && ["fullName", "attrName", "name", "obj", "val"].includes(pickProperty))
+                        finalRepData = _.mapObject(finalRepData, v => _.map(v, vv => vv[pickProperty]))
+                } else if (VAL({ string: pickProperty }) && ["fullName", "attrName", "name", "obj", "val"].includes(pickProperty)) {
+                    finalRepData = _.map(finalRepData, v => v[pickProperty])
                 }
             }
-            rowData = _.sortBy(_.compact(rowData), v => v.name.length)
-            if (VAL({ string: groupBy }) && ["rowID", "fullName", "name", "val"].includes(groupBy)) {
-                rowData = _.groupBy(rowData, v => v[groupBy])
-                if (VAL({ string: pickProperty }) && ["fullName", "name", "obj", "val"].includes(pickProperty))
-                    rowData = _.mapObject(rowData, v => _.map(v, vv => vv[pickProperty]))
-            } else if (VAL({ string: pickProperty }) && ["fullName", "name", "obj", "val"].includes(pickProperty)) {
-                rowData = _.map(rowData, v => v[pickProperty])
-            }
-            return rowData
+            return finalRepData
         }, getRepStat = (charRef, section, rowFilter, statName, isSilent = false) => getRepStats(charRef, section, rowFilter, statName, null, null, isSilent)[0],
         getPlayerID = (playerRef, isSilent = false) => {
             TRACE.push("getPlayerID")
@@ -972,12 +1027,12 @@ const D = (() => {
     // #region Repeating Section Manipulation
     const parseRepStat = (repRef) => {
             const repStatName = VAL({ object: repRef }) ? repRef.get("name") : repRef
-            if (VAL({ repname: repStatName }, "parseRepAttr")) {
+            if (VAL({ repname: repStatName }, "parseRepStat")) {
                 const nameParts = repStatName.split("_")
                 nameParts.shift()
                 return [nameParts.shift(), nameParts.shift(), nameParts.join("_")]
             }
-            return false
+            return [repStatName, repStatName, repStatName]
         },
         makeRepRow = (charRef, secName, attrs) => {
             const attrList = {},
@@ -1125,7 +1180,7 @@ const D = (() => {
         KeyMapObj: kvpMap,
         ParseToObj: parseToObj,
 
-        //LooseMatch: looseMatch, // more strict than fuzzyMatch: case-insensitive matching but everything else is still required
+        LooseMatch: looseMatch, // more strict than fuzzyMatch: case-insensitive matching but everything else is still required
         FuzzyMatch: fuzzyMatch,
         IsIn: isIn,
         Validate: validate,
@@ -1140,7 +1195,7 @@ const D = (() => {
         GMID: getGMID,
         GetSelected: getSelected,
         GetName: getName,
-        GetChars: getChars, GetChar: getChar, GetCharData: getCharData,
+        GetChars: getChars, GetChar: getChar, GetCharData: getCharData, GetCharVals: getCharsProps,
         GetStat: getStat,
         GetRepIDs: getRepIDs,
         GetRepStats: getRepStats, GetRepStat: getRepStat,
