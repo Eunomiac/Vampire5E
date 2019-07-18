@@ -468,6 +468,7 @@ const C = (() => {
         },
         TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"],
         CLANS = ["Brujah", "Gangrel", "Malkavian", "Nosferatu", "Toreador", "Tremere", "Ventrue", "Lasombra", "Tzimisce", "Banu Haqim", "Ministry", "Hecata", "Ravnos"],
+        SECTS = ["Camarilla", "Anarch", "Sabbat", "Ashirra", "Second Inquisition", "Autarkis", "Independent", "Mortal"],
         MISCATTRS = ["blood_potency_max"],
         BLOODPOTENCY = [
             { bp_surge: 0, bp_discbonus: 0, bp_minhunger: 1 },
@@ -795,7 +796,7 @@ const C = (() => {
         SKILLS, SKILLABBVS,
         DISCIPLINES, DISCABBVS,
         TRACKERS,
-        CLANS,
+        CLANS, SECTS,
         MISCATTRS,
         BLOODPOTENCY,
 

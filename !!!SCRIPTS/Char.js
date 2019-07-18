@@ -261,15 +261,12 @@ const Char = (() => {
                     case "hunger":
                         Media.Toggle(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, true, obj.get("current"))
                         break
-                    case "desire":
-                    case "_reporder_repeating_desire": {
-                        try {
-                            Media.SetText(`${D.GetName(obj.get("_characterid"), true)}Desire`, D.GetRepStat(obj.get("_characterid"), "desire", (D.GetStat(obj.get("_characterid"), "_reporder_repeating_desire") || [""])[0].split(",")[0], "desire").val)
-                        } catch (errObj) {
-                            THROW(`Bad Desire Attribute: ${D.JS(obj)}`, "handleChangeAttr", errObj)
-                        }
+                    case "desire": case "_reporder_repeating_desire":
+                        displayDesires()
                         break
-                    }
+                    case "projectstake1": case "projectstake2": case "projectstake3": case "projectstake1_name": case "projectstake2_name": case "projectstake3_name":
+                        displayStakes()
+                        break
                     /* no default */
                 }
         }

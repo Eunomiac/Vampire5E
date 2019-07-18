@@ -765,7 +765,7 @@ const D = (() => {
         getRepIDs = (charRef, section, rowFilter, isSilent = false) => {
             // rowRef: rowID (string), stat:value (list, with special "name" entry for shortname), array of either (array), or null (all)
             TRACE.push("getRepIDs")
-            DB(`GetRowIDs(${jStr(charRef, true)}, ${section}, ${jStr(rowFilter)})`, "getRepIDs")
+            DB(`GetRepIDs(${jStr(charRef, true)}, ${section}, ${jStr(rowFilter)})`, "getRepIDs")
             const charObj = getChar(charRef, isSilent),
                 getUniqIDs = attrObjs => _.uniq(_.map(attrObjs, v => v.get("name").match("repeating_[^_]*?_(.*?)_")[1]))
             let validRowIDs = [],
@@ -938,44 +938,61 @@ const D = (() => {
             let playerID = null
             try {
                 if (VAL({object: playerRef}) && playerRef.get("_type") === "player") {
+                    DB(`PlayerRef identified as Player Object: ${D.JS(playerRef, true)}<br><br>... returning ID: ${playerRef.id}`, "getPlayerID")
                     removeFirst(TRACE, "getPlayerID")
                     return playerRef.id
                 }
                 if (VAL({ char: playerRef })) {
                     const charObj = getChar(playerRef, true)
                     playerID = _.filter(charObj.get("controlledby").split(","), v => v !== "all")
+                    DB(`PlayerRef identified as Character Object: ${D.JS(charObj.get("name"))}... "controlledby": ${D.JS(playerID)}`, "getPlayerID")
                     if (playerID.length > 1 && !isSilent)
-                        THROW(`WARNING: Finding MULTIPLE player IDs connected to character reference '${jStr(playerRef)}':<br><br>${jStr(playerID)}`, "getPlayerID")
+                        THROW(`WARNING: Finding MULTIPLE player IDs connected to character reference '${jStr(playerRef)}': ${jStr(playerID)}`, "getPlayerID")
                     removeFirst(TRACE, "getPlayerID")
                     return playerID[0]
                 }
                 if (VAL({ string: playerRef })) {
-                    if (getObj("player", playerRef))
+                    DB(`PlayerRef identified as String: ${D.JS(playerRef)}`, "getPlayerID")
+                    if (getObj("player", playerRef)) {
+                        DB(`... String is Player ID. Returning ${D.JS(getObj("player", playerRef).id)}`, "getPlayerID")
                         return getObj("player", playerRef).id
-                    else if (findObjs({
+                    } else if (findObjs({
                         _type: "player",
                         _displayname: playerRef
-                    }, {caseInsensitive: true}).length > 0)
+                    }, {caseInsensitive: true}).length > 0) {
+                        DB(`... String is DISPLAY NAME. Found ${findObjs({
+                            _type: "player",
+                            _displayname: playerRef
+                        }, {caseInsensitive: true}).length} Players.`, "getPlayerID")
                         return findObjs({
                             _type: "player",
                             _displayname: playerRef
                         }, {caseInsensitive: true})[0].id
-                    else if (findObjs({
+                    } else if (findObjs({
                         _type: "player",
                         speakingas: playerRef
-                    }, {caseInsensitive: true}).length > 0)
+                    }, {caseInsensitive: true}).length > 0) {
+                        DB(`... String is SPEAKING AS. Found ${findObjs({
+                            _type: "player",
+                            speakingas: playerRef
+                        }, {caseInsensitive: true}).length} Players.`, "getPlayerID")
                         return findObjs({
                             _type: "player",
                             speakingas: playerRef
                         }, {caseInsensitive: true})[0].id
-                    else if (findObjs({
+                    } else if (findObjs({
                         _type: "player",
                         _d20userid: playerRef
-                    }, {caseInsensitive: true}).length > 0)
+                    }, {caseInsensitive: true}).length > 0) {
+                        DB(`... String is _d20userid. Found ${findObjs({
+                            _type: "player",
+                            _d20userid: playerRef
+                        }, {caseInsensitive: true}).length} Players.`, "getPlayerID")
                         return findObjs({
                             _type: "player",
                             _d20userid: playerRef
                         }, {caseInsensitive: true})[0].id
+                    }
                     return isSilent ? false : THROW(`Unable to find player connected to reference '${jStr(playerRef)}'`, "getPlayerID")
                 }
                 removeFirst(TRACE, "getPlayerID")
@@ -988,7 +1005,7 @@ const D = (() => {
         getPlayer = (playerRef, isSilent = false) => {
             TRACE.push("getPlayer")
             let playerID = getPlayerID(playerRef, true)
-            D.Alert(`Searching for Player with Player Ref: ${playerRef}
+            DB(`Searching for Player with Player Ref: ${playerRef}
                 ... playerID: ${jStr(playerID)}
                 .. String? ${VAL({string: playerID})}
                 .. Player Object? ${jStr(getObj("player", playerID))}`, "getPlayer")

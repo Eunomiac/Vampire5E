@@ -1491,6 +1491,33 @@
 		background-position: center -5px;
 	}
 
+	.charsheet div.sheet-diceroller div.sheet-effectdisplay {
+		height: 20px;
+		display: block;
+		width: calc(100% - 120px - 60px);
+		margin: 5px 60px -5px 120px;
+	}
+
+	.charsheet div.sheet-diceroller div.sheet-effectdisplay textarea {
+		overflow: hidden;
+		color: #A00;
+		font-family: Voltaire;
+		padding: 0px 0px;
+		height: 100%;
+		text-align: right;
+		text-align-last: right;
+	}
+
+	.charsheet div.sheet-diceroller div.sheet-effectdisplay.sheet-bottomdisplay {
+		width: calc(100% - 210px);
+		margin: -20px 0px 0px 210px;
+	}
+
+	.charsheet div.sheet-diceroller div.sheet-effectdisplay.sheet-bottomdisplay textarea {
+		text-align: left;
+		text-align-last: left;
+	}
+
 	.charsheet div.sheet-hungercol {
 		width: 105px;
 	}
@@ -1762,7 +1789,7 @@
 	.charsheet div.sheet-dyscrasiasdisplay {
 		height: 40px;
 		width: calc(100% - 20px - 6px - 6px);
-		margin: -10px 0px 15px 3px;
+		margin: 0px 0px 15px 3px;
 	}
 
 	.charsheet div.sheet-dyscrasiasdisplay span.sheet-header2,

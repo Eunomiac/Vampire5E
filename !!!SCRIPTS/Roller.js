@@ -1086,38 +1086,147 @@ const Roller = (() => {
     const applyRollEffects = rollInput => {
             const rollEffectString = getAttrByName(rollInput.charID, "rolleffects") || ""
             let isReapplying = false
+            DB(`APPLYING ROLL EFFECTS.<br>... ${rollEffectString}<br><br>${D.JS(rollInput)}`, "applyRollEffects")
             if (VAL({ string: rollEffectString, list: rollInput }, "applyRollEffects")) {
                 rollInput.appliedRollEffects = rollInput.appliedRollEffects || []
                 const rollEffects = _.compact(_.without(_.uniq([...rollEffectString.split("|"), ..._.keys(STATEREF.rollEffects), ...rollInput.rollEffectsToReapply || []]), ...rollInput.appliedRollEffects)),
                     [rollData, rollResults] = rollInput.rolls ? [null, rollInput] : [rollInput, null],
-                    checkRestriction = (input, traits, flags, restr) => {
-                    // TEST: If restriction is a clan, does character clan match?
-                        if (D.IsIn(restr, C.CLANS)) {
-                            if (!D.IsIn(getAttrByName(input.charID, "clan"), restr))
-                                return true
+                    checkRestriction = (input, traits, flags, rollMod, restriction) => {
+                        DB(`Checking Restriction '${D.JS(restriction)}'<br>...TRAITS: ${D.JS(traits)}<br>...FLAGS: ${D.JS(flags)}<br>...MOD: ${D.JS(rollMod)}`, "checkThreshold")
+                        if (restriction === "all") {
+                            DB("Restriction = ALL:  RETURNING TRUE", "checkThreshold")
+                            return true
+                        }
+                        if (D.IsIn(restriction, ["success", "failure", "basicfail", "critical", "basiccrit", "messycrit", "bestialfail", "totalfail"]) ||
+                        D.IsIn(rollMod, ["nowpreroll", "doublewpreroll", "freewpreroll", "bestialcancel", "totalfailure", "nomessycrit"])) {
+                            DB("... ... Detected ROLLRESULT RELEVANT", "checkThreshold")
+                            if (!input.rolls) {
+                                DB("... ... ... but NO ROLLS PROPERTY: RETURNING 'INAPPLICABLE'", "checkThreshold")
+                                return "INAPPLICABLE"
+                            } else {
+                                // Does rollMod specify a willpower cost, but it is superceded by a nowpreroll restriction somewhere in the effect?
+                                switch (rollMod) {
+                                    case "doublewpreroll": case "freewpreroll":
+                                        if (_.any(rollEffects, v => v.includes("nowpreroll"))) {
+                                            DB(`Willpower cost ${rollMod} SUPERCEDED by 'nowpreroll': ${D.JS(rollEffects)}`, "checkThreshold")
+                                            return "INAPPLICABLE"
+                                        }
+                                        break
+                                    // no default
+                                }
+                            // TEST: If rollResults and rollInput specifies a result restriction, check if it applies.
+                                let effectiveMargin = input.total - (input.diff || 1) // All rolls have a base difficulty of one if difficulty isn't specified.
+                                switch (restriction) {
+                                    case "success":
+                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0}`, "checkThreshold")
+                                        return effectiveMargin >= 0
+                                    case "failure":
+                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0}`, "checkThreshold")
+                                        return effectiveMargin < 0
+                                    case "basicfail":
+                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0}`, "checkThreshold")
+                                        return effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0 // fail AND not bestial fail AND not total fail
+                                    case "critical":
+                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0}`, "checkThreshold")
+                                        return effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0
+                                    case "basiccrit":
+                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0}`, "checkThreshold")
+                                        return effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0
+                                    case "messycrit":
+                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0}`, "checkThreshold")
+                                        return effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0
+                                    case "bestialfail":
+                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0 && input.H.botches > 0}`, "checkThreshold")
+                                        return effectiveMargin < 0 && input.H.botches > 0
+                                    case "totalfail":
+                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${input.B.succs + input.H.succs === 0}`, "checkThreshold")
+                                        return input.B.succs + input.H.succs === 0
+                                    // no default
+                                }
+                            }
+                        } else if (input.rolls) {                            
+                            DB("... ... Detected ROLLDATA RELEVANT with ROLLS PROPERTY: RETURNING 'INAPPLICABLE'", "checkThreshold")                        
+                            return "INAPPLICABLE"
+                        }
+                        // After assessing rollData/rollResults-specific restrictions, check restrictions that apply to either:
+                        DB("Initial Thresholds PASSED.  Moving on to general restrictions.", "checkThreshold")
+                        if (D.IsIn(restriction, C.CLANS)) {
+                            DB(`Restriction = CLAN.  Character Clan: ${getAttrByName(input.charID, "clan")}`, "checkThreshold")                            
+                            if (!D.IsIn(getAttrByName(input.charID, "clan"), restriction)) {                                
+                                DB("... Check FAILED.  Returning FALSE", "checkThreshold")        
+                                return false
+                            }
+                        } else if (D.IsIn(restriction, C.SECTS)) {
+                            DB(`Restriction = SECT.  Character Sect: ${getAttrByName(input.charID, "sect")}`, "checkThreshold")                                   
+                            if (!D.IsIn(getAttrByName(input.charID, "sect"), restriction)){                                
+                                DB("... Check FAILED.  Returning FALSE", "checkThreshold")        
+                                return false
+                            }                    
                         // TEST: If restriction is "physical", "social" or "mental", does an appropriate trait match?
-                        } else if (D.IsIn(restr, ["physical", "mental", "social"])) {
-                            if (!_.intersection(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()), _.keys(traits)).length) {
-                                DB(`SKIPPING: Restriction ${D.JS(restr)} Doesn't Apply<br>... ATTRIBUTES/SKILLS MAPPED: ${D.JS(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()))}<br><br>C.SKILLS[restriction] = ${D.JS(C.SKILLS[restr])}<br><br>INTERSECTION = ${D.JS(_.intersection(_.map([...C.ATTRIBUTES[restr], ...C.SKILLS[restr]], v => v.toLowerCase()), _.keys(traits)))}`, "applyRollEffects")
-                                return true
+                        } else if (D.IsIn(restriction, ["physical", "mental", "social"])) {
+                            DB(`Restriction = ARENA.  Trait Keys: ${D.JS(_.keys(traits))}`, "checkThreshold")       
+                            if (!_.intersection(_.map([...C.ATTRIBUTES[restriction], ...C.SKILLS[restriction]], v => v.toLowerCase()), _.keys(traits)).length) {                                
+                                DB("... Check FAILED.  Returning FALSE", "checkThreshold")        
+                                return false
+                            }
+                        // TEST: If restriction starts with "char:", is the named character rolling?
+                        } else if (restriction.startsWith("char:")) {
+                            DB(`Restriction = CHARACTER.  ID: ${(D.GetChar(restriction.replace(/char:/gu, "")) || {id: false}).id}`, "checkThreshold")      
+                            if (input.charID !== (D.GetChar(restriction.replace(/char:/gu, "")) || {id: false}).id){                                
+                                DB("... Check FAILED.  Returning FALSE", "checkThreshold")        
+                                return false
+                            }
+                        } else if (restriction.startsWith("loc:")) { 
+                            const loc = restriction.replace(/loc:/gu, ""),
+                                locations = {
+                                    center: _.without([
+                                        Media.GetData("DistrictCenter").activeSrc,
+                                        Media.GetData("SiteCenter").activeSrc
+                                    ], "blank"),
+                                    left: _.without([
+                                        Media.GetData("DistrictLeft").activeSrc,
+                                        Media.GetData("SiteLeft").activeSrc
+                                    ], "blank"),
+                                    right: _.without([
+                                        Media.GetData("DistrictRight").activeSrc,
+                                        Media.GetData("SiteRight").activeSrc
+                                    ], "blank")
+                                }
+                            DB(`Restriction = LOCATION: ${D.JS(loc)} vs. ${D.JS(locations)}`, "checkThreshold")    
+                            if (locations.center.length) {
+                                if (!D.IsIn(loc, locations.center)){                                
+                                    DB("... CENTER LOCATION Check FAILED.  Returning FALSE", "checkThreshold")        
+                                    return false
+                                }
+                            } else if (Media.IsInside(Char.GetToken(input.charID), "sandboxLeft")) {
+                                if (!D.IsIn(loc, locations.left)){                                
+                                    DB("... LEFT LOCATION Check FAILED.  Returning FALSE", "checkThreshold")        
+                                    return false
+                                }
+                            } else if (!D.IsIn(loc, locations.right)) {                                
+                                DB("... RIGHT LOCATION Check FAILED.  Returning FALSE", "checkThreshold")        
+                                return false
                             }
                         // TEST: If none of the above, does restriction match a trait or a flag?
-                        } else {
-                            if (!D.IsIn(restr, [..._.keys(traits), ..._.keys(flags)]))
-                                return true
+                        } else if (!D.IsIn(restriction, [..._.keys(traits), ..._.keys(flags)])) {
+                            DB(`TRAIT/FLAG check FAILED for: ${D.JS(_.keys(traits))} and ${D.JS(_.keys(flags))}, returning FALSE`, "checkThreshold")
+                            return false
                         }
-                        return false
+                        // If effect passes all of the threshold tests, return true.
+                        DB("All Threshold Checks Passed!  Returning TRUE", "checkThreshold")
+                        return true
                     }
+
                 DB(`Roll Effects: ${D.JS(rollEffects)}`, "applyRollEffects")
                 for (const effectString of rollEffects) {
                 // First, check if the global effect state variable holds an exclusion for this character ID AND effect isn't in rollEffectsToReapply.
                     if (STATEREF.rollEffects[effectString] && STATEREF.rollEffects[effectString].includes(rollInput.charID))
                         continue
-                    let [rollRestrictions, rollMod, rollLabel, isOnceOnly] = effectString.split(";"),
-                        [rollTarget, rollTraits, rollFlags] = ["", {}, {}],
-                        isSkipping = false;
+                    // Parse the effectString for all of the relevant parameters
+                    let [rollRestrictions, rollMod, rollLabel, removeWhen] = effectString.split(";"),
+                        [rollTarget, rollTraits, rollFlags] = ["", {}, {}];
                     [rollMod, rollTarget] = _.map(rollMod.split(":"), v => parseInt(v) || v.toLowerCase())
-                    rollRestrictions = _.map(rollRestrictions.split("/"), v => v.toLowerCase())
+                    rollRestrictions = _.map(rollRestrictions.split("+"), v => v.toLowerCase())
                     rollTraits = _.object(
                         _.map(_.keys(rollInput.traitData), v => v.toLowerCase()),
                         _.map(_.values(rollInput.traitData), v => parseInt(v.value) || 0)
@@ -1131,87 +1240,58 @@ const Roller = (() => {
                     DB(`Roll Traits: ${D.JS(rollTraits)}<br>Roll Flags: ${D.JSH(rollFlags)}`, "applyRollEffects")
 
                 // THRESHOLD TEST OF ROLLTARGET: IF TARGET SPECIFIED BUT DOES NOT EXIST, SKIP PROCESSING THIS ROLL EFFECT.
-                    if (VAL({ string: rollTarget }) && !D.IsIn(rollTarget, _.keys(rollTraits)) && !D.IsIn(rollTarget, _.keys(rollFlags)))
+                    if (VAL({ string: rollTarget }) && !D.IsIn(rollTarget, _.keys(rollTraits)) && !D.IsIn(rollTarget, _.keys(rollFlags))) {
+                        DB(`Roll Target ${rollTarget} NOT present, SKIPPING EFFECT.`, "applyRollEffects")
+                        continue
+                    }
+
+                // THRESHOLD TESTS OF RESTRICTION: Parse each "AND" roll restriction into "OR" restrictions (/), and finally the "NOT" restriction (!)
+                    let isEffectOK = true
+                    DB(`BEGINNING TESTS OF RESTRICTION: "<b><u>${D.JS(effectString)}</u></b><br>... --- ${rollRestrictions.length} AND-RESTRICTIONS: ${D.JS(rollRestrictions)}`, "applyRollEffects")
+                    for (const andRestriction of rollRestrictions) {
+                        const orRestrictions = andRestriction.split("/")
+                        DB(`... Checking AND-RESTRICTION <b>'${D.JS(andRestriction)}'</b>.  ${orRestrictions.length} OR-RESTRICTIONS: ${D.JS(orRestrictions)}`, "applyRollEffects")
+                        let isEffectValid = false
+                        for (const restriction of orRestrictions) {
+                            if (restriction.charAt(0) === "!") {
+                                DB(`... ... Checking <u>NEGATED</u> OR-RESTRICTION <b>'${D.JS(restriction)}'</b>...`, "applyRollEffects")
+                                isEffectValid = checkRestriction(rollInput, rollTraits, rollFlags, rollMod, restriction.slice(1)) === false
+                            } else {
+                                DB(`... ... Checking OR-RESTRICTION <b>'${D.JS(restriction)}'</b>...`, "applyRollEffects")
+                                isEffectValid = checkRestriction(rollInput, rollTraits, rollFlags, rollMod, restriction) === true
+                            }
+                            if (isEffectValid)
+                                break
+                        }
+                        DB(`IsEffectValid = ${D.JS(isEffectValid)}`, "applyRollEffects")
+                        if (!isEffectValid) {
+                            isEffectOK = false
+                            break
+                        }                        
+                    }
+                    DB(`IsEffectOKAY = ${D.JS(isEffectOK)}`, "applyRollEffects")
+                    if (!isEffectOK)
                         continue
 
-                // THRESHOLD TESTS OF RESTRICTION: IF ANY FAIL, SKIP PROCESSING THIS ROLL EFFECT.
-                    for (const restriction of rollRestrictions) {
-                        if (isSkipping) break
-                    // TEST: Is rollInput the appropriate kind for this effect?
-                        if (D.IsIn(restriction, ["success", "failure", "basicfail", "critical", "basiccrit", "messycrit", "bestialfail", "totalfail"]) ||
-                        D.IsIn(rollMod, ["nowpreroll", "doublewpreroll", "freewpreroll", "bestialcancel", "totalfailure"])) {
-                            DB(`Detected RollResult Keyword: ${D.JS(restriction)}<br>... RollMod: ${D.JS(rollMod)}`, "applyRollEffects")
-                            if (rollData) {
-                                isSkipping = true
-                            } else {
-                            // TEST: If rollResults and rollInput specifies a result restriction, check if it applies.
-                                let effectiveMargin = rollResults.total - (rollResults.diff || 0)
-                                switch (restriction) {
-                                    case "success":
-                                        if (effectiveMargin <= 0)
-                                            isSkipping = true
-                                        break
-                                    case "failure":
-                                        if (effectiveMargin > 0)
-                                            isSkipping = true
-                                        break
-                                    case "basicfail":
-                                        if (effectiveMargin > 0 || rollResults.H.botches > 0 || rollResults.B.succs + rollResults.H.succs === 0)
-                                            isSkipping = true
-                                        break
-                                    case "critical":
-                                        if (effectiveMargin <= 0 || rollResults.critPairs.bb + rollResults.critPairs.hb + rollRestrictions.critPairs.hh === 0)
-                                            isSkipping = true
-                                        break
-                                    case "basiccrit":
-                                        if (effectiveMargin <= 0 || rollResults.critPairs.bb === 0 || rollResults.critPairs.hh + rollResults.critPairs.hb > 0)
-                                            isSkipping = true
-                                        break
-                                    case "messycrit":
-                                        DB(`Effective Margin: ${effectiveMargin}<br>... CritPairs: ${D.JS(rollResults.critPairs)} (${D.JS(rollResults.critPairs.hh + rollResults.critPairs.hb)})`, "applyRollEffects")
-                                        if (effectiveMargin <= 0 || rollResults.critPairs.hh + rollResults.critPairs.hb === 0)
-                                            isSkipping = true
-                                        break
-                                    case "bestialfail":
-                                        if (effectiveMargin > 0 || rollResults.H.botches === 0)
-                                            isSkipping = true
-                                        break
-                                    case "totalfail":
-                                        if (rollResults.B.succs + rollResults.H.succs > 0)
-                                            isSkipping = true
-                                        break
-                                    default:
-                                    // If the restriction isn't any of the above, have to do the standard check to see if it applies.
-                                        if (checkRestriction(rollResults, rollTraits, rollFlags, restriction))
-                                            isSkipping = true
-                                        break
-                                }
-                            // TEST: Also check the rollMod to see whether you're applying certain effects.
-                                switch (rollMod) {
-                                    case "doublewpreroll": case "freewpreroll":
-                                        if (_.any(rollEffects, v => v.includes("nowpreroll")))
-                                            isSkipping = true
-                                // no default
-                                }
-                            }
-                        } else {
-                            if (rollResults)
-                                isSkipping = true
-                            else if (checkRestriction(rollData, rollTraits, rollFlags, restriction))
-                                isSkipping = true
-                        }
-                    }
-                    if (isSkipping) continue
-
+                    DB("Threshold Tests Passed!", "applyRollEffects")
                 // THRESHOLD TESTS PASSED.  CHECK FOR 'ISONCEONLY' AND FIRE IT ACCORDINGLY
                 // If "isOnceOnly" set, add an exclusion to the global state variable OR remove this effect from the character-specific attribute.
-                    if (isOnceOnly === "true")
-                        if (STATEREF.rollEffects[effectString])
-                            STATEREF.rollEffects[effectString] = _.union(STATEREF.rollEffects[effectString], [rollInput.charID])
-                        else
-                            setAttrs(rollInput.charID, { rolleffects: _.compact(getAttrByName(rollInput.charID, "rolleffects").replace(effectString, "").replace(/\|\|/gu, "|").split("|")).join("|") })
-                // FIRST ROLLMOD PASS: CONVERT TO NUMBER.
+                    switch (removeWhen || "never") {
+                        case "never":
+                            break
+                        case "once":
+                            if (STATEREF.rollEffects[effectString])
+                                STATEREF.rollEffects[effectString] = _.union(STATEREF.rollEffects[effectString], [rollInput.charID])
+                            else
+                                setAttrs(rollInput.charID, { rolleffects: _.compact(getAttrByName(rollInput.charID, "rolleffects").replace(effectString, "").replace(/\|\|/gu, "|").split("|")).join("|") })
+                            break
+                        default:
+
+                            break
+                    }
+                        // FIRST ROLLMOD PASS: CONVERT TO NUMBER.
                 // Check whether parsing RollData or RollResults
+                    let isEffectMoot = false
                     if (VAL({ list: rollData })) {
                         DB(`Validated RollData: ${D.JS(rollData)}`, "applyRollEffects")
                     // Is rollMod a number?
@@ -1252,82 +1332,101 @@ const Roller = (() => {
                         }
 
                     // FIRST ROLLMOD PASS COMPLETE: ROLLMOD SHOULD BE AN INTEGER BY THIS POINT.
-
-                        if (VAL({ number: rollMod }, "applyRollEffects")) {
-                        // Adjust dice pool by rollMod (negative totals are okay; displayRoll deals with the one-die minimum)
-                            rollData.dicePool += rollMod
-                            if (rollData.basePool + rollMod < 0) {
-                                rollData.hungerPool += rollData.basePool + rollMod
-                                rollData.basePool = 0
-                            } else {
-                                rollData.basePool += rollMod
-                            }
-                            // Check to see if rollLabel is calling for a RegEx replacement, and perform the calculations.
-                            if (rollLabel.charAt(0) === "*") {
-                                const regexData = _.object(["traitString", "regexString", "replaceString"], rollLabel.split("~"))
-                                DB(`RegExData: ${D.JS(regexData)}`, "applyRollEffects")
-                                let isContinuing = true
-                                // Identify the target: either a trait or a flag. Start with traits (since flags will sometimes reference them,
-                                // and if they do, you want to apply the effect to the trait).
-                                for (const trait of _.keys(rollData.traitData)) 
-                                    if (D.FuzzyMatch(rollData.traitData[trait].display, regexData.traitString)) {
-                                        DB(`... Trait Found: ${D.JS(rollData.traitData[trait])}`, "applyRollEffects")
-                                        rollData.traitData[trait].display = rollData.traitData[trait].display.replace(new RegExp(regexData.regexString, "gu"), regexData.replaceString)
-                                        rollData.traitData[trait].value = Math.max(0, rollData.traitData[trait].value + rollMod)
-                                        DB(`... Changed To: ${D.JS(rollData.traitData[trait])}`, "applyRollEffects")
-                                        isContinuing = false
-                                        break
-                                    }                                
-                                // If none found, check the flags:
-                                for (const flagType of ["posFlagLines", "negFlagLines", "redFlagLines", "goldFlagLines"]) {
-                                    if (!isContinuing) break
-                                    for (let i = 0; i < rollData[flagType].length; i++) 
-                                        if (D.FuzzyMatch(rollData[flagType][i][1], regexData.traitString)) {
-                                            DB(`... Flag Found: ${D.JS(rollData[flagType][i][1])}`, "applyRollEffects")
-                                            isContinuing = false
-                                            rollData[flagType][i] = [
-                                                rollData[flagType][i][0] + rollMod,
-                                                rollData[flagType][i][1].replace(new RegExp(regexData.regexString, "gu"), regexData.replaceString)
-                                            ]
-                                            DB(`... Changed To: ${D.JS(rollData[flagType][i][1])}`, "applyRollEffects")
-                                            break
-                                        }
+                        if (!isEffectMoot) 
+                            if (VAL({ number: rollMod }, "applyRollEffects")) {
+                            // Adjust dice pool by rollMod, adding a gold flag if One Die Minimum applies.
+                                let initialHungerPool = rollData.hungerPool
+                                rollData.dicePool += rollMod
+                                if (rollData.basePool + rollMod < 0) {
+                                    rollData.hungerPool += rollData.basePool + rollMod
+                                    rollData.basePool = 0
+                                } else {
+                                    rollData.basePool += rollMod
                                 }
-                            } else {
-                                // If not a regex replacement, add the rollLabel to the appropriate flag category.
-                                if (rollLabel.charAt(0) === "!") 
-                                    rollData.redFlagLines.push([rollMod, rollLabel.replace(/^!\s*/gu, "")])
-                                else if (rollMod > 0 || rollLabel.charAt(0) === "+") 
-                                    rollData.posFlagLines.push([rollMod, rollLabel.replace(/^[+-]\s*/gu, "")])
-                                else if (rollMod < 0 || rollLabel.charAt(0) === "-") 
-                                    rollData.negFlagLines.push([rollMod, rollLabel.replace(/^[+-]\s*/gu, "")])
-                                else 
-                                    rollData.goldFlagLines.push([rollMod, rollLabel])
                                 
+                                if (rollData.dicePool <= 0) {
+                                    rollData.dicePool = 1
+                                    if (initialHungerPool >= 1)
+                                        rollData.hungerPool = 1
+                                    else
+                                        rollData.basePool = 1
+                                    rollData.goldFlagLines.push([0, "One Die Minimum"])
+                                }
+                                // Check to see if rollLabel is calling for a RegEx replacement, and perform the calculations.
+                                if (rollLabel.charAt(0) === "*") {
+                                    const regexData = _.object(["traitString", "regexString", "replaceString"], rollLabel.split("~"))
+                                    DB(`RegExData: ${D.JS(regexData)}`, "applyRollEffects")
+                                    let isContinuing = true
+                                    // Identify the target: either a trait or a flag. Start with traits (since flags will sometimes reference them,
+                                    // and if they do, you want to apply the effect to the trait).
+                                    for (const trait of _.keys(rollData.traitData)) 
+                                        if (D.FuzzyMatch(rollData.traitData[trait].display, regexData.traitString)) {
+                                            DB(`... Trait Found: ${D.JS(rollData.traitData[trait])}`, "applyRollEffects")
+                                            rollData.traitData[trait].display = rollData.traitData[trait].display.replace(new RegExp(regexData.regexString, "gu"), regexData.replaceString)
+                                            rollData.traitData[trait].value = Math.max(0, rollData.traitData[trait].value + rollMod)
+                                            DB(`... Changed To: ${D.JS(rollData.traitData[trait])}`, "applyRollEffects")
+                                            isContinuing = false
+                                            break
+                                        }                                
+                                    // If none found, check the flags:
+                                    for (const flagType of ["posFlagLines", "negFlagLines", "redFlagLines", "goldFlagLines"]) {
+                                        if (!isContinuing) break
+                                        for (let i = 0; i < rollData[flagType].length; i++) 
+                                            if (D.FuzzyMatch(rollData[flagType][i][1], regexData.traitString)) {
+                                                DB(`... Flag Found: ${D.JS(rollData[flagType][i][1])}`, "applyRollEffects")
+                                                isContinuing = false
+                                                rollData[flagType][i] = [
+                                                    rollData[flagType][i][0] + rollMod,
+                                                    rollData[flagType][i][1].replace(new RegExp(regexData.regexString, "gu"), regexData.replaceString)
+                                                ]
+                                                DB(`... Changed To: ${D.JS(rollData[flagType][i][1])}`, "applyRollEffects")
+                                                break
+                                            }
+                                    }
+                                } else {
+                                    // If not a regex replacement, add the rollLabel to the appropriate flag category.
+                                    if (rollLabel.charAt(0) === "!") 
+                                        rollData.redFlagLines.push([rollMod, rollLabel.replace(/^!\s*/gu, "")])
+                                    else if (rollMod > 0 || rollLabel.charAt(0) === "+") 
+                                        rollData.posFlagLines.push([rollMod, rollLabel.replace(/^[+-]\s*/gu, "")])
+                                    else if (rollMod < 0 || rollLabel.charAt(0) === "-") 
+                                        rollData.negFlagLines.push([rollMod, rollLabel.replace(/^[+-]\s*/gu, "")])
+                                    else 
+                                        rollData.goldFlagLines.push([rollMod, rollLabel])
+                                    
+                                }
                             }
-                        }
+                        
                         // FINISHED!  ADD EFFECT TO APPLIED ROLL EFFECTS UNLESS EFFECT SAYS NOT TO.
                         if (!isReapplying)
                             rollData.appliedRollEffects = _.union(rollData.appliedRollEffects, [effectString])
                     } else if (VAL({ list: rollResults }, "applyRollEffects")) {
                     // RollResults rollMods all contain discrete flags/strings, plus digits; can wipe digits for static flag:
-                        DB(`Roll Results applies!  Testing rollMod replace switch: ${rollMod.replace(/\d/gu, "")}`, "applyRollEffects")
-                        switch (rollMod.replace(/\d/gu, "")) {
+                        DB(`Roll Results applies!  Testing rollMod replace switch: ${rollMod.toString().replace(/\d/gu, "")}`, "applyRollEffects")
+                        switch (rollMod.toString().replace(/\d/gu, "")) {
                             case "freewpreroll":
-                                if (rollResults.isNoWPReroll)
+                                if (rollResults.isNoWPReroll) {
+                                    isEffectMoot = true
                                     break
+                                }
                                 rollResults.wpCostAfterReroll = VAL({ number: rollResults.wpCost }) ? rollResults.wpCost : 1
                                 rollResults.wpCost = 0
                                 DB(`Setting Roll Results Costs:<br>... After Reroll: ${rollResults.wpCostAfterReroll}<br>... WP Cost: ${rollResults.wpCost}`, "applyRollEffects")
                                 break
                             case "nowpreroll":
+                                if (rollResults.isNoWPReroll) {
+                                    isEffectMoot = true
+                                    break
+                                }
                                 rollResults.isNoWPReroll = true
                                 rollResults.wpCostAfterReroll = rollResults.wpCostAfterReroll || rollResults.wpCost
                                 DB(`Setting Roll Results Costs:<br>... After Reroll: ${rollResults.wpCostAfterReroll}<br>... WP Cost: ${rollResults.wpCost}`, "applyRollEffects")
                                 break
                             case "doublewpreroll":
-                                if (rollResults.isNoWPReroll)
+                                if (rollResults.isNoWPReroll) {
+                                    isEffectMoot = true
                                     break
+                                }
                                 if (VAL({ number: rollResults.wpCostAfterReroll }))
                                     rollResults.wpCostAfterReroll = 2
                                 else
@@ -1335,6 +1434,10 @@ const Roller = (() => {
                                 DB(`Setting Roll Results Costs:<br>... After Reroll: ${rollResults.wpCostAfterReroll}<br>... WP Cost: ${rollResults.wpCost}`, "applyRollEffects")
                                 break
                             case "bestialcancel":
+                                if (rollResults.H.botches === 0 || rollResults.total <= 0) { // Moot if there are no bestial dice or no successes to cancel.
+                                    isEffectMoot = true
+                                    break
+                                }
                                 for (let i = 0; i < rollResults.H.botches; i++) {
                                     const diceValIndex = _.findIndex(rollResults.diceVals, v => v.includes("Bc") || v.includes("Bs")),
                                         diceVal = rollResults.diceVals[diceValIndex]
@@ -1371,6 +1474,10 @@ const Roller = (() => {
                                 }
                                 break
                             case "totalfailure":
+                                if (rollResults.B.succs + rollResults.H.succs === 0) { // Moot if the roll result is already a Total Failure
+                                    isEffectMoot = true
+                                    break
+                                }
                                 for (let i = 0; i < rollResults.diceVals; i++) {
                                     rollResults.diceVals = _.map(rollResults.diceVals, v => {
                                         v.replace(/([BH])([csb])[LR]*?$/gu, "$1X$2")
@@ -1406,19 +1513,21 @@ const Roller = (() => {
                         DB(`INTERIM Roll Results: ${D.JS(rollResults)}`, "applyRollEffects")
 
                         // Roll flags are PRE-PARSED for rollResults (they get parsed in between rollData and rollResults creation, in other functions)
-                        rollLabel = rollLabel.
-                            replace(/<\.>/gu, "●".repeat(Math.abs(rollMod))).
-                            replace(/<#>/gu, rollMod === 0 ? "~" : rollMod).
-                            replace(/<abs>/gu, rollMod === 0 ? "~" : Math.abs(rollMod)).
-                            replace(/<\+>/gu, rollMod < 0 ? "-" : "+")
-                        if (rollLabel.charAt(0) === "!") 
-                            rollResults.redFlagLines.push(rollLabel.replace(/^!\s*/gu, ""))
-                        else if (rollMod > 0 || rollLabel.charAt(0) === "+") 
-                            rollResults.posFlagLines.push(rollLabel.replace(/^[+-]\s*/gu, ""))
-                        else if (rollMod < 0 || rollLabel.charAt(0) === "-") 
-                            rollResults.negFlagLines.push(rollLabel.replace(/^[+-]\s*/gu, ""))
-                        else 
-                            rollResults.goldFlagLines.push(rollLabel.trim())                        
+                        if (!isEffectMoot) {
+                            rollLabel = rollLabel.
+                                replace(/<\.>/gu, "●".repeat(Math.abs(rollMod))).
+                                replace(/<#>/gu, rollMod === 0 ? "~" : rollMod).
+                                replace(/<abs>/gu, rollMod === 0 ? "~" : Math.abs(rollMod)).
+                                replace(/<\+>/gu, rollMod < 0 ? "-" : "+")
+                            if (rollLabel.charAt(0) === "!") 
+                                rollResults.redFlagLines.push(rollLabel.replace(/^!\s*/gu, ""))
+                            else if (rollMod > 0 || rollLabel.charAt(0) === "+") 
+                                rollResults.posFlagLines.push(rollLabel.replace(/^[+-]\s*/gu, ""))
+                            else if (rollMod < 0 || rollLabel.charAt(0) === "-") 
+                                rollResults.negFlagLines.push(rollLabel.replace(/^[+-]\s*/gu, ""))
+                            else 
+                                rollResults.goldFlagLines.push(rollLabel.trim())      
+                        }                  
 
                         // FINISHED!  ADD EFFECT TO APPLIED ROLL EFFECTS.
                         if (!isReapplying)
@@ -1849,7 +1958,8 @@ const Roller = (() => {
                 diceVals: [],
                 appliedRollEffects: [],
                 wpCost: 1,
-                isNPCRoll: isNPCRoll
+                isNPCRoll: isNPCRoll,
+                isNoWPReroll: ["rouse", "rouse2", "check", "project", "secret", "humanity", "willpower", "remorse"].includes(rollData.type)
             }
 
             if (rollData.rerollAmt)
@@ -2487,8 +2597,8 @@ const Roller = (() => {
                     txtWidths[name] = Media.GetTextWidth(name)
                 })
                 spread = txtWidths.posMods || 0 + txtWidths.negMods || 0
-                Media.SetText("goldMods", {shiftleft: txtWidths.outcome + 20})
-                Media.SetText("redMods", {shiftleft: txtWidths.outcome + 20})
+                Media.SetText("goldMods", Object.assign(_.omit(rollLines.goldMods, "text"), {shiftleft: txtWidths.outcome + 20}))
+                Media.SetText("redMods", Object.assign(_.omit(rollLines.redMods, "text"), {shiftleft: txtWidths.outcome + 20}))
                 //spread += txtWidths.posMods && txtWidths.negMods ? 100 : 0
                 spread = Math.max(spread, txtWidths.mainRoll)
                 scaleFrame("top", spread)

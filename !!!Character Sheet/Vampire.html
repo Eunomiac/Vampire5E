@@ -351,6 +351,10 @@
     <!-- #endregion -->
     <!-- #region [SINGLE] Dice Roller -->
     <div class="sheet-pagecontainer sheet-diceroller" style="padding-bottom: 10px;">
+        <div class="sheet-coltight1 sheet-center sheet-effectdisplay sheet-topdisplay">
+            <textarea name="attr_topdisplay" readonly></textarea>
+            <input type="hidden" name="attr_effectchecks" value="" />
+        </div>
         <div class="sheet-coltight1 sheet-hungercol">
             <span class="sheet-header2">Hunger</span>
             <div class="sheet-dotline">
@@ -435,19 +439,13 @@
             <input type="hidden" name="attr_rollarray" value="" />
             <input type="hidden" name="attr_rolleffects" value="" />
         </div>
-        <div>
-            <input class="sheet-containerselector" type="radio" name="attr_dyscrasias_toggle" value="0" />
-            <input class="sheet-containerselector" type="radio" name="attr_dyscrasias_toggle" value="1" />
-            <div class="sheet-coltight1 sheet-dyscrasiasdisplay sheet-engravedFrame">
-                <span class="sheet-header2">Dyscrasias </span><textarea type="text" name="attr_dyscrasias" value=""
-                    readonly></textarea>
-            </div>
+        <div class="sheet-coltight1 sheet-center sheet-effectdisplay sheet-bottomdisplay">
+            <textarea name="attr_bottomdisplay" readonly></textarea>
         </div>
         <div>
-            <input class="sheet-containerselector" type="radio" name="attr_compulsion_toggle" value="0" />
-            <input class="sheet-containerselector" type="radio" name="attr_compulsion_toggle" value="1" />
-            <div class="sheet-coltight1 sheet-compulsiondisplay sheet-engravedFrame">
-                <span class="sheet-header2">Compulsion </span><textarea type="text" name="attr_compulsion" value=""
+            <input class="sheet-containerselector" type="checkbox" name="attr_dyscrasias_toggle" value="1" />
+            <div class="sheet-coltight1 sheet-dyscrasiasdisplay sheet-engravedFrame">
+                <span class="sheet-header2">Dyscrasias </span><textarea type="text" name="attr_dyscrasias" value=""
                     readonly></textarea>
             </div>
         </div>
@@ -2927,9 +2925,9 @@
         // HUMSEQUENCES = ["BSH", "HBHXS", "SBS", "XHB"],
         ATTRBLACKLIST = ["toggle", "inccounter"],
         ROLLFLAGS = {
-            all: ["rolldiff", "rollmod", "hunger", "applydisc", "applybloodsurge", "applyspecialty", "applyresonance", "incap", "Stains", "resonance", "rollarray"],
+            all: ["rolldiff", "rollmod", "hunger", "applydisc", "applybloodsurge", "applyspecialty", "applyresonance", "incap", "Stains", "resonance", "rollarray", "topdisplay", "bottomdisplay", "effectchecks"],
             num: ["rolldiff", "rollmod", "applydisc", "applybloodsurge", "applyspecialty", "applyresonance"],
-            str: ["rollarray", "rollflagdisplay", "rollparams"]
+            str: ["rollarray", "rollflagdisplay", "rollparams", "topdisplay", "bottomdisplay", "effectchecks"]
         },
         THREEROLLTRAITS = ["Auspex", "Fortitude", "Celerity", "Potence", "Presence"],
         FLAGACTIONS = {
@@ -3689,7 +3687,7 @@
     })
     // #endregion
 
-    // #region UPDATE: Clan, Discipline, Resonance, DOB/DOE, Marquee Rotating
+    // #region UPDATE: Clan, Discipline, Resonance, DOB/DOE, Marquee Rotating, Desires
     const $checkRituals = () => cback => {
             const attrList = {},
                 $funcs = [
@@ -4716,7 +4714,32 @@
                                         default:
                                             break
                                     }
-                                }
+                                },
+                                checkEffects = rollArray => {
+                                    const topDisplayStrings = [],
+                                        effectChecks = _.compact(ATTRS.effectchecks.split("|"))
+                                    if (parseInt(ATTRS.applybloodsurge) > 0)
+                                        topDisplayStrings.push("Rouse Check Is Automatic")
+                                    if (parseInt(ATTRS.humanity) + parseInt(ATTRS.stains) > 10)
+                                        topDisplayStrings.push("Inhuman (-2)")
+                                    if (parseInt(ATTRS.health) === 0 && _.any(rollArray, v => isIn(v, [...ATTRIBUTES.physical, ...SKILLS.physical])))
+                                        topDisplayStrings.push("Injured (-2)")
+                                    if (parseInt(ATTRS.willpower) === 0 && _.any(rollArray, v => isIn(v, [...ATTRIBUTES.social, ...SKILLS.social, ...ATTRIBUTES.mental, ...SKILLS.mental])))
+                                        topDisplayStrings.push("Exhausted (-2)")
+                                    for (const effectCheck of effectChecks) {
+                                        const [traitString, displayString] = effectCheck.split(":")
+                                        let isDisplaying = true
+                                        if (!_.isEmpty(traitString))
+                                            for (const andTrait of _.compact(traitString.split("+")))
+                                                if (!isIn(andTrait, rollArray.map(v => realName(v, ATTRS)))) {
+                                                    isDisplaying = false
+                                                    break
+                                                }
+                                        if (isDisplaying)
+                                            topDisplayStrings.push(displayString)
+                                    }
+                                    return _.uniq(topDisplayStrings).join(", ") + "."
+                                }                                        
                             prevRArray.push(..._.compact((ATTRS.rollarray || "").split(",")))
                             log(`>>> PREVRARRAY INITIAL: ${JSON.stringify(prevRArray)}`)
 
@@ -4792,6 +4815,12 @@
                             if (parseInt(ATTRS.rolldiff) !== 0)
                                 attrList.rollpooldisplay += ` vs. ${parseInt(ATTRS.rolldiff)}`
                             log(`>>> ROLL DISPLAY: ${JSON.stringify(attrList.rollpooldisplay)}`)
+                            
+                            // Clear any result messages from the bottom display:
+                            attrList.bottomdisplay = ""
+
+                            // Create the top display string based on existing roll flags:
+                            attrList.topdisplay = checkEffects(rArray)
 
                             // Set roll parameter string:
                             attrList.rollparams = `@{character_name}|${rArray.join(",")}`

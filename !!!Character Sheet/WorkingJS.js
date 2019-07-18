@@ -23,9 +23,9 @@
         // HUMSEQUENCES = ["BSH", "HBHXS", "SBS", "XHB"],
         ATTRBLACKLIST = ["toggle", "inccounter"],
         ROLLFLAGS = {
-            all: ["rolldiff", "rollmod", "hunger", "applydisc", "applybloodsurge", "applyspecialty", "applyresonance", "incap", "Stains", "resonance", "rollarray"],
+            all: ["rolldiff", "rollmod", "hunger", "applydisc", "applybloodsurge", "applyspecialty", "applyresonance", "incap", "Stains", "resonance", "rollarray", "topdisplay", "bottomdisplay", "effectchecks"],
             num: ["rolldiff", "rollmod", "applydisc", "applybloodsurge", "applyspecialty", "applyresonance"],
-            str: ["rollarray", "rollflagdisplay", "rollparams"]
+            str: ["rollarray", "rollflagdisplay", "rollparams", "topdisplay", "bottomdisplay", "effectchecks"]
         },
         THREEROLLTRAITS = ["Auspex", "Fortitude", "Celerity", "Potence", "Presence"],
         FLAGACTIONS = {
@@ -1812,7 +1812,32 @@
                                         default:
                                             break
                                     }
-                                }
+                                },
+                                checkEffects = rollArray => {
+                                    const topDisplayStrings = [],
+                                        effectChecks = _.compact(ATTRS.effectchecks.split("|"))
+                                    if (parseInt(ATTRS.applybloodsurge) > 0)
+                                        topDisplayStrings.push("Rouse Check Is Automatic")
+                                    if (parseInt(ATTRS.humanity) + parseInt(ATTRS.stains) > 10)
+                                        topDisplayStrings.push("Inhuman (-2)")
+                                    if (parseInt(ATTRS.health) === 0 && _.any(rollArray, v => isIn(v, [...ATTRIBUTES.physical, ...SKILLS.physical])))
+                                        topDisplayStrings.push("Injured (-2)")
+                                    if (parseInt(ATTRS.willpower) === 0 && _.any(rollArray, v => isIn(v, [...ATTRIBUTES.social, ...SKILLS.social, ...ATTRIBUTES.mental, ...SKILLS.mental])))
+                                        topDisplayStrings.push("Exhausted (-2)")
+                                    for (const effectCheck of effectChecks) {
+                                        const [traitString, displayString] = effectCheck.split(":")
+                                        let isDisplaying = true
+                                        if (!_.isEmpty(traitString))
+                                            for (const andTrait of _.compact(traitString.split("+")))
+                                                if (!isIn(andTrait, rollArray.map(v => realName(v, ATTRS)))) {
+                                                    isDisplaying = false
+                                                    break
+                                                }
+                                        if (isDisplaying)
+                                            topDisplayStrings.push(displayString)
+                                    }
+                                    return _.uniq(topDisplayStrings).join(", ") + "."
+                                }                                        
                             prevRArray.push(..._.compact((ATTRS.rollarray || "").split(",")))
                             log(`>>> PREVRARRAY INITIAL: ${JSON.stringify(prevRArray)}`)
 
@@ -1888,6 +1913,12 @@
                             if (parseInt(ATTRS.rolldiff) !== 0)
                                 attrList.rollpooldisplay += ` vs. ${parseInt(ATTRS.rolldiff)}`
                             log(`>>> ROLL DISPLAY: ${JSON.stringify(attrList.rollpooldisplay)}`)
+                            
+                            // Clear any result messages from the bottom display:
+                            attrList.bottomdisplay = ""
+
+                            // Create the top display string based on existing roll flags:
+                            attrList.topdisplay = checkEffects(rArray)
 
                             // Set roll parameter string:
                             attrList.rollparams = `@{character_name}|${rArray.join(",")}`
