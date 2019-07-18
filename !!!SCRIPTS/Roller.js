@@ -2597,8 +2597,23 @@ const Roller = (() => {
                     txtWidths[name] = Media.GetTextWidth(name)
                 })
                 spread = txtWidths.posMods || 0 + txtWidths.negMods || 0
-                Media.SetText("goldMods", Object.assign(_.omit(rollLines.goldMods, "text"), {shiftleft: txtWidths.outcome + 20}))
-                Media.SetText("redMods", Object.assign(_.omit(rollLines.redMods, "text"), {shiftleft: txtWidths.outcome + 20}))
+                const [bottomEndData, outcomeData] = [Media.GetData("rollerImage_bottomEnd"), Media.GetTextData("outcome")],
+                    redPosParams = {
+                        shifttop: rollLines.redMods.shifttop || 0,
+                        shiftleft: txtWidths.outcome + 20
+                    },
+                    goldPosParams = {
+                        shifttop: rollLines.goldMods.shifttop || 0,
+                        shiftleft: txtWidths.outcome + 20
+                    }
+                if (bottomEndData.left + 0.5 * bottomEndData.width - 100 < outcomeData.left + txtWidths.outcome) {
+                    redPosParams.shifttop = (redPosParams.shifttop || 0) - 95
+                    goldPosParams.shifttop = (goldPosParams.shifttop || 0) - 95
+                    redPosParams.shiftleft = bottomEndData.left - outcomeData.left + 0.5 * bottomEndData.width + 20
+                    goldPosParams.shiftleft = bottomEndData.left - outcomeData.left + 0.5 * bottomEndData.width + 20
+                }                  
+                Media.SetText("goldMods", Object.assign(_.omit(rollLines.goldMods, "text"), redPosParams))
+                Media.SetText("redMods", Object.assign(_.omit(rollLines.redMods, "text"), goldPosParams))
                 //spread += txtWidths.posMods && txtWidths.negMods ? 100 : 0
                 spread = Math.max(spread, txtWidths.mainRoll)
                 scaleFrame("top", spread)
