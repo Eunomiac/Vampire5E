@@ -153,7 +153,7 @@ const Player = (() => {
                 }
 
         }
-        D.SendToPlayer(params.name, C.HTML.start + results.join("") + C.HTML.stop, " ")
+        D.Chat(params.name, C.HTML.start + results.join("") + C.HTML.stop, " ")
         return true
     }
     // #endregion

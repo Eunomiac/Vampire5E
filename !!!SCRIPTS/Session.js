@@ -98,10 +98,10 @@ const Session = (() => {
                 STATEREF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, sessionScribe]))
             }
             sendChat("Session Start", C.CHATHTML.colorBlock([
-                C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", 28),
-                C.CHATHTML.colorBody("Initializing Session...", 10),
+                C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: 28}),
+                C.CHATHTML.colorBody("Initializing Session...", {margin: "0px 0px 10px 0px"}),
                 C.CHATHTML.colorHeader(`Welcome to Session ${D.NumToText(STATEREF.SessionNum + 1, true)}!`),
-                C.CHATHTML.colorBody("Clock Running.<br>Animations Online.<br>Roller Ready.", 10),
+                C.CHATHTML.colorBody("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "0px 0px 10px 0px"}),
                 C.CHATHTML.colorHeader(`Session Scribe: ${sessionScribe}`),
                 C.CHATHTML.colorBody("Thank you for your service!")
             ]))
@@ -120,10 +120,10 @@ const Session = (() => {
         },
         endSession = (selection) => {
             sendChat("Session End", C.CHATHTML.colorBlock([
-                C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", 28),
+                C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: 28}),
                 C.CHATHTML.colorHeader(`Concluding Session ${D.NumToText(STATEREF.SessionNum, true)}`),
-                C.CHATHTML.colorBody("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", 10),
-                C.CHATHTML.colorTitle("See you next week!", 28),
+                C.CHATHTML.colorBody("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "0px 0px 10px 0px"}),
+                C.CHATHTML.colorTitle("See you next week!", {fontSize: 32}),
             ]))
             STATEREF.isSessionActive = false
             if (!STATEREF.isTestingActive)

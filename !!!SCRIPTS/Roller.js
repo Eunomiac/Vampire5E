@@ -1232,6 +1232,7 @@ const Roller = (() => {
                         _.map(_.values(rollInput.traitData), v => parseInt(v.value) || 0)
                     )
                     // Before parsing rollFlags, filter out the ones that have already been converted into strings:
+                    DB(`Checking Filtered Flag Error: ${D.JS([...rollInput.posFlagLines, ...rollInput.negFlagLines, ...rollInput.redFlagLines, ...rollInput.goldFlagLines])}`, "applyRollEffects")
                     let filteredFlags = _.reject([...rollInput.posFlagLines, ...rollInput.negFlagLines, ...rollInput.redFlagLines, ...rollInput.goldFlagLines], v => _.isString(v))
                     rollFlags = _.object(
                         _.map(filteredFlags, v => v[1].toLowerCase().replace(/\s*?\(●*?\)/gu, "")),
@@ -1657,7 +1658,7 @@ const Roller = (() => {
                             tFull.traitData.humanity.value -
                             (parseInt(getAttrByName(charObj.id, "stains")) || 0)
                     } else if (!tFull.traitData[trt].display) {
-                        D.SendToPlayer(D.GetPlayerID(charObj), `Error determining NAME of trait '${D.JS(trt)}'.`, "ERROR: Dice Roller")
+                        D.Chat(charObj, `Error determining NAME of trait '${D.JS(trt)}'.`, "ERROR: Dice Roller")
                     }
                 }
             })
@@ -1831,7 +1832,7 @@ const Roller = (() => {
                     break
             }
             if (rollData.traits.length === 0 && rollData.dicePool <= 0) {
-                D.SendToPlayer(D.GetPlayerID(D.GetChar(rollData.charID)), "You have no dice to roll!", "ERROR: Dice Roller")
+                D.Chat(D.GetChar(rollData.charID), "You have no dice to roll!", "ERROR: Dice Roller")
 
                 return false
             }
@@ -1863,7 +1864,7 @@ const Roller = (() => {
 			   });
 			   }
 			   If (!rollData.traitData[trt].display) {
-			   D.SendToPlayer(D.GetPlayerID(charObj),
+			   D.Chat(charObj,
 			   "Error determining NAME of trait '" + D.JS(trt) + "'.", "ERROR: Dice Roller");
 			   Return false;
 			   };
@@ -1962,7 +1963,7 @@ const Roller = (() => {
                 isNoWPReroll: ["rouse", "rouse2", "check", "project", "secret", "humanity", "willpower", "remorse"].includes(rollData.type)
             }
 
-            if (rollData.rerollAmt)
+            if (rollData.rerollAmt || rollData.rerollAmt === 0)
                 for (let i = 0; i < rollData.rerollAmt; i++)
                     roll("B")
             else
@@ -2498,11 +2499,11 @@ const Roller = (() => {
                                 }
                                 break
                             case "remorse":
-                                deltaAttrs.stains = 0
+                                deltaAttrs.stains = -1 * parseInt(getAttrByName(rollData.charID, "stains") || 0)
                                 if (rollResults.total === 0) {
                                     rollLines.outcome.text = "YOUR HUMANITY FADES..."
                                     logLines.outcome = `${CHATSTYLES.outcomeRed}DEGENERATION</span></div>`
-                                    deltaAttrs.humanity = parseInt(getAttrByName(rollData.charID, "humanity") || 1) - 1
+                                    deltaAttrs.humanity = -1
                                     rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "bad")
                                 } else {
                                     rollLines.outcome.text = "YOU FIND ABSOLUTION!"
@@ -2520,7 +2521,7 @@ const Roller = (() => {
                                     rollLines.outcome.text = "HUNGER ROUSED!"
                                     logLines.outcome = `${CHATSTYLES.outcomeRed}ROUSED!</span></div>`
                                     rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "worst")
-                                    deltaAttrs.hunger = parseInt(getAttrByName(rollData.charID, "hunger")) + 1
+                                    deltaAttrs.hunger = 1
                                 }
                                 break
                             case "check":
@@ -2606,12 +2607,16 @@ const Roller = (() => {
                         shifttop: rollLines.goldMods.shifttop || 0,
                         shiftleft: txtWidths.outcome + 20
                     }
-                if (bottomEndData.left + 0.5 * bottomEndData.width - 100 < outcomeData.left + txtWidths.outcome) {
+                bottomEndData.left = Media.GetObj("rollerImage_bottomEnd").get("left")
+                DB(`bottomEndData: ${D.JS(bottomEndData)}<br>outcomeData: ${D.JS(outcomeData)}<br><br>RedPosParams: ${D.JS(redPosParams)}<br>GoldPosParams: ${D.JS(goldPosParams)}`, "displayRoll")
+                DB(`COMPARE: ${bottomEndData.left + 0.5 * bottomEndData.width - 100} <--> ${outcomeData.left + txtWidths.outcome}`, "displayRoll")
+                if ((bottomEndData.left + 0.5 * bottomEndData.width - 100) < (outcomeData.left + txtWidths.outcome)) {
                     redPosParams.shifttop = (redPosParams.shifttop || 0) - 95
                     goldPosParams.shifttop = (goldPosParams.shifttop || 0) - 95
                     redPosParams.shiftleft = bottomEndData.left - outcomeData.left + 0.5 * bottomEndData.width + 20
                     goldPosParams.shiftleft = bottomEndData.left - outcomeData.left + 0.5 * bottomEndData.width + 20
-                }                  
+                }      
+                DB(`NEW redPosParams: ${D.JS(redPosParams)}<br>NEW goldPosParams: ${D.JS(goldPosParams)}`, "displayRoll")            
                 Media.SetText("goldMods", Object.assign(_.omit(rollLines.goldMods, "text"), redPosParams))
                 Media.SetText("redMods", Object.assign(_.omit(rollLines.redMods, "text"), goldPosParams))
                 //spread += txtWidths.posMods && txtWidths.negMods ? 100 : 0
@@ -2620,9 +2625,15 @@ const Roller = (() => {
                 D.RunFX("bloodBolt", POSITIONS.bloodBoltFX)
             }
             if (_.values(deltaAttrs).length) {
-                DB(`CHANGING ATTRIBUTES:
-				
-					${D.JS(deltaAttrs)}`, "displayRoll")
+                DB(`CHANGING ATTRIBUTES: ${D.JS(deltaAttrs)}`, "displayRoll")
+                for (const attrName of _.keys(deltaAttrs))
+                    if (attrName === "hunger") {
+                        Char.AdjustHunger(rollData.charID, deltaAttrs.hunger)
+                        delete deltaAttrs.hunger
+                    } else if (attrName === "humanity" || attrName === "stains") {
+                        Char.AdjustTrait(rollData.charID, attrName, deltaAttrs[attrName])
+                        delete deltaAttrs[attrName]
+                    }
                 setAttrs(rollData.charID, deltaAttrs)
             }
 
@@ -2688,11 +2699,11 @@ const Roller = (() => {
                     rollResults.diceVals.splice(cutIndex, 1)
                 }
             }
-            rollResults = rollDice({
+            rollResults = rollDice(Object.assign(rollData, {
                 type: "trait",
                 rerollAmt: parseInt(deltaDice) > 0 ? parseInt(deltaDice) : 0,
                 diff: rollData.diff
-            }, rollResults.diceVals, isNPCRoll)
+            }), rollResults.diceVals, isNPCRoll)
             rollData.dicePool += parseInt(deltaDice)
             rollData.basePool = Math.max(1, rollData.dicePool) - rollData.hungerPool
             replaceRoll(rollData, rollResults)

@@ -458,6 +458,8 @@
         <div class="sheet-coltight4 sheet-titleblock sheet-centered" style="margin-left:-7px;">
             <div class="sheet-header2">Health</div>
             <input type="hidden" name="attr_health" value="0" />
+            <input type="hidden" name="attr_health_bashing" value="0" />
+            <input type="hidden" name="attr_health_aggravated" value="0" />
             <input type="hidden" name="attr_health_sdmg" value="0" />
             <input type="hidden" name="attr_health_admg" value="0" />
             <br />
@@ -608,6 +610,8 @@
         <div class="sheet-coltight4 sheet-titleblock sheet-centered">
             <div class="sheet-header2">Willpower</div>
             <input type="hidden" name="attr_willpower" value="0" />
+            <input type="hidden" name="attr_willpower_bashing" value="0" />
+            <input type="hidden" name="attr_willpower_aggravated" value="0" />
             <input type="hidden" name="attr_willpower_sdmg" value="0" />
             <input type="hidden" name="attr_willpower_admg" value="0" />
             <br />
@@ -3926,8 +3930,13 @@
                         })
                         binNum++
                     })
-                    attrList[`${tracker}`] = dmgBins[0].length
-
+                    attrList[`${tracker.toLowerCase()}`] = dmgBins[0].length
+                    attrList[`${tracker.toLowerCase()}_bashing`] = dmgBins[1].length
+                    attrList[`${tracker.toLowerCase()}_aggravated`] = dmgBins[2].length
+                    
+                    // Set sdmg/admg scores to zero.
+                    attrList[p("sdmg")] = 0
+                    attrList[p("admg")] = 0
                     cback(null, attrList)
                 })
             }
@@ -4857,6 +4866,13 @@
     on("change:hunger", () => {
         log("HUNGER CHANGED!")
         doRolls("GEN")
+    })
+    // #endregion
+
+    // #region On-Sheet-Opened Triggers (To Be Done Every Time Sheet Is Opened)
+    on("sheet:opened", eInfo => {
+        doTracker("Health", eInfo)
+        doTracker("Willpower", eInfo)
     })
     // #endregion
 })()

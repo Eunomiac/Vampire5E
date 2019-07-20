@@ -294,18 +294,20 @@ const D = (() => {
     // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
     const formatTitle = (funcName, scriptName, prefix = "") => `[${prefix}${VAL({string: funcName}) || VAL({string: scriptName}) ? " " : ""}${VAL({string: scriptName}) ? `${scriptName.toUpperCase()}` : ""}${VAL({string: [scriptName, funcName]}, null, true) ? ": " : ""}${funcName || ""}]`,
         formatLogLine = (msg, funcName, scriptName, prefix = "", isShortForm = false) => `${formatTitle(funcName, scriptName, prefix)} ${jStrL(msg, isShortForm, true)}`,
-        sendToPlayer = (who, message = "", title = "") => {
-            /* Whispers formatted chat message to player given: display name OR player ID. */
-            const player = getObj("player", who) ?
-                    getObj("player", who).get("_displayname") :
-                    who,
-                html = jStrH(C.CHATHTML.header(title) + C.CHATHTML.body(jStr(message)))
-            if (player === "all" || player === "")
+        sendChatMessage = (who, message = "", title) => {
+            /* Whispers chat message to player given: display name OR player ID. 
+                If no Title, message is sent without formatting. */
+            const player = getPlayer(who) || who,
+                html = title ? jStrH(C.CHATHTML.header(title) + C.CHATHTML.body(jStr(message))) : message
+            if (player === "all" || !player)
                 sendChat("", html)
+            else if (Session.IsTesting)
+                sendChat("", `/w Storyteller ${html}`)
             else
-                sendChat("", `/w ${player} ${html}`)
+                sendChat("", `/w "${player.get("_displayname")}" ${html}`)
+                
         },
-        sendToGM = (msg, title = "[ALERT]") => sendToPlayer("Storyteller", msg, title)
+        sendToGM = (msg, title = "[ALERT]") => sendChatMessage("Storyteller", msg, title)
     // #endregion
 
     // #region OBJECT MANIPULATION: Manipulating arrays, mapping objects
@@ -1051,7 +1053,8 @@ const D = (() => {
             }
             return [repStatName, repStatName, repStatName]
         },
-        makeRepRow = (charRef, secName, attrs) => {
+        makeRepRow = (charRef, secName, attrs) => {            
+            DB(`CharRef: ${D.JS(charRef)}, secName: ${secName}, Attrs: ${D.JS(attrs, true)}`, "makeRepRow")
             const attrList = {},
                 IDa = 0,
                 IDb = [],
@@ -1086,6 +1089,7 @@ const D = (() => {
 
             _.each(attrs, (v, k) => {
                 if (_.isString(prefix + k) && (prefix + k).length > 12) {
+                    DB(`Making Row Object: Name: ${prefix + k}, CharID: ${charID}`, "makeRepRow")
                     createObj("attribute", {
                         name: prefix + k,
                         max: "",
@@ -1096,24 +1100,25 @@ const D = (() => {
                     THROW(`Failure at makeRepRow(charRef, ${D.JSL(secName)}, ${D.JSL(attrs)})<br>...Prefix (${D.JSL(prefix)}) + K (${D.JSL(k)}) is NOT A STRING)`, "makeRepRow")
                 }
             })
+            DB(`Setting Attributes: ${D.JS(attrList, true)}`, "makeRepRow")
             setAttrs(charID, attrList)
 
             return rowID
         },
         deleteRepRow = (charRef, secName, rowID) => {
-            if (!D.GetChar(charRef) || !_.isString(secName) || !_.isString(rowID))
-                return THROW(`Need valid charRef (${D.JSL(charRef)}), secName (${D.JSL(secName)}) and rowID (${D.JSL(rowID)}) to delete a repeating row.`, "deleteRepRow")
-            const attrObjs = getRepStats(charRef, secName, rowID, null, null, "obj")
-            DB(`AttrObjs to Delete:<br><br>${jStr(attrObjs)}`, "deleteRepRow")
-            // D.Alert(`deleteRepRow(charRef, ${D.JS(secName)}, ${D.JS(rowID)})<br><br><b>AttrObjs:</b><br>${D.JS(_.map(attrObjs, v => v.get("name")))}`, "DATA:DeleteRepRow")
-            if (attrObjs.length === 0)
-                return THROW(`No row "repeating_${secName}_${rowID}" to delete for ${D.GetName(charRef)}.`, "deleteRepRow")
-            //_.each(attrObjs, v => v.remove())
-            return true
+            if (VAL({char: [charRef], string: [secName, rowID]}, "deleteRepRow", true)) {
+                const attrObjs = getRepStats(charRef, secName, rowID, null, null, "obj")
+                DB(`AttrObjs to Delete: ${jStr(attrObjs, true)}`, "deleteRepRow")
+                if (attrObjs.length === 0)
+                    return THROW(`No row "repeating_${secName}_${rowID}" to delete for ${D.GetName(charRef)}.`, "deleteRepRow")
+                _.each(attrObjs, v => v.remove())
+                return true
+            }
+            return false
         },
         copyToRepSec = (charRef, sourceSec, sourceRowID, targetSec) => {
             const attrList = kvpMap(getRepStats(charRef, sourceSec, sourceRowID), (k, v) => v.name, v => v.val)
-            // D.Alert(`copyToRepSec(charRef, ${D.JS(sourceSec)}, ${D.JS(sourceRowID)}, ${D.JS(targetSec)})<br><br><b>AttrList:</b><br>${D.JS(attrList)}`, "DATA:CopyToRepSec")
+            DB(`CharRef: ${D.JS(charRef)}, SourceSec: ${sourceSec}, RowID: ${sourceRowID}, TargetSec: ${targetSec}<br>... AttrList: ${D.JS(attrList, true)}`, "copyToRepSec")
             makeRepRow(charRef, targetSec, attrList)
             deleteRepRow(charRef, sourceSec, sourceRowID)
         },
@@ -1190,7 +1195,7 @@ const D = (() => {
         Ordinal: ordinal,
         Capitalize: capitalize,
 
-        SendToPlayer: sendToPlayer,
+        Chat: sendChatMessage,
         Alert: sendToGM,
 
         RemoveFirst: removeFirst,

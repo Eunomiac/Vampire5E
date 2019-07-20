@@ -1024,8 +1024,13 @@
                         })
                         binNum++
                     })
-                    attrList[`${tracker}`] = dmgBins[0].length
-
+                    attrList[`${tracker.toLowerCase()}`] = dmgBins[0].length
+                    attrList[`${tracker.toLowerCase()}_bashing`] = dmgBins[1].length
+                    attrList[`${tracker.toLowerCase()}_aggravated`] = dmgBins[2].length
+                    
+                    // Set sdmg/admg scores to zero.
+                    attrList[p("sdmg")] = 0
+                    attrList[p("admg")] = 0
                     cback(null, attrList)
                 })
             }
@@ -1955,6 +1960,13 @@
     on("change:hunger", () => {
         log("HUNGER CHANGED!")
         doRolls("GEN")
+    })
+    // #endregion
+
+    // #region On-Sheet-Opened Triggers (To Be Done Every Time Sheet Is Opened)
+    on("sheet:opened", eInfo => {
+        doTracker("Health", eInfo)
+        doTracker("Willpower", eInfo)
     })
     // #endregion
 })()

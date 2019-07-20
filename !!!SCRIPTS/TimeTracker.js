@@ -647,6 +647,7 @@ const TimeTracker = (() => {
                 STATEREF.dateObj.getUTCMinutes() < 10 ? "0" : ""}${STATEREF.dateObj.getUTCMinutes().toString()} ${
                 Math.floor(STATEREF.dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`)
             STATEREF.lastDateStep = STATEREF.dateObj.getTime()
+            STATEREF.currentDate = STATEREF.dateObj.getTime()
         },
         setIsRunning = runStatus => {
             isRunning = runStatus
