@@ -133,6 +133,8 @@ const Complications = (() => {
                         getObj("text", STATEREF.zeroes[i]).set("layer", "map")
                         toBack(getObj("text", STATEREF.zeroes[i]))
                     }
+                    if (args[0] === "true")
+                        launchProject()
             /* falls through */
                 case "reset":
                     for (const cardData of STATEREF.cardsDrawn)
@@ -201,6 +203,9 @@ const Complications = (() => {
                     toFront(textObj)
                     STATEREF.cardsDrawn[cardIndex].value = 0
                     break
+                case "launchproject":
+                    launchProject()
+                    break
             // no default
             }
         },
@@ -214,11 +219,34 @@ const Complications = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-    // #region GETTERS: Retrieving Notes, Data
+    // #region GETTERS: Retrieving Project Data
+
 
     // #endregion
 
     // #region SETTERS:
+    const launchProject = () => {
+        const charObj = D.GetChar(Roller.LastProjectCharID),
+            p = v => Roller.LastProjectPrefix + v,
+            rowID = Roller.LastProjectPrefix.split("_")[2],
+            attrList = {},
+            [trait1name, trait1val, trait2name, trait2val, diff, scope] = [
+                D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait1_name").val,
+                D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait1").val,
+                D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait2_name").val,
+                D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait2").val,
+                D.GetRepStat(charObj, "project", rowID, "projectlaunchdiff").val,
+                D.GetRepStat(charObj, "project", rowID, "projectscope").val
+            ]
+        attrList[p("projectlaunchresultsummary")] = `${trait1name} (${trait1val}) + ${trait2name} (${trait2val}) vs. ${diff}: COMPLICATION`
+        DB(`${attrList[p("projectlaunchresultsummary")]}`, "launchProject")
+        attrList[p("projectlaunchroll_toggle")] = 2
+        attrList[p("projectlaunchresults")] = "COMPLICATION"
+        attrList[p("projectstakes_toggle")] = 1
+        attrList[p("projecttotalstake")] = parseInt(scope) + 1
+        attrList[p("projectlaunchresultsmargin")] = `${parseInt(scope) + 1} Stake Required, (${parseInt(scope) + 1} to Go)`
+        setAttrs(charObj.id, attrList)
+    }
 
     // #endregion
 

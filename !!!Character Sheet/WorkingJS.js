@@ -1267,7 +1267,22 @@
     // #region UPDATE: Projects
 
     // Updating project end date when date values are changed.
-    const doProjectDates = callback => {
+    const doSchemeSelection = () => {
+            log("", "████ DOSCHEMESELECTION CALLED ████")
+            const attrList = {},
+                attrArray = _.map([
+                    "schemetype_toggle", "schemetyperight_toggle", "schemetypebottom_toggle"
+                ], v => `repeating_project_${v}`)
+            getAttrs(attrArray, ATTRS => {
+                log("", `ATTRS: ${JSON.stringify(ATTRS)}`)
+                const [, p, pV, pI] = sFuncs("project", ATTRS)
+                attrList[p("schemetyperight_toggle")] = ATTRS[p("schemetype_toggle")]
+                attrList[p("schemetypebottom_toggle")] = ATTRS[p("schemetype_toggle")]
+                log("", `SETTING: ${JSON.stringify(attrList)}`)
+                setAttrs(attrList)                
+            })
+        },
+        doProjectDates = callback => {
             const attrList = {},
                 attrArray = _.map([
                     "projectstartdate", "projectincnum", "projectincunit"
@@ -1360,7 +1375,7 @@
                 log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
                 if (pV("projectenddate") === "") {
                     attrList[p("projectlaunchroll_toggle")] = 0
-                } else if (pV("projectlaunchresults") && (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("CRITICAL") || pV("projectlaunchresults").includes("TOTAL"))) {
+                } else if (pV("projectlaunchresults") && (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("COMPLICATION") || pV("projectlaunchresults").includes("CRITICAL") || pV("projectlaunchresults").includes("TOTAL"))) {
                     attrList[p("projectlaunchroll_toggle")] = 2
                 } else {
                     _.each(traits, trt => {
@@ -1388,10 +1403,10 @@
             log("", `████ ${funcName.toUpperCase()} CALLED ████`)
             getSectionIDs("project", idArray => {
                 _.each(idArray, repID => {
-                    _.each(["projectlaunchroll_toggle", "projectstartdate", "projectenddate", "projectinccounter", "projectlaunchroll_toggle", "projectlaunchresults"], stat => {
+                    _.each(["projectlaunchroll_toggle", "projecttotalstake", "projectstake1", "projectstake2", "projectstake3", "projectstartdate", "projectenddate", "projectinccounter", "projectlaunchroll_toggle", "projectlaunchresults"], stat => {
                         attrArray.push(`repeating_project_${repID}_${stat}`)
                     })
-                })
+                }) // const 
                 getAttrs([...attrArray, "date_today"], ATTRS => {
                     const ids = _.uniq(_.map(attrArray, v => parseRepAttr(v)[1]))
                     //log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
@@ -1400,7 +1415,8 @@
                         const [, p, pV, pI] = pFuncs(`repeating_project_${rowID}`, ATTRS)
                         let counterPos = 11
                         //log(`p-Test: p("projectinccounter) = ${JSON.stringify(p("projectinccounter"))}`, funcName)
-                        if (pV("projectlaunchresults") && (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("CRITICAL")))
+                        const stakeRemaining = Math.max(0, pI("projecttotalstake")) - _.reduce(_.map([1, 2, 3], v => pI(`projectstake${v}`)), (memo, num) => parseInt(memo) + parseInt(num))
+                        if (stakeRemaining === 0 && pV("projectlaunchresults") && (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("COMPLICATION") || pV("projectlaunchresults").includes("CRITICAL")))
                             counterPos = 10 - Math.floor(10 * getProgress(
                                 new Date(parseInt(ATTRS.date_today)), pV("projectstartdate"), pV("projectenddate")
                             ))
@@ -1430,18 +1446,19 @@
             getAttrs(attrArray, ATTRS => {
                 const [, p, pV, pI] = sFuncs("project", ATTRS)
                 log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
-                if (pV("projectlaunchresults") && pV("projectlaunchresults").includes("SUCCESS")) {
+                let stakeRemaining = 0
+                if (pV("projectlaunchresults") && (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("COMPLICATION"))) {
                     attrList[p("projectstakes_toggle")] = 1
-                    const stakeRemaining = Math.max(0, pI("projecttotalstake")) - _.reduce(_.map([1, 2, 3, 4, 5, 6], v => pI(`projectstake${v}`)), (memo, num) => parseInt(memo) + parseInt(num))
+                    stakeRemaining = Math.max(0, pI("projecttotalstake")) - _.reduce(_.map([1, 2, 3, 4, 5, 6], v => pI(`projectstake${v}`)), (memo, num) => parseInt(memo) + parseInt(num))
                     if (stakeRemaining > 0)
                         attrList[p("projectlaunchresultsmargin")] = `Stake ${pV("projecttotalstake")} Dot${pI("projecttotalstake") > 1 ? "s" : ""} (${stakeRemaining} to go)`
                     else
                         attrList[p("projectlaunchresultsmargin")] = `${pV("projecttotalstake")} Dot${pI("projecttotalstake") > 1 ? "s" : ""} Staked`
                 }
+                
                 setAttrs(attrList, {}, () => {
                     log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
-                    if (callback)
-                        callback(null)
+                    doProjectCounter(callback)
                 })
             })
         },
@@ -1546,6 +1563,10 @@
                 console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
             })
         }
+    })
+    on("change:repeating_project:schemetype_toggle", () =>{
+        log("", "████ CHANGE DETECTED ████")
+        doSchemeSelection()
     })
     // #endregion
 

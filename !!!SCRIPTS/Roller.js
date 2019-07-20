@@ -37,6 +37,9 @@ const Roller = (() => {
         STATEREF.NPC.rollIndex = STATEREF.NPC.rollIndex || 0
         STATEREF.selected = STATEREF.selected || {}
         STATEREF.rollEffects = STATEREF.rollEffects || {}
+        STATEREF.lastProjectPrefix = STATEREF.lastProjectPrefix || ""
+        STATEREF.lastProjectCharID = STATEREF.lastProjectCharID || ""
+
         _.each(_.uniq(_.flatten(STATECATS.dice)), v => {
             STATEREF.selected[v] = STATEREF.selected[v] || []
             STATEREF[v] = STATEREF[v] || []
@@ -1724,6 +1727,8 @@ const Roller = (() => {
                     rollData.mod = parseInt(params[2] || 0)
                     rollData.diffMod = parseInt(params[3] || 0)
                     rollData.prefix = ["repeating", "project", D.GetRepStat(charObj, "project", params[4]).rowID, ""].join("_")
+                    STATEREF.lastProjectPrefix = rollData.prefix
+                    STATEREF.lastProjectCharID = rollData.charID
                     DB(`PROJECT PREFIX: ${D.JS(rollData.prefix)}`, "getRollData")
                     break
                 case "secret":
@@ -2962,6 +2967,10 @@ const Roller = (() => {
     return {
         RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+
+        get LastProjectPrefix() { return STATEREF.lastProjectPrefix },
+        get LastProjectCharID() { return STATEREF.lastProjectCharID },
+
         Select: selectDie,
         Reroll: wpReroll,
         Clean: cleanRoller

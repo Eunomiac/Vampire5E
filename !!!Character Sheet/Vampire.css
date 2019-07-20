@@ -1104,6 +1104,7 @@
 
 
 
+
 	/* #endregion */
 	/* #region Collapsible & Pop-Up Divs */
 	.charsheet input.sheet-hoverpopup,
@@ -2488,6 +2489,67 @@
 		margin-right: 5px;
 	}
 
+	.charsheet div.sheet-projects div.sheet-dotline.sheet-variabledotline {
+		width: 20px;
+		margin: 1px -10px -1px -9px;
+	}
+
+	.charsheet div.sheet-projects div.sheet-dotline div.sheet-multidot input.sheet-objectivedot+span::before {
+		content: "";
+		height: 22px;
+		width: 22px;
+		margin-top: -4px;
+		background: url('https://imgur.com/A4v3nCL.jpg') no-repeat center;
+		background-size: 100%;
+
+		box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;
+	}
+	.charsheet div.sheet-projects div.sheet-dotline div.sheet-multidot input.sheet-projectdot+span::before {
+		content: "";
+		height: 22px;
+		width: 22px;
+		margin-top: -4px;
+
+		background: url('https://imgur.com/vEVEDO6.jpg') no-repeat center;
+		background-size: 100%;	
+
+		box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;	
+	}
+
+	.charsheet div.sheet-projects div.sheet-dotline div.sheet-multidot input.sheet-memoriamdot+span::before {	
+		content: "";
+		height: 22px;
+		width: 22px;
+		margin-top: -4px;
+
+		background: url('https://imgur.com/HqpPEKg.jpg') no-repeat center;
+		background-size: 100%;
+
+		box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;
+	}
+
+	.charsheet div.sheet-projects div.sheet-squareBox.sheet-objectivedate {
+		width: 60px !important;
+		margin-left: -5px;
+	}  
+
+	.charsheet div.sheet-projects div.sheet-squareBox.sheet-objectivedate span.sheet-header5.sheet-objectivedate {
+		margin: 0px;
+		width: 100%;
+		font-size: 12px !important;
+		margin-top: -5px;
+	}
+
+	.charsheet div.sheet-projects div.sheet-squareBox.sheet-objectivedate div.sheet-projectdate input.sheet-objectivedate {
+		font-size: 10px;
+		padding: 0px;
+		font-family: 'Arial Narrow' !important;
+		margin-top: 32px;
+		text-align: center;
+		text-align-last: center;
+		text-indent: -2px !important;
+		font-weight: bold;
+	}
 
 	.charsheet div.sheet-projects .sheet-doublerow {
 		height: 45px;

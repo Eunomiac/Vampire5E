@@ -1122,21 +1122,33 @@ const D = (() => {
             makeRepRow(charRef, targetSec, attrList)
             deleteRepRow(charRef, sourceSec, sourceRowID)
         },
-        sortRepSec = (charRef, secName, sortFunc) => {
-            /* Sortfunc must have parameters (charRef, secName, rowID1, rowID2) and return
-              POSITIVE INTEGER if row1 should be ABOVE row2. */
+        sortRepSec = (charRef, secName, sortTrait, isDescending = false, transformFunc = v => v) => {
             const rowIDs = getRepIDs(charRef, secName),
-                sortTrigger = getRepStat(charRef, secName, null, "sorttrigger")
-            // getStatData(charRef, [`repeating_${secName}_${rowIDs[0]}_sorttrigger`])
-            // D.Alert(`RepOrder: ${D.JS(repOrderAttr)}<br><br>${rowIDs.length} Row IDs for ${secName}:<br><br>${D.JS(rowIDs)}`, "DATA.SortRepSec")
-            rowIDs.sort((idA, idB) => sortFunc(charRef, secName, idA, idB))
-            // D.Alert(`... SORTED?<br><br>${D.JS(rowIDs)}<br><br>TEST ATTR: ${D.JS(sortTrigger)}`, "DATA.SortRepSec")
-            setAttrs(D.GetChar(charRef).id, { [`_reporder_repeating_${secName}`]: rowIDs.join(",") })
-            setRepStat(charRef, secName, sortTrigger.rowID, "sorttrigger", sortTrigger.val === "false")
-            // D.Alert(`sortRepSec(charRef, ${D.JS(secName)}, sortFunc)<br><br><b>RowIDs:</b><br>${D.JS(rowIDs)}<br><br><b>sortTrigger:</b><br>${D.JS(sortTrigger)}`, "DATA:SortRepSec")
-            //setAttrs(D.GetChar(charRef).id, sortTrigger)
-
-            return rowIDs
+                rowData = []
+            //let dbString = ""
+            for (const rowID of rowIDs) {
+                //dbString += `<br><br><b>${rowID}</b><br>`
+                const rowAttrData = getRepStats(charRef, secName, rowID),
+                    theseVals = {rowID: rowID}
+                for (const statData of rowAttrData)
+                    theseVals[statData.attrName] = statData.val
+                    //dbString += `... ${D.JS(statData.attrName, true)}: ${D.JS(theseVals[statData.attrName])}<br>`                
+                theseVals.SORTER = transformFunc(theseVals[sortTrait])
+                //dbString += `... SORTER: ${D.JS(theseVals.SORTER)}<br>`
+                rowData.push(theseVals)
+            }
+            for (const rowID of rowIDs)                
+                deleteRepRow(charRef, secName, rowID)
+            //D.Alert(dbString, "sortRepSec")
+            //D.Alert(D.JS(rowData, true), "sortRepSec")
+            const sortedData = _.sortBy(rowData, "SORTER")
+            if (isDescending)
+                sortedData.reverse()
+            //D.Alert(D.JS(sortedData, true), "sortRepSec")
+            for (let i = 0; i < sortedData.length; i++) {
+                const attrList = _.omit(sortedData[i], "SORTER", "rowID")
+                makeRepRow(charRef, secName, attrList)                
+            }
         },
         splitRepSec = (charRef, sourceSec, targetSec, sortFunc, mode = "split") => {
             /* Will combine values from both source and target sections, sort them, then evenly split

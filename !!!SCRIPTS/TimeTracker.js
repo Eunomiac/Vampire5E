@@ -578,6 +578,9 @@ const TimeTracker = (() => {
         fixDate = () => {
             setHorizon(true)
             setWeather()
+            const groundCover = getGroundCover()
+            //D.Alert(`Setting Ground Cover: ${groundCover}`)
+            Media.Set("WeatherGround", groundCover)
             //Media.OrderImages("map", true)
         },
         addTime = (dateRef, delta, unit) => {
@@ -675,7 +678,9 @@ const TimeTracker = (() => {
                     STATEREF.dateObj.getUTCDate() !== lastDate.getUTCDate() ||
                     STATEREF.dateObj.getUTCHours() !== lastDate.getUTCHours()
                 ) {
+                    //D.Alert("Setting Weather")
                     setWeather()
+                    //D.Alert(`Setting Ground Cover to ${groundCover}`)
                     Media.Set("WeatherGround", groundCover)
                 }
                 setHorizon()

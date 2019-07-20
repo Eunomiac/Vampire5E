@@ -32,6 +32,8 @@ const Session = (() => {
     const initialize = () => { // eslint-disable-line no-empty-function
         STATEREF.isSessionActive = STATEREF.isSessionActive || false
         STATEREF.isTestingActive = STATEREF.isTestingActive || false
+        if (STATEREF.SessionNum === 25)
+            STATEREF.SessionScribes = ["banzai"]
     }
     // #endregion
 
@@ -94,6 +96,10 @@ const Session = (() => {
             const sessionScribe = STATEREF.SessionScribes.pop()
             STATEREF.isSessionActive = true
             if (STATEREF.SessionScribes.length === 0) {
+                DB(`Scribe: ${sessionScribe}, SessionScribes: ${D.JS(STATEREF.SessionScribes)}
+                    PICK: ${D.JS(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe))}
+                    PLUCK: ${D.JS(_.pluck(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe), "playerName"))}
+                    WITHOUT: ${D.JS(_.without(_.pluck(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe), "playerName"), "Storyteller"))}`, "startSession")
                 const otherScribes = _.shuffle(_.without(_.pluck(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe), "playerName"), "Storyteller"))
                 STATEREF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, sessionScribe]))
             }

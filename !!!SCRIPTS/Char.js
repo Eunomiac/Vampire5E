@@ -26,7 +26,7 @@ const Char = (() => {
                 }
             })
             on("change:attribute:current", handleChangeAttr)
-            //on("add:attribute", handleAddAttr)
+            on("add:attribute", handleAddAttr)
         }
     // #endregion
 
@@ -34,8 +34,6 @@ const Char = (() => {
     const initialize = () => {
         STATEREF.registry = STATEREF.registry || {}
         STATEREF.weeklyResources = STATEREF.weeklyResources || {}
-
-        C.ROOT.Char.registry[3].playerName = "Thaumaterge"
 
         // Storyteller Override:
         //C.ROOT.Char.registry["1"].playerID = "-LLIBpH_GL5I-9lAOiw9"
@@ -256,7 +254,8 @@ const Char = (() => {
             }
         },
         handleChangeAttr = (obj, prev) => {
-            if (obj.get("current") !== prev.current)
+            if (obj.get("current") !== prev.current) {
+                D.Alert(`Detected change to '${obj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")}'`)
                 switch (obj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")) {
                     case "hunger":
                         Media.Toggle(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, true, obj.get("current"))
@@ -269,6 +268,13 @@ const Char = (() => {
                         break
                     /* no default */
                 }
+            }
+        },
+        handleAddAttr = (obj) => {
+            if (obj.get("name").includes("projectstake"))
+                displayStakes()
+            else if (obj.get("name").includes("timeline"))
+                sortTimeline(obj.get("_characterid"))
         }
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
@@ -429,8 +435,8 @@ const Char = (() => {
                 for (const stake of projectStakes) {
                     const advMax = (D.GetRepStat(charObj, "advantage", null, stake.name) || {val: null}).val,
                         endDate = (D.GetRepStat(charObj, "project", stake.rowID, "projectenddate") || {val: null}).val
-                    if (advMax)
-                        stakeData.push([_.values(D.GetCharVals(charObj, "initial"))[0], stake.name, parseInt(stake.val), parseInt(advMax), endDate])
+                    if (advMax && parseInt(stake.val) > 0)
+                        stakeData.push([_.values(D.GetCharVals(charObj, "initial"))[0], stake.name, Math.min(parseInt(stake.val), advMax), parseInt(advMax), endDate])
                 }
             }
             if (_.flatten(_.values(STATEREF.weeklyResources)).length === 0) {
@@ -439,7 +445,7 @@ const Char = (() => {
                 let lastInit = ""
                 for (const data of stakeData) {
                     const [init, name, staked, max, endDate] = data
-                    let thisString = ""
+                    let thisString = " "
                     if (init !== lastInit) {
                         thisString = `[${init}]`
                         lastInit = init
@@ -453,6 +459,7 @@ const Char = (() => {
             }
         }
     // #endregion
+    
     // #region Manipulating Stats on Sheet,
     const parseDmgTypes = (max, bashing = 0, aggravated = 0, deltaBash = 0, deltaAgg = 0) => {
             if (VAL({number: [max, bashing, aggravated, deltaBash, deltaAgg]}, "parseDmgTypes", true)) {
@@ -669,6 +676,9 @@ const Char = (() => {
             if (adjustTrait(charRef, "hunger", parseInt(amount), isKilling ? 0 : parseInt(D.GetStat(charRef, "bp_slakekill") && D.GetStat(charRef, "bp_slakekill")[0] || 1), 5, 1))
                 return true
             return false
+        },
+        sortTimeline = (charRef) => {
+            D.SortRepSec(charRef, "timeline", "tlenddate", true, function(val) {return val ? (new Date(val.replace(/— /gu, ""))).getTime() : -200})
         }
     // #endregion
 

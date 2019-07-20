@@ -2295,13 +2295,16 @@
         <!-- SCHEMES -->
         <div class="sheet-header1">
             <img src="https://i.imgur.com/5DZF5Ig.png" /> <!-- Schemes -->
+            <div class="sheet-col1"><span class="sheet-header3">(Note: Enter all dates in the form: "Jun 13, 2019")</span></div>
         </div>
         <input type="hidden" name="attr_repeatingprojectslist" />
         <fieldset class="repeating_project">
             <input type="hidden" name="attr_projectsrowid" value="0" />
             <div class="sheet-col1 sheet-projects sheet-engravedFrame" style="margin-bottom: 10px; padding: 0px 10px;">
                 <div class="sheet-coltight1 sheet-doublerow" style="height: 55px; width: 93%; margin-right: 1%;">
+                    <!-- Top Line -->
                     <div class="sheet-coltight1 sheet-right sheet-linerow" style="height: 25px; margin-top: 5px;">
+                        <!-- Hover Popup Ankh -->
                         <input class="sheet-hoverpopup" type="checkbox" value="1"
                             style="margin-left: -20px;" /><span></span>
                         <div class="sheet-coltight1">
@@ -2309,6 +2312,7 @@
                             <textarea class="sheet-collapsiblebody sheet-editable"
                                 name="attr_projectdetails"></textarea>
                         </div>
+                        <!-- Goal / Scope -->
                         <input required type="text" class="sheet-insetBox sheet-darkText sheet-dotlinename"
                             placeholder="Describe what is it you wish to achieve. (Put Scope calculations into the ankh to the left.)"
                             name="attr_projectscope_name" />
@@ -2322,44 +2326,67 @@
                             <input class="sheet-dot" type="radio" name="attr_projectscope" value="5" /><span></span>
                         </div>
                     </div>
+                    <!-- Second Line -->
                     <div class="sheet-coltight1 sheet-linerow" style="margin-bottom: 0px;">
-                        <input name="attr_projectfull_toggle" value="1" type="checkbox"
-                            style="width: 20px; margin: -10px -15px 0px -5px;">
+                        <!-- Type Checkbox: Objective, Project, Memoriam -->
+                        <div class="sheet-dotline sheet-variabledotline sheet-centered">
+                            <div class="sheet-dotcontainer sheet-multidot sheet-multibox">
+                                <input class="sheet-box sheet-whitedot sheet-objectivedot" type="radio" name="attr_schemetype_toggle" value="0" checked /><span
+                                    class="sheet-whitedot"></span>
+                                <input class="sheet-box sheet-superficialdot sheet-projectdot" type="radio" name="attr_schemetype_toggle" value="1" /><span
+                                    class="sheet-superficialdot"></span>
+                                <input class="sheet-box sheet-aggravateddot sheet-memoriamdot" type="radio" name="attr_schemetype_toggle" value="2" /><span
+                                    class="sheet-aggravateddot"></span>
+                            </div>
+                        </div>
                         <span class="sheet-header5 sheet-left"
                             style="width: 40px; margin-left: 20px; margin-top: -3px;">Hook:</span><input
                             required class="sheet-darkText sheet-projectheader sheet-insetBox" type="text"
                             placeholder="How are you going to accomplish your goal? Answer in the form of a story hook!"
-                            name="attr_projectgoal" style="width: 91%;" />
+                            name="attr_projectgoal" style="width: 90%;" />
                     </div>
                 </div>
                 <div class="sheet-coltight1 sheet-doublerow sheet-centered" style="width: 5%;">
-                    <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="11"
-                        checked />
-                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox"></div>
-                    <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="10" />
-                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter10"></div>
-                    <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="9" />
-                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter9"></div>
-                    <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="8" />
-                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter8"></div>
-                    <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="7" />
-                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter7"></div>
-                    <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="6" />
-                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter6"></div>
-                    <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="5" />
-                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter5"></div>
-                    <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="4" />
-                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter4"></div>
-                    <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="3" />
-                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter3"></div>
-                    <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="2" />
-                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter2"></div>
-                    <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="1" />
-                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter1"></div>
-                    <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="0" />
-                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter0"></div>
+                    <input class="sheet-containerselector" type="radio" name="attr_schemetyperight_toggle" value="0" checked />
+                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-objectivedate">
+                        <div class="sheet-coltight1 sheet-projectdate">
+                            <input required type="text" class="sheet-insetBox sheet-darkText sheet-objectivedate" name="attr_objectivedate" placeholder="Date Achieved"/>
+                        </div>
+                    </div>
+                    <input class="sheet-containerselector" type="radio" name="attr_schemetyperight_toggle" value="1" />
+                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox">
+                        <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="11" checked />
+                        <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="10" />
+                        <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter10"></div>
+                        <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="9" />
+                        <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter9"></div>
+                        <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="8" />
+                        <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter8"></div>
+                        <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="7" />
+                        <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter7"></div>
+                        <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="6" />
+                        <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter6"></div>
+                        <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="5" />
+                        <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter5"></div>
+                        <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="4" />
+                        <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter4"></div>
+                        <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="3" />
+                        <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter3"></div>
+                        <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="2" />
+                        <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter2"></div>
+                        <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="1" />
+                        <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter1"></div>
+                        <input class="sheet-containerselector" type="radio" name="attr_projectinccounter" value="0" />
+                        <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-projectinccounter0"></div>
+                    </div>
+                    <input class="sheet-containerselector" type="radio" name="attr_schemetyperight_toggle" value="2" />
+                    <div class="sheet-coltight1 sheet-doublerow sheet-squareBox sheet-objectivedate">
+                        <div class="sheet-coltight1 sheet-projectdate">
+                        </div>
+                    </div>
                 </div>
-                <input class="sheet-containerselector" type="checkbox" name="attr_projectfull_toggle" value="1" />
+                <input class="sheet-containerselector" type="radio" name="attr_schemetypebottom_toggle" value="0" checked />
+                <input class="sheet-containerselector" type="radio" name="attr_schemetypebottom_toggle" value="1" />
                 <div class="sheet-contingentcontainer" style="height: auto;">
                     <div class="sheet-coltight1x3 sheet-linerow">
                         <span class="sheet-header5 sheet-left" style="width: 40px; margin-left: 20px;">Start:</span>
@@ -2670,6 +2697,10 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                <input class="sheet-containerselector" type="radio" name="attr_schemetypebottom_toggle" value="2" />
+                <div class="sheet-coltight1 sheet-doublerow" style="width: 800px; margin-left: -10px;margin-bottom: -5px;">
+                    <span class="sheet-header2">Memoriam Functionality Coming Soon!</span>
                 </div>
             </div>
         </fieldset>
@@ -4173,7 +4204,22 @@
     // #region UPDATE: Projects
 
     // Updating project end date when date values are changed.
-    const doProjectDates = callback => {
+    const doSchemeSelection = () => {
+            log("", "████ DOSCHEMESELECTION CALLED ████")
+            const attrList = {},
+                attrArray = _.map([
+                    "schemetype_toggle", "schemetyperight_toggle", "schemetypebottom_toggle"
+                ], v => `repeating_project_${v}`)
+            getAttrs(attrArray, ATTRS => {
+                log("", `ATTRS: ${JSON.stringify(ATTRS)}`)
+                const [, p, pV, pI] = sFuncs("project", ATTRS)
+                attrList[p("schemetyperight_toggle")] = ATTRS[p("schemetype_toggle")]
+                attrList[p("schemetypebottom_toggle")] = ATTRS[p("schemetype_toggle")]
+                log("", `SETTING: ${JSON.stringify(attrList)}`)
+                setAttrs(attrList)                
+            })
+        },
+        doProjectDates = callback => {
             const attrList = {},
                 attrArray = _.map([
                     "projectstartdate", "projectincnum", "projectincunit"
@@ -4266,7 +4312,7 @@
                 log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
                 if (pV("projectenddate") === "") {
                     attrList[p("projectlaunchroll_toggle")] = 0
-                } else if (pV("projectlaunchresults") && (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("CRITICAL") || pV("projectlaunchresults").includes("TOTAL"))) {
+                } else if (pV("projectlaunchresults") && (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("COMPLICATION") || pV("projectlaunchresults").includes("CRITICAL") || pV("projectlaunchresults").includes("TOTAL"))) {
                     attrList[p("projectlaunchroll_toggle")] = 2
                 } else {
                     _.each(traits, trt => {
@@ -4294,10 +4340,10 @@
             log("", `████ ${funcName.toUpperCase()} CALLED ████`)
             getSectionIDs("project", idArray => {
                 _.each(idArray, repID => {
-                    _.each(["projectlaunchroll_toggle", "projectstartdate", "projectenddate", "projectinccounter", "projectlaunchroll_toggle", "projectlaunchresults"], stat => {
+                    _.each(["projectlaunchroll_toggle", "projecttotalstake", "projectstake1", "projectstake2", "projectstake3", "projectstartdate", "projectenddate", "projectinccounter", "projectlaunchroll_toggle", "projectlaunchresults"], stat => {
                         attrArray.push(`repeating_project_${repID}_${stat}`)
                     })
-                })
+                }) // const 
                 getAttrs([...attrArray, "date_today"], ATTRS => {
                     const ids = _.uniq(_.map(attrArray, v => parseRepAttr(v)[1]))
                     //log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
@@ -4306,7 +4352,8 @@
                         const [, p, pV, pI] = pFuncs(`repeating_project_${rowID}`, ATTRS)
                         let counterPos = 11
                         //log(`p-Test: p("projectinccounter) = ${JSON.stringify(p("projectinccounter"))}`, funcName)
-                        if (pV("projectlaunchresults") && (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("CRITICAL")))
+                        const stakeRemaining = Math.max(0, pI("projecttotalstake")) - _.reduce(_.map([1, 2, 3], v => pI(`projectstake${v}`)), (memo, num) => parseInt(memo) + parseInt(num))
+                        if (stakeRemaining === 0 && pV("projectlaunchresults") && (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("COMPLICATION") || pV("projectlaunchresults").includes("CRITICAL")))
                             counterPos = 10 - Math.floor(10 * getProgress(
                                 new Date(parseInt(ATTRS.date_today)), pV("projectstartdate"), pV("projectenddate")
                             ))
@@ -4336,18 +4383,19 @@
             getAttrs(attrArray, ATTRS => {
                 const [, p, pV, pI] = sFuncs("project", ATTRS)
                 log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
-                if (pV("projectlaunchresults") && pV("projectlaunchresults").includes("SUCCESS")) {
+                let stakeRemaining = 0
+                if (pV("projectlaunchresults") && (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("COMPLICATION"))) {
                     attrList[p("projectstakes_toggle")] = 1
-                    const stakeRemaining = Math.max(0, pI("projecttotalstake")) - _.reduce(_.map([1, 2, 3, 4, 5, 6], v => pI(`projectstake${v}`)), (memo, num) => parseInt(memo) + parseInt(num))
+                    stakeRemaining = Math.max(0, pI("projecttotalstake")) - _.reduce(_.map([1, 2, 3, 4, 5, 6], v => pI(`projectstake${v}`)), (memo, num) => parseInt(memo) + parseInt(num))
                     if (stakeRemaining > 0)
                         attrList[p("projectlaunchresultsmargin")] = `Stake ${pV("projecttotalstake")} Dot${pI("projecttotalstake") > 1 ? "s" : ""} (${stakeRemaining} to go)`
                     else
                         attrList[p("projectlaunchresultsmargin")] = `${pV("projecttotalstake")} Dot${pI("projecttotalstake") > 1 ? "s" : ""} Staked`
                 }
+                
                 setAttrs(attrList, {}, () => {
                     log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
-                    if (callback)
-                        callback(null)
+                    doProjectCounter(callback)
                 })
             })
         },
@@ -4452,6 +4500,10 @@
                 console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
             })
         }
+    })
+    on("change:repeating_project:schemetype_toggle", () =>{
+        log("", "████ CHANGE DETECTED ████")
+        doSchemeSelection()
     })
     // #endregion
 

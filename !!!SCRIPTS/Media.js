@@ -36,6 +36,8 @@ const Media = (() => {
         STATEREF.idregistry = STATEREF.idregistry || {}
         STATEREF.areas = STATEREF.areas || {}
         STATEREF.imgResizeDims = STATEREF.imgResizeDims || { height: 100, width: 100 }
+
+        delete STATEREF.imageregistry.TLShroud_1
     }
     // #endregion
 
@@ -301,6 +303,20 @@ const Media = (() => {
                             break
                         case "get":
                             switch (args.shift().toLowerCase()) {
+                                case "weatherlayers": {
+                                    const layerStatus = {}
+                                    for (const weatherLayer of ["WeatherFrost", "WeatherFog", "WeatherMain", "WeatherGround", "WeatherClouds", "Horizon_1", "Horizon_2"]) {
+                                        const imgObj = getImageObj(weatherLayer)
+                                        if (!VAL({imgObj: imgObj}))
+                                            layerStatus[weatherLayer] = "NOT FOUND!"
+                                        else
+                                            layerStatus[weatherLayer] = `TopLeft: ${parseInt(imgObj.get("left") - 0.5*imgObj.get("width"))} x ${parseInt(imgObj.get("top") - 0.5*imgObj.get("height"))}, BotRight: ${
+                                                parseInt(imgObj.get("left") + 0.5*imgObj.get("width"))} x ${parseInt(imgObj.get("top") + 0.5*imgObj.get("height"))}<br>Layer: ${imgObj.get("layer")}<br>Source: ${imgObj.get("imgsrc")}`
+                                    }
+                                    D.Alert(D.JS(layerStatus,true))
+
+                                    break
+                                }
                                 case "data":
                                     textObj = getImageObj(msg)
                                     if (textObj) {
@@ -323,6 +339,40 @@ const Media = (() => {
                             // no default
                             }
                             break
+                        case "fix":
+                            switch (args.shift().toLowerCase()) {
+                                case "weatherlayers":
+                                    for (const layerName of ["WeatherFrost_1", "WeatherFog_1", "WeatherMain_1", "WeatherGround_1", "WeatherClouds_1", "Horizon_1", "Horizon_2"]) {
+                                        setImgData(layerName, {
+                                            name: layerName,
+                                            left: 1340,
+                                            top: 832,
+                                            height: 1664,
+                                            width: 2680,
+                                            activeLayer: "map",
+                                            startActive: true
+                                        })
+                                        let imgObj = getImageObj(layerName)
+                                        imgObj.set({
+                                            name: layerName,
+                                            left: 1340,
+                                            top: 832,
+                                            height: 1664,
+                                            width: 2680,
+                                            layer: "map"                                            
+                                        })
+                                    }
+                                    for (const layerName of ["WeatherFrost_1", "WeatherFog_1", "WeatherMain_1", "WeatherGround_1", "TLShroud_1", "WeatherClouds_1", "AirLightLeft_1", "AirLightMid_1", "AirLightTop_1", "AirLightCN_4", "AirLightCN_5", "HungerTopLeft_1", "HungerTopRight_1", "HungerBotLeft_1", "HungerBotRight_1", "Horizon_1", "Horizon_2", "ComplicationMat_1"]) {
+                                        let imgObj = getImageObj(layerName)
+                                        imgObj.set({
+                                            name: layerName,
+                                            layer: "map"
+                                        })
+                                        toBack(imgObj)
+                                    }
+                                    break
+                                // no default
+                            }
                     // no default
                     }
                     break
@@ -856,15 +906,15 @@ const Media = (() => {
                     startActive: !(startActive === "false" || startActive === false),
                     srcs: {}
                 }
-                if (D.GetChar(imgObj)) {
+               /* if (D.GetChar(imgObj)) {
                     IMAGEREGISTRY[name].activeLayer = "objects"
                     IMAGEREGISTRY[name].startActive = true
                     addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, "base")
                     setImage(name, "base")
-                } else {
+                } else { */
                     addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, srcName)
                     setImage(name, srcName)
-                }
+               // }
                 if (!IMAGEREGISTRY[name].startActive) {
                     setImage(name, "blank")
                     layerImages([name], "gmlayer")
@@ -924,7 +974,7 @@ const Media = (() => {
 
                     imgObj.set("imgsrc", srcURL)
                     if (srcRef === "blank") {
-                        imgObj.set("layer", "walls")
+                        imgObj.set("layer", "gmlayer")
                         IMAGEREGISTRY[getImageData(imgRef).name].activeSrc = IMAGEREGISTRY[getImageData(imgRef).name].curSrc
                     } else {
                         imgObj.set("layer", getImageData(imgRef).activeLayer)
@@ -1160,7 +1210,7 @@ const Media = (() => {
                 else if (imgData.activeSrc)
                     setImage(imgData.activeSrc)
             } else if (imgObj && !isActive) {
-                imgObj.set("layer", "walls")
+                imgObj.set("layer", "gmlayer")
                 setImage(imgRef, "blank")
             }
         },
