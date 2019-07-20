@@ -2610,7 +2610,7 @@ const Roller = (() => {
                 bottomEndData.left = Media.GetObj("rollerImage_bottomEnd").get("left")
                 DB(`bottomEndData: ${D.JS(bottomEndData)}<br>outcomeData: ${D.JS(outcomeData)}<br><br>RedPosParams: ${D.JS(redPosParams)}<br>GoldPosParams: ${D.JS(goldPosParams)}`, "displayRoll")
                 DB(`COMPARE: ${bottomEndData.left + 0.5 * bottomEndData.width - 100} <--> ${outcomeData.left + txtWidths.outcome}`, "displayRoll")
-                if ((bottomEndData.left + 0.5 * bottomEndData.width - 100) < (outcomeData.left + txtWidths.outcome)) {
+                if (bottomEndData.left + 0.5 * bottomEndData.width - 100 < outcomeData.left + txtWidths.outcome) {
                     redPosParams.shifttop = (redPosParams.shifttop || 0) - 95
                     goldPosParams.shifttop = (goldPosParams.shifttop || 0) - 95
                     redPosParams.shiftleft = bottomEndData.left - outcomeData.left + 0.5 * bottomEndData.width + 20
