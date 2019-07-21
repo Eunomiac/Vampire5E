@@ -912,8 +912,8 @@ const Media = (() => {
                     addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, "base")
                     setImage(name, "base")
                 } else { */
-                    addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, srcName)
-                    setImage(name, srcName)
+                addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, srcName)
+                setImage(name, srcName)
                // }
                 if (!IMAGEREGISTRY[name].startActive) {
                     setImage(name, "blank")
@@ -1440,7 +1440,7 @@ const Media = (() => {
             if (VAL({ textObj: textObj }, "getTextWidth")) {
                 const font = textObj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
                     size = textObj.get("font_size"),
-                    textString = text || textObj.get("text") || "",
+                    textString = text === "" ? "" : text || textObj.get("text") || "",
                     chars = textString.split(""),
                     fontRef = D.CHARWIDTH[font],
                     charRef = fontRef && fontRef[size]
