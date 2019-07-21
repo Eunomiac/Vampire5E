@@ -255,7 +255,7 @@ const Char = (() => {
         },
         handleChangeAttr = (obj, prev) => {
             if (obj.get("current") !== prev.current) {
-                D.Alert(`Detected change to '${obj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")}'`)
+                //D.Alert(`Detected change to '${obj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")}'`)
                 switch (obj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")) {
                     case "hunger":
                         Media.Toggle(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, true, obj.get("current"))

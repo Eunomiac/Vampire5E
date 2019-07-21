@@ -1872,13 +1872,17 @@ const Roller = (() => {
                 dicePool: flagData.flagDiceMod,
                 traits: traitData.traitList,
                 traitData: traitData.traitData,
-                posFlagMod: flagData.posFlagMod,
-                negFlagMod: flagData.negFlagMod,
+                posFlagMod: flagData.posFlagMod || 0,
+                negFlagMod: flagData.negFlagMod || 0,
                 diffMod: 0,
                 prefix: "",
                 diff: null,
                 mod: null,
-                appliedRollEffects: []
+                appliedRollEffects: [],
+                rollFlags: rollFlags,                
+                isNPCRoll: rollFlags.isNPCRoll,
+                isOblivionRoll: rollFlags.isOblivionRoll,
+                isDiscRoll: rollFlags.isDiscRoll
             }
             rollData.charName = D.GetName(charObj)
             switch (rollType) {
@@ -1916,8 +1920,8 @@ const Roller = (() => {
 
             return rollData
         },
-        getCurrentRoll = (rollFlags) => (rollFlags.isNPCRoll ? STATEREF.NPC : STATEREF).rollRecord[(rollFlags.isNPCRoll ? STATEREF.NPC : STATEREF).rollIndex],
-        setCurrentRoll = (rollIndex, rollFlags) => { (rollFlags.isNPCRoll ? STATEREF.NPC : STATEREF).rollIndex = rollIndex },
+        getCurrentRoll = (isNPCRoll) => (isNPCRoll ? STATEREF.NPC : STATEREF).rollRecord[(isNPCRoll ? STATEREF.NPC : STATEREF).rollIndex],
+        setCurrentRoll = (rollIndex, isNPCRoll) => { (isNPCRoll ? STATEREF.NPC : STATEREF).rollIndex = rollIndex },
         replaceRoll = (rollData, rollResults, rollIndex) => {
             const recordRef = rollResults.isNPCRoll ? STATEREF.NPC : STATEREF
             recordRef.rollIndex = rollIndex || recordRef.rollIndex
@@ -2049,7 +2053,7 @@ const Roller = (() => {
 			   });
 			   RollData.dicePool = Math.max(0, rollData.dicePool); */
         },
-        rollDice = (rollData, addVals, rollFlags) => {
+        rollDice = (rollData, addVals) => {
             /* MUST SUPPLY:
                 rollData = { type, diff, basePool, hungerPool, << diffmod >> }
                   OR
@@ -2128,9 +2132,6 @@ const Roller = (() => {
                 diceVals: [],
                 appliedRollEffects: [],
                 wpCost: 1,
-                isNPCRoll: rollFlags.isNPCRoll,
-                isOblivionRoll: rollFlags.isOblivionRoll,
-                isDiscRoll: rollFlags.isDiscRoll,
                 isNoWPReroll: ["rouse", "rouse2", "check", "project", "secret", "humanity", "willpower", "remorse"].includes(rollData.type)
             }
 
@@ -2316,7 +2317,7 @@ const Roller = (() => {
 
             return logLine
         },
-        displayRoll = (isLogging = true, rollFlags) => {
+        displayRoll = (isLogging = true, isNPCRoll) => {
             /* MUST SUPPLY:
               [ALL]
                 rollData = { type, charName, charID }
@@ -2326,7 +2327,8 @@ const Roller = (() => {
                 rollResults = { H: { botches }, critPairs: {hh, hb, bb}, << margin >> }
               [TRAIT ONLY]
                 rollData = { posFlagLines, negFlagLines } */
-            const { rollData, rollResults } = getCurrentRoll(rollFlags),
+            const { rollData, rollResults } = getCurrentRoll(isNPCRoll),
+                rollFlags = rollData.rollFlags || {},
                 [deltaAttrs, txtWidths] = [{}, {}],
                 [mainRollParts, mainRollLog, stRollParts, stRollLog, diceObjs] = [[], [], [], [], []],
                 [posFlagLines, negFlagLines, redFlagLines, goldFlagLines] = [
@@ -2371,6 +2373,7 @@ const Roller = (() => {
             let [blankLines, introPhrase, logPhrase, logString, stPhrase, stString, stains, margin, total, bookends, spread] = new Array(11).fill(null),
                 maxHumanity = 10,
                 diceCats = _.clone(STATECATS.dice)
+            DB(`Retrieved ROLL DATA: ${D.JS(rollData)}<br><br>ROLL RESULTS: ${D.JS(rollResults)}`, "displayRoll")
             switch (rollData.type) {
                 case "project":
                     rollLines.subOutcome = {
@@ -2839,6 +2842,7 @@ const Roller = (() => {
             if (["rouse", "rouse2", "check"].includes(rollData.type))
                 diceCats = diceCats.reverse()
 
+            DB(`Is NPC Roll?  ${rollResults.isNPCRoll}`, "displayRoll")
             if (!rollResults.isNPCRoll) {
                 DB(`Setting Category: '${D.JS(diceCats[0])}' (total dice: ${D.JS(STATEREF[diceCats[0]].length)})<br>Showing Dice: [${D.JS(_.reject(_.map(STATEREF[diceCats[0]], vv => vv.value), v => v === "blank").join(", "))}]`, "displayRoll")
 
@@ -2932,12 +2936,12 @@ const Roller = (() => {
 				PARAMS: [${D.JS(params.join(", "))}] (length: ${params.length})`, "makeNewRoll")
             const rollData = buildDicePool(getRollData(charObj, rollType, params, rollFlags))
             recordRoll(rollData, rollDice(rollData, null, rollFlags))
-            displayRoll(true, rollFlags)
+            displayRoll(true, rollFlags.isNPCRoll)
         },
-        wpReroll = (dieCat, rollFlags) => {
+        wpReroll = (dieCat, isNPCRoll) => {
             clearInterval(rerollFX);
             [isRerollFXOn, rerollFX] = [false, null]
-            const rollRecord = getCurrentRoll(rollFlags),
+            const rollRecord = getCurrentRoll(isNPCRoll),
                 rollData = _.clone(rollRecord.rollData),
                 rolledDice = _.mapObject(
                     _.omit(
@@ -2949,7 +2953,7 @@ const Roller = (() => {
                 charObj = getObj("character", rollData.charID)
             DB(`RETRIEVED ROLL RECORD: ${D.JS(rollRecord)}`, "wpReroll")
             rollData.rerollAmt = STATEREF.selected[dieCat].length
-            const rollResults = rollDice(rollData, _.values(rolledDice), rollFlags)
+            const rollResults = rollDice(rollData, _.values(rolledDice))
             rollResults.wpCost = rollRecord.rollResults.wpCost
             rollResults.wpCostAfterReroll = rollRecord.rollResults.wpCostAfterReroll
 
@@ -2962,13 +2966,13 @@ const Roller = (() => {
             }
 
             replaceRoll(rollData, rollResults)
-            displayRoll(true, rollFlags)
+            displayRoll(true, isNPCRoll)
             //Media.SetText("goldMods", Media.GetTextData("goldMods").text.replace(/District Bonus \(Free Reroll\)/gu, ""))
             lockRoller(false)
             DragPads.Toggle("wpReroll", false)
         },
-        changeRoll = (deltaDice, rollFlags) => {
-            const rollRecord = getCurrentRoll(rollFlags),
+        changeRoll = (deltaDice, isNPCRoll) => {
+            const rollRecord = getCurrentRoll(isNPCRoll),
                 rollData = _.clone(rollRecord.rollData)
             let rollResults = _.clone(rollRecord.rollResults)
             if (parseInt(deltaDice) < 0) {
@@ -2984,25 +2988,25 @@ const Roller = (() => {
                 type: "trait",
                 rerollAmt: parseInt(deltaDice) > 0 ? parseInt(deltaDice) : 0,
                 diff: rollData.diff
-            }), rollResults.diceVals, rollFlags)
+            }), rollResults.diceVals)
             rollData.dicePool += parseInt(deltaDice)
             rollData.basePool = Math.max(1, rollData.dicePool) - rollData.hungerPool
             replaceRoll(rollData, rollResults)
-            displayRoll(true, rollFlags)
+            displayRoll(true, isNPCRoll)
             return true
         },
         lockRoller = lockToggle => { isLocked = lockToggle === true },
-        loadRoll = (rollIndex, rollFlags) => {
-            setCurrentRoll(rollIndex, rollFlags)
-            displayRoll(false, rollFlags)
+        loadRoll = (rollIndex, isNPCRoll) => {
+            setCurrentRoll(rollIndex, isNPCRoll)
+            displayRoll(false, isNPCRoll)
         },
-        loadPrevRoll = (rollFlags) => {
-            const recordRef = rollFlags.isNPCRoll ? STATEREF.NPC : STATEREF
-            loadRoll(Math.min(recordRef.rollIndex + 1, Math.max(recordRef.rollRecord.length - 1, 0)), rollFlags)
+        loadPrevRoll = (isNPCRoll) => {
+            const recordRef = isNPCRoll ? STATEREF.NPC : STATEREF
+            loadRoll(Math.min(recordRef.rollIndex + 1, Math.max(recordRef.rollRecord.length - 1, 0)), isNPCRoll)
         },
-        loadNextRoll = (rollFlags) => {
-            const recordRef = rollFlags.isNPCRoll ? STATEREF.NPC : STATEREF
-            loadRoll(Math.max(recordRef.rollIndex - 1, 0), rollFlags)
+        loadNextRoll = (isNPCRoll) => {
+            const recordRef = isNPCRoll ? STATEREF.NPC : STATEREF
+            loadRoll(Math.max(recordRef.rollIndex - 1, 0), isNPCRoll)
         }
     // #endregion
 

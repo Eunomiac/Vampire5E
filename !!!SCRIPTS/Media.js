@@ -160,22 +160,47 @@ const Media = (() => {
                                 case "token":
                                     toggleToken(D.GetSelected(msg)[0] || args.shift(), args.shift())
                                     break
-                                case "loc": case "location":
-                                    for (const param of args)
+                                case "loc": case "location": {                                    
+                                    //D.Alert(`ARGS: ${D.JS(args)}`)
+                                    const fullArgs = args.join(" "),
+                                        hosts = [],
+                                        hostOverride = {}
+                                    let [customNames, params] = [[], []]
+                                    if (fullArgs.includes(":name:")) {
+                                        customNames = _.map(fullArgs.match(new RegExp(":name:([^;]*)", "g")), v => v.replace(/:name:/gu, ""))
+                                        params = fullArgs.replace(/:name:.*?;\s*?/gu, "").split(" ")
+                                    } else {
+                                        params = args
+                                    }                                    
+                                    setImage("SiteBarCenter", "blank")
+                                    setText("SiteNameCenter", " ")
+                                    setImage("SiteBarLeft", "blank")
+                                    setText("SiteNameLeft", " ")
+                                    setImage("SiteBarRight", "blank")
+                                    setText("SiteNameRight", " ")
+                                    //D.Alert(`PARAMS: ${D.JS(params)}`)
+                                    for (const param of params) {
+                                        if (param.startsWith("Site")) hosts.push(param.split(":")[0])
                                         if (param.includes(":same")) {
                                             const targetHost = param.split(":")[0] + "_1",
                                                 targetType = targetHost.includes("District") ? "District" : "Site"
                                             let imgSrc = getImageSrc(targetHost)
                                             if (!isImageActive(targetHost))
                                                 switch (targetHost) {
-                                                    case "DistrictLeft_1":
                                                     case "SiteLeft_1":
-                                                    case "DistrictRight_1":
+                                                        hostOverride.SiteCenter = isImageActive("SiteBarLeft") ? getTextObj("SiteNameLeft").get("text") : null
+                                                    // falls through
                                                     case "SiteRight_1":
+                                                        hostOverride.SiteCenter = hostOverride.SiteCenter || isImageActive("SiteBarRight") ? getTextObj("SiteNameRight").get("text") : null
+                                                    // falls through
+                                                    case "DistrictLeft_1":
+                                                    case "DistrictRight_1":
                                                         imgSrc = getImageSrc(targetType + "Center_1")
                                                         break
-                                                    case "DistrictCenter_1":
                                                     case "SiteCenter_1":
+                                                        hostOverride.SiteLeft = isImageActive("SiteBar") ? getTextObj("SiteName").get("text") : null
+                                                    // falls through
+                                                    case "DistrictCenter_1":
                                                         imgSrc = getImageSrc(targetType + "Left_1")
                                                         break
                                                 // no default
@@ -184,7 +209,35 @@ const Media = (() => {
                                         } else {
                                             setImage(...param.split(":"))
                                         }
+                                    }                            
+                                    setImage("SiteBarCenter", "blank")
+                                    setText("SiteNameCenter", " ")
+                                    setImage("SiteBarLeft", "blank")
+                                    setText("SiteNameLeft", " ")
+                                    setImage("SiteBarRight", "blank")
+                                    setText("SiteNameRight", " ")
+                                    //D.Alert(`Hosts: ${D.JS(hosts)}, Names: ${D.JS(customNames)}`)
+                                    for (let i = 0; i < hosts.length; i++) {
+                                        customNames[i] = customNames[i] || hostOverride[hosts[i]]
+                                        if (!customNames[i])
+                                            break
+                                        switch(hosts[i]) {
+                                            case "SiteCenter":
+                                                setImage("SiteBarCenter", customNames[i] === "x" ? "blank" : "base")
+                                                setText("SiteNameCenter", customNames[i] === "x" ? " " : customNames[i])
+                                                break
+                                            case "SiteLeft":
+                                                setImage("SiteBarLeft", customNames[i] === "x" ? "blank" : "base")
+                                                setText("SiteNameLeft", customNames[i] === "x" ? " " : customNames[i])
+                                                break
+                                            case "SiteRight":
+                                                setImage("SiteBarRight", customNames[i] === "x" ? "blank" : "base")
+                                                setText("SiteNameRight", customNames[i] === "x" ? " " : customNames[i])
+                                            // no default
+                                        }                                        
+                                    }
                                     break
+                                }
                             // no default
                             }
                             break
@@ -231,7 +284,7 @@ const Media = (() => {
                             break
                         case "unreg": case "unregister":
                         //D.Alert(`ARGS: ${D.JS(args)}<br><br>getImageObj('${D.JS(args.join(" "))}'):<br><br>${D.JS(getImageObj(args.join(" ")))}`)
-                            if (args[0].toLowerCase() === "all") {
+                            if (args[0] && args[0].toLowerCase() === "all") {
                                 args.shift()
                                 for (hostName of _.keys(IMAGEREGISTRY))
                                     if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
