@@ -199,7 +199,7 @@ const Chat = (() => {
                         D.Alert(`Found ${D.GetSelected(msg, "text").length} objects.`)
                         break
                     case "prep": {
-                        const font = VAL({number: args[0]}) ? ["Candal", "Contrail One", "Arial", "Patrick Hand", "Light"][parseInt(args.shift())] : args.shift(),
+                        const font = VAL({number: args[0]}) ? ["Candal", "Contrail One", "Arial", "Patrick Hand", "Shadows Into Light"][parseInt(args.shift())] : args.shift(),
                             sizes = _.map(args, v => parseInt(v)) || [20, 22, 26, 32, 40, 56, 72, 100]                        
                         prepText(font, sizes)
                         break
@@ -551,18 +551,24 @@ const Chat = (() => {
                     }
                 }
             }
-            D.Alert("Move the text object(s) around, and type '!text res' while all are selected when you have.")
+            D.Alert(`Created ${C.TEXTCHARS.split("").length} x ${sizes.length} = ${C.TEXTCHARS.split("").length * sizes.length} text objects.<br><br>Move the text object(s) around, and type '!text res' while all are selected when you have.`)
         },
         resolveText = objs => {
+            let font, trueFont
             for (const obj of objs) {
                 const width = obj.get("width"),
+                    height = obj.get("height"),
                     char = obj.get("text").charAt(0),
-                    [font] = obj.get("font_family").split(" "),
                     size = obj.get("font_size")
+                trueFont = obj.get("font_family");
+                [font] = trueFont.split(" ")
                 D.CHARWIDTH[font] = D.CHARWIDTH[font] || {}
                 D.CHARWIDTH[font][size] = D.CHARWIDTH[font][size] || {}
-                D.CHARWIDTH[font][size][char] = width / 40
+                D.CHARWIDTH[font][size][char] = parseInt(width * 100 / 40) / 100
+                D.CHARWIDTH[font][size].lineHeight = parseInt(height * 10) / 10
             }
+            if (trueFont !== font)
+                D.CHARWIDTH[trueFont] = D.CHARWIDTH[font]
             const charCount = {}
             for (const fontName of _.keys(D.CHARWIDTH)) {
                 charCount[fontName] = {}
@@ -571,7 +577,7 @@ const Chat = (() => {
                     let colorList = ["red", "blue", "green", "purple"]
                     for (const char of ["M", "t", " ", "0"])
                         charCount[fontName][fontSize] += `<span style="color: ${C.COLORS[colorList.pop()]};"><b>${char}</b>: ${parseInt(D.CHARWIDTH[fontName][fontSize][char] * 100)/100}</span>, `
-                    charCount[fontName][fontSize] = charCount[fontName][fontSize].slice(0, -2)
+                    charCount[fontName][fontSize] = charCount[fontName][fontSize].slice(0, -2) + `<br><b>Line Height: ${D.CHARWIDTH[fontName][fontSize].lineHeight}</b>`
                 }
             }
             D.Alert(D.JS(charCount), "CHARACTER WIDTH TALLY")

@@ -1738,7 +1738,7 @@ const Media = (() => {
                         startActive: !(startActive === "false" || startActive === false),
                         justification: justification || "center",
                         maxWidth: options.maxWidth || 0,
-                        lineHeight: textObj.get("height"),
+                        lineHeight: D.CHARWIDTH[curTextParams.font_family] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size].lineHeight || textObj.get("height"),
                         vertAlign: options.vertAlign || "top"             
                     }), options)
                 TEXTREGISTRY[name].left = getBlankLeft(textObj)
@@ -1801,10 +1801,14 @@ const Media = (() => {
                 if (objParams.text.split("\n").length > 1) 
                     switch (textData.vertAlign || textOptions.vertAlign || "top") {
                         case "top":
-                            textOptions.shifttop = (textOptions.shifttop || 0) + 0.5*(objParams.text.split("\n").length - 1)*(textData && textData.lineHeight || 0)
+                            textOptions.shifttop = (textOptions.shifttop || 0) + 0.5*(objParams.text.split("\n").length - 1)*(textData && textData.lineHeight || 
+                                D.CHARWIDTH[textObj.get("font_family")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight ||
+                                0)
                             break
                         case "bottom":
-                            textOptions.shifttop = (textOptions.shifttop || 0) - 0.5*(objParams.text.split("\n").length - 1)*(textData && textData.lineHeight || 0)
+                            textOptions.shifttop = (textOptions.shifttop || 0) - 0.5*(objParams.text.split("\n").length - 1)*(textData && textData.lineHeight || 
+                                D.CHARWIDTH[textObj.get("font_family")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight ||
+                                0)
                             break
             /* no default */
                     }         

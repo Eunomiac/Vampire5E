@@ -132,11 +132,60 @@ const Char = (() => {
                             playerObj = getObj("player", charData.playerID)
                             D.Alert(`<b>NAME:</b> ${charData.playerName} (${charData.playerID})<br><b>PLAYS:</b> ${charData.name} (${charData.id})<br><br><b>DATA:</b><br><br>${D.JS(playerObj)}`, `PLAYER #${args[0]} DATA`)
                             break
+                        case "npcs": {
+                            const registeredIDs = _.map(_.values(REGISTRY), v => v.id),
+                                npcChars = _.map(_.filter(D.GetChars("all"), v => !registeredIDs.includes(v.id)), v => [v.get("name"), v.id]),
+                                npcVamps = _.filter(npcChars, v => getAttrByName(v[1], "clan").length > 2 && getAttrByName(v[1], "clan") !== "Ghoul"),
+                                npcHungers = _.map(npcVamps, v => [
+                                    v[1],
+                                    v[0],
+                                    Math.max(parseInt(getAttrByName(v[1], "bp_slakekill")) + randomInteger(5 - parseInt(getAttrByName(v[1], "bp_slakekill"))) - 2, parseInt(getAttrByName(v[1], "bp_slakekill")))                                    
+                                ]),
+                                npcHungerStrings = _.map(npcHungers, v => "<tr><td>" + v.join("</td><td>") + "</td></tr>"),
+                                npcStats = _.map(npcVamps, v => "<tr><td>" + [
+                                    v[0],
+                                    getAttrByName(v[1], "clan"),
+                                    getAttrByName(v[1], "blood_potency"),
+                                    getAttrByName(v[1], "hunger"),
+                                    getAttrByName(v[1], "bp_slakekill"),
+                                    parseInt(getAttrByName(v[1], "bp_slakekill")) + (3 - parseInt(getAttrByName(v[1], "bp_slakekill"))),
+                                    Math.max(parseInt(getAttrByName(v[1], "bp_slakekill")) + randomInteger(5 - parseInt(getAttrByName(v[1], "bp_slakekill"))) - 2, parseInt(getAttrByName(v[1], "bp_slakekill")))
+                                ].join("</td><td>") + "</td></tr>"),
+                                npcHungerTable = `<table><tr><th style="width:150px;">ID</th><th style="width:150px;">Name</th><th style="width:50px;">Hunger</th></tr>${npcHungerStrings.join("")}</table>`,
+                                npcTable = `<table><tr><th style="width:150px;">Name</th><th style="width:75px;">Clan</th><th style="width:25px;">BP</th><th style="width:50px;">Hunger</th><th style="width:30px;">Min</th><th style="width:30px;">Max</th><th style="width:30px;">Rand</th></tr>${npcStats.join("")}</table>`
+                            D.Alert(npcHungerTable)
+                            /*
+                            for (const npcData of npcStats) {
+                                setAttrs(npcData[1])
+                            }
+                            */
+                            break
+                        }
+
                             // no default
                     }
                     break
                 case "set":
                     switch (args.shift().toLowerCase()) {
+                        case "npcs": {
+                            switch (args.shift().toLowerCase()) {
+                                case "hunger": {
+                                    const registeredIDs = _.map(_.values(REGISTRY), v => v.id),
+                                        npcChars = _.map(_.filter(D.GetChars("all"), v => !registeredIDs.includes(v.id)), v => [v.get("name"), v.id]),
+                                        npcVamps = _.filter(npcChars, v => getAttrByName(v[1], "clan").length > 2 && getAttrByName(v[1], "clan") !== "Ghoul"),
+                                        npcHungers = _.map(npcVamps, v => [
+                                            v[1],
+                                            v[0],
+                                            Math.max(parseInt(getAttrByName(v[1], "bp_slakekill")) + randomInteger(5 - parseInt(getAttrByName(v[1], "bp_slakekill"))) - 2, parseInt(getAttrByName(v[1], "bp_slakekill")))                                    
+                                        ])
+                                    for (const hungerData of npcHungers)
+                                        setAttrs(hungerData[0], {hunger: hungerData[2]})
+                                    break
+                                }
+                                // no default
+                            }
+                            break
+                        }
                         case "stakes":
                             displayStakes()
                             break

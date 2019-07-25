@@ -548,8 +548,11 @@ const D = (() => {
                         title: formatTitle(funcName, scriptName, prefix),
                         contents: msg
                     })
-                    if (STATEREF.DEBUGLOG.length > 100)
+                    if (STATEREF.DEBUGLOG.length > 100) {
+                        if (Handouts.Count("debug") > 20)
+                            Handouts.RemoveAll("... DBLog", "debug")
                         getDebugRecord("... DBLog")
+                    }                        
                 }
                 log(formatLogLine(msg, funcName, scriptName, prefix))
             }
@@ -566,9 +569,16 @@ const D = (() => {
         getDebugRecord = (title = "Debug Log", isClearing = false) => {
             const logLines = []
             let lastTimeStamp, lastTitle
-            if (isClearing)              
+            if (isClearing) {           
                 Handouts.RemoveAll("Debug Log", "debug")
+                Handouts.RemoveAll("... DBLog", "debug")
+            }
             for (const logData of STATEREF.DEBUGLOG) {
+                if (lastTimeStamp && logData.timeStamp - lastTimeStamp > 7200000) {
+                    logLines.length = 0
+                    Handouts.RemoveAll("Debug Log", "debug")
+                    Handouts.RemoveAll("... DBLog", "debug")
+                }
                 if (!lastTimeStamp || logData.timeStamp - lastTimeStamp > 1000) {
                     let [logDate, ampm] = [new Date(logData.timeStamp), "A.M."]
                     logDate.setUTCHours(logDate.getUTCHours() - 4)

@@ -53,7 +53,8 @@ const Handouts = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     // #region GETTERS: Retrieving Notes, Data
-    const getHandoutObj = (title, charRef) => {
+    const getCount = category => STATEREF.noteCounts[category],
+        getHandoutObj = (title, charRef) => {
             const notes = findObjs({
                 _type: "handout",
                 name: title
@@ -190,7 +191,8 @@ const Handouts = (() => {
         Make: makeHandoutObj,
         Remove: delHandoutObj,
         RemoveAll: delHandoutObjs,
-        Get: getHandoutObj
+        Get: getHandoutObj,
+        Count: getCount
     }
 })()
 
