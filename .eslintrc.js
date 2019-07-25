@@ -28,7 +28,7 @@ module.exports = {
         ],
         "dot-location": ["error", "object"],
         "dot-notation": ["error", { "allowKeywords": false }],
-        "no-extra-parens": "error",
+        "no-extra-parens": ["error", "all", { "conditionalAssign": false }],
         "no-template-curly-in-string": "warn",
         "accessor-pairs": ["error"],
         "array-callback-return": "error",

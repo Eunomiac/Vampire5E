@@ -755,7 +755,8 @@
     // #endregion
 
     // #region UTILITY: Date & Time Handling
-    const parseDString = str => {
+    const isValidDString = str => Boolean(str && str.match(/\w\w\w\s\d\d?,\s\d\d\d\d/gu)),
+        parseDString = str => {
             if (parseInt(str))
                 return new Date(parseInt(str))
             if (_.isString(str) && str !== "") {
@@ -1267,22 +1268,7 @@
     // #region UPDATE: Projects
 
     // Updating project end date when date values are changed.
-    const doSchemeSelection = () => {
-            log("", "████ DOSCHEMESELECTION CALLED ████")
-            const attrList = {},
-                attrArray = _.map([
-                    "schemetype_toggle", "schemetyperight_toggle", "schemetypebottom_toggle"
-                ], v => `repeating_project_${v}`)
-            getAttrs(attrArray, ATTRS => {
-                log("", `ATTRS: ${JSON.stringify(ATTRS)}`)
-                const [, p, pV, pI] = sFuncs("project", ATTRS)
-                attrList[p("schemetyperight_toggle")] = ATTRS[p("schemetype_toggle")]
-                attrList[p("schemetypebottom_toggle")] = ATTRS[p("schemetype_toggle")]
-                log("", `SETTING: ${JSON.stringify(attrList)}`)
-                setAttrs(attrList)                
-            })
-        },
-        doProjectDates = callback => {
+    const doProjectDates = callback => {
             const attrList = {},
                 attrArray = _.map([
                     "projectstartdate", "projectincnum", "projectincunit"
@@ -1489,17 +1475,50 @@
                 })
             }
         },
+        doObjectiveRecord = rowID => {
+            return callback => {
+                const attrList = {},
+                    attrArray = ["triggertimelinesort", ..._.map([
+                        "objectivedate", "projectgoal", "projectdetails", "projectscope_name"
+                    ], v => `repeating_project_${rowID}_${v}`)],
+                    newRowID = generateRowID(),
+                    funcName = "doObjectiveRecord"
+                log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+                getAttrs(attrArray, ATTRS => {
+                    const [, p, pV] = pFuncs(_.keys(ATTRS)[1], ATTRS),
+                        [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`)
+                    log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+                    log(`pV("objectivedate") = ${JSON.stringify(pV("objectivedate"))}`)
+                    log(`p("objectivedate") = ${JSON.stringify(p("objectivedate"))}`)
+                    log(`All Attrs: ${JSON.stringify(ATTRS)}`)
+                    attrList[np("tlstartdate")] = pV("objectivedate")
+                    attrList[np("tlenddate")] = ""
+                    attrList[np("tldetails")] = pV("projectdetails")
+                    attrList[np("tlcategory")] = "OBJECTIVE"
+                    attrList[np("tldotdisplay")] = ""
+                    attrList[np("tltitle")] = pV("projectscope_name")
+                    attrList[np("tlsummary")] = pV("projectgoal")
+                    attrList[np("tlsortby")] = parseDString(pV("objectivedate")).getTime()
+                    attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes"
+                    setAttrs(attrList, {}, () => {
+                        log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+                        if (callback)
+                            callback(null)
+                    })
+                })
+            }
+        },
         doProjectRecord = rowID => {
             return callback => {
                 const attrList = {},
-                    attrArray = _.map([
+                    attrArray = ["triggertimelinesort", ..._.map([
                         "projectstartdate", "projectenddate", "projectgoal", "projectscope", "projectdetails", "projectlaunchresults", "projectscope_name", "projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2"
-                    ], v => `repeating_project_${rowID}_${v}`),
+                    ], v => `repeating_project_${rowID}_${v}`)],
                     newRowID = generateRowID(),
                     funcName = "doProjectRecord"
                 log("", `████ ${funcName.toUpperCase()} CALLED ████`)
                 getAttrs(attrArray, ATTRS => {
-                    const [, , pV, pI] = pFuncs(_.keys(ATTRS)[0], ATTRS),
+                    const [, , pV, pI] = pFuncs(_.keys(ATTRS)[1], ATTRS),
                         [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`)
                     log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
                     attrList[np("tlstartdate")] = pV("projectstartdate")
@@ -1507,8 +1526,72 @@
                     attrList[np("tldetails")] = pV("projectdetails")
                     attrList[np("tlcategory")] = "PROJECT"
                     attrList[np("tldotdisplay")] = pI("projectscope") > 0 ? "●".repeat(pI("projectscope")) : "Ꝋ"
-                    attrList[np("tltitle")] = pV("projectgoal")
-                    attrList[np("tlsummary")] = pV("projectscope_name")
+                    attrList[np("tltitle")] = pV("projectscope_name")
+                    attrList[np("tlsummary")] = pV("projectgoal")
+                    attrList[np("tlsortby")] = parseDString(pV("projectenddate")).getTime()
+                    attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes"
+                    setAttrs(attrList, {}, () => {
+                        log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+                        if (callback)
+                            callback(null)
+                    })
+                })
+            }
+        },
+        doMemoriamRecord = rowID => {
+            return callback => {
+                const attrList = {},
+                    attrArray = ["triggertimelinesort", ..._.map([
+                        "memoriamdate", "projectgoal", "projectdetails", "projectscope_name", "memoriamdiff", "memoriamresult"
+                    ], v => `repeating_project_${rowID}_${v}`)],
+                    newRowID = generateRowID(),
+                    funcName = "doMemoriamRecord"
+                log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+                getAttrs(attrArray, ATTRS => {
+                    const [, , pV, pI] = pFuncs(_.keys(ATTRS)[1], ATTRS),
+                        [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`)
+                    log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+                    attrList[np("tlstartdate")] = pV("memoriamdate")
+                    attrList[np("tlenddate")] = ""
+                    attrList[np("tldetails")] = pV("projectdetails")
+                    attrList[np("tlcategory")] = "MEMORIAM"
+                    attrList[np("tldotdisplay")] = pI("memoriamdiff") > 0 ? "●".repeat(pI("memoriamdiff")) : "Ꝋ"
+                    attrList[np("tltitle")] = pV("projectscope_name")
+                    attrList[np("tlsummary")] = pV("projectgoal")
+                    attrList[np("tlsortby")] = parseDString(pV("memoriamdate")).getTime()
+                    attrList[np("tlthirdline")] = pV("memoriamresult")
+                    attrList[np("tlthirdline_toggle")] = 1
+                    attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes"
+                    setAttrs(attrList, {}, () => {
+                        log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+                        if (callback)
+                            callback(null)
+                    })
+                })
+            }
+        },               
+        doEventRecord = rowID => {
+            return callback => {
+                const attrList = {},
+                    attrArray = ["triggertimelinesort", ..._.map([
+                        "eventdate", "projectgoal", "projectdetails", "projectscope_name"
+                    ], v => `repeating_project_${rowID}_${v}`)],
+                    newRowID = generateRowID(),
+                    funcName = "doEventRecord"
+                log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+                getAttrs(attrArray, ATTRS => {
+                    const [, , pV] = pFuncs(_.keys(ATTRS)[1], ATTRS),
+                        [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`)
+                    log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+                    attrList[np("tlstartdate")] = pV("eventdate")
+                    attrList[np("tlenddate")] = ""
+                    attrList[np("tldetails")] = pV("projectdetails")
+                    attrList[np("tlcategory")] = "EVENT"
+                    attrList[np("tldotdisplay")] = ""
+                    attrList[np("tltitle")] = pV("projectscope_name")
+                    attrList[np("tlsummary")] = pV("projectgoal")
+                    attrList[np("tlsortby")] = parseDString(pV("eventdate")).getTime()
+                    attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes"
                     setAttrs(attrList, {}, () => {
                         log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
                         if (callback)
@@ -1564,45 +1647,109 @@
             })
         }
     })
-    on("change:repeating_project:schemetype_toggle", () =>{
-        log("", "████ CHANGE DETECTED ████")
-        doSchemeSelection()
+    on("change:repeating_project:schemetypeobj_toggle change:repeating_project:schemetypeproj_toggle change:repeating_project:schemetypemem_toggle change:repeating_project:schemetypeevent_toggle", (eInfo) =>{
+        log("", `████ CHANGE DETECTED: SCHEMETYPE_TOGGLE ████<br>${JSON.stringify(eInfo)}`)
+        setAttrs({
+            repeating_project_schemetype: eInfo.newValue,
+            repeating_project_schemetypeobj_toggle: eInfo.newValue,
+            repeating_project_schemetypeproj_toggle: eInfo.newValue,
+            repeating_project_schemetypemem_toggle: eInfo.newValue,
+            repeating_project_schemetypeevent_toggle: eInfo.newValue
+        })
+        //doSchemeSelection()
     })
+    
+    on("change:repeating_project:objectivedate", (eInfo) => {
+        if (eInfo.sourceType !== "sheetworker") {
+            log("", `████ CHANGE DETECTED: OBJECTIVEDATE ████<br>${JSON.stringify(eInfo)}`)
+            if (isValidDString(eInfo.newValue)) {
+                log("", `Valid DString: ${eInfo.newValue}`)
+                setAttrs({"repeating_project_archiveobjective_toggle": 1})
+            } else {
+                log("", `Invalid DString: ${JSON.stringify(eInfo)}`)
+                setAttrs({"repeating_project_archiveobjective_toggle": 0})
+            }
+        }
+    }) 
+    
+    on("change:repeating_project:memoriamdate change:repeating_project:memoriamresult", (eInfo) => {
+        if (eInfo.sourceType !== "sheetworker") {
+            log("", "████ CHANGE DETECTED: MEMORIAMDATE/RESULT ████")
+            getAttrs(["repeating_project_memoriamresult", "repeating_project_memoriamdate"], ATTRS => {
+                log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`)
+                if (isValidDString(ATTRS.repeating_project_memoriamdate) && !_.isEmpty((ATTRS.repeating_project_memoriamresult && ATTRS.repeating_project_memoriamresult || "").toString().trim())) {
+                    log("", `Valid DString: ${ATTRS.repeating_project_memoriamdate} and Results: ${ATTRS.repeating_project_memoriamresult}`)
+                    setAttrs({"repeating_project_archivememoriam_toggle": 1})
+                } else {
+                    log("", `Invalid DString: ${ATTRS.repeating_project_memoriamdate} OR Results: ${ATTRS.repeating_project_memoriamresult}`)
+                    setAttrs({"repeating_project_archivememoriam_toggle": 0})
+                }
+            })
+        }
+    })
+
+    on("change:repeating_project:memoriamdiff", (eInfo) => {
+        if (eInfo.sourceType !== "sheetworker") {
+            log("", "████ CHANGE DETECTED: MEMORIAMDIFF ████")
+            getAttrs(["repeating_project_memoriamdiff"], ATTRS => {
+                log(`Retrieved Attributes: ${JSON.stringify(ATTRS)}`)
+                const attrList = {
+                    repeating_project_memoriamrewards:
+                    parseInt(ATTRS.repeating_project_memoriamdiff) === 0 && "(Set the difficulty to see which rewards you can choose from.)" ||
+                    parseInt(ATTRS.repeating_project_memoriamdiff) === 1 && "Answer One Minor Question   ♦   Gain One Expendable Background Dot   ♦   Gain a +2 Bonus to One Roll" ||
+                    parseInt(ATTRS.repeating_project_memoriamdiff) === 2 && "Answer One Major Question   ♦   Gain Two Expendable Background Dots   ♦   Gain a +4 Bonus to One Roll" ||
+                    parseInt(ATTRS.repeating_project_memoriamdiff) === 3 && "Answer One Epic Question   ♦   Gain Three Expendable Background Dot   ♦   Gain a Major Boon"
+                }
+                log(`Setting Attrs: ${JSON.stringify(attrList)}`)
+                setAttrs(attrList)
+            })
+        }
+    })
+    
+    on("change:repeating_project:eventdate", (eInfo) => {
+        if (eInfo.sourceType !== "sheetworker") {
+            log("", "████ CHANGE DETECTED: EVENTDATE ████")
+            if (isValidDString(eInfo.newValue)) {
+                log("", `Valid DString: ${eInfo.newValue}`)
+                setAttrs({"repeating_project_archiveevent_toggle": 1})
+            } else {
+                log("", `Invalid DString: ${JSON.stringify(eInfo)}`)
+                setAttrs({"repeating_project_archiveevent_toggle": 0})
+            }
+        }
+    }) 
     // #endregion
 
     // #region UPDATE: Timeline
-    const sortTimeline = () => {
-        getAttrs(["_reporder_timeline"], v => {
-            log("", "████ SORTTIMELINE CALLED ████")
-            log("", `REPORDER: ${JSON.stringify(v)}`)
-            getSectionIDs("timeline", function (idArray) {
-                const [attrArray] = [[]]
-                let reporderArray = v._reporder_timeline ? v._reporder_timeline.toLowerCase().split(",") : [],
-                    ids = [...new Set(reporderArray.filter(vv => idArray.includes(vv)).concat(idArray))] // eslint-disable-line no-unused-vars
-                log("", `IDS: ${JSON.stringify(ids)}`)
-                _.each(ids, id => { attrArray.push(`repeating_timeline_${id}_tlenddate`) })
-                getAttrs(attrArray, attrs => {
-                    log("", `END DATE ARRAY: ${JSON.stringify(attrs)}`)
-                    const endDates = _.map(_.sortBy(_.pairs(attrs), vv => {
-                        return parseDString(vv[1].replace(/^\W*/gu, "")).getTime()
-                    }).reverse(), vvv => vvv[0])
-                    log("", `SORTED IDS: ${JSON.stringify(endDates)}`)
-                    let attrsToSet = { _reporder_repeating_timeline: _.map(endDates, vv => vv.replace("repeating_timeline_", "").replace("_tlenddate", "")).join(",") }
-                    log("", `AttrsToSet: ${JSON.stringify(attrsToSet)}`)
-                    setAttrs({ _reporder_repeating_timeline: _.map(endDates, vv => vv.replace("repeating_timeline_", "").replace("_tlenddate", "")).join(",") })
-                })
-                // SORT FUNCTIONS HERE
-            })
-        })
-    }
+    
     on("change:repeating_project:archiveproject", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker")
             doProjectRecord(getRowID(eInfo.sourceAttribute))(() => {
                 removeRepeatingRow(`repeating_project_${getRowID(eInfo.sourceAttribute)}`)
-                sortTimeline()
+            })
+    })    
+    on("change:repeating_project:archiveobjective", (eInfo) => {
+        if (eInfo.sourceType !== "sheetworker")
+            doObjectiveRecord(getRowID(eInfo.sourceAttribute))(() => {
+                removeRepeatingRow(`repeating_project_${getRowID(eInfo.sourceAttribute)}`)
+            })
+
+    })  
+    on("change:repeating_project:archivememoriam", (eInfo) => {
+        if (eInfo.sourceType !== "sheetworker")
+            doMemoriamRecord(getRowID(eInfo.sourceAttribute))(() => {
+                removeRepeatingRow(`repeating_project_${getRowID(eInfo.sourceAttribute)}`)
+            })
+
+    })  
+    on("change:repeating_project:archiveevent", (eInfo) => {
+        if (eInfo.sourceType !== "sheetworker")
+            doEventRecord(getRowID(eInfo.sourceAttribute))(() => {
+                removeRepeatingRow(`repeating_project_${getRowID(eInfo.sourceAttribute)}`)
             })
 
     })
+    
     // #endregion
 
     // #region UPDATE: Experience

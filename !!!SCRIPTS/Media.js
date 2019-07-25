@@ -426,13 +426,15 @@ const Media = (() => {
                                     break
                                 // no default
                             }
+                            break
                         case "test":
                             switch (args.shift().toLowerCase()) {
-                                case "spread":
+                                case "spread": {
                                     const maxWidth = parseInt(args.shift())
                                     spreadImages("NegFlagLeft", "NegFlagRight", "NegFlagMid", getTextWidth("posFlagTest", args.join(" ")) + 90, 40, maxWidth)
                                     setText("posFlagTest", args.join(" "))
                                     break
+                                }
                                 // no default
                             }
                     // no default
@@ -545,9 +547,19 @@ const Media = (() => {
                     !text del <hostName></pre>`, "!text del")
                             }
                             break
-                        case "rereg": case "reregister":                            
-                            if (VAL({selection: msg}))
+                        case "rereg": case "reregister":   
+                            if (VAL({selection: msg})) {                         
+                                const textData = getTextData(msg, true)
+                                args[0] = args[0] || textData.name
+                                args[1] = args[1] || textData.activeLayer
+                                args[2] = args[2] || textData.startActive
+                                args[3] = args[3] || hasShadowObj(msg)
+                                args[4] = args[4] || textData.justification
+                                args[5] = args[5] ? 
+                                    args[5].includes("vertAlign") ? args[5] : `vertAlign:${textData.vertAlign}, ${args[5]}` :
+                                    `vertAlign:${textData.vertAlign || "top"}`
                                 removeText(msg, true, true)
+                            }
                             /* falls through */
                         case "reg": case "register":
                             if (!args[0]) {
@@ -777,7 +789,7 @@ const Media = (() => {
         }
     // #endregion
 
-    // #region GETTERS: Image Object & Data Retrieval
+    // #region IMAGE OBJECT GETTERS: Image Object & Data Retrieval
     const isRegImg = imgRef => Boolean(getImageKey(imgRef)),
         getImageKey = (imgRef, isSilent = false) => {
             try {
@@ -810,16 +822,6 @@ const Media = (() => {
                 return !isSilent && THROW(`Cannot locate image with search value '${D.JSL(imgRef)}'`, "GetImageKey", errObj)
             }
         },
-        /* getImageKeys = imgRefs => {
-			const imageRefs = D.GetSelected(imgRefs) || imgRefs,
-				imgKeys = []
-			for (const imgRef of imageRefs) {
-				imgKeys.push(getImageKey(imgRef))
-			}
-			return imgKeys
-		}, */
-        /* getImageName = imgRef => getImageKey(imgRef), */
-        /* getImageNames = imgRefs => getImageKeys(imgRefs), */
         getImageObj = imgRef => {
             //D.Alert("GETTING IMAGE OBJECT")
             try {
@@ -857,7 +859,7 @@ const Media = (() => {
             try {
                 if (getImageKey(imgRef)) {
                     regData = IMAGEREGISTRY[getImageKey(imgRef)]
-                } else if (imgObj = getImageObj(imgRef)) {
+                } else if ((imgObj = getImageObj(imgRef))) {
                     DB(`Retrieving data for UNREGISTERED Image Object ${D.JSL(imgRef)}`, "getImageData")
                     regData = {
                         id: imgObj.id,
@@ -930,7 +932,7 @@ const Media = (() => {
         }
     // #endregion
 
-    // #region SETTERS: Registering & Manipulating Image Objects
+    // #region IMAGE OBJECT SETTERS: Registering & Manipulating Image Objects
     const addImgSrc = (imgSrcRef, imgName, srcName) => {
             try {
                 const imgSrc = (_.isString(imgSrcRef) && imgSrcRef.includes("http") ?
@@ -1405,7 +1407,7 @@ const Media = (() => {
                     midData.pop()
                 }
                 // If the spread is smaller than the combined width of the bookends, then set the minimum possible spread and blank all mid images.
-                if (spread <= (leftData.width + rightData.width)) {
+                if (spread <= leftData.width + rightData.width) {
                     dbString += `Spread ${parseInt(spread)} less than ${parseInt(leftData.width + rightData.width)} (${parseInt(leftData.width)} + ${parseInt(rightData.width)})<br>`
                     for (const imgData of midData)
                         setImage(imgData.id, "blank")
@@ -1425,7 +1427,7 @@ const Media = (() => {
                     // HOWEVER: if the resulting stretchOverlap EXCEEDS maxOverlap, cap it there.
                     const overlapPercent = 2*minOverlap / midData[0].width,
                         coveragePercent = 1 - overlapPercent,
-                        stretchFactor = Math.min(totalMidWidth / (coveragePercent * midData[0].width), maxOverlap / minOverlap)
+                        stretchFactor = Math.min(totalMidWidth / (coveragePercent * midData[0].width), maxOverlap / minOverlap),
                         stretchOverlap = minOverlap * stretchFactor,
                         stretchWidth = midData[0].width * stretchFactor
                     dbString += `overlapPercent = ${parseInt(overlapPercent * 100)/100} = (2×mO:${parseInt(minOverlap)} / M.w:${parseInt(midData[0].width)})<br>`
@@ -1511,7 +1513,7 @@ const Media = (() => {
         }
     // #endregion
 
-    // #region TEXT OBJECTS: Registering & Manipulating Text Objects //(textObj, hostName, objLayer, !isStartActive || isStartActive !== "false", !isShadow || isShadow !== "false", D.ParseToObj(args.join(" ")))
+    // #region TEXT OBJECT GETTERS: Text Object, Width Measurements, Data Retrieval
     const getTextKey = (textRef, isSilent = false) => {
             try {
                 let textObj
@@ -1593,35 +1595,6 @@ const Media = (() => {
                 return !isSilent && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, "getTextData", errObj)
             }
         },
-        buffer = (textRef, width) => " ".repeat(Math.max(0, Math.round(width/getTextWidth(textRef, " ", false)))),
-        splitTextLines = (textRef, text, maxWidth, justification = "left") => {
-            const textObj = getTextObj(textRef)
-            let textStrings = _.without(text.split(/(\s|-)/gu), " "),
-                splitStrings = [],
-                highWidth = 0
-            for (let i = 0; i < textStrings.length; i++)
-                if (textStrings[i] === "-") {
-                    textStrings[i-1] = textStrings[i-1] + "-"
-                    textStrings = [...[...textStrings].splice(0,i), ...[...textStrings].splice(i+1)]
-                }
-            while (textStrings.length) {
-                let thisString = ""
-                while (thisString.length < maxWidth && textStrings.length)
-                    if (textStrings[0].endsWith("-"))
-                        thisString += `${textStrings.shift()}`
-                    else
-                        thisString += `${textStrings.shift()} `
-                splitStrings.push(thisString)
-                highWidth = Math.max(getTextWidth(textObj, thisString, false), highWidth)
-            }
-            if (justification === "center")
-                splitStrings = _.map(splitStrings, v => `${buffer(textObj, 0.5 * (highWidth - getTextWidth(textObj, v, false)))}${v}${buffer(textObj, 0.5 * (highWidth - getTextWidth(textObj, v, false)))}`)
-            else if (justification === "right")
-                //D.Alert(`spaceWidth: ${spaceWidth}, repeating ${D.JS(Math.round((highWidth - getTextWidth(textObj, splitStrings[0], false))/spaceWidth))} Times.`)
-                splitStrings = _.map(splitStrings, v => `${buffer(textObj, highWidth - getTextWidth(textObj, v, false))}${v}`)
-           // D.Alert(`SplitTextLines Called.  Returning: ${D.JS(splitStrings)}`)
-            return splitStrings
-        },
         getTextWidth = (textRef, text, maxWidth = 0) => {
             const textObj = getTextObj(textRef),
                 textData = getTextData(textObj),
@@ -1687,6 +1660,38 @@ const Media = (() => {
                 return params.left + (params.justification === "left" ? 0.5 : params.justification === "right" ? -0.5 : 0) * getTextWidth(textObj, params.text, params.maxWidth || 0)
             }
             return false            
+        }        
+    // #endregion
+
+    // #region TEXT OBJECT MANIPULATORS: Buffering, Justifying, Splitting
+    const buffer = (textRef, width) => " ".repeat(Math.max(0, Math.round(width/getTextWidth(textRef, " ", false)))),
+        splitTextLines = (textRef, text, maxWidth, justification = "left") => {
+            const textObj = getTextObj(textRef)
+            let textStrings = _.without(text.split(/(\s|-)/gu), " "),
+                splitStrings = [],
+                highWidth = 0
+            for (let i = 0; i < textStrings.length; i++)
+                if (textStrings[i] === "-") {
+                    textStrings[i-1] = textStrings[i-1] + "-"
+                    textStrings = [...[...textStrings].splice(0,i), ...[...textStrings].splice(i+1)]
+                }
+            while (textStrings.length) {
+                let thisString = ""
+                while (thisString.length < maxWidth && textStrings.length)
+                    if (textStrings[0].endsWith("-"))
+                        thisString += `${textStrings.shift()}`
+                    else
+                        thisString += `${textStrings.shift()} `
+                splitStrings.push(thisString)
+                highWidth = Math.max(getTextWidth(textObj, thisString, false), highWidth)
+            }
+            if (justification === "center")
+                splitStrings = _.map(splitStrings, v => `${buffer(textObj, 0.5 * (highWidth - getTextWidth(textObj, v, false)))}${v}${buffer(textObj, 0.5 * (highWidth - getTextWidth(textObj, v, false)))}`)
+            else if (justification === "right")
+            //D.Alert(`spaceWidth: ${spaceWidth}, repeating ${D.JS(Math.round((highWidth - getTextWidth(textObj, splitStrings[0], false))/spaceWidth))} Times.`)
+                splitStrings = _.map(splitStrings, v => `${buffer(textObj, highWidth - getTextWidth(textObj, v, false))}${v}`)
+       // D.Alert(`SplitTextLines Called.  Returning: ${D.JS(splitStrings)}`)
+            return splitStrings
         },
         justifyText = (textRef, justification, maxWidth = 0) => {
             const textObj = getTextObj(textRef)
@@ -1704,8 +1709,11 @@ const Media = (() => {
                 }
                 D.Alert(`${getTextKey(textRef)} Updated: ${D.JS(TEXTREGISTRY[getTextKey(textObj)])}`, "justifyText")
             }
-        },
-        regText = (textRef, hostName, activeLayer, startActive, hasShadow, justification, options = {}, isSilent = false) => {
+        }
+    // #endregion
+
+    // #region TEXT OBJECT SETTERS: Registering, Changing, Deleting
+    const regText = (textRef, hostName, activeLayer, startActive, hasShadow, justification, options = {}, isSilent = false) => {
             const textObj = getTextObj(textRef)
             DB(`regText(textRef, ${D.JS(hostName)}, ${D.JS(activeLayer)}, ${D.JS(startActive)}, ${D.JS(hasShadow)}, ${D.JS(options)}`, "regText")
             if (VAL({ text: textObj })) {
@@ -1798,7 +1806,7 @@ const Media = (() => {
                         case "bottom":
                             textOptions.shifttop = (textOptions.shifttop || 0) - 0.5*(objParams.text.split("\n").length - 1)*(textData && textData.lineHeight || 0)
                             break
-                    /* no default */
+            /* no default */
                     }         
                 for (const key of _.intersection(_.keys(textOptions), ["shiftleft", "shifttop"]))
                     objParams[key.slice(5)] = textData[key.slice(5)] + parseInt(textOptions[key])
@@ -1871,6 +1879,7 @@ const Media = (() => {
             }
         }
     // #endregion
+
 
     return {
         RegisterEventHandlers: regHandlers,

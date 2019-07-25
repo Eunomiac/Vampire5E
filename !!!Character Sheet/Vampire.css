@@ -740,7 +740,7 @@
 		opacity: 0;
 	}
 
-	.charsheet input.sheet-attr:not(.sheet-grouptab)+span:not(.sheet-nohighlight):not(.sheet-projectarchive),
+	.charsheet input.sheet-attr:not(.sheet-grouptab)+span:not(.sheet-nohighlight):not(.sheet-archive),
 	.charsheet input.sheet-attr:not(.sheet-grouptab)+div.sheet-attr {
 		width: 75px;
 		height: 17px;
@@ -1071,7 +1071,8 @@
 	}
 
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-whitedot:checked~input.sheet-superficialdot,
-	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-superficialdot:checked~input.sheet-aggravateddot {
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-superficialdot:checked~input.sheet-aggravateddot,
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-aggravateddot:checked~input.sheet-finaldot {
 		margin-left: -100% !important;
 		display: inline-block !important;
 		z-index: 102;
@@ -1079,7 +1080,8 @@
 
 	.charsheet div.sheet-dotline div.sheet-multidot:not(.sheet-oneclicker) input.sheet-whitedot:checked~span.sheet-whitedot,
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-superficialdot:checked~span.sheet-superficialdot,
-	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-aggravateddot:checked~span.sheet-aggravateddot {
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-aggravateddot:checked~span.sheet-aggravateddot,
+	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-finaldot:checked~span.sheet-finaldot {
 		display: inline-block !important;
 	}
 
@@ -1099,12 +1101,6 @@
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-stainhumanitydot:checked~span.sheet-stainhumanitydot {
 		display: inline-block !important;
 	}
-
-
-
-
-
-
 	/* #endregion */
 	/* #region Collapsible & Pop-Up Divs */
 	.charsheet input.sheet-hoverpopup,
@@ -2450,262 +2446,160 @@
 
 	/*#endregion */
 
-	/* #region SECTION: Projects */
-	.charsheet div.sheet-projects {
+	/* #region SECTION: Schemes */
+	/* GENERAL SCHEMES */
+	.charsheet div.sheet-scheme {
 		margin-bottom: 10px;
-		width: 95%;
+		padding: 0px 0px;
+		width: 98%;
 	}
 
-	.charsheet div.sheet-projects div,
-	.charsheet div.sheet-projects div.linerow,
-	.charsheet div.sheet-projects span,
-	.charsheet div.sheet-projects input,
-	.charsheet div.sheet-projects textarea,
-	.charsheet div.sheet-projects select {
+	.charsheet div.sheet-scheme div,
+	.charsheet div.sheet-scheme div.linerow,
+	.charsheet div.sheet-scheme span,
+	.charsheet div.sheet-scheme input,
+	.charsheet div.sheet-scheme textarea,
+	.charsheet div.sheet-scheme select {
 		height: 20px;
 		margin-bottom: 5px;
 		font-family: 'Bodoni SvtyTwo ITC TT' !important;
 	}
 
-	.charsheet div.sheet-projects hr {
+	.charsheet div.sheet-scheme hr {
 		margin: 5px 0px;
 	}
 
-	.charsheet div.sheet-projects textarea {
+	.charsheet div.sheet-scheme textarea {
 		padding: 0px 0px;
 	}
-	
-	.charsheet div.sheet-projects textarea.sheet-narrowText {
+
+	.charsheet div.sheet-scheme textarea.sheet-narrowText {
 		font-family: Voltaire !important;
 	}
 
-	.charsheet div.sheet-projects .sheet-projectheader {
-		margin-top: -3px;
-		line-height: 20px;
+	.charsheet div.sheet-scheme select.sheet-squareBox {
+		width: 80px;
+		margin-top: -2px;
+		margin-bottom: 2px;
 	}
 
-	.charsheet div.sheet-projects span.sheet-header5 {
+	.charsheet div.sheet-scheme span.sheet-header5 {
 		width: 95px;
 		margin-right: 5px;
 	}
 
-	.charsheet div.sheet-projects div.sheet-dotline.sheet-variabledotline {
+	.charsheet div.sheet-scheme div.sheet-linerow .sheet-squareBox {
 		width: 20px;
-		margin: 1px -10px -1px -9px;
+		height: 20px;
+		font-size: 16px !important;
+		padding: 0px;
 	}
 
-	.charsheet div.sheet-projects div.sheet-dotline div.sheet-multidot input.sheet-objectivedot+span::before {
+	.charsheet div.sheet-scheme .sheet-doublerow {
+		height: 45px;
+	}
+	
+	.charsheet div.sheet-scheme div.sheet-mainleft {
+		height: 55px;
+		width: calc(100% - 1% - 45px);
+		margin-right: 1%;
+	}
+
+	.charsheet div.sheet-scheme div.sheet-mainleft div.sheet-topline {
+		height: 25px;
+		margin-top: 5px;
+	}
+
+	.charsheet div.sheet-scheme div.sheet-mainleft div.sheet-topline input.sheet-hoverpopup+span+div {
+		width: 75%;
+		left: 0px;
+	}
+
+	.charsheet div.sheet-scheme div.sheet-mainleft div.sheet-topline input.sheet-goal {
+		margin: 2px 5px 5px 5px;
+	}
+
+	.charsheet div.sheet-scheme div.sheet-mainleft div.sheet-topline div.sheet-dotline {
+		margin-left: 5px;
+		margin-top: 2px;
+	}
+
+	.charsheet div.sheet-scheme div.sheet-rightbox {
+		width: 45px;
+		height: 50px;
+		font-size: 0px !important;
+		margin: 5px 0px;
+	}
+
+	.charsheet div.sheet-scheme div.sheet-dotline.sheet-schemeselector {
+		height: 22px;
+		width: 22px;
+		margin: 2px 0px 0px 0px;
+	}
+	.charsheet div.sheet-scheme div.sheet-dotline.sheet-schemeselector div.sheet-multidot {
+		height: 22px;
+		width: 22px;
+	}
+	.charsheet div.sheet-scheme div.sheet-dotline.sheet-schemeselector div.sheet-multidot input.sheet-objectivedot+span::before {
 		content: "";
 		height: 22px;
 		width: 22px;
-		margin-top: -4px;
 		background: url('https://imgur.com/A4v3nCL.jpg') no-repeat center;
 		background-size: 100%;
 
 		box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;
 	}
-	.charsheet div.sheet-projects div.sheet-dotline div.sheet-multidot input.sheet-projectdot+span::before {
+	.charsheet div.sheet-scheme div.sheet-dotline.sheet-schemeselector div.sheet-multidot input.sheet-projectdot+span::before {
 		content: "";
 		height: 22px;
 		width: 22px;
-		margin-top: -4px;
 
 		background: url('https://imgur.com/vEVEDO6.jpg') no-repeat center;
 		background-size: 100%;	
 
 		box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;	
 	}
-
-	.charsheet div.sheet-projects div.sheet-dotline div.sheet-multidot input.sheet-memoriamdot+span::before {	
+	.charsheet div.sheet-scheme div.sheet-dotline.sheet-schemeselector div.sheet-multidot input.sheet-memoriamdot+span::before {	
 		content: "";
 		height: 22px;
 		width: 22px;
-		margin-top: -4px;
 
 		background: url('https://imgur.com/HqpPEKg.jpg') no-repeat center;
 		background-size: 100%;
 
 		box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;
 	}
+	.charsheet div.sheet-scheme div.sheet-dotline.sheet-schemeselector div.sheet-multidot input.sheet-eventdot+span::before {	
+		content: "";
+		height: 22px;
+		width: 22px;
 
-	.charsheet div.sheet-projects div.sheet-squareBox.sheet-objectivedate {
-		width: 60px !important;
-		margin-left: -5px;
-	}  
-
-	.charsheet div.sheet-projects div.sheet-squareBox.sheet-objectivedate span.sheet-header5.sheet-objectivedate {
-		margin: 0px;
-		width: 100%;
-		font-size: 12px !important;
-		margin-top: -5px;
-	}
-
-	.charsheet div.sheet-projects div.sheet-squareBox.sheet-objectivedate div.sheet-projectdate input.sheet-objectivedate {
-		font-size: 10px;
-		padding: 0px;
-		font-family: 'Arial Narrow' !important;
-		margin-top: 32px;
-		text-align: center;
-		text-align-last: center;
-		text-indent: -2px !important;
-		font-weight: bold;
-	}
-
-	.charsheet div.sheet-projects .sheet-doublerow {
-		height: 45px;
-	}
-
-	.charsheet div.sheet-projects div.sheet-projectinccounter10 {
-		background: url('https://i.imgur.com/hWH5mmb.png') no-repeat center;
+		background: url('https://imgur.com/Ll9GkCx.jpg') no-repeat center;
 		background-size: 100%;
+
+		box-shadow: 1px 1px 0px #666, 1px 1px 0px #666, 1px 1px 2px #ccc, -1px -1px 0px #Fff, -1px -1px 0px #fff, -1px -1px 2px #fff;
+	}
+	
+	.charsheet div.sheet-scheme span.sheet-hookprompt {
+		width: 40px;
+		margin-left: 10px;
+	}
+	.charsheet div.sheet-scheme input.sheet-hook {
+		line-height: 20px;
+		width: calc(100% - 40px - 10px - 2*(5px) - 22px);
+		margin-right: 5px;
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectinccounter9 {
-		background: url('https://i.imgur.com/4P7W0SV.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-projects div.sheet-projectinccounter8 {
-		background: url('https://i.imgur.com/AWKR1YN.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-projects div.sheet-projectinccounter7 {
-		background: url('https://i.imgur.com/ADnqDaJ.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-projects div.sheet-projectinccounter6 {
-		background: url('https://i.imgur.com/u2rpb1w.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-projects div.sheet-projectinccounter5 {
-		background: url('https://i.imgur.com/Kt1rHep.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-projects div.sheet-projectinccounter4 {
-		background: url('https://i.imgur.com/dzHHTvd.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-projects div.sheet-projectinccounter3 {
-		background: url('https://i.imgur.com/66KZSZs.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-projects div.sheet-projectinccounter2 {
-		background: url('https://i.imgur.com/d0pbZns.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-projects div.sheet-projectinccounter1 {
-		background: url('https://i.imgur.com/qFqGoez.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-projects div.sheet-projectinccounter0 {
-		background: url('https://i.imgur.com/OObRfKr.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-projects div.sheet-launchroll {
-		pointer-events: none;
-		margin: 0px 0px;
-		padding: 0px 0px;
-		border: none;
-	}
-
-	.charsheet div.sheet-projects div.sheet-launchrollmain {
-		width: 295px;
-		height: 250px;
-		margin-top: -115px;
-		margin-right: -68px;
-	}
-
-	.charsheet div.sheet-projects div.sheet-launchrolltop {
-		height: 111px;
-		width: 295px;
-		margin-bottom: -1px;
-
-		background: url('https://i.imgur.com/Jrqx770.png') no-repeat center;
-		background-size: 100%;
-	}
-
-
-	.charsheet div.sheet-projects div.sheet-launchrollleft {
-		height: 40px;
-		width: 55px;
-
-		background: url('https://i.imgur.com/Qf7QSO8.png') no-repeat center;
-		background-size: 100%;
-	}
-
-
-	.charsheet div.sheet-projects div.sheet-launchrollmid {
-		height: 40px;
-		width: 102px;
-		margin: 0px -1px;
-		pointer-events: auto;
-
-		background: url('https://i.imgur.com/PHb8inM.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-projects div.sheet-launchrollmid:hover {
-		background: url('https://i.imgur.com/6HPg7h0.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-projects div.sheet-launchrollright {
-		height: 40px;
-		width: 140px;
-
-		background: url('https://i.imgur.com/WAltncc.png') no-repeat center;
-		background-size: 100%;
-	}
-
-
-	.charsheet div.sheet-projects div.sheet-launchrollbottom {
-		height: 100px;
-		width: 295px;
-
-		background: url('https://i.imgur.com/cU3uPjZ.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-projects div.sheet-launchroll button {
-		height: 40px;
-		width: 100px;
-	}
-
-	.charsheet div.sheet-projects div.sheet-projectarchive {
-		width: 205px;
-		margin: 2px -15px 0px 0px;
-	}
-
-	.charsheet div.sheet-projects div.sheet-projectarchive input {
-		width: 150px;
-		height: 30px;
-		margin-right: -150px;
-	}
-
-	.charsheet div.sheet-projects div.sheet-projectarchive input + span.sheet-projectarchive {
-		height: 30px;
-		width: 150px;
-		margin: 0px 0px;
-		line-height: 30px;
+	.charsheet div.sheet-scheme div.sheet-archive input + span {
 		border: 3px outset white;
 		text-align: center;
 		text-align-last: center;
 		background-color: rgba(255, 255, 255, 0.3);
 		border-radius: 5px;
-		font-size: 24px;
 		font-variant: small-caps;
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectarchive input:checked + span.sheet-projectarchive {
+	.charsheet div.sheet-scheme div.sheet-archive input:checked + span {
 		background-color: rgba(100, 100, 100, 0.3);
 		box-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 2px #ccc;
 		border: 3px grey inset !important;
@@ -2714,37 +2608,126 @@
 		text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 2px #ccc;
 	}
 
-	.charsheet div.sheet-projects button.sheet-projectarchive:focus {
-		outline: 0;
+	/* OBJECTIVE/EVENT + MEMORIAM */	
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-mainleft,
+	.charsheet div.sheet-scheme.sheet-event div.sheet-mainleft,
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-mainleft {
+		width: calc(100% - 1% - 80px);
 	}
 
-	.charsheet div.sheet-projects button.sheet-projectarchive:hover:not(:active) {
-		outline: 0;
-		border: 3px outset #ffffcc !important;
-		color: white;
-	}
-
-	.charsheet div.sheet-projects div.sheet-doublerow .sheet-squareBox {
-		width: 45px;
-		height: 45px;
-		font-size: 32px !important;
-		line-height: 40px;
-	}
-
-	.charsheet div.sheet-projects div.sheet-linerow .sheet-squareBox {
-		width: 20px;
-		height: 20px;
-		font-size: 16px !important;
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox,
+	.charsheet div.sheet-scheme.sheet-event div.sheet-rightbox,
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rightbox {
+		width: 70px;
+	}  	
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-completiondate input,
+	.charsheet div.sheet-scheme.sheet-event div.sheet-rightbox div.sheet-completiondate input,
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rightbox div.sheet-completiondate input {
+		font-size: 12px;
 		padding: 0px;
+		font-family: 'Voltaire' !important;
+		text-align: center;
+		text-align-last: center;
+		text-indent: -2px !important;
+		font-weight: bold;
+		margin-bottom: 0px;
+	}
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-archive input,
+	.charsheet div.sheet-scheme.sheet-event div.sheet-rightbox div.sheet-archive input,
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rightbox div.sheet-archive input {
+		width: 100%;
+		height: 20px;
+		margin-right: -100%;
+		margin-bottom: 20px;
 	}
 
-	.charsheet div.sheet-projects select.sheet-squareBox {
-		width: 80px;
-		margin-top: -2px;
-		margin-bottom: 2px;
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-rightbox div.sheet-archive input + span,
+	.charsheet div.sheet-scheme.sheet-event div.sheet-rightbox div.sheet-archive input + span,
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rightbox div.sheet-archive input + span {
+		height: 23px;
+		width: 100%;
+		margin: 0px -10px 17px 0px;
+		box-sizing: border-box;
+		line-height: 18px;
+		font-size: 14px;
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectteamwork {
+	/* OBJECTIVE/EVENT */
+	.charsheet div.sheet-scheme.sheet-objective div.sheet-mainleft div.sheet-topline input.sheet-goal,
+	.charsheet div.sheet-scheme.sheet-event div.sheet-mainleft div.sheet-topline input.sheet-goal {
+		width: calc(100% - 20px - 2*(5px));
+	}
+
+
+	/* PROJECTS */
+	.charsheet div.sheet-scheme.sheet-project div.sheet-mainleft {
+		width: 93%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-mainleft div.sheet-topline input.sheet-goal {
+		width: calc(100% - 20px - 10px - 96px - 10px);
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-rightbox {
+		width: 5%;
+	}
+	
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter10 {
+		background: url('https://i.imgur.com/hWH5mmb.png') no-repeat center;
+		background-size: 100%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter9 {
+		background: url('https://i.imgur.com/4P7W0SV.png') no-repeat center;
+		background-size: 100%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter8 {
+		background: url('https://i.imgur.com/AWKR1YN.png') no-repeat center;
+		background-size: 100%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter7 {
+		background: url('https://i.imgur.com/ADnqDaJ.png') no-repeat center;
+		background-size: 100%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter6 {
+		background: url('https://i.imgur.com/u2rpb1w.png') no-repeat center;
+		background-size: 100%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter5 {
+		background: url('https://i.imgur.com/Kt1rHep.png') no-repeat center;
+		background-size: 100%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter4 {
+		background: url('https://i.imgur.com/dzHHTvd.png') no-repeat center;
+		background-size: 100%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter3 {
+		background: url('https://i.imgur.com/66KZSZs.png') no-repeat center;
+		background-size: 100%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter2 {
+		background: url('https://i.imgur.com/d0pbZns.png') no-repeat center;
+		background-size: 100%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter1 {
+		background: url('https://i.imgur.com/qFqGoez.png') no-repeat center;
+		background-size: 100%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectinccounter0 {
+		background: url('https://i.imgur.com/OObRfKr.png') no-repeat center;
+		background-size: 100%;
+	}		
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectteamwork {
 		width: calc(50% - 90px - 25px);
 		margin-bottom: 0px;
 		height: 17px;
@@ -2752,22 +2735,12 @@
 		text-align-last: center;
 	}
 
-	.charsheet div.sheet-projects input.sheet-projectgoal {
-		width: 95%;
-	}
-
-	.charsheet div.sheet-projects input.sheet-dotlinename {
-		width: calc(100% - 15px - 96px - 10px);
-		margin-left: 5px;
-		margin-top: 2px;
-	}
-
-	.charsheet div.sheet-projects div.sheet-projectstake {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectstake {
 		width: calc(100% - 40px - 25px);
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectteamwork input.sheet-dotlinename,
-	.charsheet div.sheet-projects div.sheet-projectstake input.sheet-dotlinename {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectteamwork input.sheet-dotlinename,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectstake input.sheet-dotlinename {
 		width: calc(100% - 96px);
 		height: 16px;
 		font-size: 12px;
@@ -2777,46 +2750,138 @@
 		margin-top: 2px;
 		margin-left: 0px;
 	}
-
-	.charsheet div.sheet-projects input.sheet-hoverpopup+span+div {
-		width: 75%;
-		left: 0px;
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline {
+		width: 820px;
+		margin-left: -10px;
 	}
 
-	.charsheet div.sheet-projectsummary {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-launchtrait {
+		width: 150px;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-squareBox,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-squareBox span,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-squareBox select,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-squareBox textarea {
+		width: 45px;
+		height: 45px;
+		margin-bottom: 5px;
+		font-size: 32px !important;
+		line-height: 40px;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-squareBox span {
+		margin-right: 5px;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchline div.sheet-squareBox select {
+		width: 60px;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchroll {
+		pointer-events: none;
+		margin: 0px 0px;
+		padding: 0px 0px;
+		border: none;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchrollmain {
+		width: 295px;
+		height: 250px;
+		margin-top: -115px;
+		margin-right: -68px;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchrolltop {
+		height: 111px;
+		width: 295px;
+		margin-bottom: -1px;
+
+		background: url('https://i.imgur.com/Jrqx770.png') no-repeat center;
+		background-size: 100%;
+	}
+
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchrollleft {
+		height: 40px;
+		width: 55px;
+
+		background: url('https://i.imgur.com/Qf7QSO8.png') no-repeat center;
+		background-size: 100%;
+	}
+
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchrollmid {
+		height: 40px;
+		width: 102px;
+		margin: 0px -1px;
+		pointer-events: auto;
+
+		background: url('https://i.imgur.com/PHb8inM.png') no-repeat center;
+		background-size: 100%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchrollmid:hover {
+		background: url('https://i.imgur.com/6HPg7h0.png') no-repeat center;
+		background-size: 100%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchrollright {
+		height: 40px;
+		width: 140px;
+
+		background: url('https://i.imgur.com/WAltncc.png') no-repeat center;
+		background-size: 100%;
+	}
+
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchrollbottom {
+		height: 100px;
+		width: 295px;
+
+		background: url('https://i.imgur.com/cU3uPjZ.png') no-repeat center;
+		background-size: 100%;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-launchroll button {
+		height: 40px;
+		width: 100px;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary {
 		margin: 0px !important;
 	}
 
-	.charsheet div.sheet-projectsummary div,
-	.charsheet div.sheet-projectsummary span,
-	.charsheet div.sheet-projectsummary input,
-	.charsheet div.sheet-projectsummary textarea,
-	.charsheet div.sheet-projectsummary select {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary div,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary span,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary input,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary textarea,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary select {
 		height: 20px;
 		font-family: 'Bodoni SvtyTwo ITC TT' !important;
 		margin-bottom: 0px;
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectsummary textarea {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary textarea {
 		padding: 0px 0px;
 		overflow: hidden;
 		font-size: 14px;
 		line-height: 21px;
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectsummary.sheet-projectlaunchresults {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary.sheet-projectlaunchresults {
 		margin-top: 3px !important;
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectsummary textarea.sheet-projectlaunchresults {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary textarea.sheet-projectlaunchresults {
 		width: calc(0.65*(100% - 55px - 5px));
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectsummary textarea.sheet-projectlaunchresultsmargin {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary textarea.sheet-projectlaunchresultsmargin {
 		width: calc(0.35*(100% - 55px - 5px));
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-projectdate {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary div.sheet-projectdate {
 		width: 100px;
 		height: auto;
 		border-radius: 0;
@@ -2824,22 +2889,22 @@
 		padding: 0px;
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-projectdate textarea,
-	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-projectdate span {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary div.sheet-projectdate textarea,
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary div.sheet-projectdate span {
 		height: 14px;
 		line-height: 14px;
 		font-size: 14px;
 		font-variant: small-caps;
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-projectbody {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary div.sheet-projectbody {
 		height: auto;
 		width: calc(100% - 100px - 59px);
 		border-radius: 0;
 		padding: 0px;
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-projectbody div.sheet-outsetFrame {		
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary div.sheet-projectbody div.sheet-outsetFrame {		
 		width: calc(100% - 11px);
 		height: auto;
 		background-color: rgba(255, 255, 255, 0.3);
@@ -2848,13 +2913,13 @@
 		padding: 3px 0px;
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-outsetFrame textarea {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary div.sheet-outsetFrame textarea {
 		height: 18px;
 		line-height: 18px;
 		text-indent: 5px;
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-outsetFrame textarea.sheet-projectscope {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary div.sheet-outsetFrame textarea.sheet-projectscope {
 		width: calc(100% - 55px - 5px - 3px);
 		color: black !important;
 		font-size: 14px;
@@ -2862,26 +2927,77 @@
 		font-weight: normal !important;
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectsummary textarea.sheet-header5 {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary textarea.sheet-header5 {
 		width: 60px;
 		text-indent: 3px !important;
 	}
+	
+	.charsheet div.sheet-scheme.sheet-project div.sheet-archive {
+		width: 210px;
+	}
 
-/* 	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-doublerow .sheet-squareBox {
+	.charsheet div.sheet-scheme.sheet-project div.sheet-archive input {
+		width: 150px;
+		height: 30px;
+		margin-right: -150px;
+	}
+
+	.charsheet div.sheet-scheme.sheet-project div.sheet-archive input + span {
+		height: 30px;
+		width: 150px;
+		margin: 0px 0px;
+		line-height: 30px;
+		font-size: 24px;
+	}
+
+	/* MEMORIAMS */		
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-mainleft div.sheet-topline input.sheet-goal {
+		width: calc(100% - 20px - 10px - 70px - 10px);
+	}
+
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-mainleft div.sheet-topline div.sheet-dotline {
+		width: 70px;
+	}
+
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rewards span {
+		width: 60px;
+	}
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-rewards textarea {
+		width: calc(100% - 60px - 32px - 5px);
+		text-indent: 10px;
+	}
+
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-outcome span.sheet-header5 {
+		width: 60px;
+	}
+
+	.charsheet div.sheet-scheme.sheet-memoriam div.sheet-outcome input {
+		width: calc(100% - 60px - 5px - 10px - 5px);
+		margin-right: 5px;
+	}
+
+	/* EVENTS */	
+	.charsheet div.sheet-scheme.sheet-event input.sheet-hook {
+		width: calc(100% - 2*(5px) - 22px);
+		margin-left: 5px;
+	}
+
+
+/* 	.charsheet div.sheet-scheme div.sheet-projectsummary div.sheet-doublerow .sheet-squareBox {
 		width: 45px;
 		height: 45px;
 		font-size: 32px !important;
 		line-height: 40px;
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectsummary div.sheet-linerow .sheet-squareBox {
+	.charsheet div.sheet-scheme div.sheet-projectsummary div.sheet-linerow .sheet-squareBox {
 		width: 20px;
 		height: 20px;
 		font-size: 16px !important;
 		padding: 0px;
 	}
 
-	.charsheet div.sheet-projects div.sheet-projectsummary select.sheet-squareBox {
+	.charsheet div.sheet-scheme div.sheet-projectsummary select.sheet-squareBox {
 		width: 80px;
 		margin-top: -2px;
 		margin-bottom: 2px;
@@ -2922,7 +3038,7 @@
 		border-top: 1px grey solid;
 		padding: 5px 0px 0px 0px;
 		margin: 0px;
-		height: 40px;
+		height: auto;
 	}
 
 	.charsheet div.sheet-timeline.sheet-doublerow.sheet-timecategory {
@@ -2975,7 +3091,7 @@
 
 	.charsheet div.sheet-timeline.sheet-timesummary textarea {
 		padding-left: 3px;
-		height: 15px;
+		height: 30px;
 		width: calc(100% - 30px);
 		color: black !important;
 		font-size: 12px;
@@ -3030,6 +3146,16 @@
 	.charsheet div.sheet-timeline input.sheet-hoverpopup+span+div {
 		width: 75%;
 		left: 0px;
+	}
+
+	.charsheet div.sheet-timeline div.sheet-timethirdline span {
+		width: 130px;
+		margin: 3px 10px 0px 0px;
+	}
+
+	.charsheet div.sheet-timeline div.sheet-timethirdline textarea {
+		width: calc(100% - 10px - 130px - 12px);
+		margin-top: 0px;
 	}
 
 	/* #endregion*/

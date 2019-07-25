@@ -2370,7 +2370,7 @@ const Roller = (() => {
                 },
                 p = v => rollData.prefix + v,
                 displayName = rollFlags.isHidingName ? "someone" : rollData.charName
-            let [blankLines, introPhrase, logPhrase, logString, stPhrase, stString, stains, margin, total, bookends, spread] = new Array(11).fill(null),
+            let [blankLines, introPhrase, logPhrase, logString, stString, stains, margin, total, bookends, spread] = new Array(10).fill(null),
                 maxHumanity = 10,
                 diceCats = _.clone(STATECATS.dice)
             DB(`Retrieved ROLL DATA: ${D.JS(rollData)}<br><br>ROLL RESULTS: ${D.JS(rollResults)}`, "displayRoll")

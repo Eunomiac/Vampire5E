@@ -575,6 +575,7 @@ const TimeTracker = (() => {
                 return `${date.getUTCHours()}:${date.getUTCMinutes()} A.M.`
         },
         formatDString = (date, isIncludingTime = false) => `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}${isIncludingTime ? `, ${formatTimeString(date)}` : ""}`,
+        isValidDString = str => _.isString(str) && Boolean(str.match(/\w\w\w\s\d\d?,\s\d\d\d\d/gu)),
         fixDate = () => {
             setHorizon(true)
             setWeather()
@@ -1063,7 +1064,8 @@ const TimeTracker = (() => {
         GetDate: getDate,
         FormatDate: formatDString,
         Fix: fixDate,
-        IsDay: isDay
+        IsDay: isDay,
+        IsValidDate: isValidDString
     }
 })()
 

@@ -250,11 +250,29 @@ const Char = (() => {
                 case "changeattr":
                     changeAttrName(args.shift(), args.shift())
                     break
+                case "fixtimeline": {
+                    const endDates = D.KeyMapObj(D.GetRepStats(msg, "timeline", null, "tlenddate", "rowID", "val"), null, v => TimeTracker.GetDate(v[0].replace(/^\W\s/gu, "")).getTime())
+                    D.Alert(D.JS(endDates, true))
+                    _.each(endDates, (v, k) => {
+                        D.SetRepStat(msg, "timeline", k, "tlsortby", v)
+                    })
+                    break
+                }
+                case "checktimeline": {
+                    const sortDates = D.GetRepStats(msg, "timeline", null, "tlsortby", "rowID", "val")
+                    D.Alert(D.JS(sortDates, true))
+                    break
+                }
+                case "checksortby": {
+                    const sortDates = D.GetRepStats(msg, "timeline", null, "tlsortby", "rowID", "val")
+                    D.Alert(D.JS(sortDates, true))
+                    break
+                }
             // no default
             }
         },
         handleChangeAttr = (obj, prev) => {
-            if (obj.get("current") !== prev.current) {
+            if (obj.get("current") !== prev.current)
                 //D.Alert(`Detected change to '${obj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")}'`)
                 switch (obj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")) {
                     case "hunger":
@@ -266,14 +284,15 @@ const Char = (() => {
                     case "projectstake1": case "projectstake2": case "projectstake3": case "projectstake1_name": case "projectstake2_name": case "projectstake3_name":
                         displayStakes()
                         break
+                    case "triggertimelinesort":
+                        sortTimeline(obj.get("_characterid"))
                     /* no default */
                 }
-            }
         },
         handleAddAttr = (obj) => {
             if (obj.get("name").includes("projectstake"))
                 displayStakes()
-            else if (obj.get("name").includes("timeline"))
+            else if (obj.get("name").includes("triggertimelinesort"))
                 sortTimeline(obj.get("_characterid"))
         }
     // #endregion
@@ -678,7 +697,7 @@ const Char = (() => {
             return false
         },
         sortTimeline = (charRef) => {
-            D.SortRepSec(charRef, "timeline", "tlenddate", true, function(val) {return val ? (new Date(val.replace(/— /gu, ""))).getTime() : -200})
+            D.SortRepSec(charRef, "timeline", "tlsortby", true, function(val) {return val || -200})
         }
     // #endregion
 

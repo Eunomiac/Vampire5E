@@ -883,7 +883,6 @@ const D = (() => {
                                 return false
                             }
                         }))
-                    DB("Moving Onto Next Step ...", "parseRepStats")
                     // IF a STATNAME has been specified...
                     if (statName) {
                         const foundStat = 
@@ -1031,22 +1030,22 @@ const D = (() => {
                 })
 
         }, setStat = (charRef, statName, statValue) => setStats(charRef, { [statName]: statValue }),
-        setRepStats = (charRef, section, rowFilter, statList, isSilent = false) => {
+        setRepStats = (charRef, section, rowID, statList, isSilent = false) => {
             const charObj = getChar(charRef, isSilent)
-            if (VAL({ char: [charObj], string: [section], list: [rowFilter, statList] }, "setRepAttrs", true))
+            if (VAL({ char: [charObj], string: [section], list: [statList] }, "setRepAttrs", true)) {
+                const attrList = {}
                 _.each(statList, (value, statName) => {
-                    const rowData = getRepStat(charObj, section, rowFilter, statName, isSilent)
-                    if (VAL({ object: rowData && rowData.obj }, "setRepStat"))
-                        rowData.obj.set("current", value)
+                    attrList[`repeating_${section}_${rowID}_${statName}`] = value
                 })
-
-        }, setRepStat = (charRef, section, rowFilter, statName, statValue, isSilent = false) => setRepStats(charRef, section, rowFilter, { [statName]: statValue }, isSilent)
+                setAttrs(charObj.id, attrList)
+            }
+        }, setRepStat = (charRef, section, rowID, statName, statValue, isSilent = false) => setRepStats(charRef, section, rowID, { [statName]: statValue }, isSilent)
     // #endregion
 
     // #region Repeating Section Manipulation
     const parseRepStat = (repRef) => {
             const repStatName = VAL({ object: repRef }) ? repRef.get("name") : repRef
-            if (VAL({ repname: repStatName }, "parseRepStat")) {
+            if (VAL({ repname: repStatName })) {
                 const nameParts = repStatName.split("_")
                 nameParts.shift()
                 return [nameParts.shift(), nameParts.shift(), nameParts.join("_")]
@@ -1055,8 +1054,7 @@ const D = (() => {
         },
         makeRepRow = (charRef, secName, attrs) => {            
             DB(`CharRef: ${D.JS(charRef)}, secName: ${secName}, Attrs: ${D.JS(attrs, true)}`, "makeRepRow")
-            const attrList = {},
-                IDa = 0,
+            const IDa = 0,
                 IDb = [],
                 charID = D.GetChar(charRef).id,
                 characters = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz",
@@ -1093,15 +1091,15 @@ const D = (() => {
                     createObj("attribute", {
                         name: prefix + k,
                         max: "",
-                        _characterid: charID
+                        _characterid: charID,
+                        current: v
                     })
-                    attrList[prefix + k] = v
                 } else {
                     THROW(`Failure at makeRepRow(charRef, ${D.JSL(secName)}, ${D.JSL(attrs)})<br>...Prefix (${D.JSL(prefix)}) + K (${D.JSL(k)}) is NOT A STRING)`, "makeRepRow")
                 }
             })
-            DB(`Setting Attributes: ${D.JS(attrList, true)}`, "makeRepRow")
-            setAttrs(charID, attrList)
+            //DB(`Setting Attributes: ${D.JS(attrList, true)}`, "makeRepRow")
+            //setAttrs(charID, attrList)
 
             return rowID
         },
