@@ -127,16 +127,16 @@ const TimeTracker = (() => {
         ],
         IMAGETIMES = {
             "1:00": "night2",
-            "2:30": "night3",
-            "4:00": "night4",
-            [-60]: "night5",
+            "1:30": "night3",
+            "3:00": "night4",
+            [-120]: "night5",
             [-30]: "predawn5",
             [-20]: "predawn4",
             [-10]: "predawn3",
             [-5]: "predawn2",
             "dawn": "predawn1",
             "dusk": "day",
-            "23:30": "night1",
+            "22:30": "night1",
             "24:00": "night2"
         },
         AIRLIGHTS = {

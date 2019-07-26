@@ -345,27 +345,108 @@ const D = (() => {
                 second.toLowerCase().replace(/\W+/gu, "").includes(first.toLowerCase().replace(/\W+/gu, ""))
             return false
         },
-        isIn = (needle, haystack = ALLSTATS) => {
+        isIn = (needle, haystack = ALLSTATS, isFuzzyMatching = true) => {
             /* Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. */
             try {
-                const ndl = `\\b${needle}\\b`
-                if (VAL({ array: haystack })) {
-                    const index = _.findIndex(_.flatten(haystack),
-                                              v => v.match(new RegExp(ndl, "iu")) !== null ||
-                            v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null)
-                    return index === -1 ? false : _.flatten(haystack)[index]
-                } else if (VAL({ list: haystack })) {
-                    const index = _.findIndex(_.keys(haystack),
-                                              v => v.match(new RegExp(ndl, "iu")) !== null ||
-                            v.match(new RegExp(ndl.replace(/_/gu), "iu"))) !== null
-                    return index === -1 ? false : _.keys(haystack)[index]
-                } else if (VAL({ string: haystack }, "isIn")) {
-                    return haystack.search(new RegExp(needle, "iu")) > -1 && haystack
+                /* STEP ZERO: VALIDATE NEEDLE & HAYSTACK
+                      NEEDLE --> Must be STRING
+                      HAYSTACK --> Can be ARRAY, LIST or STRING */
+                if (VAL({string: needle}) || VAL({number: needle})) {
+                    /* STEP ONE: BUILD HAYSTACK.
+                          HAYSTACK = ARRAY? --> HAY = ARRAY
+                          HAYSTACK = LIST? ---> HAY = ARRAY (_.keys(H))
+                          HAYSTACK = STRING? -> HAY = H */
+                    const hayType = VAL({array: haystack}) && "array" ||
+                                    VAL({list: haystack}) && "list" ||
+                                    VAL({string: haystack}) && "string"                                    
+                    let ndl = needle.toString(),
+                        hay, match
+                    switch (hayType) {
+                        case "array":
+                            hay = [...haystack]
+                            break
+                        case "list":
+                            hay = _.keys(haystack)
+                            break
+                        case "string":
+                            hay = haystack
+                            break
+                        default:
+                            return THROW(`Haystack must be a string, a list or an array: ${D.JS(haystack)}`, "IsIn")
+                    }
+                    /* STEP TWO: SEARCH HAY FOR NEEDLE USING PROGRESSIVELY MORE FUZZY MATCHING. SKIP "*" STEPS IF ISFUZZYMATCHING IS FALSE.
+                              STRICT: Search for exact match, case sensitive.
+                              LOOSE: Search for exact match, case insensitive.
+                              *START: Search for match with start of haystack strings, case insensitive.
+                              *END: Search for match with end of haystack strings, case insensitive.
+                              *INCLUDE: Search for match of needle anywhere in haystack strings, case insensitive.
+                              *REVERSE INCLUDE: Search for match of HAYSTACK strings inside needle, case insensitive.
+                              FUZZY: Start again after stripping all non-word characters. */
+                    if (hayType === "array" || hayType === "list") {
+                        for (let i = 0; i <= 1; i++) {
+                            let thisNeedle = ndl,
+                                thisHay = hay
+                            match = _.findIndex(thisHay, v => thisNeedle === v) + 1 // Adding 1 means "!match" passes on failure return of -1.
+                            if (match) break                            
+                            thisHay = _.map(thisHay, v => (v || v === 0) && (VAL({string: v}) || VAL({number: v}) ? v.toString().toLowerCase() : v) || "§¥£")
+                            thisNeedle = thisNeedle.toString().toLowerCase()
+                            match = _.findIndex(thisHay, v => thisNeedle === v) + 1
+                            if (match) break
+                            if (isFuzzyMatching)
+                                match = _.findIndex(thisHay, v => v.startsWith(thisNeedle)) + 1
+                            if (match) break
+                            if (isFuzzyMatching)
+                                match = _.findIndex(thisHay, v => v.endsWith(thisNeedle)) + 1
+                            if (match) break
+                            if (isFuzzyMatching)
+                                match = _.findIndex(thisHay, v => v.includes(thisNeedle)) + 1
+                            if (match) break
+                            if (isFuzzyMatching)
+                                match = _.findIndex(thisHay, v => thisNeedle.includes(v)) + 1
+                            if (match) break
+                            // Now strip all non-word characters and try again from the top.
+                            ndl = ndl.replace(/\W+/gu, "")
+                            hay = _.map(hay, v => VAL({string: v}) || VAL({number: v}) ? v.toString().replace(/\W+/gu, "") : v)
+                        }
+                        return match && hayType === "array" ? haystack[match - 1] : haystack[_.keys(haystack)[match - 1]]
+                    } else {
+                        for (let i = 0; i <= 1; i++) {
+                            match = hay === ndl && ["", hay]
+                            if (match) break
+                            let thisNeedleRegExp = new RegExp(`^(${ndl})$`, "iu")
+                            match = hay.match(thisNeedleRegExp)
+                            if (match) break
+                            if (isFuzzyMatching) {
+                                thisNeedleRegExp = new RegExp(`^(${ndl})`, "iu")
+                                match = hay.match(thisNeedleRegExp) 
+                            }
+                            if (match) break                            
+                            if (isFuzzyMatching) {
+                                thisNeedleRegExp = new RegExp(`(${ndl})$`, "iu")
+                                match = hay.match(thisNeedleRegExp) 
+                            }
+                            if (match) break                           
+                            if (isFuzzyMatching) {
+                                thisNeedleRegExp = new RegExp(`(${ndl})`, "iu")
+                                match = hay.match(thisNeedleRegExp) 
+                            }
+                            if (match) break                           
+                            if (isFuzzyMatching) {
+                                let thisHayRegExp = new RegExp(`(${hay})`, "iu")
+                                match = ndl.match(thisHayRegExp) 
+                            }
+                            if (match) break
+                            // Now strip all non-word characters and try again from the top.
+                            ndl = ndl.replace(/\W+/gu, "")
+                            hay = hay.replace(/\W+/gu, "")
+                        }
+                        return match && match[1]
+                    }
                 }
+                return THROW(`Needle must be a string: ${D.JS(needle)}`, "isIn")
             } catch (errObj) {
-                return THROW(`Error locating stat '${D.JSL(needle)}' in ${D.JSL(haystack)}'`, "isIn", errObj)
+                return THROW(`Error locating '${D.JSL(needle)}' in ${D.JSL(haystack)}'`, "isIn", errObj)
             }
-            return false
         },
         validate = (varList, funcName, scriptName, isArray = false) => {
             //TRACE.push(`VAL(${jStrL(_.keys(varList).join(", "))}, ${jStr(funcName)})`)
@@ -462,7 +543,7 @@ const D = (() => {
                                         errorCheck.push(charObj.get("name"))
                                 })
                                 if (errorCheck.length)
-                                    errorLines.push(`Invalid trait: ${jStr(v && v.get && v.get("name") || v && v.id || v)} ON ${errorCheck.length}/${varList["char"].length} character references:<br>${jStr(errorCheck)}`)
+                                    errorLines.push(`Invalid trait: ${jStr(v && v.get && v.get("name") || v && v.id || v)} ON ${errorCheck.length}/${(varList && varList["char"] || []).length} character references:<br>${jStr(errorCheck)}`)
                             } else {
                                 errorLines.push(`Must validate at least one character before validating traits: ${jStr(varList[cat])}.`)
                             }
@@ -755,24 +836,27 @@ const D = (() => {
             return propData
         },
         getStat = (charRef, statName, isSilent = false) => {
-            const charObj = getChar(charRef)
+            const charObj = getChar(charRef),
+                isGettingMax = statName.endsWith("_max"),
+                stat = statName.replace(/_max$/gu, "")
             let attrValueObj = null
-            if (VAL({ charObj: charObj, string: statName }, isSilent ? null : "getStat")) {
-                const attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => statName.includes("repeating") || !fuzzyMatch("repeating", v.get("name"))) // UNLESS "statName" includes "repeating_", don't return repeating fieldset attributes.
+            if (VAL({ charObj: charObj, string: stat }, isSilent ? null : "getStat")) {
+                const attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => stat.includes("repeating") || !fuzzyMatch("repeating", v.get("name"))) // UNLESS "statName" includes "repeating_", don't return repeating fieldset attributes.
                 //D.Alert(`All Attr Objs: ${D.JS(_.map(allAttrObjs, v => v.get("name")))}<br><br>Filtered Attr Objs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
                 // First try for a direct match, then a fuzzy match:
-                attrValueObj = _.find(attrObjs, v => v.get("name").toLowerCase() === statName.toLowerCase()) || _.find(attrObjs, v => looseMatch(v.get("name"), statName))
+                attrValueObj = _.find(attrObjs, v => v.get("name").toLowerCase() === stat.toLowerCase()) || _.find(attrObjs, v => looseMatch(v.get("name"), stat))
                 if (!attrValueObj) {
-                    const attrNameObj = _.find(attrObjs, v => v.get("name").toLowerCase().endsWith("_name") && v.get("current").toLowerCase() === statName.toLowerCase())
+                    const attrNameObj = _.find(attrObjs, v => v.get("name").toLowerCase().endsWith("_name") && v.get("current").toLowerCase() === stat.toLowerCase())
                     if (attrNameObj)
                         attrValueObj = _.find(attrObjs, v => v.get("name") === attrNameObj.get("name").slice(0, -5))
                 }
-                DB(`AttrValueObj: ${D.JS(attrValueObj, true)}
+                DB(`StatName: ${D.JS(stat)}
+                AttrValueObj: ${D.JS(attrValueObj, true)}
                 Boolean: ${Boolean(attrValueObj)}
-                Current: ${D.JS(attrValueObj.get("current"))}
-                So, returning: ${D.JS(attrValueObj ? [attrValueObj.get("current"), attrValueObj] : null, true)}`, "getStat")
+                Current: ${D.JS(attrValueObj && attrValueObj.get(isGettingMax ? "max" : "current"))}
+                So, returning: ${D.JS(attrValueObj ? [attrValueObj.get(isGettingMax ? "max" : "current"), attrValueObj] : null, true)}`, "getStat")
             }
-            return attrValueObj ? [attrValueObj.get("current"), attrValueObj] : null
+            return attrValueObj ? [attrValueObj.get(isGettingMax ? "max" : "current"), attrValueObj] : null
         },
         getRepIDs = (charRef, section, rowFilter, isSilent = false) => {
             // rowRef: rowID (string), stat:value (list, with special "name" entry for shortname), array of either (array), or null (all)
@@ -949,61 +1033,61 @@ const D = (() => {
             let playerID = null
             try {
                 if (VAL({object: playerRef}) && playerRef.get("_type") === "player") {
-                    DB(`PlayerRef identified as Player Object: ${D.JS(playerRef, true)}<br><br>... returning ID: ${playerRef.id}`, "getPlayerID")
+                    //DB(`PlayerRef identified as Player Object: ${D.JS(playerRef, true)}<br><br>... returning ID: ${playerRef.id}`, "getPlayerID")
                     removeFirst(TRACE, "getPlayerID")
                     return playerRef.id
                 }
                 if (VAL({ char: playerRef })) {
                     const charObj = getChar(playerRef, true)
                     playerID = _.filter(charObj.get("controlledby").split(","), v => v !== "all")
-                    DB(`PlayerRef identified as Character Object: ${D.JS(charObj.get("name"))}... "controlledby": ${D.JS(playerID)}`, "getPlayerID")
+                    //DB(`PlayerRef identified as Character Object: ${D.JS(charObj.get("name"))}... "controlledby": ${D.JS(playerID)}`, "getPlayerID")
                     if (playerID.length > 1 && !isSilent)
                         THROW(`WARNING: Finding MULTIPLE player IDs connected to character reference '${jStr(playerRef)}': ${jStr(playerID)}`, "getPlayerID")
                     removeFirst(TRACE, "getPlayerID")
                     return playerID[0]
                 }
                 if (VAL({ string: playerRef })) {
-                    DB(`PlayerRef identified as String: ${D.JS(playerRef)}`, "getPlayerID")
-                    if (getObj("player", playerRef)) {
-                        DB(`... String is Player ID. Returning ${D.JS(getObj("player", playerRef).id)}`, "getPlayerID")
+                    //DB(`PlayerRef identified as String: ${D.JS(playerRef)}`, "getPlayerID")
+                    if (getObj("player", playerRef)) 
+                        //DB(`... String is Player ID. Returning ${D.JS(getObj("player", playerRef).id)}`, "getPlayerID")
                         return getObj("player", playerRef).id
-                    } else if (findObjs({
+                    else if (findObjs({
                         _type: "player",
                         _displayname: playerRef
-                    }, {caseInsensitive: true}).length > 0) {
-                        DB(`... String is DISPLAY NAME. Found ${findObjs({
-                            _type: "player",
-                            _displayname: playerRef
-                        }, {caseInsensitive: true}).length} Players.`, "getPlayerID")
+                    }, {caseInsensitive: true}).length > 0) 
+                        //DB(`... String is DISPLAY NAME. Found ${findObjs({
+                        //    _type: "player",
+                        //    _displayname: playerRef
+                        //}, {caseInsensitive: true}).length} Players.`, "getPlayerID")
                         return findObjs({
                             _type: "player",
                             _displayname: playerRef
                         }, {caseInsensitive: true})[0].id
-                    } else if (findObjs({
+                    else if (findObjs({
                         _type: "player",
                         speakingas: playerRef
-                    }, {caseInsensitive: true}).length > 0) {
-                        DB(`... String is SPEAKING AS. Found ${findObjs({
-                            _type: "player",
-                            speakingas: playerRef
-                        }, {caseInsensitive: true}).length} Players.`, "getPlayerID")
+                    }, {caseInsensitive: true}).length > 0) 
+                        //DB(`... String is SPEAKING AS. Found ${findObjs({
+                        //    _type: "player",
+                        //    speakingas: playerRef
+                        //}, {caseInsensitive: true}).length} Players.`, "getPlayerID")
                         return findObjs({
                             _type: "player",
                             speakingas: playerRef
                         }, {caseInsensitive: true})[0].id
-                    } else if (findObjs({
+                    else if (findObjs({
                         _type: "player",
                         _d20userid: playerRef
-                    }, {caseInsensitive: true}).length > 0) {
-                        DB(`... String is _d20userid. Found ${findObjs({
-                            _type: "player",
-                            _d20userid: playerRef
-                        }, {caseInsensitive: true}).length} Players.`, "getPlayerID")
+                    }, {caseInsensitive: true}).length > 0) 
+                        //DB(`... String is _d20userid. Found ${findObjs({
+                        //    _type: "player",
+                        //    _d20userid: playerRef
+                        //}, {caseInsensitive: true}).length} Players.`, "getPlayerID")
                         return findObjs({
                             _type: "player",
                             _d20userid: playerRef
                         }, {caseInsensitive: true})[0].id
-                    }
+                    
                     return isSilent ? false : THROW(`Unable to find player connected to reference '${jStr(playerRef)}'`, "getPlayerID")
                 }
                 removeFirst(TRACE, "getPlayerID")
@@ -1016,13 +1100,14 @@ const D = (() => {
         getPlayer = (playerRef, isSilent = false) => {
             TRACE.push("getPlayer")
             let playerID = getPlayerID(playerRef, true)
-            DB(`Searching for Player with Player Ref: ${playerRef}
-                ... playerID: ${jStr(playerID)}
-                .. String? ${VAL({string: playerID})}
-                .. Player Object? ${jStr(getObj("player", playerID))}`, "getPlayer")
             if (VAL({ string: playerID }) && VAL({ object: getObj("player", playerID) })) {
                 removeFirst(TRACE, "getPlayer")
                 return getObj("player", playerID)
+            } else {
+                DB(`Searching for Player with Player Ref: ${playerRef}
+                ... playerID: ${jStr(playerID)}
+                .. String? ${VAL({string: playerID})}
+                .. Player Object? ${jStr(getObj("player", playerID))}`, "getPlayer")
             }
             removeFirst(TRACE, "getPlayer")
             return isSilent ? false : THROW(`Unable to find a player object for reference '${jStr(playerRef)}`, "getPlayer")
@@ -1033,12 +1118,7 @@ const D = (() => {
     const setStats = (charRef, statList) => {
             const charObj = getChar(charRef)
             if (VAL({ charObj: charObj, list: statList }, "setStats"))
-                _.each(statList, (value, statName) => {
-                    const [, attrObj] = getStat(charObj, statName)
-                    if (VAL({ object: attrObj }, "setStats"))
-                        attrObj.set("current", value)
-                })
-
+                setAttrs(charObj.id, statList)
         }, setStat = (charRef, statName, statValue) => setStats(charRef, { [statName]: statValue }),
         setRepStats = (charRef, section, rowID, statList, isSilent = false) => {
             const charObj = getChar(charRef, isSilent)

@@ -32,6 +32,7 @@ const Session = (() => {
     const initialize = () => { // eslint-disable-line no-empty-function
         STATEREF.isSessionActive = STATEREF.isSessionActive || false
         STATEREF.isTestingActive = STATEREF.isTestingActive || false
+        STATEREF.sceneChars = STATEREF.sceneChars || []
         if (STATEREF.SessionNum === 25)
             STATEREF.SessionScribes = ["banzai"]
     }
@@ -42,14 +43,17 @@ const Session = (() => {
         //D.Alert(`Received Call: ${call}<br>MSG: ${D.JS(msg)}`)
         let [token, famToken] = []
         switch (call) {
-            case "start":
-                startSession()
+            case "start": case "end": case "toggle":
+                if (STATEREF.isSessionActive)
+                    endSession(msg)
+                else
+                    startSession()
                 break
             case "set": case "num": case "setnum":
-                setSessionNum(args.shift())
+                setSessionNum(parseInt(args.shift()) || STATEREF.SessionNum)
                 break
-            case "end":
-                endSession(msg)
+            case "scene":
+                endScene()
                 break
             case "test":
                 STATEREF.isTestingActive = !STATEREF.isTestingActive
@@ -91,7 +95,7 @@ const Session = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-    // #region Starting/Ending Sessions & Waking Up,
+    // #region Starting/Ending Sessions
     const startSession = () => {
             const sessionScribe = STATEREF.SessionScribes.pop()
             STATEREF.isSessionActive = true
@@ -140,9 +144,30 @@ const Session = (() => {
             TimeTracker.StopClock()
             TimeTracker.StopLights()
         }
+    // #endregion
+
+    // #region Waking Up 
+
+    // #endregion
+
+    // #region Starting & Ending Scenes, Logging Characters to Scene
+    const addCharToScene = (charRef) => {
+            const charObj = D.GetChar(charRef)
+            if (VAL({charObj: charObj}, "addCharToScene") && !STATEREF.sceneChars.includes(charObj.id))
+                STATEREF.sceneChars.push(charObj.id)
+        },
+        endScene = () => {
+            for (const charID of STATEREF.sceneChars)
+                D.SetStat(charID, "willpower_social_toggle", "go")
+            STATEREF.sceneChars = []
+        }
+    // #endregion
+
     return {
         RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+
+        AddSceneChar: addCharToScene,
 
         get SessionNum() { return STATEREF.SessionNum },
         get IsSessionActive() { return STATEREF.isSessionActive },

@@ -245,7 +245,7 @@ const Media = (() => {
                             cleanRegistry()
                             break
                         case "add":
-                            switch (args.shift().toLowerCase) {
+                            switch (args.shift().toLowerCase()) {
                                 case "src": case "source":
                                     [hostName, srcName] = args
                                     if (isRegImg(hostName)) {
@@ -261,7 +261,7 @@ const Media = (() => {
                                     }
                                     break
                                 default:
-                                    D.Alert("<b>Syntax:<br><br><pre>!img add &lt;src/area&gt</pre>", "IMAGES: !img add")
+                                    D.Alert("<b>Syntax:<br><br><pre>!img add &lt;src/area&gt; &lt;hostName&gt; &lt;srcName&gt;</pre>", "IMAGES: !img add")
                                     break
                             }
                             break

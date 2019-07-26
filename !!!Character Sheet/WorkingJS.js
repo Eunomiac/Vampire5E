@@ -939,7 +939,7 @@
                     attrs = [..._.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "max", "sdmg", "admg"], v => `health_${v}`), "incap"]
                     break
                 case "willpower":
-                    attrs = [..._.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "max", "sdmg", "admg"], v => `willpower_${v}`), "incap"]
+                    attrs = [..._.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "max", "sdmg", "admg", "sdmg_social", "admg_social", "sdmg_socialtotal", "admg_socialtotal"], v => `willpower_${v}`), "incap"]
                     break
                 default:
                     log(`ERROR: Invalid tracker sumbitted to binCheck: ${tracker}`)
@@ -962,8 +962,8 @@
                     _.each(boxList, (dmg, box) => dmgBins[dmg].push(box))
 
                 // Apply New Damage & Healing
-                    if (pI("sdmg") !== 0) {
-                        attrList[p("sdmg")] = pI("sdmg")
+                    if (pI("sdmg") + pI("sdmg_social") !== 0) {
+                        attrList[p("sdmg")] = pI("sdmg") + pI("sdmg_social")
                         while (attrList[p("sdmg")] > 0)
                             if (dmgBins[0].length) { // There's enough blank boxes for the superficial hit.
                                 dmgBins[1].push(dmgBins[0].shift())
@@ -984,8 +984,8 @@
                             }
 
                     }
-                    if (pI("admg") !== 0) {
-                        attrList[p("admg")] = pI("admg")
+                    if (pI("admg") + pI("admg_social") !== 0) {
+                        attrList[p("admg")] = pI("admg") + pI("admg_social")
                         while (attrList[p("admg")] > 0)
                             if (dmgBins[0].length) {
                                 dmgBins[2].push(dmgBins[0].shift())
@@ -1032,6 +1032,13 @@
                     // Set sdmg/admg scores to zero.
                     attrList[p("sdmg")] = 0
                     attrList[p("admg")] = 0
+
+                    // Add/subtract social damage to totals, and set socials to zero:
+                    attrList[p("sdmg_socialtotal")] = pI("sdmg_socialtotal") + pI("sdmg_social")
+                    attrList[p("admg_socialtotal")] = pI("admg_socialtotal") + pI("admg_social")
+                    attrList[p("sdmg_social")] = 0
+                    attrList[p("admg_social")] = 0
+
                     cback(null, attrList)
                 })
             }
@@ -1104,7 +1111,7 @@
                         if (eInfo.sourceType !== "sheetworker") {
                             const attrArray = _.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`),
                                 humArray = new Array(10)
-                            getAttrs(["stains", "humanity"], ATTRS => {
+                            getAttrs(["stains", "humanity", "incap"], ATTRS => {
                                 const humanity = Math.min(10, Math.max(0, parseInt(ATTRS.humanity))),
                                     stains = Math.min(10, Math.max(0, parseInt(ATTRS.stains)))
                                 attrList.humanity_impair_toggle = 0
@@ -1130,6 +1137,11 @@
                                     attrList[`hum_${bulletType}bullets_toggle`] = humanityText.bulletText[bulletType][humanity].length
                                 }
 
+                                if (attrList.humanity_impair_toggle === 1)
+                                    attrList.incap = _.compact(_.uniq(_.union((ATTRS.incap || "").split(","), ["Humanity"]))).join(",")
+                                else
+                                    attrList.incap = _.compact(_.uniq(_.difference((ATTRS.incap || "").split(","), ["Humanity"]))).join(",")
+
 
                                 log(`... attrList: ${JSON.stringify(attrList)}`)
 
@@ -1143,7 +1155,7 @@
                         if (eInfo.sourceType !== "sheetworker") {
                             const attrArray = _.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`),
                                 humArray = new Array(10)
-                            getAttrs(["humanity", "stains"], ATTRS => {
+                            getAttrs(["humanity", "stains", "incap"], ATTRS => {
                                 const humanity = Math.min(10, Math.max(0, parseInt(ATTRS.humanity))),
                                     stains = Math.min(10, Math.max(0, parseInt(ATTRS.stains)))
                                 attrList.humanity_impair_toggle = 0
@@ -1163,6 +1175,10 @@
                                     attrList[attrArray[i]] = humArray[i]
 
                                 log(`... attrList: ${JSON.stringify(attrList)}`)
+                                if (attrList.humanity_impair_toggle === 1)
+                                    attrList.incap = _.compact(_.uniq(_.union((ATTRS.incap || "").split(","), ["Humanity"]))).join(",")
+                                else
+                                    attrList.incap = _.compact(_.uniq(_.difference((ATTRS.incap || "").split(","), ["Humanity"]))).join(",")
                                 cbk(null, attrList)
                             })
                         }
@@ -1170,7 +1186,6 @@
                     break
                 default:
                     log(`Error in doTracker(${tracker}, ): Unrecognized tracker.`)
-
                     return
             }
             $funcs.push($set)
@@ -1191,6 +1206,7 @@
                                     _.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num)) + 3
                                 )
                             )
+                            attrList.health_maximum = attrList.health_max
                             cback(null, attrList)
                         })
                     })
@@ -1206,6 +1222,7 @@
                                         _.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num))
                                     )
                                 )
+                            attrList.willpower_maximum = attrList.willpower_max
                             cback(null, attrList)
                         })
                     })
@@ -1215,6 +1232,7 @@
                     $funcs.push(cback => {
                         getAttrs(["generation", "bonus_bp"], ATTRS => {
                             attrList.blood_potency_max = Math.min(10, Math.max(0, genDepts[parseInt(ATTRS.generation)].blood_potency_max + parseInt(ATTRS.bonus_bp)))
+                            attrList.blood_potency_maximum = attrList.blood_potency_max
                             if (tracker === "Blood Potency Full")
                                 attrList.blood_potency = genDepts[parseInt(ATTRS.generation)].blood_potency
                             cback(null, attrList)
@@ -1231,6 +1249,24 @@
             $funcs.push($doTracker(tracker, eInfo))
 
             run$($funcs)
+        },
+        healSocialWP = (cback) => {
+            const attrList = {},
+                $funcs = [
+                    cbk => {
+                        getAttrs(["willpower_sdmg_socialtotal", "willpower_admg_socialtotal", "willpower_social_toggle"], ATTRS => {
+                            attrList.willpower_sdmg = -1 * Math.floor(0.5 * parseInt(ATTRS.willpower_sdmg_socialtotal) || 0)
+                            attrList.willpower_admg = -1 * Math.floor(0.5 * parseInt(ATTRS.willpower_admg_socialtotal) || 0)
+                            attrList.willpower_sdmg_socialtotal = 0
+                            attrList.willpower_admg_socialtotal = 0
+                            attrList.willpower_social_toggle = "off"                            
+                            cbk(null, attrList)
+                        })
+                    },
+                    $set,
+                    $doTracker("willpower")
+                ]
+            run$($funcs, cback ? () => cback(null) : undefined)            
         }
 
     on("change:stamina change:bonus_health", () => {
@@ -1247,8 +1283,8 @@
             doTracker("Health", eInfo)
 
     })
-    on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "sdmg", "admg"], "willpower_"), eInfo => {
-        if (eInfo.sourceType !== "api" || ["willpower_sdmg", "willpower_admg"].includes(eInfo.sourceAttribute))
+    on(getTriggers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "sdmg", "admg", "sdmg_social", "admg_social"], "willpower_"), eInfo => {
+        if (eInfo.sourceType !== "api" || ["willpower_sdmg", "willpower_admg", "willpower_sdmg_social", "willpower_admg_social"].includes(eInfo.sourceAttribute))
             doTracker("Willpower", eInfo)
 
     })
@@ -1262,6 +1298,10 @@
     on("change:stains", eInfo => {
         if (!ISOFFLINE && eInfo.sourceType !== "sheetworker")
             doTracker("Stains", eInfo)
+    })
+    on("change:willpower_social_toggle", eInfo => {
+        if (!ISOFFLINE && eInfo.sourceType !== "sheetworker")
+            healSocialWP()
     })
     // #endregion
 

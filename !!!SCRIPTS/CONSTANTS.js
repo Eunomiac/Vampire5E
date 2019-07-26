@@ -62,7 +62,7 @@ const C = (() => {
             green: "rgb(0, 200, 0)",
             yellow: "rgb(200, 200, 0)",
             orange: "rgb(200, 100, 0)",
-            brightpurple: "rgb(200, 0, 200)",
+            brightpurple: "rgb(200, 100, 200)",
             purple: "rgb(150, 0, 150)",
             darkpurple: "rgb(100, 0, 100)",
             brightblue: "rgb(150, 150, 255)",
@@ -131,9 +131,20 @@ const C = (() => {
                     color: options.color || COLORS.crimson,
                     bgImage: options.bgImage || BGIMAGES.blackMarble,
                     borderColor: options.borderColor || options.color || COLORS.crimson,
-                    borderStyle: options.borderStyle || "outset"
+                    borderStyle: options.borderStyle || "outset",
+                    margin: options.margin || "0px 0px 0px -40px",
+                    width: options.width || 255
                 }
-                return `<div style="display: block; margin-left: -40px; height: auto; background: url('${params.bgImage}');text-align: center;border: 4px ${params.borderColor} ${params.borderStyle}; padding: 5px; width: 255px;">${_.flatten([content]).join("")}</div>`
+                return D.JSH(`<div style="
+                    display: block;
+                    margin: ${params.margin};
+                    height: auto;
+                    background: url('${params.bgImage}');
+                    text-align: center;
+                    border: 4px ${params.borderColor} ${params.borderStyle};
+                    padding: 5px;
+                    width: ${params.width}px;
+                ">${_.flatten([content]).join("")}</div>`)
             },
             colorTitle: (content, options = {}) => {
                 const params = {
@@ -147,7 +158,7 @@ const C = (() => {
                     color: options.color || COLORS.black,
                     bgColor: options.bgColor || COLORS.brightred,
                     fontFamily: options.fontFamily || "Voltaire",
-                    margin: options.margin || "0px 0px 7px 0px",
+                    margin: options.margin || "0px",
                     fontSize: options.fontSize || 16,
                     borderWidth: options.borderWidth || "1px 0px 1px 0px",
                     borderStyle: options.borderStyle || "solid none solid none",
@@ -179,7 +190,7 @@ const C = (() => {
                 const params = {
                     color: options.color || COLORS.brightred,
                     bgColor: options.bgColor || "none",
-                    margin: options.margin || "0px",
+                    margin: options.margin || "7px 0px 0px 0px",
                     fontFamily: options.fontFamily || "sexsmith",
                     fontSize: options.fontSize || 18,
                     fontWeight: options.fontWeight || "bold",

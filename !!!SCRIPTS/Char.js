@@ -80,9 +80,9 @@ const Char = (() => {
                         }
                         case "char":
                             if (msg.selected && msg.selected[0])
-                                registerChar(msg, parseInt(args.shift()), args.shift(), args.shift())
+                                registerChar(msg, parseInt(args.shift()), args.shift(), args.shift(), args.shift())
                             else
-                                THROW("Select character tokens first!", "!char reg")
+                                THROW("Select character tokens first!  Syntax: !char reg char <num> <shortName> <initial> <quadrant>", "!char reg")
                             break
                         /* no default */
                     }
@@ -118,6 +118,13 @@ const Char = (() => {
                             attrString = params.join("<br>")
                             D.Alert(attrString, `${D.Capitalize(trait)}:`)
                             break
+                        case "npcstat": {
+                            const charObj = D.GetChar(msg),
+                                statName = args.shift()
+                            if (VAL({charObj: charObj})) 
+                                D.Alert(`${charObj.get("name")}'s ${statName} = ${D.GetStat(charObj, statName)}`, "!char get npcstat")
+                            break
+                        }                        
                         case "charids":
                             chars = findObjs({
                                 _type: "character"
@@ -356,7 +363,7 @@ const Char = (() => {
     // #endregion
 
     // #region Register Characters & Token Image Alternates,
-    const registerChar = (msg, num, shortName, initial) => {
+    const registerChar = (msg, num, shortName, initial, quadrant) => {
             if (D.GetSelected(msg).length > 1) {
                 THROW("Please select only one token.", "RegisterChar")
             } else {
@@ -367,7 +374,6 @@ const Char = (() => {
                     charName = D.GetName(char),
                     playerID = D.GetPlayerID(char),
                     playerName = D.GetName(D.GetPlayer(playerID))
-
                 if (!char) {
                     THROW("No character found!", "RegisterChar")
                 } else if (!token) {
@@ -380,7 +386,8 @@ const Char = (() => {
                         playerName: playerName,
                         tokenName: charName.replace(/["'\s]*/gu, "") + "Token",
                         shortName: shortName,
-                        initial: initial
+                        initial: initial,
+                        quadrant: quadrant
                     }
                     D.Alert(`Character #${D.JSL(charNum)} Registered:<br><br>${D.JS(REGISTRY[charNum])}`, "CHARS:RegisterChar")
                 }
@@ -569,8 +576,8 @@ const Char = (() => {
             const charObj = D.GetChar(charRef)
             if (VAL({charObj: [charObj], trait: [trait], number: [amount]}, "adjustTrait", true)) {
                 const chatStyles = {
-                        block: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.block, {}) : {},
-                        body: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.body, {fontSize: 12}) : {},
+                        block: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.block, {}) : {width: 275, margin: "0px 0px 0px -50px"},
+                        body: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.body, {fontSize: 12}) : {fontFamily: "Voltaire", fontSize: 14, color: "rgb(255,50,50)"},
                         banner: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {margin: "0px", fontSize: 12}) : {margin: "0px", fontSize: 12},
                         alert: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {}) : {}
                     },
@@ -600,7 +607,7 @@ const Char = (() => {
                         else if (amount < 0)
                             bannerString = `${D.NumToText(Math.abs(amount))} stain${Math.abs(amount) > 1 ? "s" : ""} cleared from your Humanity.`
                         break
-                    case "willpower_sdmg":
+                    case "willpower_sdmg": case "willpower_sdmg_social":
                         if (amount > 0) {
                             const [maxWP, curBashing, curAggravated] = [
                                     parseInt(D.GetStat(charObj, "willpower_max")[0]),
@@ -622,16 +629,16 @@ const Char = (() => {
                                 // no default
                             }
                             if (isOverLimit || newAggravated === maxWP)
-                                alertString = "You have suffered more damage than you can stand!"
-                            else if (curBashing + curAggravated === maxWP)
-                                bodyString = `Exhausted, you are taking <i>aggravated</i> damage!<br>${maxWP - newAggravated} Willpower remaining...`
+                                alertString = "You are completely exhausted!"
+                            else if (newBashing + newAggravated === maxWP)
+                                bodyString = `Exhausted, you are taking <u>aggravated</u> damage!<br>${maxWP - newAggravated} Willpower remaining...`
                             else
-                                bodyString += `${maxWP - newAggravated - newBashing} Willpower remaining...`
+                                bodyString += `${maxWP - newAggravated - newBashing} (+${maxWP - newAggravated}) Willpower remaining...`
                         } else if (amount < 0) {
-                            bannerString = `You regain ${D.NumToText(Math.abs(amount)).toLowerCase()} Willpower.`                            
+                            bannerString = `You regain ${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "willpower_bashing")[0]), Math.abs(amount))).toLowerCase()} Willpower.`                            
                         }
                         break
-                    case "willpower_admg": 
+                    case "willpower_admg": case "willpower_admg_social":
                         if (amount > 0) {
                             const [maxWP, curBashing, curAggravated] = [
                                     parseInt(D.GetStat(charObj, "willpower_max")[0]),
@@ -642,12 +649,13 @@ const Char = (() => {
                             DB(`MaxWP: ${maxWP}, CurBash: ${curBashing}, CurAggr: ${curAggravated}<br>... Dealing ${amount} --> newBash: ${newBashing}, newAggr: ${newAggravated}`, "adjustTrait")
                             bannerString = `You suffer ${D.NumToText(Math.abs(amount)).toLowerCase()} AGGRAVATED Willpower damage!`                        
                             if (isOverLimit || newAggravated === maxWP)
-                                alertString = "You have suffered more damage than you can stand!"
+                                alertString = "You are completely exhausted!"
+                            else if (newBashing + newAggravated === maxWP)
+                                bodyString = `Exhausted, you are taking <u>aggravated</u> damage!<br>${maxWP - newAggravated} Willpower remaining...`
                             else
-                                bodyString = `${maxWP - newAggravated - newBashing} Willpower remaining...`                            
+                                bodyString += `${maxWP - newAggravated - newBashing} (+${maxWP - newAggravated}) Willpower remaining...`                        
                         } else if (amount < 0) {
-                            bannerString = `${D.NumToText(Math.abs(amount))} aggravated Willpower damage has become superficial.`
-                            
+                            bannerString = `${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "willpower_aggravated")[0]), Math.abs(amount)))} aggravated Willpower damage downgraded.`                            
                         }
                         break
                     case "health_sdmg":
@@ -670,12 +678,12 @@ const Char = (() => {
                             }
                             if (isOverLimit || newAggravated === maxHealth)
                                 alertString = "DARKNESS FALLS: YOU SINK INTO TORPOR"
-                            else if (curBashing + curAggravated === maxHealth)
-                                bodyString = `Wounded, you are taking <i>aggravated</i> damage!<br>${maxHealth - newAggravated} Health remaining...`
+                            else if (newBashing + newAggravated === maxHealth)
+                                bodyString = `Wounded, you are taking <u>aggravated</u> damage!<br>${maxHealth - newAggravated} Health remaining...`
                             else
-                                bodyString = `${maxHealth - newAggravated - newBashing} Health remaining...`                    
+                                bodyString = `${maxHealth - newAggravated - newBashing} (+${maxHealth - newAggravated}) Health remaining...`                    
                         } else if (amount < 0) {
-                            bannerString = `You heal ${D.NumToText(Math.abs(amount)).toLowerCase()} superficial Health damage.` 
+                            bannerString = `You heal ${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "health_bashing")[0]), Math.abs(amount))).toLowerCase()} superficial Health damage.` 
                         }
                         break
                     case "health_admg":
@@ -690,28 +698,31 @@ const Char = (() => {
                             bannerString = `You suffer ${D.NumToText(Math.abs(amount)).toLowerCase()} AGGRAVATED Health damage!`                        
                             if (isOverLimit || newAggravated === maxHealth)
                                 alertString = "DARKNESS FALLS: YOU SINK INTO TORPOR"
+                            else if (newBashing + newAggravated === maxHealth)
+                                bodyString = `Wounded, you are taking <u>aggravated</u> damage!<br>${maxHealth - newAggravated} Health remaining...`
                             else
-                                bodyString = `${maxHealth - newAggravated - newBashing} Health remaining...`
+                                bodyString = `${maxHealth - newAggravated - newBashing} (+${maxHealth - newAggravated}) Health remaining...`              
                         } else if (amount < 0) {
-                            bannerString = `${D.NumToText(Math.abs(amount))} aggravated Health damage has become superficial.`                  
+                            bannerString = `${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "health_aggravated")[0]), Math.abs(amount)))} aggravated Health damage downgraded.`                  
                         }
                         break
                     // no default
                 }
-                D.Chat(charObj, C.CHATHTML.colorBlock(_.compact([
-                    C.CHATHTML.colorHeader(bannerString, chatStyles.banner),
-                    bodyString ? C.CHATHTML.colorBody(bodyString, chatStyles.body) : null,
-                    alertString ? C.CHATHTML.colorHeader(alertString, chatStyles.alert) : null
-                ]), chatStyles.block))
+                if (amount !== 0)
+                    D.Chat(charObj, C.CHATHTML.colorBlock(_.compact([
+                        C.CHATHTML.colorHeader(bannerString, chatStyles.banner),
+                        bodyString ? C.CHATHTML.colorBody(bodyString, chatStyles.body) : null,
+                        alertString ? C.CHATHTML.colorHeader(alertString, chatStyles.alert) : null
+                    ]), chatStyles.block))
                 setAttrs(D.GetChar(charObj).id, {[trait.toLowerCase()]: finalTraitVal })
                 return true
             }
             return false
         },
-        adjustDamage = (charRef, trait, dtype, delta) => {
+        adjustDamage = (charRef, trait, dType, delta) => {
             const amount = parseInt(delta),
                 charObj = D.GetChar(charRef)
-            let [minVal, maxVal, targetVal, defaultVal, traitName, deltaType] = [0, 5, parseInt(amount), 0, "", ""]
+            let [minVal, maxVal, targetVal, defaultVal, traitName, deltaType, dmgType] = [0, 5, parseInt(amount), 0, "", "", dType]
             if (VAL({ charObj: [charObj], number: [amount] }, "AdjustDamage", true)) {
                 switch (trait.toLowerCase()) {
                     case "hum": case "humanity":
@@ -724,16 +735,18 @@ const Char = (() => {
                         [minVal, maxVal, targetVal, defaultVal, traitName, deltaType] = [
                             -Infinity,
                             Infinity,
-                            parseInt(amount) >= 0 && dtype === "superficial" ? parseInt(Math.ceil(amount / 2)) : parseInt(amount),
+                            parseInt(amount) >= 0 && dmgType.endsWith("superficial") ? parseInt(Math.ceil(amount / 2)) : parseInt(amount),
                             0,
-                            trait.toLowerCase() + (["superficial", "superficial+", "spent"].includes(dtype) ? "_sdmg" : "_admg"),
-                            dtype
+                            trait.toLowerCase() + (["superficial", "superficial+", "spent"].includes(dmgType.replace(/social_/gu, "")) ? "_sdmg" : "_admg") + (dmgType.includes("social") ? "_social" : ""),
+                            dmgType.replace(/social_/gu, "")
                         ]
+                        if (dmgType.includes("social"))
+                            Session.AddSceneChar(charRef)
                         break
                     }
                     // no default
                 }
-                LOG(`Adjusting Damage: (${D.JS(trait)}, ${D.JS(dtype)}, ${D.JS(amount)})`, "adjustDamage")
+                LOG(`Adjusting Damage: (${D.JS(trait)}, ${D.JS(dmgType)}, ${D.JS(amount)})`, "adjustDamage")
                 return adjustTrait(charRef, traitName, targetVal, minVal, maxVal, defaultVal, deltaType)
             }
             return false

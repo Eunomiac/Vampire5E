@@ -143,6 +143,12 @@ const Roller = (() => {
                     })
                 D.Alert(`Flag Status for Next Roll: ${D.JS(STATEREF.nextRollFlags, true)}<br><br>Is NPC Roll? ${STATEREF.isNextRollNPC}`, "NEXT ROLL FLAGS")
                 break
+            case "!oblivrouse":
+                if (playerIsGM(msg.playerid)) {
+                    STATEREF.oblivionRouse = !STATEREF.oblivionRouse
+                    D.Alert(`Next SPC Rouse Check ${STATEREF.oblivionRouse && "<b>IS</b>" || "<b>IS NOT</b>"} for Oblivion.`, "!oblivrouse")
+                }
+                break
             case "!frenzyinitroll":	// !projectroll @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
                 lockRoller(true)
                 STATEREF.frenzyRoll = `${args.join(" ").split("|")[0]}|`
@@ -178,12 +184,14 @@ const Roller = (() => {
                 if (!VAL({ charobj: charObj }, "handleInput")) return
                 if (STATEREF.isNextRollNPC && playerIsGM(msg.playerid)) {
                     STATEREF.isNextRollNPC = false
-                    makeNewRoll(charObj, rollType, params, Object.assign(_.clone(STATEREF.nextRollFlags), { isDiscRoll: call === "!discroll", isNPCRoll: true, isOblivionRoll: call.includes("obv") }))
+                    makeNewRoll(charObj, rollType, params, Object.assign(_.clone(STATEREF.nextRollFlags), { isDiscRoll: call === "!discroll", isNPCRoll: true, isOblivionRoll: STATEREF.oblivionRouse === true }))
+                    STATEREF.oblivionRouse = false
                     //STATEREF.nextRollFlags = {}
                 } else if (isLocked) {
                     return
                 } else if (playerIsGM(msg.playerid)) {
-                    makeNewRoll(charObj, rollType, params, Object.assign(_.clone(STATEREF.nextRollFlags), { isDiscRoll: call === "!discroll", isNPCRoll: false, isOblivionRoll: call.includes("obv") }))
+                    makeNewRoll(charObj, rollType, params, Object.assign(_.clone(STATEREF.nextRollFlags), { isDiscRoll: call === "!discroll", isNPCRoll: false, isOblivionRoll: STATEREF.oblivionRouse === true }))
+                    STATEREF.oblivionRouse = false
                     //STATEREF.nextRollFlags = {}                
                 } else {
                     makeNewRoll(charObj, rollType, params, { isDiscRoll: call === "!discroll", isNPCRoll: false, isOblivionRoll: call.includes("obv") })
@@ -438,6 +446,11 @@ const Roller = (() => {
                 D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getglobaleffects")
                 break
             }
+            case "!fixbigdice":
+                clearDice("bigDice")
+                makeDie("bigDice")
+                makeDie("bigDice")
+                break
             // no default
         }
     }
@@ -576,7 +589,8 @@ const Roller = (() => {
                 Hf: "https://s3.amazonaws.com/files.d20.io/images/87031674/bvrFCzyt8m7iOFLqzXTW-A/thumb.png?1563696679",
                 Bs: "https://s3.amazonaws.com/files.d20.io/images/87031676/xpWcXpa175_ushoG8Ozy7g/thumb.png?1563696683",
                 Of: "https://s3.amazonaws.com/files.d20.io/images/87031681/vTU_pKd-LzYrfHAzxhQNlg/thumb.png?1563696687",
-                Os: "https://s3.amazonaws.com/files.d20.io/images/87031687/lR5ndvbW1mm-lweHIoLQcA/thumb.png?1563696692"
+                Os: "https://s3.amazonaws.com/files.d20.io/images/87031687/lR5ndvbW1mm-lweHIoLQcA/thumb.png?1563696692",
+                Hb: "https://s3.amazonaws.com/files.d20.io/images/87031371/oJ0DAobJYHsJ-yqKp1JROg/thumb.png?1563696227"
             },
             blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
             diffFrame: "https://s3.amazonaws.com/files.d20.io/images/64184544/CnzRwB8CwKGg-0jfjCkT6w/thumb.png?1538736404",
@@ -817,7 +831,7 @@ const Roller = (() => {
                 },
                 subOutcome: {
                     bad: C.COLORS.orange,
-                    tainted: C.COLORS.darkpurple
+                    tainted: C.COLORS.brightpurple
                 }
             },
             rouse2: {
@@ -832,7 +846,7 @@ const Roller = (() => {
                 },
                 subOutcome: {
                     bad: C.COLORS.orange,
-                    tainted: C.COLORS.darkpurple
+                    tainted: C.COLORS.brightpurple
                 }
             },
             check: {
@@ -861,7 +875,7 @@ const Roller = (() => {
             margin: "<div style=\"display: inline-block; width: YYYpx; vertical-align: top; margin-top:ZZZpx; text-align: left; height: 100%; \"><span style=\"display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none; height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: left; margin-left: 10px; font-size: 12px;\">",
             outcomeRed: `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.brightred}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
             outcomeRedSmall: `<div style="display: block; width: 100%; margin-top: 5px; height: 14px; line-height: 14px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.brightred}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
-            outcomeGrey: `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.darkgrey}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
+            outcomePurple: `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.black}; display: block; width: 100%;  font-size: 22px; font-family: Voltaire; text-shadow: 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 4px rgb(255,255,255), 0px 0px 4px rgb(255,255,255), 0px 0px 6px rgb(255,255,255), 0px 0px 6px rgb(200,100,200), 0px 0px 8px rgb(200,100,200), 0px 0px 10px rgb(200,100,200), 0px 0px 15px rgb(200,100,200);">`,
             outcomeOrange: "<div style=\"display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;\"><span style=\"color: orange; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
             outcomeWhite: `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.white}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
             outcomeWhiteSmall: `<div style="display: block; margin-top: 5px; width: 100%; height: 14px; line-height: 14px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.white}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
@@ -891,8 +905,8 @@ const Roller = (() => {
                 HXs: `<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${C.COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial';">□</span>`,
                 HXb: `<span style="margin-right: 2px; width: 10px; text-align: center; color: ${C.COLORS.black}; height: 24px; vertical-align: middle; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: 0px 0px 2px ${C.COLORS.darkred}, 0px 0px 2px ${C.COLORS.darkred}, 0px 0px 2px ${C.COLORS.darkred}, 0px 0px 2px ${C.COLORS.darkred}, 0px 0px 2px ${C.COLORS.darkred}, 0px 0px 2px ${C.COLORS.darkred}, 0px 0px 2px ${C.COLORS.darkred}, 0px 0px 2px ${C.COLORS.darkred}, 0px 0px 2px ${C.COLORS.darkred}, 0px 0px 2px ${C.COLORS.darkred}, 0px 0px 2px ${C.COLORS.darkred}, 0px 0px 2px ${C.COLORS.darkred}; line-height: 22px;">♠</span>`,
                 HCb: `<span style="margin-right: 2px; width: 10px; text-align: center; color: ${C.COLORS.darkred}; height: 24px; vertical-align: middle; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}; line-height: 22px;">♠</span>`,
-                Of: `<span style="margin-right: 2px; width: 10px; text-align: center; color: ${C.COLORS.darkred}; height: 24px; vertical-align: middle; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: 0px 0px 1px ${C.COLORS.black}, 0px 0px 1px ${C.COLORS.black}, 0px 0px 1px ${C.COLORS.black}, 0px 0px 1px ${C.COLORS.black}, 0px 0px 1px ${C.COLORS.black}, 0px 0px 1px ${C.COLORS.black}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}, 0px 0px 2px ${C.COLORS.brightred}; line-height: 22px;">●</span>`,
-                Os: `<span style="margin-right: 2px; width: 10px; text-align: center; color: ${C.COLORS.black}; height: 24px; vertical-align: middle; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: 0px 0px 1px ${C.COLORS.white}, 0px 0px 1px ${C.COLORS.white}, 0px 0px 1px ${C.COLORS.white}, 0px 0px 1px ${C.COLORS.white}, 0px 0px 1px ${C.COLORS.white}, 0px 0px 1px ${C.COLORS.white}, 0px 0px 2px ${C.COLORS.white}, 0px 0px 2px ${C.COLORS.white}, 0px 0px 2px ${C.COLORS.white}, 0px 0px 2px ${C.COLORS.white}, 0px 0px 2px ${C.COLORS.white}, 0px 0px 2px ${C.COLORS.white}; line-height: 22px;">●</span>`,
+                Of: `<span style="margin-right: 2px; width: 10px; text-align: center; color: ${C.COLORS.darkred}; height: 24px; vertical-align: middle; display: inline-block; font-size: 18px; font-family: 'Arial'; line-height: 22px; text-shadow: 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 4px rgb(255,255,255), 0px 0px 4px rgb(255,255,255), 0px 0px 6px rgb(255,255,255), 0px 0px 6px rgb(200,100,200), 0px 0px 8px rgb(200,100,200), 0px 0px 10px rgb(200,100,200), 0px 0px 15px rgb(200,100,200);">●</span>`,
+                Os: `<span style="margin-right: 2px; width: 10px; text-align: center; color: ${C.COLORS.black}; height: 24px; vertical-align: middle; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 4px rgb(255,255,255), 0px 0px 4px rgb(255,255,255), 0px 0px 6px rgb(255,255,255), 0px 0px 6px rgb(200,100,200), 0px 0px 8px rgb(200,100,200), 0px 0px 10px rgb(200,100,200), 0px 0px 15px rgb(200,100,200); line-height: 22px;">●</span>`,
                 g: `<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle; color: ${C.COLORS.darkgrey}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span>`
             },
             secret: {
@@ -922,7 +936,7 @@ const Roller = (() => {
             STATEREF[category] = STATEREF[category] || []
             if (VAL({ graphic: obj }, "registerDie")) {
                 obj.set({
-                    imgsrc: IMAGES.dice.Bf,
+                    imgsrc: IMAGES[category].Bf,
                     layer: "objects",
                     isdrawing: true,
                     name: `rollerDie_${category}_${STATEREF[category].length}`,
@@ -957,7 +971,7 @@ const Roller = (() => {
             const posRef = POSITIONS.dice[category],
                 die = createObj("graphic", {
                     _pageid: D.PAGEID,
-                    imgsrc: IMAGES.dice.Bf,
+                    imgsrc: IMAGES[category].Bf,
                     left: posRef.left + posRef.spread * STATEREF[category].length,
                     top: posRef.top,
                     width: posRef.width,
@@ -1120,15 +1134,28 @@ const Roller = (() => {
         //Media.OrderImages("map")
 
         },
-        scaleFrame = (row, width) => {
+        scaleFrame = (row, width, isChangingOffRow = true) => {
             if (width < 0) {
-                for (let i = 0; i < 9; i++) {
-                    Media.Set(`rollerImage_topMid_${i + 1}`, "blank")
-                    Media.Set(`rollerImage_bottomMid_${i + 1}`, "blank")
-                }
-                Media.SetParams("rollerImage_topEnd_1", { left: 300 })
-                Media.SetParams("rollerImage_bottomEnd_1", { left: 300 })
+                if (row === "top") {
+                    for (const thisRow of isChangingOffRow ? ["top", "bottom"] : ["top"]) {
+                        Media.SetParams(`rollerImage_${thisRow}End_1`, { left: 300 })
+                        for (let i = 0; i < 9; i++)
+                            Media.Set(`rollerImage_${thisRow}Mid_${i + 1}`, "blank")
+                        Media.Set("rollerImage_diffFrame_1", "blank")
+                    }
+                } else {
+                    D.Alert("Setting Front Frame to TopOnly")
+                    Media.SetParams("rollerImage_bottomEnd_1", { left: 300 })
+                    Media.Set("rollerImage_bottomEnd_1", "blank")
+                    for (let i = 0; i < 9; i++)
+                        Media.Set(`rollerImage_bottomMid_${i + 1}`, "blank")
+                    Media.Set("rollerImage_frontFrame_1", "topOnly")
+                }                
             } else {
+                if (row === "bottom" || isChangingOffRow) {
+                    Media.Set("rollerImage_frontFrame_1", "base")
+                    Media.Set("rollerImage_bottomEnd_1", "base")
+                }
                 const stretchWidth = Math.max(width, 120),
                     imgs = [Media.GetObj(`rollerImage_${row}End`)],
                     blanks = [],
@@ -1203,18 +1230,22 @@ const Roller = (() => {
             try {
                 die.set(dieParams)
             } catch (errObj) {
-                D.Alert(`Failed to set die ${D.JS(dieCat)}:${D.JS(dieVal)} with params: ${D.JS(dieParams, true)}`, "setDie")
+                return THROW(`Failed to set die ${D.JS(dieCat)}:${D.JS(dieVal)} with params: ${D.JS(dieParams, true)}`, "setDie", errObj)
             }
 
             return die
         },
         selectDie = (dieNum, dieCat) => {
+            const rollRecord = getCurrentRoll(false)
             STATEREF.selected[dieCat] = STATEREF.selected[dieCat] || []
             if (STATEREF.selected[dieCat].includes(dieNum)) {
                 setDie(dieNum, dieCat, STATEREF[dieCat][dieNum].value)
                 STATEREF.selected[dieCat] = _.without(STATEREF.selected[dieCat], dieNum)
             } else {
-                setDie(dieNum, dieCat, "selected")
+                const selectImg = rollRecord.rollResults.wpCost === 0 ? "selectedFree" :
+                    rollRecord.rollResults.wpCost === 1 ? "selected" :
+                        "selectedDouble"
+                setDie(dieNum, dieCat, selectImg)
                 STATEREF.selected[dieCat].push(dieNum)
                 if (STATEREF.selected[dieCat].length > 3)
                     selectDie(STATEREF.selected[dieCat][0], dieCat)
@@ -2217,14 +2248,17 @@ const Roller = (() => {
                     break
                 case "rouse2":
                 case "rouse":
-                    if (rollResults.isOblivionRoll)
+                    if (rollData.isOblivionRoll) {
                         rollResults.diceVals = _.map(rollResults.rolls, rol =>
                             parseInt(rol.slice(1)) === 1 ? "Of" :
                                 parseInt(rol.slice(1)) === 10 ? "Os" :
                                     parseInt(rol.slice(1)) < 6 ? "Hb" : "Bs")
-                    else
+                    } else
                         rollResults.diceVals = _.map(rollResults.rolls, rol => parseInt(rol.slice(1)) < 6 ? "Hb" : "Bs")
                     if (rollResults.diceVals.length > 1) {
+                        //let newDiceVals = []
+                        //Of Hb Os Bs
+                        //if rollResults.diceVals.includes("")
                         let [res1, res2] = rollResults.diceVals
                         if (res1 === "Bs" || res2 === "Of")
                             rollResults.diceVals = [res2, res1]
@@ -2381,6 +2415,12 @@ const Roller = (() => {
                     }
                 /* falls through */
                 case "trait":
+                    if (Session.IsTesting) {
+                        posFlagLines.push("TestPosFlag (●●)")
+                        negFlagLines.push("TestNegFlag (●●●●)")
+                        redFlagLines.push("TestRedFlag (●●●●●)")
+                        goldFlagLines.push("TestGoldFlag (●)")
+                    }
                     //D.Alert(`posFlagLines.length: ${posFlagLines.length}<br>${D.JS(posFlagLines)}`)
                     if (posFlagLines.length && !rollFlags.isHidingDicePool && !rollFlags.isHidingTraits) {
                         rollLines.posMods = {
@@ -2442,7 +2482,6 @@ const Roller = (() => {
                 default:
                     return THROW(`Unrecognized rollType: ${D.JS(rollData.rollType)}`, "APPLYROLL: START")
             }
-
 
             if (rollData.diff === 0)
                 Media.Set("rollerImage_diffFrame", "blank")
@@ -2559,9 +2598,9 @@ const Roller = (() => {
                             case "rouse":
                                 introPhrase = introPhrase || `${D.Capitalize(displayName)}:`
                                 logPhrase = logPhrase || ":"
-                                logLines.mainRoll = `${CHATSTYLES.check}Rouse Check`
+                                logLines.mainRoll = `${CHATSTYLES.check}${rollData.isOblivionRoll ? "Oblivion " : ""}Rouse Check`
                                 stLines.mainRoll = logLines.mainRoll
-                                rollLines.mainRoll.text = `Rouse Check${rollLines.mainRoll.text}`
+                                rollLines.mainRoll.text = `${rollData.isOblivionRoll ? "Oblivion " : ""}Rouse Check${rollLines.mainRoll.text}`
                                 break
                             case "check":
                                 introPhrase = introPhrase || `${D.Capitalize(displayName)}:`
@@ -2732,23 +2771,23 @@ const Roller = (() => {
                             case "rouse":
                             case "rouse2":
                                 if (rollResults.diceVals.length === 2 && rollResults.total > 0 && _.any(rollResults.diceVals, v => v.includes("O")) && _.any(rollResults.diceVals, v => v.includes("H"))) {
-                                    rollLines.outcome.text = "COSTLY RESTRAINT?"
-                                    rollLines.subOutcome.text = "Choose: Humanity or Hunger?"
-                                    logLines.outcome = `${CHATSTYLES.outcomeOrange}Choose: Humanity or Hunger?</span></div>`
-                                    rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "bad")
-                                    rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "bad")
-                                } else if (_.any(rollResults.diceVals, v => v.includes("O"))) {
+                                    rollLines.outcome.text = "RESTRAINT AT A COST?"
+                                    rollLines.subOutcome = { text: "Choose: Humanity or Hunger?" }
+                                    logLines.outcome = `${CHATSTYLES.outcomePurple}HUMANITY or HUNGER?</span></div>`
+                                    rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "tainted")
+                                    rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "tainted")
+                                } else if (_.all(rollResults.diceVals, v => v.includes("O"))) {
                                     if (rollResults.total > 0) {
-                                        rollLines.outcome.text = "RESTRAINED"
-                                        rollLines.subOutcome.text = "You are tainted by the Abyss..."
-                                        logLines.outcome = `${CHATSTYLES.outcomeGrey}RESTRAINED but TAINTED</span></div>`
+                                        rollLines.outcome.text = "SMOTHERED..."
+                                        rollLines.subOutcome = { text: "The Abyss drags you deeper..." }
+                                        logLines.outcome = `${CHATSTYLES.outcomePurple}RESTRAINED but TAINTED</span></div>`
                                         rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "grey")
                                         rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "tainted")
                                         deltaAttrs.stains = 1
                                     } else {
-                                        rollLines.outcome.text = "HUNGER ROUSED!"
-                                        rollLines.subOutcome.text = "You are tainted by the Abyss..."
-                                        logLines.outcome = `${CHATSTYLES.outcomeGrey}ROUSED AND TAINTED!</span></div>`
+                                        rollLines.outcome.text = "THE HUNGRY DARK"                                        
+                                        rollLines.subOutcome = { text: "The Abyss drags you deeper..." }
+                                        logLines.outcome = `${CHATSTYLES.outcomePurple}ROUSED and TAINTED!</span></div>`
                                         rollLines.outcome = setColor("outcome", rollData.type, rollLines.outcome, "worst")
                                         rollLines.subOutcome = setColor("subOutcome", rollData.type, rollLines.subOutcome, "tainted")
                                         deltaAttrs.stains = 1
@@ -2862,48 +2901,52 @@ const Roller = (() => {
                             top: yShift
                         }
                     }, rollData.type))
+                
                     
                 bookends = [diceObjs[0], diceObjs[filteredDice.length - 1]]
 
                 if (filteredDice.length && (!bookends || bookends.length < 2 || _.isUndefined(bookends[0]) || _.isUndefined(bookends[1])))
                     return THROW(`Bookends Not Found.  DiceObjs.length is ${diceObjs.length}, rollResults.diceVals is ${rollResults.diceVals.length}: ${D.JS(diceObjs)}`, "displayRoll")
 
-                spread = !filteredDice.length ? 150 : bookends[1].get("left") - bookends[0].get("left")
+                spread = !filteredDice.length ? -1 : bookends[1].get("left") - bookends[0].get("left")
 
                 scaleFrame("bottom", spread)
                 for (let i = 0; i < STATEREF[diceCats[1]].length; i++)
                     setDie(i, diceCats[1], "blank")
                 if (["rouse", "rouse2", "check", "project", "secret", "humanity", "willpower", "remorse"].includes(rollData.type) || rollResults.isNoWPReroll)
                     DragPads.Toggle("selectDie", false)
+                const outcomePos = {left: Media.GetTextData("outcome").left, width: Media.GetTextWidth("outcome", rollLines.outcome.text)},
+                    bottomEndData = Media.GetData("rollerImage_bottomEnd")
+                bottomEndData.left = Media.GetObj("rollerImage_bottomEnd").get("left")
+                if (!filteredDice.length) {
+                    rollLines.outcome.shifttop = rollLines.outcome.shifttop || 0 - 95
+                    rollLines.subOutcome.shifttop = rollLines.subOutcome.shifttop || 0 - 95
+                    rollLines.difficulty.shifttop = rollLines.difficulty.shifttop || 0 - 98
+                    rollLines.margin.shifttop = rollLines.margin.shifttop || 0 - 95
+                    rollLines.resultCount.shifttop = rollLines.resultCount.shifttop || 0 - 95
+                    rollLines.goldMods.shifttop = rollLines.goldMods.shifttop || 0 - 95
+                    rollLines.goldMods.shiftleft = (rollLines.outcome.shiftleft || 0) + outcomePos.width + 20
+                    rollLines.redMods.shifttop = rollLines.redMods.shifttop || 0 - 95
+                    rollLines.redMods.shiftleft = (rollLines.outcome.shiftleft || 0) + outcomePos.width + 20
+                    Media.SetParams("rollerImage_diffFrame", {top: 150})
+                    D.Alert("RollLines Set to No Bottom")
+                } else if (bottomEndData.left + 0.5 * bottomEndData.width - 100 < outcomePos.left + outcomePos.width) {
+                    rollLines.redMods.shifttop = (rollLines.redMods.shifttop || 0) - 95
+                    rollLines.goldMods.shifttop = (rollLines.goldMods.shifttop || 0) - 95
+                    rollLines.redMods.shiftleft = bottomEndData.left - outcomePos.left + 0.5 * bottomEndData.width + 20
+                    rollLines.goldMods.shiftleft = bottomEndData.left - outcomePos.left + 0.5 * bottomEndData.width + 20
+                    Media.SetParams("rollerImage_diffFrame", {top: 250})
+                } else {
+                    rollLines.redMods.shiftleft = outcomePos.width + 20
+                    rollLines.goldMods.shiftleft = outcomePos.width + 20
+                    Media.SetParams("rollerImage_diffFrame", {top: 250})
+                }
                 _.each(rollLines, (args, name) => {
                     Media.SetText(name, args)
                     txtWidths[name] = Media.GetTextWidth(name)
                 })
-                spread = (txtWidths.posMods || 0) + (txtWidths.negMods || 0) + 20
-                const [bottomEndData, outcomeData] = [Media.GetData("rollerImage_bottomEnd"), Media.GetTextData("outcome")],
-                    redPosParams = {
-                        shifttop: rollLines.redMods.shifttop || 0,
-                        shiftleft: txtWidths.outcome + 20
-                    },
-                    goldPosParams = {
-                        shifttop: rollLines.goldMods.shifttop || 0,
-                        shiftleft: txtWidths.outcome + 20
-                    }
-                bottomEndData.left = Media.GetObj("rollerImage_bottomEnd").get("left")
-                DB(`bottomEndData: ${D.JS(bottomEndData)}<br>outcomeData: ${D.JS(outcomeData)}<br><br>RedPosParams: ${D.JS(redPosParams)}<br>GoldPosParams: ${D.JS(goldPosParams)}`, "displayRoll")
-                DB(`COMPARE: ${bottomEndData.left + 0.5 * bottomEndData.width - 100} <--> ${outcomeData.left + txtWidths.outcome}`, "displayRoll")
-                if (bottomEndData.left + 0.5 * bottomEndData.width - 100 < outcomeData.left + txtWidths.outcome) {
-                    redPosParams.shifttop = (redPosParams.shifttop || 0) - 95
-                    goldPosParams.shifttop = (goldPosParams.shifttop || 0) - 95
-                    redPosParams.shiftleft = bottomEndData.left - outcomeData.left + 0.5 * bottomEndData.width + 20
-                    goldPosParams.shiftleft = bottomEndData.left - outcomeData.left + 0.5 * bottomEndData.width + 20
-                }
-                DB(`NEW redPosParams: ${D.JS(redPosParams)}<br>NEW goldPosParams: ${D.JS(goldPosParams)}`, "displayRoll")
-                Media.SetText("goldMods", Object.assign(_.omit(rollLines.goldMods, "text"), redPosParams))
-                Media.SetText("redMods", Object.assign(_.omit(rollLines.redMods, "text"), goldPosParams))
-                //spread += txtWidths.posMods && txtWidths.negMods ? 100 : 0
-                spread = Math.max(spread, txtWidths.mainRoll)
-                scaleFrame("top", spread)
+                spread = Math.max((txtWidths.posMods || 0) + (txtWidths.negMods || 0) + 20, txtWidths.mainRoll)
+                scaleFrame("top", spread, false)
                 D.RunFX("bloodBolt", POSITIONS.bloodBoltFX)
             }
             if (_.values(deltaAttrs).length) {
@@ -2960,6 +3003,8 @@ const Roller = (() => {
             if (charObj) {
                 Char.Damage(charObj, "willpower", "spent", rollResults.wpCost)
                 if (VAL({ number: rollResults.wpCostAfterReroll })) {
+                    if (rollResults.wpCost === 0 && rollResults.wpCostAfterReroll > 0)
+                        rollResults.goldFlagLines = _.reject(rollResults.goldFlagLines, v => v.includes("Free Reroll"))
                     rollResults.wpCost = rollRecord.rollResults.wpCostAfterReroll
                     delete rollResults.wpCostAfterReroll
                 }
