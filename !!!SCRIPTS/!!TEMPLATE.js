@@ -24,7 +24,7 @@ const XX_SCRIPTNAME_XX = (() => {
         regHandlers = () => {
             on("chat:message", msg => {
                 const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid)) && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
+                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
                     const who = msg.who || "API",
                         call = args.shift()
                     handleInput(msg, who, call, args)
@@ -34,7 +34,7 @@ const XX_SCRIPTNAME_XX = (() => {
     // #endregion
 
     // #region LOCAL INITIALIZATION
-    const initialize = () => {
+    const initialize = () => { // eslint-disable-line no-empty-function
     }
     // #endregion	
 

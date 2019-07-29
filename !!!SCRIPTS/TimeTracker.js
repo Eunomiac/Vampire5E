@@ -19,7 +19,7 @@ const TimeTracker = (() => {
         regHandlers = () => {
             on("chat:message", msg => {
                 const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid)) && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
+                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
                     const who = msg.who || "API",
                         call = args.shift()
                     handleInput(msg, who, call, args)
@@ -1001,13 +1001,17 @@ const TimeTracker = (() => {
             const thisAlarm = STATEREF.Alarms.Ahead.shift()
             if (Session.IsTesting || Session.IsSessionActive) {
                 for (const action of thisAlarm.actions)
-                    if (_.isFunction(action))
+                    if (VAL({function: action}))
                         action()
-                if (thisAlarm.displayTo.includes("all"))
+                    else if (VAL({string: action}))
+                        sendChat("", action)
+                if (thisAlarm.displayTo.includes("all")) {
                     sendChat("Alarm", thisAlarm.message)
-                else
+                } else {
                     for (const player of thisAlarm.displayTo)
                         sendChat("Alarm", `/w ${D.GetName(player)} ${thisAlarm.message}`)
+                    D.Alert(`${thisAlarm.message}<br><br>Sent To: ${D.JS(thisAlarm.displayTo)}`, "TimeTracker: ALARM")
+                }
             }
             STATEREF.Alarms.Behind.unshift(thisAlarm)
         },

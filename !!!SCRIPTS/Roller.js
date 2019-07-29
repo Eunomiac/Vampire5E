@@ -19,7 +19,7 @@ const Roller = (() => {
         regHandlers = () => {
             on("chat:message", msg => {
                 const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid)) && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
+                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
                     const who = msg.who || "API",
                         call = args.shift()
                     handleInput(msg, who, call, args)
@@ -53,157 +53,441 @@ const Roller = (() => {
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
+    const newHandleInput = (msg, who, call, args) => {        
+        let charObj, params,
+            name = "",
+            [isSilent, isMaskingTraits] = [false, false]
+        switch (call) {
+            case "add": case "set": {
+                switch (args.shift().toLowerCase()) {
+                    case "sec": case "secret": case "secrecy": {
+                        switch (args[0].toLowerCase()) {
+                            case "name": case "identity":
+                                STATEREF.nextRollFlags = {
+                                    isHidingName: true,
+                                    isHidingTraits: false,
+                                    isHidingTraitVals: false,
+                                    isHidingDicePool: false,
+                                    isHidingDifficulty: false,
+                                    isHidingResult: false,
+                                    isHidingOutcome: false
+                                }
+                                break
+                            case "traitvals":
+                                STATEREF.nextRollFlags = {
+                                    isHidingName: false,
+                                    isHidingTraits: false,
+                                    isHidingTraitVals: true,
+                                    isHidingDicePool: false,
+                                    isHidingDifficulty: false,
+                                    isHidingResult: false,
+                                    isHidingOutcome: false
+                                }
+                                break
+                            case "traits":
+                                STATEREF.nextRollFlags = {
+                                    isHidingName: false,
+                                    isHidingTraits: true,
+                                    isHidingTraitVals: true,
+                                    isHidingDicePool: false,
+                                    isHidingDifficulty: false,
+                                    isHidingResult: false,
+                                    isHidingOutcome: false
+                                }
+                                break
+                            case "dice": case "dicepool": case "pool":
+                                STATEREF.nextRollFlags = {
+                                    isHidingName: false,
+                                    isHidingTraits: true,
+                                    isHidingTraitVals: true,
+                                    isHidingDicePool: true,
+                                    isHidingDifficulty: false,
+                                    isHidingResult: false,
+                                    isHidingOutcome: false
+                                }
+                                break
+                            case "result":
+                                STATEREF.nextRollFlags = {
+                                    isHidingName: false,
+                                    isHidingTraits: true,
+                                    isHidingTraitVals: true,
+                                    isHidingDicePool: true,
+                                    isHidingDifficulty: false,
+                                    isHidingResult: true,
+                                    isHidingOutcome: false
+                                }
+                                break
+                            case "outcome":
+                                STATEREF.nextRollFlags = {
+                                    isHidingName: false,
+                                    isHidingTraits: true,
+                                    isHidingTraitVals: true,
+                                    isHidingDicePool: true,
+                                    isHidingDifficulty: false,
+                                    isHidingResult: true,
+                                    isHidingOutcome: true
+                                }
+                                break
+                            default:
+                                for (const flag of ["Name", "Traits", "TraitVals", "DicePool", "Difficulty", "Result", "Outcome"])
+                                    _.each(args, v => {
+                                        const isNegating = v.startsWith("!")
+                                        if (D.FuzzyMatch(flag, v.replace(/!/gu, "")))
+                                            STATEREF.nextRollFlags[`isHiding${flag}`] = !isNegating
+                                        if (D.FuzzyMatch("NPC", v.replace(/!/gu, "")))
+                                            STATEREF.isNextRollNPC = !isNegating
+                                    })
+                                break               
+                        }
+                        D.Alert(`Flag Status for Next Roll: ${D.JS(STATEREF.nextRollFlags, true)}`, "NEXT ROLL FLAGS")
+                        break
+                    }
+                    case "charfx": case "chareffect": {
+                        let chars = D.GetChars(msg)
+                        for (const char of chars) {
+                            let rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|"))
+                            rollEffects.push(...args.join(" ").split("|"))
+                            setAttrs(char.id, { rolleffects: _.uniq(rollEffects).join("|") })
+                            D.Alert(`Roll Effects on ${D.GetName(char)} revised to:<br><br>${rollEffects.join("<br>")}`, "ROLLER: !addchareffect")
+                        }
+                        break
+                    }
+                    case "globalfx": case "globaleffect": {
+                        for (const effect of _.compact(args.join(" ").split("|")))
+                            STATEREF.rollEffects[effect] = []
+                        let rollStrings = []
+                        for (let i = 0; i < _.keys(STATEREF.rollEffects).length; i++)
+                            rollStrings.push(`${i + 1}: ${_.keys(STATEREF.rollEffects)[i]}`)
+                        D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getglobaleffects")
+                        break
+                    }
+                    case "globalexclude": case "globalex": case "globalexc": {
+                        const charObj = D.GetChar(msg) || D.GetChar(args.shift())
+                        if (VAL({ charObj: charObj }, "!addglobalexclude")) {
+                            let effectString = args.join(" ")
+                            if (VAL({ number: effectString }))
+                                effectString = _.keys(STATEREF.rollEffects)[parseInt(effectString - 1)]
+                            else
+                                effectString = _.find(_.keys(STATEREF.rollEffects, v => D.FuzzyMatch(effectString, v)))
+                            if (STATEREF.rollEffects[effectString]) {
+                                STATEREF.rollEffects[effectString].push(charObj.id)
+                                D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATEREF.rollEffects[effectString])}`, "!addglobalexclude")
+                            } else {
+                                D.Alert(`No exclusion found for reference '${effectString}'`, "!addglobalexclude")
+                            }
+                        } else {
+                            D.Alert("You must select a character token or supply a valid character reference (without spaces)!", "!addglobalexclude")
+                        }
+                        break
+                    }
+                    // no default                            
+                }
+                break
+            }
+            case "toggle": {
+                switch (args.shift().toLowerCase()) {
+                    case "obliv":
+                        if (playerIsGM(msg.playerid)) {
+                            STATEREF.oblivionRouse = !STATEREF.oblivionRouse
+                            D.Alert(`Next SPC Rouse Check ${STATEREF.oblivionRouse && "<b>IS</b>" || "<b>IS NOT</b>"} for Oblivion.`, "!oblivrouse")
+                        }
+                        break
+                    case "npc":
+                        if (playerIsGM(msg.playerid))
+                            STATEREF.isNextRollNPC = true
+                        break
+                    case "dice":
+                        _.each(STATEREF.diceList, (v, dNum) => {
+                            const thisDie = setDie(dNum, "diceList", "Hs")
+                            if (_.isObject(thisDie)) {
+                                thisDie.set("layer", "objects")
+                                thisDie.set("isdrawing", false)
+                            }
+                        })
+                        _.each(STATEREF.bigDice, (v, dNum) => {
+                            const thisDie = setDie(dNum, "bigDice", "Bs")
+                            if (_.isObject(thisDie)) {
+                                thisDie.set("layer", "objects")
+                                thisDie.set("isdrawing", false)
+                            }
+                        })
+                        break
+                    // no default
+        
+                }
+                break
+            }
+            case "roll": {
+                const rollCall = args.shift().toLowerCase()
+                let rollType
+                switch (rollCall) {
+                    case "frenzyinit":	// !projectroll @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
+                        lockRoller(true)
+                        STATEREF.frenzyRoll = `${args.join(" ").split("|")[0]}|`
+                        sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px ${C.COLORS.crimson} outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: ${C.COLORS.white}; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: ${C.COLORS.brightred}; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${args.join(" ").split("|")[0]}</span><br/></div>`)
+                        break
+                    case "frenzy": rollType = rollType || "frenzy"
+                        lockRoller(false)
+                        args = `${STATEREF.frenzyRoll} ${args[0]}`.split(" ")
+                        DB(`Parsing Frenzy Args: ${D.JS(args)}`, "!frenzyroll")
+                                /* falls through */
+                    case "disc": case "trait": rollType = rollType || "trait"
+                                /* falls through */
+                    case "rouse": case "rouseobv": rollType = rollType || "rouse"
+                                /* falls through */
+                    case "rouse2": case "rouse2obv": rollType = rollType || "rouse2"
+                                /* falls through */
+                    case "check": rollType = rollType || "check"
+                                /* falls through */
+                    case "willpower": rollType = rollType || "willpower"
+                                /* falls through */
+                    case "humanity": rollType = rollType || "humanity"
+                                /* falls through */
+                    case "remorse": rollType = rollType || "remorse"
+                                /* falls through */
+                    case "project": rollType = rollType || "project"
+                                /* all continue below */
+                        params = _.map(args.join(" ").split("|"), v => v.trim())
+                        name = params.shift()
+                        charObj = D.GetChar(name)
+                        DB(`Received Roll: ${D.JS(call)} ${name}|${params.join("|")}
+                                    ... PARAMS: [${D.JS(params.join(", "))}]
+                                    ... CHAROBJ: ${D.JS(charObj)}`, "handleInput")
+                        if (VAL({ charobj: charObj }, "handleInput")) {
+                            if (STATEREF.isNextRollNPC && playerIsGM(msg.playerid)) {
+                                STATEREF.isNextRollNPC = false
+                                makeNewRoll(charObj, rollType, params, Object.assign(_.clone(STATEREF.nextRollFlags), { isDiscRoll: rollCall === "disc", isNPCRoll: true, isOblivionRoll: STATEREF.oblivionRouse === true || rollCall.includes("obv") }))
+                                STATEREF.oblivionRouse = false
+                                        //STATEREF.nextRollFlags = {}
+                            } else if (isLocked) {
+                                break
+                            } else if (playerIsGM(msg.playerid)) {
+                                makeNewRoll(charObj, rollType, params, Object.assign(_.clone(STATEREF.nextRollFlags), { isDiscRoll: rollCall === "disc", isNPCRoll: false, isOblivionRoll: STATEREF.oblivionRouse === true || rollCall.includes("obv") }))
+                                STATEREF.oblivionRouse = false
+                                        //STATEREF.nextRollFlags = {}                
+                            } else {
+                                makeNewRoll(charObj, rollType, params, { isDiscRoll: rollCall === "disc", isNPCRoll: false, isOblivionRoll: rollCall.includes("obv") })
+                            }
+                            delete STATEREF.frenzyRoll
+                        }
+                        break
+                    case "secret": {
+                        rollType = "secret"
+                        const flags = args.shift().toLowerCase()
+                        params = args.join(" ").split("|")
+                        isSilent = flags.includes("x")
+                        isMaskingTraits = flags.includes("n")
+                        let chars
+                        if (!msg.selected || !msg.selected[0])
+                            chars = D.GetChars("registered")
+                        else
+                            chars = D.GetChars(msg)
+                        if (params.length >= 1 && params.length <= 3)
+                            makeSecretRoll(chars, params, isSilent, isMaskingTraits)
+                        break
+                    }
+                    // no default
+                }
+                break
+            }
+            case "init": {                
+                switch(args.shift().toLowerCase()) {
+                    case "roller":
+                        clearRoller()
+                        break
+                    case "frame":
+                        initFrame()
+                        break
+                    // no default
+                }
+                break
+            }
+            case "get": {
+                switch (args.shift().toLowerCase()) {
+                    case "roll":
+                        changeRoll(parseInt(args.shift()))
+                        break
+                    case "npcroll":
+                        changeRoll(parseInt(args.shift()), true)
+                        break
+                    case "prev": case "last": case "prevroll": case "lastroll":
+                        loadPrevRoll()
+                        break
+                    case "next": case "nextroll":
+                        loadNextRoll()
+                        break
+                    case "prevnpc": case "lastnpc": case "prevnpcroll": case "lastnpcroll":
+                        loadPrevRoll(true)
+                        break
+                    case "nextnpc": case "nextnpcroll":
+                        loadNextRoll(true)
+                        break
+                    case "res": case "resonance":
+                        if (args[0] === "x")
+                            args[0] = ""
+                        if (args[1] === "x")
+                            args[1] = ""
+                        displayResonance(...args)
+                        break
+                    case "charfx": case "chareffects": {
+                        let char = D.GetChar(msg)
+                        if (!char) {
+                            THROW("Select a character token first!", "!getchareffects")
+                            break
+                        }
+                        let rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|")),
+                            rollStrings = []
+                        for (let i = 0; i < rollEffects.length; i++)
+                            rollStrings.push(`${i + 1}: ${rollEffects[i]}`)
+                        D.Alert(`Roll Effects on ${D.GetName(char)}:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getchareffects")
+                        break
+                    }
+                    case "globalfx": case "globaleffects": {
+                        let rollStrings = []
+                        for (let i = 0; i < _.keys(STATEREF.rollEffects).length; i++)
+                            rollStrings.push(`${i + 1}: ${_.keys(STATEREF.rollEffects)[i]}`)
+                        D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getglobaleffects")
+                        break
+                    }
+                    // no default        
+                }
+                break
+            }
+            case "clear": case "del": case "rem": {
+                switch (args.shift().toLowerCase()) {
+                    case "charfx": case "chareffect": {
+                        let char = D.GetChar(msg)
+                        if (!char) {
+                            THROW("Select a character token first!", "!getchareffects")
+                            break
+                        }
+                        let rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|"))
+                        rollEffects.splice(Math.max(0, parseInt(args.shift()) - 1), 1)
+                        setAttrs(char.id, { rolleffects: rollEffects.join("|") })
+                        D.Alert(`Roll Effects on ${D.GetName(char)} revised to:<br><br>${rollEffects.join("<br>")}`, "ROLLER: !delchareffects")
+                        break
+                    }
+                    case "globalfx": case "globaleffect": {
+                        delete STATEREF.rollEffects[_.keys(STATEREF.rollEffects)[Math.max(0, parseInt(args.shift()) - 1)]]
+                        D.Alert(`Global Roll Effects revised to:<br><br>${_.keys(STATEREF.rollEffects).join("<br>")}`, "ROLLER: !delglobaleffect")
+                        break
+                    }
+                    case "globalexclude": case "globalex": case "globalexc": {
+                        const charObj = D.GetChar(msg) || D.GetChar(args.shift())
+                        if (VAL({ charObj: charObj }, "!delglobalexclude")) {
+                            let effectString = args.join(" ")
+                            if (VAL({ number: effectString }))
+                                effectString = _.keys(STATEREF.rollEffects)[parseInt(effectString - 1)]
+                            else
+                                effectString = _.find(_.keys(STATEREF.rollEffects, v => D.FuzzyMatch(effectString, v)))
+                            if (!STATEREF.rollEffects[effectString]) {
+                                const checkEffects = _.filter(STATEREF.rollEffects, v => v.includes(charObj.id))
+                                if (checkEffects.length === 1)
+                                    effectString = _.keys(checkEffects)[0]
+                                else if (checkEffects.length === 0)
+                                    D.Alert(`Character ${D.JS(charObj.get("name"))} is not listed in any roll effect exclusions.`, "!delglobalexclude")
+                                else if (checkEffects.length > 1)
+                                    D.Alert(`Character ${D.JS(charObj.get("name"))} is present in multiple exclusions, please be more specific: ${D.JS(checkEffects, true)}`, "!delglobalexclude")
+                
+                            }
+                            if (STATEREF.rollEffects[effectString]) {
+                                STATEREF.rollEffects[effectString] = _.without(STATEREF.rollEffects[effectString], charObj.id)
+                                D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATEREF.rollEffects[effectString])}`, "!delglobalexclude")
+                            } else {
+                                D.Alert(`No exclusion found for reference '${effectString}'`, "!delglobalexclude")
+                            }
+                        } else {
+                            D.Alert("You must select a character token or supply a valid character reference (without spaces)!", "!delglobalexclude")
+                        }
+                        break
+                        // no default
+                    }
+                    // no default                          
+                }
+                break
+            }
+            // no default
+        }
+    }
     const handleInput = (msg, who, call, args) => {
         let [rollType, charObj, diceNums, resonance, resDetails, resIntLine, params] = new Array(7),
             name = "",
             [isSilent, isMaskingTraits] = [false, false]
-        switch (call) { 		// !traitroll @{character_name}|Strength,Resolve|3|5|0|ICompulsion:3,IPhysical:2
-            //case "!setrollertext":
-            //setText(args.shift(), )
-            case "!s": case "!sec": case "!secret":
-                switch (args.shift().toLowerCase()) {
-                    case "name": case "identity":
-                        STATEREF.nextRollFlags = {
-                            isHidingName: true,
-                            isHidingTraits: false,
-                            isHidingTraitVals: false,
-                            isHidingDicePool: false,
-                            isHidingDifficulty: false,
-                            isHidingResult: false,
-                            isHidingOutcome: false
-                        }
-                        break
-                    case "traitvals":
-                        STATEREF.nextRollFlags = {
-                            isHidingName: false,
-                            isHidingTraits: false,
-                            isHidingTraitVals: true,
-                            isHidingDicePool: false,
-                            isHidingDifficulty: false,
-                            isHidingResult: false,
-                            isHidingOutcome: false
-                        }
-                        break
-                    case "traits":
-                        STATEREF.nextRollFlags = {
-                            isHidingName: false,
-                            isHidingTraits: true,
-                            isHidingTraitVals: true,
-                            isHidingDicePool: false,
-                            isHidingDifficulty: false,
-                            isHidingResult: false,
-                            isHidingOutcome: false
-                        }
-                        break
-                    case "dice": case "dicepool": case "pool":
-                        STATEREF.nextRollFlags = {
-                            isHidingName: false,
-                            isHidingTraits: true,
-                            isHidingTraitVals: true,
-                            isHidingDicePool: true,
-                            isHidingDifficulty: false,
-                            isHidingResult: false,
-                            isHidingOutcome: false
-                        }
-                        break
-                    case "result":
-                        STATEREF.nextRollFlags = {
-                            isHidingName: false,
-                            isHidingTraits: true,
-                            isHidingTraitVals: true,
-                            isHidingDicePool: true,
-                            isHidingDifficulty: false,
-                            isHidingResult: true,
-                            isHidingOutcome: false
-                        }
-                        break
-                    case "outcome":
-                        STATEREF.nextRollFlags = {
-                            isHidingName: false,
-                            isHidingTraits: true,
-                            isHidingTraitVals: true,
-                            isHidingDicePool: true,
-                            isHidingDifficulty: false,
-                            isHidingResult: true,
-                            isHidingOutcome: true
-                        }
-                        break
-                    // no default                        
-                }
-                D.Alert(`Flag Status for Next Roll: ${D.JS(STATEREF.nextRollFlags, true)}`, "NEXT ROLL FLAGS")
-                break
-            case "!setrollflags":
-                for (const flag of ["Name", "Traits", "TraitVals", "DicePool", "Difficulty", "Result", "Outcome"])
-                    _.each(args, v => {
-                        const isNegating = v.startsWith("!")
-                        if (D.FuzzyMatch(flag, v.replace(/!/gu, "")))
-                            STATEREF.nextRollFlags[`isHiding${flag}`] = !isNegating
-                        if (D.FuzzyMatch("NPC", v.replace(/!/gu, "")))
-                            STATEREF.isNextRollNPC = !isNegating
-                    })
-                D.Alert(`Flag Status for Next Roll: ${D.JS(STATEREF.nextRollFlags, true)}<br><br>Is NPC Roll? ${STATEREF.isNextRollNPC}`, "NEXT ROLL FLAGS")
-                break
-            case "!oblivrouse":
+        switch (call) { 		
+            case "obliv": case "!oblivrouse":
                 if (playerIsGM(msg.playerid)) {
                     STATEREF.oblivionRouse = !STATEREF.oblivionRouse
                     D.Alert(`Next SPC Rouse Check ${STATEREF.oblivionRouse && "<b>IS</b>" || "<b>IS NOT</b>"} for Oblivion.`, "!oblivrouse")
                 }
                 break
-            case "!frenzyinitroll":	// !projectroll @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
+            case "frenzyinit": case "!frenzyinitroll":	// !projectroll @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
                 lockRoller(true)
                 STATEREF.frenzyRoll = `${args.join(" ").split("|")[0]}|`
                 sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px ${C.COLORS.crimson} outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: ${C.COLORS.white}; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: ${C.COLORS.brightred}; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${args.join(" ").split("|")[0]}</span><br/></div>`)
                 return
-            case "!frenzyroll": rollType = rollType || "frenzy"
+            case "frenzy": case "!frenzyroll": rollType = rollType || "frenzy"
                 lockRoller(false)
                 args = `${STATEREF.frenzyRoll} ${args[0]}`.split(" ")
                 DB(`Parsing Frenzy Args: ${D.JS(args)}`, "!frenzyroll")
             /* falls through */
-            case "!discroll": case "!traitroll": rollType = rollType || "trait"
+            case "disc": case "!discroll": case "!traitroll": rollType = rollType || "trait"
             /* falls through */
-            case "!rouseroll": case "!rouserollobv": rollType = rollType || "rouse"
+            case "rouse": case "!rouseroll": case "!rouserollobv": rollType = rollType || "rouse"
             /* falls through */
-            case "!rouse2roll": case "!rouse2rollobv": rollType = rollType || "rouse2"
+            case "rouse2": case "!rouse2roll": case "!rouse2rollobv": rollType = rollType || "rouse2"
             /* falls through */
-            case "!checkroll": rollType = rollType || "check"
+            case "check": case "!checkroll": rollType = rollType || "check"
             /* falls through */
-            case "!willpowerroll": rollType = rollType || "willpower"
+            case "willpower": case "!willpowerroll": rollType = rollType || "willpower"
             /* falls through */
-            case "!humanityroll": rollType = rollType || "humanity"
+            case "humanity": case "!humanityroll": rollType = rollType || "humanity"
             /* falls through */
-            case "!remorseroll": rollType = rollType || "remorse"
+            case "remorse": case "!remorseroll": rollType = rollType || "remorse"
             /* falls through */
-            case "!projectroll": rollType = rollType || "project"
+            case "project": case "!projectroll": { rollType = rollType || "project"
                 /* all continue below */
                 params = _.map(args.join(" ").split("|"), v => v.trim())
                 name = params.shift()
                 charObj = D.GetChar(name)
+                let rollFlags = _.clone(STATEREF.nextRollFlags)
                 DB(`Received Roll: ${D.JS(call)} ${name}|${params.join("|")}
                     ... PARAMS: [${D.JS(params.join(", "))}]
                     ... CHAROBJ: ${D.JS(charObj)}`, "handleInput")
                 if (!VAL({ charobj: charObj }, "handleInput")) return
+                if (
+                    ["check", "rouse", "rouse2"].includes(rollType) ||
+                    rollType === "frenzy" && STATEREF.frenzyRoll && D.IsIn(STATEREF.frenzyRoll.slice("|")[0], _.map(D.GetChars("registered"), v => v.get("name")))
+                )
+                    rollFlags = {
+                        isHidingName: false,
+                        isHidingTraits: false,
+                        isHidingTraitVals: false,
+                        isHidingDicePool: false,
+                        isHidingDifficulty: false,
+                        isHidingResult: false,
+                        isHidingOutcome: false
+                    }
                 if (STATEREF.isNextRollNPC && playerIsGM(msg.playerid)) {
                     STATEREF.isNextRollNPC = false
-                    makeNewRoll(charObj, rollType, params, Object.assign(_.clone(STATEREF.nextRollFlags), { isDiscRoll: call === "!discroll", isNPCRoll: true, isOblivionRoll: STATEREF.oblivionRouse === true }))
+                    makeNewRoll(charObj, rollType, params, Object.assign(rollFlags, { isDiscRoll: call === "!discroll", isNPCRoll: true, isOblivionRoll: STATEREF.oblivionRouse === true }))
                     STATEREF.oblivionRouse = false
-                    //STATEREF.nextRollFlags = {}
                 } else if (isLocked) {
                     return
                 } else if (playerIsGM(msg.playerid)) {
-                    makeNewRoll(charObj, rollType, params, Object.assign(_.clone(STATEREF.nextRollFlags), { isDiscRoll: call === "!discroll", isNPCRoll: false, isOblivionRoll: STATEREF.oblivionRouse === true }))
-                    STATEREF.oblivionRouse = false
-                    //STATEREF.nextRollFlags = {}                
+                    makeNewRoll(charObj, rollType, params, Object.assign(rollFlags, { isDiscRoll: call === "!discroll", isNPCRoll: false, isOblivionRoll: STATEREF.oblivionRouse === true }))
+                    STATEREF.oblivionRouse = false             
                 } else {
                     makeNewRoll(charObj, rollType, params, { isDiscRoll: call === "!discroll", isNPCRoll: false, isOblivionRoll: call.includes("obv") })
                 }
                 delete STATEREF.frenzyRoll
                 break
+            }
             case "!npcroll": // Run this to lock the roller and declare the NEXT roll to be an NPC roll.
                 if (!playerIsGM(msg.playerid)) return
                 STATEREF.isNextRollNPC = true
                 break
             case "!cleanRoller":
-                cleanRoller()
+                clearRoller()
                 break
             case "!buildFrame":
                 initFrame()
@@ -450,6 +734,89 @@ const Roller = (() => {
                 clearDice("bigDice")
                 makeDie("bigDice")
                 makeDie("bigDice")
+                break
+            case "!s": case "!sec": case "!secret":
+                switch (args.shift().toLowerCase()) {
+                    case "name": case "identity":
+                        STATEREF.nextRollFlags = {
+                            isHidingName: true,
+                            isHidingTraits: false,
+                            isHidingTraitVals: false,
+                            isHidingDicePool: false,
+                            isHidingDifficulty: false,
+                            isHidingResult: false,
+                            isHidingOutcome: false
+                        }
+                        break
+                    case "traitvals":
+                        STATEREF.nextRollFlags = {
+                            isHidingName: false,
+                            isHidingTraits: false,
+                            isHidingTraitVals: true,
+                            isHidingDicePool: false,
+                            isHidingDifficulty: false,
+                            isHidingResult: false,
+                            isHidingOutcome: false
+                        }
+                        break
+                    case "traits":
+                        STATEREF.nextRollFlags = {
+                            isHidingName: false,
+                            isHidingTraits: true,
+                            isHidingTraitVals: true,
+                            isHidingDicePool: false,
+                            isHidingDifficulty: false,
+                            isHidingResult: false,
+                            isHidingOutcome: false
+                        }
+                        break
+                    case "dice": case "dicepool": case "pool":
+                        STATEREF.nextRollFlags = {
+                            isHidingName: false,
+                            isHidingTraits: true,
+                            isHidingTraitVals: true,
+                            isHidingDicePool: true,
+                            isHidingDifficulty: false,
+                            isHidingResult: false,
+                            isHidingOutcome: false
+                        }
+                        break
+                    case "result":
+                        STATEREF.nextRollFlags = {
+                            isHidingName: false,
+                            isHidingTraits: true,
+                            isHidingTraitVals: true,
+                            isHidingDicePool: true,
+                            isHidingDifficulty: false,
+                            isHidingResult: true,
+                            isHidingOutcome: false
+                        }
+                        break
+                    case "outcome":
+                        STATEREF.nextRollFlags = {
+                            isHidingName: false,
+                            isHidingTraits: true,
+                            isHidingTraitVals: true,
+                            isHidingDicePool: true,
+                            isHidingDifficulty: false,
+                            isHidingResult: true,
+                            isHidingOutcome: true
+                        }
+                        break
+                        // no default                        
+                }
+                D.Alert(`Flag Status for Next Roll: ${D.JS(STATEREF.nextRollFlags, true)}`, "NEXT ROLL FLAGS")
+                break
+            case "!setrollflags":
+                for (const flag of ["Name", "Traits", "TraitVals", "DicePool", "Difficulty", "Result", "Outcome"])
+                    _.each(args, v => {
+                        const isNegating = v.startsWith("!")
+                        if (D.FuzzyMatch(flag, v.replace(/!/gu, "")))
+                            STATEREF.nextRollFlags[`isHiding${flag}`] = !isNegating
+                        if (D.FuzzyMatch("NPC", v.replace(/!/gu, "")))
+                            STATEREF.isNextRollNPC = !isNegating
+                    })
+                D.Alert(`Flag Status for Next Roll: ${D.JS(STATEREF.nextRollFlags, true)}<br><br>Is NPC Roll? ${STATEREF.isNextRollNPC}`, "NEXT ROLL FLAGS")
                 break
             // no default
         }
@@ -1028,7 +1395,7 @@ const Roller = (() => {
 
             return false
         },
-        cleanRoller = () => {
+        clearRoller = () => {
             for (const textLine of _.keys(TEXTLINES))
                 Media.SetText(textLine, " ")
             _.each(STATEREF.diceList, (v, dNum) => {
@@ -2248,12 +2615,12 @@ const Roller = (() => {
                     break
                 case "rouse2":
                 case "rouse":
-                    if (rollData.isOblivionRoll) {
+                    if (rollData.isOblivionRoll) 
                         rollResults.diceVals = _.map(rollResults.rolls, rol =>
                             parseInt(rol.slice(1)) === 1 ? "Of" :
                                 parseInt(rol.slice(1)) === 10 ? "Os" :
                                     parseInt(rol.slice(1)) < 6 ? "Hb" : "Bs")
-                    } else
+                    else
                         rollResults.diceVals = _.map(rollResults.rolls, rol => parseInt(rol.slice(1)) < 6 ? "Hb" : "Bs")
                     if (rollResults.diceVals.length > 1) {
                         //let newDiceVals = []
@@ -3126,167 +3493,215 @@ const Roller = (() => {
 
     // #region Getting Random Resonance Based On District/Site Parameters
     const getResonance = (posRes = "", negRes = "", isDoubleAcute, testCycles = 0) => {
-        let resProbs = [],
-            randNum = null,
-            resonances = {
-                "Choleric": "c",
-                "Melancholic": "m",
-                "Phlegmatic": "p",
-                "Sanguine": "s",
-                "Primal": "r",
-                "Ischemic": "i",
-                "Mercurial": "q"
-            },
-            discLines = {
-                "Choleric": "the resonant disciplines of Celerity and Potence",
-                "Melancholic": "the resonant disciplines of Fortitude and Obfuscate",
-                "Phlegmatic": "the resonant disciplines of Auspex and Dominate",
-                "Sanguine": "the resonant disciplines of Blood Sorcery and Presence",
-                "Primal": "the resonant disciplines of Animalism and Protean",
-                "Ischemic": "the resonant discipline of Oblivion",
-                "Mercurial": "the resonant practice of Alchemy"
-            },
-            tracer = "",
-            resList = _.keys(resonances)
-        _.each(resonances, (v, k) => {
-            if (posRes.includes(v)) {
-                resList = _.without(resList, k)
-                resList.unshift(k)
-            }
-            if (negRes.includes(v)) {
-                resList = _.without(resList, k)
-                resList.push(k)
-            }
-        })
-        if (!(posRes + negRes).includes("r"))
-            resList = _.without(resList, "Primal")
-        if (!(posRes + negRes).includes("i"))
-            resList = _.without(resList, "Ischemic")
-        if (!(posRes + negRes).includes("q"))
-            resList = _.without(resList, "Mercurial")
-        resList = resList.slice(0, 4)
-        switch (posRes.length + negRes.length) {
-            case 3:
-                tracer += "3 Args, "
-                if (posRes.length === 2) {
-                    tracer += "2 PosRes, "
-                    if (posRes.charAt(0) === posRes.charAt(1)) {
-                        tracer += "Equal: pos2neg"
-                        resProbs = C.RESONANCEODDS.pos2neg
-                    } else {
-                        tracer += "UnEqual: posposneg"
-                        resProbs = C.RESONANCEODDS.posposneg
-                    }
-                } else if (negRes.charAt(0) === negRes.charAt(1)) {
-                    tracer += "2 NegRes + Equal: neg2pos"
-                    resProbs = C.RESONANCEODDS.neg2pos
-                } else {
-                    tracer += "2 NegRes + UnEqual: posnegneg"
-                    resProbs = C.RESONANCEODDS.posnegneg
+            let resProbs = [],
+                randNum = null,
+                resonances = {
+                    "Choleric": "c",
+                    "Melancholic": "m",
+                    "Phlegmatic": "p",
+                    "Sanguine": "s",
+                    "Primal": "r",
+                    "Ischemic": "i",
+                    "Mercurial": "q"
+                },
+                discLines = {
+                    "Choleric": "the resonant disciplines of Celerity and Potence",
+                    "Melancholic": "the resonant disciplines of Fortitude and Obfuscate",
+                    "Phlegmatic": "the resonant disciplines of Auspex and Dominate",
+                    "Sanguine": "the resonant disciplines of Blood Sorcery and Presence",
+                    "Primal": "the resonant disciplines of Animalism and Protean",
+                    "Ischemic": "the resonant discipline of Oblivion",
+                    "Mercurial": "the resonant practice of Alchemy"
+                },
+                tracer = "",
+                resList = _.keys(resonances)
+            _.each(resonances, (v, k) => {
+                if (posRes.includes(v)) {
+                    resList = _.without(resList, k)
+                    resList.unshift(k)
                 }
-                break
-            case 2:
-                tracer += "2 Args, "
-                if (posRes.length === 2) {
-                    tracer += "2 PosRes, "
-                    if (posRes.charAt(0) === posRes.charAt(1)) {
-                        tracer += "Equal: pos2"
-                        resProbs = C.RESONANCEODDS.pos2
-                    } else {
-                        tracer += "UnEqual: pospos"
-                        resProbs = C.RESONANCEODDS.pospos
-                    }
-                } else if (negRes.length === 2) {
-                    tracer += "2 NegRes, "
-                    if (negRes.charAt(0) === negRes.charAt(1)) {
-                        tracer += "Equal: neg2"
-                        resProbs = C.RESONANCEODDS.neg2
-                    } else {
-                        tracer += "UnEqual: negneg"
-                        resProbs = C.RESONANCEODDS.negneg
-                    }
-                } else {
-                    tracer += "Neg & Pos: posneg"
-                    resProbs = C.RESONANCEODDS.posneg
+                if (negRes.includes(v)) {
+                    resList = _.without(resList, k)
+                    resList.push(k)
                 }
-                break
-            case 1:
-                tracer += "1 Arg, " + (posRes.length === 1 ? "Pos: pos" : "Neg: neg")
-                resProbs = posRes.length === 1 ? C.RESONANCEODDS.pos : C.RESONANCEODDS.neg
-                break
-            case 0:
-                tracer += "0 Args, norm"
-                resProbs = C.RESONANCEODDS.norm
-                break
-            default:
-                return THROW("Too many variables!", "getResonance")
-        }
-        let theseProbs = []
-        _.each(resProbs, v => {
-            theseProbs.push({
-                neg: v.neg,
-                fleet: v.fleet,
-                intense: v.intense,
-                acute: v.acute
             })
-        })
-        if (isDoubleAcute === "2")
-            for (let i = 0; i < 4; i++) {
-                theseProbs[i].acute = 3 * theseProbs[i].acute
-                theseProbs[i].neg = 0.92 * theseProbs[i].neg
-                theseProbs[i].intense = 0.92 * theseProbs[i].intense
-                theseProbs[i].fleet = 0.92 * theseProbs[i].fleet
+            if (!(posRes + negRes).includes("r"))
+                resList = _.without(resList, "Primal")
+            if (!(posRes + negRes).includes("i"))
+                resList = _.without(resList, "Ischemic")
+            if (!(posRes + negRes).includes("q"))
+                resList = _.without(resList, "Mercurial")
+            resList = resList.slice(0, 4)
+            switch (posRes.length + negRes.length) {
+                case 3:
+                    tracer += "3 Args, "
+                    if (posRes.length === 2) {
+                        tracer += "2 PosRes, "
+                        if (posRes.charAt(0) === posRes.charAt(1)) {
+                            tracer += "Equal: pos2neg"
+                            resProbs = C.RESONANCEODDS.pos2neg
+                        } else {
+                            tracer += "UnEqual: posposneg"
+                            resProbs = C.RESONANCEODDS.posposneg
+                        }
+                    } else if (negRes.charAt(0) === negRes.charAt(1)) {
+                        tracer += "2 NegRes + Equal: neg2pos"
+                        resProbs = C.RESONANCEODDS.neg2pos
+                    } else {
+                        tracer += "2 NegRes + UnEqual: posnegneg"
+                        resProbs = C.RESONANCEODDS.posnegneg
+                    }
+                    break
+                case 2:
+                    tracer += "2 Args, "
+                    if (posRes.length === 2) {
+                        tracer += "2 PosRes, "
+                        if (posRes.charAt(0) === posRes.charAt(1)) {
+                            tracer += "Equal: pos2"
+                            resProbs = C.RESONANCEODDS.pos2
+                        } else {
+                            tracer += "UnEqual: pospos"
+                            resProbs = C.RESONANCEODDS.pospos
+                        }
+                    } else if (negRes.length === 2) {
+                        tracer += "2 NegRes, "
+                        if (negRes.charAt(0) === negRes.charAt(1)) {
+                            tracer += "Equal: neg2"
+                            resProbs = C.RESONANCEODDS.neg2
+                        } else {
+                            tracer += "UnEqual: negneg"
+                            resProbs = C.RESONANCEODDS.negneg
+                        }
+                    } else {
+                        tracer += "Neg & Pos: posneg"
+                        resProbs = C.RESONANCEODDS.posneg
+                    }
+                    break
+                case 1:
+                    tracer += "1 Arg, " + (posRes.length === 1 ? "Pos: pos" : "Neg: neg")
+                    resProbs = posRes.length === 1 ? C.RESONANCEODDS.pos : C.RESONANCEODDS.neg
+                    break
+                case 0:
+                    tracer += "0 Args, norm"
+                    resProbs = C.RESONANCEODDS.norm
+                    break
+                default:
+                    return THROW("Too many variables!", "getResonance")
             }
-
-        theseProbs = _.flatten(_.map(theseProbs, v => _.values(v)))
-        //D.Alert(`theseProbs: ${D.JS(theseProbs)}`)
-        if (parseInt(testCycles) > 0) {
-            let record = {
-                NG: { C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0 },
-                FL: { C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0 },
-                IN: { C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0 },
-                AC: { C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0 },
-                C: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
-                M: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
-                P: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
-                S: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
-                R: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
-                I: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
-                Q: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 }
-            }
-            for (let i = 0; i < parseInt(testCycles); i++) {
-                randNum = Math.random()
-                let testProbs = _.clone(theseProbs),
-                    testResonances = _.clone(resList)
-                do
-                    randNum -= testProbs.shift()
-                while (randNum > 0)
-                record[["NG", "FL", "IN", "AC"][3 - testProbs.length % 4]][resonances[testResonances.reverse()[Math.floor(testProbs.length / 4)]].toUpperCase()]++
-                record[["NG", "FL", "IN", "AC"][3 - testProbs.length % 4]].TOT++
-                record[resonances[testResonances.reverse()[Math.floor(testProbs.length / 4)]].toUpperCase()][["NG", "FL", "IN", "AC"][3 - testProbs.length % 4]]++
-                record[resonances[testResonances.reverse()[Math.floor(testProbs.length / 4)]].toUpperCase()].TOT++
-            }
-            _.each(record, (data, k) => {
-                record[k].PER = `${Math.round(data.TOT / parseInt(testCycles) * 10000) / 100}%`
-                record[k] = `${data.TOT} (${record[k].PER})`
+            let theseProbs = []
+            _.each(resProbs, v => {
+                theseProbs.push({
+                    neg: v.neg,
+                    fleet: v.fleet,
+                    intense: v.intense,
+                    acute: v.acute
+                })
             })
-            D.Alert(`Trace: ${D.JS(tracer)}<br><br>testProbs: ${D.JS(theseProbs)}<br><br>Resonances: ${D.JS(resList)}<br><br>${D.JS(record)}`)
+            if (isDoubleAcute === "2")
+                for (let i = 0; i < 4; i++) {
+                    theseProbs[i].acute = 3 * theseProbs[i].acute
+                    theseProbs[i].neg = 0.92 * theseProbs[i].neg
+                    theseProbs[i].intense = 0.92 * theseProbs[i].intense
+                    theseProbs[i].fleet = 0.92 * theseProbs[i].fleet
+                }
+
+            theseProbs = _.flatten(_.map(theseProbs, v => _.values(v)))
+            //D.Alert(`theseProbs: ${D.JS(theseProbs)}`)
+            if (parseInt(testCycles) > 0) {
+                let record = {
+                    NG: { C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0 },
+                    FL: { C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0 },
+                    IN: { C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0 },
+                    AC: { C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0 },
+                    C: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
+                    M: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
+                    P: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
+                    S: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
+                    R: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
+                    I: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
+                    Q: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 }
+                }
+                for (let i = 0; i < parseInt(testCycles); i++) {
+                    randNum = Math.random()
+                    let testProbs = _.clone(theseProbs),
+                        testResonances = _.clone(resList)
+                    do
+                        randNum -= testProbs.shift()
+                    while (randNum > 0)
+                    record[["NG", "FL", "IN", "AC"][3 - testProbs.length % 4]][resonances[testResonances.reverse()[Math.floor(testProbs.length / 4)]].toUpperCase()]++
+                    record[["NG", "FL", "IN", "AC"][3 - testProbs.length % 4]].TOT++
+                    record[resonances[testResonances.reverse()[Math.floor(testProbs.length / 4)]].toUpperCase()][["NG", "FL", "IN", "AC"][3 - testProbs.length % 4]]++
+                    record[resonances[testResonances.reverse()[Math.floor(testProbs.length / 4)]].toUpperCase()].TOT++
+                }
+                _.each(record, (data, k) => {
+                    record[k].PER = `${Math.round(data.TOT / parseInt(testCycles) * 10000) / 100}%`
+                    record[k] = `${data.TOT} (${record[k].PER})`
+                })
+                D.Alert(`Trace: ${D.JS(tracer)}<br><br>testProbs: ${D.JS(theseProbs)}<br><br>Resonances: ${D.JS(resList)}<br><br>${D.JS(record)}`)
+            }
+
+            randNum = Math.random()
+            do
+                randNum -= theseProbs.shift()
+            while (randNum > 0)
+
+            let thisRes = resList.reverse()[Math.floor(theseProbs.length / 4)]
+
+            return [
+                ["Negligibly", "Fleetingly", "Intensely", "Acutely"][3 - theseProbs.length % 4],
+                thisRes,
+                discLines[thisRes]
+            ]
+            // Return ["Acute", "Choleric"];
+        },
+        displayResonance = (posRes = "", negRes = "", isDoubleAcute, testCycles = 0) => {
+            const resonance = getResonance(posRes, negRes, isDoubleAcute, testCycles)
+            let resDetails, resIntLine
+            switch (resonance[1].toLowerCase()) {
+                case "choleric":
+                    resDetails = "Angry ♦ Passionate ♦ Violent ♦ Envious"
+                    break
+                case "sanguine":
+                    resDetails = "Happy ♦ Horny ♦ Addicted ♦ Enthusiastic"
+                    break
+                case "melancholic":
+                    resDetails = "Sad ♦ Scared ♦ Intellectual ♦ Grounded"
+                    break
+                case "phlegmatic":
+                    resDetails = "Calm ♦ Apathetic ♦ Lazy ♦ Controlling"
+                    break
+                case "primal":
+                    resDetails = "Base ♦ Impulsive ♦ Irascible ♦ Insatiable"
+                    break
+                case "ischemic":
+                    resDetails = "Cold ♦ Amoral ♦ Patient ♦ Nihilistic"
+                    break
+                case "mercurial":
+                    resDetails = "Fluid ♦ Fatalistic ♦ Inscrutable ♦ Alien"
+                    break
+                // no default
+            }
+            switch (resonance[0].toLowerCase()) {
+                case "negligibly":
+                    resIntLine = `The blood carries only the smallest hint of ${resonance[1].toLowerCase()} resonance.  It is not strong enough to confer any benefits at all.`
+                    break
+                case "fleetingly":
+                    resIntLine = `The blood's faint ${resonance[1].toLowerCase()} resonance can guide you in developing ${resonance[2]}, but lacks any real power.`
+                    break
+                case "intensely":
+                    resIntLine = `The blood's strong ${resonance[1].toLowerCase()} resonance spreads through you, infusing your own vitae and enhancing both your control and understanding of ${resonance[2]}.`
+                    break
+                case "acutely":
+                    resIntLine = `This blood is special.  In addition to enhancing ${resonance[2]}, its ${resonance[1].toLowerCase()} resonance is so powerful that the emotions within have crystallized into a dyscracias.`
+                    break
+                // no default
+            }
+            sendChat("Resonance Check", C.CHATHTML.colorBlock([
+                C.CHATHTML.colorTitle(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
+                C.CHATHTML.colorHeader(resDetails),
+                C.CHATHTML.colorBody(resIntLine)
+            ]))
         }
-
-        randNum = Math.random()
-        do
-            randNum -= theseProbs.shift()
-        while (randNum > 0)
-
-        let thisRes = resList.reverse()[Math.floor(theseProbs.length / 4)]
-
-        return [
-            ["Negligibly", "Fleetingly", "Intensely", "Acutely"][3 - theseProbs.length % 4],
-            thisRes,
-            discLines[thisRes]
-        ]
-        // Return ["Acute", "Choleric"];
-    }
     // #endregion
 
     return {
@@ -3298,7 +3713,7 @@ const Roller = (() => {
 
         Select: selectDie,
         Reroll: wpReroll,
-        Clean: cleanRoller
+        Clean: clearRoller
     }
 })()
 

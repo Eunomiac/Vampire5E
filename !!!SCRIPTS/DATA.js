@@ -24,7 +24,7 @@ const D = (() => {
         regHandlers = () => {
             on("chat:message", msg => {
                 const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid)) && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
+                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
                     const who = msg.who || "API",
                         call = args.shift()
                     handleInput(msg, who, call, args)
@@ -1019,8 +1019,13 @@ const D = (() => {
                 // Check for grouping and property-picking, and transform the data accordingly:
                 if (VAL({ string: groupBy }) && ["rowID", "fullName", "attrName", "name", "val"].includes(groupBy)) {
                     finalRepData = _.groupBy(finalRepData, v => v[groupBy])
-                    if (VAL({ string: pickProperty }) && ["fullName", "attrName", "name", "obj", "val"].includes(pickProperty))
-                        finalRepData = _.mapObject(finalRepData, v => _.map(v, vv => vv[pickProperty]))
+                    if (VAL({ string: pickProperty }) && ["fullName", "attrName", "name", "obj", "val"].includes(pickProperty)) {
+                        const pickData = {}
+                        _.each(finalRepData, (v, k) => {
+                            pickData[k] = _.map(v, vv => vv[pickProperty])
+                        })
+                        finalRepData = pickData
+                    }
                 } else if (VAL({ string: pickProperty }) && ["fullName", "attrName", "name", "obj", "val"].includes(pickProperty)) {
                     finalRepData = _.map(finalRepData, v => v[pickProperty])
                 }

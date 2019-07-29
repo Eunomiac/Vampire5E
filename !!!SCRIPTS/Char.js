@@ -18,8 +18,10 @@ const Char = (() => {
         },
         regHandlers = () => {
             on("chat:message", msg => {
+                if (!msg.content.includes("Got a Message"))
+                    D.Alert(`Got a Message: ${D.JS(msg)}`)
                 const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid)) && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
+                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
                     const who = msg.who || "API",
                         call = args.shift()
                     handleInput(msg, who, call, args)
@@ -148,7 +150,7 @@ const Char = (() => {
                                     v[0],
                                     Math.max(parseInt(getAttrByName(v[1], "bp_slakekill")) + randomInteger(5 - parseInt(getAttrByName(v[1], "bp_slakekill"))) - 2, parseInt(getAttrByName(v[1], "bp_slakekill")))                                    
                                 ]),
-                                npcHungerStrings = _.map(npcHungers, v => "<tr><td>" + v.join("</td><td>") + "</td></tr>"),
+                                npcHungerStrings = _.map(npcHungers, v => "<tr><td>" + v.join("</td><td>") + "</td></tr>")/*,
                                 npcStats = _.map(npcVamps, v => "<tr><td>" + [
                                     v[0],
                                     getAttrByName(v[1], "clan"),
@@ -157,19 +159,13 @@ const Char = (() => {
                                     getAttrByName(v[1], "bp_slakekill"),
                                     parseInt(getAttrByName(v[1], "bp_slakekill")) + (3 - parseInt(getAttrByName(v[1], "bp_slakekill"))),
                                     Math.max(parseInt(getAttrByName(v[1], "bp_slakekill")) + randomInteger(5 - parseInt(getAttrByName(v[1], "bp_slakekill"))) - 2, parseInt(getAttrByName(v[1], "bp_slakekill")))
-                                ].join("</td><td>") + "</td></tr>"),
-                                npcHungerTable = `<table><tr><th style="width:150px;">ID</th><th style="width:150px;">Name</th><th style="width:50px;">Hunger</th></tr>${npcHungerStrings.join("")}</table>`,
-                                npcTable = `<table><tr><th style="width:150px;">Name</th><th style="width:75px;">Clan</th><th style="width:25px;">BP</th><th style="width:50px;">Hunger</th><th style="width:30px;">Min</th><th style="width:30px;">Max</th><th style="width:30px;">Rand</th></tr>${npcStats.join("")}</table>`
-                            D.Alert(npcHungerTable)
-                            /*
-                            for (const npcData of npcStats) {
-                                setAttrs(npcData[1])
-                            }
-                            */
+                                ].join("</td><td>") + "</td></tr>")*/,
+                                npcHungerTable = `<table><tr><th style="width:150px;">ID</th><th style="width:150px;">Name</th><th style="width:50px;">Hunger</th></tr>${npcHungerStrings.join("")}</table>`/*,
+                                //npcTable = `<table><tr><th style="width:150px;">Name</th><th style="width:75px;">Clan</th><th style="width:25px;">BP</th><th style="width:50px;">Hunger</th><th style="width:30px;">Min</th><th style="width:30px;">Max</th><th style="width:30px;">Rand</th></tr>${npcStats.join("")}</table>`
+                                */D.Alert(npcHungerTable)
                             break
                         }
-
-                            // no default
+                        // no default
                     }
                     break
                 case "set":
@@ -195,6 +191,7 @@ const Char = (() => {
                         }
                         case "stakes":
                             displayStakes()
+                            sendChat("Storyteller (GM)", "!char get charids")
                             break
                         case "desire":
                             displayDesires()
@@ -498,25 +495,60 @@ const Char = (() => {
                 Media.SetText("weeklyResources", resStrings.join("\n"))
             }
         },
+        sortCoterieStakes = (charRef) => {
+            const charObj = D.GetChar(charRef),
+                coterieRows = _.keys(_.omit(D.GetRepStats(charObj, "advantage", null, "advantage_type", "rowID", "val"), v => v[0] !== "Coterie")),
+                advData = D.GetRepStats(charObj, "advantage", null, null, "rowID"),
+                charAdvData = _.object(_.map(_.flatten(_.map(_.values(_.omit(advData, ...coterieRows)), v => _.filter(v, vv => vv.attrName === "advantage" && vv.name !== "advantage"))), v => [v.name, v.val])),
+                coterieAdvData = _.object(_.map(_.flatten(_.map(_.values(_.pick(advData, ...coterieRows)), v => _.filter(v, vv => vv.attrName === "advantage" && vv.name !== "advantage"))), v => [v.name, v.val]))
+            //D.Alert(`AdvStats <b>CHARACTER</b>: ${D.JS(charAdvData,true)}<br><br><b>COTERIE:</b> ${D.JS(coterieAdvData, true)}`)
+            return [charAdvData, coterieAdvData]
+        },
         displayStakes = () => {
-            const [col1Width, col2Width, col3Width] = [35, 250, 190],
+            const [col1Width, col2Width, col3Width] = [35, 250, 130],
                 textObj = Media.GetTextObj("stakedAdvantages"),
                 stakeData = [],
-                stakeStrings = []
+                stakeStrings = [],
+                coterieStakes = {}
             for (const charObj of D.GetChars("registered")) {
-                const projectStakes = []
+                const projectStakes = [],
+                    [, coterieAdvs] = sortCoterieStakes(charObj)
                 for (const attrName of ["projectstake1", "projectstake2", "projectstake3"])
                     projectStakes.push(...D.GetRepStats(charObj, "project", {projectstakes_toggle: "1"}, attrName))
+                //D.Alert(D.JS(projectStakes, true))
                 for (const stake of projectStakes) {
                     const advMax = (D.GetRepStat(charObj, "advantage", null, stake.name) || {val: null}).val,
                         endDate = (D.GetRepStat(charObj, "project", stake.rowID, "projectenddate") || {val: null}).val
+                    //D.Alert(`AdvMax: ${advMax}, EndDate: ${endDate}`)
+                    //D.Alert(`RepStats: ${D.JS(_.keys(charAdvData), true)}<br><br>${D.JS(_.keys(coterieAdvData))}`)
                     if (advMax && parseInt(stake.val) > 0)
-                        stakeData.push([_.values(D.GetCharVals(charObj, "initial"))[0], stake.name, Math.min(parseInt(stake.val), advMax), parseInt(advMax), endDate])
+                        if (_.keys(coterieAdvs).includes(stake.name))
+                            coterieStakes[stake.name] = {
+                                name: stake.name,
+                                total: (coterieStakes[stake.name] && coterieStakes[stake.name].total || 0) + parseInt(stake.val),
+                                inits: _.uniq([...(coterieStakes[stake.name] || {inits: []}).inits, _.values(D.GetCharVals(charObj, "initial"))[0]]),
+                                dates: _.uniq([...(coterieStakes[stake.name] || {dates: []}).dates, endDate]),
+                                dateStamp: [...(coterieStakes[stake.name] || {dateStamp: []}).dateStamp, TimeTracker.GetDate(endDate).getTime()],
+                                max: parseInt(advMax)
+                            }
+                        else
+                            stakeData.push([_.values(D.GetCharVals(charObj, "initial"))[0], stake.name, Math.min(parseInt(stake.val), advMax), parseInt(advMax), endDate])
                 }
+                D.Alert(D.JS(coterieStakes, true))
             }
-            if (_.flatten(_.values(STATEREF.weeklyResources)).length === 0) {
+            if (_.keys(coterieStakes).length + stakeData.length === 0) {
                 Media.SetText("stakedAdvantages", {text: " "})
             } else {
+                let thisString = "(C)"
+                for (const coterieData of _.values(coterieStakes)) {
+                    D.Alert(`dateStamps: ${D.JS(coterieData.dateStamp)}<br>Sorted: ${D.JS(_.sortBy(coterieData.dateStamp, v => v))}<br>Parsed: ${D.JS(TimeTracker.FormatDate(new Date(_.sortBy(coterieData.dateStamp, v => v)[0])))}`)
+                    const thisDate = TimeTracker.FormatDate(new Date(_.sortBy(coterieData.dateStamp, v => v)[0]))
+                    stakeStrings.push(`${thisString}${Media.Buffer(textObj, col1Width - Media.GetTextWidth(textObj, thisString, false))}${
+                        coterieData.name.toUpperCase()}${Media.Buffer(textObj, col2Width - Media.GetTextWidth(textObj, coterieData.name.toUpperCase(), false))}${
+                        "○".repeat(coterieData.total)}${"●".repeat(coterieData.max - coterieData.total)}${Media.Buffer(textObj, col3Width - Media.GetTextWidth(textObj, `${
+                        "○".repeat(coterieData.total)}${"●".repeat(coterieData.max - coterieData.total)}`, false))}${thisDate}`)
+                    thisString = ""
+                }
                 let lastInit = ""
                 for (const data of stakeData) {
                     const [init, name, staked, max, endDate] = data
