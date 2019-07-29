@@ -459,13 +459,14 @@ const Char = (() => {
                 entry[1] = Math.max(0, Math.min(entry[2], entry[1] + amount))
             D.Chat(D.GetChar(initial), C.CHATHTML.colorBlock([
                 C.CHATHTML.colorHeader("Weekly Resource Updated", C.STYLES.whiteMarble.header),
-                C.CHATHTML.colorBody(amount > 0 ? `${entry[0]} restored by ${amount} to ${entry[1]}/${entry[2]}` : `${Math.abs(amount)} ${entry[0]} spent, ${entry[2]-entry[1]} remaining.`, C.STYLES.whiteMarble.body)
-            ]))
+                C.CHATHTML.colorBody(amount < 0 ? `${entry[0]} restored by ${-1*amount} to ${entry[2]-entry[1]}/${entry[2]}` : `${Math.abs(amount)} ${entry[0]} spent, ${entry[2]-entry[1]} remaining.`, C.STYLES.whiteMarble.body)
+            ], C.STYLES.whiteMarble.block))
             displayResources()
         },
         resetResources = () => {
             _.each(STATEREF.weeklyResources, (data, init) => {
-                STATEREF.weeklyResources[init] = _.map(STATEREF.weeklyResources[init], v => v[1] = 0)
+                //D.Alert(`Init: ${D.JS(init)}, Data: ${D.JS(data, true)}<br>Map: ${D.JS(_.map(data, v => [v[0], 0, v[2]]))}`)
+                STATEREF.weeklyResources[init] = _.map(data, v => [v[0], 0, v[2]])
                 D.Chat(D.GetChar(init), C.CHATHTML.colorBlock([
                     C.CHATHTML.colorBody("Your weekly resources have been refreshed.", C.STYLES.whiteMarble.body)
                 ], C.STYLES.whiteMarble.block))

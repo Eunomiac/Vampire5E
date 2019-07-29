@@ -1840,8 +1840,8 @@ const Media = (() => {
                     const shadowOptions = Object.assign(_.omit(_.clone(TEXTREGISTRY[name]), "id"), {
                         name: `${name}Shadow`,
                         color: "rgb(0,0,0)",
-                        left: TEXTREGISTRY[name].left + Math.round(TEXTREGISTRY[name].font_size/10),
-                        top: TEXTREGISTRY[name].top + Math.round(TEXTREGISTRY[name].font_size/10),      
+                        left: TEXTREGISTRY[name].left + Math.round(TEXTREGISTRY[name].font_size/15),
+                        top: TEXTREGISTRY[name].top + Math.round(TEXTREGISTRY[name].font_size/15),      
                         shadowMaster: name
                     })
                     DB(`Shadow Options: ${D.JS(shadowOptions)}`, "regText")
