@@ -18,8 +18,6 @@ const Char = (() => {
         },
         regHandlers = () => {
             on("chat:message", msg => {
-                if (!msg.content.includes("Got a Message"))
-                    D.Alert(`Got a Message: ${D.JS(msg)}`)
                 const args = msg.content.split(/\s+/u)
                 if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
                     const who = msg.who || "API",
@@ -191,7 +189,6 @@ const Char = (() => {
                         }
                         case "stakes":
                             displayStakes()
-                            sendChat("Storyteller (GM)", "!char get charids")
                             break
                         case "desire":
                             displayDesires()
@@ -534,14 +531,14 @@ const Char = (() => {
                         else
                             stakeData.push([_.values(D.GetCharVals(charObj, "initial"))[0], stake.name, Math.min(parseInt(stake.val), advMax), parseInt(advMax), endDate])
                 }
-                D.Alert(D.JS(coterieStakes, true))
+                //D.Alert(D.JS(coterieStakes, true))
             }
             if (_.keys(coterieStakes).length + stakeData.length === 0) {
                 Media.SetText("stakedAdvantages", {text: " "})
             } else {
                 let thisString = "(C)"
                 for (const coterieData of _.values(coterieStakes)) {
-                    D.Alert(`dateStamps: ${D.JS(coterieData.dateStamp)}<br>Sorted: ${D.JS(_.sortBy(coterieData.dateStamp, v => v))}<br>Parsed: ${D.JS(TimeTracker.FormatDate(new Date(_.sortBy(coterieData.dateStamp, v => v)[0])))}`)
+                    //D.Alert(`dateStamps: ${D.JS(coterieData.dateStamp)}<br>Sorted: ${D.JS(_.sortBy(coterieData.dateStamp, v => v))}<br>Parsed: ${D.JS(TimeTracker.FormatDate(new Date(_.sortBy(coterieData.dateStamp, v => v)[0])))}`)
                     const thisDate = TimeTracker.FormatDate(new Date(_.sortBy(coterieData.dateStamp, v => v)[0]))
                     stakeStrings.push(`${thisString}${Media.Buffer(textObj, col1Width - Media.GetTextWidth(textObj, thisString, false))}${
                         coterieData.name.toUpperCase()}${Media.Buffer(textObj, col2Width - Media.GetTextWidth(textObj, coterieData.name.toUpperCase(), false))}${

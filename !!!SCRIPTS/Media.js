@@ -1025,45 +1025,57 @@ const Media = (() => {
             params = locRefs.replace(/:name:.*?;\s*?/gu, "").split(" ")
             DB(`CustomNames: ${D.JS(customNames)}, Params: ${D.JS(params)}`, "setLocation")
             //D.Alert(`PARAMS: ${D.JS(params)}`) .match(/^(\w+):[^:]*:?[^:]*:?(.+$)/ui)
-            const parsedParams = []
+            const parsedParams = {
+                DistrictCenter: "blank",
+                SiteCenter: "blank",
+                DistrictRight: "blank",
+                SiteRight: "blank",
+                DistrictLeft: "blank",
+                SiteLeft: "blank"
+            }
             for (const param of params) {
                 if (param.startsWith("Site")) hosts.push(param.split(":")[0])
                 if (param.includes(":same")) {
-                    const targetHost = param.split(":")[0] + "_1",
+                    const targetHost = param.split(":")[0],
                         targetType = targetHost.includes("District") ? "District" : "Site"
                     let imgSrc = getImageSrc(targetHost)
                     DB(`TargetHost: ${D.JS(targetHost)}, Type: ${D.JS(targetType)}, Src: ${D.JS(imgSrc)}`, "setLocation")
-                    if (!isImageActive(targetHost))
-                        switch (targetHost) {
-                            case "SiteLeft_1":
-                                hostOverride.SiteLeft = isImageActive("SiteBarCenter") ? getTextObj("SiteNameCenter").get("text") : null
-                            // falls through
-                            case "SiteRight_1":
-                                hostOverride.SiteRight = targetHost === "SiteRight_1" && isImageActive("SiteBarCenter") ? getTextObj("SiteNameCenter").get("text") : null
-                            // falls through
-                            case "DistrictLeft_1":
-                            case "DistrictRight_1":
-                                imgSrc = getImageSrc(targetType + "Center_1")
-                                break
-                            case "SiteCenter_1":
-                                hostOverride.SiteCenter = isImageActive("SiteBarLeft") ? getTextObj("SiteNameLeft").get("text") : null
-                            // falls through
-                            case "DistrictCenter_1":
-                                imgSrc = getImageSrc(targetType + "Left_1")
-                                break
-                        // no default
-                        }
+                    switch (targetHost) {
+                        case "SiteLeft":
+                            hostOverride.SiteLeft = isImageActive("SiteBarCenter") ? getTextObj("SiteNameCenter").get("text") : isImageActive("SiteBarLeft") ? getTextObj("SiteNameLeft").get("text") : null
+                        // falls through
+                        case "SiteRight":
+                            hostOverride.SiteRight = targetHost === "SiteRight" && (isImageActive("SiteBarCenter") ? getTextObj("SiteNameCenter").get("text") : isImageActive("SiteBarRight") ? getTextObj("SiteNameRight").get("text") : null)
+                        // falls through
+                        case "DistrictLeft":
+                        case "DistrictRight":
+                            imgSrc = isImageActive(targetType + "Center") ? getImageSrc(targetType + "Center") : getImageSrc(targetHost)
+                            break
+                        case "SiteCenter":
+                            hostOverride.SiteCenter = isImageActive("SiteBarLeft") ? getTextObj("SiteNameLeft").get("text") : isImageActive("SiteBarCenter") ? getTextObj("SiteNameCenter").get("text") : null
+                        // falls through
+                        case "DistrictCenter":
+                            imgSrc = isImageActive(targetType + "Left") ? getImageSrc(targetType + "Left") : getImageSrc(targetHost)
+                            break
+                    // no default
+                    }
                     DB(`Final Host: ${D.JS(targetHost)}, Src: ${D.JS(imgSrc)}, HostOverrides: ${D.JS(hostOverride)}`, "setLocation")
-                    parsedParams.push([targetHost, imgSrc])
+                    parsedParams[targetHost] = imgSrc
                 } else {
                     const [targetHost, imgSrc] = param.split(":")
                     DB(`Final Host: ${D.JS(targetHost)}, Src: ${D.JS(imgSrc)}`, "setLocation")
-                    parsedParams.push([targetHost, imgSrc])
+                    parsedParams[targetHost] = imgSrc
                 }
             }
-            DB(`Final Parsed Params: ${D.JS(parsedParams)}`, "setLocation")
-            for (const params of parsedParams)
-                setImage(...params)
+            if (parsedParams.DistrictLeft === parsedParams.DistrictRight && parsedParams.DistrictLeft !== "blank") {
+                parsedParams.DistrictCenter = parsedParams.DistrictLeft
+                parsedParams.DistrictLeft = "blank"
+                parsedParams.DistrictRight = "blank"
+            }
+            DB(`Final Parsed Params: ${D.JS(parsedParams, true)}`, "setLocation")
+            _.each(parsedParams, (v,k) => {
+                setImage(k, v)
+            })
             setImage("SiteBarCenter", "blank")
             setText("SiteNameCenter", " ")
             setImage("SiteBarLeft", "blank")
