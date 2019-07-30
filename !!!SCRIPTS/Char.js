@@ -499,7 +499,7 @@ const Char = (() => {
                 advData = D.GetRepStats(charObj, "advantage", null, null, "rowID"),
                 charAdvData = _.object(_.map(_.flatten(_.map(_.values(_.omit(advData, ...coterieRows)), v => _.filter(v, vv => vv.attrName === "advantage" && vv.name !== "advantage"))), v => [v.name, v.val])),
                 coterieAdvData = _.object(_.map(_.flatten(_.map(_.values(_.pick(advData, ...coterieRows)), v => _.filter(v, vv => vv.attrName === "advantage" && vv.name !== "advantage"))), v => [v.name, v.val]))
-            //D.Alert(`AdvStats <b>CHARACTER</b>: ${D.JS(charAdvData,true)}<br><br><b>COTERIE:</b> ${D.JS(coterieAdvData, true)}`)
+            DB(`<b>CHARACTER STAKES</b>: ${D.JS(charAdvData,true)}<br><br><b>COTERIE STAKES:</b> ${D.JS(coterieAdvData, true)}`, "sortCoterieStakes")
             return [charAdvData, coterieAdvData]
         },
         displayStakes = () => {
@@ -513,13 +513,15 @@ const Char = (() => {
                     [, coterieAdvs] = sortCoterieStakes(charObj)
                 for (const attrName of ["projectstake1", "projectstake2", "projectstake3"])
                     projectStakes.push(...D.GetRepStats(charObj, "project", {projectstakes_toggle: "1"}, attrName))
-                //D.Alert(D.JS(projectStakes, true))
+                DB(`Project Stakes: ${D.JS(projectStakes, true)}`, "displayStakes")
                 for (const stake of projectStakes) {
                     const advMax = (D.GetRepStat(charObj, "advantage", null, stake.name) || {val: null}).val,
                         endDate = (D.GetRepStat(charObj, "project", stake.rowID, "projectenddate") || {val: null}).val
-                    //D.Alert(`AdvMax: ${advMax}, EndDate: ${endDate}`)
-                    //D.Alert(`RepStats: ${D.JS(_.keys(charAdvData), true)}<br><br>${D.JS(_.keys(coterieAdvData))}`)
-                    if (advMax && parseInt(stake.val) > 0)
+                    DB(`... AdvMax: ${advMax}, EndDate: ${endDate
+                    }<br>... RepStats (Coterie): ${D.JS(_.keys(coterieAdvs), true)
+                    }<br>... Parsed End Date (${D.JS(TimeTracker.GetDate(endDate).getTime())}) vs. Current Date (${TimeTracker.CurrentDate.getTime()
+                    }<br>... Comparing: ${TimeTracker.CurrentDate.getTime() < TimeTracker.GetDate(endDate).getTime()}`, "displayStakes")
+                    if (advMax && parseInt(stake.val) > 0 && TimeTracker.CurrentDate.getTime() < TimeTracker.GetDate(endDate).getTime())
                         if (_.keys(coterieAdvs).includes(stake.name))
                             coterieStakes[stake.name] = {
                                 name: stake.name,
@@ -532,19 +534,22 @@ const Char = (() => {
                         else
                             stakeData.push([_.values(D.GetCharVals(charObj, "initial"))[0], stake.name, Math.min(parseInt(stake.val), advMax), parseInt(advMax), endDate])
                 }
-                //D.Alert(D.JS(coterieStakes, true))
+                DB(`Coterie Stakes: ${D.JS(_.keys(coterieStakes), true)}`, "displayStakes")
             }
             if (_.keys(coterieStakes).length + stakeData.length === 0) {
                 Media.SetText("stakedAdvantages", {text: " "})
             } else {
                 let thisString = "(C)"
                 for (const coterieData of _.values(coterieStakes)) {
-                    //D.Alert(`dateStamps: ${D.JS(coterieData.dateStamp)}<br>Sorted: ${D.JS(_.sortBy(coterieData.dateStamp, v => v))}<br>Parsed: ${D.JS(TimeTracker.FormatDate(new Date(_.sortBy(coterieData.dateStamp, v => v)[0])))}`)
                     const thisDate = TimeTracker.FormatDate(new Date(_.sortBy(coterieData.dateStamp, v => v)[0]))
-                    stakeStrings.push(`${thisString}${Media.Buffer(textObj, col1Width - Media.GetTextWidth(textObj, thisString, false))}${
-                        coterieData.name.toUpperCase()}${Media.Buffer(textObj, col2Width - Media.GetTextWidth(textObj, coterieData.name.toUpperCase(), false))}${
-                        "○".repeat(coterieData.total)}${"●".repeat(coterieData.max - coterieData.total)}${Media.Buffer(textObj, col3Width - Media.GetTextWidth(textObj, `${
-                        "○".repeat(coterieData.total)}${"●".repeat(coterieData.max - coterieData.total)}`, false))}${thisDate}`)
+                    let col1String = thisString,
+                        col2String = coterieData.name.toUpperCase(),
+                        col3String = "○".repeat(coterieData.total) + "●".repeat(coterieData.max - coterieData.total),
+                        col4String = thisDate
+                    col1String += Media.Buffer(textObj, col1Width - Media.GetTextWidth(textObj, col1String, false))
+                    col2String += Media.Buffer(textObj, col1Width + col2Width - Media.GetTextWidth(textObj, col1String + col2String, false))
+                    col3String += Media.Buffer(textObj, col1Width + col2Width + col3Width - Media.GetTextWidth(textObj, col1String + col2String + col3String, false))
+                    stakeStrings.push(col1String + col2String + col3String + col4String)
                     thisString = ""
                 }
                 let lastInit = ""
@@ -555,10 +560,14 @@ const Char = (() => {
                         thisString = `[${init}]`
                         lastInit = init
                     }
-                    stakeStrings.push(`${thisString}${Media.Buffer(textObj, col1Width - Media.GetTextWidth(textObj, thisString, false))}${
-                        name}${Media.Buffer(textObj, col2Width - Media.GetTextWidth(textObj, name, false))}${
-                        "○".repeat(staked)}${"●".repeat(max - staked)}${Media.Buffer(textObj, col3Width - Media.GetTextWidth(textObj, `${
-                        "○".repeat(staked)}${"●".repeat(max - staked)}`, false))}${endDate}`)
+                    let col1String = thisString,
+                        col2String = name,
+                        col3String = "○".repeat(staked) + "●".repeat(max - staked),
+                        col4String = endDate
+                    col1String += Media.Buffer(textObj, col1Width - Media.GetTextWidth(textObj, col1String, false))
+                    col2String += Media.Buffer(textObj, col1Width + col2Width - Media.GetTextWidth(textObj, col1String + col2String, false))
+                    col3String += Media.Buffer(textObj, col1Width + col2Width + col3Width - Media.GetTextWidth(textObj, col1String + col2String + col3String, false))
+                    stakeStrings.push(col1String + col2String + col3String + col4String)
                 }        
                 Media.SetText("stakedAdvantages", stakeStrings.join("\n"))
             }

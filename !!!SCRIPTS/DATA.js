@@ -582,9 +582,7 @@ const D = (() => {
             if (errorLines.length) {
                 if (!funcName || !scriptName)
                     return false
-                return THROW(`[From ${jStr(scriptName).toUpperCase()}:${jStr(funcName)}]
-                                        
-                                        ${errorLines.join("<br>")}`, "validate")
+                return THROW(`[From ${jStr(scriptName).toUpperCase()}:${jStr(funcName)}]<br>... ${errorLines.join("<br>... ")}`, "validate")
             }
             return true
         }

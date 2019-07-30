@@ -38,6 +38,7 @@ const Media = (() => {
         STATEREF.imgResizeDims = STATEREF.imgResizeDims || { height: 100, width: 100 }
         STATEREF.activeAnimations = STATEREF.activeAnimations || []
         STATEREF.activeTimeouts = STATEREF.activeTimeouts || []
+        STATEREF.curLocation = STATEREF.curLocation || "DistrictCenter:blank SiteCenter:blank"
     }
     // #endregion
 
@@ -153,11 +154,8 @@ const Media = (() => {
                                     objLayer = args.pop()
                                     layerImages(args.length ? args : msg, objLayer)
                                     break
-                                case "tofront":
-                                    orderImages(args.length ? args : msg)
-                                    break
-                                case "toback":
-                                    orderImages(args.length ? args : msg, true)
+                                case "order":
+                                    orderMedia()
                                     break
                                 case "params":
                                     if (getImageData(args[0])) { textObj = getImageObj(args.shift()) }
@@ -453,6 +451,9 @@ const Media = (() => {
                                             params[param.split(":")[0]] = param.split(":")[1]
                                         setText(textObj, params)
                                     }
+                                    break                                
+                                case "order":
+                                    orderMedia()
                                     break
                                 default:
                                     textObj = getTextObj(args[0], true)
@@ -568,7 +569,8 @@ const Media = (() => {
     let [imgRecord, imgResize] = [false, false]
 
     // #region CONFIGURATION
-    const IMAGEREGISTRY = STATEREF.imageregistry,
+    const SHADOWFACTOR = 15, 
+        IMAGEREGISTRY = STATEREF.imageregistry,
         IDREGISTRY = STATEREF.idregistry,
         TEXTREGISTRY = STATEREF.textregistry,
         AREAS = STATEREF.areas,
@@ -785,7 +787,7 @@ const Media = (() => {
         },
         getImageObjs = imgRefs => {
             //D.Alert(`GetSelected ImgRefs: ${D.JS(D.GetSelected(imgRefs))}`)
-            const imageRefs = VAL({ msg: imgRefs }) ? D.GetSelected(imgRefs) || [] : imgRefs,
+            const imageRefs = VAL({ msg: imgRefs }) ? D.GetSelected(imgRefs) || [] : imgRefs || _.keys(IMAGEREGISTRY),
                 imgObjs = []
             if (VAL({ array: imageRefs })) {
                 for (const imgRef of imageRefs)
@@ -917,23 +919,18 @@ const Media = (() => {
                     width: params.width,
                     activeLayer: activeLayer,
                     startActive: !(startActive === "false" || startActive === false),
+                    zIndex: options.zIndex || (IMAGEREGISTRY[name] ? IMAGEREGISTRY[name].zIndex : 200),
                     srcs: {}
                 }
-               /* if (D.GetChar(imgObj)) {
-                    IMAGEREGISTRY[name].activeLayer = "objects"
-                    IMAGEREGISTRY[name].startActive = true
-                    addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, "base")
-                    setImage(name, "base")
-                } else { */
                 addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, srcName)
                 setImage(name, srcName)
-               // }
                 if (!IMAGEREGISTRY[name].startActive) {
                     setImage(name, "blank")
                     layerImages([name], "gmlayer")
                 } else {
                     layerImages([name], IMAGEREGISTRY[name].activeLayer)
                 }
+                orderMedia(["Pad$"], true)
                 if (!isSilent)
                     D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(IMAGEREGISTRY[name])}`, "MEDIA: regImage")
 
@@ -1018,90 +1015,80 @@ const Media = (() => {
         },
         setLocation = (locRefs) => {
             const hosts = [],
-                hostOverride = {}
+                hostOverride = {},
+                parsedParams = Object.assign({
+                    DistrictCenter: "blank",
+                    SiteCenter: "blank",
+                    SiteNameCenter: " ",
+                    DistrictRight: "blank",
+                    SiteRight: "blank",
+                    SiteNameRight: " ",
+                    DistrictLeft: "blank",
+                    SiteLeft: "blank",
+                    SiteNameLeft: " "
+                }, VAL({list: locRefs}) ? _.clone(locRefs) : {})
             let [customNames, params] = [[], []]
-            if (locRefs.includes(":name:"))
-                customNames = _.map(locRefs.match(new RegExp(":name:([^;]*)", "g")), v => v.replace(/:name:/gu, ""))
-            params = locRefs.replace(/:name:.*?;\s*?/gu, "").split(" ")
-            DB(`CustomNames: ${D.JS(customNames)}, Params: ${D.JS(params)}`, "setLocation")
-            //D.Alert(`PARAMS: ${D.JS(params)}`) .match(/^(\w+):[^:]*:?[^:]*:?(.+$)/ui)
-            const parsedParams = {
-                DistrictCenter: "blank",
-                SiteCenter: "blank",
-                DistrictRight: "blank",
-                SiteRight: "blank",
-                DistrictLeft: "blank",
-                SiteLeft: "blank"
-            }
-            for (const param of params) {
-                if (param.startsWith("Site")) hosts.push(param.split(":")[0])
-                if (param.includes(":same")) {
-                    const targetHost = param.split(":")[0],
-                        targetType = targetHost.includes("District") ? "District" : "Site"
-                    let imgSrc = getImageSrc(targetHost)
-                    DB(`TargetHost: ${D.JS(targetHost)}, Type: ${D.JS(targetType)}, Src: ${D.JS(imgSrc)}`, "setLocation")
-                    switch (targetHost) {
-                        case "SiteLeft":
-                            hostOverride.SiteLeft = isImageActive("SiteBarCenter") ? getTextObj("SiteNameCenter").get("text") : isImageActive("SiteBarLeft") ? getTextObj("SiteNameLeft").get("text") : null
-                        // falls through
-                        case "SiteRight":
-                            hostOverride.SiteRight = targetHost === "SiteRight" && (isImageActive("SiteBarCenter") ? getTextObj("SiteNameCenter").get("text") : isImageActive("SiteBarRight") ? getTextObj("SiteNameRight").get("text") : null)
-                        // falls through
-                        case "DistrictLeft":
-                        case "DistrictRight":
-                            imgSrc = isImageActive(targetType + "Center") ? getImageSrc(targetType + "Center") : getImageSrc(targetHost)
-                            break
-                        case "SiteCenter":
-                            hostOverride.SiteCenter = isImageActive("SiteBarLeft") ? getTextObj("SiteNameLeft").get("text") : isImageActive("SiteBarCenter") ? getTextObj("SiteNameCenter").get("text") : null
-                        // falls through
-                        case "DistrictCenter":
-                            imgSrc = isImageActive(targetType + "Left") ? getImageSrc(targetType + "Left") : getImageSrc(targetHost)
-                            break
-                    // no default
+            if (VAL({string: locRefs})) {
+                if (locRefs.includes(":name:"))
+                    customNames = _.map(locRefs.match(new RegExp(":name:([^;]*)", "g")), v => v.replace(/:name:/gu, ""))
+                params = locRefs.replace(/:name:.*?;\s*?/gu, "").split(" ")
+                DB(`CustomNames: ${D.JS(customNames)}, Params: ${D.JS(params)}`, "setLocation")
+                //D.Alert(`PARAMS: ${D.JS(params)}`) .match(/^(\w+):[^:]*:?[^:]*:?(.+$)/ui)
+                for (const param of params) {
+                    if (param.startsWith("Site")) hosts.push(param.split(":")[0])
+                    if (param.includes(":same")) {
+                        const targetHost = param.split(":")[0],
+                            targetType = targetHost.includes("District") ? "District" : "Site"
+                        let imgSrc = getImageSrc(targetHost)
+                        DB(`TargetHost: ${D.JS(targetHost)}, Type: ${D.JS(targetType)}, Src: ${D.JS(imgSrc)}`, "setLocation")
+                        switch (targetHost) {
+                            case "SiteLeft":
+                                hostOverride.SiteLeft = isImageActive("SiteBarCenter") ? getTextObj("SiteNameCenter").get("text") : isImageActive("SiteBarLeft") ? getTextObj("SiteNameLeft").get("text") : null
+                            // falls through
+                            case "SiteRight":
+                                hostOverride.SiteRight = targetHost === "SiteRight" && (isImageActive("SiteBarCenter") ? getTextObj("SiteNameCenter").get("text") : isImageActive("SiteBarRight") ? getTextObj("SiteNameRight").get("text") : null)
+                            // falls through
+                            case "DistrictLeft":
+                            case "DistrictRight":
+                                imgSrc = isImageActive(targetType + "Center") ? getImageSrc(targetType + "Center") : getImageSrc(targetHost)
+                                break
+                            case "SiteCenter":
+                                hostOverride.SiteCenter = isImageActive("SiteBarLeft") ? getTextObj("SiteNameLeft").get("text") : isImageActive("SiteBarCenter") ? getTextObj("SiteNameCenter").get("text") : null
+                            // falls through
+                            case "DistrictCenter":
+                                imgSrc = isImageActive(targetType + "Left") ? getImageSrc(targetType + "Left") : getImageSrc(targetHost)
+                                break
+                        // no default
+                        }
+                        DB(`Final Host: ${D.JS(targetHost)}, Src: ${D.JS(imgSrc)}, HostOverrides: ${D.JS(hostOverride)}`, "setLocation")
+                        parsedParams[targetHost] = imgSrc
+                    } else {
+                        const [targetHost, imgSrc] = param.split(":")
+                        DB(`Final Host: ${D.JS(targetHost)}, Src: ${D.JS(imgSrc)}`, "setLocation")
+                        parsedParams[targetHost] = imgSrc
                     }
-                    DB(`Final Host: ${D.JS(targetHost)}, Src: ${D.JS(imgSrc)}, HostOverrides: ${D.JS(hostOverride)}`, "setLocation")
-                    parsedParams[targetHost] = imgSrc
-                } else {
-                    const [targetHost, imgSrc] = param.split(":")
-                    DB(`Final Host: ${D.JS(targetHost)}, Src: ${D.JS(imgSrc)}`, "setLocation")
-                    parsedParams[targetHost] = imgSrc
                 }
-            }
-            if (parsedParams.DistrictLeft === parsedParams.DistrictRight && parsedParams.DistrictLeft !== "blank") {
-                parsedParams.DistrictCenter = parsedParams.DistrictLeft
-                parsedParams.DistrictLeft = "blank"
-                parsedParams.DistrictRight = "blank"
-            }
-            DB(`Final Parsed Params: ${D.JS(parsedParams, true)}`, "setLocation")
-            _.each(parsedParams, (v,k) => {
-                setImage(k, v)
-            })
-            setImage("SiteBarCenter", "blank")
-            setText("SiteNameCenter", " ")
-            setImage("SiteBarLeft", "blank")
-            setText("SiteNameLeft", " ")
-            setImage("SiteBarRight", "blank")
-            setText("SiteNameRight", " ")
-            //D.Alert(`Hosts: ${D.JS(hosts)}, Names: ${D.JS(customNames)}`)
-            for (let i = 0; i < hosts.length; i++) {
-                customNames[i] = customNames[i] && customNames[i].trim().length > 0 && customNames[i] || hostOverride[hosts[i]]
-                if (!customNames[i])
-                    break
-                switch(hosts[i]) {
-                    case "SiteCenter":
-                        setImage("SiteBarCenter", customNames[i] === "x" ? "blank" : "base")
-                        setText("SiteNameCenter", customNames[i] === "x" ? " " : customNames[i])
+                if (parsedParams.DistrictLeft === parsedParams.DistrictRight && parsedParams.DistrictLeft !== "blank") {
+                    parsedParams.DistrictCenter = parsedParams.DistrictLeft
+                    parsedParams.DistrictLeft = "blank"
+                    parsedParams.DistrictRight = "blank"
+                }                    
+                for (let i = 0; i < hosts.length; i++) {
+                    customNames[i] = customNames[i] && customNames[i].trim().length > 0 && customNames[i] || hostOverride[hosts[i]]
+                    if (!customNames[i])
                         break
-                    case "SiteLeft":
-                        setImage("SiteBarLeft", customNames[i] === "x" ? "blank" : "base")
-                        setText("SiteNameLeft", customNames[i] === "x" ? " " : customNames[i])
-                        break
-                    case "SiteRight":
-                        setImage("SiteBarRight", customNames[i] === "x" ? "blank" : "base")
-                        setText("SiteNameRight", customNames[i] === "x" ? " " : customNames[i])
-                    // no default
-                }                                        
+                    parsedParams[hosts[i].replace(/Site/gu, "SiteName")] = customNames[i] === "x" ? " " : customNames[i]                                     
+                }      
+                DB(`Final Parsed Params: ${D.JS(parsedParams, true)}`, "setLocation")
             }
+            _.each(_.omit(parsedParams, (v, k) => k.includes("Name")), (v,k) => { setImage(k, v) })
+            setImage("SiteBarCenter", parsedParams.SiteNameCenter === " " ? "blank" : "base")
+            setText("SiteNameCenter", parsedParams.SiteNameCenter)
+            setImage("SiteBarLeft", parsedParams.SiteNameLeft === " " ? "blank" : "base")
+            setText("SiteNameLeft", parsedParams.SiteNameLeft)
+            setImage("SiteBarRight", parsedParams.SiteNameRight === " " ? "blank" : "base")
+            setText("SiteNameRight", parsedParams.SiteNameRight)   
+            STATEREF.curLocation = _.clone(parsedParams)
         },
         sortImages = (imgRefs, modes = "", anchors = []) => {
             const imgObjs = getImageObjs(imgRefs),
@@ -1370,25 +1357,6 @@ const Media = (() => {
             for (const imgName of _.keys(IMAGEREGISTRY))
                 if (!getImageObj(imgName))
                     removeImage(imgName)
-
-        },
-        orderImages = (imgRefs, isToBack = false) => {
-            let imgObjs
-            if (VAL({graphic: imgRefs}, "orderImages", true)) {
-                imgObjs = getImageObjs(imgRefs)
-            //D.Alert(`Retrieved Media: ${D.JS(imgObjs)}`)
-            //D.Alert(`Retrieved Media: ${D.JS(getImageKeys(imgObjs))}`)
-                if (!isToBack)
-                    imgObjs.reverse()
-                for (const imgObj of imgObjs)
-                    if (VAL({graphicObj: imgObj}))
-                        if (isToBack)
-                            toBack(imgObj)
-                        else
-                            toFront(imgObj)
-                    else
-                        D.Alert(`Not an image object: ${D.JS(imgObj)}`, "MEDIA: OrderImages")
-            }
         },
         layerImages = (imgRefs, layer) => {
             const imgObjs = getImageObjs(imgRefs)
@@ -1828,6 +1796,7 @@ const Media = (() => {
                         name: name,
                         activeLayer: activeLayer,
                         startActive: !(startActive === "false" || startActive === false),
+                        zIndex: parseInt(options.zIndex) || (TEXTREGISTRY[name] ? TEXTREGISTRY[name].zIndex : 300),
                         justification: justification || "center",
                         maxWidth: options.maxWidth || 0,
                         lineHeight: D.CHARWIDTH[curTextParams.font_family] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size].lineHeight || textObj.get("height"),
@@ -1840,18 +1809,18 @@ const Media = (() => {
                     const shadowOptions = Object.assign(_.omit(_.clone(TEXTREGISTRY[name]), "id"), {
                         name: `${name}Shadow`,
                         color: "rgb(0,0,0)",
-                        left: TEXTREGISTRY[name].left + Math.round(TEXTREGISTRY[name].font_size/15),
-                        top: TEXTREGISTRY[name].top + Math.round(TEXTREGISTRY[name].font_size/15),      
-                        shadowMaster: name
+                        left: TEXTREGISTRY[name].left + Math.round(TEXTREGISTRY[name].font_size/SHADOWFACTOR),
+                        top: TEXTREGISTRY[name].top + Math.round(TEXTREGISTRY[name].font_size/SHADOWFACTOR),      
+                        shadowMaster: name,
+                        zIndex: TEXTREGISTRY[name].zIndex - 1
                     })
                     DB(`Shadow Options: ${D.JS(shadowOptions)}`, "regText")
                     const shadowObj = makeText(shadowOptions.name, TEXTREGISTRY[name].activeLayer, TEXTREGISTRY[name].startActive, false, justification, shadowOptions, isSilent)
                     shadowOptions.id = shadowObj.id
-                    toFront(shadowObj)
                     TEXTREGISTRY[name].shadow = shadowOptions.name
-                }                
-                toFront(textObj)       
+                }    
                 D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(TEXTREGISTRY[name])}`, "regText")
+                orderMedia(["Pad$"], true)
                 return getTextData(name)
             }
             return !isSilent && THROW(`Invalid text reference '${D.JS(textRef)}'`, "regText")
@@ -1914,12 +1883,12 @@ const Media = (() => {
                 if (textData.shadow) {
                     const shadowObj = getTextShadowObj(textRef),
                         shadowObjParams = _.omit(objParams, ["color"])
-                    shadowObjParams.left += Math.round(textData.font_size/10)
-                    shadowObjParams.top += Math.round(textData.font_size/10)
+                    shadowObjParams.left += Math.round(textData.font_size/SHADOWFACTOR)
+                    shadowObjParams.top += Math.round(textData.font_size/SHADOWFACTOR)
                     shadowObj.set(shadowObjParams)
-                    toFront(shadowObj)
+                    //toFront(shadowObj)
                 }
-                toFront(textObj)
+                //toFront(textObj)
             }
         },
         setTextData = (textRef, params) => {
@@ -1966,6 +1935,41 @@ const Media = (() => {
             STATEREF.textregistry = {}
             STATEREF.idregistry = {}
         },
+        orderMedia = (exclusions = [], isSilent = false) => {
+            let reportStrings = []
+            const imageKeys = _.reject(_.keys(IMAGEREGISTRY), v => {
+                    for (const excl of exclusions)
+                        if (v.match(new RegExp(excl, "ui")))
+                            return true
+                    return false
+                }),
+                textKeys = _.reject(_.keys(TEXTREGISTRY), v => {
+                    for (const excl of exclusions)
+                        if (v.match(new RegExp(excl, "ui")))
+                            return true
+                    return false
+                }),
+                imageObjs = _.compact(getImageObjs(imageKeys)),
+                textObjs = _.compact(getTextObjs(textKeys))
+            reportStrings.push(`${D.JS(textObjs.length)} of ${D.JS(textKeys.length)} Text Objects found.<br>${D.JS(imageObjs.length)} of ${D.JS(imageKeys.length)} Image Objects found.<br>`)
+            if (VAL({textObj: textObjs, graphicObj: imageObjs}, "orderMedia", true)) {
+                const mediaDatas = []
+                for (const imgObj of imageObjs)
+                    mediaDatas.push(Object.assign(getImageData(imgObj), {object: imgObj}))
+                for (const textObj of textObjs)
+                    mediaDatas.push(Object.assign(getTextData(textObj), {object: textObj}))
+                const sortedMediaDatas = _.mapObject(_.groupBy(mediaDatas, "activeLayer"), v => _.sortBy(v, vv => -1 * vv.zIndex))
+                for (const layerData of _.values(sortedMediaDatas)) {
+                    reportStrings.push(`<br><b>SORTING LAYER '${D.JS(layerData[0].activeLayer)}'`)
+                    for (const data of layerData) {
+                        toBack(data.object)
+                        reportStrings.push(`... ${data.name}`)
+                    }
+                }
+                if (!isSilent)
+                    D.Alert(`Media Ordering Complete!<br>${D.JS(reportStrings.join("<br>"))}`, "orderMedia")
+            }
+        },
         layerText = (textRefs, layer) => {
             const textObjs = getTextObjs(textRefs, true)
             for (const textObj of textObjs) {
@@ -1993,11 +1997,13 @@ const Media = (() => {
         SetParams: setImgParams,
         SetData: setImgData,
         SetArea: setImageArea,
+        SetLocation: setLocation,
         Toggle: toggleImage,
         ToggleToken: toggleToken,
-        OrderImages: orderImages,
+        Order: orderMedia,
         LayerImages: layerImages,
         IMAGELAYERS: IMAGELAYERS,
+        get LOCATION() { return STATEREF.curLocation },
 
         Animate: fireAnimation,
 

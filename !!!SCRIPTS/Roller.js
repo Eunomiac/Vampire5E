@@ -1498,8 +1498,7 @@ const Roller = (() => {
                 makeAllDice(diceCat, SETTINGS.dice[diceCat])
             Media.LayerImages(Media.IMAGELAYERS.map, "map")
             Media.LayerImages(Media.IMAGELAYERS.objects, "objects")
-        //Media.OrderImages("map")
-
+            Media.Order()
         },
         scaleFrame = (row, width, isChangingOffRow = true) => {
             if (width < 0) {

@@ -34,18 +34,26 @@ const TimeTracker = (() => {
         STATEREF.Alarms = STATEREF.Alarms || {}
         STATEREF.Alarms.Ahead = STATEREF.Alarms.Ahead || []
         STATEREF.Alarms.Behind = STATEREF.Alarms.Behind || []
+        STATEREF.lastDate = STATEREF.lastDate || 0
 
-        if (Session.IsSessionActive) {
+        if (!STATEREF.dateObj) {
+            D.Alert("Date Object Missing! Setting to default date.<br><br>Use !time set [year] [month] [day] [hour] [minute] to correct.", "TimeTracker")
+            STATEREF.dateObj = new Date(2019, 11, 1, 18, 55)
+            STATEREF.currentDate = STATEREF.dateObj.getTime()
+            setCurrentDate()
+        }
+
+        /* if (Session.IsSessionActive) {
             startClock()
             startAirLights()
-        }        
+        } */        
     }
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => {
         let [delta, unit] = [null, null]
-        switch (call.toLowerCase()) {
+        switch ((call || "").toLowerCase()) {
             case "get":
                 switch (args.shift().toLowerCase()) {
                     case "alarms":
@@ -627,13 +635,13 @@ const TimeTracker = (() => {
         setHorizon = (isForced = false) => {
             let imgSrcName = getHorizon()
             if (isRunningFast) {
-                if (imgSrcName.includes("night") && STATEREF.lastHorizon !== "night") {
-                    Media.OrderImages(["Horizon_1", "Horizon_2"], true)
+                if (imgSrcName.includes("night") && STATEREF.lastHorizon !== "night") 
+                    //Media.OrderImages(["Horizon_1", "Horizon_2"], true)
                     STATEREF.lastHorizon = "night"
-                } else if (!imgSrcName.includes("night") && STATEREF.lastHorizon.includes("night")) {
-                    Media.OrderImages(["Horizon_2", "Horizon_1"], true)
+                else if (!imgSrcName.includes("night") && STATEREF.lastHorizon.includes("night")) 
+                    //Media.OrderImages(["Horizon_2", "Horizon_1"], true)
                     STATEREF.lastHorizon = "day"
-                }
+                
             } else if (isForced || imgSrcName !== STATEREF.lastHorizon) {
                 STATEREF.lastHorizon = imgSrcName
                 //Media.OrderImages("map", true)
@@ -654,25 +662,31 @@ const TimeTracker = (() => {
             STATEREF.currentDate = STATEREF.dateObj.getTime()
         },
         setIsRunning = runStatus => {
+            DB("*** CALLED ***", "setIsRunning")
             isRunning = runStatus
             //Media.OrderImages("map", true)
             if (isRunning) {
-                Media.LayerImages(_.reject(Media.IMAGELAYERS.map, v => v.includes("Horizon")), "objects")
+                //Media.LayerImages(_.reject(Media.IMAGELAYERS.map, v => v.includes("Horizon")), "objects")
             } else {
-                Media.LayerImages(_.reject(Media.IMAGELAYERS.map, v => v.includes("Horizon")), "map")
-                const lastDate = new Date(parseInt(STATEREF.currentDate)),
+                //Media.LayerImages(_.reject(Media.IMAGELAYERS.map, v => v.includes("Horizon")), "map")
+                const lastDate = new Date(parseInt(STATEREF.lastDate)),
                     groundCover = getGroundCover()
                 STATEREF.currentDate = STATEREF.dateObj.getTime()
-                //D.Alert(`Characters: ${D.JS(_.map(D.GetChars("registered")), v => v.get("name"))}`, "setIsRunning")
+                DB(`Characters: ${D.JS(_.map(D.GetChars("registered")), v => v.get("name"))}`, "setIsRunning")
+                DB(`DateObj.year = ${D.JS(STATEREF.dateObj.getUTCFullYear())} vs. lastDate.year = ${D.JS(lastDate.getUTCFullYear())
+                }<br>DateObj.month = ${D.JS(STATEREF.dateObj.getMonth())} vs. lastDate.month = ${D.JS(lastDate.getMonth())
+                }<br>DateObj.date = ${D.JS(STATEREF.dateObj.getUTCDate())} vs. lastDate.date = ${D.JS(lastDate.getUTCDate())}`, "setIsRunning")
                 if (
                     STATEREF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
                     STATEREF.dateObj.getMonth() !== lastDate.getMonth() ||
                     STATEREF.dateObj.getUTCDate() !== lastDate.getUTCDate()
-                )
+                ) {
+                    DB(`Setting date_today Attributes on Registered Characters to ${D.JS(STATEREF.dateObj.getTime().toString())}`)
                     _.each(D.GetChars("registered"), char => setAttrs(char.id, {
-                        date_today: STATEREF.dateObj.getTime().toString()
+                        date_today: STATEREF.currentDate.toString()
                     }))
-
+                    Char.RefreshDisplays()
+                }
                 if (
                     STATEREF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
                     STATEREF.dateObj.getMonth() !== lastDate.getMonth() ||
@@ -684,6 +698,8 @@ const TimeTracker = (() => {
                     //D.Alert(`Setting Ground Cover to ${groundCover}`)
                     Media.Set("WeatherGround", groundCover)
                 }
+                DB(`Setting lastDate (${D.JS(STATEREF.lastDate)}) to currentDate (${D.JS(STATEREF.currentDate)}).`, "setIsRunning")
+                STATEREF.lastDate = STATEREF.dateObj.getTime()
                 setHorizon()
             }
         },
@@ -942,7 +958,7 @@ const TimeTracker = (() => {
     //#endregion
 
     // #region Alarms
-    const setAlarm = (dateString, name, message, actions = [], displayTo = []) => {
+    const setAlarm = (dateString, name, message, actions = [], displayTo = [], revActions = []) => {
             const [curDate, curMins] = [STATEREF.dateObj, 60 * STATEREF.dateObj.getUTCHours() + STATEREF.dateObj.getUTCMinutes()]
             let [targetDate, targetMins] = [new Date(STATEREF.dateObj), curMins]
             displayTo.push("Storyteller")
@@ -979,6 +995,7 @@ const TimeTracker = (() => {
                 name,
                 message,
                 actions,
+                revActions,
                 displayTo: _.uniq(displayTo)
             })
             STATEREF.Alarms.Ahead = _.sortBy(STATEREF.Alarms.Ahead, "time")
@@ -1064,7 +1081,7 @@ const TimeTracker = (() => {
         StopClock: stopClock,
         StartLights: startAirLights,
         StopLights: stopAirLights,
-        CurrentDate: () => new Date(STATEREF.dateObj),
+        get CurrentDate() { return new Date(STATEREF.dateObj) },
         GetDate: getDate,
         FormatDate: formatDString,
         Fix: fixDate,

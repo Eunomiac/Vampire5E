@@ -33,6 +33,8 @@ const Session = (() => {
         STATEREF.isSessionActive = STATEREF.isSessionActive || false
         STATEREF.isTestingActive = STATEREF.isTestingActive || false
         STATEREF.sceneChars = STATEREF.sceneChars || []
+        STATEREF.locationRecord = STATEREF.locationRecord || {DistrictCenter: "blank"}
+        STATEREF.tokenRecord = STATEREF.tokenRecord || {}
     }
     // #endregion
 
@@ -118,8 +120,11 @@ const Session = (() => {
             Roller.Clean()
             for (const textKey of [..._.map(D.GetCharVals("registered", "shortName"), v => `${v}Desire`), "TimeTracker", "tempF", "tempC", "weather", "stakedAdvantages", "weeklyResources"])
                 Media.SetText(textKey, {color: Media.GetTextData(textKey).color} )
+            for (const tokenName of _.values(D.GetCharVals("registered", "tokenName")))
+                Media.Set(tokenName, STATEREF.tokenRecord[tokenName] || "base") 
+            Media.SetLocation(STATEREF.locationRecord)
             TimeTracker.StartClock()
-            TimeTracker.StartLights()
+            //TimeTracker.StartLights()
             Char.RefreshDisplays()
         },
         setSessionNum = sNum => {
@@ -134,11 +139,18 @@ const Session = (() => {
                 C.CHATHTML.colorTitle("See you next week!", {fontSize: 32}),
             ]))
             STATEREF.isSessionActive = false
+            STATEREF.locationRecord = _.clone(Media.LOCATION)
+            STATEREF.tokenRecord = {}
+            Media.SetLocation({DistrictCenter: "blank"})
             if (!STATEREF.isTestingActive)
                 for (const char of D.GetChars(D.GetSelected(selection) ? selection : "registered"))
                     Char.AwardXP(char, 2, "Session XP award.")
             for (const textKey of [..._.map(D.GetCharVals("registered", "shortName"), v => `${v}Desire`), "TimeTracker", "tempF", "tempC", "weather", "stakedAdvantages", "weeklyResources"])
                 Media.SetText(textKey, {color: C.COLORS.darkgrey}, true )
+            for (const tokenName of _.values(D.GetCharVals("registered", "tokenName"))) {
+                STATEREF.tokenRecord[tokenName] = Media.GetData(tokenName).curSrc
+                Media.Set(tokenName, "blank")
+            }
             TimeTracker.StopClock()
             TimeTracker.StopLights()
         }
