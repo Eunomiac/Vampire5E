@@ -122,7 +122,9 @@ const Session = (() => {
                 Media.SetText(textKey, {color: Media.GetTextData(textKey).color} )
             for (const tokenName of _.values(D.GetCharVals("registered", "tokenName")))
                 Media.Set(tokenName, STATEREF.tokenRecord[tokenName] || "base") 
-            Media.SetLocation(STATEREF.locationRecord)
+            Media.SetLocation(STATEREF.locationRecord)            
+            Media.LayerText(["tempF", "tempC", "weather", "AvaDesire", "NapierDesire", "RoyDesire", "SiteNameCenter", "SiteNameLeft", "SiteNameRight", "stakedAdvantages", "weeklyResources", "TimeTracker"], "map")
+            Media.LayerImages(["rollerImage_frontFrame", "rollerImage_topEnd", "rollerImage_bottomEnd", "stakedAdvantagesHeader", "weeklyResourcesHeader", "HungerBotLeft", "HungerTopRight", "HungerBotRight", "HungerBotLeft"], "map")
             TimeTracker.StartClock()
             //TimeTracker.StartLights()
             Char.RefreshDisplays()
@@ -151,6 +153,8 @@ const Session = (() => {
                 STATEREF.tokenRecord[tokenName] = Media.GetData(tokenName).curSrc
                 Media.Set(tokenName, "blank")
             }
+            Media.LayerText(["tempF", "tempC", "weather", "AvaDesire", "NapierDesire", "RoyDesire", "SiteNameCenter", "SiteNameLeft", "SiteNameRight", "stakedAdvantages", "weeklyResources", "TimeTracker"], "gmlayer")
+            Media.LayerImages(["rollerImage_frontFrame", "rollerImage_topEnd", "rollerImage_bottomEnd", "stakedAdvantagesHeader", "weeklyResourcesHeader", "HungerBotLeft", "HungerTopRight", "HungerBotRight", "HungerBotLeft"], "gmlayer")
             TimeTracker.StopClock()
             TimeTracker.StopLights()
         }

@@ -1937,6 +1937,8 @@ const Media = (() => {
         },
         orderMedia = (exclusions = [], isSilent = false) => {
             let reportStrings = []
+            IMAGEREGISTRY.ComplicationMat_1.activeLayer = "map"
+            IMAGEREGISTRY.ComplicationMat_1.zIndex = 500
             const imageKeys = _.reject(_.keys(IMAGEREGISTRY), v => {
                     for (const excl of exclusions)
                         if (v.match(new RegExp(excl, "ui")))
