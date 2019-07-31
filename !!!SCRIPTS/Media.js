@@ -39,12 +39,20 @@ const Media = (() => {
         STATEREF.activeAnimations = STATEREF.activeAnimations || []
         STATEREF.activeTimeouts = STATEREF.activeTimeouts || []
         STATEREF.curLocation = STATEREF.curLocation || "DistrictCenter:blank SiteCenter:blank"
+
+        /*for (let i = 0; i < 10; i++) {
+            STATEREF.imageregistry[`complicationEnhanced_${i+1}`].srcs = { base: "https://s3.amazonaws.com/files.d20.io/images/87914628/dgt1u4qF9byRIEo0YLkMKw/thumb.png?1564561010" }
+            STATEREF.imageregistry[`complicationEnhanced_${i+1}`].activeSrc = "base"
+            STATEREF.imageregistry[`complicationEnhanced_${i+1}`].activeLayer = "objects"
+            STATEREF.imageregistry[`complicationEnhanced_${i+1}`].zIndex = 530
+        }*/
+
     }
     // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
-            let [srcName, hostName, textObj, objLayer, objData, isStartActive, isShadow, justification] = new Array(9),
+            let srcName, hostName, textObj, objLayer, objData, isStartActive, isShadow, justification, textParams,
                 params = {}
             switch (call.shift().toLowerCase()) {
                 case "!anim":
@@ -132,7 +140,7 @@ const Media = (() => {
                                     }
                                     break
                                 case "source": case "src":
-                                    if (VAL({ token: D.GetSelected(msg)[0] })) {
+                                    if (VAL({ token: (D.GetSelected(msg) || [])[0] })) {
                                         hostName = Media.GetData(D.GetSelected(msg)[0]).name
                                         srcName = args[0]
                                     } else {
@@ -497,9 +505,12 @@ const Media = (() => {
                                 args[2] = args[2] || textData.startActive
                                 args[3] = args[3] || hasShadowObj(msg)
                                 args[4] = args[4] || textData.justification
-                                args[5] = args[5] ? 
-                                    args[5].includes("vertAlign") ? args[5] : `vertAlign:${textData.vertAlign}, ${args[5]}` :
-                                    `vertAlign:${textData.vertAlign || "top"}`
+                                textParams = args.slice(4).join(" ")
+                                textParams = _.compact([
+                                    textParams.includes("vertAlign") ? "" : `vertAlign:${textData.vertAlign || "top"}`,
+                                    textParams.includes("maxWidth") ? "" : `maxWidth:${textData.maxWidth || 0}`,
+                                    textParams.includes("zIndex") ? "" : `zIndex:${textData.zIndex || 300}`
+                                ]).join(",") + textParams
                                 removeText(msg, true, true)
                             }
                             /* falls through */
@@ -512,8 +523,9 @@ const Media = (() => {
                                     D.Alert("Select a text object first!", "MEDIA: !text reg")
                                 } else {
                                     [hostName, objLayer, isStartActive, isShadow, justification] = [args.shift(), args.shift(), args.shift(), args.shift(), args.shift()]
+                                    textParams = textParams || args.join(" ")
                                     if (hostName && objLayer)
-                                        regText(textObj, hostName, objLayer, !isStartActive || isStartActive !== "false", !isShadow || isShadow !== "false", justification || "center", D.ParseToObj(args.join(" ")))
+                                        regText(textObj, hostName, objLayer, !isStartActive || isStartActive !== "false", !isShadow || isShadow !== "false", justification || "center", D.ParseToObj(textParams))
                                     else
                                         D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
                                 }
@@ -985,7 +997,8 @@ const Media = (() => {
                     imgObj.set("imgsrc", srcURL)
                     if (srcRef === "blank") {
                         imgObj.set("layer", "gmlayer")
-                        IMAGEREGISTRY[getImageData(imgRef).name].activeSrc = IMAGEREGISTRY[getImageData(imgRef).name].curSrc
+                        if (IMAGEREGISTRY[getImageData(imgRef).name].curSrc !== "blank")
+                            IMAGEREGISTRY[getImageData(imgRef).name].activeSrc = IMAGEREGISTRY[getImageData(imgRef).name].curSrc
                     } else {
                         imgObj.set("layer", getImageData(imgRef).activeLayer)
                         IMAGEREGISTRY[getImageData(imgRef).name].activeSrc = srcRef
@@ -1287,15 +1300,15 @@ const Media = (() => {
 				setImgParams(imgObj, attrList)
 			}
 		}, */
-        toggleImage = (imgRef, isActive, srcRef) => {
+        toggleImage = (imgRef, isActive) => {
             const imgObj = getImageObj(imgRef),
                 imgData = getImageData(imgRef)
             if (imgObj && isActive) {
                 imgObj.set("layer", imgData.activeLayer)
-                if (srcRef)
-                    setImage(imgRef, srcRef)
-                else if (imgData.activeSrc)
-                    setImage(imgData.activeSrc)
+                if (imgData.activeSrc)
+                    setImage(imgRef, imgData.activeSrc)
+                else if (imgData.srcs && imgData.srcs.base)
+                    setImage(imgRef, "base")
             } else if (imgObj && !isActive) {
                 imgObj.set("layer", "gmlayer")
                 setImage(imgRef, "blank")
@@ -1394,7 +1407,7 @@ const Media = (() => {
                 midData = _.map(_.flatten([midImgRefOrRefs]), v => getImageData(v)),
                 spread = parseFloat(width)
             let dbString = ""
-            D.Alert(`minOverlap: ${minOverlap}, maxOverlap: ${maxOverlap}`)
+            DB(`minOverlap: ${minOverlap}, maxOverlap: ${maxOverlap}`)
             if (VAL({list: [leftData, rightData, ...midData], number: [spread]}, "spreadImages", true)) {
                 setImgParams(leftData.id, {top: leftData.top, left: leftData.left})
                 dbString += `Setting Left to {left: ${parseInt(leftData.left)}}<br>`
@@ -1411,7 +1424,7 @@ const Media = (() => {
                     dbString += `Spread ${parseInt(spread)} less than ${parseInt(leftData.width + rightData.width)} (${parseInt(leftData.width)} + ${parseInt(rightData.width)})<br>`
                     for (const imgData of midData)
                         setImage(imgData.id, "blank")
-                    D.Alert(dbString + `Setting Right to {left: ${parseInt(leftData.rightEdge)} + 0.5x${parseInt(rightData.width)} = ${parseInt(leftData.rightEdge + 0.5*rightData.width)}}`, "spreadImages")
+                    DB(dbString + `Setting Right to {left: ${parseInt(leftData.rightEdge)} + 0.5x${parseInt(rightData.width)} = ${parseInt(leftData.rightEdge + 0.5*rightData.width)}}`, "spreadImages")
                     return setImgParams(rightData.id, {
                         top: leftData.top,
                         left: leftData.rightEdge + 0.5*rightData.width
@@ -1448,7 +1461,7 @@ const Media = (() => {
                         top: leftData.top + 40,
                         left: leftData.rightEdge - 2*stretchOverlap + stretchWidth + 0.5*rightData.width
                     })
-                    D.Alert(dbString, "spreadImage")
+                    DB(dbString, "spreadImage")
                     return true
                 } else {
                     // If multiple middle images were specified, first determine the minimum and maximum amount each can cover based on overlap.
@@ -1503,7 +1516,7 @@ const Media = (() => {
                         top: leftData.top + testVertSpread,
                         left: leftData.leftEdge + spread - 0.5*rightData.width
                     })
-                    D.Alert(dbString, "spreadImages")
+                    DB(dbString, "spreadImages")
                     //for (const imgData of midData)
                     //    setImage(imgData.id, "blank")
                     return true
@@ -1796,6 +1809,7 @@ const Media = (() => {
                         name: name,
                         activeLayer: activeLayer,
                         startActive: !(startActive === "false" || startActive === false),
+                        activeText: curTextParams.text,
                         zIndex: parseInt(options.zIndex) || (TEXTREGISTRY[name] ? TEXTREGISTRY[name].zIndex : 300),
                         justification: justification || "center",
                         maxWidth: options.maxWidth || 0,
@@ -1831,16 +1845,17 @@ const Media = (() => {
                 actLayer = activeLayer || options.activeLayer || options.layer || "objects",
                 objParams = Object.assign({
                     _pageid: D.PAGEID,
-                    text: "",
+                    text: options.text || "",
                     left: 200,
-                    top: 200,
-                    font_size: 24,
-                    color: C.COLORS.brightred,
-                    font_family: "Candal",
+                    top: options.top || 200,
+                    font_size: options.size || options.fontSize || options.font_size || 24,
+                    color: options.color || C.COLORS.brightred,
+                    font_family: options.font || options.fontFamily || options.font_family || "Candal",
                     layer: isStartingActive ? actLayer : "gmlayer",
                     controlledby: ""
-                }, _.pick(options, ...C.TEXTPROPS)),   
+                }, _.pick(options, ...C.TEXTPROPS)),
                 textObj = createObj("text", objParams)
+            options.activeText = objParams.text             
             textObj.set("left", getRealLeft(textObj, {left: textObj.get("left"), justification: justification || "center", maxWidth: options.maxWidth || 0}))
             regText(textObj, hostName, actLayer, isStartingActive, hasShadow, justification, options, isSilent)
             return textObj
@@ -1848,11 +1863,13 @@ const Media = (() => {
         setText = (textRef, options = {}, isTemporary = false) => {
             const textObj = getTextObj(textRef),
                 textData = getTextData(textRef),
-                textOptions = VAL({string: options}) ? {text: options} : options
+                textOptions = VAL({string: options}) ? {text: options} : options,
+                textString = (textOptions && textOptions.text || textData && textData.text || textObj.get("text")).trim()
+            let shadowObj, shadowObjParams
             if (VAL({textObj: textObj}, "setText")) {
                 textOptions.left = textOptions && textOptions.left || textData && textData.left || getBlankLeft(textObj, textObj.get("text"))
                 textOptions.top = textOptions && textOptions.top || textData && textData.top || textObj.get("top")
-                textOptions.text = (textOptions && textOptions.text || textData && textData.text || textObj.get("text")).trim()
+                textOptions.text = textString
                 textOptions.maxWidth = textOptions && textOptions.maxWidth || textData && textData.maxWidth
                 const objParams = Object.assign(_.pick(textOptions, C.TEXTPROPS))
                 if (textOptions.maxWidth > 0 && objParams.text) {
@@ -1879,16 +1896,21 @@ const Media = (() => {
                     for (const key of _.intersection(_.keys(textOptions), _.keys(textData)))
                         TEXTREGISTRY[textData.name][key] = textOptions[key]
                 objParams.left = getRealLeft(textObj, {left: objParams.left, text: textOptions.text, justification: textData.justification, maxWidth: textOptions.maxWidth})
+                if (_.isEmpty(textString)) {
+                    objParams.layer = "gmlayer"
+                    TEXTREGISTRY[textData.name].activeText = textObj.get("text")
+                } else {
+                    objParams.layer = textData.activeLayer
+                    TEXTREGISTRY[textData.name].activeText = textString
+                }
                 textObj.set(objParams)
                 if (textData.shadow) {
-                    const shadowObj = getTextShadowObj(textRef),
-                        shadowObjParams = _.omit(objParams, ["color"])
+                    shadowObj = getTextShadowObj(textRef)
+                    shadowObjParams = _.omit(objParams, ["color"])
                     shadowObjParams.left += Math.round(textData.font_size/SHADOWFACTOR)
                     shadowObjParams.top += Math.round(textData.font_size/SHADOWFACTOR)
                     shadowObj.set(shadowObjParams)
-                    //toFront(shadowObj)
                 }
-                //toFront(textObj)
             }
         },
         setTextData = (textRef, params) => {
@@ -1897,13 +1919,20 @@ const Media = (() => {
             })
             return TEXTREGISTRY[getTextKey(textRef)]
         },
-        toggleText = (textRef, isActive, text) => {
+        toggleText = (textRef, isActive) => {
             const textObj = getTextObj(textRef),
-                textData = getTextData(textRef),
-                textParams = { layer: isActive ? textData.activeLayer : "gmlayer" }
-            if (text)
-                textParams.text = text
-            setText(textObj, textParams)
+                textData = getTextData(textRef)
+            DB(`TextRef: ${D.JS(textRef)}, isActive: ${D.JS(isActive)}, Layer: ${D.JS(textObj && textObj.get("layer") || "<NO OBJ>")}`, "toggleText")
+            if (textObj && isActive && textObj.get("layer") !== textData.activeLayer) {
+                DB(`Toggling ON. ActiveLayer: ${D.JS(textData.activeLayer)}, activeText: ${D.JS(textData.activeText)}`, "toggleText")
+                textObj.set("layer", textData.activeLayer)
+                if (textData.activeText)
+                    setText(textRef, {text: textData.activeText})
+            } else if (textObj && !isActive && textObj.get("layer") !== "gmlayer") {
+                DB("Toggling OFF.", "toggleText")
+                textObj.set("layer", "gmlayer")
+                setText(textRef, {text: " "})
+            }
         },
         removeText = (textRef, isUnregOnly, isStillKillingShadow) => {
             const textObj = getTextObj(textRef),
@@ -1937,8 +1966,6 @@ const Media = (() => {
         },
         orderMedia = (exclusions = [], isSilent = false) => {
             let reportStrings = []
-            IMAGEREGISTRY.ComplicationMat_1.activeLayer = "map"
-            IMAGEREGISTRY.ComplicationMat_1.zIndex = 500
             const imageKeys = _.reject(_.keys(IMAGEREGISTRY), v => {
                     for (const excl of exclusions)
                         if (v.match(new RegExp(excl, "ui")))
@@ -1965,7 +1992,7 @@ const Media = (() => {
                     reportStrings.push(`<br><b>SORTING LAYER '${D.JS(layerData[0].activeLayer)}'`)
                     for (const data of layerData) {
                         toBack(data.object)
-                        reportStrings.push(`... ${data.name}`)
+                        reportStrings.push(`... ${data.zIndex} ... ${data.name}`)
                     }
                 }
                 if (!isSilent)
@@ -2006,6 +2033,7 @@ const Media = (() => {
         LayerImages: layerImages,
         IMAGELAYERS: IMAGELAYERS,
         get LOCATION() { return STATEREF.curLocation },
+        IsRegistered: isRegImg,
 
         Animate: fireAnimation,
 

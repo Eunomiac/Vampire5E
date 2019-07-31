@@ -35,218 +35,297 @@ const Complications = (() => {
         STATEREF.targetVal = STATEREF.targetVal || { id: "", value: 0 }
         STATEREF.currentVal = STATEREF.currentVal || { id: "", value: 0 }
         STATEREF.remainingVal = STATEREF.remainingVal || { id: "", value: 0 }
-        STATEREF.zeroes = STATEREF.zeroes || []
         STATEREF.cardsDrawn = STATEREF.cardsDrawn || []
+        STATEREF.isRunning = STATEREF.isRunning || false
+
+        delete STATEREF.zeroes
+
+        
+
+        
+
+        //STATEREF.cardsDrawn = []
+        //STATEREF.isRunning = false
     }
     // #endregion
-    let isRunning = false
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-    const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
-            const targetTextObj = getObj("text", STATEREF.targetVal.id) || null,
-                currentTextObj = getObj("text", STATEREF.currentVal.id) || null,
-                remainingTextObj = getObj("text", STATEREF.remainingVal.id) || null
-            let [textObj, imgObj, cardVal, cardIndex] = [null, null, null, null]
+    const handleInput = (msg, who, call, args) => {
             switch (call) {
-                case "reg": case "regtext":
-                    textObj = D.GetSelected(msg)[0]
-                    if (!textObj)
-                        D.Alert("Select a text object first!", "COMPLICATIONS: !comp reg")
-                    else
-                        switch (args.shift().toLowerCase()) {
-                            case "target": case "targetval":
-                                STATEREF.targetVal.id = textObj.id
-                                break
-                            case "current": case "currentval":
-                                STATEREF.currentVal.id = textObj.id
-                                break
-                            case "remaining": case "remainingval": case "remain":
-                                STATEREF.remainingVal.id = textObj.id
-                                break
-                            case "zero": case "devalue":
-                                STATEREF.zeroes[parseInt(args.shift()) - 1] = textObj.id
-                                textObj.set("text", "")
-                                break
-                        // no default
-                        }
-                    break
-                case "target":
-                    STATEREF.targetVal.value = parseInt(args.shift() || 0)
-                    targetTextObj.set("text", `${STATEREF.targetVal.value}`)
-                    STATEREF.remainingVal.value = Math.max(0, STATEREF.targetVal.value - STATEREF.currentVal.value)
-                    remainingTextObj.set("text", `${STATEREF.remainingVal.value}`)
-                    break
-                case "add": case "addval": case "addvalue":
-                    STATEREF.currentVal.value += parseInt(args.shift() || 0)
-                    STATEREF.remainingVal.value = Math.max(0, STATEREF.targetVal.value - STATEREF.currentVal.value)
-                    currentTextObj.set("text", `${STATEREF.currentVal.value}`)
-                    remainingTextObj.set("text", `${STATEREF.remainingVal.value}`)
+                case "target": case "add":
+                    setCompVals(call, parseInt(args.shift() || 0))
                     break
                 case "start":
-                    isRunning = true
-                    Media.Toggle("ComplicationMat", true, "base")
-                    imgObj = Media.GetObj("ComplicationMat")
-                    imgObj.set("layer", "objects")
-                    getObj("deck", STATEREF.deckID).set("shown", true)
-                    toFront(imgObj)
-                    cardVal = args[0] && parseInt(args[0]) ? parseInt(args[0]) : 0
-                    targetTextObj.set({
-                        layer: "objects",
-                        text: `${cardVal}`
-                    })
-                    currentTextObj.set({
-                        layer: "objects",
-                        text: "0"
-                    })
-                    remainingTextObj.set({
-                        layer: "objects",
-                        text: `${cardVal}`
-                    })
-                    toFront(targetTextObj)
-                    toFront(currentTextObj)
-                    toFront(remainingTextObj)
-				/*D.Alert(`TARGET: ${D.JS(targetTextObj)}
-			CURRENT: ${D.JS(currentTextObj)}
-			REMAINING: ${D.JS(remainingTextObj)}`)*/
-                    for (let i = 0; i < 10; i++)
-                        getObj("text", STATEREF.zeroes[i]).set("layer", "objects")
-
-                //getObj("text", STATEREF.targetVal.id).set("text", cardVal)
-                    STATEREF.targetVal.value = cardVal
-                //getObj("text", STATEREF.remainingVal.id).set("text", `${cardVal}`)
-                    STATEREF.remainingVal.value = cardVal
-                //getObj("text", STATEREF.currentVal.id).set("text", "0")
-                    STATEREF.currentVal.value = 0
+                    startComplication(parseInt(args.shift() || 0))
                     break
                 case "end": case "stop":
-                    isRunning = false
-                    Media.Toggle("ComplicationMat", false)
-                    imgObj = Media.GetObj("ComplicationMat")
-                    imgObj.set("layer", "map")
-                    getObj("deck", STATEREF.deckID).set("shown", false)
-                    toBack(imgObj)
-                    for (const textRef of ["targetVal", "currentVal", "remainingVal"]) {
-                        getObj("text", STATEREF[textRef].id).set("layer", "map")
-                        toBack(getObj("text", STATEREF[textRef].id))
-                    }
-                    for (let i = 0; i < 10; i++) {
-                        getObj("text", STATEREF.zeroes[i]).set("layer", "map")
-                        toBack(getObj("text", STATEREF.zeroes[i]))
-                    }
-                    if (args[0] === "true")
-                        launchProject()
+                    endComplication(args.shift() === "true")
+                    break
             /* falls through */
                 case "reset":
-                    for (const cardData of STATEREF.cardsDrawn)
-                        Media.Remove(cardData.id)
-
-                    STATEREF.cardsDrawn = []
-                    STATEREF.cardsDiscarded = []
-                    for (const numRef of ["targetVal", "currentVal", "remainingVal"]) {
-                        STATEREF[numRef].value = 0
-                        getObj("text", STATEREF[numRef].id).set("text", "")
-                    }
-                    for (let i = 0; i < 10; i++)
-                        getObj("text", STATEREF.zeroes[i]).set("text", "")
-
+                    resetComplication()
                     break
                 case "draw":
-                    imgObj = getObj("graphic", STATEREF.cardsDrawn[STATEREF.cardsDrawn.length - 1].id)
-                    if (!imgObj) {
-                        D.Alert("No image object found in STATEREF.cardsDrawn.", "COMPLICATIONS: !comp draw")
-                    } else {
-                        let cardVal = parseInt(args.shift() || 0)
-                        STATEREF.cardsDrawn[STATEREF.cardsDrawn.length - 1].value = cardVal
-                        STATEREF.currentVal.value += cardVal
-                        STATEREF.remainingVal.value = Math.max(0, STATEREF.targetVal.value - STATEREF.currentVal.value)
-                        getObj("text", STATEREF.currentVal.id).set("text", `${STATEREF.currentVal.value}`)
-                        getObj("text", STATEREF.remainingVal.id).set("text", `${STATEREF.remainingVal.value}`)
+                    setCardValue(parseInt(args.shift()) || 0)
+                    break
+                case "discard": {
+                    switch ((args[0] || "").toLowerCase()) {
+                        case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
+                            discardCard((parseInt(args.shift()) || 1) - 1)
+                            break
+                        default:
+                            promptST("discard")
+                            break
                     }
                     break
-                case "discard":
-                    cardIndex = parseInt(args.shift()) - 1
-                    imgObj = getObj("graphic", STATEREF.cardsDrawn[cardIndex].id)
-                    cardVal = STATEREF.cardsDrawn[cardIndex].value
-                //D.Alert(`Card Value is ${D.JS(cardVal)}`)
-                    STATEREF.currentVal.value = Math.max(0, STATEREF.currentVal.value - cardVal)
-                    STATEREF.remainingVal.value = Math.max(0, STATEREF.targetVal.value - STATEREF.currentVal.value)
-                    getObj("text", STATEREF.currentVal.id).set("text", `${STATEREF.currentVal.value}`)
-                    getObj("text", STATEREF.remainingVal.id).set("text", `${STATEREF.remainingVal.value}`)
-                    STATEREF.cardsDrawn = _.reject(STATEREF.cardsDrawn, v => v.id === imgObj.id)
-                    Media.Remove(imgObj.id)
-                    for (let i = 0; i < STATEREF.cardsDrawn.length; i++) {
-                        Media.SetArea(STATEREF.cardsDrawn[i].id, `ComplicationDraw${i + 1}`)
-                        textObj = getObj("text", STATEREF.zeroes[i])
-                        if (STATEREF.cardsDrawn[i].isZeroed) {
-                            textObj.set({ layer: "objects", text: "0" })
-                            toFront(textObj)
-                        } else {
-                            textObj.set({ layer: "map", text: "" })
-                            toBack(textObj)
-                        }
-                    }
-                    textObj = getObj("text", STATEREF.zeroes[STATEREF.cardsDrawn.length])
-                    if (textObj) {
-                        textObj.set({ layer: "map", text: "" })
-                        toBack(textObj)
+                }
+                case "enhance": {
+                    switch ((args[0] || "").toLowerCase()) {
+                        case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
+                            enhanceCard((parseInt(args.shift()) || 1) - 1)
+                            break
+                        default:
+                            promptST("enhance")
+                            break
                     }
                     break
-                case "zero": case "devalue":
-                    cardIndex = parseInt(args.shift()) - 1,
-                    textObj = getObj("text", STATEREF.zeroes[cardIndex]),
-                    cardVal = STATEREF.cardsDrawn[cardIndex].value
-                    STATEREF.currentVal.value = Math.max(0, STATEREF.currentVal.value - cardVal)
-                    STATEREF.remainingVal.value = Math.min(STATEREF.targetVal.value, STATEREF.remainingVal.value + cardVal)
-                    getObj("text", STATEREF.currentVal.id).set("text", `${STATEREF.currentVal.value}`)
-                    getObj("text", STATEREF.remainingVal.id).set("text", `${STATEREF.remainingVal.value}`)
-                    textObj.set({ layer: "objects", text: "██" })
-                    toFront(textObj)
-                    STATEREF.cardsDrawn[cardIndex].value = 0
+                }
+                case "zero": case "devalue": case "revalue":
+                    switch ((args[0] || "").toLowerCase()) {
+                        case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
+                            if (args.length > 1)
+                                revalueCard((parseInt(args.shift()) || 1) - 1, parseInt(args.shift()) || 0)
+                            else
+                                promptST("setrevalue", args[0])
+                            break
+                        default:
+                            promptST("getrevalue")
+                            break
+                    }
                     break
                 case "launchproject":
-                    launchProject()
+                    Char.LaunchProject(STATEREF.currentVal.value - STATEREF.targetVal.value, "COMPLICATION")
                     break
             // no default
             }
         },
         handleAdd = obj => {
-            if (isRunning) {
-                STATEREF.cardsDrawn.push({ id: obj.id, value: 0 })
-                Media.SetArea(obj.id, `ComplicationDraw${STATEREF.cardsDrawn.length}`)
-                sendChat("COMPLICATION", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px ${C.COLORS.crimson} outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[0](!comp draw 0) [1](!comp draw 1) [2](!comp draw 2) [3](!comp draw 3) [4](!comp draw 4)</span><br/></div>`)
-            }
+            if (STATEREF.isRunning)
+                drawCard(obj)
         }
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-    // #region GETTERS: Retrieving Project Data
+    // #region SETTERS: Setting card values, target numbers, activating Complication system
+    const setCompVals = (mode, value) => {
+            switch (mode) {
+                case "target": {
+                    STATEREF.targetVal.value = value
+                    Media.SetText("complicationTarget", `${STATEREF.targetVal.value}`)
+                    break
+                }
+                case "current": {
+                    STATEREF.currentVal.value = 0
+                } /* falls through */
+                case "add": case "addVal": case "addValue": {
+                    STATEREF.currentVal.value += value
+                    Media.SetText("complicationCurrent", `${STATEREF.currentVal.value}`)
+                    break
+                }
+                // no default
+            }
+            STATEREF.remainingVal.value = STATEREF.targetVal.value - STATEREF.currentVal.value
+            Media.SetText("complicationRemaining", `${STATEREF.remainingVal.value <= 0 ? "+" : "-"}${Math.abs(STATEREF.remainingVal.value)}`)
+            if (STATEREF.remainingVal.value <= 0) {
+                Media.SetText("complicationCurrent", { color: C.COLORS.green})
+                Media.SetText("complicationRemaining", { color: C.COLORS.green})
+            } else {
+                Media.SetText("complicationCurrent", { color: C.COLORS.brightred})
+                Media.SetText("complicationRemaining", { color: C.COLORS.brightred})
+            }
+        },
+        resetComplication = () => {
+            for (const cardData of STATEREF.cardsDrawn)
+                Media.Remove(cardData.id)
+            STATEREF.cardsDrawn = []
+            STATEREF.cardsDiscarded = []
+            setCompVals("current", 0)
+            setCompVals("target", 0)
+            for (let i = 0; i < 10; i++) {
+                Media.Set(`complicationZero_${i+1}`, "zero")
+                Media.Toggle(`complicationZero_${i+1}`, false)
+                Media.Toggle(`complicationEnhanced_${i+1}`, false)
+            }
+        },
+        startComplication = startVal => {            
+            STATEREF.isRunning = true
+            Media.Toggle("ComplicationMat", true)
+            for (const textRef of ["complicationTarget", "complicationCurrent", "complicationRemaining"])
+                Media.ToggleText(textRef, true)
+            getObj("deck", STATEREF.deckID).set("shown", true)
+            setCompVals("current", 0)
+            setCompVals("target", startVal)
+        },
+        endComplication = (isLaunchingProject) => {
+            STATEREF.isRunning = false             
+            resetComplication()
+            Media.Toggle("ComplicationMat", false)
+            for (const textRef of ["complicationTarget", "complicationCurrent", "complicationRemaining"])
+                Media.ToggleText(textRef, false)
+            for (let i = 0; i < 10; i++)
+                Media.Toggle(`complicationZero_${i+1}`, false)
+            getObj("deck", STATEREF.deckID).set("shown", false)
+            if (isLaunchingProject)
+                Char.LaunchProject(STATEREF.currentVal.value - STATEREF.targetVal.value, "COMPLICATION")   
+        },
+        promptST = (mode, paramString = "") => {
+            let chatString = `/w Storyteller <br/><div style='
+                display: block;
+                background: url(https://i.imgur.com/kBl8aTO.jpg);
+                text-align: center;
+                border: 4px ${C.COLORS.crimson} outset;
+                box-sizing: border-box;
+                margin-left: -42px;
+                width: 275px;
+            '><br/><span style='
+                display: block;
+                font-size: 25px;
+                text-align: center;
+                width: 100%;
+                font-family: Voltaire;
+                color: ${C.COLORS.brightred};
+                font-weight: bold;
+            '>`
+            switch(mode) {
+                case "setvalue":
+                    chatString += `Set Card Value:</span><br><span style='                    
+                        display: block;
+                        font-size: 16px;
+                        text-align: center;
+                        width: 100%
+                    '>[0](!comp draw 0) [1](!comp draw 1) [2](!comp draw 2) [3](!comp draw 3) [4](!comp draw 4)</span><br/><span style='
+                        display: block;
+                        font-size: 16px;
+                        text-align: center;
+                        width: 100%
+                    '>[Discard Last](!comp discard ${STATEREF.cardsDrawn.length})[Discard](!comp discard)<br>[Revalue Last](!comp revalue ${STATEREF.cardsDrawn.length})[Revalue](!comp revalue)<br>[Enhance Last](!comp enhance ${STATEREF.cardsDrawn.length})[Enhance](!comp enhance)`
+                    break
+                case "discard":
+                    chatString += `Which Card:</span><br><span style='                    
+                    display: block;
+                    font-size: 16px;
+                    text-align: center;
+                    width: 100%
+                '>[1](!comp discard 1) [2](!comp discard 2) [3](!comp discard 3) [4](!comp discard 4) [5](!comp discard 5)</span><br/><span style='
+                    display: block;
+                    font-size: 16px;
+                    text-align: center;
+                    width: 100%
+                '>[6](!comp discard 6) [7](!comp discard 7) [8](!comp discard 8) [9](!comp discard 9) [10](!comp discard 10)`
+                    break
+                case "getrevalue":
+                    chatString += `Which Card:</span><br><span style='                    
+                        display: block;
+                        font-size: 16px;
+                        text-align: center;
+                        width: 100%
+                    '>[1](!comp revalue 1) [2](!comp revalue 2) [3](!comp revalue 3) [4](!comp revalue 4) [5](!comp revalue 5)</span><br/><span style='
+                        display: block;
+                        font-size: 16px;
+                        text-align: center;
+                        width: 100%
+                    '>[6](!comp revalue 6) [7](!comp revalue 7) [8](!comp revalue 8) [9](!comp revalue 9) [10](!comp revalue 10)`
+                    break
+                case "setrevalue":
+                    chatString += `Set Card Value:</span><br><span style='                    
+                    display: block;
+                    font-size: 16px;
+                    text-align: center;
+                    width: 100%
+                '>[0](!comp revalue${paramString === "" ? "" : ` ${paramString}`} 0) [1](!comp revalue${paramString === "" ? "" : ` ${paramString}`} 1) [2](!comp revalue${paramString === "" ? "" : ` ${paramString}`} 2) [3](!comp revalue${paramString === "" ? "" : ` ${paramString}`} 3) [4](!comp revalue${paramString === "" ? "" : ` ${paramString}`} 4)`
+                    break
+                case "enhance":
+                    chatString += `Which Card:</span><br><span style='                    
+                        display: block;
+                        font-size: 16px;
+                        text-align: center;
+                        width: 100%
+                    '>[1](!comp enhance 1) [2](!comp enhance 2) [3](!comp enhance 3) [4](!comp enhance 4) [5](!comp enhance 5)</span><br/><span style='
+                        display: block;
+                        font-size: 16px;
+                        text-align: center;
+                        width: 100%
+                    '>[6](!comp enhance 6) [7](!comp enhance 7) [8](!comp enhance 8) [9](!comp enhance 9) [10](!comp enhance 10)`
+                    break
 
-
-    // #endregion
-
-    // #region SETTERS:
-    const launchProject = () => {
-        const charObj = D.GetChar(Roller.LastProjectCharID),
-            p = v => Roller.LastProjectPrefix + v,
-            rowID = Roller.LastProjectPrefix.split("_")[2],
-            attrList = {},
-            [trait1name, trait1val, trait2name, trait2val, diff, scope] = [
-                D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait1_name").val,
-                D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait1").val,
-                D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait2_name").val,
-                D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait2").val,
-                D.GetRepStat(charObj, "project", rowID, "projectlaunchdiff").val,
-                D.GetRepStat(charObj, "project", rowID, "projectscope").val
-            ]
-        attrList[p("projectlaunchresultsummary")] = `${trait1name} (${trait1val}) + ${trait2name} (${trait2val}) vs. ${diff}: COMPLICATION`
-        DB(`${attrList[p("projectlaunchresultsummary")]}`, "launchProject")
-        attrList[p("projectlaunchroll_toggle")] = 2
-        attrList[p("projectlaunchresults")] = "COMPLICATION"
-        attrList[p("projectstakes_toggle")] = 1
-        attrList[p("projecttotalstake")] = parseInt(scope) + 1
-        attrList[p("projectlaunchresultsmargin")] = `${parseInt(scope) + 1} Stake Required, (${parseInt(scope) + 1} to Go)`
-        setAttrs(charObj.id, attrList)
-    }
+                // no default
+            }
+            chatString += "</span><br/></div>"
+            sendChat("COMPLICATION", D.JSH(chatString))
+        },
+        drawCard = obj => {
+            if (!Media.IsRegistered(obj)) {
+                STATEREF.cardsDrawn.push({ id: obj.id, value: 0 })
+                Media.SetArea(obj.id, `ComplicationDraw${STATEREF.cardsDrawn.length}`)
+                promptST("setvalue")
+            }
+        },
+        setCardValue = (value = 0) => {
+            const imgObj = getObj("graphic", STATEREF.cardsDrawn[STATEREF.cardsDrawn.length - 1].id)
+            if (!imgObj) {
+                D.Alert("No image object found in STATEREF.cardsDrawn.", "COMPLICATIONS: !comp draw")
+            } else {
+                STATEREF.cardsDrawn[STATEREF.cardsDrawn.length - 1].value = value
+                setCompVals("add", value)
+            }
+        },
+        enhanceCard = (index = 0) => {
+            Media.Toggle(`complicationEnhanced_${index + 1}`, true)
+            toFront(Media.GetObj(`complicationEnhanced_${index + 1}`))
+            STATEREF.cardsDrawn[index].isEnhanced = true
+        },
+        discardCard = (index = 0) => {
+            if (index >= STATEREF.cardsDrawn.length)
+                return THROW(`Index of ${D.JS(index)} exceeds number of cards drawn: ${D.JS(STATEREF.cardsDrawn, true)}`)
+            const imgObj = getObj("graphic", STATEREF.cardsDrawn[index].id),
+                cardVal = STATEREF.cardsDrawn[index].value
+            setCompVals("add", -1 * cardVal)
+            STATEREF.cardsDrawn = _.reject(STATEREF.cardsDrawn, v => v.id === imgObj.id)
+            Media.Remove(imgObj.id)
+            for (let i = 0; i < STATEREF.cardsDrawn.length; i++) {
+                Media.SetArea(STATEREF.cardsDrawn[i].id, `ComplicationDraw${i + 1}`)
+                if (STATEREF.cardsDrawn[i].isZeroed) {
+                    Media.Toggle(`complicationZero_${i+1}`, true)
+                    toFront(Media.GetObj(`complicationZero_${i+1}`))
+                } else {
+                    Media.Toggle(`complicationZero_${i+1}`, false)
+                }
+                if (STATEREF.cardsDrawn[i].isEnhanced) {
+                    Media.Toggle(`complicationEnhanced_${i+1}`, true)
+                    toFront(Media.GetObj(`complicationEnhanced_${i+1}`))
+                } else {                    
+                    Media.Toggle(`complicationEnhanced_${i+1}`, false)
+                }
+            }
+            const endIndex = STATEREF.cardsDrawn.length
+            Media.Toggle(`complicationZero_${endIndex + 1}`, false)
+            Media.Toggle(`complicationEnhanced_${endIndex + 1}`, false)
+            return true
+        },
+        revalueCard = (index = 0, value = 0) => {
+            const cardVal = STATEREF.cardsDrawn[index].value
+            setCompVals("add", value - cardVal)
+            if (value === 0)
+                Media.Toggle(`complicationZero_${index + 1}`, true)
+            else
+                Media.Toggle(`complicationZero_${index + 1}`, false)
+            //Media.Set(`complicationZero_${index + 1}`, value)
+            toFront(Media.GetObj(`complicationZero_${index + 1}`))
+            toFront(Media.GetObj(`complicationEnhanced_${index + 1}`))
+            STATEREF.cardsDrawn[index].value = value
+            STATEREF.cardsDrawn[index].isZeroed = value === 0
+        }
+    
 
     // #endregion
 

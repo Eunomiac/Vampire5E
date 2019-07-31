@@ -43,10 +43,10 @@ const TimeTracker = (() => {
             setCurrentDate()
         }
 
-        /* if (Session.IsSessionActive) {
+        if (Session.IsSessionActive) {
             startClock()
-            startAirLights()
-        } */        
+            //startAirLights()
+        }      
     }
     // #endregion	
 
@@ -1057,7 +1057,7 @@ const TimeTracker = (() => {
                 if (!isStartup)
                     airTimes[alight].push(curTime)
                 if (curSrc !== Media.GetData(alight).curSrc)
-                    Media.Toggle(alight, true, curSrc)
+                    Media.Set(alight, curSrc)
                 airLights[alight] = setTimeout(() => { tickAirLight(alight) }, curDur)
             }
         },

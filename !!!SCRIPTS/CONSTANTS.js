@@ -69,7 +69,7 @@ const C = (() => {
             blue: "rgb(100, 100, 255)",
             darkblue: "rgb(50, 50, 150)",
             cyan: "rgb(0, 255, 255)",
-            gold: "rgb(255, 238, 102)",
+            gold: "#f1c232",
             fadedblack: "rgba(0, 0, 0, 0.2)",
             fadedgrey: "rgba(0, 0, 0, 0.1)",
             crimson: "rgb(220, 20, 60)",

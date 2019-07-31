@@ -160,6 +160,7 @@ const D = (() => {
                                 replace(/\[\s+\]/gu, "[]")
                         return [...newArray]
                     } else if (_.isObject(val) && !_.isEmpty(val)) {
+                        return JSON.stringify(val).replace(/\\n/gu, "<br>")
                         const newVal = {}
                         _.each(val, (v, k) => {
                             newVal[k] = parser(v)
@@ -328,7 +329,7 @@ const D = (() => {
                 return THROW(`Cannot parse value '${jStrC(val)}' to object.`, "parseToObj")
 
             for (const kvp of _.map(args, v => v.split(/\s*:\s*(?!\/)/u)))
-                obj[kvp[0]] = parseInt(kvp[1]) || kvp[1]
+                obj[kvp[0].toString().trim()] = parseInt(kvp[1]) || kvp[1]
             return obj
         }
     // #endregion

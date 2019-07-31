@@ -326,7 +326,7 @@ const Char = (() => {
                 //D.Alert(`Detected change to '${obj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")}'`)
                 switch (obj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")) {
                     case "hunger":
-                        Media.Toggle(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, true, obj.get("current"))
+                        Media.Set(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, obj.get("current"))
                         break
                     case "desire": case "_reporder_repeating_desire":
                         displayDesires()
@@ -799,6 +799,28 @@ const Char = (() => {
         },
         sortTimeline = (charRef) => {
             D.SortRepSec(charRef, "timeline", "tlsortby", true, function(val) {return val || -200})
+        },
+        launchProject = (margin = 0, resultString = "SUCCESS") => {
+            const charObj = D.GetChar(Roller.LastProjectCharID),
+                p = v => Roller.LastProjectPrefix + v,
+                rowID = Roller.LastProjectPrefix.split("_")[2],
+                attrList = {},
+                [trait1name, trait1val, trait2name, trait2val, diff, scope] = [
+                    D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait1_name").val,
+                    D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait1").val,
+                    D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait2_name").val,
+                    D.GetRepStat(charObj, "project", rowID, "projectlaunchtrait2").val,
+                    D.GetRepStat(charObj, "project", rowID, "projectlaunchdiff").val,
+                    D.GetRepStat(charObj, "project", rowID, "projectscope").val
+                ]
+            attrList[p("projectlaunchresultsummary")] = `${trait1name} (${trait1val}) + ${trait2name} (${trait2val}) vs. ${diff}: ${resultString}`
+            DB(`${attrList[p("projectlaunchresultsummary")]}`, "launchProject")
+            attrList[p("projectlaunchroll_toggle")] = 2
+            attrList[p("projectlaunchresults")] = resultString
+            attrList[p("projectstakes_toggle")] = 1
+            attrList[p("projecttotalstake")] = parseInt(scope) + 1 - margin
+            attrList[p("projectlaunchresultsmargin")] = `${parseInt(scope) + 1 - margin} Stake Required, (${parseInt(scope) + 1 - margin} to Go)`
+            setAttrs(charObj.id, attrList)
         }
     // #endregion
 
@@ -992,6 +1014,7 @@ const Char = (() => {
         AdjustHunger: adjustHunger,
         DaySleep: daysleep,
         AwardXP: awardXP,
+        LaunchProject: launchProject,
         RefreshDisplays: () => { displayDesires(); displayResources(); displayStakes() }
     }
 })()

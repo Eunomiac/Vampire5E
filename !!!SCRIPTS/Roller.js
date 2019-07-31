@@ -54,10 +54,77 @@ const Roller = (() => {
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const newHandleInput = (msg, who, call, args) => {        
-        let charObj, params,
+        let charObj, params, rollType,
             name = "",
             [isSilent, isMaskingTraits] = [false, false]
         switch (call) {
+            case "frenzyinit": {	// !projectroll @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
+                lockRoller(true)
+                STATEREF.frenzyRoll = `${args.join(" ").split("|")[0]}|`
+                sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px ${C.COLORS.crimson} outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: ${C.COLORS.white}; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: ${C.COLORS.brightred}; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${args.join(" ").split("|")[0]}</span><br/></div>`)
+                break
+            }
+            case "frenzy": { rollType = rollType || "frenzy"
+                lockRoller(false)
+                args = `${STATEREF.frenzyRoll} ${args[0]}`.split(" ")
+                DB(`Parsing Frenzy Args: ${D.JS(args)}`, "!frenzyroll")
+            } /* falls through */
+            case "disc": case "trait": rollType = rollType || "trait"
+            /* falls through */
+            case "rouse": case "rouseobv": rollType = rollType || "rouse"
+            /* falls through */
+            case "rouse2": case "rouse2obv": rollType = rollType || "rouse2"
+            /* falls through */
+            case "check": rollType = rollType || "check"
+            /* falls through */
+            case "willpower": rollType = rollType || "willpower"
+            /* falls through */
+            case "humanity": rollType = rollType || "humanity"
+            /* falls through */
+            case "remorse": rollType = rollType || "remorse"
+            /* falls through */
+            case "project": { rollType = rollType || "project"
+                /* all continue below */
+                params = _.map(args.join(" ").split("|"), v => v.trim())
+                name = params.shift()
+                charObj = D.GetChar(name)
+                DB(`Received Roll: ${D.JS(call)} ${name}|${params.join("|")}
+                            ... PARAMS: [${D.JS(params.join(", "))}]
+                            ... CHAROBJ: ${D.JS(charObj)}`, "handleInput")
+                if (VAL({ charobj: charObj }, "handleInput")) {
+                    if (STATEREF.isNextRollNPC && playerIsGM(msg.playerid)) {
+                        STATEREF.isNextRollNPC = false
+                        makeNewRoll(charObj, rollType, params, Object.assign(_.clone(STATEREF.nextRollFlags), { isDiscRoll: call === "disc", isNPCRoll: true, isOblivionRoll: STATEREF.oblivionRouse === true || call.includes("obv") }))
+                        STATEREF.oblivionRouse = false
+                                //STATEREF.nextRollFlags = {}
+                    } else if (isLocked) {
+                        break
+                    } else if (playerIsGM(msg.playerid)) {
+                        makeNewRoll(charObj, rollType, params, Object.assign(_.clone(STATEREF.nextRollFlags), { isDiscRoll: call === "disc", isNPCRoll: false, isOblivionRoll: STATEREF.oblivionRouse === true || call.includes("obv") }))
+                        STATEREF.oblivionRouse = false
+                                //STATEREF.nextRollFlags = {}                
+                    } else {
+                        makeNewRoll(charObj, rollType, params, { isDiscRoll: call === "disc", isNPCRoll: false, isOblivionRoll: call.includes("obv") })
+                    }
+                    delete STATEREF.frenzyRoll
+                }
+                break
+            }
+            case "secret": {
+                rollType = "secret"
+                const flags = args.shift().toLowerCase()
+                params = args.join(" ").split("|")
+                isSilent = flags.includes("x")
+                isMaskingTraits = flags.includes("n")
+                let chars
+                if (!msg.selected || !msg.selected[0])
+                    chars = D.GetChars("registered")
+                else
+                    chars = D.GetChars(msg)
+                if (params.length >= 1 && params.length <= 3)
+                    makeSecretRoll(chars, params, isSilent, isMaskingTraits)
+                break
+            }
             case "add": case "set": {
                 switch (args.shift().toLowerCase()) {
                     case "sec": case "secret": case "secrecy": {
@@ -214,79 +281,6 @@ const Roller = (() => {
                         break
                     // no default
         
-                }
-                break
-            }
-            case "roll": {
-                const rollCall = args.shift().toLowerCase()
-                let rollType
-                switch (rollCall) {
-                    case "frenzyinit":	// !projectroll @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
-                        lockRoller(true)
-                        STATEREF.frenzyRoll = `${args.join(" ").split("|")[0]}|`
-                        sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px ${C.COLORS.crimson} outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: ${C.COLORS.white}; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: ${C.COLORS.brightred}; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${args.join(" ").split("|")[0]}</span><br/></div>`)
-                        break
-                    case "frenzy": rollType = rollType || "frenzy"
-                        lockRoller(false)
-                        args = `${STATEREF.frenzyRoll} ${args[0]}`.split(" ")
-                        DB(`Parsing Frenzy Args: ${D.JS(args)}`, "!frenzyroll")
-                                /* falls through */
-                    case "disc": case "trait": rollType = rollType || "trait"
-                                /* falls through */
-                    case "rouse": case "rouseobv": rollType = rollType || "rouse"
-                                /* falls through */
-                    case "rouse2": case "rouse2obv": rollType = rollType || "rouse2"
-                                /* falls through */
-                    case "check": rollType = rollType || "check"
-                                /* falls through */
-                    case "willpower": rollType = rollType || "willpower"
-                                /* falls through */
-                    case "humanity": rollType = rollType || "humanity"
-                                /* falls through */
-                    case "remorse": rollType = rollType || "remorse"
-                                /* falls through */
-                    case "project": rollType = rollType || "project"
-                                /* all continue below */
-                        params = _.map(args.join(" ").split("|"), v => v.trim())
-                        name = params.shift()
-                        charObj = D.GetChar(name)
-                        DB(`Received Roll: ${D.JS(call)} ${name}|${params.join("|")}
-                                    ... PARAMS: [${D.JS(params.join(", "))}]
-                                    ... CHAROBJ: ${D.JS(charObj)}`, "handleInput")
-                        if (VAL({ charobj: charObj }, "handleInput")) {
-                            if (STATEREF.isNextRollNPC && playerIsGM(msg.playerid)) {
-                                STATEREF.isNextRollNPC = false
-                                makeNewRoll(charObj, rollType, params, Object.assign(_.clone(STATEREF.nextRollFlags), { isDiscRoll: rollCall === "disc", isNPCRoll: true, isOblivionRoll: STATEREF.oblivionRouse === true || rollCall.includes("obv") }))
-                                STATEREF.oblivionRouse = false
-                                        //STATEREF.nextRollFlags = {}
-                            } else if (isLocked) {
-                                break
-                            } else if (playerIsGM(msg.playerid)) {
-                                makeNewRoll(charObj, rollType, params, Object.assign(_.clone(STATEREF.nextRollFlags), { isDiscRoll: rollCall === "disc", isNPCRoll: false, isOblivionRoll: STATEREF.oblivionRouse === true || rollCall.includes("obv") }))
-                                STATEREF.oblivionRouse = false
-                                        //STATEREF.nextRollFlags = {}                
-                            } else {
-                                makeNewRoll(charObj, rollType, params, { isDiscRoll: rollCall === "disc", isNPCRoll: false, isOblivionRoll: rollCall.includes("obv") })
-                            }
-                            delete STATEREF.frenzyRoll
-                        }
-                        break
-                    case "secret": {
-                        rollType = "secret"
-                        const flags = args.shift().toLowerCase()
-                        params = args.join(" ").split("|")
-                        isSilent = flags.includes("x")
-                        isMaskingTraits = flags.includes("n")
-                        let chars
-                        if (!msg.selected || !msg.selected[0])
-                            chars = D.GetChars("registered")
-                        else
-                            chars = D.GetChars(msg)
-                        if (params.length >= 1 && params.length <= 3)
-                            makeSecretRoll(chars, params, isSilent, isMaskingTraits)
-                        break
-                    }
-                    // no default
                 }
                 break
             }
@@ -3207,7 +3201,7 @@ const Roller = (() => {
                 Media.Set("rollerImage_diffFrame", "blank")      
 
             if (_.isNumber(deltaAttrs.hunger))
-                Media.Toggle(`Hunger${getAttrByName(rollData.charID, "sandboxquadrant")}_1`, true, deltaAttrs.hunger)
+                Media.Set(`Hunger${getAttrByName(rollData.charID, "sandboxquadrant")}_1`, deltaAttrs.hunger)
 
             logLines.rollerName = `${CHATSTYLES.rollerName + D.Capitalize(displayName) + logLines.rollerName}</div>`
             stLines.rollerName = `${CHATSTYLES.rollerName + rollData.charName + stLines.rollerName}</div>`

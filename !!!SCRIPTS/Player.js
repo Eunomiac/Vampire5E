@@ -132,7 +132,7 @@ const Player = (() => {
                         left: token.get("left") + 100
                     })
                 toFront(famToken)
-                Media.Toggle(famToken, famToken.get("layer") !== "objects", "base")
+                Media.Toggle(famToken, famToken.get("layer") !== "objects")
                 break
             // no default
         }
