@@ -160,35 +160,32 @@ const D = (() => {
                                 replace(/\[\s+\]/gu, "[]")
                         return [...newArray]
                     } else if (_.isObject(val) && !_.isEmpty(val)) {
-                        return JSON.stringify(val).replace(/\\n/gu, "<br>")
-                        const newVal = {}
-                        _.each(val, (v, k) => {
-                            newVal[k] = parser(v)
-                        })  
-                        if (JSON.stringify(newVal).length < 60)
-                            return _.escape(JSON.stringify(newVal, null, 1).
-                                replace(/\\n/g,"").
-                                replace(/"([^(")"]+)":/g,"$1:")).
-                                replace(/\}/gu, " }").
-                                replace(/\s\s+/gu, " ")
-                        return newVal
+                        return (() => {
+                            let newVal = _.mapObject(val, v => parser(v))
+                            if (JSON.stringify(newVal).length < 100)
+                                return _.escape(JSON.stringify(newVal, null, 1).
+                                    replace(/\n/gu, " ").                             
+                                    replace(/"([^(")"]+)":/gu,"$1:")).
+                                    replace(/\}/gu, " }").
+                                    replace(/\s\s+/gu, " ")
+                            return newVal
+                        })()
                     } else {
                         return val
                     }
                 }
 
-                const replacer = (k, v) => typeof v === "string" ? v.replace(/\\/gu, "") : v
+                const replacer = (k, v) => typeof v === "string" ? v.replace(/\\/gu, "").replace(/\n/gu, "<br/>").replace(/\t/gu, "") : v
 
                 return JSON.stringify(parser(data), replacer, 4).
                     replace(/"\{/gu, "{").replace(/\}"/gu, "}").
                     replace(/(\s*?)"([^"]*?)"\s*?:/gu, "$1$2:"). // Removes quotes from keys of a list or object.
-                    replace(/\\n/gu, "<br>"). // Converts line break code into '<br/>'
-                    replace(/\\t/gu, ""). // Strips tab code
                     replace(/ (?= )/gu, "&nbsp;"). // Replaces any length of whitespace with one '&nbsp;'
                     replace(/@T@/gu, "&nbsp;&nbsp;&nbsp;&nbsp;"). // Converts custom '@T@' tab character to four spaces
                     replace(/"\[/gu, "[").replace(/\]"/gu, "]"). // Removes quotes from around array strings.
                     replace(/\\"/gu, "\""). // Escapes quote marks                
-                    replace(/(^"|"$)/gu, "") // Removes quote marks from the beginning and end of the string
+                    replace(/(^"|"$)/gu, ""). // Removes quote marks from the beginning and end of the string                    
+                    replace(/&amp;quot;/gu, "\"")
             } catch (errObj) {
                 return JSON.stringify(errObj)
             }

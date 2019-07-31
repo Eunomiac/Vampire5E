@@ -32,9 +32,9 @@ const Complications = (() => {
     // #region LOCAL INITIALIZATION
     const initialize = () => {
         STATEREF.deckID = STATEREF.deckID || ""
-        STATEREF.targetVal = STATEREF.targetVal || { id: "", value: 0 }
-        STATEREF.currentVal = STATEREF.currentVal || { id: "", value: 0 }
-        STATEREF.remainingVal = STATEREF.remainingVal || { id: "", value: 0 }
+        STATEREF.targetVal = STATEREF.targetVal || 0
+        STATEREF.currentVal = STATEREF.currentVal || 0
+        STATEREF.remainingVal = STATEREF.remainingVal || 0
         STATEREF.cardsDrawn = STATEREF.cardsDrawn || []
         STATEREF.isRunning = STATEREF.isRunning || false
 
@@ -73,6 +73,9 @@ const Complications = (() => {
                         case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
                             discardCard((parseInt(args.shift()) || 1) - 1)
                             break
+                        case "last":
+                            discardCard("last")
+                            break
                         default:
                             promptST("discard")
                             break
@@ -84,6 +87,9 @@ const Complications = (() => {
                         case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
                             enhanceCard((parseInt(args.shift()) || 1) - 1)
                             break
+                        case "last":
+                            enhanceCard("last")
+                            break
                         default:
                             promptST("enhance")
                             break
@@ -93,10 +99,11 @@ const Complications = (() => {
                 case "zero": case "devalue": case "revalue":
                     switch ((args[0] || "").toLowerCase()) {
                         case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
+                        case "last":
                             if (args.length > 1)
-                                revalueCard((parseInt(args.shift()) || 1) - 1, parseInt(args.shift()) || 0)
+                                revalueCard(args[0] === "last" && "last" || (parseInt(args[0]) || 1) - 1, parseInt(args[1]) || 0)
                             else
-                                promptST("setrevalue", args[0])
+                                promptST("setrevalue", args.shift())
                             break
                         default:
                             promptST("getrevalue")
@@ -104,7 +111,7 @@ const Complications = (() => {
                     }
                     break
                 case "launchproject":
-                    Char.LaunchProject(STATEREF.currentVal.value - STATEREF.targetVal.value, "COMPLICATION")
+                    Char.LaunchProject(STATEREF.currentVal - STATEREF.targetVal, "COMPLICATION")
                     break
             // no default
             }
@@ -116,27 +123,112 @@ const Complications = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
+    // #region CONFIGURATION: Card Definitions (based on img src)
+    const CARDS = {
+        advantage: {
+            "": { name: "GuiltByAssociation", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} }
+        },
+        attention: {
+            "": { name: "FanTheFlames", imgsrc: "", value: 3, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Friction", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "IrresistibleOpportunity", imgsrc: "", value: 2, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "LooseLips", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "TangledWebs", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} }
+        },
+        beast: {
+            "": { name: "BloodRush", imgsrc: "", value: 2, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "TheBeast...", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "TheBeastAscendant", imgsrc: "", value: 2, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "TheBeastRampant", imgsrc: "", value: 2, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "TheBeastRavenous", imgsrc: "", value: 2, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "TheBeastScorned", imgsrc: "", value: 2, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} }
+        },
+        benefit: {
+            "": { name: "AMomentOfInsight", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "AMomentOfInspiration", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Breakthrough", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Espionage", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} }
+        },
+        blood: {
+            "": { name: "FieldWork", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Micromanagement", imgsrc: "", value: 2, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} }
+        },
+        complication: {
+            "": { name: "Powderkeg", imgsrc: "", value: 0, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "RippleEffects", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "TunnelVision", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} }
+        },
+        debilitation: {
+            "": { name: "CognitiveDissonance", imgsrc: "", value: 3, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Exhausted", imgsrc: "", value: 2, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "MentalBlock", imgsrc: "", value: 3, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Obsessed", imgsrc: "", value: 2, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Overwhelmed", imgsrc: "", value: 2, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Preoccupied", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "SpreadThin", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Tilted", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "WeightOfTheWorld", imgsrc: "", value: 2, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} }
+        },
+        humanity: {
+            "": { name: "CollateralDamage", imgsrc: "", value: 2, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Ennui", imgsrc: "", value: 3, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "ImmortalClay", imgsrc: "", value: 2, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} }
+        },
+        prestation: {
+            "": { name: "Favors", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} }
+        },
+        project: {
+            "": { name: "AtCrossPurposes", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "CrisisManagement", imgsrc: "", value: 2, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "FalseLead", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "FlawedExecution", imgsrc: "", value: 4, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} }
+        },
+        none: {
+            "": { name: "AMatterOfPride", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "AMomentOfDespair", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "AlternativeFacts", imgsrc: "", value: 2, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Betrayal", imgsrc: "", value: -1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Cathexis", imgsrc: "", value: -1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "CostlyBlunder", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Faith", imgsrc: "", value: 0, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "InABind", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "InTheRed", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Options", imgsrc: "", value: 0, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "ProlongedAbsence", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "RepeatMistakes", imgsrc: "", value: 0, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Reverie", imgsrc: "", value: 0, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "RockyStart", imgsrc: "", value: -1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "SilentBeneficiary", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "SimmeringResentment", imgsrc: "", value: -1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "Triage", imgsrc: "", value: -1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "UnderTheBus", imgsrc: "", value: 1, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
+            "": { name: "UnfinishedBusiness", imgsrc: "", value: 0, rarity: "", rollEffect: "", enhancedRollEffect: "", action: charRef => {} }
+        }
+
+    }
+
+    // #endregion
     // #region SETTERS: Setting card values, target numbers, activating Complication system
     const setCompVals = (mode, value) => {
             switch (mode) {
                 case "target": {
-                    STATEREF.targetVal.value = value
-                    Media.SetText("complicationTarget", `${STATEREF.targetVal.value}`)
+                    STATEREF.targetVal = value
+                    Media.SetText("complicationTarget", `${STATEREF.targetVal}`)
                     break
                 }
                 case "current": {
-                    STATEREF.currentVal.value = 0
+                    STATEREF.currentVal = 0
                 } /* falls through */
                 case "add": case "addVal": case "addValue": {
-                    STATEREF.currentVal.value += value
-                    Media.SetText("complicationCurrent", `${STATEREF.currentVal.value}`)
+                    STATEREF.currentVal += value
+                    Media.SetText("complicationCurrent", `${STATEREF.currentVal}`)
                     break
                 }
                 // no default
             }
-            STATEREF.remainingVal.value = STATEREF.targetVal.value - STATEREF.currentVal.value
-            Media.SetText("complicationRemaining", `${STATEREF.remainingVal.value <= 0 ? "+" : "-"}${Math.abs(STATEREF.remainingVal.value)}`)
-            if (STATEREF.remainingVal.value <= 0) {
+            STATEREF.remainingVal = STATEREF.targetVal - STATEREF.currentVal
+            Media.SetText("complicationRemaining", `${STATEREF.remainingVal <= 0 ? "+" : "-"}${Math.abs(STATEREF.remainingVal)}`)
+            if (STATEREF.remainingVal <= 0) {
                 Media.SetText("complicationCurrent", { color: C.COLORS.green})
                 Media.SetText("complicationRemaining", { color: C.COLORS.green})
             } else {
@@ -176,7 +268,7 @@ const Complications = (() => {
                 Media.Toggle(`complicationZero_${i+1}`, false)
             getObj("deck", STATEREF.deckID).set("shown", false)
             if (isLaunchingProject)
-                Char.LaunchProject(STATEREF.currentVal.value - STATEREF.targetVal.value, "COMPLICATION")   
+                Char.LaunchProject(STATEREF.currentVal - STATEREF.targetVal, "COMPLICATION")   
         },
         promptST = (mode, paramString = "") => {
             let chatString = `/w Storyteller <br/><div style='
@@ -208,10 +300,10 @@ const Complications = (() => {
                         font-size: 16px;
                         text-align: center;
                         width: 100%
-                    '>[Discard Last](!comp discard ${STATEREF.cardsDrawn.length})[Discard](!comp discard)<br>[Revalue Last](!comp revalue ${STATEREF.cardsDrawn.length})[Revalue](!comp revalue)<br>[Enhance Last](!comp enhance ${STATEREF.cardsDrawn.length})[Enhance](!comp enhance)`
+                    '>[Discard Last](!comp discard last)[Discard](!comp discard)<br>[Revalue Last](!comp revalue last)[Revalue](!comp revalue)<br>[Enhance Last](!comp enhance last)[Enhance](!comp enhance)`
                     break
                 case "discard":
-                    chatString += `Which Card:</span><br><span style='                    
+                    chatString += `Discard Which Card:</span><br><span style='                    
                     display: block;
                     font-size: 16px;
                     text-align: center;
@@ -224,7 +316,7 @@ const Complications = (() => {
                 '>[6](!comp discard 6) [7](!comp discard 7) [8](!comp discard 8) [9](!comp discard 9) [10](!comp discard 10)`
                     break
                 case "getrevalue":
-                    chatString += `Which Card:</span><br><span style='                    
+                    chatString += `Revalue Which Card:</span><br><span style='                    
                         display: block;
                         font-size: 16px;
                         text-align: center;
@@ -245,7 +337,7 @@ const Complications = (() => {
                 '>[0](!comp revalue${paramString === "" ? "" : ` ${paramString}`} 0) [1](!comp revalue${paramString === "" ? "" : ` ${paramString}`} 1) [2](!comp revalue${paramString === "" ? "" : ` ${paramString}`} 2) [3](!comp revalue${paramString === "" ? "" : ` ${paramString}`} 3) [4](!comp revalue${paramString === "" ? "" : ` ${paramString}`} 4)`
                     break
                 case "enhance":
-                    chatString += `Which Card:</span><br><span style='                    
+                    chatString += `Enhance Which Card:</span><br><span style='                    
                         display: block;
                         font-size: 16px;
                         text-align: center;
@@ -257,7 +349,6 @@ const Complications = (() => {
                         width: 100%
                     '>[6](!comp enhance 6) [7](!comp enhance 7) [8](!comp enhance 8) [9](!comp enhance 9) [10](!comp enhance 10)`
                     break
-
                 // no default
             }
             chatString += "</span><br/></div>"
@@ -279,16 +370,18 @@ const Complications = (() => {
                 setCompVals("add", value)
             }
         },
-        enhanceCard = (index = 0) => {
-            Media.Toggle(`complicationEnhanced_${index + 1}`, true)
-            toFront(Media.GetObj(`complicationEnhanced_${index + 1}`))
-            STATEREF.cardsDrawn[index].isEnhanced = true
+        enhanceCard = (index = 0) => {          
+            const i = index === "last" ? STATEREF.cardsDrawn.length - 1 : index
+            Media.Toggle(`complicationEnhanced_${i + 1}`, true)
+            toFront(Media.GetObj(`complicationEnhanced_${i + 1}`))
+            STATEREF.cardsDrawn[i].isEnhanced = true
         },
-        discardCard = (index = 0) => {
-            if (index >= STATEREF.cardsDrawn.length)
-                return THROW(`Index of ${D.JS(index)} exceeds number of cards drawn: ${D.JS(STATEREF.cardsDrawn, true)}`)
-            const imgObj = getObj("graphic", STATEREF.cardsDrawn[index].id),
-                cardVal = STATEREF.cardsDrawn[index].value
+        discardCard = (index = 0) => {            
+            const i = index === "last" ? STATEREF.cardsDrawn.length - 1 : index
+            if (i >= STATEREF.cardsDrawn.length)
+                return THROW(`Index of ${D.JS(i)} exceeds number of cards drawn: ${D.JS(STATEREF.cardsDrawn, true)}`)
+            const imgObj = getObj("graphic", STATEREF.cardsDrawn[i].id),
+                cardVal = STATEREF.cardsDrawn[i].value
             setCompVals("add", -1 * cardVal)
             STATEREF.cardsDrawn = _.reject(STATEREF.cardsDrawn, v => v.id === imgObj.id)
             Media.Remove(imgObj.id)
@@ -312,18 +405,19 @@ const Complications = (() => {
             Media.Toggle(`complicationEnhanced_${endIndex + 1}`, false)
             return true
         },
-        revalueCard = (index = 0, value = 0) => {
-            const cardVal = STATEREF.cardsDrawn[index].value
+        revalueCard = (index = 0, value = 0) => {             
+            const i = index === "last" ? STATEREF.cardsDrawn.length - 1 : index
+            const cardVal = STATEREF.cardsDrawn[i].value
             setCompVals("add", value - cardVal)
             if (value === 0)
-                Media.Toggle(`complicationZero_${index + 1}`, true)
+                Media.Toggle(`complicationZero_${i + 1}`, true)
             else
-                Media.Toggle(`complicationZero_${index + 1}`, false)
+                Media.Toggle(`complicationZero_${i + 1}`, false)
             //Media.Set(`complicationZero_${index + 1}`, value)
-            toFront(Media.GetObj(`complicationZero_${index + 1}`))
-            toFront(Media.GetObj(`complicationEnhanced_${index + 1}`))
-            STATEREF.cardsDrawn[index].value = value
-            STATEREF.cardsDrawn[index].isZeroed = value === 0
+            toFront(Media.GetObj(`complicationZero_${i + 1}`))
+            toFront(Media.GetObj(`complicationEnhanced_${i + 1}`))
+            STATEREF.cardsDrawn[i].value = value
+            STATEREF.cardsDrawn[i].isZeroed = value === 0
         }
     
 

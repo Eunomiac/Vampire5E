@@ -35,6 +35,7 @@ const TimeTracker = (() => {
         STATEREF.Alarms.Ahead = STATEREF.Alarms.Ahead || []
         STATEREF.Alarms.Behind = STATEREF.Alarms.Behind || []
         STATEREF.lastDate = STATEREF.lastDate || 0
+        STATEREF.weatherOverride = STATEREF.weatherOverride || {}
 
         if (!STATEREF.dateObj) {
             D.Alert("Date Object Missing! Setting to default date.<br><br>Use !time set [year] [month] [day] [hour] [minute] to correct.", "TimeTracker")
@@ -43,10 +44,10 @@ const TimeTracker = (() => {
             setCurrentDate()
         }
 
-        if (Session.IsSessionActive) {
+        if (Session.IsSessionActive)
             startClock()
             //startAirLights()
-        }      
+           
     }
     // #endregion	
 
@@ -64,6 +65,10 @@ const TimeTracker = (() => {
                 }
                 break
             case "set":
+                if (args[0] === "weather") {
+                    setManualWeather(args[1] && args[1] + (args[1].length === 1 ? "x" : ""), args[2] && parseInt(args[2]), args[3], args[4])
+                    break
+                }
                 unit = "m"
                 delta = Math.ceil(((new Date(Date.UTC(..._.map(args, v => parseInt(v))))).getTime() - STATEREF.dateObj.getTime()) / (1000 * 60))
                 //D.Alert(`Changing Date by ${D.JS(delta)} minutes.`)
@@ -95,13 +100,46 @@ const TimeTracker = (() => {
             case "testfirealarm":
                 fireNextAlarm()
                 break
-            case "weatherreport":
-                checkWeatherReport()
-
-                D.Alert(`Day -> Night1: ${TWILIGHT[STATEREF.dateObj.getMonth()][1]}<br>Night1 -> Night2: ${_.keys(IMAGETIMES)[0]}<br>Night2 -> Night3: ${_.keys(IMAGETIMES)[1]}<br>Night3 -> Night4: ${_.keys(IMAGETIMES)[2]}<br>Night4 -> Night5: ${TWILIGHT[STATEREF.dateObj.getMonth()][0]} - 1h<br>PDawn5, 4, 3, 2: 30m > 20m > 10m > 5m BEFORE...<br>DAWN: ${TWILIGHT[STATEREF.dateObj.getMonth()][0]}`, "BACKGROUND CHANGE TIMES")
+            case "weatherreport": {
+                const transitionStrings = [
+                    `<tr><td style="width:100px; text-align:right; text-align-last:right;">DAY -> Night1</td><td style="width:60px; text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATEREF.dateObj.getMonth()][1], 0, true)}</td></tr>`,
+                    `<tr><td style="text-align:right; text-align-last:right;">Night1 -> Night2</td><td style="text-align:right; text-align-last:right;">${getTime(_.findKey(IMAGETIMES, v => v === "night1"), 0, true)}</td></tr>`,
+                    `<tr><td style="text-align:right; text-align-last:right;">Night2 -> Night3</td><td style="text-align:right; text-align-last:right;">${getTime(_.findKey(IMAGETIMES, v => v === "night2"), 0, true)}</td></tr>`,
+                    `<tr><td style="text-align:right; text-align-last:right;">Night3 -> Night4</td><td style="text-align:right; text-align-last:right;">${getTime(_.findKey(IMAGETIMES, v => v === "night3"), 0, true)}</td></tr>`,
+                    `<tr><td style="text-align:right; text-align-last:right;">Night4 -> Night5</td><td style="text-align:right; text-align-last:right;">${getTime(_.findKey(IMAGETIMES, v => v === "night4"), 0, true)}</td></tr>`,
+                    `<tr><td style="text-align:right; text-align-last:right;">-> Predawn5</td><td style="text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATEREF.dateObj.getMonth()][0], -120, true)}</td></tr>`,
+                    `<tr><td style="text-align:right; text-align-last:right;">-> Predawn4</td><td style="text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATEREF.dateObj.getMonth()][0], -30, true)}</td></tr>`,
+                    `<tr><td style="text-align:right; text-align-last:right;">-> Predawn3</td><td style="text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATEREF.dateObj.getMonth()][0], -20, true)}</td></tr>`,
+                    `<tr><td style="text-align:right; text-align-last:right;">-> Predawn2</td><td style="text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATEREF.dateObj.getMonth()][0], -10, true)}</td></tr>`,
+                    `<tr><td style="text-align:right; text-align-last:right;">-> Predawn1</td><td style="text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATEREF.dateObj.getMonth()][0], -5, true)}</td></tr>`,
+                    `<tr><td style="text-align:right; text-align-last:right;">Predawn1 -> DAY</td><td style="text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATEREF.dateObj.getMonth()][0], 0, true)}</td></tr>`
+                ]
+                D.Alert(D.JSH(`
+<b><u>WEATHER REPORT</u></b>
+<br><br>
+${getWeatherReport().join("<br>")}
+<br><br>
+<b><u>HORIZON TRANSITIONS</u></b>
+<br><br>
+<table>${transitionStrings.join("")}</table>
+<br><br>
+<b>!time</b> commands are 'add', 'set', 'run' and 'stop'.
+<br><br>
+To set: <b>!time set [year] [month] [day] [hour] [min]</b>
+<br><br>
+Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><td style="width:18%;">[EVENT]</td><td style="width:29%;">x: Clear</td><td style="width:29%;">b: Blizzard</td><td style="width:29%;">c: Overcast</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">f: Foggy</td><td style="width:29%;">p: Downpour</td><td style="width:29%;">s: Snowing</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">t: Thunderstorm</td><td style="width:29%;">w: Drizzle</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;"><i>(+f for foggy)</i></td></tr>
+<br><tr><td><br></td></tr><tr><td style="width:18%;">[WIND]</td><td style="width:29%;">x: Still</td><td style="width:29%;">s: Soft Breeze</td><td style="width:29%;">b: Breezy</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">w: Blustery</td><td style="width:29%;">g: Driving Winds</td><td style="width:29%;">h: Howling Winds</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">v: Roaring Winds</td></tr>
+<br><tr><td><br></td></tr><tr><td style="width:18%;">[HUMID]</td><td style="width:29%;">x: null</td><td style="width:29%;">d: Dry</td><td style="width:29%;">h: Humid</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">m: Muggy</td><td style="width:29%;">s: Sweltering</td></tr></table>`), "TIMETRACKER")
                 break
+            }
             default:
-                D.Alert("Commands are 'add', 'set', 'run' and 'stop'.<br><br>To set: <b>!time set [year] [month] [day] [hour] [min]</b><br><br>Weather: <b>!setweather 32|p|h|g</b>")
+                D.Alert(D.JSH(`<b>!time</b> commands are 'add', 'set', 'run' and 'stop'.
+<br><br>
+To set: <b>!time set [year] [month] [day] [hour] [min]</b>
+<br><br>
+Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><td style="width:18%;">[EVENT]</td><td style="width:29%;">x: Clear</td><td style="width:29%;">b: Blizzard</td><td style="width:29%;">c: Overcast</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">f: Foggy</td><td style="width:29%;">p: Downpour</td><td style="width:29%;">s: Snowing</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">t: Thunderstorm</td><td style="width:29%;">w: Drizzle</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;"><i>(+f for foggy)</i></td></tr>
+<br><tr><td><br></td></tr><tr><td style="width:18%;">[WIND]</td><td style="width:29%;">x: Still</td><td style="width:29%;">s: Soft Breeze</td><td style="width:29%;">b: Breezy</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">w: Blustery</td><td style="width:29%;">g: Driving Winds</td><td style="width:29%;">h: Howling Winds</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">v: Roaring Winds</td></tr>
+<br><tr><td><br></td></tr><tr><td style="width:18%;">[HUMID]</td><td style="width:29%;">x: null</td><td style="width:29%;">d: Dry</td><td style="width:29%;">h: Humid</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">m: Muggy</td><td style="width:29%;">s: Sweltering</td></tr></table>`), "TIMETRACKER")
                 return
         }
     }
@@ -145,7 +183,7 @@ const TimeTracker = (() => {
             "dawn": "predawn1",
             "dusk": "day",
             "22:30": "night1",
-            "24:00": "night2"
+            "24:00": "night2"  
         },
         AIRLIGHTS = {
             AirLightLeft_1: ["on:0", "on:7000", "half:100", "off:100", "half:100", "off:100", "half:100", "off:100"],
@@ -574,6 +612,17 @@ const TimeTracker = (() => {
             }
             return dateRef
         },
+        getTime = (timeRef, deltaMins, isParsingString = false) => {
+            const timeVals = [],
+                timeNums = VAL({string: timeRef}) ? _.map(timeRef.split(":"), v => parseInt(v) || 0) : timeRef
+            let totMins = timeNums[0] * 60 + timeNums[1] + deltaMins
+            if (totMins < 0)
+                totMins += 24 * 60 * Math.ceil(Math.abs(totMins) / (24 * 60))
+            const totHours = Math.floor(totMins / 60)
+            if (isParsingString)
+                return `${totHours % 12 || 12}:${totMins - 60 * totHours < 10 ? "0" : ""}${totMins - 60 * totHours} ${totHours % 24 >= 12 ? "P.M." : "A.M."}`
+            return [totHours % 24, totMins - 60 * totHours]
+        },
         formatTimeString = date => {
             if (date.getUTCHours() === 0 || date.getUTCHours() === 12)
                 return `12:${date.getUTCMinutes()} ${date.getUTCHours() === 0 ? "A.M." : "P.M."}`
@@ -765,6 +814,22 @@ const TimeTracker = (() => {
 
     // #region Weather Functions 
     const getTemp = code => WEATHERTEMP.indexOf(code) - 26,
+        setManualWeather = (event, tempC, wind, humidity) => {
+            const weatherData = {}
+            if (tempC || tempC === 0)
+                weatherData.tempC = tempC
+            if (event) {
+                weatherData.event = event
+                if (weatherData.event.length === 1)
+                    weatherData.event += "x"
+            }
+            if (wind)
+                weatherData.wind = wind
+            if (humidity)
+                weatherData.humidity = humidity
+            STATEREF.weatherOverride = weatherData
+            setWeather()
+        },
         setWeather = () => {
             const weatherCode = WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()],
                 weatherData = {},
@@ -789,10 +854,13 @@ const TimeTracker = (() => {
                 }
             let forecastLines = []
             //D.Alert(`Weather Code: ${D.JS(weatherCode)}<br>Month Temp: ${D.JS(getTemp(MONTHTEMP[dateObj.getUTCMonth()]))}<br><br>Delta Temp: ${D.JS(getTemp(weatherCode.charAt(2)))} (Code: ${weatherCode.charAt(2)})`)
-            weatherData.tempC = getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(weatherCode.charAt(2))
+            weatherData.tempC = STATEREF.weatherOverride.tempC || getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(weatherCode.charAt(2))
             Media.SetText("tempC", `${weatherData.tempC}°C`)
             Media.SetText("tempF", `(${Math.round(Math.round(9 / 5 * weatherData.tempC + 32))}°F)`)
-            switch (getHorizon() === "day" || getHorizon() === "daylighters" ? "x" : weatherCode.charAt(0)) {
+            weatherData.event = STATEREF.weatherOverride.event || (getHorizon() === "day" || getHorizon() === "daylighters" ? "xx" : weatherCode.slice(0,2))
+            weatherData.humidity = STATEREF.weatherOverride.humidity || weatherCode.charAt(3)
+            weatherData.wind = STATEREF.weatherOverride.wind || weatherCode.charAt(4)
+            switch (weatherData.event.charAt(0)) {
                 // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
                 case "b":
                     Media.Set("WeatherMain", "heavysnow")
@@ -833,17 +901,17 @@ const TimeTracker = (() => {
                 case "x":
                     Media.Set("WeatherMain", "blank")
                     Media.Set("WeatherClouds", "blank")
-                    if (getHorizon() !== "day" && weatherCode.charAt(1) === "f")
+                    if (getHorizon() !== "day" && weatherData.event.charAt(1) === "f")
                         Media.Set("WeatherFog", "fog")
                     else
                         Media.Set("WeatherFog", "blank")
                     break
                 //no default
             }
-            forecastLines.push(weatherCode.slice(0, 2) === "xf" ? WEATHERCODES[0][weatherCode.charAt(1)] : WEATHERCODES[0][weatherCode.charAt(0)])
-            if (weatherCode.charAt(3) !== "x")
-                forecastLines.push(WEATHERCODES[1][weatherCode.charAt(3)])
-            forecastLines.push(weatherData.tempC < WINTERTEMP ? WEATHERCODES[2][weatherCode.charAt(4)][1] : WEATHERCODES[2][weatherCode.charAt(4)][0])
+            forecastLines.push(weatherData.event === "xf" ? WEATHERCODES[0][weatherData.event.charAt(1)] : WEATHERCODES[0][weatherData.event.charAt(0)])
+            if (weatherData.humidity !== "x")
+                forecastLines.push(WEATHERCODES[1][weatherData.humidity])
+            forecastLines.push(weatherData.tempC < WINTERTEMP ? WEATHERCODES[2][weatherData.wind][1] : WEATHERCODES[2][weatherData.wind][0])
             Media.SetText("weather", `${forecastLines.join(" ♦ ")}`)
             Media.Set("WeatherFrost", weatherData.tempC > 0 ? "blank" : weatherData.tempC > -6 ? "frost1" : weatherData.tempC > -12 ? "frost2" : "frost3")
         },
@@ -918,7 +986,7 @@ const TimeTracker = (() => {
             else
                 return "blank"
         },
-        checkWeatherReport = () => {
+        getWeatherReport = () => {
             // const weatherCode = WEATHERDATA[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()],switch(weatherCode.charAt(0)) {
             // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
             const weatherStrings = {}
@@ -952,8 +1020,7 @@ const TimeTracker = (() => {
                     startYear++
                 }
             }
-            D.Alert(`${D.JS(_.map(weatherStrings, (v, k) => `${k}: ${v}`).join("<br>"))}`, "WEATHER REPORT")
-            //D.Alert(D.JS(debugString))		
+            return _.map(weatherStrings, (v, k) => `${k}: ${v}`)
         }
     //#endregion
 
