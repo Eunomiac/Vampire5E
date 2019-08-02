@@ -975,6 +975,23 @@ const C = (() => {
             speedRandom: 121,
             startColour: [1, 0, 0, 0.5],
             startColourRandom: [10, 0, 0, 1]
+        },
+        compCardBlink: {
+            angle: 0,
+            angleRandom: 360,
+            duration: 25,
+            emissionRate: 300,
+            endColour: [200, 0, 0, 0],
+            endColourRandom: [10, 10, 10, 0],
+            lifeSpan: 20,
+            lifeSpanRandom: 5,
+            maxParticles: 300,
+            size: 35,
+            sizeRandom: 10,
+            speed: 12,
+            speedRandom: 1,
+            startColour: [150, 0, 0, 1],
+            startColourRandom: [10, 10, 10, 0.5]
         }
     }
     // #endregion

@@ -42,6 +42,14 @@ const DragPads = (() => {
             let [obj, arg, padName, funcName] = [],
                 contCheck = true
             switch (call) {
+                case "!findpads": {
+                    const funcName = args.shift(),
+                        padData = _.filter(_.values(STATEREF.byPad), v => v.funcName === funcName),
+                        padObjs = _.map(padData, v => getObj("graphic", v.partnerID)),
+                        padLayer = _.map(padObjs, v => `${v.get("name")}: ${v.get("layer")}`)
+                    D.Alert(`Pad Data:<br><br>${D.JS(padLayer)}`, "!findpads")
+                    break     
+                }               
                 case "!dpad": // !dpad <funcName> [top:100 left:100 height:100 width:100 deltaHeight:-50 deltaWidth:-50 deltaTop:-50 deltaLeft:-50 startActive:true]
                     if (!msg.selected || !msg.selected[0]) {
                         THROW("Select a graphic or text object first!", "!dpad")
@@ -266,7 +274,10 @@ const DragPads = (() => {
                 Media.Set(light, "on")
             else
                 Media.Set(light, "off")
-
+        },
+        flipComp(card) {
+            const slot = parseInt(Media.GetData(card.id).name.replace(/compCardSpot_/gu, "") || 0) - 1
+            Complications.Flip(slot)
         }
     }
     // #endregion

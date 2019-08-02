@@ -934,8 +934,10 @@ const Media = (() => {
                     zIndex: options.zIndex || (IMAGEREGISTRY[name] ? IMAGEREGISTRY[name].zIndex : 200),
                     srcs: {}
                 }
-                addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, srcName)
-                setImage(name, srcName)
+                if (srcName !== "none") {
+                    addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, srcName)
+                    setImage(name, srcName)
+                }
                 if (!IMAGEREGISTRY[name].startActive) {
                     setImage(name, "blank")
                     layerImages([name], "gmlayer")

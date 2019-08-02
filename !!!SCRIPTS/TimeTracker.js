@@ -792,8 +792,12 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
         },
         tickClock = () => {
             if (isTimeRunning) {
+                const lastHour = STATEREF.dateObj.getUTCHours()
                 STATEREF.dateObj.setUTCMinutes(STATEREF.dateObj.getUTCMinutes() + 1)
+                if (STATEREF.dateObj.getUTCHours() !== lastHour)
+                    setWeather()
                 setCurrentDate()
+                setHorizon()
             }
         },
         startClock = (secsPerMin = 60) => {
