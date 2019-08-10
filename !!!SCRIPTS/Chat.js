@@ -20,16 +20,18 @@ const Chat = (() => {
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
 
-    const regHandlers = () => {
-        on("chat:message", msg => {
-            const args = msg.content.split(/\s+/u)
-            if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
-                const who = msg.who || "API",
-                    call = args.shift()
-                handleInput(msg, who, call, args)
-            }
-        })
-    }
+    const checkInstall = () => null,
+        regHandlers = () => {
+            on("chat:message", msg => {
+                const args = msg.content.split(/\s+/u)
+                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
+                    const who = msg.who || "API",
+                        call = args.shift()
+                    handleInput(msg, who, call, args)
+                }
+            })
+        },
+        soundReady = () => { D.Log(`${SCRIPTNAME} Ready!`) }
     // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
@@ -101,7 +103,7 @@ const Chat = (() => {
                         if (!getProperty(obj, args.shift()))
                             sendHelpMsg()
                         break
-                    case "state":
+                    case "state": case "s":
                         if (!getStateData(args))
                             sendHelpMsg()
                         break
@@ -193,7 +195,7 @@ const Chat = (() => {
                         break
                 }
                 break
-            case "!text":
+            case "!txt":
                 switch (args.shift()) {
                     case "find":
                         D.Alert(`Found ${D.GetSelected(msg, "text").length} objects.`)
@@ -227,7 +229,7 @@ const Chat = (() => {
                             _id: msg.selected[0]._id
                         });
                         ((font = obj.get("font_family").split(" "), size = obj.get("font_size")) => {
-                            D.Alert(`There are ${_.values(state.DATA.CHARWIDTH[font][size]).length} entries.`, `${D.JS(font).toUpperCase()} ${D.JS(size)}`)
+                            D.Alert(`There are ${_.values(D.CHARWIDTH[font][size]).length} entries.`, `${D.JS(font).toUpperCase()} ${D.JS(size)}`)
                         })()
                         break
                     default:
@@ -480,12 +482,12 @@ const Chat = (() => {
         },
         getStateData = (namespace, returnVals) => {
             let [stateInfo, isVerbose] = [state, false]
-            //if (namespace[0] !== C.GAMENAME)
-              //  namespace.unshift(C.GAMENAME)
             if (namespace[0] === "full") {
                 isVerbose = true
                 namespace.shift()
             }
+            if (namespace[0] !== C.GAMENAME)
+                namespace.unshift(C.GAMENAME)
             const title = `state.${namespace.join(".")}`
             // eslint-disable-next-line no-unmodified-loop-condition
             while (namespace && namespace.length)
@@ -590,12 +592,9 @@ const Chat = (() => {
     // #endregion
 
     return {
-        RegisterEventHandlers: regHandlers
+        CheckInstall: checkInstall,
+        RegisterEventHandlers: regHandlers,
+        SoundReady: soundReady
     }
 })()
-
-on("ready", () => {
-    Chat.RegisterEventHandlers()
-    D.Log("Chat Ready!")
-})
 void MarkStop("Chat")

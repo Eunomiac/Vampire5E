@@ -13,8 +13,11 @@ const C = (() => {
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
 
     const checkInstall = () => {
-        ROOT[SCRIPTNAME] = ROOT[SCRIPTNAME] || {}
-    }
+            ROOT[SCRIPTNAME] = ROOT[SCRIPTNAME] || {}
+        },
+        regHandlers = () => null,
+        soundReady = () => { D.Log(`${SCRIPTNAME} Ready!`) }
+
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
@@ -998,6 +1001,8 @@ const C = (() => {
 
     return {
         CheckInstall: checkInstall,
+        RegisterEventHandlers: regHandlers,
+        SoundReady: soundReady,
 
         GAMENAME,
         ROOT,
@@ -1035,9 +1040,4 @@ const C = (() => {
         FX
     }
 })()
-
-on("ready", () => {
-    C.CheckInstall()
-    D.Log("CONSTANTS Ready!")
-})
 void MarkStop("CONSTANTS")

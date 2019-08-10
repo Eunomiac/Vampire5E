@@ -25,7 +25,8 @@ const Handouts = (() => {
                     handleInput(msg, who, call, args)
                 }
             })
-        }
+        },
+        soundReady = () => { D.Log(`${SCRIPTNAME} Ready!`) }
     // #endregion
 
     // #region LOCAL INITIALIZATION
@@ -185,8 +186,9 @@ const Handouts = (() => {
 
 
     return {
-        RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        RegisterEventHandlers: regHandlers,
+        SoundReady: soundReady,
 
         Make: makeHandoutObj,
         Remove: delHandoutObj,
@@ -195,10 +197,4 @@ const Handouts = (() => {
         Count: getCount
     }
 })()
-
-on("ready", () => {
-    Handouts.RegisterEventHandlers()
-    Handouts.CheckInstall()
-    D.Log("Handouts Ready!")
-})
 void MarkStop("Handouts")

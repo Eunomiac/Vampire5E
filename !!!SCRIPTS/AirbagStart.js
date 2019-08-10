@@ -6,6 +6,12 @@ let airIndex = new Error();
 // Version 1.3.2
 //
 // By: github.com/VoltCruelerz
+//
+// Forked by github.come/Eunomiac:
+//	- chat message is now HTML formatted for easier reading/clarity
+//	- log message parsed for easier reading
+//	- ALL line references in the stack trace are converted to local
+// ===============================================================================
 // ===============================================================================
 
 // Whether or not the code is operational
@@ -16,11 +22,18 @@ const rezMsg = "[API IS STARTING]";
 const runMsg = "[API OPERATIONAL]";
 
 // Log for Airbag
-const airLog = (msg) => {
-    log(msg);
-    sendChat("Airbag", '/w gm ' + msg);
+const airLog = (logMsg, chatMsg) => {
+    log(logMsg);
+    sendChat("Airbag", chatMsg || logMsg);
 };
 
+// HTML Styles for Reporting
+const HTML = {
+    ChatBox: content => `<div style="display: block; width: 100%; padding: 5px 5px; margin: -30px 0px 0px -42px; border: 3px outset rgb(255, 0, 0); background-color: rgb(120, 0, 0); position: relative;">${content}</div>`,
+    TitleBox: content => `<div style="display: block; height: auto; width: 90%; line-height: 23px; margin: 0px 5%; font-family: 'copperplate gothic'; font-variant: small-caps; font-size: 16px; text-align: center; text-align-last: center; background-color: rgb(80, 80, 80); color: rgb(255, 255, 255); position: relative;">${content}</div>`,
+    StackBox: content => `<div style="display: block; width: auto; padding: 5px 5px; font-family: input, verdana, sans-serif; font-size: 10px; background-color: rgb(255, 255, 255); border: 2px solid rgb(0,0,0); line-height: 14px; position: relative; ">${content}</div>`,
+    MessageBox: content => `<div style=" display: block; width: auto; padding: 5px 25px; font-family: input, verdana, sans-serif; font-size: 18px; text-align: center; text-align-last: center; background-color: rgb(200, 200, 200); border: 2px solid rgb(0,0,0); line-height: 14px; position: relative;">${content}</div>`
+}
 
 // ===========================================================================
 // Line number Handling
@@ -31,7 +44,8 @@ let scriptRanges = [];
 
 // Line Number Parser
 const GetScriptLine = (traceable, markMode) => {
-    const match = traceable.stack.match(/apiscript.js:(\d+)/g);
+    
+    const match = traceable && traceable.stack && traceable.stack.match(/apiscript.js:(\d+)/g) || ["", ""];
     if (markMode) {
         return parseInt(match[1].split(':')[1]);
     }
@@ -189,19 +203,37 @@ const handleCrash = (e) => {
     let globalLine = GetScriptLine(e, false);
     let src = ConvertGlobalLineToLocal(globalLine);
 
-    let properties = 
-        'MSG: ' + e.message + '\n' +
-        '\n====================\n' +
-        'STK: ' + e.stack + '\n' +
-        '\n====================\n';
-        
-    if (src.Line > 0) {
-        properties = 'SRC: ' + src.Name + ':' + src.Line + '\n' +
-        '\n====================\n' + properties;
-    }
+    let stackLines = _.map(e.stack.split(/\n|apiscript\.js/gu), v => {
+		if (v.startsWith(":")) {
+			const globalLineNum = parseInt(v.match(/^:(\d+):/u)[1]),
+				  localLine = ConvertGlobalLineToLocal(globalLineNum)
+			return v.replace(/^:\d+:/gu, `@@${localLine.Name}:${localLine.Line}:`).trim()
+		}
+		return v.trim()
+	})
 
-    const errMsg = "[AIRBAG DEPLOYED]\n" + properties + "[Reboot API](!airbag)";
-    airLog(errMsg);
+    const rawErrorMsg = _.compact([
+        "[AIRBAG",
+        src.Line > 0 ? `at ${src.Name}:${src.Line}]` : "]",
+        `▌${e.message}▐`,
+        `STACK: ${stackLines.join(" ").replace(/\s@@/gu, " ").replace(/[^\s\(]+underscore\.js:/gu, "_:").replace(/\(\s+/gu, "(")}`
+    ]).join(" ").replace(/\n/gu, "")
+    
+    const styledErrorMsg = HTML.ChatBox(_.compact([
+        HTML.TitleBox(`AIRBAG DEPLOYED${src.Line > 0 ? ` at ${src.Name}: ${src.Line}` : ""}`),
+        HTML.MessageBox(e.message),
+        HTML.StackBox(stackLines.join("\n")).
+            replace(/\n/gu, "<br>").
+            replace(/<br>@@/gu, "").
+            replace(/\bat\b/gu, "<i><span style=\"margin-left: 20px; color: rgb(150, 150, 150); display: inline-block; width: auto; \">at ... </span></i>").
+            replace(/[^\s\(]+underscore\.js:(\d*?):/gu, "<span style=\"color: rgb(0,0,255);\">_</span>@@<span style=\"color: rgb(0,0,255);\">$1</span>@@").
+            replace(/[^\s\(]+firebase-node\.js:(\d*?):/gu, "<span style=\"color: rgb(0,195,0);\">firebase</span>@@<span style=\"color: rgb(0,195,0);\">$1</span>@@").
+            replace(/(\(?)([^:\.\s]*?):(\d*?):/gu, "$1<b><span style=\"color: rgb(255,0,0)\">$2</span>:<span style=\"color: rgb(255,0,0)\">$3</span></b>:").
+            replace(/@@/gu, ":"),
+        HTML.TitleBox("[ REBOOT API ](!airbag)")
+    ]).join(""))
+
+    airLog(rawErrorMsg, styledErrorMsg);
 }
 
 // ===========================================================================

@@ -26,7 +26,8 @@ const Media = (() => {
                 }
             })
             on("add:graphic", handleAdd)
-        }
+        },
+        soundReady = () => { D.Log(`${SCRIPTNAME} Ready!`) }
     // #endregion
 
     // #region LOCAL INITIALIZATION
@@ -175,7 +176,7 @@ const Media = (() => {
                                     for (const param of args)
                                         params[param.split(":")[0]] = param.split(":")[1]
 
-                                    setImgParams(textObj, params)
+                                    setMediaParams(textObj, params)
                                     break
                                 case "token":
                                     toggleToken(D.GetSelected(msg)[0] || args.shift(), args.shift())
@@ -436,7 +437,7 @@ const Media = (() => {
                                         D.Alert("Text not registered.  To register selected text:<br><br><pre>!text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; [params (\"key:value, key:value\")]</pre>", "!text set position")
                                     } else {
                                         hostName = getTextKey(msg)
-                                        setText(textObj, {top: parseInt(textObj.get("top")), left: getBlankLeft(textObj), layer: textObj.get("layer")})
+                                        setText(textObj, {top: parseInt(textObj.get("top")), left: getHorizBase(textObj), layer: textObj.get("layer")})
                                         D.Alert(`Position Set for Text ${hostName}<br><br><pre>${D.JS(TEXTREGISTRY[hostName])}</pre>`)
                                     }
                                     break
@@ -546,6 +547,10 @@ const Media = (() => {
                                 D.Alert("Provide \"all\", a registered host name, or select text objects. <b>Syntax:</b><br><br><pre>!text unreg all/<<hostName>>")
                             }
                             break
+                        case "check": {
+                            checkTextRegistration(args)
+                            break
+                        }
                         case "toggle":
                             switch (args.shift().toLowerCase()) {
                                 case "on":
@@ -742,6 +747,78 @@ const Media = (() => {
                 "ComplicationMat"
             ]
         }
+    // #endregion
+
+    // #region MEDIA OBJECT FOUNDATIONS: Basic data common to graphic and text objects.
+    const getMediaObjs = medRefs => _.compact(_.map(_.flatten([medRefs]), v => getImageObj(v, true) || getTextObj(v, true) || null)),
+        getMediaObj = medRef => (getMediaObjs(medRef) || [null])[0],
+        getRegistry = medRef => getImageData(medRef, true) ? IMAGEREGISTRY : getTextData(medRef, true) ? TEXTREGISTRY : null,
+        getMediaKey = medRef => getImageKey(medRef, true) || getTextKey(medRef, true) || null,
+        getMediaData = medRef => getImageData(medRef, true) || getTextData(medRef, true) || null,
+        setMediaParams = (medRefs, params) => {
+            const medObjs = getMediaObjs(medRefs)
+            if (VAL({imgObjORtextObj: medObjs}, "setMediaParams", true))
+                for (const obj of medObjs)
+                    obj.set(params)
+        },
+        setMediaData = (medRefs, params) => {
+            for (const obj of getMediaObjs(medRefs)) {
+                const REGISTRY = getRegistry(obj),
+                    regKey = getMediaKey(obj)
+                if (REGISTRY && REGISTRY[regKey]) {
+                    _.each(params, (v, k) => { REGISTRY[regKey][k] = v })
+                    obj.set(params)
+                }               
+            }
+        },
+        updateMediaData = (medRefs, blacklist = []) => {
+
+        },
+        toggleMedia = (medRefs, isActive) => {
+
+        },
+        unregMedia = (medRefs) => {
+
+        },
+        deleteMedia = (medRefs) => {
+
+        },
+        cleanReg = () => {
+
+        },
+        alignMedia = (medRefs, params) => {
+
+        },
+        layerMedia = (medRefs, layers) => {
+
+        },
+        linkMedia = (medRef1, medRef2, mode, options = {}) => {
+            const medObjs = [getMediaObj(medRef1), getMediaObj(medRef2)],
+                medKeys = [getMediaKey(medRef1), getMediaKey(medRef2)],
+                REGISTRY = [getRegistry(medRef1), getRegistry(medRef2)],                
+                medDatas = [REGISTRY[0][medKeys[0]], REGISTRY[1][medKeys[1]]]
+            if (VAL({list: medDatas}, "linkMedia", true)) {                
+                REGISTRY[medKeys[0]].links = REGISTRY[medKeys[0]].links || { children: [] }                
+                REGISTRY[medKeys[1]].links = REGISTRY[medKeys[1]].links || { children: [] }
+                switch(mode) {
+                    case "left": {
+                        const med1Params = { left: medDatas[1].leftEdge - 0.5 * medDatas[0].width }
+                        REGISTRY[medKeys[0]].links.left = {
+                            id: medObjs[1].id,
+                            name: medKeys[1],
+                            edge: medDatas[1].leftEdge,
+                            xShift: options.xShift || 0,
+                            yShift: options.yShift || 0
+                        }
+                        REGISTRY[medKeys[1]].links.children = REGISTRY[medKeys[1]].links.children || []
+                        REGISTRY[medKeys[1]].links.children.push(medObjs[0].id)
+                        break
+                    }
+                    // no default
+                }            
+            }
+        }
+
     // #endregion
 
     // #region IMAGE OBJECT GETTERS: Image Object & Data Retrieval
@@ -1014,14 +1091,6 @@ const Media = (() => {
 
             return THROW(`Invalid category '${D.JSL(imgRef)}'`, "setImage()")
         },
-        setImgParams = (imgRef, params) => {
-            const imgObj = getImageObj(imgRef)
-            if (VAL({imgObj: imgObj}, "setImgParams")) {
-                imgObj.set(params)
-                return imgObj
-            }
-            return false
-        },
         setImgData = (imgRef, params) => {
             _.each(params, (v, k) => {
                 IMAGEREGISTRY[getImageKey(imgRef)][k] = v
@@ -1138,7 +1207,7 @@ const Media = (() => {
                         bounds = [sorted[0].top, sorted.slice(-1)[0].top]
                         spacer = (bounds[1] - bounds[0]) / (sorted.length - 1)
                         for (const iData of sorted) {
-                            revSorted.unshift(setImgParams(iData.id, { top: bounds[0] + counter * spacer }, true))
+                            revSorted.unshift(setMediaParams(iData.id, { top: bounds[0] + counter * spacer }, true))
                             counter++
                         }
                         for (const obj of revSorted)
@@ -1150,7 +1219,7 @@ const Media = (() => {
                         spacer = (bounds[1] - bounds[0]) / (sorted.length - 1)
                         for (const iData of sorted) {
                             //D.Alert(`Setting image ${D.JS(iData)}`)
-                            revSorted.unshift(setImgParams(iData.id, { left: bounds[0] + counter * spacer }, true))
+                            revSorted.unshift(setMediaParams(iData.id, { left: bounds[0] + counter * spacer }, true))
                             counter++
                         }
                         for (const obj of revSorted)
@@ -1299,7 +1368,7 @@ const Media = (() => {
 				for (const param of params)
 					if (VAL({number: param.split(":")[1]}))
 						attrList[param.split(":")[0]] = parseInt(param.split(":")[1])
-				setImgParams(imgObj, attrList)
+				setMediaParams(imgObj, attrList)
 			}
 		}, */
         toggleImage = (imgRef, isActive) => {
@@ -1411,7 +1480,7 @@ const Media = (() => {
             let dbString = ""
             DB(`minOverlap: ${minOverlap}, maxOverlap: ${maxOverlap}`)
             if (VAL({list: [leftData, rightData, ...midData], number: [spread]}, "spreadImages", true)) {
-                setImgParams(leftData.id, {top: leftData.top, left: leftData.left})
+                setMediaParams(leftData.id, {top: leftData.top, left: leftData.left})
                 dbString += `Setting Left to {left: ${parseInt(leftData.left)}}<br>`
                 // If one imgRef supplied, check to see if it is a reference to a group of consecutively-named images:
                 if (midData.length === 1) {
@@ -1427,7 +1496,7 @@ const Media = (() => {
                     for (const imgData of midData)
                         setImage(imgData.id, "blank")
                     DB(dbString + `Setting Right to {left: ${parseInt(leftData.rightEdge)} + 0.5x${parseInt(rightData.width)} = ${parseInt(leftData.rightEdge + 0.5*rightData.width)}}`, "spreadImages")
-                    return setImgParams(rightData.id, {
+                    return setMediaParams(rightData.id, {
                         top: leftData.top,
                         left: leftData.rightEdge + 0.5*rightData.width
                     })
@@ -1453,13 +1522,13 @@ const Media = (() => {
                     // Now, set the left side of the mid image to account for the stretched overlap, and the stretched width
                     dbString += `Setting Mid Image to: {left: ${parseInt(leftData.rightEdge - stretchOverlap + 0.5*stretchWidth)} (L.re:${parseInt(leftData.rightEdge)} - sO:${parseInt(stretchOverlap)} + 0.5×sW:${parseInt(stretchWidth)})}<br>`
                     setImage(midData[0].id, "base")
-                    setImgParams(midData[0].id, {
+                    setMediaParams(midData[0].id, {
                         top: leftData.top + 20,
                         left: leftData.rightEdge - stretchOverlap + 0.5*stretchWidth,
                         width: stretchWidth
                     })
                     dbString += `Setting Right Image to: {left: ${parseInt(leftData.rightEdge - 2*stretchOverlap + stretchWidth + 0.5*rightData.width)} (L.re:${parseInt(leftData.rightEdge)} - 2×sO:${parseInt(stretchOverlap)} + sW:${parseInt(stretchWidth)} + 0.5×R.w:${parseInt(rightData.width)})}<br>`
-                    setImgParams(rightData.id, {
+                    setMediaParams(rightData.id, {
                         top: leftData.top + 40,
                         left: leftData.rightEdge - 2*stretchOverlap + stretchWidth + 0.5*rightData.width
                     })
@@ -1502,7 +1571,7 @@ const Media = (() => {
                     let currentLeft = firstMidLeft,
                         testVertSpread = 0
                     for (const imgID of midImgIDs) {
-                        setImgParams(imgID, {
+                        setMediaParams(imgID, {
                             top: leftData.top + testVertSpread,
                             left: currentLeft
                         })
@@ -1514,7 +1583,7 @@ const Media = (() => {
                     dbString += `Turning off ${midData.length} images.<br>`
                     
                     // Finally, set the position of the rightmost image to the far side of the total width:
-                    setImgParams(rightData.id, {
+                    setMediaParams(rightData.id, {
                         top: leftData.top + testVertSpread,
                         left: leftData.leftEdge + spread - 0.5*rightData.width
                     })
@@ -1670,14 +1739,23 @@ const Media = (() => {
                 return !isSilent && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, "getTextData", errObj)
             }
         },
-        getTextWidth = (textRef, text, maxWidth = 0) => {
-            const textObj = getTextObj(textRef),
-                textData = getTextData(textObj),
-                maxW = textData && textData.maxWidth || maxWidth || 0
-            if (VAL({ textObj: textObj }, "getTextWidth")) {
+        getTextVars = (textRef, text, maxWidth, isSilent = false) => {
+            const textObj = getTextObj(textRef, isSilent),
+                textData = getTextData(textObj, isSilent),
+                maxW = maxWidth === 0 ? 0 : maxWidth || textData && textData.maxWidth || 0
+            let textString = (text === "" ? "" : text || textData && textData.text || textObj && textObj.get && textObj.get("text") || "").toString()
+            if (maxW > 0)
+                textString = textString.replace(/\n/gu, " ").replace(/\s+/gu, " ")
+            textString = textString.replace(/-\s/gu, "-")
+            if (textString.trim().length > 0)
+                textString = textString.trim()
+            return [textObj, textData, textString, maxW]
+        },
+        getTextWidth = (textRef, text, maxWidth) => {
+            const [textObj, textData, textString, maxW] = getTextVars(textRef, text, maxWidth, true)
+            if (VAL({ textObj: textObj, list: textData }, "getTextWidth")) {
                 const font = textObj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
                     size = textObj.get("font_size"),
-                    textString = text === "" ? "" : text || textObj.get("text") || "",
                     chars = textString.split(""),
                     fontRef = D.CHARWIDTH[font],
                     charRef = fontRef && fontRef[size]
@@ -1689,19 +1767,22 @@ const Media = (() => {
                     return textString.length * (parseInt(textObj.get("width")) / textObj.get("text").length)
                 }
                 let textLines = []
-                if (maxWidth !== false && maxW)
-                    textLines = _.compact(splitTextLines(textObj, text, maxW, textData && textData.justification))
-                else if (maxWidth !== false && text && text.includes("\n"))
-                    textLines = _.compact(text.split(/\s*\n+\s*/gu))
+                if (maxWidth !== false && maxW) {
+                    DB(`Splitting '${D.JS(textString)}' into lines of max width ${D.JS(maxW)}`, "getTextWidth")
+                    textLines = _.compact(splitTextLines(textObj, textString, maxW, textData && textData.justification))
+                } else if (maxWidth !== false && textString && textString.includes("\n")) {
+                    DB(`No MaxW, Splitting '${D.JS(textString)}' according to line breaks.`, "getTextWidth")
+                    textLines = _.compact(textString.split(/\s*\n+\s*/gu))
+                }
                 if (textLines.length) {
                     let maxLine = textLines[0]
-                    //D.Alert(`TextLines = ${textLines}`)
-                    for (const textLine of textLines)
-                        //D.Alert(`MAX {${getTextWidth(textObj, maxLine)}} = ${maxLine}<br>TEXT: {${getTextWidth(textObj, textLine)}} = ${textLine}`)
+                    DB(`TextLines = ${textLines}`, "getTextWidth")
+                    for (const textLine of textLines) {
+                        DB(`MAX {${getTextWidth(textObj, maxLine, false)}} = ${maxLine}<br>TEXT: {${getTextWidth(textObj, textLine, false)}} = ${textLine}`, "getTextWidth")
                         maxLine = getTextWidth(textObj, maxLine, false) < getTextWidth(textObj, textLine.trim(), false) ? textLine.trim() : maxLine
-                    
-                    //D.Alert(`Max Line = ${D.JS(maxLine)}, ${getTextWidth(textObj, maxLine)}`)
-                    //D.Alert(`GetTextWidth called. Text: ${text} MaxLine: ${maxLine} with maxWidth ${D.JS(maxWidth)} and maxW ${D.JS(maxW)}<br>Width: ${getTextWidth(textObj, maxLine, false)}`)
+                    }                    
+                    DB(`Max Line = ${D.JS(maxLine)}, ${getTextWidth(textObj, maxLine, false)}`, "getTextWidth")
+                    DB(`GetTextWidth called. Text: ${textString} MaxLine: ${maxLine} with maxWidth ${D.JS(maxWidth)} and maxW ${D.JS(maxW)}<br>Width: ${getTextWidth(textObj, maxLine, false)}`, "getTextWidth")
                     return getTextWidth(textObj, maxLine, false)
                 }
                 _.each(chars, char => {
@@ -1715,36 +1796,135 @@ const Media = (() => {
                 return width
             }
             return false
+        },        
+        getTextLineHeight = textRef => {
+            const [textObj, textData] = getTextVars(textRef, true)
+            return textData.lineHeight || D.CHARWIDTH[textObj.get("font_family")] && 
+                D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] && 
+                D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight
         },
-        getBlankLeft = (textRef, justification, maxWidth = 0) => {
-            const textObj = getTextObj(textRef),
-                justify = justification || getTextData(textRef).justification
-            if (VAL({textObj: textObj}, "getBaseLeft"))               
-                //D.Alert(`getBlankLeft Called on ${textObj.get("text")} with maxWidth ${maxWidth} into getTextWidth -->`)
-                return textObj.get("left") + (justify === "left" ? -0.5 : justify === "right" ? 0.5 : 0) * getTextWidth(textObj, textObj.get("text"), maxWidth)
+        getTextHeight = (textRef, text, maxWidth) => {
+            const [textObj, textData, textString, maxW] = getTextVars(textRef, text, maxWidth, true)
+            if (VAL({textObj: textObj, list: textData}, "getTextHeight")) {
+                let splitLines
+                if (maxW > 0) {
+                    splitLines = _.compact(splitTextLines(textRef, textString, maxW, textData.justification || "left"))
+                    D.Alert(`MaxWidth = ${maxW}<br><br>SplitLines: ${D.JS(splitLines)}, Length: ${splitLines.length}`, "getTextHeight")
+                } else {
+                    splitLines = _.compact(textString.split(/\n/gu))
+                    D.Alert(`No MaxWidth.<br><br>SplitLines: ${D.JS(splitLines)}, Length: ${splitLines.length}`, "getTextHeight")
+                }
+                return splitLines.length * getTextLineHeight(textRef)
+            }
             return false
         },
-        getRealLeft = (textRef, params = {}) => {
-            const textObj = getTextObj(textRef),
-                textData = getTextData(textRef)
-            if (VAL({textObj: textObj}, "getRealLeft")) {
-                params.left = params.left || textData.left
-                params.text = params.text || textObj.get("text")
-                params.justification = params.justification || textData.justification
-                //D.Alert(`getRealLeft Called on ${params.text} with maxWidth ${params.maxWidth} into getTextWidth -->`)
-                return params.left + (params.justification === "left" ? 0.5 : params.justification === "right" ? -0.5 : 0) * getTextWidth(textObj, params.text, params.maxWidth || 0)
-            }
-            return false            
-        }        
-    // #endregion
+        getHorizBase = (textRef) => {
+            const [textObj, textData] = getTextVars(textRef)
+            if (VAL({textObj: textObj}, "getLeftEdge"))               
+                //D.Alert(`getBlankLeft Called on ${textObj.get("text")} with maxWidth ${maxWidth} into getTextWidth -->`)
+                return textObj.get("left") + (textData.justification === "left" ? -0.5 : textData.justification === "right" ? 0.5 : 0) * getTextWidth(textObj)
+            return false
+        },
+        getRealLeft = (textRef) => {              
+            const [textObj, textData] = getTextVars(textRef)
+            if (VAL({textObj: textObj, list: textData}, "getRealLeft"))
+                return textData.horizBase + (textData.justification === "left" ? 0.5 : textData.justification === "right" ? -0.5 : 0) * getTextWidth(textObj)
+            return false    
+        },
+        getVertBase = (textRef) => {            
+            const [textObj, textData] = getTextVars(textRef)
+            if (VAL({textObj: textObj}, "getVertBase"))               
+                //D.Alert(`getBlankLeft Called on ${textObj.get("text")} with maxWidth ${maxWidth} into getTextWidth -->`)
+                return textObj.get("top") + (textData.vertAlign === "bottom" ? -0.5 : textData.vertAlign === "top" ? 0.5 : 0) * getTextHeight(textObj)
+            return false
+        },
+        getRealTop = (textRef) => {
+            const [textObj, textData] = getTextVars(textRef)
+            if (VAL({textObj: textObj, list: textData}, "getRealTop"))
+                return textData.vertBase + (textData.vertAlign === "top" ? 0.5 : textData.vertAlign === "bottom" ? -0.5 : 0) * getTextHeight(textObj)
+            return false
+        },
+        checkTextRegistration = textRefs => {
+            const textObjs = getTextObjs(textRefs),
+                errorLines = []
+            if (VAL({textObj: textObjs}, "checkTextRegistration", true)) {
+                for (const textObj of textObjs) {
+                    const [, textData, textString] = getTextVars(textObj, true)
+                    if (VAL({list: textData}, "checkTextRegistration")) {
+                        const errors = []
+                        if (!textData.vertBase) {
+                            textData.vertBase = textData.top
+                            TEXTREGISTRY[textData.name].vertBase = textData.top
+                        }
+                        if (!textData.horizBase) {
+                            textData.horizBase = textData.left
+                            TEXTREGISTRY[textData.name].horizBase = textData.left
+                        }
+                        if (textData.text.trim() !== textString)
+                            errors.push(`... [TEXT] '${textString}' (obj) should be '${textData.text.trim()}'`)
+                        if (Math.abs(textData.width - getTextWidth(textObj)) >= 1)
+                            errors.push(`... [WIDTH] '${textObj.get("width")}' (obj) should be '${getTextWidth(textObj)}' (delta: ${parseInt(getTextWidth(textObj)) - textObj.get("width")})`)
+                        if (Math.abs(textData.height - getTextHeight(textObj)) >= 1)
+                            errors.push(`... [HEIGHT] '${textObj.get("height")}' (obj) should be '${getTextHeight(textObj)}' (delta: ${parseInt(getTextHeight(textObj)) - textObj.get("height")})`)
+                        if (Math.abs(textData.vertBase - getVertBase(textObj)) >= 1)
+                            errors.push(`... [VERT_BASE]: '${textData.vertBase}' (reg) should be '${getVertBase(textObj)}'`)
+                        if (Math.abs(textData.horizBase - getHorizBase(textObj)) >= 1)
+                            errors.push(`... [HORZ_BASE]: '${textData.horizBase}' (reg) should be '${getHorizBase(textObj)}'`)
+                        if (errors.length)
+                            errorLines.push(`<b>${textData.name}:</b><br>${errors.join("<br>")}`)
+                        errors.length = 0
+                    }
+                }
+                if (errorLines.length)
+                    D.Alert(errorLines.join("<br>"), "CHECK TEXT REGISTRATION")
+                else
+                    D.Alert("No anomalous entries found.", "CHECK TEXT REGISTRATION")
+               /* newData = {
+                            id: oldData.id,
+                            name: textName,
 
+                            justification: oldData.justification || "left",
+                            maxWidth: oldData.maxWidth || 0,
+                            left: getHorizBase(textObj, oldData.justification || "left", oldData.maxWidth || 0),
+                            width: getTextWidth(textObj, textObj.get("text"), oldData.maxWidth || 0),
+                            shiftleft: oldData.shiftleft || 0,
+
+                            vertAlign: oldData.vertAlign || "top",
+                            lineHeight: getTextLineHeight(textObj),
+                            top: getVertBase(textObj, oldData.vertAlign || "top", oldData.maxWidth || 0),
+                            height: getTextHeight(textObj, textObj.get("text"), oldData.maxWidth || 0),
+                            shifttop: oldData.shifttop || 0,
+
+                            color: oldData.color || "rgb(255,0,0)",
+                            font_size: oldData.font_size || 20,
+                            font_family: oldData.font_family || "Contrail One",
+
+                            text: textObj.get("text"),
+                            layer: textObj.get("layer"),
+                            zIndex: oldData.zIndex || 900,
+                            
+                            activeLayer: oldData.activeLayer || "objects",
+                            startActive: oldData.startActive !== false,
+                            activeText: oldData.activeText || oldData.text || textObj.get("text"),
+
+                            links: oldData.links || { children: [] }
+                        }*/
+            }
+        }
+    // #endregion
+    
     // #region TEXT OBJECT MANIPULATORS: Buffering, Justifying, Splitting
-    const buffer = (textRef, width) => " ".repeat(Math.max(0, Math.round(width/getTextWidth(textRef, " ", false)))),
+    const buffer = (textRef, width) => {
+            DB(`Buffering Ref ${D.JS(textRef)} to width ${D.JS(width)}<br>... getTextWidth: ${D.JS(getTextWidth(textRef, " ", false))}`, "buffer")
+            return " ".repeat(Math.max(0, Math.round(width/getTextWidth(textRef, " ", false))))
+        },
         splitTextLines = (textRef, text, maxWidth, justification = "left") => {
-            const textObj = getTextObj(textRef)
-            let textStrings = _.without(text.split(/(\s|-)/gu), " "),
+            const [textObj, , textString] = getTextVars(textRef, text, maxWidth)
+            let textStartString = textString.replace(/\n/gu, " ").replace(/\s\s+/gu, " ").replace(/-\s/gu, "-"),
+                textStrings = _.without(textStartString.split(/(\s+|-)/gu), " "),
                 splitStrings = [],
                 highWidth = 0
+            //D.Alert(`${D.JS(textStartString)}<br><br>${D.JS(_.map(textStrings, v => `'${v}'`))}`)
             for (let i = 0; i < textStrings.length; i++)
                 if (textStrings[i] === "-") {
                     textStrings[i-1] = textStrings[i-1] + "-"
@@ -1752,7 +1932,7 @@ const Media = (() => {
                 }
             while (textStrings.length) {
                 let thisString = ""
-                while (thisString.length < maxWidth && textStrings.length)
+                while (getTextWidth(textObj, thisString, false) < maxWidth && textStrings.length)
                     if (textStrings[0].endsWith("-"))
                         thisString += `${textStrings.shift()}`
                     else
@@ -1773,13 +1953,13 @@ const Media = (() => {
             D.Alert(`Justifying ${D.JS(getTextKey(textObj))}.  Reference: ${D.JS(textRef)}, Object: ${D.JS(textObj)}`, "justifyText")
             if (VAL({textObj: textObj})) {
                 TEXTREGISTRY[getTextKey(textObj)].justification = justification || "center"
-                TEXTREGISTRY[getTextKey(textObj)].left = getBlankLeft(textObj, justification, maxWidth)
+                TEXTREGISTRY[getTextKey(textObj)].left = getHorizBase(textObj, justification, maxWidth)
                 TEXTREGISTRY[getTextKey(textObj)].width = getTextWidth(textObj, textObj.get("text"), maxWidth)
                 if (hasShadowObj(textObj)) {
                     const shadowKey = getTextData(textObj).shadow,
                         shadowObj = getTextObj(shadowKey)
                     TEXTREGISTRY[shadowKey].justification = justification || "center"
-                    TEXTREGISTRY[shadowKey].left = getBlankLeft(shadowObj, justification, maxWidth)
+                    TEXTREGISTRY[shadowKey].left = getHorizBase(shadowObj, justification, maxWidth)
                     TEXTREGISTRY[shadowKey].width = getTextWidth(shadowObj, shadowObj.get("text"), maxWidth)
                 }
                 D.Alert(`${getTextKey(textRef)} Updated: ${D.JS(TEXTREGISTRY[getTextKey(textObj)])}`, "justifyText")
@@ -1816,11 +1996,14 @@ const Media = (() => {
                         justification: justification || "center",
                         maxWidth: options.maxWidth || 0,
                         lineHeight: D.CHARWIDTH[curTextParams.font_family] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size].lineHeight || textObj.get("height"),
-                        vertAlign: options.vertAlign || "top"             
+                        vertAlign: options.vertAlign || "top"            
                     }), options)
-                TEXTREGISTRY[name].left = getBlankLeft(textObj)
+                TEXTREGISTRY[name].horizBase = getHorizBase(textObj)
+                TEXTREGISTRY[name].vertBase = getVertBase(textObj)
+                curTextParams.top = getRealTop(textObj)
+                curTextParams.left = getRealLeft(textObj)
                 IDREGISTRY[textObj.id] = name
-                setText(textObj, Object.assign(_.filter(_.pick(options, C.TEXTPROPS), (v, k) => curTextParams[k] !== v), {left: getBlankLeft(textObj, justification || "center", options.maxWidth), layer: curTextParams.layer}))                
+                setText(textObj, Object.assign(_.filter(_.pick(options, C.TEXTPROPS), (v, k) => curTextParams[k] !== v), {left: getHorizBase(textObj, justification || "center", options.maxWidth), layer: curTextParams.layer}))                
                 if (hasShadow) {
                     const shadowOptions = Object.assign(_.omit(_.clone(TEXTREGISTRY[name]), "id"), {
                         name: `${name}Shadow`,
@@ -1864,34 +2047,38 @@ const Media = (() => {
         },
         setText = (textRef, options = {}, isTemporary = false) => {
             const textObj = getTextObj(textRef),
-                textData = getTextData(textRef),
+                textData = getTextData(textRef) || {},
                 textOptions = VAL({string: options}) ? {text: options} : options,
-                textString = (textOptions && textOptions.text || textData && textData.text || textObj.get("text")).trim()
-            let shadowObj, shadowObjParams
+                textString = (textOptions.text || textData.text || textObj.get("text")).trim()
+            let numLines = 1, 
+                shadowObj, shadowObjParams
             if (VAL({textObj: textObj}, "setText")) {
-                textOptions.left = textOptions && textOptions.left || textData && textData.left || getBlankLeft(textObj, textObj.get("text"))
-                textOptions.top = textOptions && textOptions.top || textData && textData.top || textObj.get("top")
+                textOptions.left = textOptions.left || textData.left || getHorizBase(textObj, textObj.get("text"))
+                textOptions.top = textOptions.top || textData.top || textObj.get("top")
                 textOptions.text = textString
-                textOptions.maxWidth = textOptions && textOptions.maxWidth || textData && textData.maxWidth
+                textOptions.maxWidth = textOptions.maxWidth || textData.maxWidth || 0
+                textOptions.justification = textOptions.justification || textData.justification || "center"
+                textOptions.vertAlign = textOptions.vertAlign || textData.vertAlign || "top"
+                textOptions.lineHeight = getTextLineHeight(textObj) || 0
                 const objParams = Object.assign(_.pick(textOptions, C.TEXTPROPS))
+                const curHeight = textOptions.lineHeight*textObj.get("text").split("\n").length,
+                    curWidth = getTextWidth(textRef, textObj.get("text"), textOptions.maxWidth)
                 if (textOptions.maxWidth > 0 && objParams.text) {
                     const splitLines = splitTextLines(textObj, objParams.text, textOptions.maxWidth, textData.justification)
-                    objParams.text = splitLines.join("\n")           
-                }                
-                if (objParams.text.split("\n").length > 1) 
-                    switch (textData.vertAlign || textOptions.vertAlign || "top") {
-                        case "top":
-                            textOptions.shifttop = (textOptions.shifttop || 0) + 0.5*(objParams.text.split("\n").length - 1)*(textData && textData.lineHeight || 
-                                D.CHARWIDTH[textObj.get("font_family")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight ||
-                                0)
-                            break
-                        case "bottom":
-                            textOptions.shifttop = (textOptions.shifttop || 0) - 0.5*(objParams.text.split("\n").length - 1)*(textData && textData.lineHeight || 
-                                D.CHARWIDTH[textObj.get("font_family")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight ||
-                                0)
-                            break
-            /* no default */
-                    }         
+                    objParams.text = splitLines.join("\n")
+                    numLines = splitLines.length
+
+                }
+                switch (textOptions.vertAlign) {
+                    case "top":
+                        textOptions.shifttop = (textOptions.shifttop || 0) + 0.5*(numLines - 1)*textOptions.lineHeight
+                        break
+                    case "bottom":
+                        textOptions.shifttop = (textOptions.shifttop || 0) - 0.5*(numLines - 1)*textOptions.lineHeight
+                        break
+                        /* no default */
+                }
+
                 for (const key of _.intersection(_.keys(textOptions), ["shiftleft", "shifttop"]))
                     objParams[key.slice(5)] = textData[key.slice(5)] + parseInt(textOptions[key])
                 if (!isTemporary)
@@ -1958,9 +2145,45 @@ const Media = (() => {
                 removeText(textName, isUnregOnly)
         },        
         cleanTextRegistry = () => {
-            for (const textName of _.keys(TEXTREGISTRY))
-                if (!getTextObj(textName))
+            for (const textName of _.keys(TEXTREGISTRY)) {
+                const textObj = getTextObj(textName)
+                if (!textObj) {
                     removeText(textName)
+                } else {
+                    const oldData = _.clone(_.omit(TEXTREGISTRY[textName], "object")),
+                        newData = {
+                            id: oldData.id,
+                            name: textName,
+
+                            justification: oldData.justification || "left",
+                            maxWidth: oldData.maxWidth || 0,
+                            left: getHorizBase(textObj),
+                            width: getTextWidth(textObj),
+                            shiftleft: oldData.shiftleft || 0,
+
+                            vertAlign: oldData.vertAlign || "top",
+                            lineHeight: getTextLineHeight(textObj),
+                            top: getVertBase(textObj, oldData.vertAlign || "top", oldData.maxWidth || 0),
+                            height: getTextHeight(textObj, textObj.get("text"), oldData.maxWidth || 0),
+                            shifttop: oldData.shifttop || 0,
+
+                            color: oldData.color || "rgb(255,0,0)",
+                            font_size: oldData.font_size || 20,
+                            font_family: oldData.font_family || "Contrail One",
+
+                            text: textObj.get("text"),
+                            layer: textObj.get("layer"),
+                            zIndex: oldData.zIndex || 900,
+                            
+                            activeLayer: oldData.activeLayer || "objects",
+                            startActive: oldData.startActive !== false,
+                            activeText: oldData.activeText || oldData.text || textObj.get("text"),
+
+                            links: oldData.links || { children: [] }
+                        }
+                    TEXTREGISTRY[textName] = _.clone(newData)
+                }
+            }
         },
         resetTextRegistry = () => {
             STATEREF.textregistry = {}
@@ -1986,9 +2209,9 @@ const Media = (() => {
             if (VAL({textObj: textObjs, graphicObj: imageObjs}, "orderMedia", true)) {
                 const mediaDatas = []
                 for (const imgObj of imageObjs)
-                    mediaDatas.push(Object.assign(getImageData(imgObj), {object: imgObj}))
+                    mediaDatas.push(Object.assign(_.clone(getImageData(imgObj)), {object: imgObj}))
                 for (const textObj of textObjs)
-                    mediaDatas.push(Object.assign(getTextData(textObj), {object: textObj}))
+                    mediaDatas.push(Object.assign(_.clone(getTextData(textObj)), {object: textObj}))
                 const sortedMediaDatas = _.mapObject(_.groupBy(mediaDatas, "activeLayer"), v => _.sortBy(v, vv => -1 * vv.zIndex))
                 for (const layerData of _.values(sortedMediaDatas)) {
                     reportStrings.push(`<br><b>SORTING LAYER '${D.JS(layerData[0].activeLayer)}'`)
@@ -2013,8 +2236,10 @@ const Media = (() => {
 
 
     return {
-        RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        RegisterEventHandlers: regHandlers,
+        SoundReady: soundReady,
+
         GetObj: getImageObj,
         GetKey: getImageKey,
         GetData: getImageData,
@@ -2025,7 +2250,7 @@ const Media = (() => {
         Remove: removeImage,
         RemoveAll: removeImages,
         Set: setImage,
-        SetParams: setImgParams,
+        SetParams: setMediaParams,
         SetData: setImgData,
         SetArea: setImageArea,
         SetLocation: setLocation,
@@ -2053,10 +2278,4 @@ const Media = (() => {
         LayerText: layerText
     }
 })()
-
-on("ready", () => {
-    Media.RegisterEventHandlers()
-    Media.CheckInstall()
-    D.Log("Media Ready!")
-})
 void MarkStop("Media")

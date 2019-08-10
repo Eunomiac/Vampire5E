@@ -25,7 +25,8 @@ const Complications = (() => {
                     handleInput(msg, who, call, args)
                 }
             })
-        }
+        },
+        soundReady = () => { D.Log(`${SCRIPTNAME} Ready!`) }
     // #endregion
 
     // #region LOCAL INITIALIZATION
@@ -57,119 +58,119 @@ const Complications = (() => {
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => {
-            switch (call) {
-                case "get": {
-                    switch (args.shift().toLowerCase()) {
-                        case "cats":
-                            D.Alert(`Used Categories: ${D.JS(getUsedCategories())}`, "!comp get cats")
-                            break
-                        case "cards":
-                            D.Alert(`Active Cards: ${D.JS(getActiveCards())}`, "!comp get cards")
-                            break
+        switch (call) {
+            case "get": {
+                switch (args.shift().toLowerCase()) {
+                    case "cats":
+                        D.Alert(`Used Categories: ${D.JS(getUsedCategories())}`, "!comp get cats")
+                        break
+                    case "cards":
+                        D.Alert(`Active Cards: ${D.JS(getActiveCards())}`, "!comp get cards")
+                        break
                         // no default
-                    }
-                    break
                 }
-                case "flip":
-                    flipCard(parseInt(args.shift() || 0) - 1)
-                    break
-                case "target": case "add":
-                    setCompVals(call, parseInt(args.shift() || 0))
-                    break
-                case "start":
-                    startComplication(parseInt(args.shift() || 0))
-                    break
-                case "end": case "stop":
-                    endComplication(args.shift() === "true")
-                    break
-                case "reset":
-                    resetComplication()
-                    break
-                case "discard": {
-                    if (args[0] && args[0].toString().startsWith("rand")) {
-                        discardCard(args.shift())
-                        break
-                    }
-                    switch ((args[0] || "").toLowerCase()) {
-                        case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
-                            discardCard((parseInt(args.shift()) || 1) - 1)
-                            break
-                        default:
-                            promptST("discard")
-                            break
-                    }
-                    break
-                }
-                case "enhance": {
-                    if (args[0] && args[0].toString().startsWith("rand")) {
-                        enhanceCard(args.shift())
-                        break
-                    }
-                    switch ((args[0] || "").toLowerCase()) {
-                        case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
-                            enhanceCard((parseInt(args.shift()) || 1) - 1)
-                            break
-                        default:
-                            promptST("enhance")
-                            break
-                    }
-                    break
-                }
-                case "negate": {
-                    if (args[0] && args[0].toString().startsWith("rand")) {
-                        negateCard(args.shift())
-                        break
-                    }
-                    switch ((args[0] || "").toLowerCase()) {
-                        case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
-                            negateCard((parseInt(args.shift()) || 1) - 1)
-                            break
-                        default:
-                            promptST("negate")
-                            break
-                    }
-                    break
-                }
-                case "zero": case "devalue": case "revalue":
-                    if (args[0] && args[0].toString().startsWith("rand")) {
-                        promptST("setrevalue", args.shift().replace(/\D/gu, ""))
-                        break
-                    }
-                    switch ((args[0] || "").toLowerCase()) {
-                        case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
-                            if (args.length > 1)
-                                revalueCard((parseInt(args[0]) || 1) - 1, parseInt(args[1]) || 0)
-                            else
-                                promptST("setrevalue", args.shift())
-                            break
-                        default:
-                            promptST("getrevalue")
-                            break
-                    }
-                    break
-                case "launchproject":
-                    Char.LaunchProject(STATEREF.currentVal - STATEREF.targetVal, "COMPLICATION")
-                    break
-                case "kill":
-                    STATEREF.DECK = []
-                    STATEREF.MAT = [
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 }
-                    ]
-                    STATEREF.DISCARDS = []
-                    STATEREF.isRunning = false
-                    break
-            // no default
+                break
             }
+            case "flip":
+                flipCard(parseInt(args.shift() || 0) - 1)
+                break
+            case "target": case "add":
+                setCompVals(call, parseInt(args.shift() || 0))
+                break
+            case "start":
+                startComplication(parseInt(args.shift() || 0))
+                break
+            case "end": case "stop":
+                endComplication(args.shift() === "true")
+                break
+            case "reset":
+                resetComplication()
+                break
+            case "discard": {
+                if (args[0] && args[0].toString().startsWith("rand")) {
+                    discardCard(args.shift())
+                    break
+                }
+                switch ((args[0] || "").toLowerCase()) {
+                    case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
+                        discardCard((parseInt(args.shift()) || 1) - 1)
+                        break
+                    default:
+                        promptST("discard")
+                        break
+                }
+                break
+            }
+            case "enhance": {
+                if (args[0] && args[0].toString().startsWith("rand")) {
+                    enhanceCard(args.shift())
+                    break
+                }
+                switch ((args[0] || "").toLowerCase()) {
+                    case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
+                        enhanceCard((parseInt(args.shift()) || 1) - 1)
+                        break
+                    default:
+                        promptST("enhance")
+                        break
+                }
+                break
+            }
+            case "negate": {
+                if (args[0] && args[0].toString().startsWith("rand")) {
+                    negateCard(args.shift())
+                    break
+                }
+                switch ((args[0] || "").toLowerCase()) {
+                    case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
+                        negateCard((parseInt(args.shift()) || 1) - 1)
+                        break
+                    default:
+                        promptST("negate")
+                        break
+                }
+                break
+            }
+            case "zero": case "devalue": case "revalue":
+                if (args[0] && args[0].toString().startsWith("rand")) {
+                    promptST("setrevalue", args.shift().replace(/\D/gu, ""))
+                    break
+                }
+                switch ((args[0] || "").toLowerCase()) {
+                    case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
+                        if (args.length > 1)
+                            revalueCard((parseInt(args[0]) || 1) - 1, parseInt(args[1]) || 0)
+                        else
+                            promptST("setrevalue", args.shift())
+                        break
+                    default:
+                        promptST("getrevalue")
+                        break
+                }
+                break
+            case "launchproject":
+                Char.LaunchProject(STATEREF.currentVal - STATEREF.targetVal, "COMPLICATION")
+                break
+            case "kill":
+                STATEREF.DECK = []
+                STATEREF.MAT = [
+                    { imgsrc: null, isFaceUp: false, value: 0 },
+                    { imgsrc: null, isFaceUp: false, value: 0 },
+                    { imgsrc: null, isFaceUp: false, value: 0 },
+                    { imgsrc: null, isFaceUp: false, value: 0 },
+                    { imgsrc: null, isFaceUp: false, value: 0 },
+                    { imgsrc: null, isFaceUp: false, value: 0 },
+                    { imgsrc: null, isFaceUp: false, value: 0 },
+                    { imgsrc: null, isFaceUp: false, value: 0 },
+                    { imgsrc: null, isFaceUp: false, value: 0 },
+                    { imgsrc: null, isFaceUp: false, value: 0 }
+                ]
+                STATEREF.DISCARDS = []
+                STATEREF.isRunning = false
+                break
+            // no default
         }
+    }
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
@@ -242,7 +243,7 @@ const Complications = (() => {
     // #region GETTERS: Active card names
     const getActiveCards = () => _.filter(STATEREF.MAT, v => v.isFaceUp),
         getUsedCategories = () => _.uniq(_.compact(_.map(getActiveCards(), v => v.category))),
-        getCardSpot = card => _findIndex(STATEREF.MAT, v => v.isFaceUp && v.name === card.name),
+        getCardSpot = card => _.findIndex(STATEREF.MAT, v => v.isFaceUp && v.name === card.name),
         isCardValid = card => VAL({list: card}) && card.imgsrc && !getUsedCategories().includes(card.category) && !_.map(getActiveCards(), v => v.name).includes(card.name),
         getRandomSpot = (mode, exclude = -1) => {
             const validSpots = []
@@ -578,16 +579,11 @@ const Complications = (() => {
     // #endregion
 
     return {
-        RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        RegisterEventHandlers: regHandlers,
+        SoundReady: soundReady,
 
         Flip: flipCard
     }
 })()
-
-on("ready", () => {
-    Complications.RegisterEventHandlers()
-    Complications.CheckInstall()
-    D.Log("Complications Ready!")
-})
 void MarkStop("Complications")

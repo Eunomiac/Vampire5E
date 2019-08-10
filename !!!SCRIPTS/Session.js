@@ -25,7 +25,8 @@ const Session = (() => {
                     handleInput(msg, who, call, args)
                 }
             })
-        }
+        },
+        soundReady = () => { D.Log(`${SCRIPTNAME} Ready!`) }
     // #endregion
 
     // #region LOCAL INITIALIZATION
@@ -178,8 +179,9 @@ const Session = (() => {
     // #endregion
 
     return {
-        RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        RegisterEventHandlers: regHandlers,
+        SoundReady: soundReady,
 
         AddSceneChar: addCharToScene,
 
@@ -191,8 +193,10 @@ const Session = (() => {
 })()
 
 on("ready", () => {
-    Session.RegisterEventHandlers()
-    Session.CheckInstall()
-    D.Log("Session Ready!")
+    for (const script of [C, D, Char, Media, DragPads, Roller, Chat, Handouts, Complications, Player, Session]) {
+        script.CheckInstall()
+        script.RegisterEventHandlers()
+        script.SoundReady()
+    }
 })
 void MarkStop("Session")

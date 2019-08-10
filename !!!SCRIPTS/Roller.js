@@ -25,7 +25,8 @@ const Roller = (() => {
                     handleInput(msg, who, call, args)
                 }
             })
-        }
+        },
+        soundReady = () => { D.Log(`${SCRIPTNAME} Ready!`) }
     // #endregion
 
     // #region LOCAL INITIALIZATION
@@ -3698,8 +3699,9 @@ const Roller = (() => {
     // #endregion
 
     return {
-        RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        RegisterEventHandlers: regHandlers,
+        SoundReady: soundReady,
 
         get LastProjectPrefix() { return STATEREF.lastProjectPrefix },
         get LastProjectCharID() { return STATEREF.lastProjectCharID },
@@ -3709,10 +3711,4 @@ const Roller = (() => {
         Clean: clearRoller
     }
 })()
-
-on("ready", () => {
-    Roller.RegisterEventHandlers()
-    Roller.CheckInstall()
-    D.Log("Roller Ready!")
-})
 void MarkStop("Roller")

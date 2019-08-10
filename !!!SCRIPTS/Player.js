@@ -25,7 +25,8 @@ const Player = (() => {
                     handleInput(msg, who, call, args)
                 }
             })
-        }
+        },
+        soundReady = () => { D.Log(`${SCRIPTNAME} Ready!`) }
     // #endregion
 
     // #region LOCAL INITIALIZATION
@@ -159,14 +160,9 @@ const Player = (() => {
     // #endregion
 
     return {
+        CheckInstall: checkInstall,
         RegisterEventHandlers: regHandlers,
-        CheckInstall: checkInstall
+        SoundReady: soundReady
     }
 })()
-
-on("ready", () => {
-    Player.RegisterEventHandlers()
-    Player.CheckInstall()
-    D.Log("Player Ready!")
-})
 void MarkStop("Player")

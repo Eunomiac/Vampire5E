@@ -27,7 +27,8 @@ const Char = (() => {
             })
             on("change:attribute:current", handleChangeAttr)
             on("add:attribute", handleAddAttr)
-        }
+        },
+        soundReady = () => { D.Log(`${SCRIPTNAME} Ready!`) }
     // #endregion
 
     // #region LOCAL INITIALIZATION
@@ -1006,8 +1007,10 @@ const Char = (() => {
     // #endregion
 
     return {
-        RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        RegisterEventHandlers: regHandlers,
+        SoundReady: soundReady,
+
         REGISTRY: REGISTRY,
         Damage: adjustDamage,
         AdjustTrait: adjustTrait,
@@ -1018,10 +1021,4 @@ const Char = (() => {
         RefreshDisplays: () => { displayDesires(); displayResources(); displayStakes() }
     }
 })()
-
-on("ready", () => {
-    Char.RegisterEventHandlers()
-    Char.CheckInstall()
-    D.Log("Char Ready!")
-})
 void MarkStop("Char")

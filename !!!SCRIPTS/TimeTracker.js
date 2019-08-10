@@ -25,7 +25,8 @@ const TimeTracker = (() => {
                     handleInput(msg, who, call, args)
                 }
             })
-        }
+        },
+        soundReady = () => { D.Log(`${SCRIPTNAME} Ready!`) }
     // #endregion
 
     // #region LOCAL INITIALIZATION
@@ -1148,6 +1149,8 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
     return {
         RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        SoundReady: soundReady,
+
         StartClock: startClock,
         StopClock: stopClock,
         StartLights: startAirLights,
@@ -1160,10 +1163,4 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
         IsValidDate: isValidDString
     }
 })()
-
-on("ready", () => {
-    TimeTracker.RegisterEventHandlers()
-    TimeTracker.CheckInstall()
-    D.Log("TimeTracker Ready!")
-})
 void MarkStop("TimeTracker")

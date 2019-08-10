@@ -26,7 +26,8 @@ const DragPads = (() => {
                 }
             })
             on("change:graphic", handleMove)
-        }
+        },
+        soundReady = () => { D.Log(`${SCRIPTNAME} Ready!`) }
     // #endregion
 
     // #region LOCAL INITIALIZATION
@@ -483,8 +484,10 @@ const DragPads = (() => {
     // #endregion
 
     return {
-        RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        RegisterEventHandlers: regHandlers,
+        SoundReady: soundReady,
+
         MakePad: makePad,
         ClearAllPads: clearAllPads,
         GetPad: getPad,
@@ -493,10 +496,4 @@ const DragPads = (() => {
         DelPad: removePad
     }
 })()
-
-on("ready", () => {
-    DragPads.RegisterEventHandlers()
-    DragPads.CheckInstall()
-    D.Log("DragPads Ready!")
-})
 void MarkStop("DragPads")
