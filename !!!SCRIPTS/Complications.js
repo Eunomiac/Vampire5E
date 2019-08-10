@@ -36,19 +36,20 @@ const Complications = (() => {
         STATEREF.remainingVal = STATEREF.remainingVal || 0
         STATEREF.cardsDrawn = STATEREF.cardsDrawn || []
         STATEREF.isRunning = STATEREF.isRunning || false
+        STATEREF.lastDraw = STATEREF.lastDraw || -1
 
         STATEREF.DECK = STATEREF.DECK || []
         STATEREF.MAT = STATEREF.MAT || [
-            { imgsrc: null, isFaceUp: false, value: 0 },
-            { imgsrc: null, isFaceUp: false, value: 0 },
-            { imgsrc: null, isFaceUp: false, value: 0 },
-            { imgsrc: null, isFaceUp: false, value: 0 },
-            { imgsrc: null, isFaceUp: false, value: 0 },
-            { imgsrc: null, isFaceUp: false, value: 0 },
-            { imgsrc: null, isFaceUp: false, value: 0 },
-            { imgsrc: null, isFaceUp: false, value: 0 },
-            { imgsrc: null, isFaceUp: false, value: 0 },
-            { imgsrc: null, isFaceUp: false, value: 0 }
+            { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+            { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+            { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+            { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+            { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+            { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+            { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+            { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+            { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+            { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false }
         ]
         STATEREF.DISCARDS = STATEREF.DISCARDS || []
         STATEREF.FXQUEUE = STATEREF.FXQUEUE || []
@@ -57,119 +58,106 @@ const Complications = (() => {
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => {
-            switch (call) {
-                case "get": {
-                    switch (args.shift().toLowerCase()) {
-                        case "cats":
-                            D.Alert(`Used Categories: ${D.JS(getUsedCategories())}`, "!comp get cats")
-                            break
-                        case "cards":
-                            D.Alert(`Active Cards: ${D.JS(getActiveCards())}`, "!comp get cards")
-                            break
-                        // no default
-                    }
-                    break
-                }
-                case "flip":
-                    flipCard(parseInt(args.shift() || 0) - 1)
-                    break
-                case "target": case "add":
-                    setCompVals(call, parseInt(args.shift() || 0))
-                    break
-                case "start":
-                    startComplication(parseInt(args.shift() || 0))
-                    break
-                case "end": case "stop":
-                    endComplication(args.shift() === "true")
-                    break
-                case "reset":
-                    resetComplication()
-                    break
-                case "discard": {
-                    if (args[0] && args[0].toString().startsWith("rand")) {
-                        discardCard(args.shift())
+        switch (call) {
+            case "get": {
+                switch (args.shift().toLowerCase()) {
+                    case "cats":
+                        D.Alert(`Used Categories: ${D.JS(getUsedCategories())}`, "!comp get cats")
                         break
-                    }
-                    switch ((args[0] || "").toLowerCase()) {
-                        case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
-                            discardCard((parseInt(args.shift()) || 1) - 1)
-                            break
-                        default:
-                            promptST("discard")
-                            break
-                    }
-                    break
-                }
-                case "enhance": {
-                    if (args[0] && args[0].toString().startsWith("rand")) {
-                        enhanceCard(args.shift())
+                    case "cards":
+                        D.Alert(`Active Cards: ${D.JS(getActiveCards())}`, "!comp get cards")
                         break
-                    }
-                    switch ((args[0] || "").toLowerCase()) {
-                        case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
-                            enhanceCard((parseInt(args.shift()) || 1) - 1)
-                            break
-                        default:
-                            promptST("enhance")
-                            break
-                    }
-                    break
+                    // no default
                 }
-                case "negate": {
-                    if (args[0] && args[0].toString().startsWith("rand")) {
-                        negateCard(args.shift())
-                        break
-                    }
-                    switch ((args[0] || "").toLowerCase()) {
-                        case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
-                            negateCard((parseInt(args.shift()) || 1) - 1)
-                            break
-                        default:
-                            promptST("negate")
-                            break
-                    }
-                    break
-                }
-                case "zero": case "devalue": case "revalue":
-                    if (args[0] && args[0].toString().startsWith("rand")) {
-                        promptST("setrevalue", args.shift().replace(/\D/gu, ""))
-                        break
-                    }
-                    switch ((args[0] || "").toLowerCase()) {
-                        case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9": case "10":
-                            if (args.length > 1)
-                                revalueCard((parseInt(args[0]) || 1) - 1, parseInt(args[1]) || 0)
-                            else
-                                promptST("setrevalue", args.shift())
-                            break
-                        default:
-                            promptST("getrevalue")
-                            break
-                    }
-                    break
-                case "launchproject":
-                    Char.LaunchProject(STATEREF.currentVal - STATEREF.targetVal, "COMPLICATION")
-                    break
-                case "kill":
-                    STATEREF.DECK = []
-                    STATEREF.MAT = [
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 },
-                        { imgsrc: null, isFaceUp: false, value: 0 }
-                    ]
-                    STATEREF.DISCARDS = []
-                    STATEREF.isRunning = false
-                    break
-            // no default
+                break
             }
+            case "flip":
+                flipCard(parseInt(args.shift() || 0) - 1)
+                break
+            case "target": case "add":
+                setCompVals(call, parseInt(args.shift() || 0))
+                break
+            case "start":
+                startComplication(parseInt(args.shift() || 0))
+                break
+            case "end": case "stop":
+                endComplication(args.shift() === "true")
+                break
+            case "reset":
+                resetComplication()
+                break
+            case "discard": {
+                if (args[0] && args[0] === "rand")
+                    discardCard(getRandomSpot(["faceUp", "noLastDrawn"]))
+                else if (args[0] && args[0] === "last")
+                    discardCard(STATEREF.lastDraw)
+                else
+                    discardCard(parseInt(args.shift()) - 1)
+                break
+            }
+            case "enhance": {
+                if (args[0] && args[0] === "rand")
+                    enhanceCard(getRandomSpot(["faceUp", "noNegated", "noEnhanced", "noLastDrawn"]))
+                else if (args[0] && args[0] === "last")
+                    enhanceCard(STATEREF.lastDraw)
+                else
+                    enhanceCard(parseInt(args.shift()) - 1)
+                break
+            }
+            case "negate": {
+                if (args[0] && args[0] === "rand")
+                    negateCard(getRandomSpot(["faceUp", "noEnhanced", "noNegated", "noLastDrawn"]))
+                else if (args[0] && args[0] === "last")
+                    negateCard(STATEREF.lastDraw)
+                else
+                    negateCard(parseInt(args.shift()) - 1)
+                break
+            }
+            case "duplicate": {
+                if (args[0] && args[0] === "rand")
+                    dupeCard(getRandomSpot(["faceUp", "noNegated", "noDuplicated", "noLastDrawn"]))
+                else if (args[0] && args[0] === "last")
+                    dupeCard(STATEREF.lastDraw)
+                else
+                    dupeCard(parseInt(args.shift()) - 1)
+                break
+            }
+            case "revalue": {
+                if (args[0] && args[0] === "rand") 
+                    promptCardVal(getRandomSpot(["faceUp", "noLastDrawn"]))
+                else if (args[0] && args[0] === "last")
+                    promptCardVal(STATEREF.lastDraw)
+                else
+                    promptCardVal(parseInt(args.shift()) - 1)
+                break
+            }
+            case "setvalue": {
+                revalueCard(parseInt(args.shift()) - 1, parseInt(args.shift()))
+                break
+            }
+            case "launchproject":
+                Char.LaunchProject(STATEREF.currentVal - STATEREF.targetVal, "COMPLICATION")
+                break
+            case "kill":
+                STATEREF.DECK = []
+                STATEREF.MAT = [
+                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
+                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false }
+                ]
+                STATEREF.DISCARDS = []
+                STATEREF.isRunning = false
+                break
+        // no default
         }
+    }
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
@@ -244,36 +232,42 @@ const Complications = (() => {
         getUsedCategories = () => _.uniq(_.compact(_.map(getActiveCards(), v => v.category))),
         getCardSpot = card => _findIndex(STATEREF.MAT, v => v.isFaceUp && v.name === card.name),
         isCardValid = card => VAL({list: card}) && card.imgsrc && !getUsedCategories().includes(card.category) && !_.map(getActiveCards(), v => v.name).includes(card.name),
-        getRandomSpot = (mode, exclude = -1) => {
+        getRandomSpot = (modes, exclude = -1) => {
             const validSpots = []
-            switch (mode) {
-                case "enhance": {
-                    for (let i = 0; i < STATEREF.MAT.length; i++) {
-                        const card = STATEREF.MAT[i]
-                        if (card.isFaceUp && !card.isNegated && !card.isEnhanced && i !== exclude) 
-                            validSpots.push(i)                        
+            for (let i = 0; i < STATEREF.MAT.length; i++) {
+                const card = STATEREF.MAT[i]
+                let isThisCardValid = true
+                for (const mode of modes) {
+                    switch (mode) {
+                        case "noEnhanced":
+                            if (card.isEnhanced)
+                                isThisCardValid = false
+                            break
+                        case "noNegated":
+                            if (card.isNegated)
+                                isThisCardValid = false
+                            break                            
+                        case "noLastDrawn":                            
+                            if (i === STATEREF.lastDraw)
+                                isThisCardValid = false
+                            break                            
+                        case "noDuplicated":
+                            if (card.isDuplicated)
+                                isThisCardValid = false
+                            break
+                        case "faceUp":
+                            if (!card.isFaceUp)
+                                isThisCardValid = false
+                            break
+                        // no default
                     }
-                    break
+                    if (!isThisCardValid)
+                        break
                 }
-                case "drawn": {
-                    for (let i = 0; i < STATEREF.MAT.length; i++) {
-                        const card = STATEREF.MAT[i]
-                        if (card.isFaceUp && !card.isNegated && i !== exclude) 
-                            validSpots.push(i)                        
-                    }
-                    break
-                }
-                case "discard": {
-                    for (let i = 0; i < STATEREF.MAT.length; i++) {
-                        const card = STATEREF.MAT[i]
-                        if (card.isFaceUp && i !== exclude) 
-                            validSpots.push(i)                        
-                    }
-                    break
-
-                }
-                // no default
+                if (isThisCardValid)
+                    validSpots.push(i)
             }
+            //D.Alert(`Valid Spots: ${D.JS(validSpots)}`, "getRandomSpot")
             return _.sample(validSpots)
         }
     // #endregion
@@ -309,27 +303,39 @@ const Complications = (() => {
             }, 500 + 300 * STATEREF.FXQUEUE.length)
         },
         negateCard = spot => {
-            if (!spot) return
-            const thisSpot = spot.toString().startsWith("rand") ? getRandomSpot("drawn", parseInt(spot.replace(/\D/gu, "")) - 1) : parseInt(spot),
-                card = STATEREF.MAT[thisSpot]
-            if (card && card.isNegated) {
-                Media.SetParams(`compCardSpot_${thisSpot+1}`, {tint_color: "transparent"})
-                card.isNegated = false
-            } else if (card) {
-                Media.Toggle(`complicationEnhanced_${thisSpot+1}`, false)
-                Media.SetParams(`compCardSpot_${thisSpot+1}`, {tint_color:"#000000"})
-                card.isNegated = true
+            if (VAL({number: spot}, "negateCard")) {
+                const card = STATEREF.MAT[spot]
+                if (card && card.isNegated) {
+                    Media.SetParams(`compCardSpot_${spot+1}`, {tint_color: "transparent"})
+                    card.isNegated = false
+                } else if (card) {
+                    Media.Toggle(`complicationEnhanced_${spot+1}`, false)
+                    Media.SetParams(`compCardSpot_${spot+1}`, {tint_color:"#000000"})
+                    card.isNegated = true
+                }
             }
         },
         discardCard = spot => {
-            if (!spot) return
-            const thisSpot = spot.toString().startsWith("rand") ? getRandomSpot("discard", parseInt(spot.replace(/\D/gu, "")) - 1) : parseInt(spot),
-                card = STATEREF.MAT[thisSpot]
-            Media.Toggle(`complicationEnhanced_${thisSpot+1}`, false)
-            Media.SetParams(`compCardSpot_${thisSpot+1}`, {tint_color: "transparent"})
-            if (card && card.isFaceUp)
-                flipCard(thisSpot)
-            dealCard(thisSpot)
+            if (VAL({number: spot}, "discardCard")) {
+                const card = STATEREF.MAT[spot]
+                Media.Toggle(`complicationEnhanced_${spot+1}`, false)
+                Media.SetParams(`compCardSpot_${spot+1}`, {tint_color: "transparent"})
+                if (card && card.isFaceUp)
+                    flipCard(spot)
+                dealCard(spot)
+            }
+        },
+        dupeCard = spot => {
+            if (VAL({number: spot}, "dupeCard")) {
+                const card = STATEREF.MAT[spot]
+                if (card && card.isDuplicated) {
+                    Media.SetParams(`compCardSpot_${spot+1}`, {tint_color: "transparent"})
+                    card.isDuplicated = false
+                } else if (card) {
+                    Media.SetParams(`compCardSpot_${spot+1}`, {tint_color:"#0000FF"})
+                    card.isDuplicated = true
+                }
+            }
         },
         doCard = card => {
             setCompVals("add", card.value)
@@ -338,13 +344,26 @@ const Complications = (() => {
             setCompVals("add", -1 * card.value)
         },
         enhanceCard = spot => {
-            if (!spot) return
-            const thisSpot = spot.toString().startsWith("rand") ? getRandomSpot("enhance", parseInt(spot.replace(/\D/gu, "")) - 1) : parseInt(spot),
-                card = STATEREF.MAT[thisSpot]
-            if (card) {
-                Media.Toggle(`complicationEnhanced_${thisSpot+1}`, card.isEnhanced !== true)
-                card.isEnhanced = card.isEnhanced !== true
+            if (VAL({number: spot}, "enhanceCard")) {
+                const card = STATEREF.MAT[spot]
+                if (card) {
+                    Media.Toggle(`complicationEnhanced_${spot+1}`, card.isEnhanced !== true)
+                    card.isEnhanced = card.isEnhanced !== true
+                }
             }
+        },        
+        revalueCard = (spot = 0, value = 0) => {
+            const card = STATEREF.MAT[spot]
+            setCompVals("add", value - card.value)
+            if (value === 0)
+                Media.Toggle(`complicationZero_${spot + 1}`, true)
+            else
+                Media.Toggle(`complicationZero_${spot + 1}`, false)
+            //Media.Set(`complicationZero_${index + 1}`, value)
+            toFront(Media.GetObj(`complicationZero_${spot + 1}`))
+            toFront(Media.GetObj(`complicationEnhanced_${spot + 1}`))
+            STATEREF.MAT[spot].value = value
+            sendGMPanel()
         },
         flipCard = spot => {
             const card = STATEREF.MAT[spot]
@@ -358,6 +377,7 @@ const Complications = (() => {
                 doCard(card)
                 Media.SetParams(`compCardSpot_${spot+1}`, {imgsrc: card.imgsrc})
                 DragPads.Toggle(Media.GetData(`compCardSpot_${spot+1}`).id, false)
+                STATEREF.lastDraw = spot
             }
             refreshDraws()
         },
@@ -438,6 +458,7 @@ const Complications = (() => {
             setCompVals("current", 0)
             setCompVals("target", startVal)
             refreshDraws()
+            sendGMPanel()
         },
         endComplication = (isLaunchingProject) => {
             STATEREF.isRunning = false    
@@ -455,8 +476,134 @@ const Complications = (() => {
             if (isLaunchingProject)
                 Char.LaunchProject(STATEREF.currentVal - STATEREF.targetVal, "COMPLICATION")   
         },
-        promptST = (mode, paramString = "") => {
-            let chatString = `/w Storyteller <br/><div style='
+        sendGMPanel = () => {
+            sendChat("COMPLICATION", D.JSH(`/w Storyteller <div style='
+                display: block;
+                background: url(https://i.imgur.com/kBl8aTO.jpg);
+                text-align: center;
+                border: 4px ${C.COLORS.crimson} outset;
+                box-sizing: border-box;
+                margin-left: -42px;
+                width: 275px;
+            '><div style="display: inline-block; width: 49%; font-size: 0px;"><br><span style='
+                    display: block;
+                    font-size: 16px;
+                    text-align: center;
+                    width: 100%;
+                    font-family: Voltaire;
+                    color: ${C.COLORS.brightred};
+                    font-weight: bold;
+                '>DISCARD</span><span style='                    
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[1](!comp discard 1) [2](!comp discard 2) [3](!comp discard 3) [4](!comp discard 4) [5](!comp discard 5)</span><span style='
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[6](!comp discard 6) [7](!comp discard 7) [8](!comp discard 8) [9](!comp discard 9) [0](!comp discard 10)</span><span style='
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[LAST](!comp discard last) [RANDOM](!comp discard rand)</span><br><span style='
+                    display: block;
+                    font-size: 16px;
+                    text-align: center;
+                    width: 100%;
+                    font-family: Voltaire;
+                    color: ${C.COLORS.brightred};
+                    font-weight: bold;
+                '>ENHANCE</span><span style='                    
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[1](!comp enhance 1) [2](!comp enhance 2) [3](!comp enhance 3) [4](!comp enhance 4) [5](!comp enhance 5)</span><span style='
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[6](!comp enhance 6) [7](!comp enhance 7) [8](!comp enhance 8) [9](!comp enhance 9) [0](!comp enhance 10)</span><span style='
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[LAST](!comp enhance last) [RANDOM](!comp enhance rand)</span></div><div style="display: inline-block; width: 49%; font-size: 0px;"><br><span style='
+                    display: block;
+                    font-size: 16px;
+                    text-align: center;
+                    width: 100%;
+                    font-family: Voltaire;
+                    color: ${C.COLORS.brightred};
+                    font-weight: bold;
+                '>NEGATE</span><span style='                    
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[1](!comp negate 1) [2](!comp negate 2) [3](!comp negate 3) [4](!comp negate 4) [5](!comp negate 5)</span><span style='
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[6](!comp negate 6) [7](!comp negate 7) [8](!comp negate 8) [9](!comp negate 9) [0](!comp negate 10)</span><span style='
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[LAST](!comp negate last) [RANDOM](!comp negate rand)</span><br><span style='
+                    display: block;
+                    font-size: 16px;
+                    text-align: center;
+                    width: 100%;
+                    font-family: Voltaire;
+                    color: ${C.COLORS.brightred};
+                    font-weight: bold;
+                '>REVALUE</span><span style='                    
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[1](!comp revalue 1) [2](!comp revalue 2) [3](!comp revalue 3) [4](!comp revalue 4) [5](!comp revalue 5)</span><span style='
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[6](!comp revalue 6) [7](!comp revalue 7) [8](!comp revalue 8) [9](!comp revalue 9) [0](!comp revalue 10)</span><span style='
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[LAST](!comp revalue last) [RANDOM](!comp revalue rand)</span></div><span style='
+                display: block;
+                font-size: 16px;
+                text-align: center;
+                width: 100%;
+                font-family: Voltaire;
+                color: ${C.COLORS.brightred};
+                font-weight: bold;
+            '><br>DUPLICATE</span><span style='                    
+                display: block;
+                font-size: 10px;
+                text-align: center;
+                width: 100%
+            '>[1](!comp duplicate 1) [2](!comp duplicate 2) [3](!comp duplicate 3) [4](!comp duplicate 4) [5](!comp duplicate 5)</span><span style='
+                display: block;
+                font-size: 10px;
+                text-align: center;
+                width: 100%
+            '>[6](!comp duplicate 6) [7](!comp duplicate 7) [8](!comp duplicate 8) [9](!comp duplicate 9) [0](!comp duplicate 10)</span><span style='
+                display: block;
+                font-size: 10px;
+                text-align: center;
+                width: 100%
+            '>[LAST](!comp duplicate last) [RANDOM](!comp duplicate rand)</span><br></div>`))
+        },  
+        promptCardVal = (cardSpot) => {
+            sendChat("COMPLICATION", D.JSH(`/w Storyteller <div style='
                 display: block;
                 background: url(https://i.imgur.com/kBl8aTO.jpg);
                 text-align: center;
@@ -466,115 +613,19 @@ const Complications = (() => {
                 width: 275px;
             '><br/><span style='
                 display: block;
-                font-size: 25px;
+                font-size: 16px;
                 text-align: center;
                 width: 100%;
                 font-family: Voltaire;
                 color: ${C.COLORS.brightred};
                 font-weight: bold;
-            '>`
-            switch(mode) {
-                case "setvalue":
-                    chatString += `Set Card Value:</span><br><span style='                    
-                        display: block;
-                        font-size: 16px;
-                        text-align: center;
-                        width: 100%
-                    '>[0](!comp draw 0) [1](!comp draw 1) [2](!comp draw 2) [3](!comp draw 3) [4](!comp draw 4)</span><br/><span style='
-                        display: block;
-                        font-size: 16px;
-                        text-align: center;
-                        width: 100%
-                    '>[Discard Last](!comp discard last)[Discard](!comp discard)<br>[Revalue Last](!comp revalue last)[Revalue](!comp revalue)<br>[Enhance Last](!comp enhance last)[Enhance](!comp enhance)`
-                    break
-                case "discard":
-                    chatString += `Discard Which Card:</span><br><span style='                    
-                    display: block;
-                    font-size: 16px;
-                    text-align: center;
-                    width: 100%
-                '>[1](!comp discard 1) [2](!comp discard 2) [3](!comp discard 3) [4](!comp discard 4) [5](!comp discard 5)</span><br/><span style='
-                    display: block;
-                    font-size: 16px;
-                    text-align: center;
-                    width: 100%
-                '>[6](!comp discard 6) [7](!comp discard 7) [8](!comp discard 8) [9](!comp discard 9) [10](!comp discard 10)`
-                    break
-                case "getrevalue":
-                    chatString += `Revalue Which Card:</span><br><span style='                    
-                        display: block;
-                        font-size: 16px;
-                        text-align: center;
-                        width: 100%
-                    '>[1](!comp revalue 1) [2](!comp revalue 2) [3](!comp revalue 3) [4](!comp revalue 4) [5](!comp revalue 5)</span><br/><span style='
-                        display: block;
-                        font-size: 16px;
-                        text-align: center;
-                        width: 100%
-                    '>[6](!comp revalue 6) [7](!comp revalue 7) [8](!comp revalue 8) [9](!comp revalue 9) [10](!comp revalue 10)`
-                    break
-                case "setrevalue":
-                    chatString += `Set Card Value:</span><br><span style='                    
-                    display: block;
-                    font-size: 16px;
-                    text-align: center;
-                    width: 100%
-                '>[0](!comp revalue${paramString === "" ? "" : ` ${paramString}`} 0) [1](!comp revalue${paramString === "" ? "" : ` ${paramString}`} 1) [2](!comp revalue${paramString === "" ? "" : ` ${paramString}`} 2) [3](!comp revalue${paramString === "" ? "" : ` ${paramString}`} 3) [4](!comp revalue${paramString === "" ? "" : ` ${paramString}`} 4)`
-                    break
-                case "negate":
-                    chatString += `Negate Which Card:</span><br><span style='                    
-                        display: block;
-                        font-size: 16px;
-                        text-align: center;
-                        width: 100%
-                    '>[1](!comp negate 1) [2](!comp negate 2) [3](!comp negate 3) [4](!comp negate 4) [5](!comp negate 5)</span><br/><span style='
-                        display: block;
-                        font-size: 16px;
-                        text-align: center;
-                        width: 100%
-                    '>[6](!comp negate 6) [7](!comp negate 7) [8](!comp negate 8) [9](!comp negate 9) [10](!comp negate 10)`
-                    break
-                case "enhance":
-                    chatString += `Enhance Which Card:</span><br><span style='                    
-                        display: block;
-                        font-size: 16px;
-                        text-align: center;
-                        width: 100%
-                    '>[1](!comp enhance 1) [2](!comp enhance 2) [3](!comp enhance 3) [4](!comp enhance 4) [5](!comp enhance 5)</span><br/><span style='
-                        display: block;
-                        font-size: 16px;
-                        text-align: center;
-                        width: 100%
-                    '>[6](!comp enhance 6) [7](!comp enhance 7) [8](!comp enhance 8) [9](!comp enhance 9) [10](!comp enhance 10)`
-                    break
-                // no default
-            }
-            chatString += "</span><br/></div>"
-            sendChat("COMPLICATION", D.JSH(chatString))
-        },
-        setCardValue = (value = 0) => {
-            const imgObj = getObj("graphic", STATEREF.cardsDrawn[STATEREF.cardsDrawn.length - 1].id)
-            if (!imgObj) {
-                D.Alert("No image object found in STATEREF.cardsDrawn.", "COMPLICATIONS: !comp draw")
-            } else {
-                STATEREF.cardsDrawn[STATEREF.cardsDrawn.length - 1].value = value
-                setCompVals("add", value)
-            }
-        },
-        revalueCard = (spot = 0, value = 0) => {
-            const card = STATEREF.MAT[spot]
-            setCompVals("add", value - card.value)
-            if (value === 0)
-                Media.Toggle(`complicationZero_${spot + 1}`, true)
-            else
-                Media.Toggle(`complicationZero_${spot + 1}`, false)
-            //Media.Set(`complicationZero_${index + 1}`, value)
-            toFront(Media.GetObj(`complicationZero_${spot + 1}`))
-            toFront(Media.GetObj(`complicationEnhanced_${spot + 1}`))
-            STATEREF.MAT[spot].value = value
+            '>Set Card Value:</span><span style='                    
+                display: block;
+                font-size: 10px;
+                text-align: center;
+                width: 100%
+            '>[0](!comp setvalue ${cardSpot+1} 0) [1](!comp setvalue ${cardSpot+1} 1) [2](!comp setvalue ${cardSpot+1} 2) [3](!comp setvalue ${cardSpot+1} 3) [4](!comp setvalue ${cardSpot+1} 4)</span></div>`))
         }
-    
-
     // #endregion
 
     return {

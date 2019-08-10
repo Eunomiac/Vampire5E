@@ -22,6 +22,7 @@ const Session = (() => {
                 if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
                     const who = msg.who || "API",
                         call = args.shift()
+                    log(`SESSION CALL: handleInput(${D.JSL(msg)}, ${D.JSL(who)}, ${D.JSL(call)}, ${D.JSL(args)})`)
                     handleInput(msg, who, call, args)
                 }
             })
@@ -44,6 +45,7 @@ const Session = (() => {
         let [token, famToken] = []
         switch (call) {
             case "start": case "end": case "toggle":
+                log(`... HANDLE INPUT. STATEREF.isSessionActive = ${D.JSL(STATEREF.isSessionActive)}`)
                 if (STATEREF.isSessionActive)
                     endSession(msg)
                 else
@@ -106,13 +108,13 @@ const Session = (() => {
                     WITHOUT: ${D.JS(_.without(_.pluck(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe), "playerName"), "Storyteller"))}`, "startSession")
                 const otherScribes = _.shuffle(_.without(_.pluck(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe), "playerName"), "Storyteller"))
                 STATEREF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, sessionScribe]))
-            }
+            } 
             sendChat("Session Start", C.CHATHTML.colorBlock([
                 C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: 28}),
                 C.CHATHTML.colorBody("Initializing Session...", {margin: "0px 0px 10px 0px"}),
                 C.CHATHTML.colorHeader(`Welcome to Session ${D.NumToText(STATEREF.SessionNum + 1, true)}!`),
                 C.CHATHTML.colorBody("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "0px 0px 10px 0px"}),
-                C.CHATHTML.colorHeader(`Session Scribe: ${sessionScribe}`),
+                C.CHATHTML.colorHeader(`Session Scribe: ${"sessionScribe"}`),
                 C.CHATHTML.colorBody("Thank you for your service!")
             ]))
             if (!STATEREF.isTestingActive)
@@ -126,7 +128,7 @@ const Session = (() => {
             Media.LayerText(["tempF", "tempC", "weather", "AvaDesire", "NapierDesire", "RoyDesire", "SiteNameCenter", "SiteNameLeft", "SiteNameRight", "stakedAdvantages", "weeklyResources", "TimeTracker"], "map")
             Media.LayerImages(["rollerImage_frontFrame", "rollerImage_topEnd", "rollerImage_bottomEnd", "stakedAdvantagesHeader", "weeklyResourcesHeader", "HungerBotLeft", "HungerTopRight", "HungerBotRight", "HungerBotLeft"], "map")
             TimeTracker.StartClock()
-            //TimeTracker.StartLights()
+            TimeTracker.StartLights()
             Char.RefreshDisplays()
         },
         setSessionNum = sNum => {
