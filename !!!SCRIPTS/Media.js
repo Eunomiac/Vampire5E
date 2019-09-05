@@ -40,7 +40,7 @@ const Media = (() => {
         STATEREF.activeTimeouts = STATEREF.activeTimeouts || []
         STATEREF.curLocation = STATEREF.curLocation || "DistrictCenter:blank SiteCenter:blank"
 
-        TEXTREGISTRY.testSessionNotice.activeLayer = "gmlayer"
+        //TEXTREGISTRY.testSessionNotice.activeLayer = "gmlayer"
         /*for (let i = 0; i < 10; i++) {
             STATEREF.imageregistry[`complicationEnhanced_${i+1}`].srcs = { base: "https://s3.amazonaws.com/files.d20.io/images/87914628/dgt1u4qF9byRIEo0YLkMKw/thumb.png?1564561010" }
             STATEREF.imageregistry[`complicationEnhanced_${i+1}`].activeSrc = "base"
@@ -788,6 +788,7 @@ const Media = (() => {
                     "Dr.ArthurRoyToken_1": 200,
                     JohannesNapierToken_1: 200,
                     AvaWongToken_1: 200,
+                    LockeUlrichToken_1: 200
                 },
                 Complications: {
                     Base: {
@@ -2098,7 +2099,7 @@ const Media = (() => {
             const textObj = getTextObj(textRef),
                 textData = getTextData(textRef),
                 textOptions = VAL({string: options}) ? {text: options} : options,
-                textString = (textOptions && textOptions.text || textData && textData.text || textObj.get("text")).trim()
+                textString = (textOptions && textOptions.text || textData && textData.text || textObj && textObj.get("text") || "").trim()
             let shadowObj, shadowObjParams
             if (VAL({textObj: textObj}, "setText")) {
                 textOptions.left = textOptions && textOptions.left || textData && textData.left || getBlankLeft(textObj, textObj.get("text"))

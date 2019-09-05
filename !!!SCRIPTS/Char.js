@@ -35,6 +35,50 @@ const Char = (() => {
         STATEREF.registry = STATEREF.registry || {}
         STATEREF.weeklyResources = STATEREF.weeklyResources || {}
 
+        STATEREF.registry = {
+            TopLeft: {
+                id: "-LluFXX9vtlTeb_D7t4y",
+                name: "Locke Ulrich",
+                playerID: "LMGDQqIvyL87oIfrVDX",
+                playerName: "PixelPuzzler",
+                tokenName: "LockeUlrichToken",
+                shortName: "Locke",
+                initial: "L",
+                quadrant: "TopLeft"
+            },
+            BotLeft: {
+                id: "-LU7pYIreUSrtqZ3UL46",
+                name: "Dr. Arthur Roy",
+                playerID: "-LN6n-fR8cSNR2E_N_3q",
+                playerName: "banzai",
+                tokenName: "Dr.ArthurRoyToken",
+                shortName: "Roy",
+                initial: "R",
+                quadrant: "BotLeft"
+                
+            },
+            TopRight: {
+                id: "-LU7packiBP3Zg5H4Ao_",
+                name: "Johannes Napier",
+                playerID: "-LN7lNnjuWmFuvVPW76H",
+                playerName: "Thaumaterge",
+                tokenName: "JohannesNapierToken",
+                shortName: "Napier",
+                initial: "N",
+                quadrant: "TopRight"
+            },
+            BotRight: {
+                id: "-LU7p_BZ3yaOqjWCoOUh",
+                name: "Ava Wong",
+                playerID: "-LMGDbZCKw4bZk8ztfNf",
+                playerName: "Ava Wong",
+                tokenName: "AvaWongToken",
+                shortName: "Ava",
+                initial: "A",
+                quadrant: "BotRight"
+            }
+        }
+
         // Storyteller Override:
         //C.ROOT.Char.registry["1"].playerID = "-LLIBpH_GL5I-9lAOiw9"
 
@@ -316,6 +360,15 @@ const Char = (() => {
                 case "checksortby": {
                     const sortDates = D.GetRepStats(msg, "timeline", null, "tlsortby", "rowID", "val")
                     D.Alert(D.JS(sortDates, true))
+                    break
+                }
+                case "sendhome": {
+                    if (!D.GetSelected(msg, "character"))
+                        for (const charData of _.values(STATEREF.registry))
+                            Media.SetArea(charData.tokenName, `${charData.quadrant}Token`)
+                    else
+                        for (const charData of _.values(STATEREF.registry).filter(x => D.GetSelected(msg, "character").map(xx => xx.id).includes(x.id)))
+                            Media.SetArea(charData.tokenName, `${charData.quadrant}Token`)
                     break
                 }
             // no default

@@ -125,8 +125,10 @@ const Session = (() => {
             Media.Initialize()
             for (const textKey of [..._.map(D.GetCharVals("registered", "shortName"), v => `${v}Desire`), "TimeTracker", "tempF", "tempC", "weather", "stakedAdvantages", "weeklyResources"])
                 Media.SetText(textKey, {color: Media.GetTextData(textKey).color} )
-            for (const tokenName of _.values(D.GetCharVals("registered", "tokenName")))
+            for (const tokenName of _.values(D.GetCharVals("registered", "tokenName"))) {
                 Media.Set(tokenName, STATEREF.tokenRecord[tokenName] || "base") 
+                Media.SetParams(tokenName, STATEREF.tokenHomePos[tokenName])
+            }
             Media.SetLocation(STATEREF.locationRecord) 
             TimeTracker.StartClock()
             Char.RefreshDisplays()

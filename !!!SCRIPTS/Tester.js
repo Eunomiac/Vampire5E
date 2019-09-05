@@ -37,7 +37,13 @@ const Tester = (() => {
     const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
         let [isKilling, isWriting] = [false, false]
         switch (call) {
-            case "killimg":
+            case "players": {
+                const playerObjs = findObjs({
+                    _type: "player"
+                })
+                D.Alert(playerObjs.map(x => `${x.get("displayname")}: ${x.id}`))
+                break
+            } case "killimg":
                 isKilling = true
                 // falls through
             case "images": {
