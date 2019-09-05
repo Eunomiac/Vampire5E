@@ -1157,7 +1157,8 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
         FormatDate: formatDString,
         Fix: fixDate,
         IsDay: isDay,
-        IsValidDate: isValidDString
+        IsValidDate: isValidDString,
+        UpdateWeather: setWeather
     }
 })()
 

@@ -40,6 +40,7 @@ const Media = (() => {
         STATEREF.activeTimeouts = STATEREF.activeTimeouts || []
         STATEREF.curLocation = STATEREF.curLocation || "DistrictCenter:blank SiteCenter:blank"
 
+        TEXTREGISTRY.testSessionNotice.activeLayer = "gmlayer"
         /*for (let i = 0; i < 10; i++) {
             STATEREF.imageregistry[`complicationEnhanced_${i+1}`].srcs = { base: "https://s3.amazonaws.com/files.d20.io/images/87914628/dgt1u4qF9byRIEo0YLkMKw/thumb.png?1564561010" }
             STATEREF.imageregistry[`complicationEnhanced_${i+1}`].activeSrc = "base"
@@ -303,18 +304,53 @@ const Media = (() => {
                             break
                         case "get":
                             switch (args.shift().toLowerCase()) {
-                                case "weatherlayers": {
-                                    const layerStatus = {}
-                                    for (const weatherLayer of ["WeatherFrost", "WeatherFog", "WeatherMain", "WeatherGround", "WeatherClouds", "Horizon_1", "Horizon_2"]) {
-                                        const imgObj = getImageObj(weatherLayer)
-                                        if (!VAL({imgObj: imgObj}))
-                                            layerStatus[weatherLayer] = "NOT FOUND!"
-                                        else
-                                            layerStatus[weatherLayer] = `TopLeft: ${parseInt(imgObj.get("left") - 0.5*imgObj.get("width"))} x ${parseInt(imgObj.get("top") - 0.5*imgObj.get("height"))}, BotRight: ${
-                                                parseInt(imgObj.get("left") + 0.5*imgObj.get("width"))} x ${parseInt(imgObj.get("top") + 0.5*imgObj.get("height"))}<br>Layer: ${imgObj.get("layer")}<br>Source: ${imgObj.get("imgsrc")}`
-                                    }
-                                    D.Alert(D.JS(layerStatus,true))
-
+                                case "zlevels": {
+                                    const sortFunc = (a, b) => {
+                                            let [aVal, bVal] = [1000*a[2], 1000*b[2]]
+                                            if (a[2] === b[2]) {
+                                                if (a[0] === b[0]) {
+                                                    aVal += Number(a[1].match(/_(\d*)$/i)[1])
+                                                    bVal += Number(b[1].match(/_(\d*)$/i)[1])
+                                                } else {
+                                                    aVal += a[0] > b[0] ? 1 : -1
+                                                    bVal += b[0] > a[0] ? 1 : -1
+                                                }
+                                                return aVal - bVal
+                                            }
+                                            return bVal - aVal
+                                        },
+                                        reportTables = [
+                                            getZLevels().map.sort(sortFunc).map(x => `<tr><td><b>${x[2]}</b></td><td>${x[0]}</td><td>${x[1]}</td></tr>`),
+                                            getZLevels().objects.sort(sortFunc).map(x => `<tr><td><b>${x[2]}</b></td><td>${x[0]}</td><td>${x[1]}</td></tr>`)
+                                        ]
+                                    D.Alert(`<h2>MAP</h2><table><tr><td style="width: 60px;"></td><td style="width: 100px;"></td><td style="width: 100px;"></td></tr>${reportTables[0]}</table><h2>OBJECTS</h2><table><tr><td style="width: 60px;"></td><td style="width: 100px;"></td><td style="width: 100px;"></td></tr>${reportTables[1]}</table>`)
+                                    break
+                                }
+                                case "active": {
+                                    const startActiveNames = {
+                                            objects: _.values(IMAGEREGISTRY).filter(x => x.activeLayer === "objects" && x.startActive).map(x => x.name),
+                                            map: _.values(IMAGEREGISTRY).filter(x => x.activeLayer === "map" && x.startActive).map(x => x.name),
+                                            other: _.values(IMAGEREGISTRY).filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && x.startActive).map(x => x.name)
+                                        },
+                                        startInactiveNames = {
+                                            objects: _.values(IMAGEREGISTRY).filter(x => x.activeLayer === "objects" && !x.startActive).map(x => x.name),
+                                            map: _.values(IMAGEREGISTRY).filter(x => x.activeLayer === "map" && !x.startActive).map(x => x.name),
+                                            other: _.values(IMAGEREGISTRY).filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && !x.startActive).map(x => x.name)
+                                        }
+                                    D.Alert([
+                                        "<h2>ACTIVE OBJECTS</h2>",
+                                        ...startActiveNames.objects,
+                                        "<h2>ACTIVE MAP</h2>",
+                                        ...startActiveNames.map,
+                                        "<h2>ACTIVE OTHER</h2>",
+                                        ...startActiveNames.other,
+                                        "<h2>INACTIVE OBJECTS</h2>",
+                                        ...startInactiveNames.objects,
+                                        "<h2>INACTIVE MAP</h2>",
+                                        ...startInactiveNames.map,
+                                        "<h2>INACTIVE OTHER</h2>",
+                                        ...startInactiveNames.other
+                                    ].join("<br>"))
                                     break
                                 }
                                 case "data":
@@ -341,6 +377,14 @@ const Media = (() => {
                             break
                         case "fix":
                             switch (args.shift().toLowerCase()) {
+                                case "layers": {
+                                    for (const category of ["map", "objects", "dragpads"])
+                                        for (const imgData of getZLevels()[category]) {
+                                            IMAGEREGISTRY[imgData[1]].zIndex = imgData[2]
+                                            IMAGEREGISTRY[imgData[1]].activeLayer = {map: "map", objects: "objects", dragpads: "objects"}[category] 
+                                        }
+                                    break
+                                }
                                 case "weatherlayers":
                                     for (const layerName of ["WeatherFrost_1", "WeatherFog_1", "WeatherMain_1", "WeatherGround_1", "WeatherClouds_1", "Horizon_1", "Horizon_2"]) {
                                         setImgData(layerName, {
@@ -420,6 +464,33 @@ const Media = (() => {
                                         }
                                     }
                                     D.Alert(`${dbStrings.join("<br>")}`, "Text Width Check")
+                                    break
+                                }
+                                case "active": {
+                                    const startActiveNames = {
+                                            objects: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "objects" && x.startActive).map(x => x.name),
+                                            map: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "map" && x.startActive).map(x => x.name),
+                                            other: _.values(TEXTREGISTRY).filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && x.startActive).map(x => x.name)
+                                        },
+                                        startInactiveNames = {
+                                            objects: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "objects" && !x.startActive).map(x => x.name),
+                                            map: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "map" && !x.startActive).map(x => x.name),
+                                            other: _.values(TEXTREGISTRY).filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && !x.startActive).map(x => x.name)
+                                        }
+                                    D.Alert([
+                                        "<h2>ACTIVE OBJECTS</h2>",
+                                        ...startActiveNames.objects,
+                                        "<h2>ACTIVE MAP</h2>",
+                                        ...startActiveNames.map,
+                                        "<h2>ACTIVE OTHER</h2>",
+                                        ...startActiveNames.other,
+                                        "<h2>INACTIVE OBJECTS</h2>",
+                                        ...startInactiveNames.objects,
+                                        "<h2>INACTIVE MAP</h2>",
+                                        ...startInactiveNames.map,
+                                        "<h2>INACTIVE OTHER</h2>",
+                                        ...startInactiveNames.other
+                                    ].join("<br>"))
                                     break
                                 }
                                 // no default
@@ -586,163 +657,286 @@ const Media = (() => {
         IDREGISTRY = STATEREF.idregistry,
         TEXTREGISTRY = STATEREF.textregistry,
         AREAS = STATEREF.areas,
-        IMAGELAYERS = {
-            map: [
-                "SignalLightTopLeft", "SignalLightTopRight", "SignalLightBotLeft", "SignalLightBotRight",
-                "rollerDie_bigDice_1",
-                "rollerDie_bigDice_2",
-                "rollerDie_diceList_1",
-                "rollerDie_diceList_2",
-                "rollerDie_diceList_3",
-                "rollerDie_diceList_4",
-                "rollerDie_diceList_5",
-                "rollerDie_diceList_6",
-                "rollerDie_diceList_7",
-                "rollerDie_diceList_8",
-                "rollerDie_diceList_9",
-                "rollerDie_diceList_10",
-                "rollerDie_diceList_11",
-                "rollerDie_diceList_12",
-                "rollerDie_diceList_13",
-                "rollerDie_diceList_14",
-                "rollerDie_diceList_15",
-                "rollerDie_diceList_16",
-                "rollerDie_diceList_17",
-                "rollerDie_diceList_18",
-                "rollerDie_diceList_19",
-                "rollerDie_diceList_20",
-                "rollerDie_diceList_21",
-                "rollerDie_diceList_22",
-                "rollerDie_diceList_23",
-                "rollerDie_diceList_24",
-                "rollerDie_diceList_25",
-                "rollerDie_diceList_26",
-                "rollerDie_diceList_27",
-                "rollerDie_diceList_28",
-                "rollerDie_diceList_29",
-                "rollerDie_diceList_30",
-                "rollerImage_diffFrame",
-                "rollerImage_bottomEnd",
-                "rollerImage_topEnd",
-                "rollerImage_bottomMid_9",
-                "rollerImage_bottomMid_8",
-                "rollerImage_bottomMid_7",
-                "rollerImage_bottomMid_6",
-                "rollerImage_bottomMid_5",
-                "rollerImage_bottomMid_4",
-                "rollerImage_bottomMid_3",
-                "rollerImage_bottomMid_2",
-                "rollerImage_bottomMid_1",
-                "rollerImage_topMid_9",
-                "rollerImage_topMid_8",
-                "rollerImage_topMid_7",
-                "rollerImage_topMid_6",
-                "rollerImage_topMid_5",
-                "rollerImage_topMid_4",
-                "rollerImage_topMid_3",
-                "rollerImage_topMid_2",
-                "rollerImage_topMid_1",
-                "rollerImage_frontFrame",
-                "SiteCenter",
-                "SiteLeft",
-                "SiteRight",
-                "DistrictCenter",
-                "DistrictLeft",
-                "DistrictRight",
-                "WeatherFrost",
-                "WeatherFog",
-                "WeatherMain",
-                //"WeatherLightning_1", //"WeatherLightning_2", "WeatherLightning_3", "WeatherLightning_4", "WeatherLightning_5",
-                "WeatherGround",
-                "WeatherClouds",
-                "AirLightLeft", "AirLightMid", "AirLightTop", "AirLightCN_4", "AirLightCN_5",
-                "HungerTopLeft", "HungerTopRight", "HungerBotLeft", "HungerBotRight",
-                "Horizon_1",
-                "Horizon_2",
-                "ComplicationMat"
-            ],
-            objects: [
-                "YusefShamsinToken",
-                "AvaWongToken",
-                "JohannesNapierToken",
-                "Dr.ArthurRoyToken"
-            ],
-            daylighterMap: [
-                "rollerDie_bigDice_1",
-                "rollerDie_bigDice_2",
-                "rollerDie_diceList_1",
-                "rollerDie_diceList_2",
-                "rollerDie_diceList_3",
-                "rollerDie_diceList_4",
-                "rollerDie_diceList_5",
-                "rollerDie_diceList_6",
-                "rollerDie_diceList_7",
-                "rollerDie_diceList_8",
-                "rollerDie_diceList_9",
-                "rollerDie_diceList_10",
-                "rollerDie_diceList_11",
-                "rollerDie_diceList_12",
-                "rollerDie_diceList_13",
-                "rollerDie_diceList_14",
-                "rollerDie_diceList_15",
-                "rollerDie_diceList_16",
-                "rollerDie_diceList_17",
-                "rollerDie_diceList_18",
-                "rollerDie_diceList_19",
-                "rollerDie_diceList_20",
-                "rollerDie_diceList_21",
-                "rollerDie_diceList_22",
-                "rollerDie_diceList_23",
-                "rollerDie_diceList_24",
-                "rollerDie_diceList_25",
-                "rollerDie_diceList_26",
-                "rollerDie_diceList_27",
-                "rollerDie_diceList_28",
-                "rollerDie_diceList_29",
-                "rollerDie_diceList_30",
-                "rollerImage_diffFrame",
-                "rollerImage_bottomEnd",
-                "rollerImage_topEnd",
-                "rollerImage_bottomMid_9",
-                "rollerImage_bottomMid_8",
-                "rollerImage_bottomMid_7",
-                "rollerImage_bottomMid_6",
-                "rollerImage_bottomMid_5",
-                "rollerImage_bottomMid_4",
-                "rollerImage_bottomMid_3",
-                "rollerImage_bottomMid_2",
-                "rollerImage_bottomMid_1",
-                "rollerImage_topMid_9",
-                "rollerImage_topMid_8",
-                "rollerImage_topMid_7",
-                "rollerImage_topMid_6",
-                "rollerImage_topMid_5",
-                "rollerImage_topMid_4",
-                "rollerImage_topMid_3",
-                "rollerImage_topMid_2",
-                "rollerImage_topMid_1",
-                "rollerImage_frontFrame",
-                "SiteCenter",
-                "SiteLeft",
-                "SiteRight",
-                "DistrictCenter",
-                "DistrictLeft",
-                "DistrictRight",
-                "Horizon_1",
-                "WeatherFrost",
-                "WeatherFog",
-                "WeatherMain",
-                //"WeatherLightning_1", //"WeatherLightning_2", "WeatherLightning_3", "WeatherLightning_4", "WeatherLightning_5",
-                "WeatherGround",
-                "WeatherClouds",
-                "AirLightLeft", "AirLightMid", "AirLightTop", "AirLightCN_4", "AirLightCN_5",
-                "HungerTopLeft", "HungerTopRight", "HungerBotLeft", "HungerBotRight",
-                "Horizon_2",
-                "SignalLightTopLeft", "SignalLightTopRight", "SignalLightBotLeft", "SignalLightBotRight",
-                "ComplicationMat"
-            ]
+        ZLEVELS = {
+            map: {
+                DistrictsAndSites: {
+                    DistrictCenter_1: 140,
+                    DistrictLeft_1: 140,
+                    DistrictRight_1: 140,
+                    SiteCenter_1: 145,
+                    SiteLeft_1: 145,
+                    SiteRight_1: 145,
+                    SiteBars: { 
+                        SiteBarCenter_1: 150,    
+                        SiteBarLeft_1: 150,
+                        SiteBarRight_1: 150
+                    }
+                },
+                AirLights: {
+                    AirLightLeft_1: 100,
+                    AirLightMid_1: 100,
+                    AirLightTop_1: 100,
+                    AirLightCN_4: 100,
+                    AirLightCN_5: 100
+                },
+                SignalLights: {
+                    SignalLightTopRight_1: 120,
+                    SignalLightBotRight_1: 120,
+                    SignalLightBotLeft_1: 120,
+                    SignalLightTopLeft_1: 120
+                },
+                HungerOverlays: {
+                    HungerBotLeft_1: 100,
+                    HungerTopLeft_1: 100,
+                    HungerTopRight_1: 100,
+                    HungerBotRight_1: 100
+                },
+                TombstoneShrouds: {
+                    ShroudTopLeft_1: 107
+                },
+                HorizonBGs: {
+                    Horizon_1: 1,
+                    Horizon_2: -1,
+                },
+                WeatherOverlays: {
+                    WeatherFrost_1: 139,
+                    WeatherFog_1: 125,
+                    WeatherMain_1: 124, 
+                    //WeatherLightning: 110,
+                    WeatherGround_1: 110,
+                    WeatherClouds_1: 105
+                },
+                DiceRoller: {
+                    Frame: {
+                        rollerImage_frontFrame_1: 151,
+                        TopMids: {
+                            rollerImage_topMid_1: 152,
+                            rollerImage_topMid_2: 153,
+                            rollerImage_topMid_3: 154,
+                            rollerImage_topMid_4: 155,
+                            rollerImage_topMid_5: 156,
+                            rollerImage_topMid_6: 157,
+                            rollerImage_topMid_7: 158,
+                            rollerImage_topMid_8: 159,
+                            rollerImage_topMid_9: 160
+                        },
+                        BottomMods: {                  
+                            rollerImage_bottomMid_1: 152,
+                            rollerImage_bottomMid_2: 153,
+                            rollerImage_bottomMid_3: 154,
+                            rollerImage_bottomMid_4: 155,
+                            rollerImage_bottomMid_5: 156,
+                            rollerImage_bottomMid_6: 157,
+                            rollerImage_bottomMid_7: 158,
+                            rollerImage_bottomMid_8: 159,
+                            rollerImage_bottomMid_9: 160
+                        },
+                        rollerImage_topEnd_1: 160,
+                        rollerImage_bottomEnd_1: 161,
+                        rollerImage_diffFrame_1: 165
+                    },
+                    RerollTrigger: {
+                        wpRerollPlaceholder_1: 0
+                    },
+                    DiceList: {                        
+                        rollerDie_diceList_1: 199,
+                        rollerDie_diceList_2: 198,
+                        rollerDie_diceList_3: 197,
+                        rollerDie_diceList_4: 196,
+                        rollerDie_diceList_5: 195,
+                        rollerDie_diceList_6: 194,
+                        rollerDie_diceList_7: 193,
+                        rollerDie_diceList_8: 192,
+                        rollerDie_diceList_9: 191,
+                        rollerDie_diceList_10: 190,
+                        rollerDie_diceList_11: 189,
+                        rollerDie_diceList_12: 188,
+                        rollerDie_diceList_13: 187,
+                        rollerDie_diceList_14: 186,
+                        rollerDie_diceList_15: 185,
+                        rollerDie_diceList_16: 184,
+                        rollerDie_diceList_17: 183,
+                        rollerDie_diceList_18: 182,
+                        rollerDie_diceList_19: 181,
+                        rollerDie_diceList_20: 180,
+                        rollerDie_diceList_21: 179,
+                        rollerDie_diceList_22: 178,
+                        rollerDie_diceList_23: 177,
+                        rollerDie_diceList_24: 176,
+                        rollerDie_diceList_25: 175,
+                        rollerDie_diceList_26: 174,
+                        rollerDie_diceList_27: 173,
+                        rollerDie_diceList_28: 172,
+                        rollerDie_diceList_29: 171,
+                        rollerDie_diceList_30: 170
+                    },
+                    BigDice: {
+                        rollerDie_bigDice_1: 199,
+                        rollerDie_bigDice_2: 198
+                    }
+                },
+                Headers: {
+                    stakedAdvantagesHeader_1: 130,
+                    weeklyResourcesHeader_1: 130
+                },
+                Map: {
+                    TorontoMap_1: 1
+                }
+            },
+            objects: {
+                PlayerTokens: {
+                    "Dr.ArthurRoyToken_1": 200,
+                    JohannesNapierToken_1: 200,
+                    AvaWongToken_1: 200,
+                },
+                Complications: {
+                    Base: {
+                        ComplicationMat_1: 500
+                    },
+                    CardSlots: {
+                        compCardSpot_1: 505,
+                        compCardSpot_2: 505,
+                        compCardSpot_3: 505,
+                        compCardSpot_4: 505,
+                        compCardSpot_5: 505,
+                        compCardSpot_6: 505,
+                        compCardSpot_7: 505,
+                        compCardSpot_8: 505,
+                        compCardSpot_9: 505,
+                        compCardSpot_10: 505
+                    },
+                    ZeroedOverlays: {
+                        complicationZero_1: 510,
+                        complicationZero_2: 510,
+                        complicationZero_3: 510,
+                        complicationZero_4: 510,
+                        complicationZero_5: 510,
+                        complicationZero_6: 510,
+                        complicationZero_7: 510,
+                        complicationZero_8: 510,
+                        complicationZero_9: 510,
+                        complicationZero_10: 510
+                    },
+                    EnhancedOverlays: {
+                        complicationEnhanced_1: 515,
+                        complicationEnhanced_2: 515,
+                        complicationEnhanced_3: 515,
+                        complicationEnhanced_4: 515,
+                        complicationEnhanced_5: 515,
+                        complicationEnhanced_6: 515,
+                        complicationEnhanced_7: 515,
+                        complicationEnhanced_8: 515,
+                        complicationEnhanced_9: 515,
+                        complicationEnhanced_10: 515
+                    }
+                }
+            },
+            dragpads: { // ALL DragPads should have Z-Level = 700.          
+                SignalLights: { 
+                    signalLight_Pad_1: 700,
+                    signalLight_PartnerPad_1: 700,
+                    signalLight_Pad_2: 700,
+                    signalLight_PartnerPad_2: 700,
+                    signalLight_Pad_3: 700,
+                    signalLight_PartnerPad_3: 700,
+                    signalLight_Pad_4: 700,
+                    signalLight_PartnerPad_4: 700
+                },
+                DiceRoller: {
+                    RerollTrigger: {
+                        wpReroll_Pad_2: 700,
+                        wpReroll_PartnerPad_2: 700
+                    },
+                    DiceList: {
+                        selectDie_Pad_33: 700,
+                        selectDie_PartnerPad_33: 700,
+                        selectDie_Pad_34: 700,
+                        selectDie_PartnerPad_34: 700,
+                        selectDie_Pad_35: 700,
+                        selectDie_PartnerPad_35: 700,
+                        selectDie_Pad_36: 700,
+                        selectDie_PartnerPad_36: 700,
+                        selectDie_Pad_37: 700,
+                        selectDie_PartnerPad_37: 700,
+                        selectDie_Pad_38: 700,
+                        selectDie_PartnerPad_38: 700,
+                        selectDie_Pad_39: 700,
+                        selectDie_PartnerPad_39: 700,
+                        selectDie_Pad_40: 700,
+                        selectDie_PartnerPad_40: 700,
+                        selectDie_Pad_41: 700,
+                        selectDie_PartnerPad_41: 700,
+                        selectDie_Pad_42: 700,
+                        selectDie_PartnerPad_42: 700,
+                        selectDie_Pad_43: 700,
+                        selectDie_PartnerPad_43: 700,
+                        selectDie_Pad_44: 700,
+                        selectDie_PartnerPad_44: 700,
+                        selectDie_Pad_45: 700,
+                        selectDie_PartnerPad_45: 700,
+                        selectDie_Pad_46: 700,
+                        selectDie_PartnerPad_46: 700,
+                        selectDie_Pad_47: 700,
+                        selectDie_PartnerPad_47: 700,
+                        selectDie_Pad_48: 700,
+                        selectDie_PartnerPad_48: 700,
+                        selectDie_Pad_49: 700,
+                        selectDie_PartnerPad_49: 700,
+                        selectDie_Pad_50: 700,
+                        selectDie_PartnerPad_50: 700,
+                        selectDie_Pad_51: 700,
+                        selectDie_PartnerPad_51: 700,
+                        selectDie_Pad_52: 700,
+                        selectDie_PartnerPad_52: 700,
+                        selectDie_Pad_53: 700,
+                        selectDie_PartnerPad_53: 700,
+                        selectDie_Pad_54: 700,
+                        selectDie_PartnerPad_54: 700,
+                        selectDie_Pad_55: 700,
+                        selectDie_PartnerPad_55: 700,
+                        selectDie_Pad_56: 700,
+                        selectDie_PartnerPad_56: 700,
+                        selectDie_Pad_57: 700,
+                        selectDie_PartnerPad_57: 700,
+                        selectDie_Pad_58: 700,
+                        selectDie_PartnerPad_58: 700,
+                        selectDie_Pad_59: 700,
+                        selectDie_PartnerPad_59: 700,
+                        selectDie_Pad_60: 700,
+                        selectDie_PartnerPad_60: 700,
+                        selectDie_Pad_61: 700,
+                        selectDie_PartnerPad_61: 700,
+                        selectDie_Pad_62: 700,
+                        selectDie_PartnerPad_62: 700
+                    }
+                },
+                Complications: { 
+                    flipComp_Pad_1: 700,
+                    flipComp_PartnerPad_1: 700,
+                    flipComp_Pad_2: 700,
+                    flipComp_PartnerPad_2: 700,
+                    flipComp_Pad_3: 700,
+                    flipComp_PartnerPad_3: 700,
+                    flipComp_Pad_4: 700,
+                    flipComp_PartnerPad_4: 700,
+                    flipComp_Pad_5: 700,
+                    flipComp_PartnerPad_5: 700,
+                    flipComp_Pad_6: 700,
+                    flipComp_PartnerPad_6: 700,
+                    flipComp_Pad_7: 700,
+                    flipComp_PartnerPad_7: 700,
+                    flipComp_Pad_8: 700,
+                    flipComp_PartnerPad_8: 700,
+                    flipComp_Pad_9: 700,
+                    flipComp_PartnerPad_9: 700,
+                    flipComp_Pad_10: 700,
+                    flipComp_PartnerPad_10: 700
+                }
+            }
         }
     // #endregion
+
+    
 
     // #region IMAGE OBJECT GETTERS: Image Object & Data Retrieval
     const isRegImg = imgRef => Boolean(getImageKey(imgRef)),
@@ -888,6 +1082,26 @@ const Media = (() => {
             )
             DB(`contained images:<br><br>${D.JS(_.map(contImages, v => v.get("name")))}`, "getContainedImages")
             return contImages
+        },
+        getZLevels = () => {
+            const imgZLevels = {
+                map: [],
+                objects: [],
+                dragpads: []
+            }
+            const getArray = (obj, topKey) => {
+                const returnArray = []
+                for (const key of _.keys(obj))
+                    if (_.isNumber(obj[key]))
+                        returnArray.push([topKey, key, obj[key]])
+                    else
+                        returnArray.push(...getArray(obj[key], topKey))
+                return returnArray
+            }
+            for (const cat of ["map", "objects", "dragpads"])
+                for (const key of _.keys(ZLEVELS[cat]))
+                    imgZLevels[cat].push(...getArray(ZLEVELS[cat][key], key))
+            return imgZLevels
         }
     // #endregion
 
@@ -1636,6 +1850,10 @@ const Media = (() => {
                 for (const tRef of tRefs)
                     textObjs.push(getTextObj(tRef))
                 return textObjs
+            } else if (textRefs === "all") {
+                for (const tRef of _.values(TEXTREGISTRY))
+                    textObjs.push(getTextObj(tRef.id))
+                return textObjs
             }
             return false
         },
@@ -1669,6 +1887,20 @@ const Media = (() => {
             } catch (errObj) {
                 return !isSilent && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, "getTextData", errObj)
             }
+        },
+        getTextDatas = (textRefs, isSilent = false) => {
+            const tRefs = VAL({ msg: textRefs }) ? D.GetSelected(textRefs) || [] : textRefs,
+                textDatas = []
+            if (VAL({ array: tRefs })) {
+                for (const tRef of tRefs)
+                    textDatas.push(getTextData(tRef))
+                return textDatas
+            } else if (textRefs === "all") {
+                for (const tRef of _.values(TEXTREGISTRY))
+                    textDatas.push(getTextData(tRef.id))
+                return textDatas
+            }
+            return false
         },
         getTextWidth = (textRef, text, maxWidth = 0) => {
             const textObj = getTextObj(textRef),
@@ -2011,10 +2243,35 @@ const Media = (() => {
         }
     // #endregion
 
+    // #region MEDIA SETTERS: Image, Animation & Text
+    const setZIndices = () => {
+            for (const category of ["map", "objects", "dragpads"]) {
+                const imgDatas = getZLevels()[category].map(x => IMAGEREGISTRY[x[1]]),
+                    imgObjsSorted = imgDatas.sort((a,b) => b.zIndex - a.zIndex).map(x => getImageObj(x.id)),
+                    allMediaObjs = []
+                if (category === "map") {
+                    allMediaObjs.push(..._.keys(TEXTREGISTRY).filter(x => !x.includes("Shadow")).map(x => getTextObj(x)))
+                    allMediaObjs.push(..._.keys(TEXTREGISTRY).filter(x => x.includes("Shadow")).map(x => getTextObj(x)))
+                }
+                allMediaObjs.push(...imgObjsSorted)
+                for (let i = 0; i < allMediaObjs.length; i++)
+                    toBack(allMediaObjs[i])
+            }
+        },
+        initMedia = () => {
+            for (const imgKey of _.keys(IMAGEREGISTRY))
+                toggleImage(imgKey, IMAGEREGISTRY[imgKey].startActive)
+            for (const textKey of _.keys(TEXTREGISTRY)) 
+                toggleText(textKey, TEXTREGISTRY[textKey].startActive)
+            setZIndices()
+        }
+    // #endregion
 
     return {
         RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        IMAGES: IMAGEREGISTRY,
+        TEXT: TEXTREGISTRY,
         GetObj: getImageObj,
         GetKey: getImageKey,
         GetData: getImageData,
@@ -2033,7 +2290,6 @@ const Media = (() => {
         ToggleToken: toggleToken,
         Order: orderMedia,
         LayerImages: layerImages,
-        IMAGELAYERS: IMAGELAYERS,
         get LOCATION() { return STATEREF.curLocation },
         IsRegistered: isRegImg,
 
@@ -2050,7 +2306,9 @@ const Media = (() => {
         SetText: setText,
         SetTextData: setTextData,
         ToggleText: toggleText,
-        LayerText: layerText
+        LayerText: layerText,
+
+        Initialize: initMedia
     }
 })()
 

@@ -36,6 +36,8 @@ const Session = (() => {
         STATEREF.sceneChars = STATEREF.sceneChars || []
         STATEREF.locationRecord = STATEREF.locationRecord || {DistrictCenter: "blank"}
         STATEREF.tokenRecord = STATEREF.tokenRecord || {}
+        STATEREF.SessionScribes = STATEREF.SessionScribes || []
+        //STATEREF.SessionScribes = ["Ava Wong", "Thaumaterge", "banzai"]
     }
     // #endregion
 
@@ -99,7 +101,7 @@ const Session = (() => {
 
     // #region Starting/Ending Sessions
     const startSession = () => {
-            const sessionScribe = STATEREF.SessionScribes.pop()
+            const sessionScribe = STATEREF.isTestingActive ? STATEREF.SessionScribes[0] : STATEREF.SessionScribes.pop()
             STATEREF.isSessionActive = true
             if (STATEREF.SessionScribes.length === 0) {
                 DB(`Scribe: ${sessionScribe}, SessionScribes: ${D.JS(STATEREF.SessionScribes)}
@@ -113,23 +115,22 @@ const Session = (() => {
                 C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: 28}),
                 C.CHATHTML.colorBody("Initializing Session...", {margin: "0px 0px 10px 0px"}),
                 C.CHATHTML.colorHeader(`Welcome to Session ${D.NumToText(STATEREF.SessionNum + 1, true)}!`),
-                C.CHATHTML.colorBody("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "0px 0px 10px 0px"}),
-                C.CHATHTML.colorHeader(`Session Scribe: ${"sessionScribe"}`),
+                C.CHATHTML.colorBody("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "10px 0px 10px 0px"}),
+                C.CHATHTML.colorHeader(`Session Scribe: ${sessionScribe}`),
                 C.CHATHTML.colorBody("Thank you for your service!")
             ]))
             if (!STATEREF.isTestingActive)
                 STATEREF.SessionNum++
             Roller.Clean()
+            Media.Initialize()
             for (const textKey of [..._.map(D.GetCharVals("registered", "shortName"), v => `${v}Desire`), "TimeTracker", "tempF", "tempC", "weather", "stakedAdvantages", "weeklyResources"])
                 Media.SetText(textKey, {color: Media.GetTextData(textKey).color} )
             for (const tokenName of _.values(D.GetCharVals("registered", "tokenName")))
                 Media.Set(tokenName, STATEREF.tokenRecord[tokenName] || "base") 
-            Media.SetLocation(STATEREF.locationRecord)            
-            Media.LayerText(["tempF", "tempC", "weather", "AvaDesire", "NapierDesire", "RoyDesire", "SiteNameCenter", "SiteNameLeft", "SiteNameRight", "stakedAdvantages", "weeklyResources", "TimeTracker"], "map")
-            Media.LayerImages(["rollerImage_frontFrame", "rollerImage_topEnd", "rollerImage_bottomEnd", "stakedAdvantagesHeader", "weeklyResourcesHeader", "HungerBotLeft", "HungerTopRight", "HungerBotRight", "HungerBotLeft"], "map")
+            Media.SetLocation(STATEREF.locationRecord) 
             TimeTracker.StartClock()
-            TimeTracker.StartLights()
             Char.RefreshDisplays()
+            TimeTracker.Fix()
         },
         setSessionNum = sNum => {
             STATEREF.SessionNum = sNum
@@ -139,9 +140,10 @@ const Session = (() => {
             sendChat("Session End", C.CHATHTML.colorBlock([
                 C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: 28}),
                 C.CHATHTML.colorHeader(`Concluding Session ${D.NumToText(STATEREF.SessionNum, true)}`),
-                C.CHATHTML.colorBody("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "0px 0px 10px 0px"}),
+                C.CHATHTML.colorBody("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "10px 0px 10px 0px"}),
                 C.CHATHTML.colorTitle("See you next week!", {fontSize: 32}),
             ]))
+            Roller.Clean()
             STATEREF.isSessionActive = false
             STATEREF.locationRecord = _.clone(Media.LOCATION)
             STATEREF.tokenRecord = {}
@@ -155,8 +157,13 @@ const Session = (() => {
                 STATEREF.tokenRecord[tokenName] = Media.GetData(tokenName).curSrc
                 Media.Set(tokenName, "blank")
             }
-            Media.LayerText(["tempF", "tempC", "weather", "AvaDesire", "NapierDesire", "RoyDesire", "SiteNameCenter", "SiteNameLeft", "SiteNameRight", "stakedAdvantages", "weeklyResources", "TimeTracker"], "gmlayer")
-            Media.LayerImages(["rollerImage_frontFrame", "rollerImage_topEnd", "rollerImage_bottomEnd", "stakedAdvantagesHeader", "weeklyResourcesHeader", "HungerBotLeft", "HungerTopRight", "HungerBotRight", "HungerBotLeft"], "gmlayer")
+            Media.LayerText(_.keys(Media.TEXT), "gmlayer")
+            Media.LayerImages([
+                ..._.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("rollerImage")),
+                ..._.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("Hunger")),
+                "stakedAdvantagesHeader",
+                "weeklyResourcesHeader"
+            ], "gmlayer")
             TimeTracker.StopClock()
             TimeTracker.StopLights()
         }

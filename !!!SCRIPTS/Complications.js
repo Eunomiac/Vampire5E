@@ -230,9 +230,8 @@ const Complications = (() => {
     // #region GETTERS: Active card names
     const getActiveCards = () => _.filter(STATEREF.MAT, v => v.isFaceUp),
         getUsedCategories = () => _.uniq(_.compact(_.map(getActiveCards(), v => v.category))),
-        getCardSpot = card => _findIndex(STATEREF.MAT, v => v.isFaceUp && v.name === card.name),
         isCardValid = card => VAL({list: card}) && card.imgsrc && !getUsedCategories().includes(card.category) && !_.map(getActiveCards(), v => v.name).includes(card.name),
-        getRandomSpot = (modes, exclude = -1) => {
+        getRandomSpot = (modes) => {
             const validSpots = []
             for (let i = 0; i < STATEREF.MAT.length; i++) {
                 const card = STATEREF.MAT[i]
@@ -453,6 +452,7 @@ const Complications = (() => {
             STATEREF.isRunning = true
             TimeTracker.StopClock()
             Media.Toggle("ComplicationMat", true)
+            DragPads.Toggle("flipComp", true)
             for (const textRef of ["complicationTarget", "complicationCurrent", "complicationRemaining"])
                 Media.ToggleText(textRef, true)
             setCompVals("current", 0)
@@ -465,6 +465,7 @@ const Complications = (() => {
             if (Session.IsRunning)
                 TimeTracker.StartClock()         
             resetComplication(false)
+            DragPads.Toggle("flipComp", false)
             Media.Toggle("ComplicationMat", false)
             for (const textRef of ["complicationTarget", "complicationCurrent", "complicationRemaining"])
                 Media.ToggleText(textRef, false)
