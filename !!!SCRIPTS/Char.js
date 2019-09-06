@@ -34,7 +34,24 @@ const Char = (() => {
     const initialize = () => {
         STATEREF.registry = STATEREF.registry || {}
         STATEREF.weeklyResources = STATEREF.weeklyResources || {}
+        STATEREF.customStakes = STATEREF.customStakes || {}
+        STATEREF.customStakes.coterie = STATEREF.customStakes.coterie || []
+        STATEREF.customStakes.personal = STATEREF.customStakes.personal || {A: [], L: [], N: [], R: []}
 
+
+        /* STATEREF.customStakes.coterie = [
+            [ "Mawla (Baroness) x2", 3, 4, "Sep 10, 2020" ],
+            [ "Haven", 3, 6, "Dec 8, 2019" ]
+        ]
+
+        STATEREF.customStakes.personal = {
+            A: [["Haven", 3, 6, "Dec 8, 2019"]], L: [], N: [["Haven", 3, 6, "Dec 8, 2019"]], R: []
+        } */
+        
+
+        // [ name, total, max, date ] 
+
+        /*
         STATEREF.registry = {
             TopLeft: {
                 id: "-LluFXX9vtlTeb_D7t4y",
@@ -78,6 +95,7 @@ const Char = (() => {
                 quadrant: "BotRight"
             }
         }
+        */
 
         // Storyteller Override:
         //C.ROOT.Char.registry["1"].playerID = "-LLIBpH_GL5I-9lAOiw9"
@@ -122,6 +140,24 @@ const Char = (() => {
                             regResource(resInitial, resName, resAmount)
                             break
                         }
+                        case "stake": {
+                            switch (args[0].toLowerCase()) {
+                                case "coterie": {
+                                    args.shift()                                    
+                                    const [name, value, max, date] = args.join(" ").split("|")
+                                    STATEREF.customStakes.coterie.push([name, parseInt(value), parseInt(max), date])
+                                    break
+                                }
+                                default: {
+                                    const initial = args.shift(),
+                                        [name, value, max, date] = args.join(" ").split("|")
+                                    STATEREF.customStakes.personal[initial].push([name, parseInt(value), parseInt(max), date])
+                                    break
+                                }
+                            }
+                            displayStakes()
+                            break
+                        }
                         case "char":
                             if (msg.selected && msg.selected[0])
                                 registerChar(msg, parseInt(args.shift()), args.shift(), args.shift(), args.shift())
@@ -140,6 +176,23 @@ const Char = (() => {
                         case "char":
                             unregisterChar(args.shift())
                             break
+                        case "stake": {
+                            args.shift()
+                            switch (args[0].toLowerCase()) {
+                                case "coterie": {
+                                    args.shift()
+                                    STATEREF.customStakes.coterie = STATEREF.customStakes.coterie.filter(x => x[0].toLowerCase() !== args.join(" ").toLowerCase())
+                                    break
+                                }
+                                default: {
+                                    const initial = args.shift(),
+                                        name = args.join(" ")
+                                    STATEREF.customStakes.personal[initial] = STATEREF.customStakes.personal[initial].filter(x => x[0].toLowerCase() !== name.toLowerCase())
+                                    break
+                                }
+                            }
+                            displayStakes()
+                        }
                         /* no default */
                     }
                     break
@@ -545,6 +598,7 @@ const Char = (() => {
                 })            
                 Media.SetText("weeklyResources", resStrings.join("\n"))
             }
+            displayStakes()
         },
         sortCoterieStakes = (charRef) => {
             const charObj = D.GetChar(charRef),
@@ -556,14 +610,17 @@ const Char = (() => {
             return [charAdvData, coterieAdvData]
         },
         displayStakes = () => {
-            const [col1Width, col2Width, col3Width] = [35, 250, 130],
-                textObj = Media.GetTextObj("stakedAdvantages"),
-                stakeData = [],
-                stakeStrings = [],
-                coterieStakes = {}
+            const [col1Width, col2Width, col3Width] = [35, 310, 150],
+                [coterieObj, personalObj] = [
+                    Media.GetTextObj("stakedCoterieAdvantages"),
+                    Media.GetTextObj("stakedAdvantages")
+                ],
+                [stakeData, coterieStakes] = [[],{}],
+                [stakeStrings, coterieStakeStrings] = [[], []]
             for (const charObj of D.GetChars("registered")) {
                 const projectStakes = [],
-                    [, coterieAdvs] = sortCoterieStakes(charObj)
+                    [, coterieAdvs] = sortCoterieStakes(charObj),
+                    initial = _.values(D.GetCharVals(charObj, "initial"))[0]
                 for (const attrName of ["projectstake1", "projectstake2", "projectstake3"])
                     projectStakes.push(...D.GetRepStats(charObj, "project", {projectstakes_toggle: "1"}, attrName))
                 DB(`Project Stakes: ${D.JS(projectStakes, true)}`, "displayStakes")
@@ -579,50 +636,75 @@ const Char = (() => {
                             coterieStakes[stake.name] = {
                                 name: stake.name,
                                 total: (coterieStakes[stake.name] && coterieStakes[stake.name].total || 0) + parseInt(stake.val),
-                                inits: _.uniq([...(coterieStakes[stake.name] || {inits: []}).inits, _.values(D.GetCharVals(charObj, "initial"))[0]]),
+                                inits: _.uniq([...(coterieStakes[stake.name] || {inits: []}).inits, initial]),
                                 dates: _.uniq([...(coterieStakes[stake.name] || {dates: []}).dates, endDate]),
                                 dateStamp: [...(coterieStakes[stake.name] || {dateStamp: []}).dateStamp, TimeTracker.GetDate(endDate).getTime()],
                                 max: parseInt(advMax)
                             }
                         else
-                            stakeData.push([_.values(D.GetCharVals(charObj, "initial"))[0], stake.name, Math.min(parseInt(stake.val), advMax), parseInt(advMax), endDate])
+                            stakeData.push([initial, stake.name, Math.min(parseInt(stake.val), advMax), parseInt(advMax), endDate])
                 }
-                DB(`Coterie Stakes: ${D.JS(_.keys(coterieStakes), true)}`, "displayStakes")
+                for (const stake of STATEREF.customStakes.personal[initial]) {
+                    const [name, val, max, dateStamp] = [stake[0], stake[1], stake[2], TimeTracker.GetDate(stake[3])]
+                    if (max && val > 0 && TimeTracker.CurrentDate.getTime() < dateStamp.getTime())
+                        stakeData.push([initial, name, val, max, TimeTracker.FormatDate(dateStamp)])
+                }
+                    
             }
-            if (_.keys(coterieStakes).length + stakeData.length === 0) {
-                Media.SetText("stakedAdvantages", {text: " "})
+            for (const stake of STATEREF.customStakes.coterie) {
+                const [name, val, max, dateStamp] = [stake[0], stake[1], stake[2], TimeTracker.GetDate(stake[3])]
+                if (max && val > 0 && TimeTracker.CurrentDate.getTime() < dateStamp.getTime())
+                    if (coterieStakes[name]) {
+                        coterieStakes[name].total += val
+                        coterieStakes[name].dateStamp.push(dateStamp.getTime())
+                        coterieStakes[name].max = max || coterieStakes[name].max
+                    } else {
+                        coterieStakes[name] = {
+                            name: name,
+                            total: val,
+                            dateStamp: [dateStamp.getTime()],
+                            max: max
+                        }
+                    }
+            }
+                
+            DB(`Coterie Stakes: ${D.JS(_.keys(coterieStakes), true)}`, "displayStakes")
+            // PERSONAL STAKES
+            if (_.keys(stakeData).length === 0)
+                Media.SetText("stakedAdvantages", " ")
+            let lastInit = ""
+            for (const data of stakeData) {
+                const [init, name, staked, max, endDate] = data
+                let thisString = " "
+                if (init !== lastInit) {
+                    thisString = `[${init}]`
+                    lastInit = init
+                }
+                let col1String = thisString,
+                    col2String = name,
+                    col3String = "○".repeat(staked) + "●".repeat(max - staked),
+                    col4String = endDate
+                col1String += Media.Buffer(personalObj, col1Width - Media.GetTextWidth(personalObj, col1String, false))
+                col2String += Media.Buffer(personalObj, col1Width + col2Width - Media.GetTextWidth(personalObj, col1String + col2String, false))
+                col3String += Media.Buffer(personalObj, col1Width + col2Width + col3Width - Media.GetTextWidth(personalObj, col1String + col2String + col3String, false))
+                stakeStrings.push(col1String + col2String + col3String + col4String)
+            }        
+            Media.SetText("stakedAdvantages", stakeStrings.join("\n"))
+
+            // COTERIE STAKES
+            if (_.keys(coterieStakes).length === 0) {
+                Media.SetText("stakedCoterieAdvantages", " ")
             } else {
-                let thisString = "(C)"
                 for (const coterieData of _.values(coterieStakes)) {
                     const thisDate = TimeTracker.FormatDate(new Date(_.sortBy(coterieData.dateStamp, v => v)[0]))
-                    let col1String = thisString,
-                        col2String = coterieData.name.toUpperCase(),
+                    let col12String = coterieData.name.toUpperCase(),
                         col3String = "○".repeat(coterieData.total) + "●".repeat(coterieData.max - coterieData.total),
                         col4String = thisDate
-                    col1String += Media.Buffer(textObj, col1Width - Media.GetTextWidth(textObj, col1String, false))
-                    col2String += Media.Buffer(textObj, col1Width + col2Width - Media.GetTextWidth(textObj, col1String + col2String, false))
-                    col3String += Media.Buffer(textObj, col1Width + col2Width + col3Width - Media.GetTextWidth(textObj, col1String + col2String + col3String, false))
-                    stakeStrings.push(col1String + col2String + col3String + col4String)
-                    thisString = ""
-                }
-                let lastInit = ""
-                for (const data of stakeData) {
-                    const [init, name, staked, max, endDate] = data
-                    let thisString = " "
-                    if (init !== lastInit) {
-                        thisString = `[${init}]`
-                        lastInit = init
-                    }
-                    let col1String = thisString,
-                        col2String = name,
-                        col3String = "○".repeat(staked) + "●".repeat(max - staked),
-                        col4String = endDate
-                    col1String += Media.Buffer(textObj, col1Width - Media.GetTextWidth(textObj, col1String, false))
-                    col2String += Media.Buffer(textObj, col1Width + col2Width - Media.GetTextWidth(textObj, col1String + col2String, false))
-                    col3String += Media.Buffer(textObj, col1Width + col2Width + col3Width - Media.GetTextWidth(textObj, col1String + col2String + col3String, false))
-                    stakeStrings.push(col1String + col2String + col3String + col4String)
-                }        
-                Media.SetText("stakedAdvantages", stakeStrings.join("\n"))
+                    col12String += Media.Buffer(coterieObj, col1Width + col2Width - Media.GetTextWidth(coterieObj, col12String, false))
+                    col3String += Media.Buffer(coterieObj, col1Width + col2Width + col3Width - Media.GetTextWidth(coterieObj, col12String + col3String, false))
+                    coterieStakeStrings.push(col12String + col3String + col4String)
+                }                     
+                Media.SetText("stakedCoterieAdvantages", coterieStakeStrings.join("\n"))
             }
         }
     // #endregion

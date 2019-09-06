@@ -76,7 +76,7 @@ const D = (() => {
                 }
                 break
             case "clear": case "reset":
-                switch(args.shift().toLowerCase()) {
+                switch((args.shift() || "none").toLowerCase()) {
                     case "watch": case "dbwatch": case "watchlist":
                         setWatchList("clear")
                         break

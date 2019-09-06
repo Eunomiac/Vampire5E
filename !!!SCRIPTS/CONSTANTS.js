@@ -20,7 +20,7 @@ const C = (() => {
 
     // #region CORE CONFIGURATION & BASIC REFERENCES
     const PIXELSPERSQUARE = 70,
-        TEXTCHARS = "0123456789LMNQSOPRUWXTVZY-=●(+ABCFHDEGJIKalmnqsopruwxtvzyfhdegjikbc )?![]:;,.○~♠◌‡⅓°♦",
+        TEXTCHARS = `0123456789LMNQSOPRUWXTVZY-=●(+ABCFHDEGJIKalmnqsopruwxtvzyfhdegjikbc )?![]:;,.○~♠◌‡⅓°♦"'`, // eslint-disable-line quotes
         TEXTPAGEID = "-LNoXCt3hlI0Rz_Snw1s",
         SANDBOX = {
             height: 2680,

@@ -613,8 +613,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
             return dateRef
         },
         getTime = (timeRef, deltaMins, isParsingString = false) => {
-            const timeVals = [],
-                timeNums = VAL({string: timeRef}) ? _.map(timeRef.split(":"), v => parseInt(v) || 0) : timeRef
+            const timeNums = VAL({string: timeRef}) ? _.map(timeRef.split(":"), v => parseInt(v) || 0) : timeRef
             let totMins = timeNums[0] * 60 + timeNums[1] + deltaMins
             if (totMins < 0)
                 totMins += 24 * 60 * Math.ceil(Math.abs(totMins) / (24 * 60))

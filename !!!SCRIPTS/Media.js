@@ -40,6 +40,21 @@ const Media = (() => {
         STATEREF.activeTimeouts = STATEREF.activeTimeouts || []
         STATEREF.curLocation = STATEREF.curLocation || "DistrictCenter:blank SiteCenter:blank"
 
+        const SHADOWFACTORS = {
+            20: 2,
+            22: 2,
+            26: 3,
+            32: 3,
+            40: 3,
+            56: 5,
+            72: 5,
+            100: 7
+        }
+        for (const font of _.keys(state[C.GAMENAME].DATA.CHARWIDTH)) {
+            const DATAREF = state[C.GAMENAME].DATA.CHARWIDTH[font]
+            for (const size of _.keys(DATAREF))
+                state[C.GAMENAME].DATA.CHARWIDTH[font][size].shadowShift = SHADOWFACTORS[size]
+        }
         //TEXTREGISTRY.testSessionNotice.activeLayer = "gmlayer"
         /*for (let i = 0; i < 10; i++) {
             STATEREF.imageregistry[`complicationEnhanced_${i+1}`].srcs = { base: "https://s3.amazonaws.com/files.d20.io/images/87914628/dgt1u4qF9byRIEo0YLkMKw/thumb.png?1564561010" }
@@ -67,6 +82,21 @@ const Media = (() => {
                         case "fire":
                             fireAnimation(args.shift())
                             break
+                        case "kill": {
+                            switch (args.shift().toLowerCase()) {
+                                case "all": {
+                                    killAllAnimations()
+                                    D.Alert("All animations cleared.", "!anim kill all")
+                                    break
+                                }
+                                case "time": case "timers": case "timeouts": {
+                                    killAllTimeouts()
+                                    D.Alert("All timeouts cleared.", "!anim kill timeouts")
+                                    break
+                                }
+                                // no default
+                            }
+                        }
                         // no default
                     }
                     break
@@ -442,6 +472,12 @@ const Media = (() => {
                                     else
                                         D.Alert("Syntax: !text get data [<name>] (or select a text object object)", "!text get data")
                                     break
+                                case "width": {
+                                    textObj = getTextObj(msg)
+                                    const textString = msg.content.match(/@@(.*?)@@/ui)[1]
+                                    D.Alert(`The width of @@${textString}@@ is ${getTextWidth(textObj, textString, false)}`)
+                                    break
+                                }
                                 case "names":
                                     D.Alert(D.JS(_.keys(TEXTREGISTRY)), "!text get names")
                                     break
@@ -498,6 +534,26 @@ const Media = (() => {
                             break
                         case "set":
                             switch (args[0].toLowerCase()) {
+                                case "updateslave": {
+                                    updateSlaveText(args[1])
+                                    break
+                                }
+                                case "slave": {
+                                    args.shift()
+                                    try {
+                                        textObj = getTextObj(msg)
+                                        D.Alert(D.JS(textObj))
+                                        D.Alert(D.JS(getTextKey(textObj)))
+                                        hostName = args.shift()
+                                        const edgeDir = args.shift(),
+                                            horizPad = parseInt(args[0] ? args.shift() : 0),
+                                            vertPad = parseInt(args[0] ? args.shift() : 0)
+                                        linkText(hostName, {[edgeDir]: [getTextKey(textObj)]}, horizPad, vertPad)
+                                    } catch (errObj) {
+                                        D.Alert(`Syntax: !text set slave (hostName) (edgeDirection) (horizPad) (vertPad)<br>${JSON.stringify(errObj)}`, "!text set slave")
+                                    }
+                                    break
+                                }
                                 case "pos": case "position":
                                     args.shift()
                                     textObj = getTextObj(msg)
@@ -579,7 +635,7 @@ const Media = (() => {
                                 textParams = args.slice(4).join(" ")
                                 textParams = _.compact([
                                     textParams.includes("vertAlign") ? "" : `vertAlign:${textData.vertAlign || "top"}`,
-                                    textParams.includes("maxWidth") ? "" : `maxWidth:${textData.maxWidth || 0}`,
+                                    textData.maxWidth && !textParams.includes("maxWidth") ? `maxWidth:${textData.maxWidth}` : "",
                                     textParams.includes("zIndex") ? "" : `zIndex:${textData.zIndex || 300}`
                                 ]).join(",") + textParams
                                 removeText(msg, true, true)
@@ -652,8 +708,7 @@ const Media = (() => {
     let [imgRecord, imgResize] = [false, false]
 
     // #region CONFIGURATION
-    const SHADOWFACTOR = 15, 
-        IMAGEREGISTRY = STATEREF.imageregistry,
+    const IMAGEREGISTRY = STATEREF.imageregistry,
         IDREGISTRY = STATEREF.idregistry,
         TEXTREGISTRY = STATEREF.textregistry,
         AREAS = STATEREF.areas,
@@ -1865,6 +1920,12 @@ const Media = (() => {
                 return getTextObj(TEXTREGISTRY[textKey].shadow, true) || !isSilent && THROW(`No shadow text object registered for ${D.JS(textKey)}`, "getTextShadowObj")
             return !isSilent && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, "getTextShadowObj")
         },
+        getShadowShift = textRef => {
+            const textObj = getTextObj(textRef),
+                font = textObj.get("font_family").toLowerCase().includes("contrail") ? "Contrail One" : textObj.get("font_family"),
+                size = textObj.get("font_size")
+            return state[C.GAMENAME].DATA.CHARWIDTH[font][size].shadowShift
+        },
         getTextData = (textRef, isSilent = false) => {
             try {
                 if (getTextKey(textRef, isSilent)) {
@@ -1888,20 +1949,6 @@ const Media = (() => {
             } catch (errObj) {
                 return !isSilent && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, "getTextData", errObj)
             }
-        },
-        getTextDatas = (textRefs, isSilent = false) => {
-            const tRefs = VAL({ msg: textRefs }) ? D.GetSelected(textRefs) || [] : textRefs,
-                textDatas = []
-            if (VAL({ array: tRefs })) {
-                for (const tRef of tRefs)
-                    textDatas.push(getTextData(tRef))
-                return textDatas
-            } else if (textRefs === "all") {
-                for (const tRef of _.values(TEXTREGISTRY))
-                    textDatas.push(getTextData(tRef.id))
-                return textDatas
-            }
-            return false
         },
         getTextWidth = (textRef, text, maxWidth = 0) => {
             const textObj = getTextObj(textRef),
@@ -1949,12 +1996,30 @@ const Media = (() => {
             }
             return false
         },
-        getBlankLeft = (textRef, justification, maxWidth = 0) => {
+        getMaxWidth = (textRef) => {
+            const textObj = getTextObj(textRef),
+                splitLines = textObj.get("text").split(/\n/gu)
+            let max = 0
+            for (const line of splitLines)
+                max = Math.max(max, getTextWidth(textObj, line, false))
+            return max
+        },
+        getTextHeight = (textRef, text, maxWidth) => {
+            const textObj = getTextObj(textRef),
+                textData = getTextData(textRef),
+                textValue = text || textObj.get("text"),
+                numLines = maxWidth ? splitTextLines(textObj, textValue, maxWidth, textData.justification).length : (textValue.match(/\n/gui) || []).length + 1
+            return numLines * textData.lineHeight
+        },
+        getBlankLeft = (textRef, justification, maxWidth = 0, useCurrent = false) => {
             const textObj = getTextObj(textRef),
                 justify = justification || getTextData(textRef).justification
-            if (VAL({textObj: textObj}, "getBaseLeft"))               
+            if (VAL({textObj: textObj}, "getBlankLeft")) {   
+                if (useCurrent)
+                    return textObj.get("left") + (justify === "left" ? -0.5 : justify === "right" ? 0.5 : 0) * getMaxWidth(textObj)
                 //D.Alert(`getBlankLeft Called on ${textObj.get("text")} with maxWidth ${maxWidth} into getTextWidth -->`)
                 return textObj.get("left") + (justify === "left" ? -0.5 : justify === "right" ? 0.5 : 0) * getTextWidth(textObj, textObj.get("text"), maxWidth)
+            }
             return false
         },
         getRealLeft = (textRef, params = {}) => {
@@ -1968,14 +2033,14 @@ const Media = (() => {
                 return params.left + (params.justification === "left" ? 0.5 : params.justification === "right" ? -0.5 : 0) * getTextWidth(textObj, params.text, params.maxWidth || 0)
             }
             return false            
-        }        
+        }      
     // #endregion
 
     // #region TEXT OBJECT MANIPULATORS: Buffering, Justifying, Splitting
     const buffer = (textRef, width) => " ".repeat(Math.max(0, Math.round(width/getTextWidth(textRef, " ", false)))),
         splitTextLines = (textRef, text, maxWidth, justification = "left") => {
             const textObj = getTextObj(textRef)
-            let textStrings = _.without(text.split(/(\s|-)/gu), " "),
+            let textStrings = text.split(/(\s|-)/gu).filter(x => x.match(/\S/gu)),
                 splitStrings = [],
                 highWidth = 0
             for (let i = 0; i < textStrings.length; i++)
@@ -1983,13 +2048,20 @@ const Media = (() => {
                     textStrings[i-1] = textStrings[i-1] + "-"
                     textStrings = [...[...textStrings].splice(0,i), ...[...textStrings].splice(i+1)]
                 }
+            let [stringCount, lineCount] = [0, 0]
             while (textStrings.length) {
-                let thisString = ""
-                while (thisString.length < maxWidth && textStrings.length)
-                    if (textStrings[0].endsWith("-"))
-                        thisString += `${textStrings.shift()}`
-                    else
-                        thisString += `${textStrings.shift()} `
+                let thisString = "",
+                    nextWidth = getTextWidth(textObj, textStrings[0] + (textStrings[0].endsWith("-") ? "" : " "), false)
+                lineCount++
+                stringCount = 0
+                DB(`LINE ${lineCount}.  NextWidth: ${nextWidth}`, "splitTextLines")
+                while (nextWidth < maxWidth && textStrings.length) {
+                    thisString += textStrings[0].endsWith("-") ? `${textStrings.shift()}` : `${textStrings.shift()} `
+                    nextWidth = textStrings.length ? getTextWidth(textObj, thisString + textStrings[0] + (textStrings[0].endsWith("-") ? "" : " "), false) : 0
+                    stringCount++
+                    DB(`... STRING ${stringCount}: ${thisString}  NextWidth: ${nextWidth}`, "splitTextLines")
+                }
+                DB(`ADDING LINE: ${thisString} with width ${getTextWidth(textObj, thisString, false)}`, "splitTextLines")
                 splitStrings.push(thisString)
                 highWidth = Math.max(getTextWidth(textObj, thisString, false), highWidth)
             }
@@ -2031,35 +2103,43 @@ const Media = (() => {
                     curTextParams = {
                         left: textObj.get("left"),
                         top: textObj.get("top"),
-                        width: getTextWidth(textObj, textObj.get("text")),
+                        width: getMaxWidth(textObj),
                         font_size: textObj.get("font_size"),
                         color: textObj.get("color"),
-                        font_family: textObj.get("font_family"),
+                        font_family: textObj.get("font_family").toLowerCase().includes("contrail") ? "Contrail One" : textObj.get("font_family"),
                         text: textObj.get("text").trim(),
                         layer: !(startActive === "false" || startActive === false) ? activeLayer : "gmlayer"
                     }
+                options.justification = justification || options.justification || "center"
+                options.maxWidth = options.maxWidth || 0
+                options.lineHeight = D.CHARWIDTH[curTextParams.font_family] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size].lineHeight || textObj.get("height")
+                D.Alert(`CurTextParams: ${D.JS(curTextParams)}<br>NumLineBreaks: ${D.JS((curTextParams.text.match(/\n/gui) || []).length)}`)
                 TEXTREGISTRY[name] = Object.assign(
-                    Object.assign(curTextParams, {
-                        id: textObj.id,
-                        name: name,
-                        activeLayer: activeLayer,
-                        startActive: !(startActive === "false" || startActive === false),
-                        activeText: curTextParams.text,
-                        zIndex: parseInt(options.zIndex) || (TEXTREGISTRY[name] ? TEXTREGISTRY[name].zIndex : 300),
-                        justification: justification || "center",
-                        maxWidth: options.maxWidth || 0,
-                        lineHeight: D.CHARWIDTH[curTextParams.font_family] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size].lineHeight || textObj.get("height"),
-                        vertAlign: options.vertAlign || "top"             
-                    }), options)
-                TEXTREGISTRY[name].left = getBlankLeft(textObj)
+                    Object.assign(
+                        curTextParams,
+                        {
+                            id: textObj.id,
+                            name: name,
+                            top: curTextParams.top - 0.5 * (curTextParams.text.split("\n").length - 1) * options.lineHeight,
+                            activeLayer: activeLayer,
+                            startActive: !(startActive === "false" || startActive === false),
+                            activeText: curTextParams.text,
+                            zIndex: parseInt(options.zIndex) || (TEXTREGISTRY[name] ? TEXTREGISTRY[name].zIndex : 300),
+                            justification: justification || "center",
+                            maxWidth: options.maxWidth || 0,
+                            lineHeight: D.CHARWIDTH[curTextParams.font_family] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size].lineHeight || textObj.get("height"),
+                            vertAlign: options.vertAlign || "top"             
+                        }
+                    ),
+                    options
+                )
+                TEXTREGISTRY[name].left = getBlankLeft(textObj, TEXTREGISTRY[name].justification, TEXTREGISTRY[name].maxWidth, true)
                 IDREGISTRY[textObj.id] = name
-                setText(textObj, Object.assign(_.filter(_.pick(options, C.TEXTPROPS), (v, k) => curTextParams[k] !== v), {left: getBlankLeft(textObj, justification || "center", options.maxWidth), layer: curTextParams.layer}))                
+                setText(textObj, Object.assign(_.filter(_.pick(options, C.TEXTPROPS), (v, k) => curTextParams[k] !== v), {left: TEXTREGISTRY[name].left, layer: curTextParams.layer}))                
                 if (hasShadow) {
                     const shadowOptions = Object.assign(_.omit(_.clone(TEXTREGISTRY[name]), "id"), {
                         name: `${name}Shadow`,
                         color: "rgb(0,0,0)",
-                        left: TEXTREGISTRY[name].left + Math.round(TEXTREGISTRY[name].font_size/SHADOWFACTOR),
-                        top: TEXTREGISTRY[name].top + Math.round(TEXTREGISTRY[name].font_size/SHADOWFACTOR),      
                         shadowMaster: name,
                         zIndex: TEXTREGISTRY[name].zIndex - 1
                     })
@@ -2067,6 +2147,13 @@ const Media = (() => {
                     const shadowObj = makeText(shadowOptions.name, TEXTREGISTRY[name].activeLayer, TEXTREGISTRY[name].startActive, false, justification, shadowOptions, isSilent)
                     shadowOptions.id = shadowObj.id
                     TEXTREGISTRY[name].shadow = shadowOptions.name
+                    TEXTREGISTRY[shadowOptions.name].left = TEXTREGISTRY[name].left + state[C.GAMENAME].DATA.CHARWIDTH[curTextParams.font_family][curTextParams.font_size].shadowShift
+                    TEXTREGISTRY[shadowOptions.name].top = TEXTREGISTRY[name].top + state[C.GAMENAME].DATA.CHARWIDTH[curTextParams.font_family][curTextParams.font_size].shadowShift
+                    setText(shadowOptions.name)
+                    /*
+                    left: TEXTREGISTRY[name].left + Math.round(TEXTREGISTRY[name].font_size/SHADOWFACTOR),
+                    top: TEXTREGISTRY[name].top + Math.round(TEXTREGISTRY[name].font_size/SHADOWFACTOR),    
+                    */  
                 }    
                 D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(TEXTREGISTRY[name])}`, "regText")
                 orderMedia(["Pad$"], true)
@@ -2095,23 +2182,71 @@ const Media = (() => {
             regText(textObj, hostName, actLayer, isStartingActive, hasShadow, justification, options, isSilent)
             return textObj
         },
+        linkText = (masterRef, slaveData, horizPad = 0, vertPad = 0) => {
+            // ON MASTER: list each slave object in terms of the edge it attaches to -- top, left, right or bottom
+            // ON SLAVES: set "pushleft" and "pushtop" values in their registry data whenever master changes
+            //      Register them with "horizPad" and "vertPad" to add extra distance.
+            //      Slaves must be set to the exact same position as the master to shift properly.
+            const masterObj = getTextObj(masterRef),
+                masterKey = getTextKey(masterObj)
+            D.Alert(`Slave Data: ${D.JS(slaveData)}`)
+            TEXTREGISTRY[masterKey].linkedText = TEXTREGISTRY[masterKey].linkedText || {}
+            for (const edgeDir of _.keys(slaveData)) {
+                TEXTREGISTRY[masterKey].linkedText[edgeDir] = TEXTREGISTRY[masterKey].linkedText[edgeDir] || []
+                for (const slaveRef of slaveData[edgeDir]) {
+                    const slaveKey = getTextKey(slaveRef)
+                    TEXTREGISTRY[masterKey].linkedText[edgeDir].push(slaveKey)
+                    TEXTREGISTRY[slaveKey].horizPad = horizPad
+                    TEXTREGISTRY[slaveKey].vertPad = vertPad
+                }
+            }
+            updateSlaveText(masterKey)
+        },
+        updateSlaveText = (masterRef) => {
+            const masterObj = getTextObj(masterRef),
+                masterKey = getTextKey(masterObj),
+                edgeDirs = TEXTREGISTRY[masterKey].linkedText || {}
+            for (const edgeDir of _.keys(edgeDirs))
+                for (const slaveKey of edgeDirs[edgeDir]) {
+                    const slaveData = getTextData(slaveKey)
+                    if (slaveData) {
+                        switch (edgeDir) {
+                            case "left":
+                                TEXTREGISTRY[slaveKey].pushleft = masterObj.get("text").match(/\S/gui) ? -getMaxWidth(masterObj) - slaveData.horizPad : 0
+                                break
+                            case "right":
+                                TEXTREGISTRY[slaveKey].pushleft = masterObj.get("text").match(/\S/gui) ? getMaxWidth(masterObj) + slaveData.horizPad : 0
+                                break
+                            case "top":
+                                TEXTREGISTRY[slaveKey].pushtop = masterObj.get("text").match(/\S/gui) ? -getTextHeight(masterObj) - slaveData.vertPad : 0
+                                break
+                            case "bottom":
+                                TEXTREGISTRY[slaveKey].pushtop = masterObj.get("text").match(/\S/gui) ? getTextHeight(masterObj) + slaveData.vertPad : 0
+                            // no default
+                        }
+                        setText(slaveKey)
+                    }
+                }
+        },
         setText = (textRef, options = {}, isTemporary = false) => {
             const textObj = getTextObj(textRef),
                 textData = getTextData(textRef),
-                textOptions = VAL({string: options}) ? {text: options} : options,
+                textOptions = VAL({string: options}) ? {text: options} : options === {} ? {text: textObj.get("text")} : options,
                 textString = (textOptions && textOptions.text || textData && textData.text || textObj && textObj.get("text") || "").trim()
             let shadowObj, shadowObjParams
             if (VAL({textObj: textObj}, "setText")) {
                 textOptions.left = textOptions && textOptions.left || textData && textData.left || getBlankLeft(textObj, textObj.get("text"))
                 textOptions.top = textOptions && textOptions.top || textData && textData.top || textObj.get("top")
                 textOptions.text = textString
-                textOptions.maxWidth = textOptions && textOptions.maxWidth || textData && textData.maxWidth
+                textOptions.maxWidth = textOptions && textOptions.maxWidth || textData && textData.maxWidth || 0
                 const objParams = Object.assign(_.pick(textOptions, C.TEXTPROPS))
+                DB(`Options: ${D.JS(textOptions)}<br><br>Params: ${D.JS(objParams)}`, "setText")
                 if (textOptions.maxWidth > 0 && objParams.text) {
                     const splitLines = splitTextLines(textObj, objParams.text, textOptions.maxWidth, textData.justification)
+                    DB(`Splitting Text: ${D.JS(splitLines)}`, "setText")
                     objParams.text = splitLines.join("\n")           
                 }                
-                if (objParams.text.split("\n").length > 1) 
+                if (objParams.text.split("\n").length > 1)
                     switch (textData.vertAlign || textOptions.vertAlign || "top") {
                         case "top":
                             textOptions.shifttop = (textOptions.shifttop || 0) + 0.5*(objParams.text.split("\n").length - 1)*(textData && textData.lineHeight || 
@@ -2123,10 +2258,10 @@ const Media = (() => {
                                 D.CHARWIDTH[textObj.get("font_family")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight ||
                                 0)
                             break
-            /* no default */
-                    }         
-                for (const key of _.intersection(_.keys(textOptions), ["shiftleft", "shifttop"]))
-                    objParams[key.slice(5)] = textData[key.slice(5)] + parseInt(textOptions[key])
+                        // no default
+                    }
+                objParams.left += (textData && textData.pushleft || 0) + (textOptions.shiftleft || 0)
+                objParams.top += (textData && textData.pushtop || 0) + (textOptions.shifttop || 0)                    
                 if (!isTemporary)
                     for (const key of _.intersection(_.keys(textOptions), _.keys(textData)))
                         TEXTREGISTRY[textData.name][key] = textOptions[key]
@@ -2142,10 +2277,12 @@ const Media = (() => {
                 if (textData.shadow) {
                     shadowObj = getTextShadowObj(textRef)
                     shadowObjParams = _.omit(objParams, ["color"])
-                    shadowObjParams.left += Math.round(textData.font_size/SHADOWFACTOR)
-                    shadowObjParams.top += Math.round(textData.font_size/SHADOWFACTOR)
+                    shadowObjParams.left += getShadowShift(textRef)
+                    shadowObjParams.top += getShadowShift(textRef)
                     shadowObj.set(shadowObjParams)
                 }
+                if (textData && textData.linkedText)
+                    updateSlaveText(textObj)
             }
         },
         setTextData = (textRef, params) => {
