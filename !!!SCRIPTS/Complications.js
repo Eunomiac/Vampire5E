@@ -59,32 +59,14 @@ const Complications = (() => {
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => {
         switch (call) {
-            case "get": {
-                switch (args.shift().toLowerCase()) {
-                    case "cats":
-                        D.Alert(`Used Categories: ${D.JS(getUsedCategories())}`, "!comp get cats")
-                        break
-                    case "cards":
-                        D.Alert(`Active Cards: ${D.JS(getActiveCards())}`, "!comp get cards")
-                        break
-                    // no default
-                }
-                break
-            }
-            case "flip":
-                flipCard(parseInt(args.shift() || 0) - 1)
-                break
-            case "target": case "add":
+            case "target":
                 setCompVals(call, parseInt(args.shift() || 0))
                 break
             case "start":
                 startComplication(parseInt(args.shift() || 0))
                 break
-            case "end": case "stop":
+            case "stop": case "end":
                 endComplication(args.shift() === "true")
-                break
-            case "reset":
-                resetComplication()
                 break
             case "discard": {
                 if (args[0] && args[0] === "rand")
@@ -138,23 +120,6 @@ const Complications = (() => {
             case "launchproject":
                 Char.LaunchProject(STATEREF.currentVal - STATEREF.targetVal, "COMPLICATION")
                 break
-            case "kill":
-                STATEREF.DECK = []
-                STATEREF.MAT = [
-                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
-                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
-                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
-                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
-                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
-                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
-                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
-                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
-                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false },
-                    { imgsrc: null, isFaceUp: false, value: 0, isNegated: false, isDuplicated: false, isEnhanced: false }
-                ]
-                STATEREF.DISCARDS = []
-                STATEREF.isRunning = false
-                break
         // no default
         }
     }
@@ -162,6 +127,7 @@ const Complications = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     // #region CONFIGURATION: Card Definitions
+    /* eslint-disable no-unused-vars, no-empty-function */
     const CARDS = [             
             { name: "AMatterOfPride", imgsrc: "https://s3.amazonaws.com/files.d20.io/images/88065307/Fc0lL3TQqzh5xGsX-KW0KA/thumb.png?1564720656", category: null, value: 1, rarity: "C", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
             { name: "AMomentOfDespair", imgsrc: "https://s3.amazonaws.com/files.d20.io/images/88065308/sv4eABfbP3o649To0Xuinw/thumb.png?1564720665", category: null, value: 1, rarity: "C", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
@@ -222,7 +188,8 @@ const Complications = (() => {
             { name: "UnderTheBus", imgsrc: "https://s3.amazonaws.com/files.d20.io/images/88074476/ouv0wcAakOtEFsvGkKHWNw/thumb.png?1564736741", category: null, value: 1, rarity: "U", rollEffect: "U", enhancedRollEffect: "", action: charRef => {} },
             { name: "UnfinishedBusiness", imgsrc: "https://s3.amazonaws.com/files.d20.io/images/88065379/_A0OoKzz8rXL9JUVJdGSUw/thumb.png?1564720760", category: null, value: 0, rarity: "U", rollEffect: "", enhancedRollEffect: "", action: charRef => {} },
             { name: "WeightOfTheWorld", imgsrc: "https://s3.amazonaws.com/files.d20.io/images/88065231/L2T1utZx997A5XemGbXWxQ/thumb.png?1564720567", category: "debilitation", value: 2, rarity: "U", rollEffect: "", enhancedRollEffect: "", action: charRef => {} }
-        ],
+        ],        
+    /* eslint-enable no-unused-vars, no-empty-function */
         CARDBACK = "https://s3.amazonaws.com/files.d20.io/images/88065314/frlnhSBmBUgfAXMaC8f0cQ/thumb.png?1564720670",
         CARDQTYS = {V: 12, C: 6, U: 3, R: 1}
     // #endregion

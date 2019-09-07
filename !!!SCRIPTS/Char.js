@@ -38,19 +38,6 @@ const Char = (() => {
         STATEREF.customStakes.coterie = STATEREF.customStakes.coterie || []
         STATEREF.customStakes.personal = STATEREF.customStakes.personal || {A: [], L: [], N: [], R: []}
 
-
-        /* STATEREF.customStakes.coterie = [
-            [ "Mawla (Baroness) x2", 3, 4, "Sep 10, 2020" ],
-            [ "Haven", 3, 6, "Dec 8, 2019" ]
-        ]
-
-        STATEREF.customStakes.personal = {
-            A: [["Haven", 3, 6, "Dec 8, 2019"]], L: [], N: [["Haven", 3, 6, "Dec 8, 2019"]], R: []
-        } */
-        
-
-        // [ name, total, max, date ] 
-
         /*
         STATEREF.registry = {
             TopLeft: {
@@ -108,30 +95,17 @@ const Char = (() => {
         //C.ROOT.Char.registry["1"].famulusTokenID = "-Li_TTDHnKYob56yfijy"
     }
     // #endregion
-    const sortFunc = (charRef, secName, idA, idB) => {
-        const rowA = D.TextToNum(D.GetRepStat(charRef, secName, idA, "xp_session").val),
-            rowB = D.TextToNum(D.GetRepStat(charRef, secName, idB, "xp_session").val)
-        if (rowA === rowB)
-            return parseInt(D.GetRepStat(charRef, secName, idB, "xp_award").val) - parseInt(D.GetRepStat(charRef, secName, idA, "xp_award").val)
-        return rowA - rowB
-    }
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => { // eslint-disable-line no-unused-vars
-            let [chars, params, attrList] = [[], [], []],
-                charData = {},
-                [amount, dmg] = [0, 0],
-                [trait, dtype, attrString, playerObj, msgString] = new Array(6).fill(""),
-                char = null,
-                isHealing = false
             switch (call) {
-                case "reg":
-                    switch(args.shift().toLowerCase()) {
-                        case "token":
-                            if (msg.selected && msg.selected.length === 1 && args.length === 2)
-                                registerToken(msg, args.shift(), "base")
+                case "reg": {
+                    switch(args.shift().toLowerCase()) {                        
+                        case "char":
+                            if (VAL({selection: msg}, "!char reg char"))
+                                registerChar(msg, parseInt(args.shift()), args.shift(), args.shift(), args.shift())
                             else
-                                THROW("Select a graphic object. Syntax: !char reg token <hostName> <srcName>", "!char reg")
+                                D.Alert("Select character tokens first!  Syntax: !char reg char <shortName> <initial> <quadrant>", "!char reg char")
                             break
                         case "weekly": case "resource": case "weeklyresource": {
                             const resInitial = args.shift().toUpperCase(),
@@ -158,23 +132,18 @@ const Char = (() => {
                             displayStakes()
                             break
                         }
-                        case "char":
-                            if (msg.selected && msg.selected[0])
-                                registerChar(msg, parseInt(args.shift()), args.shift(), args.shift(), args.shift())
-                            else
-                                THROW("Select character tokens first!  Syntax: !char reg char <num> <shortName> <initial> <quadrant>", "!char reg")
-                            break
-                        /* no default */
+                        // no default
                     }
                     break
-                case "unreg":
-                    switch(args[0].toLowerCase()) {                        
+                }
+                case "unreg": {
+                    switch(args[0].toLowerCase()) {  
+                        case "char":
+                            unregisterChar(args.shift())
+                            break                      
                         case "weekly": case "resource": case "weeklyresource":
                             args.shift()
                             unregResource(args.shift(), parseInt(args.shift()))
-                            break
-                        case "char":
-                            unregisterChar(args.shift())
                             break
                         case "stake": {
                             args.shift()
@@ -193,50 +162,141 @@ const Char = (() => {
                             }
                             displayStakes()
                         }
-                        /* no default */
+                        // no default
                     }
                     break
-                case "get":
+                }
+                case "get": {
                     switch (args.shift().toLowerCase()) {
-                        case "reg": case "registry": case "registered":
+                        case "stat": {
+                            const traitName = args.shift(),
+                                charObjs = VAL({npc: D.GetSelected(msg, "character")}, null, true) ? D.GetChars(msg) : D.GetChars("registered"),
+                                params = []
+                            for (const charObj of charObjs) {
+                                const statData = D.GetStat(charObj, traitName, true) || D.GetRepStat(charObj, "*", null, traitName, true),
+                                    charName = D.GetCharData(charObj).shortName || D.GetCharData(charObj).name
+                                if (VAL({array: statData}))
+                                    params.push(`<span style="display: inline-block; width: 15%; margin-right: 3%;">${
+                                        charName
+                                    }</span><span style="display: inline-block; width: 60%; margin-right: 3%;">${
+                                        D.Capitalize(statData[1].get("name"), true)
+                                    }</span><span style="display: inline-block; width: 15%; margin-right: 3%;">${
+                                        parseInt(statData[0]) ? "●".repeat(parseInt(statData[0])) : "~"
+                                    }</span>`)
+                                else if (VAL({list: statData}))
+                                    params.push(`<span style="display: inline-block; width: 15%; margin-right: 3%;">${
+                                        charName
+                                    }</span><span style="display: inline-block; width: 60%; margin-right: 3%;">${
+                                        D.Capitalize(statData.name, true)
+                                    }</span><span style="display: inline-block; width: 15%; margin-right: 3%;">${
+                                        parseInt(statData.val) ? "●".repeat(parseInt(statData.val)) : "~"
+                                    }</span>`)
+                                else
+                                    params.push(`<span style="display: inline-block; width: 15%; margin-right: 3%;">${
+                                        charName
+                                    }</span><span style="display: inline-block; width: 60%; margin-right: 3%;">~</span><span style="display: inline-block; width: 15%; margin-right: 3%;">~</span>`)
+                            }
+                            D.Alert(params.join("<br>"), `${D.Capitalize(traitName)}:`)
+                            break
+                        }
+                        // no default
+                    }
+                    break
+                }
+                case "set": {
+                    switch (args.shift().toLowerCase()) {
+                        case "stat": case "stats": case "attr": case "attrs": {
+                            const charObj = D.GetChar(msg) || D.GetChar(args.shift()),
+                                attrList = {}
+                            if (VAL({charObj: charObj}, "!char set stat")) {
+                                for (const statpair of D.ParseArgs("|"))
+                                    attrList[statpair.split(":")[0]] = parseInt(statpair.split(":")[1]) || 0
+                                D.SetStats(charObj.id, attrList)
+                            } else {
+                                D.Alert("Select a character or provide a character reference first!", "!char set stat")
+                            }
+                            break
+                        }
+                        case "xp": {
+                            const charObjs = D.GetChars(msg) || D.GetChars("registered")
+                            DB(`!char xp COMMAND RECEIVED<br><br>Characters: ${D.JS(_.map(charObjs, v => v.get("name")))}`, "!char set xp")
+                            if (VAL({char: charObjs}, "!char set xp", true)) {
+                                const amount = parseInt(args.shift()) || 0
+                                for (const charObj of charObjs)
+                                    if (awardXP(charObj, amount, args.join(" ")))
+                                        D.Alert(`${amount} XP awarded to ${D.GetName(charObj)}`, "!char set xp")
+                                    else
+                                        D.Alert(`FAILED to award ${JSON.stringify(amount)} XP to ${JSON.stringify(D.GetName(charObj))}`, "!char set xp")
+                            }
+                            break
+                        }                                               
+                        case "weekly": case "resource": case "weeklyresource": {
+                            if (args[0] && args[0].length > 2)
+                                switch (args[0].toLowerCase()) {
+                                    case "reset":
+                                        resetResources()
+                                        break
+                                    default:
+                                        adjustResource(args.shift().toUpperCase(), parseInt(args.shift()), parseInt(args.shift()))
+                                        break
+                                }
+                            displayResources()
+                            break
+                        }
+                        // no default
+                    }
+                    break
+                }
+                case "list": {
+                    switch (args.shift().toLowerCase()) {
+                        case "reg": case "registry": case "registered": {
                             D.Alert(REGISTRY, "Registered Player Characters")
                             break
-                        case "stat":
-                            trait = args.shift()
-                            for (const char of D.GetChars("registered")) {
-                                const statData = D.GetStat(char, trait, true) || D.GetRepStat(char, "*", null, trait, true)
-                                if (VAL({array: statData}))
-                                    params.push(`<span style="display: inline-block; width: 15%; margin-right: 3%;">${D.GetCharData(char).shortName}</span><span style="display: inline-block; width: 60%; margin-right: 3%;">${D.Capitalize(statData[1].get("name"), true)}</span><span style="display: inline-block; width: 15%; margin-right: 3%;">${parseInt(statData[0]) ? "●".repeat(parseInt(statData[0])) : "~"}</span>`)
-                                else if (VAL({list: statData}))
-                                    params.push(`<span style="display: inline-block; width: 15%; margin-right: 3%;">${D.GetCharData(char).shortName}</span><span style="display: inline-block; width: 60%; margin-right: 3%;">${D.Capitalize(statData.name, true)}</span><span style="display: inline-block; width: 15%; margin-right: 3%;">${parseInt(statData.val) ? "●".repeat(parseInt(statData.val)) : "~"}</span>`)
-                                else
-                                    params.push(`<span style="display: inline-block; width: 15%; margin-right: 3%;">${D.GetCharData(char).shortName}</span><span style="display: inline-block; width: 60%; margin-right: 3%;">~</span><span style="display: inline-block; width: 15%; margin-right: 3%;">~</span>`)
-                            }
-                            attrString = params.join("<br>")
-                            D.Alert(attrString, `${D.Capitalize(trait)}:`)
+                        }                                          
+                        case "ids": case "charids": {
+                            const charObjs = findObjs({ _type: "character" }),
+                                msgStrings = []
+                            for (const charObj of charObjs)
+                                msgStrings.push(`${D.GetName(charObj)}<span style="color: ${C.COLORS.brightred}; font-weight:bold;">@T</span>${charObj.id}`)
+                            D.Alert(D.JS(msgStrings.join("<br>")))
                             break
-                        case "npcstat": {
-                            const charObj = D.GetChar(msg),
-                                statName = args.shift()
-                            if (VAL({charObj: charObj})) 
-                                D.Alert(`${charObj.get("name")}'s ${statName} = ${D.GetStat(charObj, statName)}`, "!char get npcstat")
+                        }
+                        // no default
+                    }
+                    break
+                }
+                case "refresh": {
+                    displayStakes()
+                    displayDesires()
+                    displayResources()
+                    break
+                }
+                case "dmg": case "damage": case "spend": case "heal": {
+                    const charObjs = D.GetChars(msg)
+                    if (VAL({char: charObjs}, "!char xp", true)) {
+                        const trait = args.shift().toLowerCase(),
+                            dtype = ["hum", "humanity", "stain", "stains"].includes(trait) ? null : args.shift(),
+                            dmg = (call === "heal" ? -1 : 1) * parseInt(args.shift()) || 0
+                        _.each(charObjs, (char) => {
+                            if (adjustDamage(char, trait, dtype, dmg))
+                                D.Alert(`Dealt ${D.JS(dmg)}${dtype ? ` ${D.JS(dtype)}` : ""} ${D.JS(trait)} damage to ${D.GetName(char)}`, "CHARS:!char dmg")
+                            else
+                                THROW(`FAILED to damage ${D.GetName(char)}`, "!char dmg")
+                        })
+                    }
+                    break
+                }
+                case "process": {
+                    switch (args.shift().toLowerCase()) {
+                        case "defaults": {
+                            populateDefaults(args.shift())
                             break
-                        }                        
-                        case "charids":
-                            chars = findObjs({
-                                _type: "character"
-                            })
-                            msgString = ""
-                            for (const char of chars)
-                                msgString += `${D.GetName(char)}<span style="color: ${C.COLORS.brightred}; font-weight:bold;">@T</span>${char.id}<br>`
-                            D.Alert(D.JS(msgString))
+                        }
+                        case "npcstats": {
+                            setNPCStats(args.shift())
                             break
-                        case "player":
-                            charData = REGISTRY[args[0]]
-                            playerObj = getObj("player", charData.playerID)
-                            D.Alert(`<b>NAME:</b> ${charData.playerName} (${charData.playerID})<br><b>PLAYS:</b> ${charData.name} (${charData.id})<br><br><b>DATA:</b><br><br>${D.JS(playerObj)}`, `PLAYER #${args[0]} DATA`)
-                            break
-                        case "npcs": {
+                        }
+                        case "npchunger": {
                             const registeredIDs = _.map(_.values(REGISTRY), v => v.id),
                                 npcChars = _.map(_.filter(D.GetChars("all"), v => !registeredIDs.includes(v.id)), v => [v.get("name"), v.id]),
                                 npcVamps = _.filter(npcChars, v => getAttrByName(v[1], "clan").length > 2 && getAttrByName(v[1], "clan") !== "Ghoul"),
@@ -244,185 +304,39 @@ const Char = (() => {
                                     v[1],
                                     v[0],
                                     Math.max(parseInt(getAttrByName(v[1], "bp_slakekill")) + randomInteger(5 - parseInt(getAttrByName(v[1], "bp_slakekill"))) - 2, parseInt(getAttrByName(v[1], "bp_slakekill")))                                    
-                                ]),
-                                npcHungerStrings = _.map(npcHungers, v => "<tr><td>" + v.join("</td><td>") + "</td></tr>")/*,
-                                npcStats = _.map(npcVamps, v => "<tr><td>" + [
-                                    v[0],
-                                    getAttrByName(v[1], "clan"),
-                                    getAttrByName(v[1], "blood_potency"),
-                                    getAttrByName(v[1], "hunger"),
-                                    getAttrByName(v[1], "bp_slakekill"),
-                                    parseInt(getAttrByName(v[1], "bp_slakekill")) + (3 - parseInt(getAttrByName(v[1], "bp_slakekill"))),
-                                    Math.max(parseInt(getAttrByName(v[1], "bp_slakekill")) + randomInteger(5 - parseInt(getAttrByName(v[1], "bp_slakekill"))) - 2, parseInt(getAttrByName(v[1], "bp_slakekill")))
-                                ].join("</td><td>") + "</td></tr>")*/,
-                                npcHungerTable = `<table><tr><th style="width:150px;">ID</th><th style="width:150px;">Name</th><th style="width:50px;">Hunger</th></tr>${npcHungerStrings.join("")}</table>`/*,
-                                //npcTable = `<table><tr><th style="width:150px;">Name</th><th style="width:75px;">Clan</th><th style="width:25px;">BP</th><th style="width:50px;">Hunger</th><th style="width:30px;">Min</th><th style="width:30px;">Max</th><th style="width:30px;">Rand</th></tr>${npcStats.join("")}</table>`
-                                */D.Alert(npcHungerTable)
+                                ])
+                            for (const hungerData of npcHungers)
+                                setAttrs(hungerData[0], {hunger: hungerData[2]})
+                            break
+                        }
+                        case "changestat": {
+                            changeAttrName(args.shift(), args.shift())
                             break
                         }
                         // no default
                     }
                     break
-                case "set":
+                }
+                case "send": {
                     switch (args.shift().toLowerCase()) {
-                        case "npcs": {
-                            switch (args.shift().toLowerCase()) {
-                                case "hunger": {
-                                    const registeredIDs = _.map(_.values(REGISTRY), v => v.id),
-                                        npcChars = _.map(_.filter(D.GetChars("all"), v => !registeredIDs.includes(v.id)), v => [v.get("name"), v.id]),
-                                        npcVamps = _.filter(npcChars, v => getAttrByName(v[1], "clan").length > 2 && getAttrByName(v[1], "clan") !== "Ghoul"),
-                                        npcHungers = _.map(npcVamps, v => [
-                                            v[1],
-                                            v[0],
-                                            Math.max(parseInt(getAttrByName(v[1], "bp_slakekill")) + randomInteger(5 - parseInt(getAttrByName(v[1], "bp_slakekill"))) - 2, parseInt(getAttrByName(v[1], "bp_slakekill")))                                    
-                                        ])
-                                    for (const hungerData of npcHungers)
-                                        setAttrs(hungerData[0], {hunger: hungerData[2]})
-                                    break
-                                }
-                                // no default
-                            }
+                        case "home": {
+                            const charDatas = (D.GetChars(msg).filter(x => getCharType(x) === "pc") || D.GetChars("registered")).map(x => D.GetCharData(x))
+                            for (const charData of charDatas)
+                                Media.SetArea(charData.tokenName, `${charData.quadrant}Token`)
                             break
                         }
-                        case "stakes":
-                            displayStakes()
+                        case "district": {
+                            const tokenObjs = D.GetSelected(msg, "token") || _.values(REGISTRY).map(x => Media.GetObj(x.tokenName))
+                            for (const tokenObj of tokenObjs)
+                                Media.SetArea(tokenObj, `District${D.Capitalize(args[0])}`)
                             break
-                        case "desire":
-                            displayDesires()
-                            break
-                        case "attr":
-                        case "attrs":
-                        case "stat":
-                        case "stats":
-                            if (args[0].includes(":") && msg.selected && msg.selected[0]) {
-                                char = D.GetChar(msg)
-                            } else if (!args[0].includes(":")) {
-                                char = D.GetChar(args.shift())
-                            } else {
-                                D.Alert("Select a character or provide a character reference first!", "CHARS:!set attr")
-                                return
-                            }
-                            if (char) {
-                                D.Alert(`Setting the following stats on ${char.get("name")}:<br><br>${D.JS(args.join(" ").replace(/[,|\s]\s*?/gu, "|").split("|"))}`)
-                                for (const statpair of args.join(" ").replace(/[,|\s]\s*?/gu, "|").split("|"))
-                                    attrList[statpair.split(":")[0]] = parseInt(statpair.split(":")[1]) || 0
-                                setAttrs(char.id, attrList)
-                            } else {
-                                D.Alert("Unable to find character.", "CHARS:!set attr")
-                            }
-                            break
-                            // no default
-                    }
-                    break
-                case "xp": // !char xp Cost Session Message, with some character tokens selected.
-                    chars = _.compact(D.GetChars(msg) || D.GetChars("registered"))
-                    DB(`!char xp COMMAND RECEIVED<br><br>Characters: ${D.JS(_.map(chars, v => v.get("name")))}`, "awardXP")
-                    if (chars) {
-                        amount = parseInt(args.shift()) || 0
-                        _.each(chars, (char) => {
-                            if (awardXP(char, amount, args.join(" ")))
-                                D.Alert(`${amount} XP awarded to ${D.GetName(char)}`, "CHARS:!char xp")
-                            else
-                                THROW(`FAILED to award ${JSON.stringify(amount)} XP to ${JSON.stringify(D.GetName(char))}`, "!char xp")
-                        })
-                    } else {
-                        THROW("Select character tokens or register characters first!", "!char xp")
-                    }
-                    break
-                case "heal":
-                    isHealing = true
-            // falls through
-                case "dmg": case "damage":
-                case "spend":
-                    chars = D.GetChars(msg)
-                    if (chars) {
-                        trait = args.shift().toLowerCase();
-                        [dtype, dmg] = [
-                            ["hum", "humanity", "stain", "stains"].includes(trait) ? null : args.shift(),
-                            (isHealing ? -1 : 1) * parseInt(args.shift()) || 0
-                        ]
-                        _.each(chars, (char) => {
-                            if (adjustDamage(char, trait, dtype, dmg))
-                                D.Alert(`Dealt ${D.JS(dmg)}${dtype ? ` ${D.JS(dtype)}` : ""} ${D.JS(trait)} damage to ${D.GetName(char)}`, "CHARS:!char dmg")
-                            else
-                                THROW(`FAILED to damage ${D.GetName(char)}`, "!char dmg")
-                        })
-                    } else {
-                        THROW("Select character tokens first!", "!char dmg")
-                    }
-                    break
-                
-                case "rep":
-                case "repeating":
-                case "repeat":
-                    switch (args.shift().toLowerCase()) {
-                        case "copy":
-                        case "copyrow":
-                            if (msg.selected && msg.selected[0] && args.length === 3)
-                                D.CopyToSec(msg, ...args)
-                            break
-                        case "sort":
-                        case "sortrow":
-                            if (msg.selected && msg.selected[0] && args.length === 2)
-                                D.SortRepSec(msg, args.shift(), sortFunc)
-                            break
-                        case "split":
-                        case "splitsecs":
-                            if (msg.selected && msg.selected[0] && args.length >= 3)
-                                D.SplitRepSec(msg, args.shift(), args.shift(), sortFunc, args[0] || null)
-                            break
-                    // no default
-                    }
-                    break                                
-                case "weekly": case "resource": case "weeklyresource":
-                    if (args[0] && args[0].length > 2)
-                        switch (args.shift().toLowerCase()) {
-                            case "reset":
-                                resetResources()
-                                break
-                            case "change": case "adjust": case "spend": case "restore": case "refund":
-                                adjustResource(args.shift().toUpperCase(), parseInt(args.shift()), parseInt(args.shift()))
-                                break
-                            default:
-                                break
                         }
-                    displayResources()
-                    break
-                case "defaults":
-                    populateDefaults(args.shift())
-                    break
-                case "setnpcs":
-                    setNPCStats(args.shift())
-                    break
-                case "changeattr":
-                    changeAttrName(args.shift(), args.shift())
-                    break
-                case "fixtimeline": {
-                    const endDates = D.KeyMapObj(D.GetRepStats(msg, "timeline", null, "tlenddate", "rowID", "val"), null, v => TimeTracker.GetDate(v[0].replace(/^\W\s/gu, "")).getTime())
-                    D.Alert(D.JS(endDates, true))
-                    _.each(endDates, (v, k) => {
-                        D.SetRepStat(msg, "timeline", k, "tlsortby", v)
-                    })
-                    break
-                }
-                case "checktimeline": {
-                    const sortDates = D.GetRepStats(msg, "timeline", null, "tlsortby", "rowID", "val")
-                    D.Alert(D.JS(sortDates, true))
-                    break
-                }
-                case "checksortby": {
-                    const sortDates = D.GetRepStats(msg, "timeline", null, "tlsortby", "rowID", "val")
-                    D.Alert(D.JS(sortDates, true))
-                    break
-                }
-                case "sendhome": {
-                    if (!D.GetSelected(msg, "character"))
-                        for (const charData of _.values(STATEREF.registry))
-                            Media.SetArea(charData.tokenName, `${charData.quadrant}Token`)
-                    else
-                        for (const charData of _.values(STATEREF.registry).filter(x => D.GetSelected(msg, "character").map(xx => xx.id).includes(x.id)))
-                            Media.SetArea(charData.tokenName, `${charData.quadrant}Token`)
-                    break
+                        case "site": {
+
+                            break
+                        }
+                        // no default
+                    }
                 }
             // no default
             }
@@ -442,7 +356,7 @@ const Char = (() => {
                         break
                     case "triggertimelinesort":
                         sortTimeline(obj.get("_characterid"))
-                    /* no default */
+                    // no default
                 }
         },
         handleAddAttr = (obj) => {
@@ -463,23 +377,23 @@ const Char = (() => {
     // #endregion
 
     // #region Register Characters & Token Image Alternates,
-    const registerChar = (msg, num, shortName, initial, quadrant) => {
+    const registerChar = (msg, shortName, initial, quadrant) => {
             if (D.GetSelected(msg).length > 1) {
-                THROW("Please select only one token.", "RegisterChar")
+                THROW("Please select only one token.", "registerChar")
             } else {
-                const char = D.GetChar(msg),
-                    token = D.GetSelected(msg)[0],
-                    charNum = num ? num : _.keys(REGISTRY).length + 1,
-                    charID = char.id,
-                    charName = D.GetName(char),
-                    playerID = D.GetPlayerID(char),
+                const charObj = D.GetChar(msg),
+                    tokenObj = D.GetSelected(msg)[0],
+                    charID = charObj.id,
+                    charName = D.GetName(charObj),
+                    playerID = D.GetPlayerID(charObj),
                     playerName = D.GetName(D.GetPlayer(playerID))
-                if (!char) {
-                    THROW("No character found!", "RegisterChar")
-                } else if (!token) {
-                    THROW("Please select a character token.", "RegisterChar")
-                } else {
-                    REGISTRY[charNum] = {
+                if (!charObj) {
+                    THROW("No character found!", "registerChar")
+                } else if (!tokenObj) {
+                    THROW("Please select a character token.", "registerChar")
+                } else if (!D.IsIn(quadrant, _.keys(C.QUADRANTS))) {
+                    THROW("Quadrant must be one of: TopLeft, BotLeft, TopRight, BotRight.", "registerChar")
+                    REGISTRY[quadrant] = {
                         id: charID,
                         name: charName,
                         playerID: playerID,
@@ -489,24 +403,22 @@ const Char = (() => {
                         initial: initial,
                         quadrant: quadrant
                     }
-                    D.Alert(`Character #${D.JSL(charNum)} Registered:<br><br>${D.JS(REGISTRY[charNum])}`, "CHARS:RegisterChar")
+                    D.Alert(`${D.JSL(charName)} Registered to ${quadrant} quadrant:<br><br>${D.JS(REGISTRY[quadrant])}`, "registerChar")
                 }
             }
-        },
-        registerToken = (msg, hostName, srcName) => {
-            if (!Media.GetKey(hostName))
-                THROW(`No image registered under ${hostName}`, "RegisterToken")
-            else
-                Media.AddSrc(msg, hostName, srcName)
         },
         unregisterChar = (nameRef) => {
             if (VAL({string: nameRef}, "unregisterChar")) {
                 const regKey = _.findKey(REGISTRY, v => D.FuzzyMatch(v.name, nameRef))
                 D.Alert(`nameRef: ${nameRef}<br>regKey: ${D.JS(regKey)}`, "unregisterChar")
-                if (regKey >= 0 && REGISTRY[regKey])
+                if (REGISTRY[regKey])
                     delete REGISTRY[regKey]
             }
         }
+    // #endregion
+
+    // #region GETTERS: Check Character Type
+    const getCharType = (charRef) => D.GetChar(charRef) && (D.IsIn(D.GetChar(charRef).id, _.values(REGISTRY).map(x => x.id)) ? "pc" : "npc") || false
     // #endregion
 
     // #region Awarding XP,
@@ -982,6 +894,8 @@ const Char = (() => {
     DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
     TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"], */
     const populateDefaults = (charRef) => {
+        // Initializes (or resets) a given character with default values for all stats.
+        // Can provide a number for charRef, in which case it will reset values of 10 characters starting from that index position in the keys of NPCSTATS.
             const attrList = {},
                 charIDs = [],
                 npcStats = JSON.parse(NPCSTATS),
@@ -1033,6 +947,7 @@ const Char = (() => {
             D.Alert(D.JS(attrList))
         },
         setNPCStats = (charRef) => {
+            // Applies NPCSTATS (output from the NPC Stats Google Sheet) to the given character reference, OR all characters in NPC stats. 
             const charIDs = [],
                 npcStats = JSON.parse(NPCSTATS)
             let errorLog = ""

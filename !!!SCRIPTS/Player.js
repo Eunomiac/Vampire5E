@@ -54,15 +54,15 @@ const Player = (() => {
                 if (imgData.unObfSrc !== "sense") {
                     Media.SetData(token, { unObfSrc: "sense" })
                     if (imgData.isObf)
-                        Media.ToggleToken(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
+                        Media.Set(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
                     else
-                        Media.ToggleToken(token, `sense${imgData.isDaylighter ? "DL" : ""}`)
+                        Media.Set(token, `sense${imgData.isDaylighter ? "DL" : ""}`)
                 } else {
                     Media.SetData(token, { unObfSrc: "base" })
                     if (imgData.isObf)
-                        Media.ToggleToken(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
+                        Media.Set(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
                     else
-                        Media.ToggleToken(token, `base${imgData.isDaylighter ? "DL" : ""}`)
+                        Media.Set(token, `base${imgData.isDaylighter ? "DL" : ""}`)
                 }
                 break
             case "!hide":
@@ -78,14 +78,14 @@ const Player = (() => {
                 imgData = Media.GetData(token)
                 //D.Alert(`ImgData: ${D.JS(token)}`)
                 if (imgData.isObf) {
-                    Media.ToggleToken(token, `${imgData.unObfSrc || "base"}${imgData.isDaylighter ? "DL" : ""}`)
+                    Media.Set(token, `${imgData.unObfSrc || "base"}${imgData.isDaylighter ? "DL" : ""}`)
                     Media.SetData(token, { isObf: false })
                 } else {
                     if (imgData.unObfSrc === "sense") {
-                        Media.ToggleToken(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
+                        Media.Set(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
                         Media.SetData(token, { isObf: true })
                     } else {
-                        Media.ToggleToken(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
+                        Media.Set(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
                         Media.SetData(token, { isObf: true })
                     }
                 }
@@ -105,11 +105,11 @@ const Player = (() => {
                 if (imgData.unObfSrc === "mask") {
                     Media.SetData(token, { unObfSrc: "base" })
                     if (!imgData.isObf)
-                        Media.ToggleToken(token, "base")
+                        Media.Set(token, "base")
                 } else {
                     Media.SetData(token, { unObfSrc: "mask" })
                     if (!imgData.isObf)
-                        Media.ToggleToken(token, "mask")
+                        Media.Set(token, "mask")
                 }
                 break
             case "!famulus":

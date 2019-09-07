@@ -79,21 +79,18 @@ const Session = (() => {
 
                     if (STATEREF.isDaylighterSession) {
                         Media.SetData(token, { isDaylighter: true, unObfSrc: "base" })
-                        Media.ToggleToken(token, "baseDL")
+                        Media.Set(token, "baseDL")
                         if (charData.famulusTokenID) {
                             famToken = Media.GetObj(charData.famulusTokenID)
                             Media.Toggle(famToken, false)
                         }
                     } else {
                         Media.SetData(token, { isDaylighter: false, unObfSrc: "base" })
-                        Media.ToggleToken(token, "base")
+                        Media.Set(token, "base")
                     }
                 }
                 break
-            case "":
-
-                break
-            default: break
+            // no default
         }
     }
     // #endregion
@@ -125,9 +122,10 @@ const Session = (() => {
             Media.Initialize()
             for (const textKey of [..._.map(D.GetCharVals("registered", "shortName"), v => `${v}Desire`), "TimeTracker", "tempF", "tempC", "weather", "stakedAdvantages", "weeklyResources"])
                 Media.SetText(textKey, {color: Media.GetTextData(textKey).color} )
-            for (const tokenName of _.values(D.GetCharVals("registered", "tokenName"))) {
-                Media.Set(tokenName, STATEREF.tokenRecord[tokenName] || "base") 
-                Media.SetParams(tokenName, STATEREF.tokenHomePos[tokenName])
+            for (const quadrant of _.keys(Char.REGISTRY)) {
+                const tokenName = Char.REGISTRY[quadrant].tokenName
+                Media.Set(tokenName, STATEREF.tokenRecord[tokenName] || "base")
+                Media.SetArea(tokenName, `${quadrant}Token`)
             }
             Media.SetLocation(STATEREF.locationRecord) 
             TimeTracker.StartClock()

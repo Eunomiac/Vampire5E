@@ -50,7 +50,7 @@ const D = (() => {
     const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
         TRACE.push("handleInput")
         switch (call) {
-            case "add": case "set":
+            case "add": case "set": {
                 switch(args.shift().toLowerCase()) {
                     case "blacklist":
                         setBlackList(args)
@@ -58,10 +58,11 @@ const D = (() => {
                     case "watch": case "dbwatch": case "watchlist":
                         setWatchList(args)
                         break
-                    /* no default */
+                    // no default
                 }
                 break
-            case "get":
+            }
+            case "get": {
                 switch(args.shift().toLowerCase()) {
                     case "blacklist":
                         sendToGM(getBlackList(), "DEBUG BLACKLIST")
@@ -72,10 +73,11 @@ const D = (() => {
                     case "debug": case "log": case "dblog":
                         getDebugRecord()
                         break
-                    /* no default */
+                    // no default
                 }
                 break
-            case "clear": case "reset":
+            }
+            case "clear": case "reset": {
                 switch((args.shift() || "none").toLowerCase()) {
                     case "watch": case "dbwatch": case "watchlist":
                         setWatchList("clear")
@@ -88,19 +90,8 @@ const D = (() => {
                         Handouts.RemoveAll("... DBLog", "debug")
                         STATEREF.DEBUGLOG = STATEREF.DEBUGLOG || []
                         break
-                    /* no default */
+                    // no default
                 }
-                break
-            case "rep": { // !get rep section key1:val1,key2:val2 statName groupBy pickProperty  (can be "null")
-                const [section, rowFilter, statName, groupBy, pickProperty] = args
-                D.Alert(`${jStr(getRepStats(
-                    msg,
-                    section,
-                    rowFilter === "null" || !rowFilter ? null : parseToObj(rowFilter),
-                    statName === "null" ? null : statName,
-                    groupBy === "null" ? null : groupBy,
-                    pickProperty === "null" ? null : pickProperty
-                ))}`, "Testing GetRepAttr")
                 break
             }
             case "toggle": {
@@ -226,6 +217,7 @@ const D = (() => {
                 replace(/&gt;&gt;/gu, ">"). // Restores doubled right brackets to code.
                 replace(/&lt;&lt;/gu, "<")}</pre>` // Restores doubled left brackets to code.
         },
+        parseArgs = (args, delim = " ") => (VAL({array: args}) ? args.join(" ") : args).split(new RegExp(`,?${delim}+`, "gu")).map(x => x.trim()),
         numToText = (num, isTitleCase = false) => {
             const numString = `${jStr(num)}`,
                 parseThreeDigits = v => {
@@ -499,6 +491,18 @@ const D = (() => {
                                 errorLines.push(`Invalid character object: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
                             else
                                 charArray.push(v)
+                            break                        
+                        case "playerchar": case "playercharref": case "pcref": case "pc":
+                            if (!getChar(v, true))
+                                errorLines.push(`Invalid character reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                            else if (!_.values(Char.REGISTRY).map(x => x.id).includes(getChar(v, true).id))
+                                errorLines.push(`Character reference is not a player character: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                            break                                               
+                        case "npc": case "npcref": case "spc": case "spcref":
+                            if (!getChar(v, true))
+                                errorLines.push(`Invalid character reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                            else if (_.values(Char.REGISTRY).map(x => x.id).includes(getChar(v, true).id))
+                                errorLines.push(`Character reference is not a non-player character: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
                             break
                         case "player": case "playerref":
                             if (!getPlayer(v, true))
@@ -692,7 +696,7 @@ const D = (() => {
                     "character" --> Will return character objects associated with selected tokens. */
             const selObjs = new Set(),
                 types = _.flatten([typeFilter])
-            if (VAL({ selection: msg }, "getSelected"))
+            if (VAL({ selection: msg }))
                 _.each(_.compact(msg.selected), v => {
                     //DB(`MSG Iteration:<br><br>Selected (${msg.selected.length}): ${jStr(msg.selected, true)}<br><br>Current V: ${jStr(v)}`, "getSelected")
                     if (types.length === 0 || types.includes(v._type))
@@ -704,7 +708,9 @@ const D = (() => {
                             selObjs.add(getObj("character", getObj("graphic", v._id).get("represents")))
                 })
             removeFirst(TRACE, "getSelected")
-            return selObjs.size > 0 ? [...selObjs] : THROW(`None of the selected objects are of type(s) '${jStrL(types)}'`, "getSelected")
+            if (selObjs.size === 0)
+                THROW(`None of the selected objects are of type(s) '${jStrL(types)}'`, "getSelected")
+            return [...selObjs] 
         },
         getName = (value, isShort = false) => {
             // Returns the NAME of the Graphic, Character or Player (DISPLAYNAME) given: object or ID.
@@ -817,10 +823,21 @@ const D = (() => {
                 isSilent ? false : THROW(`No Characters Found using Search Parameters:<br>${jStr(searchParams)} in Character Reference<br>${jStr(charRef)}`, "getChars")
                 : _.reject([...charObjs], v => v.get("name") === "Jesse, Good Lad That He Is")
         }, getChar = (charRef, isSilent = false) => getChars(charRef, isSilent)[0],
-        getCharData = (charRef, isSilent = false) => {
+        getCharData = (charRef) => {
             const charObj = getChar(charRef)
-            if (VAL({charObj: charObj}, isSilent ? null : "getCharData"))
+            if (VAL({playerchar: charObj}, "getCharData"))
                 return _.find(_.values(Char.REGISTRY), v => v.id === charObj.id)
+            else if (VAL({npc: charObj}, "getCharData"))
+                return {
+                    id: charObj.id,
+                    name: charObj.get("name"),
+                    playerID: getGMID(),
+                    playerName: "Storyteller",
+                    tokenName: null,
+                    shortName: charObj.get("name"),
+                    initial: null,
+                    quadrant: null
+                }
             return false
         },
         getCharsProps = (charRefs, property, isSilent = false) => {
@@ -1291,6 +1308,7 @@ const D = (() => {
 
         CHARWIDTH: STATEREF.CHARWIDTH,
         JS: jStr, JSL: jStrL, JSH: jStrH, JSC: jStrC,
+        ParseArgs: parseArgs,
         NumToText: numToText, TextToNum: textToNum,
         Ordinal: ordinal,
         Capitalize: capitalize,
@@ -1323,7 +1341,7 @@ const D = (() => {
         GetRepStats: getRepStats, GetRepStat: getRepStat,
         GetPlayerID: getPlayerID, GetPlayer: getPlayer,
 
-        SetStat: setStat,
+        SetStat: setStat, SetStats: setStats,
         SetRepStats: setRepStats, SetRepStat: setRepStat,
 
         ParseRepStat: parseRepStat,

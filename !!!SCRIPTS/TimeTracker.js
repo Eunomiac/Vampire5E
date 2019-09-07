@@ -61,7 +61,7 @@ const TimeTracker = (() => {
                         getNextAlarms()
                         getPastAlarms()
                         break
-                    /* no default */
+                    // no default
                 }
                 break
             case "set":
@@ -81,7 +81,7 @@ const TimeTracker = (() => {
             case "setalarm": // !time setalarm 2 d alarmName message ending in a pipe|space-delim'd list of people to display to
                 setAlarm(addTime(STATEREF.dateObj, parseInt(args.shift()), args.shift()), args.shift(), args.join(" ").split("|")[0], null, args.join(" ").split("|")[1].split(" "))
                 break
-            case "run":
+            case "start":
                 startClock()
                 break
             case "stop":
@@ -1044,7 +1044,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                     case "noon":
                         targetMins = 12 * 60
                         break
-                    /* no default */
+                    // no default
                 }
                 targetDate.setUTCHours(0)
                 if (curMins >= targetMins)
