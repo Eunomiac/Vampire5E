@@ -53,6 +53,7 @@ const Roller = (() => {
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
+    // eslint-disable-next-line no-unused-vars
     const newHandleInput = (msg, who, call, args) => {        
         let charObj, params, rollType,
             name = "",

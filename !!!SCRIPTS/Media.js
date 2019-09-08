@@ -1654,7 +1654,8 @@ const Media = (() => {
             }
             imgObj.set(imgParams)
             return true
-        },
+        },        
+        // eslint-disable-next-line no-unused-vars
         spreadImages = (leftImgRef, rightImgRef, midImgRefOrRefs, width, minOverlap = 20, maxOverlap = 40) => {
             const leftData = getImageData(leftImgRef),
                 rightData = getImageData(rightImgRef),
@@ -2025,17 +2026,17 @@ const Media = (() => {
                     textStrings[i-1] = textStrings[i-1] + "-"
                     textStrings = [...[...textStrings].splice(0,i), ...[...textStrings].splice(i+1)]
                 }
-            let [stringCount, lineCount] = [0, 0]
+            //let [stringCount, lineCount] = [0, 0]
             while (textStrings.length) {
                 let thisString = "",
                     nextWidth = getTextWidth(textObj, textStrings[0] + (textStrings[0].endsWith("-") ? "" : " "), false)
-                lineCount++
-                stringCount = 0
+                //lineCount++
+                //stringCount = 0
                 //DB(`LINE ${lineCount}.  NextWidth: ${nextWidth}`, "splitTextLines")
                 while (nextWidth < maxWidth && textStrings.length) {
                     thisString += textStrings[0].endsWith("-") ? `${textStrings.shift()}` : `${textStrings.shift()} `
                     nextWidth = textStrings.length ? getTextWidth(textObj, thisString + textStrings[0] + (textStrings[0].endsWith("-") ? "" : " "), false) : 0
-                    stringCount++
+                    //stringCount++
                     //DB(`... STRING ${stringCount}: ${thisString}  NextWidth: ${nextWidth}`, "splitTextLines")
                 }
                 //DB(`ADDING LINE: ${thisString} with width ${getTextWidth(textObj, thisString, false)}`, "splitTextLines")
