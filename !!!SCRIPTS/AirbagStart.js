@@ -31,11 +31,11 @@ let scriptRanges = [];
 
 // Line Number Parser
 const GetScriptLine = (traceable, markMode) => {
-    const match = traceable.stack.match(/apiscript.js:(\d+)/g);
+    const match = (traceable.stack || "").match(/apiscript.js:(\d+)/g);
     if (markMode) {
-        return parseInt(match[1].split(':')[1]);
+        return parseInt(match && match[1] && match[1].split(':')[1] || 9999);
     }
-    return parseInt(match[0].split(':')[1]);
+    return parseInt(match && match[0] && match[0].split(':')[1] || 9999);
 };
 
 // The last range entry that was added

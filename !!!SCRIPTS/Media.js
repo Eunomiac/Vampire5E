@@ -35,6 +35,7 @@ const Media = (() => {
         STATEREF.textregistry = STATEREF.textregistry || {}
         STATEREF.idregistry = STATEREF.idregistry || {}
         STATEREF.areas = STATEREF.areas || {}
+        STATEREF.tokenregistry = STATEREF.tokenregistry || {}
         STATEREF.imgResizeDims = STATEREF.imgResizeDims || { height: 100, width: 100 }
         STATEREF.activeAnimations = STATEREF.activeAnimations || []
         STATEREF.activeTimeouts = STATEREF.activeTimeouts || []
@@ -62,21 +63,27 @@ const Media = (() => {
                 case "!img": {
                     switch (call.shift().toLowerCase()) {
                         case "reg": case "register": {
-                            if (!args[0]) {
-                                D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; [params (\"key:value, key:value\")]<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;!img reg img &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; [params (\"key:value, key:value\")]", "MEDIA: !img reg")
-                            } else {                                
-                                const imgObj = getImageObj(msg)
-                                DB(`Image Object: ${D.JS(getImageObj(msg))}<br><br><br>MSG:<br><br>${D.JS(msg)}`, "MEDIA: !img reg")
-                                if (!imgObj) {
-                                    D.Alert("Select an image object first!", "MEDIA: !img reg")
-                                } else {
-                                    const [hostName, srcName, objLayer, isStartActive] = [args.shift(), args.shift(), args.shift(), args.shift()]
-                                    if (hostName && srcName && objLayer && isStartActive)
-                                        regImage(imgObj, hostName, srcName, objLayer, !isStartActive || isStartActive !== "false", D.ParseToObj(args.join(" ")))
-                                    else
-                                        D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; [params (\"key:value, key:value\")]", "MEDIA: !img reg")
+                            const imgObj = getImageObj(msg)
+                            if (args[0] && VAL({graphicObj: imgObj}, "!img reg"))                                
+                                switch (args[0]) {
+                                    case "token": {
+                                        args.shift()
+                                        const tokenName = args.shift()
+                                        if (VAL({string: tokenName}, "!img reg token"))
+                                            regRandomizerToken(imgObj, tokenName)
+                                        break
+                                    }
+                                    default: {
+                                        const [hostName, srcName, objLayer, isStartActive] = [args.shift(), args.shift(), args.shift(), args.shift()]
+                                        if (hostName && srcName && objLayer && isStartActive)
+                                            regImage(imgObj, hostName, srcName, objLayer, !isStartActive || isStartActive !== "false", D.ParseToObj(args.join(" ")))
+                                        else
+                                            D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; [params (\"key:value, key:value\")]", "MEDIA: !img reg")    
+                                        break
+                                    }
                                 }
-                            }
+                            else
+                                D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; [params (\"key:value, key:value\")]<br>!img reg token &lt;tokenName&rt;", "MEDIA: !img reg")
                             break
                         }
                         case "set": {
@@ -162,6 +169,12 @@ const Media = (() => {
                                     } else {
                                         D.Alert(`Host name '${D.JS(hostName)}' not registered.`, "MEDIA: !img add src")
                                     }
+                                    break
+                                }
+                                case "tokensrc": case "tokensource": {
+                                    const tokenName = args.shift()
+                                    if (isRegImg(tokenName))
+                                        addTokenSrc(getImageObj(msg), tokenName)
                                     break
                                 }
                                 default: {
@@ -642,6 +655,8 @@ const Media = (() => {
                 LOG(obj.get("imgsrc"))
             if (imgResize)
                 obj.set(STATEREF.imgResizeDims)
+            if (isRandomizerToken(obj))
+                setRandomizerToken(obj)
         }
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
@@ -653,6 +668,7 @@ const Media = (() => {
         IDREGISTRY = STATEREF.idregistry,
         TEXTREGISTRY = STATEREF.textregistry,
         AREAS = STATEREF.areas,
+        TOKENREGISTRY = STATEREF.tokenregistry,
         ZLEVELS = {
             map: {
                 DistrictsAndSites: {
@@ -937,6 +953,13 @@ const Media = (() => {
 
     // #region IMAGE OBJECT & AREA GETTERS: Image Object & Data Retrieval
     const isRegImg = imgRef => Boolean(getImageKey(imgRef)),
+        isRandomizerToken = tokenObj => {
+            const tokenBaseSrc = tokenObj && tokenObj.get && tokenObj.get("imgsrc"),
+                tokenBase = tokenBaseSrc && tokenBaseSrc.match(/.*?\/images\/(.*?)\/[^/]*?\.png\?(.*)/u).slice(1).join("/")
+            if (tokenBase && TOKENREGISTRY[tokenBase] && isRegImg(TOKENREGISTRY[tokenBase].name))
+                return tokenBase
+            return false
+        },
         getImageKey = (imgRef, isSilent = false) => {
             try {
                 const imgName =
@@ -1116,6 +1139,20 @@ const Media = (() => {
                 THROW("", "addImgSrc", errObj)
             }
         },
+        addTokenSrc = (tokenSrcRef, tokenName) => {
+            try {
+                const tokenSrc = (_.isString(tokenSrcRef) && tokenSrcRef.includes("http") ?
+                        tokenSrcRef :
+                        getImageObj(tokenSrcRef).get("imgsrc") || "").replace(/\w*?(?=\.\w+?\?)/u, "thumb"),
+                    tokenBase = isRandomizerToken(getImageObj(tokenName))
+                if (tokenBase)
+                    TOKENREGISTRY[tokenBase].srcs.push(tokenSrc)
+                else
+                    D.Alert(`Token base '${D.JS(tokenBase)} is not registered in the token registry.`, "addTokenSrc")
+            } catch (errObj) {
+                THROW("", "addImgSrc", errObj)
+            }
+        },
         regImage = (imgRef, imgName, srcName, activeLayer, startActive, options = {}, isSilent = false) => {
             // D.Alert(`Options for '${D.JS(imgName)}': ${D.JS(options)}`, "MEDIA: regImage")
             const imgObj = getImageObj(imgRef)
@@ -1163,6 +1200,23 @@ const Media = (() => {
             }
 
             return THROW(`Invalid img reference '${D.JSL(imgRef)}'`, "regImage")
+        },
+        regRandomizerToken = (imgRef, tokenName) => {
+            if (!isRegImg(tokenName))
+                regImage(imgRef, tokenName, "base", "objects", true)            
+            const tokenBaseSrc = getImageData(tokenName).srcs.base,
+                tokenKey = getImageKey(tokenName)
+            if (tokenBaseSrc) {
+                const tokenBase = tokenBaseSrc.match(/.*?\/images\/(.*?)\/[^/]*?\.png\?(.*)/u).slice(1).join("/")
+                D.Alert(`Token Base Src: '${tokenBaseSrc}'<br>Token Base: '${tokenBase}'`, "regRandomizerToken")
+                TOKENREGISTRY[tokenBase] = {
+                    name: tokenKey,
+                    srcs: [tokenBaseSrc]
+                }
+                IMAGEREGISTRY[tokenKey].tokenSrcCount = 0
+            } else {
+                D.Alert(`No 'base' source found for ${tokenName}`, "regRandomizerToken")
+            }
         },
         regArea = (imgRef, areaName) => {
             const imgObj = getImageObj(imgRef)
@@ -1236,6 +1290,14 @@ const Media = (() => {
             }
 
             return THROW(`Invalid category '${D.JSL(imgRef)}'`, "setImage()")
+        },
+        setRandomizerToken = tokenObj => {
+            const tokenBase = isRandomizerToken(tokenObj),
+                tokenKey = tokenBase && TOKENREGISTRY[tokenBase].name
+            if (tokenBase && tokenKey) {
+                IMAGEREGISTRY[tokenKey].tokenSrcCount = _.isNumber(IMAGEREGISTRY[tokenKey].tokenSrcCount) && IMAGEREGISTRY[tokenKey].tokenSrcCount < TOKENREGISTRY[tokenBase].srcs.length - 1 ? IMAGEREGISTRY[tokenKey].tokenSrcCount + 1 : 0
+                tokenObj.set("imgsrc", TOKENREGISTRY[tokenBase].srcs[IMAGEREGISTRY[tokenKey].tokenSrcCount])
+            }
         },
         setImgParams = (imgRef, params) => {
             const imgObj = getImageObj(imgRef)
@@ -2304,11 +2366,11 @@ const Media = (() => {
                             return THROW(`No Image Registered for ZIndex Entry '${x[1]}'`, "setZIndices")
                         return IMAGEREGISTRY[x[1]]
                     })),
-                    imgObjsSorted = imgDatas.sort((a,b) => b.zIndex - a.zIndex).map(x => getImageObj(x.id)),
+                    imgObjsSorted = _.compact(imgDatas.sort((a,b) => b.zIndex - a.zIndex).map(x => getImageObj(x.id) || null)),
                     allMediaObjs = []
                 if (category === "map") {
-                    allMediaObjs.push(..._.keys(TEXTREGISTRY).filter(x => !x.includes("Shadow")).map(x => getTextObj(x)))
-                    allMediaObjs.push(..._.keys(TEXTREGISTRY).filter(x => x.includes("Shadow")).map(x => getTextObj(x)))
+                    allMediaObjs.push(..._.compact(_.keys(TEXTREGISTRY).filter(x => !x.includes("Shadow")).map(x => getTextObj(x) || null)))
+                    allMediaObjs.push(..._.compact(_.keys(TEXTREGISTRY).filter(x => x.includes("Shadow")).map(x => getTextObj(x) || null)))
                 }
                 allMediaObjs.push(...imgObjsSorted)
                 for (let i = 0; i < allMediaObjs.length; i++)
@@ -2317,9 +2379,11 @@ const Media = (() => {
         },
         initMedia = () => {
             for (const imgKey of _.keys(IMAGEREGISTRY))
-                toggleImage(imgKey, IMAGEREGISTRY[imgKey].startActive)
-            for (const textKey of _.keys(TEXTREGISTRY)) 
-                toggleText(textKey, TEXTREGISTRY[textKey].startActive)
+                if (getImageObj(imgKey))
+                    toggleImage(imgKey, IMAGEREGISTRY[imgKey].startActive)
+            for (const textKey of _.keys(TEXTREGISTRY))
+                if (getTextObj(textKey))
+                    toggleText(textKey, TEXTREGISTRY[textKey].startActive)
             setZIndices()
         }
     // #endregion
