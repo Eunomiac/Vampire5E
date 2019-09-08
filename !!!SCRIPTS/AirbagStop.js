@@ -1,8 +1,8 @@
-        MarkStart('AirbagStop');
-        airLog(runMsg);
-    } catch (e) {
-        handleCrash(e);
-    }
+MarkStart('AirbagStop');
+airLog(runMsg);
+} catch (e) {
+handleCrash(e);
+}
 };
 
 codebase();

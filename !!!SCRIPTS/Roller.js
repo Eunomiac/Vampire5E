@@ -536,7 +536,7 @@ const Roller = (() => {
                     args[1] = ""
                 resonance = getResonance(...args)
                 break
-            case "!resCheck":
+            case "!resCheck": {
                 if (args[0] === "x")
                     args[0] = ""
                 if (args[1] === "x")
@@ -587,6 +587,7 @@ const Roller = (() => {
                     C.CHATHTML.colorBody(resIntLine)
                 ]))
                 break
+            }
             case "!nxsroll":
             case "!xnsroll":
             case "!xsroll":
@@ -595,8 +596,7 @@ const Roller = (() => {
             case "!sxnroll":
             case "!nsroll":
             case "!snroll":
-            case "!sroll":
-            {
+            case "!sroll": {
                 rollType = "secret"
                 const params = args.join(" ").split("|")
                 isSilent = call.includes("x")
@@ -612,8 +612,7 @@ const Roller = (() => {
                     makeSecretRoll(chars, params, isSilent, isMaskingTraits)
                 break
             }
-            case "!getchareffects":
-            {
+            case "!getchareffects": {
                 let char = D.GetChar(msg)
                 if (!char) {
                     THROW("Select a character token first!", "!getchareffects")
@@ -626,17 +625,33 @@ const Roller = (() => {
                 D.Alert(`Roll Effects on ${D.GetName(char)}:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getchareffects")
                 break
             }
-            case "!delchareffect":
-            {
-                let char = D.GetChar(msg)
-                if (!char) {
-                    THROW("Select a character token first!", "!getchareffects")
-                    break
+            case "!getalleffects": {
+                const charObjs = D.GetChars("all"),
+                    returnStrings = ["<h3>GLOBAL EFFECTS:</h3><!br>"]
+                for (let i = 0; i < _.keys(STATEREF.rollEffects).length; i++)
+                    returnStrings.push(`${i + 1}: ${_.keys(STATEREF.rollEffects)[i]}`)
+                returnStrings.push("")              
+                returnStrings.push("<h3>CHARACTER EFFECTS:</h3><!br>")
+                for (const charObj of charObjs) {
+                    const rollEffects = _.compact((getAttrByName(charObj.id, "rolleffects") || "").split("|"))
+                    if (rollEffects.length) {
+                        returnStrings.push(`<b>${charObj.get("name").toUpperCase()}</b>`)
+                        for (let i = 0; i < rollEffects.length; i++)
+                            returnStrings.push(`${i + 1}: ${rollEffects[i]}`)
+                        returnStrings.push("")
+                    }
                 }
-                let rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|"))
-                rollEffects.splice(Math.max(0, parseInt(args.shift()) - 1), 1)
-                setAttrs(char.id, { rolleffects: rollEffects.join("|") })
-                D.Alert(`Roll Effects on ${D.GetName(char)} revised to:<br><br>${rollEffects.join("<br>")}`, "ROLLER: !delchareffects")
+                D.Alert(returnStrings.join("<br>").replace(/<!br><br>/gu, ""), "Active Roll Effects")
+                break
+            }
+            case "!delchareffect": {
+                const charObj = D.GetChar(msg) || D.GetChar(args.shift())
+                if (VAL({charObj: charObj}, "!delchareffect")) {
+                    const rollEffects = _.compact((getAttrByName(charObj.id, "rolleffects") || "").split("|"))
+                    rollEffects.splice(Math.max(0, parseInt(args.shift()) - 1), 1)
+                    setAttrs(charObj.id, { rolleffects: rollEffects.join("|") })
+                    D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "ROLLER: !delchareffects")
+                }
                 break
             }
             case "!addchareffect":
@@ -934,8 +949,8 @@ const Roller = (() => {
                 HcR: "https://s3.amazonaws.com/files.d20.io/images/87032700/VudTzvmWVMynpxS-5focJw/thumb.png?1563697904",
                 HcRb: "https://s3.amazonaws.com/files.d20.io/images/87032703/65M52wU1gqyULUWinCabww/thumb.png?1563697907",
                 HcLb: "https://s3.amazonaws.com/files.d20.io/images/87032708/Ui_y4n4driMHJv0mdYAn7A/thumb.png?1563697910",
-                BXc: "https://s3.amazonaws.com/files.d20.io/images/87031416/ZyhOfNTASq81b0B8aAf37w/thumb.png?1563696273",
-                BXs: "https://s3.amazonaws.com/files.d20.io/images/87031419/arIWnTAYAFmG6upEm_Wh0w/thumb.png?1563696276",
+                BXc: "https://s3.amazonaws.com/files.d20.io/images/91336100/ESSgeEN2h4llmYgujVpJjQ/thumb.png?1567943808",
+                BXs: "https://s3.amazonaws.com/files.d20.io/images/91336101/xsSpdIN3Lktcq0275avnmw/thumb.png?1567943808",
                 HXc: "https://s3.amazonaws.com/files.d20.io/images/87031427/FuGfrl1aiw9HTsVy46-m1A/thumb.png?1563696289",
                 HXs: "https://s3.amazonaws.com/files.d20.io/images/87031430/ucYeuAXpDbaIjkqbzoRqWQ/thumb.png?1563696294",
                 HXb: "https://s3.amazonaws.com/files.d20.io/images/87031432/JoFhDPGehZCF2wnpCU652w/thumb.png?1563696299",
@@ -1288,6 +1303,10 @@ const Roller = (() => {
                 greyPlus: `<span style="color: ${C.COLORS.brightgrey}; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 20px; vertical-align: top; line-height: 14px;"> + </span>`,
                 greyMinus: `<span style="color: ${C.COLORS.brightgrey}; font-weight: bold; display: inline-block; text-align: right; margin: 2px 5px 0px 20px; vertical-align: top; line-height: 14px;"> - </span>`
             }
+        },
+        ROLLRESULTEFFECTS = {
+            restriction: ["success", "failure", "basicfail", "critical", "basiccrit", "messycrit", "bestialfail", "totalfail"],
+            rollMod: ["nowpreroll", "doublewpreroll", "freewpreroll", "bestialcancelcrit", "bestialcancelsucc", "bestialcancelall", "totalfailure", "nomessycrit"]
         }
     // #endregion
 
@@ -1504,7 +1523,7 @@ const Roller = (() => {
                         Media.Set("rollerImage_diffFrame_1", "blank")
                     }
                 } else {
-                    D.Alert("Setting Front Frame to TopOnly")
+                    //D.Alert("Setting Front Frame to TopOnly")
                     Media.SetParams("rollerImage_bottomEnd_1", { left: 300 })
                     Media.Set("rollerImage_bottomEnd_1", "blank")
                     for (let i = 0; i < 9; i++)
@@ -1630,69 +1649,69 @@ const Roller = (() => {
     const applyRollEffects = rollInput => {
             const rollEffectString = getAttrByName(rollInput.charID, "rolleffects") || ""
             let isReapplying = false
-            DB(`APPLYING ROLL EFFECTS.<br>... ${rollEffectString}<br><br>${D.JS(rollInput)}`, "applyRollEffects")
+            DB(`<h3>APPLYING ROLL EFFECTS.</h3>... ${rollEffectString}<br><br>${D.JS(rollInput)}`, "applyRollEffects")
             if (VAL({ string: rollEffectString, list: rollInput }, "applyRollEffects")) {
                 rollInput.appliedRollEffects = rollInput.appliedRollEffects || []
                 const rollEffects = _.compact(_.without(_.uniq([...rollEffectString.split("|"), ..._.keys(STATEREF.rollEffects), ...rollInput.rollEffectsToReapply || []]), ...rollInput.appliedRollEffects)),
                     [rollData, rollResults] = rollInput.rolls ? [null, rollInput] : [rollInput, null],
+                    checkInput = (input, rollMod, restriction) => {
+                        DB(`Checking Input. RollMod: ${rollMod}, Restriction: ${restriction}<br>... Boolean(input.rolls): ${Boolean(input.rolls)}<br>... D.IsIn: ${Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod))}`, "checkInput")
+                        return Boolean(input.rolls) === Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod))
+                    },
                     checkRestriction = (input, traits, flags, rollMod, restriction) => {
                         DB(`Checking Restriction '${D.JS(restriction)}'<br>...TRAITS: ${D.JS(traits)}<br>...FLAGS: ${D.JS(flags)}<br>...MOD: ${D.JS(rollMod)}`, "checkThreshold")
+                        // FIRST, check whether this restriction applies to the given input (either rollData or rollResults):
+                        if (!checkInput(input, rollMod, restriction)) {
+                            DB("... checkInput returns FALSE: returning 'INAPPLICABLE'.", "checkThreshold")
+                            return "INAPPLICABLE"
+                        }
+                        DB("... checkInput returns TRUE: continuing validation.", "checkThreshold")
                         if (restriction === "all") {
                             DB("Restriction = ALL:  RETURNING TRUE", "checkThreshold")
                             return true
                         }
-                        if (D.IsIn(restriction, ["success", "failure", "basicfail", "critical", "basiccrit", "messycrit", "bestialfail", "totalfail"]) ||
-                        D.IsIn(rollMod, ["nowpreroll", "doublewpreroll", "freewpreroll", "bestialcancel", "totalfailure", "nomessycrit"])) {
-                            DB("... ... Detected ROLLRESULT RELEVANT", "checkThreshold")
-                            if (!input.rolls) {
-                                DB("... ... ... but NO ROLLS PROPERTY: RETURNING 'INAPPLICABLE'", "checkThreshold")
-                                return "INAPPLICABLE"
-                            } else {
-                            // Does rollMod specify a willpower cost, but it is superceded by a nowpreroll restriction somewhere in the effect?
-                                switch (rollMod) {
-                                    case "doublewpreroll": case "freewpreroll":
-                                        if (_.any(rollEffects, v => v.includes("nowpreroll"))) {
-                                            DB(`Willpower cost ${rollMod} SUPERCEDED by 'nowpreroll': ${D.JS(rollEffects)}`, "checkThreshold")
-                                            return "INAPPLICABLE"
-                                        }
-                                        break
-                                // no default
-                                }
-                            // TEST: If rollResults and rollInput specifies a result restriction, check if it applies.
-                                let effectiveMargin = input.total - (input.diff || 1) // All rolls have a base difficulty of one if difficulty isn't specified.
-                                switch (restriction) {
-                                    case "success":
-                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0}`, "checkThreshold")
-                                        return effectiveMargin >= 0
-                                    case "failure":
-                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0}`, "checkThreshold")
-                                        return effectiveMargin < 0
-                                    case "basicfail":
-                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0}`, "checkThreshold")
-                                        return effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0 // fail AND not bestial fail AND not total fail
-                                    case "critical":
-                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0}`, "checkThreshold")
-                                        return effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0
-                                    case "basiccrit":
-                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0}`, "checkThreshold")
-                                        return effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0
-                                    case "messycrit":
-                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0}`, "checkThreshold")
-                                        return effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0
-                                    case "bestialfail":
-                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0 && input.H.botches > 0}`, "checkThreshold")
-                                        return effectiveMargin < 0 && input.H.botches > 0
-                                    case "totalfail":
-                                        DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${input.B.succs + input.H.succs === 0}`, "checkThreshold")
-                                        return input.B.succs + input.H.succs === 0
-                                // no default
-                                }
+                        if (rollResults) {
+                        // Does rollMod specify a willpower cost, but it is superceded by a nowpreroll restriction somewhere in the effect?
+                            switch (rollMod) {
+                                case "doublewpreroll": case "freewpreroll":
+                                    if (_.any(rollEffects, v => v.includes("nowpreroll"))) {
+                                        DB(`Willpower cost ${rollMod} SUPERCEDED by 'nowpreroll': ${D.JS(rollEffects)}`, "checkThreshold")
+                                        return "INAPPLICABLE"
+                                    }
+                                    break
+                            // no default
                             }
-                        } else if (input.rolls) {
-                            DB("... ... Detected ROLLDATA RELEVANT with ROLLS PROPERTY: RETURNING 'INAPPLICABLE'", "checkThreshold")
-                            return "INAPPLICABLE"
+                            // TEST: If rollResults and rollInput specifies a result restriction, check if it applies.
+                            let effectiveMargin = input.total - (input.diff || 1) // All rolls have a base difficulty of one if difficulty isn't specified.
+                            switch (restriction) {
+                                case "success":
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0}`, "checkThreshold")
+                                    return effectiveMargin >= 0
+                                case "failure":
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0}`, "checkThreshold")
+                                    return effectiveMargin < 0
+                                case "basicfail":
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0}`, "checkThreshold")
+                                    return effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0 // fail AND not bestial fail AND not total fail
+                                case "critical":
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0}`, "checkThreshold")
+                                    return effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0
+                                case "basiccrit":
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0}`, "checkThreshold")
+                                    return effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0
+                                case "messycrit":
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0}`, "checkThreshold")
+                                    return effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0
+                                case "bestialfail":
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0 && input.H.botches > 0}`, "checkThreshold")
+                                    return effectiveMargin < 0 && input.H.botches > 0
+                                case "totalfail":
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${input.B.succs + input.H.succs === 0}`, "checkThreshold")
+                                    return input.B.succs + input.H.succs === 0
+                            // no default
+                            }
                         }
-                    // After assessing rollData/rollResults-specific restrictions, check restrictions that apply to either:
+                        // After assessing rollData/rollResults-specific restrictions, check restrictions that apply to either:
                         DB("Initial Thresholds PASSED.  Moving on to general restrictions.", "checkThreshold")
                         if (D.IsIn(restriction, C.CLANS)) {
                             DB(`Restriction = CLAN.  Character Clan: ${getAttrByName(input.charID, "clan")}`, "checkThreshold")
@@ -1982,18 +2001,81 @@ const Roller = (() => {
                                     rollResults.wpCost = 2
                                 DB(`Setting Roll Results Costs:<br>... After Reroll: ${rollResults.wpCostAfterReroll}<br>... WP Cost: ${rollResults.wpCost}`, "applyRollEffects")
                                 break
-                            case "bestialcancel":
-                                if (rollResults.H.botches === 0 || rollResults.total <= 0) { // Moot if there are no bestial dice or no successes to cancel.
+                            case "bestialcancelsucc": {
+                                isReapplying = true
+                                if (rollResults.diceVals.filter(x => x === "Hb").length === 0 || rollResults.total <= 0 || rollResults.B.succs === 0) {
                                     isEffectMoot = true
                                     break
                                 }
-                                for (let i = 0; i < rollResults.H.botches; i++) {
-                                    const diceValIndex = _.findIndex(rollResults.diceVals, v => v.includes("Bc") || v.includes("Bs")),
-                                        botchIndex = _.findIndex(rollResults.diceVals, v => v === "Hb"),
-                                        diceVal = rollResults.diceVals[diceValIndex]
-                                    rollResults.diceVals[botchIndex] = "HCb"
+                                const botchCount = rollResults.diceVals.filter(x => x === "Hb").length
+                                for (let i = 0; i < botchCount; i++) {
+                                    const diceValIndex = _.findIndex(rollResults.diceVals, v => v.includes("Bs")),
+                                        botchIndex = _.findIndex(rollResults.diceVals, v => v === "Hb")
+                                    DB(`diceValIndex: ${diceValIndex}, botchIndex: ${botchIndex}`, "applyRollEffects")
                                     if (diceValIndex < 0)
                                         continue
+                                    rollResults.diceVals[botchIndex] = "HCb"
+                                    rollResults.diceVals[diceValIndex] = "BXs"
+                                    rollResults.B.succs--
+                                    rollResults.B.fails++
+                                    rollResults.total--
+                                }
+                                break
+                            }
+                            case "bestialcancelcrit": {
+                                isReapplying = true
+                                if (rollResults.diceVals.filter(x => x === "Hb").length === 0 || rollResults.total <= 0 || rollResults.diceVals.filter(x => x.includes("Bc")).length === 0) { // Moot if there are no bestial dice or no successes to cancel.
+                                    isEffectMoot = true
+                                    break
+                                }
+                                const botchCount = rollResults.diceVals.filter(x => x === "Hb").length
+                                for (let i = 0; i < botchCount; i++) {
+                                    const diceValIndex = _.findIndex(rollResults.diceVals, v => v.includes("Bc")),
+                                        botchIndex = _.findIndex(rollResults.diceVals, v => v === "Hb"),
+                                        diceVal = rollResults.diceVals[diceValIndex]
+                                    if (diceValIndex < 0)
+                                        continue
+                                    rollResults.diceVals[botchIndex] = "HCb"
+                                    switch (diceVal) {
+                                        case "BcL": case "BcR":
+                                            if (diceVal === "BcL") {
+                                                rollResults.diceVals[diceValIndex + 1] = "Bc"
+                                                rollResults.critPairs.bb--
+                                                rollResults.B.crits++
+                                            } else {
+                                                rollResults.diceVals[diceValIndex - 1] = "Hc"
+                                                rollResults.critPairs.hb--
+                                                rollResults.H.crits++
+                                            }
+                                            rollResults.diceVals[diceValIndex] = "BXc"
+                                            rollResults.B.fails++
+                                            rollResults.total -= 3
+                                            break
+                                        case "Bc":
+                                            rollResults.diceVals[diceValIndex] = "BXc"
+                                            rollResults.B.crits--                                            
+                                            rollResults.B.fails++
+                                            rollResults.total--
+                                            break
+                                        default: break
+                                    }
+                                }
+                                break   
+                            }                         
+                            case "bestialcancelall": {
+                                isReapplying = true
+                                if (rollResults.diceVals.filter(x => x === "Hb").length === 0 || rollResults.total <= 0 || rollResults.diceVals.filter(x => x.includes("Bc") || x.includes("Bs")).length === 0) { // Moot if there are no bestial dice or no successes to cancel.
+                                    isEffectMoot = true
+                                    break
+                                }
+                                const botchCount = rollResults.diceVals.filter(x => x === "Hb").length
+                                for (let i = 0; i < botchCount; i++) {
+                                    const diceValIndex = _.findIndex(rollResults.diceVals, v => rollResults.diceVals.filter(x => x.includes("Bc")).length > 0 ? v.includes("Bc") : v.includes("Bs")),
+                                        botchIndex = _.findIndex(rollResults.diceVals, v => v === "Hb"),
+                                        diceVal = rollResults.diceVals[diceValIndex]
+                                    if (diceValIndex < 0)
+                                        continue
+                                    rollResults.diceVals[botchIndex] = "HCb"
                                     switch (diceVal) {
                                         case "BcL": case "BcR":
                                             if (diceVal === "BcL") {
@@ -2024,6 +2106,7 @@ const Roller = (() => {
                                     }
                                 }
                                 break
+                            }
                             case "totalfailure":
                                 if (rollResults.B.succs + rollResults.H.succs === 0) { // Moot if the roll result is already a Total Failure
                                     isEffectMoot = true
@@ -2463,9 +2546,13 @@ const Roller = (() => {
             DB(`ROLL DATA: ${D.JS(rollData)}`, "rollDice")
             if (addVals)
                 DB(`ADDED VALS: ${D.JS(addVals)}`, "rollDice")
+            const forcedRolls = null /* {
+                B: [10, 10, 10, 8, 8, 8, 4, 4, 4, 4, 4, 4, 4],
+                H: [1, 1, 1, 1]
+            } */
             const sortBins = [],
                 roll = dType => {
-                    const d10 = randomInteger(10)
+                    const d10 = forcedRolls && forcedRolls[dType] && forcedRolls[dType].length ? forcedRolls[dType].shift() : randomInteger(10)
                     rollResults.rolls.push(dType + d10)
                     switch (d10) {
                         case 10:
@@ -2541,19 +2628,19 @@ const Roller = (() => {
 
             _.each(addVals, val => {
                 const dType = val.slice(0, 1)
-                switch (val.slice(1, 2)) {
-                    case "c":
+                switch (val.slice(1, 3)) {
+                    case "cR": case "cL": case "c": case "Xc":
                         rollResults[dType].crits++
                         rollResults.total++
                         break
-                    case "s":
+                    case "s": case "Xs":
                         rollResults[dType].succs++
                         rollResults.total++
                         break
-                    case "f": case "X":
+                    case "f":
                         rollResults[dType].fails++
                         break
-                    case "b": case "C":
+                    case "b": case "Cb": case "Xb":
                         rollResults[dType].botches++
                         break
                     default:
@@ -2637,6 +2724,62 @@ const Roller = (() => {
             DB(`ROLL RESULTS: ${D.JS(rollResults)}`, "rollDice")
 
             rollResults = applyRollEffects(Object.assign(rollResults, rollData))
+            
+
+
+            // Now run through again to find consecutive crits and apply them:
+
+            
+
+
+            // First, remove ALL valid crits from diceVals:
+            const diceVals = rollResults.diceVals.filter(x => !x.includes("Hc") && !x.includes("Bc"))
+            // Second, find new crit pairs and update the tallies appropriately:           
+            while (rollResults.B.crits + rollResults.H.crits >= 2) {
+                while (rollResults.H.crits >= 2) {
+                    rollResults.H.crits -= 2
+                    rollResults.critPairs.hh++
+                    rollResults.total += 2
+                }
+                if (rollResults.B.crits > 0 && rollResults.H.crits > 0) {
+                    rollResults.B.crits--
+                    rollResults.H.crits--
+                    rollResults.critPairs.hb++
+                    rollResults.total += 2
+                }
+                while (rollResults.B.crits >= 2) {
+                    rollResults.B.crits -= 2
+                    rollResults.critPairs.bb++
+                    rollResults.total += 2
+                }
+            }
+            // Third, construct the new front end containing ALL crits:
+            const critFrontEnd = []
+            for (let i = 0; i < rollResults.critPairs.hh; i++)
+                critFrontEnd.push(...["HcL", "HcR"])
+            for (let i = 0; i < rollResults.critPairs.hb; i++)
+                critFrontEnd.push(...["HcL", "BcR"])
+            for (let i = 0; i < rollResults.critPairs.bb; i++)
+                critFrontEnd.push(...["BcL", "BcR"])
+            for (let i = 0; i < rollResults.H.crits; i++)
+                critFrontEnd.push("Hc")
+            for (let i = 0; i < rollResults.B.crits; i++)
+                critFrontEnd.push("Bc")
+            // Finally, assemble the new diceVals after sorting them:
+            rollResults.diceVals = [
+                ...critFrontEnd,
+                ...diceVals.filter(x => x === "Hs"),
+                ...diceVals.filter(x => x === "Bs"),
+                ...diceVals.filter(x => x === "HXc"),
+                ...diceVals.filter(x => x === "BXc"),
+                ...diceVals.filter(x => x === "HXs"),
+                ...diceVals.filter(x => x === "BXs"),
+                ...diceVals.filter(x => x === "Hf"),
+                ...diceVals.filter(x => x === "Bf"),
+                ...diceVals.filter(x => x === "HXb"),
+                ...diceVals.filter(x => x === "Hb"),
+                ...diceVals.filter(x => x === "HCb")
+            ]
             return rollResults
         },
         formatDiceLine = (rollData = {}, rollResults, split = 15, rollFlags = {}, isSmall = false) => {
@@ -2775,12 +2918,12 @@ const Roller = (() => {
                     }
                 /* falls through */
                 case "trait":
-                    if (Session.IsTesting) {
+                    /*if (Session.IsTesting) {
                         posFlagLines.push("TestPosFlag (●●)")
                         negFlagLines.push("TestNegFlag (●●●●)")
                         redFlagLines.push("TestRedFlag (●●●●●)")
                         goldFlagLines.push("TestGoldFlag (●)")
-                    }
+                    }*/
                     //D.Alert(`posFlagLines.length: ${posFlagLines.length}<br>${D.JS(posFlagLines)}`)
                     if (posFlagLines.length && !rollFlags.isHidingDicePool && !rollFlags.isHidingTraits) {
                         rollLines.posMods = {
@@ -3201,7 +3344,7 @@ const Roller = (() => {
                 Media.Set("rollerImage_diffFrame", "blank")      
 
             if (_.isNumber(deltaAttrs.hunger))
-                Media.Set(`Hunger${getAttrByName(rollData.charID, "sandboxquadrant")}_1`, deltaAttrs.hunger)
+                Media.Set(`Hunger${getAttrByName(rollData.charID, "sandboxquadrant")}_1`, Number(getAttrByName(rollData.charID, "hunger")) + deltaAttrs.hunger)
 
             logLines.rollerName = `${CHATSTYLES.rollerName + D.Capitalize(displayName) + logLines.rollerName}</div>`
             stLines.rollerName = `${CHATSTYLES.rollerName + rollData.charName + stLines.rollerName}</div>`
@@ -3289,7 +3432,7 @@ const Roller = (() => {
                     rollLines.redMods.shifttop = rollLines.redMods.shifttop || 0 - 95
                     rollLines.redMods.shiftleft = (rollLines.outcome.shiftleft || 0) + outcomePos.width + 20
                     Media.SetParams("rollerImage_diffFrame", {top: 150})
-                    D.Alert("RollLines Set to No Bottom")
+                    //D.Alert("RollLines Set to No Bottom")
                 } else if (bottomEndData.left + 0.5 * bottomEndData.width - 100 < outcomePos.left + outcomePos.width) {
                     rollLines.redMods.shifttop = (rollLines.redMods.shifttop || 0) - 95
                     rollLines.goldMods.shifttop = (rollLines.goldMods.shifttop || 0) - 95

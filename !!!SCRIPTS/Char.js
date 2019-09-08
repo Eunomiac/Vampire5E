@@ -410,7 +410,7 @@ const Char = (() => {
         unregisterChar = (nameRef) => {
             if (VAL({string: nameRef}, "unregisterChar")) {
                 const regKey = _.findKey(REGISTRY, v => D.FuzzyMatch(v.name, nameRef))
-                D.Alert(`nameRef: ${nameRef}<br>regKey: ${D.JS(regKey)}`, "unregisterChar")
+                //D.Alert(`nameRef: ${nameRef}<br>regKey: ${D.JS(regKey)}`, "unregisterChar")
                 if (REGISTRY[regKey])
                     delete REGISTRY[regKey]
             }

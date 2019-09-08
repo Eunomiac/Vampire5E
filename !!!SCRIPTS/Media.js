@@ -235,13 +235,12 @@ const Media = (() => {
                                 case "resize": {
                                     imgResize = !imgResize
                                     if (imgResize) {
-                                        const params = args.join("").split(",")
-                                        if (params.length === 2 && VAL({number: _.map(params, v => v.split(":")[1])}, null, true)) {
-                                            _.each(params, v => {
-                                                STATEREF.imgResizeDims[v.split(":")[0]] = parseInt(v.split(":")[1])
-                                            })
+                                        const params = args.join(" ").split(/,?\s+/gu)
+                                        if (params.length === 2 && VAL({number: params}, null, true)) {
+                                            STATEREF.imgResizeDims.height = params[0]
+                                            STATEREF.imgResizeDims.width = params[1]
                                         } else {
-                                            D.Alert("Must supply either a valid C.IMAGES key (default) OR \"height:<height>, width:<width>\"", "MEDIA, !img toggle resize")
+                                            D.Alert("Must supply either a valid C.IMAGES key (default) OR \"<height> <width>\"", "MEDIA, !img toggle resize")
                                             imgResize = false
                                             break
                                         }
@@ -315,16 +314,9 @@ const Media = (() => {
                                     break
                                 }
                                 case "data": {
-                                    const imgObj = getImageObj(msg)
-                                    if (imgObj) {
-                                        D.Alert(getImageData(imgObj), "MEDIA, !img get data")
-                                    } else {
-                                        const hostName = args.shift()
-                                        if (hostName && IMAGEREGISTRY[hostName])
-                                            D.Alert(D.JS(IMAGEREGISTRY[hostName]), `IMAGES: '${D.JS(hostName)}'`)
-                                        else
-                                            D.Alert("Syntax: !img get data [<category> <name>] (or select an image object)", "MEDIA, !img get data")
-                                    }
+                                    const imgData = getImageData(msg) || getImageData(args.shift())
+                                    if (VAL({list: imgData}, "!img get data"))
+                                        D.Alert(args[0] && imgData[args[0]] || imgData, "MEDIA, !img get data")
                                     break
                                 }
                                 case "names": {
@@ -343,6 +335,28 @@ const Media = (() => {
                                             IMAGEREGISTRY[imgData[1]].zIndex = imgData[2]
                                             IMAGEREGISTRY[imgData[1]].activeLayer = {map: "map", objects: "objects", dragpads: "objects"}[category] 
                                         }
+                                    break
+                                }
+                                case "backgrounds": {
+                                    const imgData = getImageData("Horizon_1")
+                                    for (const bgImgObj of getImageObjs(["WeatherMain_1", "WeatherFog_1", "WeatherGround_1", "WeatherClouds_1", "WeatherFrost_1", "Horizon_1", "Horizon_2"])) 
+                                        bgImgObj.set({
+                                            top: imgData.top,
+                                            left: imgData.left,
+                                            height: imgData.height,
+                                            width: imgData.width
+                                        })
+                                    break
+                                }
+                                case "registry": {
+                                    const returnStrings = []
+                                    for (const category of ["map", "objects", "dragpads"]) {
+                                        const zLevels = getZLevels()[category]
+                                        for (const zL of zLevels)
+                                            if (!IMAGEREGISTRY[zL[1]])
+                                                returnStrings.push(`Data Not Found: ${zL[1]}`)
+                                    }
+                                    D.Alert(`Missing Images:<br>${D.JS(returnStrings.join("<br>"))}`)
                                     break
                                 }
                                 // no default
@@ -674,7 +688,7 @@ const Media = (() => {
                     HungerBotRight_1: 100
                 },
                 TombstoneShrouds: {
-                    ShroudTopLeft_1: 107
+                    //ShroudTopLeft_1: 107
                 },
                 HorizonBGs: {
                     Horizon_1: 1,
@@ -1955,14 +1969,14 @@ const Media = (() => {
                     nextWidth = getTextWidth(textObj, textStrings[0] + (textStrings[0].endsWith("-") ? "" : " "), false)
                 lineCount++
                 stringCount = 0
-                DB(`LINE ${lineCount}.  NextWidth: ${nextWidth}`, "splitTextLines")
+                //DB(`LINE ${lineCount}.  NextWidth: ${nextWidth}`, "splitTextLines")
                 while (nextWidth < maxWidth && textStrings.length) {
                     thisString += textStrings[0].endsWith("-") ? `${textStrings.shift()}` : `${textStrings.shift()} `
                     nextWidth = textStrings.length ? getTextWidth(textObj, thisString + textStrings[0] + (textStrings[0].endsWith("-") ? "" : " "), false) : 0
                     stringCount++
-                    DB(`... STRING ${stringCount}: ${thisString}  NextWidth: ${nextWidth}`, "splitTextLines")
+                    //DB(`... STRING ${stringCount}: ${thisString}  NextWidth: ${nextWidth}`, "splitTextLines")
                 }
-                DB(`ADDING LINE: ${thisString} with width ${getTextWidth(textObj, thisString, false)}`, "splitTextLines")
+                //DB(`ADDING LINE: ${thisString} with width ${getTextWidth(textObj, thisString, false)}`, "splitTextLines")
                 splitStrings.push(thisString)
                 highWidth = Math.max(getTextWidth(textObj, thisString, false), highWidth)
             }
@@ -1976,7 +1990,7 @@ const Media = (() => {
         },
         justifyText = (textRef, justification, maxWidth = 0) => {
             const textObj = getTextObj(textRef)
-            D.Alert(`Justifying ${D.JS(getTextKey(textObj))}.  Reference: ${D.JS(textRef)}, Object: ${D.JS(textObj)}`, "justifyText")
+            //D.Alert(`Justifying ${D.JS(getTextKey(textObj))}.  Reference: ${D.JS(textRef)}, Object: ${D.JS(textObj)}`, "justifyText")
             if (VAL({textObj: textObj})) {
                 TEXTREGISTRY[getTextKey(textObj)].justification = justification || "center"
                 TEXTREGISTRY[getTextKey(textObj)].left = getBlankLeft(textObj, justification, maxWidth)
@@ -1988,7 +2002,7 @@ const Media = (() => {
                     TEXTREGISTRY[shadowKey].left = getBlankLeft(shadowObj, justification, maxWidth)
                     TEXTREGISTRY[shadowKey].width = getTextWidth(shadowObj, shadowObj.get("text"), maxWidth)
                 }
-                D.Alert(`${getTextKey(textRef)} Updated: ${D.JS(TEXTREGISTRY[getTextKey(textObj)])}`, "justifyText")
+                //D.Alert(`${getTextKey(textRef)} Updated: ${D.JS(TEXTREGISTRY[getTextKey(textObj)])}`, "justifyText")
             }
         }
     // #endregion
@@ -2285,7 +2299,11 @@ const Media = (() => {
     // #region MEDIA SETTERS: Image, Animation & Text
     const setZIndices = () => {
             for (const category of ["map", "objects", "dragpads"]) {
-                const imgDatas = getZLevels()[category].map(x => IMAGEREGISTRY[x[1]]),
+                const imgDatas = _.compact(getZLevels()[category].map(x => {
+                        if (!IMAGEREGISTRY[x[1]])
+                            return THROW(`No Image Registered for ZIndex Entry '${x[1]}'`, "setZIndices")
+                        return IMAGEREGISTRY[x[1]]
+                    })),
                     imgObjsSorted = imgDatas.sort((a,b) => b.zIndex - a.zIndex).map(x => getImageObj(x.id)),
                     allMediaObjs = []
                 if (category === "map") {

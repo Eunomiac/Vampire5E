@@ -46,7 +46,45 @@ const TimeTracker = (() => {
 
         if (Session.IsSessionActive)
             startClock()
+        
+        if (_.keys(STATEREF.weatherOverride).length)
+            D.Alert(`Weather Override in effect: ${D.JS(STATEREF.weatherOverride)}<br><b>!time set weather</b> to clear.`, "Alert: Weather Override")
             //startAirLights()
+
+        /* Media.IMAGES.WeatherMain_1.srcs = {
+            heavysnow: "",
+            lightsnow: "",
+            heavyrain: "",
+            lightrain: ""
+        }
+        Media.IMAGES.WeatherGround_1.srcs = {
+            wet: "",
+            snow1: "",
+            snow2: "",
+            snow3: "",
+            snow4: "",
+            snow5: "",
+            frost: ""
+        }
+        delete Media.IMAGES.WeatherFog_1.srcs.fog
+        Media.IMAGES.WeatherFog_1.srcs = {
+            brightfog: "",
+            darkfog: ""
+        }
+        Media.IMAGES.WeatherClouds_1.srcs = {
+            brightclouds1: "",
+            brightclouds2: "",
+            brightclouds3: "",
+            darkclouds: "",
+            night1clouds: "",
+            stormclouds: ""
+        }
+        Media.IMAGES.WeatherFrost_1.srcs = {
+            frost1: "",
+            frost2: "",
+            frost3: ""
+        } */
+
            
     }
     // #endregion	
@@ -61,6 +99,8 @@ const TimeTracker = (() => {
                         getNextAlarms()
                         getPastAlarms()
                         break
+                    case "weather":
+                        D.Alert(`Weather Code: ${WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()]}`)
                     // no default
                 }
                 break
@@ -86,7 +126,10 @@ const TimeTracker = (() => {
                 break
             case "stop":
                 stopClock()
-                break            
+                break
+            case "fix":
+                fixDate()
+                break
             case "stoplights":
                 isAirlights = false
                 break
@@ -172,7 +215,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
             ["7:44", "17:12"]
         ],
         IMAGETIMES = {
-            "1:00": "night2",
+            "0:00": "night2",
             "1:30": "night3",
             "3:00": "night4",
             [-120]: "night5",
@@ -854,6 +897,28 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                         default:
                             return `brightclouds${randomInteger(3)}`
                     }
+                },
+                getFogSrc = () => {
+                    switch (getHorizon()) {
+                        case "night1":
+                        case "night2":
+                        case "night3":
+                            return "brightfog"
+                        case "day":
+                            return "blank"
+                        default:
+                            return "darkfog"
+                    }
+                },
+                getSnowSrc = (degree) => {
+                    switch (getHorizon()) {
+                        case "night1":
+                        case "night2":
+                        case "night3":
+                            return `bright${degree.toLowerCase()}snow`
+                        default:
+                            return `dark${degree.toLowerCase()}snow`
+                    }
                 }
             let forecastLines = []
             //D.Alert(`Weather Code: ${D.JS(weatherCode)}<br>Month Temp: ${D.JS(getTemp(MONTHTEMP[dateObj.getUTCMonth()]))}<br><br>Delta Temp: ${D.JS(getTemp(weatherCode.charAt(2)))} (Code: ${weatherCode.charAt(2)})`)
@@ -866,9 +931,9 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
             switch (weatherData.event.charAt(0)) {
                 // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
                 case "b":
-                    Media.Set("WeatherMain", "heavysnow")
+                    Media.Set("WeatherMain", getSnowSrc("heavy"))
                     Media.Set("WeatherFog", "blank")
-                    Media.Set("WeatherClouds", "stormy")
+                    Media.Set("WeatherClouds", "stormclouds")
                     break
                 case "c":
                     Media.Set("WeatherMain", "blank")
@@ -877,7 +942,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                     break
                 case "f":
                     Media.Set("WeatherMain", "blank")
-                    Media.Set("WeatherFog", "fog")
+                    Media.Set("WeatherFog", getFogSrc())
                     Media.Set("WeatherClouds", getCloudSrc())
                     break
                 case "p":
@@ -886,14 +951,14 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                     Media.Set("WeatherClouds", getCloudSrc())
                     break
                 case "s":
-                    Media.Set("WeatherMain", "lightsnow")
+                    Media.Set("WeatherMain", getSnowSrc("light"))
                     Media.Set("WeatherFog", "blank")
                     Media.Set("WeatherClouds", getCloudSrc())
                     break
                 case "t":
                     Media.Set("WeatherMain", "heavyrain")
                     Media.Set("WeatherFog", "blank")
-                    Media.Set("WeatherClouds", "stormy")
+                    Media.Set("WeatherClouds", "stormclouds")
                     // Lightning Animations
                     break
                 case "w":
@@ -904,8 +969,8 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                 case "x":
                     Media.Set("WeatherMain", "blank")
                     Media.Set("WeatherClouds", "blank")
-                    if (getHorizon() !== "day" && weatherData.event.charAt(1) === "f")
-                        Media.Set("WeatherFog", "fog")
+                    if (weatherData.event.charAt(1) === "f")
+                        Media.Set("WeatherFog", getFogSrc())
                     else
                         Media.Set("WeatherFog", "blank")
                     break
