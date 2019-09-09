@@ -88,6 +88,7 @@ module.exports = {
         "Complications": true,
         "Session": true,
         "Player": true,
+        "Fuzzy": true,
         "TimeTracker": true,
         "_": false,
         "state": true,

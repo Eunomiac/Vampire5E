@@ -581,7 +581,7 @@ const C = (() => {
             SCI: "science",
             TEC: "technology"
         },
-        DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
+        DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy", "Vicissitude"],
         DISCABBVS = {
             ANI: "Animalism",
             AUS: "Auspex",

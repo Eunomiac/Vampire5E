@@ -38,8 +38,7 @@ const Char = (() => {
         STATEREF.customStakes.coterie = STATEREF.customStakes.coterie || []
         STATEREF.customStakes.personal = STATEREF.customStakes.personal || {A: [], L: [], N: [], R: []}
 
-        /*
-        STATEREF.registry = {
+        /* STATEREF.registry = {
             TopLeft: {
                 id: "-LluFXX9vtlTeb_D7t4y",
                 name: "Locke Ulrich",
@@ -59,7 +58,6 @@ const Char = (() => {
                 shortName: "Roy",
                 initial: "R",
                 quadrant: "BotLeft"
-                
             },
             TopRight: {
                 id: "-LU7packiBP3Zg5H4Ao_",
@@ -81,18 +79,16 @@ const Char = (() => {
                 initial: "A",
                 quadrant: "BotRight"
             }
-        }
-        */
+        } */
 
         // Storyteller Override:
-        //C.ROOT.Char.registry["1"].playerID = "-LLIBpH_GL5I-9lAOiw9"
+        //STATEREF.registry.TopLeft.playerID = "-LLIBpH_GL5I-9lAOiw9"
 
         // Return Player Control:
-        //C.ROOT.Char.registry["4"].playerID = "-LMGDbZCKw4bZk8ztfNf"
-        //C.ROOT.Char.registry["3"].playerID = "-LN7lNnjuWmFuvVPW76H"
-        //C.ROOT.Char.registry["2"].playerID = "-LN6n-fR8cSNR2E_N_3q"
-        //C.ROOT.Char.registry["1"].playerID = "-LMGDQqIvyL87oIfrVDX"
-        //C.ROOT.Char.registry["1"].famulusTokenID = "-Li_TTDHnKYob56yfijy"
+        //STATEREF.registry.TopLeft.playerID = "-LMGDQqIvyL87oIfrVDX"
+        //STATEREF.registry.BotLeft.playerID = "-LN6n-fR8cSNR2E_N_3q"
+        //STATEREF.registry.TopRight.playerID = "-LN7lNnjuWmFuvVPW76H"
+        //STATEREF.registry.BotRight.playerID = "-LMGDbZCKw4bZk8ztfNf"
     }
     // #endregion
 

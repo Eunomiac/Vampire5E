@@ -40,6 +40,22 @@ const Media = (() => {
         STATEREF.activeAnimations = STATEREF.activeAnimations || []
         STATEREF.activeTimeouts = STATEREF.activeTimeouts || []
         STATEREF.curLocation = STATEREF.curLocation || "DistrictCenter:blank SiteCenter:blank"
+
+        // Initialize IMAGEDICT Fuzzy Dictionary
+        STATEREF.IMAGEDICT = Fuzzy.Fix()
+        for (const imgKey of _.keys(STATEREF.imageregistry))
+            STATEREF.IMAGEDICT.add(imgKey)
+
+        // Initialize TEXTDICT Fuzzy Dictionary
+        STATEREF.TEXTDICT = Fuzzy.Fix()
+        for (const textKey of _.keys(STATEREF.textregistry))
+            STATEREF.TEXTDICT.add(textKey)
+        
+        // Initialize AREADICT Fuzzy Dictionary
+        STATEREF.AREADICT = Fuzzy.Fix()
+        for (const areaKey of _.keys(STATEREF.areas))
+            STATEREF.AREADICT.add(areaKey)
+
     }
     // #endregion
 
@@ -962,31 +978,24 @@ const Media = (() => {
         },
         getImageKey = (imgRef, isSilent = false) => {
             try {
-                const imgName =
+                const dictTerm =
                     VAL({graphicObj: imgRef}) ?
                         imgRef.get("name") :
-                        VAL({graphicObj: getObj("graphic", imgRef)}) ?
+                        _.isString(imgRef) && VAL({graphicObj: getObj("graphic", imgRef)}) ?
                             getObj("graphic", imgRef).get("name") :
-                            _.isString(imgRef) ?
-                                IMAGEREGISTRY[D.JSL(imgRef) + "_1"] ? imgRef + "_1" : imgRef :
-                                D.GetSelected(imgRef) ?
-                                    D.GetSelected(imgRef)[0].get("name") :
-                                    false
-                // D.Alert(`IsObj? ${VAL({graphicObj: imgRef})}
-                // Getting Name: ${imgRef.get("name")}`, "IMAGE NAME")
-                //D.Alert(`RETRIEVED NAME: ${D.JS(imgName)}`)
+                            VAL({selection: imgRef}) ?
+                                D.GetSelected(imgRef)[0].get("name") :
+                                _.isString(imgRef) ?
+                                    imgRef :
+                                    false,
+                    imgName = _.isString(dictTerm) ? 
+                        IMAGEREGISTRY[dictTerm] && dictTerm ||
+                        IMAGEREGISTRY[`${dictTerm}_1`] && `${dictTerm}_1` ||
+                        D.IsIn(dictTerm, STATEREF.IMAGEDICT) :
+                        false
                 if (!imgName)
                     return !isSilent && THROW(`Cannot find name of image from reference '${D.JSL(imgRef)}'`, "GetImageKey")
-                else if (_.find(_.keys(IMAGEREGISTRY), v => v.toLowerCase().startsWith(imgName.toLowerCase())))
-                    //D.Alert(`... returning: ${D.JS(_.keys(REGISTRY)[
-                    //	_.findIndex(_.keys(REGISTRY), v => v.toLowerCase().startsWith(imgName.toLowerCase()))
-                    //])}`)
-                    return _.keys(IMAGEREGISTRY)[
-                        _.findIndex(_.keys(IMAGEREGISTRY), v => v.toLowerCase().startsWith(imgName.toLowerCase()))
-                    ]
-                else
-                    return !isSilent && THROW(`Cannot find image with name '${D.JSL(imgName)}' from reference ${D.JSL(imgRef)}`, "GetImageKey")
-
+                return imgName
             } catch (errObj) {
                 return !isSilent && THROW(`Cannot locate image with search value '${D.JSL(imgRef)}'`, "GetImageKey", errObj)
             }

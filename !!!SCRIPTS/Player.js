@@ -65,6 +65,21 @@ const Player = (() => {
                         Media.Set(token, `base${imgData.isDaylighter ? "DL" : ""}`)
                 }
                 break
+            case "!awe": {
+                charID = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)].id;
+                [token] = findObjs({
+                    _pageid: D.PAGEID,
+                    _type: "graphic",
+                    _subtype: "token",
+                    represents: charID
+                })
+                imgData = Media.GetData(token)
+                if (imgData.curSrc === "base")
+                    Media.Set(token, "awe")
+                else
+                    Media.Set(token, "base")
+                break
+            }
             case "!hide":
                 charID = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)].id;
                 //D.Alert(`Char ID[${D.JS(_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid))}] = ${D.JS(charID)}`);

@@ -40,6 +40,26 @@ const D = (() => {
         STATEREF.CHARWIDTH = STATEREF.CHARWIDTH || {}
         STATEREF.DEBUGLOG = STATEREF.DEBUGLOG || []
 
+        // Initialize STATSDICT Fuzzy Dictionary
+        STATEREF.STATSDICT = Fuzzy.Fix()
+        for (const str of [
+            ..._.flatten(_.values(C.ATTRIBUTES)),
+            ..._.flatten(_.values(C.SKILLS)),
+            ...C.DISCIPLINES,
+            ...C.TRACKERS
+        ])
+            STATEREF.STATSDICT.add(str)
+
+        // Initialize PCDICT Fuzzy Dictionary
+        STATEREF.PCDICT = Fuzzy.Fix()
+        for (const name of _.values(Char.REGISTRY).map(x => x.name))
+            STATEREF.PCDICT.add(name)
+
+        // Initialize NPCDICT Fuzzy Dictionary
+        STATEREF.NPCDICT = Fuzzy.Fix()
+        for (const name of getChars("all").map(x => x.get("name")).filter(x => !_.values(Char.REGISTRY).map(xx => xx.name).includes(x)))
+            STATEREF.NPCDICT.add(name)
+
         //delete state.VAMPIRE.DATA.CHARWIDTH
     }
     const TRACE = []
@@ -119,12 +139,12 @@ const D = (() => {
     // #endregion
 
     // #region DECLARATIONS: Dependent Variables
-    const ALLSTATS = [
+    /* const ALLSTATS = [
         ..._.flatten(_.values(C.ATTRIBUTES)),
         ..._.flatten(_.values(C.SKILLS)),
         ...C.DISCIPLINES,
         ...C.TRACKERS
-    ]
+    ] */
     // #endregion
 
     // #region PARSING & STRING MANIPULATION: Converting data types to strings, formatting strings, converting strings into objects.
@@ -334,17 +354,32 @@ const D = (() => {
                 second.toLowerCase().replace(/\W+/gu, "").includes(first.toLowerCase().replace(/\W+/gu, ""))
             return false
         },
-        isIn = (needle, haystack = ALLSTATS, isFuzzyMatching = true) => {
-            /* Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. */
+        isIn = (needle, haystack) => {
+            let dict
+            if (!haystack) {
+                dict = STATEREF.STATSDICT
+            } else if (haystack.add) {
+                dict = haystack
+            } else {
+                dict = Fuzzy.Fix()
+                for (const str of haystack)
+                    dict.add(str)
+            }
+            const result = dict.get(needle)
+            return result && result[0][1]
+        },
+        /* eslint-disable-next-line no-unused-vars */
+        /* isntIn = (needle, haystack = ALLSTATS, isFuzzyMatching = true) => {
+            // Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. 
             try {
-                /* STEP ZERO: VALIDATE NEEDLE & HAYSTACK
-                      NEEDLE --> Must be STRING
-                      HAYSTACK --> Can be ARRAY, LIST or STRING */
+                // STEP ZERO: VALIDATE NEEDLE & HAYSTACK
+                      // NEEDLE --> Must be STRING
+                      // HAYSTACK --> Can be ARRAY, LIST or STRING 
                 if (VAL({string: needle}) || VAL({number: needle})) {
-                    /* STEP ONE: BUILD HAYSTACK.
-                          HAYSTACK = ARRAY? --> HAY = ARRAY
-                          HAYSTACK = LIST? ---> HAY = ARRAY (_.keys(H))
-                          HAYSTACK = STRING? -> HAY = H */
+                    // STEP ONE: BUILD HAYSTACK.
+                        // HAYSTACK = ARRAY? --> HAY = ARRAY
+                        // HAYSTACK = LIST? ---> HAY = ARRAY (_.keys(H))
+                        // HAYSTACK = STRING? -> HAY = H
                     const hayType = VAL({array: haystack}) && "array" ||
                                     VAL({list: haystack}) && "list" ||
                                     VAL({string: haystack}) && "string"                                    
@@ -363,14 +398,14 @@ const D = (() => {
                         default:
                             return THROW(`Haystack must be a string, a list or an array: ${D.JS(haystack)}`, "IsIn")
                     }
-                    /* STEP TWO: SEARCH HAY FOR NEEDLE USING PROGRESSIVELY MORE FUZZY MATCHING. SKIP "*" STEPS IF ISFUZZYMATCHING IS FALSE.
-                              STRICT: Search for exact match, case sensitive.
-                              LOOSE: Search for exact match, case insensitive.
-                              *START: Search for match with start of haystack strings, case insensitive.
-                              *END: Search for match with end of haystack strings, case insensitive.
-                              *INCLUDE: Search for match of needle anywhere in haystack strings, case insensitive.
-                              *REVERSE INCLUDE: Search for match of HAYSTACK strings inside needle, case insensitive.
-                              FUZZY: Start again after stripping all non-word characters. */
+                    // STEP TWO: SEARCH HAY FOR NEEDLE USING PROGRESSIVELY MORE FUZZY MATCHING. SKIP "*" STEPS IF ISFUZZYMATCHING IS FALSE.
+                            // STRICT: Search for exact match, case sensitive.
+                            // LOOSE: Search for exact match, case insensitive.
+                            // *START: Search for match with start of haystack strings, case insensitive.
+                            // *END: Search for match with end of haystack strings, case insensitive.
+                            // *INCLUDE: Search for match of needle anywhere in haystack strings, case insensitive.
+                            // *REVERSE INCLUDE: Search for match of HAYSTACK strings inside needle, case insensitive.
+                            // FUZZY: Start again after stripping all non-word characters. 
                     if (hayType === "array" || hayType === "list") {
                         for (let i = 0; i <= 1; i++) {
                             let thisNeedle = ndl,
@@ -436,7 +471,7 @@ const D = (() => {
             } catch (errObj) {
                 return THROW(`Error locating '${D.JSL(needle)}' in ${D.JSL(haystack)}'`, "isIn", errObj)
             }
-        },
+        },*/
         validate = (varList, funcName, scriptName, isArray = false) => {
             //TRACE.push(`VAL(${jStrL(_.keys(varList).join(", "))}, ${jStr(funcName)})`)
             // NOTE: To avoid accidental recursion, DO NOT use validate to confirm a type within the getter of that type.
@@ -766,8 +801,8 @@ const D = (() => {
                 if (searchParams.length > 1)
                     dbstring += "<br>"
                 // If parameter is a digit corresponding to a REGISTERED CHARACTER:
-                if (VAL({ number: v }) && Char.REGISTRY[parseInt(v)]) {
-                    charObjs.add(getObj("character", Char.REGISTRY[parseInt(v)].id))
+                if (VAL({ string: v }) && ["TopLeft", "BotLeft", "TopRight", "BotRight"].includes(v)) {
+                    charObjs.add(getObj("character", Char.REGISTRY[v].id))
                     dbstring += " ... Registry #: "
                     // If parameter is a CHARACTER OBJECT already: */
                 } else if (VAL({ charObj: v })) {
@@ -789,7 +824,7 @@ const D = (() => {
                 } else if (v.toLowerCase() === "registered") {
                     _.each(Char.REGISTRY, charData => { if (!charData.name.toLowerCase().includes("Good Lad")) charObjs.add(getObj("character", charData.id)) })
                     dbstring += ` ... "${jStr(v)}": `
-                    // If parameter is a SINGLE CHARACTER, assume it is an INITIAL and search the registry for it.
+                    // If parameter is a SINGLE LETTER, assume it is an INITIAL and search the registry for it.
                 } else if (VAL({string: v}) && v.length === 1) {
                     const charData = _.find(Char.REGISTRY, charData => charData.initial.toLowerCase() === v.toLowerCase())
                     if (charData)
@@ -797,21 +832,10 @@ const D = (() => {
                     dbstring += ` ... "${jStr(v)}": `                    
                     // If parameter is a STRING, assume it is a character name to fuzzy-match.
                 } else if (VAL({ string: v })) {
-                    let isCharFound = false
-                    // FIRST look for REGISTERED CHARACTERS:
-                    _.each(Char.REGISTRY, charData => {
-                        const char = getObj("character", charData.id)
-                        if (fuzzyMatch(char.get("name"), v)) {
-                            isCharFound = true
-                            charObjs.add(char)
-                        }
-                    })
-                    // IF NONE FOUND, look at other characters:
-                    if (!isCharFound)
-                        _.each(findObjs({ _type: "character" }), char => {
-                            if (fuzzyMatch(char.get("name"), v))
-                                charObjs.add(char)
-                        })
+                    const charName = D.IsIn(v, STATEREF.PCDICT) || D.IsIn(v, STATEREF.NPCDICT),
+                        charObj = charName && (findObjs({ _type: "character", name: charName }) || [])[0]
+                    if (charObj)
+                        charObjs.add(charObj)
                     dbstring += " ... String: "
                 }
                 dbstring += `${charObjs.size} Characters Found.`
@@ -1302,6 +1326,10 @@ const D = (() => {
     return {
         CheckInstall: checkInstall,
         RegisterEventHandlers: regHandlers,
+
+        get STATSDICT() { return STATEREF.STATSDICT },
+        get PCDICT() { return STATEREF.PCDICT },
+        get NPCDICT() { return STATEREF.NPCDICT },
 
         get PAGEID() { return VALS.PAGEID() },
         get CELLSIZE() { return VALS.CELLSIZE() },

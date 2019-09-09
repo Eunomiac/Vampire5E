@@ -755,16 +755,30 @@
     // #endregion
 
     // #region UTILITY: Date & Time Handling
-    const isValidDString = str => Boolean(str && str.match(/\w\w\w\s\d\d?,\s\d\d\d\d/gu)),
-        parseDString = str => {
-            if (parseInt(str))
+    const parseDString = str => {
+            if (!str || !str.match)
+                return str
+            if (!str.match(/\D/gu))
                 return new Date(parseInt(str))
             if (_.isString(str) && str !== "") {
-                const strArray = _.compact(str.split(/[\s,]+?/gu))
-                return new Date(`${strArray[2]}-${["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(strArray[0].slice(0, 3).toLowerCase()) + 1}-${strArray[1]}`)
+                let [month, day, year] = _.compact(str.match(/([\d]+)[^\w\d]*?([\d]+)[^\w\d]*?([\d]+)|(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*[^\w\d]*?([\d]+){1,2}\w*?[^\w\d]*?(\d+)/imuy)).slice(1)                
+                if (!month || !day || !year)
+                    return str
+                if (!["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].includes(month.toLowerCase()) && month > 12)
+                    [day, month] = [month, day]
+                if (!["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].includes(month.toLowerCase()))
+                    month = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"][month - 1]
+                if (`${year}`.length < 3)
+                    year = parseInt(year) + 2000
+                day = parseInt(day)
+                return new Date([year, ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(month.toLowerCase())+1, day])
             }
             return str
         },
+        isValidDString = str => {
+            const dateTest = parseDString(str)
+            return Boolean(str && dateTest && Object.prototype.toString.call(dateTest) === "[object Date]" && !isNaN(dateTest))
+        },   
         formatDString = date => `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`,
         getProgress = (todaysDate, startDate, endDate) => Math.min(1, Math.max(0,
                                                                                (parseDString(todaysDate).getTime() - parseDString(startDate).getTime()) / (parseDString(endDate).getTime() - parseDString(startDate).getTime())

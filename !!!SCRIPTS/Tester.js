@@ -30,13 +30,108 @@ const Tester = (() => {
 
     // #region LOCAL INITIALIZATION
     const initialize = () => { // eslint-disable-line no-empty-function
+        const advNames = [
+            "Haven (Harbord Appt.)",
+            "Haven (Warding)",
+            "Haven (Surgery)",
+            "Domain (Portillion)",
+            "Status (Anarchs)",
+            "Mawla (Baroness)",
+            "Mawla (Scientists)",
+            "Dr. Netchurch",
+            "Dr. Netchurch",
+            "Dr Netchurch",
+            "Herd (Mobile Clinic)",
+            "Herd (Bookies)",
+            "Allies (Bookies)",
+            "Contacts (Ogden Stone)",
+            "Contacts (The Aristocrat)",
+            "Mask: John Pierce",
+            "Enemy (Underwood)",
+            "Addict (Painkillers)",
+            "Known Corpse",
+            "Adversary (Seneschal)"                
+        ]
+        for (const adv of advNames)
+            fuz.add(adv)
     }
+    
+    const fuz = Fuzzy.Fix()
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
         let [isKilling, isWriting] = [false, false]
         switch (call) {
+            case "fuzzy": {
+                switch(args.shift().toLowerCase()) {
+                    case "stat": {
+                        D.Alert(D.JS(D.IsIn(args.join(" "))))
+                        break
+                    }
+                    case "char": {
+                        D.Alert(D.JS(D.GetChars(args.join(" ")) && D.GetChars(args.join(" "))[0].get("name")))
+                        break
+                    }
+                    // no default
+                }                
+                break
+            }
+            case "date": {
+                const dateStrings = [
+                    "apply",
+                    null,
+                    21,
+                    () => 30,
+                    [1, 2, 3],
+                    {is: "not", a: "date"},
+                    "30-4-2000",
+                    "06/22/1827",
+                    "Jan. 07, 2087",
+                    "Feb 23rd: 1919",
+                    "March 1st, 2111",
+                    "December 30th 100",
+                    "December 30 10"
+                ]
+                const tableFunc = arr => {
+                        let tableRow = "<tr>"
+                        for (let i = 0; i < arr.length; i++)
+                            tableRow += `<td style="width:100px;">${_.isUndefined(arr[i]) ? "UN" : arr[i]}</td>`
+                        tableRow += "<tr>"
+                        return tableRow
+                    },
+                    parseDString = str => {
+                        if (!str || !str.match)
+                            return str
+                        if (!str.match(/\D/gu))
+                            return new Date(parseInt(str))
+                        if (_.isString(str) && str !== "") {
+                            let [month, day, year] = _.compact(str.match(/([\d]+)[^\w\d]*?([\d]+)[^\w\d]*?([\d]+)|(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*[^\w\d]*?([\d]+){1,2}\w*?[^\w\d]*?(\d+)/imuy)).slice(1)                
+                            if (!month || !day || !year)
+                                return str
+                            if (!["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].includes(month.toLowerCase()) && month > 12)
+                                [day, month] = [month, day]
+                            if (!["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].includes(month.toLowerCase()))
+                                month = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"][month - 1]
+                            if (`${year}`.length < 3)
+                                year = parseInt(year) + 2000
+                            day = parseInt(day)
+                            return new Date([year, ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(month.toLowerCase())+1, day])
+                        }
+                        return str
+                    },
+                    isValidDString = str => {
+                        const dateTest = parseDString(str)
+                        return Boolean(str && dateTest && Object.prototype.toString.call(dateTest) === "[object Date]" && !isNaN(dateTest))
+                    },   
+                    returnLines = ["<table><tr><th style=\"width:100px;\">INPUT</th><th style=\"width:100px;\">OUTPUT</th></tr>"]
+                for (const dString of dateStrings)
+                    if (isValidDString(dString))                   
+                        returnLines.push(tableFunc([dString, TimeTracker.FormatDate(parseDString(dString))]))
+                returnLines.push("</table>")
+                D.Alert(returnLines.join(""))
+                break
+            }
             case "players": {
                 const playerObjs = findObjs({
                     _type: "player"
