@@ -63,6 +63,9 @@ const Chat = (() => {
                         if (!getSelected(obj, true))
                             sendHelpMsg()
                         break
+                    case "id":
+                        D.Alert(obj.id)
+                        break
                     case "name":
                         if (!getName(obj))
                             sendHelpMsg()

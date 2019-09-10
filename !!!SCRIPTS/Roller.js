@@ -129,7 +129,7 @@ const Roller = (() => {
             case "add": case "set": {
                 switch (args.shift().toLowerCase()) {
                     case "sec": case "secret": case "secrecy": {
-                        switch (args[0].toLowerCase()) {
+                        switch ((args[0] || "").toLowerCase()) {
                             case "name": case "identity":
                                 STATEREF.nextRollFlags = {
                                     isHidingName: true,
@@ -1510,9 +1510,7 @@ const Roller = (() => {
             DragPads.Toggle("wpReroll", false)
             for (const diceCat of _.keys(SETTINGS.dice))
                 makeAllDice(diceCat, SETTINGS.dice[diceCat])
-            Media.LayerImages(Media.IMAGELAYERS.map, "map")
-            Media.LayerImages(Media.IMAGELAYERS.objects, "objects")
-            Media.Order()
+            Media.Initialize()
         },
         scaleFrame = (row, width, isChangingOffRow = true) => {
             if (width < 0) {

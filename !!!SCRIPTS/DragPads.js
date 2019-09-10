@@ -278,6 +278,42 @@ const DragPads = (() => {
         flipComp(card) {
             const slot = parseInt(Media.GetData(card.id).name.replace(/compCardSpot_/gu, "") || 0) - 1
             Complications.Flip(slot)
+        },
+        toggleMapLayer(mapButton) { // mapButtonRoads --> TorontoMapRoadsOverlay
+            //D.Alert(D.JS(mapButton))
+            //D.Alert(D.JS(Media.GetKey(mapButton.id)))
+            const buttonKey = Media.GetKey(mapButton.id),
+                buttonData = Media.GetData(buttonKey),
+                mapLayerKey = buttonKey.replace(/mapButton(.*?)_1/gu, "TorontoMap$1Overlay"),
+                mapLayerData = Media.GetData(mapLayerKey)
+            let isActive
+            //D.Alert(D.JS(buttonData))
+            //D.Alert(D.JS(mapLayerKey))
+            //D.Alert(D.JS(mapLayerData))
+            if (mapLayerData.cycleSrcs && mapLayerData.cycleSrcs.length) {
+                isActive = Media.Toggle(mapLayerKey, true)
+                let srcIndex = Math.max(_.findIndex(mapLayerData.cycleSrcs, x => x === mapLayerData.curSrc), 0)
+                //D.Alert(`Map Cycle Srcs: ${srcIndex}`)
+                if (srcIndex === mapLayerData.cycleSrcs.length - 1)
+                    srcIndex = 0
+                else
+                    srcIndex++
+                Media.Set(mapLayerKey, mapLayerData.cycleSrcs[srcIndex])
+            } else {
+                isActive = Media.Toggle(mapLayerKey)
+                Media.IMAGES[`${mapLayerKey}_1`].startActive = isActive
+            }
+            if (buttonData.cycleSrcs && buttonData.cycleSrcs.length) {
+                let srcIndex = Math.max(_.findIndex(buttonData.cycleSrcs, x => x === buttonData.curSrc), 0)
+                //D.Alert(`Button Cycle Srcs: ${srcIndex}`)
+                if (srcIndex === buttonData.cycleSrcs.length - 1)
+                    srcIndex = 0
+                else
+                    srcIndex++
+                Media.Set(mapButton.id, buttonData.cycleSrcs[srcIndex])
+            } else {
+                Media.Set(mapButton.id, isActive && "on" || "off")
+            }
         }
     }
     // #endregion
@@ -334,15 +370,16 @@ const DragPads = (() => {
         makePad = (graphicObj, funcName, params = "deltaTop:0, deltaLeft:0, deltaHeight:0, deltaWidth:0") => {
             const options = {
                 controlledby: "all",
-                layer: "gmlayer"
+                layer: "objects",
+                startActive: true
             }
             let [pad, partnerPad] = [null, null]
             if (_.isString(params))
                 _.each(params.split(/,\s*?(?=\S)/gu),
                        v => {
                            let [key, value] = v.split(/\s*?(?=\S):\s*?(?=\S)/gu)
-                           if (key.toLowerCase() === "startactive" && value !== "false")
-                               options.startActive = true
+                           if (key.toLowerCase() === "startactive" && value === "false")
+                               options.startActive = false
                            else
                                options[key] = value
                        })
@@ -358,8 +395,10 @@ const DragPads = (() => {
                 options.top = options.top || graphicObj.get("top")
                 options.width = options.width || graphicObj.get("width")
                 options.height = options.height || graphicObj.get("height")
-                if (options.startActive)
+                if (options.startActive) {
                     options.layer = "objects"
+                    options.activeLayer = "objects"
+                }
 
             }
             if (!options.left || !options.top || !options.width || !options.height)

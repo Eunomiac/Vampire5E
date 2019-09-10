@@ -37,6 +37,7 @@ const Char = (() => {
         STATEREF.customStakes = STATEREF.customStakes || {}
         STATEREF.customStakes.coterie = STATEREF.customStakes.coterie || []
         STATEREF.customStakes.personal = STATEREF.customStakes.personal || {A: [], L: [], N: [], R: []}
+        STATEREF.tokenRecord = STATEREF.tokenRecord || []
 
         /* STATEREF.registry = {
             TopLeft: {
@@ -111,7 +112,7 @@ const Char = (() => {
                             break
                         }
                         case "stake": {
-                            switch (args[0].toLowerCase()) {
+                            switch ((args[0] || "").toLowerCase()) {
                                 case "coterie": {
                                     args.shift()                                    
                                     const [name, value, max, date] = args.join(" ").split("|")
@@ -133,7 +134,7 @@ const Char = (() => {
                     break
                 }
                 case "unreg": {
-                    switch(args[0].toLowerCase()) {  
+                    switch((args[0] || "").toLowerCase()) {  
                         case "char":
                             unregisterChar(args.shift())
                             break                      
@@ -143,7 +144,7 @@ const Char = (() => {
                             break
                         case "stake": {
                             args.shift()
-                            switch (args[0].toLowerCase()) {
+                            switch ((args[0] || "").toLowerCase()) {
                                 case "coterie": {
                                     args.shift()
                                     STATEREF.customStakes.coterie = STATEREF.customStakes.coterie.filter(x => x[0].toLowerCase() !== args.join(" ").toLowerCase())
@@ -205,8 +206,8 @@ const Char = (() => {
                             const charObj = D.GetChar(msg) || D.GetChar(args.shift()),
                                 attrList = {}
                             if (VAL({charObj: charObj}, "!char set stat")) {
-                                for (const statpair of D.ParseArgs("|"))
-                                    attrList[statpair.split(":")[0]] = parseInt(statpair.split(":")[1]) || 0
+                                for (const statpair of D.ParseParams("|"))
+                                    attrList[statpair[0]] = parseInt(statpair[1]) || 0
                                 D.SetStats(charObj.id, attrList)
                             } else {
                                 D.Alert("Select a character or provide a character reference first!", "!char set stat")
@@ -228,7 +229,7 @@ const Char = (() => {
                         }                                               
                         case "weekly": case "resource": case "weeklyresource": {
                             if (args[0] && args[0].length > 2)
-                                switch (args[0].toLowerCase()) {
+                                switch ((args[0] || "").toLowerCase()) {
                                     case "reset":
                                         resetResources()
                                         break
@@ -316,9 +317,7 @@ const Char = (() => {
                 case "send": {
                     switch (args.shift().toLowerCase()) {
                         case "home": {
-                            const charDatas = (D.GetChars(msg).filter(x => getCharType(x) === "pc") || D.GetChars("registered")).map(x => D.GetCharData(x))
-                            for (const charData of charDatas)
-                                Media.SetArea(charData.tokenName, `${charData.quadrant}Token`)
+                            sendCharsHome()
                             break
                         }
                         case "district": {
@@ -415,6 +414,21 @@ const Char = (() => {
 
     // #region GETTERS: Check Character Type
     const getCharType = (charRef) => D.GetChar(charRef) && (D.IsIn(D.GetChar(charRef).id, _.values(REGISTRY).map(x => x.id)) ? "pc" : "npc") || false
+    // #endregion
+
+    // #region SETTERS: Moving Tokens
+    const sendCharsHome = () => {
+            const charDatas = D.GetChars("registered").map(x => D.GetCharData(x)),
+                tokenObjs = _.compact(_.values(charDatas).map(x => (findObjs({_pageid: D.PAGEID, _type: "graphic", _subtype: "token", represents: x.id}) || [null])[0]))
+            STATEREF.tokenRecord = tokenObjs && tokenObjs.map(x => ({id: x.id, left: x.get("left"), top: x.get("top")}))
+            for (const charData of charDatas)
+                Media.SetArea(charData.tokenName, `${charData.quadrant}Token`)
+        },
+        restoreCharsPos = () => {
+            for (const tokenData of STATEREF.tokenRecord)
+                (getObj("graphic", tokenData.id) || {set: () => false}).set({left: tokenData.left, top: tokenData.top})
+            
+        }
     // #endregion
 
     // #region Awarding XP,
@@ -1061,6 +1075,8 @@ const Char = (() => {
         DaySleep: daysleep,
         AwardXP: awardXP,
         LaunchProject: launchProject,
+        SendHome: sendCharsHome,
+        SendBack: restoreCharsPos,
         RefreshDisplays: () => { displayDesires(); displayResources(); displayStakes() }
     }
 })()

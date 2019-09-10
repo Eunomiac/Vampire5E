@@ -383,7 +383,7 @@ const Complications = (() => {
             Media.SetText("complicationRemaining", `${STATEREF.remainingVal <= 0 ? "+" : "-"}${Math.abs(STATEREF.remainingVal)}`)
             if (STATEREF.remainingVal <= 0) {
                 Media.SetText("complicationCurrent", { color: C.COLORS.green})
-                Media.SetText("complicationRemaining", { color: C.COLORS.green})
+                Media.SetText("complicationRemaining", { color: STATEREF.remainingVal === 0 ? C.COLORS.gold : C.COLORS.green})
             } else {
                 Media.SetText("complicationCurrent", { color: C.COLORS.brightred})
                 Media.SetText("complicationRemaining", { color: C.COLORS.brightred})
@@ -422,6 +422,11 @@ const Complications = (() => {
             DragPads.Toggle("flipComp", true)
             for (const textRef of ["complicationTarget", "complicationCurrent", "complicationRemaining"])
                 Media.ToggleText(textRef, true)
+            for (let i = 1; i <= 10; i++) {
+                Media.Toggle(`compCardSpot_${i}`, true)
+                Media.ToggleText(`compCardName_${i}`, true)
+                Media.TEXT[`compCardName_${i}`].activeLayer = "gmlayer"
+            }
             setCompVals("current", 0)
             setCompVals("target", startVal)
             refreshDraws()

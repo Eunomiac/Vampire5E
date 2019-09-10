@@ -38,6 +38,7 @@ const Session = (() => {
         STATEREF.tokenRecord = STATEREF.tokenRecord || {}
         STATEREF.SessionScribes = STATEREF.SessionScribes || []
         //STATEREF.SessionScribes = ["Ava Wong", "Thaumaterge", "banzai"]
+        
     }
     // #endregion
 
@@ -46,25 +47,31 @@ const Session = (() => {
         //D.Alert(`Received Call: ${call}<br>MSG: ${D.JS(msg)}`)
         let [token, famToken] = []
         switch (call) {
-            case "start": case "end": case "toggle":
+            case "start": case "end": case "toggle": {
                 log(`... HANDLE INPUT. STATEREF.isSessionActive = ${D.JSL(STATEREF.isSessionActive)}`)
                 if (STATEREF.isSessionActive)
                     endSession(msg)
                 else
                     startSession()
                 break
-            case "set": case "num": case "setnum":
+            }
+            case "set": case "num": case "setnum": {
                 setSessionNum(parseInt(args.shift()) || STATEREF.SessionNum)
                 break
-            case "scene":
+            }
+            case "scene": {
                 endScene()
                 break
-            case "test":
-                STATEREF.isTestingActive = !STATEREF.isTestingActive
-                Media.SetText("testSessionNotice", STATEREF.isTestingActive ? "TEST SESSION ACTIVE" : " ")
-                D.Alert(`Testing Set to ${STATEREF.isTestingActive}`, "!sess test")
+            }
+            case "test": {
+                toggleTesting()
                 break
-            case "daylighters":
+            }
+            case "downtime": {
+                toggleDowntime()
+                break
+            }
+            case "daylighters": {
                 STATEREF.isDaylighterSession = !STATEREF.isDaylighterSession
                 D.Alert(`Daylighter Session Set To: ${STATEREF.isDaylighterSession}`)
                 DragPads.Toggle("signalLight", !STATEREF.isDaylighterSession)
@@ -90,6 +97,7 @@ const Session = (() => {
                     }
                 }
                 break
+            }
             // no default
         }
     }
@@ -120,14 +128,15 @@ const Session = (() => {
                 STATEREF.SessionNum++
             Roller.Clean()
             Media.Initialize()
-            for (const textKey of [..._.map(D.GetCharVals("registered", "shortName"), v => `${v}Desire`), "TimeTracker", "tempF", "tempC", "weather", "stakedAdvantages", "weeklyResources"])
-                Media.SetText(textKey, {color: Media.GetTextData(textKey).color} )
             for (const quadrant of _.keys(Char.REGISTRY)) {
                 const tokenName = Char.REGISTRY[quadrant].tokenName
                 Media.Set(tokenName, STATEREF.tokenRecord[tokenName] || "base")
                 Media.SetArea(tokenName, `${quadrant}Token`)
             }
+            if (STATEREF.isDowntime)
+                Media.Toggle("downtimeBanner", true)
             Media.SetLocation(STATEREF.locationRecord) 
+            TimeTracker.StopCountdown()
             TimeTracker.StartClock()
             Char.RefreshDisplays()
             TimeTracker.Fix()
@@ -135,6 +144,46 @@ const Session = (() => {
         setSessionNum = sNum => {
             STATEREF.SessionNum = sNum
             D.Alert(`Session Number <b>${D.NumToText(STATEREF.SessionNum)}</b> SET.`)
+        },
+        toggleTesting = (isTesting) => {
+            if (isTesting === false || isTesting === true)
+                STATEREF.isTestingActive = isTesting
+            else
+                STATEREF.isTestingActive = !STATEREF.isTestingActive
+            Media.ToggleText("testSessionNotice", STATEREF.isTestingActive)
+            D.Alert(`Testing Set to ${STATEREF.isTestingActive}`, "!sess test")
+        },
+        toggleDowntime = () => {
+            STATEREF.isDowntime = !STATEREF.isDowntime
+            Media.Toggle("downtimeBanner", STATEREF.isDowntime)
+            if (STATEREF.isDowntime) {
+                Roller.Clean()
+                TimeTracker.StopClock()
+                TimeTracker.StopLights()                
+                STATEREF.locationRecord = _.clone(Media.LOCATION)
+                Media.SetLocation({DistrictCenter: "blank"})
+                Char.SendHome()
+                for (const tokenName of _.values(D.GetCharVals("registered", "tokenName")))
+                    Media.Toggle(tokenName, false)
+                for (const imgKey of _.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("Hunger")))
+                    Media.Toggle(imgKey, false)
+                sendChat("Session Downtime", C.CHATHTML.colorBlock([
+                    C.CHATHTML.colorTitle("Session Downtime"),
+                    C.CHATHTML.colorHeader("Session Status: Downtime"),
+                    C.CHATHTML.colorBody("Clock Stopped.")
+                ]))
+            } else {
+                TimeTracker.StartClock()  
+                Media.SetLocation(STATEREF.locationRecord)    
+                Char.SendBack()       
+                sendChat("Session Downtime", C.CHATHTML.colorBlock([
+                    C.CHATHTML.colorTitle("Session Downtime"),
+                    C.CHATHTML.colorHeader("Session Status: Regular Time"),
+                    C.CHATHTML.colorBody("Clock Started.")
+                ]))
+            }
+            Char.RefreshDisplays()
+            TimeTracker.Fix()
         },
         endSession = (selection) => {
             sendChat("Session End", C.CHATHTML.colorBlock([
@@ -151,21 +200,24 @@ const Session = (() => {
             if (!STATEREF.isTestingActive)
                 for (const char of D.GetChars(D.GetSelected(selection) ? selection : "registered"))
                     Char.AwardXP(char, 2, "Session XP award.")
-            for (const textKey of [..._.map(D.GetCharVals("registered", "shortName"), v => `${v}Desire`), "TimeTracker", "tempF", "tempC", "weather", "stakedAdvantages", "weeklyResources"])
-                Media.SetText(textKey, {color: C.COLORS.darkgrey}, true )
-            for (const tokenName of _.values(D.GetCharVals("registered", "tokenName"))) {
-                STATEREF.tokenRecord[tokenName] = Media.GetData(tokenName).curSrc
-                Media.Set(tokenName, "blank")
-            }
-            Media.LayerText(_.keys(Media.TEXT), "gmlayer")
-            Media.LayerImages([
+            for (const tokenName of _.values(D.GetCharVals("registered", "tokenName")))
+                Media.Toggle(tokenName, false)
+            for (const textKey of _.keys(Media.TEXT))
+                Media.ToggleText(textKey, false)
+            if (STATEREF.isTestingActive)
+                Media.ToggleText("testSessionNotice", true)
+            for (const imgKey of [
                 ..._.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("rollerImage")),
                 ..._.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("Hunger")),
                 "stakedAdvantagesHeader",
-                "weeklyResourcesHeader"
-            ], "gmlayer")
+                "weeklyResourcesHeader",
+                "downtimeBanner"
+            ])
+                Media.Toggle(imgKey, false)
             TimeTracker.StopClock()
             TimeTracker.StopLights()
+            TimeTracker.StartCountdown()
+            TimeTracker.UpdateWeather()
         }
     // #endregion
 
@@ -189,13 +241,15 @@ const Session = (() => {
     return {
         RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        ToggleTesting: toggleTesting,
 
         AddSceneChar: addCharToScene,
 
         get SessionNum() { return STATEREF.SessionNum },
         get IsSessionActive() { return STATEREF.isSessionActive },
         get IsDaylighterSession() { return STATEREF.isDaylighterSession },
-        get IsTesting() { return STATEREF.isTestingActive }
+        get IsTesting() { return STATEREF.isTestingActive },
+        get IsDowntime() { return STATEREF.isDowntime }
     }
 })()
 

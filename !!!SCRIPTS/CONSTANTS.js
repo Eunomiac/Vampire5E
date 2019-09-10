@@ -64,7 +64,7 @@ const C = (() => {
             blue: "rgb(100, 100, 255)",
             darkblue: "rgb(50, 50, 150)",
             cyan: "rgb(0, 255, 255)",
-            gold: "#f1c232",
+            gold: "#ffd700",
             fadedblack: "rgba(0, 0, 0, 0.2)",
             fadedgrey: "rgba(0, 0, 0, 0.1)",
             crimson: "rgb(220, 20, 60)",
@@ -518,7 +518,8 @@ const C = (() => {
             40: 3,
             56: 5,
             72: 5,
-            100: 7
+            100: 7,
+            200: 14
         }
         
     // #endregion

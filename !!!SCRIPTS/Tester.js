@@ -63,6 +63,11 @@ const Tester = (() => {
     const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
         let [isKilling, isWriting] = [false, false]
         switch (call) {
+            case "exist": {
+                if (args[1])
+                    D.Alert(`${args[0].toUpperCase()} Object with ID ${args[1]}: ${Boolean(getObj(args[0], args[1])) && "Exists" || "Does NOT Exist"}`)
+                break
+            }
             case "fuzzy": {
                 switch(args.shift().toLowerCase()) {
                     case "stat": {
@@ -75,6 +80,12 @@ const Tester = (() => {
                     }
                     // no default
                 }                
+                break
+            }
+            case "pos": {
+                const charDatas = D.GetChars("registered").map(x => D.GetCharData(x)),
+                    tokenObjs = _.compact(_.values(charDatas).map(x => (findObjs({_pageid: D.PAGEID, _type: "graphic", _subtype: "token", represents: x.id}) || [null])[0]))
+                D.Alert(D.JS(tokenObjs, true))
                 break
             }
             case "date": {
