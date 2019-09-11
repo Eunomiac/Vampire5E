@@ -164,7 +164,7 @@ const Handouts = (() => {
                     /* for (const item of ["projectdetails", "projectgoal", "projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectscope_name", "projectscope", ]) {
                         projectData[item] = projectData[item] || ""
                     } */
-                    if (projectData.projectenddate && TimeTracker.GetDate(projectData.projectenddate) < TimeTracker.CurrentDate())
+                    if (projectData.projectenddate && TimeTracker.GetDate(projectData.projectenddate) < TimeTracker.CurrentDate)
                         continue
                     const projLines = []
                     let projGoal = ""
@@ -240,7 +240,7 @@ const Handouts = (() => {
                         /* for (const item of ["projectdetails", "projectgoal", "projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectscope_name", "projectscope", ]) {
                             projectData[item] = projectData[item] || ""
                         } */
-                        if (prestationData.projectenddate && TimeTracker.GetDate(prestationData.projectenddate) < TimeTracker.CurrentDate())
+                        if (prestationData.projectenddate && TimeTracker.GetDate(prestationData.projectenddate) < TimeTracker.CurrentDate)
                             continue
                         const projLines = []
                         let projGoal = ""

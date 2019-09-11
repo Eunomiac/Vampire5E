@@ -278,6 +278,7 @@ const C = (() => {
                     font-variant: small-caps; 
                     border-bottom: 1px solid ${COLORS.black}; 
                     border-top: 1px solid ${COLORS.black};
+                    overflow: hidden;
                 ">${content}</span>`,
                 tag: (content, color = COLORS.black) => `<span style="
                     display:inline-block; 
@@ -300,6 +301,7 @@ const C = (() => {
                     font-family: 'Alice Regular'; 
                     vertical-align: top; 
                     padding-top: 2px;
+                    overflow: hidden;
                 ">${content}</span>`,
                 critSucc: content => `<span style="
                     display: inline-block; 
