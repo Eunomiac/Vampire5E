@@ -106,7 +106,7 @@ const Session = (() => {
 
     // #region Starting/Ending Sessions
     const startSession = () => {
-            const sessionScribe = STATEREF.isTestingActive ? STATEREF.SessionScribes[0] : STATEREF.SessionScribes.pop()
+            const sessionScribe = STATEREF.isTestingActive ? STATEREF.SessionScribes[0] : STATEREF.SessionScribes.shift()
             STATEREF.isSessionActive = true
             if (STATEREF.SessionScribes.length === 0) {
                 DB(`Scribe: ${sessionScribe}, SessionScribes: ${D.JS(STATEREF.SessionScribes)}
@@ -119,22 +119,26 @@ const Session = (() => {
             sendChat("Session Start", C.CHATHTML.colorBlock([
                 C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: 28}),
                 C.CHATHTML.colorBody("Initializing Session...", {margin: "0px 0px 10px 0px"}),
-                C.CHATHTML.colorHeader(`Welcome to Session ${D.NumToText(STATEREF.SessionNum + 1, true)}!`),
+                C.CHATHTML.colorHeader(`Welcome to Session ${D.NumToText(STATEREF.SessionNum, true)}!`),
                 C.CHATHTML.colorBody("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "10px 0px 10px 0px"}),
                 C.CHATHTML.colorHeader(`Session Scribe: ${sessionScribe}`),
                 C.CHATHTML.colorBody("Thank you for your service!")
             ]))
-            if (!STATEREF.isTestingActive)
-                STATEREF.SessionNum++
             Roller.Clean()
             Media.Initialize()
             for (const quadrant of _.keys(Char.REGISTRY)) {
                 const tokenName = Char.REGISTRY[quadrant].tokenName
+                Media.Toggle(tokenName, true)
                 Media.Set(tokenName, STATEREF.tokenRecord[tokenName] || "base")
                 Media.SetArea(tokenName, `${quadrant}Token`)
             }
             if (STATEREF.isDowntime)
                 Media.Toggle("downtimeBanner", true)
+            else
+                for (const imgKey of _.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("Hunger")))
+                    Media.Toggle(imgKey, true)
+            for (const imgKey of ["stakedAdvantagesHeader", "weeklyResourcesHeader"])
+                Media.Toggle(imgKey, true)
             Media.SetLocation(STATEREF.locationRecord) 
             TimeTracker.StopCountdown()
             TimeTracker.StartClock()
@@ -156,10 +160,9 @@ const Session = (() => {
         toggleDowntime = () => {
             STATEREF.isDowntime = !STATEREF.isDowntime
             Media.Toggle("downtimeBanner", STATEREF.isDowntime)
+            Roller.Clean()
             if (STATEREF.isDowntime) {
-                Roller.Clean()
-                TimeTracker.StopClock()
-                TimeTracker.StopLights()                
+                TimeTracker.StopClock()                
                 STATEREF.locationRecord = _.clone(Media.LOCATION)
                 Media.SetLocation({DistrictCenter: "blank"})
                 Char.SendHome()
@@ -175,7 +178,11 @@ const Session = (() => {
             } else {
                 TimeTracker.StartClock()  
                 Media.SetLocation(STATEREF.locationRecord)    
-                Char.SendBack()       
+                Char.SendBack()  
+                for (const tokenName of _.values(D.GetCharVals("registered", "tokenName")))
+                    Media.Toggle(tokenName, true)
+                for (const imgKey of _.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("Hunger")))
+                    Media.Toggle(imgKey, true)     
                 sendChat("Session Downtime", C.CHATHTML.colorBlock([
                     C.CHATHTML.colorTitle("Session Downtime"),
                     C.CHATHTML.colorHeader("Session Status: Regular Time"),
@@ -185,30 +192,33 @@ const Session = (() => {
             Char.RefreshDisplays()
             TimeTracker.Fix()
         },
-        endSession = (selection) => {
+        endSession = () => {
             sendChat("Session End", C.CHATHTML.colorBlock([
                 C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: 28}),
                 C.CHATHTML.colorHeader(`Concluding Session ${D.NumToText(STATEREF.SessionNum, true)}`),
                 C.CHATHTML.colorBody("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "10px 0px 10px 0px"}),
                 C.CHATHTML.colorTitle("See you next week!", {fontSize: 32}),
             ]))
+            if (!STATEREF.isTestingActive)
+                STATEREF.SessionNum++
             Roller.Clean()
             STATEREF.isSessionActive = false
             STATEREF.locationRecord = _.clone(Media.LOCATION)
             STATEREF.tokenRecord = {}
-            Media.SetLocation({DistrictCenter: "blank"})
             if (!STATEREF.isTestingActive)
-                for (const char of D.GetChars(D.GetSelected(selection) ? selection : "registered"))
+                for (const char of D.GetChars("registered"))
                     Char.AwardXP(char, 2, "Session XP award.")
-            for (const tokenName of _.values(D.GetCharVals("registered", "tokenName")))
-                Media.Toggle(tokenName, false)
+            for (const imgKey of [..._.values(D.GetCharVals("registered", "tokenName")), "DistrictCenter", "DistrictLeft", "DistrictRight", "SiteCenter", "SiteLeft", "SiteRight", "SiteBarCenter", "SiteBarLeft", "SiteBarRight"])
+                Media.Toggle(imgKey, false)
             for (const textKey of _.keys(Media.TEXT))
                 Media.ToggleText(textKey, false)
             if (STATEREF.isTestingActive)
                 Media.ToggleText("testSessionNotice", true)
             for (const imgKey of [
-                ..._.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("rollerImage")),
-                ..._.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("Hunger")),
+                ..._.keys(Media.IMAGES).filter(x => x.startsWith("rollerImage")),
+                ..._.keys(Media.IMAGES).filter(x => x.startsWith("Hunger")),
+                ..._.keys(Media.IMAGES).filter(x => x.startsWith("District")),
+                ..._.keys(Media.IMAGES).filter(x => x.startsWith("Site")),
                 "stakedAdvantagesHeader",
                 "weeklyResourcesHeader",
                 "downtimeBanner"

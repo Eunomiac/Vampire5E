@@ -363,14 +363,20 @@ const Media = (() => {
                                     break
                                 }
                                 case "backgrounds": {
-                                    const imgData = getImageData("Horizon_1")
-                                    for (const bgImgObj of getImageObjs(["WeatherMain_1", "WeatherFog_1", "WeatherGround_1", "WeatherClouds_1", "WeatherFrost_1", "Horizon_1"])) 
-                                        bgImgObj.set({
-                                            top: imgData.top,
-                                            left: imgData.left,
-                                            height: imgData.height,
-                                            width: imgData.width
-                                        })
+                                    for (const imgObj of getImageObjs(BGIMAGES.keys))
+                                        setImgData(imgObj, {
+                                            top: BGIMAGES.top,
+                                            left: BGIMAGES.left,
+                                            height: BGIMAGES.height,
+                                            width: BGIMAGES.width
+                                        }, true)
+                                    for(const imgObj of getImageObjs(MAPIMAGES.keys))                                    
+                                        setImgData(imgObj, {
+                                            top: MAPIMAGES.top,
+                                            left: MAPIMAGES.left,
+                                            height: MAPIMAGES.height,
+                                            width: MAPIMAGES.width
+                                        }, true)
                                     break
                                 }
                                 // no default
@@ -670,6 +676,34 @@ const Media = (() => {
         TEXTREGISTRY = STATEREF.textregistry,
         AREAS = STATEREF.areas,
         TOKENREGISTRY = STATEREF.tokenregistry,
+        BGIMAGES = {
+            top: C.SANDBOX.top,
+            left: C.SANDBOX.left,
+            height: C.SANDBOX.height,
+            width: C.SANDBOX.width,
+            keys: [
+                "Horizon",
+                "WeatherGround",
+                "WeatherMain",
+                "WeatherFog",
+                "WeatherClouds",
+                "WeatherFrost"            
+            ]
+        },
+        MAPIMAGES = {
+            top: C.MAP.top,
+            left: C.MAP.left,
+            height: C.MAP.height,
+            width: C.MAP.width,
+            keys: [
+                "TorontoMap",
+                "TorontoMapDomainsOverlay",
+                "TorontoMapAutarkisOverlay",
+                "TorontoMapRackOverlay",
+                "TorontoMapDistrictsOverlay",
+                "TorontoMapParksOverlay"
+            ]
+        },
         ZLEVELS = {
             map: {
                 DistrictsAndSites: {
@@ -799,9 +833,9 @@ const Media = (() => {
                     TorontoMapDomainOverlay_1: 5,
                     TorontoMapAutarkisOverlay_1: 5,
                     TorontoMapRackOverlay_1: 5,
-                    TorontoMapRoadsOverlay_1: 7,
-                    TorontoMapDistrictsOverlay_1: 6,
-                    TorontoMapParksOverlay: 4
+                    TorontoMapRoadsOverlay_1: 6,
+                    TorontoMapDistrictsOverlay_1: 7,
+                    TorontoMapParksOverlay_1: 4
                 }
             },
             objects: {
@@ -1289,14 +1323,10 @@ const Media = (() => {
                         return isSilent ? THROW(`Image object '${D.JSL(imgRef)}' is unregistered or is missing 'srcs' property`, "setImage()") : false
 
                     imgObj.set("imgsrc", srcURL)
-                    if (srcRef === "blank") {
-                        imgObj.set("layer", "gmlayer")
-                        if (IMAGEREGISTRY[getImageData(imgRef).name].curSrc !== "blank")
-                            IMAGEREGISTRY[getImageData(imgRef).name].activeSrc = IMAGEREGISTRY[getImageData(imgRef).name].curSrc
-                    } else {
-                        imgObj.set("layer", getImageData(imgRef).activeLayer)
+                    if (srcRef !== "blank" && !getImageData(imgRef).isActive)
+                        toggleImagePermanent(imgRef, true)
+                    if (srcRef !== "blank" && getImageData(imgRef).isActive)
                         IMAGEREGISTRY[getImageData(imgRef).name].activeSrc = srcRef
-                    }
                     IMAGEREGISTRY[getImageData(imgRef).name].curSrc = srcRef
                     return imgObj
                 }
@@ -1321,11 +1351,18 @@ const Media = (() => {
             }
             return false
         },
-        setImgData = (imgRef, params) => {
-            _.each(params, (v, k) => {
-                IMAGEREGISTRY[getImageKey(imgRef)][k] = v
-            })
-            return IMAGEREGISTRY[getImageKey(imgRef)]
+        setImgData = (imgRef, params, isSettingObject = false) => {
+            const imgObj = getImageObj(imgRef),
+                imgKey = getImageKey(imgRef)
+            if (imgObj && imgKey) {
+                _.each(params, (v, k) => {
+                    IMAGEREGISTRY[imgKey][k] = v
+                })
+                if (isSettingObject)
+                    setImgParams(imgRef, params)
+                return IMAGEREGISTRY[getImageKey(imgRef)]
+            }
+            return false
         },
         setLocation = (locRefs) => {
             const hosts = [],
@@ -1601,28 +1638,34 @@ const Media = (() => {
 				setImgParams(imgObj, attrList)
 			}
 		}, */
-        toggleImage = (imgRef, isActive) => {
+        toggleImage = (imgRef, isActive, isPermanent = false) => {
             const imgKey = getImageKey(imgRef),
                 imgObj = getImageObj(imgRef),
                 imgData = getImageData(imgRef)
             if (imgObj) {
-                const activeCheck = (isActive === false || isActive === true) ? isActive : (IMAGEREGISTRY[imgKey].isActive === false || IMAGEREGISTRY[imgKey].isActive === true) ? !IMAGEREGISTRY[imgKey].isActive : IMAGEREGISTRY[imgKey].startActive
+                const activeCheck = isActive === false || isActive === true ? isActive : IMAGEREGISTRY[imgKey].isActive === false || IMAGEREGISTRY[imgKey].isActive === true ? !IMAGEREGISTRY[imgKey].isActive : IMAGEREGISTRY[imgKey].startActive
                 //D.Alert(`activeCheck: ${activeCheck}`)
                 if (activeCheck) {
                     IMAGEREGISTRY[imgKey].isActive = true
                     imgObj.set("layer", imgData.activeLayer || "objects")
-                    if (imgData.activeSrc)
+                    if (imgData.activeSrc && imgData.activeSrc !== "blank")
                         setImage(imgRef, imgData.activeSrc)
                     else if (imgData.srcs && imgData.srcs.base)
                         setImage(imgRef, "base")
                 } else {
                     IMAGEREGISTRY[imgKey].isActive = false
                     imgObj.set("layer", "gmlayer")
+                    if (IMAGEREGISTRY[imgKey].curSrc !== "blank")
+                        IMAGEREGISTRY[imgKey].activeSrc = IMAGEREGISTRY[imgKey].curSrc
                     setImage(imgRef, "blank")
                 }
+                if (isPermanent)
+                    IMAGEREGISTRY[imgKey].startActive = IMAGEREGISTRY[imgKey].isActive
                 return IMAGEREGISTRY[imgKey].isActive
             }
+            return null
         },
+        toggleImagePermanent = (imgRef, isActive) => toggleImage(imgRef, isActive, true),
         removeImage = (imgRef, isUnregOnly) => {
             const imgObj = getImageObj(imgRef),
                 imgData = getImageData(imgRef)
@@ -2266,10 +2309,7 @@ const Media = (() => {
                     for (const key of _.intersection(_.keys(textOptions), _.keys(textData)))
                         TEXTREGISTRY[textData.name][key] = textOptions[key]
                 objParams.left = getRealLeft(textObj, {left: objParams.left, text: textOptions.text, justification: textData.justification, maxWidth: textOptions.maxWidth})
-                if (_.isEmpty(textString)) {
-                    objParams.layer = "gmlayer"
-                    TEXTREGISTRY[textData.name].activeText = textObj.get("text")
-                } else {
+                if (!_.isEmpty(textString)) {
                     objParams.layer = textData.activeLayer
                     TEXTREGISTRY[textData.name].activeText = textString
                 }
@@ -2291,21 +2331,30 @@ const Media = (() => {
             })
             return TEXTREGISTRY[getTextKey(textRef)]
         },
-        toggleText = (textRef, isActive) => {
-            const textObj = getTextObj(textRef),
+        toggleText = (textRef, isActive, isPermanent = false) => {
+            const textKey = getTextKey(textRef),
+                textObj = getTextObj(textRef),
                 textData = getTextData(textRef)
-            DB(`Obj: ${D.JS(textObj)}, TextRef: ${D.JS(textRef)}, isActive: ${D.JS(isActive)}, Layer: ${D.JS(textObj && textObj.get("layer") || "<NO OBJ>")}`, "toggleText")
-            if (textObj && isActive) {
-                DB(`Toggling ON. ActiveLayer: ${D.JS(textData.activeLayer)}, activeText: ${D.JS(textData.activeText)}`, "toggleText")
-                textObj.set("layer", textData.activeLayer)
-                if (textData.activeText)
-                    setText(textRef, {text: textData.activeText})
-            } else if (textObj && !isActive) {
-                DB("Toggling OFF.", "toggleText")
-                textObj.set("layer", "gmlayer")
-                setText(textRef, {text: " "})
+            if (textObj) {
+                const activeCheck = isActive === false || isActive === true ? isActive : TEXTREGISTRY[textKey].isActive === false || TEXTREGISTRY[textKey].isActive === true ? !TEXTREGISTRY[textKey].isActive : TEXTREGISTRY[textKey].startActive
+                //D.Alert(`activeCheck: ${activeCheck}`)
+                if (activeCheck) {
+                    TEXTREGISTRY[textKey].isActive = true
+                    textObj.set("layer", textData.activeLayer || "objects")
+                    if (textData.activeText)
+                        setText(textRef, {text: textData.activeText})
+                } else {
+                    TEXTREGISTRY[textKey].isActive = false
+                    textObj.set("layer", "gmlayer")
+                    setText(textRef, {text: " "})
+                }
+                if (isPermanent)
+                    TEXTREGISTRY[textKey].startActive = TEXTREGISTRY[textKey].isActive                
+                return TEXTREGISTRY[textKey].isActive  
             }
+            return null
         },
+        toggleTextPermanent = (textRef, isActive) => toggleText(textRef, isActive, true),
         removeText = (textRef, isUnregOnly, isStillKillingShadow) => {
             const textObj = getTextObj(textRef),
                 textData = getTextData(textRef)
@@ -2345,7 +2394,7 @@ const Media = (() => {
                 const imgObj = getImageObj(imgData.id)
                 if (imgObj)
                     imgObj.set("layer", imgData.activeLayer)
-                else
+                else if (!imgData.name.includes("Token"))
                     returnStrings.push(`No Image Object Found for '${imgData.name}'`)
             }
             for (const textData of _.values(TEXTREGISTRY)) {
@@ -2406,7 +2455,7 @@ const Media = (() => {
         SetData: setImgData,
         SetArea: setImageArea,
         SetLocation: setLocation,
-        Toggle: toggleImage,
+        Toggle: toggleImagePermanent,
         get LOCATION() { return STATEREF.curLocation },
         IsRegistered: isRegImg,
 
@@ -2422,7 +2471,7 @@ const Media = (() => {
         RemoveAllText: removeTexts,
         SetText: setText,
         SetTextData: setTextData,
-        ToggleText: toggleText,
+        ToggleText: toggleTextPermanent,
 
         Initialize: initMedia
     }

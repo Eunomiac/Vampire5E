@@ -386,7 +386,7 @@ const Char = (() => {
                     THROW("No character found!", "registerChar")
                 } else if (!tokenObj) {
                     THROW("Please select a character token.", "registerChar")
-                } else if (!D.IsIn(quadrant, _.keys(C.QUADRANTS))) {
+                } else if (!D.IsIn(quadrant, _.keys(C.QUADRANTS), true)) {
                     THROW("Quadrant must be one of: TopLeft, BotLeft, TopRight, BotRight.", "registerChar")
                     REGISTRY[quadrant] = {
                         id: charID,
@@ -410,10 +410,6 @@ const Char = (() => {
                     delete REGISTRY[regKey]
             }
         }
-    // #endregion
-
-    // #region GETTERS: Check Character Type
-    const getCharType = (charRef) => D.GetChar(charRef) && (D.IsIn(D.GetChar(charRef).id, _.values(REGISTRY).map(x => x.id)) ? "pc" : "npc") || false
     // #endregion
 
     // #region SETTERS: Moving Tokens

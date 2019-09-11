@@ -123,12 +123,12 @@ const D = (() => {
     // #endregion
 
     // #region DECLARATIONS: Dependent Variables
-    /* const ALLSTATS = [
+    const ALLSTATS = [
         ..._.flatten(_.values(C.ATTRIBUTES)),
         ..._.flatten(_.values(C.SKILLS)),
         ...C.DISCIPLINES,
         ...C.TRACKERS
-    ] */
+    ]
     // #endregion
 
     // #region PARSING & STRING MANIPULATION: Converting data types to strings, formatting strings, converting strings into objects.
@@ -338,8 +338,81 @@ const D = (() => {
                 second.toLowerCase().replace(/\W+/gu, "").includes(first.toLowerCase().replace(/\W+/gu, ""))
             return false
         },
-        isIn = (needle, haystack) => {
+        isInExact = (needle, haystack = ALLSTATS) => {
+            // Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. 
+            try {
+                // STEP ZERO: VALIDATE NEEDLE & HAYSTACK
+                      // NEEDLE --> Must be STRING
+                      // HAYSTACK --> Can be ARRAY, LIST or STRING 
+                if (VAL({string: needle}) || VAL({number: needle})) {
+                    // STEP ONE: BUILD HAYSTACK.
+                        // HAYSTACK = ARRAY? --> HAY = ARRAY
+                        // HAYSTACK = LIST? ---> HAY = ARRAY (_.keys(H))
+                        // HAYSTACK = STRING? -> HAY = H
+                    const hayType = VAL({array: haystack}) && "array" ||
+                                    VAL({list: haystack}) && "list" ||
+                                    VAL({string: haystack}) && "string"                                    
+                    let ndl = needle.toString(),
+                        hay, match
+                    switch (hayType) {
+                        case "array":
+                            hay = [...haystack]
+                            break
+                        case "list":
+                            hay = _.keys(haystack)
+                            break
+                        case "string":
+                            hay = haystack
+                            break
+                        default:
+                            return THROW(`Haystack must be a string, a list or an array: ${D.JS(haystack)}`, "IsIn")
+                    }
+                    // STEP TWO: SEARCH HAY FOR NEEDLE USING PROGRESSIVELY MORE FUZZY MATCHING. SKIP "*" STEPS IF ISFUZZYMATCHING IS FALSE.
+                            // STRICT: Search for exact match, case sensitive.
+                            // LOOSE: Search for exact match, case insensitive.
+                            // *START: Search for match with start of haystack strings, case insensitive.
+                            // *END: Search for match with end of haystack strings, case insensitive.
+                            // *INCLUDE: Search for match of needle anywhere in haystack strings, case insensitive.
+                            // *REVERSE INCLUDE: Search for match of HAYSTACK strings inside needle, case insensitive.
+                            // FUZZY: Start again after stripping all non-word characters. 
+                    if (hayType === "array" || hayType === "list") {
+                        for (let i = 0; i <= 1; i++) {
+                            let thisNeedle = ndl,
+                                thisHay = hay
+                            match = _.findIndex(thisHay, v => thisNeedle === v) + 1 // Adding 1 means "!match" passes on failure return of -1.
+                            if (match) break                            
+                            thisHay = _.map(thisHay, v => (v || v === 0) && (VAL({string: v}) || VAL({number: v}) ? v.toString().toLowerCase() : v) || "§¥£")
+                            thisNeedle = thisNeedle.toString().toLowerCase()
+                            match = _.findIndex(thisHay, v => thisNeedle === v) + 1
+                            if (match) break
+                            // Now strip all non-word characters and try again from the top.
+                            ndl = ndl.replace(/\W+/gu, "")
+                            hay = _.map(hay, v => VAL({string: v}) || VAL({number: v}) ? v.toString().replace(/\W+/gu, "") : v)
+                        }
+                        return match && hayType === "array" ? haystack[match - 1] : haystack[_.keys(haystack)[match - 1]]
+                    } else {
+                        for (let i = 0; i <= 1; i++) {
+                            match = hay === ndl && ["", hay]
+                            if (match) break
+                            let thisNeedleRegExp = new RegExp(`^(${ndl})$`, "iu")
+                            match = hay.match(thisNeedleRegExp)
+                            if (match) break
+                            // Now strip all non-word characters and try again from the top.
+                            ndl = ndl.replace(/\W+/gu, "")
+                            hay = hay.replace(/\W+/gu, "")
+                        }
+                        return match && match[1]
+                    }
+                }
+                return THROW(`Needle must be a string: ${D.JS(needle)}`, "isIn")
+            } catch (errObj) {
+                return THROW(`Error locating '${D.JSL(needle)}' in ${D.JSL(haystack)}'`, "isIn", errObj)
+            }
+        },
+        isIn = (needle, haystack, isExact = false) => {
             let dict
+            if (isExact)
+                return isInExact(needle, haystack)
             if (!haystack) {
                 dict = STATEREF.STATSDICT
             } else if (haystack.add) {
@@ -747,7 +820,7 @@ const D = (() => {
             }
             return "(UNNAMED)"
         },
-        getChars = (charRef, isSilent = false) => {
+        getChars = (charRef, isSilent = false, isFuzzyMatching = false) => {
 			/* Returns an ARRAY OF CHARACTERS given: "all", "registered", a character ID, a character Name,
 				a token object, a message with selected tokens, OR an array of such parameters. */
             const charObjs = new Set()
@@ -804,7 +877,7 @@ const D = (() => {
                     dbstring += ` ... "${jStr(v)}": `                    
                     // If parameter is a STRING, assume it is a character name to fuzzy-match.
                 } else if (VAL({ string: v })) {
-                    const charName = D.IsIn(v, STATEREF.PCDICT) || D.IsIn(v, STATEREF.NPCDICT),
+                    const charName = D.IsIn(v, STATEREF.PCDICT, !isFuzzyMatching) || D.IsIn(v, STATEREF.NPCDICT, !isFuzzyMatching),
                         charObj = charName && (findObjs({ _type: "character", name: charName }) || [])[0]
                     if (charObj)
                         charObjs.add(charObj)
@@ -1028,59 +1101,60 @@ const D = (() => {
             // Returns a PLAYER ID given: display name, token object, character reference.
             let playerID = null
             try {
-                if (VAL({object: playerRef}) && playerRef.get("_type") === "player")
-                    //DB(`PlayerRef identified as Player Object: ${D.JS(playerRef, true)}<br><br>... returning ID: ${playerRef.id}`, "getPlayerID")
+                if (VAL({object: playerRef}) && playerRef.get("_type") === "player") {
+                    DB(`PlayerRef identified as Player Object: ${D.JS(playerRef, true)}<br><br>... returning ID: ${playerRef.id}`, "getPlayerID")
                     return playerRef.id
+                }
                 if (VAL({ char: playerRef })) {
                     const charObj = getChar(playerRef, true)
                     playerID = _.filter(charObj.get("controlledby").split(","), v => v !== "all")
-                    //DB(`PlayerRef identified as Character Object: ${D.JS(charObj.get("name"))}... "controlledby": ${D.JS(playerID)}`, "getPlayerID")
+                    DB(`PlayerRef identified as Character Object: ${D.JS(charObj.get("name"))}... "controlledby": ${D.JS(playerID)}`, "getPlayerID")
                     if (playerID.length > 1 && !isSilent)
                         THROW(`WARNING: Finding MULTIPLE player IDs connected to character reference '${jStr(playerRef)}': ${jStr(playerID)}`, "getPlayerID")
                     return playerID[0]
                 }
                 if (VAL({ string: playerRef })) {
-                    //DB(`PlayerRef identified as String: ${D.JS(playerRef)}`, "getPlayerID")
-                    if (getObj("player", playerRef)) 
-                        //DB(`... String is Player ID. Returning ${D.JS(getObj("player", playerRef).id)}`, "getPlayerID")
+                    DB(`PlayerRef identified as String: ${D.JS(playerRef)}`, "getPlayerID")
+                    if (getObj("player", playerRef)) {
+                        DB(`... String is Player ID. Returning ${D.JS(getObj("player", playerRef).id)}`, "getPlayerID")
                         return getObj("player", playerRef).id
-                    else if (findObjs({
+                    } else if (findObjs({
                         _type: "player",
                         _displayname: playerRef
-                    }, {caseInsensitive: true}).length > 0) 
-                        //DB(`... String is DISPLAY NAME. Found ${findObjs({
-                        //    _type: "player",
-                        //    _displayname: playerRef
-                        //}, {caseInsensitive: true}).length} Players.`, "getPlayerID")
+                    }, {caseInsensitive: true}).length > 0) {
+                        DB(`... String is DISPLAY NAME. Found ${findObjs({
+                            _type: "player",
+                            _displayname: playerRef
+                        }, {caseInsensitive: true}).length} Players.`, "getPlayerID")
                         return findObjs({
                             _type: "player",
                             _displayname: playerRef
                         }, {caseInsensitive: true})[0].id
-                    else if (findObjs({
+                    } else if (findObjs({
                         _type: "player",
                         speakingas: playerRef
-                    }, {caseInsensitive: true}).length > 0) 
-                        //DB(`... String is SPEAKING AS. Found ${findObjs({
-                        //    _type: "player",
-                        //    speakingas: playerRef
-                        //}, {caseInsensitive: true}).length} Players.`, "getPlayerID")
+                    }, {caseInsensitive: true}).length > 0) {
+                        DB(`... String is SPEAKING AS. Found ${findObjs({
+                            _type: "player",
+                            speakingas: playerRef
+                        }, {caseInsensitive: true}).length} Players.`, "getPlayerID")
                         return findObjs({
                             _type: "player",
                             speakingas: playerRef
                         }, {caseInsensitive: true})[0].id
-                    else if (findObjs({
+                    } else if (findObjs({
                         _type: "player",
                         _d20userid: playerRef
-                    }, {caseInsensitive: true}).length > 0) 
-                        //DB(`... String is _d20userid. Found ${findObjs({
-                        //    _type: "player",
-                        //    _d20userid: playerRef
-                        //}, {caseInsensitive: true}).length} Players.`, "getPlayerID")
+                    }, {caseInsensitive: true}).length > 0) {
+                        DB(`... String is _d20userid. Found ${findObjs({
+                            _type: "player",
+                            _d20userid: playerRef
+                        }, {caseInsensitive: true}).length} Players.`, "getPlayerID")
                         return findObjs({
                             _type: "player",
                             _d20userid: playerRef
                         }, {caseInsensitive: true})[0].id
-                    
+                    }
                     return isSilent ? false : THROW(`Unable to find player connected to reference '${jStr(playerRef)}'`, "getPlayerID")
                 }
                 return isSilent ? false : THROW(`Unable to find player connected to character token '${jStr(playerRef)}'`, "getPlayerID")

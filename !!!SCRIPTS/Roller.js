@@ -451,7 +451,7 @@ const Roller = (() => {
                 if (!VAL({ charobj: charObj }, "handleInput")) return
                 if (
                     ["check", "rouse", "rouse2"].includes(rollType) ||
-                    rollType === "frenzy" && STATEREF.frenzyRoll && D.IsIn(STATEREF.frenzyRoll.slice("|")[0], _.map(D.GetChars("registered"), v => v.get("name")))
+                    rollType === "frenzy" && STATEREF.frenzyRoll && D.IsIn(STATEREF.frenzyRoll.slice("|")[0], _.map(D.GetChars("registered"), v => v.get("name")), true)
                 )
                     rollFlags = {
                         isHidingName: false,
@@ -1411,7 +1411,7 @@ const Roller = (() => {
         },
         clearRoller = () => {
             for (const textLine of _.keys(TEXTLINES))
-                Media.SetText(textLine, " ")
+                Media.ToggleText(textLine, false)
             _.each(STATEREF.diceList, (v, dNum) => {
                 setDie(dNum, "diceList", "blank")
             })
@@ -1515,19 +1515,20 @@ const Roller = (() => {
         scaleFrame = (row, width, isChangingOffRow = true) => {
             if (width < 0) {
                 if (row === "top") {
+                    Media.Set("rollerImage_frontFrame_1", "base")
                     for (const thisRow of isChangingOffRow ? ["top", "bottom"] : ["top"]) {
+                        Media.Set(`rollerImage_${thisRow}End_1`, "base")
                         Media.SetParams(`rollerImage_${thisRow}End_1`, { left: 300 })
                         for (let i = 0; i < 9; i++)
-                            Media.Set(`rollerImage_${thisRow}Mid_${i + 1}`, "blank")
-                        Media.Set("rollerImage_diffFrame_1", "blank")
+                            Media.Toggle(`rollerImage_${thisRow}Mid_${i + 1}`, false)
+                        Media.Toggle("rollerImage_diffFrame_1", false)
                     }
                 } else {
-                    //D.Alert("Setting Front Frame to TopOnly")
-                    Media.SetParams("rollerImage_bottomEnd_1", { left: 300 })
-                    Media.Set("rollerImage_bottomEnd_1", "blank")
-                    for (let i = 0; i < 9; i++)
-                        Media.Set(`rollerImage_bottomMid_${i + 1}`, "blank")
                     Media.Set("rollerImage_frontFrame_1", "topOnly")
+                    //D.Alert("Setting Front Frame to TopOnly")
+                    Media.Toggle("rollerImage_bottomEnd_1", false)
+                    for (let i = 0; i < 9; i++)
+                        Media.Toggle(`rollerImage_bottomMid_${i + 1}`, false)
                 }                
             } else {
                 if (row === "bottom" || isChangingOffRow) {
@@ -1568,7 +1569,7 @@ const Roller = (() => {
                 dbLines.push(`Setting ${row}End to ${left}`)
                 Media.SetParams(endImg, { left: left })
                 for (let j = 0; j < blanks.length; j++)
-                    Media.Set(blanks[j], "blank")
+                    Media.Toggle(blanks[j], false)
 
                 /* const frameEndObj = Media.GetObj("rollerImage_bottomEnd_1"),
                     frameRightSide = frameEndObj.get("left") + 0.5 * frameEndObj.get("width")
@@ -1654,19 +1655,19 @@ const Roller = (() => {
                 const rollEffects = _.compact(_.without(_.uniq([...rollEffectString.split("|"), ..._.keys(STATEREF.rollEffects), ...rollInput.rollEffectsToReapply || []]), ...rollInput.appliedRollEffects)),
                     [rollData, rollResults] = rollInput.rolls ? [null, rollInput] : [rollInput, null],
                     checkInput = (input, rollMod, restriction) => {
-                        DB(`Checking Input. RollMod: ${rollMod}, Restriction: ${restriction}<br>... Boolean(input.rolls): ${Boolean(input.rolls)}<br>... D.IsIn: ${Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod))}`, "checkInput")
-                        return Boolean(input.rolls) === Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod))
+                        DB(`Checking Input. RollMod: ${rollMod}, Restriction: ${restriction}<br>... Boolean(input.rolls): ${Boolean(input.rolls)}<br>... D.IsIn: ${Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction, true) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod, true))}`, "checkInput")
+                        return Boolean(input.rolls) === Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction, true) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod, true))
                     },
                     checkRestriction = (input, traits, flags, rollMod, restriction) => {
-                        DB(`Checking Restriction '${D.JS(restriction)}'<br>...TRAITS: ${D.JS(traits)}<br>...FLAGS: ${D.JS(flags)}<br>...MOD: ${D.JS(rollMod)}`, "checkThreshold")
+                        DB(`Checking Restriction '${D.JS(restriction)}'<br>...TRAITS: ${D.JS(traits)}<br>...FLAGS: ${D.JS(flags)}<br>...MOD: ${D.JS(rollMod)}`, "checkRestriction")
                         // FIRST, check whether this restriction applies to the given input (either rollData or rollResults):
                         if (!checkInput(input, rollMod, restriction)) {
-                            DB("... checkInput returns FALSE: returning 'INAPPLICABLE'.", "checkThreshold")
+                            DB("... checkInput returns FALSE: returning 'INAPPLICABLE'.", "checkRestriction")
                             return "INAPPLICABLE"
                         }
-                        DB("... checkInput returns TRUE: continuing validation.", "checkThreshold")
+                        DB("... checkInput returns TRUE: continuing validation.", "checkRestriction")
                         if (restriction === "all") {
-                            DB("Restriction = ALL:  RETURNING TRUE", "checkThreshold")
+                            DB("Restriction = ALL:  RETURNING TRUE", "checkRestriction")
                             return true
                         }
                         if (rollResults) {
@@ -1674,7 +1675,7 @@ const Roller = (() => {
                             switch (rollMod) {
                                 case "doublewpreroll": case "freewpreroll":
                                     if (_.any(rollEffects, v => v.includes("nowpreroll"))) {
-                                        DB(`Willpower cost ${rollMod} SUPERCEDED by 'nowpreroll': ${D.JS(rollEffects)}`, "checkThreshold")
+                                        DB(`Willpower cost ${rollMod} SUPERCEDED by 'nowpreroll': ${D.JS(rollEffects)}`, "checkRestriction")
                                         return "INAPPLICABLE"
                                     }
                                     break
@@ -1684,61 +1685,66 @@ const Roller = (() => {
                             let effectiveMargin = input.total - (input.diff || 1) // All rolls have a base difficulty of one if difficulty isn't specified.
                             switch (restriction) {
                                 case "success":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0}`, "checkThreshold")
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0}`, "checkRestriction")
                                     return effectiveMargin >= 0
                                 case "failure":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0}`, "checkThreshold")
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0}`, "checkRestriction")
                                     return effectiveMargin < 0
                                 case "basicfail":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0}`, "checkThreshold")
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0}`, "checkRestriction")
                                     return effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0 // fail AND not bestial fail AND not total fail
                                 case "critical":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0}`, "checkThreshold")
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0}`, "checkRestriction")
                                     return effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0
                                 case "basiccrit":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0}`, "checkThreshold")
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0}`, "checkRestriction")
                                     return effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0
                                 case "messycrit":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0}`, "checkThreshold")
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0}`, "checkRestriction")
                                     return effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0
                                 case "bestialfail":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0 && input.H.botches > 0}`, "checkThreshold")
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0 && input.H.botches > 0}`, "checkRestriction")
                                     return effectiveMargin < 0 && input.H.botches > 0
                                 case "totalfail":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${input.B.succs + input.H.succs === 0}`, "checkThreshold")
+                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${input.B.succs + input.H.succs === 0}`, "checkRestriction")
                                     return input.B.succs + input.H.succs === 0
                             // no default
                             }
                         }
                         // After assessing rollData/rollResults-specific restrictions, check restrictions that apply to either:
-                        DB("Initial Thresholds PASSED.  Moving on to general restrictions.", "checkThreshold")
-                        if (D.IsIn(restriction, C.CLANS)) {
-                            DB(`Restriction = CLAN.  Character Clan: ${getAttrByName(input.charID, "clan")}`, "checkThreshold")
-                            if (!D.IsIn(getAttrByName(input.charID, "clan"), restriction)) {
-                                DB("... Check FAILED.  Returning FALSE", "checkThreshold")
+                        DB("Initial Thresholds PASSED.  Moving on to general restrictions.", "checkRestriction")
+                        if (D.IsIn(restriction, C.CLANS, true)) {
+                            DB(`Restriction = CLAN.  Character Clan: ${getAttrByName(input.charID, "clan")}`, "checkRestriction")
+                            if (!D.IsIn(getAttrByName(input.charID, "clan"), restriction, true)) {
+                                DB("... Check FAILED.  Returning FALSE", "checkRestriction")
                                 return false
                             }
-                        } else if (D.IsIn(restriction, C.SECTS)) {
-                            DB(`Restriction = SECT.  Character Sect: ${getAttrByName(input.charID, "sect")}`, "checkThreshold")
-                            if (!D.IsIn(getAttrByName(input.charID, "sect"), restriction)) {
-                                DB("... Check FAILED.  Returning FALSE", "checkThreshold")
+                            DB("... Check PASSED. Moving on...", "checkRestriction")
+                        } else if (D.IsIn(restriction, C.SECTS, true)) {
+                            DB(`Restriction = SECT.  Character Sect: ${getAttrByName(input.charID, "sect")}`, "checkRestriction")
+                            if (!D.IsIn(getAttrByName(input.charID, "sect"), restriction, true)) {
+                                DB("... Check FAILED.  Returning FALSE", "checkRestriction")
                                 return false
                             }
+                            DB("... Check PASSED. Moving on...", "checkRestriction")
                         // TEST: If restriction is "physical", "social" or "mental", does an appropriate trait match?
-                        } else if (D.IsIn(restriction, ["physical", "mental", "social"])) {
-                            DB(`Restriction = ARENA.  Trait Keys: ${D.JS(_.keys(traits))}`, "checkThreshold")
+                        } else if (D.IsIn(restriction, ["physical", "mental", "social"], true)) {
+                            DB(`Restriction = ARENA.  Trait Keys: ${D.JS(_.keys(traits))}`, "checkRestriction")
                             if (!_.intersection(_.map([...C.ATTRIBUTES[restriction], ...C.SKILLS[restriction]], v => v.toLowerCase()), _.keys(traits)).length) {
-                                DB("... Check FAILED.  Returning FALSE", "checkThreshold")
+                                DB("... Check FAILED.  Returning FALSE", "checkRestriction")
                                 return false
                             }
+                            DB("... Check PASSED. Moving on...", "checkRestriction")
                         // TEST: If restriction starts with "char:", is the named character rolling?
                         } else if (restriction.startsWith("char:")) {
-                            DB(`Restriction = CHARACTER.  ID: ${(D.GetChar(restriction.replace(/char:/gu, "")) || { id: false }).id}`, "checkThreshold")
+                            DB(`Restriction = CHARACTER.  ID: ${(D.GetChar(restriction.replace(/char:/gu, "")) || { id: false }).id}`, "checkRestriction")
                             if (input.charID !== (D.GetChar(restriction.replace(/char:/gu, "")) || { id: false }).id) {
-                                DB("... Check FAILED.  Returning FALSE", "checkThreshold")
+                                DB("... Check FAILED.  Returning FALSE", "checkRestriction")
                                 return false
                             }
+                            DB("... Check PASSED. Moving on...", "checkRestriction")
                         } else if (restriction.startsWith("loc:")) {
+                            DB("Restriction = LOCATION", "checkRestriction")
                             const loc = restriction.replace(/loc:/gu, ""),
                                 locations = {
                                     center: _.without([
@@ -1754,28 +1760,31 @@ const Roller = (() => {
                                         Media.GetData("SiteRight").activeSrc
                                     ], "blank")
                                 }
-                            DB(`Restriction = LOCATION: ${D.JS(loc)} vs. ${D.JS(locations)}`, "checkThreshold")
+                            DB(`... ${D.JS(loc)} vs. ${D.JS(locations)}`, "checkRestriction")
                             if (locations.center.length) {
-                                if (!D.IsIn(loc, locations.center)) {
-                                    DB("... CENTER LOCATION Check FAILED.  Returning FALSE", "checkThreshold")
+                                if (!D.IsIn(loc, locations.center, true)) {
+                                    DB("... CENTER LOCATION Check FAILED.  Returning FALSE", "checkRestriction")
                                     return false
                                 }
+                                DB("... Check PASSED. Moving on...", "checkRestriction")
                             } else if (Media.IsInside(Char.GetToken(input.charID), "sandboxLeft")) {
-                                if (!D.IsIn(loc, locations.left)) {
-                                    DB("... LEFT LOCATION Check FAILED.  Returning FALSE", "checkThreshold")
+                                if (!D.IsIn(loc, locations.left, true)) {
+                                    DB("... LEFT LOCATION Check FAILED.  Returning FALSE", "checkRestriction")
                                     return false
                                 }
-                            } else if (!D.IsIn(loc, locations.right)) {
-                                DB("... RIGHT LOCATION Check FAILED.  Returning FALSE", "checkThreshold")
+                                DB("... Check PASSED. Moving on...", "checkRestriction")
+                            } else if (!D.IsIn(loc, locations.right, true)) {
+                                DB("... RIGHT LOCATION Check FAILED.  Returning FALSE", "checkRestriction")
                                 return false
                             }
+                            DB("... Check PASSED. Moving on...", "checkRestriction")
                         // TEST: If none of the above, does restriction match a trait or a flag?
-                        } else if (!D.IsIn(restriction, [..._.keys(traits), ..._.keys(flags)])) {
-                            DB(`TRAIT/FLAG check FAILED for: ${D.JS(_.keys(traits))} and ${D.JS(_.keys(flags))}, returning FALSE`, "checkThreshold")
+                        } else if (!D.IsIn(restriction, [..._.keys(traits), ..._.keys(flags)], true)) {
+                            DB(`TRAIT/FLAG check FAILED for: ${D.JS(_.keys(traits))} and ${D.JS(_.keys(flags))}, returning FALSE`, "checkRestriction")
                             return false
                         }
                     // If effect passes all of the threshold tests, return true.
-                        DB("All Threshold Checks Passed!  Returning TRUE", "checkThreshold")
+                        DB("All Threshold Checks Passed!  Returning TRUE", "checkRestriction")
                         return true
                     }
 
@@ -1803,7 +1812,7 @@ const Roller = (() => {
                     DB(`Roll Traits: ${D.JS(rollTraits)}<br>Roll Flags: ${D.JSH(rollFlags)}`, "applyRollEffects")
 
                 // THRESHOLD TEST OF ROLLTARGET: IF TARGET SPECIFIED BUT DOES NOT EXIST, SKIP PROCESSING THIS ROLL EFFECT.
-                    if (VAL({ string: rollTarget }) && !D.IsIn(rollTarget, _.keys(rollTraits)) && !D.IsIn(rollTarget, _.keys(rollFlags))) {
+                    if (VAL({ string: rollTarget }) && !D.IsIn(rollTarget, _.keys(rollTraits), true) && !D.IsIn(rollTarget, _.keys(rollFlags), true)) {
                         DB(`Roll Target ${rollTarget} NOT present, SKIPPING EFFECT.`, "applyRollEffects")
                         continue
                     }
@@ -1862,7 +1871,7 @@ const Roller = (() => {
                         // If rollMod is a number, Is there a rollTarget?
                             if (VAL({ string: rollTarget }))
                             // If so, is the rollTarget present in traits?
-                                if (D.IsIn(rollTarget, _.keys(rollTraits)))
+                                if (D.IsIn(rollTarget, _.keys(rollTraits), true))
                                 // If so, cap any negative modifier to the value of the target trait (i.e. no negative traits)
                                     rollMod = rollMod < 0 ? Math.max(-1 * rollTraits[rollTarget], rollMod) : rollMod
                             // If not in traits, rollTarget must be in flags (validation happened above)
@@ -1881,7 +1890,7 @@ const Roller = (() => {
                             // If so, is there a rollTarget?
                                 if (VAL({ string: rollTarget })) {
                                 // If so, is the rollTarget present in traits?
-                                    if (D.IsIn(rollTarget, _.keys(rollTraits)))
+                                    if (D.IsIn(rollTarget, _.keys(rollTraits), true))
                                     // If so, multiply trait accordingly (rounding DOWN to a minimum of one) and set rollMod to the difference.
                                         rollMod = Math.max(1, Math.floor(rollTraits[rollTarget] * parseFloat(rollMod.replace(/x/gu, "")))) - rollTraits[rollTarget]
                                 // If not in traits, rollTarget must be in flags (validation happened above)
@@ -3379,6 +3388,7 @@ const Roller = (() => {
                 rollLines[line] = {
                     text: " "
                 }
+                Media.ToggleText(line, false)
             })
             if (["rouse", "rouse2", "check"].includes(rollData.type))
                 diceCats = diceCats.reverse()
@@ -3846,6 +3856,7 @@ const Roller = (() => {
         get LastProjectPrefix() { return STATEREF.lastProjectPrefix },
         get LastProjectCharID() { return STATEREF.lastProjectCharID },
 
+        ROLLERTEXT: TEXTLINES,
         Select: selectDie,
         Reroll: wpReroll,
         Clean: clearRoller

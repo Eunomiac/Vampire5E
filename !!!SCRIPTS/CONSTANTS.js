@@ -501,10 +501,18 @@ const C = (() => {
     // #region SANDBOX CONFIGURATION & DEFINITIONS
     const PIXELSPERSQUARE = 70,
         SANDBOX = {
-            height: 2680,
-            width: 1664
-        },
-        QUADRANTS = {
+            height: 1750,
+            width: 2680
+        }
+    SANDBOX.top = SANDBOX.height/2
+    SANDBOX.left = SANDBOX.width/2
+    const MAP = {            
+        height: 3520,
+        width: SANDBOX.width
+    }
+    MAP.top = MAP.height/2 + SANDBOX.height
+    MAP.left = MAP.width/2
+    const QUADRANTS = {
             TopLeft: {},
             BotLeft: {},
             TopRight: {},
@@ -936,7 +944,7 @@ const C = (() => {
         STYLES,
 
         PIXELSPERSQUARE,
-        SANDBOX,
+        SANDBOX, MAP,
         QUADRANTS,
         SHADOWOFFSETS,
 

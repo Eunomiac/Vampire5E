@@ -301,7 +301,6 @@ const DragPads = (() => {
                 Media.Set(mapLayerKey, mapLayerData.cycleSrcs[srcIndex])
             } else {
                 isActive = Media.Toggle(mapLayerKey)
-                Media.IMAGES[`${mapLayerKey}_1`].startActive = isActive
             }
             if (buttonData.cycleSrcs && buttonData.cycleSrcs.length) {
                 let srcIndex = Math.max(_.findIndex(buttonData.cycleSrcs, x => x === buttonData.curSrc), 0)

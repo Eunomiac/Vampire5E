@@ -36,8 +36,9 @@ const TimeTracker = (() => {
         STATEREF.Alarms.Behind = STATEREF.Alarms.Behind || []
         STATEREF.lastDate = STATEREF.lastDate || 0
         STATEREF.weatherOverride = STATEREF.weatherOverride || {}
-        STATEREF.timeZoneOffset = parseInt((new Date()).toLocaleString("de-DE", {hour: "2-digit", hour12: false, timeZone: "America/New_York" }))
-
+        STATEREF.timeZoneOffset = parseInt((new Date()).toLocaleString("en-US", {hour: "2-digit", hour12: false, timeZone: "America/New_York" }))
+        
+        
         if (!STATEREF.dateObj) {
             D.Alert("Date Object Missing! Setting to default date.<br><br>Use !time set [year] [month] [day] [hour] [minute] to correct.", "TimeTracker")
             STATEREF.dateObj = new Date(2019, 11, 1, 18, 55)
@@ -146,19 +147,65 @@ const TimeTracker = (() => {
             case "fix":
                 fixDate()
                 break
-            case "stoplights":
+            case "stoplights": {
                 isAirlights = false
                 break
-            case "testground":
-                //D.Alert("Received, Testing...")
-                getGroundCover(true, ...args)
+            }
+            case "test": {
+                switch (args.shift().toLowerCase()) {
+                    case "ground": {
+                        getGroundCover(true, ...args)
+                        break
+                    }
+                    case "alarm": {
+                        setAlarm(args.shift())
+                        break
+                    }
+                    case "firealarm": {
+                        fireNextAlarm()
+                        break
+                    }
+                    case "date": {
+                        const curDateObj = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"})),
+                            sessDateObj = new Date(curDateObj)
+
+                        //shiftedDateObj.setHours(shiftedDateObj.getHours() - STATEREF.timeZoneOffset)
+                        
+                        sessDateObj.setDate(curDateObj.getDate() - curDateObj.getDay() + 7)
+                        sessDateObj.setHours(19)
+                        sessDateObj.setMinutes(30)
+                        sessDateObj.setSeconds(0)
+
+                        let secsLeft = (sessDateObj - curDateObj)/1000 
+                        
+                        if (secsLeft >= 7*24*60*60)
+                            secsLeft -= 7*24*60*60
+
+                        const secsProgress = [secsLeft]
+                    
+                        const daysLeft = Math.floor(secsLeft / (24 * 60 * 60))
+                        secsLeft -= daysLeft * 24 * 60 * 60
+                        secsProgress.push(secsLeft)
+                        const hoursLeft = Math.floor(secsLeft / (60 * 60))
+                        secsLeft -= hoursLeft * 60 * 60
+                        secsProgress.push(secsLeft)
+                        const minsLeft = Math.floor(secsLeft / 60)
+                        secsLeft -= minsLeft * 60
+                        secsProgress.push(secsLeft)
+
+                        const returnLines = [
+                            `Current Date: ${curDateObj.toString()}`,
+                            `Session Date: ${sessDateObj.toString()}`,
+                            `Days: ${daysLeft}, Hours: ${hoursLeft}, Minutes: ${minsLeft}, Seconds: ${secsLeft}`,
+                            `Seconds Progress: [${secsProgress.join(", ")}]`
+                        ]
+                        D.Alert(returnLines.join("<br>"))
+                        break
+                    }
+                    // no default
+                }
                 break
-            case "testalarm":
-                setAlarm(args.shift())
-                break
-            case "testfirealarm":
-                fireNextAlarm()
-                break
+            }
             case "weatherreport": {
                 const transitionStrings = [
                     `<tr><td style="width:100px; text-align:right; text-align-last:right;">DAY -> Night1</td><td style="width:60px; text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATEREF.dateObj.getMonth()][1], 0, true)}</td></tr>`,
@@ -191,7 +238,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
 <br><tr><td><br></td></tr><tr><td style="width:18%;">[HUMID]</td><td style="width:29%;">x: null</td><td style="width:29%;">d: Dry</td><td style="width:29%;">h: Humid</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">m: Muggy</td><td style="width:29%;">s: Sweltering</td></tr></table>`), "TIMETRACKER")
                 break
             }
-            default:
+            default: {
                 D.Alert(D.JSH(`<b>!time</b> commands are 'add', 'set', 'run' and 'stop'.
 <br><br>
 To set: <b>!time set [year] [month] [day] [hour] [min]</b>
@@ -199,7 +246,8 @@ To set: <b>!time set [year] [month] [day] [hour] [min]</b>
 Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><td style="width:18%;">[EVENT]</td><td style="width:29%;">x: Clear</td><td style="width:29%;">b: Blizzard</td><td style="width:29%;">c: Overcast</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">f: Foggy</td><td style="width:29%;">p: Downpour</td><td style="width:29%;">s: Snowing</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">t: Thunderstorm</td><td style="width:29%;">w: Drizzle</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;"><i>(+f for foggy)</i></td></tr>
 <br><tr><td><br></td></tr><tr><td style="width:18%;">[WIND]</td><td style="width:29%;">x: Still</td><td style="width:29%;">s: Soft Breeze</td><td style="width:29%;">b: Breezy</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">w: Blustery</td><td style="width:29%;">g: Driving Winds</td><td style="width:29%;">h: Howling Winds</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">v: Roaring Winds</td></tr>
 <br><tr><td><br></td></tr><tr><td style="width:18%;">[HUMID]</td><td style="width:29%;">x: null</td><td style="width:29%;">d: Dry</td><td style="width:29%;">h: Humid</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">m: Muggy</td><td style="width:29%;">s: Sweltering</td></tr></table>`), "TIMETRACKER")
-                return
+                break
+            }
         }
     }
     // #endregion
@@ -786,20 +834,13 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
         },
         tickCountdown = () => {
             if (isCountdownRunning) {
-                const realDateObj = new Date(),
+                const realDateObj = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"})),
                     sessDateObj = new Date(realDateObj)
 
-                realDateObj.setHours(realDateObj.getHours() - STATEREF.timeZoneOffset)
-
-                //D.Alert(sessDateObj.getSeconds())
                 sessDateObj.setDate(realDateObj.getDate() - realDateObj.getDay() + 7)
                 sessDateObj.setHours(19)
                 sessDateObj.setMinutes(30)
                 sessDateObj.setSeconds(0)
-                //D.Alert(sessDateObj.getSeconds())
-                //const secProgress = [sessDateObj.getTime()/1000]
-                //D.Alert(`Timezone Offset: ${realDateObj.getTimezoneOffset()}, Current Hour: ${realDateObj.getUTCHours()}, Session Hour: ${sessDateObj.getUTCHours()}`)
-                //D.Alert(`Correction: ${}`)
 
                 let secsLeft = (sessDateObj - realDateObj)/1000
 
@@ -807,20 +848,13 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                     secsLeft -= 7*24*60*60
                 if (secsLeft < 15*60)
                     Session.ToggleTesting(false)
-                //secProgress.push(secsLeft)
                     
                 const daysLeft = Math.floor(secsLeft / (24 * 60 * 60))
                 secsLeft -= daysLeft * 24 * 60 * 60
-                //secProgress.push(secsLeft)
                 const hoursLeft = Math.floor(secsLeft / (60 * 60))
                 secsLeft -= hoursLeft * 60 * 60
-                //secProgress.push(secsLeft)
                 const minsLeft = Math.floor(secsLeft / 60)
-                //secProgress.push(`${minsLeft} Mins, ${secsLeft} Secs.  Mins * 60 = ${minsLeft * 60}`)
                 secsLeft -= minsLeft * 60
-                //secProgress.push(secsLeft)
-
-                //D.Alert(D.JS(secProgress))
 
                 countdownRecord = [daysLeft, hoursLeft, minsLeft]
 
@@ -832,18 +866,14 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
         startSecTimer = () => {
             clearInterval(secTimer)
             secondsLeft = (new Date()).getSeconds()
-            //D.Alert(`Starting Sec Timer with ${secondsLeft} secs left.`)
             secTimer = setInterval(tickCountdownSecond, 1000)            
         },
         tickCountdownSecond = () => {
             secondsLeft = 59 - (new Date()).getSeconds()
-            if (secondsLeft <= 0) {                
-                //D.Alert(`${secondsLeft} secs left: Ticking Countdown.`)
+            if (secondsLeft <= 0)
                 tickCountdown()
-            } else {
-                //D.Alert(`${secondsLeft} secs left: Update Countdown.`)
+            else
                 updateCountdown()
-            }
         },
         updateCountdown = () => {
             Media.SetText("Countdown", [...countdownRecord, secondsLeft].map(x => `${x.toString().length === 1 && "0" || ""}${x}`).join(":"))
@@ -1033,24 +1063,20 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                             return `dark${degree.toLowerCase()}snow`
                     }
                 }
-            if (!Session.IsSessionActive) {
+            if (!Session.IsSessionActive || Session.IsDowntime) {
                 for (const textKey of [..._.map(D.GetCharVals("registered", "shortName"), v => `${v}Desire`), "tempF", "tempC", "weather"])
                     Media.ToggleText(textKey, false)
-                Media.Set("WeatherMain", "blank")
-                Media.Set("WeatherFog", "blank")                
-                Media.Set("WeatherClouds", "blank")                
-                Media.Set("WeatherGround", "wet")                
-                Media.Set("WeatherFrost", "red")
-                Media.Set("Horizon_1", "night5")
-            } else if (Session.IsDowntime) {
-                for (const textKey of [..._.map(D.GetCharVals("registered", "shortName"), v => `${v}Desire`), "tempF", "tempC", "weather"])
-                    Media.ToggleText(textKey, false)
-                Media.Set("WeatherMain", "blank")
-                Media.Set("WeatherFog", "blank")                
-                Media.Set("WeatherClouds", "blank")                
-                Media.Set("WeatherGround", "blank")                
-                Media.Set("WeatherFrost", "blank")
-                Media.Set("Horizon_1", "night4")
+                Media.Toggle("WeatherMain", false)
+                Media.Toggle("WeatherFog", false)
+                Media.Toggle("WeatherClouds", false)
+                Media.Set("Horizon", "night5")
+                if (!Session.IsSessionActive) {
+                    Media.Set("WeatherGround", "wet")
+                    Media.Set("WeatherFrost", "red")
+                } else {
+                    Media.Toggle("WeatherGround", false)
+                    Media.Toggle("WeatherFrost", false)
+                }
             } else {
                 for (const textKey of [..._.map(D.GetCharVals("registered", "shortName"), v => `${v}Desire`), "tempF", "tempC", "weather"])
                     Media.ToggleText(textKey, true)
@@ -1066,47 +1092,47 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                     // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
                     case "b":
                         Media.Set("WeatherMain", getSnowSrc("heavy"))
-                        Media.Set("WeatherFog", "blank")
+                        Media.Toggle("WeatherFog", false)
                         Media.Set("WeatherClouds", "stormclouds")
                         break
                     case "c":
-                        Media.Set("WeatherMain", "blank")
-                        Media.Set("WeatherFog", "blank")
+                        Media.Toggle("WeatherMain", false)
+                        Media.Toggle("WeatherFog", false)
                         Media.Set("WeatherClouds", getCloudSrc())
                         break
                     case "f":
-                        Media.Set("WeatherMain", "blank")
+                        Media.Toggle("WeatherMain", false)
                         Media.Set("WeatherFog", getFogSrc())
                         Media.Set("WeatherClouds", getCloudSrc())
                         break
                     case "p":
+                        Media.Toggle("WeatherFog", false)
                         Media.Set("WeatherMain", "heavyrain")
-                        Media.Set("WeatherFog", "blank")
                         Media.Set("WeatherClouds", getCloudSrc())
                         break
                     case "s":
+                        Media.Toggle("WeatherFog", false)
                         Media.Set("WeatherMain", getSnowSrc("light"))
-                        Media.Set("WeatherFog", "blank")
                         Media.Set("WeatherClouds", getCloudSrc())
                         break
                     case "t":
+                        Media.Toggle("WeatherFog", false)
                         Media.Set("WeatherMain", "heavyrain")
-                        Media.Set("WeatherFog", "blank")
                         Media.Set("WeatherClouds", "stormclouds")
                         // Lightning Animations
                         break
                     case "w":
+                        Media.Toggle("WeatherFog", false)
                         Media.Set("WeatherMain", "lightrain")
-                        Media.Set("WeatherFog", "blank")
                         Media.Set("WeatherClouds", getCloudSrc())
                         break
                     case "x":
-                        Media.Set("WeatherMain", "blank")
-                        Media.Set("WeatherClouds", "blank")
+                        Media.Toggle("WeatherMain", false)
+                        Media.Toggle("WeatherClouds", false)
                         if (weatherData.event.charAt(1) === "f")
                             Media.Set("WeatherFog", getFogSrc())
                         else
-                            Media.Set("WeatherFog", "blank")
+                            Media.Toggle("WeatherFog", false)
                         break
                     //no default
                 }
@@ -1115,7 +1141,10 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                     forecastLines.push(WEATHERCODES[1][weatherData.humidity])
                 forecastLines.push(weatherData.tempC < WINTERTEMP ? WEATHERCODES[2][weatherData.wind][1] : WEATHERCODES[2][weatherData.wind][0])
                 Media.SetText("weather", `${forecastLines.join(" ♦ ")}`)
-                Media.Set("WeatherFrost", weatherData.tempC > 0 ? "blank" : weatherData.tempC > -6 ? "frost1" : weatherData.tempC > -12 ? "frost2" : "frost3")
+                if (weatherData.tempC > 0)
+                    Media.Toggle("WeatherFrost", false)
+                else
+                    Media.Set("WeatherFrost", weatherData.tempC > -6 ? "frost1" : weatherData.tempC > -12 ? "frost2" : "frost3")
             }
         },
         getGroundCover = (isTesting = false, downVal = 0.3, upb = 1, ups = 0.5) => {

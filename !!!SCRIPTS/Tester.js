@@ -147,7 +147,7 @@ const Tester = (() => {
                 const playerObjs = findObjs({
                     _type: "player"
                 })
-                D.Alert(playerObjs.map(x => `${x.get("displayname")}: ${x.id}`))
+                sendChat("", `/w Storyteller ${playerObjs.map(x => `${x.get("displayname")}: ${x.id}<br>`)}`)
                 break
             } case "killimg":
                 isKilling = true

@@ -434,7 +434,7 @@ const Complications = (() => {
         },
         endComplication = (isLaunchingProject) => {
             STATEREF.isRunning = false    
-            if (Session.IsRunning)
+            if (Session.IsSessionActive)
                 TimeTracker.StartClock()         
             resetComplication(false)
             DragPads.Toggle("flipComp", false)
