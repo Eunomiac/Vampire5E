@@ -104,6 +104,13 @@ const Session = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
+    // #region Setting Session Data
+    const setSessionNum = sNum => {
+        STATEREF.SessionNum = sNum
+        D.Alert(`Session Number <b>${D.NumToText(STATEREF.SessionNum)}</b> SET.`)
+    }
+    // #endregion
+
     // #region Starting/Ending Sessions
     const startSession = () => {
             const sessionScribe = STATEREF.isTestingActive ? STATEREF.SessionScribes[0] : STATEREF.SessionScribes.shift()
@@ -145,11 +152,49 @@ const Session = (() => {
             Char.RefreshDisplays()
             TimeTracker.Fix()
         },
-        setSessionNum = sNum => {
-            STATEREF.SessionNum = sNum
-            D.Alert(`Session Number <b>${D.NumToText(STATEREF.SessionNum)}</b> SET.`)
-        },
-        toggleTesting = (isTesting) => {
+        endSession = () => {
+            if (remorseCheck()) {
+                sendChat("Session End", C.CHATHTML.colorBlock([
+                    C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: 28}),
+                    C.CHATHTML.colorHeader(`Concluding Session ${D.NumToText(STATEREF.SessionNum, true)}`),
+                    C.CHATHTML.colorBody("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "10px 0px 10px 0px"}),
+                    C.CHATHTML.colorTitle("See you next week!", {fontSize: 32}),
+                ]))
+                Roller.Clean()
+                STATEREF.isSessionActive = false
+                STATEREF.locationRecord = _.clone(Media.LOCATION)
+                STATEREF.tokenRecord = {}
+                if (!STATEREF.isTestingActive)
+                    for (const char of D.GetChars("registered"))
+                        Char.AwardXP(char, 2, "Session XP award.")
+                for (const imgKey of [..._.values(D.GetCharVals("registered", "tokenName")), "DistrictCenter", "DistrictLeft", "DistrictRight", "SiteCenter", "SiteLeft", "SiteRight", "SiteBarCenter", "SiteBarLeft", "SiteBarRight"])
+                    Media.Toggle(imgKey, false)
+                for (const textKey of _.keys(Media.TEXT))
+                    Media.ToggleText(textKey, false)
+                if (STATEREF.isTestingActive)
+                    Media.ToggleText("testSessionNotice", true)
+                for (const imgKey of [
+                    ..._.keys(Media.IMAGES).filter(x => x.startsWith("rollerImage")),
+                    ..._.keys(Media.IMAGES).filter(x => x.startsWith("Hunger")),
+                    ..._.keys(Media.IMAGES).filter(x => x.startsWith("District")),
+                    ..._.keys(Media.IMAGES).filter(x => x.startsWith("Site")),
+                    "stakedAdvantagesHeader",
+                    "weeklyResourcesHeader",
+                    "downtimeBanner"
+                ])
+                    Media.Toggle(imgKey, false)
+                TimeTracker.StopClock()
+                TimeTracker.StopLights()
+                TimeTracker.StartCountdown()
+                TimeTracker.UpdateWeather()
+                if (!STATEREF.isTestingActive)
+                    STATEREF.SessionNum++
+            }
+        }
+    // #endregion
+
+    // #region Toggling Session Modes
+    const toggleTesting = (isTesting) => {
             if (isTesting === false || isTesting === true)
                 STATEREF.isTestingActive = isTesting
             else
@@ -191,48 +236,57 @@ const Session = (() => {
             }
             Char.RefreshDisplays()
             TimeTracker.Fix()
-        },
-        endSession = () => {
-            sendChat("Session End", C.CHATHTML.colorBlock([
-                C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: 28}),
-                C.CHATHTML.colorHeader(`Concluding Session ${D.NumToText(STATEREF.SessionNum, true)}`),
-                C.CHATHTML.colorBody("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "10px 0px 10px 0px"}),
-                C.CHATHTML.colorTitle("See you next week!", {fontSize: 32}),
-            ]))
-            if (!STATEREF.isTestingActive)
-                STATEREF.SessionNum++
-            Roller.Clean()
-            STATEREF.isSessionActive = false
-            STATEREF.locationRecord = _.clone(Media.LOCATION)
-            STATEREF.tokenRecord = {}
-            if (!STATEREF.isTestingActive)
-                for (const char of D.GetChars("registered"))
-                    Char.AwardXP(char, 2, "Session XP award.")
-            for (const imgKey of [..._.values(D.GetCharVals("registered", "tokenName")), "DistrictCenter", "DistrictLeft", "DistrictRight", "SiteCenter", "SiteLeft", "SiteRight", "SiteBarCenter", "SiteBarLeft", "SiteBarRight"])
-                Media.Toggle(imgKey, false)
-            for (const textKey of _.keys(Media.TEXT))
-                Media.ToggleText(textKey, false)
-            if (STATEREF.isTestingActive)
-                Media.ToggleText("testSessionNotice", true)
-            for (const imgKey of [
-                ..._.keys(Media.IMAGES).filter(x => x.startsWith("rollerImage")),
-                ..._.keys(Media.IMAGES).filter(x => x.startsWith("Hunger")),
-                ..._.keys(Media.IMAGES).filter(x => x.startsWith("District")),
-                ..._.keys(Media.IMAGES).filter(x => x.startsWith("Site")),
-                "stakedAdvantagesHeader",
-                "weeklyResourcesHeader",
-                "downtimeBanner"
-            ])
-                Media.Toggle(imgKey, false)
-            TimeTracker.StopClock()
-            TimeTracker.StopLights()
-            TimeTracker.StartCountdown()
-            TimeTracker.UpdateWeather()
         }
+
     // #endregion
 
     // #region Waking Up 
 
+    // #endregion
+
+    // #region Automatic Remorse Rolls
+    const remorseCheck = () => {
+            const charObjs = D.GetChars("registered"),
+                stainedCharObjs = []
+            for (const charObj of charObjs)
+                if (D.GetStatVal(charObj, "stains"))
+                    stainedCharObjs.push(charObj)
+            if (stainedCharObjs.length) {
+                promptRemorseCheck(stainedCharObjs)
+                return false
+            }
+            return true      
+        },
+        promptRemorseCheck = (charObjs) => {
+            const charObjRows = [],
+                chatLines = []
+            while (charObjs.length)
+                charObjRows.push(_.compact([charObjs.shift(), charObjs.shift()]))
+            for (const charObjRow of charObjRows)
+                chatLines.push(`<span style="                    
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%;
+                ">[${D.GetName(charObjRow[0])}](!roll pcroll remorse ${D.GetName(charObjRow[0])})${charObjRow[1] ? ` [${D.GetName(charObjRow[1])}](!roll pcroll remorse ${D.GetName(charObjRow[1])})` : ""}</span>`)
+            sendChat("REMORSE CHECKS", D.JSH(`/w Storyteller <div style='
+                display: block;
+                background: url(https://i.imgur.com/kBl8aTO.jpg);
+                text-align: center;
+                border: 4px ${C.COLORS.crimson} outset;
+                box-sizing: border-box;
+                margin-left: -42px;
+                width: 275px;
+            '><div style="display: inline-block; width: 49%; font-size: 0px;"><span style='
+            display: block;
+            font-size: 16px;
+            text-align: center;
+            width: 100%;
+            font-family: Voltaire;
+            color: ${C.COLORS.brightred};
+            font-weight: bold;
+        '><br>ROLL REMORSE FOR...</span><br>${chatLines.join("<br>")}<br></div>`))    
+        }
     // #endregion
 
     // #region Starting & Ending Scenes, Logging Characters to Scene

@@ -349,9 +349,12 @@ const D = (() => {
                         // HAYSTACK = ARRAY? --> HAY = ARRAY
                         // HAYSTACK = LIST? ---> HAY = ARRAY (_.keys(H))
                         // HAYSTACK = STRING? -> HAY = H
+                    
+                    if (haystack && haystack.gramSizeLower)
+                        return isIn(needle, haystack)
                     const hayType = VAL({array: haystack}) && "array" ||
                                     VAL({list: haystack}) && "list" ||
-                                    VAL({string: haystack}) && "string"                                    
+                                    VAL({string: haystack}) && "string"                             
                     let ndl = needle.toString(),
                         hay, match
                     switch (hayType) {
@@ -365,7 +368,7 @@ const D = (() => {
                             hay = haystack
                             break
                         default:
-                            return THROW(`Haystack must be a string, a list or an array: ${D.JS(haystack)}`, "IsIn")
+                            return THROW(`Haystack must be a string, a list or an array (${typeof haystack}): ${JSON.stringify(haystack)}`, "IsIn")
                     }
                     // STEP TWO: SEARCH HAY FOR NEEDLE USING PROGRESSIVELY MORE FUZZY MATCHING. SKIP "*" STEPS IF ISFUZZYMATCHING IS FALSE.
                             // STRICT: Search for exact match, case sensitive.
@@ -823,7 +826,10 @@ const D = (() => {
         getChars = (charRef, isSilent = false, isFuzzyMatching = false) => {
 			/* Returns an ARRAY OF CHARACTERS given: "all", "registered", a character ID, a character Name,
 				a token object, a message with selected tokens, OR an array of such parameters. */
-            const charObjs = new Set()
+            const charObjs = new Set(),
+                selCharObj = Char.SelectedChar
+            if (selCharObj)
+                return [selCharObj]
             let [searchParams, dbstring] = [[], ""]
             try {
                 if (charRef.who) {
@@ -890,7 +896,7 @@ const D = (() => {
             return charObjs.size === 0 ?
                 isSilent ? false : THROW(`No Characters Found using Search Parameters:<br>${jStr(searchParams)} in Character Reference<br>${jStr(charRef)}`, "getChars")
                 : _.reject([...charObjs], v => v.get("name") === "Jesse, Good Lad That He Is")
-        }, getChar = (charRef, isSilent = false) => getChars(charRef, isSilent)[0],
+        }, getChar = (charRef, isSilent = false) => Char.SelectedChar || (getChars(charRef, isSilent) || [false])[0],
         getCharData = (charRef) => {
             const charObj = getChar(charRef)
             if (VAL({playerchar: charObj}, "getCharData"))
@@ -919,7 +925,8 @@ const D = (() => {
             const charObj = getChar(charRef),
                 isGettingMax = statName.endsWith("_max"),
                 stat = statName.replace(/_max$/gu, "")
-            let attrValueObj = null
+            let attrValueObj = null,
+                attrValue = null
             if (VAL({ charObj: charObj, string: stat }, isSilent ? null : "getStat")) {
                 const attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => stat.includes("repeating") || !fuzzyMatch("repeating", v.get("name"))) // UNLESS "statName" includes "repeating_", don't return repeating fieldset attributes.
                 //D.Alert(`All Attr Objs: ${D.JS(_.map(allAttrObjs, v => v.get("name")))}<br><br>Filtered Attr Objs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
@@ -930,14 +937,20 @@ const D = (() => {
                     if (attrNameObj)
                         attrValueObj = _.find(attrObjs, v => v.get("name") === attrNameObj.get("name").slice(0, -5))
                 }
+                if (attrValueObj) {
+                    attrValue = attrValueObj.get(isGettingMax ? "max" : "current")
+                    if (!_.isNaN(parseInt(attrValue)))
+                        attrValue = parseInt(attrValue)
+                }
                 DB(`StatName: ${D.JS(stat)}
                 AttrValueObj: ${D.JS(attrValueObj, true)}
                 Boolean: ${Boolean(attrValueObj)}
                 Current: ${D.JS(attrValueObj && attrValueObj.get(isGettingMax ? "max" : "current"))}
                 So, returning: ${D.JS(attrValueObj ? [attrValueObj.get(isGettingMax ? "max" : "current"), attrValueObj] : null, true)}`, "getStat")
             }
-            return attrValueObj ? [attrValueObj.get(isGettingMax ? "max" : "current"), attrValueObj] : null
+            return attrValueObj ? [attrValue, attrValueObj] : null
         },
+        getStatVal = (charRef, statName, isSilent = false) => (getStat(charRef, statName, isSilent) || [false])[0],
         getRepIDs = (charRef, section, rowFilter, isSilent = false) => {
             // rowRef: rowID (string), stat:value (list, with special "name" entry for shortname), array of either (array), or null (all)
             DB(`GetRepIDs(${jStr(charRef, true)}, ${section}, ${jStr(rowFilter)})`, "getRepIDs")
@@ -951,8 +964,10 @@ const D = (() => {
                 const rowIDs = getUniqIDs(attrObjs)
                 DB(`attrObjsInSection: ${jStr(_.map(attrObjs, v => parseRepStat(v.get("name"))[2]))}<br><br>rowIDsInSection: ${jStr(rowIDs)}`, "getRepIDs")
                 if (VAL({ string: rowFilter })) {
-                    // RowRef is a rowID (string); use this to find row ID with a case insensitive reference and simply return that.
-                    DB(`RowRef: STRING.  Valid Row IDs: ${jStr(_.find(rowIDs, v => v.toLowerCase() === rowFilter.toLowerCase()))}`, "getRepIDs")
+                    // RowRef is a string. Check to see if it's a flag ("top"); if not, assume it's a rowid.
+                    if (rowFilter === "top")
+                        return [_.find(rowIDs, v => v.toLowerCase() === (getStatVal(charObj, `_reporder_repeating_${section}`) || "").split(",")[0].toLowerCase())]
+                    DB(`RowRef: STRING (${rowFilter}).  Valid Row IDs: ${jStr(_.find(rowIDs, v => v.toLowerCase() === rowFilter.toLowerCase()))}`, "getRepIDs")
                     return [_.find(rowIDs, v => v.toLowerCase() === rowFilter.toLowerCase())]
                 } else if (VAL({ list: rowFilter })) {
                     // RowRef is a key/value list of stat name and value to filter by. Only row IDs referring to ALL matching key/value pairs will be returned.
@@ -1018,9 +1033,12 @@ const D = (() => {
                 const filter = VAL({string: rowFilter}) ? rowFilter :
                         VAL({string: statName, list: rowFilter || {} }) ? Object.assign({ [statName]: "*" }, rowFilter || {}) :
                             rowFilter,
-                    rowIDs = getRepIDs(charObj, section, filter, isSilent),
-                    attrObjs = _.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`) &&
-                                                                                                         rowIDs.includes(v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`)[1]))
+                    rowIDs = _.compact(getRepIDs(charObj, section, filter, isSilent)),
+                    attrObjs = []
+                if (filter === "top" && !rowIDs.length)
+                    rowIDs.push(..._.compact(getRepIDs(charObj, section, null, isSilent)))
+                attrObjs.push(..._.filter(findObjs({ _type: "attribute", _characterid: charObj.id }), v => v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`) &&
+                    rowIDs.includes(v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`)[1])))
                 // STEP TWO: ITERATE THROUGH EACH ROW TO LOOK FOR REQUESTED STAT(S)
                 for (const rowID of rowIDs) {
                     const rowAttrObjs = _.filter(attrObjs, v => v.get("name").toLowerCase().includes(rowID.toLowerCase())), // Select the attribute objects from this row.
@@ -1385,7 +1403,7 @@ const D = (() => {
         GetSelected: getSelected,
         GetName: getName,
         GetChars: getChars, GetChar: getChar, GetCharData: getCharData, GetCharVals: getCharsProps,
-        GetStat: getStat,
+        GetStat: getStat, GetStatVal: getStatVal,
         GetRepIDs: getRepIDs,
         GetRepStats: getRepStats, GetRepStat: getRepStat,
         GetPlayerID: getPlayerID, GetPlayer: getPlayer,

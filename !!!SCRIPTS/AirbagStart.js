@@ -1,4 +1,3 @@
-/* eslint-disable */
 let airIndex = new Error();
 // ===============================================================================
 // AIRBAG - API Crash Handler
@@ -6,6 +5,12 @@ let airIndex = new Error();
 // Version 1.3.2
 //
 // By: github.com/VoltCruelerz
+//
+// Forked by github.come/Eunomiac:
+//	- chat message is now HTML formatted for easier reading/clarity
+//	- log message parsed for easier reading
+//	- ALL line references in the stack trace are converted to local
+// ===============================================================================
 // ===============================================================================
 
 // Whether or not the code is operational
@@ -16,26 +21,84 @@ const rezMsg = "[API IS STARTING]";
 const runMsg = "[API OPERATIONAL]";
 
 // Log for Airbag
-const airLog = (msg) => {
-    log(msg);
-    sendChat("Airbag", '/w gm ' + msg);
-};
+const airLog = (logMsg, chatMsg, dbMsg) => {
+        log(logMsg);
+        sendChat("Airbag", `/w gm ${chatMsg || logMsg}`);
+        state.VAMPIRE.DATA.DEBUGLOG.push({
+            timeStamp: (new Date()).getTime(),
+            title: "[AIRBAG RAW STACK TRACE]",
+            contents: dbMsg
+        })
+    };
 
+// HTML Styles for Reporting
+const HTML = {
+    ChatBox: content => `<div style="${[
+            "display: block;",
+            "width: 100%;",
+            "padding: 5px 5px;",
+            "margin: -30px 0px 0px -42px;",
+            "border: 3px outset rgb(255, 0, 0);",
+            "background-color: rgb(120, 0, 0);",
+            "position: relative;"
+        ].join(" ")}">${content}</div>`,
+    TitleBox: content => `<div style="${[
+            "display: block;",
+            "height: auto;",
+            "width: 90%;",
+            "line-height: 23px;",
+            "margin: 0px 5%;",
+            "font-family: 'copperplate gothic';",
+            "font-variant: small-caps;",
+            "font-size: 16px;",
+            "text-align: center;",
+            "text-align-last: center;",
+            "background-color: rgb(80, 80, 80);",
+            "color: rgb(255, 255, 255);",
+            "position: relative;"
+        ].join(" ")}">${content}</div>`,
+    StackBox: content => `<div style="${[
+            "display: block;",
+            "width: auto;",
+            "padding: 5px 5px;",
+            "font-family: input, verdana, sans-serif;",
+            "font-size: 10px;",
+            "background-color: rgb(255, 255, 255);",
+            "border: 2px solid rgb(0,0,0);",
+            "line-height: 14px;",
+            "position: relative;"
+        ].join(" ")}">${content}</div>`,
+    MessageBox: content => `<div style="${[
+            "display: block;",
+            "width: auto;",
+            "padding: 5px 25px;",
+            "font-family: input, verdana, sans-serif;",
+            "font-size: 12px;",
+            "text-align: center;",
+            "text-align-last: center;",
+            "background-color: rgb(200, 200, 200);",
+            "border: 2px solid rgb(0,0,0);",
+            "line-height: 14px;",
+            "color: black;",
+            "position: relative;"
+        ].join(" ")}">${content}</div>`
+}
 
 // ===========================================================================
 // Line number Handling
 // ===========================================================================
 
 // Denote the occupation ranges of the installed scripts that Airbag insulates
-let scriptRanges = [];
+let scriptRanges = [],
+    scriptNames = []
 
 // Line Number Parser
 const GetScriptLine = (traceable, markMode) => {
-    const match = (traceable.stack || "").match(/apiscript.js:(\d+)/g);
+    const match = traceable.stack.match(/apiscript.js:(\d+)/g) || ["", ""];
     if (markMode) {
-        return parseInt(match && match[1] && match[1].split(':')[1] || 9999);
+        return parseInt(match[1].split(':')[1]);
     }
-    return parseInt(match && match[0] && match[0].split(':')[1] || 9999);
+    return parseInt(match[0].split(':')[1]);
 };
 
 // The last range entry that was added
@@ -50,6 +113,7 @@ scriptRanges.push(lastStart);
 
 // Available for dependent scripts.
 const MarkStart = (scriptName) => {
+    scriptNames.push(scriptName)
     let index = new Error();
     let line = GetScriptLine(index, true);
     lastStart = {
@@ -189,19 +253,66 @@ const handleCrash = (e) => {
     let globalLine = GetScriptLine(e, false);
     let src = ConvertGlobalLineToLocal(globalLine);
 
-    let properties = 
-        'MSG: ' + e.message + '\n' +
-        '\n====================\n' +
-        'STK: ' + e.stack + '\n' +
-        '\n====================\n';
-        
-    if (src.Line > 0) {
-        properties = 'SRC: ' + src.Name + ':' + src.Line + '\n' +
-        '\n====================\n' + properties;
+    let stackLines = _.map(e.stack.split(/\n|apiscript\.js/gu), v => {
+		if (v.startsWith(":")) {
+			const globalLineNum = parseInt(v.match(/^:(\d+):/u)[1]),
+				  localLine = ConvertGlobalLineToLocal(globalLineNum)
+			return v.replace(/^:\d+:/gu, `@@${localLine.Name}:${localLine.Line}:`).trim()
+		}
+		return v.trim()
+    })
+
+    const rawErrorMsg = _.compact([
+        "[AIRBAG",
+        src.Line > 0 ? `at ${src.Name}:${src.Line}]` : "]",
+        `▌${e.message}▐`,
+        `STACK: ${stackLines.join(" ").replace(/\s@@/gu, " ").replace(/[^\s\(]+underscore\.js:/gu, "_:").replace(/\(\s+/gu, "(")}`
+    ]).join(" ").replace(/\n/gu, "")
+
+    const debugErrorMsg = _.compact([
+        `<b>[AIRBAG ${src.Line > 0 ? `at ${src.Name}:${src.Line}]` : "]"}</b>`,
+        `▌${e.message}▐`,
+        "<b>STACK:</b>",
+        stackLines.join("<br>").replace(/<br>@@/gu, "")
+    ]).join("<br>").replace(/\n/gu, "")
+    
+    const concatLines = stackLines.join("\n").replace(/\n/gu, "<br>").replace(/<br>@@/gu, "").split("<br>"),
+        filteredStackLines = []
+    
+    for (const line of concatLines) {
+        let lineCheck = false
+        if (!line.startsWith("at"))
+            lineCheck = true
+        else
+            for (const scriptName of scriptNames.filter(x => x !== "AirbagStop"))
+                if (line.toLowerCase().includes(scriptName.toLowerCase())) {
+                    lineCheck = true
+                    break
+                }   
+        if (lineCheck)
+            filteredStackLines.push(line)
     }
 
-    const errMsg = "[AIRBAG DEPLOYED]\n" + properties + "[Reboot API](!airbag)";
-    airLog(errMsg);
+    filteredStackLines.shift()
+    filteredStackLines[0] = `<br>${filteredStackLines[0]}`
+
+    const styledErrorMsg = HTML.ChatBox(_.compact([
+        HTML.TitleBox(`AIRBAG DEPLOYED${src.Line > 0 ? ` at ${src.Name}: ${src.Line}` : ""}`),
+        HTML.MessageBox(e.message),
+        HTML.StackBox(filteredStackLines.join("\n")).
+            replace(/\n/gu, "<br>").
+            replace(/<br>@@/gu, "").
+            replace(/<br>at\b/gu, "<br><i><span style=\"margin-left: 20px; color: rgb(150, 150, 150); display: inline-block; width: auto; \">at ... </span></i>").
+            replace(/[^\s\(]+underscore\.js:(\d*?):/gu, "<span style=\"color: rgb(0,0,255);\">_</span>@@<span style=\"color: rgb(0,0,255);\">$1</span>@@").
+            replace(/[^\s\(]+firebase-node\.js:(\d*?):/gu, "<span style=\"color: rgb(0,195,0);\">firebase</span>@@<span style=\"color: rgb(0,195,0);\">$1</span>@@").
+            replace(/\/home\/node\/d20-api-server\/api\.js/gu, "API").
+            replace(/(\(?)([^:\.\s]*?):(\d*?):/gu, "$1<b><span style=\"color: rgb(255,0,0)\">$2</span>:<span style=\"color: rgb(255,0,0)\">$3</span></b>:").
+            replace(/@@/gu, ":").
+            replace(/relative;">\s*?<br>/gu, "relative;\">"),
+        HTML.TitleBox("[ REBOOT API ](!airbag)")
+    ]).join(""))
+
+    airLog(rawErrorMsg, styledErrorMsg, debugErrorMsg);
 }
 
 // ===========================================================================

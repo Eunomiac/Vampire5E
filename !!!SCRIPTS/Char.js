@@ -240,6 +240,10 @@ const Char = (() => {
                             displayResources()
                             break
                         }
+                        case "desire": {
+                            resolveDesire(D.GetChar(msg) || D.GetChar(args.shift()))
+                            break
+                        }
                         // no default
                     }
                     break
@@ -332,12 +336,23 @@ const Char = (() => {
                         }
                         // no default
                     }
+                    break
+                }
+                case "select": {
+                    if (args.length) {
+                        regCharSelect(args.shift())
+                        promptActionMenu()
+                    } else {
+                        promptCharSelect()
+                    }
+                    break
                 }
             // no default
             }
         },
         handleChangeAttr = (obj, prev) => {
-            if (obj.get("current") !== prev.current)
+            //D.Alert(`Attr Changed: ${obj.get("name")} to ${obj.get("current")}`)
+            if (obj.get("current") !== prev.current || obj.get("name").toLowerCase() === "_reporder_repeating_desire")
                 //D.Alert(`Detected change to '${obj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")}'`)
                 switch (obj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")) {
                     case "hunger":
@@ -355,10 +370,13 @@ const Char = (() => {
                 }
         },
         handleAddAttr = (obj) => {
+            //D.Alert(`Attr Added: ${obj.get("name")}.  Value = ${obj.get("current")}`)
             if (obj.get("name").includes("projectstake"))
                 displayStakes()
             else if (obj.get("name").includes("triggertimelinesort"))
                 sortTimeline(obj.get("_characterid"))
+            else if (obj.get("name").includes("desire"))
+                displayDesires({charID: obj.get("_characterid"), val: obj.get("current")})
         }
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
@@ -427,7 +445,80 @@ const Char = (() => {
         }
     // #endregion
 
-    // #region Awarding XP,
+    // #region GETTERS: Character Chat Prompt
+    const promptCharSelect = () => {
+            const charObjs = D.GetChars("registered"),
+                charObjRows = [],
+                chatLines = []
+            while (charObjs.length)
+                charObjRows.push(_.compact([charObjs.shift(), charObjs.shift()]))
+            for (const charObjRow of charObjRows)
+                chatLines.push(`<span style="                    
+                        display: block;
+                        font-size: 10px;
+                        text-align: center;
+                        width: 100%;
+                        margin-bottom: 5px;
+                    ">[${D.GetName(charObjRow[0])}](!char select ${charObjRow[0].id})${charObjRow[1] ? ` [${D.GetName(charObjRow[1])}](!char select ${charObjRow[1].id})` : ""}</span>`)
+            sendChat("Select a Character", D.JSH(`/w Storyteller <div style='
+                    display: block;
+                    background: url(https://i.imgur.com/kBl8aTO.jpg);
+                    text-align: center;
+                    border: 4px ${C.COLORS.crimson} outset;
+                    box-sizing: border-box;
+                    margin-left: -42px;
+                    width: 275px;
+                '><span style='
+                display: block;
+                font-size: 16px;
+                text-align: center;
+                width: 100%;
+                font-family: Voltaire;
+                color: ${C.COLORS.brightred};
+                font-weight: bold;
+                margin-bottom: 5px;
+                margin-top: 10px;
+            '>CHARACTER SELECTION</span>${chatLines.join("")}<br></div>`))
+        },
+        regCharSelect = charID => STATEREF.charSelection = charID,
+        promptActionMenu = () => {
+            const selCharObj = getObj("character", STATEREF.charSelection),
+                chatLines = [],
+                charActions = _.keys(C.CHARACTIONS)
+            while (charActions.length) {
+                const actionButtons = []
+                for (let i = 0; i < Math.min(3, charActions.length); i++)
+                    actionButtons.push(`[${charActions[0]}](${C.CHARACTIONS[charActions.shift()]})`)
+                chatLines.push([
+                    "<span style=\"display: block; font-size: 10px; text-align: center; width: 100%; margin-bottom: 5px;\">",
+                    actionButtons.join(" "),
+                    "</span>"
+                ].join(""))
+            }
+            sendChat("Character Actions", D.JSH(`/w Storyteller <div style='
+                    display: block;
+                    background: url(https://i.imgur.com/kBl8aTO.jpg);
+                    text-align: center;
+                    border: 4px ${C.COLORS.crimson} outset;
+                    box-sizing: border-box;
+                    margin-left: -42px;
+                    width: 275px;
+                '><span style='
+                display: block;
+                font-size: 16px;
+                text-align: center;
+                width: 100%;
+                font-family: Voltaire;
+                color: ${C.COLORS.brightred};
+                font-weight: bold;
+                margin-bottom: 5px;
+                margin-top: 10px;
+            '>${selCharObj.get("name").toUpperCase()}</span>${chatLines.join("")}</div>`))            
+        }
+    // #endregion
+
+
+    // #region Awarding XP
     const awardXP = (charRef, award, reason) => {
         DB(`Award XP Parameters: charRef: ${D.JS(charRef)}, Award: ${D.JS(award)}<br>Reason: ${D.JS(reason)}`, "awardXP")
         const charObj = D.GetChar(charRef)
@@ -458,12 +549,31 @@ const Char = (() => {
     // #endregion
 
     // #region Sandbox Displays: Desires, Advantages & Weekly Resources
-    const displayDesires = () => {        
+    const displayDesires = (addAttrData) => {     
             for (const charData of _.values(Char.REGISTRY)) {
                 const desireObj = Media.GetTextObj(`${charData.shortName}Desire`)
-                if (VAL({textObj: desireObj}))
-                    Media.SetText(desireObj, (D.GetRepStat(charData.id, "desire", null, "desire") || {val: ""}).val)
+                if (VAL({textObj: desireObj})) {
+                    let desireVal = (D.GetRepStat(charData.id, "desire", "top", "desire") || {val: ""}).val
+                    if (desireVal === "" && addAttrData && addAttrData.charID === charData.id)
+                        desireVal = addAttrData.val
+                    if (desireVal === "")
+                        desireVal = " "                    
+                    DB(`<b>${charData.name}</b>: Getting Desire Value = ${desireVal}`, "displayDesires")
+                    Media.SetText(desireObj, desireVal)
+                }
             }
+        },
+        resolveDesire = charRef => {
+            const charData = D.GetCharData(charRef),
+                desireObj = (D.GetRepStat(charRef, "desire", "top", "desire") || {obj: null}).obj
+            if (desireObj) {
+                desireObj.remove()
+                adjustDamage(charRef, "willpower", "superficial+", -1, false)
+                displayDesires()
+                D.Chat(D.GetChar(charRef), C.CHATHTML.colorBlock([
+                    C.CHATHTML.colorHeader("You have resolved your Desire!<br>One superficial Willpower restored.<br>What do you Desire next?", Object.assign({height: "auto"}, C.STYLES.whiteMarble.header))
+                ], C.STYLES.whiteMarble.block))
+            }            
         },
         regResource = (initial, name, amount) => {
             STATEREF.weeklyResources[initial.toUpperCase()] = STATEREF.weeklyResources[initial.toUpperCase()] || []
@@ -664,7 +774,7 @@ const Char = (() => {
             }
             return false
         },
-        adjustTrait = (charRef, trait, amount, min, max, defaultTraitVal, deltaType) => {
+        adjustTrait = (charRef, trait, amount, min, max, defaultTraitVal, deltaType, isChatting = true) => {
             const charObj = D.GetChar(charRef)
             if (VAL({charObj: [charObj], trait: [trait], number: [amount]}, "adjustTrait", true)) {
                 const chatStyles = {
@@ -800,7 +910,7 @@ const Char = (() => {
                         break
                     // no default
                 }
-                if (amount !== 0)
+                if (amount !== 0 && isChatting)
                     D.Chat(charObj, C.CHATHTML.colorBlock(_.compact([
                         C.CHATHTML.colorHeader(bannerString, chatStyles.banner),
                         bodyString ? C.CHATHTML.colorBody(bodyString, chatStyles.body) : null,
@@ -811,7 +921,7 @@ const Char = (() => {
             }
             return false
         },
-        adjustDamage = (charRef, trait, dType, delta) => {
+        adjustDamage = (charRef, trait, dType, delta, isChatting = true) => {
             const amount = parseInt(delta),
                 charObj = D.GetChar(charRef)
             let [minVal, maxVal, targetVal, defaultVal, traitName, deltaType, dmgType] = [0, 5, parseInt(amount), 0, "", "", dType]
@@ -839,7 +949,7 @@ const Char = (() => {
                     // no default
                 }
                 LOG(`Adjusting Damage: (${D.JS(trait)}, ${D.JS(dmgType)}, ${D.JS(amount)})`, "adjustDamage")
-                return adjustTrait(charRef, traitName, targetVal, minVal, maxVal, defaultVal, deltaType)
+                return adjustTrait(charRef, traitName, targetVal, minVal, maxVal, defaultVal, deltaType, isChatting)
             }
             return false
         },
@@ -1073,7 +1183,16 @@ const Char = (() => {
         LaunchProject: launchProject,
         SendHome: sendCharsHome,
         SendBack: restoreCharsPos,
-        RefreshDisplays: () => { displayDesires(); displayResources(); displayStakes() }
+        RefreshDisplays: () => { displayDesires(); displayResources(); displayStakes() },
+        get SelectedChar() { 
+            if (STATEREF.charSelection) {
+                const charObj = getObj("character", STATEREF.charSelection)
+                delete STATEREF.charSelection
+                return charObj
+            } else {
+                return false
+            }
+        }
     }
 })()
 

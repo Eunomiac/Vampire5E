@@ -622,9 +622,10 @@
             if (attrs)
                 triggerStrings.push(_.map(attrs, v => `change:${prefix}${v}`).join(" "))
             if (repSecs && _.isArray(repSecs))
-                triggerStrings.push([..._.map(repSecs, v => `change:repeating_${prefix}${v}`), ..._.map(repSecs, v => `remove:repeating_${prefix}${v}`)].join(" "))
+                triggerStrings.push(_.map(repSecs, v => `change:_reporder_repeating_${prefix}${v} change:repeating_${prefix}${v} remove:repeating_${prefix}${v}`).join(" "))
             else if (repSecs && _.isObject(repSecs))
                 _.each(_.keys(repSecs), k => {
+                    triggerStrings.push(`change:_reporder_repeating_${prefix}${k} remove:repeating_${prefix}${k}`)
                     _.each(repSecs[k], v => {
                         triggerStrings.push(`change:repeating_${prefix}${k}:${v}`)
                     })
@@ -1899,7 +1900,12 @@
         })
     }
 
-    on(getTriggers(null, "", _.keys(XPREPREFS)), doEXP)
+    on(getTriggers(null, "", _.keys(XPREPREFS)), eInfo => {
+        log("", "████ doEXP Triggered ████")
+        log(`TRIGGER STRING: '${getTriggers(null, "", _.keys(XPREPREFS))}'`, "doEXP")
+        log(`EINFO: '${JSON.stringify(eInfo)}'`, "doEXP")
+        doEXP()
+    })
     // #endregion
 
     // #region UPDATE: Dice Roller
@@ -2189,6 +2195,7 @@
     on("sheet:opened", eInfo => {
         doTracker("Health", eInfo)
         doTracker("Willpower", eInfo)
+        log(`TRIGGER STRING: '${getTriggers(null, "", _.keys(XPREPREFS))}'`, "doEXP")
     })
     // #endregion
 })()

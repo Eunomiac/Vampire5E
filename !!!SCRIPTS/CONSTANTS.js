@@ -144,6 +144,7 @@ const C = (() => {
             },
             colorHeader: (content, options = {}) => {
                 const params = {
+                    height: options.height || "20px",
                     color: options.color || COLORS.black,
                     bgColor: options.bgColor || COLORS.brightred,
                     fontFamily: options.fontFamily || "Voltaire",
@@ -157,7 +158,7 @@ const C = (() => {
                 }
                 return D.JSH(`<span style="
                     display: block;
-                    height: 20px;
+                    height: ${params.height};
                     line-height: 20px; 
                     width: 100%;
                     margin: ${params.margin};
@@ -532,6 +533,19 @@ const C = (() => {
             200: 14
         }
         
+    // #endregion
+
+    // #region CHARACTER ACTIONS
+    const CHARACTIONS = _.mapObject({
+        "Health S": "!char dmg health superficial ?{Damage done (negative numbers heal)?}",
+        "Health S+": "!char dmg health superficial+ ?{Damage done (negative numbers heal)?}",
+        "Health A": "!char dmg health aggravated ?{Damage done (negative numbers heal)?}",
+        "Will S": "!char dmg willpower superficial ?{Damage done (negative numbers heal)?}",
+        "Will S+": "!char dmg willpower superficial+ ?{Damage done (negative numbers heal)?}",
+        "Will A": "!char dmg willpower aggravated ?{Damage done (negative numbers heal)?}",
+        "Will Ss": "!char dmg willpower social_superficial ?{Damage done (negative numbers heal)?}",
+        "Will As": "!char dmg willpower social_aggravated ?{Damage done (negative numbers heal)?}"
+    }, v => v.replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;"))
     // #endregion
 
     // #region ROLL20 OBJECT PROPERTIES
@@ -949,6 +963,8 @@ const C = (() => {
         SANDBOX, MAP,
         QUADRANTS,
         SHADOWOFFSETS,
+
+        CHARACTIONS,
 
         IMAGEPROPS,
         TEXTPROPS,

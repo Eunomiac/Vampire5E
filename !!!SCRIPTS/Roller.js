@@ -408,7 +408,25 @@ const Roller = (() => {
         let [rollType, charObj, diceNums, resonance, resDetails, resIntLine, params] = new Array(7),
             name = "",
             [isSilent, isMaskingTraits] = [false, false]
-        switch (call) { 		
+        switch (call) {
+            case "!roll": {
+                switch(args.shift().toLowerCase()) {
+                    case "pcroll": {
+                        switch(args.shift().toLowerCase()) {
+                            case "remorse": {
+                                const charObj = D.GetChar(args.join(" "))
+                                if (VAL({charObj: charObj}, "!roll pcroll remorse"))
+                                    makeNewRoll(charObj, "remorse")
+                                break
+                            }
+                            // no default
+                        }
+                        break
+                    }
+                    // no default
+                }
+                break
+            }		
             case "obliv": case "!oblivrouse":
                 if (playerIsGM(msg.playerid)) {
                     STATEREF.oblivionRouse = !STATEREF.oblivionRouse
@@ -442,8 +460,15 @@ const Roller = (() => {
             case "project": case "!projectroll": { rollType = rollType || "project"
                 /* all continue below */
                 params = _.map(args.join(" ").split("|"), v => v.trim())
-                name = params.shift()
-                charObj = D.GetChar(name)
+                if (STATEREF.rollNextAs) {
+                    params.shift()
+                    charObj = D.GetChar(STATEREF.rollNextAs)
+                    name = D.GetName(charObj)
+                    delete STATEREF.rollNextAs
+                } else {
+                    name = params.shift()
+                    charObj = D.GetChar(name)
+                }
                 let rollFlags = _.clone(STATEREF.nextRollFlags)
                 DB(`Received Roll: ${D.JS(call)} ${name}|${params.join("|")}
                     ... PARAMS: [${D.JS(params.join(", "))}]
@@ -475,6 +500,16 @@ const Roller = (() => {
                     makeNewRoll(charObj, rollType, params, { isDiscRoll: call === "!discroll", isNPCRoll: false, isOblivionRoll: call.includes("obv") })
                 }
                 delete STATEREF.frenzyRoll
+                break
+            }
+            case "!pcroll": {
+                D.Alert("PC roll called.", "!pcroll")
+                if (!playerIsGM(msg.playerid)) return
+                charObj = D.GetChar(msg) || D.GetChar(args.join(" "))
+                if (charObj) {
+                    STATEREF.rollNextAs = charObj.id
+                    D.Alert(`Rolling Next As ${D.GetName(charObj)}`, "Roller: !pcroll")
+                }
                 break
             }
             case "!npcroll": // Run this to lock the roller and declare the NEXT roll to be an NPC roll.
@@ -2248,7 +2283,7 @@ const Roller = (() => {
 
             return flagData
         },
-        parseTraits = (charObj, rollType, params) => {
+        parseTraits = (charObj, rollType, params = {}) => {
             let traits = _.compact((params.args[1] || params[0] || "").split(","))
             const tFull = {
                 traitList: [],
@@ -3481,7 +3516,7 @@ const Roller = (() => {
 
             return deltaAttrs
         },
-        makeNewRoll = (charObj, rollType, params, rollFlags) => {
+        makeNewRoll = (charObj, rollType, params = [], rollFlags = {}) => {
             DB(`BEGINNING ROLL:
                 CHAR: ${D.JS(charObj.get("name"))} 
 				ROLL TYPE: ${D.JS(rollType)}
