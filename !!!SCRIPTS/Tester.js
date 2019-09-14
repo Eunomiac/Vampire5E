@@ -201,6 +201,26 @@ const Tester = (() => {
                 D.Alert(reportLines.join("<br>"), "Image Survey & Verification")
                 break
             }
+            case "contimages": {
+                const imgObjs = Media.GetContents(args.shift(), {padding: 50})
+                D.Alert(`Contained Images: ${imgObjs.map(v => v.get("name"))}`, "!test contimages")
+                break
+            }            
+            case "contchars": {
+                const charObjs = D.GetChars("sandbox")
+                D.Alert(`Contained Chars: ${charObjs.map(v => v.get("name"))}`, "!test contchars")
+                break
+            }
+            case "bounds": {
+                D.Alert(`Boundaries:<br>${D.JS(Media.GetBounds(Media.GetObj(msg) || args.shift()))}`)
+                break
+            }
+            case "token": {
+                const tokenObj = Media.GetObj(msg),
+                    charObj = D.GetChar(tokenObj)
+                D.Alert(`Token: ${D.JS(tokenObj)}<br>Char: ${D.JS(charObj)}`, "!test token")
+                break
+            }
             case "killtext":
                 isKilling = true
                 // falls through

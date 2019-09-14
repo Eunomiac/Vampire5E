@@ -868,13 +868,17 @@ const D = (() => {
                     charObjs.add(getObj("character", v.get("represents")))
                     dbstring += " ... Token: "
                     // If parameter is "all":
-                } else if (v.toLowerCase() === "all") {
+                } else if (VAL({ string: v }) && v.toLowerCase() === "all") {
                     _.each(findObjs({ _type: "character" }), char => charObjs.add(char))
                     dbstring += ` ... "${jStr(v)}": `
                     // If parameter calls for REGISTERED CHARACTERS:
-                } else if (v.toLowerCase() === "registered") {
+                } else if (VAL({ string: v }) && v.toLowerCase() === "registered") {
                     _.each(Char.REGISTRY, charData => { if (!charData.name.toLowerCase().includes("Good Lad")) charObjs.add(getObj("character", charData.id)) })
                     dbstring += ` ... "${jStr(v)}": `
+                    // If parameter is "sandbox", calls for all characters with tokens in the sandbox (do player characters first)
+                } else if (VAL({ string: v }) && v.toLowerCase() === "sandbox") {
+                    _.each(Media.GetContainedChars("Sandbox", {padding: 50}), v => charObjs.add(v))
+                    dbstring += ` ... "${jStr(v)}": `                    
                     // If parameter is a SINGLE LETTER, assume it is an INITIAL and search the registry for it.
                 } else if (VAL({string: v}) && v.length === 1) {
                     const charData = _.find(Char.REGISTRY, charData => charData.initial.toLowerCase() === v.toLowerCase())

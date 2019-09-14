@@ -45,7 +45,10 @@ const Session = (() => {
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
         //D.Alert(`Received Call: ${call}<br>MSG: ${D.JS(msg)}`)
-        let [token, famToken] = []
+        let charObj = getObj("character", call)
+        if (charObj)
+            call = args.shift()
+        //D.Alert(`Updated Call: ${call}<br>MSG: ${D.JS(msg)}`)
         switch (call) {
             case "start": case "end": case "toggle": {
                 log(`... HANDLE INPUT. STATEREF.isSessionActive = ${D.JSL(STATEREF.isSessionActive)}`)
@@ -53,6 +56,17 @@ const Session = (() => {
                     endSession(msg)
                 else
                     startSession()
+                break
+            }
+            case "add": {
+                switch (args.shift().toLowerCase()) {
+                    case "scene": {
+                        charObj = charObj || D.GetChar(msg) || D.GetChar(args.shift())
+                        addCharToScene(charObj)
+                        break
+                    }
+                    // no default
+                }
                 break
             }
             case "set": case "num": case "setnum": {
@@ -292,13 +306,16 @@ const Session = (() => {
     // #region Starting & Ending Scenes, Logging Characters to Scene
     const addCharToScene = (charRef) => {
             const charObj = D.GetChar(charRef)
-            if (VAL({charObj: charObj}, "addCharToScene") && !STATEREF.sceneChars.includes(charObj.id))
+            if (VAL({charObj: charObj}, "addCharToScene") && !STATEREF.sceneChars.includes(charObj.id)) {
                 STATEREF.sceneChars.push(charObj.id)
+                D.Alert(`Scene Now Includes:<br><ul>${D.JS(STATEREF.sceneChars.map(x => `<li><b>${D.GetName(x)}</b>`).join(""))}</ul>`, "Scene Characters")
+            }
         },
         endScene = () => {
             for (const charID of STATEREF.sceneChars)
                 D.SetStat(charID, "willpower_social_toggle", "go")
             STATEREF.sceneChars = []
+            D.Alert("Social Willpower Damage partially refunded.", "Scene Ended")
         }
     // #endregion
 

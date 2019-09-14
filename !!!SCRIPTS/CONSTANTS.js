@@ -52,7 +52,9 @@ const C = (() => {
             grey: "rgb(130, 130, 130)",
             darkgrey: "rgb(80, 80, 80)",
             brightred: "rgb(255, 0, 0)",
+            brightredmid: "rgb(225, 0, 0)",
             red: "rgb(200, 0, 0)",
+            darkredmid: "rgb(175, 0, 0)",
             darkred: "rgb(150, 0, 0)",
             green: "rgb(0, 200, 0)",
             yellow: "rgb(200, 200, 0)",
@@ -69,7 +71,8 @@ const C = (() => {
             fadedgrey: "rgba(0, 0, 0, 0.1)",
             crimson: "rgb(220, 20, 60)",
             transparent: "rgba(0,0,0,0)",
-            halfwhite: "rgba(255,255,255,0.5)"
+            halfwhite: "rgba(255,255,255,0.5)",
+            palegreen: "rgb(175, 255, 175)"
         }
     // #endregion
 
@@ -204,6 +207,178 @@ const C = (() => {
                     text-shadow: ${params.textShadow};
                     box-shadow: ${params.boxShadow};
                 ">${content}</span>`)
+            }
+        },       
+        MENUHTML = {
+            Block: (content, options = {}) => {
+                const params = {
+                    color: options.color || COLORS.crimson,
+                    bgImage: options.bgImage || BGIMAGES.blackMarble,
+                    borderColor: options.borderColor || options.color || COLORS.crimson,
+                    borderStyle: options.borderStyle || "outset",
+                    margin: options.margin || "0px 0px 0px -42px",
+                    width: options.width || "255px"
+                }
+                return D.JSH(`<div style="
+                    display: block;
+                    margin: ${params.margin};
+                    height: auto;
+                    width: ${params.width};
+                    background: url('${params.bgImage}');
+                    text-align: center;
+                    border: 4px ${params.borderColor} ${params.borderStyle};
+                    box-sizing: border-box;
+                    padding: 0px;
+            ">${_.flatten([content]).join("")}</div>`)
+            },
+            Title: (content, options = {}) => {
+                const params = {
+                    fontSize: options.fontSize || 32,
+                    color: options.color || COLORS.brightred
+                }
+                return D.JSH(`<span style="
+                    display: block;
+                    font-weight: bold;
+                    color: ${params.color};
+                    text-align: center;
+                    width: 100%;
+                    font-family: sexsmith;
+                    font-size: ${params.fontSize}px;
+                    height: 45px;
+                    line-height: 45px;
+                ">${_.flatten([content]).join("")}</span>`)
+            },
+            Header: (content, options = {}) => {
+                const params = {
+                    height: options.height || 20,
+                    color: options.color || COLORS.black,
+                    bgColor: options.bgColor || COLORS.brightred,
+                    fontFamily: options.fontFamily || "Voltaire",
+                    margin: options.margin || "0px",
+                    fontSize: options.fontSize || 16,
+                    borderWidth: options.borderWidth || "1px 0px 1px 0px",
+                    borderStyle: options.borderStyle || "solid none solid none",
+                    borderColor: options.borderColor || options.color || COLORS.brightred,
+                    textShadow: options.textShadow || "none",
+                    boxShadow: options.boxShadow || "none",
+                    textAlign: options.textAlign || "center"
+                }
+                return D.JSH(`<span style="
+                    display: block;
+                    height: ${params.height}px;
+                    line-height: ${params.height}px; 
+                    width: 100%;
+                    margin: ${params.margin};
+                    box-sizing: border-box;
+                    text-align: ${params.textAlign};
+                    text-align-last: ${params.textAlign};
+                    color: ${params.color};
+                    font-family: '${params.fontFamily}';
+                    font-weight: bold;
+                    font-size: ${params.fontSize}px;
+                    background-color: ${params.bgColor};
+                    border-width: ${params.borderWidth};
+                    border-style: ${params.borderStyle};
+                    border-color: ${params.borderColor};
+                    text-shadow: ${params.textShadow};
+                    box-shadow: ${params.boxShadow};
+            ">${_.flatten([content]).join("")}</span>`)
+            },
+            ButtonLine: (content, options = {}) => {
+                const params = Object.assign({
+                    height: "18px",
+                    width: "100%",
+                    margin: "0px 0px 2px 0px",
+                    textAlign: "center"
+                }, options)
+                return D.JSH(`<span style="  
+                    height: ${params.height};
+                    width: ${params.width};             
+                    display: block;
+                    text-align: ${params.textAlign};
+                    margin: ${params.margin};
+                ">${_.flatten([content]).join("")}</span>`)
+            },
+            ButtonSubheader: (content, options = {}) => {
+                const params = Object.assign({
+                    height: "18px",
+                    width: "15%",
+                    fontFamily: "Voltaire",
+                    fontSize: "10px",
+                    bgColor: "transparent",
+                    color: COLORS.white,
+                    margin: "0px 3% 0px 0px",
+                    textAlign: "left",
+                    textIndent: "3px",
+                    padding: "0px 0px 0px 0px",
+                    lineHeight: "16px"
+                }, options)
+                return D.JSH(`<span style="
+                    height: ${params.height};
+                    width: ${params.width};                 
+                    display: inline-block;
+                    margin: ${params.margin};
+                    font-size: ${params.fontSize};
+                    font-family: ${params.fontFamily};
+                    line-height: ${params.lineHeight};
+                    color: ${params.color};
+                    overflow: hidden;
+                    background-color: ${params.bgColor};
+                    text-indent: ${params.textIndent};
+                    text-align: ${params.textAlign};
+                    text-align-last: ${params.textAlign};
+                    padding: ${params.padding};
+                ">${_.flatten([content]).join("")}</span>`)
+            },
+            Button: (name, command, options = {}) => {
+                const params = Object.assign({
+                    height: "18px",
+                    lineHeight: "8px",
+                    width: "22%",
+                    fontFamily: "Voltaire",
+                    margin: "0px 3% 0px 0px",
+                    fontSize: "10px",
+                    bgColor: COLORS.brightred,
+                    color: COLORS.white,
+                    border: "1px solid white",
+                    fontWeight: "normal",
+                    textShadow: "none"
+                }, options)
+                return D.JSH(`<span style="   
+                    height: ${params.height};
+                    width: ${params.width};                 
+                    display: inline-block;
+                    margin: ${params.margin};
+                    padding: 0px;
+                    font-size: 0px;
+                    overflow: hidden;
+                "><a style="
+                    height: 8px;
+                    width: 83%;
+                    display: inline-block;
+                    box-sizing: 'border-box';
+                    border: ${params.border};
+                    color: ${params.color};
+                    background-color: ${params.bgColor};
+                    font-size: ${params.fontSize};
+                    line-height: ${params.lineHeight};
+                    font-family: ${params.fontFamily};
+                    text-transform: uppercase;
+                    text-align: center;
+                    padding: 5%;
+                    font-weight: ${params.fontWeight};
+                    text-shadow: ${params.textShadow};
+                " href="${command}">${name}</a></span>`)
+            },            
+            ButtonSpacer: (width) => {
+                return D.JSH(`<span style="   
+                    height: 100%;
+                    width: ${width || "5%"};                 
+                    display: inline-block;
+                    margin: 0px;
+                    padding: 0px;
+                    font-size: 0px;
+                "></span>`)
             }
         },
         HANDOUTHTML = {
@@ -954,6 +1129,7 @@ const C = (() => {
 
         IMAGES, BGIMAGES,
         CHATHTML,
+        MENUHTML,
         HANDOUTHTML,
         ROLLERHTML,
         HTML, bHTML,

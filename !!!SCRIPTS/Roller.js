@@ -405,9 +405,12 @@ const Roller = (() => {
         }
     }
     const handleInput = (msg, who, call, args) => {
-        let [rollType, charObj, diceNums, resonance, resDetails, resIntLine, params] = new Array(7),
+        let [rollType, char, diceNums, resonance, resDetails, resIntLine, params] = new Array(7),
             name = "",
             [isSilent, isMaskingTraits] = [false, false]
+        let charObj = getObj("character", call)
+        if (charObj)
+            call = args.shift()
         switch (call) {
             case "!roll": {
                 switch(args.shift().toLowerCase()) {
@@ -462,18 +465,18 @@ const Roller = (() => {
                 params = _.map(args.join(" ").split("|"), v => v.trim())
                 if (STATEREF.rollNextAs) {
                     params.shift()
-                    charObj = D.GetChar(STATEREF.rollNextAs)
-                    name = D.GetName(charObj)
+                    char = D.GetChar(STATEREF.rollNextAs)
+                    name = D.GetName(char)
                     delete STATEREF.rollNextAs
                 } else {
                     name = params.shift()
-                    charObj = D.GetChar(name)
+                    char = D.GetChar(name)
                 }
                 let rollFlags = _.clone(STATEREF.nextRollFlags)
                 DB(`Received Roll: ${D.JS(call)} ${name}|${params.join("|")}
                     ... PARAMS: [${D.JS(params.join(", "))}]
-                    ... CHAROBJ: ${D.JS(charObj)}`, "handleInput")
-                if (!VAL({ charobj: charObj }, "handleInput")) return
+                    ... CHAROBJ: ${D.JS(char)}`, "handleInput")
+                if (!VAL({ charobj: char }, "handleInput")) return
                 if (
                     ["check", "rouse", "rouse2"].includes(rollType) ||
                     rollType === "frenzy" && STATEREF.frenzyRoll && D.IsIn(STATEREF.frenzyRoll.slice("|")[0], _.map(D.GetChars("registered"), v => v.get("name")), true)
@@ -489,26 +492,26 @@ const Roller = (() => {
                     }
                 if (STATEREF.isNextRollNPC && playerIsGM(msg.playerid)) {
                     STATEREF.isNextRollNPC = false
-                    makeNewRoll(charObj, rollType, params, Object.assign(rollFlags, { isDiscRoll: call === "!discroll", isNPCRoll: true, isOblivionRoll: STATEREF.oblivionRouse === true }))
+                    makeNewRoll(char, rollType, params, Object.assign(rollFlags, { isDiscRoll: call === "!discroll", isNPCRoll: true, isOblivionRoll: STATEREF.oblivionRouse === true }))
                     STATEREF.oblivionRouse = false
                 } else if (isLocked) {
                     return
                 } else if (playerIsGM(msg.playerid)) {
-                    makeNewRoll(charObj, rollType, params, Object.assign(rollFlags, { isDiscRoll: call === "!discroll", isNPCRoll: false, isOblivionRoll: STATEREF.oblivionRouse === true }))
+                    makeNewRoll(char, rollType, params, Object.assign(rollFlags, { isDiscRoll: call === "!discroll", isNPCRoll: false, isOblivionRoll: STATEREF.oblivionRouse === true }))
                     STATEREF.oblivionRouse = false             
                 } else {
-                    makeNewRoll(charObj, rollType, params, { isDiscRoll: call === "!discroll", isNPCRoll: false, isOblivionRoll: call.includes("obv") })
+                    makeNewRoll(char, rollType, params, { isDiscRoll: call === "!discroll", isNPCRoll: false, isOblivionRoll: call.includes("obv") })
                 }
                 delete STATEREF.frenzyRoll
                 break
             }
             case "!pcroll": {
-                D.Alert("PC roll called.", "!pcroll")
+                //D.Alert("PC roll called.", "!pcroll")
                 if (!playerIsGM(msg.playerid)) return
-                charObj = D.GetChar(msg) || D.GetChar(args.join(" "))
-                if (charObj) {
-                    STATEREF.rollNextAs = charObj.id
-                    D.Alert(`Rolling Next As ${D.GetName(charObj)}`, "Roller: !pcroll")
+                char = charObj || D.GetChar(msg) || D.GetChar(args.join(" "))
+                if (char) {
+                    STATEREF.rollNextAs = char.id
+                    D.Alert(`Rolling Next As ${D.GetName(char)}`, "Roller: !pcroll")
                 }
                 break
             }

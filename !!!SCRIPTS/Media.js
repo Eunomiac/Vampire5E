@@ -73,6 +73,15 @@ const Media = (() => {
                                 regArea(getImageObj(msg), args.shift())                                        
                             break
                         }
+                        case "get": {
+                            switch (args.shift().toLowerCase()) {
+                                case "names": {
+                                    D.Alert(`Registered Areas:<br>${D.JS(_.keys(AREAREGISTRY))}`)
+                                    break
+                                }
+                                // no default
+                            }
+                        }
                         // no default
                     }
                     break
@@ -674,7 +683,7 @@ const Media = (() => {
     const IMAGEREGISTRY = STATEREF.imageregistry,
         IDREGISTRY = STATEREF.idregistry,
         TEXTREGISTRY = STATEREF.textregistry,
-        AREAS = STATEREF.areas,
+        AREAREGISTRY = STATEREF.areas,
         TOKENREGISTRY = STATEREF.tokenregistry,
         BGIMAGES = {
             top: C.SANDBOX.top,
@@ -1092,7 +1101,7 @@ const Media = (() => {
                 return (findObjs({_pageid: D.PAGEID, _type: "graphic", _subtype: "token", represents: charObj.id}) || [null])[0]
             return THROW(`No character found for reference ${charRef}`, "getTokenObj")
         },
-        getAreaData = areaRef => AREAS[areaRef],
+        getAreaData = areaRef => AREAREGISTRY[areaRef],
         /* getImageDatas = imgRefs => {
 			const imageRefs = D.GetSelected(imgRefs) || imgRefs,
 				 imageDatas = []
@@ -1101,16 +1110,39 @@ const Media = (() => {
 			}
 			return imageDatas
 		},	*/
-        getBounds = (locRef, params = {}) => {
-            const boundaryData = _.pick(Object.assign(getImageData(locRef) || getAreaData(locRef), params), "top", "left", "height", "width")
+        getBounds = (locRef) => {
+            const boundaryData = {}
+            if (VAL({string: locRef}) && AREAREGISTRY[locRef]) {
+                boundaryData.top = AREAREGISTRY[locRef].top
+                boundaryData.left = AREAREGISTRY[locRef].left
+                boundaryData.height = AREAREGISTRY[locRef].height
+                boundaryData.width = AREAREGISTRY[locRef].width
+                //D.Alert(`BoundaryData:<br>${D.JS(boundaryData, true)}`, "getBounds")
+            } else if (VAL({graphic: locRef})) {
+                const imgObj = getImageObj(locRef)
+                boundaryData.top = imgObj.get("top")
+                boundaryData.left = imgObj.get("left")
+                boundaryData.height = imgObj.get("height")
+                boundaryData.width = imgObj.get("width")
+            }
             if (VAL({list: boundaryData}, "getBounds"))
                 return {
-                    topY: boundaryData.top - 0.5 * boundaryData.height,
-                    bottomY: boundaryData.top + 0.5 * boundaryData.height,
-                    leftX: boundaryData.left - 0.5 * boundaryData.width,
-                    rightX: boundaryData.left + 0.5 * boundaryData.width
+                    top: boundaryData.top - 0.5 * boundaryData.height,
+                    bottom: boundaryData.top + 0.5 * boundaryData.height,
+                    left: boundaryData.left - 0.5 * boundaryData.width,
+                    right: boundaryData.left + 0.5 * boundaryData.width,
+                    height: boundaryData.height,
+                    width: boundaryData.width
                 }
             return false
+        },
+        checkBounds = (locRef, imgRef, padding = 0) => {
+            const locBounds = getBounds(locRef),
+                imgBounds = getBounds(imgRef)
+            return locBounds.top <= imgBounds.top + padding &&
+                locBounds.bottom >= imgBounds.bottom - padding &&
+                locBounds.left <= imgBounds.left + padding &&
+                locBounds.right >= imgBounds.right - padding
         },
         getImageSrc = imgRef => getImageData(imgRef) ? getImageData(imgRef).curSrc : false,
         /* getImageSrcs = imgRef => getImageData(imgRef) ? getImageData(imgRef).srcs : false, */
@@ -1124,25 +1156,27 @@ const Media = (() => {
             return false
         },
         /* eslint-disable-next-line no-unused-vars */
-        getContainedImages = (imgRef) => {
-            const imgObj = getImageObj(imgRef),
-                boundaries = {
-                    horiz: [parseInt(imgObj.get("left")) - parseInt(imgObj.get("width")) / 2, parseInt(imgObj.get("left")) + parseInt(imgObj.get("width")) / 2],
-                    vert: [parseInt(imgObj.get("top")) - parseInt(imgObj.get("height")) / 2, parseInt(imgObj.get("top")) + parseInt(imgObj.get("height")) / 2]
+        getContainedImgObjs = (locRef, options = {}) => {
+            const findFilter = {
+                _pageid: D.PAGEID,
+                _type: "graphic"
+            }
+            for (const key of _.intersection(_.keys(options), ["subtype", "_subtype", "layer", "name"]))
+                findFilter[key.replace(/^sub/gu, "_sub")] = options[key]            
+            const contImgObjs = findObjs(findFilter).filter(v => {
+                for (const key of _.intersection(_.keys(options), ["imgsrc", "represents", "left", "top", "width", "height", "controlledby"])) {
+                    if (_.isEmpty(v.get(key)) || isRegImg(v) && !isImageActive(v))
+                        return false
+                    if (options[key] !== true && !v.get(key).toLowerCase().includes(options[key].toLowerCase()))
+                        return false                    
                 }
-            DB(`boundaries: ${D.JS(boundaries)}`, "getContainedImages")
-            const contImages = _.filter(findObjs({ _type: "graphic", _pageid: D.PAGEID }), v =>
-                parseInt(v.get("left")) >= boundaries.horiz[0] &&
-                parseInt(v.get("left")) <= boundaries.horiz[1] &&
-                parseInt(v.get("top")) >= boundaries.vert[0] &&
-                parseInt(v.get("top")) <= boundaries.vert[1] &&
-                v.get("layer") === "objects" &&
-                v.get("represents").length > 2 &&
-                parseInt(v.get("height")) <= parseInt(imgObj.get("height")) &&
-                parseInt(v.get("width")) <= parseInt(imgObj.get("width"))
-            )
-            DB(`contained images:<br><br>${D.JS(_.map(contImages, v => v.get("name")))}`, "getContainedImages")
-            return contImages
+                if (checkBounds(locRef, v, options.padding || 0))
+                    return true
+                return false
+            })
+            if (options.isCharsOnly)
+                return _.compact(contImgObjs.map(v => D.GetChar(v)))
+            return contImgObjs
         },
         getZLevels = () => {
             const imgZLevels = {
@@ -1262,13 +1296,13 @@ const Media = (() => {
         regArea = (imgRef, areaName) => {
             const imgObj = getImageObj(imgRef)
             if (VAL({graphicObj: imgObj}, "regArea")) {
-                AREAS[areaName] = {
+                AREAREGISTRY[areaName] = {
                     top: parseInt(imgObj.get("top")),
                     left: parseInt(imgObj.get("left")),
                     height: parseInt(imgObj.get("height")),
                     width: parseInt(imgObj.get("width"))
                 }
-                D.Alert(`Area Registered: ${areaName}<br><br><pre>${D.JS(AREAS[areaName])}</pre>`, "Media: Register Area")
+                D.Alert(`Area Registered: ${areaName}<br><br><pre>${D.JS(AREAREGISTRY[areaName])}</pre>`, "Media: Register Area")
             }
         },
         makeImage = (imgName = "", params = {}, isSilent = false) => {
@@ -2445,6 +2479,9 @@ const Media = (() => {
         GetKey: getImageKey,
         GetData: getImageData,
         GetSrc: getImageSrc,
+        GetBounds: getBounds,
+        GetContents: getContainedImgObjs,
+        GetContainedChars: (locRef, options) => getContainedImgObjs(locRef, Object.assign(options, {isCharsOnly: true})),
         MakeImage: makeImage,
         Register: regImage,
         AddSrc: addImgSrc,

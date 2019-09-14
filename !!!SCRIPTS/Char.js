@@ -95,7 +95,10 @@ const Char = (() => {
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => { // eslint-disable-line no-unused-vars
-            switch (call) {
+            let charObj = getObj("character", call)
+            if (charObj)
+                call = args.shift()
+            switch (call.toLowerCase()) {
                 case "reg": {
                     switch(args.shift().toLowerCase()) {                        
                         case "char":
@@ -215,7 +218,7 @@ const Char = (() => {
                             break
                         }
                         case "xp": {
-                            const charObjs = D.GetChars(msg) || D.GetChars("registered")
+                            const charObjs = charObj && [charObj] || D.GetChars(msg) || D.GetChars("registered")
                             DB(`!char xp COMMAND RECEIVED<br><br>Characters: ${D.JS(_.map(charObjs, v => v.get("name")))}`, "!char set xp")
                             if (VAL({char: charObjs}, "!char set xp", true)) {
                                 const amount = parseInt(args.shift()) || 0
@@ -241,7 +244,8 @@ const Char = (() => {
                             break
                         }
                         case "desire": {
-                            resolveDesire(D.GetChar(msg) || D.GetChar(args.shift()))
+                            charObj = charObj || D.GetChar(msg) || D.GetChar(args.shift())
+                            resolveDesire(charObj)
                             break
                         }
                         // no default
@@ -272,18 +276,45 @@ const Char = (() => {
                     displayResources()
                     break
                 }
+                case "change": {
+                    const fullCommand = `!char ${charObj && charObj.id || ""} ${call} ${args.join(" ")}`
+                    charObj = charObj || D.GetChar(msg) || D.GetChar(args.shift())
+                    if (VAL({char: charObj}, "!char change")) {
+                        let isKilling = false
+                        switch (args.shift().toLowerCase()) {
+                            case "hungerkill": {
+                                isKilling = true                              
+                            }
+                            // falls through
+                            case "hunger": {
+                                if (args.length) 
+                                    adjustHunger(charObj, parseInt(args.shift()) || 0, isKilling)
+                                else 
+                                    promptNumber(`${fullCommand} @@AMOUNT@@`)                                
+                                break
+                            }
+                            // no default
+                        }
+                    }
+                    break
+                }
                 case "dmg": case "damage": case "spend": case "heal": {
-                    const charObjs = D.GetChars(msg)
-                    if (VAL({char: charObjs}, "!char xp", true)) {
-                        const trait = args.shift().toLowerCase(),
-                            dtype = ["hum", "humanity", "stain", "stains"].includes(trait) ? null : args.shift(),
-                            dmg = (call === "heal" ? -1 : 1) * parseInt(args.shift()) || 0
-                        _.each(charObjs, (char) => {
-                            if (adjustDamage(char, trait, dtype, dmg))
-                                D.Alert(`Dealt ${D.JS(dmg)}${dtype ? ` ${D.JS(dtype)}` : ""} ${D.JS(trait)} damage to ${D.GetName(char)}`, "CHARS:!char dmg")
-                            else
-                                THROW(`FAILED to damage ${D.GetName(char)}`, "!char dmg")
-                        })
+                    const charObjs = charObj && [charObj] || D.GetChars(msg)
+                    if (VAL({char: charObjs}, "!char dmg", true)) {
+                        const fullCommand = `!char ${charObj && charObj.id || ""} ${call} ${args.join(" ")}`,
+                            trait = args.shift().toLowerCase(),
+                            dtype = ["hum", "humanity", "stain", "stains"].includes(trait) ? null : args.shift()
+                        if (args.length) {
+                            const dmg = (call === "heal" ? -1 : 1) * parseInt(args.shift()) || 0
+                            _.each(charObjs, (char) => {
+                                if (adjustDamage(char, trait, dtype, dmg))
+                                    D.Alert(`Dealt ${D.JS(dmg)}${dtype ? ` ${D.JS(dtype)}` : ""} ${D.JS(trait)} damage to ${D.GetName(char)}`, "CHARS:!char dmg")
+                                else
+                                    THROW(`FAILED to damage ${D.GetName(char)}`, "!char dmg")
+                            })
+                        } else {
+                            promptNumber(`${fullCommand} @@AMOUNT@@`)
+                        }
                     }
                     break
                 }
@@ -339,12 +370,10 @@ const Char = (() => {
                     break
                 }
                 case "select": {
-                    if (args.length) {
-                        regCharSelect(args.shift())
-                        promptActionMenu()
-                    } else {
+                    if (args.length)
+                        promptActionMenu(args.shift())
+                    else
                         promptCharSelect()
-                    }
                     break
                 }
             // no default
@@ -445,57 +474,96 @@ const Char = (() => {
         }
     // #endregion
 
-    // #region GETTERS: Character Chat Prompt
+    // #region GETTERS: Checking Chaacter Status, Character Chat Prompt
     const promptCharSelect = () => {
-            const charObjs = D.GetChars("registered"),
-                charObjRows = [],
+            const charObjs = D.GetChars("sandbox"),
+                charLines = [],
                 chatLines = []
             while (charObjs.length)
-                charObjRows.push(_.compact([charObjs.shift(), charObjs.shift()]))
-            for (const charObjRow of charObjRows)
-                chatLines.push(`<span style="                    
-                        display: block;
-                        font-size: 10px;
-                        text-align: center;
-                        width: 100%;
-                        margin-bottom: 5px;
-                    ">[${D.GetName(charObjRow[0])}](!char select ${charObjRow[0].id})${charObjRow[1] ? ` [${D.GetName(charObjRow[1])}](!char select ${charObjRow[1].id})` : ""}</span>`)
-            sendChat("Select a Character", D.JSH(`/w Storyteller <div style='
-                    display: block;
-                    background: url(https://i.imgur.com/kBl8aTO.jpg);
-                    text-align: center;
-                    border: 4px ${C.COLORS.crimson} outset;
-                    box-sizing: border-box;
-                    margin-left: -42px;
-                    width: 275px;
-                '><span style='
-                display: block;
-                font-size: 16px;
-                text-align: center;
-                width: 100%;
-                font-family: Voltaire;
-                color: ${C.COLORS.brightred};
-                font-weight: bold;
-                margin-bottom: 5px;
-                margin-top: 10px;
-            '>CHARACTER SELECTION</span>${chatLines.join("")}<br></div>`))
+                charLines.push(_.compact([charObjs.shift(), charObjs.shift(), charObjs.shift(), charObjs.shift()]).map(x => C.MENUHTML.Button(D.GetName(x, true), `!char select ${x.id}`, {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: VAL({npc: x}) ? C.COLORS.crimson : C.COLORS.brightred} )).join(""))
+            chatLines.push(
+                C.MENUHTML.Block([
+                    C.MENUHTML.Header(
+                        "Character Selection"
+                    ),
+                    ...charLines.map(x => C.MENUHTML.ButtonLine(x))
+                ])
+            )
+            sendChat("Select a Character", D.JSH(`/w Storyteller ${chatLines.join("")}`))
         },
         regCharSelect = charID => STATEREF.charSelection = charID,
-        promptActionMenu = () => {
-            const selCharObj = getObj("character", STATEREF.charSelection),
-                chatLines = [],
-                charActions = _.keys(C.CHARACTIONS)
-            while (charActions.length) {
-                const actionButtons = []
-                for (let i = 0; i < Math.min(3, charActions.length); i++)
-                    actionButtons.push(`[${charActions[0]}](${C.CHARACTIONS[charActions.shift()]})`)
-                chatLines.push([
-                    "<span style=\"display: block; font-size: 10px; text-align: center; width: 100%; margin-bottom: 5px;\">",
-                    actionButtons.join(" "),
-                    "</span>"
-                ].join(""))
+        promptActionMenu = (charID) => {
+            const selCharObj = getObj("character", charID),
+                chatLines = []                
+            const CHARACTIONS = _.mapObject({
+                "_TopButtons": [
+                    ["Add to Scene", "!sess @@CHARID@@ add scene", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.palegreen, color: C.COLORS.black}],
+                    ["Pop Desire", "!char @@CHARID@@ set desire", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
+                    ["Resonance", "!resCheck ?{Enter the first letters of all POSITIVE resonance mods. Include doubles (e.g. 'ss'), or 'x' for none.} ?{Enter the first letters of all NEGATIVE resonance mods.  Include doubles (e.g. 'mm'), or 'x' for none.} ?{Is the site likely to produce dyscrasias?|No,0|Yes,2}", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.brightred, fontWeight: "bold", textShadow: "1px 0px red"}],
+                    ["Roll As", "!pcroll @@CHARID@@", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.purple, color: C.COLORS.white}]
+                ],
+                "_LastButtons": [
+                    ["Secret Roll", "", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.purple, color: C.COLORS.white}],
+                    ["Get Trait", "", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.grey, color: C.COLORS.black}],
+                    ["Complic's", "", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.orange, color: C.COLORS.black, fontWeight: "bold", textShadow: "1px 0px red"}],
+                    ["Frenzy", "", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.brightred, color: C.COLORS.black}]
+                ],
+                "Health": [
+                    [ "S", "!char @@CHARID@@ dmg health superficial", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred}],
+                    [ "S+", "!char @@CHARID@@ dmg health superficial+", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightredmid}],
+                    [ "A", "!char @@CHARID@@ dmg health aggravated", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.red}]
+                ],
+                "Willpower": [
+                    [ "S", "!char @@CHARID@@ dmg willpower superficial", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightblue}],
+                    [ "S+", "!char @@CHARID@@ dmg willpower superficial+", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue}],
+                    [ "A", "!char @@CHARID@@ dmg willpower aggravated", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkblue}],
+                    ["3%"],
+                    [ "S", "!char @@CHARID@@ dmg willpower social_superficial", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightpurple}],
+                    [ "S+", "!char @@CHARID@@ dmg willpower social_superficial+", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.purple}],
+                    [ "A", "!char @@CHARID@@ dmg willpower social_aggravated", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkpurple}]
+                ],
+                "Hunger": [
+                    [ "+1", "!char @@CHARID@@ change hunger 1", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkredmid} ],
+                    [ "-1", "!char @@CHARID@@ change hunger -1", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkred} ],
+                    [ "Δ", "!char @@CHARID@@ change hunger", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.red} ],
+                    ["Kill Slake", "17%"],
+                    [ "-1", "!char @@CHARID@@ change hungerkill -1", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightredmid} ],
+                    [ "Δ", "!char @@CHARID@@ change hungerkill", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred} ]
+                ],
+                "XP": [
+                    [ "1", "!char @@CHARID@@ set xp 1 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
+                    [ "2", "!char @@CHARID@@ set xp 2 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
+                    [ "Δ", "!char @@CHARID@@ set xp ?{How Much XP?|3|4|5|6|7|8|9|10} ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
+                    ["Humanity", "17%"],
+                    [ "Stn", "!char @@CHARID@@ dmg stains", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.white}],
+                    [ "Hum", "!char @@CHARID@@ dmg humanity", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.white}]
+                ]
+            }, v => v.map(x => x.map(xx => VAL({string: xx}) && xx.replace(/@@CHARID@@/gu, selCharObj.id).replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;") || xx)))                
+            for (const subHeader of _.keys(CHARACTIONS)) {
+                const theseCols = [C.MENUHTML.ButtonSubheader(
+                    subHeader.startsWith("_") ? "" : subHeader,
+                    subHeader.startsWith("_") ? {margin: "1px 0px 0px 3px", height: "18px", width: "0%"} : {margin: "1px 0.5px 0px 3px", height: "18px", width: "17%"}
+                    )]
+                for(const button of CHARACTIONS[subHeader])
+                    if (button.length === 1)
+                        theseCols.push(C.MENUHTML.ButtonSpacer(button[0]))
+                    else if (button.length === 2)
+                        theseCols.push(C.MENUHTML.ButtonSubheader(button[0], {margin: "1px 0.5px 0px 0px", height: "18px", width: button[1], textAlign: "right", padding: "0px 3px 0px 0px"}))
+                    else
+                        theseCols.push(C.MENUHTML.Button(...button))                
+                chatLines.push(C.MENUHTML.ButtonLine(theseCols.join(""), {textAlign: "left"}))
             }
-            sendChat("Character Actions", D.JSH(`/w Storyteller <div style='
+            sendChat(`Actions: ${D.GetName(selCharObj)}`, D.JSH(`/w Storyteller ${
+                C.MENUHTML.Block([
+                    C.MENUHTML.Header(
+                        `Action: ${D.GetName(selCharObj)}`
+                    ),
+                    ...chatLines
+                ])}`))
+        },
+        promptNumber = (fullCommand) => {
+            if (VAL({string: fullCommand}, "promptNumber") && fullCommand.includes("@@AMOUNT@@"))
+                sendChat("Amount", D.JSH(`/w Storyteller <div style='
                     display: block;
                     background: url(https://i.imgur.com/kBl8aTO.jpg);
                     text-align: center;
@@ -503,17 +571,45 @@ const Char = (() => {
                     box-sizing: border-box;
                     margin-left: -42px;
                     width: 275px;
-                '><span style='
-                display: block;
-                font-size: 16px;
-                text-align: center;
-                width: 100%;
-                font-family: Voltaire;
-                color: ${C.COLORS.brightred};
-                font-weight: bold;
-                margin-bottom: 5px;
-                margin-top: 10px;
-            '>${selCharObj.get("name").toUpperCase()}</span>${chatLines.join("")}</div>`))            
+                '><br/><span style='
+                    display: block;
+                    font-size: 16px;
+                    text-align: center;
+                    width: 100%;
+                    font-family: Voltaire;
+                    color: ${C.COLORS.brightred};
+                    font-weight: bold;
+                '>Choose Amount:</span><span style='                    
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[1](${fullCommand.replace(/@@AMOUNT@@/gu, "1")}) [2](${fullCommand.replace(/@@AMOUNT@@/gu, "2")}) [3](${fullCommand.replace(/@@AMOUNT@@/gu, "3")}) [4](${fullCommand.replace(/@@AMOUNT@@/gu, "4")}) [5](${fullCommand.replace(/@@AMOUNT@@/gu, "5")})</span><span style='                    
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[6](${fullCommand.replace(/@@AMOUNT@@/gu, "6")}) [7](${fullCommand.replace(/@@AMOUNT@@/gu, "7")}) [8](${fullCommand.replace(/@@AMOUNT@@/gu, "8")}) [9](${fullCommand.replace(/@@AMOUNT@@/gu, "9")}) [10](${fullCommand.replace(/@@AMOUNT@@/gu, "10")})</span><span style='                    
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[0](${fullCommand.replace(/@@AMOUNT@@/gu, "0")})</span><span style='                    
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[-1](${fullCommand.replace(/@@AMOUNT@@/gu, "-1")}) [-2](${fullCommand.replace(/@@AMOUNT@@/gu, "-2")}) [-3](${fullCommand.replace(/@@AMOUNT@@/gu, "-3")}) [-4](${fullCommand.replace(/@@AMOUNT@@/gu, "-4")}) [-5](${fullCommand.replace(/@@AMOUNT@@/gu, "-5")})</span><span style='                    
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>[-6](${fullCommand.replace(/@@AMOUNT@@/gu, "-6")}) [-7](${fullCommand.replace(/@@AMOUNT@@/gu, "-7")}) [-8](${fullCommand.replace(/@@AMOUNT@@/gu, "-8")}) [-9](${fullCommand.replace(/@@AMOUNT@@/gu, "-9")}) [-10](${fullCommand.replace(/@@AMOUNT@@/gu, "-10")})</span><span style='                    
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '></span></div>`))
         }
     // #endregion
 
@@ -564,8 +660,7 @@ const Char = (() => {
             }
         },
         resolveDesire = charRef => {
-            const charData = D.GetCharData(charRef),
-                desireObj = (D.GetRepStat(charRef, "desire", "top", "desire") || {obj: null}).obj
+            const desireObj = (D.GetRepStat(charRef, "desire", "top", "desire") || {obj: null}).obj
             if (desireObj) {
                 desireObj.remove()
                 adjustDamage(charRef, "willpower", "superficial+", -1, false)
