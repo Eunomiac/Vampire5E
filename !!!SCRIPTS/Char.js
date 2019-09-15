@@ -38,6 +38,7 @@ const Char = (() => {
         STATEREF.customStakes.coterie = STATEREF.customStakes.coterie || []
         STATEREF.customStakes.personal = STATEREF.customStakes.personal || {A: [], L: [], N: [], R: []}
         STATEREF.tokenRecord = STATEREF.tokenRecord || []
+        STATEREF.traitSelection = STATEREF.traitSelection || []
 
         /* STATEREF.registry = {
             TopLeft: {
@@ -95,9 +96,9 @@ const Char = (() => {
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => { // eslint-disable-line no-unused-vars
-            let charObj = getObj("character", call)
-            if (charObj)
-                call = args.shift()
+            let charObjs, charIDString
+            [charObjs, charIDString, call, args] = D.ParseCharSelection(call, args)
+            //D.Alert(`CharObjs (${(charObjs || []).length}): ${(charObjs || []).map(x => x.get("name")).join("<br>")}<br>IDString: ${charIDString}<br>Call: ${call}<br>Args: ${args}`)
             switch (call.toLowerCase()) {
                 case "reg": {
                     switch(args.shift().toLowerCase()) {                        
@@ -169,34 +170,54 @@ const Char = (() => {
                 case "get": {
                     switch (args.shift().toLowerCase()) {
                         case "stat": {
-                            const traitName = args.shift(),
-                                charObjs = VAL({npc: D.GetSelected(msg, "character")}, null, true) ? D.GetChars(msg) : D.GetChars("registered"),
-                                params = []
-                            for (const charObj of charObjs) {
-                                const statData = D.GetStat(charObj, traitName, true) || D.GetRepStat(charObj, "*", null, traitName, true),
-                                    charName = D.GetCharData(charObj).shortName || D.GetCharData(charObj).name
-                                if (VAL({array: statData}))
-                                    params.push(`<span style="display: inline-block; width: 15%; margin-right: 3%;">${
-                                        charName
-                                    }</span><span style="display: inline-block; width: 60%; margin-right: 3%;">${
-                                        D.Capitalize(statData[1].get("name"), true)
-                                    }</span><span style="display: inline-block; width: 15%; margin-right: 3%;">${
-                                        parseInt(statData[0]) ? "●".repeat(parseInt(statData[0])) : "~"
-                                    }</span>`)
-                                else if (VAL({list: statData}))
-                                    params.push(`<span style="display: inline-block; width: 15%; margin-right: 3%;">${
-                                        charName
-                                    }</span><span style="display: inline-block; width: 60%; margin-right: 3%;">${
-                                        D.Capitalize(statData.name, true)
-                                    }</span><span style="display: inline-block; width: 15%; margin-right: 3%;">${
-                                        parseInt(statData.val) ? "●".repeat(parseInt(statData.val)) : "~"
-                                    }</span>`)
-                                else
-                                    params.push(`<span style="display: inline-block; width: 15%; margin-right: 3%;">${
-                                        charName
-                                    }</span><span style="display: inline-block; width: 60%; margin-right: 3%;">~</span><span style="display: inline-block; width: 15%; margin-right: 3%;">~</span>`)
+                            if (!args.length) {
+                                promptTraitSelect(charIDString, null, "!char @@CHARIDS@@ get stat @@TRAITNAME@@")
+                            } else {
+                                const traitName = args[0].toLowerCase() === "selected" && STATEREF.traitSelection.shift() || args.shift(),
+                                    returnLines = []
+                                charObjs = VAL({charObj: charObjs}, null, true) && charObjs || (VAL({npc: D.GetSelected(msg, "character")}, null, true) ? D.GetChars(msg) : D.GetChars("registered"))
+                                while (charObjs.length) {
+                                    const charLines = []
+                                    let name, traitVal
+                                    for (let i = 0; i < 2; i++) {
+                                        if (charObjs.length) {
+                                            let thisCharObj = charObjs.shift();
+                                            [name, traitVal] = ["", "", ""]
+                                            if (VAL({thisCharObj: thisCharObj})) {
+                                                const statData = D.GetStat(thisCharObj, traitName, true) || D.GetRepStat(thisCharObj, "*", null, traitName, true);
+                                                [name, traitVal] = [
+                                                    VAL({pc: thisCharObj}) ? `<b>${D.GetName(thisCharObj, true).toUpperCase()}</b>` : D.GetName(thisCharObj, true),
+                                                    parseInt(statData && statData[0] || statData && statData.val) ? "●".repeat(parseInt(statData && statData[0] || statData && statData.val)) : "~"
+                                                ]
+                                            }
+                                        } else {
+                                            [name, traitVal] = ["", ""]
+                                        }
+                                        charLines.push(`<div style="
+                                            display: inline-block;
+                                            width: 48%;
+                                            overflow: hidden;
+                                            margin-right: 2%;
+                                        "><span style="
+                                            display: inline-block;
+                                            width: 60%;
+                                            margin-right: 3%;
+                                            color: ${traitVal === "~" && C.COLORS.grey || C.COLORS.white};
+                                        ">${name}</span><span style="
+                                            display: inline-block;
+                                            width: 34%;
+                                            margin-right: 3%;
+                                            color: ${traitVal === "~" && C.COLORS.grey || C.COLORS.white};
+                                        ">${traitVal}</span></div>`)
+                                    }
+                                    returnLines.push(charLines.join(""))
+                                }  
+                                sendChat(D.Capitalize(traitName, true), D.JSH(`/w Storyteller ${
+                                    C.CHATHTML.colorBlock([
+                                        C.CHATHTML.colorHeader(D.Capitalize(traitName, true)),
+                                        C.CHATHTML.colorBody(returnLines.join("<br>"), {color: C.COLORS.white, fontWeight: "normal", fontFamily: "Voltaire", fontSize: "12px", textAlign: "left"})
+                                    ].join(""))}`))
                             }
-                            D.Alert(params.join("<br>"), `${D.Capitalize(traitName)}:`)
                             break
                         }
                         // no default
@@ -218,7 +239,7 @@ const Char = (() => {
                             break
                         }
                         case "xp": {
-                            const charObjs = charObj && [charObj] || D.GetChars(msg) || D.GetChars("registered")
+                            charObjs = charObjs || D.GetChars(msg) || D.GetChars("registered")
                             DB(`!char xp COMMAND RECEIVED<br><br>Characters: ${D.JS(_.map(charObjs, v => v.get("name")))}`, "!char set xp")
                             if (VAL({char: charObjs}, "!char set xp", true)) {
                                 const amount = parseInt(args.shift()) || 0
@@ -244,8 +265,9 @@ const Char = (() => {
                             break
                         }
                         case "desire": {
-                            charObj = charObj || D.GetChar(msg) || D.GetChar(args.shift())
-                            resolveDesire(charObj)
+                            charObjs = charObjs || D.GetChars(msg) || D.GetChars(args.shift())
+                            for (const charObj of charObjs)
+                                resolveDesire(charObj)
                             break
                         }
                         // no default
@@ -277,9 +299,9 @@ const Char = (() => {
                     break
                 }
                 case "change": {
-                    const fullCommand = `!char ${charObj && charObj.id || ""} ${call} ${args.join(" ")}`
-                    charObj = charObj || D.GetChar(msg) || D.GetChar(args.shift())
-                    if (VAL({char: charObj}, "!char change")) {
+                    const fullCommand = `!char ${charObjs.length && charObjs.map(x => x.id).join(",") || ""} ${call} ${args.join(" ")}`
+                    charObjs = charObjs || D.GetChars(msg) || D.GetChars(args.shift())
+                    if (VAL({char: charObjs}, "!char change", true)) {
                         let isKilling = false
                         switch (args.shift().toLowerCase()) {
                             case "hungerkill": {
@@ -288,7 +310,8 @@ const Char = (() => {
                             // falls through
                             case "hunger": {
                                 if (args.length) 
-                                    adjustHunger(charObj, parseInt(args.shift()) || 0, isKilling)
+                                    for (const charObj of charObjs)
+                                        adjustHunger(charObj, parseInt(args[0]) || 0, isKilling)
                                 else 
                                     promptNumber(`${fullCommand} @@AMOUNT@@`)                                
                                 break
@@ -299,9 +322,9 @@ const Char = (() => {
                     break
                 }
                 case "dmg": case "damage": case "spend": case "heal": {
-                    const charObjs = charObj && [charObj] || D.GetChars(msg)
+                    charObjs = charObjs || D.GetChars(msg)
                     if (VAL({char: charObjs}, "!char dmg", true)) {
-                        const fullCommand = `!char ${charObj && charObj.id || ""} ${call} ${args.join(" ")}`,
+                        const fullCommand = `!char ${charObjs.length && charObjs.map(x => x.id).join(",") || ""} ${call} ${args.join(" ")}`,
                             trait = args.shift().toLowerCase(),
                             dtype = ["hum", "humanity", "stain", "stains"].includes(trait) ? null : args.shift()
                         if (args.length) {
@@ -370,10 +393,37 @@ const Char = (() => {
                     break
                 }
                 case "select": {
-                    if (args.length)
-                        promptActionMenu(args.shift())
-                    else
-                        promptCharSelect()
+                    switch((args[0] || "").toLowerCase()) {
+                        case "trait": {
+                            args.shift()
+                            if (args.length) {
+                                const thisTrait = args.shift().toLowerCase()
+                                if (STATEREF.traitSelection.includes(thisTrait))
+                                    STATEREF.traitSelection = _.without(STATEREF.traitSelection, thisTrait)
+                                else
+                                    STATEREF.traitSelection.push(thisTrait)
+                                Media.SetText("secretRollTraits", STATEREF.traitSelection.length === 0 ? " " : STATEREF.traitSelection.join("\n"))
+                            } else {
+                                promptTraitSelect()
+                            }
+                            break
+                        }
+                        case "registered":
+                        case "npcs":
+                        case "pcs":
+                        case "sandbox": {
+                            promptActionMenu(args[0].toLowerCase())                            
+                            break
+                        }
+                        default: {
+                            //D.Alert(`Args: ${D.JS(args.join(","))}`)
+                            if (args[0])
+                                promptActionMenu(args[0])
+                            else
+                                promptCharSelect()
+                            break
+                        }
+                    }
                     break
                 }
             // no default
@@ -409,7 +459,10 @@ const Char = (() => {
         }
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
-    const REGISTRY = STATEREF.registry
+    const REGISTRY = STATEREF.registry,
+        ATTRNAMES = _.values(C.ATTRIBUTES).map(x => x.map(xx => xx.replace(/\s/gu, "_"))),
+        SKILLNAMES = _.values(C.SKILLS).map(x => x.map(xx => xx.replace(/\s/gu, "_"))),
+        DISCNAMES = C.DISCIPLINES.map(x => x.replace(/\s/gu, "_"))
 
     // #region JSON Text Blocks
     /* eslint-disable-next-line quotes */
@@ -475,89 +528,160 @@ const Char = (() => {
     // #endregion
 
     // #region GETTERS: Checking Chaacter Status, Character Chat Prompt
-    const promptCharSelect = () => {
+    const getCharIDString = (charsRef) => {
+            const charIDs = []
+            switch(charsRef.toLowerCase()) {
+                case "registered": {
+                    charIDs.push(...D.GetChars("registered").map(x => x.id))
+                    break
+                }
+                case "npcs": {
+                    charIDs.push(...D.GetChars("sandbox").filter(x => VAL({npc: x})).map(x => x.id))
+                    break
+                }
+                case "pcs": {
+                    charIDs.push(...D.GetChars("sandbox").filter(x => VAL({pc: x})).map(x => x.id))
+                    break
+                }
+                case "sandbox": {
+                    charIDs.push(...D.GetChars("sandbox").map(x => x.id))
+                    break
+                }
+                default: {
+                    for (const id of charsRef.split(",").map(x => x.trim()))
+                        if (getObj("character", id))
+                            charIDs.push(id)
+                    break
+                }
+            }
+            return charIDs.join(",")
+        },
+        promptCharSelect = () => {
             const charObjs = D.GetChars("sandbox"),
-                charLines = [],
-                chatLines = []
-            while (charObjs.length)
-                charLines.push(_.compact([charObjs.shift(), charObjs.shift(), charObjs.shift(), charObjs.shift()]).map(x => C.MENUHTML.Button(D.GetName(x, true), `!char select ${x.id}`, {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: VAL({npc: x}) ? C.COLORS.crimson : C.COLORS.brightred} )).join(""))
-            chatLines.push(
-                C.MENUHTML.Block([
-                    C.MENUHTML.Header(
-                        "Character Selection"
-                    ),
-                    ...charLines.map(x => C.MENUHTML.ButtonLine(x))
-                ])
-            )
-            sendChat("Select a Character", D.JSH(`/w Storyteller ${chatLines.join("")}`))
+                pcCharObjs = D.GetChars("registered"),
+                npcCharObjs = charObjs.filter(x => VAL({npc: x})),
+                chatLines = [
+                    C.MENUHTML.Header("Character Selection", {margin: "0px 0px 5px 0px"}),
+                    C.MENUHTML.ButtonLine([
+                        ["All PCs", "!char select registered", {width: "24%", height: "16px", buttonHeight: "6px", lineHeight: "8px", fontSize: "12px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue, color: C.COLORS.black}],
+                        ["Active PCs", "!char select pcs", {width: "24%", height: "16px", buttonHeight: "6px", lineHeight: "8px", fontSize: "12px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue, color: C.COLORS.black}],
+                        ["Active NPCs", "!char select npcs", {width: "24%", height: "16px", buttonHeight: "6px", lineHeight: "8px", fontSize: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue, color: C.COLORS.black}],
+                        ["All Active", "!char select sandbox", {width: "24%", height: "16px", buttonHeight: "6px", lineHeight: "8px", fontSize: "12px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue, color: C.COLORS.black}]
+                    ].map(x => C.MENUHTML.Button(...x)), {margin: "0px 0px 5px 0px"})
+                ]
+            while (pcCharObjs.length)
+                chatLines.push(C.MENUHTML.ButtonLine(
+                    _.compact([pcCharObjs.shift(), pcCharObjs.shift(), pcCharObjs.shift(), pcCharObjs.shift()]).map(x => C.MENUHTML.Button(
+                        D.GetName(x, true),
+                        `!char select ${x.id}`,
+                        {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: charObjs.map(xx => xx.id).includes(x.id) ? C.COLORS.brightred : C.COLORS.black}
+                    )).join(""),
+                    {margin: "0px 0px 10px 0px"}
+                ))        
+            while (npcCharObjs.length)
+                chatLines.push(C.MENUHTML.ButtonLine(
+                    _.compact([npcCharObjs.shift(), npcCharObjs.shift(), npcCharObjs.shift(), npcCharObjs.shift()]).map(x => C.MENUHTML.Button(
+                        D.GetName(x, true),
+                        `!char select ${x.id}`,
+                        {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.crimson}
+                    )).join("")
+                ))
+            sendChat("Select a Character", D.JSH(`/w Storyteller ${C.MENUHTML.Block(chatLines.join(""))}`))
         },
         regCharSelect = charID => STATEREF.charSelection = charID,
-        promptActionMenu = (charID) => {
-            const selCharObj = getObj("character", charID),
-                chatLines = []                
+        promptActionMenu = (charsRef) => {
+            const chatLines = [],
+                charIDString = getCharIDString(charsRef),
+                charIDs = charIDString.split(",").map(x => x.trim())
+            let title = ""             
             const CHARACTIONS = _.mapObject({
                 "_TopButtons": [
-                    ["Add to Scene", "!sess @@CHARID@@ add scene", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.palegreen, color: C.COLORS.black}],
-                    ["Pop Desire", "!char @@CHARID@@ set desire", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
-                    ["Resonance", "!resCheck ?{Enter the first letters of all POSITIVE resonance mods. Include doubles (e.g. 'ss'), or 'x' for none.} ?{Enter the first letters of all NEGATIVE resonance mods.  Include doubles (e.g. 'mm'), or 'x' for none.} ?{Is the site likely to produce dyscrasias?|No,0|Yes,2}", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.brightred, fontWeight: "bold", textShadow: "1px 0px red"}],
-                    ["Roll As", "!pcroll @@CHARID@@", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.purple, color: C.COLORS.white}]
+                    ["Add to Scene", "!sess @@CHARIDS@@ add scene", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.palegreen, color: C.COLORS.black}],
+                    ["Pop Desire", "!char @@CHARIDS@@ set desire", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
+                    ["@@SINGLEONLY@@Resonance", "!resCheck ?{Enter the first letters of all POSITIVE resonance mods. Include doubles (e.g. 'ss'), or 'x' for none.} ?{Enter the first letters of all NEGATIVE resonance mods.  Include doubles (e.g. 'mm'), or 'x' for none.} ?{Is the site likely to produce dyscrasias?|No,0|Yes,2}", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.brightred, fontWeight: "bold", textShadow: "1px 0px red"}],
+                    ["@@SINGLEONLY@@Roll As", "!pcroll @@CHARIDS@@", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.purple, color: C.COLORS.white}]
                 ],
                 "_LastButtons": [
-                    ["Secret Roll", "", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.purple, color: C.COLORS.white}],
-                    ["Get Trait", "", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.grey, color: C.COLORS.black}],
-                    ["Complic's", "", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.orange, color: C.COLORS.black, fontWeight: "bold", textShadow: "1px 0px red"}],
-                    ["Frenzy", "", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.brightred, color: C.COLORS.black}]
+                    ["Secret Roll", "!roll @@CHARIDS@@ sroll ", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.purple, color: C.COLORS.white}],
+                    ["Get Trait", "!char @@CHARIDS@@ get stat", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.grey, color: C.COLORS.black}],
+                    ["@@SINGLEONLY@@Complic's", "", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.orange, color: C.COLORS.black, fontWeight: "bold", textShadow: "1px 0px red"}],
+                    ["@@SINGLEONLY@@Frenzy", "", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.brightred, color: C.COLORS.black}]
                 ],
                 "Health": [
-                    [ "S", "!char @@CHARID@@ dmg health superficial", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred}],
-                    [ "S+", "!char @@CHARID@@ dmg health superficial+", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightredmid}],
-                    [ "A", "!char @@CHARID@@ dmg health aggravated", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.red}]
+                    [ "S", "!char @@CHARIDS@@ dmg health superficial", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred}],
+                    [ "S+", "!char @@CHARIDS@@ dmg health superficial+", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightredmid}],
+                    [ "A", "!char @@CHARIDS@@ dmg health aggravated", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.red}]
                 ],
                 "Willpower": [
-                    [ "S", "!char @@CHARID@@ dmg willpower superficial", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightblue}],
-                    [ "S+", "!char @@CHARID@@ dmg willpower superficial+", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue}],
-                    [ "A", "!char @@CHARID@@ dmg willpower aggravated", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkblue}],
+                    [ "S", "!char @@CHARIDS@@ dmg willpower superficial", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightblue}],
+                    [ "S+", "!char @@CHARIDS@@ dmg willpower superficial+", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue}],
+                    [ "A", "!char @@CHARIDS@@ dmg willpower aggravated", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkblue}],
                     ["3%"],
-                    [ "S", "!char @@CHARID@@ dmg willpower social_superficial", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightpurple}],
-                    [ "S+", "!char @@CHARID@@ dmg willpower social_superficial+", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.purple}],
-                    [ "A", "!char @@CHARID@@ dmg willpower social_aggravated", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkpurple}]
+                    [ "S", "!char @@CHARIDS@@ dmg willpower social_superficial", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightpurple}],
+                    [ "S+", "!char @@CHARIDS@@ dmg willpower social_superficial+", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.purple}],
+                    [ "A", "!char @@CHARIDS@@ dmg willpower social_aggravated", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkpurple}]
                 ],
                 "Hunger": [
-                    [ "+1", "!char @@CHARID@@ change hunger 1", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkredmid} ],
-                    [ "-1", "!char @@CHARID@@ change hunger -1", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkred} ],
-                    [ "Δ", "!char @@CHARID@@ change hunger", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.red} ],
+                    [ "+1", "!char @@CHARIDS@@ change hunger 1", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkredmid} ],
+                    [ "-1", "!char @@CHARIDS@@ change hunger -1", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkred} ],
+                    [ "Δ", "!char @@CHARIDS@@ change hunger", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.red} ],
                     ["Kill Slake", "17%"],
-                    [ "-1", "!char @@CHARID@@ change hungerkill -1", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightredmid} ],
-                    [ "Δ", "!char @@CHARID@@ change hungerkill", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred} ]
+                    [ "-1", "!char @@CHARIDS@@ change hungerkill -1", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightredmid} ],
+                    [ "Δ", "!char @@CHARIDS@@ change hungerkill", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred} ]
                 ],
                 "XP": [
-                    [ "1", "!char @@CHARID@@ set xp 1 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
-                    [ "2", "!char @@CHARID@@ set xp 2 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
-                    [ "Δ", "!char @@CHARID@@ set xp ?{How Much XP?|3|4|5|6|7|8|9|10} ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
+                    [ "1", "!char @@CHARIDS@@ set xp 1 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
+                    [ "2", "!char @@CHARIDS@@ set xp 2 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
+                    [ "Δ", "!char @@CHARIDS@@ set xp ?{How Much XP?|3|4|5|6|7|8|9|10} ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
                     ["Humanity", "17%"],
-                    [ "Stn", "!char @@CHARID@@ dmg stains", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.white}],
-                    [ "Hum", "!char @@CHARID@@ dmg humanity", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.white}]
+                    [ "Stn", "!char @@CHARIDS@@ dmg stains", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.white}],
+                    [ "Hum", "!char @@CHARIDS@@ dmg humanity", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.white}]
                 ]
-            }, v => v.map(x => x.map(xx => VAL({string: xx}) && xx.replace(/@@CHARID@@/gu, selCharObj.id).replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;") || xx)))                
+            }, v => v.map(x => x.map(xx => VAL({string: xx}) && xx.replace(/@@CHARIDS@@/gu, charIDString).replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;") || xx)))                
             for (const subHeader of _.keys(CHARACTIONS)) {
                 const theseCols = [C.MENUHTML.ButtonSubheader(
                     subHeader.startsWith("_") ? "" : subHeader,
                     subHeader.startsWith("_") ? {margin: "1px 0px 0px 3px", height: "18px", width: "0%"} : {margin: "1px 0.5px 0px 3px", height: "18px", width: "17%"}
-                    )]
+                )]
                 for(const button of CHARACTIONS[subHeader])
                     if (button.length === 1)
                         theseCols.push(C.MENUHTML.ButtonSpacer(button[0]))
                     else if (button.length === 2)
                         theseCols.push(C.MENUHTML.ButtonSubheader(button[0], {margin: "1px 0.5px 0px 0px", height: "18px", width: button[1], textAlign: "right", padding: "0px 3px 0px 0px"}))
+                    else if (button[0].includes("@@SINGLEONLY@@") && charIDs.length !== 1)
+                        continue
                     else
-                        theseCols.push(C.MENUHTML.Button(...button))                
+                        theseCols.push(C.MENUHTML.Button(...button.map(x => VAL({string: x}) && x.replace(/@@SINGLEONLY@@/gu, "") || x)))                
                 chatLines.push(C.MENUHTML.ButtonLine(theseCols.join(""), {textAlign: "left"}))
             }
-            sendChat(`Actions: ${D.GetName(selCharObj)}`, D.JSH(`/w Storyteller ${
+            switch (charsRef) {
+                case "registered": {
+                    title = "Actions: All PCs"
+                    break
+                }
+                case "pcs": {
+                    title = "Actions: Active PCs"
+                    break
+                }
+                case "npcs": {
+                    title = "Actions: Active NPCs"
+                    break
+                }
+                case "sandbox": {
+                    title = "Actions: ALL Active"
+                    break
+                }
+                default: {
+                    if (charIDs.length === 1)
+                        title = `Actions: ${D.GetName(charIDs[0])}`
+                    else
+                        title = `Actions: ${charIDs.length} Characters`
+                    break
+                }
+            }
+            sendChat(title, D.JSH(`/w Storyteller ${
                 C.MENUHTML.Block([
-                    C.MENUHTML.Header(
-                        `Action: ${D.GetName(selCharObj)}`
-                    ),
+                    C.MENUHTML.Header(title),
                     ...chatLines
                 ])}`))
         },
@@ -610,9 +734,82 @@ const Char = (() => {
                     text-align: center;
                     width: 100%
                 '></span></div>`))
+        },
+        promptTraitSelect = (charIDString, fullCommand, buttonOverride) => {
+            const TRAITLIST = {},
+                chatLines = []
+            let rowCount = 0
+            for (let i = 0; i < ATTRNAMES[0].length; i++) {
+                TRAITLIST[`_AttrNames${i}`] = []
+                for (let j = 0; j < ATTRNAMES.length; j++)
+                    TRAITLIST[`_AttrNames${i}`].push([
+                        ATTRNAMES[j][i].replace(/_/gu, " "),
+                        buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, ATTRNAMES[j][i].toLowerCase()) || `!char select trait ${ATTRNAMES[j][i].toLowerCase()}`,
+                        {width: "30%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.yellow, color: C.COLORS.black}
+                    ].map(x => VAL({string: x}) && x.replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;") || x))                
+            }
+            TRAITLIST._SpacerRow1 = [["80%"]]
+            for (let i = 0; i < SKILLNAMES[0].length; i++) {
+                TRAITLIST[`_SkillNames${i}`] = []
+                for (let j = 0; j < SKILLNAMES.length; j++)
+                    TRAITLIST[`_SkillNames${i}`].push([
+                        SKILLNAMES[j][i].replace(/_/gu, " "),
+                        buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, SKILLNAMES[j][i].toLowerCase()) || `!char select trait ${SKILLNAMES[j][i].toLowerCase()}`,
+                        {width: "30%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}
+                    ].map(x => VAL({string: x}) && x.replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;") || x))
+            }
+            TRAITLIST._SpacerRow2 = [["80%"]]
+            while (DISCNAMES.length) {
+                rowCount++
+                TRAITLIST[`_DiscRow${rowCount}`] = _.compact([DISCNAMES.shift(), DISCNAMES.shift(), DISCNAMES.shift()]).map(
+                    x => [
+                        x.replace(/_/gu, " "),
+                        buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, x.toLowerCase()) || `!char select trait ${x.toLowerCase()}`,
+                        {width: "30%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred, color: C.COLORS.black}
+                    ]
+                )
+            }
+            TRAITLIST._SpacerRow3 = [["80%"]]
+            TRAITLIST._BottomButtons1 = [
+                ["Disciplines", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
+                ["Blood Pot.", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
+                ["Health", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
+                ["Willpower", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}]
+            ]  
+            TRAITLIST._BottomButtons2 = [
+                ["Humanity", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
+                ["Hunger", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
+                ["Blood", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
+                ["Resonance", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}]
+            ]   
+            TRAITLIST._SpacerRow4 = [["80%"]]     
+            if (fullCommand)      
+                TRAITLIST._BottomButtons3 = [
+                    ["3%"],
+                    ["Finished", fullCommand.replace(/@@CHARIDS@@/gu, charIDString), {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
+                    ["3%"]
+                ]  
+            for (const subHeader of _.keys(TRAITLIST)) {
+                const theseCols = [C.MENUHTML.ButtonSubheader(
+                    subHeader.startsWith("_") ? "" : subHeader,
+                    subHeader.startsWith("_") ? {margin: "1px 0px 0px 3px", height: "18px", width: "0%"} : {margin: "1px 0.5px 0px 3px", height: "18px", width: "17%"}
+                )]
+                for(const button of TRAITLIST[subHeader])
+                    if (button.length === 1)
+                        theseCols.push(C.MENUHTML.ButtonSpacer(button[0]))
+                    else if (button.length === 2)
+                        theseCols.push(C.MENUHTML.ButtonSubheader(button[0], {margin: "1px 0.5px 0px 0px", height: "18px", width: button[1], textAlign: "right", padding: "0px 3px 0px 0px"}))
+                    else
+                        theseCols.push(C.MENUHTML.Button(...button))                
+                chatLines.push(C.MENUHTML.ButtonLine(theseCols.join("")))
+            }
+            sendChat("Trait Select", D.JSH(`/w Storyteller ${
+                C.MENUHTML.Block([
+                    C.MENUHTML.Header("Trait Select"),
+                    ...chatLines
+                ].join(""))}`))
         }
     // #endregion
-
 
     // #region Awarding XP
     const awardXP = (charRef, award, reason) => {
@@ -1278,6 +1475,7 @@ const Char = (() => {
         LaunchProject: launchProject,
         SendHome: sendCharsHome,
         SendBack: restoreCharsPos,
+        PromptTraitSelect: promptTraitSelect,
         RefreshDisplays: () => { displayDesires(); displayResources(); displayStakes() },
         get SelectedChar() { 
             if (STATEREF.charSelection) {
@@ -1287,6 +1485,12 @@ const Char = (() => {
             } else {
                 return false
             }
+        },
+        get SelectedTraits() {
+            const selTraits = [...STATEREF.traitSelection]
+            STATEREF.traitSelection = []
+            Media.SetText("secretRollTraits", " ")
+            return selTraits.length && selTraits || false
         }
     }
 })()

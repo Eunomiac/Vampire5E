@@ -94,7 +94,7 @@ let scriptRanges = [],
 
 // Line Number Parser
 const GetScriptLine = (traceable, markMode) => {
-    const match = traceable.stack.match(/apiscript.js:(\d+)/g) || ["", ""];
+    const match = (traceable && traceable.stack || "").match(/apiscript.js:(\d+)/g) || ["", ""];
     if (markMode) {
         return parseInt(match[1].split(':')[1]);
     }
@@ -253,7 +253,7 @@ const handleCrash = (e) => {
     let globalLine = GetScriptLine(e, false);
     let src = ConvertGlobalLineToLocal(globalLine);
 
-    let stackLines = _.map(e.stack.split(/\n|apiscript\.js/gu), v => {
+    let stackLines = _.map((e && e.stack || "").split(/\n|apiscript\.js/gu), v => {
 		if (v.startsWith(":")) {
 			const globalLineNum = parseInt(v.match(/^:(\d+):/u)[1]),
 				  localLine = ConvertGlobalLineToLocal(globalLineNum)

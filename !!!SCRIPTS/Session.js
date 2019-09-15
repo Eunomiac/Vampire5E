@@ -37,7 +37,7 @@ const Session = (() => {
         STATEREF.locationRecord = STATEREF.locationRecord || {DistrictCenter: "blank"}
         STATEREF.tokenRecord = STATEREF.tokenRecord || {}
         STATEREF.SessionScribes = STATEREF.SessionScribes || []
-        //STATEREF.SessionScribes = ["Ava Wong", "Thaumaterge", "banzai"]
+        //STATEREF.SessionScribes = [ "PixelPuzzler", "Thaumaterge", "Ava Wong", "banzai" ]
         
     }
     // #endregion
@@ -45,9 +45,8 @@ const Session = (() => {
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
         //D.Alert(`Received Call: ${call}<br>MSG: ${D.JS(msg)}`)
-        let charObj = getObj("character", call)
-        if (charObj)
-            call = args.shift()
+        let charObjs, charIDString
+        [charObjs, charIDString, call, args] = D.ParseCharSelection(call, args)
         //D.Alert(`Updated Call: ${call}<br>MSG: ${D.JS(msg)}`)
         switch (call) {
             case "start": case "end": case "toggle": {
@@ -61,8 +60,8 @@ const Session = (() => {
             case "add": {
                 switch (args.shift().toLowerCase()) {
                     case "scene": {
-                        charObj = charObj || D.GetChar(msg) || D.GetChar(args.shift())
-                        addCharToScene(charObj)
+                        charObjs = charObjs || D.GetChar(msg) || D.GetChar(args.shift())
+                        addCharToScene(charObjs)
                         break
                     }
                     // no default
@@ -91,7 +90,7 @@ const Session = (() => {
                 DragPads.Toggle("signalLight", !STATEREF.isDaylighterSession)
                 TimeTracker.Fix()
                 for (const charData of _.values(Char.REGISTRY).slice(0, 4)) {
-                    [token] = findObjs({
+                    const [token] = findObjs({
                         _pageid: D.PAGEID,
                         _type: "graphic",
                         _subtype: "token",
@@ -102,7 +101,7 @@ const Session = (() => {
                         Media.SetData(token, { isDaylighter: true, unObfSrc: "base" })
                         Media.Set(token, "baseDL")
                         if (charData.famulusTokenID) {
-                            famToken = Media.GetObj(charData.famulusTokenID)
+                            const famToken = Media.GetObj(charData.famulusTokenID)
                             Media.Toggle(famToken, false)
                         }
                     } else {
@@ -209,10 +208,13 @@ const Session = (() => {
 
     // #region Toggling Session Modes
     const toggleTesting = (isTesting) => {
-            if (isTesting === false || isTesting === true)
+            if (isTesting === false || isTesting === true) {
+                if (isTesting === STATEREF.isTestingActive)
+                    return
                 STATEREF.isTestingActive = isTesting
-            else
+            } else {
                 STATEREF.isTestingActive = !STATEREF.isTestingActive
+            }
             Media.ToggleText("testSessionNotice", STATEREF.isTestingActive)
             D.Alert(`Testing Set to ${STATEREF.isTestingActive}`, "!sess test")
         },
@@ -305,9 +307,13 @@ const Session = (() => {
 
     // #region Starting & Ending Scenes, Logging Characters to Scene
     const addCharToScene = (charRef) => {
-            const charObj = D.GetChar(charRef)
-            if (VAL({charObj: charObj}, "addCharToScene") && !STATEREF.sceneChars.includes(charObj.id)) {
-                STATEREF.sceneChars.push(charObj.id)
+            const charObjs = D.GetChars(charRef)
+            if (VAL({charObj: charObjs}, "addCharToScene", true)) {
+                for (const charObj of charObjs) {
+                    if (STATEREF.sceneChars.includes(charObj.id))
+                        continue
+                    STATEREF.sceneChars.push(charObj.id)
+                }
                 D.Alert(`Scene Now Includes:<br><ul>${D.JS(STATEREF.sceneChars.map(x => `<li><b>${D.GetName(x)}</b>`).join(""))}</ul>`, "Scene Characters")
             }
         },

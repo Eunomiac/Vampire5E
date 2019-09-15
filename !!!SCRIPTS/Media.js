@@ -507,9 +507,9 @@ const Media = (() => {
                                     break   
                                 }
                                 default: {
+                                    const textObj = getTextObj(args[0], true) || D.GetSelected(msg)[0]
                                     if (getTextObj(args[0], true))
                                         args.shift()
-                                    const textObj = getTextObj(args[0], true) || D.GetSelected(msg)[0]
                                     if (VAL({textObj: textObj}, "!text set"))
                                         setText(textObj, {text: args[0] && args.join(" ") || " "})
                                     break
@@ -1468,10 +1468,16 @@ const Media = (() => {
             }
             _.each(_.omit(parsedParams, (v, k) => k.includes("Name")), (v,k) => { setImage(k, v) })
             setImage("SiteBarCenter", parsedParams.SiteNameCenter === " " ? "blank" : "base")
+            if (parsedParams.SiteNameCenter !== " ")
+                toggleText("SiteNameCenter", true)
             setText("SiteNameCenter", parsedParams.SiteNameCenter)
             setImage("SiteBarLeft", parsedParams.SiteNameLeft === " " ? "blank" : "base")
+            if (parsedParams.SiteNameLeft !== " ")
+                toggleText("SiteNameLeft", true)
             setText("SiteNameLeft", parsedParams.SiteNameLeft)
             setImage("SiteBarRight", parsedParams.SiteNameRight === " " ? "blank" : "base")
+            if (parsedParams.SiteNameRight !== " ")
+                toggleText("SiteNameRight", true)
             setText("SiteNameRight", parsedParams.SiteNameRight)   
             STATEREF.curLocation = _.clone(parsedParams)
         },

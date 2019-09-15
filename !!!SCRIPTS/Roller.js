@@ -407,11 +407,35 @@ const Roller = (() => {
     const handleInput = (msg, who, call, args) => {
         let [rollType, char, diceNums, resonance, resDetails, resIntLine, params] = new Array(7),
             name = "",
-            [isSilent, isMaskingTraits] = [false, false]
-        let charObj = getObj("character", call)
-        if (charObj)
-            call = args.shift()
+            [isSilent, isMaskingTraits] = [false, false]            
+        let charObjs, charIDString
+        if (call === "!roll" && args[0] && args[0].toLowerCase() !== "pcroll") {
+            //D.Alert(`Calling D.ParseCharSelection(<br>CALL: ${D.JS(call)},<br>ARGS: [${D.JS(args.join(", "))}])`);
+            [charObjs, charIDString, call, args] = D.ParseCharSelection(args[0], args.slice(1))
+            //D.Alert(`AFTER:<br>CHAROBJS: ${D.JS((charObjs || []).map(x => D.GetName(x)).join("<br>"))}<br>IDSTRING: ${D.JS(charIDString)}<br>CALL: ${call}<br>ARGS: [${args.join(", ")}]`)
+        }
         switch (call) {
+            case "nxsroll":
+            case "xnsroll":
+            case "xsroll":
+            case "sxroll":
+            case "snxroll":
+            case "sxnroll":
+            case "nsroll":
+            case "snroll":
+            case "sroll": {
+                rollType = "secret"
+                if (!args.length) {
+                    Char.PromptTraitSelect(charIDString, "!roll @@CHARIDS@@ sroll selected")
+                } else {                    
+                    const params = args[0] === "selected" && Char.SelectedTraits.join(",") || args.join(" ").split("|")
+                    isSilent = call.includes("x")
+                    isMaskingTraits = call.includes("n")
+                    charObjs = charObjs || D.GetChars(msg) || D.GetChars("registered")
+                    makeSecretRoll(charObjs, params, isSilent, isMaskingTraits)
+                }
+                break
+            }
             case "!roll": {
                 switch(args.shift().toLowerCase()) {
                     case "pcroll": {
@@ -508,7 +532,7 @@ const Roller = (() => {
             case "!pcroll": {
                 //D.Alert("PC roll called.", "!pcroll")
                 if (!playerIsGM(msg.playerid)) return
-                char = charObj || D.GetChar(msg) || D.GetChar(args.join(" "))
+                char = charObjs && charObjs[0] || D.GetChar(msg) || D.GetChar(args.join(" "))
                 if (char) {
                     STATEREF.rollNextAs = char.id
                     D.Alert(`Rolling Next As ${D.GetName(char)}`, "Roller: !pcroll")
@@ -625,30 +649,6 @@ const Roller = (() => {
                     C.CHATHTML.colorHeader(resDetails),
                     C.CHATHTML.colorBody(resIntLine)
                 ]))
-                break
-            }
-            case "!nxsroll":
-            case "!xnsroll":
-            case "!xsroll":
-            case "!sxroll":
-            case "!snxroll":
-            case "!sxnroll":
-            case "!nsroll":
-            case "!snroll":
-            case "!sroll": {
-                rollType = "secret"
-                const params = args.join(" ").split("|")
-                isSilent = call.includes("x")
-                isMaskingTraits = call.includes("n")
-                let chars = null
-                if (!msg.selected || !msg.selected[0])
-                    chars = D.GetChars("registered")
-                else
-                    chars = D.GetChars(msg)
-                if (params.length < 1 || params.length > 3)
-                    THROW(`Syntax Error: ![x][n]sroll: <trait1>[,<trait2>,<mod>] (${D.JS(params)})`, "!sroll")
-                else
-                    makeSecretRoll(chars, params, isSilent, isMaskingTraits)
                 break
             }
             case "!getchareffects": {
@@ -2243,7 +2243,7 @@ const Roller = (() => {
                     flagDiceMod: 0
                 },
                 traitList = _.compact(
-                    _.map((params.args[1] || params[0] || "").split(","), v => v.replace(/:\d+/gu, "").replace(/_/gu, " "))
+                    _.map((params && params.args && params.args[1] || _.isArray(params) && params[0] || _.isString(params) && params || "").split(","), v => v.replace(/:\d+/gu, "").replace(/_/gu, " "))
                 ),
                 bloodPot = parseInt(getAttrByName(charObj.id, "blood_potency")) || 0
             if (["rouse", "rouse2", "remorse", "check", "project", "secret", "humanity"].includes(rollType))
@@ -2287,7 +2287,7 @@ const Roller = (() => {
             return flagData
         },
         parseTraits = (charObj, rollType, params = {}) => {
-            let traits = _.compact((params.args[1] || params[0] || "").split(","))
+            let traits = _.compact((params && params.args && params.args[1] || _.isArray(params) && params[0] || _.isString(params) && params || "").split(","))
             const tFull = {
                 traitList: [],
                 traitData: {}
@@ -2314,7 +2314,7 @@ const Roller = (() => {
                 if (trt.includes(":")) {
                     const tData = trt.split(":")
                     tFull.traitData[tData[0]] = {
-                        display: D.Capitalize(tData[0]),
+                        display: D.Capitalize(tData[0].replace(/_/gu, " "), true),
                         value: parseInt(tData[1])
                     }
                     if (rollType === "frenzy" && tData[0] === "humanity") {
@@ -2331,8 +2331,8 @@ const Roller = (() => {
                     tFull.traitList = _.without(tFull.traitList, trt)
                 } else {
                     tFull.traitData[trt] = {
-                        display: D.IsIn(trt) || getAttrByName(charObj.id, `${trt}_name`),
-                        value: parseInt(getAttrByName(charObj.id, trt)) || 0
+                        display: D.IsIn(trt) || D.IsIn(trt.replace(/_/gu, " ")) || getAttrByName(charObj.id, `${trt}_name`) || getAttrByName(charObj.id, `${trt.replace(/_/gu, " ")}_name`),
+                        value: parseInt(getAttrByName(charObj.id, trt) || getAttrByName(charObj.id, trt.replace(/_/gu, " "))) || 0
                     }
                     if (rollType === "frenzy" && trt === "humanity") {
                         tFull.traitData.humanity.display = "⅓ Humanity"
@@ -2379,7 +2379,7 @@ const Roller = (() => {
                 mod: 0,
                 diff: 3
               }*/
-            const flagData = parseFlags(charObj, rollType, params, rollFlags),
+            const flagData = parseFlags(charObj, rollType, params, rollFlags = {}),
                 traitData = parseTraits(charObj, rollType, params)
             let rollData = {
                 charID: charObj.id,
@@ -3607,6 +3607,7 @@ const Roller = (() => {
 
     // #region Secret Rolls
     const makeSecretRoll = (chars, params, isSilent, isHidingTraits) => {
+        //D.Alert(`Received Parameters: ${params}`)
         let rollData = buildDicePool(getRollData(chars[0], "secret", params)),
             [traitLine, playerLine] = ["", ""],
             resultLine = null
@@ -3618,13 +3619,13 @@ const Roller = (() => {
         if (isHidingTraits || rollData.traits.length === 0) {
             playerLine = `${CHATSTYLES.space30 + CHATSTYLES.secret.greyS}... rolling </span>${CHATSTYLES.secret.whiteB}${dicePool}</span>${CHATSTYLES.space10}${CHATSTYLES.secret.greyS}${dicePool === 1 ? " die " : " dice "}...</span>${CHATSTYLES.space40}`
         } else {
-            playerLine = `${CHATSTYLES.secret.greyS}rolling </span>${CHATSTYLES.secret.white}${_.map(_.keys(rollData.traitData), k => k.toLowerCase()).join(`</span><br>${CHATSTYLES.space30}${CHATSTYLES.secret.greyPlus}${CHATSTYLES.secret.white}`)}</span>`
+            playerLine = `${CHATSTYLES.secret.greyS}rolling </span>${CHATSTYLES.secret.white}${_.values(rollData.traitData).map(x => x.display.toLowerCase()).join(`</span><br>${CHATSTYLES.space30}${CHATSTYLES.secret.greyPlus}${CHATSTYLES.secret.white}`)}</span>`
             if (rollData.mod !== 0)
                 playerLine += `${(rollData.mod > 0 ? CHATSTYLES.secret.greyPlus : "") + (rollData.mod < 0 ? CHATSTYLES.secret.greyMinus : "") + CHATSTYLES.secret.white + Math.abs(rollData.mod)}</span>`
         }
 
         if (rollData.traits.length) {
-            traitLine = _.keys(rollData.traitData).join(" + ")
+            traitLine = _.values(rollData.traitData).map(x => x.display).join(" + ")
             if (rollData.mod !== 0)
                 traitLine += (dicePool > 0 ? " + " : "") + (dicePool < 0 ? " - " : "") + Math.abs(rollData.mod)
         } else {
@@ -3655,7 +3656,7 @@ const Roller = (() => {
             else
                 outcomeLine = `${CHATSTYLES.outcomeWhiteSmall}SUCCESS! (${rollData.diff > 0 ? `+${margin}` : total})`
             blocks.push(`${CHATSTYLES.secret.startBlock + CHATSTYLES.secret.blockNameStart + rollData.charName}</div>${
-                CHATSTYLES.secret.diceStart}${formatDiceLine(rollData, rollResults, 9, null, true).replace(/text-align: center; height: 20px/gu, "text-align: center; height: 20px; line-height: 25px").
+                CHATSTYLES.secret.diceStart}${formatDiceLine(rollData, rollResults, 9, undefined, true).replace(/text-align: center; height: 20px/gu, "text-align: center; height: 20px; line-height: 25px").
                 replace(/margin-bottom: 5px;/gu, "margin-bottom: 0px;").
                 replace(/(color: [^\s]*?; height:) 24px/gu, "$1 18px").
                 replace(/height: 24px/gu, "height: 20px").

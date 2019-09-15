@@ -185,7 +185,7 @@ const C = (() => {
                     bgColor: options.bgColor || "none",
                     margin: options.margin || "7px 0px 0px 0px",
                     fontFamily: options.fontFamily || "sexsmith",
-                    fontSize: options.fontSize || 18,
+                    fontSize: options.fontSize || "18px",
                     fontWeight: options.fontWeight || "bold",
                     textAlign: options.textAlign || "center",
                     textShadow: options.textShadow || `0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}`,
@@ -197,10 +197,10 @@ const C = (() => {
                 return D.JSH(`<span style="
                     display: block; 
                     width: 100%; 
-                    line-height: 22px;
+                    line-height: ${params.fontSize};
                     margin: ${params.margin};
                     color: ${params.color};
-                    font-size: ${params.fontSize}px;
+                    font-size: ${params.fontSize};
                     text-align: ${params.textAlign};
                     font-family: '${params.fontFamily}';
                     font-weight: ${params.fontWeight};
@@ -342,7 +342,9 @@ const C = (() => {
                     color: COLORS.white,
                     border: "1px solid white",
                     fontWeight: "normal",
-                    textShadow: "none"
+                    textShadow: "none",
+                    buttonHeight: "8px",
+                    buttonWidth: "83%"
                 }, options)
                 return D.JSH(`<span style="   
                     height: ${params.height};
@@ -353,8 +355,8 @@ const C = (() => {
                     font-size: 0px;
                     overflow: hidden;
                 "><a style="
-                    height: 8px;
-                    width: 83%;
+                    height: ${params.buttonHeight};
+                    width: ${params.buttonWidth};
                     display: inline-block;
                     box-sizing: 'border-box';
                     border: ${params.border};

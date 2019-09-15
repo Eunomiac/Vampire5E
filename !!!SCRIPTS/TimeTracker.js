@@ -838,15 +838,17 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                     sessDateObj = new Date(realDateObj)
 
                 sessDateObj.setDate(realDateObj.getDate() - realDateObj.getDay() + 7)
+                //sessDateObj.setHours(0)
+                //sessDateObj.setMinutes(56)
                 sessDateObj.setHours(19)
                 sessDateObj.setMinutes(30)
                 sessDateObj.setSeconds(0)
 
-                let secsLeft = (sessDateObj - realDateObj)/1000
+                let secsLeft = (sessDateObj - realDateObj)/1000 - 60
 
                 if (secsLeft > 7*24*60*60)
                     secsLeft -= 7*24*60*60
-                if (secsLeft < 15*60)
+                if (secsLeft < 60)
                     Session.ToggleTesting(false)
                     
                 const daysLeft = Math.floor(secsLeft / (24 * 60 * 60))
@@ -876,7 +878,11 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                 updateCountdown()
         },
         updateCountdown = () => {
-            Media.SetText("Countdown", [...countdownRecord, secondsLeft].map(x => `${x.toString().length === 1 && "0" || ""}${x}`).join(":"))
+            if (countdownRecord[0] === 6 && countdownRecord[1] === 23 && countdownRecord[2] >= 45 ||
+                countdownRecord[0] === 0 && countdownRecord[1] === 0 && countdownRecord[2] === 0 && secondsLeft <= 5)
+                Media.SetText("Countdown", " ")
+            else
+                Media.SetText("Countdown", [...countdownRecord, secondsLeft].map(x => `${x.toString().length === 1 && "0" || ""}${x}`).join(":"))
         },
         setIsRunning = runStatus => {
             DB("*** CALLED ***", "setIsRunning")
