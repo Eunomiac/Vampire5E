@@ -1407,6 +1407,10 @@ const D = (() => {
 
         Chat: sendChatMessage,
         Alert: sendToGM,
+        Poke: (msg, title = "[ALERT]") => {
+            if (Session.IsTesting)
+                sendToGM(msg, title)
+        },
 
         RemoveFirst: removeFirst,
         KeyMapObj: kvpMap,

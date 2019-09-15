@@ -37,7 +37,7 @@ const Session = (() => {
         STATEREF.locationRecord = STATEREF.locationRecord || {DistrictCenter: "blank"}
         STATEREF.tokenRecord = STATEREF.tokenRecord || {}
         STATEREF.SessionScribes = STATEREF.SessionScribes || []
-        //STATEREF.SessionScribes = [ "PixelPuzzler", "Thaumaterge", "Ava Wong", "banzai" ]
+        //STATEREF.SessionScribes = [ "Thaumaterge", "Ava Wong", "banzai", "PixelPuzzler" ]
         
     }
     // #endregion
@@ -137,7 +137,7 @@ const Session = (() => {
                 STATEREF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, sessionScribe]))
             } 
             sendChat("Session Start", C.CHATHTML.colorBlock([
-                C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: 28}),
+                C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
                 C.CHATHTML.colorBody("Initializing Session...", {margin: "0px 0px 10px 0px"}),
                 C.CHATHTML.colorHeader(`Welcome to Session ${D.NumToText(STATEREF.SessionNum, true)}!`),
                 C.CHATHTML.colorBody("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "10px 0px 10px 0px"}),
@@ -168,10 +168,10 @@ const Session = (() => {
         endSession = () => {
             if (remorseCheck()) {
                 sendChat("Session End", C.CHATHTML.colorBlock([
-                    C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: 28}),
+                    C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
                     C.CHATHTML.colorHeader(`Concluding Session ${D.NumToText(STATEREF.SessionNum, true)}`),
                     C.CHATHTML.colorBody("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "10px 0px 10px 0px"}),
-                    C.CHATHTML.colorTitle("See you next week!", {fontSize: 32}),
+                    C.CHATHTML.colorTitle("See you next week!", {fontSize: "32px"}),
                 ]))
                 Roller.Clean()
                 STATEREF.isSessionActive = false

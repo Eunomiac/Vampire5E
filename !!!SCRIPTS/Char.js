@@ -833,7 +833,10 @@ const Char = (() => {
                 D.Chat(charObj, C.CHATHTML.colorBlock([                    
                     C.CHATHTML.colorBody(`<b>FOR:</b> ${reason}`, C.STYLES.whiteMarble.body),
                     C.CHATHTML.colorHeader(`You Have Been Awarded ${D.NumToText(award, true)} XP.`, C.STYLES.whiteMarble.header),
-                ], C.STYLES.whiteMarble.block))
+                ], C.STYLES.whiteMarble.block))                
+                //D.Alert(`Sort Trigger Value: ${D.GetStatVal(charObj, "xpsorttrigger")}`)
+                D.SetStat(charObj, "xpsorttrigger", D.GetStatVal(charObj, "xpsorttrigger") === "1" ? "2" : "1")
+                //D.Alert(`New Value: ${D.GetStatVal(charObj, "xpsorttrigger")}`)
                 return true
             }
         }
@@ -847,9 +850,10 @@ const Char = (() => {
                 const desireObj = Media.GetTextObj(`${charData.shortName}Desire`)
                 if (VAL({textObj: desireObj})) {
                     let desireVal = (D.GetRepStat(charData.id, "desire", "top", "desire") || {val: ""}).val
-                    if (desireVal === "" && addAttrData && addAttrData.charID === charData.id)
+                    D.Poke(`Desire Val for ${charData.name}: '${D.JS(desireVal)}'`)
+                    if ((!desireVal || desireVal === "") && addAttrData && addAttrData.charID === charData.id)
                         desireVal = addAttrData.val
-                    if (desireVal === "")
+                    if (!desireVal || desireVal === "")
                         desireVal = " "                    
                     DB(`<b>${charData.name}</b>: Getting Desire Value = ${desireVal}`, "displayDesires")
                     Media.SetText(desireObj, desireVal)
@@ -1067,12 +1071,13 @@ const Char = (() => {
             return false
         },
         adjustTrait = (charRef, trait, amount, min, max, defaultTraitVal, deltaType, isChatting = true) => {
+            D.Alert(`Adjusting Trait: ${[charRef, trait, amount, min, max, defaultTraitVal, deltaType, isChatting].map(x => D.JS(x)).join(", ")}`)
             const charObj = D.GetChar(charRef)
             if (VAL({charObj: [charObj], trait: [trait], number: [amount]}, "adjustTrait", true)) {
                 const chatStyles = {
-                        block: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.block, {}) : {width: 275, margin: "0px 0px 0px -50px"},
-                        body: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.body, {fontSize: 12}) : {fontFamily: "Voltaire", fontSize: 14, color: "rgb(255,50,50)"},
-                        banner: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {margin: "0px", fontSize: 12}) : {margin: "0px", fontSize: 12},
+                        block: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.block, {}) : {width: "275px", margin: "0px 0px 0px -50px"},
+                        body: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.body, {fontSize: "12px"}) : {fontFamily: "Voltaire", fontSize: "14px", color: "rgb(255,50,50)"},
+                        banner: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {margin: "0px", fontSize: "12px"}) : {margin: "0px", fontSize: "12px"},
                         alert: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {}) : {}
                     },
                     initTraitVal = parseInt((D.GetStat(charObj, trait) || [0])[0] || defaultTraitVal || 0),
@@ -1240,8 +1245,11 @@ const Char = (() => {
                     }
                     // no default
                 }
-                LOG(`Adjusting Damage: (${D.JS(trait)}, ${D.JS(dmgType)}, ${D.JS(amount)})`, "adjustDamage")
-                return adjustTrait(charRef, traitName, targetVal, minVal, maxVal, defaultVal, deltaType, isChatting)
+                D.Alert(`Adjusting Damage: (${D.JS(trait)}, ${D.JS(dmgType)}, ${D.JS(amount)})`, "adjustDamage")
+                const returnVal = adjustTrait(charRef, traitName, targetVal, minVal, maxVal, defaultVal, deltaType, isChatting)
+                //if (amount < 0 && deltaType === "aggravated")
+                    //adjustTrait(charRef, traitName.replace(/_admg/gu, "_sdmg"), -1 * targetVal, minVal, maxVal, defaultVal, "superficial", false)
+                return returnVal
             }
             return false
         },

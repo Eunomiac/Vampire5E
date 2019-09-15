@@ -979,6 +979,7 @@
                 // Apply New Damage & Healing
                     if (pI("sdmg") + pI("sdmg_social") !== 0) {
                         attrList[p("sdmg")] = pI("sdmg") + pI("sdmg_social")
+                        log(`>>@@>> attrList[${p("sdmg")}] = ${attrList[p("sdmg")]}`)
                         while (attrList[p("sdmg")] > 0)
                             if (dmgBins[0].length) { // There's enough blank boxes for the superficial hit.
                                 dmgBins[1].push(dmgBins[0].shift())
@@ -990,17 +991,20 @@
                                 break
                             }
 
-                        while (attrList[p("sdmg")] < 0)
+                        while (attrList[p("sdmg")] < 0) {
+                            log(`>>@@>> attrList[${p("sdmg")}] = ${attrList[p("sdmg")]}`)
                             if (dmgBins[1].length) { // Superficial damage present, so heal.
                                 dmgBins[0].push(dmgBins[1].pop())
                                 attrList[p("sdmg")]++
                             } else {
                                 break
                             }
+                        }
 
                     }
                     if (pI("admg") + pI("admg_social") !== 0) {
                         attrList[p("admg")] = pI("admg") + pI("admg_social")
+                        log(`>>@@>> attrList[${p("admg")}] = ${attrList[p("admg")]}`)
                         while (attrList[p("admg")] > 0)
                             if (dmgBins[0].length) {
                                 dmgBins[2].push(dmgBins[0].shift())
@@ -1012,13 +1016,15 @@
                                 break
                             }
 
-                        while (attrList[p("admg")] < 0)
+                        while (attrList[p("admg")] < 0) {                            
+                            log(`>>@@>> attrList[${p("admg")}] = ${attrList[p("admg")]}`)
                             if (dmgBins[2].length) {
-                                dmgBins[0].push(dmgBins[2].pop())
-                                attrList[p("admg")]--
+                                dmgBins[1].push(dmgBins[2].pop())
+                                attrList[p("admg")]++
                             } else {
                                 break
                             }
+                        }
 
                     }
 
@@ -1043,6 +1049,7 @@
                     attrList[`${tracker.toLowerCase()}`] = dmgBins[0].length
                     attrList[`${tracker.toLowerCase()}_bashing`] = dmgBins[1].length
                     attrList[`${tracker.toLowerCase()}_aggravated`] = dmgBins[2].length
+
                     
                     // Set sdmg/admg scores to zero.
                     attrList[p("sdmg")] = 0
@@ -1053,6 +1060,8 @@
                     attrList[p("admg_socialtotal")] = pI("admg_socialtotal") + pI("admg_social")
                     attrList[p("sdmg_social")] = 0
                     attrList[p("admg_social")] = 0
+                    
+                    log(JSON.stringify(attrList))
 
                     cback(null, attrList)
                 })
@@ -1900,7 +1909,7 @@
         })
     }
 
-    on(getTriggers(null, "", _.keys(XPREPREFS)), eInfo => {
+    on(`change:xpsorttrigger ${getTriggers(null, "", _.keys(XPREPREFS))}`, eInfo => {
         log("", "████ doEXP Triggered ████")
         log(`TRIGGER STRING: '${getTriggers(null, "", _.keys(XPREPREFS))}'`, "doEXP")
         log(`EINFO: '${JSON.stringify(eInfo)}'`, "doEXP")

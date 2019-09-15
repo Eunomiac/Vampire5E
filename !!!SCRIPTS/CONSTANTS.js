@@ -125,7 +125,7 @@ const C = (() => {
                     borderColor: options.borderColor || options.color || COLORS.crimson,
                     borderStyle: options.borderStyle || "outset",
                     margin: options.margin || "0px 0px 0px -40px",
-                    width: options.width || 255
+                    width: options.width || "255px"
                 }
                 return D.JSH(`<div style="
                     display: block;
@@ -135,15 +135,24 @@ const C = (() => {
                     text-align: center;
                     border: 4px ${params.borderColor} ${params.borderStyle};
                     padding: 5px;
-                    width: ${params.width}px;
+                    width: ${params.width};
                 ">${_.flatten([content]).join("")}</div>`)
             },
             colorTitle: (content, options = {}) => {
                 const params = {
-                    fontSize: options.fontSize || 32,
+                    fontSize: options.fontSize || "32px",
                     color: options.color || COLORS.brightred
                 }
-                return `<span style="display: block; font-weight: bold; color: ${params.color}; text-align: center; width: 100%; font-family: sexsmith; font-size: ${params.fontSize}px; height: 45px; line-height: 45px;">${content}</span>`
+                return `<span style="
+                    display: block;
+                    font-weight: bold;
+                    color: ${params.color};
+                    text-align: center;
+                    width: 100%;
+                    font-family: sexsmith;
+                    font-size: ${params.fontSize};
+                    height: 45px;
+                    line-height: 45px;">${content}</span>`
             },
             colorHeader: (content, options = {}) => {
                 const params = {
@@ -152,7 +161,7 @@ const C = (() => {
                     bgColor: options.bgColor || COLORS.brightred,
                     fontFamily: options.fontFamily || "Voltaire",
                     margin: options.margin || "0px",
-                    fontSize: options.fontSize || 16,
+                    fontSize: options.fontSize || "16px",
                     borderWidth: options.borderWidth || "1px 0px 1px 0px",
                     borderStyle: options.borderStyle || "solid none solid none",
                     borderColor: options.borderColor || options.color || COLORS.brightred,
@@ -170,7 +179,7 @@ const C = (() => {
                     color: ${params.color};
                     font-family: '${params.fontFamily}';
                     font-weight: bold;
-                    font-size: ${params.fontSize}px;
+                    font-size: ${params.fontSize};
                     background-color: ${params.bgColor};
                     border-width: ${params.borderWidth};
                     border-style: ${params.borderStyle};
@@ -233,7 +242,7 @@ const C = (() => {
             },
             Title: (content, options = {}) => {
                 const params = {
-                    fontSize: options.fontSize || 32,
+                    fontSize: options.fontSize || "32px",
                     color: options.color || COLORS.brightred
                 }
                 return D.JSH(`<span style="
@@ -243,19 +252,19 @@ const C = (() => {
                     text-align: center;
                     width: 100%;
                     font-family: sexsmith;
-                    font-size: ${params.fontSize}px;
+                    font-size: ${params.fontSize};
                     height: 45px;
                     line-height: 45px;
                 ">${_.flatten([content]).join("")}</span>`)
             },
             Header: (content, options = {}) => {
                 const params = {
-                    height: options.height || 20,
+                    height: options.height || "20px",
                     color: options.color || COLORS.black,
                     bgColor: options.bgColor || COLORS.brightred,
                     fontFamily: options.fontFamily || "Voltaire",
                     margin: options.margin || "0px",
-                    fontSize: options.fontSize || 16,
+                    fontSize: options.fontSize || "16px",
                     borderWidth: options.borderWidth || "1px 0px 1px 0px",
                     borderStyle: options.borderStyle || "solid none solid none",
                     borderColor: options.borderColor || options.color || COLORS.brightred,
@@ -265,8 +274,8 @@ const C = (() => {
                 }
                 return D.JSH(`<span style="
                     display: block;
-                    height: ${params.height}px;
-                    line-height: ${params.height}px; 
+                    height: ${params.height};
+                    line-height: ${params.height}; 
                     width: 100%;
                     margin: ${params.margin};
                     box-sizing: border-box;
@@ -275,7 +284,7 @@ const C = (() => {
                     color: ${params.color};
                     font-family: '${params.fontFamily}';
                     font-weight: bold;
-                    font-size: ${params.fontSize}px;
+                    font-size: ${params.fontSize};
                     background-color: ${params.bgColor};
                     border-width: ${params.borderWidth};
                     border-style: ${params.borderStyle};
@@ -669,7 +678,7 @@ const C = (() => {
                     bgColor: COLORS.transparent,
                     textShadow: "-1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 0px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc",
                     borderStyle: "none",
-                    fontSize: 16,
+                    fontSize: "16px",
                     fontFamily: "Bodoni SvtyTwo ITC TT",
                     fontWeight: "normal",
                     margin: "0px 0px 5px 0px"
