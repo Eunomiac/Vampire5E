@@ -409,11 +409,11 @@ const Roller = (() => {
             name = "",
             [isSilent, isMaskingTraits] = [false, false]            
         let charObjs, charIDString
-        if (call === "!roll" && args[0] && args[0].toLowerCase() !== "pcroll") {
+        if (call === "!roll" && args[0] && args[0].toLowerCase() !== "pcroll") 
             //D.Alert(`Calling D.ParseCharSelection(<br>CALL: ${D.JS(call)},<br>ARGS: [${D.JS(args.join(", "))}])`);
             [charObjs, charIDString, call, args] = D.ParseCharSelection(args[0], args.slice(1))
             //D.Alert(`AFTER:<br>CHAROBJS: ${D.JS((charObjs || []).map(x => D.GetName(x)).join("<br>"))}<br>IDSTRING: ${D.JS(charIDString)}<br>CALL: ${call}<br>ARGS: [${args.join(", ")}]`)
-        }
+        
         switch (call) {
             case "nxsroll":
             case "xnsroll":
@@ -434,6 +434,97 @@ const Roller = (() => {
                     charObjs = charObjs || D.GetChars(msg) || D.GetChars("registered")
                     makeSecretRoll(charObjs, params, isSilent, isMaskingTraits)
                 }
+                break
+            }
+            case "resonance": {
+                const location = _.omit(Media.LOCATION, (v, k) => k.includes("Name") || v === "blank"),
+                    resArgs = [],
+                    deltaAttrs = {}
+                //D.Alert(D.JS(location))
+                if (location.DistrictCenter) {
+                    resArgs.push(...C.DISTRICTS[location.DistrictCenter].resonance)
+                    if (location.SiteCenter) {
+                        resArgs[0] += C.SITES[location.SiteCenter].resonance[0] || ""
+                        resArgs[1] += C.SITES[location.SiteCenter].resonance[1] || ""
+                    }
+                } else if (args[0] && args[0].toLowerCase().slice(0,1) === "r" && location.DistrictRight ||
+                        location.DistrictRight && !location.DistrictLeft) {
+                    resArgs.push(...C.DISTRICTS[location.DistrictRight].resonance)
+                    if (location.SiteRight) {
+                        resArgs[0] += C.SITES[location.SiteRight].resonance[0] || ""
+                        resArgs[1] += C.SITES[location.SiteRight].resonance[1] || ""
+                    }
+                } else if (args[0] && args[0].toLowerCase().slice(0,1) === "l" && location.DistrictLeft ||
+                        location.DistrictLeft) {
+                    resArgs.push(...C.DISTRICTS[location.DistrictLeft].resonance)
+                    if (location.SiteLeft) {
+                        resArgs[0] += C.SITES[location.SiteLeft].resonance[0] || ""
+                        resArgs[1] += C.SITES[location.SiteLeft].resonance[1] || ""
+                    }
+                }
+                //D.Alert(`Location-Based Resonance: ${D.JS(resArgs.join(", "))}`)
+                if (resArgs.join("").length > 1) {
+                    resonance = getResonance(...resArgs)
+                } else {
+                    if (args[0] === "x")
+                        args[0] = ""
+                    if (args[1] === "x")
+                        args[1] = ""
+                    resonance = getResonance(...args)
+                }
+                switch (resonance[1].toLowerCase()) {
+                    case "choleric":
+                        resDetails = "Angry ♦ Passionate ♦ Violent ♦ Envious"
+                        break
+                    case "sanguine":
+                        resDetails = "Happy ♦ Horny ♦ Addicted ♦ Enthusiastic"
+                        break
+                    case "melancholic":
+                        resDetails = "Sad ♦ Scared ♦ Intellectual ♦ Grounded"
+                        break
+                    case "phlegmatic":
+                        resDetails = "Calm ♦ Apathetic ♦ Lazy ♦ Controlling"
+                        break
+                    case "primal":
+                        resDetails = "Base ♦ Impulsive ♦ Irascible ♦ Insatiable"
+                        break
+                    case "ischemic":
+                        resDetails = "Cold ♦ Amoral ♦ Patient ♦ Nihilistic"
+                        break
+                    case "mercurial":
+                        resDetails = "Fluid ♦ Fatalistic ♦ Inscrutable ♦ Alien"
+                        break
+                    // no default
+                }
+                switch (resonance[0].toLowerCase()) {
+                    case "negligible":
+                        deltaAttrs.resonance = "None"
+                        resonance[0] = "Negligibly"
+                        resIntLine = `The blood carries only the smallest hint of ${resonance[1].toLowerCase()} resonance.  It is not strong enough to confer any benefits at all.`
+                        break
+                    case "fleeting":
+                        deltaAttrs.resonance = "None"
+                        resonance[0] = "Fleetingly"
+                        resIntLine = `The blood's faint ${resonance[1].toLowerCase()} resonance can guide you in developing ${resonance[2]}, but lacks any real power.`
+                        break
+                    case "intense":
+                        deltaAttrs.resonance = resonance[1]
+                        resonance[0] = "Intensely"
+                        resIntLine = `The blood's strong ${resonance[1].toLowerCase()} resonance spreads through you, infusing your own vitae and enhancing both your control and understanding of ${resonance[2]}.`
+                        break
+                    case "acute":
+                        deltaAttrs.resonance = resonance[1]
+                        resonance[0] = "Acutely"
+                        resIntLine = `This blood is special.  In addition to enhancing ${resonance[2]}, its ${resonance[1].toLowerCase()} resonance is so powerful that the emotions within have crystallized into a dyscracias.`
+                        break
+                    // no default
+                }
+                D.SetStat(charObjs[0], "resonance", deltaAttrs.resonance)
+                sendChat("Resonance Check", C.CHATHTML.colorBlock([
+                    C.CHATHTML.colorTitle(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
+                    C.CHATHTML.colorHeader(resDetails),
+                    C.CHATHTML.colorBody(resIntLine)
+                ]))
                 break
             }
             case "!roll": {
@@ -599,58 +690,6 @@ const Roller = (() => {
                     args[1] = ""
                 resonance = getResonance(...args)
                 break
-            case "!resCheck": {
-                if (args[0] === "x")
-                    args[0] = ""
-                if (args[1] === "x")
-                    args[1] = ""
-                resonance = getResonance(...args)
-                switch (resonance[1].toLowerCase()) {
-                    case "choleric":
-                        resDetails = "Angry ♦ Passionate ♦ Violent ♦ Envious"
-                        break
-                    case "sanguine":
-                        resDetails = "Happy ♦ Horny ♦ Addicted ♦ Enthusiastic"
-                        break
-                    case "melancholic":
-                        resDetails = "Sad ♦ Scared ♦ Intellectual ♦ Grounded"
-                        break
-                    case "phlegmatic":
-                        resDetails = "Calm ♦ Apathetic ♦ Lazy ♦ Controlling"
-                        break
-                    case "primal":
-                        resDetails = "Base ♦ Impulsive ♦ Irascible ♦ Insatiable"
-                        break
-                    case "ischemic":
-                        resDetails = "Cold ♦ Amoral ♦ Patient ♦ Nihilistic"
-                        break
-                    case "mercurial":
-                        resDetails = "Fluid ♦ Fatalistic ♦ Inscrutable ♦ Alien"
-                        break
-                    // no default
-                }
-                switch (resonance[0].toLowerCase()) {
-                    case "negligibly":
-                        resIntLine = `The blood carries only the smallest hint of ${resonance[1].toLowerCase()} resonance.  It is not strong enough to confer any benefits at all.`
-                        break
-                    case "fleetingly":
-                        resIntLine = `The blood's faint ${resonance[1].toLowerCase()} resonance can guide you in developing ${resonance[2]}, but lacks any real power.`
-                        break
-                    case "intensely":
-                        resIntLine = `The blood's strong ${resonance[1].toLowerCase()} resonance spreads through you, infusing your own vitae and enhancing both your control and understanding of ${resonance[2]}.`
-                        break
-                    case "acutely":
-                        resIntLine = `This blood is special.  In addition to enhancing ${resonance[2]}, its ${resonance[1].toLowerCase()} resonance is so powerful that the emotions within have crystallized into a dyscracias.`
-                        break
-                    // no default
-                }
-                sendChat("Resonance Check", C.CHATHTML.colorBlock([
-                    C.CHATHTML.colorTitle(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
-                    C.CHATHTML.colorHeader(resDetails),
-                    C.CHATHTML.colorBody(resIntLine)
-                ]))
-                break
-            }
             case "!getchareffects": {
                 let char = D.GetChar(msg)
                 if (!char) {
@@ -3677,16 +3716,14 @@ const Roller = (() => {
 
     // #region Getting Random Resonance Based On District/Site Parameters
     const getResonance = (posRes = "", negRes = "", isDoubleAcute, testCycles = 0) => {
-            let resProbs = [],
-                randNum = null,
-                resonances = {
-                    "Choleric": "c",
-                    "Melancholic": "m",
-                    "Phlegmatic": "p",
-                    "Sanguine": "s",
-                    "Primal": "r",
-                    "Ischemic": "i",
-                    "Mercurial": "q"
+            const resonances = {
+                    c: "Choleric",
+                    m: "Melancholic",
+                    p: "Phlegmatic",
+                    s: "Sanguine",
+                    r: "Primal",
+                    i: "Ischemic",
+                    q: "Mercurial"
                 },
                 discLines = {
                     "Choleric": "the resonant disciplines of Celerity and Potence",
@@ -3695,146 +3732,111 @@ const Roller = (() => {
                     "Sanguine": "the resonant disciplines of Blood Sorcery and Presence",
                     "Primal": "the resonant disciplines of Animalism and Protean",
                     "Ischemic": "the resonant discipline of Oblivion",
-                    "Mercurial": "the resonant practice of Alchemy"
+                    "Mercurial": "the resonant disciplines of Alchemy and Vicissitude"
                 },
-                tracer = "",
-                resList = _.keys(resonances)
-            _.each(resonances, (v, k) => {
-                if (posRes.includes(v)) {
-                    resList = _.without(resList, k)
-                    resList.unshift(k)
-                }
-                if (negRes.includes(v)) {
-                    resList = _.without(resList, k)
-                    resList.push(k)
-                }
-            })
-            if (!(posRes + negRes).includes("r"))
-                resList = _.without(resList, "Primal")
-            if (!(posRes + negRes).includes("i"))
-                resList = _.without(resList, "Ischemic")
-            if (!(posRes + negRes).includes("q"))
-                resList = _.without(resList, "Mercurial")
-            resList = resList.slice(0, 4)
-            switch (posRes.length + negRes.length) {
-                case 3:
-                    tracer += "3 Args, "
-                    if (posRes.length === 2) {
-                        tracer += "2 PosRes, "
-                        if (posRes.charAt(0) === posRes.charAt(1)) {
-                            tracer += "Equal: pos2neg"
-                            resProbs = C.RESONANCEODDS.pos2neg
-                        } else {
-                            tracer += "UnEqual: posposneg"
-                            resProbs = C.RESONANCEODDS.posposneg
-                        }
-                    } else if (negRes.charAt(0) === negRes.charAt(1)) {
-                        tracer += "2 NegRes + Equal: neg2pos"
-                        resProbs = C.RESONANCEODDS.neg2pos
-                    } else {
-                        tracer += "2 NegRes + UnEqual: posnegneg"
-                        resProbs = C.RESONANCEODDS.posnegneg
-                    }
-                    break
-                case 2:
-                    tracer += "2 Args, "
-                    if (posRes.length === 2) {
-                        tracer += "2 PosRes, "
-                        if (posRes.charAt(0) === posRes.charAt(1)) {
-                            tracer += "Equal: pos2"
-                            resProbs = C.RESONANCEODDS.pos2
-                        } else {
-                            tracer += "UnEqual: pospos"
-                            resProbs = C.RESONANCEODDS.pospos
-                        }
-                    } else if (negRes.length === 2) {
-                        tracer += "2 NegRes, "
-                        if (negRes.charAt(0) === negRes.charAt(1)) {
-                            tracer += "Equal: neg2"
-                            resProbs = C.RESONANCEODDS.neg2
-                        } else {
-                            tracer += "UnEqual: negneg"
-                            resProbs = C.RESONANCEODDS.negneg
-                        }
-                    } else {
-                        tracer += "Neg & Pos: posneg"
-                        resProbs = C.RESONANCEODDS.posneg
-                    }
-                    break
-                case 1:
-                    tracer += "1 Arg, " + (posRes.length === 1 ? "Pos: pos" : "Neg: neg")
-                    resProbs = posRes.length === 1 ? C.RESONANCEODDS.pos : C.RESONANCEODDS.neg
-                    break
-                case 0:
-                    tracer += "0 Args, norm"
-                    resProbs = C.RESONANCEODDS.norm
-                    break
-                default:
-                    return THROW("Too many variables!", "getResonance")
-            }
-            let theseProbs = []
-            _.each(resProbs, v => {
-                theseProbs.push({
-                    neg: v.neg,
-                    fleet: v.fleet,
-                    intense: v.intense,
-                    acute: v.acute
-                })
-            })
-            if (isDoubleAcute === "2")
-                for (let i = 0; i < 4; i++) {
-                    theseProbs[i].acute = 3 * theseProbs[i].acute
-                    theseProbs[i].neg = 0.92 * theseProbs[i].neg
-                    theseProbs[i].intense = 0.92 * theseProbs[i].intense
-                    theseProbs[i].fleet = 0.92 * theseProbs[i].fleet
-                }
-
-            theseProbs = _.flatten(_.map(theseProbs, v => _.values(v)))
-            //D.Alert(`theseProbs: ${D.JS(theseProbs)}`)
+                posResRefs = posRes.toLowerCase().split(""),
+                negResRefs = negRes.toLowerCase().split(""),
+                resBins = {
+                    "zero": [],
+                    "2neg": [],
+                    "neg": [],
+                    "norm": [],
+                    "pos": [],
+                    "2pos": []
+                },
+                countRes = (resRef, resArray) => resArray.filter(x => x === resRef).length
+            let oddsKey = ""
+                
+            for(const resRef of _.keys(resonances))
+                if (_.keys(resonances).findIndex(x => x === resRef) <= 3 ||
+                        countRes(resRef, posResRefs) - countRes(resRef, negResRefs) > 0)
+                    resBins[_.keys(resBins)[countRes(resRef, posResRefs) - countRes(resRef, negResRefs) + 3]].push(resRef)
+                else
+                    resBins.zero.push(resRef)
+            for (const bin of ["2neg", "neg", "pos", "2pos"])
+                oddsKey += bin.repeat(resBins[bin].length)
+            if (oddsKey === "")
+                oddsKey = "norm"
+            //D.Alert(`KEY: ${oddsKey}<br>Bins: ${D.JS(resBins)}`)
+            const randInts = [randomInteger(1000), randomInteger(1000)],
+                resOdds = {
+                    flavor: C.RESONANCEODDS.flavor[oddsKey][["r", "i", "q"].reduce((tot, x) => tot + countRes(x, [...resBins["pos"], ...resBins["2pos"]]), 0)],
+                    intensity: C.RESONANCEODDS.intensity[isDoubleAcute === "2" && "doubleAcute" || "norm"]
+                },
+                flavorOdds = resOdds.flavor.map((x, i, a) => Math.round((i === 0 && x || x + a.slice(0, i).reduce((tot, xx) => tot + xx, 0))*1000)),
+                intOdds = resOdds.intensity.map((x, i, a) => Math.round((i === 0 && x || x + a.slice(0, i).reduce((tot, xx) => tot + xx, 0))*1000)),
+                resChoice = resonances[_.flatten(_.values(resBins)).reverse()[flavorOdds.findIndex(x => randInts[0] < x)]],
+                intChoice = ["Negligible", "Fleeting", "Intense", "Acute"][intOdds.findIndex(x => randInts[1] < x)]
+                
+            //D.Alert(`RandInts: [${randInts.join(", ")}]<br><br>Bin Array: [${D.JS(_.flatten(_.values(resBins)).reverse().join(", "))}]: ${resChoice}<br><br>IntOdds: [${D.JS(intOdds.join(", "))}]: ${intChoice}`)
+            
+            // STEP ONE: COMPARE POSRES AND NEGRES FLAGS. CANCEL OUT RESONANCES. ELIMINATE PURE-NEG RARE RESONANCES. DETERMINE ODDS KEY.
+                        
             if (parseInt(testCycles) > 0) {
                 let record = {
-                    NG: { C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0 },
-                    FL: { C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0 },
-                    IN: { C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0 },
-                    AC: { C: 0, M: 0, P: 0, S: 0, R: 0, I: 0, Q: 0, TOT: 0, PER: 0 },
-                    C: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
-                    M: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
-                    P: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
-                    S: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
-                    R: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
-                    I: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 },
-                    Q: { NG: 0, FL: 0, IN: 0, AC: 0, TOT: 0, PER: 0 }
+                    N: { Cho: 0, Mel: 0, Phl: 0, Sng: 0, Pri: 0, Isc: 0, Mrc: 0, TOT: 0, PER: 0 },
+                    F: { Cho: 0, Mel: 0, Phl: 0, Sng: 0, Pri: 0, Isc: 0, Mrc: 0, TOT: 0, PER: 0 },
+                    I: { Cho: 0, Mel: 0, Phl: 0, Sng: 0, Pri: 0, Isc: 0, Mrc: 0, TOT: 0, PER: 0 },
+                    A: { Cho: 0, Mel: 0, Phl: 0, Sng: 0, Pri: 0, Isc: 0, Mrc: 0, TOT: 0, PER: 0 },
+                    Cho: { N: 0, F: 0, I: 0, A: 0, TOT: 0, PER: 0 },
+                    Mel: { N: 0, F: 0, I: 0, A: 0, TOT: 0, PER: 0 },
+                    Phl: { N: 0, F: 0, I: 0, A: 0, TOT: 0, PER: 0 },
+                    Sng: { N: 0, F: 0, I: 0, A: 0, TOT: 0, PER: 0 },
+                    Pri: { N: 0, F: 0, I: 0, A: 0, TOT: 0, PER: 0 },
+                    Isc: { N: 0, F: 0, I: 0, A: 0, TOT: 0, PER: 0 },
+                    Mrc: { N: 0, F: 0, I: 0, A: 0, TOT: 0, PER: 0 }
                 }
+                let dbString = ""
+                const resBinsReversed = _.flatten(_.values(resBins)).reverse()
                 for (let i = 0; i < parseInt(testCycles); i++) {
-                    randNum = Math.random()
-                    let testProbs = _.clone(theseProbs),
-                        testResonances = _.clone(resList)
-                    do
-                        randNum -= testProbs.shift()
-                    while (randNum > 0)
-                    record[["NG", "FL", "IN", "AC"][3 - testProbs.length % 4]][resonances[testResonances.reverse()[Math.floor(testProbs.length / 4)]].toUpperCase()]++
-                    record[["NG", "FL", "IN", "AC"][3 - testProbs.length % 4]].TOT++
-                    record[resonances[testResonances.reverse()[Math.floor(testProbs.length / 4)]].toUpperCase()][["NG", "FL", "IN", "AC"][3 - testProbs.length % 4]]++
-                    record[resonances[testResonances.reverse()[Math.floor(testProbs.length / 4)]].toUpperCase()].TOT++
+                    
+                    let randNums = [randomInteger(1000), randomInteger(1000)],
+                        results = [
+                            resonances[resBinsReversed[flavorOdds.findIndex(x => randNums[0] <= x)]],
+                            ["Negligible", "Fleeting", "Intense", "Acute"][intOdds.findIndex(x => randNums[1] <= x)]
+                        ]
+                    dbString = `${i}: [${randNums.join(", ")}]: ${D.JS(results)}`
+                    try {                        
+                        results = results.map(x => ({Choleric: "Cho", Melancholic: "Mel", Phlegmatic: "Phl", Sanguine: "Sng", Primal: "Pri", Ischemic: "Isc", Mercurial: "Mrc"}[x] || x.slice(0,1)))
+                    } catch (errObj) {
+                        D.Alert(`Error: ${D.JS(dbString)}<br><br>Odds: ${D.JS(flavorOdds)}<br>${D.JS(intOdds)}`)
+                        return false
+                    }
+                    record[results[1]][results[0]]++
+                    record[results[0]][results[1]]++
                 }
-                _.each(record, (data, k) => {
-                    record[k].PER = `${Math.round(data.TOT / parseInt(testCycles) * 10000) / 100}%`
-                    record[k] = `${data.TOT} (${record[k].PER})`
-                })
-                D.Alert(`Trace: ${D.JS(tracer)}<br><br>testProbs: ${D.JS(theseProbs)}<br><br>Resonances: ${D.JS(resList)}<br><br>${D.JS(record)}`)
+                let [flaTot, intTot] = [0,0]
+                for (const intensity of _.keys(record).slice(0,4)) {
+                    dbString += `Keys: ${_.keys(record).slice(0,4)}, Vals: [${_.values(record[intensity]).slice(0,7).join(",")}], Adding: ${_.values(record[intensity]).slice(0,7).reduce((tot, x) => tot + x, 0)}. `
+                    record[intensity].TOT += _.values(record[intensity]).slice(0,7).reduce((tot, x) => tot + x, 0)
+                    intTot += record[intensity].TOT
+                }
+                for (const flavor of _.keys(record).slice(4)) {
+                    record[flavor].TOT += _.values(record[flavor]).slice(0,4).reduce((tot, x) => tot + x, 0)
+                    flaTot += record[flavor].TOT
+                }
+                for (const intensity of _.keys(record).slice(0,4))
+                    record[intensity].PER = `${Math.round(10000*record[intensity].TOT/intTot)/100}%`
+                for (const flavor of _.keys(record).slice(4))
+                    record[flavor].PER = `${Math.round(10000*record[flavor].TOT/flaTot)/100}%`
+                    
+                let returnRows = []
+                for (const k of _.keys(record)) {
+                    const thisRowLines = []
+                    for (const kk of _.keys(record[k]))
+                        thisRowLines.push(`${kk}: ${record[k][kk]}`)
+                    returnRows.push(`<b>${k}</b>: { ${thisRowLines.join(", ")} }`)
+                }     
+                
+                let intResults = _.values(record).slice(0,4).map(x => x.PER).join(", "),
+                    flaResults = _.keys(record).slice(4).map(k => [k.slice(0,1), parseFloat(record[k].PER.slice(0,-1))]).sort((a,b) => b[1] - a[1]).map(x => `${x[0]}: ${x[1]}%`).join(", ")
+                
+                D.Alert(`${D.JS(_.keys(resBins).map(x => `      <b>${x}</b>: [${resBins[x].join(",")}]`).join(", "))}<br><br><pre>${D.JS(returnRows.join("<br>"))}</pre><br><pre>Flavor..: ${D.JS(resOdds.flavor.map(x => `_: ${parseInt(x*10000)/100}.${"0".repeat(4 - `${parseInt(x*10000)/100}`.length)}%`).join(", "))}]<br>Compared: ${flaResults}</pre><br><br>Int Odds: [${D.JS(resOdds.intensity.map(x => `${x*100}%`).join(", "))}]<br>Compared: ${intResults}`)
             }
-
-            randNum = Math.random()
-            do
-                randNum -= theseProbs.shift()
-            while (randNum > 0)
-
-            let thisRes = resList.reverse()[Math.floor(theseProbs.length / 4)]
-
             return [
-                ["Negligibly", "Fleetingly", "Intensely", "Acutely"][3 - theseProbs.length % 4],
-                thisRes,
-                discLines[thisRes]
+                intChoice,
+                resChoice,
+                discLines[resChoice]
             ]
             // Return ["Acute", "Choleric"];
         },

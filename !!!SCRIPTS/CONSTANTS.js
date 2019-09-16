@@ -826,78 +826,558 @@ const C = (() => {
             { bp_surge: 5, bp_discbonus: 5, bp_minhunger: 4 }
         ],
         RESONANCEODDS = {
-            norm: [
-                { neg: 0.1245, fleet: 0.0753, intense: 0.0403, acute: 0.01 },
-                { neg: 0.1245, fleet: 0.0753, intense: 0.0403, acute: 0.01 },
-                { neg: 0.1245, fleet: 0.0753, intense: 0.0403, acute: 0.01 },
-                { neg: 0.1245, fleet: 0.0753, intense: 0.0403, acute: 0.01 }
-            ],
-            pos: [
-                { neg: 0.166, fleet: 0.1003, intense: 0.0537, acute: 0.0133 },
-                { neg: 0.1107, fleet: 0.0669, intense: 0.0358, acute: 0.0089 },
-                { neg: 0.1107, fleet: 0.0669, intense: 0.0358, acute: 0.0089 },
-                { neg: 0.1107, fleet: 0.0669, intense: 0.0358, acute: 0.0089 }
-            ],
-            neg: [
-                { neg: 0.1358, fleet: 0.0821, intense: 0.0439, acute: 0.0109 },
-                { neg: 0.1358, fleet: 0.0821, intense: 0.0439, acute: 0.0109 },
-                { neg: 0.1358, fleet: 0.0821, intense: 0.0439, acute: 0.0109 },
-                { neg: 0.0905, fleet: 0.0547, intense: 0.0293, acute: 0.0073 }
-            ],
-            posneg: [
-                { neg: 0.1793, fleet: 0.1084, intense: 0.058, acute: 0.0144 },
-                { neg: 0.1195, fleet: 0.0722, intense: 0.0386, acute: 0.0096 },
-                { neg: 0.1195, fleet: 0.0722, intense: 0.0386, acute: 0.0096 },
-                { neg: 0.0797, fleet: 0.0482, intense: 0.0258, acute: 0.0064 }
-            ],
-            pos2: [
-                { neg: 0.249, fleet: 0.1505, intense: 0.0805, acute: 0.02 },
-                { neg: 0.083, fleet: 0.0502, intense: 0.0268, acute: 0.0067 },
-                { neg: 0.083, fleet: 0.0502, intense: 0.0268, acute: 0.0067 },
-                { neg: 0.083, fleet: 0.0502, intense: 0.0268, acute: 0.0067 }
-            ],
-            pospos: [
-                { neg: 0.166, fleet: 0.1003, intense: 0.0537, acute: 0.0133 },
-                { neg: 0.166, fleet: 0.1003, intense: 0.0537, acute: 0.0133 },
-                { neg: 0.083, fleet: 0.0502, intense: 0.0268, acute: 0.0067 },
-                { neg: 0.083, fleet: 0.0502, intense: 0.0268, acute: 0.0067 }
-            ],
-            neg2: [
-                { neg: 0.1573, fleet: 0.0951, intense: 0.0508, acute: 0.0126 },
-                { neg: 0.1573, fleet: 0.0951, intense: 0.0508, acute: 0.0126 },
-                { neg: 0.1573, fleet: 0.0951, intense: 0.0508, acute: 0.0126 },
-                { neg: 0.0262, fleet: 0.0158, intense: 0.0085, acute: 0.0021 }
-            ],
-            negneg: [
-                { neg: 0.166, fleet: 0.1003, intense: 0.0537, acute: 0.0133 },
-                { neg: 0.166, fleet: 0.1003, intense: 0.0537, acute: 0.0133 },
-                { neg: 0.083, fleet: 0.0502, intense: 0.0268, acute: 0.0067 },
-                { neg: 0.083, fleet: 0.0502, intense: 0.0268, acute: 0.0067 }
-            ],
-            pos2neg: [
-                { neg: 0.249, fleet: 0.1505, intense: 0.0805, acute: 0.02 },
-                { neg: 0.0996, fleet: 0.0602, intense: 0.0322, acute: 0.008 },
-                { neg: 0.0996, fleet: 0.0602, intense: 0.0322, acute: 0.008 },
-                { neg: 0.0498, fleet: 0.0301, intense: 0.0161, acute: 0.004 }
-            ],
-            neg2pos: [
-                { neg: 0.2241, fleet: 0.1355, intense: 0.0725, acute: 0.018 },
-                { neg: 0.1245, fleet: 0.0753, intense: 0.0403, acute: 0.01 },
-                { neg: 0.1245, fleet: 0.0753, intense: 0.0403, acute: 0.01 },
-                { neg: 0.0249, fleet: 0.0151, intense: 0.0081, acute: 0.002 }
-            ],
-            posposneg: [
-                { neg: 0.1743, fleet: 0.1054, intense: 0.0564, acute: 0.014 },
-                { neg: 0.1743, fleet: 0.1054, intense: 0.0564, acute: 0.014 },
-                { neg: 0.0996, fleet: 0.0602, intense: 0.0322, acute: 0.008 },
-                { neg: 0.0498, fleet: 0.0301, intense: 0.0161, acute: 0.004 }
-            ],
-            posnegneg: [
-                { neg: 0.2241, fleet: 0.1355, intense: 0.0725, acute: 0.018 },
-                { neg: 0.1245, fleet: 0.0753, intense: 0.0403, acute: 0.01 },
-                { neg: 0.0747, fleet: 0.0452, intense: 0.0242, acute: 0.006 },
-                { neg: 0.0747, fleet: 0.0452, intense: 0.0242, acute: 0.006 }
-            ],
+            flavor: {
+                "norm": [[0.25, 0.25, 0.25, 0.25, 0, 0, 0]],
+                "pos": [
+                    [0.5, 0.1666, 0.1666, 0.1666, 0, 0, 0],
+                    [0.5, 0.125, 0.125, 0.125, 0.125, 0, 0]
+                ],
+                "neg": [[0.3, 0.3, 0.3, 0.1, 0, 0, 0]],
+                "negpos": [
+                    [0.5, 0.2, 0.2, 0.1, 0, 0, 0],
+                    [0.5, 0.1333, 0.1333, 0.1333, 0.1, 0, 0]
+                ],
+                "2pos": [
+                    [0.7, 0.1, 0.1, 0.1, 0, 0, 0],
+                    [0.7, 0.075, 0.075, 0.075, 0.075, 0, 0]
+                ],
+                "pospos": [
+                    [0.35, 0.35, 0.15, 0.15, 0, 0, 0],
+                    [0.35, 0.35, 0.1, 0.1, 0.1, 0, 0],
+                    [0.35, 0.35, 0.075, 0.075, 0.075, 0.075, 0]
+                ],
+                "2neg": [[0.3333, 0.3333, 0.3333, 0, 0, 0, 0]],
+                "negneg": [[0.4, 0.4, 0.1, 0.1, 0, 0, 0]],
+                "neg2pos": [
+                    [0.7, 0.15, 0.15, 0, 0, 0, 0],
+                    [0.7, 0.1, 0.1, 0.1, 0, 0, 0]
+                ],
+                "2negpos": [
+                    [0.5, 0.25, 0.25, 0, 0, 0, 0],
+                    [0.5, 0.1666, 0.1666, 0.1666, 0, 0, 0]
+                ],
+                "negpospos": [
+                    [0.35, 0.35, 0.25, 0.05, 0, 0, 0],
+                    [0.35, 0.35, 0.125, 0.125, 0.05, 0, 0],
+                    [0.35, 0.35, 0.0833, 0.0833, 0.0833, 0.05, 0]
+                ],
+                "negnegpos": [
+                    [0.5, 0.25, 0.125, 0.125, 0, 0, 0],
+                    [0.5, 0.15, 0.15, 0.1, 0.1, 0, 0]
+                ]
+            },
+            intensity: {
+                norm: [0.5, 0.3, 0.15, 0.05],
+                doubleAcute: [0.45, 0.3, 0.15, 0.1]
+            }
+        }
+    // #endregion
+
+    // #region CITY DETAILS
+
+
+    const DISTRICTS = {
+            Annex: {
+                fullName: "the Annex",
+                resonance: ["p", "m"],
+                huntDiff: 3,
+                homestead: [4, 2, 2, 1],
+                rollEffects: []
+            },
+            BayStFinancial: {
+                fullName: "the Bay St. Financial District",
+                resonance: ["p", "s"],
+                huntDiff: 4,
+                homestead: [5, 4, 6, 5],
+                rollEffects: []
+            },
+            Bennington: {
+                fullName: "Bennington Heights",
+                resonance: ["p", "s"],
+                huntDiff: 6,
+                homestead: [5, 1, 5, 1],
+                rollEffects: ["loc:Bennington+blood surge;nobloodsurge;[-1]Total Eclipse of the Heart;Aspect: No Blood Surge"]
+            },
+            Cabbagetown: {
+                fullName: "Cabbagetown",
+                resonance: ["i", "s"],
+                huntDiff: 2,
+                homestead: [2, 1, 1, 1],
+                rollEffects: []
+            },
+            CentreIsland: {
+                fullName: "Centre Island",
+                resonance: ["s", "p"],
+                huntDiff: 6,
+                homestead: [2, 3, 0, 2],
+                rollEffects: []
+            },
+            Chinatown: {
+                fullName: "Chinatown",
+                resonance: ["s", "m"],
+                huntDiff: 2,
+                homestead: [2, 4, 4, 2],
+                rollEffects: ["loc:Chinatown+brawl;2;[+1]<#> Kung-Fu Fighting|loc;Chinatown+firearms/melee;-2;[-1]<#> Kung-Fu Fighting"]
+            },
+            Corktown: {
+                fullName: "Corktown",
+                resonance: ["c", "p"],
+                huntDiff: 2,
+                homestead: [2, 3, 1, 0],
+                rollEffects: []
+            },
+            Danforth: {
+                fullName: "the Danforth",
+                resonance: ["s", "p"],
+                huntDiff: 3,
+                homestead: [4, 2, 4, 2],
+                rollEffects: []
+            },
+            DeerPark: {
+                fullName: "Deer Park",
+                resonance: ["r", "s"],
+                huntDiff: 5,
+                homestead: [2, 1, 2, 3],
+                rollEffects: ["loc:DeerPark;bestialcancel;[!1]Bad Moon Rising"]
+            },
+            Discovery: {
+                fullName: "the Discovery District",
+                resonance: ["m", "c"],
+                huntDiff: 4,
+                homestead: [5, 2, 3, 3],
+                rollEffects: []
+            },
+            Distillery: {
+                fullName: "the Distillery District",
+                resonance: ["c", "s"],
+                huntDiff: 5,
+                homestead: [1, 2, 4, 4],
+                rollEffects: ["loc:Distillery+firearms;2;[+1]<#> Janie's Got a Gun|loc:Distillery+brawl/melee;-2;[-1]<#> Janie's Got a Gun"]
+            },
+            DupontByTheCastle: {
+                fullName: "Dupont by the Castle",
+                resonance: ["m", "c"],
+                huntDiff: 4,
+                homestead: [5, 3, 5, 2],
+                rollEffects: ["loc:DupontByTheCastle+messycrit;;[!1]Can't Stop the Feeling"]
+            },
+            GayVillage: {
+                fullName: "the Gay Village",
+                resonance: ["s", "m"],
+                huntDiff: 2,
+                homestead: [4, 3, 2, 3],
+                rollEffects: []
+            },
+            HarbordVillage: {
+                fullName: "Harbord Village",
+                resonance: ["c", "p"],
+                huntDiff: 4,
+                homestead: [3, 5, 3, 4],
+                rollEffects: []
+            },
+            Humewood: {
+                fullName: "Humewood",
+                resonance: ["r", "s"],
+                huntDiff: 3,
+                homestead: [2, 1, 4, 2],
+                rollEffects: []
+            },
+            LibertyVillage: {
+                fullName: "Liberty Village",
+                resonance: ["c", "m"],
+                huntDiff: 3,
+                homestead: [3, 3, 2, 1],
+                rollEffects: []
+            },
+            LittleItaly: {
+                fullName: "Little Italy",
+                resonance: ["c", "p"],
+                huntDiff: 2,
+                homestead: [3, 3, 3, 3],
+                rollEffects: ["loc:LittleItaly+melee;2;[+1]<#> Beat It|loc:LittleItaly+firearms/melee;-2;[-1]<#> Beat It"]
+            },
+            LittlePortugal: {
+                fullName: "Little Portugal",
+                resonance: ["m", "p"],
+                huntDiff: 2,
+                homestead: [1, 4, 3, 3],
+                rollEffects: []
+            },
+            PATH: {
+                fullName: "P.A.T.H.",
+                resonance: ["p", "c"],
+                huntDiff: 4,
+                homestead: [3, 6, 4, 5],
+                rollEffects: []
+            },
+            RegentPark: {
+                fullName: "Regent Park",
+                resonance: ["p", "c"],
+                huntDiff: 3,
+                homestead: [4, 4, 3, 4],
+                rollEffects: []
+            },
+            Riverdale: {
+                fullName: "Riverdale",
+                resonance: ["q", "m"],
+                huntDiff: 3,
+                homestead: [3, 5, 4, 3],
+                rollEffects: ["loc:Riverdale+messycrit;nomessycrit;Aspect: Steady As She Goes"]
+            },
+            Rosedale: {
+                fullName: "Rosedale",
+                resonance: ["p", "m"],
+                huntDiff: 6,
+                homestead: [5, 1, 5, 4],
+                rollEffects: []
+            },
+            Sewers: {
+                fullName: "the Sewers",
+                resonance: ["m", "s"],
+                huntDiff: "~",
+                homestead: [0, 1, 4, 5],
+                rollEffects: ["loc:Sewers+Nosferatu+physical/discipline;2;[+1]<#> Demons"]
+            },
+            StJamesTown: {
+                fullName: "St. James Town",
+                resonance: ["i", "p"],
+                huntDiff: 2,
+                homestead: [1, 1, 4, 1],
+                rollEffects: ["loc:StJamesTown+Lasombra+Dominate;2;[+1]<#> Music of the Night"]
+            },
+            Summerhill: {
+                fullName: "Summerhill",
+                resonance: ["m", "s"],
+                huntDiff: 2,
+                homestead: [1, 3, 3, 2],
+                rollEffects: []
+            },
+            Waterfront: {
+                fullName: "the Waterfront",
+                resonance: ["s", "c"],
+                huntDiff: 4,
+                homestead: [6, 5, 4, 5],
+                rollEffects: []
+            },
+            WestQueenWest: {
+                fullName: "West Queen West",
+                resonance: ["s", "p"],
+                huntDiff: 3,
+                homestead: [4, 4, 3, 4],
+                rollEffects: ["loc:WestQueenWest+success+rouse;reroll;[!1]Hungry Like the Wolf"]
+            },
+            Wychwood: {
+                fullName: "Wychwood",
+                resonance: ["s", "c"],
+                huntDiff: 5,
+                homestead: [2, 0, 5, 1],
+                rollEffects: []
+            },
+            YongeHospital: {
+                fullName: "the Yonge & College Hospital District",
+                resonance: ["p", "c"],
+                huntDiff: 4,
+                homestead: [4, 4, 4, 5],
+                rollEffects: []
+            },
+            YongeMuseum: {
+                fullName: "the Yonge & Bloor Museum District",
+                resonance: ["m", "c"],
+                huntDiff: 4,
+                homestead: [5, 4, 4, 3],
+                rollEffects: []            
+            },
+            YongeStreet: {
+                fullName: "Yonge Street",
+                resonance: ["q", "m"],
+                huntDiff: 3,
+                homestead: [4, 5, 4, 6],
+                rollEffects: []
+            },
+            Yorkville: {
+                fullName: "Yorkville",
+                resonance: ["c", "m"],
+                huntDiff: 6,
+                homestead: [5, 2, 4, 5],
+                rollEffects: []
+            }
+        },
+        SITES = {
+            AnarchBar: {
+                fullName: "an Anarch Dive Bar",
+                resonance: ["c", null],
+                rollEffects: []
+            },
+            ArtGallery: {
+                fullName: "the Art Gallery of Ontario",
+                resonance: ["s", null],
+                rollEffects: []
+            },
+            BackAlley: {
+                fullName: "a Back Alley",
+                resonance: [null, "s"],
+                rollEffects: []
+            },
+            BayTower: {
+                fullName: "the Bay Wellington Tower",
+                resonance: ["p", null],
+                rollEffects: []
+            },
+            BBishopFerry: {
+                fullName: "the Billy Bishop Ferry",
+                resonance: [],
+                rollEffects: []
+            },
+            CasaLoma: {
+                fullName: "Casa Loma",
+                resonance: [null, "m"],
+                rollEffects: []
+            },
+            Cemetary: {
+                fullName: "a Cemetary",
+                resonance: ["m", null],
+                rollEffects: []
+            },
+            CityApt1: {
+                fullName: "a City Apartment",
+                resonance: ["c", null],
+                rollEffects: []
+            },
+            CityHall: {
+                fullName: "City Hall",
+                resonance: ["p", null],
+                rollEffects: []
+            },
+            CityPark: {
+                fullName: "a City Park",
+                resonance: ["s", null],
+                rollEffects: []
+            },
+            CNTower: {
+                fullName: "the CN Tower",
+                resonance: ["s", null],
+                rollEffects: []
+            },
+            Docks: {
+                fullName: "the Docks",
+                resonance: ["c", null],
+                rollEffects: []
+            },
+            Drake: {
+                fullName: "the Drake Hotel",
+                resonance: ["s", null],
+                rollEffects: []
+            },
+            Elysium: {
+                fullName: "Elysium",
+                resonance: [null, "c"],
+                rollEffects: []
+            },
+            BrickWorks: {
+                fullName: "the Evergreen Brick Works",
+                resonance: [null, "s"],
+                rollEffects: []
+            },
+            EvergreenPalisades: {
+                fullName: "the Evergreen Palisades",
+                resonance: ["i", null],
+                rollEffects: []
+            },
+            FightClub: {
+                fullName: "a Fight Club",
+                resonance: ["c", null],
+                rollEffects: []
+            },
+            CeramicsMuseum: {
+                fullName: "the Gardiner Ceramics Museum",
+                resonance: ["p", null],
+                rollEffects: []
+            },
+            GayClub: {
+                fullName: "a Gay Nightclub",
+                resonance: ["s", null],
+                rollEffects: []
+            },
+            Distillery: {
+                fullName: "the Historic Distillery",
+                resonance: ["m", null],
+                rollEffects: []
+            },
+            Laboratory: {
+                fullName: "a Laboratory",
+                resonance: ["m", null],
+                rollEffects: []
+            },
+            LectureHall: {
+                fullName: "a Lecture Hall",
+                resonance: ["m", null],
+                rollEffects: []
+            },
+            Library: {
+                fullName: "a Library",
+                resonance: ["p", null],
+                rollEffects: []
+            },
+            MadinaMasjid: {
+                fullName: "Madina Masjid",
+                resonance: ["p", null],
+                rollEffects: []
+            },
+            MiddleOfRoad: {
+                fullName: "the Middle Of The Road",
+                resonance: ["m", null],
+                rollEffects: []
+            },
+            Nightclub: {
+                fullName: "a Nightclub",
+                resonance: ["s", null],
+                rollEffects: []
+            },
+            Office: {
+                fullName: "an Office",
+                resonance: [null, "c"],
+                rollEffects: []
+            },
+            ParkingLot: {
+                fullName: "a Parking Lot",
+                resonance: [null, "p"],
+                rollEffects: []
+            },
+            PMHospital: {
+                fullName: "Princess Margaret Hospital",
+                resonance: ["p", null],
+                rollEffects: []
+            },
+            ProfOffice: {
+                fullName: "a Professor's Office",
+                resonance: ["p", null],
+                rollEffects: []
+            },
+            RedemptionHouse: {
+                fullName: "Redemption House",
+                resonance: [null, "p"],
+                rollEffects: []
+            },
+            RegentParkApt: {
+                fullName: "a Regent Park Apartment",
+                resonance: ["i", null],
+                rollEffects: []
+            },
+            RogersCentre: {
+                fullName: "the Rogers Centre",
+                resonance: ["c", null],
+                rollEffects: []
+            },
+            Rooftops: {
+                fullName: "the Rooftops",
+                resonance: ["m", null],
+                rollEffects: []
+            },
+            ROM: {
+                fullName: "the Royal Ontario Museum",
+                resonance: ["m", null],
+                rollEffects: []
+            },
+            Sidewalk1: {
+                fullName: "the Sidewalk",
+                resonance: [null, "s"],
+                rollEffects: []
+            },
+            Sidewalk2: {
+                fullName: "the Sidewalk",
+                resonance: ["q", null],
+                rollEffects: []
+            },
+            Sidewalk3: {
+                fullName: "the Sidewalk",
+                resonance: ["p", null],
+                rollEffects: []
+            },
+            SiteLotus: {
+                fullName: "Site: Lotus",
+                resonance: [null, null],
+                rollEffects: []
+            },
+            SpawningPool: {
+                fullName: "a Spawning Pool",
+                resonance: ["m", null],
+                rollEffects: []
+            },
+            StMichaelsCathedral: {
+                fullName: "St. Michael's Cathedral Basilica",
+                resonance: ["p", null],
+                rollEffects: []
+            },
+            StripClub: {
+                fullName: "a Strip Club",
+                resonance: ["s", null],
+                rollEffects: []
+            },
+            StudentVillage: {
+                fullName: "the Student Village",
+                resonance: ["s", null],
+                rollEffects: []
+            },
+            SubwayStation: {
+                fullName: "a Subway Station",
+                resonance: ["c", null],
+                rollEffects: []
+            },
+            SubwayTunnels: {
+                fullName: "the Subway Tunnels",
+                resonance: [null, "s"],
+                rollEffects: []
+            },
+            UndergroundMedClinic: {
+                fullName: "an Underground Medical Clinic",
+                resonance: ["m", null],
+                rollEffects: []
+            },
+            UndergroundMedOffice: {
+                fullName: "an Underground Medical Office",
+                resonance: [null, "c"],
+                rollEffects: []
+            },
+            WalkingPath: {
+                fullName: "a Walking Path",
+                resonance: ["q", null],
+                rollEffects: []
+            },
+            WarrensAntechamber: {
+                fullName: "the Warrens: Antechamber",
+                resonance: ["m", null],
+                rollEffects: []
+            },
+            WychwoodPub: {
+                fullName: "a Wychwood Pub",
+                resonance: [null, "c"],
+                rollEffects: []
+            },
+            YachtMister: {
+                fullName: "a Yacht",
+                resonance: [],
+                rollEffects: []
+            },
+            YongeDundasSquare: {
+                fullName: "Yonge & Dundas Square",
+                resonance: ["c", null],
+                rollEffects: []
+            },
+            YorkvilleApt1: {
+                fullName: "a Yorkville Apartment",
+                resonance: ["m", null],
+                rollEffects: []
+            },
+            YorkvilleApt2: {
+                fullName: "a Yorkville Apartment",
+                resonance: ["m", null],
+                rollEffects: []
+            },
+            YouthShelter: {
+                fullName: "a Youth Shelter",
+                resonance: ["c", null],
+                rollEffects: []
+            }
         }
     // #endregion
 
@@ -1165,8 +1645,10 @@ const C = (() => {
         CLANS, SECTS,
         MISCATTRS,
         BLOODPOTENCY,
-
         RESONANCEODDS,
+
+        DISTRICTS, SITES,
+
         MVCVALS,
         FX
     }

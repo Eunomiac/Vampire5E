@@ -256,6 +256,10 @@ const Session = (() => {
 
     // #endregion
 
+    // #region Location Handling
+
+    // #endregion
+    
     // #region Waking Up 
 
     // #endregion

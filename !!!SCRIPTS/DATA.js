@@ -136,42 +136,29 @@ const D = (() => {
         /* Parses a value of any type via JSON.stringify, and then further styles it for display either
           in Roll20 chat, in the API console log, or both. */
             try {
-                if (_.isUndefined(data))
-                    return _.escape("<UNDEFINED>")
-                const parser = val => {
-                    if (val && val.get) {
-                        if (isVerbose)
-                            return JSON.stringify(val)
-                        else
-                            return `▌${data.get("_type") && data.get("_type").toUpperCase().slice(0, 3) || "OBJ"}</b>: ${data.get("name") || data.id || data}▐`
-                    } else if (_.isArray(val)) {
-                        const newArray = []
-                        for (const v of val)
-                            newArray.push(parser(v))
-                        if (JSON.stringify(newArray).length < 200) 
-                            return `[ ${_.map(newArray, v => _.isString(v) ? `"${v}"` : v).join(", ")} ]`.
-                                replace(/\]"/gu, "]").replace(/"\[/gu, "[").
-                                replace(/\[\s+\]/gu, "[]")
-                        return [...newArray]
-                    } else if (_.isObject(val) && !_.isEmpty(val)) {
-                        return (() => {
-                            let newVal = _.mapObject(val, v => parser(v))
-                            if (JSON.stringify(newVal).length < 100)
-                                return _.escape(JSON.stringify(newVal, null, 1).
-                                    replace(/\n/gu, " ").                             
-                                    replace(/"([^(")"]+)":/gu,"$1:")).
-                                    replace(/\}/gu, " }").
-                                    replace(/\s\s+/gu, " ")
-                            return newVal
-                        })()
-                    } else {
-                        return val
-                    }
+                const replacer = (k, v) => {
+                    let returnVal = v
+                    if (!isVerbose && 
+                        (k.slice(0, 3).toLowerCase() === "obj" ||
+                        v && (v.get || v._type)))
+                        returnVal = "OBJECT"
+                    else if (_.isUndefined(v))
+                        returnVal = "<UNDEFINED>"
+                    else if (_.isNull(v))
+                        returnVal = "<NULL>"
+                    else if (_.isNaN(v))
+                        returnVal = "<NaN>"
+                    else if (_.isFunction(v))
+                        returnVal = "<FUNCTION>"
+                    if (_.isString(returnVal) || _.isNumber(returnVal))
+                        returnVal = `${v}`.
+                            replace(/[\t\\]/gu, ""). // Strips tabs and escape slashes.
+                            replace(/\n/gu, "<br/>"). // Converts line breaks into HTML breaks.
+                            replace(/(\s)\s+/gu, "$1") // Removes excess whitespace. */
+                    return returnVal
                 }
 
-                const replacer = (k, v) => typeof v === "string" ? v.replace(/\\/gu, "").replace(/\n/gu, "<br/>").replace(/\t/gu, "") : v
-
-                return JSON.stringify(parser(data), replacer, 4).
+                return JSON.stringify(data, replacer, 4).
                     replace(/"\{/gu, "{").replace(/\}"/gu, "}").
                     replace(/(\s*?)"([^"]*?)"\s*?:/gu, "$1$2:"). // Removes quotes from keys of a list or object.
                     replace(/ (?= )/gu, "&nbsp;"). // Replaces any length of whitespace with one '&nbsp;'
@@ -179,7 +166,7 @@ const D = (() => {
                     replace(/"\[/gu, "[").replace(/\]"/gu, "]"). // Removes quotes from around array strings.
                     replace(/\\"/gu, "\""). // Escapes quote marks                
                     replace(/(^"|"$)/gu, ""). // Removes quote marks from the beginning and end of the string                    
-                    replace(/&amp;quot;/gu, "\"")
+                    replace(/&amp;quot;/gu, "\"") 
             } catch (errObj) {
                 return JSON.stringify(errObj)
             }

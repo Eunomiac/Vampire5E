@@ -598,7 +598,7 @@ const Char = (() => {
                 "_TopButtons": [
                     ["Add to Scene", "!sess @@CHARIDS@@ add scene", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.palegreen, color: C.COLORS.black}],
                     ["Pop Desire", "!char @@CHARIDS@@ set desire", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
-                    ["@@SINGLEONLY@@Resonance", "!resCheck ?{Enter the first letters of all POSITIVE resonance mods. Include doubles (e.g. 'ss'), or 'x' for none.} ?{Enter the first letters of all NEGATIVE resonance mods.  Include doubles (e.g. 'mm'), or 'x' for none.} ?{Is the site likely to produce dyscrasias?|No,0|Yes,2}", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.brightred, fontWeight: "bold", textShadow: "1px 0px red"}],
+                    ["@@SINGLEONLY@@Resonance", "!roll @@CHARIDS@@ resonance", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.brightred, fontWeight: "bold", textShadow: "1px 0px red"}],
                     ["@@SINGLEONLY@@Roll As", "!pcroll @@CHARIDS@@", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.purple, color: C.COLORS.white}]
                 ],
                 "_LastButtons": [
@@ -759,9 +759,10 @@ const Char = (() => {
                     ].map(x => VAL({string: x}) && x.replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;") || x))
             }
             TRAITLIST._SpacerRow2 = [["80%"]]
-            while (DISCNAMES.length) {
+            const DISCS = [...DISCNAMES]
+            while (DISCS.length) {
                 rowCount++
-                TRAITLIST[`_DiscRow${rowCount}`] = _.compact([DISCNAMES.shift(), DISCNAMES.shift(), DISCNAMES.shift()]).map(
+                TRAITLIST[`_DiscRow${rowCount}`] = _.compact([DISCS.shift(), DISCS.shift(), DISCS.shift()]).map(
                     x => [
                         x.replace(/_/gu, " "),
                         buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, x.toLowerCase()) || `!char select trait ${x.toLowerCase()}`,
@@ -772,15 +773,15 @@ const Char = (() => {
             TRAITLIST._SpacerRow3 = [["80%"]]
             TRAITLIST._BottomButtons1 = [
                 ["Disciplines", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
-                ["Blood Pot.", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
-                ["Health", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
-                ["Willpower", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}]
+                ["Blood Pot.", buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, "blood_potency") || "!char select trait blood_potency", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
+                ["Health", buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, "health") || "!char select trait health", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
+                ["Willpower", buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, "willpower") || "!char select trait willpower", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}]
             ]  
             TRAITLIST._BottomButtons2 = [
-                ["Humanity", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
-                ["Hunger", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
+                ["Humanity", buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, "humanity") || "!char select trait humanity", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
+                ["Hunger", buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, "hunger") || "!char select trait hunger", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
                 ["Blood", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
-                ["Resonance", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}]
+                ["Resonance", buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, "resonance") || "!char select trait resonance", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}]
             ]   
             TRAITLIST._SpacerRow4 = [["80%"]]     
             if (fullCommand)      

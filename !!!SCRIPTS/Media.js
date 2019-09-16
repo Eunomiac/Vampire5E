@@ -41,6 +41,7 @@ const Media = (() => {
         STATEREF.activeTimeouts = STATEREF.activeTimeouts || []
         STATEREF.curLocation = STATEREF.curLocation || "DistrictCenter:blank SiteCenter:blank"
 
+        delete STATEREF.tokenregistry["85239212/An9D7-g4OmLdjhKm-NbKnA/1561848759"]
         // Initialize IMAGEDICT Fuzzy Dictionary
         STATEREF.IMAGEDICT = Fuzzy.Fix()
         for (const imgKey of _.keys(STATEREF.imageregistry))
