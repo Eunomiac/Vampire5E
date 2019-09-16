@@ -1390,6 +1390,10 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
         StopLights: stopAirLights,
         get CurrentDate() { return new Date(STATEREF.dateObj) },
         GetDate: getDate,
+        set CurrentDate(dateRef) {
+            if (dateRef)
+                STATEREF.dateObj = getDate(dateRef)
+        },
         FormatDate: formatDString,
         Fix: fixDate,
         IsDay: isDay,

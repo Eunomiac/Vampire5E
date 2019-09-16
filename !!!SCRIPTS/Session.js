@@ -128,6 +128,10 @@ const Session = (() => {
     const startSession = () => {
             const sessionScribe = STATEREF.isTestingActive ? STATEREF.SessionScribes[0] : STATEREF.SessionScribes.shift()
             STATEREF.isSessionActive = true
+            if (STATEREF.isTestingActive)
+                STATEREF.dateRecord = TimeTracker.CurrentDate.getTime()
+            else
+                STATEREF.dateRecord = null
             if (STATEREF.SessionScribes.length === 0) {
                 DB(`Scribe: ${sessionScribe}, SessionScribes: ${D.JS(STATEREF.SessionScribes)}
                     PICK: ${D.JS(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe))}
@@ -177,9 +181,14 @@ const Session = (() => {
                 STATEREF.isSessionActive = false
                 STATEREF.locationRecord = _.clone(Media.LOCATION)
                 STATEREF.tokenRecord = {}
-                if (!STATEREF.isTestingActive)
+                if (!STATEREF.isTestingActive) {
+                    STATEREF.dateRecord = null
                     for (const char of D.GetChars("registered"))
                         Char.AwardXP(char, 2, "Session XP award.")
+                } else {
+                    TimeTracker.CurrentDate = STATEREF.dateRecord
+                    TimeTracker.Fix()
+                }
                 for (const imgKey of [..._.values(D.GetCharVals("registered", "tokenName")), "DistrictCenter", "DistrictLeft", "DistrictRight", "SiteCenter", "SiteLeft", "SiteRight", "SiteBarCenter", "SiteBarLeft", "SiteBarRight"])
                     Media.Toggle(imgKey, false)
                 for (const textKey of _.keys(Media.TEXT))
@@ -259,7 +268,7 @@ const Session = (() => {
     // #region Location Handling
 
     // #endregion
-    
+
     // #region Waking Up 
 
     // #endregion
