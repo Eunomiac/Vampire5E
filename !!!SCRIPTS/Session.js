@@ -31,12 +31,12 @@ const Session = (() => {
 
     // #region LOCAL INITIALIZATION
     const initialize = () => { // eslint-disable-line no-empty-function
-        STATEREF.isSessionActive = STATEREF.isSessionActive || false
         STATEREF.isTestingActive = STATEREF.isTestingActive || false
         STATEREF.sceneChars = STATEREF.sceneChars || []
         STATEREF.locationRecord = STATEREF.locationRecord || {DistrictCenter: "blank"}
         STATEREF.tokenRecord = STATEREF.tokenRecord || {}
         STATEREF.SessionScribes = STATEREF.SessionScribes || []
+        STATEREF.SessionModes = STATEREF.SessionModes || ["Active", "Inactive", "Daylighter", "Downtime", "Complications"]
         //STATEREF.SessionScribes = [ "Thaumaterge", "Ava Wong", "banzai", "PixelPuzzler" ]
         
     }
@@ -50,8 +50,8 @@ const Session = (() => {
         //D.Alert(`Updated Call: ${call}<br>MSG: ${D.JS(msg)}`)
         switch (call) {
             case "start": case "end": case "toggle": {
-                log(`... HANDLE INPUT. STATEREF.isSessionActive = ${D.JSL(STATEREF.isSessionActive)}`)
-                if (STATEREF.isSessionActive)
+                log(`... HANDLE INPUT. isSessionActive() = ${D.JSL(isSessionActive())}`)
+                if (isSessionActive())
                     endSession(msg)
                 else
                     startSession()
@@ -64,12 +64,45 @@ const Session = (() => {
                         addCharToScene(charObjs)
                         break
                     }
+                    case "mode": {
+                        const mode = args.shift()
+                        if (VAL({string: mode}, "!sess add mode") && !D.IsIn(mode, STATEREF.SessionModes)) {
+                            STATEREF.SessionModes.push(args.shift())
+                            D.Alert(`Session Mode '${mode}' Added.<br>Current Modes: ${D.JS(STATEREF.SessionModes)}`, "!sess add mode")
+                        }
+                        break
+                    }
                     // no default
                 }
                 break
             }
-            case "set": case "num": case "setnum": {
-                setSessionNum(parseInt(args.shift()) || STATEREF.SessionNum)
+            case "set": {
+                switch((args[0] || "").toLowerCase()) {
+                    default: {
+                        setSessionNum(parseInt(args.shift()) || STATEREF.SessionNum)
+                        break
+                    }
+                    case "mode": {
+                        args.shift()
+                        STATEREF.Mode = D.IsIn(args.shift(), STATEREF.SessionModes) || STATEREF.Mode
+                        D.Alert(`Current Session Mode:<br><h3>${STATEREF.Mode}</h3>`, "!sess set mode")
+                        break
+                    }
+                }
+                break
+            }
+            case "delete": case "del": {
+                switch ((args.shift() || "").toLowerCase()) {
+                    case "mode": {
+                        const mode = args.shift()
+                        if (VAL({string: mode}, "!sess add mode") && D.IsIn(mode, STATEREF.SessionModes)) {
+                            STATEREF.SessionModes = _.without(STATEREF.SessionModes, D.IsIn(mode, STATEREF.SessionModes))
+                            D.Alert(`Session Mode '${mode}' Removed.<br>Current Modes: ${D.JS(STATEREF.SessionModes)}`, "!sess del mode")
+                        }
+                        break
+                    }
+                    // no default
+                }
                 break
             }
             case "scene": {
@@ -85,9 +118,9 @@ const Session = (() => {
                 break
             }
             case "daylighters": {
-                STATEREF.isDaylighterSession = !STATEREF.isDaylighterSession
-                D.Alert(`Daylighter Session Set To: ${STATEREF.isDaylighterSession}`)
-                DragPads.Toggle("signalLight", !STATEREF.isDaylighterSession)
+                STATEREF.Mode = STATEREF.Mode === "Daylighter" ? "Active" : "Daylighter"
+                D.Alert(`Session Mode Set To: ${STATEREF.Mode}`)
+                DragPads.Toggle("signalLight", STATEREF.Mode !== "Daylighter")
                 TimeTracker.Fix()
                 for (const charData of _.values(Char.REGISTRY).slice(0, 4)) {
                     const [token] = findObjs({
@@ -97,7 +130,7 @@ const Session = (() => {
                         represents: charData.id
                     })
 
-                    if (STATEREF.isDaylighterSession) {
+                    if (STATEREF.Mode === "Daylighter") {
                         Media.SetData(token, { isDaylighter: true, unObfSrc: "base" })
                         Media.Set(token, "baseDL")
                         if (charData.famulusTokenID) {
@@ -117,17 +150,18 @@ const Session = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-    // #region Setting Session Data
-    const setSessionNum = sNum => {
-        STATEREF.SessionNum = sNum
-        D.Alert(`Session Number <b>${D.NumToText(STATEREF.SessionNum)}</b> SET.`)
-    }
+    // #region Getting & Setting Session Data
+    const isSessionActive = () => ["Active", "Downtime", "Complications", "Daylighter"].includes(STATEREF.Mode),
+        setSessionNum = sNum => {
+            STATEREF.SessionNum = sNum
+            D.Alert(`Session Number <b>${D.NumToText(STATEREF.SessionNum)}</b> SET.`)
+        }
     // #endregion
 
     // #region Starting/Ending Sessions
     const startSession = () => {
             const sessionScribe = STATEREF.isTestingActive ? STATEREF.SessionScribes[0] : STATEREF.SessionScribes.shift()
-            STATEREF.isSessionActive = true
+            STATEREF.Mode = "Active"
             if (STATEREF.isTestingActive)
                 STATEREF.dateRecord = TimeTracker.CurrentDate.getTime()
             else
@@ -156,7 +190,7 @@ const Session = (() => {
                 Media.Set(tokenName, STATEREF.tokenRecord[tokenName] || "base")
                 Media.SetArea(tokenName, `${quadrant}Token`)
             }
-            if (STATEREF.isDowntime)
+            if (STATEREF.Mode === "Downtime")
                 Media.Toggle("downtimeBanner", true)
             else
                 for (const imgKey of _.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("Hunger")))
@@ -178,7 +212,7 @@ const Session = (() => {
                     C.CHATHTML.colorTitle("See you next week!", {fontSize: "32px"}),
                 ]))
                 Roller.Clean()
-                STATEREF.isSessionActive = false
+                STATEREF.Mode = "Inactive"
                 STATEREF.locationRecord = _.clone(Media.LOCATION)
                 STATEREF.tokenRecord = {}
                 if (!STATEREF.isTestingActive) {
@@ -228,10 +262,10 @@ const Session = (() => {
             D.Alert(`Testing Set to ${STATEREF.isTestingActive}`, "!sess test")
         },
         toggleDowntime = () => {
-            STATEREF.isDowntime = !STATEREF.isDowntime
-            Media.Toggle("downtimeBanner", STATEREF.isDowntime)
+            STATEREF.Mode = STATEREF.Mode === "Downtime" ? "Active" : "Downtime"
+            Media.Toggle("downtimeBanner", STATEREF.Mode === "Downtime")
             Roller.Clean()
-            if (STATEREF.isDowntime) {
+            if (STATEREF.Mode === "Downtime") {
                 TimeTracker.StopClock()                
                 STATEREF.locationRecord = _.clone(Media.LOCATION)
                 Media.SetLocation({DistrictCenter: "blank"})
@@ -346,10 +380,10 @@ const Session = (() => {
         AddSceneChar: addCharToScene,
 
         get SessionNum() { return STATEREF.SessionNum },
-        get IsSessionActive() { return STATEREF.isSessionActive },
-        get IsDaylighterSession() { return STATEREF.isDaylighterSession },
+        get IsSessionActive() { return isSessionActive() },
+        get Modes() { return STATEREF.SessionModes },
         get IsTesting() { return STATEREF.isTestingActive },
-        get IsDowntime() { return STATEREF.isDowntime }
+        get Mode() { return STATEREF.Mode }
     }
 })()
 

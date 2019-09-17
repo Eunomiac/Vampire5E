@@ -267,17 +267,15 @@ const Roller = (() => {
                     case "dice":
                         _.each(STATEREF.diceList, (v, dNum) => {
                             const thisDie = setDie(dNum, "diceList", "Hs")
-                            if (_.isObject(thisDie)) {
-                                thisDie.set("layer", "objects")
+                            if (_.isObject(thisDie)) 
                                 thisDie.set("isdrawing", false)
-                            }
+                            
                         })
                         _.each(STATEREF.bigDice, (v, dNum) => {
                             const thisDie = setDie(dNum, "bigDice", "Bs")
-                            if (_.isObject(thisDie)) {
-                                thisDie.set("layer", "objects")
+                            if (_.isObject(thisDie)) 
                                 thisDie.set("isdrawing", false)
-                            }
+                            
                         })
                         break
                     // no default
@@ -640,6 +638,9 @@ const Roller = (() => {
             case "!buildFrame":
                 initFrame()
                 break
+            case "!buildPads": 
+                makeSelectionPads()
+                break
             case "!clearAllDice":
                 clearDice(STATECATS.dice[0])
                 clearDice(STATECATS.dice[1])
@@ -652,17 +653,15 @@ const Roller = (() => {
             case "!showDice":
                 _.each(STATEREF.diceList, (v, dNum) => {
                     const thisDie = setDie(dNum, "diceList", "Hs")
-                    if (_.isObject(thisDie)) {
-                        thisDie.set("layer", "objects")
+                    if (_.isObject(thisDie)) 
                         thisDie.set("isdrawing", false)
-                    }
+                    
                 })
                 _.each(STATEREF.bigDice, (v, dNum) => {
                     const thisDie = setDie(dNum, "bigDice", "Bs")
-                    if (_.isObject(thisDie)) {
-                        thisDie.set("layer", "objects")
+                    if (_.isObject(thisDie)) 
                         thisDie.set("isdrawing", false)
-                    }
+                    
                 })
                 break
             case "!changeRoll":
@@ -1071,15 +1070,17 @@ const Roller = (() => {
                 top: 20,
                 left: 45,
                 color: C.COLORS.white,
-                text: "rollerName"
+                text: "rollerName",
+                justification: "left"
             },
             mainRoll: {
                 font_family: "Contrail One",
                 font_size: 40,
-                top: 73,
+                top: 92,
                 left: 135,
                 color: C.COLORS.white,
-                text: "mainRoll"
+                text: "mainRoll",
+                justification: "left"
             },
             posMods: {
                 font_family: "Contrail One",
@@ -1087,7 +1088,8 @@ const Roller = (() => {
                 top: 115,
                 left: 205,
                 color: C.COLORS.white,
-                text: "posMods"
+                text: "posMods",
+                justification: "left"
             },
             negMods: {
                 font_family: "Contrail One",
@@ -1095,7 +1097,8 @@ const Roller = (() => {
                 top: 115,
                 left: 205,
                 color: C.COLORS.red,
-                text: "negMods"
+                text: "negMods",
+                justification: "left"
             },
             redMods: {
                 font_family: "Contrail One",
@@ -1103,7 +1106,8 @@ const Roller = (() => {
                 top: 166,
                 left: 595,
                 color: C.COLORS.red,
-                text: "redMods"
+                text: "redMods",
+                justification: "left"
             },
             goldMods: {
                 font_family: "Contrail One",
@@ -1111,7 +1115,8 @@ const Roller = (() => {
                 top: 166,
                 left: 595,
                 color: C.COLORS.gold,
-                text: "goldMods"
+                text: "goldMods",
+                justification: "left"
             },
             dicePool: {
                 font_family: "Candal",
@@ -1119,7 +1124,8 @@ const Roller = (() => {
                 top: 91,
                 left: 75,
                 color: C.COLORS.white,
-                text: "SS"
+                text: "SS",
+                justification: "center"
             },
             difficulty: {
                 font_family: "Contrail One",
@@ -1127,7 +1133,8 @@ const Roller = (() => {
                 top: 253,
                 left: 96,
                 color: C.COLORS.white,
-                text: "D"
+                text: "D",
+                justification: "center"
             },
             resultCount: {
                 font_family: "Candal",
@@ -1135,7 +1142,8 @@ const Roller = (() => {
                 top: 185,
                 left: 75,
                 color: C.COLORS.white,
-                text: "RC"
+                text: "RC",
+                justification: "center"
             },
             margin: {
                 font_family: "Candal",
@@ -1143,7 +1151,8 @@ const Roller = (() => {
                 top: 294,
                 left: 133,
                 color: C.COLORS.white,
-                text: "M"
+                text: "M",
+                justification: "center"
             },
             outcome: {
                 font_family: "Contrail One",
@@ -1151,7 +1160,8 @@ const Roller = (() => {
                 top: 297,
                 left: 200,
                 color: C.COLORS.white,
-                text: "outcome"
+                text: "outcome",
+                justification: "left"
             },
             subOutcome: {
                 font_family: "Contrail One",
@@ -1159,7 +1169,8 @@ const Roller = (() => {
                 top: 341,
                 left: 360,
                 color: C.COLORS.white,
-                text: "subOutcome"
+                text: "subOutcome",
+                justification: "left"
             }
         },
         COLORSCHEMES = {
@@ -1389,18 +1400,17 @@ const Roller = (() => {
     // #endregion
 
     // #region Object Creation & Registration
-    const registerDie = (obj, category) => {
-            const padRef = POSITIONS.dice[category].pad
+    const registerDie = (obj, category) => {            
             STATEREF[category] = STATEREF[category] || []
             if (VAL({ graphic: obj }, "registerDie")) {
                 obj.set({
-                    imgsrc: IMAGES[category].Bf,
-                    layer: "objects",
+                    imgsrc: IMAGES[category].blank,
+                    layer: "walls",
                     isdrawing: true,
                     name: `rollerDie_${category}_${STATEREF[category].length}`,
                     controlledby: ""
                 })
-                Media.Register(obj, `rollerDie_${category}_${STATEREF[category].length}`, "Bf", "map", false)
+                Media.Register(obj, `rollerDie_${category}_${STATEREF[category].length}`, "blank", "map", false)
                 STATEREF[category].push({
                     id: obj.id,
                     top: obj.get("top"),
@@ -1409,13 +1419,7 @@ const Roller = (() => {
                     height: obj.get("height"),
                     value: "blank"
                 })
-                DragPads.MakePad(obj, "selectDie", {
-                    deltaHeight: padRef.dH,
-                    deltaWidth: padRef.dW,
-                    deltaLeft: padRef.dX,
-                    deltaTop: padRef.dY
-                })
-                D.Alert(`Registered die #${STATEREF[category].length}: ${D.JS(_.values(STATEREF[category]).slice(-1))}, Added WigglePad #${_.values(C.ROOT.DragPads.byPad).length}`, "ROLLER: registerDie()")
+                D.Alert(`Registered die #${STATEREF[category].length}: ${D.JS(_.values(STATEREF[category]).slice(-1))}`, "ROLLER: registerDie()")
 
             // D.Alert(`Returning Die Object: ${D.JS(obj)}`)
 
@@ -1424,7 +1428,7 @@ const Roller = (() => {
 
             return THROW(`Invalid object: ${D.JS(obj)}`, "registerDie()")
         },
-        makeDie = (category, isActive = false) => {
+        makeDie = (category) => {
             STATEREF[category] = STATEREF[category] || []
             const posRef = POSITIONS.dice[category],
                 die = createObj("graphic", {
@@ -1434,7 +1438,7 @@ const Roller = (() => {
                     top: posRef.top,
                     width: posRef.width,
                     height: posRef.height,
-                    layer: isActive ? "objects" : "map",
+                    layer: "map",
                     isdrawing: true,
                     controlledby: ""
                 })
@@ -1501,18 +1505,17 @@ const Roller = (() => {
 
     // #region Dice Frame
     const initFrame = () => {
-            let workingImg = null
             for (const name of _.keys(TEXTLINES))
                 Media.RemoveText(name)
-            DragPads.ClearAllPads("wpReroll")
             Media.Remove("wpRerollPlaceholder")
             Media.RemoveAll("rollerImage")
-            DragPads.ClearAllPads("selectDie")
             for (const cat of STATECATS.dice)
                 clearDice(cat)
-            for (const textLine of _.keys(TEXTLINES))
-                Media.MakeText(textLine, "objects", true, true, null, TEXTLINES[textLine])
-            Media.MakeImg("rollerImage_frontFrame", {
+            for (const textLine of _.keys(TEXTLINES)) {
+                Media.MakeText(textLine, "map", false, true, null, TEXTLINES[textLine])
+                Media.ToggleText(textLine, false, true)
+            }
+            Media.MakeImage("rollerImage_frontFrame", {
                 imgsrc: IMAGES.frontFrame,
                 top: POSITIONS.diceFrameFront.top(),
                 left: POSITIONS.diceFrameFront.left(),
@@ -1522,26 +1525,26 @@ const Roller = (() => {
                 startActive: true
             })
             for (let i = 0; i < 9; i++) {
-                Media.MakeImg(`rollerImage_topMid_${i}`, {
+                Media.MakeImage(`rollerImage_topMid_${i}`, {
                     imgsrc: IMAGES.topMids[i - 3 * Math.floor(i / 3)],
                     top: POSITIONS.diceFrameMidTop.top(),
                     left: POSITIONS.diceFrameMidTop.left() + i * POSITIONS.diceFrameMidTop.xShift(),
                     height: POSITIONS.diceFrameMidTop.height(),
                     width: POSITIONS.diceFrameMidTop.width(),
                     activeLayer: "map",
-                    startActive: true
+                    startActive: false
                 })
-                Media.MakeImg(`rollerImage_bottomMid_${i}`, {
+                Media.MakeImage(`rollerImage_bottomMid_${i}`, {
                     imgsrc: IMAGES.bottomMids[i - 3 * Math.floor(i / 3)],
                     top: POSITIONS.diceFrameMidBottom.top(),
                     left: POSITIONS.diceFrameMidBottom.left() + i * POSITIONS.diceFrameMidBottom.xShift(),
                     height: POSITIONS.diceFrameMidBottom.height(),
                     width: POSITIONS.diceFrameMidBottom.width(),
                     activeLayer: "map",
-                    startActive: true
+                    startActive: false
                 })
             }
-            Media.MakeImg("rollerImage_topEnd", {
+            Media.MakeImage("rollerImage_topEnd", {
                 imgsrc: IMAGES.topEnd,
                 top: POSITIONS.diceFrameEndTop.top(),
                 left: POSITIONS.diceFrameEndTop.left(),
@@ -1550,7 +1553,7 @@ const Roller = (() => {
                 activeLayer: "map",
                 startActive: true
             })
-            Media.MakeImg("rollerImage_bottomEnd", {
+            Media.MakeImage("rollerImage_bottomEnd", {
                 imgsrc: IMAGES.bottomEnd,
                 top: POSITIONS.diceFrameEndBottom.top(),
                 left: POSITIONS.diceFrameEndBottom.left(),
@@ -1559,7 +1562,7 @@ const Roller = (() => {
                 activeLayer: "map",
                 startActive: true
             })
-            Media.MakeImg("rollerImage_diffFrame", {
+            Media.MakeImage("rollerImage_diffFrame", {
                 imgsrc: IMAGES.diffFrame,
                 top: POSITIONS.diceFrameDiffFrame.top(),
                 left: POSITIONS.diceFrameDiffFrame.left(),
@@ -1568,8 +1571,9 @@ const Roller = (() => {
                 activeLayer: "map",
                 startActive: false
             })
+            Media.Toggle("rollerImage_diffFrame", false)
         //WP REROLL BUTTON
-            Media.MakeImg("wpRerollPlaceholder", {
+            Media.MakeImage("wpRerollPlaceholder", {
                 imgsrc: IMAGES.blank,
                 top: POSITIONS.diceFrameRerollPad.top(),
                 left: POSITIONS.diceFrameRerollPad.left(),
@@ -1578,17 +1582,34 @@ const Roller = (() => {
                 activeLayer: "map",
                 startActive: false
             })
-            DragPads.MakePad(workingImg, "wpReroll", {
-                top: POSITIONS.diceFrameRerollPad.top(),
-                left: POSITIONS.diceFrameRerollPad.left(),
-                height: POSITIONS.diceFrameRerollPad.height(),
-                width: POSITIONS.diceFrameRerollPad.width()
-            })
-            DragPads.Toggle("wpReroll", false)
             for (const diceCat of _.keys(SETTINGS.dice))
                 makeAllDice(diceCat, SETTINGS.dice[diceCat])
             Media.Initialize()
         },
+        makeSelectionPads = () => {            
+            DragPads.ClearAllPads("wpReroll")
+            DragPads.ClearAllPads("selectDie")
+            const wpImgObj = Media.GetObj("wpRerollPlaceholder")
+            if (VAL({graphic: wpImgObj}, "makeSelectionPads")) 
+                DragPads.MakePad(wpImgObj, "wpReroll", {
+                    top: POSITIONS.diceFrameRerollPad.top(),
+                    left: POSITIONS.diceFrameRerollPad.left(),
+                    height: POSITIONS.diceFrameRerollPad.height(),
+                    width: POSITIONS.diceFrameRerollPad.width(),
+                    startActive: false
+                })
+            for (const category of STATECATS.dice)
+                for (const dieData of STATEREF[category]) {
+                    const dieObj = getObj("graphic", dieData.id),
+                        padRef = POSITIONS.dice[category].pad              
+                    DragPads.MakePad(dieObj, "selectDie", {
+                        deltaHeight: padRef.dH,
+                        deltaWidth: padRef.dW,
+                        deltaLeft: padRef.dX,
+                        deltaTop: padRef.dY
+                    })
+                }            
+        },        
         scaleFrame = (row, width, isChangingOffRow = true) => {
             if (width < 0) {
                 if (row === "top") {
@@ -1677,11 +1698,11 @@ const Roller = (() => {
             }
             DragPads.Toggle(dieParams.id, !["humanity", "project", "secret", "remorse", "willpower"].includes(rollType) && dieVal !== "blank" && !dieVal.includes("H"))
             dieParams.imgsrc = IMAGES[dieCat][dieVal]
-            dieParams.layer = dieVal === "blank" ? "map" : "objects"
             _.each(["top", "left", "width"], dir => {
                 if (die.get(dir) !== dieRef[dir] || params.shift && params.shift[dir])
                     dieParams[dir] = dieRef[dir] + (params.shift && params.shift[dir] ? params.shift[dir] : 0)
             })
+            Media.Toggle(die.get("name"), dieVal !== "blank", false)
         //DB(`Die Params for ${D.JS(dieCat)}-${D.JS(dieVal)}: ${D.JS(dieParams)}`, "setDie")
             try {
                 die.set(dieParams)
@@ -3760,7 +3781,7 @@ const Roller = (() => {
             //D.Alert(`KEY: ${oddsKey}<br>Bins: ${D.JS(resBins)}`)
             const randInts = [randomInteger(1000), randomInteger(1000)],
                 resOdds = {
-                    flavor: C.RESONANCEODDS.flavor[oddsKey][["r", "i", "q"].reduce((tot, x) => tot + countRes(x, [...resBins["pos"], ...resBins["2pos"]]), 0)],
+                    flavor: C.RESONANCEODDS.flavor[oddsKey][["r", "i", "q"].reduce((tot, x) => tot + countRes(x, [...resBins.pos, ...resBins["2pos"]]), 0)],
                     intensity: C.RESONANCEODDS.intensity[isDoubleAcute === "2" && "doubleAcute" || "norm"]
                 },
                 flavorOdds = resOdds.flavor.map((x, i, a) => Math.round((i === 0 && x || x + a.slice(0, i).reduce((tot, xx) => tot + xx, 0))*1000)),

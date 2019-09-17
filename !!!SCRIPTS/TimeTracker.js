@@ -745,7 +745,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
             setHorizon(true)
             setWeather()
             //D.Alert(`Setting Ground Cover: ${groundCover}`)
-            Media.Set("WeatherGround", Session.IsDowntime ? "blank" : getGroundCover())
+            Media.Set("WeatherGround", Session.Mode === "Downtime" ? "blank" : getGroundCover())
             //Media.OrderImages("map", true)
             setCurrentDate()
         },
@@ -783,14 +783,14 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                 curTime = 60 * STATEREF.dateObj.getUTCHours() + STATEREF.dateObj.getUTCMinutes(),
                 curHoriz = imgTimes[_.find(_.keys(imgTimes), v => curTime <= v)]
             //D.Alert(`Daylighter Check: ${C.ROOT.Chars.isDaylighterSession} vs. ${C.ROOT.Chars.isDaylighterSession}, imgSrc: ${curHoriz}`)
-            if (Session.IsDaylighterSession && curHoriz === "day")
+            if (Session.Mode === "Daylighter" && curHoriz === "day")
                 return "daylighters"
             else
                 return curHoriz
         },
         isDay = () => getHorizon().includes("day"),
         setHorizon = (isForced = false) => {
-            if (Session.IsDowntime) {
+            if (Session.Mode === "Downtime") {
                 if (STATEREF.lastHorizon !== "night1") {
                     Media.Set("Horizon_1", "night1")
                     STATEREF.lastHorizon = "night1"
@@ -815,7 +815,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
         setCurrentDate = () => {
             // dateObj = dateObj || new Date(parseInt(STATEREF.currentDate))
             checkAlarm(STATEREF.lastDateStep, STATEREF.dateObj.getTime())
-            if (Session.IsDowntime)
+            if (Session.Mode === "Downtime")
                 Media.SetText("TimeTracker", `${
                     DAYSOFWEEK[STATEREF.dateObj.getUTCDay()]}, ${
                     MONTHS[STATEREF.dateObj.getUTCMonth()]} ${
@@ -911,7 +911,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                     Char.RefreshDisplays()
                 }
                 if (
-                    !Session.IsDowntime && (
+                    Session.Mode !== "Downtime" && (
                         STATEREF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
                         STATEREF.dateObj.getMonth() !== lastDate.getMonth() ||
                         STATEREF.dateObj.getUTCDate() !== lastDate.getUTCDate() ||
@@ -929,7 +929,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
             }
         },
         setIsRunningFast = runStatus => {
-            if (!Session.IsDowntime)
+            if (Session.Mode !== "Downtime")
                 if (runStatus && !isRunningFast) {
                     isRunningFast = runStatus
                     Media.Set("WeatherMain", "blank")
@@ -1069,7 +1069,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                             return `dark${degree.toLowerCase()}snow`
                     }
                 }
-            if (!Session.IsSessionActive || Session.IsDowntime) {
+            if (!Session.IsSessionActive || Session.Mode === "Downtime") {
                 for (const textKey of [..._.map(D.GetCharVals("registered", "shortName"), v => `${v}Desire`), "tempF", "tempC", "weather"])
                     Media.ToggleText(textKey, false)
                 Media.Toggle("WeatherMain", false)
@@ -1158,7 +1158,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
             const weatherCode = WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()]
             if (STATEREF.dateObj.getUTCMonth() >= 3 && STATEREF.dateObj.getUTCMonth() <= 9)
                 return "blank"
-            if (isDay() && Session.IsDaylighterSession)
+            if (isDay() && Session.Mode === "Daylighter")
                 if (getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()].charAt(2)) < 1)
                     return "frost"
                 else

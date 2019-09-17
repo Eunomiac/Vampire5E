@@ -32,6 +32,7 @@ const Fuzzy = (() => {
 
     // #region LOCAL INITIALIZATION
     const initialize = () => { // eslint-disable-line no-empty-function
+        STATEREF.minMatchScore = STATEREF.minMatchScore || 0.33
     }
     // #endregion	
 
@@ -41,8 +42,25 @@ const Fuzzy = (() => {
     const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
         // const
         switch (call) {
-            case "":
+            case "set": {
+                switch (args[0] && args.shift().toLowerCase() || "") {
+                    case "minmatch": default: {
+                        if (args[0])
+                            STATEREF.minMatchScore = parseFloat(args.shift()) || 0.33
+                        break
+                    }
+                }
+            }
+            // falls through
+            case "get": {
+                switch (args[0] && args.shift().toLowerCase() || "") {
+                    case "minmatch": default: {
+                        D.Alert(`Fuzzy Minimum Match Score is <b>${STATEREF.minMatchScore}</b><br><br>Default = 0.33; <b>!fuzzy set minmatch &lt;#&gt;</b> to change.`, "!fuzzy set minmatch")
+                        break
+                    }
+                }
                 break
+            }
             // no default
         }
     }
@@ -232,6 +250,7 @@ const Fuzzy = (() => {
                     newResults.push([scoreWordPair[0], this.exactSet[scoreWordPair[1]]])
                 
             }.bind(this))
+            DB(`Needle: ${D.JS(value)}<br>Sorted Matches:${D.JS(newResults.map(x => `${x[0]}: "${x[1]}"`))}`, "fuzzyMatch")
             return newResults
         }
     
