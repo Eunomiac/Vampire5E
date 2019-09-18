@@ -133,7 +133,7 @@ const Tester = (() => {
                         },
                         isValidDString = str => {
                             const dateTest = parseDString(str)
-                            return Boolean(str && dateTest && Object.prototype.toString.call(dateTest) === "[object Date]" && !isNaN(dateTest))
+                            return Boolean(str && dateTest && Object.prototype.toString.call(dateTest) === "[object Date]" && !_.isNaN(dateTest))
                         },   
                         returnLines = ["<table><tr><th style=\"width:100px;\">INPUT</th><th style=\"width:100px;\">OUTPUT</th></tr>"]
                     for (const dString of dateStrings)

@@ -87,6 +87,7 @@ module.exports = {
         "no-param-reassign": 0,
         "no-plusplus": 0,
         "no-restricted-syntax": 0,
+        "no-restricted-globals": 0,
         "no-template-curly-in-string": "warn",
         "no-underscore-dangle": 0,
         "no-unused-vars": "warn",

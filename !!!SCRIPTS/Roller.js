@@ -376,7 +376,7 @@ const Roller = (() => {
                                 if (!STATEREF.rollEffects[effectString]) {
                                     const checkEffects = _.filter(STATEREF.rollEffects, v => v.includes(charObj.id))
                                     if (checkEffects.length === 1)
-                                        effectString = _.keys(checkEffects)[0]
+                                        [effectString] = _.keys(checkEffects)
                                     else if (checkEffects.length === 0)
                                         D.Alert(`Character ${D.JS(charObj.get("name"))} is not listed in any roll effect exclusions.`, "!delglobalexclude")
                                     else if (checkEffects.length > 1)
@@ -506,12 +506,12 @@ const Roller = (() => {
                             resIntLine = `The blood's faint ${resonance[1].toLowerCase()} resonance can guide you in developing ${resonance[2]}, but lacks any real power.`
                             break
                         case "intense":
-                            deltaAttrs.resonance = resonance[1]
+                            [,deltaAttrs.resonance] = [resonance]
                             resonance[0] = "Intensely"
                             resIntLine = `The blood's strong ${resonance[1].toLowerCase()} resonance spreads through you, infusing your own vitae and enhancing both your control and understanding of ${resonance[2]}.`
                             break
                         case "acute":
-                            deltaAttrs.resonance = resonance[1]
+                            [,deltaAttrs.resonance] = [resonance]
                             resonance[0] = "Acutely"
                             resIntLine = `This blood is special.  In addition to enhancing ${resonance[2]}, its ${resonance[1].toLowerCase()} resonance is so powerful that the emotions within have crystallized into a dyscracias.`
                             break
@@ -782,7 +782,7 @@ const Roller = (() => {
                         if (!STATEREF.rollEffects[effectString]) {
                             const checkEffects = _.filter(STATEREF.rollEffects, v => v.includes(charObj.id))
                             if (checkEffects.length === 1)
-                                effectString = _.keys(checkEffects)[0]
+                                [effectString] = _.keys(checkEffects)
                             else if (checkEffects.length === 0)
                                 D.Alert(`Character ${D.JS(charObj.get("name"))} is not listed in any roll effect exclusions.`, "!delglobalexclude")
                             else if (checkEffects.length > 1)
@@ -3171,13 +3171,13 @@ const Roller = (() => {
                                 })    
                                 // LogLines.rollerName += logPhrase;
                                 rollLines.rollerName.text = introPhrase
-                                if (rollFlags.isHidingTraits)
+                                if (rollFlags.isHidingTraits) {
                                     rollLines.mainRoll.text = rollFlags.isHidingDicePool ? "Some Dice" : `${rollData.dicePool + -1 * (rollData.negFlagMod || 0)} Dice`
-                                else
+                                    logLines.mainRoll = CHATSTYLES.mainRoll + rollFlags.isHidingDicePool ? "Some Dice" : `${rollData.dicePool + -1 * (rollData.negFlagMod || 0)} Dice`
+                                } else {
                                     rollLines.mainRoll.text = mainRollParts.join(" + ")
-                                logLines.mainRoll = CHATSTYLES.mainRoll + (rollFlags.isHidingTraits ?
-                                    rollFlags.isHidingDicePool ? "Some Dice" : `${rollData.dicePool + -1 * (rollData.negFlagMod || 0)} Dice` :
-                                    mainRollLog.join(" + "))
+                                    logLines.mainRoll = CHATSTYLES.mainRoll + mainRollLog.join(" + ")
+                                }
                                 stLines.mainRoll = CHATSTYLES.mainRoll + stRollLog.join(" + ")
                                 if (rollData.mod && rollData.mod !== 0)
                                     if (rollData.traits.length === 0 && rollData.mod > 0) {

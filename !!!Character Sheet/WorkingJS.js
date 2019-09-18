@@ -33,11 +33,11 @@
 				"append": Add the stat to the end of the list, bumping the oldest stat if necessary.
 				"replace": Replace the would-be pair with this stat, keeping the older stat.
 				"pass": Delete the stat and repeat comparison with the next-newest. */
-            attribute: { attribute: "append", skill: "append", discipline: "append", advantage: "append", tracker: "append" },
-            skill: { attribute: "append", skill: "replace", discipline: "append", advantage: "append", tracker: "pass" },
-            discipline: { attribute: "append", skill: "pass", discipline: "replace", advantage: "pass", tracker: "pass" },
-            advantage: { attribute: "append", skill: "append", discipline: "pass", advantage: "replace", tracker: "pass" },
-            tracker: { attribute: "append", skill: "pass", discipline: "pass", advantage: "pass", tracker: "replace" }
+            attribute: {attribute: "append", skill: "append", discipline: "append", advantage: "append", tracker: "append"},
+            skill: {attribute: "append", skill: "replace", discipline: "append", advantage: "append", tracker: "pass"},
+            discipline: {attribute: "append", skill: "pass", discipline: "replace", advantage: "pass", tracker: "pass"},
+            advantage: {attribute: "append", skill: "append", discipline: "pass", advantage: "replace", tracker: "pass"},
+            tracker: {attribute: "append", skill: "pass", discipline: "pass", advantage: "pass", tracker: "replace"}
         },
         res_discs = {
             None: [" "],
@@ -91,32 +91,32 @@
             null,
             null,
             null,
-            { blood_potency_max: 10, blood_potency: 5 },
-            { blood_potency_max: 9, blood_potency: 4 },
-            { blood_potency_max: 8, blood_potency: 3 },
-            { blood_potency_max: 7, blood_potency: 3 },
-            { blood_potency_max: 6, blood_potency: 2 },
-            { blood_potency_max: 5, blood_potency: 2 },
-            { blood_potency_max: 4, blood_potency: 1 },
-            { blood_potency_max: 4, blood_potency: 1 },
-            { blood_potency_max: 3, blood_potency: 1 },
-            { blood_potency_max: 3, blood_potency: 1 },
-            { blood_potency_max: 0, blood_potency: 0 },
-            { blood_potency_max: 0, blood_potency: 0 },
-            { blood_potency_max: 0, blood_potency: 0 }
+            {blood_potency_max: 10, blood_potency: 5},
+            {blood_potency_max: 9, blood_potency: 4},
+            {blood_potency_max: 8, blood_potency: 3},
+            {blood_potency_max: 7, blood_potency: 3},
+            {blood_potency_max: 6, blood_potency: 2},
+            {blood_potency_max: 5, blood_potency: 2},
+            {blood_potency_max: 4, blood_potency: 1},
+            {blood_potency_max: 4, blood_potency: 1},
+            {blood_potency_max: 3, blood_potency: 1},
+            {blood_potency_max: 3, blood_potency: 1},
+            {blood_potency_max: 0, blood_potency: 0},
+            {blood_potency_max: 0, blood_potency: 0},
+            {blood_potency_max: 0, blood_potency: 0}
         ],
         bpDependants = [
-            { bp_surge: 1, bp_mend: 1, bp_discbonus: 1, bp_rousereroll: 0, bp_baneseverity: 1, bp_slakeanimal: 1, bp_slakehuman: 0, bp_slakekill: 1 },
-            { bp_surge: 1, bp_mend: 2, bp_discbonus: 1, bp_rousereroll: 1, bp_baneseverity: 1, bp_slakeanimal: 0.5, bp_slakehuman: 0, bp_slakekill: 1 },
-            { bp_surge: 2, bp_mend: 2, bp_discbonus: 1, bp_rousereroll: 2, bp_baneseverity: 2, bp_slakeanimal: 0, bp_slakehuman: 0, bp_slakekill: 1 },
-            { bp_surge: 2, bp_mend: 3, bp_discbonus: 2, bp_rousereroll: 2, bp_baneseverity: 2, bp_slakeanimal: 0, bp_slakehuman: -1, bp_slakekill: 1 },
-            { bp_surge: 3, bp_mend: 3, bp_discbonus: 2, bp_rousereroll: 3, bp_baneseverity: 3, bp_slakeanimal: 0, bp_slakehuman: -1, bp_slakekill: 2 },
-            { bp_surge: 3, bp_mend: 3, bp_discbonus: 3, bp_rousereroll: 3, bp_baneseverity: 3, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 2 },
-            { bp_surge: 4, bp_mend: 3, bp_discbonus: 3, bp_rousereroll: 4, bp_baneseverity: 4, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 2 },
-            { bp_surge: 4, bp_mend: 4, bp_discbonus: 4, bp_rousereroll: 4, bp_baneseverity: 4, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 3 },
-            { bp_surge: 5, bp_mend: 4, bp_discbonus: 4, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 3 },
-            { bp_surge: 5, bp_mend: 5, bp_discbonus: 5, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -3, bp_slakekill: 3 },
-            { bp_surge: 10, bp_mend: 10, bp_discbonus: 10, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -4, bp_slakekill: 4 }
+            {bp_surge: 1, bp_mend: 1, bp_discbonus: 1, bp_rousereroll: 0, bp_baneseverity: 1, bp_slakeanimal: 1, bp_slakehuman: 0, bp_slakekill: 1},
+            {bp_surge: 1, bp_mend: 2, bp_discbonus: 1, bp_rousereroll: 1, bp_baneseverity: 1, bp_slakeanimal: 0.5, bp_slakehuman: 0, bp_slakekill: 1},
+            {bp_surge: 2, bp_mend: 2, bp_discbonus: 1, bp_rousereroll: 2, bp_baneseverity: 2, bp_slakeanimal: 0, bp_slakehuman: 0, bp_slakekill: 1},
+            {bp_surge: 2, bp_mend: 3, bp_discbonus: 2, bp_rousereroll: 2, bp_baneseverity: 2, bp_slakeanimal: 0, bp_slakehuman: -1, bp_slakekill: 1},
+            {bp_surge: 3, bp_mend: 3, bp_discbonus: 2, bp_rousereroll: 3, bp_baneseverity: 3, bp_slakeanimal: 0, bp_slakehuman: -1, bp_slakekill: 2},
+            {bp_surge: 3, bp_mend: 3, bp_discbonus: 3, bp_rousereroll: 3, bp_baneseverity: 3, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 2},
+            {bp_surge: 4, bp_mend: 3, bp_discbonus: 3, bp_rousereroll: 4, bp_baneseverity: 4, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 2},
+            {bp_surge: 4, bp_mend: 4, bp_discbonus: 4, bp_rousereroll: 4, bp_baneseverity: 4, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 3},
+            {bp_surge: 5, bp_mend: 4, bp_discbonus: 4, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -2, bp_slakekill: 3},
+            {bp_surge: 5, bp_mend: 5, bp_discbonus: 5, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -3, bp_slakekill: 3},
+            {bp_surge: 10, bp_mend: 10, bp_discbonus: 10, bp_rousereroll: 5, bp_baneseverity: 5, bp_slakeanimal: 0, bp_slakehuman: -4, bp_slakekill: 4}
         ],
         humanityText = {
             mainText: [
@@ -794,9 +794,9 @@
             ISOFFLINE = !ISOFFLINE
             log(`Sheetworker: ${JSON.stringify(ISOFFLINE)}`)
             if (ISOFFLINE)
-                setAttrs({ sheetworkertoggle: "1" })
+                setAttrs({sheetworkertoggle: "1"})
             else
-                setAttrs({ sheetworkertoggle: "0" })
+                setAttrs({sheetworkertoggle: "0"})
         }
     })
     // #endregion
@@ -1067,7 +1067,7 @@
                 })
             }
         },
-        doTracker = (tracker, eInfo = { sourceAttribute: "" }, cback) => {
+        doTracker = (tracker, eInfo = {sourceAttribute: ""}, cback) => {
             const attrList = {},
                 $funcs = []
             switch (tracker.toLowerCase()) {
@@ -1119,7 +1119,7 @@
                                     }`
                             attrList.bp_slakebag = attrList.bp_slakeanimal
                             attrList.bp_slaketext = `Animals & bagged blood slake ${
-                                { 0: "no", 0.5: "half", 1: "full" }[attrList.bp_slakeanimal]
+                                {0: "no", 0.5: "half", 1: "full"}[attrList.bp_slakeanimal]
                             } Hunger.\n${
                                 attrList.bp_slakehuman === 0 ?
                                     "Humans slake full Hunger.\n" :
@@ -1340,7 +1340,7 @@
                 funcName = "doProjectDates",
                 getEndDate = (start, incUnit, incNum) => {
                     const end = new Date(start)
-                //log(`EndDate: ${JSON.stringify(end)}`, "DoProjectDates >>> GetEndDate")
+                // log(`EndDate: ${JSON.stringify(end)}`, "DoProjectDates >>> GetEndDate")
                     switch (incUnit) {
                         case "hours":
                             return new Date(end.setUTCHours(start.getUTCHours() + 10 * incNum))
@@ -1359,14 +1359,14 @@
                 }
             log("", `████ ${funcName.toUpperCase()} CALLED ████`)
             getAttrs([...attrArray, "date_today"], ATTRS => {
-            //const [, p, pV, pI] = pFuncs(_.keys(ATTRS)[0], ATTRS),
+            // const [, p, pV, pI] = pFuncs(_.keys(ATTRS)[0], ATTRS),
                 const [, p, pV, pI] = sFuncs("project", ATTRS),
                     curDate = new Date(parseDString(ATTRS.date_today))
                 log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
                 let startDate = null
                 if (pV("projectstartdate")) {
                     startDate = new Date(parseDString(pV("projectstartdate")))
-                //log(`Parsing Start Date "${pV("projectstartdate")}": ${JSON.stringify(startDate)}`, funcName)
+                // log(`Parsing Start Date "${pV("projectstartdate")}": ${JSON.stringify(startDate)}`, funcName)
                 } else {
                     startDate = new Date(curDate)
                     attrList[p("projectstartdate")] = formatDString(startDate)
@@ -1420,7 +1420,7 @@
             log("", `████ ${funcName.toUpperCase()} CALLED ████`)
             getAttrs(attrArray, ATTRS => {
                 const [, p, pV, pI] = sFuncs("project", ATTRS),
-                    traits = _.map(["projectlaunchtrait1", "projectlaunchtrait2"], v => ({ name: pV(`${v}_name`), value: pI(v) })),
+                    traits = _.map(["projectlaunchtrait1", "projectlaunchtrait2"], v => ({name: pV(`${v}_name`), value: pI(v)})),
                     launchTrtCheck = []
                 log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
                 if (pV("projectenddate") === "") {
@@ -1459,12 +1459,12 @@
                 }) // const 
                 getAttrs([...attrArray, "date_today"], ATTRS => {
                     const ids = _.uniq(_.map(attrArray, v => parseRepAttr(v)[1]))
-                    //log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
-                    //log(`Retrieved IDs: ${JSON.stringify(simpleRepAttrs(ids))}`, funcName)
+                    // log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+                    // log(`Retrieved IDs: ${JSON.stringify(simpleRepAttrs(ids))}`, funcName)
                     _.each(ids, rowID => {
                         const [, p, pV, pI] = pFuncs(`repeating_project_${rowID}`, ATTRS)
                         let counterPos = 11
-                        //log(`p-Test: p("projectinccounter) = ${JSON.stringify(p("projectinccounter"))}`, funcName)
+                        // log(`p-Test: p("projectinccounter) = ${JSON.stringify(p("projectinccounter"))}`, funcName)
                         const stakeRemaining = Math.max(0, pI("projecttotalstake")) - _.reduce(_.map([1, 2, 3], v => pI(`projectstake${v}`)), (memo, num) => parseInt(memo) + parseInt(num))
                         if (stakeRemaining === 0 && pV("projectlaunchresults") && (pV("projectlaunchresults").includes("SUCCESS") || pV("projectlaunchresults").includes("COMPLICATION") || pV("projectlaunchresults").includes("CRITICAL")))
                             counterPos = 10 - Math.floor(10 * getProgress(
@@ -1523,7 +1523,7 @@
                 log(`Attr Array: ${JSON.stringify(attrArray)}`, funcName)
                 getAttrs(attrArray, ATTRS => {
                     const [, p, pV, pI] = sFuncs("project", ATTRS),
-                        traits = _.map(["projectlaunchtrait1", "projectlaunchtrait2"], v => ({ name: pV(`${v}_name`), value: pI(v) }))
+                        traits = _.map(["projectlaunchtrait1", "projectlaunchtrait2"], v => ({name: pV(`${v}_name`), value: pI(v)}))
                     let traitString = ""
                     log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
                     if (traits[0].name !== "" && traits[0].value > 0 ||
@@ -1666,7 +1666,7 @@
         }
 
     on("change:date_today", doProjectCounter)
-    on(getTriggers(null, "", { project: ["projectstartdate", "projectincnum", "projectincunit"] }), eInfo => {
+    on(getTriggers(null, "", {project: ["projectstartdate", "projectincnum", "projectincunit"]}), eInfo => {
         if (eInfo.sourceType !== "sheetworker") {
             console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
             log(`(Dates, LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
@@ -1675,7 +1675,7 @@
             })
         }
     })
-    on(getTriggers(null, "", { project: ["projectscope", "projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1, 2, 3], v => [`projectteamwork${v}`]))] }), eInfo => {
+    on(getTriggers(null, "", {project: ["projectscope", "projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1, 2, 3], v => [`projectteamwork${v}`]))]}), eInfo => {
         if (eInfo.sourceType !== "sheetworker") {
             console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
             log(`(Diff, LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
@@ -1684,7 +1684,7 @@
             })
         }
     })
-    on(getTriggers(null, "", { project: ["projectlaunchtrait1", "projectlaunchtrait1_name", "projectlaunchtrait2", "projectlaunchtrait2_name"] }), eInfo => {
+    on(getTriggers(null, "", {project: ["projectlaunchtrait1", "projectlaunchtrait1_name", "projectlaunchtrait2", "projectlaunchtrait2_name"]}), eInfo => {
         if (eInfo.sourceType !== "sheetworker") {
             console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
             log(`(LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
@@ -1693,7 +1693,7 @@
             })
         }
     })
-    on(getTriggers(null, "", { project: ["projectlaunchresults"] }), eInfo => {
+    on(getTriggers(null, "", {project: ["projectlaunchresults"]}), eInfo => {
         if (eInfo.sourceType !== "sheetworker") {
             console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
             log(`(Diff, LCheck, LParams, Stake, Counter) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
@@ -1702,7 +1702,7 @@
             })
         }
     })
-    on(getTriggers(null, "", { project: _.flatten(_.map([1, 2, 3, 4, 5, 6], v => [`projectstake${v}`, `projectstake${v}_name`])) }), eInfo => {
+    on(getTriggers(null, "", {project: _.flatten(_.map([1, 2, 3, 4, 5, 6], v => [`projectstake${v}`, `projectstake${v}_name`]))}), eInfo => {
         if (eInfo.sourceType !== "sheetworker") {
             console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
             log(`(Stake) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
@@ -1720,7 +1720,7 @@
             repeating_project_schemetypemem_toggle: eInfo.newValue,
             repeating_project_schemetypeevent_toggle: eInfo.newValue
         })
-        //doSchemeSelection()
+        // doSchemeSelection()
     })
     
     on("change:repeating_project:objectivedate", (eInfo) => {
@@ -1819,7 +1819,7 @@
     // #region UPDATE: Experience
     const doEXP = callback => {
         const attrList = {},
-            attrArray = { "earnedxp": [], "earnedxpright": [], "spentxp": [] },
+            attrArray = {"earnedxp": [], "earnedxpright": [], "spentxp": []},
             funcName = "doEXP"
         log("", `████ ${funcName.toUpperCase()} CALLED ████`)
         getSectionIDs("earnedxp", idArray => {
@@ -2078,7 +2078,7 @@
                                         if (isDisplaying)
                                             topDisplayStrings.push(displayString)
                                     }
-                                    return _.uniq(topDisplayStrings).join(", ") + "."
+                                    return `${_.uniq(topDisplayStrings).join(", ")  }.`
                                 }                                        
                             prevRArray.push(..._.compact((ATTRS.rollarray || "").split(",")))
                             log(`>>> PREVRARRAY INITIAL: ${JSON.stringify(prevRArray)}`)
