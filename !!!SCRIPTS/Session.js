@@ -3,16 +3,16 @@ const Session = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Session",
         CHATCOMMAND = "!sess",
-        GMONLY = true
+        GMONLY = true,
 
     // #region COMMON INITIALIZATION
-    const STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
+        STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
+        VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
+        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
-    const checkInstall = () => {
+        checkInstall = () => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             initialize()
         },
@@ -26,140 +26,140 @@ const Session = (() => {
                     handleInput(msg, who, call, args)
                 }
             })
-        }
+        },
     // #endregion
 
     // #region LOCAL INITIALIZATION
-    const initialize = () => { // eslint-disable-line no-empty-function
-        STATEREF.isTestingActive = STATEREF.isTestingActive || false
-        STATEREF.sceneChars = STATEREF.sceneChars || []
-        STATEREF.locationRecord = STATEREF.locationRecord || {DistrictCenter: "blank"}
-        STATEREF.tokenRecord = STATEREF.tokenRecord || {}
-        STATEREF.SessionScribes = STATEREF.SessionScribes || []
-        STATEREF.SessionModes = STATEREF.SessionModes || ["Active", "Inactive", "Daylighter", "Downtime", "Complications"]
-        //STATEREF.SessionScribes = [ "Thaumaterge", "Ava Wong", "banzai", "PixelPuzzler" ]
+        initialize = () => { // eslint-disable-line no-empty-function
+            STATEREF.isTestingActive = STATEREF.isTestingActive || false
+            STATEREF.sceneChars = STATEREF.sceneChars || []
+            STATEREF.locationRecord = STATEREF.locationRecord || {DistrictCenter: "blank"}
+            STATEREF.tokenRecord = STATEREF.tokenRecord || {}
+            STATEREF.SessionScribes = STATEREF.SessionScribes || []
+            STATEREF.SessionModes = STATEREF.SessionModes || ["Active", "Inactive", "Daylighter", "Downtime", "Complications"]
+        // STATEREF.SessionScribes = [ "Thaumaterge", "Ava Wong", "banzai", "PixelPuzzler" ]
         
-    }
+        },
     // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-    const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
-        //D.Alert(`Received Call: ${call}<br>MSG: ${D.JS(msg)}`)
-        let charObjs, charIDString
-        [charObjs, charIDString, call, args] = D.ParseCharSelection(call, args)
-        //D.Alert(`Updated Call: ${call}<br>MSG: ${D.JS(msg)}`)
-        switch (call) {
-            case "start": case "end": case "toggle": {
-                log(`... HANDLE INPUT. isSessionActive() = ${D.JSL(isSessionActive())}`)
-                if (isSessionActive())
-                    endSession(msg)
-                else
-                    startSession()
-                break
-            }
-            case "add": {
-                switch (args.shift().toLowerCase()) {
-                    case "scene": {
-                        charObjs = charObjs || D.GetChar(msg) || D.GetChar(args.shift())
-                        addCharToScene(charObjs)
-                        break
-                    }
-                    case "mode": {
-                        const mode = args.shift()
-                        if (VAL({string: mode}, "!sess add mode") && !D.IsIn(mode, STATEREF.SessionModes)) {
-                            STATEREF.SessionModes.push(args.shift())
-                            D.Alert(`Session Mode '${mode}' Added.<br>Current Modes: ${D.JS(STATEREF.SessionModes)}`, "!sess add mode")
+        handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
+        // D.Alert(`Received Call: ${call}<br>MSG: ${D.JS(msg)}`)
+            let charObjs, charIDString
+            [charObjs, charIDString, call, args] = D.ParseCharSelection(call, args)
+        // D.Alert(`Updated Call: ${call}<br>MSG: ${D.JS(msg)}`)
+            switch (call) {
+                case "start": case "end": case "toggle": {
+                    log(`... HANDLE INPUT. isSessionActive() = ${D.JSL(isSessionActive())}`)
+                    if (isSessionActive())
+                        endSession(msg)
+                    else
+                        startSession()
+                    break
+                }
+                case "add": {
+                    switch (args.shift().toLowerCase()) {
+                        case "scene": {
+                            charObjs = charObjs || D.GetChar(msg) || D.GetChar(args.shift())
+                            addCharToScene(charObjs)
+                            break
                         }
-                        break
-                    }
-                    // no default
-                }
-                break
-            }
-            case "set": {
-                switch((args[0] || "").toLowerCase()) {
-                    default: {
-                        setSessionNum(parseInt(args.shift()) || STATEREF.SessionNum)
-                        break
-                    }
-                    case "mode": {
-                        args.shift()
-                        STATEREF.Mode = D.IsIn(args.shift(), STATEREF.SessionModes) || STATEREF.Mode
-                        D.Alert(`Current Session Mode:<br><h3>${STATEREF.Mode}</h3>`, "!sess set mode")
-                        break
-                    }
-                }
-                break
-            }
-            case "delete": case "del": {
-                switch ((args.shift() || "").toLowerCase()) {
-                    case "mode": {
-                        const mode = args.shift()
-                        if (VAL({string: mode}, "!sess add mode") && D.IsIn(mode, STATEREF.SessionModes)) {
-                            STATEREF.SessionModes = _.without(STATEREF.SessionModes, D.IsIn(mode, STATEREF.SessionModes))
-                            D.Alert(`Session Mode '${mode}' Removed.<br>Current Modes: ${D.JS(STATEREF.SessionModes)}`, "!sess del mode")
+                        case "mode": {
+                            const mode = args.shift()
+                            if (VAL({string: mode}, "!sess add mode") && !D.IsIn(mode, STATEREF.SessionModes)) {
+                                STATEREF.SessionModes.push(args.shift())
+                                D.Alert(`Session Mode '${mode}' Added.<br>Current Modes: ${D.JS(STATEREF.SessionModes)}`, "!sess add mode")
+                            }
+                            break
                         }
-                        break
-                    }
                     // no default
+                    }
+                    break
                 }
-                break
-            }
-            case "scene": {
-                endScene()
-                break
-            }
-            case "test": {
-                toggleTesting()
-                break
-            }
-            case "downtime": {
-                toggleDowntime()
-                break
-            }
-            case "daylighters": {
-                STATEREF.Mode = STATEREF.Mode === "Daylighter" ? "Active" : "Daylighter"
-                D.Alert(`Session Mode Set To: ${STATEREF.Mode}`)
-                DragPads.Toggle("signalLight", STATEREF.Mode !== "Daylighter")
-                TimeTracker.Fix()
-                for (const charData of _.values(Char.REGISTRY).slice(0, 4)) {
-                    const [token] = findObjs({
-                        _pageid: D.PAGEID,
-                        _type: "graphic",
-                        _subtype: "token",
-                        represents: charData.id
-                    })
+                case "set": {
+                    switch((args[0] || "").toLowerCase()) {
+                        default: {
+                            setSessionNum(parseInt(args.shift()) || STATEREF.SessionNum)
+                            break
+                        }
+                        case "mode": {
+                            args.shift()
+                            STATEREF.Mode = D.IsIn(args.shift(), STATEREF.SessionModes) || STATEREF.Mode
+                            D.Alert(`Current Session Mode:<br><h3>${STATEREF.Mode}</h3>`, "!sess set mode")
+                            break
+                        }
+                    }
+                    break
+                }
+                case "delete": case "del": {
+                    switch ((args.shift() || "").toLowerCase()) {
+                        case "mode": {
+                            const mode = args.shift()
+                            if (VAL({string: mode}, "!sess add mode") && D.IsIn(mode, STATEREF.SessionModes)) {
+                                STATEREF.SessionModes = _.without(STATEREF.SessionModes, D.IsIn(mode, STATEREF.SessionModes))
+                                D.Alert(`Session Mode '${mode}' Removed.<br>Current Modes: ${D.JS(STATEREF.SessionModes)}`, "!sess del mode")
+                            }
+                            break
+                        }
+                    // no default
+                    }
+                    break
+                }
+                case "scene": {
+                    endScene()
+                    break
+                }
+                case "test": {
+                    toggleTesting()
+                    break
+                }
+                case "downtime": {
+                    toggleDowntime()
+                    break
+                }
+                case "daylighters": {
+                    STATEREF.Mode = STATEREF.Mode === "Daylighter" ? "Active" : "Daylighter"
+                    D.Alert(`Session Mode Set To: ${STATEREF.Mode}`)
+                    DragPads.Toggle("signalLight", STATEREF.Mode !== "Daylighter")
+                    TimeTracker.Fix()
+                    for (const charData of _.values(Char.REGISTRY).slice(0, 4)) {
+                        const [token] = findObjs({
+                            _pageid: D.PAGEID,
+                            _type: "graphic",
+                            _subtype: "token",
+                            represents: charData.id
+                        })
 
-                    if (STATEREF.Mode === "Daylighter") {
-                        Media.SetData(token, { isDaylighter: true, unObfSrc: "base" })
-                        Media.Set(token, "baseDL")
-                        if (charData.famulusTokenID) {
-                            const famToken = Media.GetObj(charData.famulusTokenID)
-                            Media.Toggle(famToken, false)
+                        if (STATEREF.Mode === "Daylighter") {
+                            Media.SetImgData(token, {isDaylighter: true, unObfSrc: "base"})
+                            Media.SetImg(token, "baseDL")
+                            if (charData.famulusTokenID) {
+                                const famToken = Media.GetImg(charData.famulusTokenID)
+                                Media.ToggleImg(famToken, false)
+                            }
+                        } else {
+                            Media.SetImgData(token, {isDaylighter: false, unObfSrc: "base"})
+                            Media.SetImg(token, "base")
                         }
-                    } else {
-                        Media.SetData(token, { isDaylighter: false, unObfSrc: "base" })
-                        Media.Set(token, "base")
                     }
+                    break
                 }
-                break
-            }
             // no default
-        }
-    }
+            }
+        },
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     // #region Getting & Setting Session Data
-    const isSessionActive = () => ["Active", "Downtime", "Complications", "Daylighter"].includes(STATEREF.Mode),
+        isSessionActive = () => ["Active", "Downtime", "Complications", "Daylighter"].includes(STATEREF.Mode),
         setSessionNum = sNum => {
             STATEREF.SessionNum = sNum
             D.Alert(`Session Number <b>${D.NumToText(STATEREF.SessionNum)}</b> SET.`)
-        }
+        },
     // #endregion
 
     // #region Starting/Ending Sessions
-    const startSession = () => {
+        startSession = () => {
             const sessionScribe = STATEREF.isTestingActive ? STATEREF.SessionScribes[0] : STATEREF.SessionScribes.shift()
             STATEREF.Mode = "Active"
             if (STATEREF.isTestingActive)
@@ -185,18 +185,18 @@ const Session = (() => {
             Roller.Clean()
             Media.Initialize()
             for (const quadrant of _.keys(Char.REGISTRY)) {
-                const tokenName = Char.REGISTRY[quadrant].tokenName
-                Media.Toggle(tokenName, true)
-                Media.Set(tokenName, STATEREF.tokenRecord[tokenName] || "base")
+                const {tokenName} = Char.REGISTRY[quadrant]
+                Media.ToggleImg(tokenName, true)
+                Media.SetImg(tokenName, STATEREF.tokenRecord[tokenName] || "base")
                 Media.SetArea(tokenName, `${quadrant}Token`)
             }
             if (STATEREF.Mode === "Downtime")
-                Media.Toggle("downtimeBanner", true)
+                Media.ToggleImg("downtimeBanner", true)
             else
                 for (const imgKey of _.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("Hunger")))
-                    Media.Toggle(imgKey, true)
+                    Media.ToggleImg(imgKey, true)
             for (const imgKey of ["stakedAdvantagesHeader", "weeklyResourcesHeader"])
-                Media.Toggle(imgKey, true)
+                Media.ToggleImg(imgKey, true)
             Media.SetLocation(STATEREF.locationRecord) 
             TimeTracker.StopCountdown()
             TimeTracker.StartClock()
@@ -224,7 +224,7 @@ const Session = (() => {
                     TimeTracker.Fix()
                 }
                 for (const imgKey of [..._.values(D.GetCharVals("registered", "tokenName")), "DistrictCenter", "DistrictLeft", "DistrictRight", "SiteCenter", "SiteLeft", "SiteRight", "SiteBarCenter", "SiteBarLeft", "SiteBarRight"])
-                    Media.Toggle(imgKey, false)
+                    Media.ToggleImg(imgKey, false)
                 for (const textKey of _.keys(Media.TEXT))
                     Media.ToggleText(textKey, false)
                 if (STATEREF.isTestingActive)
@@ -238,7 +238,7 @@ const Session = (() => {
                     "weeklyResourcesHeader",
                     "downtimeBanner"
                 ])
-                    Media.Toggle(imgKey, false)
+                    Media.ToggleImg(imgKey, false)
                 TimeTracker.StopClock()
                 TimeTracker.StopLights()
                 TimeTracker.StartCountdown()
@@ -246,11 +246,11 @@ const Session = (() => {
                 if (!STATEREF.isTestingActive)
                     STATEREF.SessionNum++
             }
-        }
+        },
     // #endregion
 
     // #region Toggling Session Modes
-    const toggleTesting = (isTesting) => {
+        toggleTesting = (isTesting) => {
             if (isTesting === false || isTesting === true) {
                 if (isTesting === STATEREF.isTestingActive)
                     return
@@ -263,7 +263,7 @@ const Session = (() => {
         },
         toggleDowntime = () => {
             STATEREF.Mode = STATEREF.Mode === "Downtime" ? "Active" : "Downtime"
-            Media.Toggle("downtimeBanner", STATEREF.Mode === "Downtime")
+            Media.ToggleImg("downtimeBanner", STATEREF.Mode === "Downtime")
             Roller.Clean()
             if (STATEREF.Mode === "Downtime") {
                 TimeTracker.StopClock()                
@@ -271,9 +271,9 @@ const Session = (() => {
                 Media.SetLocation({DistrictCenter: "blank"})
                 Char.SendHome()
                 for (const tokenName of _.values(D.GetCharVals("registered", "tokenName")))
-                    Media.Toggle(tokenName, false)
+                    Media.ToggleImg(tokenName, false)
                 for (const imgKey of _.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("Hunger")))
-                    Media.Toggle(imgKey, false)
+                    Media.ToggleImg(imgKey, false)
                 sendChat("Session Downtime", C.CHATHTML.colorBlock([
                     C.CHATHTML.colorTitle("Session Downtime"),
                     C.CHATHTML.colorHeader("Session Status: Downtime"),
@@ -284,9 +284,9 @@ const Session = (() => {
                 Media.SetLocation(STATEREF.locationRecord)    
                 Char.SendBack()  
                 for (const tokenName of _.values(D.GetCharVals("registered", "tokenName")))
-                    Media.Toggle(tokenName, true)
+                    Media.ToggleImg(tokenName, true)
                 for (const imgKey of _.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("Hunger")))
-                    Media.Toggle(imgKey, true)     
+                    Media.ToggleImg(imgKey, true)     
                 sendChat("Session Downtime", C.CHATHTML.colorBlock([
                     C.CHATHTML.colorTitle("Session Downtime"),
                     C.CHATHTML.colorHeader("Session Status: Regular Time"),
@@ -295,7 +295,7 @@ const Session = (() => {
             }
             Char.RefreshDisplays()
             TimeTracker.Fix()
-        }
+        },
 
     // #endregion
 
@@ -308,7 +308,7 @@ const Session = (() => {
     // #endregion
 
     // #region Automatic Remorse Rolls
-    const remorseCheck = () => {
+        remorseCheck = () => {
             const charObjs = D.GetChars("registered"),
                 stainedCharObjs = []
             for (const charObj of charObjs)
@@ -349,11 +349,11 @@ const Session = (() => {
             color: ${C.COLORS.brightred};
             font-weight: bold;
         '><br>ROLL REMORSE FOR...</span><br>${chatLines.join("<br>")}<br></div>`))    
-        }
+        },
     // #endregion
 
     // #region Starting & Ending Scenes, Logging Characters to Scene
-    const addCharToScene = (charRef) => {
+        addCharToScene = (charRef) => {
             const charObjs = D.GetChars(charRef)
             if (VAL({charObj: charObjs}, "addCharToScene", true)) {
                 for (const charObj of charObjs) {

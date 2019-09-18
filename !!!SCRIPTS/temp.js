@@ -971,7 +971,108 @@ const Media = (() => {
                     }
                 }
             },
-            dragpads: 700
+            dragpads: { // ALL DragPads should have Z-Level = 700.          
+                SignalLights: { 
+                    signalLight_Pad_1: 700,
+                    signalLight_PartnerPad_1: 700,
+                    signalLight_Pad_2: 700,
+                    signalLight_PartnerPad_2: 700,
+                    signalLight_Pad_3: 700,
+                    signalLight_PartnerPad_3: 700,
+                    signalLight_Pad_4: 700,
+                    signalLight_PartnerPad_4: 700
+                },
+                DiceRoller: {
+                    RerollTrigger: {
+                        wpReroll_Pad_2: 700,
+                        wpReroll_PartnerPad_2: 700
+                    },
+                    DiceList: {
+                        selectDie_Pad_33: 700,
+                        selectDie_PartnerPad_33: 700,
+                        selectDie_Pad_34: 700,
+                        selectDie_PartnerPad_34: 700,
+                        selectDie_Pad_35: 700,
+                        selectDie_PartnerPad_35: 700,
+                        selectDie_Pad_36: 700,
+                        selectDie_PartnerPad_36: 700,
+                        selectDie_Pad_37: 700,
+                        selectDie_PartnerPad_37: 700,
+                        selectDie_Pad_38: 700,
+                        selectDie_PartnerPad_38: 700,
+                        selectDie_Pad_39: 700,
+                        selectDie_PartnerPad_39: 700,
+                        selectDie_Pad_40: 700,
+                        selectDie_PartnerPad_40: 700,
+                        selectDie_Pad_41: 700,
+                        selectDie_PartnerPad_41: 700,
+                        selectDie_Pad_42: 700,
+                        selectDie_PartnerPad_42: 700,
+                        selectDie_Pad_43: 700,
+                        selectDie_PartnerPad_43: 700,
+                        selectDie_Pad_44: 700,
+                        selectDie_PartnerPad_44: 700,
+                        selectDie_Pad_45: 700,
+                        selectDie_PartnerPad_45: 700,
+                        selectDie_Pad_46: 700,
+                        selectDie_PartnerPad_46: 700,
+                        selectDie_Pad_47: 700,
+                        selectDie_PartnerPad_47: 700,
+                        selectDie_Pad_48: 700,
+                        selectDie_PartnerPad_48: 700,
+                        selectDie_Pad_49: 700,
+                        selectDie_PartnerPad_49: 700,
+                        selectDie_Pad_50: 700,
+                        selectDie_PartnerPad_50: 700,
+                        selectDie_Pad_51: 700,
+                        selectDie_PartnerPad_51: 700,
+                        selectDie_Pad_52: 700,
+                        selectDie_PartnerPad_52: 700,
+                        selectDie_Pad_53: 700,
+                        selectDie_PartnerPad_53: 700,
+                        selectDie_Pad_54: 700,
+                        selectDie_PartnerPad_54: 700,
+                        selectDie_Pad_55: 700,
+                        selectDie_PartnerPad_55: 700,
+                        selectDie_Pad_56: 700,
+                        selectDie_PartnerPad_56: 700,
+                        selectDie_Pad_57: 700,
+                        selectDie_PartnerPad_57: 700,
+                        selectDie_Pad_58: 700,
+                        selectDie_PartnerPad_58: 700,
+                        selectDie_Pad_59: 700,
+                        selectDie_PartnerPad_59: 700,
+                        selectDie_Pad_60: 700,
+                        selectDie_PartnerPad_60: 700,
+                        selectDie_Pad_61: 700,
+                        selectDie_PartnerPad_61: 700,
+                        selectDie_Pad_62: 700,
+                        selectDie_PartnerPad_62: 700
+                    }
+                },
+                Complications: { 
+                    flipComp_Pad_1: 700,
+                    flipComp_PartnerPad_1: 700,
+                    flipComp_Pad_2: 700,
+                    flipComp_PartnerPad_2: 700,
+                    flipComp_Pad_3: 700,
+                    flipComp_PartnerPad_3: 700,
+                    flipComp_Pad_4: 700,
+                    flipComp_PartnerPad_4: 700,
+                    flipComp_Pad_5: 700,
+                    flipComp_PartnerPad_5: 700,
+                    flipComp_Pad_6: 700,
+                    flipComp_PartnerPad_6: 700,
+                    flipComp_Pad_7: 700,
+                    flipComp_PartnerPad_7: 700,
+                    flipComp_Pad_8: 700,
+                    flipComp_PartnerPad_8: 700,
+                    flipComp_Pad_9: 700,
+                    flipComp_PartnerPad_9: 700,
+                    flipComp_Pad_10: 700,
+                    flipComp_PartnerPad_10: 700
+                }
+            }
         }
     // #endregion
 
@@ -1059,6 +1160,7 @@ const Media = (() => {
         }
 
     // #endregion
+
     // #region IMG OBJECT & AREA GETTERS: Img Object & Data Retrieval
     const isRegImg = imgRef => Boolean(getImgKey(imgRef)),
         isRandomizerToken = tokenObj => {
@@ -1069,35 +1171,42 @@ const Media = (() => {
                 return tokenBase
             return false
         },
+        onModeActive = imgRef => {
+            const imgData = getImgData(imgRef)
+           
+        },
+        onModeState = imgRef => {
+            const imgData = getImgData(imgRef)
+            if (VAL({list: imgData}, "onModeState")) {
+                switch (imgData.modes[Session.Mode].isForcedState) {
+                    case true: return true
+                    case null: return null
+                    case "LAST": return imgData.modes[Session.Mode].lastState
+                    case null: return imgData.isActive
+
+                }
+            }
+        },
         getImgKey = (imgRef, isSilent = false) => {
             try {
-                let imgKey, imgObj
-                if (VAL({string: imgRef})) {
-                    if (IMGREGISTRY[imgRef])
-                        return imgRef
-                    if (IMGREGISTRY[`${imgRef}_1`])
-                        return `${imgRef}_1`
-                    imgObj = getObj("graphic", imgRef)                    
-                } else if (VAL({imgObj: imgRef})) {
-                    imgObj = imgRef
-                } else if (VAL({selection: imgRef})) {
-                    imgObj = D.GetSelected(imgRef)[0]
-                }
-                if (VAL({imgObj: imgObj})) {
-                    imgKey = getImgKey(imgObj.get("name"))
-                    if (IMGREGISTRY[imgKey])
-                        return imgKey
-                    imgKey = getImgKey(imgObj.get("name"))
-                    if (IMGREGISTRY[imgKey])
-                        return imgKey
-                    imgKey = getImgKey((_.find(_.values(Char.REGISTRY), x => x.id === imgObj.get("represents")) || {tokenName: false}).tokenName)
-                    if (IMGREGISTRY[imgKey])
-                        return imgKey
-                    imgKey = getImgKey(`${getObj("character", imgObj.get("represents")).get("name").replace(/\s+/gu, "")}Token`)
-                    if (IMGREGISTRY[imgKey])
-                        return imgKey
-                }
-                return !isSilent && THROW(`Cannot find name of image from reference '${D.JSL(imgRef)}'`, "GetImgKey")
+                const dictTerm =
+                    VAL({graphicObj: imgRef}) ?
+                        imgRef.get("name") :
+                        _.isString(imgRef) && VAL({graphicObj: getObj("graphic", imgRef)}) ?
+                            getObj("graphic", imgRef).get("name") :
+                            VAL({selection: imgRef}) ?
+                                D.GetSelected(imgRef)[0].get("name") :
+                                _.isString(imgRef) ?
+                                    imgRef :
+                                    false,
+                    imgName = _.isString(dictTerm) ? 
+                        IMGREGISTRY[dictTerm] && dictTerm ||
+                        IMGREGISTRY[`${dictTerm}_1`] && `${dictTerm}_1` ||
+                        false :
+                        false
+                if (!imgName)
+                    return !isSilent && THROW(`Cannot find name of image from reference '${D.JSL(imgRef)}'`, "GetImgKey")
+                return imgName
             } catch (errObj) {
                 return !isSilent && THROW(`Cannot locate image with search value '${D.JSL(imgRef)}'`, "GetImgKey", errObj)
             }
@@ -1105,74 +1214,89 @@ const Media = (() => {
         getImgObj = imgRef => {
             //D.Alert("GETTING IMG OBJECT")
             try {
-                let imgKey, imgObj
-                if (VAL({imgObj: imgRef}))
-                    return imgRef
-                if (VAL({string: imgRef})) {
-                    imgObj = getObj("graphic", imgRef)
-                    if (VAL({imgObj: imgObj}))
-                        return imgObj
-                }
-                if (VAL({selection: imgRef})) {
+                let imgObj = null
+                //D.Alert(`VALIDATIONS: GRAPHIC --> ${D.JS(VAL({ graphic: imgRef }))}
+                //VALIDATION STRING: ${VAL({ string: imgRef })}`)
+                if (VAL({ graphicObj: imgRef }))
+                    imgObj = imgRef
+                else if (VAL({ string: imgRef }))
+                    if (getImgKey(imgRef))
+                        imgObj = getObj("graphic", IMGREGISTRY[getImgKey(imgRef)].id)
+                    else
+                        imgObj = getObj("graphic", imgRef) || null
+                else if (D.GetSelected(imgRef) && D.GetSelected(imgRef)[0])
                     imgObj = D.GetSelected(imgRef)[0]
-                    if (VAL({imgObj: imgObj}))
-                        return imgObj
-                }
-                imgKey = getImgKey(imgRef)
-                if (VAL({string: imgKey}))
-                    imgObj = getObj("graphic", IMGREGISTRY[imgKey].id)
-                if (VAL({imgObj: imgObj}))
-                    return imgObj
-                return false
+                return imgObj
             } catch (errObj) {
                 return THROW(`IMGREF: ${D.JS(imgRef)}`, "getImgObj", errObj)
             }
         },
         getImgObjs = imgRefs => {
             //D.Alert(`GetSelected ImgRefs: ${D.JS(D.GetSelected(imgRefs))}`)
-            imgRefs = VAL({ selection: imgRefs }) ? D.GetSelected(imgRefs) : imgRefs || _.keys(IMGREGISTRY)
+            imgRefs = VAL({ msg: imgRefs }) ? D.GetSelected(imgRefs) || [] : imgRefs || _.keys(IMGREGISTRY)
             const imgObjs = []
-            if (VAL({ array: imgRefs }))
+            if (VAL({ array: imgRefs })) {
                 for (const imgRef of imgRefs)
                     imgObjs.push(getImgObj(imgRef))
-            return _.compact(imgObjs)
+                //D.Alert(`Img Objs: ${D.JS(imgObjs)}`)
+                return imgObjs
+            }
+            return false
         },
         getImgData = imgRef => {
-            const imgData = (() => {
-                let imgKey, imgObj
-                try {
-                    imgKey = getImgKey(imgRef)
-                    if (VAL({string: imgKey}))
-                        return IMGREGISTRY[imgKey]
-                    imgObj = getImgObj(imgRef)
-                    if (VAL({imgObj: imgObj}))
-                        return {
-                            isUnregistered: true,
-                            id: imgObj.id,
-                            name: imgObj.get("name"),
-                            left: parseInt(imgObj.get("left")),
-                            top: parseInt(imgObj.get("top")),
-                            height: parseInt(imgObj.get("height")),
-                            width: parseInt(imgObj.get("width")),
-                            activeLayer: imgObj.get("layer")
-                        }
-                    return false
-                } catch (errObj) {
-                    return THROW(`Cannot locate image with search value '${D.JS(imgRef)}'`, "getImgData", errObj)
+            let regData, imgObj
+            try {
+                if (getImgKey(imgRef)) {
+                    regData = IMGREGISTRY[getImgKey(imgRef)]
+                } else if ((imgObj = getImgObj(imgRef))) {
+                    DB(`Retrieving data for UNREGISTERED Image Object ${D.JSL(imgRef)}`, "getImgData")
+                    regData = {
+                        isUnregistered: true,
+                        id: imgObj.id,
+                        name: imgObj.get("name"),
+                        left: parseInt(imgObj.get("left")),
+                        top: parseInt(imgObj.get("top")),
+                        height: parseInt(imgObj.get("height")),
+                        width: parseInt(imgObj.get("width")),
+                        activeLayer: imgObj.get("activeLayer")
+                    }
                 }
-            })()
-            if (VAL({list: imgData}, "getImgData")) {
-                imgData.leftEdge = imgData.left - 0.5*imgData.width
-                imgData.rightEdge = imgData.left + 0.5*imgData.width
-                imgData.topEdge = imgData.top - 0.5*imgData.height
-                imgData.bottomEdge = imgData.top + 0.5*imgData.height
+                if (!regData)
+                    return THROW(`Img reference '${imgRef}' does not refer to a registered image object.`, "GetData")
+            } catch (errObj) {
+                return THROW(`Cannot locate image with search value '${D.JS(imgRef)}'`, "getImgData", errObj)
             }
-            return imgData
+            regData.leftEdge = regData.left - 0.5*regData.width
+            regData.rightEdge = regData.left + 0.5*regData.width
+            regData.topEdge = regData.top - 0.5*regData.height
+            regData.bottomEdge = regData.top + 0.5*regData.height
+            return regData
         },
-        getTokenObj = charRef => {
+        getTokenObj = tokenRef => {
+            let charObj = D.GetChar(tokenRef) 
+            if (VAL({charObj: charObj})) {
+                return (findObjs({_pageid: D.PAGEID, _type: "graphic", _subtype: "token", represents: charObj.id}) || [null])[0]
+            } else {
+                const imgObj = getImgObj(tokenRef)
+                if (VAL({imgObj: imgObj})) {
+                    const imgKey = getImgKey(imgObj) ||
+                        (imgObj.get("represents") || "").length &&
+                        findObjs({_type: "character", _id: imgObj.get("represents")}).length && `${(
+                            _.find(_.values(Char.REGISTRY), x => x.id === imgObj.get("represents")) ||
+                            {tokenName: `${(getObj("character", imgObj.get("represents")) || {get: () => ""}).get("name").replace(/\s+/gu, "")}Token`}
+                        ).tokenName}_1`.replace(/(_\d+)_1/gu, "$1")
+                    
+                }
+                const imgName = isRegImg(tokenRef) && getImgKey(tokenRef) ||
+            }
+
+            imgName = isRegImg(imgObj) && getImgKey(imgObj) ||
+                        imgObj && (imgObj.get("represents") || "").length && findObjs({_type: "character", _id: imgObj.get("represents")}).length &&
+                            ,
+                imgKey = imgName && 
             const charObj = D.GetChar(charRef)
             if (charObj)
-                return (findObjs({_pageid: D.PAGEID, _type: "graphic", _subtype: "token", represents: charObj.id}) || [false])[0]
+                
             return THROW(`No character found for reference ${charRef}`, "getTokenObj")
         },
         getAreaData = areaRef => AREAREGISTRY[areaRef],
@@ -1218,9 +1342,17 @@ const Media = (() => {
                 locBounds.left <= imgBounds.left + padding &&
                 locBounds.right >= imgBounds.right - padding
         },
-        getImgSrc = imgRef => Object.assign({curSrc: false}, getImgData(imgRef)).curSrc,
+        getImgSrc = imgRef => getImgData(imgRef) ? getImgData(imgRef).curSrc : false,
         /* getImgSrcs = imgRef => getImgData(imgRef) ? getImgData(imgRef).srcs : false, */
-        isImgActive = imgRef => Object.assign({isActive: null}, getImgData(imgRef)).isActive,
+        isImgActive = imgRef => {
+            DB(`Img ${D.JS(imgRef)} Testing:<br>.... GetImgObj ? ${D.JS(getImgObj(imgRef))}<br>... Layer === ActiveLayer ? ${D.JS(getImgObj(imgRef).get("layer"))} =?= ${D.JS(getImgData(imgRef).activeLayer)}`, "isImgActive")
+            if (getImgObj(imgRef) && getImgObj(imgRef).get("layer") === getImgData(imgRef).activeLayer) {
+                DB("... Returning TRUE", "isImgActive")
+                return true
+            }
+            DB("... Returning FALSE", "isImgActive")
+            return false
+        },
         /* eslint-disable-next-line no-unused-vars */
         getContainedImgObjs = (locRef, options = {}) => {
             const findFilter = {
@@ -1263,24 +1395,6 @@ const Media = (() => {
                 for (const key of _.keys(ZLEVELS[cat]))
                     imgZLevels[cat].push(...getArray(ZLEVELS[cat][key], key))
             return imgZLevels
-        },
-        getZLevel = imgRef => {
-            const imgKey = getImgKey(imgRef)
-            if (VAL({string: imgKey}, "getZLevel")) {
-                const dredgeList = (list) => {
-                    const results = []
-                    
-                    for (const val of Object.entries()) {
-                        if (VAL({array: val}))
-                            results.push(...dredgeArray(val))
-                        else
-
-                    }
-                }
-                return [
-                    ...ZLEVELS
-                ]
-            }
         }
     // #endregion
 
@@ -1312,19 +1426,19 @@ const Media = (() => {
                 THROW("", "addImgSrc", errObj)
             }
         },
-        regImg = (imgRef, imgName, srcName, activeLayer, options = {}, isSilent = false) => {
+        regImg = (imgRef, imgName, srcName, activeLayer, startActive, options = {}, isSilent = false) => {
             // D.Alert(`Options for '${D.JS(imgName)}': ${D.JS(options)}`, "MEDIA: regImg")
-            if (!(imgRef && imgName && srcName && activeLayer))
-                return THROW("Must supply all parameters for regImg.", "RegImg")
             const imgObj = getImgObj(imgRef)
-            if (VAL({graphicObj: imgObj}, "regImg")) {                
-                const baseName = imgName.replace(/(_|\d|#)+$/gu, ""),
-                    name = `${baseName}_${_.filter(_.keys(IMGREGISTRY), k => k.includes(baseName)).length + 1}`,
+            if (VAL({graphicObj: imgObj})) {
+                if (!(imgRef && imgName && srcName && activeLayer && startActive !== null))
+                    return THROW("Must supply all parameters for regImg.", "RegImg")
+                const baseName = imgName.replace(/(_|\d|#)+$/gu, "").toLowerCase(),
+                    name = `${imgName.replace(/(_|\d|#)+$/gu, "")}_${_.filter(_.keys(IMGREGISTRY), k => k.includes(imgName.replace(/(_|\d|#)+$/gu, ""))).length + 1}`,
                     params = {
-                        left: options.left || imgObj.get("left") || IMGREGISTRY[name].left || C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].left,
-                        top: options.top || imgObj.get("top") || IMGREGISTRY[name].top || C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].top,
-                        height: options.height || imgObj.get("height") || IMGREGISTRY[name].height || C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].height,
-                        width: options.width || imgObj.get("width") || IMGREGISTRY[name].width || C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].width
+                        left: options.left || imgObj.get("left") || IMGREGISTRY[name].left || C.IMAGES[baseName] && C.IMAGES[baseName].left,
+                        top: options.top || imgObj.get("top") || IMGREGISTRY[name].top || C.IMAGES[baseName] && C.IMAGES[baseName].top,
+                        height: options.height || imgObj.get("height") || IMGREGISTRY[name].height || C.IMAGES[baseName] && C.IMAGES[baseName].height,
+                        width: options.width || imgObj.get("width") || IMGREGISTRY[name].width || C.IMAGES[baseName] && C.IMAGES[baseName].width
                     }
                 if (!params.left || !params.top || !params.height || !params.width)
                     return THROW("Must supply position & dimension to register image.", "RegImg")
@@ -1337,10 +1451,11 @@ const Media = (() => {
                     height: params.height,
                     width: params.width,
                     activeLayer: activeLayer,
-                    modes: params.modes || C.MODEDEFAULTS(imgObj),
+                    startActive: startActive === "false" ? false : Boolean(startActive),
                     zIndex: options.zIndex || (IMGREGISTRY[name] ? IMGREGISTRY[name].zIndex : 200),
                     srcs: {}
                 }
+                D.Alert(`Immediate Registry (StartActive: ${D.JS(startActive)}): ${D.JS(IMGREGISTRY[name])}`)
                 if (srcName !== "none") {
                     addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, srcName)
                     setImg(name, srcName)
@@ -1391,6 +1506,8 @@ const Media = (() => {
         },
         makeImg = (imgName = "", params = {}, isSilent = false) => {
             const dataRef = C.IMAGES.defaults,
+                activeLayer = params.activeLayer || "gmlayer",
+                isStartingActive = !(params.startActive === "false" || params.startActive === false),
                 imgObj = createObj("graphic", {
                     _pageid: params._pageID || D.PAGEID,
                     imgsrc: params.imgsrc || C.IMAGES.blank,
@@ -1398,22 +1515,72 @@ const Media = (() => {
                     top: params.top || dataRef.top,
                     width: params.width || dataRef.width,
                     height: params.height || dataRef.height,
-                    layer: params.layer || params.activeLayer || "gmlayer",
+                    layer: params.layer || isStartingActive && activeLayer || "gmlayer",
                     isdrawing: params.isDrawing !== false,
                     controlledby: params.controlledby || "",
                     showname: params.showname === true
                 }),
-                options = _.omit(params, "activeLayer")
-            regImg(imgObj, imgName, params.imgsrc && params.imgsrc !== C.IMAGES.blank ? "base" : "blank", params.activeLayer || params.layer || "gmlayer", options, isSilent)
+                options = _.omit(params, ["activeLayer", "startActive"])
+            regImg(imgObj, imgName, params.imgsrc && params.imgsrc !== C.IMAGES.blank ? "base" : "blank", activeLayer, isStartingActive, options, isSilent)
             return imgObj
         },
         setImg = (imgRef, srcRef, isSilent = false) => {
             //D.Alert(`Getting ${D.JS(srcRef)} for ${D.JS(imgRef)} --> ${D.JS(REGISTRY[getImgData(imgRef).name].srcs[srcRef])}`, "MEDIA:SetImg")
+            let imgData = getImgData(imgRef),
+                srcURL
+            i
+            if (VAL({list: imgData, string: srcRef}, "setImg")) {
+                const imgName = imgData.name
+                if (imgData.curSrc === srcRef)
+                    return true
+                if (srcRef.includes("http"))
+                    srcURL = srcRef
+                if (VAL({string: imgData.srcs})) {
+                    imgData = getImgData(imgData.srcs)
+                    if (!VAL({list: imgData}, "setImg"))
+                        return false
+                }
+                srcURL = imgData.srcs[srcRef] || C.IMAGES[srcRef]
+                const imgObj = getImgObj(imgRef)
+                if (VAL({imgObj: imgObj, string: [srcURL, curURL]}, "setImg") && srcURL.includes("http")) {
+                    IMAGEREGISTRY[imgName].curSrc = srcRef
+                    imgObj.set("imgsrc", srcURL)
+                } else {
+                    return false
+                }
+                    return srcURL.toLowerCase() === curURL.toLowerCase() // i.e. true if not changing because unnecessary; false if not changing because error
+                IMGREGISTRY[imgData.name].curSrc = srcRef
+                
+                if (!imgData.srcs[srcRef]) {
+                    
+                }
+
+
+
+
+            if (VAL({list: imgData}, "setImg")) {
+                const curSrc = imgData.curSrc
+                // First, check to see if srcs refers to a different image object:
+                
+                    imgData = getImgData(imgData.srcs) {
+                    const srcImgData = getImgData(imgData.srcs)
+                    if (VAL({list: srcImgData})) {
+
+                    }
+                } && IMGREGISTRY[getImgKey(stateRef.srcs)])
+                        stateRef = IMGREGISTRY[getImgKey(stateRef.srcs)]
+                    if (stateRef.srcs[srcRef])
+                        srcURL = stateRef.srcs[srcRef]
+                    else if (_.values(stateRef.srcs).includes(srcRef) && srcRef.includes("http"))
+                        srcURL = srcRef
+                    else if (_.isString(C.IMAGES[srcRef]))
+                        srcURL = C.IMAGES[srcRef]
+                    else
+            } && imgData.curSrc !== srcRef) {
+
+            }
             const imgObj = getImgObj(imgRef),
-                imgName = isRegImg(imgObj) && getImgKey(imgObj) ||
-                        imgObj && (imgObj.get("represents") || "").length && findObjs({_type: "character", _id: imgObj.get("represents")}).length &&
-                            (_.find(_.values(Char.REGISTRY), x => x.id === imgObj.get("represents")) || {tokenName: `${getObj("character", imgObj.get("represents")).get("name").replace(/\s+/gu, "")}Token`}).tokenName,
-                imgKey = imgName && (/_\d+/gu).test(imgName) ? imgName : `${imgName}_1`
+                
             if (isRegImg(imgKey)) {
                 let stateRef = IMGREGISTRY[imgName],
                     srcURL = srcRef
@@ -1450,7 +1617,7 @@ const Media = (() => {
         },
         setImgTemp = (imgRef, params) => {
             const imgObj = getImgObj(imgRef)
-            if (VAL({imgObj: imgObj}, "setImgTemp")) {
+            if (VAL({imgObj: imgObj}, "setImgParams")) {
                 imgObj.set(params)
                 return imgObj
             }
@@ -1746,7 +1913,7 @@ const Media = (() => {
 				for (const param of params)
 					if (VAL({number: param.split(":")[1]}))
 						attrList[param.split(":")[0]] = parseInt(param.split(":")[1])
-				setImgTemp(imgObj, attrList)
+				setImgParams(imgObj, attrList)
 			}
 		}, */
         toggleImg = (imgRef, isActive) => {
@@ -2025,7 +2192,7 @@ const Media = (() => {
 
     // #endregion
 
-    // #region TEXT OBJECT GETTERS: Text Object, Width Measurements, Data Retrieval    
+    // #region TEXT OBJECT GETTERS: Text Object, Width Measurements, Data Retrieval
     const isRegText = textRef => Boolean(getTextKey(textRef)), 
         getTextKey = (textRef, isSilent = false) => {
             try {
@@ -2601,10 +2768,8 @@ const Media = (() => {
         IMAGES: IMGREGISTRY, TEXT: TEXTREGISTRY, AREAS: AREAREGISTRY,
 
         // GENERAL MEDIA FUNCTIONS
-        Get: getObj,
-        GetKey: getKey,
-        GetData: getData,
-        IsRegistered: isRegistered,        
+        IsRegistered: isRegImg,
+        
         
         // GETTERS
         GetImg: getImgObj, GetText: getTextObj,
@@ -2622,7 +2787,7 @@ const Media = (() => {
 
         // SETTERS
         SetImg: setImg, SetText: setText,        
-        ToggleImg: toggleImg, ToggleText: toggleText,
+        ToggleImg: toggleImgPermanent, ToggleText: toggleTextPermanent,
         SetImgData: setImgData, SetTextData: setTextData,
         SetImgTemp: setImgTemp, SetTextTemp: setTextTemp,
 

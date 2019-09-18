@@ -1,15 +1,43 @@
 module.exports = {
+    "parser": "babel-eslint",
     "env": {
-        "browser": true,
-        "es6": true
+      "es6": true,
+      "browser": true,
+      "commonjs": true,
+      "jest": true
     },
-    "extends": "eslint:recommended",
-    "parserOptions": {
-        "ecmaVersion": 2017,
-        "sourceType": "module"
-    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:react/recommended",
+        "eslint-config-prettier",
+        "airbnb",
+        "prettier"
+      ],
+      "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module",
+        "allowImportExportEverywhere": false,
+        "codeFrame": false,
+        "ecmaFeatures": {
+            "jsx": true,
+            "impliedStrict": true
+        }
+      },
     "rules": {
-        //"complexity": ["warn", 50],
+        "dot-location": ["error", "object"],
+        "accessor-pairs": ["error"],
+        "array-callback-return": "error",
+        "babel/no-invalid-this": 1,
+        "babel/no-unused-expressions": 1,  
+        "babel/object-curly-spacing": 1,
+        "babel/quotes": 1,
+        "block-scoped-var": "error",
+        "class-methods-use-this": "error",
+        "consistent-return": "error",
+        "curly": ["error", "multi", "consistent"],
+        "default-case": "error",
+        "dot-notation": ["error", { "allowKeywords": false }],
+        "eqeqeq": ["error", "always"],
         "indent": [
             "error",
             4,
@@ -26,54 +54,57 @@ module.exports = {
                 "flatTernaryExpression": false*/
             }
         ],
-        "dot-location": ["error", "object"],
-        "dot-notation": ["error", { "allowKeywords": false }],
-        "no-extra-parens": ["error", "all", { "conditionalAssign": false }],
-        "no-template-curly-in-string": "warn",
-        "accessor-pairs": ["error"],
-        "array-callback-return": "error",
-        "block-scoped-var": "error",
-        "class-methods-use-this": "error",
-        "consistent-return": "error",
-        "curly": ["error", "multi", "consistent"],
-        "default-case": "error",
-        "eqeqeq": ["error", "always"],
+        "linebreak-style": [
+            "error",
+            "windows"
+        ],
+        "no-console": 0,
+        "no-continue": 0,
+        "no-debugger": "warn",
         "no-else-return": "off",
         "no-empty-function": "warn",
         "no-eq-null": "error",
         "no-eval": "error",
         "no-extra-bind": "warn",
+        "no-extra-parens": ["error", "all", { "conditionalAssign": false }],
         "no-floating-decimal": "error",
         "no-implicit-coercion": "error",
-        "no-unused-vars": "warn",
         "no-implicit-globals": "error",
         "no-implied-eval": "error",
         "no-invalid-this": "error",
         "no-iterator": "error",
         "no-labels": "error",
         "no-lone-blocks": "warn",
-        "no-loop-func": "error",
-        //"no-magic-numbers": ["warn", { "ignoreArrayIndexes": true, "ignore": [0, 1], "enforceConst": true } ],
+        "no-lonely-if": 0,
+        "no-loop-func": "error",        
+		"no-mixed-spaces-and-tabs": [
+			"error",
+			"smart-tabs"
+		],
         "no-multi-spaces": "error",
         "no-multi-str": "error",
         "no-new": "error",
-        "linebreak-style": [
-            "error",
-            "windows"
-        ],
+        "no-param-reassign": 0,
+        "no-plusplus": 0,
+        "no-restricted-syntax": 0,
+        "no-template-curly-in-string": "warn",
+        "no-underscore-dangle": 0,
+        "no-unused-vars": "warn",
+        "no-use-before-define": 0,
+        //"no-magic-numbers": ["warn", { "ignoreArrayIndexes": true, "ignore": [0, 1], "enforceConst": true } ],
+        "no-void": 0,
+        "one-var": ["error", "consecutive"],
+        "prefer-const": ["error", {"destructuring": "all"}],
         "quotes": [
             "error",
             "double"
         ],
+        "radix": 0,
         "semi": [
             "error",
             "never",
             { "beforeStatementContinuationChars": "never" }
-        ],
-		"no-mixed-spaces-and-tabs": [
-			"error",
-			"smart-tabs"
-		]
+        ]
     },
     "globals": {
         "START": true,
@@ -120,5 +151,8 @@ module.exports = {
         "generateRowID": false,
         "MarkStart": true,
         "MarkStop": true
-    }
+    },
+    "plugins": [
+        "babel"
+      ]
 };
