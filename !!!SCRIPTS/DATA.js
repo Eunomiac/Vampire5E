@@ -46,7 +46,8 @@ const D = (() => {
                 ..._.flatten(_.values(C.ATTRIBUTES)),
                 ..._.flatten(_.values(C.SKILLS)),
                 ...C.DISCIPLINES,
-                ...C.TRACKERS
+                ...C.TRACKERS,
+                ...C.MISCATTRS
             ])
                 STATEREF.STATSDICT.add(str)
 
@@ -540,8 +541,6 @@ const D = (() => {
             }
         }, */
         validate = (varList, funcName, scriptName, isArray = false) => {
-            // NOTE: To avoid accidental recursion, DO NOT use validate to confirm a type within the getter of that type.
-            //		(E.g do not use VAL{char} inside any of the getChar() functions.)
             const [errorLines, valArray, charArray] = [[], [], []]
             _.each(varList, (val, cat) => {
                 valArray.length = 0
@@ -550,7 +549,8 @@ const D = (() => {
                     errorLines.push("No values to check in array.")
                 else
                     _.each(valArray, v => {
-                        let errorCheck = null
+                        let charRefs = [],
+                            errorCheck = null
                         switch (cat.toLowerCase()) {
                             case "object":
                                 if (!(v && v.get && v.id))
@@ -577,41 +577,112 @@ const D = (() => {
                                     errorLines.push(`Invalid list object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                                 break
                             case "date":
-                                if (!_.isDate(TimeTracker.GetDate(v)))
-                                    errorLines.push(`Invalid date object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                if (!(_.isDate(v) || _.isDate(parseInt(v)))) {
+                                    const splitDate = _.compact(v.split(/[\s,]+?/gu))
+                                    if (!_.isDate(new Date(`${splitDate[2]}-${["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(splitDate[0].slice(0, 3).toLowerCase()) + 1}-${splitDate[1]}`)))
+                                        errorLines.push(`Invalid date reference: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                }
                                 break
                             case "msg": case "selection": case "selected":
                                 if (!v || !v.selected || !v.selected[0])
                                     errorLines.push("Invalid selection: Select objects first!")
                                 break
                             case "char": case "charref":
-                                if (!getChar(v, true))
-                                    errorLines.push(`Invalid character reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
-                                else
-                                    charArray.push(getChar(v, true))
-                                break
+                            case "playerchar": case "playercharref": case "pcref": case "pc":
+                            case "npc": case "npcref": case "spc": case "spcref": {
+                                let vRef
+                                try {
+                                    if (v && v.selected && v.selected[0] && v.selected[0]._type === "graphic")
+                                        vRef = getObj("graphic", v.selected[0]._id )
+                                    else
+                                        vRef = v
+                                    if (vRef)
+                                        if (vRef.get && vRef.get("_type") === "character")
+                                            charRefs.push(vRef)
+                                        else if (_.isString(vRef) && vRef.length)
+                                            if (
+                                                ["topleft", "botleft", "topright", "botright", "all", "registered", "sandbox"].includes(vRef.toLowerCase()) ||
+                                                vRef.length === 1 && _.find(Char.REGISTRY, data => data.initial.toLowerCase() === vRef.toLowerCase())
+                                            ) {
+                                                charRefs.push(vRef)
+                                            } else {
+                                                charRefs.push(..._.compact([getObj("character", vRef)]))
+                                                if (!charRefs.length) {
+                                                    const allChars = findObjs({_type: "character"})
+                                                    charRefs.push(...allChars.filter(x => x.get("name").toLowerCase() === vRef.toLowerCase()))                                                
+                                                }
+                                            }
+                                        else if (vRef.get && vRef.get("represents"))
+                                            charRefs.push(..._.compact([getObj("character", vRef.get("represents"))]))
+                                } catch (errObj) {
+                                    errorLines.push(`(val({${cat.toLowerCase()}: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}) <b>${errObj.name}</b>: ${errObj.message}`)
+                                } finally {
+                                    if (charRefs.length)
+                                        switch(cat.toLowerCase()) {
+                                            case "playerchar": case "playercharref": case "pcref": case "pc": {
+                                                charRefs = _.uniq(charRefs.map(x => x.replace(/all/gu, "registered").replace(/sandbox/gu, "activepc"))).filter(x =>
+                                                    _.isString(x) && ["topleft", "botleft", "topright", "botright", "registered", "activepc"].includes(x.toLowerCase()) ||
+                                                    x.get && x.get("_type") === "character" && _.values(Char.REGISTRY).filter(xx => xx.id === x.id).length
+                                                )
+                                                break
+                                            }
+                                            case "npc": case "npcref": case "spc": case "spcref": {
+                                                charRefs = _.uniq(charRefs.map(x => x.replace(/all/gu, "allnpc").replace(/sandbox/gu, "activenpc"))).filter(x => !(
+                                                    _.isString(x) && ["topleft", "botleft", "topright", "botright", "registered", "activepc"].includes(x.toLowerCase()) ||
+                                                    x.get && x.get("_type") === "character" && _.values(Char.REGISTRY).filter(xx => xx.id === x.id).length
+                                                ))
+                                                break
+                                            }
+                                            // no default
+                                        }                                    
+                                    if (charRefs.length)
+                                        charArray.push(...charRefs)
+                                    else
+                                        errorLines.push(`Invalid ${cat.toLowerCase()} reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                }                                
+                                break                                
+                            }
                             case "charobj":
                                 if (!v || !v.get || v.get("_type") !== "character")
                                     errorLines.push(`Invalid character object: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
                                 else
                                     charArray.push(v)
-                                break                        
-                            case "playerchar": case "playercharref": case "pcref": case "pc":
-                                if (!getChar(v, true))
-                                    errorLines.push(`Invalid character reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
-                                else if (!_.values(Char.REGISTRY).map(x => x.id).includes(getChar(v, true).id))
-                                    errorLines.push(`Character reference is not a player character: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
-                                break                                               
-                            case "npc": case "npcref": case "spc": case "spcref":
-                                if (!getChar(v, true))
-                                    errorLines.push(`Invalid character reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
-                                else if (_.values(Char.REGISTRY).map(x => x.id).includes(getChar(v, true).id))
-                                    errorLines.push(`Character reference is not a non-player character: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
                                 break
-                            case "player": case "playerref":
-                                if (!getPlayer(v, true))
-                                    errorLines.push(`Invalid player reference: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                            case "player": case "playerref": {
+                                let playerRef 
+                                try {
+                                    if (v && v.get) {
+                                        switch(v.get("_type")) {
+                                            case "player": {
+                                                playerRef = v
+                                                break
+                                            }
+                                            case "character":
+                                            case "graphic": {
+                                                playerRef = v.get("controlledby").split(",").filter(x => !["all", "storyteller", D.GMID].includes(x.toLowerCase()))
+                                                if (!playerRef.length)
+                                                    playerRef = undefined
+                                                break
+                                            }
+                                            // no default
+                                        }
+                                    } else if (_.isString(v)) {
+                                        playerRef = getObj("player", playerRef)
+                                        if (!playerRef) 
+                                            playerRef = _.find(findObjs({_type: "player"}), x => 
+                                                x.get("_displayname") === v || 
+                                                x.get("speakingas") === v ||
+                                                x.get("_d20userid") === v
+                                            )
+                                    }
+                                } catch(errObj) {
+                                    errorLines.push(`(val({${cat.toLowerCase()}: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}) <b>${errObj.name}</b>: ${errObj.message}`)
+                                } finally {
+                                    if (!playerRef)
+                                        errorLines.push(`Invalid player reference: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                }
                                 break
+                            }
                             case "playerobj":
                                 if (!v || !v.get || v.get("_type") !== "player")
                                     errorLines.push(`Invalid player object: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
@@ -641,17 +712,8 @@ const D = (() => {
                                     errorLines.push(`Invalid token object (not a token, or doesn't represent a character): ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                                 break
                             case "trait":
-                                if (charArray.length) {
-                                    errorCheck = []
-                                    _.each(charArray, charObj => {
-                                        if (!getStat(charObj, v, true))
-                                            errorCheck.push(charObj.get("name"))
-                                    })
-                                    if (errorCheck.length)
-                                        errorLines.push(`Invalid trait: ${jStr(v && v.get && v.get("name") || v && v.id || v)} ON ${errorCheck.length}/${(varList && varList["char"] || []).length} character references:<br>${jStr(errorCheck)}`)
-                                } else {
-                                    errorLines.push(`Must validate at least one character before validating traits: ${jStr(varList[cat])}.`)
-                                }
+                                if (!_.find(ALLSTATS, x => x.toLowerCase() === v))
+                                    errorLines.push(`Invalid trait: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                                 break
                             case "reptrait":
                                 if (charArray.length) {
@@ -1046,7 +1108,7 @@ const D = (() => {
             if (VAL({charObj, string: section}, "getRepStats")) {
                 // STEP ONE: USE THE ROW FILTER TO GET VALID ROW IDS TO SEARCH
                 const filter = VAL({string: rowFilter}) ? rowFilter :
-                        VAL({string: statName, list: rowFilter || {}}) ? {[statName]: "*", ...rowFilter || {}} :
+                        VAL({string: statName, list: rowFilter || {}}) ? Object.assign({[statName]: "*"}, rowFilter || {}) :
                             rowFilter,
                     rowIDs = _.compact(getRepIDs(charObj, section, filter, isSilent)),
                     attrObjs = []

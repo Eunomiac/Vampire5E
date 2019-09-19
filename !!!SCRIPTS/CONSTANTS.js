@@ -294,10 +294,10 @@ const C = (() => {
             ">${_.flatten([content]).join("")}</span>`)
             },
             ButtonLine: (content, options = {}) => {
-                const params = {height: "18px",
-                                width: "100%",
-                                margin: "0px 0px 2px 0px",
-                                textAlign: "center", ...options}
+                const params = Object.assign({height: "18px",
+                                              width: "100%",
+                                              margin: "0px 0px 2px 0px",
+                                              textAlign: "center"}, options)
                 return D.JSH(`<span style="  
                     height: ${params.height};
                     width: ${params.width};             
@@ -307,17 +307,17 @@ const C = (() => {
                 ">${_.flatten([content]).join("")}</span>`)
             },
             ButtonSubheader: (content, options = {}) => {
-                const params = {height: "18px",
-                                width: "15%",
-                                fontFamily: "Voltaire",
-                                fontSize: "10px",
-                                bgColor: "transparent",
-                                color: COLORS.white,
-                                margin: "0px 3% 0px 0px",
-                                textAlign: "left",
-                                textIndent: "3px",
-                                padding: "0px 0px 0px 0px",
-                                lineHeight: "16px", ...options}
+                const params = Object.assign({height: "18px",
+                                              width: "15%",
+                                              fontFamily: "Voltaire",
+                                              fontSize: "10px",
+                                              bgColor: "transparent",
+                                              color: COLORS.white,
+                                              margin: "0px 3% 0px 0px",
+                                              textAlign: "left",
+                                              textIndent: "3px",
+                                              padding: "0px 0px 0px 0px",
+                                              lineHeight: "16px"}, options)
                 return D.JSH(`<span style="
                     height: ${params.height};
                     width: ${params.width};                 
@@ -336,19 +336,19 @@ const C = (() => {
                 ">${_.flatten([content]).join("")}</span>`)
             },
             Button: (name, command, options = {}) => {
-                const params = {height: "18px",
-                                lineHeight: "8px",
-                                width: "22%",
-                                fontFamily: "Voltaire",
-                                margin: "0px 3% 0px 0px",
-                                fontSize: "10px",
-                                bgColor: COLORS.brightred,
-                                color: COLORS.white,
-                                border: "1px solid white",
-                                fontWeight: "normal",
-                                textShadow: "none",
-                                buttonHeight: "8px",
-                                buttonWidth: "83%", ...options}
+                const params = Object.assign({height: "18px",
+                                              lineHeight: "8px",
+                                              width: "22%",
+                                              fontFamily: "Voltaire",
+                                              margin: "0px 3% 0px 0px",
+                                              fontSize: "10px",
+                                              bgColor: COLORS.brightred,
+                                              color: COLORS.white,
+                                              border: "1px solid white",
+                                              fontWeight: "normal",
+                                              textShadow: "none",
+                                              buttonHeight: "8px",
+                                              buttonWidth: "83%"}, options)
                 return D.JSH(`<span style="   
                     height: ${params.height};
                     width: ${params.width};                 
@@ -734,6 +734,10 @@ const C = (() => {
         ATTRPROPS = ["name", "current", "max"],
         HANDOUTPROPS = ["avatar", "name", "notes", "gmnotes", "inplayerjournals", "archived", "controlledby"],
 
+        /*MODEDEFAULTS = (obj) => ({
+            isForcedOn: false,
+            isForcedState: null
+        }),
         MODEDEFAULTS = (obj) => {
             if (VAL({object: obj}, "MODEDEFAULTS"))
                 switch(obj.get("_type")) {
@@ -766,7 +770,7 @@ const C = (() => {
                 isForcedOn: null,
                 isForcedState: null
             }
-        },
+        },*/
     // #endregion
     
     // #region VAMPIRE ATTRIBUTES, STATS & TRAITS
@@ -839,7 +843,7 @@ const C = (() => {
         TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"],
         CLANS = ["Brujah", "Gangrel", "Malkavian", "Nosferatu", "Toreador", "Tremere", "Ventrue", "Lasombra", "Tzimisce", "Banu Haqim", "Ministry", "Hecata", "Ravnos"],
         SECTS = ["Camarilla", "Anarch", "Sabbat", "Ashirra", "Second Inquisition", "Autarkis", "Independent", "Mortal"],
-        MISCATTRS = ["blood_potency_max"],
+        MISCATTRS = ["blood_potency_max", "bp_surge", "bp_discbonus", "bp_minhunger", "bp_slakekill", "hunger", "resonance"],
         BLOODPOTENCY = [
             {bp_surge: 0, bp_discbonus: 0, bp_minhunger: 1},
             {bp_surge: 1, bp_discbonus: 1, bp_minhunger: 1},
@@ -1666,7 +1670,7 @@ const C = (() => {
         ATTRPROPS, 
         HANDOUTPROPS,
 
-        MODEDEFAULTS,
+        //MODEDEFAULTS,
 
         ATTRIBUTES, ATTRABBVS,
         SKILLS, SKILLABBVS,

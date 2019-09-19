@@ -3,16 +3,16 @@ const Media = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Media",
         CHATCOMMAND = ["!area", "!img", "!text", "!anim"],
-        GMONLY = true
+        GMONLY = true,
 
     // #region COMMON INITIALIZATION
-    const STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
+        STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
+        VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
+        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
-    const checkInstall = () => {
+        checkInstall = () => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             initialize()
         },
@@ -26,43 +26,43 @@ const Media = (() => {
                 }
             })
             on("add:graphic", handleAdd)
-        }
+        },
     // #endregion
 
     // #region LOCAL INITIALIZATION
-    const initialize = () => {
-        STATEREF.imgregistry = STATEREF.imgregistry || {}
-        STATEREF.textregistry = STATEREF.textregistry || {}
-        STATEREF.idregistry = STATEREF.idregistry || {}
-        STATEREF.areas = STATEREF.areas || {}
-        STATEREF.tokenregistry = STATEREF.tokenregistry || {}
-        STATEREF.imgResizeDims = STATEREF.imgResizeDims || { height: 100, width: 100 }
-        STATEREF.activeAnimations = STATEREF.activeAnimations || []
-        STATEREF.activeTimeouts = STATEREF.activeTimeouts || []
-        STATEREF.curLocation = STATEREF.curLocation || "DistrictCenter:blank SiteCenter:blank"
+        initialize = () => {
+            STATEREF.imgregistry = STATEREF.imgregistry || {}
+            STATEREF.textregistry = STATEREF.textregistry || {}
+            STATEREF.idregistry = STATEREF.idregistry || {}
+            STATEREF.areas = STATEREF.areas || {}
+            STATEREF.tokenregistry = STATEREF.tokenregistry || {}
+            STATEREF.imgResizeDims = STATEREF.imgResizeDims || {height: 100, width: 100}
+            STATEREF.activeAnimations = STATEREF.activeAnimations || []
+            STATEREF.activeTimeouts = STATEREF.activeTimeouts || []
+            STATEREF.curLocation = STATEREF.curLocation || "DistrictCenter:blank SiteCenter:blank"
 
-        //delete STATEREF.tokenregistry["85239212/An9D7-g4OmLdjhKm-NbKnA/1561848759"]
+        // delete STATEREF.tokenregistry["85239212/An9D7-g4OmLdjhKm-NbKnA/1561848759"]
         // Initialize IMGDICT Fuzzy Dictionary
-        STATEREF.IMGDICT = Fuzzy.Fix()
-        for (const imgKey of _.keys(STATEREF.imgregistry))
-            STATEREF.IMGDICT.add(imgKey)
+            STATEREF.IMGDICT = Fuzzy.Fix()
+            for (const imgKey of _.keys(STATEREF.imgregistry))
+                STATEREF.IMGDICT.add(imgKey)
 
         // Initialize TEXTDICT Fuzzy Dictionary
-        STATEREF.TEXTDICT = Fuzzy.Fix()
-        for (const textKey of _.keys(STATEREF.textregistry))
-            STATEREF.TEXTDICT.add(textKey)
+            STATEREF.TEXTDICT = Fuzzy.Fix()
+            for (const textKey of _.keys(STATEREF.textregistry))
+                STATEREF.TEXTDICT.add(textKey)
         
         // Initialize AREADICT Fuzzy Dictionary
-        STATEREF.AREADICT = Fuzzy.Fix()
-        for (const areaKey of _.keys(STATEREF.areas))
-            STATEREF.AREADICT.add(areaKey)
+            STATEREF.AREADICT = Fuzzy.Fix()
+            for (const areaKey of _.keys(STATEREF.areas))
+                STATEREF.AREADICT.add(areaKey)
         
-        //STATEREF.imgregistry.mapButtonDomain_1.cycleSrcs = ["anarch", "camarilla", "nodomain"]
-    }
+        // STATEREF.imgregistry.mapButtonDomain_1.cycleSrcs = ["anarch", "camarilla", "nodomain"]
+        },
     // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-    const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
+        handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
             let textParams
             switch (call.shift().toLowerCase()) {
                 case "!area": {
@@ -89,6 +89,10 @@ const Media = (() => {
                 }
                 case "!img": {
                     switch (call.shift().toLowerCase()) {
+                        case "testzlevel": {
+                            D.Alert(D.JS(getZLevel(args.shift())))
+                            break
+                        }
                         case "backup": {
                             STATEREF.backup = {
                                 arearegistry: JSON.parse(JSON.stringify(AREAREGISTRY)),
@@ -126,7 +130,7 @@ const Media = (() => {
                             switch (args.shift().toLowerCase()) {
                                 case "source": case "src": {
                                     let [hostName, srcName] = ["", ""]
-                                    if (VAL({ token: (D.GetSelected(msg) || [])[0] })) {
+                                    if (VAL({token: (D.GetSelected(msg) || [])[0]})) {
                                         hostName = Media.GetImgData(D.GetSelected(msg)[0]).name
                                         srcName = args[0]
                                     } else {
@@ -159,25 +163,6 @@ const Media = (() => {
                                     break
                                 }
                                 case "mode": {
-                                    const sampleImgModeData = {
-                                        isForcedOn: true, // true - toggled on; false - toggled off; null - no change, "LAST" - last state
-                                        activeOnLastExit: false,
-                                        isForcedState: "base", // can also be null for no change OR "LAST" to restore last img src                                        
-                                        stateOnLastExit: "base" 
-                                    }
-                                    const sampleTextModeData = {
-                                        isForcedOn: true, // true - toggled on; false - toggled off; null - no change
-                                        activeOnLastExit: true,
-                                        isForcedState: "LAST", // can also be false for no change OR true to restore last state
-                                        stateOnLastExit: "SUCCESS"
-                                    }
-                                    // DRAG PAD SAMPLE MODE DATA:
-                                    const dragPadModeData = {
-                                        isForcedOn: true, // ALWAYS false for the partner pad, might be false if pad disabled for this mode
-                                        isForcedState: null
-                                    }
-
-
                                     const imgObjs = D.GetSelected(msg) || [getImgObjs(args.shift())]
                                     if (VAL({graphic: imgObjs}, "!img set mode", true)) {
                                         const mode = args.shift(),
@@ -260,7 +245,7 @@ const Media = (() => {
                             break
                         }
                         case "unreg": case "unregister": {
-                        //D.Alert(`ARGS: ${D.JS(args)}<br><br>getImgObj('${D.JS(args.join(" "))}'):<br><br>${D.JS(getImgObj(args.join(" ")))}`)
+                        // D.Alert(`ARGS: ${D.JS(args)}<br><br>getImgObj('${D.JS(args.join(" "))}'):<br><br>${D.JS(getImgObj(args.join(" ")))}`)
                             if ((args[0] || "").toLowerCase() === "all") {
                                 args.shift()
                                 for (const hostName of _.keys(IMGREGISTRY))
@@ -569,7 +554,7 @@ const Media = (() => {
                                     args.shift()
                                     const textObj = getTextObj(args[0]) || getTextObj(msg),
                                         params = D.ParseParams(args)
-                                    if (VAL({textObj: textObj}, "!text set params"))
+                                    if (VAL({textObj}, "!text set params"))
                                         setText(textObj, params)
                                     break   
                                 }
@@ -577,7 +562,7 @@ const Media = (() => {
                                     const textObj = getTextObj(args[0], true) || D.GetSelected(msg)[0]
                                     if (getTextObj(args[0], true))
                                         args.shift()
-                                    if (VAL({textObj: textObj}, "!text set"))
+                                    if (VAL({textObj}, "!text set"))
                                         setText(textObj, {text: args[0] && args.join(" ") || " "})
                                     break
                                 }
@@ -644,7 +629,7 @@ const Media = (() => {
                                 removeText(msg, true, true)
                             }
                         }
-                        /* falls through */
+                        // falls through
                         case "reg": case "register": {
                             if (!args[0]) {
                                 D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
@@ -815,7 +800,7 @@ const Media = (() => {
                     HungerBotRight_1: 100
                 },
                 TombstoneShrouds: {
-                    //ShroudTopLeft_1: 107
+                    // ShroudTopLeft_1: 107
                 },
                 HorizonBGs: {
                     Horizon_1: 1
@@ -824,7 +809,7 @@ const Media = (() => {
                     WeatherFrost_1: 139,
                     WeatherFog_1: 125,
                     WeatherMain_1: 124, 
-                    //WeatherLightning: 110,
+                    // WeatherLightning: 110,
                     WeatherGround_1: 110,
                     WeatherClouds_1: 105
                 },
@@ -972,11 +957,11 @@ const Media = (() => {
                 }
             },
             dragpads: 700
-        }
+        },
     // #endregion
 
     // #region GENERAL MEDIA OBJECT GETTERS:
-    const isRegistered = mediaRef => isRegText(mediaRef) || isRegImg(mediaRef),
+        isRegistered = mediaRef => isRegText(mediaRef) || isRegImg(mediaRef),
         getObj = mediaRef => {
             if (isRegText(mediaRef))
                 return getTextObj(mediaRef)
@@ -1034,11 +1019,11 @@ const Media = (() => {
             if (VAL({list: mediaData}, "getActiveLayer"))
                 return mediaData.activeLayer
             return "gmlayer"
-        }
+        },
         // #endregion
 
     // #region GENERAL MEDIA OBJECT SETTERS: 
-    const setState = (mediaRef, stateRef) => {
+        setState = (mediaRef, stateRef) => {
             if (isRegImg(mediaRef)) 
                 setImg(mediaRef, stateRef)
             else if (isRegText(mediaRef)) 
@@ -1056,11 +1041,11 @@ const Media = (() => {
                 toggle(mediaRef, modeStatus.isActive)
             if (!_.isUndefined(modeStatus.state))
                 setState(mediaRef, modeStatus.state)
-        }
+        },
 
     // #endregion
     // #region IMG OBJECT & AREA GETTERS: Img Object & Data Retrieval
-    const isRegImg = imgRef => Boolean(getImgKey(imgRef)),
+        isRegImg = imgRef => Boolean(getImgKey(imgRef)),
         isRandomizerToken = tokenObj => {
             const tokenBaseSrc = tokenObj && tokenObj.get && tokenObj.get("imgsrc"),
                 tokenMatch = tokenBaseSrc && tokenBaseSrc.match(/.*?\/images\/(.*?)\/[^/]*?\.png\?(.*)/u),
@@ -1083,7 +1068,7 @@ const Media = (() => {
                 } else if (VAL({selection: imgRef})) {
                     imgObj = D.GetSelected(imgRef)[0]
                 }
-                if (VAL({imgObj: imgObj})) {
+                if (VAL({imgObj})) {
                     imgKey = getImgKey(imgObj.get("name"))
                     if (IMGREGISTRY[imgKey])
                         return imgKey
@@ -1103,25 +1088,25 @@ const Media = (() => {
             }
         },
         getImgObj = imgRef => {
-            //D.Alert("GETTING IMG OBJECT")
+            // D.Alert("GETTING IMG OBJECT")
             try {
                 let imgKey, imgObj
                 if (VAL({imgObj: imgRef}))
                     return imgRef
                 if (VAL({string: imgRef})) {
                     imgObj = getObj("graphic", imgRef)
-                    if (VAL({imgObj: imgObj}))
+                    if (VAL({imgObj}))
                         return imgObj
                 }
                 if (VAL({selection: imgRef})) {
                     imgObj = D.GetSelected(imgRef)[0]
-                    if (VAL({imgObj: imgObj}))
+                    if (VAL({imgObj}))
                         return imgObj
                 }
                 imgKey = getImgKey(imgRef)
                 if (VAL({string: imgKey}))
                     imgObj = getObj("graphic", IMGREGISTRY[imgKey].id)
-                if (VAL({imgObj: imgObj}))
+                if (VAL({imgObj}))
                     return imgObj
                 return false
             } catch (errObj) {
@@ -1129,10 +1114,10 @@ const Media = (() => {
             }
         },
         getImgObjs = imgRefs => {
-            //D.Alert(`GetSelected ImgRefs: ${D.JS(D.GetSelected(imgRefs))}`)
-            imgRefs = VAL({ selection: imgRefs }) ? D.GetSelected(imgRefs) : imgRefs || _.keys(IMGREGISTRY)
+            // D.Alert(`GetSelected ImgRefs: ${D.JS(D.GetSelected(imgRefs))}`)
+            imgRefs = VAL({selection: imgRefs}) ? D.GetSelected(imgRefs) : imgRefs || _.keys(IMGREGISTRY)
             const imgObjs = []
-            if (VAL({ array: imgRefs }))
+            if (VAL({array: imgRefs}))
                 for (const imgRef of imgRefs)
                     imgObjs.push(getImgObj(imgRef))
             return _.compact(imgObjs)
@@ -1145,7 +1130,7 @@ const Media = (() => {
                     if (VAL({string: imgKey}))
                         return IMGREGISTRY[imgKey]
                     imgObj = getImgObj(imgRef)
-                    if (VAL({imgObj: imgObj}))
+                    if (VAL({imgObj}))
                         return {
                             isUnregistered: true,
                             id: imgObj.id,
@@ -1191,7 +1176,7 @@ const Media = (() => {
                 boundaryData.left = AREAREGISTRY[locRef].left
                 boundaryData.height = AREAREGISTRY[locRef].height
                 boundaryData.width = AREAREGISTRY[locRef].width
-                //D.Alert(`BoundaryData:<br>${D.JS(boundaryData, true)}`, "getBounds")
+                // D.Alert(`BoundaryData:<br>${D.JS(boundaryData, true)}`, "getBounds")
             } else if (VAL({graphic: locRef})) {
                 const imgObj = getImgObj(locRef)
                 boundaryData.top = imgObj.get("top")
@@ -1218,9 +1203,9 @@ const Media = (() => {
                 locBounds.left <= imgBounds.left + padding &&
                 locBounds.right >= imgBounds.right - padding
         },
-        getImgSrc = imgRef => Object.assign({curSrc: false}, getImgData(imgRef)).curSrc,
+        getImgSrc = imgRef => (getImgData(imgRef) || {curSrc: false}).curSrc,
         /* getImgSrcs = imgRef => getImgData(imgRef) ? getImgData(imgRef).srcs : false, */
-        isImgActive = imgRef => Object.assign({isActive: null}, getImgData(imgRef)).isActive,
+        isImgActive = imgRef => (getImgData(imgRef) || {isActive: null}).isActive,
         /* eslint-disable-next-line no-unused-vars */
         getContainedImgObjs = (locRef, options = {}) => {
             const findFilter = {
@@ -1246,19 +1231,19 @@ const Media = (() => {
         },
         getZLevels = () => {
             const imgZLevels = {
-                map: [],
-                objects: [],
-                dragpads: []
-            }
-            const getArray = (obj, topKey) => {
-                const returnArray = []
-                for (const key of _.keys(obj))
-                    if (_.isNumber(obj[key]))
-                        returnArray.push([topKey, key, obj[key]])
-                    else
-                        returnArray.push(...getArray(obj[key], topKey))
-                return returnArray
-            }
+                    map: [],
+                    objects: [],
+                    dragpads: []
+                },
+                getArray = (obj, topKey) => {
+                    const returnArray = []
+                    for (const key of _.keys(obj))
+                        if (_.isNumber(obj[key]))
+                            returnArray.push([topKey, key, obj[key]])
+                        else
+                            returnArray.push(...getArray(obj[key], topKey))
+                    return returnArray
+                }
             for (const cat of ["map", "objects", "dragpads"])
                 for (const key of _.keys(ZLEVELS[cat]))
                     imgZLevels[cat].push(...getArray(ZLEVELS[cat][key], key))
@@ -1269,23 +1254,20 @@ const Media = (() => {
             if (VAL({string: imgKey}, "getZLevel")) {
                 const dredgeList = (list) => {
                     const results = []
-                    
-                    for (const val of Object.entries()) {
-                        if (VAL({array: val}))
-                            results.push(...dredgeArray(val))
+                    for (const val of Object.entries(list))
+                        if (VAL({list: val[1]}))
+                            results.push(...dredgeList(val))
                         else
-
-                    }
+                            results.push(val)
+                    return results
                 }
-                return [
-                    ...ZLEVELS
-                ]
+                return (dredgeList(ZLEVELS).filter(x => x[0] === imgKey)[0] || [null,false])[1]
             }
-        }
+        },
     // #endregion
 
     // #region IMG OBJECT & AREA SETTERS: Registering & Manipulating Img Objects
-    const addImgSrc = (imgSrcRef, imgName, srcName) => {
+        addImgSrc = (imgSrcRef, imgName, srcName) => {
             try {
                 const imgSrc = (_.isString(imgSrcRef) && imgSrcRef.includes("http") ?
                     imgSrcRef :
@@ -1328,7 +1310,7 @@ const Media = (() => {
                     }
                 if (!params.left || !params.top || !params.height || !params.width)
                     return THROW("Must supply position & dimension to register image.", "RegImg")
-                imgObj.set({ name, showname: false })
+                imgObj.set({name, showname: false})
                 IMGREGISTRY[name] = {
                     id: imgObj.id,
                     name,
@@ -1336,7 +1318,7 @@ const Media = (() => {
                     top: params.top,
                     height: params.height,
                     width: params.width,
-                    activeLayer: activeLayer,
+                    activeLayer,
                     modes: params.modes || C.MODEDEFAULTS(imgObj),
                     zIndex: options.zIndex || (IMGREGISTRY[name] ? IMGREGISTRY[name].zIndex : 200),
                     srcs: {}
@@ -1408,7 +1390,7 @@ const Media = (() => {
             return imgObj
         },
         setImg = (imgRef, srcRef, isSilent = false) => {
-            //D.Alert(`Getting ${D.JS(srcRef)} for ${D.JS(imgRef)} --> ${D.JS(REGISTRY[getImgData(imgRef).name].srcs[srcRef])}`, "MEDIA:SetImg")
+            // D.Alert(`Getting ${D.JS(srcRef)} for ${D.JS(imgRef)} --> ${D.JS(REGISTRY[getImgData(imgRef).name].srcs[srcRef])}`, "MEDIA:SetImg")
             const imgObj = getImgObj(imgRef),
                 imgName = isRegImg(imgObj) && getImgKey(imgObj) ||
                         imgObj && (imgObj.get("represents") || "").length && findObjs({_type: "character", _id: imgObj.get("represents")}).length &&
@@ -1417,9 +1399,9 @@ const Media = (() => {
             if (isRegImg(imgKey)) {
                 let stateRef = IMGREGISTRY[imgName],
                     srcURL = srcRef
-                //D.Alert(D.JS(REGISTRY[getImgData(imgRef).name]))
+                // D.Alert(D.JS(REGISTRY[getImgData(imgRef).name]))
                 if (imgObj && stateRef) {
-                    //D.Alert(`Getting ${D.JS(stateRef.srcs)} --> ${D.JS(srcRef)} --> ${D.JS(stateRef.srcs[srcRef])}`, "MEDIA:SetImg")
+                    // D.Alert(`Getting ${D.JS(stateRef.srcs)} --> ${D.JS(srcRef)} --> ${D.JS(stateRef.srcs[srcRef])}`, "MEDIA:SetImg")
                     if (_.isString(stateRef.srcs) && IMGREGISTRY[getImgKey(stateRef.srcs)])
                         stateRef = IMGREGISTRY[getImgKey(stateRef.srcs)]
                     if (stateRef.srcs[srcRef])
@@ -1450,7 +1432,7 @@ const Media = (() => {
         },
         setImgTemp = (imgRef, params) => {
             const imgObj = getImgObj(imgRef)
-            if (VAL({imgObj: imgObj}, "setImgTemp")) {
+            if (VAL({imgObj}, "setImgTemp")) {
                 imgObj.set(params)
                 return imgObj
             }
@@ -1481,15 +1463,14 @@ const Media = (() => {
                     SiteNameRight: " ",
                     DistrictLeft: "blank",
                     SiteLeft: "blank",
-                    SiteNameLeft: " "
-                }, VAL({list: locRefs}) ? _.clone(locRefs) : {})
+                    SiteNameLeft: " "}, VAL({list: locRefs}) ? _.clone(locRefs) : {})
             let [customNames, params] = [[], []]
             if (VAL({string: locRefs})) {
                 if (locRefs.includes(":name:"))
                     customNames = _.map(locRefs.match(new RegExp(":name:([^;]*)", "g")), v => v.replace(/:name:/gu, ""))
                 params = locRefs.replace(/:name:.*?;\s*?/gu, "").split(" ")
                 DB(`CustomNames: ${D.JS(customNames)}, Params: ${D.JS(params)}`, "setLocation")
-                //D.Alert(`PARAMS: ${D.JS(params)}`) .match(/^(\w+):[^:]*:?[^:]*:?(.+$)/ui)
+                // D.Alert(`PARAMS: ${D.JS(params)}`) .match(/^(\w+):[^:]*:?[^:]*:?(.+$)/ui)
                 for (const param of params) {
                     if (param.startsWith("Site")) hosts.push(param.split(":")[0])
                     if (param.includes(":same")) {
@@ -1506,13 +1487,13 @@ const Media = (() => {
                             // falls through
                             case "DistrictLeft":
                             case "DistrictRight":
-                                imgSrc = isImgActive(targetType + "Center") ? getImgSrc(targetType + "Center") : getImgSrc(targetHost)
+                                imgSrc = isImgActive(`${targetType }Center`) ? getImgSrc(`${targetType }Center`) : getImgSrc(targetHost)
                                 break
                             case "SiteCenter":
                                 hostOverride.SiteCenter = isImgActive("SiteBarLeft") ? getTextObj("SiteNameLeft").get("text") : isImgActive("SiteBarCenter") ? getTextObj("SiteNameCenter").get("text") : null
                             // falls through
                             case "DistrictCenter":
-                                imgSrc = isImgActive(targetType + "Left") ? getImgSrc(targetType + "Left") : getImgSrc(targetHost)
+                                imgSrc = isImgActive(`${targetType }Left`) ? getImgSrc(`${targetType }Left`) : getImgSrc(targetHost)
                                 break
                         // no default
                         }
@@ -1575,7 +1556,7 @@ const Media = (() => {
                 [centerX, centerY] = [maxX - minX, maxY - minY]
             let [sortedArray, anchorArray, bounds] = [[], [], []],
                 anchorRef = "best"
-            for (var i = 0; i < sortModes.length; i++) {
+            for (let i = 0; i < sortModes.length; i++) {
                 anchorRef = anchors[i] || anchorRef
                 let [spacer, counter] = [0, 0],
                     [sorted, revSorted] = [[], []]
@@ -1585,7 +1566,7 @@ const Media = (() => {
                         bounds = [sorted[0].top, sorted.slice(-1)[0].top]
                         spacer = (bounds[1] - bounds[0]) / (sorted.length - 1)
                         for (const iData of sorted) {
-                            revSorted.unshift(setImgTemp(iData.id, { top: bounds[0] + counter * spacer }, true))
+                            revSorted.unshift(setImgTemp(iData.id, {top: bounds[0] + counter * spacer}, true))
                             counter++
                         }
                         for (const obj of revSorted)
@@ -1596,13 +1577,13 @@ const Media = (() => {
                         bounds = [sorted[0].left, sorted.slice(-1)[0].left]
                         spacer = (bounds[1] - bounds[0]) / (sorted.length - 1)
                         for (const iData of sorted) {
-                            //D.Alert(`Setting img ${D.JS(iData)}`)
-                            revSorted.unshift(setImgTemp(iData.id, { left: bounds[0] + counter * spacer }, true))
+                            // D.Alert(`Setting img ${D.JS(iData)}`)
+                            revSorted.unshift(setImgTemp(iData.id, {left: bounds[0] + counter * spacer}, true))
                             counter++
                         }
                         for (const obj of revSorted)
                             toFront(obj)
-                        //D.Alert(`Bounds: ${D.JS(bounds)}, Spacer: ${D.JS(spacer)}`)
+                        // D.Alert(`Bounds: ${D.JS(bounds)}, Spacer: ${D.JS(spacer)}`)
                         break
                     default:
                         switch (anchorRef.toLowerCase()) {
@@ -1709,31 +1690,31 @@ const Media = (() => {
                         break
                     case "centerX":
                         for (const iData of sorted)
-                            iData.obj.set({ left: anchor.left })
+                            iData.obj.set({left: anchor.left})
                         break
                     case "centerY":
                         for (const iData of sorted)
-                            iData.obj.set({ top: anchor.top })
+                            iData.obj.set({top: anchor.top})
                         break
                     case "left":
                     case "leftedge":
                         for (const iData of sorted)
-                            iData.obj.set({ left: anchor.leftX + 0.5 * iData.width })
+                            iData.obj.set({left: anchor.leftX + 0.5 * iData.width})
                         break
                     case "right":
                     case "rightedge":
                         for (const iData of sorted)
-                            iData.obj.set({ left: anchor.rightX - 0.5 * iData.width })
+                            iData.obj.set({left: anchor.rightX - 0.5 * iData.width})
                         break
                     case "top":
                     case "topedge":
                         for (const iData of sorted)
-                            iData.obj.set({ top: anchor.topY + 0.5 * iData.height })
+                            iData.obj.set({top: anchor.topY + 0.5 * iData.height})
                         break
                     case "bottom":
                     case "bottomedge":
                         for (const iData of sorted)
-                            iData.obj.set({ top: anchor.bottomY - 0.5 * iData.height })
+                            iData.obj.set({top: anchor.bottomY - 0.5 * iData.height})
                         break
                     // no default
                 }
@@ -1814,10 +1795,10 @@ const Media = (() => {
         },
         layerImgs = (imgRefs, layer) => {
             const imgObjs = getImgObjs(imgRefs)
-            //orderImgs(IMGLAYERS.objects)
+            // orderImgs(IMGLAYERS.objects)
             for (const imgObj of imgObjs)
                 if (VAL({graphicObj: imgObj}))
-                    imgObj.set({ layer: layer })
+                    imgObj.set({layer})
                 else
                     D.Alert(`No image found for reference ${D.JS(imgObj)}`, "MEDIA: OrderImgs")
         },
@@ -1863,7 +1844,7 @@ const Media = (() => {
                     dbString += `Spread ${parseInt(spread)} less than ${parseInt(leftData.width + rightData.width)} (${parseInt(leftData.width)} + ${parseInt(rightData.width)})<br>`
                     for (const imgData of midData)
                         setImg(imgData.id, "blank")
-                    DB(dbString + `Setting Right to {left: ${parseInt(leftData.rightEdge)} + 0.5x${parseInt(rightData.width)} = ${parseInt(leftData.rightEdge + 0.5*rightData.width)}}`, "spreadImgs")
+                    DB(`${dbString }Setting Right to {left: ${parseInt(leftData.rightEdge)} + 0.5x${parseInt(rightData.width)} = ${parseInt(leftData.rightEdge + 0.5*rightData.width)}}`, "spreadImgs")
                     return setImgTemp(rightData.id, {
                         top: leftData.top,
                         left: leftData.rightEdge + 0.5*rightData.width
@@ -1945,7 +1926,7 @@ const Media = (() => {
                         })
                         currentLeft += spreadPerImg
                         dbString += `... Spreading Mid to ${parseInt(currentLeft)}<br>`
-                        //testVertSpread += 5
+                        // testVertSpread += 5
                     }
                     // Then, turn off all the unused middle imgs.
                     dbString += `Turning off ${midData.length} imgs.<br>`
@@ -1956,17 +1937,17 @@ const Media = (() => {
                         left: leftData.leftEdge + spread - 0.5*rightData.width
                     })
                     DB(dbString, "spreadImgs")
-                    //for (const imgData of midData)
+                    // for (const imgData of midData)
                     //    setImg(imgData.id, "blank")
                     return true
                 }
             }
             return false
-        }
+        },
     // #endregion
 
     // #region ANIMATIONS: Creating, Timeouts, Controlling WEBM Animations
-    const regAnimation = (selectionRef, animName, activeLayer, timeout) => {
+        regAnimation = (selectionRef, animName, activeLayer, timeout) => {
             const [animRefObj] = D.GetSelected(selectionRef)
             if (VAL({imgObj: animRefObj}, "regAnimation")) {
                 IMGREGISTRY[animName] = {
@@ -1975,7 +1956,7 @@ const Media = (() => {
                     top: animRefObj.get("top"),
                     height: animRefObj.get("height"),
                     width: animRefObj.get("width"),
-                    activeLayer: activeLayer,
+                    activeLayer,
                     imgsrc: animRefObj.get("imgsrc").replace(/med/gu, "thumb"),
                     timeOut: parseInt(1000 * (parseFloat(timeout) || 0))
                 }
@@ -2013,20 +1994,20 @@ const Media = (() => {
         },
         killAllTimeouts = () => {
             for (const animID of STATEREF.activeTimeouts)
-                (getObj("graphic", animID) || { remove: () => false }).remove()
+                (getObj("graphic", animID) || {remove: () => false}).remove()
             STATEREF.activeTimeouts = []            
         },
         killAllAnimations = () => {
             for (const animID of STATEREF.activeAnimations)
-                (getObj("graphic", animID) || { remove: () => false }).remove()
+                (getObj("graphic", animID) || {remove: () => false}).remove()
             STATEREF.activeAnimations = []
-        }
+        },
 
 
     // #endregion
 
     // #region TEXT OBJECT GETTERS: Text Object, Width Measurements, Data Retrieval    
-    const isRegText = textRef => Boolean(getTextKey(textRef)), 
+        isRegText = textRef => Boolean(getTextKey(textRef)), 
         getTextKey = (textRef, isSilent = false) => {
             try {
                 let textObj
@@ -2042,7 +2023,7 @@ const Media = (() => {
                     textObj = D.GetSelected(textRef)[0]
                 if (VAL({textObj: textRef}))
                     textObj = textRef
-                if (VAL({textObj: textObj}, "getTextKey"))
+                if (VAL({textObj}, "getTextKey"))
                     if (IDREGISTRY[textObj.id])
                         return IDREGISTRY[textObj.id]
                 return !isSilent && THROW(`Cannot locate text key with search value '${D.JS(textRef)}'`, "getTextKey")
@@ -2053,14 +2034,14 @@ const Media = (() => {
         getTextObj = (textRef, isSilent = false) => {
             try {
                 let textObj
-                if (VAL({ textObj: textRef }))
+                if (VAL({textObj: textRef}))
                     textObj = textRef
-                else if (VAL({ string: textRef }))
+                else if (VAL({string: textRef}))
                     if (getTextKey(textRef, isSilent))
                         textObj = getObj("text", TEXTREGISTRY[getTextKey(textRef)].id)
                     else
                         textObj = getObj("text", textRef) || null
-                else if (VAL({ selected: textRef}))
+                else if (VAL({selected: textRef}))
                     textObj = D.GetSelected(textRef)[0]
                 return textObj || !isSilent && THROW(`Bad text reference: ${D.JS(textRef)}`, "getTextObj")
             } catch (errObj) {
@@ -2068,9 +2049,9 @@ const Media = (() => {
             }
         },
         getTextObjs = textRefs => {
-            const tRefs = VAL({ msg: textRefs }) ? D.GetSelected(textRefs) || [] : textRefs,
+            const tRefs = VAL({msg: textRefs}) ? D.GetSelected(textRefs) || [] : textRefs,
                 textObjs = []
-            if (VAL({ array: tRefs })) {
+            if (VAL({array: tRefs})) {
                 for (const tRef of tRefs)
                     textObjs.push(getTextObj(tRef))
                 return textObjs
@@ -2117,7 +2098,7 @@ const Media = (() => {
             const textObj = getTextObj(textRef),
                 textData = getTextData(textObj),
                 maxW = textData && textData.maxWidth || maxWidth || 0
-            if (VAL({ textObj: textObj }, "getTextWidth")) {
+            if (VAL({textObj}, "getTextWidth")) {
                 const font = textObj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
                     size = textObj.get("font_size"),
                     textString = text === "" ? "" : text || textObj.get("text") || "",
@@ -2138,13 +2119,13 @@ const Media = (() => {
                     textLines = _.compact(text.split(/\s*\n+\s*/gu))
                 if (textLines.length) {
                     let maxLine = textLines[0]
-                    //D.Alert(`TextLines = ${textLines}`)
+                    // D.Alert(`TextLines = ${textLines}`)
                     for (const textLine of textLines)
-                        //D.Alert(`MAX {${getTextWidth(textObj, maxLine)}} = ${maxLine}<br>TEXT: {${getTextWidth(textObj, textLine)}} = ${textLine}`)
+                        // D.Alert(`MAX {${getTextWidth(textObj, maxLine)}} = ${maxLine}<br>TEXT: {${getTextWidth(textObj, textLine)}} = ${textLine}`)
                         maxLine = getTextWidth(textObj, maxLine, false) < getTextWidth(textObj, textLine.trim(), false) ? textLine.trim() : maxLine
                     
-                    //D.Alert(`Max Line = ${D.JS(maxLine)}, ${getTextWidth(textObj, maxLine)}`)
-                    //D.Alert(`GetTextWidth called. Text: ${text} MaxLine: ${maxLine} with maxWidth ${D.JS(maxWidth)} and maxW ${D.JS(maxW)}<br>Width: ${getTextWidth(textObj, maxLine, false)}`)
+                    // D.Alert(`Max Line = ${D.JS(maxLine)}, ${getTextWidth(textObj, maxLine)}`)
+                    // D.Alert(`GetTextWidth called. Text: ${text} MaxLine: ${maxLine} with maxWidth ${D.JS(maxWidth)} and maxW ${D.JS(maxW)}<br>Width: ${getTextWidth(textObj, maxLine, false)}`)
                     return getTextWidth(textObj, maxLine, false)
                 }
                 _.each(chars, char => {
@@ -2153,8 +2134,8 @@ const Media = (() => {
                     else
                         width += charRef[char]
                 })
-                /*if (maxWidth !== false)
-                    D.Alert(`GetTextWidth called on ${text} with maxWidth ${D.JS(maxWidth)} and maxW ${D.JS(maxW)}`)*/
+                /* if (maxWidth !== false)
+                    D.Alert(`GetTextWidth called on ${text} with maxWidth ${D.JS(maxWidth)} and maxW ${D.JS(maxW)}`) */
                 return width
             }
             return false
@@ -2177,10 +2158,10 @@ const Media = (() => {
         getBlankLeft = (textRef, justification, maxWidth = 0, useCurrent = false) => {
             const textObj = getTextObj(textRef),
                 justify = justification || getTextData(textRef).justification
-            if (VAL({textObj: textObj}, "getBlankLeft")) {   
+            if (VAL({textObj}, "getBlankLeft")) {   
                 if (useCurrent)
                     return textObj.get("left") + (justify === "left" ? -0.5 : justify === "right" ? 0.5 : 0) * getMaxWidth(textObj)
-                //D.Alert(`getBlankLeft Called on ${textObj.get("text")} with maxWidth ${maxWidth} into getTextWidth -->`)
+                // D.Alert(`getBlankLeft Called on ${textObj.get("text")} with maxWidth ${maxWidth} into getTextWidth -->`)
                 return textObj.get("left") + (justify === "left" ? -0.5 : justify === "right" ? 0.5 : 0) * getTextWidth(textObj, textObj.get("text"), maxWidth)
             }
             return false
@@ -2188,19 +2169,19 @@ const Media = (() => {
         getRealLeft = (textRef, params = {}) => {
             const textObj = getTextObj(textRef),
                 textData = getTextData(textRef)
-            if (VAL({textObj: textObj}, "getRealLeft")) {
+            if (VAL({textObj}, "getRealLeft")) {
                 params.left = params.left || textData.left
                 params.text = params.text || textObj.get("text")
                 params.justification = params.justification || textData.justification
-                //D.Alert(`getRealLeft Called on ${params.text} with maxWidth ${params.maxWidth} into getTextWidth -->`)
+                // D.Alert(`getRealLeft Called on ${params.text} with maxWidth ${params.maxWidth} into getTextWidth -->`)
                 return params.left + (params.justification === "left" ? 0.5 : params.justification === "right" ? -0.5 : 0) * getTextWidth(textObj, params.text, params.maxWidth || 0)
             }
             return false            
-        }      
+        },      
     // #endregion
 
     // #region TEXT OBJECT MANIPULATORS: Buffering, Justifying, Splitting
-    const buffer = (textRef, width) => " ".repeat(Math.max(0, Math.round(width/getTextWidth(textRef, " ", false)))),
+        buffer = (textRef, width) => " ".repeat(Math.max(0, Math.round(width/getTextWidth(textRef, " ", false)))),
         splitTextLines = (textRef, text, maxWidth, justification = "left") => {
             const textObj = getTextObj(textRef)
             let textStrings = text.split(/(\s|-)/gu).filter(x => x.match(/\S/gu)),
@@ -2208,38 +2189,38 @@ const Media = (() => {
                 highWidth = 0
             for (let i = 0; i < textStrings.length; i++)
                 if (textStrings[i] === "-") {
-                    textStrings[i-1] = textStrings[i-1] + "-"
+                    textStrings[i-1] = `${textStrings[i-1] }-`
                     textStrings = [...[...textStrings].splice(0,i), ...[...textStrings].splice(i+1)]
                 }
-            //let [stringCount, lineCount] = [0, 0]
+            // let [stringCount, lineCount] = [0, 0]
             while (textStrings.length) {
                 let thisString = "",
                     nextWidth = getTextWidth(textObj, textStrings[0] + (textStrings[0].endsWith("-") ? "" : " "), false)
-                //lineCount++
-                //stringCount = 0
-                //DB(`LINE ${lineCount}.  NextWidth: ${nextWidth}`, "splitTextLines")
+                // lineCount++
+                // stringCount = 0
+                // DB(`LINE ${lineCount}.  NextWidth: ${nextWidth}`, "splitTextLines")
                 while (nextWidth < maxWidth && textStrings.length) {
                     thisString += textStrings[0].endsWith("-") ? `${textStrings.shift()}` : `${textStrings.shift()} `
                     nextWidth = textStrings.length ? getTextWidth(textObj, thisString + textStrings[0] + (textStrings[0].endsWith("-") ? "" : " "), false) : 0
-                    //stringCount++
-                    //DB(`... STRING ${stringCount}: ${thisString}  NextWidth: ${nextWidth}`, "splitTextLines")
+                    // stringCount++
+                    // DB(`... STRING ${stringCount}: ${thisString}  NextWidth: ${nextWidth}`, "splitTextLines")
                 }
-                //DB(`ADDING LINE: ${thisString} with width ${getTextWidth(textObj, thisString, false)}`, "splitTextLines")
+                // DB(`ADDING LINE: ${thisString} with width ${getTextWidth(textObj, thisString, false)}`, "splitTextLines")
                 splitStrings.push(thisString)
                 highWidth = Math.max(getTextWidth(textObj, thisString, false), highWidth)
             }
             if (justification === "center")
                 splitStrings = _.map(splitStrings, v => `${buffer(textObj, 0.5 * (highWidth - getTextWidth(textObj, v, false)))}${v}${buffer(textObj, 0.5 * (highWidth - getTextWidth(textObj, v, false)))}`)
             else if (justification === "right")
-            //D.Alert(`spaceWidth: ${spaceWidth}, repeating ${D.JS(Math.round((highWidth - getTextWidth(textObj, splitStrings[0], false))/spaceWidth))} Times.`)
+            // D.Alert(`spaceWidth: ${spaceWidth}, repeating ${D.JS(Math.round((highWidth - getTextWidth(textObj, splitStrings[0], false))/spaceWidth))} Times.`)
                 splitStrings = _.map(splitStrings, v => `${buffer(textObj, highWidth - getTextWidth(textObj, v, false))}${v}`)
        // D.Alert(`SplitTextLines Called.  Returning: ${D.JS(splitStrings)}`)
             return splitStrings
         },
         justifyText = (textRef, justification, maxWidth = 0) => {
             const textObj = getTextObj(textRef)
-            //D.Alert(`Justifying ${D.JS(getTextKey(textObj))}.  Reference: ${D.JS(textRef)}, Object: ${D.JS(textObj)}`, "justifyText")
-            if (VAL({textObj: textObj})) {
+            // D.Alert(`Justifying ${D.JS(getTextKey(textObj))}.  Reference: ${D.JS(textRef)}, Object: ${D.JS(textObj)}`, "justifyText")
+            if (VAL({textObj})) {
                 TEXTREGISTRY[getTextKey(textObj)].justification = justification || "center"
                 TEXTREGISTRY[getTextKey(textObj)].left = getBlankLeft(textObj, justification, maxWidth)
                 TEXTREGISTRY[getTextKey(textObj)].width = getTextWidth(textObj, textObj.get("text"), maxWidth)
@@ -2250,16 +2231,16 @@ const Media = (() => {
                     TEXTREGISTRY[shadowKey].left = getBlankLeft(shadowObj, justification, maxWidth)
                     TEXTREGISTRY[shadowKey].width = getTextWidth(shadowObj, shadowObj.get("text"), maxWidth)
                 }
-                //D.Alert(`${getTextKey(textRef)} Updated: ${D.JS(TEXTREGISTRY[getTextKey(textObj)])}`, "justifyText")
+                // D.Alert(`${getTextKey(textRef)} Updated: ${D.JS(TEXTREGISTRY[getTextKey(textObj)])}`, "justifyText")
             }
-        }
+        },
     // #endregion
 
     // #region TEXT OBJECT SETTERS: Registering, Changing, Deleting
-    const regText = (textRef, hostName, activeLayer, startActive, hasShadow, justification, options = {}, isSilent = false) => {
+        regText = (textRef, hostName, activeLayer, startActive, hasShadow, justification, options = {}, isSilent = false) => {
             const textObj = getTextObj(textRef)
             DB(`regText(textRef, ${D.JS(hostName)}, ${D.JS(activeLayer)}, ${D.JS(startActive)}, ${D.JS(hasShadow)}, ${D.JS(options)}`, "regText")
-            if (VAL({ text: textObj })) {
+            if (VAL({text: textObj})) {
                 if (!(hostName && activeLayer))
                     return THROW("Must supply host name and active layer for regText.", "RegText")
                 const name = options.name && !TEXTREGISTRY[options.name] ? options.name : !TEXTREGISTRY[hostName] ? hostName : `${hostName.replace(/(_|\d|#)+$/gu, "")}_${_.filter(_.keys(TEXTREGISTRY), k => k.includes(hostName.replace(/(_|\d|#)+$/gu, ""))).length + 1}`,
@@ -2282,9 +2263,9 @@ const Media = (() => {
                         curTextParams,
                         {
                             id: textObj.id,
-                            name: name,
+                            name,
                             top: curTextParams.top - 0.5 * (curTextParams.text.split("\n").length - 1) * options.lineHeight,
-                            activeLayer: activeLayer,
+                            activeLayer,
                             startActive: !(startActive === "false" || startActive === false),
                             activeText: curTextParams.text,
                             zIndex: parseInt(options.zIndex) || (TEXTREGISTRY[name] ? TEXTREGISTRY[name].zIndex : 300),
@@ -2328,16 +2309,15 @@ const Media = (() => {
             DB(`makeText(${D.JS(hostName)}, ${D.JS(activeLayer)}, ${D.JS(startActive)}, ${D.JS(hasShadow)}, ${D.JS(options)}`, "makeText")
             const isStartingActive = startActive || !(options.startActive === "false" || options.startActive === false),
                 actLayer = activeLayer || options.activeLayer || options.layer || "objects",
-                objParams = Object.assign({
-                    _pageid: D.PAGEID,
-                    text: options.text || "",
-                    left: 200,
-                    top: options.top || 200,
-                    font_size: options.size || options.fontSize || options.font_size || 24,
-                    color: options.color || C.COLORS.brightred,
-                    font_family: options.font || options.fontFamily || options.font_family || "Candal",
-                    layer: isStartingActive ? actLayer : "gmlayer",
-                    controlledby: ""
+                objParams = Object.assign({_pageid: D.PAGEID,
+                                           text: options.text || "",
+                                           left: 200,
+                                           top: options.top || 200,
+                                           font_size: options.size || options.fontSize || options.font_size || 24,
+                                           color: options.color || C.COLORS.brightred,
+                                           font_family: options.font || options.fontFamily || options.font_family || "Candal",
+                                           layer: isStartingActive ? actLayer : "gmlayer",
+                                           controlledby: ""
                 }, _.pick(options, ...C.TEXTPROPS)),
                 textObj = createObj("text", objParams)
             options.activeText = objParams.text             
@@ -2397,16 +2377,16 @@ const Media = (() => {
                 textOptions = VAL({string: options}) ? {text: options} : options === {} ? {text: textObj.get("text")} : options,
                 textString = (textOptions && textOptions.text || textData && textData.text || textObj && textObj.get("text") || "").trim()
             let shadowObj, shadowObjParams
-            if (VAL({textObj: textObj}, "setText")) {
+            if (VAL({textObj}, "setText")) {
                 textOptions.left = textOptions && textOptions.left || textData && textData.left || getBlankLeft(textObj, textObj.get("text"))
                 textOptions.top = textOptions && textOptions.top || textData && textData.top || textObj.get("top")
                 textOptions.text = textString
                 textOptions.maxWidth = textOptions && textOptions.maxWidth || textData && textData.maxWidth || 0
                 const objParams = Object.assign(_.pick(textOptions, C.TEXTPROPS))
-                //DB(`Options: ${D.JS(textOptions)}<br><br>Params: ${D.JS(objParams)}`, "setText")
+                // DB(`Options: ${D.JS(textOptions)}<br><br>Params: ${D.JS(objParams)}`, "setText")
                 if (textOptions.maxWidth > 0 && objParams.text) {
                     const splitLines = splitTextLines(textObj, objParams.text, textOptions.maxWidth, textData.justification)
-                    //DB(`Splitting Text: ${D.JS(splitLines)}`, "setText")
+                    // DB(`Splitting Text: ${D.JS(splitLines)}`, "setText")
                     objParams.text = splitLines.join("\n")           
                 }                
                 if (objParams.text.split("\n").length > 1)
@@ -2457,7 +2437,7 @@ const Media = (() => {
                 textData = getTextData(textRef)
             if (textObj) {
                 const activeCheck = isActive === false || isActive === true ? isActive : TEXTREGISTRY[textKey].isActive === false || TEXTREGISTRY[textKey].isActive === true ? !TEXTREGISTRY[textKey].isActive : TEXTREGISTRY[textKey].startActive
-                //D.Alert(`activeCheck: ${activeCheck}`)
+                // D.Alert(`activeCheck: ${activeCheck}`)
                 if (activeCheck) {
                     TEXTREGISTRY[textKey].isActive = true
                     textObj.set("layer", textData.activeLayer || "objects")
@@ -2506,11 +2486,11 @@ const Media = (() => {
         resetTextRegistry = () => {
             STATEREF.textregistry = {}
             STATEREF.idregistry = {}
-        }
+        },
     // #endregion
 
     // #region MEDIA SETTERS: Img, Animation & Text
-    const setActiveLayers = (isOverridingStartActive = true) => {
+        setActiveLayers = (isOverridingStartActive = true) => {
             // NEEDS TO HANDLE MODES IN HERE
             const returnStrings = []
             for (const imgData of _.values(IMGREGISTRY)) {
@@ -2537,12 +2517,12 @@ const Media = (() => {
                 D.Alert(returnStrings.join("<br>"), "Media: SetActiveLayers")
         },
         setZIndices = () => {
-            const allImgDatas = [],
+            /* const allImgDatas = [],
                 sortedMediaObjs = []
             for (const category of ["map", "objects", "dragpads"]) {
                 const imgDatas = _.compact(getZLevels()[category].map(x => {
                     if (!IMGREGISTRY[x[1]])
-                        return false//THROW(`No image Registered for ZIndex Entry '${x[1]}'`, "setZIndices")
+                        return false// THROW(`No image Registered for ZIndex Entry '${x[1]}'`, "setZIndices")
                     IMGREGISTRY[x[1]].zIndex = x[2]
                     return IMGREGISTRY[x[1]]
                 }))
@@ -2552,11 +2532,11 @@ const Media = (() => {
             sortedMediaObjs.push(..._.compact(_.keys(TEXTREGISTRY).filter(x => x.includes("Shadow")).map(x => getTextObj(x) || null)))
             sortedMediaObjs.push(..._.compact(allImgDatas.sort((a,b) => b.zIndex - a.zIndex).map(x => getImgObj(x.id) || null)))
             for (let i = 0; i < sortedMediaObjs.length; i++)
-                toBack(sortedMediaObjs[i])
+                toBack(sortedMediaObjs[i])*/
         },
         initMedia = () => {
             setActiveLayers()
-            //setZIndices()
+            // setZIndices()
             const onCheck = (key) => {
                     const modeData = IMGREGISTRY[key] && IMGREGISTRY[key].modes && IMGREGISTRY[key].modes[Session.Mode] ||
                                 TEXTREGISTRY[key] && TEXTREGISTRY[key].modes && TEXTREGISTRY[key].modes[Session.Mode] ||
@@ -2624,7 +2604,7 @@ const Media = (() => {
         SetImg: setImg, SetText: setText,        
         ToggleImg: toggleImg, ToggleText: toggleText,
         SetImgData: setImgData, SetTextData: setTextData,
-        SetImgTemp: setImgTemp, SetTextTemp: setTextTemp,
+        SetImgTemp: setImgTemp, // SetTextTemp: setTextTemp,
 
         // AREA FUNCTIONS
         GetBounds: getBounds, GetContents: getContainedImgObjs,

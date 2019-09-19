@@ -14,12 +14,12 @@ module.exports = {
         "prettier"
       ],
       "parserOptions": {
-        "ecmaVersion": 2018,
+        "ecmaVersion": 2017,
         "sourceType": "module",
         "allowImportExportEverywhere": false,
         "codeFrame": false,
         "ecmaFeatures": {
-            "jsx": true,
+            "jsx": false,
             "impliedStrict": true
         }
       },
@@ -96,6 +96,7 @@ module.exports = {
         "no-void": 0,
         "one-var": ["error", "consecutive"],
         "prefer-const": ["error", {"destructuring": "all"}],
+        "prefer-object-spread": 0,
         "quotes": [
             "error",
             "double"

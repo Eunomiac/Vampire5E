@@ -1,5 +1,23 @@
 void MarkStart("Char")
 const Char = (() => {
+    // ************************************** CLEAN DISABLE (UNCOMMENT TO DISABLE SCRIPT) *******************************************
+    /*return {
+        RegisterEventHandlers: () => false,
+        CheckInstall:  () => false,
+        REGISTRY: () => false,
+        Damage:  () => false,
+        AdjustTrait:  () => false,
+        AdjustHunger:  () => false,
+        DaySleep:  () => false,
+        AwardXP:  () => false,
+        LaunchProject:  () => false,
+        SendHome:  () => false,
+        SendBack:  () => false,
+        PromptTraitSelect:  () => false,
+        RefreshDisplays:  () => false,
+        get SelectedChar() { return false },
+        get SelectedTraits() { return false }
+    }*/
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Char",
         CHATCOMMAND = "!char",
@@ -868,7 +886,7 @@ const Char = (() => {
                 adjustDamage(charRef, "willpower", "superficial+", -1, false)
                 displayDesires()
                 D.Chat(D.GetChar(charRef), C.CHATHTML.colorBlock([
-                    C.CHATHTML.colorHeader("You have resolved your Desire!<br>One superficial Willpower restored.<br>What do you Desire next?", {height: "auto", ...C.STYLES.whiteMarble.header})
+                    C.CHATHTML.colorHeader("You have resolved your Desire!<br>One superficial Willpower restored.<br>What do you Desire next?", Object.assign({height: "auto"}, C.STYLES.whiteMarble.header))
                 ], C.STYLES.whiteMarble.block))
             }            
         },
