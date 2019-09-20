@@ -3,16 +3,16 @@ const Handouts = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Handouts",
         CHATCOMMAND = "!handouts",
-        GMONLY = true
+        GMONLY = true,
 
     // #region COMMON INITIALIZATION
-    const STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
+        STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
+        VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
+        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
-    const checkInstall = () => {
+        checkInstall = () => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             initialize()
         },
@@ -25,40 +25,40 @@ const Handouts = (() => {
                     handleInput(msg, who, call, args)
                 }
             })
-        }
+        },
     // #endregion
 
     // #region LOCAL INITIALIZATION
-    const initialize = () => {
-        STATEREF.noteCounts = STATEREF.noteCounts || { projects: 0 }
-    }
+        initialize = () => {
+            STATEREF.noteCounts = STATEREF.noteCounts || {projects: 0}
+        },
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-    const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
+        handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
         // const
-        switch (call) {
-            case "get":
-                switch (args.shift().toLowerCase()) {
-                    case "projects": {
-                        summarizeProjects("Project Summary", D.GetChars("registered"))
-                        break
-                    }
-                    case "prestation": {
-                        summarizePrestation("Prestation Summary", D.GetChars("registered"))
-                        break
-                    }
+            switch (call) {
+                case "get":
+                    switch (args.shift().toLowerCase()) {
+                        case "projects": {
+                            summarizeProjects("Project Summary", D.GetChars("registered"))
+                            break
+                        }
+                        case "prestation": {
+                            summarizePrestation("Prestation Summary", D.GetChars("registered"))
+                            break
+                        }
                     // no default
-                }
-                break
+                    }
+                    break
             // no default
-        }
-    }
+            }
+        },
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     // #region GETTERS: Retrieving Notes, Data
-    const getCount = category => STATEREF.noteCounts[category],
+        getCount = category => STATEREF.noteCounts[category],
         getHandoutObj = (title, charRef) => {
             const notes = findObjs({
                 _type: "handout",
@@ -74,9 +74,9 @@ const Handouts = (() => {
         getProjectData = (charRef) => {
             const projAttrs = D.GetRepStats(charRef, "project", null, null, "rowID"),
                 projData = []
-            //D.Alert(`Project Attributes: ${D.JS(projAttrs)}`)
+            // D.Alert(`Project Attributes: ${D.JS(projAttrs)}`)
             _.each(projAttrs, (attrDatas, rowID) => {
-                const rowData = { rowID }
+                const rowData = {rowID}
                 _.each(attrDatas, attrData => {
                     rowData[attrData.name] = attrData.val
                 })
@@ -93,10 +93,10 @@ const Handouts = (() => {
                     boonsOwed: [],
                     boonsOwing: []
                 }
-            //D.Alert(`Project Attributes: ${D.JS(projAttrs)}`)
+            // D.Alert(`Project Attributes: ${D.JS(projAttrs)}`)
             _.each(["boonsOwed", "boonsOwing"], cat => {
                 _.each(prestationAttrs[cat], (attrDatas, rowID) => {
-                    const rowData = { rowID }
+                    const rowData = {rowID}
                     _.each(attrDatas, attrData => {
                         rowData[attrData.name] = attrData.val
                     })
@@ -120,14 +120,14 @@ const Handouts = (() => {
             D.Alert(`Prestation Data for ${D.GetChar(charRef).get("name")}:<br>${D.JS(groupedData)}`, "Prestation Data")
             
             return groupedData
-        }
+        },
     // #endregion
 
     // #region SETTERS: Setting Notes, Deleting Handouts, Appending to Handouts
-    const makeHandoutObj = (title, category, contents) => {
+        makeHandoutObj = (title, category, contents) => {
             if (category)
                 STATEREF.noteCounts[category] = STATEREF.noteCounts[category] ? STATEREF.noteCounts[category] + 1 : 1
-            const noteObj = createObj("handout", { name: `${title} ${category && STATEREF.noteCounts[category] && STATEREF.noteCounts[category] > 1 ? STATEREF.noteCounts[category] - 1 : ""}` })
+            const noteObj = createObj("handout", {name: `${title} ${category && STATEREF.noteCounts[category] && STATEREF.noteCounts[category] > 1 ? STATEREF.noteCounts[category] - 1 : ""}`})
             if (contents)
                 noteObj.set("notes", C.HANDOUTHTML.main(D.JS(contents)))
             return noteObj
@@ -142,25 +142,25 @@ const Handouts = (() => {
             const handoutObj = _.find(findObjs({_type: "handout", inplayerjournals: "", archived: false}), v => v.get("name").toLowerCase().startsWith(title.toLowerCase()))
             if (VAL({object: handoutObj})) {
                 if (category && STATEREF.noteCounts[category]) {
-                    let matcher = handoutObj.get("name").match(/\d+$/u)
+                    const matcher = handoutObj.get("name").match(/\d+$/u)
                     if (matcher && parseInt(matcher[0]) === STATEREF.noteCounts[category])
                         STATEREF.noteCounts[category]--
                 }
                 handoutObj.remove()
             }                
-        }
+        },
     // #endregion
 
     // #region CHARACTER SHEET SUMMARIES
 
-    const summarizeProjects = (title, charObjs) => {
+        summarizeProjects = (title, charObjs) => {
             delHandoutObjs("Project Summary", "projects")
             const noteObj = makeHandoutObj(title, "projects"),
                 noteSections = []
             for (const char of charObjs) {
                 const charLines = []
-                for (let projectData of getProjectData(char)) {
-                    //D.Alert(D.JS(projectData), "Project Data")
+                for (const projectData of getProjectData(char)) {
+                    // D.Alert(D.JS(projectData), "Project Data")
                     /* for (const item of ["projectdetails", "projectgoal", "projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectscope_name", "projectscope", ]) {
                         projectData[item] = projectData[item] || ""
                     } */
@@ -219,7 +219,7 @@ const Handouts = (() => {
                 charLines.unshift(C.HANDOUTHTML.projects.charName(D.GetName(char).toUpperCase()))
                 noteSections.push(charLines.join(""))
             }
-            //noteObj.set("notes", "This works!")
+            // noteObj.set("notes", "This works!")
             noteObj.set("notes", C.HANDOUTHTML.main(noteSections.join("<br>")))
             return noteObj
         },
@@ -233,10 +233,10 @@ const Handouts = (() => {
                         boonsOwing: []
                     },
                     prestationData = getPrestationData(charObj)                    
-                //D.Alert(`Prestation Data for ${charObj.get("name")}:<br><b>OWED:</b><br>${D.JS(prestationData.boonsOwed)}<br><br><b>OWING:</b><br>${D.JS(prestationData.boonsOwing)}`, "Prestation Data")
+                // D.Alert(`Prestation Data for ${charObj.get("name")}:<br><b>OWED:</b><br>${D.JS(prestationData.boonsOwed)}<br><br><b>OWING:</b><br>${D.JS(prestationData.boonsOwing)}`, "Prestation Data")
                 continue
-                for (const cat of ["boonsOwed", "boonsOwing"]) {
-                    for (let boonData of prestationData[cat]) {
+                for (const cat of ["boonsOwed", "boonsOwing"]) 
+                    for (const boonData of prestationData[cat]) {
                         /* for (const item of ["projectdetails", "projectgoal", "projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectscope_name", "projectscope", ]) {
                             projectData[item] = projectData[item] || ""
                         } */
@@ -290,7 +290,7 @@ const Handouts = (() => {
                             continue
                         charLines.push(C.HANDOUTHTML.main(projLines.join("")))
                     }
-                }
+                
                 if (charLines.length === 0)
                     continue
                 charLines.unshift(C.HANDOUTHTML.projects.charName(D.GetName(charObj).toUpperCase()))

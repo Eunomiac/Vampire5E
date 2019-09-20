@@ -183,21 +183,12 @@ const Session = (() => {
                 C.CHATHTML.colorBody("Thank you for your service!")
             ]))
             Roller.Clean()
-            Media.Initialize()
+            Media.SwitchMode()
             for (const quadrant of _.keys(Char.REGISTRY)) {
                 const {tokenName} = Char.REGISTRY[quadrant]
-                Media.ToggleImg(tokenName, true)
                 Media.SetImg(tokenName, STATEREF.tokenRecord[tokenName] || "base")
                 Media.SetArea(tokenName, `${quadrant}Token`)
             }
-            if (STATEREF.Mode === "Downtime")
-                Media.ToggleImg("downtimeBanner", true)
-            else
-                for (const imgKey of _.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("Hunger")))
-                    Media.ToggleImg(imgKey, true)
-            for (const imgKey of ["stakedAdvantagesHeader", "weeklyResourcesHeader"])
-                Media.ToggleImg(imgKey, true)
-            Media.SetLocation(STATEREF.locationRecord) 
             TimeTracker.StopCountdown()
             TimeTracker.StartClock()
             Char.RefreshDisplays()
@@ -205,6 +196,7 @@ const Session = (() => {
         },
         endSession = () => {
             if (remorseCheck()) {
+                STATEREF.Mode = "Inactive"
                 sendChat("Session End", C.CHATHTML.colorBlock([
                     C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
                     C.CHATHTML.colorHeader(`Concluding Session ${D.NumToText(STATEREF.SessionNum, true)}`),
@@ -212,7 +204,7 @@ const Session = (() => {
                     C.CHATHTML.colorTitle("See you next week!", {fontSize: "32px"}),
                 ]))
                 Roller.Clean()
-                STATEREF.Mode = "Inactive"
+                Media.SwitchMode()
                 STATEREF.locationRecord = _.clone(Media.LOCATION)
                 STATEREF.tokenRecord = {}
                 if (!STATEREF.isTestingActive) {
@@ -223,22 +215,6 @@ const Session = (() => {
                     TimeTracker.CurrentDate = STATEREF.dateRecord
                     TimeTracker.Fix()
                 }
-                for (const imgKey of [..._.values(D.GetCharVals("registered", "tokenName")), "DistrictCenter", "DistrictLeft", "DistrictRight", "SiteCenter", "SiteLeft", "SiteRight", "SiteBarCenter", "SiteBarLeft", "SiteBarRight"])
-                    Media.ToggleImg(imgKey, false)
-                for (const textKey of _.keys(Media.TEXT))
-                    Media.ToggleText(textKey, false)
-                if (STATEREF.isTestingActive)
-                    Media.ToggleText("testSessionNotice", true)
-                for (const imgKey of [
-                    ..._.keys(Media.IMAGES).filter(x => x.startsWith("rollerImage")),
-                    ..._.keys(Media.IMAGES).filter(x => x.startsWith("Hunger")),
-                    ..._.keys(Media.IMAGES).filter(x => x.startsWith("District")),
-                    ..._.keys(Media.IMAGES).filter(x => x.startsWith("Site")),
-                    "stakedAdvantagesHeader",
-                    "weeklyResourcesHeader",
-                    "downtimeBanner"
-                ])
-                    Media.ToggleImg(imgKey, false)
                 TimeTracker.StopClock()
                 TimeTracker.StopLights()
                 TimeTracker.StartCountdown()
@@ -263,17 +239,13 @@ const Session = (() => {
         },
         toggleDowntime = () => {
             STATEREF.Mode = STATEREF.Mode === "Downtime" ? "Active" : "Downtime"
-            Media.ToggleImg("downtimeBanner", STATEREF.Mode === "Downtime")
             Roller.Clean()
+            Media.SwitchMode()
             if (STATEREF.Mode === "Downtime") {
                 TimeTracker.StopClock()                
                 STATEREF.locationRecord = _.clone(Media.LOCATION)
                 Media.SetLocation({DistrictCenter: "blank"})
                 Char.SendHome()
-                for (const tokenName of _.values(D.GetCharVals("registered", "tokenName")))
-                    Media.ToggleImg(tokenName, false)
-                for (const imgKey of _.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("Hunger")))
-                    Media.ToggleImg(imgKey, false)
                 sendChat("Session Downtime", C.CHATHTML.colorBlock([
                     C.CHATHTML.colorTitle("Session Downtime"),
                     C.CHATHTML.colorHeader("Session Status: Downtime"),
@@ -282,11 +254,7 @@ const Session = (() => {
             } else {
                 TimeTracker.StartClock()  
                 Media.SetLocation(STATEREF.locationRecord)    
-                Char.SendBack()  
-                for (const tokenName of _.values(D.GetCharVals("registered", "tokenName")))
-                    Media.ToggleImg(tokenName, true)
-                for (const imgKey of _.keys(Media.IMAGES).filter(x => Media.IMAGES[x].name.includes("Hunger")))
-                    Media.ToggleImg(imgKey, true)     
+                Char.SendBack()
                 sendChat("Session Downtime", C.CHATHTML.colorBlock([
                     C.CHATHTML.colorTitle("Session Downtime"),
                     C.CHATHTML.colorHeader("Session Status: Regular Time"),

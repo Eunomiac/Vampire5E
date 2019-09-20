@@ -561,7 +561,7 @@ const D = (() => {
                                     errorLines.push(`Invalid number: ${jStr(v)}`)
                                 break
                             case "string":
-                                if (!_.isString(v))
+                                if (!_.isString(v) && !_.isNumber(v))
                                     errorLines.push(`Invalid string: ${jStr(v)}`)
                                 break
                             case "function":
@@ -590,6 +590,7 @@ const D = (() => {
                             case "char": case "charref":
                             case "playerchar": case "playercharref": case "pcref": case "pc":
                             case "npc": case "npcref": case "spc": case "spcref": {
+                                const charCounts = []
                                 let vRef
                                 try {
                                     if (v && v.selected && v.selected[0] && v.selected[0]._type === "graphic")
@@ -614,23 +615,26 @@ const D = (() => {
                                             }
                                         else if (vRef.get && vRef.get("represents"))
                                             charRefs.push(..._.compact([getObj("character", vRef.get("represents"))]))
+                                    charCounts[0] = charRefs.length
                                 } catch (errObj) {
-                                    errorLines.push(`(val({${cat.toLowerCase()}: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}) <b>${errObj.name}</b>: ${errObj.message}`)
+                                    errorLines.push(`(val({${cat.toLowerCase()}: ${jStr(v && v.get && v.get("name") && `OBJ:${v.get("name")}` || v && v.id || v, true)} [${charCounts.join(", ")}]) <b>${errObj.name}</b>: ${errObj.message}`)
                                 } finally {
                                     if (charRefs.length)
                                         switch(cat.toLowerCase()) {
                                             case "playerchar": case "playercharref": case "pcref": case "pc": {
-                                                charRefs = _.uniq(charRefs.map(x => x.replace(/all/gu, "registered").replace(/sandbox/gu, "activepc"))).filter(x =>
+                                                charRefs = _.uniq(charRefs.map(x => _.isString(x) && x.replace(/all/gu, "registered").replace(/sandbox/gu, "activepc") || x)).filter(x =>
                                                     _.isString(x) && ["topleft", "botleft", "topright", "botright", "registered", "activepc"].includes(x.toLowerCase()) ||
                                                     x.get && x.get("_type") === "character" && _.values(Char.REGISTRY).filter(xx => xx.id === x.id).length
                                                 )
+                                                charCounts[1] = charRefs.length
                                                 break
                                             }
                                             case "npc": case "npcref": case "spc": case "spcref": {
-                                                charRefs = _.uniq(charRefs.map(x => x.replace(/all/gu, "allnpc").replace(/sandbox/gu, "activenpc"))).filter(x => !(
+                                                charRefs = _.uniq(charRefs.map(x => _.isString(x) && x.replace(/all/gu, "allnpc").replace(/sandbox/gu, "activenpc") || x)).filter(x => !(
                                                     _.isString(x) && ["topleft", "botleft", "topright", "botright", "registered", "activepc"].includes(x.toLowerCase()) ||
                                                     x.get && x.get("_type") === "character" && _.values(Char.REGISTRY).filter(xx => xx.id === x.id).length
                                                 ))
+                                                charCounts[1] = charRefs.length
                                                 break
                                             }
                                             // no default
@@ -638,7 +642,7 @@ const D = (() => {
                                     if (charRefs.length)
                                         charArray.push(...charRefs)
                                     else
-                                        errorLines.push(`Invalid ${cat.toLowerCase()} reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                        errorLines.push(`Invalid ${cat.toLowerCase()} reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)} [${charCounts.join(", ")}]`)
                                 }                                
                                 break                                
                             }
