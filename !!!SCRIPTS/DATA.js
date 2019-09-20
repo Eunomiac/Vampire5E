@@ -541,6 +541,163 @@ const D = (() => {
             }
         }, */
         validate = (varList, funcName, scriptName, isArray = false) => {
+            // NOTE: To avoid accidental recursion, DO NOT use validate to confirm a type within the getter of that type.
+            //		(E.g do not use VAL{char} inside any of the getChar() functions.)
+            const [errorLines, valArray, charArray] = [[], [], []]
+            let detailsMsg
+            if (_.isArray(funcName))
+                [funcName, detailsMsg] = funcName
+            _.each(varList, (val, cat) => {
+                valArray.length = 0
+                valArray.push(...isArray ? val : [val])
+                if (isArray && valArray.length === 0)
+                    errorLines.push("No values to check in array.")
+                else
+                    _.each(valArray, v => {
+                        let errorCheck = null
+                        switch (cat.toLowerCase()) {
+                            case "object":
+                                if (!(v && v.get && v.id))
+                                    errorLines.push(`Invalid object: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                break
+                            case "number":
+                                if (_.isNaN(parseInt(v)))
+                                    errorLines.push(`Invalid number: ${jStr(v)}`)
+                                break
+                            case "string":
+                                if (!_.isString(v) && !_.isNumber(v))
+                                    errorLines.push(`Invalid string: ${jStr(v)}`)
+                                break
+                            case "function":
+                                if (!_.isFunction(v))
+                                    errorLines.push("Invalid function.")
+                                break
+                            case "array":
+                                if (!_.isArray(v))
+                                    errorLines.push(`Invalid array: ${jStr(v)}`)
+                                break
+                            case "list":
+                                if (!_.isObject(v) || _.isFunction(v) || _.isArray(v) || v && v.get && v.get("_type"))
+                                    errorLines.push(`Invalid list object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                break
+                            case "date":
+                                if (!_.isDate(TimeTracker.GetDate(v)))
+                                    errorLines.push(`Invalid date object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                break
+                            case "msg": case "selection": case "selected":
+                                if (!v || !v.selected || !v.selected[0])
+                                    errorLines.push("Invalid selection: Select objects first!")
+                                break
+                            case "char": case "charref":
+                                if (!getChar(v, true))
+                                    errorLines.push(`Invalid character reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                else
+                                    charArray.push(getChar(v, true))
+                                break
+                            case "charobj":
+                                if (!v || !v.get || v.get("_type") !== "character")
+                                    errorLines.push(`Invalid character object: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                else
+                                    charArray.push(v)
+                                break                        
+                            case "playerchar": case "playercharref": case "pcref": case "pc":
+                                if (!getChar(v, true))
+                                    errorLines.push(`Invalid character reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                else if (!_.values(Char.REGISTRY).map(x => x.id).includes(getChar(v, true).id))
+                                    errorLines.push(`Character reference is not a player character: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                break                                               
+                            case "npc": case "npcref": case "spc": case "spcref":
+                                if (!getChar(v, true))
+                                    errorLines.push(`Invalid character reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                else if (_.values(Char.REGISTRY).map(x => x.id).includes(getChar(v, true).id))
+                                    errorLines.push(`Character reference is not a non-player character: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                break
+                            case "player": case "playerref":
+                                if (!getPlayer(v, true))
+                                    errorLines.push(`Invalid player reference: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                break
+                            case "playerobj":
+                                if (!v || !v.get || v.get("_type") !== "player")
+                                    errorLines.push(`Invalid player object: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                break
+                            case "text": case "textref": /*
+                                if (!Media.GetTextObj(v))
+                                    errorLines.push(`Invalid text reference: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                break       */
+                            // fall through
+                            case "textobj":
+                                if (!v || !v.get || v.get("_type") !== "text")
+                                    errorLines.push(`Invalid text object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                break
+                            case "graphic": case "graphicref": case "image": case "imageref": /*
+                                break       */
+                            // fall through
+                            case "graphicobj": case "imageobj": case "imgobj":
+                                if (!v || !v.get || v.get("_type") !== "graphic")
+                                    errorLines.push(`Invalid graphic object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                break
+                            case "attribute": case "attr": case "attributeobj": case "attrobj":
+                                if (!v || !v.get || v.get("_type") !== "attribute")
+                                    errorLines.push(`Invalid attribute object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                break
+                            case "token": case "tokenobj":
+                                if (!v || !v.get || v.get("_subtype") !== "token" || v.get("represents") === "")
+                                    errorLines.push(`Invalid token object (not a token, or doesn't represent a character): ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                break
+                            case "trait":
+                                if (charArray.length) {
+                                    errorCheck = []
+                                    _.each(charArray, charObj => {
+                                        if (!getStat(charObj, v, true))
+                                            errorCheck.push(charObj.get("name"))
+                                    })
+                                    if (errorCheck.length)
+                                        errorLines.push(`Invalid trait: ${jStr(v && v.get && v.get("name") || v && v.id || v)} ON ${errorCheck.length}/${(varList && varList["char"] || []).length} character references:<br>${jStr(errorCheck)}`)
+                                } else {
+                                    errorLines.push(`Must validate at least one character before validating traits: ${jStr(varList[cat])}.`)
+                                }
+                                break
+                            case "reptrait":
+                                if (charArray.length) {
+                                    errorCheck = []
+                                    let [section, rowID, statName] = []
+                                    if (_.isString(v) && v.match("^repeating_[^_]*?_[^_]*?_.+"))
+                                        [section, rowID, statName] = parseRepStat(v)
+                                    else
+                                        [section, statName] = _.isString(v) ? v.split(":") : []
+                                    if (statName) {
+                                        _.each(charArray, charObj => {
+                                            if (!getRepStat(charObj, section, rowID, statName, true))
+                                                errorCheck.push(charObj.get("name"))
+                                        })
+                                        if (errorCheck.length)
+                                            errorLines.push(`Invalid repeating trait: ${jStr(v && v.get && v.get("name") || v && v.id || v)} ON ${errorCheck.length}/${varList["char"].length} character references:<br>${jStr(errorCheck)}`)
+                                    } else {
+                                        errorLines.push(`Bad form for repeating trait name: ${jStr(v)}. Must supply full name, or string in the form "section:statname".`)
+                                    }
+                                } else {
+                                    errorLines.push(`Must validate at least one character before validating repeating traits: ${jStr(val)}.`)
+                                }
+                                break
+                            case "repname":
+                                if (!(_.isString(v) && v.match("^repeating_[^_]*?_(.*?)_")))
+                                    errorLines.push(`Invalid repeating attribute name: ${jStr(v)}`)
+                                break
+                            // no default
+                        }
+                    })
+            })
+            if (errorLines.length) {
+                if (!funcName || !scriptName)
+                    return false
+                if (detailsMsg)
+                    return THROW(`[From ${jStr(scriptName).toUpperCase()}:${jStr(funcName)}]<br><b>MSG</b>: ${detailsMsg}<br>... ${errorLines.join("<br>... ")}`, "validate")
+                return THROW(`[From ${jStr(scriptName).toUpperCase()}:${jStr(funcName)}]<br>... ${errorLines.join("<br>... ")}`, "validate")
+            }
+            return true
+        },
+        /*
+        validate = (varList, funcName, scriptName, isArray = false) => {
             const [errorLines, valArray, charArray] = [[], [], []]
             _.each(varList, (val, cat) => {
                 valArray.length = 0
@@ -691,17 +848,17 @@ const D = (() => {
                                 if (!v || !v.get || v.get("_type") !== "player")
                                     errorLines.push(`Invalid player object: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
                                 break
-                            case "text": case "textref": /*
-                                if (!Media.GetText(v))
-                                    errorLines.push(`Invalid text reference: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
-                                break       */
+                            case "text": case "textref": 
+                            //    if (!Media.GetText(v))
+                             //       errorLines.push(`Invalid text reference: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                            //    break      
                             // fall through
                             case "textobj":
                                 if (!v || !v.get || v.get("_type") !== "text")
                                     errorLines.push(`Invalid text object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                                 break
-                            case "graphic": case "graphicref": case "image": case "imageref": /*
-                                break       */
+                            case "graphic": case "graphicref": case "image": case "imageref": 
+                              //  break       
                             // fall through
                             case "graphicobj": case "imageobj": case "imgobj":
                                 if (!v || !v.get || v.get("_type") !== "graphic")
@@ -755,7 +912,7 @@ const D = (() => {
                 return THROW(`[From ${jStr(scriptName).toUpperCase()}:${jStr(funcName)}]<br>... ${errorLines.join("<br>... ")}`, "validate")
             }
             return true
-        },
+        }, */
     // #endregion
 
     // #region DEBUGGING & ERROR MANAGEMENT
@@ -973,9 +1130,9 @@ const D = (() => {
             })
             if (!STATEREF.BLACKLIST.includes("getChars"))
                 DB(dbstring, "getChars")
-            return charObjs.size === 0 ?
-                isSilent ? false : THROW(`No Characters Found using Search Parameters:<br>${jStr(searchParams)} in Character Reference<br>${jStr(charRef)}`, "getChars")
-                : _.reject([...charObjs], v => v.get("name") === "Jesse, Good Lad That He Is")
+            if (charObjs.size === 0)
+                return !isSilent && THROW(`No Characters Found using Search Parameters:<br>${jStr(searchParams)} in Character Reference<br>${jStr(charRef)}`, "getChars")
+            return _.reject([...charObjs], v => v.get("name") === "Jesse, Good Lad That He Is")
         }, getChar = (charRef, isSilent = false) => Char.SelectedChar || (getChars(charRef, isSilent) || [false])[0],
         getCharData = (charRef) => {
             const charObj = getChar(charRef)
@@ -1104,16 +1261,15 @@ const D = (() => {
             }
             return _.uniq(validRowIDs)
         },
-        getRepStats = (charRef, section, rowFilter, statName, groupBy, pickProperty, isSilent = false) => {
+        getRepStats = (charRef, section, rowFilter = {}, statName, groupBy, pickProperty, isSilent = false) => {
             const charObj = getChar(charRef)
             // D.Alert(`CharRef: ${D.JS(charRef)}, CharObj: ${D.JS(charObj)}`)
             DB(`getRepStats(${jStr([charObj.get("name"), section, rowFilter, statName, groupBy, pickProperty])})`, "getRepStats")
             let finalRepData = []
             if (VAL({charObj, string: section}, "getRepStats")) {
                 // STEP ONE: USE THE ROW FILTER TO GET VALID ROW IDS TO SEARCH
-                const filter = VAL({string: rowFilter}) ? rowFilter :
-                        VAL({string: statName, list: rowFilter || {}}) ? Object.assign({[statName]: "*"}, rowFilter || {}) :
-                            rowFilter,
+                const filter = VAL({string: statName, list: rowFilter}) ? Object.assign({[statName]: "*"}, rowFilter) :
+                        rowFilter,
                     rowIDs = _.compact(getRepIDs(charObj, section, filter, isSilent)),
                     attrObjs = []
                 if (filter === "top" && !rowIDs.length)

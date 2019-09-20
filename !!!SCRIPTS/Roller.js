@@ -1515,7 +1515,7 @@ const Roller = (() => {
                 Media.MakeText(textLine, "map", false, true, null, TEXTLINES[textLine])
                 Media.ToggleText(textLine, false, true)
             }
-            Media.MakeImage("rollerImage_frontFrame", {
+            Media.MakeImg("rollerImage_frontFrame", {
                 imgsrc: IMAGES.frontFrame,
                 top: POSITIONS.diceFrameFront.top(),
                 left: POSITIONS.diceFrameFront.left(),
@@ -1525,7 +1525,7 @@ const Roller = (() => {
                 startActive: true
             })
             for (let i = 0; i < 9; i++) {
-                Media.MakeImage(`rollerImage_topMid_${i}`, {
+                Media.MakeImg(`rollerImage_topMid_${i}`, {
                     imgsrc: IMAGES.topMids[i - 3 * Math.floor(i / 3)],
                     top: POSITIONS.diceFrameMidTop.top(),
                     left: POSITIONS.diceFrameMidTop.left() + i * POSITIONS.diceFrameMidTop.xShift(),
@@ -1534,7 +1534,7 @@ const Roller = (() => {
                     activeLayer: "map",
                     startActive: false
                 })
-                Media.MakeImage(`rollerImage_bottomMid_${i}`, {
+                Media.MakeImg(`rollerImage_bottomMid_${i}`, {
                     imgsrc: IMAGES.bottomMids[i - 3 * Math.floor(i / 3)],
                     top: POSITIONS.diceFrameMidBottom.top(),
                     left: POSITIONS.diceFrameMidBottom.left() + i * POSITIONS.diceFrameMidBottom.xShift(),
@@ -1544,7 +1544,7 @@ const Roller = (() => {
                     startActive: false
                 })
             }
-            Media.MakeImage("rollerImage_topEnd", {
+            Media.MakeImg("rollerImage_topEnd", {
                 imgsrc: IMAGES.topEnd,
                 top: POSITIONS.diceFrameEndTop.top(),
                 left: POSITIONS.diceFrameEndTop.left(),
@@ -1553,7 +1553,7 @@ const Roller = (() => {
                 activeLayer: "map",
                 startActive: true
             })
-            Media.MakeImage("rollerImage_bottomEnd", {
+            Media.MakeImg("rollerImage_bottomEnd", {
                 imgsrc: IMAGES.bottomEnd,
                 top: POSITIONS.diceFrameEndBottom.top(),
                 left: POSITIONS.diceFrameEndBottom.left(),
@@ -1562,7 +1562,7 @@ const Roller = (() => {
                 activeLayer: "map",
                 startActive: true
             })
-            Media.MakeImage("rollerImage_diffFrame", {
+            Media.MakeImg("rollerImage_diffFrame", {
                 imgsrc: IMAGES.diffFrame,
                 top: POSITIONS.diceFrameDiffFrame.top(),
                 left: POSITIONS.diceFrameDiffFrame.left(),
@@ -1573,7 +1573,7 @@ const Roller = (() => {
             })
             Media.ToggleImg("rollerImage_diffFrame", false)
         // WP REROLL BUTTON
-            Media.MakeImage("wpRerollPlaceholder", {
+            Media.MakeImg("wpRerollPlaceholder", {
                 imgsrc: IMAGES.blank,
                 top: POSITIONS.diceFrameRerollPad.top(),
                 left: POSITIONS.diceFrameRerollPad.left(),

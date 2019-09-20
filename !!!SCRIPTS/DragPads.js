@@ -378,9 +378,9 @@ const DragPads = (() => {
 
             return pads
         },
-        getPadPair = imgID => {
+        getPadPair = (imgID, isSilent = false) => {
             const padData = GRAPHICREGISTRY[imgID]
-            if (VAL({list: padData}, "getPadPair")) {
+            if (VAL({list: padData}, isSilent ? undefined : ["getPadPair", `imgID: ${D.JS(imgID)}, name: ${(getObj("graphic", imgID) || {get: () => "OBJ NOT FOUND"}).get("name")}`])) {
                 const padImgData = [
                     Media.GetImgData(padData.id),
                     Media.GetImgData(padData.pad.partnerID)
@@ -405,7 +405,7 @@ const DragPads = (() => {
 */
 
         makePad = (graphicObj, funcName, params = "deltaTop:0, deltaLeft:0, deltaHeight:0, deltaWidth:0") => {
-            THROW(`Making Pad: ${graphicObj.get("name")}, ${funcName}, ${D.JSL(params)}`, "makePad")
+            //THROW(`Making Pad: ${graphicObj.get("name")}, ${funcName}, ${D.JSL(params)}`, "makePad")
             let options = {
                     controlledby: "all",
                     startActive: true
@@ -448,12 +448,12 @@ const DragPads = (() => {
             delete options.deltaTop
             delete options.deltaWidth
             delete options.deltaHeight
-            pad = Media.MakeImage(`${funcName}_Pad_#`, options, true)
+            pad = Media.MakeImg(`${funcName}_Pad_#`, options, true)
             if (!graphicObj)
                 graphicObj = pad
             options.startActive = false
             options.layer = "walls"
-            partnerPad = Media.MakeImage(`${funcName}_PartnerPad_#`, options, true)
+            partnerPad = Media.MakeImg(`${funcName}_PartnerPad_#`, options, true)
             PADREGISTRY[pad.id] = {
                 funcName,
                 name: pad.get("name"),

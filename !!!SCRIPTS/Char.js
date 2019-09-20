@@ -869,7 +869,7 @@ const Char = (() => {
                 const desireObj = Media.GetText(`${charData.shortName}Desire`)
                 if (VAL({textObj: desireObj})) {
                     let desireVal = (D.GetRepStat(charData.id, "desire", "top", "desire") || {val: ""}).val
-                    D.Poke(`Desire Val for ${charData.name}: '${D.JS(desireVal)}'`)
+                    //D.Poke(`Desire Val for ${charData.name}: '${D.JS(desireVal)}'`)
                     if ((!desireVal || desireVal === "") && addAttrData && addAttrData.charID === charData.id)
                         desireVal = addAttrData.val
                     if (!desireVal || desireVal === "")

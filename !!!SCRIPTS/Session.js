@@ -226,6 +226,12 @@ const Session = (() => {
     // #endregion
 
     // #region Toggling Session Modes
+        changeMode = mode => {
+            if (VAL({string: mode}, "changeMode") && STATEREF.SessionModes.map(x => x.toLowerCase()).includes(mode.toLowerCase())) {
+                STATEREF.mode = D.Capitalize(mode.toLowerCase())
+                Media.SwitchMode()
+            }
+        },
         toggleTesting = (isTesting) => {
             if (isTesting === false || isTesting === true) {
                 if (isTesting === STATEREF.isTestingActive)
@@ -346,6 +352,7 @@ const Session = (() => {
         ToggleTesting: toggleTesting,
 
         AddSceneChar: addCharToScene,
+        ChangeMode: changeMode,
 
         get SessionNum() { return STATEREF.SessionNum },
         get IsSessionActive() { return isSessionActive() },

@@ -734,11 +734,7 @@ const C = (() => {
         ATTRPROPS = ["name", "current", "max"],
         HANDOUTPROPS = ["avatar", "name", "notes", "gmnotes", "inplayerjournals", "archived", "controlledby"],
 
-        /*MODEDEFAULTS = (obj) => ({
-            isForcedOn: false,
-            isForcedState: null
-        }),
-        MODEDEFAULTS = (obj) => {
+        MODEDEFAULTS = (obj, mode = "Active") => {
             if (VAL({object: obj}, "MODEDEFAULTS"))
                 switch(obj.get("_type")) {
                     case "graphic": {
@@ -746,7 +742,7 @@ const C = (() => {
                         if (name.includes("_Pad_")) {
                             const imgData = Media.GetImgData((DragPads.GetGraphic(obj) || {id: ""}).id)
                             if (VAL({list: imgData}))
-                                return imgData.modes.Active
+                                return imgData.modes[mode]
                         }
                         if (name.includes("_PartnerPad_"))
                             return {
@@ -757,20 +753,48 @@ const C = (() => {
                     }
                     case "text": {
                         const objData = Media.GetTextData(obj) || {name: "", shadowMaster: false}
-                        if (objData.name.endsWith("Shadow")) {
+                        if (objData.shadowMaster) {
                             const textData = Media.GetTextData(objData.shadowMaster)
                             if (VAL({list: textData}))
-                                return textData.modes.Active
+                                return textData.modes[mode]
                         }
                         break
                     }
                 // no default
                 }                    
             return {
-                isForcedOn: null,
-                isForcedState: null
-            }
-        },*/
+                Active: {
+                    isForcedOn: "LAST",
+                    isForcedState: null,
+                    lastActive: true,
+                    lastState: null
+                },
+                Inactive: {
+                    isForcedOn: false,
+                    isForcedState: null,
+                    lastActive: false,
+                    lastState: null
+                },
+                Daylighter: {
+                    isForcedOn: "LAST",
+                    isForcedState: null,
+                    lastActive: true,
+                    lastState: null
+                },
+                Downtime: {
+                    isForcedOn: "LAST",
+                    isForcedState: null,
+                    lastActive: true,
+                    lastState: null
+                },
+                Complications: {
+                    isForcedOn: null,
+                    isForcedState: null,
+                    lastActive: null,
+                    lastState: null
+                }
+            }[mode]
+        },
     // #endregion
     
     // #region VAMPIRE ATTRIBUTES, STATS & TRAITS
@@ -1670,7 +1694,7 @@ const C = (() => {
         ATTRPROPS, 
         HANDOUTPROPS,
 
-        //MODEDEFAULTS,
+        MODEDEFAULTS,
 
         ATTRIBUTES, ATTRABBVS,
         SKILLS, SKILLABBVS,

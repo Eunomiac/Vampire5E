@@ -41,6 +41,9 @@ const Media = (() => {
             STATEREF.activeTimeouts = STATEREF.activeTimeouts || []
             STATEREF.curLocation = STATEREF.curLocation || "DistrictCenter:blank SiteCenter:blank"
 
+            
+
+
         // delete STATEREF.tokenregistry["85239212/An9D7-g4OmLdjhKm-NbKnA/1561848759"]
         // Initialize IMGDICT Fuzzy Dictionary
             STATEREF.IMGDICT = Fuzzy.Fix()
@@ -55,1970 +58,2120 @@ const Media = (() => {
         // Initialize AREADICT Fuzzy Dictionary
             STATEREF.AREADICT = Fuzzy.Fix()
             for (const areaKey of _.keys(STATEREF.areas))
-                STATEREF.AREADICT.add(areaKey)        
-            IMGREGISTRY.AirLightCN_4.isActive = true
-            IMGREGISTRY.AirLightCN_5.isActive = true
-            IMGREGISTRY.AirLightLeft_1.isActive = true
-            IMGREGISTRY.AirLightMid_1.isActive = true
-            IMGREGISTRY.AirLightTop_1.isActive = true
-            IMGREGISTRY.AvaWongToken_1.isActive = true
-            IMGREGISTRY.compCardSpot_1.isActive = false
-            IMGREGISTRY.compCardSpot_10.isActive = false
-            IMGREGISTRY.compCardSpot_2.isActive = false
-            IMGREGISTRY.compCardSpot_3.isActive = false
-            IMGREGISTRY.compCardSpot_4.isActive = false
-            IMGREGISTRY.compCardSpot_5.isActive = false
-            IMGREGISTRY.compCardSpot_6.isActive = false
-            IMGREGISTRY.compCardSpot_7.isActive = false
-            IMGREGISTRY.compCardSpot_8.isActive = false
-            IMGREGISTRY.compCardSpot_9.isActive = false
-            IMGREGISTRY.complicationEnhanced_1.isActive = false
-            IMGREGISTRY.complicationEnhanced_10.isActive = false
-            IMGREGISTRY.complicationEnhanced_2.isActive = false
-            IMGREGISTRY.complicationEnhanced_3.isActive = false
-            IMGREGISTRY.complicationEnhanced_4.isActive = false
-            IMGREGISTRY.complicationEnhanced_5.isActive = false
-            IMGREGISTRY.complicationEnhanced_6.isActive = false
-            IMGREGISTRY.complicationEnhanced_7.isActive = false
-            IMGREGISTRY.complicationEnhanced_8.isActive = false
-            IMGREGISTRY.complicationEnhanced_9.isActive = false
-            IMGREGISTRY.ComplicationMat_1.isActive = false
-            IMGREGISTRY.complicationZero_1.isActive = false
-            IMGREGISTRY.complicationZero_10.isActive = false
-            IMGREGISTRY.complicationZero_2.isActive = false
-            IMGREGISTRY.complicationZero_3.isActive = false
-            IMGREGISTRY.complicationZero_4.isActive = false
-            IMGREGISTRY.complicationZero_5.isActive = false
-            IMGREGISTRY.complicationZero_6.isActive = false
-            IMGREGISTRY.complicationZero_7.isActive = false
-            IMGREGISTRY.complicationZero_8.isActive = false
-            IMGREGISTRY.complicationZero_9.isActive = false
-            IMGREGISTRY.DistrictCenter_1.isActive = false
-            IMGREGISTRY.DistrictLeft_1.isActive = false
-            IMGREGISTRY.DistrictRight_1.isActive = false
-            IMGREGISTRY.downtimeBanner_1.isActive = false
-            IMGREGISTRY["Dr.ArthurRoyToken_1"].isActive = true
-            IMGREGISTRY.Horizon_1.isActive = true
-            IMGREGISTRY.HungerBotLeft_1.isActive = true
-            IMGREGISTRY.HungerBotRight_1.isActive = true
-            IMGREGISTRY.HungerTopLeft_1.isActive = true
-            IMGREGISTRY.HungerTopRight_1.isActive = true
-            IMGREGISTRY.JohannesNapierToken_1.isActive = true
-            IMGREGISTRY.LockeUlrichToken_1.isActive = true
-            IMGREGISTRY.mapButtonAutarkis_1.isActive = true
-            IMGREGISTRY.mapButtonDistricts_1.isActive = true
-            IMGREGISTRY.mapButtonDomain_1.isActive = true
-            IMGREGISTRY.mapButtonParks_1.isActive = true
-            IMGREGISTRY.mapButtonRack_1.isActive = true
-            IMGREGISTRY.mapButtonRoads_1.isActive = true
-            IMGREGISTRY.mapButtonSitesCulture_1.isActive = true
-            IMGREGISTRY.mapButtonSitesEducation_1.isActive = true
-            IMGREGISTRY.mapButtonSitesHavens_1.isActive = true
-            IMGREGISTRY.mapButtonSitesHealth_1.isActive = true
-            IMGREGISTRY.mapButtonSitesLandmarks_1.isActive = true
-            IMGREGISTRY.mapButtonSitesNightlife_1.isActive = true
-            IMGREGISTRY.mapButtonSitesShopping_1.isActive = true
-            IMGREGISTRY.mapButtonSitesTransportation_1.isActive = true
-            IMGREGISTRY.rollerDie_bigDice_1.isActive = false
-            IMGREGISTRY.rollerDie_bigDice_2.isActive = false
-            IMGREGISTRY.rollerDie_diceList_1.isActive = false
-            IMGREGISTRY.rollerDie_diceList_10.isActive = false
-            IMGREGISTRY.rollerDie_diceList_11.isActive = false
-            IMGREGISTRY.rollerDie_diceList_12.isActive = false
-            IMGREGISTRY.rollerDie_diceList_13.isActive = false
-            IMGREGISTRY.rollerDie_diceList_14.isActive = false
-            IMGREGISTRY.rollerDie_diceList_15.isActive = false
-            IMGREGISTRY.rollerDie_diceList_16.isActive = false
-            IMGREGISTRY.rollerDie_diceList_17.isActive = false
-            IMGREGISTRY.rollerDie_diceList_18.isActive = false
-            IMGREGISTRY.rollerDie_diceList_19.isActive = false
-            IMGREGISTRY.rollerDie_diceList_2.isActive = false
-            IMGREGISTRY.rollerDie_diceList_20.isActive = false
-            IMGREGISTRY.rollerDie_diceList_21.isActive = false
-            IMGREGISTRY.rollerDie_diceList_22.isActive = false
-            IMGREGISTRY.rollerDie_diceList_23.isActive = false
-            IMGREGISTRY.rollerDie_diceList_24.isActive = false
-            IMGREGISTRY.rollerDie_diceList_25.isActive = false
-            IMGREGISTRY.rollerDie_diceList_26.isActive = false
-            IMGREGISTRY.rollerDie_diceList_27.isActive = false
-            IMGREGISTRY.rollerDie_diceList_28.isActive = false
-            IMGREGISTRY.rollerDie_diceList_29.isActive = false
-            IMGREGISTRY.rollerDie_diceList_3.isActive = false
-            IMGREGISTRY.rollerDie_diceList_30.isActive = false
-            IMGREGISTRY.rollerDie_diceList_4.isActive = false
-            IMGREGISTRY.rollerDie_diceList_5.isActive = false
-            IMGREGISTRY.rollerDie_diceList_6.isActive = false
-            IMGREGISTRY.rollerDie_diceList_7.isActive = false
-            IMGREGISTRY.rollerDie_diceList_8.isActive = false
-            IMGREGISTRY.rollerDie_diceList_9.isActive = false
-            IMGREGISTRY.rollerImage_bottomEnd_1.isActive = true
-            IMGREGISTRY.rollerImage_bottomMid_1.isActive = false
-            IMGREGISTRY.rollerImage_bottomMid_2.isActive = false
-            IMGREGISTRY.rollerImage_bottomMid_3.isActive = false
-            IMGREGISTRY.rollerImage_bottomMid_4.isActive = false
-            IMGREGISTRY.rollerImage_bottomMid_5.isActive = false
-            IMGREGISTRY.rollerImage_bottomMid_6.isActive = false
-            IMGREGISTRY.rollerImage_bottomMid_7.isActive = false
-            IMGREGISTRY.rollerImage_bottomMid_8.isActive = false
-            IMGREGISTRY.rollerImage_bottomMid_9.isActive = false
-            IMGREGISTRY.rollerImage_diffFrame_1.isActive = false
-            IMGREGISTRY.rollerImage_frontFrame_1.isActive = true
-            IMGREGISTRY.rollerImage_topEnd_1.isActive = true
-            IMGREGISTRY.rollerImage_topMid_1.isActive = false
-            IMGREGISTRY.rollerImage_topMid_2.isActive = false
-            IMGREGISTRY.rollerImage_topMid_3.isActive = false
-            IMGREGISTRY.rollerImage_topMid_4.isActive = false
-            IMGREGISTRY.rollerImage_topMid_5.isActive = false
-            IMGREGISTRY.rollerImage_topMid_6.isActive = false
-            IMGREGISTRY.rollerImage_topMid_7.isActive = false
-            IMGREGISTRY.rollerImage_topMid_8.isActive = false
-            IMGREGISTRY.rollerImage_topMid_9.isActive = false
-            IMGREGISTRY.SignalLightBotLeft_1.isActive = true
-            IMGREGISTRY.SignalLightBotRight_1.isActive = true
-            IMGREGISTRY.SignalLightTopLeft_1.isActive = true
-            IMGREGISTRY.SignalLightTopRight_1.isActive = true
-            IMGREGISTRY.SiteBarCenter_1.isActive = false
-            IMGREGISTRY.SiteBarLeft_1.isActive = false
-            IMGREGISTRY.SiteBarRight_1.isActive = false
-            IMGREGISTRY.SiteCenter_1.isActive = false
-            IMGREGISTRY.SiteLeft_1.isActive = false
-            IMGREGISTRY.SiteRight_1.isActive = false
-            IMGREGISTRY.stakedAdvantagesHeader_1.isActive = true
-            IMGREGISTRY.TorontoMap_1.isActive = true
-            IMGREGISTRY.TorontoMapAutarkisOverlay_1.isActive = true
-            IMGREGISTRY.TorontoMapDistrictsOverlay_1.isActive = true
-            IMGREGISTRY.TorontoMapDomainOverlay_1.isActive = true
-            IMGREGISTRY.TorontoMapParksOverlay_1.isActive = true
-            IMGREGISTRY.TorontoMapRackOverlay_1.isActive = true
-            IMGREGISTRY.TorontoMapRoadsOverlay_1.isActive = true
-            IMGREGISTRY.TorontoMapSitesCultureOverlay_1.isActive = true
-            IMGREGISTRY.TorontoMapSitesEducationOverlay_1.isActive = true
-            IMGREGISTRY.TorontoMapSitesHavensOverlay_1.isActive = true
-            IMGREGISTRY.TorontoMapSitesHealthOverlay_1.isActive = true
-            IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.isActive = true
-            IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.isActive = true
-            IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.isActive = true
-            IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.isActive = true
-            IMGREGISTRY.WeatherClouds_1.isActive = false
-            IMGREGISTRY.WeatherFog_1.isActive = false
-            IMGREGISTRY.WeatherFrost_1.isActive = false
-            IMGREGISTRY.WeatherGround_1.isActive = false
-            IMGREGISTRY.WeatherMain_1.isActive = false
-            IMGREGISTRY.weeklyResourcesHeader_1.isActive = true
-            IMGREGISTRY.wpRerollPlaceholder_1.isActive = true
-            IMGREGISTRY.AirLightCN_4.modes.Active.lastActive = true
-            IMGREGISTRY.AirLightCN_5.modes.Active.lastActive = true
-            IMGREGISTRY.AirLightLeft_1.modes.Active.lastActive = true
-            IMGREGISTRY.AirLightMid_1.modes.Active.lastActive = true
-            IMGREGISTRY.AirLightTop_1.modes.Active.lastActive = true
-            IMGREGISTRY.AvaWongToken_1.modes.Active.lastActive = true
-            IMGREGISTRY.compCardSpot_1.modes.Active.lastActive = false
-            IMGREGISTRY.compCardSpot_10.modes.Active.lastActive = false
-            IMGREGISTRY.compCardSpot_2.modes.Active.lastActive = false
-            IMGREGISTRY.compCardSpot_3.modes.Active.lastActive = false
-            IMGREGISTRY.compCardSpot_4.modes.Active.lastActive = false
-            IMGREGISTRY.compCardSpot_5.modes.Active.lastActive = false
-            IMGREGISTRY.compCardSpot_6.modes.Active.lastActive = false
-            IMGREGISTRY.compCardSpot_7.modes.Active.lastActive = false
-            IMGREGISTRY.compCardSpot_8.modes.Active.lastActive = false
-            IMGREGISTRY.compCardSpot_9.modes.Active.lastActive = false
-            IMGREGISTRY.complicationEnhanced_1.modes.Active.lastActive = false
-            IMGREGISTRY.complicationEnhanced_10.modes.Active.lastActive = false
-            IMGREGISTRY.complicationEnhanced_2.modes.Active.lastActive = false
-            IMGREGISTRY.complicationEnhanced_3.modes.Active.lastActive = false
-            IMGREGISTRY.complicationEnhanced_4.modes.Active.lastActive = false
-            IMGREGISTRY.complicationEnhanced_5.modes.Active.lastActive = false
-            IMGREGISTRY.complicationEnhanced_6.modes.Active.lastActive = false
-            IMGREGISTRY.complicationEnhanced_7.modes.Active.lastActive = false
-            IMGREGISTRY.complicationEnhanced_8.modes.Active.lastActive = false
-            IMGREGISTRY.complicationEnhanced_9.modes.Active.lastActive = false
-            IMGREGISTRY.ComplicationMat_1.modes.Active.lastActive = false
-            IMGREGISTRY.complicationZero_1.modes.Active.lastActive = false
-            IMGREGISTRY.complicationZero_10.modes.Active.lastActive = false
-            IMGREGISTRY.complicationZero_2.modes.Active.lastActive = false
-            IMGREGISTRY.complicationZero_3.modes.Active.lastActive = false
-            IMGREGISTRY.complicationZero_4.modes.Active.lastActive = false
-            IMGREGISTRY.complicationZero_5.modes.Active.lastActive = false
-            IMGREGISTRY.complicationZero_6.modes.Active.lastActive = false
-            IMGREGISTRY.complicationZero_7.modes.Active.lastActive = false
-            IMGREGISTRY.complicationZero_8.modes.Active.lastActive = false
-            IMGREGISTRY.complicationZero_9.modes.Active.lastActive = false
-            IMGREGISTRY.DistrictCenter_1.modes.Active.lastActive = false
-            IMGREGISTRY.DistrictLeft_1.modes.Active.lastActive = false
-            IMGREGISTRY.DistrictRight_1.modes.Active.lastActive = false
-            IMGREGISTRY.downtimeBanner_1.modes.Active.lastActive = false
-            IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Active.lastActive = true
-            IMGREGISTRY.Horizon_1.modes.Active.lastActive = true
-            IMGREGISTRY.HungerBotLeft_1.modes.Active.lastActive = true
-            IMGREGISTRY.HungerBotRight_1.modes.Active.lastActive = true
-            IMGREGISTRY.HungerTopLeft_1.modes.Active.lastActive = true
-            IMGREGISTRY.HungerTopRight_1.modes.Active.lastActive = true
-            IMGREGISTRY.JohannesNapierToken_1.modes.Active.lastActive = true
-            IMGREGISTRY.LockeUlrichToken_1.modes.Active.lastActive = true
-            IMGREGISTRY.mapButtonAutarkis_1.modes.Active.lastActive = true
-            IMGREGISTRY.mapButtonDistricts_1.modes.Active.lastActive = true
-            IMGREGISTRY.mapButtonDomain_1.modes.Active.lastActive = true
-            IMGREGISTRY.mapButtonParks_1.modes.Active.lastActive = true
-            IMGREGISTRY.mapButtonRack_1.modes.Active.lastActive = true
-            IMGREGISTRY.mapButtonRoads_1.modes.Active.lastActive = true
-            IMGREGISTRY.mapButtonSitesCulture_1.modes.Active.lastActive = true
-            IMGREGISTRY.mapButtonSitesEducation_1.modes.Active.lastActive = true
-            IMGREGISTRY.mapButtonSitesHavens_1.modes.Active.lastActive = true
-            IMGREGISTRY.mapButtonSitesHealth_1.modes.Active.lastActive = true
-            IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Active.lastActive = true
-            IMGREGISTRY.mapButtonSitesNightlife_1.modes.Active.lastActive = true
-            IMGREGISTRY.mapButtonSitesShopping_1.modes.Active.lastActive = true
-            IMGREGISTRY.mapButtonSitesTransportation_1.modes.Active.lastActive = true
-            IMGREGISTRY.rollerDie_bigDice_1.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_bigDice_2.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_1.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_10.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_11.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_12.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_13.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_14.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_15.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_16.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_17.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_18.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_19.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_2.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_20.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_21.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_22.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_23.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_24.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_25.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_26.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_27.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_28.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_29.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_3.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_30.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_4.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_5.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_6.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_7.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_8.modes.Active.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_9.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_bottomEnd_1.modes.Active.lastActive = true
-            IMGREGISTRY.rollerImage_bottomMid_1.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_2.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_3.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_4.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_5.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_6.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_7.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_8.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_9.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_diffFrame_1.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_frontFrame_1.modes.Active.lastActive = true
-            IMGREGISTRY.rollerImage_topEnd_1.modes.Active.lastActive = true
-            IMGREGISTRY.rollerImage_topMid_1.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_2.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_3.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_4.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_5.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_6.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_7.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_8.modes.Active.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_9.modes.Active.lastActive = false
-            IMGREGISTRY.SignalLightBotLeft_1.modes.Active.lastActive = true
-            IMGREGISTRY.SignalLightBotRight_1.modes.Active.lastActive = true
-            IMGREGISTRY.SignalLightTopLeft_1.modes.Active.lastActive = true
-            IMGREGISTRY.SignalLightTopRight_1.modes.Active.lastActive = true
-            IMGREGISTRY.SiteBarCenter_1.modes.Active.lastActive = false
-            IMGREGISTRY.SiteBarLeft_1.modes.Active.lastActive = false
-            IMGREGISTRY.SiteBarRight_1.modes.Active.lastActive = false
-            IMGREGISTRY.SiteCenter_1.modes.Active.lastActive = false
-            IMGREGISTRY.SiteLeft_1.modes.Active.lastActive = false
-            IMGREGISTRY.SiteRight_1.modes.Active.lastActive = false
-            IMGREGISTRY.stakedAdvantagesHeader_1.modes.Active.lastActive = true
-            IMGREGISTRY.TorontoMap_1.modes.Active.lastActive = true
-            IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Active.lastActive = true
-            IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Active.lastActive = true
-            IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Active.lastActive = true
-            IMGREGISTRY.TorontoMapParksOverlay_1.modes.Active.lastActive = true
-            IMGREGISTRY.TorontoMapRackOverlay_1.modes.Active.lastActive = true
-            IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Active.lastActive = true
-            IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Active.lastActive = true
-            IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Active.lastActive = true
-            IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Active.lastActive = true
-            IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Active.lastActive = true
-            IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Active.lastActive = true
-            IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Active.lastActive = true
-            IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Active.lastActive = true
-            IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Active.lastActive = true
-            IMGREGISTRY.WeatherClouds_1.modes.Active.lastActive = false
-            IMGREGISTRY.WeatherFog_1.modes.Active.lastActive = false
-            IMGREGISTRY.WeatherFrost_1.modes.Active.lastActive = false
-            IMGREGISTRY.WeatherGround_1.modes.Active.lastActive = false
-            IMGREGISTRY.WeatherMain_1.modes.Active.lastActive = false
-            IMGREGISTRY.weeklyResourcesHeader_1.modes.Active.lastActive = true
-            IMGREGISTRY.wpRerollPlaceholder_1.modes.Active.lastActive = true
-            IMGREGISTRY.AirLightCN_4.modes.Active.lastState = "on"
-            IMGREGISTRY.AirLightCN_5.modes.Active.lastState = "on"
-            IMGREGISTRY.AirLightLeft_1.modes.Active.lastState = "on"
-            IMGREGISTRY.AirLightMid_1.modes.Active.lastState = "on"
-            IMGREGISTRY.AirLightTop_1.modes.Active.lastState = "on"
-            IMGREGISTRY.AvaWongToken_1.modes.Active.lastState = "base"
-            IMGREGISTRY.compCardSpot_1.modes.Active.lastState = null
-            IMGREGISTRY.compCardSpot_10.modes.Active.lastState = null
-            IMGREGISTRY.compCardSpot_2.modes.Active.lastState = null
-            IMGREGISTRY.compCardSpot_3.modes.Active.lastState = null
-            IMGREGISTRY.compCardSpot_4.modes.Active.lastState = null
-            IMGREGISTRY.compCardSpot_5.modes.Active.lastState = null
-            IMGREGISTRY.compCardSpot_6.modes.Active.lastState = null
-            IMGREGISTRY.compCardSpot_7.modes.Active.lastState = null
-            IMGREGISTRY.compCardSpot_8.modes.Active.lastState = null
-            IMGREGISTRY.compCardSpot_9.modes.Active.lastState = null
-            IMGREGISTRY.complicationEnhanced_1.modes.Active.lastState = null
-            IMGREGISTRY.complicationEnhanced_10.modes.Active.lastState = null
-            IMGREGISTRY.complicationEnhanced_2.modes.Active.lastState = null
-            IMGREGISTRY.complicationEnhanced_3.modes.Active.lastState = null
-            IMGREGISTRY.complicationEnhanced_4.modes.Active.lastState = null
-            IMGREGISTRY.complicationEnhanced_5.modes.Active.lastState = null
-            IMGREGISTRY.complicationEnhanced_6.modes.Active.lastState = null
-            IMGREGISTRY.complicationEnhanced_7.modes.Active.lastState = null
-            IMGREGISTRY.complicationEnhanced_8.modes.Active.lastState = null
-            IMGREGISTRY.complicationEnhanced_9.modes.Active.lastState = null
-            IMGREGISTRY.ComplicationMat_1.modes.Active.lastState = null
-            IMGREGISTRY.complicationZero_1.modes.Active.lastState = null
-            IMGREGISTRY.complicationZero_10.modes.Active.lastState = null
-            IMGREGISTRY.complicationZero_2.modes.Active.lastState = null
-            IMGREGISTRY.complicationZero_3.modes.Active.lastState = null
-            IMGREGISTRY.complicationZero_4.modes.Active.lastState = null
-            IMGREGISTRY.complicationZero_5.modes.Active.lastState = null
-            IMGREGISTRY.complicationZero_6.modes.Active.lastState = null
-            IMGREGISTRY.complicationZero_7.modes.Active.lastState = null
-            IMGREGISTRY.complicationZero_8.modes.Active.lastState = null
-            IMGREGISTRY.complicationZero_9.modes.Active.lastState = null
-            IMGREGISTRY.DistrictCenter_1.modes.Active.lastState = null
-            IMGREGISTRY.DistrictLeft_1.modes.Active.lastState = null
-            IMGREGISTRY.DistrictRight_1.modes.Active.lastState = null
-            IMGREGISTRY.downtimeBanner_1.modes.Active.lastState = null
-            IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Active.lastState = "base"
-            IMGREGISTRY.Horizon_1.modes.Active.lastState = "night1"
-            IMGREGISTRY.HungerBotLeft_1.modes.Active.lastState = 2
-            IMGREGISTRY.HungerBotRight_1.modes.Active.lastState = 2
-            IMGREGISTRY.HungerTopLeft_1.modes.Active.lastState = 2
-            IMGREGISTRY.HungerTopRight_1.modes.Active.lastState = 2
-            IMGREGISTRY.JohannesNapierToken_1.modes.Active.lastState = "base"
-            IMGREGISTRY.LockeUlrichToken_1.modes.Active.lastState = "base"
-            IMGREGISTRY.mapButtonAutarkis_1.modes.Active.lastState = "on"
-            IMGREGISTRY.mapButtonDistricts_1.modes.Active.lastState = "on"
-            IMGREGISTRY.mapButtonDomain_1.modes.Active.lastState = "camarilla"
-            IMGREGISTRY.mapButtonParks_1.modes.Active.lastState = "on"
-            IMGREGISTRY.mapButtonRack_1.modes.Active.lastState = "on"
-            IMGREGISTRY.mapButtonRoads_1.modes.Active.lastState = "on"
-            IMGREGISTRY.mapButtonSitesCulture_1.modes.Active.lastState = "on"
-            IMGREGISTRY.mapButtonSitesEducation_1.modes.Active.lastState = "on"
-            IMGREGISTRY.mapButtonSitesHavens_1.modes.Active.lastState = "on"
-            IMGREGISTRY.mapButtonSitesHealth_1.modes.Active.lastState = "on"
-            IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Active.lastState = "on"
-            IMGREGISTRY.mapButtonSitesNightlife_1.modes.Active.lastState = "on"
-            IMGREGISTRY.mapButtonSitesShopping_1.modes.Active.lastState = "on"
-            IMGREGISTRY.mapButtonSitesTransportation_1.modes.Active.lastState = "on"
-            IMGREGISTRY.rollerDie_bigDice_1.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_bigDice_2.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_1.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_10.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_11.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_12.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_13.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_14.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_15.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_16.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_17.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_18.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_19.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_2.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_20.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_21.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_22.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_23.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_24.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_25.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_26.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_27.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_28.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_29.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_3.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_30.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_4.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_5.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_6.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_7.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_8.modes.Active.lastState = null
-            IMGREGISTRY.rollerDie_diceList_9.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_bottomEnd_1.modes.Active.lastState = "base"
-            IMGREGISTRY.rollerImage_bottomMid_1.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_2.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_3.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_4.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_5.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_6.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_7.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_8.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_9.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_diffFrame_1.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_frontFrame_1.modes.Active.lastState = "base"
-            IMGREGISTRY.rollerImage_topEnd_1.modes.Active.lastState = "base"
-            IMGREGISTRY.rollerImage_topMid_1.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_topMid_2.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_topMid_3.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_topMid_4.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_topMid_5.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_topMid_6.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_topMid_7.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_topMid_8.modes.Active.lastState = null
-            IMGREGISTRY.rollerImage_topMid_9.modes.Active.lastState = null
-            IMGREGISTRY.SignalLightBotLeft_1.modes.Active.lastState = "off"
-            IMGREGISTRY.SignalLightBotRight_1.modes.Active.lastState = "off"
-            IMGREGISTRY.SignalLightTopLeft_1.modes.Active.lastState = "off"
-            IMGREGISTRY.SignalLightTopRight_1.modes.Active.lastState = "off"
-            IMGREGISTRY.SiteBarCenter_1.modes.Active.lastState = null
-            IMGREGISTRY.SiteBarLeft_1.modes.Active.lastState = null
-            IMGREGISTRY.SiteBarRight_1.modes.Active.lastState = null
-            IMGREGISTRY.SiteCenter_1.modes.Active.lastState = null
-            IMGREGISTRY.SiteLeft_1.modes.Active.lastState = null
-            IMGREGISTRY.SiteRight_1.modes.Active.lastState = null
-            IMGREGISTRY.stakedAdvantagesHeader_1.modes.Active.lastState = "base"
-            IMGREGISTRY.TorontoMap_1.modes.Active.lastState = "base"
-            IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Active.lastState = "base"
-            IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Active.lastState = "base"
-            IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Active.lastState = "base"
-            IMGREGISTRY.TorontoMapParksOverlay_1.modes.Active.lastState = "base"
-            IMGREGISTRY.TorontoMapRackOverlay_1.modes.Active.lastState = "base"
-            IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Active.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Active.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Active.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Active.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Active.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Active.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Active.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Active.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Active.lastState = "base"
-            IMGREGISTRY.WeatherClouds_1.modes.Active.lastState = null
-            IMGREGISTRY.WeatherFog_1.modes.Active.lastState = null
-            IMGREGISTRY.WeatherFrost_1.modes.Active.lastState = null
-            IMGREGISTRY.WeatherGround_1.modes.Active.lastState = null
-            IMGREGISTRY.WeatherMain_1.modes.Active.lastState = null
-            IMGREGISTRY.weeklyResourcesHeader_1.modes.Active.lastState = "base"
-            IMGREGISTRY.wpRerollPlaceholder_1.modes.Active.lastState = "blank"
-            IMGREGISTRY.AirLightCN_4.curSrc = "on"
-            IMGREGISTRY.AirLightCN_5.curSrc = "on"
-            IMGREGISTRY.AirLightLeft_1.curSrc = "on"
-            IMGREGISTRY.AirLightMid_1.curSrc = "on"
-            IMGREGISTRY.AirLightTop_1.curSrc = "on"
-            IMGREGISTRY.AvaWongToken_1.curSrc = "base"
-            IMGREGISTRY.compCardSpot_1.curSrc = null
-            IMGREGISTRY.compCardSpot_10.curSrc = null
-            IMGREGISTRY.compCardSpot_2.curSrc = null
-            IMGREGISTRY.compCardSpot_3.curSrc = null
-            IMGREGISTRY.compCardSpot_4.curSrc = null
-            IMGREGISTRY.compCardSpot_5.curSrc = null
-            IMGREGISTRY.compCardSpot_6.curSrc = null
-            IMGREGISTRY.compCardSpot_7.curSrc = null
-            IMGREGISTRY.compCardSpot_8.curSrc = null
-            IMGREGISTRY.compCardSpot_9.curSrc = null
-            IMGREGISTRY.complicationEnhanced_1.curSrc = null
-            IMGREGISTRY.complicationEnhanced_10.curSrc = null
-            IMGREGISTRY.complicationEnhanced_2.curSrc = null
-            IMGREGISTRY.complicationEnhanced_3.curSrc = null
-            IMGREGISTRY.complicationEnhanced_4.curSrc = null
-            IMGREGISTRY.complicationEnhanced_5.curSrc = null
-            IMGREGISTRY.complicationEnhanced_6.curSrc = null
-            IMGREGISTRY.complicationEnhanced_7.curSrc = null
-            IMGREGISTRY.complicationEnhanced_8.curSrc = null
-            IMGREGISTRY.complicationEnhanced_9.curSrc = null
-            IMGREGISTRY.ComplicationMat_1.curSrc = null
-            IMGREGISTRY.complicationZero_1.curSrc = null
-            IMGREGISTRY.complicationZero_10.curSrc = null
-            IMGREGISTRY.complicationZero_2.curSrc = null
-            IMGREGISTRY.complicationZero_3.curSrc = null
-            IMGREGISTRY.complicationZero_4.curSrc = null
-            IMGREGISTRY.complicationZero_5.curSrc = null
-            IMGREGISTRY.complicationZero_6.curSrc = null
-            IMGREGISTRY.complicationZero_7.curSrc = null
-            IMGREGISTRY.complicationZero_8.curSrc = null
-            IMGREGISTRY.complicationZero_9.curSrc = null
-            IMGREGISTRY.DistrictCenter_1.curSrc = null
-            IMGREGISTRY.DistrictLeft_1.curSrc = null
-            IMGREGISTRY.DistrictRight_1.curSrc = null
-            IMGREGISTRY.downtimeBanner_1.curSrc = null
-            IMGREGISTRY["Dr.ArthurRoyToken_1"].curSrc = "base"
-            IMGREGISTRY.Horizon_1.curSrc = "night1"
-            IMGREGISTRY.HungerBotLeft_1.curSrc = 2
-            IMGREGISTRY.HungerBotRight_1.curSrc = 2
-            IMGREGISTRY.HungerTopLeft_1.curSrc = 2
-            IMGREGISTRY.HungerTopRight_1.curSrc = 2
-            IMGREGISTRY.JohannesNapierToken_1.curSrc = "base"
-            IMGREGISTRY.LockeUlrichToken_1.curSrc = "base"
-            IMGREGISTRY.mapButtonAutarkis_1.curSrc = "on"
-            IMGREGISTRY.mapButtonDistricts_1.curSrc = "on"
-            IMGREGISTRY.mapButtonDomain_1.curSrc = "camarilla"
-            IMGREGISTRY.mapButtonParks_1.curSrc = "on"
-            IMGREGISTRY.mapButtonRack_1.curSrc = "on"
-            IMGREGISTRY.mapButtonRoads_1.curSrc = "on"
-            IMGREGISTRY.mapButtonSitesCulture_1.curSrc = "on"
-            IMGREGISTRY.mapButtonSitesEducation_1.curSrc = "on"
-            IMGREGISTRY.mapButtonSitesHavens_1.curSrc = "on"
-            IMGREGISTRY.mapButtonSitesHealth_1.curSrc = "on"
-            IMGREGISTRY.mapButtonSitesLandmarks_1.curSrc = "on"
-            IMGREGISTRY.mapButtonSitesNightlife_1.curSrc = "on"
-            IMGREGISTRY.mapButtonSitesShopping_1.curSrc = "on"
-            IMGREGISTRY.mapButtonSitesTransportation_1.curSrc = "on"
-            IMGREGISTRY.rollerDie_bigDice_1.curSrc = null
-            IMGREGISTRY.rollerDie_bigDice_2.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_1.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_10.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_11.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_12.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_13.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_14.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_15.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_16.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_17.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_18.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_19.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_2.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_20.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_21.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_22.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_23.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_24.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_25.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_26.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_27.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_28.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_29.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_3.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_30.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_4.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_5.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_6.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_7.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_8.curSrc = null
-            IMGREGISTRY.rollerDie_diceList_9.curSrc = null
-            IMGREGISTRY.rollerImage_bottomEnd_1.curSrc = "base"
-            IMGREGISTRY.rollerImage_bottomMid_1.curSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_2.curSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_3.curSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_4.curSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_5.curSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_6.curSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_7.curSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_8.curSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_9.curSrc = null
-            IMGREGISTRY.rollerImage_diffFrame_1.curSrc = null
-            IMGREGISTRY.rollerImage_frontFrame_1.curSrc = "base"
-            IMGREGISTRY.rollerImage_topEnd_1.curSrc = "base"
-            IMGREGISTRY.rollerImage_topMid_1.curSrc = null
-            IMGREGISTRY.rollerImage_topMid_2.curSrc = null
-            IMGREGISTRY.rollerImage_topMid_3.curSrc = null
-            IMGREGISTRY.rollerImage_topMid_4.curSrc = null
-            IMGREGISTRY.rollerImage_topMid_5.curSrc = null
-            IMGREGISTRY.rollerImage_topMid_6.curSrc = null
-            IMGREGISTRY.rollerImage_topMid_7.curSrc = null
-            IMGREGISTRY.rollerImage_topMid_8.curSrc = null
-            IMGREGISTRY.rollerImage_topMid_9.curSrc = null
-            IMGREGISTRY.SignalLightBotLeft_1.curSrc = "off"
-            IMGREGISTRY.SignalLightBotRight_1.curSrc = "off"
-            IMGREGISTRY.SignalLightTopLeft_1.curSrc = "off"
-            IMGREGISTRY.SignalLightTopRight_1.curSrc = "off"
-            IMGREGISTRY.SiteBarCenter_1.curSrc = null
-            IMGREGISTRY.SiteBarLeft_1.curSrc = null
-            IMGREGISTRY.SiteBarRight_1.curSrc = null
-            IMGREGISTRY.SiteCenter_1.curSrc = null
-            IMGREGISTRY.SiteLeft_1.curSrc = null
-            IMGREGISTRY.SiteRight_1.curSrc = null
-            IMGREGISTRY.stakedAdvantagesHeader_1.curSrc = "base"
-            IMGREGISTRY.TorontoMap_1.curSrc = "base"
-            IMGREGISTRY.TorontoMapAutarkisOverlay_1.curSrc = "base"
-            IMGREGISTRY.TorontoMapDistrictsOverlay_1.curSrc = "base"
-            IMGREGISTRY.TorontoMapDomainOverlay_1.curSrc = "base"
-            IMGREGISTRY.TorontoMapParksOverlay_1.curSrc = "base"
-            IMGREGISTRY.TorontoMapRackOverlay_1.curSrc = "base"
-            IMGREGISTRY.TorontoMapRoadsOverlay_1.curSrc = "base"
-            IMGREGISTRY.TorontoMapSitesCultureOverlay_1.curSrc = "base"
-            IMGREGISTRY.TorontoMapSitesEducationOverlay_1.curSrc = "base"
-            IMGREGISTRY.TorontoMapSitesHavensOverlay_1.curSrc = "base"
-            IMGREGISTRY.TorontoMapSitesHealthOverlay_1.curSrc = "base"
-            IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.curSrc = "base"
-            IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.curSrc = "base"
-            IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.curSrc = "base"
-            IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.curSrc = "base"
-            IMGREGISTRY.WeatherClouds_1.curSrc = null
-            IMGREGISTRY.WeatherFog_1.curSrc = null
-            IMGREGISTRY.WeatherFrost_1.curSrc = null
-            IMGREGISTRY.WeatherGround_1.curSrc = null
-            IMGREGISTRY.WeatherMain_1.curSrc = null
-            IMGREGISTRY.weeklyResourcesHeader_1.curSrc = "base"
-            IMGREGISTRY.wpRerollPlaceholder_1.curSrc = "blank"
-            IMGREGISTRY.AirLightCN_4.activeSrc = "on"
-            IMGREGISTRY.AirLightCN_5.activeSrc = "on"
-            IMGREGISTRY.AirLightLeft_1.activeSrc = "on"
-            IMGREGISTRY.AirLightMid_1.activeSrc = "on"
-            IMGREGISTRY.AirLightTop_1.activeSrc = "on"
-            IMGREGISTRY.AvaWongToken_1.activeSrc = "base"
-            IMGREGISTRY.compCardSpot_1.activeSrc = null
-            IMGREGISTRY.compCardSpot_10.activeSrc = null
-            IMGREGISTRY.compCardSpot_2.activeSrc = null
-            IMGREGISTRY.compCardSpot_3.activeSrc = null
-            IMGREGISTRY.compCardSpot_4.activeSrc = null
-            IMGREGISTRY.compCardSpot_5.activeSrc = null
-            IMGREGISTRY.compCardSpot_6.activeSrc = null
-            IMGREGISTRY.compCardSpot_7.activeSrc = null
-            IMGREGISTRY.compCardSpot_8.activeSrc = null
-            IMGREGISTRY.compCardSpot_9.activeSrc = null
-            IMGREGISTRY.complicationEnhanced_1.activeSrc = null
-            IMGREGISTRY.complicationEnhanced_10.activeSrc = null
-            IMGREGISTRY.complicationEnhanced_2.activeSrc = null
-            IMGREGISTRY.complicationEnhanced_3.activeSrc = null
-            IMGREGISTRY.complicationEnhanced_4.activeSrc = null
-            IMGREGISTRY.complicationEnhanced_5.activeSrc = null
-            IMGREGISTRY.complicationEnhanced_6.activeSrc = null
-            IMGREGISTRY.complicationEnhanced_7.activeSrc = null
-            IMGREGISTRY.complicationEnhanced_8.activeSrc = null
-            IMGREGISTRY.complicationEnhanced_9.activeSrc = null
-            IMGREGISTRY.ComplicationMat_1.activeSrc = null
-            IMGREGISTRY.complicationZero_1.activeSrc = null
-            IMGREGISTRY.complicationZero_10.activeSrc = null
-            IMGREGISTRY.complicationZero_2.activeSrc = null
-            IMGREGISTRY.complicationZero_3.activeSrc = null
-            IMGREGISTRY.complicationZero_4.activeSrc = null
-            IMGREGISTRY.complicationZero_5.activeSrc = null
-            IMGREGISTRY.complicationZero_6.activeSrc = null
-            IMGREGISTRY.complicationZero_7.activeSrc = null
-            IMGREGISTRY.complicationZero_8.activeSrc = null
-            IMGREGISTRY.complicationZero_9.activeSrc = null
-            IMGREGISTRY.DistrictCenter_1.activeSrc = null
-            IMGREGISTRY.DistrictLeft_1.activeSrc = null
-            IMGREGISTRY.DistrictRight_1.activeSrc = null
-            IMGREGISTRY.downtimeBanner_1.activeSrc = null
-            IMGREGISTRY["Dr.ArthurRoyToken_1"].activeSrc = "base"
-            IMGREGISTRY.Horizon_1.activeSrc = "night1"
-            IMGREGISTRY.HungerBotLeft_1.activeSrc = 2
-            IMGREGISTRY.HungerBotRight_1.activeSrc = 2
-            IMGREGISTRY.HungerTopLeft_1.activeSrc = 2
-            IMGREGISTRY.HungerTopRight_1.activeSrc = 2
-            IMGREGISTRY.JohannesNapierToken_1.activeSrc = "base"
-            IMGREGISTRY.LockeUlrichToken_1.activeSrc = "base"
-            IMGREGISTRY.mapButtonAutarkis_1.activeSrc = "on"
-            IMGREGISTRY.mapButtonDistricts_1.activeSrc = "on"
-            IMGREGISTRY.mapButtonDomain_1.activeSrc = "camarilla"
-            IMGREGISTRY.mapButtonParks_1.activeSrc = "on"
-            IMGREGISTRY.mapButtonRack_1.activeSrc = "on"
-            IMGREGISTRY.mapButtonRoads_1.activeSrc = "on"
-            IMGREGISTRY.mapButtonSitesCulture_1.activeSrc = "on"
-            IMGREGISTRY.mapButtonSitesEducation_1.activeSrc = "on"
-            IMGREGISTRY.mapButtonSitesHavens_1.activeSrc = "on"
-            IMGREGISTRY.mapButtonSitesHealth_1.activeSrc = "on"
-            IMGREGISTRY.mapButtonSitesLandmarks_1.activeSrc = "on"
-            IMGREGISTRY.mapButtonSitesNightlife_1.activeSrc = "on"
-            IMGREGISTRY.mapButtonSitesShopping_1.activeSrc = "on"
-            IMGREGISTRY.mapButtonSitesTransportation_1.activeSrc = "on"
-            IMGREGISTRY.rollerDie_bigDice_1.activeSrc = null
-            IMGREGISTRY.rollerDie_bigDice_2.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_1.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_10.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_11.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_12.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_13.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_14.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_15.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_16.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_17.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_18.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_19.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_2.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_20.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_21.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_22.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_23.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_24.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_25.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_26.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_27.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_28.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_29.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_3.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_30.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_4.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_5.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_6.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_7.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_8.activeSrc = null
-            IMGREGISTRY.rollerDie_diceList_9.activeSrc = null
-            IMGREGISTRY.rollerImage_bottomEnd_1.activeSrc = "base"
-            IMGREGISTRY.rollerImage_bottomMid_1.activeSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_2.activeSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_3.activeSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_4.activeSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_5.activeSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_6.activeSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_7.activeSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_8.activeSrc = null
-            IMGREGISTRY.rollerImage_bottomMid_9.activeSrc = null
-            IMGREGISTRY.rollerImage_diffFrame_1.activeSrc = null
-            IMGREGISTRY.rollerImage_frontFrame_1.activeSrc = "base"
-            IMGREGISTRY.rollerImage_topEnd_1.activeSrc = "base"
-            IMGREGISTRY.rollerImage_topMid_1.activeSrc = null
-            IMGREGISTRY.rollerImage_topMid_2.activeSrc = null
-            IMGREGISTRY.rollerImage_topMid_3.activeSrc = null
-            IMGREGISTRY.rollerImage_topMid_4.activeSrc = null
-            IMGREGISTRY.rollerImage_topMid_5.activeSrc = null
-            IMGREGISTRY.rollerImage_topMid_6.activeSrc = null
-            IMGREGISTRY.rollerImage_topMid_7.activeSrc = null
-            IMGREGISTRY.rollerImage_topMid_8.activeSrc = null
-            IMGREGISTRY.rollerImage_topMid_9.activeSrc = null
-            IMGREGISTRY.SignalLightBotLeft_1.activeSrc = "off"
-            IMGREGISTRY.SignalLightBotRight_1.activeSrc = "off"
-            IMGREGISTRY.SignalLightTopLeft_1.activeSrc = "off"
-            IMGREGISTRY.SignalLightTopRight_1.activeSrc = "off"
-            IMGREGISTRY.SiteBarCenter_1.activeSrc = null
-            IMGREGISTRY.SiteBarLeft_1.activeSrc = null
-            IMGREGISTRY.SiteBarRight_1.activeSrc = null
-            IMGREGISTRY.SiteCenter_1.activeSrc = null
-            IMGREGISTRY.SiteLeft_1.activeSrc = null
-            IMGREGISTRY.SiteRight_1.activeSrc = null
-            IMGREGISTRY.stakedAdvantagesHeader_1.activeSrc = "base"
-            IMGREGISTRY.TorontoMap_1.activeSrc = "base"
-            IMGREGISTRY.TorontoMapAutarkisOverlay_1.activeSrc = "base"
-            IMGREGISTRY.TorontoMapDistrictsOverlay_1.activeSrc = "base"
-            IMGREGISTRY.TorontoMapDomainOverlay_1.activeSrc = "base"
-            IMGREGISTRY.TorontoMapParksOverlay_1.activeSrc = "base"
-            IMGREGISTRY.TorontoMapRackOverlay_1.activeSrc = "base"
-            IMGREGISTRY.TorontoMapRoadsOverlay_1.activeSrc = "base"
-            IMGREGISTRY.TorontoMapSitesCultureOverlay_1.activeSrc = "base"
-            IMGREGISTRY.TorontoMapSitesEducationOverlay_1.activeSrc = "base"
-            IMGREGISTRY.TorontoMapSitesHavensOverlay_1.activeSrc = "base"
-            IMGREGISTRY.TorontoMapSitesHealthOverlay_1.activeSrc = "base"
-            IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.activeSrc = "base"
-            IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.activeSrc = "base"
-            IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.activeSrc = "base"
-            IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.activeSrc = "base"
-            IMGREGISTRY.WeatherClouds_1.activeSrc = null
-            IMGREGISTRY.WeatherFog_1.activeSrc = null
-            IMGREGISTRY.WeatherFrost_1.activeSrc = null
-            IMGREGISTRY.WeatherGround_1.activeSrc = null
-            IMGREGISTRY.WeatherMain_1.activeSrc = null
-            IMGREGISTRY.weeklyResourcesHeader_1.activeSrc = "base"
-            IMGREGISTRY.wpRerollPlaceholder_1.activeSrc = "blank"
-            IMGREGISTRY.AirLightCN_4.modes.Inactive.lastActive = false
-            IMGREGISTRY.AirLightCN_5.modes.Inactive.lastActive = false
-            IMGREGISTRY.AirLightLeft_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.AirLightMid_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.AirLightTop_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.AvaWongToken_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.compCardSpot_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.compCardSpot_10.modes.Inactive.lastActive = false
-            IMGREGISTRY.compCardSpot_2.modes.Inactive.lastActive = false
-            IMGREGISTRY.compCardSpot_3.modes.Inactive.lastActive = false
-            IMGREGISTRY.compCardSpot_4.modes.Inactive.lastActive = false
-            IMGREGISTRY.compCardSpot_5.modes.Inactive.lastActive = false
-            IMGREGISTRY.compCardSpot_6.modes.Inactive.lastActive = false
-            IMGREGISTRY.compCardSpot_7.modes.Inactive.lastActive = false
-            IMGREGISTRY.compCardSpot_8.modes.Inactive.lastActive = false
-            IMGREGISTRY.compCardSpot_9.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationEnhanced_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationEnhanced_10.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationEnhanced_2.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationEnhanced_3.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationEnhanced_4.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationEnhanced_5.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationEnhanced_6.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationEnhanced_7.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationEnhanced_8.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationEnhanced_9.modes.Inactive.lastActive = false
-            IMGREGISTRY.ComplicationMat_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationZero_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationZero_10.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationZero_2.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationZero_3.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationZero_4.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationZero_5.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationZero_6.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationZero_7.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationZero_8.modes.Inactive.lastActive = false
-            IMGREGISTRY.complicationZero_9.modes.Inactive.lastActive = false
-            IMGREGISTRY.DistrictCenter_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.DistrictLeft_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.DistrictRight_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.downtimeBanner_1.modes.Inactive.lastActive = false
-            IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Inactive.lastActive = false
-            IMGREGISTRY.Horizon_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.HungerBotLeft_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.HungerBotRight_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.HungerTopLeft_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.HungerTopRight_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.JohannesNapierToken_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.LockeUlrichToken_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.mapButtonAutarkis_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.mapButtonDistricts_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.mapButtonDomain_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.mapButtonParks_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.mapButtonRack_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.mapButtonRoads_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.mapButtonSitesCulture_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.mapButtonSitesEducation_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.mapButtonSitesHavens_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.mapButtonSitesHealth_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.mapButtonSitesNightlife_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.mapButtonSitesShopping_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.mapButtonSitesTransportation_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.rollerDie_bigDice_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_bigDice_2.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_10.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_11.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_12.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_13.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_14.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_15.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_16.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_17.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_18.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_19.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_2.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_20.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_21.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_22.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_23.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_24.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_25.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_26.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_27.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_28.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_29.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_3.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_30.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_4.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_5.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_6.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_7.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_8.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_9.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_bottomEnd_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_2.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_3.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_4.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_5.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_6.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_7.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_8.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_9.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_diffFrame_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_frontFrame_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_topEnd_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_2.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_3.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_4.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_5.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_6.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_7.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_8.modes.Inactive.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_9.modes.Inactive.lastActive = false
-            IMGREGISTRY.SignalLightBotLeft_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.SignalLightBotRight_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.SignalLightTopLeft_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.SignalLightTopRight_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.SiteBarCenter_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.SiteBarLeft_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.SiteBarRight_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.SiteCenter_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.SiteLeft_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.SiteRight_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.stakedAdvantagesHeader_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.TorontoMap_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.TorontoMapParksOverlay_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.TorontoMapRackOverlay_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.WeatherClouds_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.WeatherFog_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.WeatherFrost_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.WeatherGround_1.modes.Inactive.lastActive = true
-            IMGREGISTRY.WeatherMain_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.weeklyResourcesHeader_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.wpRerollPlaceholder_1.modes.Inactive.lastActive = false
-            IMGREGISTRY.AirLightCN_4.modes.Inactive.lastState = null
-            IMGREGISTRY.AirLightCN_5.modes.Inactive.lastState = null
-            IMGREGISTRY.AirLightLeft_1.modes.Inactive.lastState = null
-            IMGREGISTRY.AirLightMid_1.modes.Inactive.lastState = null
-            IMGREGISTRY.AirLightTop_1.modes.Inactive.lastState = null
-            IMGREGISTRY.AvaWongToken_1.modes.Inactive.lastState = null
-            IMGREGISTRY.compCardSpot_1.modes.Inactive.lastState = null
-            IMGREGISTRY.compCardSpot_10.modes.Inactive.lastState = null
-            IMGREGISTRY.compCardSpot_2.modes.Inactive.lastState = null
-            IMGREGISTRY.compCardSpot_3.modes.Inactive.lastState = null
-            IMGREGISTRY.compCardSpot_4.modes.Inactive.lastState = null
-            IMGREGISTRY.compCardSpot_5.modes.Inactive.lastState = null
-            IMGREGISTRY.compCardSpot_6.modes.Inactive.lastState = null
-            IMGREGISTRY.compCardSpot_7.modes.Inactive.lastState = null
-            IMGREGISTRY.compCardSpot_8.modes.Inactive.lastState = null
-            IMGREGISTRY.compCardSpot_9.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationEnhanced_1.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationEnhanced_10.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationEnhanced_2.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationEnhanced_3.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationEnhanced_4.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationEnhanced_5.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationEnhanced_6.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationEnhanced_7.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationEnhanced_8.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationEnhanced_9.modes.Inactive.lastState = null
-            IMGREGISTRY.ComplicationMat_1.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationZero_1.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationZero_10.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationZero_2.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationZero_3.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationZero_4.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationZero_5.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationZero_6.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationZero_7.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationZero_8.modes.Inactive.lastState = null
-            IMGREGISTRY.complicationZero_9.modes.Inactive.lastState = null
-            IMGREGISTRY.DistrictCenter_1.modes.Inactive.lastState = null
-            IMGREGISTRY.DistrictLeft_1.modes.Inactive.lastState = null
-            IMGREGISTRY.DistrictRight_1.modes.Inactive.lastState = null
-            IMGREGISTRY.downtimeBanner_1.modes.Inactive.lastState = null
-            IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Inactive.lastState = null
-            IMGREGISTRY.Horizon_1.modes.Inactive.lastState = "night5"
-            IMGREGISTRY.HungerBotLeft_1.modes.Inactive.lastState = null
-            IMGREGISTRY.HungerBotRight_1.modes.Inactive.lastState = null
-            IMGREGISTRY.HungerTopLeft_1.modes.Inactive.lastState = null
-            IMGREGISTRY.HungerTopRight_1.modes.Inactive.lastState = null
-            IMGREGISTRY.JohannesNapierToken_1.modes.Inactive.lastState = null
-            IMGREGISTRY.LockeUlrichToken_1.modes.Inactive.lastState = null
-            IMGREGISTRY.mapButtonAutarkis_1.modes.Inactive.lastState = "on"
-            IMGREGISTRY.mapButtonDistricts_1.modes.Inactive.lastState = "on"
-            IMGREGISTRY.mapButtonDomain_1.modes.Inactive.lastState = "camarilla"
-            IMGREGISTRY.mapButtonParks_1.modes.Inactive.lastState = "on"
-            IMGREGISTRY.mapButtonRack_1.modes.Inactive.lastState = "on"
-            IMGREGISTRY.mapButtonRoads_1.modes.Inactive.lastState = "on"
-            IMGREGISTRY.mapButtonSitesCulture_1.modes.Inactive.lastState = "on"
-            IMGREGISTRY.mapButtonSitesEducation_1.modes.Inactive.lastState = "on"
-            IMGREGISTRY.mapButtonSitesHavens_1.modes.Inactive.lastState = "on"
-            IMGREGISTRY.mapButtonSitesHealth_1.modes.Inactive.lastState = "on"
-            IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Inactive.lastState = "on"
-            IMGREGISTRY.mapButtonSitesNightlife_1.modes.Inactive.lastState = "on"
-            IMGREGISTRY.mapButtonSitesShopping_1.modes.Inactive.lastState = "on"
-            IMGREGISTRY.mapButtonSitesTransportation_1.modes.Inactive.lastState = "on"
-            IMGREGISTRY.rollerDie_bigDice_1.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_bigDice_2.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_1.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_10.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_11.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_12.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_13.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_14.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_15.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_16.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_17.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_18.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_19.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_2.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_20.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_21.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_22.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_23.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_24.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_25.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_26.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_27.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_28.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_29.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_3.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_30.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_4.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_5.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_6.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_7.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_8.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerDie_diceList_9.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_bottomEnd_1.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_1.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_2.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_3.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_4.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_5.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_6.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_7.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_8.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_9.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_diffFrame_1.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_frontFrame_1.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_topEnd_1.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_topMid_1.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_topMid_2.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_topMid_3.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_topMid_4.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_topMid_5.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_topMid_6.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_topMid_7.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_topMid_8.modes.Inactive.lastState = null
-            IMGREGISTRY.rollerImage_topMid_9.modes.Inactive.lastState = null
-            IMGREGISTRY.SignalLightBotLeft_1.modes.Inactive.lastState = "off"
-            IMGREGISTRY.SignalLightBotRight_1.modes.Inactive.lastState = "off"
-            IMGREGISTRY.SignalLightTopLeft_1.modes.Inactive.lastState = "off"
-            IMGREGISTRY.SignalLightTopRight_1.modes.Inactive.lastState = "off"
-            IMGREGISTRY.SiteBarCenter_1.modes.Inactive.lastState = null
-            IMGREGISTRY.SiteBarLeft_1.modes.Inactive.lastState = null
-            IMGREGISTRY.SiteBarRight_1.modes.Inactive.lastState = null
-            IMGREGISTRY.SiteCenter_1.modes.Inactive.lastState = null
-            IMGREGISTRY.SiteLeft_1.modes.Inactive.lastState = null
-            IMGREGISTRY.SiteRight_1.modes.Inactive.lastState = null
-            IMGREGISTRY.stakedAdvantagesHeader_1.modes.Inactive.lastState = null
-            IMGREGISTRY.TorontoMap_1.modes.Inactive.lastState = "base"
-            IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Inactive.lastState = "base"
-            IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Inactive.lastState = "base"
-            IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Inactive.lastState = "base"
-            IMGREGISTRY.TorontoMapParksOverlay_1.modes.Inactive.lastState = "base"
-            IMGREGISTRY.TorontoMapRackOverlay_1.modes.Inactive.lastState = "base"
-            IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Inactive.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Inactive.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Inactive.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Inactive.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Inactive.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Inactive.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Inactive.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Inactive.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Inactive.lastState = "base"
-            IMGREGISTRY.WeatherClouds_1.modes.Inactive.lastState = null
-            IMGREGISTRY.WeatherFog_1.modes.Inactive.lastState = null
-            IMGREGISTRY.WeatherFrost_1.modes.Inactive.lastState = "red"
-            IMGREGISTRY.WeatherGround_1.modes.Inactive.lastState = "wet"
-            IMGREGISTRY.WeatherMain_1.modes.Inactive.lastState = null
-            IMGREGISTRY.weeklyResourcesHeader_1.modes.Inactive.lastState = null
-            IMGREGISTRY.wpRerollPlaceholder_1.modes.Inactive.lastState = null
-            IMGREGISTRY.AirLightCN_4.modes.Downtime.lastActive = true
-            IMGREGISTRY.AirLightCN_5.modes.Downtime.lastActive = true
-            IMGREGISTRY.AirLightLeft_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.AirLightMid_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.AirLightTop_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.AvaWongToken_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.compCardSpot_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.compCardSpot_10.modes.Downtime.lastActive = false
-            IMGREGISTRY.compCardSpot_2.modes.Downtime.lastActive = false
-            IMGREGISTRY.compCardSpot_3.modes.Downtime.lastActive = false
-            IMGREGISTRY.compCardSpot_4.modes.Downtime.lastActive = false
-            IMGREGISTRY.compCardSpot_5.modes.Downtime.lastActive = false
-            IMGREGISTRY.compCardSpot_6.modes.Downtime.lastActive = false
-            IMGREGISTRY.compCardSpot_7.modes.Downtime.lastActive = false
-            IMGREGISTRY.compCardSpot_8.modes.Downtime.lastActive = false
-            IMGREGISTRY.compCardSpot_9.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationEnhanced_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationEnhanced_10.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationEnhanced_2.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationEnhanced_3.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationEnhanced_4.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationEnhanced_5.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationEnhanced_6.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationEnhanced_7.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationEnhanced_8.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationEnhanced_9.modes.Downtime.lastActive = false
-            IMGREGISTRY.ComplicationMat_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationZero_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationZero_10.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationZero_2.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationZero_3.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationZero_4.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationZero_5.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationZero_6.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationZero_7.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationZero_8.modes.Downtime.lastActive = false
-            IMGREGISTRY.complicationZero_9.modes.Downtime.lastActive = false
-            IMGREGISTRY.DistrictCenter_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.DistrictLeft_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.DistrictRight_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.downtimeBanner_1.modes.Downtime.lastActive = false
-            IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Downtime.lastActive = true
-            IMGREGISTRY.Horizon_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.HungerBotLeft_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.HungerBotRight_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.HungerTopLeft_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.HungerTopRight_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.JohannesNapierToken_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.LockeUlrichToken_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.mapButtonAutarkis_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.mapButtonDistricts_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.mapButtonDomain_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.mapButtonParks_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.mapButtonRack_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.mapButtonRoads_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.mapButtonSitesCulture_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.mapButtonSitesEducation_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.mapButtonSitesHavens_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.mapButtonSitesHealth_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.mapButtonSitesNightlife_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.mapButtonSitesShopping_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.mapButtonSitesTransportation_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.rollerDie_bigDice_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_bigDice_2.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_10.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_11.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_12.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_13.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_14.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_15.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_16.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_17.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_18.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_19.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_2.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_20.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_21.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_22.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_23.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_24.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_25.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_26.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_27.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_28.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_29.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_3.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_30.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_4.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_5.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_6.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_7.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_8.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_9.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_bottomEnd_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.rollerImage_bottomMid_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_2.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_3.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_4.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_5.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_6.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_7.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_8.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_9.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_diffFrame_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_frontFrame_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.rollerImage_topEnd_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.rollerImage_topMid_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_2.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_3.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_4.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_5.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_6.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_7.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_8.modes.Downtime.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_9.modes.Downtime.lastActive = false
-            IMGREGISTRY.SignalLightBotLeft_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.SignalLightBotRight_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.SignalLightTopLeft_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.SignalLightTopRight_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.SiteBarCenter_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.SiteBarLeft_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.SiteBarRight_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.SiteCenter_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.SiteLeft_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.SiteRight_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.stakedAdvantagesHeader_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.TorontoMap_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.TorontoMapParksOverlay_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.TorontoMapRackOverlay_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.WeatherClouds_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.WeatherFog_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.WeatherFrost_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.WeatherGround_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.WeatherMain_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.weeklyResourcesHeader_1.modes.Downtime.lastActive = false
-            IMGREGISTRY.wpRerollPlaceholder_1.modes.Downtime.lastActive = true
-            IMGREGISTRY.AirLightCN_4.modes.Downtime.lastState = "on"
-            IMGREGISTRY.AirLightCN_5.modes.Downtime.lastState = "on"
-            IMGREGISTRY.AirLightLeft_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.AirLightMid_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.AirLightTop_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.AvaWongToken_1.modes.Downtime.lastState = "daylighter"
-            IMGREGISTRY.compCardSpot_1.modes.Downtime.lastState = null
-            IMGREGISTRY.compCardSpot_10.modes.Downtime.lastState = null
-            IMGREGISTRY.compCardSpot_2.modes.Downtime.lastState = null
-            IMGREGISTRY.compCardSpot_3.modes.Downtime.lastState = null
-            IMGREGISTRY.compCardSpot_4.modes.Downtime.lastState = null
-            IMGREGISTRY.compCardSpot_5.modes.Downtime.lastState = null
-            IMGREGISTRY.compCardSpot_6.modes.Downtime.lastState = null
-            IMGREGISTRY.compCardSpot_7.modes.Downtime.lastState = null
-            IMGREGISTRY.compCardSpot_8.modes.Downtime.lastState = null
-            IMGREGISTRY.compCardSpot_9.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationEnhanced_1.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationEnhanced_10.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationEnhanced_2.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationEnhanced_3.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationEnhanced_4.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationEnhanced_5.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationEnhanced_6.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationEnhanced_7.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationEnhanced_8.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationEnhanced_9.modes.Downtime.lastState = null
-            IMGREGISTRY.ComplicationMat_1.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationZero_1.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationZero_10.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationZero_2.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationZero_3.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationZero_4.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationZero_5.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationZero_6.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationZero_7.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationZero_8.modes.Downtime.lastState = null
-            IMGREGISTRY.complicationZero_9.modes.Downtime.lastState = null
-            IMGREGISTRY.DistrictCenter_1.modes.Downtime.lastState = null
-            IMGREGISTRY.DistrictLeft_1.modes.Downtime.lastState = null
-            IMGREGISTRY.DistrictRight_1.modes.Downtime.lastState = null
-            IMGREGISTRY.downtimeBanner_1.modes.Downtime.lastState = null
-            IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Downtime.lastState = "base"
-            IMGREGISTRY.Horizon_1.modes.Downtime.lastState = "daylighters"
-            IMGREGISTRY.HungerBotLeft_1.modes.Downtime.lastState = null
-            IMGREGISTRY.HungerBotRight_1.modes.Downtime.lastState = null
-            IMGREGISTRY.HungerTopLeft_1.modes.Downtime.lastState = null
-            IMGREGISTRY.HungerTopRight_1.modes.Downtime.lastState = null
-            IMGREGISTRY.JohannesNapierToken_1.modes.Downtime.lastState = null
-            IMGREGISTRY.LockeUlrichToken_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.mapButtonAutarkis_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.mapButtonDistricts_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.mapButtonDomain_1.modes.Downtime.lastState = "camarilla"
-            IMGREGISTRY.mapButtonParks_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.mapButtonRack_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.mapButtonRoads_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.mapButtonSitesCulture_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.mapButtonSitesEducation_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.mapButtonSitesHavens_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.mapButtonSitesHealth_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.mapButtonSitesNightlife_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.mapButtonSitesShopping_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.mapButtonSitesTransportation_1.modes.Downtime.lastState = "on"
-            IMGREGISTRY.rollerDie_bigDice_1.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_bigDice_2.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_1.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_10.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_11.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_12.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_13.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_14.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_15.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_16.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_17.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_18.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_19.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_2.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_20.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_21.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_22.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_23.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_24.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_25.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_26.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_27.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_28.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_29.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_3.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_30.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_4.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_5.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_6.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_7.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_8.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerDie_diceList_9.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_bottomEnd_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.rollerImage_bottomMid_1.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_2.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_3.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_4.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_5.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_6.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_7.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_8.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_9.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_diffFrame_1.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_frontFrame_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.rollerImage_topEnd_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.rollerImage_topMid_1.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_topMid_2.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_topMid_3.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_topMid_4.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_topMid_5.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_topMid_6.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_topMid_7.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_topMid_8.modes.Downtime.lastState = null
-            IMGREGISTRY.rollerImage_topMid_9.modes.Downtime.lastState = null
-            IMGREGISTRY.SignalLightBotLeft_1.modes.Downtime.lastState = null
-            IMGREGISTRY.SignalLightBotRight_1.modes.Downtime.lastState = null
-            IMGREGISTRY.SignalLightTopLeft_1.modes.Downtime.lastState = null
-            IMGREGISTRY.SignalLightTopRight_1.modes.Downtime.lastState = null
-            IMGREGISTRY.SiteBarCenter_1.modes.Downtime.lastState = null
-            IMGREGISTRY.SiteBarLeft_1.modes.Downtime.lastState = null
-            IMGREGISTRY.SiteBarRight_1.modes.Downtime.lastState = null
-            IMGREGISTRY.SiteCenter_1.modes.Downtime.lastState = null
-            IMGREGISTRY.SiteLeft_1.modes.Downtime.lastState = null
-            IMGREGISTRY.SiteRight_1.modes.Downtime.lastState = null
-            IMGREGISTRY.stakedAdvantagesHeader_1.modes.Downtime.lastState = null
-            IMGREGISTRY.TorontoMap_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.TorontoMapParksOverlay_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.TorontoMapRackOverlay_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Downtime.lastState = "base"
-            IMGREGISTRY.WeatherClouds_1.modes.Downtime.lastState = null
-            IMGREGISTRY.WeatherFog_1.modes.Downtime.lastState = null
-            IMGREGISTRY.WeatherFrost_1.modes.Downtime.lastState = null
-            IMGREGISTRY.WeatherGround_1.modes.Downtime.lastState = null
-            IMGREGISTRY.WeatherMain_1.modes.Downtime.lastState = null
-            IMGREGISTRY.weeklyResourcesHeader_1.modes.Downtime.lastState = null
-            IMGREGISTRY.wpRerollPlaceholder_1.modes.Downtime.lastState = "blank"
-            IMGREGISTRY.AirLightCN_4.modes.Daylighter.lastActive = false
-            IMGREGISTRY.AirLightCN_5.modes.Daylighter.lastActive = false
-            IMGREGISTRY.AirLightLeft_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.AirLightMid_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.AirLightTop_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.AvaWongToken_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.compCardSpot_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.compCardSpot_10.modes.Daylighter.lastActive = false
-            IMGREGISTRY.compCardSpot_2.modes.Daylighter.lastActive = false
-            IMGREGISTRY.compCardSpot_3.modes.Daylighter.lastActive = false
-            IMGREGISTRY.compCardSpot_4.modes.Daylighter.lastActive = false
-            IMGREGISTRY.compCardSpot_5.modes.Daylighter.lastActive = false
-            IMGREGISTRY.compCardSpot_6.modes.Daylighter.lastActive = false
-            IMGREGISTRY.compCardSpot_7.modes.Daylighter.lastActive = false
-            IMGREGISTRY.compCardSpot_8.modes.Daylighter.lastActive = false
-            IMGREGISTRY.compCardSpot_9.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationEnhanced_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationEnhanced_10.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationEnhanced_2.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationEnhanced_3.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationEnhanced_4.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationEnhanced_5.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationEnhanced_6.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationEnhanced_7.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationEnhanced_8.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationEnhanced_9.modes.Daylighter.lastActive = false
-            IMGREGISTRY.ComplicationMat_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationZero_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationZero_10.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationZero_2.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationZero_3.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationZero_4.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationZero_5.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationZero_6.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationZero_7.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationZero_8.modes.Daylighter.lastActive = false
-            IMGREGISTRY.complicationZero_9.modes.Daylighter.lastActive = false
-            IMGREGISTRY.DistrictCenter_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.DistrictLeft_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.DistrictRight_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.downtimeBanner_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Daylighter.lastActive = false
-            IMGREGISTRY.Horizon_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.HungerBotLeft_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.HungerBotRight_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.HungerTopLeft_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.HungerTopRight_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.JohannesNapierToken_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.LockeUlrichToken_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.mapButtonAutarkis_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.mapButtonDistricts_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.mapButtonDomain_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.mapButtonParks_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.mapButtonRack_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.mapButtonRoads_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.mapButtonSitesCulture_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.mapButtonSitesEducation_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.mapButtonSitesHavens_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.mapButtonSitesHealth_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.mapButtonSitesNightlife_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.mapButtonSitesShopping_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.mapButtonSitesTransportation_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.rollerDie_bigDice_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_bigDice_2.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_10.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_11.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_12.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_13.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_14.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_15.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_16.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_17.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_18.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_19.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_2.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_20.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_21.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_22.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_23.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_24.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_25.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_26.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_27.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_28.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_29.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_3.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_30.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_4.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_5.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_6.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_7.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_8.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_9.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_bottomEnd_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.rollerImage_bottomMid_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_2.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_3.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_4.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_5.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_6.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_7.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_8.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_9.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_diffFrame_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_frontFrame_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.rollerImage_topEnd_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.rollerImage_topMid_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_2.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_3.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_4.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_5.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_6.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_7.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_8.modes.Daylighter.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_9.modes.Daylighter.lastActive = false
-            IMGREGISTRY.SignalLightBotLeft_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.SignalLightBotRight_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.SignalLightTopLeft_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.SignalLightTopRight_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.SiteBarCenter_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.SiteBarLeft_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.SiteBarRight_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.SiteCenter_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.SiteLeft_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.SiteRight_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.stakedAdvantagesHeader_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.TorontoMap_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.TorontoMapParksOverlay_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.TorontoMapRackOverlay_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.WeatherClouds_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.WeatherFog_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.WeatherFrost_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.WeatherGround_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.WeatherMain_1.modes.Daylighter.lastActive = false
-            IMGREGISTRY.weeklyResourcesHeader_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.wpRerollPlaceholder_1.modes.Daylighter.lastActive = true
-            IMGREGISTRY.AirLightCN_4.modes.Daylighter.lastState = null
-            IMGREGISTRY.AirLightCN_5.modes.Daylighter.lastState = null
-            IMGREGISTRY.AirLightLeft_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.AirLightMid_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.AirLightTop_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.AvaWongToken_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.compCardSpot_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.compCardSpot_10.modes.Daylighter.lastState = null
-            IMGREGISTRY.compCardSpot_2.modes.Daylighter.lastState = null
-            IMGREGISTRY.compCardSpot_3.modes.Daylighter.lastState = null
-            IMGREGISTRY.compCardSpot_4.modes.Daylighter.lastState = null
-            IMGREGISTRY.compCardSpot_5.modes.Daylighter.lastState = null
-            IMGREGISTRY.compCardSpot_6.modes.Daylighter.lastState = null
-            IMGREGISTRY.compCardSpot_7.modes.Daylighter.lastState = null
-            IMGREGISTRY.compCardSpot_8.modes.Daylighter.lastState = null
-            IMGREGISTRY.compCardSpot_9.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationEnhanced_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationEnhanced_10.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationEnhanced_2.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationEnhanced_3.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationEnhanced_4.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationEnhanced_5.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationEnhanced_6.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationEnhanced_7.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationEnhanced_8.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationEnhanced_9.modes.Daylighter.lastState = null
-            IMGREGISTRY.ComplicationMat_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationZero_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationZero_10.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationZero_2.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationZero_3.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationZero_4.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationZero_5.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationZero_6.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationZero_7.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationZero_8.modes.Daylighter.lastState = null
-            IMGREGISTRY.complicationZero_9.modes.Daylighter.lastState = null
-            IMGREGISTRY.DistrictCenter_1.modes.Daylighter.lastState = true
-            IMGREGISTRY.DistrictLeft_1.modes.Daylighter.lastState = true
-            IMGREGISTRY.DistrictRight_1.modes.Daylighter.lastState = true
-            IMGREGISTRY.downtimeBanner_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Daylighter.lastState = null
-            IMGREGISTRY.Horizon_1.modes.Daylighter.lastState = "night5"
-            IMGREGISTRY.HungerBotLeft_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.HungerBotRight_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.HungerTopLeft_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.HungerTopRight_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.JohannesNapierToken_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.LockeUlrichToken_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.mapButtonAutarkis_1.modes.Daylighter.lastState = "on"
-            IMGREGISTRY.mapButtonDistricts_1.modes.Daylighter.lastState = "on"
-            IMGREGISTRY.mapButtonDomain_1.modes.Daylighter.lastState = "camarilla"
-            IMGREGISTRY.mapButtonParks_1.modes.Daylighter.lastState = "on"
-            IMGREGISTRY.mapButtonRack_1.modes.Daylighter.lastState = "on"
-            IMGREGISTRY.mapButtonRoads_1.modes.Daylighter.lastState = "on"
-            IMGREGISTRY.mapButtonSitesCulture_1.modes.Daylighter.lastState = "on"
-            IMGREGISTRY.mapButtonSitesEducation_1.modes.Daylighter.lastState = "on"
-            IMGREGISTRY.mapButtonSitesHavens_1.modes.Daylighter.lastState = "on"
-            IMGREGISTRY.mapButtonSitesHealth_1.modes.Daylighter.lastState = "on"
-            IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Daylighter.lastState = "on"
-            IMGREGISTRY.mapButtonSitesNightlife_1.modes.Daylighter.lastState = "on"
-            IMGREGISTRY.mapButtonSitesShopping_1.modes.Daylighter.lastState = "on"
-            IMGREGISTRY.mapButtonSitesTransportation_1.modes.Daylighter.lastState = "on"
-            IMGREGISTRY.rollerDie_bigDice_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_bigDice_2.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_10.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_11.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_12.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_13.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_14.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_15.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_16.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_17.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_18.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_19.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_2.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_20.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_21.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_22.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_23.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_24.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_25.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_26.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_27.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_28.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_29.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_3.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_30.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_4.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_5.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_6.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_7.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_8.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerDie_diceList_9.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_bottomEnd_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.rollerImage_bottomMid_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_2.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_3.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_4.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_5.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_6.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_7.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_8.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_9.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_diffFrame_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_frontFrame_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.rollerImage_topEnd_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.rollerImage_topMid_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_topMid_2.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_topMid_3.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_topMid_4.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_topMid_5.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_topMid_6.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_topMid_7.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_topMid_8.modes.Daylighter.lastState = null
-            IMGREGISTRY.rollerImage_topMid_9.modes.Daylighter.lastState = null
-            IMGREGISTRY.SignalLightBotLeft_1.modes.Daylighter.lastState = "off"
-            IMGREGISTRY.SignalLightBotRight_1.modes.Daylighter.lastState = "off"
-            IMGREGISTRY.SignalLightTopLeft_1.modes.Daylighter.lastState = "off"
-            IMGREGISTRY.SignalLightTopRight_1.modes.Daylighter.lastState = "off"
-            IMGREGISTRY.SiteBarCenter_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.SiteBarLeft_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.SiteBarRight_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.SiteCenter_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.SiteLeft_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.SiteRight_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.stakedAdvantagesHeader_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.TorontoMap_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.TorontoMapParksOverlay_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.TorontoMapRackOverlay_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.WeatherClouds_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.WeatherFog_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.WeatherFrost_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.WeatherGround_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.WeatherMain_1.modes.Daylighter.lastState = null
-            IMGREGISTRY.weeklyResourcesHeader_1.modes.Daylighter.lastState = "base"
-            IMGREGISTRY.wpRerollPlaceholder_1.modes.Daylighter.lastState = "blank"
-            IMGREGISTRY.AirLightCN_4.modes.Complications.lastActive = true
-            IMGREGISTRY.AirLightCN_5.modes.Complications.lastActive = true
-            IMGREGISTRY.AirLightLeft_1.modes.Complications.lastActive = true
-            IMGREGISTRY.AirLightMid_1.modes.Complications.lastActive = true
-            IMGREGISTRY.AirLightTop_1.modes.Complications.lastActive = true
-            IMGREGISTRY.AvaWongToken_1.modes.Complications.lastActive = false
-            IMGREGISTRY.compCardSpot_1.modes.Complications.lastActive = true
-            IMGREGISTRY.compCardSpot_10.modes.Complications.lastActive = true
-            IMGREGISTRY.compCardSpot_2.modes.Complications.lastActive = true
-            IMGREGISTRY.compCardSpot_3.modes.Complications.lastActive = true
-            IMGREGISTRY.compCardSpot_4.modes.Complications.lastActive = true
-            IMGREGISTRY.compCardSpot_5.modes.Complications.lastActive = true
-            IMGREGISTRY.compCardSpot_6.modes.Complications.lastActive = true
-            IMGREGISTRY.compCardSpot_7.modes.Complications.lastActive = true
-            IMGREGISTRY.compCardSpot_8.modes.Complications.lastActive = true
-            IMGREGISTRY.compCardSpot_9.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationEnhanced_1.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationEnhanced_10.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationEnhanced_2.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationEnhanced_3.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationEnhanced_4.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationEnhanced_5.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationEnhanced_6.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationEnhanced_7.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationEnhanced_8.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationEnhanced_9.modes.Complications.lastActive = true
-            IMGREGISTRY.ComplicationMat_1.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationZero_1.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationZero_10.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationZero_2.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationZero_3.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationZero_4.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationZero_5.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationZero_6.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationZero_7.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationZero_8.modes.Complications.lastActive = true
-            IMGREGISTRY.complicationZero_9.modes.Complications.lastActive = true
-            IMGREGISTRY.DistrictCenter_1.modes.Complications.lastActive = false
-            IMGREGISTRY.DistrictLeft_1.modes.Complications.lastActive = false
-            IMGREGISTRY.DistrictRight_1.modes.Complications.lastActive = false
-            IMGREGISTRY.downtimeBanner_1.modes.Complications.lastActive = false
-            IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Complications.lastActive = false
-            IMGREGISTRY.Horizon_1.modes.Complications.lastActive = true
-            IMGREGISTRY.HungerBotLeft_1.modes.Complications.lastActive = true
-            IMGREGISTRY.HungerBotRight_1.modes.Complications.lastActive = true
-            IMGREGISTRY.HungerTopLeft_1.modes.Complications.lastActive = true
-            IMGREGISTRY.HungerTopRight_1.modes.Complications.lastActive = true
-            IMGREGISTRY.JohannesNapierToken_1.modes.Complications.lastActive = false
-            IMGREGISTRY.LockeUlrichToken_1.modes.Complications.lastActive = false
-            IMGREGISTRY.mapButtonAutarkis_1.modes.Complications.lastActive = true
-            IMGREGISTRY.mapButtonDistricts_1.modes.Complications.lastActive = true
-            IMGREGISTRY.mapButtonDomain_1.modes.Complications.lastActive = true
-            IMGREGISTRY.mapButtonParks_1.modes.Complications.lastActive = true
-            IMGREGISTRY.mapButtonRack_1.modes.Complications.lastActive = true
-            IMGREGISTRY.mapButtonRoads_1.modes.Complications.lastActive = true
-            IMGREGISTRY.mapButtonSitesCulture_1.modes.Complications.lastActive = true
-            IMGREGISTRY.mapButtonSitesEducation_1.modes.Complications.lastActive = true
-            IMGREGISTRY.mapButtonSitesHavens_1.modes.Complications.lastActive = true
-            IMGREGISTRY.mapButtonSitesHealth_1.modes.Complications.lastActive = true
-            IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Complications.lastActive = true
-            IMGREGISTRY.mapButtonSitesNightlife_1.modes.Complications.lastActive = true
-            IMGREGISTRY.mapButtonSitesShopping_1.modes.Complications.lastActive = true
-            IMGREGISTRY.mapButtonSitesTransportation_1.modes.Complications.lastActive = true
-            IMGREGISTRY.rollerDie_bigDice_1.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_bigDice_2.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_1.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_10.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_11.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_12.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_13.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_14.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_15.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_16.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_17.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_18.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_19.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_2.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_20.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_21.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_22.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_23.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_24.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_25.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_26.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_27.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_28.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_29.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_3.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_30.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_4.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_5.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_6.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_7.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_8.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerDie_diceList_9.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_bottomEnd_1.modes.Complications.lastActive = true
-            IMGREGISTRY.rollerImage_bottomMid_1.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_2.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_3.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_4.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_5.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_6.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_7.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_8.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_bottomMid_9.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_diffFrame_1.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_frontFrame_1.modes.Complications.lastActive = true
-            IMGREGISTRY.rollerImage_topEnd_1.modes.Complications.lastActive = true
-            IMGREGISTRY.rollerImage_topMid_1.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_2.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_3.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_4.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_5.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_6.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_7.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_8.modes.Complications.lastActive = false
-            IMGREGISTRY.rollerImage_topMid_9.modes.Complications.lastActive = false
-            IMGREGISTRY.SignalLightBotLeft_1.modes.Complications.lastActive = true
-            IMGREGISTRY.SignalLightBotRight_1.modes.Complications.lastActive = true
-            IMGREGISTRY.SignalLightTopLeft_1.modes.Complications.lastActive = true
-            IMGREGISTRY.SignalLightTopRight_1.modes.Complications.lastActive = true
-            IMGREGISTRY.SiteBarCenter_1.modes.Complications.lastActive = false
-            IMGREGISTRY.SiteBarLeft_1.modes.Complications.lastActive = false
-            IMGREGISTRY.SiteBarRight_1.modes.Complications.lastActive = false
-            IMGREGISTRY.SiteCenter_1.modes.Complications.lastActive = false
-            IMGREGISTRY.SiteLeft_1.modes.Complications.lastActive = false
-            IMGREGISTRY.SiteRight_1.modes.Complications.lastActive = false
-            IMGREGISTRY.stakedAdvantagesHeader_1.modes.Complications.lastActive = true
-            IMGREGISTRY.TorontoMap_1.modes.Complications.lastActive = true
-            IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Complications.lastActive = true
-            IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Complications.lastActive = true
-            IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Complications.lastActive = true
-            IMGREGISTRY.TorontoMapParksOverlay_1.modes.Complications.lastActive = true
-            IMGREGISTRY.TorontoMapRackOverlay_1.modes.Complications.lastActive = true
-            IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Complications.lastActive = true
-            IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Complications.lastActive = true
-            IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Complications.lastActive = true
-            IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Complications.lastActive = true
-            IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Complications.lastActive = true
-            IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Complications.lastActive = true
-            IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Complications.lastActive = true
-            IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Complications.lastActive = true
-            IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Complications.lastActive = true
-            IMGREGISTRY.WeatherClouds_1.modes.Complications.lastActive = false
-            IMGREGISTRY.WeatherFog_1.modes.Complications.lastActive = false
-            IMGREGISTRY.WeatherFrost_1.modes.Complications.lastActive = false
-            IMGREGISTRY.WeatherGround_1.modes.Complications.lastActive = false
-            IMGREGISTRY.WeatherMain_1.modes.Complications.lastActive = false
-            IMGREGISTRY.weeklyResourcesHeader_1.modes.Complications.lastActive = true
-            IMGREGISTRY.wpRerollPlaceholder_1.modes.Complications.lastActive = true
-            IMGREGISTRY.AirLightCN_4.modes.Complications.lastState = "on"
-            IMGREGISTRY.AirLightCN_5.modes.Complications.lastState = "on"
-            IMGREGISTRY.AirLightLeft_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.AirLightMid_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.AirLightTop_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.AvaWongToken_1.modes.Complications.lastState = null
-            IMGREGISTRY.compCardSpot_1.modes.Complications.lastState = "blank"
-            IMGREGISTRY.compCardSpot_10.modes.Complications.lastState = "blank"
-            IMGREGISTRY.compCardSpot_2.modes.Complications.lastState = "blank"
-            IMGREGISTRY.compCardSpot_3.modes.Complications.lastState = "blank"
-            IMGREGISTRY.compCardSpot_4.modes.Complications.lastState = "blank"
-            IMGREGISTRY.compCardSpot_5.modes.Complications.lastState = "blank"
-            IMGREGISTRY.compCardSpot_6.modes.Complications.lastState = "blank"
-            IMGREGISTRY.compCardSpot_7.modes.Complications.lastState = "blank"
-            IMGREGISTRY.compCardSpot_8.modes.Complications.lastState = "blank"
-            IMGREGISTRY.compCardSpot_9.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationEnhanced_1.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationEnhanced_10.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationEnhanced_2.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationEnhanced_3.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationEnhanced_4.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationEnhanced_5.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationEnhanced_6.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationEnhanced_7.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationEnhanced_8.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationEnhanced_9.modes.Complications.lastState = "blank"
-            IMGREGISTRY.ComplicationMat_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.complicationZero_1.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationZero_10.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationZero_2.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationZero_3.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationZero_4.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationZero_5.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationZero_6.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationZero_7.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationZero_8.modes.Complications.lastState = "blank"
-            IMGREGISTRY.complicationZero_9.modes.Complications.lastState = "blank"
-            IMGREGISTRY.DistrictCenter_1.modes.Complications.lastState = null
-            IMGREGISTRY.DistrictLeft_1.modes.Complications.lastState = null
-            IMGREGISTRY.DistrictRight_1.modes.Complications.lastState = null
-            IMGREGISTRY.downtimeBanner_1.modes.Complications.lastState = null
-            IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Complications.lastState = null
-            IMGREGISTRY.Horizon_1.modes.Complications.lastState = "night1"
-            IMGREGISTRY.HungerBotLeft_1.modes.Complications.lastState = 2
-            IMGREGISTRY.HungerBotRight_1.modes.Complications.lastState = 2
-            IMGREGISTRY.HungerTopLeft_1.modes.Complications.lastState = 2
-            IMGREGISTRY.HungerTopRight_1.modes.Complications.lastState = 2
-            IMGREGISTRY.JohannesNapierToken_1.modes.Complications.lastState = null
-            IMGREGISTRY.LockeUlrichToken_1.modes.Complications.lastState = null
-            IMGREGISTRY.mapButtonAutarkis_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.mapButtonDistricts_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.mapButtonDomain_1.modes.Complications.lastState = "camarilla"
-            IMGREGISTRY.mapButtonParks_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.mapButtonRack_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.mapButtonRoads_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.mapButtonSitesCulture_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.mapButtonSitesEducation_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.mapButtonSitesHavens_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.mapButtonSitesHealth_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.mapButtonSitesNightlife_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.mapButtonSitesShopping_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.mapButtonSitesTransportation_1.modes.Complications.lastState = "on"
-            IMGREGISTRY.rollerDie_bigDice_1.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_bigDice_2.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_1.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_10.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_11.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_12.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_13.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_14.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_15.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_16.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_17.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_18.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_19.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_2.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_20.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_21.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_22.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_23.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_24.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_25.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_26.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_27.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_28.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_29.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_3.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_30.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_4.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_5.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_6.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_7.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_8.modes.Complications.lastState = null
-            IMGREGISTRY.rollerDie_diceList_9.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_bottomEnd_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.rollerImage_bottomMid_1.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_2.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_3.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_4.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_5.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_6.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_7.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_8.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_bottomMid_9.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_diffFrame_1.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_frontFrame_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.rollerImage_topEnd_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.rollerImage_topMid_1.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_topMid_2.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_topMid_3.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_topMid_4.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_topMid_5.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_topMid_6.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_topMid_7.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_topMid_8.modes.Complications.lastState = null
-            IMGREGISTRY.rollerImage_topMid_9.modes.Complications.lastState = null
-            IMGREGISTRY.SignalLightBotLeft_1.modes.Complications.lastState = "off"
-            IMGREGISTRY.SignalLightBotRight_1.modes.Complications.lastState = "off"
-            IMGREGISTRY.SignalLightTopLeft_1.modes.Complications.lastState = "off"
-            IMGREGISTRY.SignalLightTopRight_1.modes.Complications.lastState = "off"
-            IMGREGISTRY.SiteBarCenter_1.modes.Complications.lastState = null
-            IMGREGISTRY.SiteBarLeft_1.modes.Complications.lastState = null
-            IMGREGISTRY.SiteBarRight_1.modes.Complications.lastState = null
-            IMGREGISTRY.SiteCenter_1.modes.Complications.lastState = null
-            IMGREGISTRY.SiteLeft_1.modes.Complications.lastState = null
-            IMGREGISTRY.SiteRight_1.modes.Complications.lastState = null
-            IMGREGISTRY.stakedAdvantagesHeader_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.TorontoMap_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.TorontoMapParksOverlay_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.TorontoMapRackOverlay_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.WeatherClouds_1.modes.Complications.lastState = null
-            IMGREGISTRY.WeatherFog_1.modes.Complications.lastState = null
-            IMGREGISTRY.WeatherFrost_1.modes.Complications.lastState = null
-            IMGREGISTRY.WeatherGround_1.modes.Complications.lastState = null
-            IMGREGISTRY.WeatherMain_1.modes.Complications.lastState = null
-            IMGREGISTRY.weeklyResourcesHeader_1.modes.Complications.lastState = "base"
-            IMGREGISTRY.wpRerollPlaceholder_1.modes.Complications.lastState = "blank"
-
-            for (const imgKey of _.keys(IMGREGISTRY)) {
-                const imgData = getImgData(imgKey)
-                if (imgData.isActive) {
-                    toggleImg(imgKey, true)
-                    setImg(imgKey, imgData.activeSrc)
-                } else {
-                    const activeSrc = imgData.activeSrc
-                    toggleImg(imgKey, false)
-                    setImg(imgKey, "blank")
-                    IMGREGISTRY[imgKey].activeSrc = activeSrc
+                STATEREF.AREADICT.add(areaKey)    
+            
+            const resetWPPlaceholder = ((isResetting = false) => {
+                if (!isResetting)
+                    return null
+                DragPads.DelPad("wpReroll")
+                Media.RemoveImg("wpRerollPlaceholder_1")
+                const wpPlaceholderObj = createObj("graphic", {
+                    _pageid: D.PAGEID,
+                    imgsrc: C.IMAGES.blank,
+                    left: 73,
+                    top: 186,
+                    width: 64,
+                    height: 64,
+                    layer: "map",
+                    isdrawing: true,
+                    controlledby: "",
+                    showname: false
+                })
+                DragPads.MakePad(wpPlaceholderObj, "wpReroll", {
+                    top: 186,
+                    left: 73,
+                    height: 64,
+                    width: 64,
+                    startActive: true
+                })
+    
+                STATEREF.imgregistry.wpReroll_Pad_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null,
+                        lastActive: false,
+                        lastState: false
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null,
+                        lastActive: false,
+                        lastState: false
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null,
+                        lastActive: false,
+                        lastState: false
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
                 }
-            }
+                STATEREF.imgregistry.wpReroll_Pad_1.curSrc = "blank"
+                STATEREF.imgregistry.wpReroll_Pad_1.activeSrc = "blank"
+                STATEREF.imgregistry.wpReroll_Pad_1.curMode = "Active"
+                STATEREF.imgregistry.wpReroll_PartnerPad_1.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null,
+                        lastActive: false,
+                        lastState: false
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null,
+                        lastActive: false,
+                        lastState: false
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null,
+                        lastActive: false,
+                        lastState: false
+                    },
+                    Complications: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    }
+                }
+                STATEREF.imgregistry.wpReroll_PartnerPad_1.curSrc = "blank"
+                STATEREF.imgregistry.wpReroll_PartnerPad_1.activeSrc = "blank"
+                STATEREF.imgregistry.wpReroll_PartnerPad_1.curMode = "Active"
+    
+    
+                STATEREF.imgregistry.wpRerollPlaceholder_1 = {
+                    id: wpPlaceholderObj.id,
+                    name: "wpRerollPlaceholder_1",
+                    left: 73,
+                    top: 186,
+                    height: 64,
+                    width: 64,
+                    activeLayer: "map",
+                    startActive: false,
+                    zIndex: 0,
+                    srcs: {
+                        blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511"
+                    },
+                    leftEdge: 41,
+                    rightEdge: 105,
+                    topEdge: 154,
+                    bottomEdge: 218,
+                    curSrc: "blank",
+                    isActive: true,
+                    modes: {
+                        Active: {
+                            isForcedOn: false,
+                            isForcedState: null,
+                            lastActive: true,
+                            lastState: "blank"
+                        },
+                        Inactive: {
+                            isForcedOn: false,
+                            isForcedState: null,
+                            lastActive: false,
+                            lastState: "null"
+                        },
+                        Daylighter: {
+                            isForcedOn: false,
+                            isForcedState: null,
+                            lastActive: true,
+                            lastState: "blank"
+                        },
+                        Downtime: {
+                            isForcedOn: false,
+                            isForcedState: null,
+                            lastActive: true,
+                            lastState: "blank"
+                        },
+                        Complications: {
+                            isForcedOn: false,
+                            isForcedState: null,
+                            lastActive: true,
+                            lastState: "blank"
+                        }
+                    },
+                    curMode: "Active",
+                    activeSrc: "blank"
+                }
+            })()
+            const modeReset = ((isResetting = true) => { 
+                if (!isResetting)
+                    return null
+                state.VAMPIRE.Session.Mode = "Active"
+                IMGREGISTRY.AirLightCN_4.isActive = true
+                IMGREGISTRY.AirLightCN_5.isActive = true
+                IMGREGISTRY.AirLightLeft_1.isActive = true
+                IMGREGISTRY.AirLightMid_1.isActive = true
+                IMGREGISTRY.AirLightTop_1.isActive = true
+                IMGREGISTRY.AvaWongToken_1.isActive = true
+                IMGREGISTRY.compCardSpot_1.isActive = false
+                IMGREGISTRY.compCardSpot_10.isActive = false
+                IMGREGISTRY.compCardSpot_2.isActive = false
+                IMGREGISTRY.compCardSpot_3.isActive = false
+                IMGREGISTRY.compCardSpot_4.isActive = false
+                IMGREGISTRY.compCardSpot_5.isActive = false
+                IMGREGISTRY.compCardSpot_6.isActive = false
+                IMGREGISTRY.compCardSpot_7.isActive = false
+                IMGREGISTRY.compCardSpot_8.isActive = false
+                IMGREGISTRY.compCardSpot_9.isActive = false
+                IMGREGISTRY.complicationEnhanced_1.isActive = false
+                IMGREGISTRY.complicationEnhanced_10.isActive = false
+                IMGREGISTRY.complicationEnhanced_2.isActive = false
+                IMGREGISTRY.complicationEnhanced_3.isActive = false
+                IMGREGISTRY.complicationEnhanced_4.isActive = false
+                IMGREGISTRY.complicationEnhanced_5.isActive = false
+                IMGREGISTRY.complicationEnhanced_6.isActive = false
+                IMGREGISTRY.complicationEnhanced_7.isActive = false
+                IMGREGISTRY.complicationEnhanced_8.isActive = false
+                IMGREGISTRY.complicationEnhanced_9.isActive = false
+                IMGREGISTRY.ComplicationMat_1.isActive = false
+                IMGREGISTRY.complicationZero_1.isActive = false
+                IMGREGISTRY.complicationZero_10.isActive = false
+                IMGREGISTRY.complicationZero_2.isActive = false
+                IMGREGISTRY.complicationZero_3.isActive = false
+                IMGREGISTRY.complicationZero_4.isActive = false
+                IMGREGISTRY.complicationZero_5.isActive = false
+                IMGREGISTRY.complicationZero_6.isActive = false
+                IMGREGISTRY.complicationZero_7.isActive = false
+                IMGREGISTRY.complicationZero_8.isActive = false
+                IMGREGISTRY.complicationZero_9.isActive = false
+                IMGREGISTRY.DistrictCenter_1.isActive = false
+                IMGREGISTRY.DistrictLeft_1.isActive = false
+                IMGREGISTRY.DistrictRight_1.isActive = false
+                IMGREGISTRY.downtimeBanner_1.isActive = false
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].isActive = true
+                IMGREGISTRY.Horizon_1.isActive = true
+                IMGREGISTRY.HungerBotLeft_1.isActive = true
+                IMGREGISTRY.HungerBotRight_1.isActive = true
+                IMGREGISTRY.HungerTopLeft_1.isActive = true
+                IMGREGISTRY.HungerTopRight_1.isActive = true
+                IMGREGISTRY.JohannesNapierToken_1.isActive = true
+                IMGREGISTRY.LockeUlrichToken_1.isActive = true
+                IMGREGISTRY.mapButtonAutarkis_1.isActive = true
+                IMGREGISTRY.mapButtonDistricts_1.isActive = true
+                IMGREGISTRY.mapButtonDomain_1.isActive = true
+                IMGREGISTRY.mapButtonParks_1.isActive = true
+                IMGREGISTRY.mapButtonRack_1.isActive = true
+                IMGREGISTRY.mapButtonRoads_1.isActive = true
+                IMGREGISTRY.mapButtonSitesCulture_1.isActive = true
+                IMGREGISTRY.mapButtonSitesEducation_1.isActive = true
+                IMGREGISTRY.mapButtonSitesHavens_1.isActive = true
+                IMGREGISTRY.mapButtonSitesHealth_1.isActive = true
+                IMGREGISTRY.mapButtonSitesLandmarks_1.isActive = true
+                IMGREGISTRY.mapButtonSitesNightlife_1.isActive = true
+                IMGREGISTRY.mapButtonSitesShopping_1.isActive = true
+                IMGREGISTRY.mapButtonSitesTransportation_1.isActive = true
+                IMGREGISTRY.rollerDie_bigDice_1.isActive = false
+                IMGREGISTRY.rollerDie_bigDice_2.isActive = false
+                IMGREGISTRY.rollerDie_diceList_1.isActive = false
+                IMGREGISTRY.rollerDie_diceList_10.isActive = false
+                IMGREGISTRY.rollerDie_diceList_11.isActive = false
+                IMGREGISTRY.rollerDie_diceList_12.isActive = false
+                IMGREGISTRY.rollerDie_diceList_13.isActive = false
+                IMGREGISTRY.rollerDie_diceList_14.isActive = false
+                IMGREGISTRY.rollerDie_diceList_15.isActive = false
+                IMGREGISTRY.rollerDie_diceList_16.isActive = false
+                IMGREGISTRY.rollerDie_diceList_17.isActive = false
+                IMGREGISTRY.rollerDie_diceList_18.isActive = false
+                IMGREGISTRY.rollerDie_diceList_19.isActive = false
+                IMGREGISTRY.rollerDie_diceList_2.isActive = false
+                IMGREGISTRY.rollerDie_diceList_20.isActive = false
+                IMGREGISTRY.rollerDie_diceList_21.isActive = false
+                IMGREGISTRY.rollerDie_diceList_22.isActive = false
+                IMGREGISTRY.rollerDie_diceList_23.isActive = false
+                IMGREGISTRY.rollerDie_diceList_24.isActive = false
+                IMGREGISTRY.rollerDie_diceList_25.isActive = false
+                IMGREGISTRY.rollerDie_diceList_26.isActive = false
+                IMGREGISTRY.rollerDie_diceList_27.isActive = false
+                IMGREGISTRY.rollerDie_diceList_28.isActive = false
+                IMGREGISTRY.rollerDie_diceList_29.isActive = false
+                IMGREGISTRY.rollerDie_diceList_3.isActive = false
+                IMGREGISTRY.rollerDie_diceList_30.isActive = false
+                IMGREGISTRY.rollerDie_diceList_4.isActive = false
+                IMGREGISTRY.rollerDie_diceList_5.isActive = false
+                IMGREGISTRY.rollerDie_diceList_6.isActive = false
+                IMGREGISTRY.rollerDie_diceList_7.isActive = false
+                IMGREGISTRY.rollerDie_diceList_8.isActive = false
+                IMGREGISTRY.rollerDie_diceList_9.isActive = false
+                IMGREGISTRY.rollerImage_bottomEnd_1.isActive = true
+                IMGREGISTRY.rollerImage_bottomMid_1.isActive = false
+                IMGREGISTRY.rollerImage_bottomMid_2.isActive = false
+                IMGREGISTRY.rollerImage_bottomMid_3.isActive = false
+                IMGREGISTRY.rollerImage_bottomMid_4.isActive = false
+                IMGREGISTRY.rollerImage_bottomMid_5.isActive = false
+                IMGREGISTRY.rollerImage_bottomMid_6.isActive = false
+                IMGREGISTRY.rollerImage_bottomMid_7.isActive = false
+                IMGREGISTRY.rollerImage_bottomMid_8.isActive = false
+                IMGREGISTRY.rollerImage_bottomMid_9.isActive = false
+                IMGREGISTRY.rollerImage_diffFrame_1.isActive = false
+                IMGREGISTRY.rollerImage_frontFrame_1.isActive = true
+                IMGREGISTRY.rollerImage_topEnd_1.isActive = true
+                IMGREGISTRY.rollerImage_topMid_1.isActive = false
+                IMGREGISTRY.rollerImage_topMid_2.isActive = false
+                IMGREGISTRY.rollerImage_topMid_3.isActive = false
+                IMGREGISTRY.rollerImage_topMid_4.isActive = false
+                IMGREGISTRY.rollerImage_topMid_5.isActive = false
+                IMGREGISTRY.rollerImage_topMid_6.isActive = false
+                IMGREGISTRY.rollerImage_topMid_7.isActive = false
+                IMGREGISTRY.rollerImage_topMid_8.isActive = false
+                IMGREGISTRY.rollerImage_topMid_9.isActive = false
+                IMGREGISTRY.SignalLightBotLeft_1.isActive = true
+                IMGREGISTRY.SignalLightBotRight_1.isActive = true
+                IMGREGISTRY.SignalLightTopLeft_1.isActive = true
+                IMGREGISTRY.SignalLightTopRight_1.isActive = true
+                IMGREGISTRY.SiteBarCenter_1.isActive = false
+                IMGREGISTRY.SiteBarLeft_1.isActive = false
+                IMGREGISTRY.SiteBarRight_1.isActive = false
+                IMGREGISTRY.SiteCenter_1.isActive = false
+                IMGREGISTRY.SiteLeft_1.isActive = false
+                IMGREGISTRY.SiteRight_1.isActive = false
+                IMGREGISTRY.stakedAdvantagesHeader_1.isActive = true
+                IMGREGISTRY.TorontoMap_1.isActive = true
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.isActive = true
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.isActive = true
+                IMGREGISTRY.TorontoMapDomainOverlay_1.isActive = true
+                IMGREGISTRY.TorontoMapParksOverlay_1.isActive = true
+                IMGREGISTRY.TorontoMapRackOverlay_1.isActive = true
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.isActive = true
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.isActive = true
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.isActive = true
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.isActive = true
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.isActive = true
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.isActive = true
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.isActive = true
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.isActive = true
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.isActive = true
+                IMGREGISTRY.WeatherClouds_1.isActive = false
+                IMGREGISTRY.WeatherFog_1.isActive = false
+                IMGREGISTRY.WeatherFrost_1.isActive = false
+                IMGREGISTRY.WeatherGround_1.isActive = false
+                IMGREGISTRY.WeatherMain_1.isActive = false
+                IMGREGISTRY.weeklyResourcesHeader_1.isActive = true
+                IMGREGISTRY.wpRerollPlaceholder_1.isActive = true
+                IMGREGISTRY.AirLightCN_4.modes.Active.lastActive = true
+                IMGREGISTRY.AirLightCN_5.modes.Active.lastActive = true
+                IMGREGISTRY.AirLightLeft_1.modes.Active.lastActive = true
+                IMGREGISTRY.AirLightMid_1.modes.Active.lastActive = true
+                IMGREGISTRY.AirLightTop_1.modes.Active.lastActive = true
+                IMGREGISTRY.AvaWongToken_1.modes.Active.lastActive = true
+                IMGREGISTRY.compCardSpot_1.modes.Active.lastActive = false
+                IMGREGISTRY.compCardSpot_10.modes.Active.lastActive = false
+                IMGREGISTRY.compCardSpot_2.modes.Active.lastActive = false
+                IMGREGISTRY.compCardSpot_3.modes.Active.lastActive = false
+                IMGREGISTRY.compCardSpot_4.modes.Active.lastActive = false
+                IMGREGISTRY.compCardSpot_5.modes.Active.lastActive = false
+                IMGREGISTRY.compCardSpot_6.modes.Active.lastActive = false
+                IMGREGISTRY.compCardSpot_7.modes.Active.lastActive = false
+                IMGREGISTRY.compCardSpot_8.modes.Active.lastActive = false
+                IMGREGISTRY.compCardSpot_9.modes.Active.lastActive = false
+                IMGREGISTRY.complicationEnhanced_1.modes.Active.lastActive = false
+                IMGREGISTRY.complicationEnhanced_10.modes.Active.lastActive = false
+                IMGREGISTRY.complicationEnhanced_2.modes.Active.lastActive = false
+                IMGREGISTRY.complicationEnhanced_3.modes.Active.lastActive = false
+                IMGREGISTRY.complicationEnhanced_4.modes.Active.lastActive = false
+                IMGREGISTRY.complicationEnhanced_5.modes.Active.lastActive = false
+                IMGREGISTRY.complicationEnhanced_6.modes.Active.lastActive = false
+                IMGREGISTRY.complicationEnhanced_7.modes.Active.lastActive = false
+                IMGREGISTRY.complicationEnhanced_8.modes.Active.lastActive = false
+                IMGREGISTRY.complicationEnhanced_9.modes.Active.lastActive = false
+                IMGREGISTRY.ComplicationMat_1.modes.Active.lastActive = false
+                IMGREGISTRY.complicationZero_1.modes.Active.lastActive = false
+                IMGREGISTRY.complicationZero_10.modes.Active.lastActive = false
+                IMGREGISTRY.complicationZero_2.modes.Active.lastActive = false
+                IMGREGISTRY.complicationZero_3.modes.Active.lastActive = false
+                IMGREGISTRY.complicationZero_4.modes.Active.lastActive = false
+                IMGREGISTRY.complicationZero_5.modes.Active.lastActive = false
+                IMGREGISTRY.complicationZero_6.modes.Active.lastActive = false
+                IMGREGISTRY.complicationZero_7.modes.Active.lastActive = false
+                IMGREGISTRY.complicationZero_8.modes.Active.lastActive = false
+                IMGREGISTRY.complicationZero_9.modes.Active.lastActive = false
+                IMGREGISTRY.DistrictCenter_1.modes.Active.lastActive = false
+                IMGREGISTRY.DistrictLeft_1.modes.Active.lastActive = false
+                IMGREGISTRY.DistrictRight_1.modes.Active.lastActive = false
+                IMGREGISTRY.downtimeBanner_1.modes.Active.lastActive = false
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Active.lastActive = true
+                IMGREGISTRY.Horizon_1.modes.Active.lastActive = true
+                IMGREGISTRY.HungerBotLeft_1.modes.Active.lastActive = true
+                IMGREGISTRY.HungerBotRight_1.modes.Active.lastActive = true
+                IMGREGISTRY.HungerTopLeft_1.modes.Active.lastActive = true
+                IMGREGISTRY.HungerTopRight_1.modes.Active.lastActive = true
+                IMGREGISTRY.JohannesNapierToken_1.modes.Active.lastActive = true
+                IMGREGISTRY.LockeUlrichToken_1.modes.Active.lastActive = true
+                IMGREGISTRY.mapButtonAutarkis_1.modes.Active.lastActive = true
+                IMGREGISTRY.mapButtonDistricts_1.modes.Active.lastActive = true
+                IMGREGISTRY.mapButtonDomain_1.modes.Active.lastActive = true
+                IMGREGISTRY.mapButtonParks_1.modes.Active.lastActive = true
+                IMGREGISTRY.mapButtonRack_1.modes.Active.lastActive = true
+                IMGREGISTRY.mapButtonRoads_1.modes.Active.lastActive = true
+                IMGREGISTRY.mapButtonSitesCulture_1.modes.Active.lastActive = true
+                IMGREGISTRY.mapButtonSitesEducation_1.modes.Active.lastActive = true
+                IMGREGISTRY.mapButtonSitesHavens_1.modes.Active.lastActive = true
+                IMGREGISTRY.mapButtonSitesHealth_1.modes.Active.lastActive = true
+                IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Active.lastActive = true
+                IMGREGISTRY.mapButtonSitesNightlife_1.modes.Active.lastActive = true
+                IMGREGISTRY.mapButtonSitesShopping_1.modes.Active.lastActive = true
+                IMGREGISTRY.mapButtonSitesTransportation_1.modes.Active.lastActive = true
+                IMGREGISTRY.rollerDie_bigDice_1.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_bigDice_2.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_1.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_10.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_11.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_12.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_13.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_14.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_15.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_16.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_17.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_18.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_19.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_2.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_20.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_21.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_22.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_23.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_24.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_25.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_26.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_27.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_28.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_29.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_3.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_30.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_4.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_5.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_6.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_7.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_8.modes.Active.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_9.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_bottomEnd_1.modes.Active.lastActive = true
+                IMGREGISTRY.rollerImage_bottomMid_1.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_2.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_3.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_4.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_5.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_6.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_7.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_8.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_9.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_diffFrame_1.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_frontFrame_1.modes.Active.lastActive = true
+                IMGREGISTRY.rollerImage_topEnd_1.modes.Active.lastActive = true
+                IMGREGISTRY.rollerImage_topMid_1.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_2.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_3.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_4.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_5.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_6.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_7.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_8.modes.Active.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_9.modes.Active.lastActive = false
+                IMGREGISTRY.SignalLightBotLeft_1.modes.Active.lastActive = true
+                IMGREGISTRY.SignalLightBotRight_1.modes.Active.lastActive = true
+                IMGREGISTRY.SignalLightTopLeft_1.modes.Active.lastActive = true
+                IMGREGISTRY.SignalLightTopRight_1.modes.Active.lastActive = true
+                IMGREGISTRY.SiteBarCenter_1.modes.Active.lastActive = false
+                IMGREGISTRY.SiteBarLeft_1.modes.Active.lastActive = false
+                IMGREGISTRY.SiteBarRight_1.modes.Active.lastActive = false
+                IMGREGISTRY.SiteCenter_1.modes.Active.lastActive = false
+                IMGREGISTRY.SiteLeft_1.modes.Active.lastActive = false
+                IMGREGISTRY.SiteRight_1.modes.Active.lastActive = false
+                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Active.lastActive = true
+                IMGREGISTRY.TorontoMap_1.modes.Active.lastActive = true
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Active.lastActive = true
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Active.lastActive = true
+                IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Active.lastActive = true
+                IMGREGISTRY.TorontoMapParksOverlay_1.modes.Active.lastActive = true
+                IMGREGISTRY.TorontoMapRackOverlay_1.modes.Active.lastActive = true
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Active.lastActive = true
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Active.lastActive = true
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Active.lastActive = true
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Active.lastActive = true
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Active.lastActive = true
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Active.lastActive = true
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Active.lastActive = true
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Active.lastActive = true
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Active.lastActive = true
+                IMGREGISTRY.WeatherClouds_1.modes.Active.lastActive = false
+                IMGREGISTRY.WeatherFog_1.modes.Active.lastActive = false
+                IMGREGISTRY.WeatherFrost_1.modes.Active.lastActive = false
+                IMGREGISTRY.WeatherGround_1.modes.Active.lastActive = false
+                IMGREGISTRY.WeatherMain_1.modes.Active.lastActive = false
+                IMGREGISTRY.weeklyResourcesHeader_1.modes.Active.lastActive = true
+                IMGREGISTRY.wpRerollPlaceholder_1.modes.Active.lastActive = true
+                IMGREGISTRY.AirLightCN_4.modes.Active.lastState = "on"
+                IMGREGISTRY.AirLightCN_5.modes.Active.lastState = "on"
+                IMGREGISTRY.AirLightLeft_1.modes.Active.lastState = "on"
+                IMGREGISTRY.AirLightMid_1.modes.Active.lastState = "on"
+                IMGREGISTRY.AirLightTop_1.modes.Active.lastState = "on"
+                IMGREGISTRY.AvaWongToken_1.modes.Active.lastState = "base"
+                IMGREGISTRY.compCardSpot_1.modes.Active.lastState = null
+                IMGREGISTRY.compCardSpot_10.modes.Active.lastState = null
+                IMGREGISTRY.compCardSpot_2.modes.Active.lastState = null
+                IMGREGISTRY.compCardSpot_3.modes.Active.lastState = null
+                IMGREGISTRY.compCardSpot_4.modes.Active.lastState = null
+                IMGREGISTRY.compCardSpot_5.modes.Active.lastState = null
+                IMGREGISTRY.compCardSpot_6.modes.Active.lastState = null
+                IMGREGISTRY.compCardSpot_7.modes.Active.lastState = null
+                IMGREGISTRY.compCardSpot_8.modes.Active.lastState = null
+                IMGREGISTRY.compCardSpot_9.modes.Active.lastState = null
+                IMGREGISTRY.complicationEnhanced_1.modes.Active.lastState = null
+                IMGREGISTRY.complicationEnhanced_10.modes.Active.lastState = null
+                IMGREGISTRY.complicationEnhanced_2.modes.Active.lastState = null
+                IMGREGISTRY.complicationEnhanced_3.modes.Active.lastState = null
+                IMGREGISTRY.complicationEnhanced_4.modes.Active.lastState = null
+                IMGREGISTRY.complicationEnhanced_5.modes.Active.lastState = null
+                IMGREGISTRY.complicationEnhanced_6.modes.Active.lastState = null
+                IMGREGISTRY.complicationEnhanced_7.modes.Active.lastState = null
+                IMGREGISTRY.complicationEnhanced_8.modes.Active.lastState = null
+                IMGREGISTRY.complicationEnhanced_9.modes.Active.lastState = null
+                IMGREGISTRY.ComplicationMat_1.modes.Active.lastState = null
+                IMGREGISTRY.complicationZero_1.modes.Active.lastState = null
+                IMGREGISTRY.complicationZero_10.modes.Active.lastState = null
+                IMGREGISTRY.complicationZero_2.modes.Active.lastState = null
+                IMGREGISTRY.complicationZero_3.modes.Active.lastState = null
+                IMGREGISTRY.complicationZero_4.modes.Active.lastState = null
+                IMGREGISTRY.complicationZero_5.modes.Active.lastState = null
+                IMGREGISTRY.complicationZero_6.modes.Active.lastState = null
+                IMGREGISTRY.complicationZero_7.modes.Active.lastState = null
+                IMGREGISTRY.complicationZero_8.modes.Active.lastState = null
+                IMGREGISTRY.complicationZero_9.modes.Active.lastState = null
+                IMGREGISTRY.DistrictCenter_1.modes.Active.lastState = null
+                IMGREGISTRY.DistrictLeft_1.modes.Active.lastState = null
+                IMGREGISTRY.DistrictRight_1.modes.Active.lastState = null
+                IMGREGISTRY.downtimeBanner_1.modes.Active.lastState = null
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Active.lastState = "base"
+                IMGREGISTRY.Horizon_1.modes.Active.lastState = "night1"
+                IMGREGISTRY.HungerBotLeft_1.modes.Active.lastState = 2
+                IMGREGISTRY.HungerBotRight_1.modes.Active.lastState = 2
+                IMGREGISTRY.HungerTopLeft_1.modes.Active.lastState = 2
+                IMGREGISTRY.HungerTopRight_1.modes.Active.lastState = 2
+                IMGREGISTRY.JohannesNapierToken_1.modes.Active.lastState = "base"
+                IMGREGISTRY.LockeUlrichToken_1.modes.Active.lastState = "base"
+                IMGREGISTRY.mapButtonAutarkis_1.modes.Active.lastState = "on"
+                IMGREGISTRY.mapButtonDistricts_1.modes.Active.lastState = "on"
+                IMGREGISTRY.mapButtonDomain_1.modes.Active.lastState = "camarilla"
+                IMGREGISTRY.mapButtonParks_1.modes.Active.lastState = "on"
+                IMGREGISTRY.mapButtonRack_1.modes.Active.lastState = "on"
+                IMGREGISTRY.mapButtonRoads_1.modes.Active.lastState = "on"
+                IMGREGISTRY.mapButtonSitesCulture_1.modes.Active.lastState = "on"
+                IMGREGISTRY.mapButtonSitesEducation_1.modes.Active.lastState = "on"
+                IMGREGISTRY.mapButtonSitesHavens_1.modes.Active.lastState = "on"
+                IMGREGISTRY.mapButtonSitesHealth_1.modes.Active.lastState = "on"
+                IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Active.lastState = "on"
+                IMGREGISTRY.mapButtonSitesNightlife_1.modes.Active.lastState = "on"
+                IMGREGISTRY.mapButtonSitesShopping_1.modes.Active.lastState = "on"
+                IMGREGISTRY.mapButtonSitesTransportation_1.modes.Active.lastState = "on"
+                IMGREGISTRY.rollerDie_bigDice_1.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_bigDice_2.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_1.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_10.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_11.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_12.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_13.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_14.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_15.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_16.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_17.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_18.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_19.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_2.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_20.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_21.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_22.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_23.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_24.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_25.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_26.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_27.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_28.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_29.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_3.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_30.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_4.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_5.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_6.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_7.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_8.modes.Active.lastState = null
+                IMGREGISTRY.rollerDie_diceList_9.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_bottomEnd_1.modes.Active.lastState = "base"
+                IMGREGISTRY.rollerImage_bottomMid_1.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_2.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_3.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_4.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_5.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_6.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_7.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_8.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_9.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_diffFrame_1.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_frontFrame_1.modes.Active.lastState = "base"
+                IMGREGISTRY.rollerImage_topEnd_1.modes.Active.lastState = "base"
+                IMGREGISTRY.rollerImage_topMid_1.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_topMid_2.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_topMid_3.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_topMid_4.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_topMid_5.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_topMid_6.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_topMid_7.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_topMid_8.modes.Active.lastState = null
+                IMGREGISTRY.rollerImage_topMid_9.modes.Active.lastState = null
+                IMGREGISTRY.SignalLightBotLeft_1.modes.Active.lastState = "off"
+                IMGREGISTRY.SignalLightBotRight_1.modes.Active.lastState = "off"
+                IMGREGISTRY.SignalLightTopLeft_1.modes.Active.lastState = "off"
+                IMGREGISTRY.SignalLightTopRight_1.modes.Active.lastState = "off"
+                IMGREGISTRY.SiteBarCenter_1.modes.Active.lastState = null
+                IMGREGISTRY.SiteBarLeft_1.modes.Active.lastState = null
+                IMGREGISTRY.SiteBarRight_1.modes.Active.lastState = null
+                IMGREGISTRY.SiteCenter_1.modes.Active.lastState = null
+                IMGREGISTRY.SiteLeft_1.modes.Active.lastState = null
+                IMGREGISTRY.SiteRight_1.modes.Active.lastState = null
+                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Active.lastState = "base"
+                IMGREGISTRY.TorontoMap_1.modes.Active.lastState = "base"
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Active.lastState = "base"
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Active.lastState = "base"
+                IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Active.lastState = "base"
+                IMGREGISTRY.TorontoMapParksOverlay_1.modes.Active.lastState = "base"
+                IMGREGISTRY.TorontoMapRackOverlay_1.modes.Active.lastState = "base"
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Active.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Active.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Active.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Active.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Active.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Active.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Active.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Active.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Active.lastState = "base"
+                IMGREGISTRY.WeatherClouds_1.modes.Active.lastState = null
+                IMGREGISTRY.WeatherFog_1.modes.Active.lastState = null
+                IMGREGISTRY.WeatherFrost_1.modes.Active.lastState = null
+                IMGREGISTRY.WeatherGround_1.modes.Active.lastState = null
+                IMGREGISTRY.WeatherMain_1.modes.Active.lastState = null
+                IMGREGISTRY.weeklyResourcesHeader_1.modes.Active.lastState = "base"
+                IMGREGISTRY.wpRerollPlaceholder_1.modes.Active.lastState = "blank"
+                IMGREGISTRY.AirLightCN_4.curSrc = "on"
+                IMGREGISTRY.AirLightCN_5.curSrc = "on"
+                IMGREGISTRY.AirLightLeft_1.curSrc = "on"
+                IMGREGISTRY.AirLightMid_1.curSrc = "on"
+                IMGREGISTRY.AirLightTop_1.curSrc = "on"
+                IMGREGISTRY.AvaWongToken_1.curSrc = "base"
+                IMGREGISTRY.compCardSpot_1.curSrc = null
+                IMGREGISTRY.compCardSpot_10.curSrc = null
+                IMGREGISTRY.compCardSpot_2.curSrc = null
+                IMGREGISTRY.compCardSpot_3.curSrc = null
+                IMGREGISTRY.compCardSpot_4.curSrc = null
+                IMGREGISTRY.compCardSpot_5.curSrc = null
+                IMGREGISTRY.compCardSpot_6.curSrc = null
+                IMGREGISTRY.compCardSpot_7.curSrc = null
+                IMGREGISTRY.compCardSpot_8.curSrc = null
+                IMGREGISTRY.compCardSpot_9.curSrc = null
+                IMGREGISTRY.complicationEnhanced_1.curSrc = null
+                IMGREGISTRY.complicationEnhanced_10.curSrc = null
+                IMGREGISTRY.complicationEnhanced_2.curSrc = null
+                IMGREGISTRY.complicationEnhanced_3.curSrc = null
+                IMGREGISTRY.complicationEnhanced_4.curSrc = null
+                IMGREGISTRY.complicationEnhanced_5.curSrc = null
+                IMGREGISTRY.complicationEnhanced_6.curSrc = null
+                IMGREGISTRY.complicationEnhanced_7.curSrc = null
+                IMGREGISTRY.complicationEnhanced_8.curSrc = null
+                IMGREGISTRY.complicationEnhanced_9.curSrc = null
+                IMGREGISTRY.ComplicationMat_1.curSrc = null
+                IMGREGISTRY.complicationZero_1.curSrc = null
+                IMGREGISTRY.complicationZero_10.curSrc = null
+                IMGREGISTRY.complicationZero_2.curSrc = null
+                IMGREGISTRY.complicationZero_3.curSrc = null
+                IMGREGISTRY.complicationZero_4.curSrc = null
+                IMGREGISTRY.complicationZero_5.curSrc = null
+                IMGREGISTRY.complicationZero_6.curSrc = null
+                IMGREGISTRY.complicationZero_7.curSrc = null
+                IMGREGISTRY.complicationZero_8.curSrc = null
+                IMGREGISTRY.complicationZero_9.curSrc = null
+                IMGREGISTRY.DistrictCenter_1.curSrc = null
+                IMGREGISTRY.DistrictLeft_1.curSrc = null
+                IMGREGISTRY.DistrictRight_1.curSrc = null
+                IMGREGISTRY.downtimeBanner_1.curSrc = null
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].curSrc = "base"
+                IMGREGISTRY.Horizon_1.curSrc = "night1"
+                IMGREGISTRY.HungerBotLeft_1.curSrc = 2
+                IMGREGISTRY.HungerBotRight_1.curSrc = 2
+                IMGREGISTRY.HungerTopLeft_1.curSrc = 2
+                IMGREGISTRY.HungerTopRight_1.curSrc = 2
+                IMGREGISTRY.JohannesNapierToken_1.curSrc = "base"
+                IMGREGISTRY.LockeUlrichToken_1.curSrc = "base"
+                IMGREGISTRY.mapButtonAutarkis_1.curSrc = "on"
+                IMGREGISTRY.mapButtonDistricts_1.curSrc = "on"
+                IMGREGISTRY.mapButtonDomain_1.curSrc = "camarilla"
+                IMGREGISTRY.mapButtonParks_1.curSrc = "on"
+                IMGREGISTRY.mapButtonRack_1.curSrc = "on"
+                IMGREGISTRY.mapButtonRoads_1.curSrc = "on"
+                IMGREGISTRY.mapButtonSitesCulture_1.curSrc = "on"
+                IMGREGISTRY.mapButtonSitesEducation_1.curSrc = "on"
+                IMGREGISTRY.mapButtonSitesHavens_1.curSrc = "on"
+                IMGREGISTRY.mapButtonSitesHealth_1.curSrc = "on"
+                IMGREGISTRY.mapButtonSitesLandmarks_1.curSrc = "on"
+                IMGREGISTRY.mapButtonSitesNightlife_1.curSrc = "on"
+                IMGREGISTRY.mapButtonSitesShopping_1.curSrc = "on"
+                IMGREGISTRY.mapButtonSitesTransportation_1.curSrc = "on"
+                IMGREGISTRY.rollerDie_bigDice_1.curSrc = null
+                IMGREGISTRY.rollerDie_bigDice_2.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_1.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_10.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_11.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_12.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_13.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_14.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_15.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_16.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_17.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_18.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_19.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_2.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_20.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_21.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_22.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_23.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_24.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_25.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_26.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_27.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_28.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_29.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_3.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_30.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_4.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_5.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_6.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_7.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_8.curSrc = null
+                IMGREGISTRY.rollerDie_diceList_9.curSrc = null
+                IMGREGISTRY.rollerImage_bottomEnd_1.curSrc = "base"
+                IMGREGISTRY.rollerImage_bottomMid_1.curSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_2.curSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_3.curSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_4.curSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_5.curSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_6.curSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_7.curSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_8.curSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_9.curSrc = null
+                IMGREGISTRY.rollerImage_diffFrame_1.curSrc = null
+                IMGREGISTRY.rollerImage_frontFrame_1.curSrc = "base"
+                IMGREGISTRY.rollerImage_topEnd_1.curSrc = "base"
+                IMGREGISTRY.rollerImage_topMid_1.curSrc = null
+                IMGREGISTRY.rollerImage_topMid_2.curSrc = null
+                IMGREGISTRY.rollerImage_topMid_3.curSrc = null
+                IMGREGISTRY.rollerImage_topMid_4.curSrc = null
+                IMGREGISTRY.rollerImage_topMid_5.curSrc = null
+                IMGREGISTRY.rollerImage_topMid_6.curSrc = null
+                IMGREGISTRY.rollerImage_topMid_7.curSrc = null
+                IMGREGISTRY.rollerImage_topMid_8.curSrc = null
+                IMGREGISTRY.rollerImage_topMid_9.curSrc = null
+                IMGREGISTRY.SignalLightBotLeft_1.curSrc = "off"
+                IMGREGISTRY.SignalLightBotRight_1.curSrc = "off"
+                IMGREGISTRY.SignalLightTopLeft_1.curSrc = "off"
+                IMGREGISTRY.SignalLightTopRight_1.curSrc = "off"
+                IMGREGISTRY.SiteBarCenter_1.curSrc = null
+                IMGREGISTRY.SiteBarLeft_1.curSrc = null
+                IMGREGISTRY.SiteBarRight_1.curSrc = null
+                IMGREGISTRY.SiteCenter_1.curSrc = null
+                IMGREGISTRY.SiteLeft_1.curSrc = null
+                IMGREGISTRY.SiteRight_1.curSrc = null
+                IMGREGISTRY.stakedAdvantagesHeader_1.curSrc = "base"
+                IMGREGISTRY.TorontoMap_1.curSrc = "base"
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.curSrc = "base"
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.curSrc = "base"
+                IMGREGISTRY.TorontoMapDomainOverlay_1.curSrc = "base"
+                IMGREGISTRY.TorontoMapParksOverlay_1.curSrc = "base"
+                IMGREGISTRY.TorontoMapRackOverlay_1.curSrc = "base"
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.curSrc = "base"
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.curSrc = "base"
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.curSrc = "base"
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.curSrc = "base"
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.curSrc = "base"
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.curSrc = "base"
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.curSrc = "base"
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.curSrc = "base"
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.curSrc = "base"
+                IMGREGISTRY.WeatherClouds_1.curSrc = null
+                IMGREGISTRY.WeatherFog_1.curSrc = null
+                IMGREGISTRY.WeatherFrost_1.curSrc = null
+                IMGREGISTRY.WeatherGround_1.curSrc = null
+                IMGREGISTRY.WeatherMain_1.curSrc = null
+                IMGREGISTRY.weeklyResourcesHeader_1.curSrc = "base"
+                IMGREGISTRY.wpRerollPlaceholder_1.curSrc = "blank"
+                IMGREGISTRY.AirLightCN_4.activeSrc = "on"
+                IMGREGISTRY.AirLightCN_5.activeSrc = "on"
+                IMGREGISTRY.AirLightLeft_1.activeSrc = "on"
+                IMGREGISTRY.AirLightMid_1.activeSrc = "on"
+                IMGREGISTRY.AirLightTop_1.activeSrc = "on"
+                IMGREGISTRY.AvaWongToken_1.activeSrc = "base"
+                IMGREGISTRY.compCardSpot_1.activeSrc = null
+                IMGREGISTRY.compCardSpot_10.activeSrc = null
+                IMGREGISTRY.compCardSpot_2.activeSrc = null
+                IMGREGISTRY.compCardSpot_3.activeSrc = null
+                IMGREGISTRY.compCardSpot_4.activeSrc = null
+                IMGREGISTRY.compCardSpot_5.activeSrc = null
+                IMGREGISTRY.compCardSpot_6.activeSrc = null
+                IMGREGISTRY.compCardSpot_7.activeSrc = null
+                IMGREGISTRY.compCardSpot_8.activeSrc = null
+                IMGREGISTRY.compCardSpot_9.activeSrc = null
+                IMGREGISTRY.complicationEnhanced_1.activeSrc = null
+                IMGREGISTRY.complicationEnhanced_10.activeSrc = null
+                IMGREGISTRY.complicationEnhanced_2.activeSrc = null
+                IMGREGISTRY.complicationEnhanced_3.activeSrc = null
+                IMGREGISTRY.complicationEnhanced_4.activeSrc = null
+                IMGREGISTRY.complicationEnhanced_5.activeSrc = null
+                IMGREGISTRY.complicationEnhanced_6.activeSrc = null
+                IMGREGISTRY.complicationEnhanced_7.activeSrc = null
+                IMGREGISTRY.complicationEnhanced_8.activeSrc = null
+                IMGREGISTRY.complicationEnhanced_9.activeSrc = null
+                IMGREGISTRY.ComplicationMat_1.activeSrc = null
+                IMGREGISTRY.complicationZero_1.activeSrc = null
+                IMGREGISTRY.complicationZero_10.activeSrc = null
+                IMGREGISTRY.complicationZero_2.activeSrc = null
+                IMGREGISTRY.complicationZero_3.activeSrc = null
+                IMGREGISTRY.complicationZero_4.activeSrc = null
+                IMGREGISTRY.complicationZero_5.activeSrc = null
+                IMGREGISTRY.complicationZero_6.activeSrc = null
+                IMGREGISTRY.complicationZero_7.activeSrc = null
+                IMGREGISTRY.complicationZero_8.activeSrc = null
+                IMGREGISTRY.complicationZero_9.activeSrc = null
+                IMGREGISTRY.DistrictCenter_1.activeSrc = null
+                IMGREGISTRY.DistrictLeft_1.activeSrc = null
+                IMGREGISTRY.DistrictRight_1.activeSrc = null
+                IMGREGISTRY.downtimeBanner_1.activeSrc = null
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].activeSrc = "base"
+                IMGREGISTRY.Horizon_1.activeSrc = "night1"
+                IMGREGISTRY.HungerBotLeft_1.activeSrc = 2
+                IMGREGISTRY.HungerBotRight_1.activeSrc = 2
+                IMGREGISTRY.HungerTopLeft_1.activeSrc = 2
+                IMGREGISTRY.HungerTopRight_1.activeSrc = 2
+                IMGREGISTRY.JohannesNapierToken_1.activeSrc = "base"
+                IMGREGISTRY.LockeUlrichToken_1.activeSrc = "base"
+                IMGREGISTRY.mapButtonAutarkis_1.activeSrc = "on"
+                IMGREGISTRY.mapButtonDistricts_1.activeSrc = "on"
+                IMGREGISTRY.mapButtonDomain_1.activeSrc = "camarilla"
+                IMGREGISTRY.mapButtonParks_1.activeSrc = "on"
+                IMGREGISTRY.mapButtonRack_1.activeSrc = "on"
+                IMGREGISTRY.mapButtonRoads_1.activeSrc = "on"
+                IMGREGISTRY.mapButtonSitesCulture_1.activeSrc = "on"
+                IMGREGISTRY.mapButtonSitesEducation_1.activeSrc = "on"
+                IMGREGISTRY.mapButtonSitesHavens_1.activeSrc = "on"
+                IMGREGISTRY.mapButtonSitesHealth_1.activeSrc = "on"
+                IMGREGISTRY.mapButtonSitesLandmarks_1.activeSrc = "on"
+                IMGREGISTRY.mapButtonSitesNightlife_1.activeSrc = "on"
+                IMGREGISTRY.mapButtonSitesShopping_1.activeSrc = "on"
+                IMGREGISTRY.mapButtonSitesTransportation_1.activeSrc = "on"
+                IMGREGISTRY.rollerDie_bigDice_1.activeSrc = null
+                IMGREGISTRY.rollerDie_bigDice_2.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_1.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_10.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_11.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_12.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_13.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_14.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_15.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_16.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_17.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_18.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_19.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_2.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_20.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_21.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_22.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_23.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_24.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_25.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_26.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_27.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_28.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_29.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_3.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_30.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_4.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_5.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_6.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_7.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_8.activeSrc = null
+                IMGREGISTRY.rollerDie_diceList_9.activeSrc = null
+                IMGREGISTRY.rollerImage_bottomEnd_1.activeSrc = "base"
+                IMGREGISTRY.rollerImage_bottomMid_1.activeSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_2.activeSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_3.activeSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_4.activeSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_5.activeSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_6.activeSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_7.activeSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_8.activeSrc = null
+                IMGREGISTRY.rollerImage_bottomMid_9.activeSrc = null
+                IMGREGISTRY.rollerImage_diffFrame_1.activeSrc = null
+                IMGREGISTRY.rollerImage_frontFrame_1.activeSrc = "base"
+                IMGREGISTRY.rollerImage_topEnd_1.activeSrc = "base"
+                IMGREGISTRY.rollerImage_topMid_1.activeSrc = null
+                IMGREGISTRY.rollerImage_topMid_2.activeSrc = null
+                IMGREGISTRY.rollerImage_topMid_3.activeSrc = null
+                IMGREGISTRY.rollerImage_topMid_4.activeSrc = null
+                IMGREGISTRY.rollerImage_topMid_5.activeSrc = null
+                IMGREGISTRY.rollerImage_topMid_6.activeSrc = null
+                IMGREGISTRY.rollerImage_topMid_7.activeSrc = null
+                IMGREGISTRY.rollerImage_topMid_8.activeSrc = null
+                IMGREGISTRY.rollerImage_topMid_9.activeSrc = null
+                IMGREGISTRY.SignalLightBotLeft_1.activeSrc = "off"
+                IMGREGISTRY.SignalLightBotRight_1.activeSrc = "off"
+                IMGREGISTRY.SignalLightTopLeft_1.activeSrc = "off"
+                IMGREGISTRY.SignalLightTopRight_1.activeSrc = "off"
+                IMGREGISTRY.SiteBarCenter_1.activeSrc = null
+                IMGREGISTRY.SiteBarLeft_1.activeSrc = null
+                IMGREGISTRY.SiteBarRight_1.activeSrc = null
+                IMGREGISTRY.SiteCenter_1.activeSrc = null
+                IMGREGISTRY.SiteLeft_1.activeSrc = null
+                IMGREGISTRY.SiteRight_1.activeSrc = null
+                IMGREGISTRY.stakedAdvantagesHeader_1.activeSrc = "base"
+                IMGREGISTRY.TorontoMap_1.activeSrc = "base"
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.activeSrc = "base"
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.activeSrc = "base"
+                IMGREGISTRY.TorontoMapDomainOverlay_1.activeSrc = "base"
+                IMGREGISTRY.TorontoMapParksOverlay_1.activeSrc = "base"
+                IMGREGISTRY.TorontoMapRackOverlay_1.activeSrc = "base"
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.activeSrc = "base"
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.activeSrc = "base"
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.activeSrc = "base"
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.activeSrc = "base"
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.activeSrc = "base"
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.activeSrc = "base"
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.activeSrc = "base"
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.activeSrc = "base"
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.activeSrc = "base"
+                IMGREGISTRY.WeatherClouds_1.activeSrc = null
+                IMGREGISTRY.WeatherFog_1.activeSrc = null
+                IMGREGISTRY.WeatherFrost_1.activeSrc = null
+                IMGREGISTRY.WeatherGround_1.activeSrc = null
+                IMGREGISTRY.WeatherMain_1.activeSrc = null
+                IMGREGISTRY.weeklyResourcesHeader_1.activeSrc = "base"
+                IMGREGISTRY.wpRerollPlaceholder_1.activeSrc = "blank"
+                IMGREGISTRY.AirLightCN_4.modes.Inactive.lastActive = false
+                IMGREGISTRY.AirLightCN_5.modes.Inactive.lastActive = false
+                IMGREGISTRY.AirLightLeft_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.AirLightMid_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.AirLightTop_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.AvaWongToken_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.compCardSpot_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.compCardSpot_10.modes.Inactive.lastActive = false
+                IMGREGISTRY.compCardSpot_2.modes.Inactive.lastActive = false
+                IMGREGISTRY.compCardSpot_3.modes.Inactive.lastActive = false
+                IMGREGISTRY.compCardSpot_4.modes.Inactive.lastActive = false
+                IMGREGISTRY.compCardSpot_5.modes.Inactive.lastActive = false
+                IMGREGISTRY.compCardSpot_6.modes.Inactive.lastActive = false
+                IMGREGISTRY.compCardSpot_7.modes.Inactive.lastActive = false
+                IMGREGISTRY.compCardSpot_8.modes.Inactive.lastActive = false
+                IMGREGISTRY.compCardSpot_9.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationEnhanced_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationEnhanced_10.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationEnhanced_2.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationEnhanced_3.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationEnhanced_4.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationEnhanced_5.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationEnhanced_6.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationEnhanced_7.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationEnhanced_8.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationEnhanced_9.modes.Inactive.lastActive = false
+                IMGREGISTRY.ComplicationMat_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationZero_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationZero_10.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationZero_2.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationZero_3.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationZero_4.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationZero_5.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationZero_6.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationZero_7.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationZero_8.modes.Inactive.lastActive = false
+                IMGREGISTRY.complicationZero_9.modes.Inactive.lastActive = false
+                IMGREGISTRY.DistrictCenter_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.DistrictLeft_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.DistrictRight_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.downtimeBanner_1.modes.Inactive.lastActive = false
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Inactive.lastActive = false
+                IMGREGISTRY.Horizon_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.HungerBotLeft_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.HungerBotRight_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.HungerTopLeft_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.HungerTopRight_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.JohannesNapierToken_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.LockeUlrichToken_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.mapButtonAutarkis_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.mapButtonDistricts_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.mapButtonDomain_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.mapButtonParks_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.mapButtonRack_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.mapButtonRoads_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.mapButtonSitesCulture_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.mapButtonSitesEducation_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.mapButtonSitesHavens_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.mapButtonSitesHealth_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.mapButtonSitesNightlife_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.mapButtonSitesShopping_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.mapButtonSitesTransportation_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.rollerDie_bigDice_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_bigDice_2.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_10.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_11.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_12.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_13.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_14.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_15.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_16.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_17.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_18.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_19.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_2.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_20.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_21.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_22.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_23.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_24.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_25.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_26.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_27.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_28.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_29.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_3.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_30.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_4.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_5.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_6.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_7.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_8.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_9.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_bottomEnd_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_2.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_3.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_4.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_5.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_6.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_7.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_8.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_9.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_diffFrame_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_frontFrame_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_topEnd_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_2.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_3.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_4.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_5.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_6.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_7.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_8.modes.Inactive.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_9.modes.Inactive.lastActive = false
+                IMGREGISTRY.SignalLightBotLeft_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.SignalLightBotRight_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.SignalLightTopLeft_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.SignalLightTopRight_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.SiteBarCenter_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.SiteBarLeft_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.SiteBarRight_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.SiteCenter_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.SiteLeft_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.SiteRight_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.TorontoMap_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.TorontoMapParksOverlay_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.TorontoMapRackOverlay_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.WeatherClouds_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.WeatherFog_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.WeatherFrost_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.WeatherGround_1.modes.Inactive.lastActive = true
+                IMGREGISTRY.WeatherMain_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.weeklyResourcesHeader_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.wpRerollPlaceholder_1.modes.Inactive.lastActive = false
+                IMGREGISTRY.AirLightCN_4.modes.Inactive.lastState = null
+                IMGREGISTRY.AirLightCN_5.modes.Inactive.lastState = null
+                IMGREGISTRY.AirLightLeft_1.modes.Inactive.lastState = null
+                IMGREGISTRY.AirLightMid_1.modes.Inactive.lastState = null
+                IMGREGISTRY.AirLightTop_1.modes.Inactive.lastState = null
+                IMGREGISTRY.AvaWongToken_1.modes.Inactive.lastState = null
+                IMGREGISTRY.compCardSpot_1.modes.Inactive.lastState = null
+                IMGREGISTRY.compCardSpot_10.modes.Inactive.lastState = null
+                IMGREGISTRY.compCardSpot_2.modes.Inactive.lastState = null
+                IMGREGISTRY.compCardSpot_3.modes.Inactive.lastState = null
+                IMGREGISTRY.compCardSpot_4.modes.Inactive.lastState = null
+                IMGREGISTRY.compCardSpot_5.modes.Inactive.lastState = null
+                IMGREGISTRY.compCardSpot_6.modes.Inactive.lastState = null
+                IMGREGISTRY.compCardSpot_7.modes.Inactive.lastState = null
+                IMGREGISTRY.compCardSpot_8.modes.Inactive.lastState = null
+                IMGREGISTRY.compCardSpot_9.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationEnhanced_1.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationEnhanced_10.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationEnhanced_2.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationEnhanced_3.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationEnhanced_4.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationEnhanced_5.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationEnhanced_6.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationEnhanced_7.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationEnhanced_8.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationEnhanced_9.modes.Inactive.lastState = null
+                IMGREGISTRY.ComplicationMat_1.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationZero_1.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationZero_10.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationZero_2.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationZero_3.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationZero_4.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationZero_5.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationZero_6.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationZero_7.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationZero_8.modes.Inactive.lastState = null
+                IMGREGISTRY.complicationZero_9.modes.Inactive.lastState = null
+                IMGREGISTRY.DistrictCenter_1.modes.Inactive.lastState = null
+                IMGREGISTRY.DistrictLeft_1.modes.Inactive.lastState = null
+                IMGREGISTRY.DistrictRight_1.modes.Inactive.lastState = null
+                IMGREGISTRY.downtimeBanner_1.modes.Inactive.lastState = null
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Inactive.lastState = null
+                IMGREGISTRY.Horizon_1.modes.Inactive.lastState = "night5"
+                IMGREGISTRY.HungerBotLeft_1.modes.Inactive.lastState = null
+                IMGREGISTRY.HungerBotRight_1.modes.Inactive.lastState = null
+                IMGREGISTRY.HungerTopLeft_1.modes.Inactive.lastState = null
+                IMGREGISTRY.HungerTopRight_1.modes.Inactive.lastState = null
+                IMGREGISTRY.JohannesNapierToken_1.modes.Inactive.lastState = null
+                IMGREGISTRY.LockeUlrichToken_1.modes.Inactive.lastState = null
+                IMGREGISTRY.mapButtonAutarkis_1.modes.Inactive.lastState = "on"
+                IMGREGISTRY.mapButtonDistricts_1.modes.Inactive.lastState = "on"
+                IMGREGISTRY.mapButtonDomain_1.modes.Inactive.lastState = "camarilla"
+                IMGREGISTRY.mapButtonParks_1.modes.Inactive.lastState = "on"
+                IMGREGISTRY.mapButtonRack_1.modes.Inactive.lastState = "on"
+                IMGREGISTRY.mapButtonRoads_1.modes.Inactive.lastState = "on"
+                IMGREGISTRY.mapButtonSitesCulture_1.modes.Inactive.lastState = "on"
+                IMGREGISTRY.mapButtonSitesEducation_1.modes.Inactive.lastState = "on"
+                IMGREGISTRY.mapButtonSitesHavens_1.modes.Inactive.lastState = "on"
+                IMGREGISTRY.mapButtonSitesHealth_1.modes.Inactive.lastState = "on"
+                IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Inactive.lastState = "on"
+                IMGREGISTRY.mapButtonSitesNightlife_1.modes.Inactive.lastState = "on"
+                IMGREGISTRY.mapButtonSitesShopping_1.modes.Inactive.lastState = "on"
+                IMGREGISTRY.mapButtonSitesTransportation_1.modes.Inactive.lastState = "on"
+                IMGREGISTRY.rollerDie_bigDice_1.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_bigDice_2.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_1.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_10.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_11.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_12.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_13.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_14.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_15.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_16.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_17.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_18.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_19.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_2.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_20.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_21.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_22.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_23.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_24.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_25.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_26.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_27.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_28.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_29.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_3.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_30.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_4.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_5.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_6.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_7.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_8.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerDie_diceList_9.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_bottomEnd_1.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_1.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_2.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_3.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_4.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_5.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_6.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_7.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_8.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_9.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_diffFrame_1.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_frontFrame_1.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_topEnd_1.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_topMid_1.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_topMid_2.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_topMid_3.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_topMid_4.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_topMid_5.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_topMid_6.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_topMid_7.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_topMid_8.modes.Inactive.lastState = null
+                IMGREGISTRY.rollerImage_topMid_9.modes.Inactive.lastState = null
+                IMGREGISTRY.SignalLightBotLeft_1.modes.Inactive.lastState = "off"
+                IMGREGISTRY.SignalLightBotRight_1.modes.Inactive.lastState = "off"
+                IMGREGISTRY.SignalLightTopLeft_1.modes.Inactive.lastState = "off"
+                IMGREGISTRY.SignalLightTopRight_1.modes.Inactive.lastState = "off"
+                IMGREGISTRY.SiteBarCenter_1.modes.Inactive.lastState = null
+                IMGREGISTRY.SiteBarLeft_1.modes.Inactive.lastState = null
+                IMGREGISTRY.SiteBarRight_1.modes.Inactive.lastState = null
+                IMGREGISTRY.SiteCenter_1.modes.Inactive.lastState = null
+                IMGREGISTRY.SiteLeft_1.modes.Inactive.lastState = null
+                IMGREGISTRY.SiteRight_1.modes.Inactive.lastState = null
+                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Inactive.lastState = null
+                IMGREGISTRY.TorontoMap_1.modes.Inactive.lastState = "base"
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Inactive.lastState = "base"
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Inactive.lastState = "base"
+                IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Inactive.lastState = "base"
+                IMGREGISTRY.TorontoMapParksOverlay_1.modes.Inactive.lastState = "base"
+                IMGREGISTRY.TorontoMapRackOverlay_1.modes.Inactive.lastState = "base"
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Inactive.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Inactive.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Inactive.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Inactive.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Inactive.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Inactive.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Inactive.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Inactive.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Inactive.lastState = "base"
+                IMGREGISTRY.WeatherClouds_1.modes.Inactive.lastState = null
+                IMGREGISTRY.WeatherFog_1.modes.Inactive.lastState = null
+                IMGREGISTRY.WeatherFrost_1.modes.Inactive.lastState = "red"
+                IMGREGISTRY.WeatherGround_1.modes.Inactive.lastState = "wet"
+                IMGREGISTRY.WeatherMain_1.modes.Inactive.lastState = null
+                IMGREGISTRY.weeklyResourcesHeader_1.modes.Inactive.lastState = null
+                IMGREGISTRY.wpRerollPlaceholder_1.modes.Inactive.lastState = null
+                IMGREGISTRY.AirLightCN_4.modes.Downtime.lastActive = true
+                IMGREGISTRY.AirLightCN_5.modes.Downtime.lastActive = true
+                IMGREGISTRY.AirLightLeft_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.AirLightMid_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.AirLightTop_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.AvaWongToken_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.compCardSpot_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_10.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_2.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_3.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_4.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_5.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_6.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_7.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_8.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_9.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_10.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_2.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_3.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_4.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_5.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_6.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_7.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_8.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_9.modes.Downtime.lastActive = false
+                IMGREGISTRY.ComplicationMat_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_10.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_2.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_3.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_4.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_5.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_6.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_7.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_8.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_9.modes.Downtime.lastActive = false
+                IMGREGISTRY.DistrictCenter_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.DistrictLeft_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.DistrictRight_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.downtimeBanner_1.modes.Downtime.lastActive = false
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Downtime.lastActive = true
+                IMGREGISTRY.Horizon_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.HungerBotLeft_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.HungerBotRight_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.HungerTopLeft_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.HungerTopRight_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.JohannesNapierToken_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.LockeUlrichToken_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonAutarkis_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonDistricts_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonDomain_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonParks_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonRack_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonRoads_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesCulture_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesEducation_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesHavens_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesHealth_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesNightlife_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesShopping_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesTransportation_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.rollerDie_bigDice_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_bigDice_2.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_10.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_11.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_12.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_13.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_14.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_15.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_16.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_17.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_18.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_19.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_2.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_20.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_21.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_22.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_23.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_24.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_25.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_26.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_27.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_28.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_29.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_3.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_30.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_4.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_5.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_6.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_7.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_8.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_9.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomEnd_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.rollerImage_bottomMid_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_2.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_3.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_4.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_5.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_6.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_7.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_8.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_9.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_diffFrame_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_frontFrame_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.rollerImage_topEnd_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.rollerImage_topMid_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_2.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_3.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_4.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_5.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_6.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_7.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_8.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_9.modes.Downtime.lastActive = false
+                IMGREGISTRY.SignalLightBotLeft_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.SignalLightBotRight_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.SignalLightTopLeft_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.SignalLightTopRight_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.SiteBarCenter_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.SiteBarLeft_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.SiteBarRight_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.SiteCenter_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.SiteLeft_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.SiteRight_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.TorontoMap_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapParksOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapRackOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.WeatherClouds_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.WeatherFog_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.WeatherFrost_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.WeatherGround_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.WeatherMain_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.weeklyResourcesHeader_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.wpRerollPlaceholder_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.AirLightCN_4.modes.Downtime.lastState = "on"
+                IMGREGISTRY.AirLightCN_5.modes.Downtime.lastState = "on"
+                IMGREGISTRY.AirLightLeft_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.AirLightMid_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.AirLightTop_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.AvaWongToken_1.modes.Downtime.lastState = "daylighter"
+                IMGREGISTRY.compCardSpot_1.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_10.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_2.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_3.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_4.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_5.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_6.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_7.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_8.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_9.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_1.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_10.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_2.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_3.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_4.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_5.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_6.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_7.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_8.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_9.modes.Downtime.lastState = null
+                IMGREGISTRY.ComplicationMat_1.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_1.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_10.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_2.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_3.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_4.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_5.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_6.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_7.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_8.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_9.modes.Downtime.lastState = null
+                IMGREGISTRY.DistrictCenter_1.modes.Downtime.lastState = null
+                IMGREGISTRY.DistrictLeft_1.modes.Downtime.lastState = null
+                IMGREGISTRY.DistrictRight_1.modes.Downtime.lastState = null
+                IMGREGISTRY.downtimeBanner_1.modes.Downtime.lastState = null
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Downtime.lastState = "base"
+                IMGREGISTRY.Horizon_1.modes.Downtime.lastState = "daylighters"
+                IMGREGISTRY.HungerBotLeft_1.modes.Downtime.lastState = null
+                IMGREGISTRY.HungerBotRight_1.modes.Downtime.lastState = null
+                IMGREGISTRY.HungerTopLeft_1.modes.Downtime.lastState = null
+                IMGREGISTRY.HungerTopRight_1.modes.Downtime.lastState = null
+                IMGREGISTRY.JohannesNapierToken_1.modes.Downtime.lastState = null
+                IMGREGISTRY.LockeUlrichToken_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.mapButtonAutarkis_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonDistricts_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonDomain_1.modes.Downtime.lastState = "camarilla"
+                IMGREGISTRY.mapButtonParks_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonRack_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonRoads_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesCulture_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesEducation_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesHavens_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesHealth_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesNightlife_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesShopping_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesTransportation_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.rollerDie_bigDice_1.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_bigDice_2.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_1.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_10.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_11.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_12.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_13.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_14.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_15.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_16.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_17.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_18.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_19.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_2.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_20.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_21.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_22.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_23.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_24.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_25.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_26.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_27.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_28.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_29.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_3.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_30.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_4.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_5.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_6.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_7.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_8.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_9.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomEnd_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.rollerImage_bottomMid_1.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_2.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_3.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_4.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_5.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_6.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_7.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_8.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_9.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_diffFrame_1.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_frontFrame_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.rollerImage_topEnd_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.rollerImage_topMid_1.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_2.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_3.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_4.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_5.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_6.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_7.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_8.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_9.modes.Downtime.lastState = null
+                IMGREGISTRY.SignalLightBotLeft_1.modes.Downtime.lastState = null
+                IMGREGISTRY.SignalLightBotRight_1.modes.Downtime.lastState = null
+                IMGREGISTRY.SignalLightTopLeft_1.modes.Downtime.lastState = null
+                IMGREGISTRY.SignalLightTopRight_1.modes.Downtime.lastState = null
+                IMGREGISTRY.SiteBarCenter_1.modes.Downtime.lastState = null
+                IMGREGISTRY.SiteBarLeft_1.modes.Downtime.lastState = null
+                IMGREGISTRY.SiteBarRight_1.modes.Downtime.lastState = null
+                IMGREGISTRY.SiteCenter_1.modes.Downtime.lastState = null
+                IMGREGISTRY.SiteLeft_1.modes.Downtime.lastState = null
+                IMGREGISTRY.SiteRight_1.modes.Downtime.lastState = null
+                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Downtime.lastState = null
+                IMGREGISTRY.TorontoMap_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapParksOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapRackOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.WeatherClouds_1.modes.Downtime.lastState = null
+                IMGREGISTRY.WeatherFog_1.modes.Downtime.lastState = null
+                IMGREGISTRY.WeatherFrost_1.modes.Downtime.lastState = null
+                IMGREGISTRY.WeatherGround_1.modes.Downtime.lastState = null
+                IMGREGISTRY.WeatherMain_1.modes.Downtime.lastState = null
+                IMGREGISTRY.weeklyResourcesHeader_1.modes.Downtime.lastState = null
+                IMGREGISTRY.wpRerollPlaceholder_1.modes.Downtime.lastState = "blank"
+                IMGREGISTRY.AirLightCN_4.modes.Daylighter.lastActive = false
+                IMGREGISTRY.AirLightCN_5.modes.Daylighter.lastActive = false
+                IMGREGISTRY.AirLightLeft_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.AirLightMid_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.AirLightTop_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.AvaWongToken_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.compCardSpot_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.compCardSpot_10.modes.Daylighter.lastActive = false
+                IMGREGISTRY.compCardSpot_2.modes.Daylighter.lastActive = false
+                IMGREGISTRY.compCardSpot_3.modes.Daylighter.lastActive = false
+                IMGREGISTRY.compCardSpot_4.modes.Daylighter.lastActive = false
+                IMGREGISTRY.compCardSpot_5.modes.Daylighter.lastActive = false
+                IMGREGISTRY.compCardSpot_6.modes.Daylighter.lastActive = false
+                IMGREGISTRY.compCardSpot_7.modes.Daylighter.lastActive = false
+                IMGREGISTRY.compCardSpot_8.modes.Daylighter.lastActive = false
+                IMGREGISTRY.compCardSpot_9.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationEnhanced_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationEnhanced_10.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationEnhanced_2.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationEnhanced_3.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationEnhanced_4.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationEnhanced_5.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationEnhanced_6.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationEnhanced_7.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationEnhanced_8.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationEnhanced_9.modes.Daylighter.lastActive = false
+                IMGREGISTRY.ComplicationMat_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationZero_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationZero_10.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationZero_2.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationZero_3.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationZero_4.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationZero_5.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationZero_6.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationZero_7.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationZero_8.modes.Daylighter.lastActive = false
+                IMGREGISTRY.complicationZero_9.modes.Daylighter.lastActive = false
+                IMGREGISTRY.DistrictCenter_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.DistrictLeft_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.DistrictRight_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.downtimeBanner_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Daylighter.lastActive = false
+                IMGREGISTRY.Horizon_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.HungerBotLeft_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.HungerBotRight_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.HungerTopLeft_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.HungerTopRight_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.JohannesNapierToken_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.LockeUlrichToken_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.mapButtonAutarkis_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.mapButtonDistricts_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.mapButtonDomain_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.mapButtonParks_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.mapButtonRack_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.mapButtonRoads_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.mapButtonSitesCulture_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.mapButtonSitesEducation_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.mapButtonSitesHavens_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.mapButtonSitesHealth_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.mapButtonSitesNightlife_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.mapButtonSitesShopping_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.mapButtonSitesTransportation_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.rollerDie_bigDice_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_bigDice_2.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_10.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_11.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_12.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_13.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_14.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_15.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_16.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_17.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_18.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_19.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_2.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_20.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_21.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_22.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_23.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_24.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_25.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_26.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_27.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_28.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_29.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_3.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_30.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_4.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_5.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_6.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_7.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_8.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_9.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_bottomEnd_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.rollerImage_bottomMid_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_2.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_3.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_4.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_5.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_6.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_7.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_8.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_9.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_diffFrame_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_frontFrame_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.rollerImage_topEnd_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.rollerImage_topMid_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_2.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_3.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_4.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_5.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_6.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_7.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_8.modes.Daylighter.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_9.modes.Daylighter.lastActive = false
+                IMGREGISTRY.SignalLightBotLeft_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.SignalLightBotRight_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.SignalLightTopLeft_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.SignalLightTopRight_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.SiteBarCenter_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.SiteBarLeft_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.SiteBarRight_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.SiteCenter_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.SiteLeft_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.SiteRight_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.TorontoMap_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.TorontoMapParksOverlay_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.TorontoMapRackOverlay_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.WeatherClouds_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.WeatherFog_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.WeatherFrost_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.WeatherGround_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.WeatherMain_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.weeklyResourcesHeader_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.wpRerollPlaceholder_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.AirLightCN_4.modes.Daylighter.lastState = null
+                IMGREGISTRY.AirLightCN_5.modes.Daylighter.lastState = null
+                IMGREGISTRY.AirLightLeft_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.AirLightMid_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.AirLightTop_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.AvaWongToken_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.compCardSpot_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.compCardSpot_10.modes.Daylighter.lastState = null
+                IMGREGISTRY.compCardSpot_2.modes.Daylighter.lastState = null
+                IMGREGISTRY.compCardSpot_3.modes.Daylighter.lastState = null
+                IMGREGISTRY.compCardSpot_4.modes.Daylighter.lastState = null
+                IMGREGISTRY.compCardSpot_5.modes.Daylighter.lastState = null
+                IMGREGISTRY.compCardSpot_6.modes.Daylighter.lastState = null
+                IMGREGISTRY.compCardSpot_7.modes.Daylighter.lastState = null
+                IMGREGISTRY.compCardSpot_8.modes.Daylighter.lastState = null
+                IMGREGISTRY.compCardSpot_9.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationEnhanced_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationEnhanced_10.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationEnhanced_2.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationEnhanced_3.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationEnhanced_4.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationEnhanced_5.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationEnhanced_6.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationEnhanced_7.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationEnhanced_8.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationEnhanced_9.modes.Daylighter.lastState = null
+                IMGREGISTRY.ComplicationMat_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationZero_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationZero_10.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationZero_2.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationZero_3.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationZero_4.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationZero_5.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationZero_6.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationZero_7.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationZero_8.modes.Daylighter.lastState = null
+                IMGREGISTRY.complicationZero_9.modes.Daylighter.lastState = null
+                IMGREGISTRY.DistrictCenter_1.modes.Daylighter.lastState = true
+                IMGREGISTRY.DistrictLeft_1.modes.Daylighter.lastState = true
+                IMGREGISTRY.DistrictRight_1.modes.Daylighter.lastState = true
+                IMGREGISTRY.downtimeBanner_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Daylighter.lastState = null
+                IMGREGISTRY.Horizon_1.modes.Daylighter.lastState = "night5"
+                IMGREGISTRY.HungerBotLeft_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.HungerBotRight_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.HungerTopLeft_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.HungerTopRight_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.JohannesNapierToken_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.LockeUlrichToken_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.mapButtonAutarkis_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.mapButtonDistricts_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.mapButtonDomain_1.modes.Daylighter.lastState = "camarilla"
+                IMGREGISTRY.mapButtonParks_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.mapButtonRack_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.mapButtonRoads_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.mapButtonSitesCulture_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.mapButtonSitesEducation_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.mapButtonSitesHavens_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.mapButtonSitesHealth_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.mapButtonSitesNightlife_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.mapButtonSitesShopping_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.mapButtonSitesTransportation_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.rollerDie_bigDice_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_bigDice_2.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_10.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_11.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_12.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_13.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_14.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_15.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_16.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_17.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_18.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_19.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_2.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_20.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_21.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_22.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_23.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_24.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_25.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_26.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_27.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_28.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_29.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_3.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_30.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_4.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_5.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_6.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_7.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_8.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerDie_diceList_9.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_bottomEnd_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.rollerImage_bottomMid_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_2.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_3.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_4.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_5.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_6.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_7.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_8.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_9.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_diffFrame_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_frontFrame_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.rollerImage_topEnd_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.rollerImage_topMid_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_topMid_2.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_topMid_3.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_topMid_4.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_topMid_5.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_topMid_6.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_topMid_7.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_topMid_8.modes.Daylighter.lastState = null
+                IMGREGISTRY.rollerImage_topMid_9.modes.Daylighter.lastState = null
+                IMGREGISTRY.SignalLightBotLeft_1.modes.Daylighter.lastState = "off"
+                IMGREGISTRY.SignalLightBotRight_1.modes.Daylighter.lastState = "off"
+                IMGREGISTRY.SignalLightTopLeft_1.modes.Daylighter.lastState = "off"
+                IMGREGISTRY.SignalLightTopRight_1.modes.Daylighter.lastState = "off"
+                IMGREGISTRY.SiteBarCenter_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.SiteBarLeft_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.SiteBarRight_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.SiteCenter_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.SiteLeft_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.SiteRight_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.TorontoMap_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.TorontoMapParksOverlay_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.TorontoMapRackOverlay_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.WeatherClouds_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.WeatherFog_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.WeatherFrost_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.WeatherGround_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.WeatherMain_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.weeklyResourcesHeader_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.wpRerollPlaceholder_1.modes.Daylighter.lastState = "blank"
+                IMGREGISTRY.AirLightCN_4.modes.Complications.lastActive = true
+                IMGREGISTRY.AirLightCN_5.modes.Complications.lastActive = true
+                IMGREGISTRY.AirLightLeft_1.modes.Complications.lastActive = true
+                IMGREGISTRY.AirLightMid_1.modes.Complications.lastActive = true
+                IMGREGISTRY.AirLightTop_1.modes.Complications.lastActive = true
+                IMGREGISTRY.AvaWongToken_1.modes.Complications.lastActive = false
+                IMGREGISTRY.compCardSpot_1.modes.Complications.lastActive = true
+                IMGREGISTRY.compCardSpot_10.modes.Complications.lastActive = true
+                IMGREGISTRY.compCardSpot_2.modes.Complications.lastActive = true
+                IMGREGISTRY.compCardSpot_3.modes.Complications.lastActive = true
+                IMGREGISTRY.compCardSpot_4.modes.Complications.lastActive = true
+                IMGREGISTRY.compCardSpot_5.modes.Complications.lastActive = true
+                IMGREGISTRY.compCardSpot_6.modes.Complications.lastActive = true
+                IMGREGISTRY.compCardSpot_7.modes.Complications.lastActive = true
+                IMGREGISTRY.compCardSpot_8.modes.Complications.lastActive = true
+                IMGREGISTRY.compCardSpot_9.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationEnhanced_1.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationEnhanced_10.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationEnhanced_2.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationEnhanced_3.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationEnhanced_4.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationEnhanced_5.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationEnhanced_6.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationEnhanced_7.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationEnhanced_8.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationEnhanced_9.modes.Complications.lastActive = true
+                IMGREGISTRY.ComplicationMat_1.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationZero_1.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationZero_10.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationZero_2.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationZero_3.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationZero_4.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationZero_5.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationZero_6.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationZero_7.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationZero_8.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationZero_9.modes.Complications.lastActive = true
+                IMGREGISTRY.DistrictCenter_1.modes.Complications.lastActive = false
+                IMGREGISTRY.DistrictLeft_1.modes.Complications.lastActive = false
+                IMGREGISTRY.DistrictRight_1.modes.Complications.lastActive = false
+                IMGREGISTRY.downtimeBanner_1.modes.Complications.lastActive = false
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Complications.lastActive = false
+                IMGREGISTRY.Horizon_1.modes.Complications.lastActive = true
+                IMGREGISTRY.HungerBotLeft_1.modes.Complications.lastActive = true
+                IMGREGISTRY.HungerBotRight_1.modes.Complications.lastActive = true
+                IMGREGISTRY.HungerTopLeft_1.modes.Complications.lastActive = true
+                IMGREGISTRY.HungerTopRight_1.modes.Complications.lastActive = true
+                IMGREGISTRY.JohannesNapierToken_1.modes.Complications.lastActive = false
+                IMGREGISTRY.LockeUlrichToken_1.modes.Complications.lastActive = false
+                IMGREGISTRY.mapButtonAutarkis_1.modes.Complications.lastActive = true
+                IMGREGISTRY.mapButtonDistricts_1.modes.Complications.lastActive = true
+                IMGREGISTRY.mapButtonDomain_1.modes.Complications.lastActive = true
+                IMGREGISTRY.mapButtonParks_1.modes.Complications.lastActive = true
+                IMGREGISTRY.mapButtonRack_1.modes.Complications.lastActive = true
+                IMGREGISTRY.mapButtonRoads_1.modes.Complications.lastActive = true
+                IMGREGISTRY.mapButtonSitesCulture_1.modes.Complications.lastActive = true
+                IMGREGISTRY.mapButtonSitesEducation_1.modes.Complications.lastActive = true
+                IMGREGISTRY.mapButtonSitesHavens_1.modes.Complications.lastActive = true
+                IMGREGISTRY.mapButtonSitesHealth_1.modes.Complications.lastActive = true
+                IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Complications.lastActive = true
+                IMGREGISTRY.mapButtonSitesNightlife_1.modes.Complications.lastActive = true
+                IMGREGISTRY.mapButtonSitesShopping_1.modes.Complications.lastActive = true
+                IMGREGISTRY.mapButtonSitesTransportation_1.modes.Complications.lastActive = true
+                IMGREGISTRY.rollerDie_bigDice_1.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_bigDice_2.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_1.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_10.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_11.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_12.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_13.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_14.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_15.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_16.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_17.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_18.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_19.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_2.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_20.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_21.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_22.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_23.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_24.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_25.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_26.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_27.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_28.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_29.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_3.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_30.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_4.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_5.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_6.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_7.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_8.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_9.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_bottomEnd_1.modes.Complications.lastActive = true
+                IMGREGISTRY.rollerImage_bottomMid_1.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_2.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_3.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_4.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_5.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_6.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_7.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_8.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_9.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_diffFrame_1.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_frontFrame_1.modes.Complications.lastActive = true
+                IMGREGISTRY.rollerImage_topEnd_1.modes.Complications.lastActive = true
+                IMGREGISTRY.rollerImage_topMid_1.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_2.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_3.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_4.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_5.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_6.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_7.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_8.modes.Complications.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_9.modes.Complications.lastActive = false
+                IMGREGISTRY.SignalLightBotLeft_1.modes.Complications.lastActive = true
+                IMGREGISTRY.SignalLightBotRight_1.modes.Complications.lastActive = true
+                IMGREGISTRY.SignalLightTopLeft_1.modes.Complications.lastActive = true
+                IMGREGISTRY.SignalLightTopRight_1.modes.Complications.lastActive = true
+                IMGREGISTRY.SiteBarCenter_1.modes.Complications.lastActive = false
+                IMGREGISTRY.SiteBarLeft_1.modes.Complications.lastActive = false
+                IMGREGISTRY.SiteBarRight_1.modes.Complications.lastActive = false
+                IMGREGISTRY.SiteCenter_1.modes.Complications.lastActive = false
+                IMGREGISTRY.SiteLeft_1.modes.Complications.lastActive = false
+                IMGREGISTRY.SiteRight_1.modes.Complications.lastActive = false
+                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Complications.lastActive = true
+                IMGREGISTRY.TorontoMap_1.modes.Complications.lastActive = true
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Complications.lastActive = true
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Complications.lastActive = true
+                IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Complications.lastActive = true
+                IMGREGISTRY.TorontoMapParksOverlay_1.modes.Complications.lastActive = true
+                IMGREGISTRY.TorontoMapRackOverlay_1.modes.Complications.lastActive = true
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Complications.lastActive = true
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Complications.lastActive = true
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Complications.lastActive = true
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Complications.lastActive = true
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Complications.lastActive = true
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Complications.lastActive = true
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Complications.lastActive = true
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Complications.lastActive = true
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Complications.lastActive = true
+                IMGREGISTRY.WeatherClouds_1.modes.Complications.lastActive = false
+                IMGREGISTRY.WeatherFog_1.modes.Complications.lastActive = false
+                IMGREGISTRY.WeatherFrost_1.modes.Complications.lastActive = false
+                IMGREGISTRY.WeatherGround_1.modes.Complications.lastActive = false
+                IMGREGISTRY.WeatherMain_1.modes.Complications.lastActive = false
+                IMGREGISTRY.weeklyResourcesHeader_1.modes.Complications.lastActive = true
+                IMGREGISTRY.wpRerollPlaceholder_1.modes.Complications.lastActive = true
+                IMGREGISTRY.AirLightCN_4.modes.Complications.lastState = "on"
+                IMGREGISTRY.AirLightCN_5.modes.Complications.lastState = "on"
+                IMGREGISTRY.AirLightLeft_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.AirLightMid_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.AirLightTop_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.AvaWongToken_1.modes.Complications.lastState = null
+                IMGREGISTRY.compCardSpot_1.modes.Complications.lastState = "blank"
+                IMGREGISTRY.compCardSpot_10.modes.Complications.lastState = "blank"
+                IMGREGISTRY.compCardSpot_2.modes.Complications.lastState = "blank"
+                IMGREGISTRY.compCardSpot_3.modes.Complications.lastState = "blank"
+                IMGREGISTRY.compCardSpot_4.modes.Complications.lastState = "blank"
+                IMGREGISTRY.compCardSpot_5.modes.Complications.lastState = "blank"
+                IMGREGISTRY.compCardSpot_6.modes.Complications.lastState = "blank"
+                IMGREGISTRY.compCardSpot_7.modes.Complications.lastState = "blank"
+                IMGREGISTRY.compCardSpot_8.modes.Complications.lastState = "blank"
+                IMGREGISTRY.compCardSpot_9.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationEnhanced_1.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationEnhanced_10.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationEnhanced_2.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationEnhanced_3.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationEnhanced_4.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationEnhanced_5.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationEnhanced_6.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationEnhanced_7.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationEnhanced_8.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationEnhanced_9.modes.Complications.lastState = "blank"
+                IMGREGISTRY.ComplicationMat_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationZero_1.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationZero_10.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationZero_2.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationZero_3.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationZero_4.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationZero_5.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationZero_6.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationZero_7.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationZero_8.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationZero_9.modes.Complications.lastState = "blank"
+                IMGREGISTRY.DistrictCenter_1.modes.Complications.lastState = null
+                IMGREGISTRY.DistrictLeft_1.modes.Complications.lastState = null
+                IMGREGISTRY.DistrictRight_1.modes.Complications.lastState = null
+                IMGREGISTRY.downtimeBanner_1.modes.Complications.lastState = null
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Complications.lastState = null
+                IMGREGISTRY.Horizon_1.modes.Complications.lastState = "night1"
+                IMGREGISTRY.HungerBotLeft_1.modes.Complications.lastState = 2
+                IMGREGISTRY.HungerBotRight_1.modes.Complications.lastState = 2
+                IMGREGISTRY.HungerTopLeft_1.modes.Complications.lastState = 2
+                IMGREGISTRY.HungerTopRight_1.modes.Complications.lastState = 2
+                IMGREGISTRY.JohannesNapierToken_1.modes.Complications.lastState = null
+                IMGREGISTRY.LockeUlrichToken_1.modes.Complications.lastState = null
+                IMGREGISTRY.mapButtonAutarkis_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.mapButtonDistricts_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.mapButtonDomain_1.modes.Complications.lastState = "camarilla"
+                IMGREGISTRY.mapButtonParks_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.mapButtonRack_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.mapButtonRoads_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.mapButtonSitesCulture_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.mapButtonSitesEducation_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.mapButtonSitesHavens_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.mapButtonSitesHealth_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.mapButtonSitesNightlife_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.mapButtonSitesShopping_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.mapButtonSitesTransportation_1.modes.Complications.lastState = "on"
+                IMGREGISTRY.rollerDie_bigDice_1.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_bigDice_2.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_1.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_10.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_11.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_12.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_13.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_14.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_15.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_16.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_17.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_18.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_19.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_2.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_20.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_21.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_22.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_23.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_24.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_25.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_26.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_27.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_28.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_29.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_3.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_30.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_4.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_5.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_6.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_7.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_8.modes.Complications.lastState = null
+                IMGREGISTRY.rollerDie_diceList_9.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_bottomEnd_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.rollerImage_bottomMid_1.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_2.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_3.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_4.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_5.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_6.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_7.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_8.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_9.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_diffFrame_1.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_frontFrame_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.rollerImage_topEnd_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.rollerImage_topMid_1.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_topMid_2.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_topMid_3.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_topMid_4.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_topMid_5.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_topMid_6.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_topMid_7.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_topMid_8.modes.Complications.lastState = null
+                IMGREGISTRY.rollerImage_topMid_9.modes.Complications.lastState = null
+                IMGREGISTRY.SignalLightBotLeft_1.modes.Complications.lastState = "off"
+                IMGREGISTRY.SignalLightBotRight_1.modes.Complications.lastState = "off"
+                IMGREGISTRY.SignalLightTopLeft_1.modes.Complications.lastState = "off"
+                IMGREGISTRY.SignalLightTopRight_1.modes.Complications.lastState = "off"
+                IMGREGISTRY.SiteBarCenter_1.modes.Complications.lastState = null
+                IMGREGISTRY.SiteBarLeft_1.modes.Complications.lastState = null
+                IMGREGISTRY.SiteBarRight_1.modes.Complications.lastState = null
+                IMGREGISTRY.SiteCenter_1.modes.Complications.lastState = null
+                IMGREGISTRY.SiteLeft_1.modes.Complications.lastState = null
+                IMGREGISTRY.SiteRight_1.modes.Complications.lastState = null
+                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.TorontoMap_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.TorontoMapParksOverlay_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.TorontoMapRackOverlay_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.WeatherClouds_1.modes.Complications.lastState = null
+                IMGREGISTRY.WeatherFog_1.modes.Complications.lastState = null
+                IMGREGISTRY.WeatherFrost_1.modes.Complications.lastState = null
+                IMGREGISTRY.WeatherGround_1.modes.Complications.lastState = null
+                IMGREGISTRY.WeatherMain_1.modes.Complications.lastState = null
+                IMGREGISTRY.weeklyResourcesHeader_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.wpRerollPlaceholder_1.modes.Complications.lastState = "blank"
+
+                for (const imgKey of _.keys(IMGREGISTRY)) {
+                    const imgData = getImgData(imgKey)
+                    if (imgData.isActive) {
+                        toggleImg(imgKey, true)
+                        setImg(imgKey, imgData.activeSrc)
+                    } else {
+                        const {activeSrc} = imgData
+                        toggleImg(imgKey, false)
+                        setImg(imgKey, "blank")
+                        IMGREGISTRY[imgKey].activeSrc = activeSrc
+                    }
+                }
+            })()
 
         // STATEREF.imgregistry.mapButtonDomain_1.cycleSrcs = ["anarch", "camarilla", "nodomain"]
         },
@@ -2146,7 +2299,10 @@ const Media = (() => {
                             break
                         }
                         case "clean": case "cleanreg": case "cleanregistry": {
-                            cleanRegistry()
+                            if (args[0] && args[0].toLowerCase() === "confirm")
+                                cleanRegistryConfirm()
+                            else
+                                cleanRegistry()
                             break
                         }
                         case "add": {
@@ -2352,7 +2508,7 @@ const Media = (() => {
                                     break
                                 }
                                 case "data": {
-                                    const imgData = getImgData(msg) || getImgData(args.shift())
+                                    const imgData = getImgData(msg, true) || getImgData(args.shift())
                                     if (VAL({list: imgData}, "!img get data"))
                                         D.Alert(D.JS(args[0] && imgData[args[0]] || imgData), "MEDIA, !img get data")
                                     break
@@ -2518,7 +2674,7 @@ const Media = (() => {
                                     const textObj = getTextObj(args[0]) || getTextObj(msg),
                                         params = D.ParseParams(args)
                                     if (VAL({textObj}, "!text set params"))
-                                        setText(textObj, params)
+                                        setTextData(textObj, params)
                                     break   
                                 }
                                 default: {
@@ -2526,7 +2682,7 @@ const Media = (() => {
                                     if (getTextObj(args[0], true))
                                         args.shift()
                                     if (VAL({textObj}, "!text set"))
-                                        setText(textObj, {text: args[0] && args.join(" ") || " "})
+                                        setText(textObj, args[0] && args.join(" ") || " ")
                                     break
                                 }
                             // no default                                    
@@ -2546,7 +2702,7 @@ const Media = (() => {
                                         D.Alert("Text not registered.  To register selected text:<br><br><pre>!text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; [params (\"key:value, key:value\")]</pre>", "!text set position")
                                     } else {
                                         const hostName = getTextKey(msg)
-                                        setText(textObj, {top: parseInt(textObj.get("top")), left: getBlankLeft(textObj), layer: textObj.get("layer")})
+                                        setTextData(textObj, {top: parseInt(textObj.get("top")), left: getBlankLeft(textObj), layer: textObj.get("layer")})
                                         D.Alert(`Position Set for Text ${hostName}<br><br><pre>${D.JS(TEXTREGISTRY[hostName])}</pre>`)
                                     }
                                     break
@@ -2941,6 +3097,25 @@ const Media = (() => {
                 return getTextData(mediaRef)
             return getImgData(mediaRef)
         },
+        fixModeStatus = mediaRef => {
+            /* TEXT: */
+            const textKey = getTextKey(mediaRef),
+                textData = getTextData(textKey),
+                textObj = getTextObj(textKey),
+                stateRef = TEXTREGISTRY[textKey]
+            delete stateRef.startActive
+            stateRef.curText = stateRef.text || textObj.get("text")
+            delete stateRef.text
+            for (const mode of ["Active", "Inactive", "Daylighter", "Downtime", "Complications"]) {
+                if (stateRef[mode].lastState === false)
+                    stateRef[mode].lastState = null
+                if (textData.shadow) {
+                    TEXTREGISTRY[textData.shadow].modes = JSON.parse(JSON.stringify(textData.modes))
+                    TEXTREGISTRY[textData.shadow].activeText = textData.activeText
+                    TEXTREGISTRY[textData.shadow].curText = textData.curText
+                }
+            }
+        },
         getModeStatus = mediaRef => {
             const modeStatus = {}
             if (isRegistered(mediaRef)) {
@@ -2954,7 +3129,7 @@ const Media = (() => {
                     else
                         modeStatus.isActive = mediaData.isActive
                     if (mediaModes.isForcedState === true)
-                        modeStatus.state = mediaModes.lastState
+                        modeStatus.state = mediaModes.lastState === false ? null : mediaModes.lastState
                     else if (mediaModes.isForcedState === null)
                         modeStatus.state = undefined
                     else
@@ -2977,7 +3152,7 @@ const Media = (() => {
             if (isRegImg(mediaRef)) 
                 setImg(mediaRef, stateRef)
             else if (isRegText(mediaRef)) 
-                setText(mediaRef, {text: mediaRef})
+                setText(mediaRef, mediaRef)
         },
         setLayer = (mediaRef, layer) => {
             const mediaObj = getMediaObj(mediaRef)
@@ -3001,6 +3176,7 @@ const Media = (() => {
             if (isRegImg(mediaKey)) {
                 const imgData = getImgData(mediaKey),
                     modeStatus = getModeStatus(mediaKey)
+                DB(`Updating '${D.JS(mediaRef)}'. ModeStatus: ${D.JS(modeStatus)}`, "modeUpdate")
                 if(VAL({list: modeStatus}, "modeUpdate")) {
                     const lastMode = imgData.curMode
                     if (lastMode) {
@@ -3008,10 +3184,14 @@ const Media = (() => {
                         IMGREGISTRY[mediaKey].modes[lastMode].lastState = imgData.isActive && imgData.activeSrc
                     }
                     IMGREGISTRY[mediaKey].curMode = Session.Mode
-                    if (!_.isUndefined(modeStatus.isActive))
+                    if (!_.isUndefined(modeStatus.isActive)) {
+                        DB(`... IsActive OK! toggleImg(${D.JS(mediaKey)}, ${D.JS(modeStatus.isActive)})`, "modeUpdate")
                         toggleImg(mediaKey, modeStatus.isActive)
-                    if (!_.isUndefined(modeStatus.state))
+                    }
+                    if (!_.isUndefined(modeStatus.state)) {
+                        DB(`... State OK! setImg(${D.JS(mediaKey)}, ${D.JS(modeStatus.state)})`, "modeUpdate")
                         setImg(mediaKey, modeStatus.state)
+                    }
                 }
             } else if (isRegText(mediaKey)) {
                 const textData = getTextData(mediaKey),
@@ -3075,7 +3255,7 @@ const Media = (() => {
                 return !isSilent && THROW(`Cannot locate image with search value '${D.JSL(imgRef)}'`, "GetImgKey", errObj)
             }
         },
-        getImgObj = imgRef => {
+        getImgObj = (imgRef, isSilent = false) => {
             // D.Alert("GETTING IMG OBJECT")
             try {
                 let imgObj
@@ -3098,26 +3278,26 @@ const Media = (() => {
                     return imgObj
                 return false
             } catch (errObj) {
-                return THROW(`IMGREF: ${D.JS(imgRef)}`, "getImgObj", errObj)
+                return !isSilent && THROW(`IMGREF: ${D.JS(imgRef)}`, "getImgObj", errObj)
             }
         },
-        getImgObjs = imgRefs => {
+        getImgObjs = (imgRefs, isSilent = false) => {
             // D.Alert(`GetSelected ImgRefs: ${D.JS(D.GetSelected(imgRefs))}`)
             imgRefs = VAL({selection: imgRefs}) ? D.GetSelected(imgRefs) : imgRefs || _.keys(IMGREGISTRY)
             const imgObjs = []
             if (VAL({array: imgRefs}))
                 for (const imgRef of imgRefs)
-                    imgObjs.push(getImgObj(imgRef))
+                    imgObjs.push(getImgObj(imgRef, isSilent))
             return _.compact(imgObjs)
         },
-        getImgData = imgRef => {
+        getImgData = (imgRef, isSilent = false) => {
             const imgData = (() => {
                 let imgKey, imgObj
                 try {
-                    imgKey = getImgKey(imgRef)
+                    imgKey = getImgKey(imgRef, isSilent)
                     if (VAL({string: imgKey}))
                         return IMGREGISTRY[imgKey]
-                    imgObj = getImgObj(imgRef)
+                    imgObj = getImgObj(imgRef, isSilent)
                     if (VAL({imgObj}))
                         return {
                             isUnregistered: true,
@@ -3131,10 +3311,10 @@ const Media = (() => {
                         }
                     return false
                 } catch (errObj) {
-                    return THROW(`Cannot locate image with search value '${D.JS(imgRef)}'`, "getImgData", errObj)
+                    return !isSilent && THROW(`Cannot locate image with search value '${D.JS(imgRef)}'`, "getImgData", errObj)
                 }
             })()
-            if (VAL({list: imgData}, "getImgData")) {
+            if (VAL({list: imgData}, isSilent ? "getImgData" : undefined)) {
                 imgData.leftEdge = imgData.left - 0.5*imgData.width
                 imgData.rightEdge = imgData.left + 0.5*imgData.width
                 imgData.topEdge = imgData.top - 0.5*imgData.height
@@ -3142,11 +3322,11 @@ const Media = (() => {
             }
             return imgData
         },
-        getTokenObj = charRef => {
-            const charObj = D.GetChar(charRef)
+        getTokenObj = (charRef, isSilent = false) => {
+            const charObj = D.GetChar(charRef, isSilent)
             if (charObj)
                 return (findObjs({_pageid: D.PAGEID, _type: "graphic", _subtype: "token", represents: charObj.id}) || [false])[0]
-            return THROW(`No character found for reference ${charRef}`, "getTokenObj")
+            return !isSilent && THROW(`No character found for reference ${charRef}`, "getTokenObj")
         },
         getAreaData = areaRef => AREAREGISTRY[areaRef],
         /* getImgDatas = imgRefs => {
@@ -3383,9 +3563,12 @@ const Media = (() => {
         setImg = (imgRef, srcRef) => {
             // D.Alert(`Getting ${D.JS(srcRef)} for ${D.JS(imgRef)} --> ${D.JS(REGISTRY[getImgData(imgRef).name].srcs[srcRef])}`, "MEDIA:SetImg")
             const imgKey = getImgKey(imgRef)
+            
+            if (srcRef === null)
+                return false
             if (VAL({string: [imgKey, srcRef]}, "setImg", true)) {
                 const imgObj = getImgObj(imgKey)
-                if (!VAL({imgObj}, "setImg"))
+                if (!VAL({imgObj}, ["setImg", `Key: ${D.JS(imgKey)}`]))
                     return false
                 let refData = getImgData(imgKey),
                     srcURL
@@ -3733,11 +3916,12 @@ const Media = (() => {
             if (VAL({list: imgData}, "toggleImg")) {
                 if ((isActive === true || isActive === false) && imgData.isActive === isActive || isActive === null)
                     return null
-                if (isActive === true || imgData.isActive === false) {
+                if (isActive === false || imgData.isActive === true) {
                     // TURN OFF: Set layer to walls, toggle off associated drag pads, update activeState value
                     IMGREGISTRY[imgData.name].activeSrc = imgData.curSrc
+                    IMGREGISTRY[imgData.name].isActive = false
                     const imgObj = getObj("graphic", imgData.id),
-                        [pad, partner] = DragPads.GetPadPair(imgData.id)
+                        [pad, partner] = DragPads.GetPadPair(imgData.id, true)
                     if (imgObj)
                         setLayer(imgObj, "walls")
                     if (pad)
@@ -3745,11 +3929,12 @@ const Media = (() => {
                     if (partner)
                         toggleImg(partner, false)
                     return false                   
-                } else if (isActive === false || imgData.isActive === true) {
+                } else if (isActive === true || imgData.isActive === false) {
                     // TURN ON: Set layer to active layer, toggle on associated drag pads, restore activeState value if it's different
+                    IMGREGISTRY[imgData.name].isActive = true
                     setImg(imgData.name, imgData.activeSrc)
                     const imgObj = getObj("graphic", imgData.id),
-                        [pad, partner] = DragPads.GetPadPair(imgData.id)
+                        [pad, partner] = DragPads.GetPadPair(imgData.id, true)
                     if (imgObj)
                         setLayer(imgObj, imgData.activeLayer)
                     if (pad)
@@ -3784,9 +3969,20 @@ const Media = (() => {
 
         },
         cleanRegistry = () => {
+            STATEREF.regClean = []
             for (const imgName of _.keys(IMGREGISTRY))
                 if (!getImgObj(imgName))
-                    removeImg(imgName)
+                    STATEREF.regClean.push(imgName)
+            if (STATEREF.regClean.length)
+                D.Alert(`The following registered images are missing:<br><br>${D.JS(STATEREF.regClean)}<br><br><b>!img clean confirm</b> to purge registry.`, "IMAGE REGISTRY CLEAN")
+            else
+                D.Alert("No missing image objects found!", "IMAGE REGISTRY CLEAN")
+        },
+        cleanRegistryConfirm = () => {
+            for (const imgName of STATEREF.regClean)
+                removeImg(imgName)
+            D.Alert(`The following registry entries have been purged:<br><br>${D.JS(STATEREF.regClean)}`, "IMAGE REGISTRY CLEAN CONFIRMED")
+            STATEREF.regClean = []
         },
         layerImgs = (imgRefs, layer) => {
             const imgObjs = getImgObjs(imgRefs)
@@ -4001,7 +4197,7 @@ const Media = (() => {
     // #endregion
 
     // #region TEXT OBJECT GETTERS: Text Object, Width Measurements, Data Retrieval    
-        isRegText = textRef => Boolean(getTextKey(textRef)), 
+        isRegText = textRef => Boolean(getTextKey(textRef, true)), 
         getTextKey = (textRef, isSilent = false) => {
             try {
                 let textObj
@@ -4059,6 +4255,10 @@ const Media = (() => {
         hasShadowObj = textRef => Boolean((getTextData(textRef) || {shadow: false}).shadow),
         getTextShadowObj = (textRef, isSilent = false) => {
             const textKey = getTextKey(textRef, isSilent)
+            if (_.isString(textRef) && textRef.includes("Ava"))
+                D.Alert(`Seeking Shadow with REF: ${D.JS(textRef)}`)
+            if (_.isString(textKey) && textKey.includes("Ava"))
+                D.Alert(`Seeking Shadow with KEY: ${D.JS(textKey)}`)
             if (textKey)
                 return getTextObj(TEXTREGISTRY[textKey].shadow, true) || !isSilent && THROW(`No shadow text object registered for ${D.JS(textKey)}`, "getTextShadowObj")
             return !isSilent && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, "getTextShadowObj")
@@ -4231,9 +4431,9 @@ const Media = (() => {
     // #endregion
 
     // #region TEXT OBJECT SETTERS: Registering, Changing, Deleting
-        regText = (textRef, hostName, activeLayer, startActive, hasShadow, justification, options = {}, isSilent = false) => {
+        regText = (textRef, hostName, activeLayer, hasShadow, justification, options = {}, isSilent = false) => {
             const textObj = getTextObj(textRef)
-            DB(`regText(textRef, ${D.JS(hostName)}, ${D.JS(activeLayer)}, ${D.JS(startActive)}, ${D.JS(hasShadow)}, ${D.JS(options)}`, "regText")
+            DB(`regText(textRef, ${D.JS(hostName)}, ${D.JS(activeLayer)}, ${D.JS(hasShadow)}, ${D.JS(options)}`, "regText")
             if (VAL({text: textObj})) {
                 if (!(hostName && activeLayer))
                     return THROW("Must supply host name and active layer for regText.", "RegText")
@@ -4252,7 +4452,7 @@ const Media = (() => {
                     color: textObj.get("color"),
                     font_family: textObj.get("font_family").toLowerCase().includes("contrail") ? "Contrail One" : textObj.get("font_family"),
                     text: textObj.get("text").trim(),
-                    layer: !(startActive === "false" || startActive === false) ? activeLayer : "gmlayer"
+                    layer: activeLayer
                 }
                 options.justification = justification || options.justification || "center"
                 options.maxWidth = options.maxWidth || 0
@@ -4266,49 +4466,49 @@ const Media = (() => {
                             name,
                             top: curTextParams.top - 0.5 * (curTextParams.text.split("\n").length - 1) * options.lineHeight,
                             activeLayer,
-                            startActive: !(startActive === "false" || startActive === false),
+                            curText: curTextParams.text,
                             activeText: curTextParams.text,
                             zIndex: parseInt(options.zIndex) || (TEXTREGISTRY[name] ? TEXTREGISTRY[name].zIndex : 300),
                             justification: justification || "center",
                             maxWidth: options.maxWidth || 0,
                             lineHeight: D.CHARWIDTH[curTextParams.font_family] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size].lineHeight || textObj.get("height"),
-                            vertAlign: options.vertAlign || "top"             
+                            vertAlign: options.vertAlign || "top",
+                            modes: {}        
                         }
                     ),
                     options
                 )
+                delete TEXTREGISTRY[name].text
+                for (const mode of Session.Modes)
+                    TEXTREGISTRY[name].modes[mode] = C.MODEDEFAULTS(textObj, mode)                
                 TEXTREGISTRY[name].left = getBlankLeft(textObj, TEXTREGISTRY[name].justification, TEXTREGISTRY[name].maxWidth, true)
-                IDREGISTRY[textObj.id] = name
-                setText(textObj, Object.assign(_.filter(_.pick(options, C.TEXTPROPS), (v, k) => curTextParams[k] !== v), {left: TEXTREGISTRY[name].left, layer: curTextParams.layer}))                
+                IDREGISTRY[textObj.id] = name      
                 if (hasShadow) {
                     const shadowOptions = Object.assign(_.omit(_.clone(TEXTREGISTRY[name]), "id"), {
                         name: `${name}Shadow`,
                         color: "rgb(0,0,0)",
                         shadowMaster: name,
-                        zIndex: TEXTREGISTRY[name].zIndex - 1
+                        zIndex: TEXTREGISTRY[name].zIndex - 1,
+                        left: TEXTREGISTRY[name].left + getShadowShift(textObj),
+                        top: TEXTREGISTRY[name].top + getShadowShift(textObj)
                     })
                     DB(`Shadow Options: ${D.JS(shadowOptions)}`, "regText")
-                    const shadowObj = makeText(shadowOptions.name, TEXTREGISTRY[name].activeLayer, TEXTREGISTRY[name].startActive, false, justification, shadowOptions, isSilent)
+                    const shadowObj = makeText(shadowOptions.name, TEXTREGISTRY[name].activeLayer, false, justification, shadowOptions, isSilent)
                     shadowOptions.id = shadowObj.id
                     TEXTREGISTRY[name].shadow = shadowOptions.name
-                    TEXTREGISTRY[shadowOptions.name].left = TEXTREGISTRY[name].left + getShadowShift(textObj)
-                    TEXTREGISTRY[shadowOptions.name].top = TEXTREGISTRY[name].top + getShadowShift(textObj)
-                    setText(shadowOptions.name)
-                    /*
-                    left: TEXTREGISTRY[name].left + Math.round(TEXTREGISTRY[name].font_size/SHADOWFACTOR),
-                    top: TEXTREGISTRY[name].top + Math.round(TEXTREGISTRY[name].font_size/SHADOWFACTOR),    
-                    */  
-                }    
+                }                
+                toggleText(textObj, true)
+                setText(textObj, TEXTREGISTRY[name].curText, true)
+                setTextData(textObj, _.pick(TEXTREGISTRY[name], C.TEXTPROPS))        
                 D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(TEXTREGISTRY[name])}`, "regText")
                 initMedia()
                 return getTextData(name)
             }
             return !isSilent && THROW(`Invalid text reference '${D.JS(textRef)}'`, "regText")
         },
-        makeText = (hostName, activeLayer, startActive, hasShadow, justification, options = {}, isSilent = false) => {
-            DB(`makeText(${D.JS(hostName)}, ${D.JS(activeLayer)}, ${D.JS(startActive)}, ${D.JS(hasShadow)}, ${D.JS(options)}`, "makeText")
-            const isStartingActive = startActive || !(options.startActive === "false" || options.startActive === false),
-                actLayer = activeLayer || options.activeLayer || options.layer || "objects",
+        makeText = (hostName, activeLayer, hasShadow, justification, options = {}, isSilent = false) => {
+            DB(`makeText(${D.JS(hostName)}, ${D.JS(activeLayer)}, ${D.JS(hasShadow)}, ${D.JS(options)}`, "makeText")
+            const actLayer = activeLayer || options.activeLayer || options.layer || "objects",
                 objParams = Object.assign({_pageid: D.PAGEID,
                                            text: options.text || "",
                                            left: 200,
@@ -4316,14 +4516,43 @@ const Media = (() => {
                                            font_size: options.size || options.fontSize || options.font_size || 24,
                                            color: options.color || C.COLORS.brightred,
                                            font_family: options.font || options.fontFamily || options.font_family || "Candal",
-                                           layer: isStartingActive ? actLayer : "gmlayer",
+                                           layer: actLayer,
                                            controlledby: ""
                 }, _.pick(options, ...C.TEXTPROPS)),
                 textObj = createObj("text", objParams)
             options.activeText = objParams.text             
             textObj.set("left", getRealLeft(textObj, {left: textObj.get("left"), justification: justification || options.justification || "center", maxWidth: options.maxWidth || 0}))
-            regText(textObj, hostName, actLayer, isStartingActive, hasShadow, justification, options, isSilent)
+            regText(textObj, hostName, actLayer, hasShadow, justification, options, isSilent)
             return textObj
+        },
+        updateTextShadow = (textRef, isForcing = false) => {
+            const textKey = getTextKey(textRef)
+            if (VAL({string: textKey}, "updateTextShadow")) {
+                const textData = getTextData(textKey),
+                    textObj = getTextObj(textKey)
+                if (VAL({textObj, list: textData}, "updateTextShadow") && textData.shadow) {
+                    const shadowKey = textData.shadow,
+                        shadowData = getTextData(shadowKey),
+                        shadowObj = getTextObj(shadowKey)
+                    if (VAL({textObj: shadowObj, list: shadowData}, "updateTextShadow")) {
+                        const shadowShift = getShadowShift(textObj),
+                            shadowParams = {
+                                left: textObj.get("left") + shadowShift,
+                                top: textObj.get("top") + shadowShift,
+                                text: textObj.get("text")
+                            }
+                        if(!isForcing && (
+                            shadowObj.get("left") === shadowParams.left &&
+                            shadowObj.get("top") === shadowParams.top &&
+                            shadowObj.get("text") === shadowParams.text
+                        ))
+                            return null
+                        shadowObj.set(shadowParams)
+                        return true
+                    }
+                }
+            }
+            return false
         },
         linkText = (masterRef, slaveData, horizPad = 0, vertPad = 0) => {
             // ON MASTER: list each slave object in terms of the edge it attaches to -- top, left, right or bottom
@@ -4371,90 +4600,100 @@ const Media = (() => {
                     }
                 }
         },
-        setText = (textRef, options, isTemporary = false) => {
-            const textObj = getTextObj(textRef),
-                textData = getTextData(textRef),
-                textOptions = VAL({list: options}) && options ||
-                            VAL({string: options}) && {text: options.length && options || ""} ||
-                            ({text: textObj.get("text")}),
-                textString = (textOptions && textOptions.text || textData && textData.text || textObj && textObj.get("text") || "").trim()
-            let shadowObj, shadowObjParams
-            if (VAL({textObj}, `setText: textRef: ${D.JS(textRef)} + options: ${D.JS(options)} `)) {
-                textOptions.left = textOptions && textOptions.left || textData && textData.left || getBlankLeft(textObj, textObj.get("text"))
-                textOptions.top = textOptions && textOptions.top || textData && textData.top || textObj.get("top")
-                textOptions.text = textString
-                textOptions.maxWidth = textOptions && textOptions.maxWidth || textData && textData.maxWidth || 0
-                const objParams = Object.assign(_.pick(textOptions, C.TEXTPROPS))
-                // DB(`Options: ${D.JS(textOptions)}<br><br>Params: ${D.JS(objParams)}`, "setText")
-                if (textOptions.maxWidth > 0 && objParams.text) {
-                    const splitLines = splitTextLines(textObj, objParams.text, textOptions.maxWidth, textData.justification)
-                    // DB(`Splitting Text: ${D.JS(splitLines)}`, "setText")
-                    objParams.text = splitLines.join("\n")           
+        setText = (textRef, text = "", isForcing = false) => {
+            const textKey = getTextKey(textRef),
+                textObj = getTextObj(textRef),
+                textData = getTextData(textKey),
+                textParams = {text}
+            if (textParams.text === null || textParams.text === undefined || !isForcing && textParams.text === textObj.get("text"))
+                return null
+            let [shiftTop, shiftLeft] = [0, 0]
+            if (VAL({textObj}, ["setText", `textRef: ${D.JS(textRef)}, text: ${D.JS(text)}`])) {
+                if (textData.maxWidth && textParams.text.length) {
+                    const splitLines = splitTextLines(textObj, textParams.text, textData.maxWidth, textData.justification)
+                    textParams.text = splitLines.join("\n")           
                 }                
-                if (objParams.text.split("\n").length > 1)
-                    switch (textData.vertAlign || textOptions.vertAlign || "top") {
+                if (textParams.text.split("\n").length > 1)
+                    switch (textData.vertAlign) {
                         case "top":
-                            textOptions.shifttop = (textOptions.shifttop || 0) + 0.5*(objParams.text.split("\n").length - 1)*(textData && textData.lineHeight || 
+                            shiftTop = (textData.pushtop || 0) + 0.5*(textParams.text.split("\n").length - 1)*(
+                                textData.lineHeight || 
                                 D.CHARWIDTH[textObj.get("font_family")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight ||
                                 0)
                             break
                         case "bottom":
-                            textOptions.shifttop = (textOptions.shifttop || 0) - 0.5*(objParams.text.split("\n").length - 1)*(textData && textData.lineHeight || 
+                            shiftTop = (textData.pushtop || 0) + 0.5*(textParams.text.split("\n").length - 1)*(
+                                textData.lineHeight || 
                                 D.CHARWIDTH[textObj.get("font_family")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight ||
                                 0)
                             break
                         // no default
                     }
-                objParams.left += (textData && textData.pushleft || 0) + (textOptions.shiftleft || 0)
-                objParams.top += (textData && textData.pushtop || 0) + (textOptions.shifttop || 0)                    
-                if (!isTemporary)
-                    for (const key of _.intersection(_.keys(textOptions), _.keys(textData)))
-                        TEXTREGISTRY[textData.name][key] = textOptions[key]
-                objParams.left = getRealLeft(textObj, {left: objParams.left, text: textOptions.text, justification: textData.justification, maxWidth: textOptions.maxWidth})
-                if (!_.isEmpty(textString)) {
-                    objParams.layer = textData.activeLayer
-                    TEXTREGISTRY[textData.name].activeText = textString
-                }
-                textObj.set(objParams)
-                if (textData.shadow) {
-                    shadowObj = getTextShadowObj(textRef)
-                    shadowObjParams = _.omit(objParams, ["color"])
-                    shadowObjParams.left += getShadowShift(textRef)
-                    shadowObjParams.top += getShadowShift(textRef)
-                    shadowObj.set(shadowObjParams)
-                }
-                if (textData && textData.linkedText)
-                    updateSlaveText(textObj)
+                textParams.left = getRealLeft(textObj, {
+                    left: (textData.left || getBlankLeft(textObj, textObj.get("text"))) + (textData.pushleft || 0) + shiftLeft, 
+                    text: textParams.text,
+                    justification: textData.justification,
+                    maxWidth: textData.maxWidth
+                })
+                textParams.top = (textData.top || textObj.get("top")) + (textData.pushtop || 0) + shiftTop
+                if (textData.isActive)
+                    TEXTREGISTRY[textData.name].activeText = textParams.text
+                TEXTREGISTRY[textData.name].curText = textParams.text
+                if (textParams.left === textObj.get("left"))
+                    delete textParams.left
+                if (textParams.top === textObj.get("top"))
+                    delete textParams.top
+                textObj.set(textParams)
+                if (textData.shadow)
+                    updateTextShadow(textKey, isForcing)
+                if (textData.linkedText)
+                    updateSlaveText(textData.name)
             }
         },
         setTextData = (textRef, params) => {
-            _.each(params, (v, k) => {
-                TEXTREGISTRY[getTextKey(textRef)][k] = v
-            })
-            return TEXTREGISTRY[getTextKey(textRef)]
+            const textKey = getTextKey(textRef)             
+            if (VAL({string: textKey}, "setTextData")) {
+                const textObj = getTextObj(textKey)
+                if (VAL({textObj}, ["setTextData", `Registered object '${textKey}' not found!`])) {
+                    const textParams = Object.assign(params, {left: getBlankLeft(textObj, textObj.get("text"))}),
+                        objParams = _.omit(_.pick(textParams, C.TEXTPROPS), "text")
+                    _.each(textParams, (v, k) => {
+                        if (k === "text")
+                            D.Alert("Attempt to set 'text' via setTextData: Use setText() to set text values!", "ERROR: setTextData")
+                        else
+                            TEXTREGISTRY[textKey][k] = v
+                    })
+                    textObj.set(objParams)
+                    return getTextData(textKey)
+                }
+            }
+            return false
         },
-        toggleText = (textRef, isActive) => {
+        toggleText = (textRef, isActive, isForcing = false) => {
             // NON-PERMANENT.  If turning off, set activeSrc to curSrc.
             // Also, verify img status is changing before doing anything.
-            const textData = getTextData(textRef)
-            if (VAL({list: textData}, "toggleText")) {
-                if ((isActive === true || isActive === false) && textData.isActive === isActive)
+            const textKey = getTextKey(textRef),
+                textData = getTextData(textKey),
+                textObj = getTextObj(textKey)
+            if (VAL({textObj, list: textData}, "toggleText")) {
+                if (!isForcing && (
+                    isActive === true && textObj.get("layer") === textData.activeLayer ||
+                    isActive === false && textObj.get("layer") === "walls"
+                ))
                     return null
-                if (isActive === true || textData.isActive === false) {
+                if (isActive === false || textData.isActive === true) {
                     // TURN OFF: Set layer to walls, toggle off associated drag pads, update activeState value
-                    TEXTREGISTRY[textData.name].activeText = textData.curText
-                    const textObj = getObj("text", textData.id)
-                    if (textObj)
-                        setLayer(textObj, "walls")
+                    TEXTREGISTRY[textKey].activeText = textData.curText
+                    TEXTREGISTRY[textKey].isActive = false
+                    setLayer(textObj, "walls")
                     if (textData.shadow)
                         toggleText(textData.shadow, false)
                     return false                   
-                } else if (isActive === false || textData.isActive === true) {
+                } else if (isActive === true || textData.isActive === false) {
                     // TURN ON: Set layer to active layer, toggle on associated drag pads, restore activeState value if it's different
-                    setText(textData.name, textData.activeText)
-                    const textObj = getObj("text", textData.id)
-                    if (textObj)
-                        setLayer(textObj, textData.activeLayer)
+                    TEXTREGISTRY[textKey].isActive = true
+                    setText(textKey, textData.activeText)
+                    setLayer(textObj, textData.activeLayer)
                     if (textData.shadow)
                         toggleText(textData.shadow, true)
                     return true                   
@@ -4466,7 +4705,7 @@ const Media = (() => {
             const textObj = getTextObj(textRef),
                 textData = getTextData(textRef)
             if (hasShadowObj(textObj))
-                removeText(`${textData.name}Shadow`, isUnregOnly && !isStillKillingShadow)
+                removeText(textData.shadow, isUnregOnly && !isStillKillingShadow)
             if (textObj && !isUnregOnly)
                 textObj.remove()
             if (textData) {

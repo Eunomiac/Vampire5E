@@ -185,10 +185,7 @@ const Tester = (() => {
                             ""
                         )
                     if (isKilling) {
-                        const urlsToKill = [
-                            "KCTmLOcXQkAZZUZkbd4wOQ",
-                            "MQ_uNU12WcYYmLUMQcbh0w"
-                        ]
+                        const urlsToKill = []
                         let count = 0
                         for (const url of urlsToKill) {
                             const imgObjs = unregImgObjs.filter(x => x.get("imgsrc").includes(url))
