@@ -979,7 +979,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
         },
         startClock = (secsPerMin = 60) => {
             stopCountdown()
-            Media.ToggleText("TimeTracker", true)
+            //Media.ToggleText("TimeTracker", true)
             isTimeRunning = true
             timeTimer = setInterval(tickClock, parseInt(secsPerMin) * 1000)
             // D.Alert(`Auto clock ticking ENABLED at:
@@ -988,7 +988,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
         },
         stopClock = () => {
             clearInterval(timeTimer)
-            Media.ToggleText("TimeTracker", false)
+            //Media.ToggleText("TimeTracker", false)
             timeTimer = null
             isTimeRunning = false
             // D.Alert("Auto clock ticking DISABLED", "TIMETRACKER !TIME")
@@ -996,13 +996,13 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
         startCountdown = () => {
             stopClock()
             isCountdownRunning = true
-            Media.ToggleText("Countdown", true)
+            //Media.ToggleText("Countdown", true)
             tickCountdown()
         },
         stopCountdown = () => {
             clearInterval(secTimer)
             isCountdownRunning = false
-            Media.ToggleText("Countdown", false)
+            //Media.ToggleText("Countdown", false)
             secTimer = null
         },
     // #endregion

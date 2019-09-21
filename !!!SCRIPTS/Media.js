@@ -41,8 +41,57 @@ const Media = (() => {
             STATEREF.activeTimeouts = STATEREF.activeTimeouts || []
             STATEREF.curLocation = STATEREF.curLocation || "DistrictCenter:blank SiteCenter:blank"
 
+        STATEREF.textregistry.complicationDeckSize.modes = {
+                Active: {
+                    isForcedOn: false,
+                    isForcedState: null
+                },
+                Inactive: {
+                    isForcedOn: false,
+                    isForcedState: null
+                },
+                Daylighter: {
+                    isForcedOn: false,
+                    isForcedState: null
+                },
+                Downtime: {
+                    isForcedOn: false,
+                    isForcedState: null
+                },
+                Complications: {
+                    isForcedOn: true,
+                    isForcedState: null,
+                    lastActive: true
+                }
+            }
+            STATEREF.textregistry.complicationDeckSizeShadow.modes = {
+                Active: {
+                    isForcedOn: false,
+                    isForcedState: null
+                },
+                Inactive: {
+                    isForcedOn: false,
+                    isForcedState: null
+                },
+                Daylighter: {
+                    isForcedOn: false,
+                    isForcedState: null
+                },
+                Downtime: {
+                    isForcedOn: false,
+                    isForcedState: null
+                },
+                Complications: {
+                    isForcedOn: true,
+                    isForcedState: null,
+                    lastActive: true
+                }
+            }
             
-
+            STATEREF.textregistry.complicationDeckSize.left = 195
+            STATEREF.textregistry.complicationDeckSize.justification = "center"
+            STATEREF.textregistry.complicationDeckSizeShadow.left = 200
+            STATEREF.textregistry.complicationDeckSizeShadow.justification = "center"
 
         // delete STATEREF.tokenregistry["85239212/An9D7-g4OmLdjhKm-NbKnA/1561848759"]
         // Initialize IMGDICT Fuzzy Dictionary
@@ -84,7 +133,7 @@ const Media = (() => {
                     width: 64,
                     startActive: true
                 })
-    
+
                 STATEREF.imgregistry.wpReroll_Pad_1.modes = {
                     Active: {
                         isForcedOn: null,
@@ -147,8 +196,8 @@ const Media = (() => {
                 STATEREF.imgregistry.wpReroll_PartnerPad_1.curSrc = "blank"
                 STATEREF.imgregistry.wpReroll_PartnerPad_1.activeSrc = "blank"
                 STATEREF.imgregistry.wpReroll_PartnerPad_1.curMode = "Active"
-    
-    
+
+
                 STATEREF.imgregistry.wpRerollPlaceholder_1 = {
                     id: wpPlaceholderObj.id,
                     name: "wpRerollPlaceholder_1",
@@ -203,11 +252,4256 @@ const Media = (() => {
                     curMode: "Active",
                     activeSrc: "blank"
                 }
-            })()
-            const modeReset = ((isResetting = true) => { 
-                if (!isResetting)
-                    return null
+            })()   
+
+            // STATEREF.imgregistry.mapButtonDomain_1.cycleSrcs = ["anarch", "camarilla", "nodomain"]
+        },
+    // #endregion
+
+    // #region EVENT HANDLERS: (HANDLEINPUT)
+        handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
+            let textParams
+            switch (call.shift().toLowerCase()) {
+                case "!area": {
+                    switch (call.shift().toLowerCase()) {
+                        case "reg": case "register": {
+                            if (!args[0])
+                                D.Alert("Syntax: !area reg &lt;areaName&gt;", "!area reg")                                
+                            else if (VAL({graphicObj: getImgObj(msg)}, "!area reg"))
+                                regArea(getImgObj(msg), args.shift())                                        
+                            break
+                        }
+                        case "get": {
+                            switch (args.shift().toLowerCase()) {
+                                case "names": {
+                                    D.Alert(`Registered Areas:<br>${D.JS(_.keys(AREAREGISTRY))}`)
+                                    break
+                                }
+                                // no default
+                            }
+                        }
+                        // no default
+                    }
+                    break
+                }
+                case "!img": {
+                    switch (call.shift().toLowerCase()) {
+                        case "testmode": {
+                            modeCheck(false, false, false)
+                            break
+                        }
+                        case "fixmode": {
+                            modeCheck(false, false, true)
+                            break
+                        }
+                        case "resetmode": {
+                            modeCheck(true, true, true)
+                            break
+                        }
+                        case "testzlevel": {
+                            D.Alert(D.JS(getZLevel(args.shift())))
+                            break
+                        }
+                        case "backup": {
+                            STATEREF.backup = {
+                                arearegistry: JSON.parse(JSON.stringify(AREAREGISTRY)),
+                                imgregistry: JSON.parse(JSON.stringify(IMGREGISTRY)),
+                                textregistry: JSON.parse(JSON.stringify(TEXTREGISTRY))
+                            }
+                            D.Alert("Media Registry Backup Updated.", "!img backup")
+                            break
+                        }
+                        case "reg": case "register": {
+                            const imgObj = getImgObj(msg)
+                            if (args[0] && VAL({graphicObj: imgObj}, "!img reg"))                                
+                                switch (args[0]) {
+                                    case "token": {
+                                        args.shift()
+                                        const tokenName = args.shift()
+                                        if (VAL({string: tokenName}, "!img reg token"))
+                                            regRandomizerToken(imgObj, tokenName)
+                                        break
+                                    }
+                                    default: {
+                                        const [hostName, srcName, objLayer, isStartActive] = [args.shift(), args.shift(), args.shift(), args.shift()]
+                                        if (hostName && srcName && objLayer && isStartActive)
+                                            regImg(imgObj, hostName, srcName, objLayer, !isStartActive || isStartActive !== "false", D.ParseToObj(args.join(" ")))
+                                        else
+                                            D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; [params (\"key:value, key:value\")]", "MEDIA: !img reg")    
+                                        break
+                                    }
+                                }
+                            else
+                                D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; [params (\"key:value, key:value\")]<br>!img reg token &lt;tokenName&rt;", "MEDIA: !img reg")
+                            break
+                        }
+                        case "set": {
+                            switch (args.shift().toLowerCase()) {
+                                case "mode": {
+                                    let [hostName, mode, key, val] = args
+                                    const imgKey = getImgKey(hostName)
+                                    if (!Session.Modes.includes(mode) || !["isForcedOn", "isForcedState", "lastActive", "lastState"].includes(key) || !["true", "false", "null", "LAST"].includes(val))
+                                        D.Alert("Mode Set Syntax:<br><br><b>!img set mode (hostName) (mode) (key) (val)</b>", "!img set mode")
+                                    else {
+                                        IMGREGISTRY[imgKey].modes = IMGREGISTRY[imgKey].modes || {}
+                                        IMGREGISTRY[imgKey].modes[mode] = IMGREGISTRY[imgKey].modes[mode] || {}
+                                        IMGREGISTRY[imgKey].modes[mode][key] = {true: true, false: false, null: null, LAST: "LAST"}[val]
+                                        D.Alert(`${mode} mode for ${imgKey} set to ${D.JS(IMGREGISTRY[imgKey].modes[mode])}`, "!img set mode")
+                                    }
+                                    break
+                                }
+                                case "source": case "src": {
+                                    let [hostName, srcName] = ["", ""]
+                                    if (VAL({token: (D.GetSelected(msg) || [])[0]})) {
+                                        hostName = Media.GetImgData(D.GetSelected(msg)[0]).name;
+                                        [srcName] = args
+                                    } else {
+                                        [hostName, srcName] = args
+                                    }
+                                    if (isRegImg(hostName))
+                                        setImg(hostName, srcName)
+                                    else
+                                        D.Alert(`Img name ${D.JS(hostName)} is not registered.`, "MEDIA: !img set src")
+                                    break
+                                }
+                                case "area": {
+                                    const imgObj = getImgObj(msg)
+                                    if (!imgObj)
+                                        D.Alert("Select an image first!", "MEDIA: !img set area")
+                                    else
+                                        setImgArea(imgObj, args.shift(), args.shift().toLowerCase === "resize")
+                                    break
+                                }
+                                case "params": {
+                                    const imgObj = getImgObj(args[0]) || getImgObj(msg),
+                                        params = D.ParseParams(args)
+                                    if (VAL({graphicObj: imgObj}, "!img set params"))
+                                        setImgTemp(imgObj, params)
+                                    break
+                                }
+                                case "loc": case "location": {                                    
+                                    DB(`SET LOCATION COMMAND RECEIVED.  MSG: ${D.JS(msg)}`, "!img set loc")         
+                                    setLocation(args.join(" "))
+                                    break
+                                }
+                                case "mode": {
+                                    const imgObjs = D.GetSelected(msg) || [getImgObjs(args.shift())]
+                                    if (VAL({graphic: imgObjs}, "!img set mode", true)) {
+                                        const mode = args.shift(),
+                                            params = D.ParseParams(args)
+                                        for (const imgObj of imgObjs)
+                                            if (isRegImg(imgObj)) {
+                                                const REGREF = IMGREGISTRY[getImgKey(imgObj)]
+                                                REGREF.modes = REGREF.modes || D.KeyMapObj(Session.Modes, (k,v) => v.toLowerCase(), () => ({}))
+                                                REGREF.modes[mode] = REGREF.modes[mode] || {}
+                                                for (const param of _.keys(params))
+                                                    REGREF.modes[mode][param] = params[param]
+                                            }
+                                    }
+                                    break
+                                }
+                            // no default
+                            }
+                            break
+                        }
+                        case "clean": case "cleanreg": case "cleanregistry": {
+                            if (args[0] && args[0].toLowerCase() === "confirm")
+                                cleanRegistryConfirm()
+                            else
+                                cleanRegistry()
+                            break
+                        }
+                        case "add": {
+                            let hostName, srcName
+                            switch (args.shift().toLowerCase()) {
+                                case "cyclesrc": case "cycle": {
+                                    [hostName, srcName] = args
+                                    if (isRegImg(hostName)) {
+                                        IMGREGISTRY[getImgKey(hostName)].cycleSrcs = IMGREGISTRY[getImgKey(hostName)].cycleSrcs || []
+                                        IMGREGISTRY[getImgKey(hostName)].cycleSrcs.push(srcName)
+                                    }
+                                }
+                                // falls through
+                                case "src": case "source": {
+                                    hostName = hostName || args[0]
+                                    srcName = srcName || args[1]
+                                    if (isRegImg(hostName)) {
+                                        hostName = getImgKey(hostName)
+                                        if (!_.isObject(IMGREGISTRY[hostName].srcs))
+                                            IMGREGISTRY[hostName].srcs = {}
+                                        if (srcName)
+                                            addImgSrc(msg, hostName, srcName)
+                                        else
+                                            D.Alert(`Invalid image name '${D.JS(srcName)}'`, "MEDIA: !img add src")
+                                    } else {
+                                        D.Alert(`Host name '${D.JS(hostName)}' not registered.`, "MEDIA: !img add src")
+                                    }
+                                    break
+                                }
+                                case "tokensrc": case "tokensource": {
+                                    const tokenName = args.shift()
+                                    if (isRegImg(tokenName))
+                                        addTokenSrc(getImgObj(msg), tokenName)
+                                    break
+                                }
+                                default: {
+                                    D.Alert("<b>Syntax:<br><br><pre>!img add &lt;src/area&gt; &lt;hostName&gt; &lt;srcName&gt;</pre>", "MEDIA: !img add")
+                                    break
+                                }
+                            }
+                            break
+                        }
+                        case "del": case "delete": {
+                            if ((args[0] || "").toLowerCase() === "all") {
+                                args.shift()
+                                for (const hostName of _.keys(IMGREGISTRY))
+                                    if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
+                                        removeImg(hostName)
+                            } else if (getImgObjs(msg).length) {
+                                for (const obj of getImgObjs(msg))
+                                    removeImg(obj)
+
+                            } else if (args[0] && getImgObj(args.join(" "))) {
+                                removeImg(args.join(" "))
+                            } else {
+                                D.Alert(`Provide "all" (plus an optional host name substring), a registered host name, or select image objects. <b>Syntax:</b><br><br><pre>!img del all <hostSubstring>
+                    !img del <hostName></pre>`, "MEDIA: !img del")
+                            }
+                            break
+                        }
+                        case "unreg": case "unregister": {
+                        // D.Alert(`ARGS: ${D.JS(args)}<br><br>getImgObj('${D.JS(args.join(" "))}'):<br><br>${D.JS(getImgObj(args.join(" ")))}`)
+                            if ((args[0] || "").toLowerCase() === "all") {
+                                args.shift()
+                                for (const hostName of _.keys(IMGREGISTRY))
+                                    if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
+                                        removeImg(hostName, true)
+                            } else if (_.compact(getImgObjs(msg)).length) {
+                                for (const obj of getImgObjs(msg))
+                                    removeImg(obj, true)
+
+                            } else if (args[0] && getImgObj(args.join(" "))) {
+                                removeImg(args.join(" "), true)
+                            } else if (args[0] && IMGREGISTRY[args.join(" ")]) {
+                                delete IMGREGISTRY[args.join(" ")]
+                            } else {
+                                D.Alert("Provide \"all\", a registered host name, or select image objects. <b>Syntax:</b><br><br><pre>!img unreg all/<<hostName>>")
+                            }
+                            break
+                        }
+                        case "reset": {
+                            switch (args.shift().toLowerCase()) {
+                                case "pos": case "position": {
+                                    const imgObjs = D.GetSelected(msg)
+                                    for (const imgObj of imgObjs)
+                                        if (VAL({graphicObj: imgObj}, "!img set pos")) {
+                                            const hostName = getImgKey(imgObj)
+                                            IMGREGISTRY[hostName].top = parseInt(imgObj.get("top"))
+                                            IMGREGISTRY[hostName].left = parseInt(imgObj.get("left"))
+                                            IMGREGISTRY[hostName].height = parseInt(imgObj.get("height"))
+                                            IMGREGISTRY[hostName].width = parseInt(imgObj.get("width"))
+                                            D.Alert(`Position Set for Img ${hostName}<br><br><pre>${D.JS(IMGREGISTRY[hostName])}</pre>`)
+                                        }
+                                    break
+                                }
+                                case "cyclesrc": case "cyclesrcs": {
+                                    const imgKey = getImgKey(D.GetSelected(msg)[0]) || getImgKey(args.shift())
+                                    if (isRegImg(imgKey))
+                                        delete IMGREGISTRY[imgKey].cycleSrcs
+                                    break
+                                }
+                                // no default
+                            }
+                            break
+                        }
+                        case "toggle": {
+                            DB(`TOGGLE COMMAND RECEIVED.  MESSAGE IS AS FOLLOWS:<br><br>${D.JS(msg)}`, "!img toggle")
+                            switch (args.shift().toLowerCase()) {
+                                case "on": {
+                                    DB(`Toggling ON: ${D.JS(args)}`, "!img toggle")
+                                    for (const param of args)
+                                        toggleImg(param, true)
+                                    break
+                                }
+                                case "off": {
+                                    DB(`Toggling OFF: ${D.JS(args)}`, "!img toggle")
+                                    for (const param of args)
+                                        toggleImg(param, false)
+                                    break
+                                }
+                                case "log": {
+                                    imgRecord = !imgRecord
+                                    if (imgRecord)
+                                        D.Alert("Logging image data as they are added to the sandbox.", "MEDIA, !img toggle log")
+                                    else
+                                        D.Alert("Img logging disabled.", "MEDIA, !img toggle log")
+                                    break
+                                }
+                                case "resize": {
+                                    const params = D.ParseParams(args)
+                                    if (!imgResize || params.length) {
+                                        imgResize = true
+                                        for (const param of params)
+                                            [,STATEREF.imgResizeDims[param[0]]] = [param]
+                                        D.Alert(`New imagess automatically resized to height: ${STATEREF.imgResizeDims.height}, width: ${STATEREF.imgResizeDims.width}.`, "!img toggle resize")
+                                    } else {
+                                        imgResize = false
+                                        D.Alert("Img resizing disabled.", "MEDIA, !img toggle resize")
+                                    }
+                                    break
+                                }
+                                default: {
+                                    D.Alert("Must state either 'on', 'off', 'log' or 'resize'.  <b>Syntax:</b><br><br><pre>!img toggle &lt;on/off&gt; &lt;hostnames&gt;</pre><br><pre>!img toggle log/resize</pre>", "MEDIA: !img toggle")
+                                    break
+                                }
+                            }
+                            break
+                        }
+                        case "align": {
+                            if (D.GetSelected(msg))
+                                alignImgs(msg, ...args)
+                            break
+                        }
+                        case "get": {
+                            switch (args.shift().toLowerCase()) {
+                                case "zlevels": {
+                                    const sortFunc = (a, b) => {
+                                            let [aVal, bVal] = [1000*a[2], 1000*b[2]]
+                                            if (a[2] === b[2]) {
+                                                if (a[0] === b[0]) {
+                                                    aVal += Number(a[1].match(/_(\d*)$/i)[1])
+                                                    bVal += Number(b[1].match(/_(\d*)$/i)[1])
+                                                } else {
+                                                    aVal += a[0] > b[0] ? 1 : -1
+                                                    bVal += b[0] > a[0] ? 1 : -1
+                                                }
+                                                return aVal - bVal
+                                            }
+                                            return bVal - aVal
+                                        },
+                                        reportTables = [
+                                            getZLevels().map.sort(sortFunc).map(x => `<tr><td><b>${x[2]}</b></td><td>${x[0]}</td><td>${x[1]}</td></tr>`),
+                                            getZLevels().objects.sort(sortFunc).map(x => `<tr><td><b>${x[2]}</b></td><td>${x[0]}</td><td>${x[1]}</td></tr>`)
+                                        ]
+                                    D.Alert(`<h2>MAP</h2><table><tr><td style="width: 60px;"></td><td style="width: 100px;"></td><td style="width: 100px;"></td></tr>${reportTables[0]}</table><h2>OBJECTS</h2><table><tr><td style="width: 60px;"></td><td style="width: 100px;"></td><td style="width: 100px;"></td></tr>${reportTables[1]}</table>`)
+                                    break
+                                }
+                                case "active": {
+                                    const startActiveNames = {
+                                            objects: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer === "objects" && x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`),
+                                            map: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer === "map" && x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`),
+                                            other: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`)
+                                        },
+                                        startInactiveNames = {
+                                            objects: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer === "objects" && !x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`),
+                                            map: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer === "map" && !x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`),
+                                            other: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && !x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`)
+                                        }
+                                    D.Alert([
+                                        "<h2>ACTIVE OBJECTS</h2>",
+                                        ...startActiveNames.objects,
+                                        "<h2>ACTIVE MAP</h2>",
+                                        ...startActiveNames.map,
+                                        "<h2>ACTIVE OTHER</h2>",
+                                        ...startActiveNames.other,
+                                        "<h2>INACTIVE OBJECTS</h2>",
+                                        ...startInactiveNames.objects,
+                                        "<h2>INACTIVE MAP</h2>",
+                                        ...startInactiveNames.map,
+                                        "<h2>INACTIVE OTHER</h2>",
+                                        ...startInactiveNames.other
+                                    ].join("<br>"))
+                                    break
+                                }
+                                case "data": {
+                                    const imgData = getImgData(msg, true) || getImgData(args.shift())
+                                    if (VAL({list: imgData}, "!img get data"))
+                                        D.Alert(D.JS(args[0] && imgData[args[0]] || imgData), "MEDIA, !img get data")
+                                    break
+                                }
+                                case "names": {
+                                    D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(IMGREGISTRY))}`)
+                                    break
+                                }
+                            // no default
+                            }
+                            break
+                        }
+                        case "fix": {
+                            switch (args.shift().toLowerCase()) {
+                                case "layers": {
+                                    setActiveLayers(args[0] === "true")
+                                    break
+                                }
+                                case "zlevels": {
+                                    setZIndices()
+                                    break
+                                }
+                                case "backgrounds": {
+                                    for (const imgObj of getImgObjs(BGIMGS.keys))
+                                        setImgData(imgObj, {
+                                            top: BGIMGS.top,
+                                            left: BGIMGS.left,
+                                            height: BGIMGS.height,
+                                            width: BGIMGS.width
+                                        }, true)
+                                    for(const imgObj of getImgObjs(MAPIMGS.keys))                                    
+                                        setImgData(imgObj, {
+                                            top: MAPIMGS.top,
+                                            left: MAPIMGS.left,
+                                            height: MAPIMGS.height,
+                                            width: MAPIMGS.width
+                                        }, true)
+                                    break
+                                }
+                                // no default
+                            }
+                            break
+                        }
+                        case "adjust": {
+                            const imgObjs = D.GetSelected(msg) || [getImgObj(args.shift())],
+                                [deltaX, deltaY] = args.map(x => x === "x" ? 0 : parseFloat(x))
+                            for (const imgObj of imgObjs)
+                                if (VAL({graphic: imgObj}))
+                                    setImgTemp(imgObj, {
+                                        left: parseFloat(imgObj.get("left")) + (deltaX || 0),
+                                        top: parseFloat(imgObj.get("top")) + (deltaY || 0)
+                                    })
+                            break
+                        }
+                    // no default
+                    }
+                    break
+                }
+                case "!text": {
+                    switch (call.shift().toLowerCase()) {                                                
+                        case "get":
+                            switch (args.shift().toLowerCase()) {
+                                case "data": {
+                                    const textObj = VAL({selection: msg}) ? getTextObj(msg) : getTextObj(args.shift())
+                                    if (textObj)
+                                        D.Alert(D.JS(getTextData(textObj)), "!text get data")
+                                    else
+                                        D.Alert("Syntax: !text get data [<name>] (or select a text object object)", "!text get data")
+                                    break
+                                }
+                                case "width": {
+                                    const textObj = getTextObj(msg),
+                                        textString = msg.content.match(/@@(.*?)@@/ui)[1]
+                                    D.Alert(`The width of @@${textString}@@ is ${getTextWidth(textObj, textString, false)}`)
+                                    break
+                                }
+                                case "names":
+                                    D.Alert(D.JS(_.keys(TEXTREGISTRY)), "!text get names")
+                                    break
+                                case "widths": {
+                                    const dbStrings = []
+                                    for (const textData of _.values(STATEREF.textregistry)) {
+                                        textData.justification = "left"
+                                        const textObj = getObj("text", textData.id)
+                                        if (textObj) {
+                                            const text = textObj.get("text"),
+                                                left = textObj.get("left"),
+                                                textWidth = getTextWidth(textObj, text)
+                                            let width = textObj.get("width")                                                
+                                            if (width === 0) {
+                                                textObj.set("left", left + 10)
+                                                width = textObj.get("width")
+                                                textObj.set("left", left)
+                                            }
+                                            dbStrings.push(`${textData.name}: width: ${width} --> ${textWidth}`)
+                                        }
+                                    }
+                                    D.Alert(`${dbStrings.join("<br>")}`, "Text Width Check")
+                                    break
+                                }
+                                case "active": {
+                                    const startActiveNames = {
+                                            objects: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "objects" && x.startActive).map(x => x.name),
+                                            map: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "map" && x.startActive).map(x => x.name),
+                                            other: _.values(TEXTREGISTRY).filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && x.startActive).map(x => x.name)
+                                        },
+                                        startInactiveNames = {
+                                            objects: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "objects" && !x.startActive).map(x => x.name),
+                                            map: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "map" && !x.startActive).map(x => x.name),
+                                            other: _.values(TEXTREGISTRY).filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && !x.startActive).map(x => x.name)
+                                        }
+                                    D.Alert([
+                                        "<h2>ACTIVE OBJECTS</h2>",
+                                        ...startActiveNames.objects,
+                                        "<h2>ACTIVE MAP</h2>",
+                                        ...startActiveNames.map,
+                                        "<h2>ACTIVE OTHER</h2>",
+                                        ...startActiveNames.other,
+                                        "<h2>INACTIVE OBJECTS</h2>",
+                                        ...startInactiveNames.objects,
+                                        "<h2>INACTIVE MAP</h2>",
+                                        ...startInactiveNames.map,
+                                        "<h2>INACTIVE OTHER</h2>",
+                                        ...startInactiveNames.other
+                                    ].join("<br>"))
+                                    break
+                                }
+                                // no default
+                            }
+                            break
+                        case "set":
+                            switch ((args[0] || "").toLowerCase()) {
+                                case "mode": {
+                                    let [hostName, mode, key, val] = args
+                                    const textKey = getTextKey(hostName)
+                                    if (!Session.Modes.includes(mode) || !["isForcedOn", "isForcedState", "lastActive", "lastState"].includes(key) || !["true", "false", "null", "LAST"].includes(val))
+                                        D.Alert("Mode Set Syntax:<br><br><b>!text set mode (hostName) (mode) (key) (val)</b>", "!text set mode")
+                                    else {
+                                        TEXTREGISTRY[textKey].modes = TEXTREGISTRY[textKey].modes || {}
+                                        TEXTREGISTRY[textKey].modes[mode] = TEXTREGISTRY[textKey].modes[mode] || {}
+                                        TEXTREGISTRY[textKey].modes[mode][key] = {true: true, false: false, null: null, LAST: "LAST"}[val]
+                                        D.Alert(`${mode} mode for ${textKey} set to ${D.JS(TEXTREGISTRY[textKey].modes[mode])}`, "!text set mode")
+                                    }
+                                    break
+                                }
+                                case "updateslave": {
+                                    updateSlaveText(args[1])
+                                    break
+                                }
+                                case "slave": {
+                                    args.shift()
+                                    try {
+                                        const textObj = getTextObj(msg),
+                                            [hostName, edgeDir] = [args.shift(), args.shift()],
+                                            horizPad = parseInt(args[0] ? args.shift() : 0),
+                                            vertPad = parseInt(args[0] ? args.shift() : 0)
+                                        linkText(hostName, {[edgeDir]: [getTextKey(textObj)]}, horizPad, vertPad)
+                                    } catch (errObj) {
+                                        D.Alert(`Syntax: !text set slave (hostName) (edgeDirection) (horizPad) (vertPad)<br>${JSON.stringify(errObj)}`, "!text set slave")
+                                    }
+                                    break
+                                }
+                                case "justify": case "justification": case "just": {
+                                    args.shift()
+                                    const justification = args.shift() || "center"
+                                    if (VAL({selection: msg})) 
+                                        for(const textObj of D.GetSelected(msg))
+                                            justifyText(textObj, justification)
+                                    else 
+                                        for (const textKey of args)
+                                            justifyText(textKey, justification)                            
+                                    break
+                                }
+                                case "params": {
+                                    args.shift()
+                                    const textObj = getTextObj(args[0]) || getTextObj(msg),
+                                        params = D.ParseParams(args)
+                                    if (VAL({textObj}, "!text set params"))
+                                        setTextData(textObj, params)
+                                    break   
+                                }
+                                default: {
+                                    const textObj = getTextObj(args[0], true) || D.GetSelected(msg)[0]
+                                    if (getTextObj(args[0], true))
+                                        args.shift()
+                                    if (VAL({textObj}, "!text set"))
+                                        setText(textObj, args[0] && args.join(" ") || " ")
+                                    break
+                                }
+                            // no default                                    
+                            }
+                            break
+                        case "clean": case "cleanreg": case "cleanregistry":
+                            cleanTextRegistry()
+                            break
+                        case "reset": case "resetreg": case "resetregistry": {
+                            switch((args[0] || "").toLowerCase()) {
+                                case "pos": case "position": {
+                                    args.shift()
+                                    const textObj = getTextObj(msg)
+                                    if (!textObj) {
+                                        D.Alert("Select a text object first!", "MEDIA: !text set position")
+                                    } else if (!IDREGISTRY[textObj.id]) {
+                                        D.Alert("Text not registered.  To register selected text:<br><br><pre>!text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; [params (\"key:value, key:value\")]</pre>", "!text set position")
+                                    } else {
+                                        const hostName = getTextKey(msg)
+                                        setTextData(textObj, {top: parseInt(textObj.get("top")), left: getBlankLeft(textObj), layer: textObj.get("layer")})
+                                        D.Alert(`Position Set for Text ${hostName}<br><br><pre>${D.JS(TEXTREGISTRY[hostName])}</pre>`)
+                                    }
+                                    break
+                                }
+                                default: {
+                                    resetTextRegistry()
+                                    break
+                                }
+                            }
+                            break
+                        }
+                        case "del": case "delete": {
+                            if ((args[0] || "").toLowerCase() === "all") {
+                                args.shift()
+                                for (const hostName of _.keys(TEXTREGISTRY))
+                                    if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
+                                        removeText(hostName)
+                            } else if (getTextObjs(msg).length) {
+                                for (const obj of getTextObjs(msg))
+                                    removeText(obj)
+                            } else if (args[0] && getTextObj(args.join(" "))) {
+                                removeText(args.join(" "))
+                            } else {
+                                D.Alert(`Provide "all" (plus an optional host name substring), a registered host name, or select text objects. <b>Syntax:</b><br><br><pre>!text del all <hostSubstring>
+                    !text del <hostName></pre>`, "!text del")
+                            }
+                            break
+                        }
+                        case "rereg": case "reregister": {
+                            if (VAL({selection: msg})) {                         
+                                const textData = getTextData(msg, true)
+                                args[0] = args[0] || textData.name
+                                args[1] = args[1] || textData.activeLayer
+                                args[2] = args[2] || textData.startActive
+                                args[3] = args[3] || hasShadowObj(msg)
+                                args[4] = args[4] || textData.justification
+                                textParams = args.slice(4).join(" ")
+                                textParams = _.compact([
+                                    textParams.includes("vertAlign") ? "" : `vertAlign:${textData.vertAlign || "top"}`,
+                                    textData.maxWidth && !textParams.includes("maxWidth") ? `maxWidth:${textData.maxWidth}` : "",
+                                    textParams.includes("zIndex") ? "" : `zIndex:${textData.zIndex || 300}`
+                                ]).join(",") + textParams
+                                removeText(msg, true, true)
+                            }
+                        }
+                        // falls through
+                        case "reg": case "register": {
+                            if (!args[0]) {
+                                D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
+                            } else {
+                                const textObj = getTextObj(msg)
+                                if (!textObj) {
+                                    D.Alert("Select a text object first!", "MEDIA: !text reg")
+                                } else {
+                                    const [hostName, objLayer, isShadow, justification] = [args.shift(), args.shift(), args.shift(), args.shift()]
+                                    textParams = textParams || args.join(" ")
+                                    if (hostName && objLayer)
+                                        regText(textObj, hostName, objLayer, !isShadow || isShadow !== "false", justification || "center", D.ParseToObj(textParams))
+                                    else
+                                        D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
+                                }
+                            }
+                            break
+                        }
+                        case "unreg": case "unregister": {
+                            if ((args[0] || "").toLowerCase() === "all") {
+                                args.shift()
+                                for (const hostName of _.keys(TEXTREGISTRY))
+                                    if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
+                                        removeText(hostName, true, true)
+                            } else if (args[0]) {
+                                removeText(args.join(" "), true, true)
+                            } else if (_.compact(getTextObjs(msg)).length) {
+                                for (const obj of getTextObjs(msg))
+                                    removeText(obj, true, true)
+                            } else {
+                                D.Alert("Provide \"all\", a registered host name, or select text objects. <b>Syntax:</b><br><br><pre>!text unreg all/<<hostName>>")
+                            }
+                            break
+                        }
+                        case "toggle":
+                            switch (args.shift().toLowerCase()) {
+                                case "on":
+                                    DB(`Toggling ON: ${D.JS(args)}`, "!text toggle")
+                                    for (const param of args)
+                                        toggleText(param, true)
+                                    break
+                                case "off":
+                                    DB(`Toggling OFF: ${D.JS(args)}`, "!text toggle")
+                                    for (const param of args)
+                                        toggleText(param, false)
+                                    break
+                                default:
+                                    D.Alert("Must state either 'on' or 'off'.  <b>Syntax:</b><br><br><pre>!text toggle &lt;on/off&gt; &lt;hostnames&gt;</pre>", "MEDIA: !text toggle")
+                                    break
+                            }
+                            break
+                    // no default
+                    }
+                    break
+                }
+                case "!anim": {
+                    switch (call.shift().toLowerCase()) {
+                        case "reg": case "register":
+                            if (!args[0] || !D.GetSelected(msg)) 
+                                D.Alert("Select an animation first!<br><br>Syntax: !anim reg &lt;animName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;timeout&gt;", "MEDIA: !anim reg")
+                            else
+                                regAnimation(msg, args.shift(), args.shift(), args.shift())
+                            break
+                        case "fire":
+                            fireAnimation(args.shift())
+                            break
+                        case "kill": {
+                            switch (args.shift().toLowerCase()) {
+                                case "all": {
+                                    killAllAnimations()
+                                    D.Alert("All animations cleared.", "!anim kill all")
+                                    break
+                                }
+                                case "time": case "timers": case "timeouts": {
+                                    killAllTimeouts()
+                                    D.Alert("All timeouts cleared.", "!anim kill timeouts")
+                                    break
+                                }
+                                // no default
+                            }
+                        }
+                        // no default
+                    }
+                    break
+                }
+                // no default
+            }
+        },
+        handleAdd = obj => {
+            if (imgRecord)
+                LOG(obj.get("imgsrc"))
+            if (imgResize)
+                obj.set(STATEREF.imgResizeDims)
+            if (isRandomizerToken(obj))
+                setRandomizerToken(obj)
+        }
+    // #endregion
+    // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
+
+    let [imgRecord, imgResize] = [false, false]
+
+    // #region CONFIGURATION
+    const IMGREGISTRY = STATEREF.imgregistry,
+        IDREGISTRY = STATEREF.idregistry,
+        TEXTREGISTRY = STATEREF.textregistry,
+        AREAREGISTRY = STATEREF.areas,
+        TOKENREGISTRY = STATEREF.tokenregistry,
+        BGIMGS = {
+            top: C.SANDBOX.top,
+            left: C.SANDBOX.left,
+            height: C.SANDBOX.height,
+            width: C.SANDBOX.width,
+            keys: [
+                "Horizon",
+                "WeatherGround",
+                "WeatherMain",
+                "WeatherFog",
+                "WeatherClouds",
+                "WeatherFrost"            
+            ]
+        },
+        MAPIMGS = {
+            top: C.MAP.top,
+            left: C.MAP.left,
+            height: C.MAP.height,
+            width: C.MAP.width,
+            keys: [
+                "TorontoMap",
+                "TorontoMapDomainsOverlay",
+                "TorontoMapAutarkisOverlay",
+                "TorontoMapRackOverlay",
+                "TorontoMapDistrictsOverlay",
+                "TorontoMapParksOverlay"
+            ]
+        },
+        ZLEVELS = {
+            defaultZLevel: 500,
+            map: {
+                DistrictsAndSites: {
+                    DistrictCenter_1: 140,
+                    DistrictLeft_1: 140,
+                    DistrictRight_1: 140,
+                    SiteCenter_1: 145,
+                    SiteLeft_1: 145,
+                    SiteRight_1: 145,
+                    SiteBars: { 
+                        SiteBarCenter_1: 150,    
+                        SiteBarLeft_1: 150,
+                        SiteBarRight_1: 150
+                    }
+                },
+                AirLights: {
+                    AirLightLeft_1: 100,
+                    AirLightMid_1: 100,
+                    AirLightTop_1: 100,
+                    AirLightCN_4: 100,
+                    AirLightCN_5: 100
+                },
+                SignalLights: {
+                    SignalLightTopRight_1: 120,
+                    SignalLightBotRight_1: 120,
+                    SignalLightBotLeft_1: 120,
+                    SignalLightTopLeft_1: 120
+                },
+                HungerOverlays: {
+                    HungerBotLeft_1: 100,
+                    HungerTopLeft_1: 100,
+                    HungerTopRight_1: 100,
+                    HungerBotRight_1: 100
+                },
+                TombstoneShrouds: {
+                    // ShroudTopLeft_1: 107
+                },
+                HorizonBGs: {
+                    Horizon_1: 1
+                },
+                WeatherOverlays: {
+                    WeatherFrost_1: 139,
+                    WeatherFog_1: 125,
+                    WeatherMain_1: 124, 
+                    // WeatherLightning: 110,
+                    WeatherGround_1: 110,
+                    WeatherClouds_1: 105
+                },
+                Banners: {
+                    downtimeBanner_1: 200
+                },
+                DiceRoller: {
+                    Frame: {
+                        rollerImage_frontFrame_1: 151,
+                        TopMids: {
+                            rollerImage_topMid_1: 152,
+                            rollerImage_topMid_2: 153,
+                            rollerImage_topMid_3: 154,
+                            rollerImage_topMid_4: 155,
+                            rollerImage_topMid_5: 156,
+                            rollerImage_topMid_6: 157,
+                            rollerImage_topMid_7: 158,
+                            rollerImage_topMid_8: 159,
+                            rollerImage_topMid_9: 160
+                        },
+                        BottomMods: {                  
+                            rollerImage_bottomMid_1: 152,
+                            rollerImage_bottomMid_2: 153,
+                            rollerImage_bottomMid_3: 154,
+                            rollerImage_bottomMid_4: 155,
+                            rollerImage_bottomMid_5: 156,
+                            rollerImage_bottomMid_6: 157,
+                            rollerImage_bottomMid_7: 158,
+                            rollerImage_bottomMid_8: 159,
+                            rollerImage_bottomMid_9: 160
+                        },
+                        rollerImage_topEnd_1: 160,
+                        rollerImage_bottomEnd_1: 161,
+                        rollerImage_diffFrame_1: 165
+                    },
+                    RerollTrigger: {
+                        wpRerollPlaceholder_1: 0
+                    },
+                    DiceList: {                        
+                        rollerDie_diceList_1: 199,
+                        rollerDie_diceList_2: 198,
+                        rollerDie_diceList_3: 197,
+                        rollerDie_diceList_4: 196,
+                        rollerDie_diceList_5: 195,
+                        rollerDie_diceList_6: 194,
+                        rollerDie_diceList_7: 193,
+                        rollerDie_diceList_8: 192,
+                        rollerDie_diceList_9: 191,
+                        rollerDie_diceList_10: 190,
+                        rollerDie_diceList_11: 189,
+                        rollerDie_diceList_12: 188,
+                        rollerDie_diceList_13: 187,
+                        rollerDie_diceList_14: 186,
+                        rollerDie_diceList_15: 185,
+                        rollerDie_diceList_16: 184,
+                        rollerDie_diceList_17: 183,
+                        rollerDie_diceList_18: 182,
+                        rollerDie_diceList_19: 181,
+                        rollerDie_diceList_20: 180,
+                        rollerDie_diceList_21: 179,
+                        rollerDie_diceList_22: 178,
+                        rollerDie_diceList_23: 177,
+                        rollerDie_diceList_24: 176,
+                        rollerDie_diceList_25: 175,
+                        rollerDie_diceList_26: 174,
+                        rollerDie_diceList_27: 173,
+                        rollerDie_diceList_28: 172,
+                        rollerDie_diceList_29: 171,
+                        rollerDie_diceList_30: 170
+                    },
+                    BigDice: {
+                        rollerDie_bigDice_1: 199,
+                        rollerDie_bigDice_2: 198
+                    }
+                },
+                Headers: {
+                    stakedAdvantagesHeader_1: 130,
+                    weeklyResourcesHeader_1: 130
+                },
+                Map: {
+                    TorontoMap_1: 1,
+                    TorontoMapDomainOverlay_1: 5,
+                    TorontoMapAutarkisOverlay_1: 5,
+                    TorontoMapRackOverlay_1: 4,
+                    TorontoMapRoadsOverlay_1: 6,
+                    TorontoMapDistrictsOverlay_1: 7,
+                    TorontoMapParksOverlay_1: 4,
+                    TorontoMapSitesCultureOverlay_1: 8,
+                    TorontoMapSitesNightlifeOverlay_1: 8,
+                    TorontoMapSitesLandmarksOverlay_1: 8,
+                    TorontoMapSitesTransportationOverlay_1: 8,
+                    TorontoMapSitesShoppingOverlay_1: 8,
+                    TorontoMapSitesEducationOverlay_1: 8,
+                    TorontoMapSitesHealthOverlay_1: 8,
+                    TorontoMapSitesHavensOverlay_1: 8
+                }
+            },
+            objects: {
+                PlayerTokens: {
+                    "Dr.ArthurRoyToken_1": 200,
+                    JohannesNapierToken_1: 200,
+                    AvaWongToken_1: 200,
+                    LockeUlrichToken_1: 200
+                },
+                Complications: {
+                    Base: {
+                        ComplicationMat_1: 500
+                    },
+                    CardSlots: {
+                        compCardSpot_1: 505,
+                        compCardSpot_2: 505,
+                        compCardSpot_3: 505,
+                        compCardSpot_4: 505,
+                        compCardSpot_5: 505,
+                        compCardSpot_6: 505,
+                        compCardSpot_7: 505,
+                        compCardSpot_8: 505,
+                        compCardSpot_9: 505,
+                        compCardSpot_10: 505
+                    },
+                    ZeroedOverlays: {
+                        complicationZero_1: 510,
+                        complicationZero_2: 510,
+                        complicationZero_3: 510,
+                        complicationZero_4: 510,
+                        complicationZero_5: 510,
+                        complicationZero_6: 510,
+                        complicationZero_7: 510,
+                        complicationZero_8: 510,
+                        complicationZero_9: 510,
+                        complicationZero_10: 510
+                    },
+                    EnhancedOverlays: {
+                        complicationEnhanced_1: 515,
+                        complicationEnhanced_2: 515,
+                        complicationEnhanced_3: 515,
+                        complicationEnhanced_4: 515,
+                        complicationEnhanced_5: 515,
+                        complicationEnhanced_6: 515,
+                        complicationEnhanced_7: 515,
+                        complicationEnhanced_8: 515,
+                        complicationEnhanced_9: 515,
+                        complicationEnhanced_10: 515
+                    }
+                }
+            },
+            dragpads: 700
+        },
+    // #endregion
+
+        modeCheck = (isToggling, isResetting, isFixing) => {
+            const resetAllModeData = () => {
                 state.VAMPIRE.Session.Mode = "Active"
+                IMGREGISTRY.AirLightCN_4.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.AirLightCN_5.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.AirLightLeft_1.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.AirLightMid_1.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.AirLightTop_1.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.AvaWongToken_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.compCardSpot_1.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.compCardSpot_10.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.compCardSpot_2.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.compCardSpot_3.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.compCardSpot_4.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.compCardSpot_5.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.compCardSpot_6.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.compCardSpot_7.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.compCardSpot_8.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.compCardSpot_9.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationEnhanced_1.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationEnhanced_10.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationEnhanced_2.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationEnhanced_3.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationEnhanced_4.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationEnhanced_5.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationEnhanced_6.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationEnhanced_7.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationEnhanced_8.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationEnhanced_9.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.ComplicationMat_1.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: true,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.complicationZero_1.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationZero_10.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationZero_2.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationZero_3.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationZero_4.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationZero_5.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationZero_6.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationZero_7.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationZero_8.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.complicationZero_9.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    }
+                }
+                IMGREGISTRY.DistrictCenter_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.DistrictLeft_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.DistrictRight_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.downtimeBanner_1.modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: true,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.Horizon_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: true,
+                        isForcedState: "night5"
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: "daylighters"
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: "night5"
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.HungerBotLeft_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.HungerBotRight_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.HungerTopLeft_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.HungerTopRight_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.JohannesNapierToken_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.LockeUlrichToken_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.mapButtonAutarkis_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.mapButtonDistricts_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.mapButtonDomain_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.mapButtonParks_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.mapButtonRack_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.mapButtonRoads_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.mapButtonSitesCulture_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.mapButtonSitesEducation_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.mapButtonSitesHavens_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.mapButtonSitesHealth_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.mapButtonSitesLandmarks_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.mapButtonSitesNightlife_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.mapButtonSitesShopping_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.mapButtonSitesTransportation_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_bigDice_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_bigDice_2.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_10.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_11.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_12.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_13.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_14.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_15.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_16.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_17.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_18.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_19.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_2.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_20.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_21.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_22.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_23.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_24.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_25.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_26.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_27.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_28.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_29.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_3.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_30.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_4.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_5.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_6.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_7.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_8.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerDie_diceList_9.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_bottomEnd_1.modes = {
+                    Active: {
+                        isForcedOn: true,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: true,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: true,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_bottomMid_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_bottomMid_2.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_bottomMid_3.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_bottomMid_4.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_bottomMid_5.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_bottomMid_6.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_bottomMid_7.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_bottomMid_8.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_bottomMid_9.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_diffFrame_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_frontFrame_1.modes = {
+                    Active: {
+                        isForcedOn: true,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: true,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: true,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_topEnd_1.modes = {
+                    Active: {
+                        isForcedOn: true,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: true,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: true,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_topMid_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_topMid_2.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_topMid_3.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_topMid_4.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_topMid_5.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_topMid_6.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_topMid_7.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_topMid_8.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.rollerImage_topMid_9.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.SignalLightBotLeft_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: "off"
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: "off"
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: "off"
+                    }
+                }
+                IMGREGISTRY.SignalLightBotRight_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: "off"
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: "off"
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: "off"
+                    }
+                }
+                IMGREGISTRY.SignalLightTopLeft_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: "off"
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: "off"
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: "off"
+                    }
+                }
+                IMGREGISTRY.SignalLightTopRight_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: "off"
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: "off"
+                    },
+                    Complications: {
+                        isForcedOn: "LAST",
+                        isForcedState: "off"
+                    }
+                }
+                IMGREGISTRY.SiteBarCenter_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.SiteBarLeft_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.SiteBarRight_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.SiteCenter_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.SiteLeft_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.SiteRight_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: true
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.stakedAdvantagesHeader_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.TorontoMap_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.TorontoMapDomainOverlay_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.TorontoMapParksOverlay_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.TorontoMapRackOverlay_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes = {
+                    Active: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.WeatherClouds_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.WeatherFog_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.WeatherFrost_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: true,
+                        isForcedState: "red"
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.WeatherGround_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: true,
+                        isForcedState: "wet"
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.WeatherMain_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.weeklyResourcesHeader_1.modes = {
+                    Active: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: "LAST",
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: null,
+                        isForcedState: null
+                    }
+                }
+                IMGREGISTRY.wpRerollPlaceholder_1.modes = {
+                    Active: {
+                        isForcedOn: true,
+                        isForcedState: null
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Daylighter: {
+                        isForcedOn: true,
+                        isForcedState: null
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    },
+                    Complications: {
+                        isForcedOn: false,
+                        isForcedState: null
+                    }
+                }
                 IMGREGISTRY.AirLightCN_4.isActive = true
                 IMGREGISTRY.AirLightCN_5.isActive = true
                 IMGREGISTRY.AirLightLeft_1.isActive = true
@@ -1258,312 +5552,12 @@ const Media = (() => {
                 IMGREGISTRY.WeatherMain_1.modes.Inactive.lastState = null
                 IMGREGISTRY.weeklyResourcesHeader_1.modes.Inactive.lastState = null
                 IMGREGISTRY.wpRerollPlaceholder_1.modes.Inactive.lastState = null
-                IMGREGISTRY.AirLightCN_4.modes.Downtime.lastActive = true
-                IMGREGISTRY.AirLightCN_5.modes.Downtime.lastActive = true
-                IMGREGISTRY.AirLightLeft_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.AirLightMid_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.AirLightTop_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.AvaWongToken_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.compCardSpot_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.compCardSpot_10.modes.Downtime.lastActive = false
-                IMGREGISTRY.compCardSpot_2.modes.Downtime.lastActive = false
-                IMGREGISTRY.compCardSpot_3.modes.Downtime.lastActive = false
-                IMGREGISTRY.compCardSpot_4.modes.Downtime.lastActive = false
-                IMGREGISTRY.compCardSpot_5.modes.Downtime.lastActive = false
-                IMGREGISTRY.compCardSpot_6.modes.Downtime.lastActive = false
-                IMGREGISTRY.compCardSpot_7.modes.Downtime.lastActive = false
-                IMGREGISTRY.compCardSpot_8.modes.Downtime.lastActive = false
-                IMGREGISTRY.compCardSpot_9.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationEnhanced_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationEnhanced_10.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationEnhanced_2.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationEnhanced_3.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationEnhanced_4.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationEnhanced_5.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationEnhanced_6.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationEnhanced_7.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationEnhanced_8.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationEnhanced_9.modes.Downtime.lastActive = false
-                IMGREGISTRY.ComplicationMat_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationZero_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationZero_10.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationZero_2.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationZero_3.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationZero_4.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationZero_5.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationZero_6.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationZero_7.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationZero_8.modes.Downtime.lastActive = false
-                IMGREGISTRY.complicationZero_9.modes.Downtime.lastActive = false
-                IMGREGISTRY.DistrictCenter_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.DistrictLeft_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.DistrictRight_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.downtimeBanner_1.modes.Downtime.lastActive = false
-                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Downtime.lastActive = true
-                IMGREGISTRY.Horizon_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.HungerBotLeft_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.HungerBotRight_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.HungerTopLeft_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.HungerTopRight_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.JohannesNapierToken_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.LockeUlrichToken_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.mapButtonAutarkis_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.mapButtonDistricts_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.mapButtonDomain_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.mapButtonParks_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.mapButtonRack_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.mapButtonRoads_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.mapButtonSitesCulture_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.mapButtonSitesEducation_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.mapButtonSitesHavens_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.mapButtonSitesHealth_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.mapButtonSitesNightlife_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.mapButtonSitesShopping_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.mapButtonSitesTransportation_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.rollerDie_bigDice_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_bigDice_2.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_10.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_11.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_12.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_13.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_14.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_15.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_16.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_17.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_18.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_19.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_2.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_20.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_21.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_22.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_23.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_24.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_25.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_26.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_27.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_28.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_29.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_3.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_30.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_4.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_5.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_6.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_7.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_8.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerDie_diceList_9.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_bottomEnd_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.rollerImage_bottomMid_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_bottomMid_2.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_bottomMid_3.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_bottomMid_4.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_bottomMid_5.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_bottomMid_6.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_bottomMid_7.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_bottomMid_8.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_bottomMid_9.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_diffFrame_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_frontFrame_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.rollerImage_topEnd_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.rollerImage_topMid_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_topMid_2.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_topMid_3.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_topMid_4.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_topMid_5.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_topMid_6.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_topMid_7.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_topMid_8.modes.Downtime.lastActive = false
-                IMGREGISTRY.rollerImage_topMid_9.modes.Downtime.lastActive = false
-                IMGREGISTRY.SignalLightBotLeft_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.SignalLightBotRight_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.SignalLightTopLeft_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.SignalLightTopRight_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.SiteBarCenter_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.SiteBarLeft_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.SiteBarRight_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.SiteCenter_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.SiteLeft_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.SiteRight_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.TorontoMap_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.TorontoMapParksOverlay_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.TorontoMapRackOverlay_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.WeatherClouds_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.WeatherFog_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.WeatherFrost_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.WeatherGround_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.WeatherMain_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.weeklyResourcesHeader_1.modes.Downtime.lastActive = false
-                IMGREGISTRY.wpRerollPlaceholder_1.modes.Downtime.lastActive = true
-                IMGREGISTRY.AirLightCN_4.modes.Downtime.lastState = "on"
-                IMGREGISTRY.AirLightCN_5.modes.Downtime.lastState = "on"
-                IMGREGISTRY.AirLightLeft_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.AirLightMid_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.AirLightTop_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.AvaWongToken_1.modes.Downtime.lastState = "daylighter"
-                IMGREGISTRY.compCardSpot_1.modes.Downtime.lastState = null
-                IMGREGISTRY.compCardSpot_10.modes.Downtime.lastState = null
-                IMGREGISTRY.compCardSpot_2.modes.Downtime.lastState = null
-                IMGREGISTRY.compCardSpot_3.modes.Downtime.lastState = null
-                IMGREGISTRY.compCardSpot_4.modes.Downtime.lastState = null
-                IMGREGISTRY.compCardSpot_5.modes.Downtime.lastState = null
-                IMGREGISTRY.compCardSpot_6.modes.Downtime.lastState = null
-                IMGREGISTRY.compCardSpot_7.modes.Downtime.lastState = null
-                IMGREGISTRY.compCardSpot_8.modes.Downtime.lastState = null
-                IMGREGISTRY.compCardSpot_9.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationEnhanced_1.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationEnhanced_10.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationEnhanced_2.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationEnhanced_3.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationEnhanced_4.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationEnhanced_5.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationEnhanced_6.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationEnhanced_7.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationEnhanced_8.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationEnhanced_9.modes.Downtime.lastState = null
-                IMGREGISTRY.ComplicationMat_1.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationZero_1.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationZero_10.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationZero_2.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationZero_3.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationZero_4.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationZero_5.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationZero_6.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationZero_7.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationZero_8.modes.Downtime.lastState = null
-                IMGREGISTRY.complicationZero_9.modes.Downtime.lastState = null
-                IMGREGISTRY.DistrictCenter_1.modes.Downtime.lastState = null
-                IMGREGISTRY.DistrictLeft_1.modes.Downtime.lastState = null
-                IMGREGISTRY.DistrictRight_1.modes.Downtime.lastState = null
-                IMGREGISTRY.downtimeBanner_1.modes.Downtime.lastState = null
-                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Downtime.lastState = "base"
-                IMGREGISTRY.Horizon_1.modes.Downtime.lastState = "daylighters"
-                IMGREGISTRY.HungerBotLeft_1.modes.Downtime.lastState = null
-                IMGREGISTRY.HungerBotRight_1.modes.Downtime.lastState = null
-                IMGREGISTRY.HungerTopLeft_1.modes.Downtime.lastState = null
-                IMGREGISTRY.HungerTopRight_1.modes.Downtime.lastState = null
-                IMGREGISTRY.JohannesNapierToken_1.modes.Downtime.lastState = null
-                IMGREGISTRY.LockeUlrichToken_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.mapButtonAutarkis_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.mapButtonDistricts_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.mapButtonDomain_1.modes.Downtime.lastState = "camarilla"
-                IMGREGISTRY.mapButtonParks_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.mapButtonRack_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.mapButtonRoads_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.mapButtonSitesCulture_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.mapButtonSitesEducation_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.mapButtonSitesHavens_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.mapButtonSitesHealth_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.mapButtonSitesNightlife_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.mapButtonSitesShopping_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.mapButtonSitesTransportation_1.modes.Downtime.lastState = "on"
-                IMGREGISTRY.rollerDie_bigDice_1.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_bigDice_2.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_1.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_10.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_11.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_12.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_13.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_14.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_15.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_16.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_17.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_18.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_19.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_2.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_20.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_21.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_22.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_23.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_24.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_25.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_26.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_27.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_28.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_29.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_3.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_30.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_4.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_5.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_6.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_7.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_8.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerDie_diceList_9.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_bottomEnd_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.rollerImage_bottomMid_1.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_bottomMid_2.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_bottomMid_3.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_bottomMid_4.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_bottomMid_5.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_bottomMid_6.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_bottomMid_7.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_bottomMid_8.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_bottomMid_9.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_diffFrame_1.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_frontFrame_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.rollerImage_topEnd_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.rollerImage_topMid_1.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_topMid_2.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_topMid_3.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_topMid_4.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_topMid_5.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_topMid_6.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_topMid_7.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_topMid_8.modes.Downtime.lastState = null
-                IMGREGISTRY.rollerImage_topMid_9.modes.Downtime.lastState = null
-                IMGREGISTRY.SignalLightBotLeft_1.modes.Downtime.lastState = null
-                IMGREGISTRY.SignalLightBotRight_1.modes.Downtime.lastState = null
-                IMGREGISTRY.SignalLightTopLeft_1.modes.Downtime.lastState = null
-                IMGREGISTRY.SignalLightTopRight_1.modes.Downtime.lastState = null
-                IMGREGISTRY.SiteBarCenter_1.modes.Downtime.lastState = null
-                IMGREGISTRY.SiteBarLeft_1.modes.Downtime.lastState = null
-                IMGREGISTRY.SiteBarRight_1.modes.Downtime.lastState = null
-                IMGREGISTRY.SiteCenter_1.modes.Downtime.lastState = null
-                IMGREGISTRY.SiteLeft_1.modes.Downtime.lastState = null
-                IMGREGISTRY.SiteRight_1.modes.Downtime.lastState = null
-                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Downtime.lastState = null
-                IMGREGISTRY.TorontoMap_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.TorontoMapParksOverlay_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.TorontoMapRackOverlay_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Downtime.lastState = "base"
-                IMGREGISTRY.WeatherClouds_1.modes.Downtime.lastState = null
-                IMGREGISTRY.WeatherFog_1.modes.Downtime.lastState = null
-                IMGREGISTRY.WeatherFrost_1.modes.Downtime.lastState = null
-                IMGREGISTRY.WeatherGround_1.modes.Downtime.lastState = null
-                IMGREGISTRY.WeatherMain_1.modes.Downtime.lastState = null
-                IMGREGISTRY.weeklyResourcesHeader_1.modes.Downtime.lastState = null
-                IMGREGISTRY.wpRerollPlaceholder_1.modes.Downtime.lastState = "blank"
-                IMGREGISTRY.AirLightCN_4.modes.Daylighter.lastActive = false
-                IMGREGISTRY.AirLightCN_5.modes.Daylighter.lastActive = false
-                IMGREGISTRY.AirLightLeft_1.modes.Daylighter.lastActive = false
-                IMGREGISTRY.AirLightMid_1.modes.Daylighter.lastActive = false
-                IMGREGISTRY.AirLightTop_1.modes.Daylighter.lastActive = false
-                IMGREGISTRY.AvaWongToken_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.AirLightCN_4.modes.Daylighter.lastActive = true
+                IMGREGISTRY.AirLightCN_5.modes.Daylighter.lastActive = true
+                IMGREGISTRY.AirLightLeft_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.AirLightMid_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.AirLightTop_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.AvaWongToken_1.modes.Daylighter.lastActive = true
                 IMGREGISTRY.compCardSpot_1.modes.Daylighter.lastActive = false
                 IMGREGISTRY.compCardSpot_10.modes.Daylighter.lastActive = false
                 IMGREGISTRY.compCardSpot_2.modes.Daylighter.lastActive = false
@@ -1595,18 +5589,18 @@ const Media = (() => {
                 IMGREGISTRY.complicationZero_7.modes.Daylighter.lastActive = false
                 IMGREGISTRY.complicationZero_8.modes.Daylighter.lastActive = false
                 IMGREGISTRY.complicationZero_9.modes.Daylighter.lastActive = false
-                IMGREGISTRY.DistrictCenter_1.modes.Daylighter.lastActive = true
-                IMGREGISTRY.DistrictLeft_1.modes.Daylighter.lastActive = true
-                IMGREGISTRY.DistrictRight_1.modes.Daylighter.lastActive = true
-                IMGREGISTRY.downtimeBanner_1.modes.Daylighter.lastActive = true
-                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Daylighter.lastActive = false
+                IMGREGISTRY.DistrictCenter_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.DistrictLeft_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.DistrictRight_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.downtimeBanner_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Daylighter.lastActive = true
                 IMGREGISTRY.Horizon_1.modes.Daylighter.lastActive = true
                 IMGREGISTRY.HungerBotLeft_1.modes.Daylighter.lastActive = false
                 IMGREGISTRY.HungerBotRight_1.modes.Daylighter.lastActive = false
                 IMGREGISTRY.HungerTopLeft_1.modes.Daylighter.lastActive = false
                 IMGREGISTRY.HungerTopRight_1.modes.Daylighter.lastActive = false
                 IMGREGISTRY.JohannesNapierToken_1.modes.Daylighter.lastActive = false
-                IMGREGISTRY.LockeUlrichToken_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.LockeUlrichToken_1.modes.Daylighter.lastActive = true
                 IMGREGISTRY.mapButtonAutarkis_1.modes.Daylighter.lastActive = true
                 IMGREGISTRY.mapButtonDistricts_1.modes.Daylighter.lastActive = true
                 IMGREGISTRY.mapButtonDomain_1.modes.Daylighter.lastActive = true
@@ -1675,17 +5669,17 @@ const Media = (() => {
                 IMGREGISTRY.rollerImage_topMid_7.modes.Daylighter.lastActive = false
                 IMGREGISTRY.rollerImage_topMid_8.modes.Daylighter.lastActive = false
                 IMGREGISTRY.rollerImage_topMid_9.modes.Daylighter.lastActive = false
-                IMGREGISTRY.SignalLightBotLeft_1.modes.Daylighter.lastActive = true
-                IMGREGISTRY.SignalLightBotRight_1.modes.Daylighter.lastActive = true
-                IMGREGISTRY.SignalLightTopLeft_1.modes.Daylighter.lastActive = true
-                IMGREGISTRY.SignalLightTopRight_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.SignalLightBotLeft_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.SignalLightBotRight_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.SignalLightTopLeft_1.modes.Daylighter.lastActive = false
+                IMGREGISTRY.SignalLightTopRight_1.modes.Daylighter.lastActive = false
                 IMGREGISTRY.SiteBarCenter_1.modes.Daylighter.lastActive = false
                 IMGREGISTRY.SiteBarLeft_1.modes.Daylighter.lastActive = false
                 IMGREGISTRY.SiteBarRight_1.modes.Daylighter.lastActive = false
                 IMGREGISTRY.SiteCenter_1.modes.Daylighter.lastActive = false
                 IMGREGISTRY.SiteLeft_1.modes.Daylighter.lastActive = false
                 IMGREGISTRY.SiteRight_1.modes.Daylighter.lastActive = false
-                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Daylighter.lastActive = false
                 IMGREGISTRY.TorontoMap_1.modes.Daylighter.lastActive = true
                 IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Daylighter.lastActive = true
                 IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Daylighter.lastActive = true
@@ -1706,14 +5700,14 @@ const Media = (() => {
                 IMGREGISTRY.WeatherFrost_1.modes.Daylighter.lastActive = false
                 IMGREGISTRY.WeatherGround_1.modes.Daylighter.lastActive = false
                 IMGREGISTRY.WeatherMain_1.modes.Daylighter.lastActive = false
-                IMGREGISTRY.weeklyResourcesHeader_1.modes.Daylighter.lastActive = true
+                IMGREGISTRY.weeklyResourcesHeader_1.modes.Daylighter.lastActive = false
                 IMGREGISTRY.wpRerollPlaceholder_1.modes.Daylighter.lastActive = true
-                IMGREGISTRY.AirLightCN_4.modes.Daylighter.lastState = null
-                IMGREGISTRY.AirLightCN_5.modes.Daylighter.lastState = null
-                IMGREGISTRY.AirLightLeft_1.modes.Daylighter.lastState = null
-                IMGREGISTRY.AirLightMid_1.modes.Daylighter.lastState = null
-                IMGREGISTRY.AirLightTop_1.modes.Daylighter.lastState = null
-                IMGREGISTRY.AvaWongToken_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.AirLightCN_4.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.AirLightCN_5.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.AirLightLeft_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.AirLightMid_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.AirLightTop_1.modes.Daylighter.lastState = "on"
+                IMGREGISTRY.AvaWongToken_1.modes.Daylighter.lastState = "daylighter"
                 IMGREGISTRY.compCardSpot_1.modes.Daylighter.lastState = null
                 IMGREGISTRY.compCardSpot_10.modes.Daylighter.lastState = null
                 IMGREGISTRY.compCardSpot_2.modes.Daylighter.lastState = null
@@ -1745,18 +5739,18 @@ const Media = (() => {
                 IMGREGISTRY.complicationZero_7.modes.Daylighter.lastState = null
                 IMGREGISTRY.complicationZero_8.modes.Daylighter.lastState = null
                 IMGREGISTRY.complicationZero_9.modes.Daylighter.lastState = null
-                IMGREGISTRY.DistrictCenter_1.modes.Daylighter.lastState = true
-                IMGREGISTRY.DistrictLeft_1.modes.Daylighter.lastState = true
-                IMGREGISTRY.DistrictRight_1.modes.Daylighter.lastState = true
-                IMGREGISTRY.downtimeBanner_1.modes.Daylighter.lastState = "base"
-                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Daylighter.lastState = null
-                IMGREGISTRY.Horizon_1.modes.Daylighter.lastState = "night5"
+                IMGREGISTRY.DistrictCenter_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.DistrictLeft_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.DistrictRight_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.downtimeBanner_1.modes.Daylighter.lastState = null
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Daylighter.lastState = "base"
+                IMGREGISTRY.Horizon_1.modes.Daylighter.lastState = "daylighters"
                 IMGREGISTRY.HungerBotLeft_1.modes.Daylighter.lastState = null
                 IMGREGISTRY.HungerBotRight_1.modes.Daylighter.lastState = null
                 IMGREGISTRY.HungerTopLeft_1.modes.Daylighter.lastState = null
                 IMGREGISTRY.HungerTopRight_1.modes.Daylighter.lastState = null
                 IMGREGISTRY.JohannesNapierToken_1.modes.Daylighter.lastState = null
-                IMGREGISTRY.LockeUlrichToken_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.LockeUlrichToken_1.modes.Daylighter.lastState = "base"
                 IMGREGISTRY.mapButtonAutarkis_1.modes.Daylighter.lastState = "on"
                 IMGREGISTRY.mapButtonDistricts_1.modes.Daylighter.lastState = "on"
                 IMGREGISTRY.mapButtonDomain_1.modes.Daylighter.lastState = "camarilla"
@@ -1825,17 +5819,17 @@ const Media = (() => {
                 IMGREGISTRY.rollerImage_topMid_7.modes.Daylighter.lastState = null
                 IMGREGISTRY.rollerImage_topMid_8.modes.Daylighter.lastState = null
                 IMGREGISTRY.rollerImage_topMid_9.modes.Daylighter.lastState = null
-                IMGREGISTRY.SignalLightBotLeft_1.modes.Daylighter.lastState = "off"
-                IMGREGISTRY.SignalLightBotRight_1.modes.Daylighter.lastState = "off"
-                IMGREGISTRY.SignalLightTopLeft_1.modes.Daylighter.lastState = "off"
-                IMGREGISTRY.SignalLightTopRight_1.modes.Daylighter.lastState = "off"
+                IMGREGISTRY.SignalLightBotLeft_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.SignalLightBotRight_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.SignalLightTopLeft_1.modes.Daylighter.lastState = null
+                IMGREGISTRY.SignalLightTopRight_1.modes.Daylighter.lastState = null
                 IMGREGISTRY.SiteBarCenter_1.modes.Daylighter.lastState = null
                 IMGREGISTRY.SiteBarLeft_1.modes.Daylighter.lastState = null
                 IMGREGISTRY.SiteBarRight_1.modes.Daylighter.lastState = null
                 IMGREGISTRY.SiteCenter_1.modes.Daylighter.lastState = null
                 IMGREGISTRY.SiteLeft_1.modes.Daylighter.lastState = null
                 IMGREGISTRY.SiteRight_1.modes.Daylighter.lastState = null
-                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Daylighter.lastState = null
                 IMGREGISTRY.TorontoMap_1.modes.Daylighter.lastState = "base"
                 IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Daylighter.lastState = "base"
                 IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Daylighter.lastState = "base"
@@ -1856,8 +5850,308 @@ const Media = (() => {
                 IMGREGISTRY.WeatherFrost_1.modes.Daylighter.lastState = null
                 IMGREGISTRY.WeatherGround_1.modes.Daylighter.lastState = null
                 IMGREGISTRY.WeatherMain_1.modes.Daylighter.lastState = null
-                IMGREGISTRY.weeklyResourcesHeader_1.modes.Daylighter.lastState = "base"
+                IMGREGISTRY.weeklyResourcesHeader_1.modes.Daylighter.lastState = null
                 IMGREGISTRY.wpRerollPlaceholder_1.modes.Daylighter.lastState = "blank"
+                IMGREGISTRY.AirLightCN_4.modes.Downtime.lastActive = false
+                IMGREGISTRY.AirLightCN_5.modes.Downtime.lastActive = false
+                IMGREGISTRY.AirLightLeft_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.AirLightMid_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.AirLightTop_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.AvaWongToken_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_10.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_2.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_3.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_4.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_5.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_6.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_7.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_8.modes.Downtime.lastActive = false
+                IMGREGISTRY.compCardSpot_9.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_10.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_2.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_3.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_4.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_5.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_6.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_7.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_8.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationEnhanced_9.modes.Downtime.lastActive = false
+                IMGREGISTRY.ComplicationMat_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_10.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_2.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_3.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_4.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_5.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_6.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_7.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_8.modes.Downtime.lastActive = false
+                IMGREGISTRY.complicationZero_9.modes.Downtime.lastActive = false
+                IMGREGISTRY.DistrictCenter_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.DistrictLeft_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.DistrictRight_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.downtimeBanner_1.modes.Downtime.lastActive = true
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Downtime.lastActive = false
+                IMGREGISTRY.Horizon_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.HungerBotLeft_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.HungerBotRight_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.HungerTopLeft_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.HungerTopRight_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.JohannesNapierToken_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.LockeUlrichToken_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.mapButtonAutarkis_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonDistricts_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonDomain_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonParks_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonRack_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonRoads_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesCulture_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesEducation_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesHavens_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesHealth_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesNightlife_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesShopping_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.mapButtonSitesTransportation_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.rollerDie_bigDice_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_bigDice_2.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_10.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_11.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_12.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_13.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_14.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_15.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_16.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_17.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_18.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_19.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_2.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_20.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_21.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_22.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_23.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_24.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_25.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_26.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_27.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_28.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_29.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_3.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_30.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_4.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_5.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_6.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_7.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_8.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerDie_diceList_9.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomEnd_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.rollerImage_bottomMid_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_2.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_3.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_4.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_5.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_6.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_7.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_8.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_bottomMid_9.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_diffFrame_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_frontFrame_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.rollerImage_topEnd_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.rollerImage_topMid_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_2.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_3.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_4.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_5.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_6.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_7.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_8.modes.Downtime.lastActive = false
+                IMGREGISTRY.rollerImage_topMid_9.modes.Downtime.lastActive = false
+                IMGREGISTRY.SignalLightBotLeft_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.SignalLightBotRight_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.SignalLightTopLeft_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.SignalLightTopRight_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.SiteBarCenter_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.SiteBarLeft_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.SiteBarRight_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.SiteCenter_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.SiteLeft_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.SiteRight_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMap_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapParksOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapRackOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.WeatherClouds_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.WeatherFog_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.WeatherFrost_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.WeatherGround_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.WeatherMain_1.modes.Downtime.lastActive = false
+                IMGREGISTRY.weeklyResourcesHeader_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.wpRerollPlaceholder_1.modes.Downtime.lastActive = true
+                IMGREGISTRY.AirLightCN_4.modes.Downtime.lastState = null
+                IMGREGISTRY.AirLightCN_5.modes.Downtime.lastState = null
+                IMGREGISTRY.AirLightLeft_1.modes.Downtime.lastState = null
+                IMGREGISTRY.AirLightMid_1.modes.Downtime.lastState = null
+                IMGREGISTRY.AirLightTop_1.modes.Downtime.lastState = null
+                IMGREGISTRY.AvaWongToken_1.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_1.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_10.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_2.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_3.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_4.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_5.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_6.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_7.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_8.modes.Downtime.lastState = null
+                IMGREGISTRY.compCardSpot_9.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_1.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_10.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_2.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_3.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_4.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_5.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_6.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_7.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_8.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationEnhanced_9.modes.Downtime.lastState = null
+                IMGREGISTRY.ComplicationMat_1.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_1.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_10.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_2.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_3.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_4.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_5.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_6.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_7.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_8.modes.Downtime.lastState = null
+                IMGREGISTRY.complicationZero_9.modes.Downtime.lastState = null
+                IMGREGISTRY.DistrictCenter_1.modes.Downtime.lastState = true
+                IMGREGISTRY.DistrictLeft_1.modes.Downtime.lastState = true
+                IMGREGISTRY.DistrictRight_1.modes.Downtime.lastState = true
+                IMGREGISTRY.downtimeBanner_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY["Dr.ArthurRoyToken_1"].modes.Downtime.lastState = null
+                IMGREGISTRY.Horizon_1.modes.Downtime.lastState = "night5"
+                IMGREGISTRY.HungerBotLeft_1.modes.Downtime.lastState = null
+                IMGREGISTRY.HungerBotRight_1.modes.Downtime.lastState = null
+                IMGREGISTRY.HungerTopLeft_1.modes.Downtime.lastState = null
+                IMGREGISTRY.HungerTopRight_1.modes.Downtime.lastState = null
+                IMGREGISTRY.JohannesNapierToken_1.modes.Downtime.lastState = null
+                IMGREGISTRY.LockeUlrichToken_1.modes.Downtime.lastState = null
+                IMGREGISTRY.mapButtonAutarkis_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonDistricts_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonDomain_1.modes.Downtime.lastState = "camarilla"
+                IMGREGISTRY.mapButtonParks_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonRack_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonRoads_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesCulture_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesEducation_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesHavens_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesHealth_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesLandmarks_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesNightlife_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesShopping_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.mapButtonSitesTransportation_1.modes.Downtime.lastState = "on"
+                IMGREGISTRY.rollerDie_bigDice_1.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_bigDice_2.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_1.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_10.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_11.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_12.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_13.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_14.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_15.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_16.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_17.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_18.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_19.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_2.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_20.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_21.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_22.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_23.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_24.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_25.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_26.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_27.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_28.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_29.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_3.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_30.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_4.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_5.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_6.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_7.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_8.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerDie_diceList_9.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomEnd_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.rollerImage_bottomMid_1.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_2.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_3.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_4.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_5.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_6.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_7.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_8.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_bottomMid_9.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_diffFrame_1.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_frontFrame_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.rollerImage_topEnd_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.rollerImage_topMid_1.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_2.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_3.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_4.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_5.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_6.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_7.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_8.modes.Downtime.lastState = null
+                IMGREGISTRY.rollerImage_topMid_9.modes.Downtime.lastState = null
+                IMGREGISTRY.SignalLightBotLeft_1.modes.Downtime.lastState = "off"
+                IMGREGISTRY.SignalLightBotRight_1.modes.Downtime.lastState = "off"
+                IMGREGISTRY.SignalLightTopLeft_1.modes.Downtime.lastState = "off"
+                IMGREGISTRY.SignalLightTopRight_1.modes.Downtime.lastState = "off"
+                IMGREGISTRY.SiteBarCenter_1.modes.Downtime.lastState = null
+                IMGREGISTRY.SiteBarLeft_1.modes.Downtime.lastState = null
+                IMGREGISTRY.SiteBarRight_1.modes.Downtime.lastState = null
+                IMGREGISTRY.SiteCenter_1.modes.Downtime.lastState = null
+                IMGREGISTRY.SiteLeft_1.modes.Downtime.lastState = null
+                IMGREGISTRY.SiteRight_1.modes.Downtime.lastState = null
+                IMGREGISTRY.stakedAdvantagesHeader_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMap_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapAutarkisOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapDistrictsOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapDomainOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapParksOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapRackOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapRoadsOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesCultureOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesEducationOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesHavensOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesHealthOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesLandmarksOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesNightlifeOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesShoppingOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.TorontoMapSitesTransportationOverlay_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.WeatherClouds_1.modes.Downtime.lastState = null
+                IMGREGISTRY.WeatherFog_1.modes.Downtime.lastState = null
+                IMGREGISTRY.WeatherFrost_1.modes.Downtime.lastState = null
+                IMGREGISTRY.WeatherGround_1.modes.Downtime.lastState = null
+                IMGREGISTRY.WeatherMain_1.modes.Downtime.lastState = null
+                IMGREGISTRY.weeklyResourcesHeader_1.modes.Downtime.lastState = "base"
+                IMGREGISTRY.wpRerollPlaceholder_1.modes.Downtime.lastState = "blank"
                 IMGREGISTRY.AirLightCN_4.modes.Complications.lastActive = true
                 IMGREGISTRY.AirLightCN_5.modes.Complications.lastActive = true
                 IMGREGISTRY.AirLightLeft_1.modes.Complications.lastActive = true
@@ -1874,27 +6168,27 @@ const Media = (() => {
                 IMGREGISTRY.compCardSpot_7.modes.Complications.lastActive = true
                 IMGREGISTRY.compCardSpot_8.modes.Complications.lastActive = true
                 IMGREGISTRY.compCardSpot_9.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationEnhanced_1.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationEnhanced_10.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationEnhanced_2.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationEnhanced_3.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationEnhanced_4.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationEnhanced_5.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationEnhanced_6.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationEnhanced_7.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationEnhanced_8.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationEnhanced_9.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationEnhanced_1.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationEnhanced_10.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationEnhanced_2.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationEnhanced_3.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationEnhanced_4.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationEnhanced_5.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationEnhanced_6.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationEnhanced_7.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationEnhanced_8.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationEnhanced_9.modes.Complications.lastActive = false
                 IMGREGISTRY.ComplicationMat_1.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationZero_1.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationZero_10.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationZero_2.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationZero_3.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationZero_4.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationZero_5.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationZero_6.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationZero_7.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationZero_8.modes.Complications.lastActive = true
-                IMGREGISTRY.complicationZero_9.modes.Complications.lastActive = true
+                IMGREGISTRY.complicationZero_1.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationZero_10.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationZero_2.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationZero_3.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationZero_4.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationZero_5.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationZero_6.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationZero_7.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationZero_8.modes.Complications.lastActive = false
+                IMGREGISTRY.complicationZero_9.modes.Complications.lastActive = false
                 IMGREGISTRY.DistrictCenter_1.modes.Complications.lastActive = false
                 IMGREGISTRY.DistrictLeft_1.modes.Complications.lastActive = false
                 IMGREGISTRY.DistrictRight_1.modes.Complications.lastActive = false
@@ -2014,37 +6308,37 @@ const Media = (() => {
                 IMGREGISTRY.AirLightMid_1.modes.Complications.lastState = "on"
                 IMGREGISTRY.AirLightTop_1.modes.Complications.lastState = "on"
                 IMGREGISTRY.AvaWongToken_1.modes.Complications.lastState = null
-                IMGREGISTRY.compCardSpot_1.modes.Complications.lastState = "blank"
-                IMGREGISTRY.compCardSpot_10.modes.Complications.lastState = "blank"
-                IMGREGISTRY.compCardSpot_2.modes.Complications.lastState = "blank"
-                IMGREGISTRY.compCardSpot_3.modes.Complications.lastState = "blank"
-                IMGREGISTRY.compCardSpot_4.modes.Complications.lastState = "blank"
-                IMGREGISTRY.compCardSpot_5.modes.Complications.lastState = "blank"
-                IMGREGISTRY.compCardSpot_6.modes.Complications.lastState = "blank"
-                IMGREGISTRY.compCardSpot_7.modes.Complications.lastState = "blank"
-                IMGREGISTRY.compCardSpot_8.modes.Complications.lastState = "blank"
-                IMGREGISTRY.compCardSpot_9.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationEnhanced_1.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationEnhanced_10.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationEnhanced_2.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationEnhanced_3.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationEnhanced_4.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationEnhanced_5.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationEnhanced_6.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationEnhanced_7.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationEnhanced_8.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationEnhanced_9.modes.Complications.lastState = "blank"
+                IMGREGISTRY.compCardSpot_1.modes.Complications.lastState = "cardBack"
+                IMGREGISTRY.compCardSpot_10.modes.Complications.lastState = "cardBack"
+                IMGREGISTRY.compCardSpot_2.modes.Complications.lastState = "cardBack"
+                IMGREGISTRY.compCardSpot_3.modes.Complications.lastState = "cardBack"
+                IMGREGISTRY.compCardSpot_4.modes.Complications.lastState = "cardBack"
+                IMGREGISTRY.compCardSpot_5.modes.Complications.lastState = "cardBack"
+                IMGREGISTRY.compCardSpot_6.modes.Complications.lastState = "cardBack"
+                IMGREGISTRY.compCardSpot_7.modes.Complications.lastState = "cardBack"
+                IMGREGISTRY.compCardSpot_8.modes.Complications.lastState = "cardBack"
+                IMGREGISTRY.compCardSpot_9.modes.Complications.lastState = "cardBack"
+                IMGREGISTRY.complicationEnhanced_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationEnhanced_10.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationEnhanced_2.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationEnhanced_3.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationEnhanced_4.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationEnhanced_5.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationEnhanced_6.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationEnhanced_7.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationEnhanced_8.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationEnhanced_9.modes.Complications.lastState = "base"
                 IMGREGISTRY.ComplicationMat_1.modes.Complications.lastState = "base"
-                IMGREGISTRY.complicationZero_1.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationZero_10.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationZero_2.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationZero_3.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationZero_4.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationZero_5.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationZero_6.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationZero_7.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationZero_8.modes.Complications.lastState = "blank"
-                IMGREGISTRY.complicationZero_9.modes.Complications.lastState = "blank"
+                IMGREGISTRY.complicationZero_1.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationZero_10.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationZero_2.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationZero_3.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationZero_4.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationZero_5.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationZero_6.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationZero_7.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationZero_8.modes.Complications.lastState = "base"
+                IMGREGISTRY.complicationZero_9.modes.Complications.lastState = "base"
                 IMGREGISTRY.DistrictCenter_1.modes.Complications.lastState = null
                 IMGREGISTRY.DistrictLeft_1.modes.Complications.lastState = null
                 IMGREGISTRY.DistrictRight_1.modes.Complications.lastState = null
@@ -2158,927 +6452,743 @@ const Media = (() => {
                 IMGREGISTRY.WeatherMain_1.modes.Complications.lastState = null
                 IMGREGISTRY.weeklyResourcesHeader_1.modes.Complications.lastState = "base"
                 IMGREGISTRY.wpRerollPlaceholder_1.modes.Complications.lastState = "blank"
-
+                TEXTREGISTRY.AvaDesire.isActive = true
+                TEXTREGISTRY.compCardName_1.isActive = false
+                TEXTREGISTRY.compCardName_10.isActive = false
+                TEXTREGISTRY.compCardName_2.isActive = false
+                TEXTREGISTRY.compCardName_3.isActive = false
+                TEXTREGISTRY.compCardName_4.isActive = false
+                TEXTREGISTRY.compCardName_5.isActive = false
+                TEXTREGISTRY.compCardName_6.isActive = false
+                TEXTREGISTRY.compCardName_7.isActive = false
+                TEXTREGISTRY.compCardName_8.isActive = false
+                TEXTREGISTRY.compCardName_9.isActive = false
+                TEXTREGISTRY.complicationCurrent.isActive = false
+                TEXTREGISTRY.complicationRemaining.isActive = false
+                TEXTREGISTRY.complicationTarget.isActive = false
+                TEXTREGISTRY.Countdown.isActive = false
+                TEXTREGISTRY.dicePool.isActive = false
+                TEXTREGISTRY.difficulty.isActive = false
+                TEXTREGISTRY.goldMods.isActive = false
+                TEXTREGISTRY.LockeDesire.isActive = true
+                TEXTREGISTRY.mainRoll.isActive = false
+                TEXTREGISTRY.margin.isActive = false
+                TEXTREGISTRY.NapierDesire.isActive = true
+                TEXTREGISTRY.negMods.isActive = false
+                TEXTREGISTRY.outcome.isActive = false
+                TEXTREGISTRY.posMods.isActive = false
+                TEXTREGISTRY.redMods.isActive = false
+                TEXTREGISTRY.resultCount.isActive = false
+                TEXTREGISTRY.rollerName.isActive = false
+                TEXTREGISTRY.RoyDesire.isActive = true
+                TEXTREGISTRY.secretRollTraits.isActive = false
+                TEXTREGISTRY.SiteNameCenter.isActive = false
+                TEXTREGISTRY.SiteNameLeft.isActive = false
+                TEXTREGISTRY.SiteNameRight.isActive = false
+                TEXTREGISTRY.stakedAdvantages.isActive = true
+                TEXTREGISTRY.stakedCoterieAdvantages.isActive = true
+                TEXTREGISTRY.subOutcome.isActive = false
+                TEXTREGISTRY.tempC.isActive = true
+                TEXTREGISTRY.tempF.isActive = true
+                TEXTREGISTRY.testSessionNotice.isActive = true
+                TEXTREGISTRY.TimeTracker.isActive = true
+                TEXTREGISTRY.weather.isActive = true
+                TEXTREGISTRY.weeklyResources.isActive = true
+                TEXTREGISTRY.AvaDesire.modes.Active.lastActive = true
+                TEXTREGISTRY.compCardName_1.modes.Active.lastActive = false
+                TEXTREGISTRY.compCardName_10.modes.Active.lastActive = false
+                TEXTREGISTRY.compCardName_2.modes.Active.lastActive = false
+                TEXTREGISTRY.compCardName_3.modes.Active.lastActive = false
+                TEXTREGISTRY.compCardName_4.modes.Active.lastActive = false
+                TEXTREGISTRY.compCardName_5.modes.Active.lastActive = false
+                TEXTREGISTRY.compCardName_6.modes.Active.lastActive = false
+                TEXTREGISTRY.compCardName_7.modes.Active.lastActive = false
+                TEXTREGISTRY.compCardName_8.modes.Active.lastActive = false
+                TEXTREGISTRY.compCardName_9.modes.Active.lastActive = false
+                TEXTREGISTRY.complicationCurrent.modes.Active.lastActive = false
+                TEXTREGISTRY.complicationRemaining.modes.Active.lastActive = false
+                TEXTREGISTRY.complicationTarget.modes.Active.lastActive = false
+                TEXTREGISTRY.Countdown.modes.Active.lastActive = false
+                TEXTREGISTRY.dicePool.modes.Active.lastActive = false
+                TEXTREGISTRY.difficulty.modes.Active.lastActive = false
+                TEXTREGISTRY.goldMods.modes.Active.lastActive = false
+                TEXTREGISTRY.LockeDesire.modes.Active.lastActive = true
+                TEXTREGISTRY.mainRoll.modes.Active.lastActive = false
+                TEXTREGISTRY.margin.modes.Active.lastActive = false
+                TEXTREGISTRY.NapierDesire.modes.Active.lastActive = true
+                TEXTREGISTRY.negMods.modes.Active.lastActive = false
+                TEXTREGISTRY.outcome.modes.Active.lastActive = false
+                TEXTREGISTRY.posMods.modes.Active.lastActive = false
+                TEXTREGISTRY.redMods.modes.Active.lastActive = false
+                TEXTREGISTRY.resultCount.modes.Active.lastActive = false
+                TEXTREGISTRY.rollerName.modes.Active.lastActive = false
+                TEXTREGISTRY.RoyDesire.modes.Active.lastActive = true
+                TEXTREGISTRY.secretRollTraits.modes.Active.lastActive = false
+                TEXTREGISTRY.SiteNameCenter.modes.Active.lastActive = false
+                TEXTREGISTRY.SiteNameLeft.modes.Active.lastActive = false
+                TEXTREGISTRY.SiteNameRight.modes.Active.lastActive = false
+                TEXTREGISTRY.stakedAdvantages.modes.Active.lastActive = true
+                TEXTREGISTRY.stakedCoterieAdvantages.modes.Active.lastActive = true
+                TEXTREGISTRY.subOutcome.modes.Active.lastActive = false
+                TEXTREGISTRY.tempC.modes.Active.lastActive = true
+                TEXTREGISTRY.tempF.modes.Active.lastActive = true
+                TEXTREGISTRY.testSessionNotice.modes.Active.lastActive = true
+                TEXTREGISTRY.TimeTracker.modes.Active.lastActive = true
+                TEXTREGISTRY.weather.modes.Active.lastActive = true
+                TEXTREGISTRY.weeklyResources.modes.Active.lastActive = true
+                TEXTREGISTRY.AvaDesire.modes.Active.lastState = "@@curText@@"
+                TEXTREGISTRY.compCardName_1.modes.Active.lastState = null
+                TEXTREGISTRY.compCardName_10.modes.Active.lastState = null
+                TEXTREGISTRY.compCardName_2.modes.Active.lastState = null
+                TEXTREGISTRY.compCardName_3.modes.Active.lastState = null
+                TEXTREGISTRY.compCardName_4.modes.Active.lastState = null
+                TEXTREGISTRY.compCardName_5.modes.Active.lastState = null
+                TEXTREGISTRY.compCardName_6.modes.Active.lastState = null
+                TEXTREGISTRY.compCardName_7.modes.Active.lastState = null
+                TEXTREGISTRY.compCardName_8.modes.Active.lastState = null
+                TEXTREGISTRY.compCardName_9.modes.Active.lastState = null
+                TEXTREGISTRY.complicationCurrent.modes.Active.lastState = null
+                TEXTREGISTRY.complicationRemaining.modes.Active.lastState = null
+                TEXTREGISTRY.complicationTarget.modes.Active.lastState = null
+                TEXTREGISTRY.Countdown.modes.Active.lastState = null
+                TEXTREGISTRY.dicePool.modes.Active.lastState = null
+                TEXTREGISTRY.difficulty.modes.Active.lastState = null
+                TEXTREGISTRY.goldMods.modes.Active.lastState = null
+                TEXTREGISTRY.LockeDesire.modes.Active.lastState = "@@curText@@"
+                TEXTREGISTRY.mainRoll.modes.Active.lastState = null
+                TEXTREGISTRY.margin.modes.Active.lastState = null
+                TEXTREGISTRY.NapierDesire.modes.Active.lastState = "@@curText@@"
+                TEXTREGISTRY.negMods.modes.Active.lastState = null
+                TEXTREGISTRY.outcome.modes.Active.lastState = null
+                TEXTREGISTRY.posMods.modes.Active.lastState = null
+                TEXTREGISTRY.redMods.modes.Active.lastState = null
+                TEXTREGISTRY.resultCount.modes.Active.lastState = null
+                TEXTREGISTRY.rollerName.modes.Active.lastState = null
+                TEXTREGISTRY.RoyDesire.modes.Active.lastState = "@@curText@@"
+                TEXTREGISTRY.secretRollTraits.modes.Active.lastState = null
+                TEXTREGISTRY.SiteNameCenter.modes.Active.lastState = null
+                TEXTREGISTRY.SiteNameLeft.modes.Active.lastState = null
+                TEXTREGISTRY.SiteNameRight.modes.Active.lastState = null
+                TEXTREGISTRY.stakedAdvantages.modes.Active.lastState = "@@curText@@"
+                TEXTREGISTRY.stakedCoterieAdvantages.modes.Active.lastState = "@@curText@@"
+                TEXTREGISTRY.subOutcome.modes.Active.lastState = null
+                TEXTREGISTRY.tempC.modes.Active.lastState = "@@curText@@"
+                TEXTREGISTRY.tempF.modes.Active.lastState = "@@curText@@"
+                TEXTREGISTRY.testSessionNotice.modes.Active.lastState = "@@curText@@"
+                TEXTREGISTRY.TimeTracker.modes.Active.lastState = "@@curText@@"
+                TEXTREGISTRY.weather.modes.Active.lastState = "@@curText@@"
+                TEXTREGISTRY.weeklyResources.modes.Active.lastState = "@@curText@@"
+                TEXTREGISTRY.AvaDesire.curText = "@@curText@@"
+                TEXTREGISTRY.compCardName_1.curText = null
+                TEXTREGISTRY.compCardName_10.curText = null
+                TEXTREGISTRY.compCardName_2.curText = null
+                TEXTREGISTRY.compCardName_3.curText = null
+                TEXTREGISTRY.compCardName_4.curText = null
+                TEXTREGISTRY.compCardName_5.curText = null
+                TEXTREGISTRY.compCardName_6.curText = null
+                TEXTREGISTRY.compCardName_7.curText = null
+                TEXTREGISTRY.compCardName_8.curText = null
+                TEXTREGISTRY.compCardName_9.curText = null
+                TEXTREGISTRY.complicationCurrent.curText = null
+                TEXTREGISTRY.complicationRemaining.curText = null
+                TEXTREGISTRY.complicationTarget.curText = null
+                TEXTREGISTRY.Countdown.curText = null
+                TEXTREGISTRY.dicePool.curText = null
+                TEXTREGISTRY.difficulty.curText = null
+                TEXTREGISTRY.goldMods.curText = null
+                TEXTREGISTRY.LockeDesire.curText = "@@curText@@"
+                TEXTREGISTRY.mainRoll.curText = null
+                TEXTREGISTRY.margin.curText = null
+                TEXTREGISTRY.NapierDesire.curText = "@@curText@@"
+                TEXTREGISTRY.negMods.curText = null
+                TEXTREGISTRY.outcome.curText = null
+                TEXTREGISTRY.posMods.curText = null
+                TEXTREGISTRY.redMods.curText = null
+                TEXTREGISTRY.resultCount.curText = null
+                TEXTREGISTRY.rollerName.curText = null
+                TEXTREGISTRY.RoyDesire.curText = "@@curText@@"
+                TEXTREGISTRY.secretRollTraits.curText = null
+                TEXTREGISTRY.SiteNameCenter.curText = null
+                TEXTREGISTRY.SiteNameLeft.curText = null
+                TEXTREGISTRY.SiteNameRight.curText = null
+                TEXTREGISTRY.stakedAdvantages.curText = "@@curText@@"
+                TEXTREGISTRY.stakedCoterieAdvantages.curText = "@@curText@@"
+                TEXTREGISTRY.subOutcome.curText = null
+                TEXTREGISTRY.tempC.curText = "@@curText@@"
+                TEXTREGISTRY.tempF.curText = "@@curText@@"
+                TEXTREGISTRY.testSessionNotice.curText = "@@curText@@"
+                TEXTREGISTRY.TimeTracker.curText = "@@curText@@"
+                TEXTREGISTRY.weather.curText = "@@curText@@"
+                TEXTREGISTRY.weeklyResources.curText = "@@curText@@"
+                TEXTREGISTRY.AvaDesire.activeText = "@@curText@@"
+                TEXTREGISTRY.compCardName_1.activeText = null
+                TEXTREGISTRY.compCardName_10.activeText = null
+                TEXTREGISTRY.compCardName_2.activeText = null
+                TEXTREGISTRY.compCardName_3.activeText = null
+                TEXTREGISTRY.compCardName_4.activeText = null
+                TEXTREGISTRY.compCardName_5.activeText = null
+                TEXTREGISTRY.compCardName_6.activeText = null
+                TEXTREGISTRY.compCardName_7.activeText = null
+                TEXTREGISTRY.compCardName_8.activeText = null
+                TEXTREGISTRY.compCardName_9.activeText = null
+                TEXTREGISTRY.complicationCurrent.activeText = null
+                TEXTREGISTRY.complicationRemaining.activeText = null
+                TEXTREGISTRY.complicationTarget.activeText = null
+                TEXTREGISTRY.Countdown.activeText = null
+                TEXTREGISTRY.dicePool.activeText = null
+                TEXTREGISTRY.difficulty.activeText = null
+                TEXTREGISTRY.goldMods.activeText = null
+                TEXTREGISTRY.LockeDesire.activeText = "@@curText@@"
+                TEXTREGISTRY.mainRoll.activeText = null
+                TEXTREGISTRY.margin.activeText = null
+                TEXTREGISTRY.NapierDesire.activeText = "@@curText@@"
+                TEXTREGISTRY.negMods.activeText = null
+                TEXTREGISTRY.outcome.activeText = null
+                TEXTREGISTRY.posMods.activeText = null
+                TEXTREGISTRY.redMods.activeText = null
+                TEXTREGISTRY.resultCount.activeText = null
+                TEXTREGISTRY.rollerName.activeText = null
+                TEXTREGISTRY.RoyDesire.activeText = "@@curText@@"
+                TEXTREGISTRY.secretRollTraits.activeText = null
+                TEXTREGISTRY.SiteNameCenter.activeText = null
+                TEXTREGISTRY.SiteNameLeft.activeText = null
+                TEXTREGISTRY.SiteNameRight.activeText = null
+                TEXTREGISTRY.stakedAdvantages.activeText = "@@curText@@"
+                TEXTREGISTRY.stakedCoterieAdvantages.activeText = "@@curText@@"
+                TEXTREGISTRY.subOutcome.activeText = null
+                TEXTREGISTRY.tempC.activeText = "@@curText@@"
+                TEXTREGISTRY.tempF.activeText = "@@curText@@"
+                TEXTREGISTRY.testSessionNotice.activeText = "@@curText@@"
+                TEXTREGISTRY.TimeTracker.activeText = "@@curText@@"
+                TEXTREGISTRY.weather.activeText = "@@curText@@"
+                TEXTREGISTRY.weeklyResources.activeText = "@@curText@@"
+                TEXTREGISTRY.AvaDesire.modes.Inactive.lastActive = false
+                TEXTREGISTRY.compCardName_1.modes.Inactive.lastActive = false
+                TEXTREGISTRY.compCardName_10.modes.Inactive.lastActive = false
+                TEXTREGISTRY.compCardName_2.modes.Inactive.lastActive = false
+                TEXTREGISTRY.compCardName_3.modes.Inactive.lastActive = false
+                TEXTREGISTRY.compCardName_4.modes.Inactive.lastActive = false
+                TEXTREGISTRY.compCardName_5.modes.Inactive.lastActive = false
+                TEXTREGISTRY.compCardName_6.modes.Inactive.lastActive = false
+                TEXTREGISTRY.compCardName_7.modes.Inactive.lastActive = false
+                TEXTREGISTRY.compCardName_8.modes.Inactive.lastActive = false
+                TEXTREGISTRY.compCardName_9.modes.Inactive.lastActive = false
+                TEXTREGISTRY.complicationCurrent.modes.Inactive.lastActive = false
+                TEXTREGISTRY.complicationRemaining.modes.Inactive.lastActive = false
+                TEXTREGISTRY.complicationTarget.modes.Inactive.lastActive = false
+                TEXTREGISTRY.Countdown.modes.Inactive.lastActive = true
+                TEXTREGISTRY.dicePool.modes.Inactive.lastActive = false
+                TEXTREGISTRY.difficulty.modes.Inactive.lastActive = false
+                TEXTREGISTRY.goldMods.modes.Inactive.lastActive = false
+                TEXTREGISTRY.LockeDesire.modes.Inactive.lastActive = false
+                TEXTREGISTRY.mainRoll.modes.Inactive.lastActive = false
+                TEXTREGISTRY.margin.modes.Inactive.lastActive = false
+                TEXTREGISTRY.NapierDesire.modes.Inactive.lastActive = false
+                TEXTREGISTRY.negMods.modes.Inactive.lastActive = false
+                TEXTREGISTRY.outcome.modes.Inactive.lastActive = false
+                TEXTREGISTRY.posMods.modes.Inactive.lastActive = false
+                TEXTREGISTRY.redMods.modes.Inactive.lastActive = false
+                TEXTREGISTRY.resultCount.modes.Inactive.lastActive = false
+                TEXTREGISTRY.rollerName.modes.Inactive.lastActive = false
+                TEXTREGISTRY.RoyDesire.modes.Inactive.lastActive = false
+                TEXTREGISTRY.secretRollTraits.modes.Inactive.lastActive = false
+                TEXTREGISTRY.SiteNameCenter.modes.Inactive.lastActive = false
+                TEXTREGISTRY.SiteNameLeft.modes.Inactive.lastActive = false
+                TEXTREGISTRY.SiteNameRight.modes.Inactive.lastActive = false
+                TEXTREGISTRY.stakedAdvantages.modes.Inactive.lastActive = false
+                TEXTREGISTRY.stakedCoterieAdvantages.modes.Inactive.lastActive = false
+                TEXTREGISTRY.subOutcome.modes.Inactive.lastActive = false
+                TEXTREGISTRY.tempC.modes.Inactive.lastActive = false
+                TEXTREGISTRY.tempF.modes.Inactive.lastActive = false
+                TEXTREGISTRY.testSessionNotice.modes.Inactive.lastActive = true
+                TEXTREGISTRY.TimeTracker.modes.Inactive.lastActive = false
+                TEXTREGISTRY.weather.modes.Inactive.lastActive = false
+                TEXTREGISTRY.weeklyResources.modes.Inactive.lastActive = false
+                TEXTREGISTRY.AvaDesire.modes.Inactive.lastState = null
+                TEXTREGISTRY.compCardName_1.modes.Inactive.lastState = null
+                TEXTREGISTRY.compCardName_10.modes.Inactive.lastState = null
+                TEXTREGISTRY.compCardName_2.modes.Inactive.lastState = null
+                TEXTREGISTRY.compCardName_3.modes.Inactive.lastState = null
+                TEXTREGISTRY.compCardName_4.modes.Inactive.lastState = null
+                TEXTREGISTRY.compCardName_5.modes.Inactive.lastState = null
+                TEXTREGISTRY.compCardName_6.modes.Inactive.lastState = null
+                TEXTREGISTRY.compCardName_7.modes.Inactive.lastState = null
+                TEXTREGISTRY.compCardName_8.modes.Inactive.lastState = null
+                TEXTREGISTRY.compCardName_9.modes.Inactive.lastState = null
+                TEXTREGISTRY.complicationCurrent.modes.Inactive.lastState = null
+                TEXTREGISTRY.complicationRemaining.modes.Inactive.lastState = null
+                TEXTREGISTRY.complicationTarget.modes.Inactive.lastState = null
+                TEXTREGISTRY.Countdown.modes.Inactive.lastState = "@@curText@@"
+                TEXTREGISTRY.dicePool.modes.Inactive.lastState = null
+                TEXTREGISTRY.difficulty.modes.Inactive.lastState = null
+                TEXTREGISTRY.goldMods.modes.Inactive.lastState = null
+                TEXTREGISTRY.LockeDesire.modes.Inactive.lastState = null
+                TEXTREGISTRY.mainRoll.modes.Inactive.lastState = null
+                TEXTREGISTRY.margin.modes.Inactive.lastState = null
+                TEXTREGISTRY.NapierDesire.modes.Inactive.lastState = null
+                TEXTREGISTRY.negMods.modes.Inactive.lastState = null
+                TEXTREGISTRY.outcome.modes.Inactive.lastState = null
+                TEXTREGISTRY.posMods.modes.Inactive.lastState = null
+                TEXTREGISTRY.redMods.modes.Inactive.lastState = null
+                TEXTREGISTRY.resultCount.modes.Inactive.lastState = null
+                TEXTREGISTRY.rollerName.modes.Inactive.lastState = null
+                TEXTREGISTRY.RoyDesire.modes.Inactive.lastState = null
+                TEXTREGISTRY.secretRollTraits.modes.Inactive.lastState = null
+                TEXTREGISTRY.SiteNameCenter.modes.Inactive.lastState = null
+                TEXTREGISTRY.SiteNameLeft.modes.Inactive.lastState = null
+                TEXTREGISTRY.SiteNameRight.modes.Inactive.lastState = null
+                TEXTREGISTRY.stakedAdvantages.modes.Inactive.lastState = null
+                TEXTREGISTRY.stakedCoterieAdvantages.modes.Inactive.lastState = null
+                TEXTREGISTRY.subOutcome.modes.Inactive.lastState = null
+                TEXTREGISTRY.tempC.modes.Inactive.lastState = null
+                TEXTREGISTRY.tempF.modes.Inactive.lastState = null
+                TEXTREGISTRY.testSessionNotice.modes.Inactive.lastState = "@@curText@@"
+                TEXTREGISTRY.TimeTracker.modes.Inactive.lastState = null
+                TEXTREGISTRY.weather.modes.Inactive.lastState = null
+                TEXTREGISTRY.weeklyResources.modes.Inactive.lastState = null
+                TEXTREGISTRY.AvaDesire.modes.Daylighter.lastActive = true
+                TEXTREGISTRY.compCardName_1.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.compCardName_10.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.compCardName_2.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.compCardName_3.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.compCardName_4.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.compCardName_5.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.compCardName_6.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.compCardName_7.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.compCardName_8.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.compCardName_9.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.complicationCurrent.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.complicationRemaining.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.complicationTarget.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.Countdown.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.dicePool.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.difficulty.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.goldMods.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.LockeDesire.modes.Daylighter.lastActive = true
+                TEXTREGISTRY.mainRoll.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.margin.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.NapierDesire.modes.Daylighter.lastActive = true
+                TEXTREGISTRY.negMods.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.outcome.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.posMods.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.redMods.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.resultCount.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.rollerName.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.RoyDesire.modes.Daylighter.lastActive = true
+                TEXTREGISTRY.secretRollTraits.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.SiteNameCenter.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.SiteNameLeft.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.SiteNameRight.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.stakedAdvantages.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.stakedCoterieAdvantages.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.subOutcome.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.tempC.modes.Daylighter.lastActive = true
+                TEXTREGISTRY.tempF.modes.Daylighter.lastActive = true
+                TEXTREGISTRY.testSessionNotice.modes.Daylighter.lastActive = true
+                TEXTREGISTRY.TimeTracker.modes.Daylighter.lastActive = true
+                TEXTREGISTRY.weather.modes.Daylighter.lastActive = true
+                TEXTREGISTRY.weeklyResources.modes.Daylighter.lastActive = false
+                TEXTREGISTRY.AvaDesire.modes.Daylighter.lastState = "@@curText@@"
+                TEXTREGISTRY.compCardName_1.modes.Daylighter.lastState = null
+                TEXTREGISTRY.compCardName_10.modes.Daylighter.lastState = null
+                TEXTREGISTRY.compCardName_2.modes.Daylighter.lastState = null
+                TEXTREGISTRY.compCardName_3.modes.Daylighter.lastState = null
+                TEXTREGISTRY.compCardName_4.modes.Daylighter.lastState = null
+                TEXTREGISTRY.compCardName_5.modes.Daylighter.lastState = null
+                TEXTREGISTRY.compCardName_6.modes.Daylighter.lastState = null
+                TEXTREGISTRY.compCardName_7.modes.Daylighter.lastState = null
+                TEXTREGISTRY.compCardName_8.modes.Daylighter.lastState = null
+                TEXTREGISTRY.compCardName_9.modes.Daylighter.lastState = null
+                TEXTREGISTRY.complicationCurrent.modes.Daylighter.lastState = null
+                TEXTREGISTRY.complicationRemaining.modes.Daylighter.lastState = null
+                TEXTREGISTRY.complicationTarget.modes.Daylighter.lastState = null
+                TEXTREGISTRY.Countdown.modes.Daylighter.lastState = null
+                TEXTREGISTRY.dicePool.modes.Daylighter.lastState = null
+                TEXTREGISTRY.difficulty.modes.Daylighter.lastState = null
+                TEXTREGISTRY.goldMods.modes.Daylighter.lastState = null
+                TEXTREGISTRY.LockeDesire.modes.Daylighter.lastState = "@@curText@@"
+                TEXTREGISTRY.mainRoll.modes.Daylighter.lastState = null
+                TEXTREGISTRY.margin.modes.Daylighter.lastState = null
+                TEXTREGISTRY.NapierDesire.modes.Daylighter.lastState = "@@curText@@"
+                TEXTREGISTRY.negMods.modes.Daylighter.lastState = null
+                TEXTREGISTRY.outcome.modes.Daylighter.lastState = null
+                TEXTREGISTRY.posMods.modes.Daylighter.lastState = null
+                TEXTREGISTRY.redMods.modes.Daylighter.lastState = null
+                TEXTREGISTRY.resultCount.modes.Daylighter.lastState = null
+                TEXTREGISTRY.rollerName.modes.Daylighter.lastState = null
+                TEXTREGISTRY.RoyDesire.modes.Daylighter.lastState = "@@curText@@"
+                TEXTREGISTRY.secretRollTraits.modes.Daylighter.lastState = null
+                TEXTREGISTRY.SiteNameCenter.modes.Daylighter.lastState = null
+                TEXTREGISTRY.SiteNameLeft.modes.Daylighter.lastState = null
+                TEXTREGISTRY.SiteNameRight.modes.Daylighter.lastState = null
+                TEXTREGISTRY.stakedAdvantages.modes.Daylighter.lastState = null
+                TEXTREGISTRY.stakedCoterieAdvantages.modes.Daylighter.lastState = null
+                TEXTREGISTRY.subOutcome.modes.Daylighter.lastState = null
+                TEXTREGISTRY.tempC.modes.Daylighter.lastState = "@@curText@@"
+                TEXTREGISTRY.tempF.modes.Daylighter.lastState = "@@curText@@"
+                TEXTREGISTRY.testSessionNotice.modes.Daylighter.lastState = "@@curText@@"
+                TEXTREGISTRY.TimeTracker.modes.Daylighter.lastState = "@@curText@@"
+                TEXTREGISTRY.weather.modes.Daylighter.lastState = "@@curText@@"
+                TEXTREGISTRY.weeklyResources.modes.Daylighter.lastState = null
+                TEXTREGISTRY.AvaDesire.modes.Downtime.lastActive = true
+                TEXTREGISTRY.compCardName_1.modes.Downtime.lastActive = false
+                TEXTREGISTRY.compCardName_10.modes.Downtime.lastActive = false
+                TEXTREGISTRY.compCardName_2.modes.Downtime.lastActive = false
+                TEXTREGISTRY.compCardName_3.modes.Downtime.lastActive = false
+                TEXTREGISTRY.compCardName_4.modes.Downtime.lastActive = false
+                TEXTREGISTRY.compCardName_5.modes.Downtime.lastActive = false
+                TEXTREGISTRY.compCardName_6.modes.Downtime.lastActive = false
+                TEXTREGISTRY.compCardName_7.modes.Downtime.lastActive = false
+                TEXTREGISTRY.compCardName_8.modes.Downtime.lastActive = false
+                TEXTREGISTRY.compCardName_9.modes.Downtime.lastActive = false
+                TEXTREGISTRY.complicationCurrent.modes.Downtime.lastActive = false
+                TEXTREGISTRY.complicationRemaining.modes.Downtime.lastActive = false
+                TEXTREGISTRY.complicationTarget.modes.Downtime.lastActive = false
+                TEXTREGISTRY.Countdown.modes.Downtime.lastActive = false
+                TEXTREGISTRY.dicePool.modes.Downtime.lastActive = false
+                TEXTREGISTRY.difficulty.modes.Downtime.lastActive = false
+                TEXTREGISTRY.goldMods.modes.Downtime.lastActive = false
+                TEXTREGISTRY.LockeDesire.modes.Downtime.lastActive = true
+                TEXTREGISTRY.mainRoll.modes.Downtime.lastActive = false
+                TEXTREGISTRY.margin.modes.Downtime.lastActive = false
+                TEXTREGISTRY.NapierDesire.modes.Downtime.lastActive = true
+                TEXTREGISTRY.negMods.modes.Downtime.lastActive = false
+                TEXTREGISTRY.outcome.modes.Downtime.lastActive = false
+                TEXTREGISTRY.posMods.modes.Downtime.lastActive = false
+                TEXTREGISTRY.redMods.modes.Downtime.lastActive = false
+                TEXTREGISTRY.resultCount.modes.Downtime.lastActive = false
+                TEXTREGISTRY.rollerName.modes.Downtime.lastActive = false
+                TEXTREGISTRY.RoyDesire.modes.Downtime.lastActive = true
+                TEXTREGISTRY.secretRollTraits.modes.Downtime.lastActive = false
+                TEXTREGISTRY.SiteNameCenter.modes.Downtime.lastActive = false
+                TEXTREGISTRY.SiteNameLeft.modes.Downtime.lastActive = false
+                TEXTREGISTRY.SiteNameRight.modes.Downtime.lastActive = false
+                TEXTREGISTRY.stakedAdvantages.modes.Downtime.lastActive = true
+                TEXTREGISTRY.stakedCoterieAdvantages.modes.Downtime.lastActive = true
+                TEXTREGISTRY.subOutcome.modes.Downtime.lastActive = false
+                TEXTREGISTRY.tempC.modes.Downtime.lastActive = false
+                TEXTREGISTRY.tempF.modes.Downtime.lastActive = false
+                TEXTREGISTRY.testSessionNotice.modes.Downtime.lastActive = true
+                TEXTREGISTRY.TimeTracker.modes.Downtime.lastActive = true
+                TEXTREGISTRY.weather.modes.Downtime.lastActive = false
+                TEXTREGISTRY.weeklyResources.modes.Downtime.lastActive = true
+                TEXTREGISTRY.AvaDesire.modes.Downtime.lastState = "@@curText@@"
+                TEXTREGISTRY.compCardName_1.modes.Downtime.lastState = null
+                TEXTREGISTRY.compCardName_10.modes.Downtime.lastState = null
+                TEXTREGISTRY.compCardName_2.modes.Downtime.lastState = null
+                TEXTREGISTRY.compCardName_3.modes.Downtime.lastState = null
+                TEXTREGISTRY.compCardName_4.modes.Downtime.lastState = null
+                TEXTREGISTRY.compCardName_5.modes.Downtime.lastState = null
+                TEXTREGISTRY.compCardName_6.modes.Downtime.lastState = null
+                TEXTREGISTRY.compCardName_7.modes.Downtime.lastState = null
+                TEXTREGISTRY.compCardName_8.modes.Downtime.lastState = null
+                TEXTREGISTRY.compCardName_9.modes.Downtime.lastState = null
+                TEXTREGISTRY.complicationCurrent.modes.Downtime.lastState = null
+                TEXTREGISTRY.complicationRemaining.modes.Downtime.lastState = null
+                TEXTREGISTRY.complicationTarget.modes.Downtime.lastState = null
+                TEXTREGISTRY.Countdown.modes.Downtime.lastState = null
+                TEXTREGISTRY.dicePool.modes.Downtime.lastState = null
+                TEXTREGISTRY.difficulty.modes.Downtime.lastState = null
+                TEXTREGISTRY.goldMods.modes.Downtime.lastState = null
+                TEXTREGISTRY.LockeDesire.modes.Downtime.lastState = "@@curText@@"
+                TEXTREGISTRY.mainRoll.modes.Downtime.lastState = null
+                TEXTREGISTRY.margin.modes.Downtime.lastState = null
+                TEXTREGISTRY.NapierDesire.modes.Downtime.lastState = "@@curText@@"
+                TEXTREGISTRY.negMods.modes.Downtime.lastState = null
+                TEXTREGISTRY.outcome.modes.Downtime.lastState = null
+                TEXTREGISTRY.posMods.modes.Downtime.lastState = null
+                TEXTREGISTRY.redMods.modes.Downtime.lastState = null
+                TEXTREGISTRY.resultCount.modes.Downtime.lastState = null
+                TEXTREGISTRY.rollerName.modes.Downtime.lastState = null
+                TEXTREGISTRY.RoyDesire.modes.Downtime.lastState = "@@curText@@"
+                TEXTREGISTRY.secretRollTraits.modes.Downtime.lastState = null
+                TEXTREGISTRY.SiteNameCenter.modes.Downtime.lastState = null
+                TEXTREGISTRY.SiteNameLeft.modes.Downtime.lastState = null
+                TEXTREGISTRY.SiteNameRight.modes.Downtime.lastState = null
+                TEXTREGISTRY.stakedAdvantages.modes.Downtime.lastState = "@@curText@@"
+                TEXTREGISTRY.stakedCoterieAdvantages.modes.Downtime.lastState = "@@curText@@"
+                TEXTREGISTRY.subOutcome.modes.Downtime.lastState = null
+                TEXTREGISTRY.tempC.modes.Downtime.lastState = null
+                TEXTREGISTRY.tempF.modes.Downtime.lastState = null
+                TEXTREGISTRY.testSessionNotice.modes.Downtime.lastState = "@@curText@@"
+                TEXTREGISTRY.TimeTracker.modes.Downtime.lastState = "@@curText@@"
+                TEXTREGISTRY.weather.modes.Downtime.lastState = null
+                TEXTREGISTRY.weeklyResources.modes.Downtime.lastState = "@@curText@@"
+                TEXTREGISTRY.AvaDesire.modes.Complications.lastActive = true
+                TEXTREGISTRY.compCardName_1.modes.Complications.lastActive = true
+                TEXTREGISTRY.compCardName_10.modes.Complications.lastActive = true
+                TEXTREGISTRY.compCardName_2.modes.Complications.lastActive = true
+                TEXTREGISTRY.compCardName_3.modes.Complications.lastActive = true
+                TEXTREGISTRY.compCardName_4.modes.Complications.lastActive = true
+                TEXTREGISTRY.compCardName_5.modes.Complications.lastActive = true
+                TEXTREGISTRY.compCardName_6.modes.Complications.lastActive = true
+                TEXTREGISTRY.compCardName_7.modes.Complications.lastActive = true
+                TEXTREGISTRY.compCardName_8.modes.Complications.lastActive = true
+                TEXTREGISTRY.compCardName_9.modes.Complications.lastActive = true
+                TEXTREGISTRY.complicationCurrent.modes.Complications.lastActive = true
+                TEXTREGISTRY.complicationRemaining.modes.Complications.lastActive = true
+                TEXTREGISTRY.complicationTarget.modes.Complications.lastActive = true
+                TEXTREGISTRY.Countdown.modes.Complications.lastActive = false
+                TEXTREGISTRY.dicePool.modes.Complications.lastActive = false
+                TEXTREGISTRY.difficulty.modes.Complications.lastActive = false
+                TEXTREGISTRY.goldMods.modes.Complications.lastActive = false
+                TEXTREGISTRY.LockeDesire.modes.Complications.lastActive = true
+                TEXTREGISTRY.mainRoll.modes.Complications.lastActive = false
+                TEXTREGISTRY.margin.modes.Complications.lastActive = false
+                TEXTREGISTRY.NapierDesire.modes.Complications.lastActive = true
+                TEXTREGISTRY.negMods.modes.Complications.lastActive = false
+                TEXTREGISTRY.outcome.modes.Complications.lastActive = false
+                TEXTREGISTRY.posMods.modes.Complications.lastActive = false
+                TEXTREGISTRY.redMods.modes.Complications.lastActive = false
+                TEXTREGISTRY.resultCount.modes.Complications.lastActive = false
+                TEXTREGISTRY.rollerName.modes.Complications.lastActive = false
+                TEXTREGISTRY.RoyDesire.modes.Complications.lastActive = true
+                TEXTREGISTRY.secretRollTraits.modes.Complications.lastActive = false
+                TEXTREGISTRY.SiteNameCenter.modes.Complications.lastActive = false
+                TEXTREGISTRY.SiteNameLeft.modes.Complications.lastActive = false
+                TEXTREGISTRY.SiteNameRight.modes.Complications.lastActive = false
+                TEXTREGISTRY.stakedAdvantages.modes.Complications.lastActive = true
+                TEXTREGISTRY.stakedCoterieAdvantages.modes.Complications.lastActive = true
+                TEXTREGISTRY.subOutcome.modes.Complications.lastActive = false
+                TEXTREGISTRY.tempC.modes.Complications.lastActive = true
+                TEXTREGISTRY.tempF.modes.Complications.lastActive = true
+                TEXTREGISTRY.testSessionNotice.modes.Complications.lastActive = true
+                TEXTREGISTRY.TimeTracker.modes.Complications.lastActive = true
+                TEXTREGISTRY.weather.modes.Complications.lastActive = true
+                TEXTREGISTRY.weeklyResources.modes.Complications.lastActive = true
+                TEXTREGISTRY.AvaDesire.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.compCardName_1.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.compCardName_10.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.compCardName_2.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.compCardName_3.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.compCardName_4.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.compCardName_5.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.compCardName_6.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.compCardName_7.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.compCardName_8.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.compCardName_9.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.complicationCurrent.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.complicationRemaining.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.complicationTarget.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.Countdown.modes.Complications.lastState = null
+                TEXTREGISTRY.dicePool.modes.Complications.lastState = null
+                TEXTREGISTRY.difficulty.modes.Complications.lastState = null
+                TEXTREGISTRY.goldMods.modes.Complications.lastState = null
+                TEXTREGISTRY.LockeDesire.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.mainRoll.modes.Complications.lastState = null
+                TEXTREGISTRY.margin.modes.Complications.lastState = null
+                TEXTREGISTRY.NapierDesire.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.negMods.modes.Complications.lastState = null
+                TEXTREGISTRY.outcome.modes.Complications.lastState = null
+                TEXTREGISTRY.posMods.modes.Complications.lastState = null
+                TEXTREGISTRY.redMods.modes.Complications.lastState = null
+                TEXTREGISTRY.resultCount.modes.Complications.lastState = null
+                TEXTREGISTRY.rollerName.modes.Complications.lastState = null
+                TEXTREGISTRY.RoyDesire.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.secretRollTraits.modes.Complications.lastState = null
+                TEXTREGISTRY.SiteNameCenter.modes.Complications.lastState = null
+                TEXTREGISTRY.SiteNameLeft.modes.Complications.lastState = null
+                TEXTREGISTRY.SiteNameRight.modes.Complications.lastState = null
+                TEXTREGISTRY.stakedAdvantages.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.stakedCoterieAdvantages.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.subOutcome.modes.Complications.lastState = null
+                TEXTREGISTRY.tempC.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.tempF.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.testSessionNotice.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.TimeTracker.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.weather.modes.Complications.lastState = "@@curText@@"
+                TEXTREGISTRY.weeklyResources.modes.Complications.lastState = "@@curText@@"
+                
+                for (const textKey of _.keys(TEXTREGISTRY)) {
+                    TEXTREGISTRY[textKey].curMode = "Active"
+                    if (textKey.includes("Shadow"))
+                        continue
+                    const textObj = getTextObj(textKey),
+                        textData = getTextData(textKey)
+                    TEXTREGISTRY[textKey].curText = textObj.get("text")
+                    TEXTREGISTRY[textKey].activeText = _.isString(TEXTREGISTRY[textKey].activeText) ? TEXTREGISTRY[textKey].activeText : textObj.get("text")
+                    for (const mode of Session.Modes) {
+                        const modeRef = TEXTREGISTRY[textKey].modes[mode]
+                        for (const modeKey of _.keys(modeRef)) 
+                            if (modeRef[modeKey] === "@@curText@@")
+                                modeRef[modeKey] = textObj.get("text")                                
+                    }
+                }
                 for (const imgKey of _.keys(IMGREGISTRY)) {
-                    const imgData = getImgData(imgKey)
-                    if (imgData.isActive) {
-                        toggleImg(imgKey, true)
-                        setImg(imgKey, imgData.activeSrc)
-                    } else {
-                        const {activeSrc} = imgData
-                        toggleImg(imgKey, false)
-                        setImg(imgKey, "blank")
-                        IMGREGISTRY[imgKey].activeSrc = activeSrc
-                    }
+                    IMGREGISTRY[imgKey].curMode = "Active"
                 }
-            })()
-
-        // STATEREF.imgregistry.mapButtonDomain_1.cycleSrcs = ["anarch", "camarilla", "nodomain"]
-        },
-    // #endregion
-
-    // #region EVENT HANDLERS: (HANDLEINPUT)
-        handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
-            let textParams
-            switch (call.shift().toLowerCase()) {
-                case "!area": {
-                    switch (call.shift().toLowerCase()) {
-                        case "reg": case "register": {
-                            if (!args[0])
-                                D.Alert("Syntax: !area reg &lt;areaName&gt;", "!area reg")                                
-                            else if (VAL({graphicObj: getImgObj(msg)}, "!area reg"))
-                                regArea(getImgObj(msg), args.shift())                                        
-                            break
-                        }
-                        case "get": {
-                            switch (args.shift().toLowerCase()) {
-                                case "names": {
-                                    D.Alert(`Registered Areas:<br>${D.JS(_.keys(AREAREGISTRY))}`)
-                                    break
-                                }
-                                // no default
-                            }
-                        }
-                        // no default
-                    }
-                    break
-                }
-                case "!img": {
-                    switch (call.shift().toLowerCase()) {
-                        case "testzlevel": {
-                            D.Alert(D.JS(getZLevel(args.shift())))
-                            break
-                        }
-                        case "backup": {
-                            STATEREF.backup = {
-                                arearegistry: JSON.parse(JSON.stringify(AREAREGISTRY)),
-                                imgregistry: JSON.parse(JSON.stringify(IMGREGISTRY)),
-                                textregistry: JSON.parse(JSON.stringify(TEXTREGISTRY))
-                            }
-                            D.Alert("Media Registry Backup Updated.", "!img backup")
-                            break
-                        }
-                        case "reg": case "register": {
-                            const imgObj = getImgObj(msg)
-                            if (args[0] && VAL({graphicObj: imgObj}, "!img reg"))                                
-                                switch (args[0]) {
-                                    case "token": {
-                                        args.shift()
-                                        const tokenName = args.shift()
-                                        if (VAL({string: tokenName}, "!img reg token"))
-                                            regRandomizerToken(imgObj, tokenName)
-                                        break
-                                    }
-                                    default: {
-                                        const [hostName, srcName, objLayer, isStartActive] = [args.shift(), args.shift(), args.shift(), args.shift()]
-                                        if (hostName && srcName && objLayer && isStartActive)
-                                            regImg(imgObj, hostName, srcName, objLayer, !isStartActive || isStartActive !== "false", D.ParseToObj(args.join(" ")))
-                                        else
-                                            D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; [params (\"key:value, key:value\")]", "MEDIA: !img reg")    
-                                        break
-                                    }
-                                }
-                            else
-                                D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; [params (\"key:value, key:value\")]<br>!img reg token &lt;tokenName&rt;", "MEDIA: !img reg")
-                            break
-                        }
-                        case "set": {
-                            switch (args.shift().toLowerCase()) {
-                                case "source": case "src": {
-                                    let [hostName, srcName] = ["", ""]
-                                    if (VAL({token: (D.GetSelected(msg) || [])[0]})) {
-                                        hostName = Media.GetImgData(D.GetSelected(msg)[0]).name;
-                                        [srcName] = args
-                                    } else {
-                                        [hostName, srcName] = args
-                                    }
-                                    if (isRegImg(hostName))
-                                        setImg(hostName, srcName)
-                                    else
-                                        D.Alert(`Img name ${D.JS(hostName)} is not registered.`, "MEDIA: !img set src")
-                                    break
-                                }
-                                case "area": {
-                                    const imgObj = getImgObj(msg)
-                                    if (!imgObj)
-                                        D.Alert("Select an image first!", "MEDIA: !img set area")
-                                    else
-                                        setImgArea(imgObj, args.shift(), args.shift().toLowerCase === "resize")
-                                    break
-                                }
-                                case "params": {
-                                    const imgObj = getImgObj(args[0]) || getImgObj(msg),
-                                        params = D.ParseParams(args)
-                                    if (VAL({graphicObj: imgObj}, "!img set params"))
-                                        setImgTemp(imgObj, params)
-                                    break
-                                }
-                                case "loc": case "location": {                                    
-                                    DB(`SET LOCATION COMMAND RECEIVED.  MSG: ${D.JS(msg)}`, "!img set loc")         
-                                    setLocation(args.join(" "))
-                                    break
-                                }
-                                case "mode": {
-                                    const imgObjs = D.GetSelected(msg) || [getImgObjs(args.shift())]
-                                    if (VAL({graphic: imgObjs}, "!img set mode", true)) {
-                                        const mode = args.shift(),
-                                            params = D.ParseParams(args)
-                                        for (const imgObj of imgObjs)
-                                            if (isRegImg(imgObj)) {
-                                                const REGREF = IMGREGISTRY[getImgKey(imgObj)]
-                                                REGREF.modes = REGREF.modes || D.KeyMapObj(Session.Modes, (k,v) => v.toLowerCase(), () => ({}))
-                                                REGREF.modes[mode] = REGREF.modes[mode] || {}
-                                                for (const param of _.keys(params))
-                                                    REGREF.modes[mode][param] = params[param]
-                                            }
-                                    }
-                                    break
-                                }
-                            // no default
-                            }
-                            break
-                        }
-                        case "clean": case "cleanreg": case "cleanregistry": {
-                            if (args[0] && args[0].toLowerCase() === "confirm")
-                                cleanRegistryConfirm()
-                            else
-                                cleanRegistry()
-                            break
-                        }
-                        case "add": {
-                            let hostName, srcName
-                            switch (args.shift().toLowerCase()) {
-                                case "cyclesrc": case "cycle": {
-                                    [hostName, srcName] = args
-                                    if (isRegImg(hostName)) {
-                                        IMGREGISTRY[getImgKey(hostName)].cycleSrcs = IMGREGISTRY[getImgKey(hostName)].cycleSrcs || []
-                                        IMGREGISTRY[getImgKey(hostName)].cycleSrcs.push(srcName)
-                                    }
-                                }
-                                // falls through
-                                case "src": case "source": {
-                                    hostName = hostName || args[0]
-                                    srcName = srcName || args[1]
-                                    if (isRegImg(hostName)) {
-                                        hostName = getImgKey(hostName)
-                                        if (!_.isObject(IMGREGISTRY[hostName].srcs))
-                                            IMGREGISTRY[hostName].srcs = {}
-                                        if (srcName)
-                                            addImgSrc(msg, hostName, srcName)
-                                        else
-                                            D.Alert(`Invalid image name '${D.JS(srcName)}'`, "MEDIA: !img add src")
-                                    } else {
-                                        D.Alert(`Host name '${D.JS(hostName)}' not registered.`, "MEDIA: !img add src")
-                                    }
-                                    break
-                                }
-                                case "tokensrc": case "tokensource": {
-                                    const tokenName = args.shift()
-                                    if (isRegImg(tokenName))
-                                        addTokenSrc(getImgObj(msg), tokenName)
-                                    break
-                                }
-                                default: {
-                                    D.Alert("<b>Syntax:<br><br><pre>!img add &lt;src/area&gt; &lt;hostName&gt; &lt;srcName&gt;</pre>", "MEDIA: !img add")
-                                    break
-                                }
-                            }
-                            break
-                        }
-                        case "del": case "delete": {
-                            if ((args[0] || "").toLowerCase() === "all") {
-                                args.shift()
-                                for (const hostName of _.keys(IMGREGISTRY))
-                                    if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
-                                        removeImg(hostName)
-                            } else if (getImgObjs(msg).length) {
-                                for (const obj of getImgObjs(msg))
-                                    removeImg(obj)
-
-                            } else if (args[0] && getImgObj(args.join(" "))) {
-                                removeImg(args.join(" "))
-                            } else {
-                                D.Alert(`Provide "all" (plus an optional host name substring), a registered host name, or select image objects. <b>Syntax:</b><br><br><pre>!img del all <hostSubstring>
-                    !img del <hostName></pre>`, "MEDIA: !img del")
-                            }
-                            break
-                        }
-                        case "unreg": case "unregister": {
-                        // D.Alert(`ARGS: ${D.JS(args)}<br><br>getImgObj('${D.JS(args.join(" "))}'):<br><br>${D.JS(getImgObj(args.join(" ")))}`)
-                            if ((args[0] || "").toLowerCase() === "all") {
-                                args.shift()
-                                for (const hostName of _.keys(IMGREGISTRY))
-                                    if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
-                                        removeImg(hostName, true)
-                            } else if (_.compact(getImgObjs(msg)).length) {
-                                for (const obj of getImgObjs(msg))
-                                    removeImg(obj, true)
-
-                            } else if (args[0] && getImgObj(args.join(" "))) {
-                                removeImg(args.join(" "), true)
-                            } else if (args[0] && IMGREGISTRY[args.join(" ")]) {
-                                delete IMGREGISTRY[args.join(" ")]
-                            } else {
-                                D.Alert("Provide \"all\", a registered host name, or select image objects. <b>Syntax:</b><br><br><pre>!img unreg all/<<hostName>>")
-                            }
-                            break
-                        }
-                        case "reset": {
-                            switch (args.shift().toLowerCase()) {
-                                case "pos": case "position": {
-                                    const imgObjs = D.GetSelected(msg)
-                                    for (const imgObj of imgObjs)
-                                        if (VAL({graphicObj: imgObj}, "!img set pos")) {
-                                            const hostName = getImgKey(imgObj)
-                                            IMGREGISTRY[hostName].top = parseInt(imgObj.get("top"))
-                                            IMGREGISTRY[hostName].left = parseInt(imgObj.get("left"))
-                                            IMGREGISTRY[hostName].height = parseInt(imgObj.get("height"))
-                                            IMGREGISTRY[hostName].width = parseInt(imgObj.get("width"))
-                                            D.Alert(`Position Set for Img ${hostName}<br><br><pre>${D.JS(IMGREGISTRY[hostName])}</pre>`)
-                                        }
-                                    break
-                                }
-                                case "cyclesrc": case "cyclesrcs": {
-                                    const imgKey = getImgKey(D.GetSelected(msg)[0]) || getImgKey(args.shift())
-                                    if (isRegImg(imgKey))
-                                        delete IMGREGISTRY[imgKey].cycleSrcs
-                                    break
-                                }
-                                // no default
-                            }
-                            break
-                        }
-                        case "toggle": {
-                            DB(`TOGGLE COMMAND RECEIVED.  MESSAGE IS AS FOLLOWS:<br><br>${D.JS(msg)}`, "!img toggle")
-                            switch (args.shift().toLowerCase()) {
-                                case "on": {
-                                    DB(`Toggling ON: ${D.JS(args)}`, "!img toggle")
-                                    for (const param of args)
-                                        toggleImg(param, true)
-                                    break
-                                }
-                                case "off": {
-                                    DB(`Toggling OFF: ${D.JS(args)}`, "!img toggle")
-                                    for (const param of args)
-                                        toggleImg(param, false)
-                                    break
-                                }
-                                case "log": {
-                                    imgRecord = !imgRecord
-                                    if (imgRecord)
-                                        D.Alert("Logging image data as they are added to the sandbox.", "MEDIA, !img toggle log")
-                                    else
-                                        D.Alert("Img logging disabled.", "MEDIA, !img toggle log")
-                                    break
-                                }
-                                case "resize": {
-                                    const params = D.ParseParams(args)
-                                    if (!imgResize || params.length) {
-                                        imgResize = true
-                                        for (const param of params)
-                                            [,STATEREF.imgResizeDims[param[0]]] = [param]
-                                        D.Alert(`New imagess automatically resized to height: ${STATEREF.imgResizeDims.height}, width: ${STATEREF.imgResizeDims.width}.`, "!img toggle resize")
-                                    } else {
-                                        imgResize = false
-                                        D.Alert("Img resizing disabled.", "MEDIA, !img toggle resize")
-                                    }
-                                    break
-                                }
-                                default: {
-                                    D.Alert("Must state either 'on', 'off', 'log' or 'resize'.  <b>Syntax:</b><br><br><pre>!img toggle &lt;on/off&gt; &lt;hostnames&gt;</pre><br><pre>!img toggle log/resize</pre>", "MEDIA: !img toggle")
-                                    break
-                                }
-                            }
-                            break
-                        }
-                        case "align": {
-                            if (D.GetSelected(msg))
-                                alignImgs(msg, ...args)
-                            break
-                        }
-                        case "get": {
-                            switch (args.shift().toLowerCase()) {
-                                case "zlevels": {
-                                    const sortFunc = (a, b) => {
-                                            let [aVal, bVal] = [1000*a[2], 1000*b[2]]
-                                            if (a[2] === b[2]) {
-                                                if (a[0] === b[0]) {
-                                                    aVal += Number(a[1].match(/_(\d*)$/i)[1])
-                                                    bVal += Number(b[1].match(/_(\d*)$/i)[1])
-                                                } else {
-                                                    aVal += a[0] > b[0] ? 1 : -1
-                                                    bVal += b[0] > a[0] ? 1 : -1
-                                                }
-                                                return aVal - bVal
-                                            }
-                                            return bVal - aVal
-                                        },
-                                        reportTables = [
-                                            getZLevels().map.sort(sortFunc).map(x => `<tr><td><b>${x[2]}</b></td><td>${x[0]}</td><td>${x[1]}</td></tr>`),
-                                            getZLevels().objects.sort(sortFunc).map(x => `<tr><td><b>${x[2]}</b></td><td>${x[0]}</td><td>${x[1]}</td></tr>`)
-                                        ]
-                                    D.Alert(`<h2>MAP</h2><table><tr><td style="width: 60px;"></td><td style="width: 100px;"></td><td style="width: 100px;"></td></tr>${reportTables[0]}</table><h2>OBJECTS</h2><table><tr><td style="width: 60px;"></td><td style="width: 100px;"></td><td style="width: 100px;"></td></tr>${reportTables[1]}</table>`)
-                                    break
-                                }
-                                case "active": {
-                                    const startActiveNames = {
-                                            objects: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer === "objects" && x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`),
-                                            map: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer === "map" && x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`),
-                                            other: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`)
-                                        },
-                                        startInactiveNames = {
-                                            objects: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer === "objects" && !x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`),
-                                            map: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer === "map" && !x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`),
-                                            other: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && !x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`)
-                                        }
-                                    D.Alert([
-                                        "<h2>ACTIVE OBJECTS</h2>",
-                                        ...startActiveNames.objects,
-                                        "<h2>ACTIVE MAP</h2>",
-                                        ...startActiveNames.map,
-                                        "<h2>ACTIVE OTHER</h2>",
-                                        ...startActiveNames.other,
-                                        "<h2>INACTIVE OBJECTS</h2>",
-                                        ...startInactiveNames.objects,
-                                        "<h2>INACTIVE MAP</h2>",
-                                        ...startInactiveNames.map,
-                                        "<h2>INACTIVE OTHER</h2>",
-                                        ...startInactiveNames.other
-                                    ].join("<br>"))
-                                    break
-                                }
-                                case "data": {
-                                    const imgData = getImgData(msg, true) || getImgData(args.shift())
-                                    if (VAL({list: imgData}, "!img get data"))
-                                        D.Alert(D.JS(args[0] && imgData[args[0]] || imgData), "MEDIA, !img get data")
-                                    break
-                                }
-                                case "names": {
-                                    D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(IMGREGISTRY))}`)
-                                    break
-                                }
-                            // no default
-                            }
-                            break
-                        }
-                        case "fix": {
-                            switch (args.shift().toLowerCase()) {
-                                case "layers": {
-                                    setActiveLayers(args[0] === "true")
-                                    break
-                                }
-                                case "zlevels": {
-                                    setZIndices()
-                                    break
-                                }
-                                case "backgrounds": {
-                                    for (const imgObj of getImgObjs(BGIMGS.keys))
-                                        setImgData(imgObj, {
-                                            top: BGIMGS.top,
-                                            left: BGIMGS.left,
-                                            height: BGIMGS.height,
-                                            width: BGIMGS.width
-                                        }, true)
-                                    for(const imgObj of getImgObjs(MAPIMGS.keys))                                    
-                                        setImgData(imgObj, {
-                                            top: MAPIMGS.top,
-                                            left: MAPIMGS.left,
-                                            height: MAPIMGS.height,
-                                            width: MAPIMGS.width
-                                        }, true)
-                                    break
-                                }
-                                // no default
-                            }
-                            break
-                        }
-                        case "adjust": {
-                            const imgObjs = D.GetSelected(msg) || [getImgObj(args.shift())],
-                                [deltaX, deltaY] = args.map(x => x === "x" ? 0 : parseFloat(x))
-                            for (const imgObj of imgObjs)
-                                if (VAL({graphic: imgObj}))
-                                    setImgTemp(imgObj, {
-                                        left: parseFloat(imgObj.get("left")) + (deltaX || 0),
-                                        top: parseFloat(imgObj.get("top")) + (deltaY || 0)
-                                    })
-                            break
-                        }
-                    // no default
-                    }
-                    break
-                }
-                case "!text": {
-                    switch (call.shift().toLowerCase()) {                                                
-                        case "get":
-                            switch (args.shift().toLowerCase()) {
-                                case "data": {
-                                    const textObj = VAL({selection: msg}) ? getTextObj(msg) : getTextObj(args.shift())
-                                    if (textObj)
-                                        D.Alert(D.JS(getTextData(textObj)), "!text get data")
-                                    else
-                                        D.Alert("Syntax: !text get data [<name>] (or select a text object object)", "!text get data")
-                                    break
-                                }
-                                case "width": {
-                                    const textObj = getTextObj(msg),
-                                        textString = msg.content.match(/@@(.*?)@@/ui)[1]
-                                    D.Alert(`The width of @@${textString}@@ is ${getTextWidth(textObj, textString, false)}`)
-                                    break
-                                }
-                                case "names":
-                                    D.Alert(D.JS(_.keys(TEXTREGISTRY)), "!text get names")
-                                    break
-                                case "widths": {
-                                    const dbStrings = []
-                                    for (const textData of _.values(STATEREF.textregistry)) {
-                                        textData.justification = "left"
-                                        const textObj = getObj("text", textData.id)
-                                        if (textObj) {
-                                            const text = textObj.get("text"),
-                                                left = textObj.get("left"),
-                                                textWidth = getTextWidth(textObj, text)
-                                            let width = textObj.get("width")                                                
-                                            if (width === 0) {
-                                                textObj.set("left", left + 10)
-                                                width = textObj.get("width")
-                                                textObj.set("left", left)
-                                            }
-                                            dbStrings.push(`${textData.name}: width: ${width} --> ${textWidth}`)
-                                        }
-                                    }
-                                    D.Alert(`${dbStrings.join("<br>")}`, "Text Width Check")
-                                    break
-                                }
-                                case "active": {
-                                    const startActiveNames = {
-                                            objects: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "objects" && x.startActive).map(x => x.name),
-                                            map: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "map" && x.startActive).map(x => x.name),
-                                            other: _.values(TEXTREGISTRY).filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && x.startActive).map(x => x.name)
-                                        },
-                                        startInactiveNames = {
-                                            objects: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "objects" && !x.startActive).map(x => x.name),
-                                            map: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "map" && !x.startActive).map(x => x.name),
-                                            other: _.values(TEXTREGISTRY).filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && !x.startActive).map(x => x.name)
-                                        }
-                                    D.Alert([
-                                        "<h2>ACTIVE OBJECTS</h2>",
-                                        ...startActiveNames.objects,
-                                        "<h2>ACTIVE MAP</h2>",
-                                        ...startActiveNames.map,
-                                        "<h2>ACTIVE OTHER</h2>",
-                                        ...startActiveNames.other,
-                                        "<h2>INACTIVE OBJECTS</h2>",
-                                        ...startInactiveNames.objects,
-                                        "<h2>INACTIVE MAP</h2>",
-                                        ...startInactiveNames.map,
-                                        "<h2>INACTIVE OTHER</h2>",
-                                        ...startInactiveNames.other
-                                    ].join("<br>"))
-                                    break
-                                }
-                                // no default
-                            }
-                            break
-                        case "set":
-                            switch ((args[0] || "").toLowerCase()) {
-                                case "updateslave": {
-                                    updateSlaveText(args[1])
-                                    break
-                                }
-                                case "slave": {
-                                    args.shift()
-                                    try {
-                                        const textObj = getTextObj(msg),
-                                            [hostName, edgeDir] = [args.shift(), args.shift()],
-                                            horizPad = parseInt(args[0] ? args.shift() : 0),
-                                            vertPad = parseInt(args[0] ? args.shift() : 0)
-                                        linkText(hostName, {[edgeDir]: [getTextKey(textObj)]}, horizPad, vertPad)
-                                    } catch (errObj) {
-                                        D.Alert(`Syntax: !text set slave (hostName) (edgeDirection) (horizPad) (vertPad)<br>${JSON.stringify(errObj)}`, "!text set slave")
-                                    }
-                                    break
-                                }
-                                case "justify": case "justification": case "just": {
-                                    args.shift()
-                                    const justification = args.shift() || "center"
-                                    if (VAL({selection: msg})) 
-                                        for(const textObj of D.GetSelected(msg))
-                                            justifyText(textObj, justification)
-                                    else 
-                                        for (const textKey of args)
-                                            justifyText(textKey, justification)                            
-                                    break
-                                }
-                                case "params": {
-                                    args.shift()
-                                    const textObj = getTextObj(args[0]) || getTextObj(msg),
-                                        params = D.ParseParams(args)
-                                    if (VAL({textObj}, "!text set params"))
-                                        setTextData(textObj, params)
-                                    break   
-                                }
-                                default: {
-                                    const textObj = getTextObj(args[0], true) || D.GetSelected(msg)[0]
-                                    if (getTextObj(args[0], true))
-                                        args.shift()
-                                    if (VAL({textObj}, "!text set"))
-                                        setText(textObj, args[0] && args.join(" ") || " ")
-                                    break
-                                }
-                            // no default                                    
-                            }
-                            break
-                        case "clean": case "cleanreg": case "cleanregistry":
-                            cleanTextRegistry()
-                            break
-                        case "reset": case "resetreg": case "resetregistry": {
-                            switch((args[0] || "").toLowerCase()) {
-                                case "pos": case "position": {
-                                    args.shift()
-                                    const textObj = getTextObj(msg)
-                                    if (!textObj) {
-                                        D.Alert("Select a text object first!", "MEDIA: !text set position")
-                                    } else if (!IDREGISTRY[textObj.id]) {
-                                        D.Alert("Text not registered.  To register selected text:<br><br><pre>!text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; [params (\"key:value, key:value\")]</pre>", "!text set position")
-                                    } else {
-                                        const hostName = getTextKey(msg)
-                                        setTextData(textObj, {top: parseInt(textObj.get("top")), left: getBlankLeft(textObj), layer: textObj.get("layer")})
-                                        D.Alert(`Position Set for Text ${hostName}<br><br><pre>${D.JS(TEXTREGISTRY[hostName])}</pre>`)
-                                    }
-                                    break
-                                }
-                                default: {
-                                    resetTextRegistry()
-                                    break
-                                }
-                            }
-                            break
-                        }
-                        case "del": case "delete": {
-                            if ((args[0] || "").toLowerCase() === "all") {
-                                args.shift()
-                                for (const hostName of _.keys(TEXTREGISTRY))
-                                    if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
-                                        removeText(hostName)
-                            } else if (getTextObjs(msg).length) {
-                                for (const obj of getTextObjs(msg))
-                                    removeText(obj)
-                            } else if (args[0] && getTextObj(args.join(" "))) {
-                                removeText(args.join(" "))
-                            } else {
-                                D.Alert(`Provide "all" (plus an optional host name substring), a registered host name, or select text objects. <b>Syntax:</b><br><br><pre>!text del all <hostSubstring>
-                    !text del <hostName></pre>`, "!text del")
-                            }
-                            break
-                        }
-                        case "rereg": case "reregister": {
-                            if (VAL({selection: msg})) {                         
-                                const textData = getTextData(msg, true)
-                                args[0] = args[0] || textData.name
-                                args[1] = args[1] || textData.activeLayer
-                                args[2] = args[2] || textData.startActive
-                                args[3] = args[3] || hasShadowObj(msg)
-                                args[4] = args[4] || textData.justification
-                                textParams = args.slice(4).join(" ")
-                                textParams = _.compact([
-                                    textParams.includes("vertAlign") ? "" : `vertAlign:${textData.vertAlign || "top"}`,
-                                    textData.maxWidth && !textParams.includes("maxWidth") ? `maxWidth:${textData.maxWidth}` : "",
-                                    textParams.includes("zIndex") ? "" : `zIndex:${textData.zIndex || 300}`
-                                ]).join(",") + textParams
-                                removeText(msg, true, true)
-                            }
-                        }
-                        // falls through
-                        case "reg": case "register": {
-                            if (!args[0]) {
-                                D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
-                            } else {
-                                const textObj = getTextObj(msg)
-                                if (!textObj) {
-                                    D.Alert("Select a text object first!", "MEDIA: !text reg")
-                                } else {
-                                    const [hostName, objLayer, isStartActive, isShadow, justification] = [args.shift(), args.shift(), args.shift(), args.shift(), args.shift()]
-                                    textParams = textParams || args.join(" ")
-                                    if (hostName && objLayer)
-                                        regText(textObj, hostName, objLayer, !isStartActive || isStartActive !== "false", !isShadow || isShadow !== "false", justification || "center", D.ParseToObj(textParams))
-                                    else
-                                        D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
-                                }
-                            }
-                            break
-                        }
-                        case "unreg": case "unregister": {
-                            if ((args[0] || "").toLowerCase() === "all") {
-                                args.shift()
-                                for (const hostName of _.keys(TEXTREGISTRY))
-                                    if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
-                                        removeText(hostName, true, true)
-                            } else if (args[0]) {
-                                removeText(args.join(" "), true, true)
-                            } else if (_.compact(getTextObjs(msg)).length) {
-                                for (const obj of getTextObjs(msg))
-                                    removeText(obj, true, true)
-                            } else {
-                                D.Alert("Provide \"all\", a registered host name, or select text objects. <b>Syntax:</b><br><br><pre>!text unreg all/<<hostName>>")
-                            }
-                            break
-                        }
-                        case "toggle":
-                            switch (args.shift().toLowerCase()) {
-                                case "on":
-                                    DB(`Toggling ON: ${D.JS(args)}`, "!text toggle")
-                                    for (const param of args)
-                                        toggleText(param, true)
-                                    break
-                                case "off":
-                                    DB(`Toggling OFF: ${D.JS(args)}`, "!text toggle")
-                                    for (const param of args)
-                                        toggleText(param, false)
-                                    break
-                                default:
-                                    D.Alert("Must state either 'on' or 'off'.  <b>Syntax:</b><br><br><pre>!text toggle &lt;on/off&gt; &lt;hostnames&gt;</pre>", "MEDIA: !text toggle")
-                                    break
-                            }
-                            break
-                    // no default
-                    }
-                    break
-                }
-                case "!anim": {
-                    switch (call.shift().toLowerCase()) {
-                        case "reg": case "register":
-                            if (!args[0] || !D.GetSelected(msg)) 
-                                D.Alert("Select an animation first!<br><br>Syntax: !anim reg &lt;animName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;timeout&gt;", "MEDIA: !anim reg")
-                            else
-                                regAnimation(msg, args.shift(), args.shift(), args.shift())
-                            break
-                        case "fire":
-                            fireAnimation(args.shift())
-                            break
-                        case "kill": {
-                            switch (args.shift().toLowerCase()) {
-                                case "all": {
-                                    killAllAnimations()
-                                    D.Alert("All animations cleared.", "!anim kill all")
-                                    break
-                                }
-                                case "time": case "timers": case "timeouts": {
-                                    killAllTimeouts()
-                                    D.Alert("All timeouts cleared.", "!anim kill timeouts")
-                                    break
-                                }
-                                // no default
-                            }
-                        }
-                        // no default
-                    }
-                    break
-                }
-                // no default
             }
-        },
-        handleAdd = obj => {
-            if (imgRecord)
-                LOG(obj.get("imgsrc"))
-            if (imgResize)
-                obj.set(STATEREF.imgResizeDims)
-            if (isRandomizerToken(obj))
-                setRandomizerToken(obj)
-        }
-    // #endregion
-    // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
-
-    let [imgRecord, imgResize] = [false, false]
-
-    // #region CONFIGURATION
-    const IMGREGISTRY = STATEREF.imgregistry,
-        IDREGISTRY = STATEREF.idregistry,
-        TEXTREGISTRY = STATEREF.textregistry,
-        AREAREGISTRY = STATEREF.areas,
-        TOKENREGISTRY = STATEREF.tokenregistry,
-        BGIMGS = {
-            top: C.SANDBOX.top,
-            left: C.SANDBOX.left,
-            height: C.SANDBOX.height,
-            width: C.SANDBOX.width,
-            keys: [
-                "Horizon",
-                "WeatherGround",
-                "WeatherMain",
-                "WeatherFog",
-                "WeatherClouds",
-                "WeatherFrost"            
-            ]
-        },
-        MAPIMGS = {
-            top: C.MAP.top,
-            left: C.MAP.left,
-            height: C.MAP.height,
-            width: C.MAP.width,
-            keys: [
-                "TorontoMap",
-                "TorontoMapDomainsOverlay",
-                "TorontoMapAutarkisOverlay",
-                "TorontoMapRackOverlay",
-                "TorontoMapDistrictsOverlay",
-                "TorontoMapParksOverlay"
-            ]
-        },
-        ZLEVELS = {
-            defaultZLevel: 500,
-            map: {
-                DistrictsAndSites: {
-                    DistrictCenter_1: 140,
-                    DistrictLeft_1: 140,
-                    DistrictRight_1: 140,
-                    SiteCenter_1: 145,
-                    SiteLeft_1: 145,
-                    SiteRight_1: 145,
-                    SiteBars: { 
-                        SiteBarCenter_1: 150,    
-                        SiteBarLeft_1: 150,
-                        SiteBarRight_1: 150
-                    }
-                },
-                AirLights: {
-                    AirLightLeft_1: 100,
-                    AirLightMid_1: 100,
-                    AirLightTop_1: 100,
-                    AirLightCN_4: 100,
-                    AirLightCN_5: 100
-                },
-                SignalLights: {
-                    SignalLightTopRight_1: 120,
-                    SignalLightBotRight_1: 120,
-                    SignalLightBotLeft_1: 120,
-                    SignalLightTopLeft_1: 120
-                },
-                HungerOverlays: {
-                    HungerBotLeft_1: 100,
-                    HungerTopLeft_1: 100,
-                    HungerTopRight_1: 100,
-                    HungerBotRight_1: 100
-                },
-                TombstoneShrouds: {
-                    // ShroudTopLeft_1: 107
-                },
-                HorizonBGs: {
-                    Horizon_1: 1
-                },
-                WeatherOverlays: {
-                    WeatherFrost_1: 139,
-                    WeatherFog_1: 125,
-                    WeatherMain_1: 124, 
-                    // WeatherLightning: 110,
-                    WeatherGround_1: 110,
-                    WeatherClouds_1: 105
-                },
-                Banners: {
-                    downtimeBanner_1: 200
-                },
-                DiceRoller: {
-                    Frame: {
-                        rollerImage_frontFrame_1: 151,
-                        TopMids: {
-                            rollerImage_topMid_1: 152,
-                            rollerImage_topMid_2: 153,
-                            rollerImage_topMid_3: 154,
-                            rollerImage_topMid_4: 155,
-                            rollerImage_topMid_5: 156,
-                            rollerImage_topMid_6: 157,
-                            rollerImage_topMid_7: 158,
-                            rollerImage_topMid_8: 159,
-                            rollerImage_topMid_9: 160
-                        },
-                        BottomMods: {                  
-                            rollerImage_bottomMid_1: 152,
-                            rollerImage_bottomMid_2: 153,
-                            rollerImage_bottomMid_3: 154,
-                            rollerImage_bottomMid_4: 155,
-                            rollerImage_bottomMid_5: 156,
-                            rollerImage_bottomMid_6: 157,
-                            rollerImage_bottomMid_7: 158,
-                            rollerImage_bottomMid_8: 159,
-                            rollerImage_bottomMid_9: 160
-                        },
-                        rollerImage_topEnd_1: 160,
-                        rollerImage_bottomEnd_1: 161,
-                        rollerImage_diffFrame_1: 165
-                    },
-                    RerollTrigger: {
-                        wpRerollPlaceholder_1: 0
-                    },
-                    DiceList: {                        
-                        rollerDie_diceList_1: 199,
-                        rollerDie_diceList_2: 198,
-                        rollerDie_diceList_3: 197,
-                        rollerDie_diceList_4: 196,
-                        rollerDie_diceList_5: 195,
-                        rollerDie_diceList_6: 194,
-                        rollerDie_diceList_7: 193,
-                        rollerDie_diceList_8: 192,
-                        rollerDie_diceList_9: 191,
-                        rollerDie_diceList_10: 190,
-                        rollerDie_diceList_11: 189,
-                        rollerDie_diceList_12: 188,
-                        rollerDie_diceList_13: 187,
-                        rollerDie_diceList_14: 186,
-                        rollerDie_diceList_15: 185,
-                        rollerDie_diceList_16: 184,
-                        rollerDie_diceList_17: 183,
-                        rollerDie_diceList_18: 182,
-                        rollerDie_diceList_19: 181,
-                        rollerDie_diceList_20: 180,
-                        rollerDie_diceList_21: 179,
-                        rollerDie_diceList_22: 178,
-                        rollerDie_diceList_23: 177,
-                        rollerDie_diceList_24: 176,
-                        rollerDie_diceList_25: 175,
-                        rollerDie_diceList_26: 174,
-                        rollerDie_diceList_27: 173,
-                        rollerDie_diceList_28: 172,
-                        rollerDie_diceList_29: 171,
-                        rollerDie_diceList_30: 170
-                    },
-                    BigDice: {
-                        rollerDie_bigDice_1: 199,
-                        rollerDie_bigDice_2: 198
-                    }
-                },
-                Headers: {
-                    stakedAdvantagesHeader_1: 130,
-                    weeklyResourcesHeader_1: 130
-                },
-                Map: {
-                    TorontoMap_1: 1,
-                    TorontoMapDomainOverlay_1: 5,
-                    TorontoMapAutarkisOverlay_1: 5,
-                    TorontoMapRackOverlay_1: 4,
-                    TorontoMapRoadsOverlay_1: 6,
-                    TorontoMapDistrictsOverlay_1: 7,
-                    TorontoMapParksOverlay_1: 4,
-                    TorontoMapSitesCultureOverlay_1: 8,
-                    TorontoMapSitesNightlifeOverlay_1: 8,
-                    TorontoMapSitesLandmarksOverlay_1: 8,
-                    TorontoMapSitesTransportationOverlay_1: 8,
-                    TorontoMapSitesShoppingOverlay_1: 8,
-                    TorontoMapSitesEducationOverlay_1: 8,
-                    TorontoMapSitesHealthOverlay_1: 8,
-                    TorontoMapSitesHavensOverlay_1: 8
+            if (isResetting)
+                resetAllModeData()
+            
+            const errorLines = ["<h3>IMAGE ERRORS:</h3>"]
+            for (const imgKey of _.keys(IMGREGISTRY)) {
+                const imgData = getImgData(imgKey),
+                    imgObj = getImgObj(imgKey),
+                    imgActiveState = imgData.isActive,
+                    imgSrcs = _.keys(getImgSrcs(imgKey)),
+                    imgErrors = []
+                // Reset Active status by toggling both ways.
+                if (isToggling) {
+                    toggleImg(imgKey, !imgActiveState)
+                    toggleImg(imgKey, imgActiveState)
+                    // If image is active, set it to its top source OR if it has no top source, to blank.
+                    // (if image is NOT active, toggle should have set it to blank anyways.)
+                    setImg(imgKey, _.keys(imgData.srcs)[0] || "blank")
                 }
-            },
-            objects: {
-                PlayerTokens: {
-                    "Dr.ArthurRoyToken_1": 200,
-                    JohannesNapierToken_1: 200,
-                    AvaWongToken_1: 200,
-                    LockeUlrichToken_1: 200
-                },
-                Complications: {
-                    Base: {
-                        ComplicationMat_1: 500
-                    },
-                    CardSlots: {
-                        compCardSpot_1: 505,
-                        compCardSpot_2: 505,
-                        compCardSpot_3: 505,
-                        compCardSpot_4: 505,
-                        compCardSpot_5: 505,
-                        compCardSpot_6: 505,
-                        compCardSpot_7: 505,
-                        compCardSpot_8: 505,
-                        compCardSpot_9: 505,
-                        compCardSpot_10: 505
-                    },
-                    ZeroedOverlays: {
-                        complicationZero_1: 510,
-                        complicationZero_2: 510,
-                        complicationZero_3: 510,
-                        complicationZero_4: 510,
-                        complicationZero_5: 510,
-                        complicationZero_6: 510,
-                        complicationZero_7: 510,
-                        complicationZero_8: 510,
-                        complicationZero_9: 510,
-                        complicationZero_10: 510
-                    },
-                    EnhancedOverlays: {
-                        complicationEnhanced_1: 515,
-                        complicationEnhanced_2: 515,
-                        complicationEnhanced_3: 515,
-                        complicationEnhanced_4: 515,
-                        complicationEnhanced_5: 515,
-                        complicationEnhanced_6: 515,
-                        complicationEnhanced_7: 515,
-                        complicationEnhanced_8: 515,
-                        complicationEnhanced_9: 515,
-                        complicationEnhanced_10: 515
+                
+                // BEGIN ERROR CHECKING OF CURSRC, ACTIVESRC, LAYER, ISACTIVE:
+                const imgURL = imgObj.get("imgsrc")
+                if (_.keys(imgData).includes("startActive")) {
+                    imgErrors.push("...has 'startActive'; deleting.")
+                    delete imgData.startActive
+                }
+                if (!(
+                    _.isString(imgData.curSrc) &&
+                    (imgData.curSrc === "blank" || imgSrcs.includes(imgData.curSrc))
+                ))
+                    imgErrors.push(`... bad curSrc: ${imgData.curSrc}`)
+                else if (!(
+                    imgData.curSrc === "blank" && imgURL === C.IMAGES.blank ||
+                    imgURL === imgData.srcs[imgData.curSrc]
+                ))
+                    imgErrors.push(`... bad curSrc URL: ${imgURL} (!== "${imgData.curSrc}")`)
+                if (!(
+                    _.isString(imgData.activeSrc) && (                                
+                        imgData.activeSrc === "blank" && (
+                            imgKey.includes("Pad") ||
+                                imgSrcs.length === 0 ||
+                                !imgSrcs.includes("base"))
+                        || 
+                            imgSrcs.includes(imgData.activeSrc)
+                    )
+                )) {
+                    imgErrors.push(`... bad activeSrc: ${imgData.activeSrc}`)
+                    if (isFixing)
+                        imgData.activeSrc = imgData.curSrc
+                }
+                if (!(imgData.isActive === true || imgData.isActive === false)) {
+                    imgErrors.push(`...bad isActive: ${D.JS(imgData.isActive)}`)                        
+                } else if (imgData.isActive === true) {
+                    if (imgObj.get("layer") !== imgData.activeLayer)
+                        imgErrors.push(`... wrong layer: ${imgObj.get("layer")} vs. activeLayer: ${imgData.activeLayer}`)                                              
+                    if (imgData.activeSrc !== imgData.curSrc)
+                        imgErrors.push(`... src mismatch: activeSrc (${imgData.activeSrc}) vs. curSrc (${imgData.curSrc})`)
+                } else if (imgData.isActive === false) {
+                    if (imgObj.get("layer") !== "walls")
+                        imgErrors.push(`... layer isn't walls: ${imgObj.get("layer")}`)
+                }
+
+                // NOW CHECK MODE VALUES:
+                for (const mode of Session.Modes) {
+                    const modeData = imgData.modes[mode]
+                    if (![true, false, null, "LAST"].includes(modeData.isForcedOn))
+                        imgErrors.push(`... ... [${mode}] bad isForcedOn: ${D.JS(modeData.isForcedOn)}`)
+                    if (!(
+                        [true, null].includes(modeData.isForcedState) ||
+                        _.isString(modeData.isForcedState) && (modeData.isForcedState === "blank" || imgSrcs.includes(modeData.isForcedState))
+                    ))
+                        imgErrors.push(`... ... [${mode}] bad isForcedState: ${D.JS(modeData.isForcedState)}`)
+                    if (modeData.lastActive !== false && modeData.lastActive !== true) {
+                        imgErrors.push(`... ... [${mode}] bad lastActive: ${D.JS(modeData.lastActive)}`)
+                        if (isFixing)
+                            modeData.lastActive = [true, null, "LAST"].includes(modeData.isForcedOn)
+                    }
+                    if (modeData.isForcedState === true && !(_.isString(modeData.lastState) && (modeData.lastState === "blank" || imgSrcs.includes(modeData.lastState)))) {
+                        imgErrors.push(`... ... [${mode}] bad lastState: ${D.JS(modeData.lastState)}`)
+                        if (isFixing)
+                            modeData.lastState = imgSrcs.length && imgSrcs[0] || "blank"
                     }
                 }
-            },
-            dragpads: 700
+                if (imgErrors.length)
+                    errorLines.push(...[
+                        "",
+                        `<b>${imgKey}:</b>`,
+                        ...imgErrors
+                    ])
+            }
+            errorLines.push("<h3>TEXT ERRORS</h3>")
+            for (const textKey of _.keys(TEXTREGISTRY)) {
+                const textData = getTextData(textKey),
+                    textObj = getTextObj(textKey),
+                    textErrors = []
+                let textActiveState = textData.isActive
+                // Reset Active status by toggling both ways.
+                if (isToggling) {
+                    if (textKey.includes("Shadow")) {
+                        const masterData = getTextData(textData.shadowMaster)
+                        textData.modes = JSON.parse(JSON.stringify(masterData.modes))
+                        textData.curText = masterData.curText
+                        textData.activeText = masterData.activeText
+                        textData.isActive = masterData.isActive
+                        textActiveState = masterData.isActive
+                    }
+                    toggleText(textKey, !textActiveState)
+                    toggleText(textKey, textActiveState)
+                    // If image is active, set it to its top source OR if it has no top source, to blank.
+                    // (if image is NOT active, toggle should have set it to blank anyways.)
+                    setText(textKey, textObj.get("text"))
+                }
+                
+                const textString = textObj.get("text")
+                // BEGIN ERROR CHECKING OF CURTEXT, ACTIVETEXT, LAYER, ISACTIVE:
+                
+                if (_.keys(textData).includes("startActive")) {
+                    textErrors.push("...has 'startActive'; deleting.")
+                    delete textData.startActive
+                }
+                if (!_.isString(textData.curText)) {
+                    textErrors.push(`... bad curText: ${textData.curText}`)
+                    if (isFixing)
+                        textData.curText = textString
+                }
+                if (!_.isString(textData.activeText)) {
+                    textErrors.push(`... bad activeText: ${textData.activeText}`)
+                    if (isFixing)
+                        textData.activeText = textString
+                }
+                if (!(textData.isActive === true || textData.isActive === false)) {
+                    textErrors.push(`...bad isActive: ${D.JS(textData.isActive)}`)                        
+                } else if (textData.isActive === true) {
+                    if (textObj.get("layer") !== textData.activeLayer)
+                        textErrors.push(`... wrong layer: ${textObj.get("layer")} vs. activeLayer: ${textData.activeLayer}`)                                              
+                    if (textData.activeText !== textData.curText)
+                        textErrors.push(`... text mismatch: activeText (${textData.activeText}) vs. curText (${textData.curText})`)
+                } else if (textData.isActive === false) {
+                    if (textObj.get("layer") !== "walls")
+                        textErrors.push(`... layer isn't walls: ${textObj.get("layer")}`)
+                }
+
+                // NOW CHECK MODE VALUES:
+                for (const mode of Session.Modes) {
+                    const modeData = textData.modes[mode]
+                    if (![true, false, null, "LAST"].includes(modeData.isForcedOn))
+                        textErrors.push(`... ... [${mode}] bad isForcedOn: ${D.JS(modeData.isForcedOn)}`)
+                    if (!(
+                        [true, null].includes(modeData.isForcedState) ||
+                        _.isString(modeData.isForcedState)
+                    ))
+                        textErrors.push(`... ... [${mode}] bad isForcedState: ${D.JS(modeData.isForcedState)}`)
+                    if (modeData.lastActive !== false && modeData.lastActive !== true) {
+                        textErrors.push(`... ... [${mode}] bad lastActive: ${D.JS(modeData.lastActive)}`)
+                        if (isFixing)
+                            modeData.lastActive = [true, null, "LAST"].includes(modeData.isForcedOn)
+                    }
+                    if (modeData.isForcedState === true && !_.isString(modeData.lastState)) {
+                        textErrors.push(`... ... [${mode}] bad lastState: ${D.JS(modeData.lastState)}`)
+                        if (isFixing)
+                            modeData.lastState = textString
+                    }
+                }
+                if (textErrors.length)
+                    errorLines.push(...[
+                        "",
+                        `<b>${textKey}:</b>`,
+                        ...textErrors
+                    ])
+            }
+            D.Alert(errorLines.join("<br>"), "ERROR REPORT")
         },
-    // #endregion
 
     // #region GENERAL MEDIA OBJECT GETTERS:
         isRegistered = mediaRef => isRegText(mediaRef) || isRegImg(mediaRef),
@@ -3097,25 +7207,6 @@ const Media = (() => {
                 return getTextData(mediaRef)
             return getImgData(mediaRef)
         },
-        fixModeStatus = mediaRef => {
-            /* TEXT: */
-            const textKey = getTextKey(mediaRef),
-                textData = getTextData(textKey),
-                textObj = getTextObj(textKey),
-                stateRef = TEXTREGISTRY[textKey]
-            delete stateRef.startActive
-            stateRef.curText = stateRef.text || textObj.get("text")
-            delete stateRef.text
-            for (const mode of ["Active", "Inactive", "Daylighter", "Downtime", "Complications"]) {
-                if (stateRef[mode].lastState === false)
-                    stateRef[mode].lastState = null
-                if (textData.shadow) {
-                    TEXTREGISTRY[textData.shadow].modes = JSON.parse(JSON.stringify(textData.modes))
-                    TEXTREGISTRY[textData.shadow].activeText = textData.activeText
-                    TEXTREGISTRY[textData.shadow].curText = textData.curText
-                }
-            }
-        },
         getModeStatus = mediaRef => {
             const modeStatus = {}
             if (isRegistered(mediaRef)) {
@@ -3129,7 +7220,7 @@ const Media = (() => {
                     else
                         modeStatus.isActive = mediaData.isActive
                     if (mediaModes.isForcedState === true)
-                        modeStatus.state = mediaModes.lastState === false ? null : mediaModes.lastState
+                        modeStatus.state = mediaModes.lastState
                     else if (mediaModes.isForcedState === null)
                         modeStatus.state = undefined
                     else
@@ -3176,37 +7267,42 @@ const Media = (() => {
             if (isRegImg(mediaKey)) {
                 const imgData = getImgData(mediaKey),
                     modeStatus = getModeStatus(mediaKey)
-                DB(`Updating '${D.JS(mediaRef)}'. ModeStatus: ${D.JS(modeStatus)}`, "modeUpdate")
+                // DB(`Updating '${D.JS(mediaRef)}'. ModeStatus: ${D.JS(modeStatus)}`, "modeUpdate")
                 if(VAL({list: modeStatus}, "modeUpdate")) {
                     const lastMode = imgData.curMode
                     if (lastMode) {
                         IMGREGISTRY[mediaKey].modes[lastMode].lastActive = imgData.isActive
-                        IMGREGISTRY[mediaKey].modes[lastMode].lastState = imgData.isActive && imgData.activeSrc
+                        IMGREGISTRY[mediaKey].modes[lastMode].lastState = imgData.isActive && imgData.activeSrc || IMGREGISTRY[mediaKey].modes[lastMode].lastState
                     }
                     IMGREGISTRY[mediaKey].curMode = Session.Mode
                     if (!_.isUndefined(modeStatus.isActive)) {
-                        DB(`... IsActive OK! toggleImg(${D.JS(mediaKey)}, ${D.JS(modeStatus.isActive)})`, "modeUpdate")
+                        // DB(`... IsActive OK! toggleImg(${D.JS(mediaKey)}, ${D.JS(modeStatus.isActive)})`, "modeUpdate")
                         toggleImg(mediaKey, modeStatus.isActive)
                     }
                     if (!_.isUndefined(modeStatus.state)) {
-                        DB(`... State OK! setImg(${D.JS(mediaKey)}, ${D.JS(modeStatus.state)})`, "modeUpdate")
+                        // DB(`... State OK! setImg(${D.JS(mediaKey)}, ${D.JS(modeStatus.state)})`, "modeUpdate")
                         setImg(mediaKey, modeStatus.state)
                     }
                 }
-            } else if (isRegText(mediaKey)) {
+            } else if (isRegText(mediaKey) && !mediaKey.includes("Shadow")) {
                 const textData = getTextData(mediaKey),
                     modeStatus = getModeStatus(mediaKey)
+                // DB(`Updating '${D.JS(mediaRef)}'. ModeStatus: ${D.JS(modeStatus)}`, "modeUpdate")
                 if(VAL({list: modeStatus}, "modeUpdate")) {
                     const lastMode = textData.curMode
                     if (lastMode) {
                         TEXTREGISTRY[mediaKey].modes[lastMode].lastActive = textData.isActive
-                        TEXTREGISTRY[mediaKey].modes[lastMode].lastState = textData.isActive && (_.isString(textData.activeText) && textData.activeText || textData.curText)
+                        TEXTREGISTRY[mediaKey].modes[lastMode].lastState = textData.isActive && (_.isString(textData.activeText) && textData.activeText || textData.curText) || TEXTREGISTRY[mediaKey].modes[lastMode].lastState
                     }
                     TEXTREGISTRY[mediaKey].curMode = Session.Mode
-                    if (!_.isUndefined(modeStatus.isActive))
+                    if (!_.isUndefined(modeStatus.isActive)) {
+                        // DB(`... IsActive OK! toggleText(${D.JS(mediaKey)}, ${D.JS(modeStatus.isActive)})`, "modeUpdate")
                         toggleText(mediaKey, modeStatus.isActive)
-                    if (!_.isUndefined(modeStatus.state))
+                    }
+                    if (!_.isUndefined(modeStatus.state)) {
+                        // DB(`... State OK! setText(${D.JS(mediaKey)}, ${D.JS(modeStatus.state)})`, "modeUpdate")
                         setText(mediaKey, modeStatus.state)
+                    }
                 }
             }   
         },
@@ -3321,6 +7417,12 @@ const Media = (() => {
                 imgData.bottomEdge = imgData.top + 0.5*imgData.height
             }
             return imgData
+        },
+        getImgSrcs = (imgRef) => {
+            let imgData = getImgData(imgRef)
+            while (isRegImg(imgData.srcs))
+                imgData = getImgData(imgData.srcs)
+            return imgData.srcs
         },
         getTokenObj = (charRef, isSilent = false) => {
             const charObj = D.GetChar(charRef, isSilent)
@@ -3490,10 +7592,11 @@ const Media = (() => {
                     height: params.height,
                     width: params.width,
                     activeLayer,
-                    modes: params.modes || C.MODEDEFAULTS(imgObj),
                     zIndex: options.zIndex || (IMGREGISTRY[name] ? IMGREGISTRY[name].zIndex : 200),
                     srcs: {}
                 }
+                IMGREGISTRY[name].modes = C.MODEDEFAULTS(imgObj, params.modes)
+                D.Alert(`Modes for ${name}: ${D.JS(IMGREGISTRY[name].modes)}`, "regImg")
                 if (srcName !== "none") {
                     addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, srcName)
                     setImg(name, srcName)
@@ -3560,10 +7663,11 @@ const Media = (() => {
             regImg(imgObj, imgName, params.imgsrc && params.imgsrc !== C.IMAGES.blank ? "base" : "blank", params.activeLayer || params.layer || "gmlayer", options, isSilent)
             return imgObj
         },
-        setImg = (imgRef, srcRef) => {
+        setImg = (imgRef, srcRef, isToggling) => {
             // D.Alert(`Getting ${D.JS(srcRef)} for ${D.JS(imgRef)} --> ${D.JS(REGISTRY[getImgData(imgRef).name].srcs[srcRef])}`, "MEDIA:SetImg")
             const imgKey = getImgKey(imgRef)
-            
+            if (isToggling === false || isToggling === true)
+                toggleImg(imgRef, isToggling)
             if (srcRef === null)
                 return false
             if (VAL({string: [imgKey, srcRef]}, "setImg", true)) {
@@ -3912,9 +8016,18 @@ const Media = (() => {
         toggleImg = (imgRef, isActive) => {
             // NON-PERMANENT.  If turning off, set activeSrc to curSrc.
             // Also, verify img status is changing before doing anything.
+            if (isActive === null) return null
             const imgData = getImgData(imgRef)
             if (VAL({list: imgData}, "toggleImg")) {
-                if ((isActive === true || isActive === false) && imgData.isActive === isActive || isActive === null)
+                const [pad, partner] = DragPads.GetPadPair(imgData.id, true)
+                if (pad)
+                    if (isActive === false || imgData.isActive === true)
+                        toggleImg(pad, true)
+                    else if (isActive === false || imgData.isActive === true)
+                        toggleImg(pad, false)
+                if (partner)
+                    toggleImg(partner, false)
+                if ((isActive === true || isActive === false) && imgData.isActive === isActive)
                     return null
                 if (isActive === false || imgData.isActive === true) {
                     // TURN OFF: Set layer to walls, toggle off associated drag pads, update activeState value
@@ -3924,10 +8037,6 @@ const Media = (() => {
                         [pad, partner] = DragPads.GetPadPair(imgData.id, true)
                     if (imgObj)
                         setLayer(imgObj, "walls")
-                    if (pad)
-                        toggleImg(pad, false)
-                    if (partner)
-                        toggleImg(partner, false)
                     return false                   
                 } else if (isActive === true || imgData.isActive === false) {
                     // TURN ON: Set layer to active layer, toggle on associated drag pads, restore activeState value if it's different
@@ -3937,10 +8046,6 @@ const Media = (() => {
                         [pad, partner] = DragPads.GetPadPair(imgData.id, true)
                     if (imgObj)
                         setLayer(imgObj, imgData.activeLayer)
-                    if (pad)
-                        toggleImg(pad, true)
-                    if (partner)
-                        toggleImg(partner, false)
                     return true                   
                 }
             }
@@ -4352,7 +8457,8 @@ const Media = (() => {
         getBlankLeft = (textRef, justification, maxWidth = 0, useCurrent = false) => {
             const textObj = getTextObj(textRef),
                 justify = justification || getTextData(textRef).justification || "center"
-            if (VAL({textObj}, "getBlankLeft")) {   
+            if (VAL({textObj}, "getBlankLeft")) {  
+                //D.Alert(`GetBlankLeft(${D.JS(textRef)}, ${D.JS(justification)}, ${D.JS(maxWidth)}, ${D.JS(useCurrent)}) = ${D.JS(useCurrent && (textObj.get("left") + {left: -0.5, right: 0.5, center: 0}[justify] * getMaxWidth(textObj)) || (textObj.get("left") + {left: -0.5, right: 0.5, center: 0}[justify] * getTextWidth(textObj, textObj.get("text"), maxWidth)))}`) 
                 if (useCurrent)
                     return textObj.get("left") + {left: -0.5, right: 0.5, center: 0}[justify] * getMaxWidth(textObj)
                 // D.Alert(`getBlankLeft Called on ${textObj.get("text")} with maxWidth ${maxWidth} into getTextWidth -->`)
@@ -4479,6 +8585,8 @@ const Media = (() => {
                     options
                 )
                 delete TEXTREGISTRY[name].text
+                TEXTREGISTRY[name].modes = C.MODEDEFAULTS(textObj, options.modes)
+                D.Alert(`Modes for ${name}: ${D.JS(TEXTREGISTRY[name].modes)}`, "regText")
                 for (const mode of Session.Modes)
                     TEXTREGISTRY[name].modes[mode] = C.MODEDEFAULTS(textObj, mode)                
                 TEXTREGISTRY[name].left = getBlankLeft(textObj, TEXTREGISTRY[name].justification, TEXTREGISTRY[name].maxWidth, true)
@@ -4496,8 +8604,7 @@ const Media = (() => {
                     const shadowObj = makeText(shadowOptions.name, TEXTREGISTRY[name].activeLayer, false, justification, shadowOptions, isSilent)
                     shadowOptions.id = shadowObj.id
                     TEXTREGISTRY[name].shadow = shadowOptions.name
-                }                
-                toggleText(textObj, true)
+                }
                 setText(textObj, TEXTREGISTRY[name].curText, true)
                 setTextData(textObj, _.pick(TEXTREGISTRY[name], C.TEXTPROPS))        
                 D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(TEXTREGISTRY[name])}`, "regText")
@@ -4530,24 +8637,29 @@ const Media = (() => {
             if (VAL({string: textKey}, "updateTextShadow")) {
                 const textData = getTextData(textKey),
                     textObj = getTextObj(textKey)
-                if (VAL({textObj, list: textData}, "updateTextShadow") && textData.shadow) {
+                if (VAL({textObj, list: textData}, "updateTextShadow")) {
                     const shadowKey = textData.shadow,
                         shadowData = getTextData(shadowKey),
                         shadowObj = getTextObj(shadowKey)
                     if (VAL({textObj: shadowObj, list: shadowData}, "updateTextShadow")) {
-                        const shadowShift = getShadowShift(textObj),
-                            shadowParams = {
-                                left: textObj.get("left") + shadowShift,
-                                top: textObj.get("top") + shadowShift,
-                                text: textObj.get("text")
-                            }
+                        const shadowShift = getShadowShift(textObj)
+                        const shadowParams = {
+                                left: parseInt(textObj.get("left")) + shadowShift,
+                                top: parseInt(textObj.get("top")) + shadowShift
+                            },
+                            shadowText = textObj.get("text")
+                        //if (_.isNaN(shadowParams.left) || _.isNaN(shadowParams.top)) {
+                        //D.Alert(`ShadowShift: ${D.JS(shadowShift)}<br>ShadowParams: ${D.JS(shadowParams)}, ShadowText: ${D.JS(shadowText)}`, "UPDATETEXTSHADOW ERROR")
+                            //return false
+                        //}
                         if(!isForcing && (
                             shadowObj.get("left") === shadowParams.left &&
                             shadowObj.get("top") === shadowParams.top &&
-                            shadowObj.get("text") === shadowParams.text
+                            shadowObj.get("text") === shadowText
                         ))
                             return null
-                        shadowObj.set(shadowParams)
+                        setText(shadowKey, shadowText)
+                        setTextData(shadowKey, shadowParams)
                         return true
                     }
                 }
@@ -4600,12 +8712,14 @@ const Media = (() => {
                     }
                 }
         },
-        setText = (textRef, text = "", isForcing = false) => {
+        setText = (textRef, text = "", isToggling) => {
             const textKey = getTextKey(textRef),
                 textObj = getTextObj(textRef),
                 textData = getTextData(textKey),
-                textParams = {text}
-            if (textParams.text === null || textParams.text === undefined || !isForcing && textParams.text === textObj.get("text"))
+                textParams = {text}            
+            if (isToggling === false || isToggling === true)
+                toggleText(textKey, isToggling)
+            if (textParams.text === null || textParams.text === undefined || textParams.text === textObj.get("text"))
                 return null
             let [shiftTop, shiftLeft] = [0, 0]
             if (VAL({textObj}, ["setText", `textRef: ${D.JS(textRef)}, text: ${D.JS(text)}`])) {
@@ -4645,17 +8759,18 @@ const Media = (() => {
                     delete textParams.top
                 textObj.set(textParams)
                 if (textData.shadow)
-                    updateTextShadow(textKey, isForcing)
+                    updateTextShadow(textKey)
                 if (textData.linkedText)
-                    updateSlaveText(textData.name)
+                    updateSlaveText(textKey)
             }
         },
         setTextData = (textRef, params) => {
-            const textKey = getTextKey(textRef)             
+            const textKey = getTextKey(textRef),
+                textData = getTextData(textKey)            
             if (VAL({string: textKey}, "setTextData")) {
                 const textObj = getTextObj(textKey)
                 if (VAL({textObj}, ["setTextData", `Registered object '${textKey}' not found!`])) {
-                    const textParams = Object.assign(params, {left: getBlankLeft(textObj, textObj.get("text"))}),
+                    const textParams = Object.assign(params, {left: getBlankLeft(textObj)}),
                         objParams = _.omit(_.pick(textParams, C.TEXTPROPS), "text")
                     _.each(textParams, (v, k) => {
                         if (k === "text")
@@ -4676,26 +8791,25 @@ const Media = (() => {
                 textData = getTextData(textKey),
                 textObj = getTextObj(textKey)
             if (VAL({textObj, list: textData}, "toggleText")) {
+                if (textData.shadow)
+                    toggleText(textData.shadow, isActive, isForcing)
+
                 if (!isForcing && (
-                    isActive === true && textObj.get("layer") === textData.activeLayer ||
-                    isActive === false && textObj.get("layer") === "walls"
-                ))
-                    return null
+                    isActive === null ||
+                    (isActive === true || isActive === false) && textData.isActive === isActive
+                    ))
+                    return null                
                 if (isActive === false || textData.isActive === true) {
                     // TURN OFF: Set layer to walls, toggle off associated drag pads, update activeState value
                     TEXTREGISTRY[textKey].activeText = textData.curText
                     TEXTREGISTRY[textKey].isActive = false
                     setLayer(textObj, "walls")
-                    if (textData.shadow)
-                        toggleText(textData.shadow, false)
                     return false                   
                 } else if (isActive === true || textData.isActive === false) {
                     // TURN ON: Set layer to active layer, toggle on associated drag pads, restore activeState value if it's different
                     TEXTREGISTRY[textKey].isActive = true
                     setText(textKey, textData.activeText)
                     setLayer(textObj, textData.activeLayer)
-                    if (textData.shadow)
-                        toggleText(textData.shadow, true)
                     return true                   
                 }
             }

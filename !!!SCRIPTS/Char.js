@@ -622,7 +622,7 @@ const Char = (() => {
                 "_LastButtons": [
                     ["Secret Roll", "!roll @@CHARIDS@@ sroll ", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.purple, color: C.COLORS.white}],
                     ["Get Trait", "!char @@CHARIDS@@ get stat", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.grey, color: C.COLORS.black}],
-                    ["@@SINGLEONLY@@Complic's", "", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.orange, color: C.COLORS.black, fontWeight: "bold", textShadow: "1px 0px red"}],
+                    ["@@SINGLEONLY@@Complic's", "!comp @@CHARIDS@@ start ?{Shortfall?}", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.orange, color: C.COLORS.black, fontWeight: "bold", textShadow: "1px 0px red"}],
                     ["@@SINGLEONLY@@Frenzy", "", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.brightred, color: C.COLORS.black}]
                 ],
                 "Health": [

@@ -38,7 +38,9 @@ const Session = (() => {
             STATEREF.SessionScribes = STATEREF.SessionScribes || []
             STATEREF.SessionModes = STATEREF.SessionModes || ["Active", "Inactive", "Daylighter", "Downtime", "Complications"]
         // STATEREF.SessionScribes = [ "Thaumaterge", "Ava Wong", "banzai", "PixelPuzzler" ]
-        
+            delete STATEREF.mode
+            delete state.VAMPIRE.Char.SessionNum
+            delete state.VAMPIRE.Char.isDaylighterSession
         },
     // #endregion
 
@@ -228,7 +230,7 @@ const Session = (() => {
     // #region Toggling Session Modes
         changeMode = mode => {
             if (VAL({string: mode}, "changeMode") && STATEREF.SessionModes.map(x => x.toLowerCase()).includes(mode.toLowerCase())) {
-                STATEREF.mode = D.Capitalize(mode.toLowerCase())
+                STATEREF.Mode = D.Capitalize(mode.toLowerCase())
                 Media.SwitchMode()
             }
         },

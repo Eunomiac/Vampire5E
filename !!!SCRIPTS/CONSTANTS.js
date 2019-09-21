@@ -734,7 +734,7 @@ const C = (() => {
         ATTRPROPS = ["name", "current", "max"],
         HANDOUTPROPS = ["avatar", "name", "notes", "gmnotes", "inplayerjournals", "archived", "controlledby"],
 
-        MODEDEFAULTS = (obj, mode = "Active") => {
+        MODEDEFAULTS = (obj, modeStatuses = {Active: true, Inactive: false, Daylighter: true, Downtime: null, Complications: null}) => {
             if (VAL({object: obj}, "MODEDEFAULTS"))
                 switch(obj.get("_type")) {
                     case "graphic": {
@@ -742,13 +742,10 @@ const C = (() => {
                         if (name.includes("_Pad_")) {
                             const imgData = Media.GetImgData((DragPads.GetGraphic(obj) || {id: ""}).id)
                             if (VAL({list: imgData}))
-                                return imgData.modes[mode]
+                                return D.KeyMapObj(imgData.modes, null, v => Object.assign(_.omit(v, "lastState"), {isForcedState: null}))
                         }
                         if (name.includes("_PartnerPad_"))
-                            return {
-                                isForcedOn: false,
-                                isForcedState: null
-                            }
+                            return D.KeyMapObj(Session.Modes, (k,v) => v, () => ({isForcedOn: false, isForcedState: null}))
                         break
                     }
                     case "text": {
@@ -756,44 +753,42 @@ const C = (() => {
                         if (objData.shadowMaster) {
                             const textData = Media.GetTextData(objData.shadowMaster)
                             if (VAL({list: textData}))
-                                return textData.modes[mode]
+                                return textData.modes
                         }
                         break
                     }
                 // no default
-                }                    
-            return {
-                Active: {
-                    isForcedOn: "LAST",
-                    isForcedState: null,
-                    lastActive: true,
-                    lastState: null
-                },
-                Inactive: {
-                    isForcedOn: false,
-                    isForcedState: null,
-                    lastActive: false,
-                    lastState: null
-                },
-                Daylighter: {
-                    isForcedOn: "LAST",
-                    isForcedState: null,
-                    lastActive: true,
-                    lastState: null
-                },
-                Downtime: {
-                    isForcedOn: "LAST",
-                    isForcedState: null,
-                    lastActive: true,
-                    lastState: null
-                },
-                Complications: {
-                    isForcedOn: null,
-                    isForcedState: null,
-                    lastActive: null,
-                    lastState: null
                 }
-            }[mode]
+            const modeStatus = {}
+            _.each(modeStatuses, (v, k) => { modeStatus[k] = v })
+            return D.KeyMapObj(modeStatuses, null, v => {
+                switch (v) {
+                    case true:
+                        return {
+                            isForcedOn: "LAST",
+                            isForcedState: null,
+                            lastActive: true
+                        }
+                    case false:
+                        return {
+                            isForcedOn: false,
+                            isForcedState: null
+                        }
+                    case null:
+                        return {
+                            isForcedOn: null,
+                            isForcedState: null,
+                            lastActive: true
+                        }
+                    default:
+                        return {
+                            isForcedOn: "LAST",
+                            isForcedState: null,
+                            lastActive: true
+                        }
+                    // no default
+                }
+            })
         },
     // #endregion
     

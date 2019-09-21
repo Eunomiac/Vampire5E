@@ -61,7 +61,7 @@ const DragPads = (() => {
                     D.Alert(`Pad Data:<br><br>${D.JS(padLayer)}`, "!dpad find")
                     break     
                 }               
-                case "make": { // !dpad <funcName> [top:100 left:100 height:100 width:100 deltaHeight:-50 deltaWidth:-50 deltaTop:-50 deltaLeft:-50 startActive:true]
+                case "make": { // !dpad <funcName> <imgKey OR select img> [top:100 left:100 height:100 width:100 deltaHeight:-50 deltaWidth:-50 deltaTop:-50 deltaLeft:-50 startActive:true]
                     const funcName = args.shift(),
                         hostObj = D.GetSelected(msg) && D.GetSelected(msg)[0] || Media.GetImg(args.shift())
                     if (VAL({graphicObj: hostObj}, "!dpad make")) {
