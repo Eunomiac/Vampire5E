@@ -833,11 +833,12 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
             STATEREF.currentDate = STATEREF.dateObj.getTime()
         },
         tickCountdown = () => {
+            const sessionPush = 1
             if (isCountdownRunning) {
                 const realDateObj = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"})),
                     sessDateObj = new Date(realDateObj)
 
-                sessDateObj.setDate(realDateObj.getDate() - realDateObj.getDay() + 7)
+                sessDateObj.setDate(realDateObj.getDate() - realDateObj.getDay() + (sessionPush + 1)*7)
                 // sessDateObj.setHours(0)
                 // sessDateObj.setMinutes(56)
                 sessDateObj.setHours(19)
@@ -846,8 +847,8 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
 
                 let secsLeft = (sessDateObj - realDateObj)/1000 - 60
 
-                if (secsLeft > 7*24*60*60)
-                    secsLeft -= 7*24*60*60
+                if (secsLeft > (sessionPush+1)*7*24*60*60)
+                    secsLeft -= (sessionPush+1)*7*24*60*60
                 if (secsLeft < 60)
                     Session.ToggleTesting(false)
                     
@@ -979,7 +980,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
         },
         startClock = (secsPerMin = 60) => {
             stopCountdown()
-            //Media.ToggleText("TimeTracker", true)
+            // Media.ToggleText("TimeTracker", true)
             isTimeRunning = true
             timeTimer = setInterval(tickClock, parseInt(secsPerMin) * 1000)
             // D.Alert(`Auto clock ticking ENABLED at:
@@ -988,7 +989,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
         },
         stopClock = () => {
             clearInterval(timeTimer)
-            //Media.ToggleText("TimeTracker", false)
+            // Media.ToggleText("TimeTracker", false)
             timeTimer = null
             isTimeRunning = false
             // D.Alert("Auto clock ticking DISABLED", "TIMETRACKER !TIME")
@@ -996,13 +997,13 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
         startCountdown = () => {
             stopClock()
             isCountdownRunning = true
-            //Media.ToggleText("Countdown", true)
+            // Media.ToggleText("Countdown", true)
             tickCountdown()
         },
         stopCountdown = () => {
             clearInterval(secTimer)
             isCountdownRunning = false
-            //Media.ToggleText("Countdown", false)
+            // Media.ToggleText("Countdown", false)
             secTimer = null
         },
     // #endregion
@@ -1075,10 +1076,10 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                 Media.ToggleImg("WeatherMain", false)
                 Media.ToggleImg("WeatherFog", false)
                 Media.ToggleImg("WeatherClouds", false)
-                Media.SetImg("Horizon", "night5")
+                Media.SetImg("Horizon", "night5", true)
                 if (!Session.IsSessionActive) {
-                    Media.SetImg("WeatherGround", "wet")
-                    Media.SetImg("WeatherFrost", "red")
+                    Media.SetImg("WeatherGround", "wet", true)
+                    Media.SetImg("WeatherFrost", "red", true)
                 } else {
                     Media.ToggleImg("WeatherGround", false)
                     Media.ToggleImg("WeatherFrost", false)
@@ -1097,46 +1098,46 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                 switch (weatherData.event.charAt(0)) {
                     // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
                     case "b":
-                        Media.SetImg("WeatherMain", getSnowSrc("heavy"))
+                        Media.SetImg("WeatherMain", getSnowSrc("heavy"), true)
                         Media.ToggleImg("WeatherFog", false)
-                        Media.SetImg("WeatherClouds", "stormclouds")
+                        Media.SetImg("WeatherClouds", "stormclouds", true)
                         break
                     case "c":
                         Media.ToggleImg("WeatherMain", false)
                         Media.ToggleImg("WeatherFog", false)
-                        Media.SetImg("WeatherClouds", getCloudSrc())
+                        Media.SetImg("WeatherClouds", getCloudSrc(), true)
                         break
                     case "f":
                         Media.ToggleImg("WeatherMain", false)
-                        Media.SetImg("WeatherFog", getFogSrc())
-                        Media.SetImg("WeatherClouds", getCloudSrc())
+                        Media.SetImg("WeatherFog", getFogSrc(), true)
+                        Media.SetImg("WeatherClouds", getCloudSrc(), true)
                         break
                     case "p":
                         Media.ToggleImg("WeatherFog", false)
-                        Media.SetImg("WeatherMain", "heavyrain")
-                        Media.SetImg("WeatherClouds", getCloudSrc())
+                        Media.SetImg("WeatherMain", "heavyrain", true)
+                        Media.SetImg("WeatherClouds", getCloudSrc(), true)
                         break
                     case "s":
                         Media.ToggleImg("WeatherFog", false)
-                        Media.SetImg("WeatherMain", getSnowSrc("light"))
-                        Media.SetImg("WeatherClouds", getCloudSrc())
+                        Media.SetImg("WeatherMain", getSnowSrc("light"), true)
+                        Media.SetImg("WeatherClouds", getCloudSrc(), true)
                         break
                     case "t":
                         Media.ToggleImg("WeatherFog", false)
-                        Media.SetImg("WeatherMain", "heavyrain")
-                        Media.SetImg("WeatherClouds", "stormclouds")
+                        Media.SetImg("WeatherMain", "heavyrain", true)
+                        Media.SetImg("WeatherClouds", "stormclouds", true)
                         // Lightning Animations
                         break
                     case "w":
                         Media.ToggleImg("WeatherFog", false)
-                        Media.SetImg("WeatherMain", "lightrain")
-                        Media.SetImg("WeatherClouds", getCloudSrc())
+                        Media.SetImg("WeatherMain", "lightrain", true)
+                        Media.SetImg("WeatherClouds", getCloudSrc(), true)
                         break
                     case "x":
                         Media.ToggleImg("WeatherMain", false)
                         Media.ToggleImg("WeatherClouds", false)
                         if (weatherData.event.charAt(1) === "f")
-                            Media.SetImg("WeatherFog", getFogSrc())
+                            Media.SetImg("WeatherFog", getFogSrc(), true)
                         else
                             Media.ToggleImg("WeatherFog", false)
                         break
@@ -1150,7 +1151,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                 if (weatherData.tempC > 0)
                     Media.ToggleImg("WeatherFrost", false)
                 else
-                    Media.SetImg("WeatherFrost", weatherData.tempC > -6 ? "frost1" : weatherData.tempC > -12 ? "frost2" : "frost3")
+                    Media.SetImg("WeatherFrost", weatherData.tempC > -6 ? "frost1" : weatherData.tempC > -12 ? "frost2" : "frost3", true)
             }
         },
         getGroundCover = (isTesting = false, downVal = 0.3, upb = 1, ups = 0.5) => {
@@ -1270,11 +1271,11 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
             if (VAL({string: dateString})) {
                 switch (dateString.toLowerCase()) {
                     case "dawn":
-                        targetMins = TWILIGHTMINS[curDate.getUTCMonth()][0]             
+                        [targetMins] = TWILIGHTMINS[curDate.getUTCMonth()]             
                         break
                     case "nextfullnight":
                     case "dusk":
-                        targetMins = TWILIGHTMINS[curDate.getUTCMonth()][1]   
+                        [,targetMins] = TWILIGHTMINS[curDate.getUTCMonth()]   
                         break
                     case "noon":
                         targetMins = 12 * 60

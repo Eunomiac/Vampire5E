@@ -120,61 +120,61 @@ const Complications = (() => {
                 Media.IMAGES[`compCardSpot_${i}`].srcs = "compCardSpot_1"
                 */
             for (let i = 1; i <= 10; i++) {
-               Media.IMAGES[`flipComp_Pad_${i}`].modes = {
-                Active: {
-                    isForcedOn: false,
-                    isForcedState: null,
-                    lastActive: false
-                },
-                Inactive: {
-                    isForcedOn: false,
-                    isForcedState: null,
-                    lastActive: false
-                },
-                Daylighter: {
-                    isForcedOn: false,
-                    isForcedState: null,
-                    lastActive: false
-                },
-                Downtime: {
-                    isForcedOn: false,
-                    isForcedState: null,
-                    lastActive: false
-                },
-                Complications: {
-                    isForcedOn: true,
-                    isForcedState: "blank",
-                    lastActive: true
+                Media.IMAGES[`flipComp_Pad_${i}`].modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null,
+                        lastActive: false
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null,
+                        lastActive: false
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null,
+                        lastActive: false
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null,
+                        lastActive: false
+                    },
+                    Complications: {
+                        isForcedOn: true,
+                        isForcedState: "blank",
+                        lastActive: true
+                    }
+                }
+                Media.IMAGES[`flipComp_PartnerPad_${i}`].modes = {
+                    Active: {
+                        isForcedOn: false,
+                        isForcedState: null,
+                        lastActive: false
+                    },
+                    Inactive: {
+                        isForcedOn: false,
+                        isForcedState: null,
+                        lastActive: false
+                    },
+                    Daylighter: {
+                        isForcedOn: false,
+                        isForcedState: null,
+                        lastActive: false
+                    },
+                    Downtime: {
+                        isForcedOn: false,
+                        isForcedState: null,
+                        lastActive: false
+                    },
+                    Complications: {
+                        isForcedOn: false,
+                        isForcedState: null,
+                        lastActive: false
+                    }
                 }
             }
-            Media.IMAGES[`flipComp_PartnerPad_${i}`].modes = {
-                Active: {
-                    isForcedOn: false,
-                    isForcedState: null,
-                    lastActive: false
-                },
-                Inactive: {
-                    isForcedOn: false,
-                    isForcedState: null,
-                    lastActive: false
-                },
-                Daylighter: {
-                    isForcedOn: false,
-                    isForcedState: null,
-                    lastActive: false
-                },
-                Downtime: {
-                    isForcedOn: false,
-                    isForcedState: null,
-                    lastActive: false
-                },
-                Complications: {
-                    isForcedOn: false,
-                    isForcedState: null,
-                    lastActive: false
-                }
-            }
-        }
             
         },
     // #endregion
@@ -491,7 +491,7 @@ const Complications = (() => {
                 else if (!isCardValid(card))
                     dealCard(i)
                 Media.SetImg(`compCardSpot_${i+1}`, "cardBack")
-                //D.Alert(`Setting compCardName_${i+1} to "${card.name}"`)
+                // D.Alert(`Setting compCardName_${i+1} to "${card.name}"`)
                 Media.SetText(`compCardName_${i+1}`, STATEREF.MAT[i].name)
             }
         },

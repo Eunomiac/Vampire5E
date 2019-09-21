@@ -41,58 +41,7 @@ const Media = (() => {
             STATEREF.activeTimeouts = STATEREF.activeTimeouts || []
             STATEREF.curLocation = STATEREF.curLocation || "DistrictCenter:blank SiteCenter:blank"
 
-        STATEREF.textregistry.complicationDeckSize.modes = {
-                Active: {
-                    isForcedOn: false,
-                    isForcedState: null
-                },
-                Inactive: {
-                    isForcedOn: false,
-                    isForcedState: null
-                },
-                Daylighter: {
-                    isForcedOn: false,
-                    isForcedState: null
-                },
-                Downtime: {
-                    isForcedOn: false,
-                    isForcedState: null
-                },
-                Complications: {
-                    isForcedOn: true,
-                    isForcedState: null,
-                    lastActive: true
-                }
-            }
-            STATEREF.textregistry.complicationDeckSizeShadow.modes = {
-                Active: {
-                    isForcedOn: false,
-                    isForcedState: null
-                },
-                Inactive: {
-                    isForcedOn: false,
-                    isForcedState: null
-                },
-                Daylighter: {
-                    isForcedOn: false,
-                    isForcedState: null
-                },
-                Downtime: {
-                    isForcedOn: false,
-                    isForcedState: null
-                },
-                Complications: {
-                    isForcedOn: true,
-                    isForcedState: null,
-                    lastActive: true
-                }
-            }
-            
-            STATEREF.textregistry.complicationDeckSize.left = 195
-            STATEREF.textregistry.complicationDeckSize.justification = "center"
-            STATEREF.textregistry.complicationDeckSizeShadow.left = 200
-            STATEREF.textregistry.complicationDeckSizeShadow.justification = "center"
-
+            // STATEREF.imgregistry.mapButtonDomain_1.cycleSrcs = ["camarilla", "nodomain", "anarch"]
         // delete STATEREF.tokenregistry["85239212/An9D7-g4OmLdjhKm-NbKnA/1561848759"]
         // Initialize IMGDICT Fuzzy Dictionary
             STATEREF.IMGDICT = Fuzzy.Fix()
@@ -252,15 +201,16 @@ const Media = (() => {
                     curMode: "Active",
                     activeSrc: "blank"
                 }
+                return null
             })()   
-
-            // STATEREF.imgregistry.mapButtonDomain_1.cycleSrcs = ["anarch", "camarilla", "nodomain"]
         },
+            
+        
     // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
         handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
-            let textParams
+            let textParams, textModes
             switch (call.shift().toLowerCase()) {
                 case "!area": {
                     switch (call.shift().toLowerCase()) {
@@ -338,10 +288,10 @@ const Media = (() => {
                         case "set": {
                             switch (args.shift().toLowerCase()) {
                                 case "mode": {
-                                    let [hostName, mode, key, val] = args
-                                    const imgKey = getImgKey(hostName)
+                                    const [hostName, mode, key, val] = args,
+                                        imgKey = getImgKey(hostName)
                                     if (!Session.Modes.includes(mode) || !["isForcedOn", "isForcedState", "lastActive", "lastState"].includes(key) || !["true", "false", "null", "LAST"].includes(val))
-                                        D.Alert("Mode Set Syntax:<br><br><b>!img set mode (hostName) (mode) (key) (val)</b>", "!img set mode")
+                                    {D.Alert("Mode Set Syntax:<br><br><b>!img set mode (hostName) (mode) (key) (val)</b>", "!img set mode")}
                                     else {
                                         IMGREGISTRY[imgKey].modes = IMGREGISTRY[imgKey].modes || {}
                                         IMGREGISTRY[imgKey].modes[mode] = IMGREGISTRY[imgKey].modes[mode] || {}
@@ -382,22 +332,6 @@ const Media = (() => {
                                 case "loc": case "location": {                                    
                                     DB(`SET LOCATION COMMAND RECEIVED.  MSG: ${D.JS(msg)}`, "!img set loc")         
                                     setLocation(args.join(" "))
-                                    break
-                                }
-                                case "mode": {
-                                    const imgObjs = D.GetSelected(msg) || [getImgObjs(args.shift())]
-                                    if (VAL({graphic: imgObjs}, "!img set mode", true)) {
-                                        const mode = args.shift(),
-                                            params = D.ParseParams(args)
-                                        for (const imgObj of imgObjs)
-                                            if (isRegImg(imgObj)) {
-                                                const REGREF = IMGREGISTRY[getImgKey(imgObj)]
-                                                REGREF.modes = REGREF.modes || D.KeyMapObj(Session.Modes, (k,v) => v.toLowerCase(), () => ({}))
-                                                REGREF.modes[mode] = REGREF.modes[mode] || {}
-                                                for (const param of _.keys(params))
-                                                    REGREF.modes[mode][param] = params[param]
-                                            }
-                                    }
                                     break
                                 }
                             // no default
@@ -748,10 +682,10 @@ const Media = (() => {
                         case "set":
                             switch ((args[0] || "").toLowerCase()) {
                                 case "mode": {
-                                    let [hostName, mode, key, val] = args
-                                    const textKey = getTextKey(hostName)
+                                    const [hostName, mode, key, val] = args,
+                                        textKey = getTextKey(hostName)
                                     if (!Session.Modes.includes(mode) || !["isForcedOn", "isForcedState", "lastActive", "lastState"].includes(key) || !["true", "false", "null", "LAST"].includes(val))
-                                        D.Alert("Mode Set Syntax:<br><br><b>!text set mode (hostName) (mode) (key) (val)</b>", "!text set mode")
+                                    {D.Alert("Mode Set Syntax:<br><br><b>!text set mode (hostName) (mode) (key) (val)</b>", "!text set mode")}
                                     else {
                                         TEXTREGISTRY[textKey].modes = TEXTREGISTRY[textKey].modes || {}
                                         TEXTREGISTRY[textKey].modes[mode] = TEXTREGISTRY[textKey].modes[mode] || {}
@@ -855,15 +789,15 @@ const Media = (() => {
                                 const textData = getTextData(msg, true)
                                 args[0] = args[0] || textData.name
                                 args[1] = args[1] || textData.activeLayer
-                                args[2] = args[2] || textData.startActive
-                                args[3] = args[3] || hasShadowObj(msg)
-                                args[4] = args[4] || textData.justification
-                                textParams = args.slice(4).join(" ")
+                                args[2] = args[2] || hasShadowObj(msg)
+                                args[3] = args[3] || textData.justification
+                                textParams = args.slice(3).join(" ")
                                 textParams = _.compact([
                                     textParams.includes("vertAlign") ? "" : `vertAlign:${textData.vertAlign || "top"}`,
                                     textData.maxWidth && !textParams.includes("maxWidth") ? `maxWidth:${textData.maxWidth}` : "",
                                     textParams.includes("zIndex") ? "" : `zIndex:${textData.zIndex || 300}`
                                 ]).join(",") + textParams
+                                textModes = JSON.parse(JSON.stringify(textData.modes))
                                 removeText(msg, true, true)
                             }
                         }
@@ -878,10 +812,13 @@ const Media = (() => {
                                 } else {
                                     const [hostName, objLayer, isShadow, justification] = [args.shift(), args.shift(), args.shift(), args.shift()]
                                     textParams = textParams || args.join(" ")
-                                    if (hostName && objLayer)
+                                    if (hostName && objLayer) {
                                         regText(textObj, hostName, objLayer, !isShadow || isShadow !== "false", justification || "center", D.ParseToObj(textParams))
-                                    else
-                                        D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
+                                        if (textModes)
+                                            TEXTREGISTRY[getTextKey(textObj)].modes = textModes
+                                    } else {
+                                        D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
+                                    }
                                 }
                             }
                             break
@@ -7001,8 +6938,6 @@ const Media = (() => {
                 
                 for (const textKey of _.keys(TEXTREGISTRY)) {
                     TEXTREGISTRY[textKey].curMode = "Active"
-                    if (textKey.includes("Shadow"))
-                        continue
                     const textObj = getTextObj(textKey),
                         textData = getTextData(textKey)
                     TEXTREGISTRY[textKey].curText = textObj.get("text")
@@ -7014,9 +6949,9 @@ const Media = (() => {
                                 modeRef[modeKey] = textObj.get("text")                                
                     }
                 }
-                for (const imgKey of _.keys(IMGREGISTRY)) {
+                for (const imgKey of _.keys(IMGREGISTRY)) 
                     IMGREGISTRY[imgKey].curMode = "Active"
-                }
+                
             }
             if (isResetting)
                 resetAllModeData()
@@ -7106,23 +7041,16 @@ const Media = (() => {
                         `<b>${imgKey}:</b>`,
                         ...imgErrors
                     ])
+                setImg("mapButtonDomain_1", "camarilla")
             }
             errorLines.push("<h3>TEXT ERRORS</h3>")
             for (const textKey of _.keys(TEXTREGISTRY)) {
                 const textData = getTextData(textKey),
                     textObj = getTextObj(textKey),
-                    textErrors = []
-                let textActiveState = textData.isActive
+                    textErrors = [],
+                    textActiveState = textData.isActive
                 // Reset Active status by toggling both ways.
                 if (isToggling) {
-                    if (textKey.includes("Shadow")) {
-                        const masterData = getTextData(textData.shadowMaster)
-                        textData.modes = JSON.parse(JSON.stringify(masterData.modes))
-                        textData.curText = masterData.curText
-                        textData.activeText = masterData.activeText
-                        textData.isActive = masterData.isActive
-                        textActiveState = masterData.isActive
-                    }
                     toggleText(textKey, !textActiveState)
                     toggleText(textKey, textActiveState)
                     // If image is active, set it to its top source OR if it has no top source, to blank.
@@ -7275,16 +7203,16 @@ const Media = (() => {
                         IMGREGISTRY[mediaKey].modes[lastMode].lastState = imgData.isActive && imgData.activeSrc || IMGREGISTRY[mediaKey].modes[lastMode].lastState
                     }
                     IMGREGISTRY[mediaKey].curMode = Session.Mode
-                    if (!_.isUndefined(modeStatus.isActive)) {
+                    if (!_.isUndefined(modeStatus.isActive)) 
                         // DB(`... IsActive OK! toggleImg(${D.JS(mediaKey)}, ${D.JS(modeStatus.isActive)})`, "modeUpdate")
                         toggleImg(mediaKey, modeStatus.isActive)
-                    }
-                    if (!_.isUndefined(modeStatus.state)) {
+                    
+                    if (!_.isUndefined(modeStatus.state)) 
                         // DB(`... State OK! setImg(${D.JS(mediaKey)}, ${D.JS(modeStatus.state)})`, "modeUpdate")
                         setImg(mediaKey, modeStatus.state)
-                    }
+                    
                 }
-            } else if (isRegText(mediaKey) && !mediaKey.includes("Shadow")) {
+            } else if (isRegText(mediaKey)) {
                 const textData = getTextData(mediaKey),
                     modeStatus = getModeStatus(mediaKey)
                 // DB(`Updating '${D.JS(mediaRef)}'. ModeStatus: ${D.JS(modeStatus)}`, "modeUpdate")
@@ -7295,14 +7223,14 @@ const Media = (() => {
                         TEXTREGISTRY[mediaKey].modes[lastMode].lastState = textData.isActive && (_.isString(textData.activeText) && textData.activeText || textData.curText) || TEXTREGISTRY[mediaKey].modes[lastMode].lastState
                     }
                     TEXTREGISTRY[mediaKey].curMode = Session.Mode
-                    if (!_.isUndefined(modeStatus.isActive)) {
+                    if (!_.isUndefined(modeStatus.isActive)) 
                         // DB(`... IsActive OK! toggleText(${D.JS(mediaKey)}, ${D.JS(modeStatus.isActive)})`, "modeUpdate")
                         toggleText(mediaKey, modeStatus.isActive)
-                    }
-                    if (!_.isUndefined(modeStatus.state)) {
+                    
+                    if (!_.isUndefined(modeStatus.state)) 
                         // DB(`... State OK! setText(${D.JS(mediaKey)}, ${D.JS(modeStatus.state)})`, "modeUpdate")
                         setText(mediaKey, modeStatus.state)
-                    }
+                    
                 }
             }   
         },
@@ -7801,19 +7729,18 @@ const Media = (() => {
                 }      
                 DB(`Final Parsed Params: ${D.JS(parsedParams, true)}`, "setLocation")
             }
-            _.each(_.omit(parsedParams, (v, k) => k.includes("Name")), (v,k) => { setImg(k, v) })
-            setImg("SiteBarCenter", parsedParams.SiteNameCenter === " " ? "blank" : "base")
-            if (parsedParams.SiteNameCenter !== " ")
-                toggleText("SiteNameCenter", true)
-            setText("SiteNameCenter", parsedParams.SiteNameCenter)
-            setImg("SiteBarLeft", parsedParams.SiteNameLeft === " " ? "blank" : "base")
-            if (parsedParams.SiteNameLeft !== " ")
-                toggleText("SiteNameLeft", true)
-            setText("SiteNameLeft", parsedParams.SiteNameLeft)
-            setImg("SiteBarRight", parsedParams.SiteNameRight === " " ? "blank" : "base")
-            if (parsedParams.SiteNameRight !== " ")
-                toggleText("SiteNameRight", true)
-            setText("SiteNameRight", parsedParams.SiteNameRight)   
+            for (const loc of _.keys(parsedParams).filter(x => !x.includes("Name")))
+                if (parsedParams[loc] === "blank")
+                    toggleImg(loc, false)
+                else
+                    setImg(loc, parsedParams[loc], true)            
+            for (const sitePos of ["SiteNameCenter", "SiteNameLeft", "SiteNameRight"]) {
+                toggleImg(sitePos.replace(/Name/gu, "Bar"), parsedParams[sitePos] !== " ")
+                if (parsedParams[sitePos] === " ")
+                    toggleText(sitePos, false)
+                else
+                    setText(sitePos, parsedParams[sitePos])
+            }
             STATEREF.curLocation = _.clone(parsedParams)
         },
         sortImgs = (imgRefs, modes = "", anchors = []) => {
@@ -8017,35 +7944,32 @@ const Media = (() => {
             // NON-PERMANENT.  If turning off, set activeSrc to curSrc.
             // Also, verify img status is changing before doing anything.
             if (isActive === null) return null
-            const imgData = getImgData(imgRef)
+            const imgData = getImgData(imgRef),
+                imgObj = getImgObj(imgData.name)
             if (VAL({list: imgData}, "toggleImg")) {
+                let activeCheck = null
+                if (isActive === false || isActive !== true && imgData.isActive === true)
+                    activeCheck = false
+                else if (isActive === true || isActive !== false && imgData.isActive === false)
+                    activeCheck = true
                 const [pad, partner] = DragPads.GetPadPair(imgData.id, true)
                 if (pad)
-                    if (isActive === false || imgData.isActive === true)
-                        toggleImg(pad, true)
-                    else if (isActive === false || imgData.isActive === true)
-                        toggleImg(pad, false)
+                    toggleImg(pad, activeCheck)
                 if (partner)
                     toggleImg(partner, false)
-                if ((isActive === true || isActive === false) && imgData.isActive === isActive)
+                if (activeCheck === null || imgData.isActive === activeCheck && imgObj.get("layer") === (activeCheck ? imgData.activeLayer : "walls"))
                     return null
-                if (isActive === false || imgData.isActive === true) {
+                if (activeCheck === false) {
                     // TURN OFF: Set layer to walls, toggle off associated drag pads, update activeState value
                     IMGREGISTRY[imgData.name].activeSrc = imgData.curSrc
                     IMGREGISTRY[imgData.name].isActive = false
-                    const imgObj = getObj("graphic", imgData.id),
-                        [pad, partner] = DragPads.GetPadPair(imgData.id, true)
-                    if (imgObj)
-                        setLayer(imgObj, "walls")
+                    setLayer(imgObj, "walls")
                     return false                   
-                } else if (isActive === true || imgData.isActive === false) {
+                } else if (activeCheck === true) {
                     // TURN ON: Set layer to active layer, toggle on associated drag pads, restore activeState value if it's different
                     IMGREGISTRY[imgData.name].isActive = true
-                    setImg(imgData.name, imgData.activeSrc)
-                    const imgObj = getObj("graphic", imgData.id),
-                        [pad, partner] = DragPads.GetPadPair(imgData.id, true)
-                    if (imgObj)
-                        setLayer(imgObj, imgData.activeLayer)
+                    // setImg(imgData.name, imgData.activeSrc)
+                    setLayer(imgObj, imgData.activeLayer)
                     return true                   
                 }
             }
@@ -8357,15 +8281,11 @@ const Media = (() => {
             }
             return false
         },
-        hasShadowObj = textRef => Boolean((getTextData(textRef) || {shadow: false}).shadow),
+        hasShadowObj = textRef => Boolean((getTextData(textRef) || {shadowID: false}).shadowID),
         getTextShadowObj = (textRef, isSilent = false) => {
-            const textKey = getTextKey(textRef, isSilent)
-            if (_.isString(textRef) && textRef.includes("Ava"))
-                D.Alert(`Seeking Shadow with REF: ${D.JS(textRef)}`)
-            if (_.isString(textKey) && textKey.includes("Ava"))
-                D.Alert(`Seeking Shadow with KEY: ${D.JS(textKey)}`)
-            if (textKey)
-                return getTextObj(TEXTREGISTRY[textKey].shadow, true) || !isSilent && THROW(`No shadow text object registered for ${D.JS(textKey)}`, "getTextShadowObj")
+            const textData = getTextData(textRef, isSilent)
+            if (VAL({list: textData}) && textData.shadowID)
+                return getObj("text", textData.shadowID) || !isSilent && THROW(`No shadow text object registered for ${D.JS(textData.name)}`, "getTextShadowObj")
             return !isSilent && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, "getTextShadowObj")
         },
         getShadowShift = textRef => C.SHADOWOFFSETS[(getTextObj(textRef) || {get: () => 20}).get("font_size")],
@@ -8413,9 +8333,9 @@ const Media = (() => {
                 }
                 let textLines = []
                 if (maxWidth !== false && maxW)
-                    textLines = _.compact(splitTextLines(textObj, text, maxW, textData && textData.justification))
-                else if (maxWidth !== false && text && text.includes("\n"))
-                    textLines = _.compact(text.split(/\s*\n+\s*/gu))
+                    textLines = _.compact(splitTextLines(textObj, textString, maxW, textData && textData.justification))
+                else if (maxWidth !== false && textString && textString.includes("\n"))
+                    textLines = _.compact(textString.split(/\s*\n+\s*/gu))
                 if (textLines.length) {
                     let maxLine = textLines[0]
                     // D.Alert(`TextLines = ${textLines}`)
@@ -8458,10 +8378,13 @@ const Media = (() => {
             const textObj = getTextObj(textRef),
                 justify = justification || getTextData(textRef).justification || "center"
             if (VAL({textObj}, "getBlankLeft")) {  
-                //D.Alert(`GetBlankLeft(${D.JS(textRef)}, ${D.JS(justification)}, ${D.JS(maxWidth)}, ${D.JS(useCurrent)}) = ${D.JS(useCurrent && (textObj.get("left") + {left: -0.5, right: 0.5, center: 0}[justify] * getMaxWidth(textObj)) || (textObj.get("left") + {left: -0.5, right: 0.5, center: 0}[justify] * getTextWidth(textObj, textObj.get("text"), maxWidth)))}`) 
+                // D.Alert(`GetBlankLeft(${D.JS(getTextKey(textRef))}, ${D.JS(justify)}, ${D.JS(maxWidth)}, ${D.JS(useCurrent)}) =<br>Left: ${D.JS(textObj.get("left"))}, Width: ${D.JS(useCurrent ? getTextWidth(textObj, textObj.get("text"), maxWidth) : getTextWidth(textObj))}, Final: ${D.JS(useCurrent && (textObj.get("left") + {left: -0.5, right: 0.5, center: 0}[justify] * getMaxWidth(textObj)) || (textObj.get("left") + {left: -0.5, right: 0.5, center: 0}[justify] * getTextWidth(textObj, textObj.get("text"), maxWidth)))}`) 
+                // if (useCurrent)
+                //    return textObj.get("left") + (justify === "left" ? -0.5 : justify === "right" ? 0.5 : 0) * getMaxWidth(textObj)
+                // D.Alert(`getBlankLeft Called on ${textObj.get("text")} with maxWidth ${maxWidth} into getTextWidth -->`)
+                // return textObj.get("left") + (justify === "left" ? -0.5 : justify === "right" ? 0.5 : 0) * getTextWidth(textObj, textObj.get("text"), maxWidth)
                 if (useCurrent)
                     return textObj.get("left") + {left: -0.5, right: 0.5, center: 0}[justify] * getMaxWidth(textObj)
-                // D.Alert(`getBlankLeft Called on ${textObj.get("text")} with maxWidth ${maxWidth} into getTextWidth -->`)
                 return textObj.get("left") + {left: -0.5, right: 0.5, center: 0}[justify] * getTextWidth(textObj, textObj.get("text"), maxWidth)
             }
             return false
@@ -8473,8 +8396,8 @@ const Media = (() => {
                 params.left = params.left || textData.left
                 params.text = params.text || textObj.get("text")
                 params.justification = params.justification || textData.justification || "center"
-                // D.Alert(`getRealLeft Called on ${params.text} with maxWidth ${params.maxWidth} into getTextWidth -->`)
-                return params.left + {left: -0.5, right: 0.5, center: 0}[params.justification] * getTextWidth(textObj, params.text, params.maxWidth || 0)
+                // D.Alert(`getRealLeft(${D.JS(textData.name)}, ${D.JS(params)}) =<br>Left: ${D.JS(textObj.get("left"))}, DataLeft: ${D.JS(textData.left)}, Final: ${params.left + {left: -0.5, right: 0.5, center: 0}[params.justification] * getTextWidth(textObj, params.text, params.maxWidth || 0)}`)
+                return params.left + {left: 0.5, right: -0.5, center: 0}[params.justification] * getTextWidth(textObj, params.text, params.maxWidth || 0)
             }
             return false            
         },      
@@ -8524,13 +8447,6 @@ const Media = (() => {
                 TEXTREGISTRY[getTextKey(textObj)].justification = justification || "center"
                 TEXTREGISTRY[getTextKey(textObj)].left = getBlankLeft(textObj, justification, maxWidth)
                 TEXTREGISTRY[getTextKey(textObj)].width = getTextWidth(textObj, textObj.get("text"), maxWidth)
-                if (hasShadowObj(textObj)) {
-                    const shadowKey = getTextData(textObj).shadow,
-                        shadowObj = getTextObj(shadowKey)
-                    TEXTREGISTRY[shadowKey].justification = justification || "center"
-                    TEXTREGISTRY[shadowKey].left = getBlankLeft(shadowObj, justification, maxWidth)
-                    TEXTREGISTRY[shadowKey].width = getTextWidth(shadowObj, shadowObj.get("text"), maxWidth)
-                }
                 // D.Alert(`${getTextKey(textRef)} Updated: ${D.JS(TEXTREGISTRY[getTextKey(textObj)])}`, "justifyText")
             }
         },
@@ -8586,29 +8502,28 @@ const Media = (() => {
                 )
                 delete TEXTREGISTRY[name].text
                 TEXTREGISTRY[name].modes = C.MODEDEFAULTS(textObj, options.modes)
-                D.Alert(`Modes for ${name}: ${D.JS(TEXTREGISTRY[name].modes)}`, "regText")
-                for (const mode of Session.Modes)
-                    TEXTREGISTRY[name].modes[mode] = C.MODEDEFAULTS(textObj, mode)                
+                D.Alert(`Modes for ${name}: ${D.JS(TEXTREGISTRY[name].modes)}`, "regText")          
                 TEXTREGISTRY[name].left = getBlankLeft(textObj, TEXTREGISTRY[name].justification, TEXTREGISTRY[name].maxWidth, true)
-                IDREGISTRY[textObj.id] = name      
+                IDREGISTRY[textObj.id] = name 
                 if (hasShadow) {
-                    const shadowOptions = Object.assign(_.omit(_.clone(TEXTREGISTRY[name]), "id"), {
-                        name: `${name}Shadow`,
+                    const shadowObj = createObj("text", {
+                        _pageid: D.PAGEID,
+                        text: TEXTREGISTRY[name].curText,
+                        left: TEXTREGISTRY[name].left,
+                        top: TEXTREGISTRY[name].top,
+                        font_size: TEXTREGISTRY[name].font_size,
                         color: "rgb(0,0,0)",
-                        shadowMaster: name,
-                        zIndex: TEXTREGISTRY[name].zIndex - 1,
-                        left: TEXTREGISTRY[name].left + getShadowShift(textObj),
-                        top: TEXTREGISTRY[name].top + getShadowShift(textObj)
+                        font_family: TEXTREGISTRY[name].font_family,
+                        layer: TEXTREGISTRY[name].activeLayer,
+                        controlledby: ""
                     })
-                    DB(`Shadow Options: ${D.JS(shadowOptions)}`, "regText")
-                    const shadowObj = makeText(shadowOptions.name, TEXTREGISTRY[name].activeLayer, false, justification, shadowOptions, isSilent)
-                    shadowOptions.id = shadowObj.id
-                    TEXTREGISTRY[name].shadow = shadowOptions.name
+                    TEXTREGISTRY[name].shadowID = shadowObj.id
                 }
                 setText(textObj, TEXTREGISTRY[name].curText, true)
-                setTextData(textObj, _.pick(TEXTREGISTRY[name], C.TEXTPROPS))        
+                setTextData(textObj, _.pick(TEXTREGISTRY[name], C.TEXTPROPS))
+                updateTextShadow(name)       
                 D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(TEXTREGISTRY[name])}`, "regText")
-                initMedia()
+                // initMedia()
                 return getTextData(name)
             }
             return !isSilent && THROW(`Invalid text reference '${D.JS(textRef)}'`, "regText")
@@ -8633,38 +8548,22 @@ const Media = (() => {
             return textObj
         },
         updateTextShadow = (textRef, isForcing = false) => {
-            const textKey = getTextKey(textRef)
-            if (VAL({string: textKey}, "updateTextShadow")) {
-                const textData = getTextData(textKey),
-                    textObj = getTextObj(textKey)
-                if (VAL({textObj, list: textData}, "updateTextShadow")) {
-                    const shadowKey = textData.shadow,
-                        shadowData = getTextData(shadowKey),
-                        shadowObj = getTextObj(shadowKey)
-                    if (VAL({textObj: shadowObj, list: shadowData}, "updateTextShadow")) {
-                        const shadowShift = getShadowShift(textObj)
-                        const shadowParams = {
-                                left: parseInt(textObj.get("left")) + shadowShift,
-                                top: parseInt(textObj.get("top")) + shadowShift
-                            },
-                            shadowText = textObj.get("text")
-                        //if (_.isNaN(shadowParams.left) || _.isNaN(shadowParams.top)) {
-                        //D.Alert(`ShadowShift: ${D.JS(shadowShift)}<br>ShadowParams: ${D.JS(shadowParams)}, ShadowText: ${D.JS(shadowText)}`, "UPDATETEXTSHADOW ERROR")
-                            //return false
-                        //}
-                        if(!isForcing && (
-                            shadowObj.get("left") === shadowParams.left &&
-                            shadowObj.get("top") === shadowParams.top &&
-                            shadowObj.get("text") === shadowText
-                        ))
-                            return null
-                        setText(shadowKey, shadowText)
-                        setTextData(shadowKey, shadowParams)
-                        return true
-                    }
+            const textData = getTextData(textRef)
+            if (VAL({list: textData}, "updateTextShadow") && textData.shadowID) {
+                const textObj = getTextObj(textData.name),
+                    shadowObj = getObj("text", textData.shadowID)
+                if (VAL({textObj: shadowObj}, "updateTextShadow")) {
+                    const shadowShift = getShadowShift(textObj),
+                        shadowParams = {
+                            text: textObj.get("text"),
+                            left: textObj.get("left") + shadowShift,
+                            top: textObj.get("top") + shadowShift
+                        }
+                    shadowObj.set(shadowParams)
+                    toFront(shadowObj)
+                    toFront(textObj)
                 }
             }
-            return false
         },
         linkText = (masterRef, slaveData, horizPad = 0, vertPad = 0) => {
             // ON MASTER: list each slave object in terms of the edge it attaches to -- top, left, right or bottom
@@ -8708,7 +8607,7 @@ const Media = (() => {
                                 TEXTREGISTRY[slaveKey].pushtop = masterObj.get("text").match(/\S/gui) ? getTextHeight(masterObj) + slaveData.vertPad : 0
                             // no default
                         }
-                        setText(slaveKey)
+                        setText(slaveKey, slaveData.curText)
                     }
                 }
         },
@@ -8721,7 +8620,7 @@ const Media = (() => {
                 toggleText(textKey, isToggling)
             if (textParams.text === null || textParams.text === undefined || textParams.text === textObj.get("text"))
                 return null
-            let [shiftTop, shiftLeft] = [0, 0]
+            let [totalTopShift, totalLeftShift] = [(textData.shiftTop || 0) + (textData.pushtop || 0), (textData.shiftLeft || 0) + (textData.pushleft || 0)]
             if (VAL({textObj}, ["setText", `textRef: ${D.JS(textRef)}, text: ${D.JS(text)}`])) {
                 if (textData.maxWidth && textParams.text.length) {
                     const splitLines = splitTextLines(textObj, textParams.text, textData.maxWidth, textData.justification)
@@ -8730,13 +8629,13 @@ const Media = (() => {
                 if (textParams.text.split("\n").length > 1)
                     switch (textData.vertAlign) {
                         case "top":
-                            shiftTop = (textData.pushtop || 0) + 0.5*(textParams.text.split("\n").length - 1)*(
+                            totalTopShift += 0.5*(textParams.text.split("\n").length - 1)*(
                                 textData.lineHeight || 
                                 D.CHARWIDTH[textObj.get("font_family")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight ||
                                 0)
                             break
                         case "bottom":
-                            shiftTop = (textData.pushtop || 0) + 0.5*(textParams.text.split("\n").length - 1)*(
+                            totalTopShift += 0.5*(textParams.text.split("\n").length - 1)*(
                                 textData.lineHeight || 
                                 D.CHARWIDTH[textObj.get("font_family")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight ||
                                 0)
@@ -8744,12 +8643,12 @@ const Media = (() => {
                         // no default
                     }
                 textParams.left = getRealLeft(textObj, {
-                    left: (textData.left || getBlankLeft(textObj, textObj.get("text"))) + (textData.pushleft || 0) + shiftLeft, 
+                    left: (textData.left || getBlankLeft(textObj, textObj.get("text"))) + totalLeftShift, 
                     text: textParams.text,
                     justification: textData.justification,
                     maxWidth: textData.maxWidth
                 })
-                textParams.top = (textData.top || textObj.get("top")) + (textData.pushtop || 0) + shiftTop
+                textParams.top = (textData.top || textObj.get("top")) + totalTopShift
                 if (textData.isActive)
                     TEXTREGISTRY[textData.name].activeText = textParams.text
                 TEXTREGISTRY[textData.name].curText = textParams.text
@@ -8758,11 +8657,13 @@ const Media = (() => {
                 if (textParams.top === textObj.get("top"))
                     delete textParams.top
                 textObj.set(textParams)
-                if (textData.shadow)
+                if (textData.shadowID)
                     updateTextShadow(textKey)
                 if (textData.linkedText)
                     updateSlaveText(textKey)
+                return textObj
             }
+            return null
         },
         setTextData = (textRef, params) => {
             const textKey = getTextKey(textRef),
@@ -8770,8 +8671,9 @@ const Media = (() => {
             if (VAL({string: textKey}, "setTextData")) {
                 const textObj = getTextObj(textKey)
                 if (VAL({textObj}, ["setTextData", `Registered object '${textKey}' not found!`])) {
-                    const textParams = Object.assign(params, {left: getBlankLeft(textObj)}),
+                    const textParams = params, // Object.assign(params, {left: getBlankLeft(textObj)}),
                         objParams = _.omit(_.pick(textParams, C.TEXTPROPS), "text")
+                    //D.Alert(`textParams: ${D.JS(textParams)}<br>objParams: ${D.JS(objParams)}`, `${textKey}`)
                     _.each(textParams, (v, k) => {
                         if (k === "text")
                             D.Alert("Attempt to set 'text' via setTextData: Use setText() to set text values!", "ERROR: setTextData")
@@ -8787,29 +8689,35 @@ const Media = (() => {
         toggleText = (textRef, isActive, isForcing = false) => {
             // NON-PERMANENT.  If turning off, set activeSrc to curSrc.
             // Also, verify img status is changing before doing anything.
+            if (isActive === null) return null
             const textKey = getTextKey(textRef),
                 textData = getTextData(textKey),
                 textObj = getTextObj(textKey)
             if (VAL({textObj, list: textData}, "toggleText")) {
-                if (textData.shadow)
-                    toggleText(textData.shadow, isActive, isForcing)
-
-                if (!isForcing && (
-                    isActive === null ||
-                    (isActive === true || isActive === false) && textData.isActive === isActive
-                    ))
+                let activeCheck = null
+                if (isActive === true || isActive !== false && textData.isActive === false)
+                    activeCheck = true
+                else if (isActive === false || isActive !== true && textData.isActive === true)
+                    activeCheck = false
+                if (!isForcing && 
+                    textData.isActive === activeCheck && 
+                    textObj.get("layer") === (activeCheck ? textData.activeLayer : "walls"))
                     return null                
-                if (isActive === false || textData.isActive === true) {
+                if (activeCheck === false) {
                     // TURN OFF: Set layer to walls, toggle off associated drag pads, update activeState value
                     TEXTREGISTRY[textKey].activeText = textData.curText
                     TEXTREGISTRY[textKey].isActive = false
                     setLayer(textObj, "walls")
+                    if (textData.shadowID)
+                        (getObj("text", textData.shadowID) || {set: () => false}).set("layer", "walls")
                     return false                   
-                } else if (isActive === true || textData.isActive === false) {
+                } else if (activeCheck === true) {
                     // TURN ON: Set layer to active layer, toggle on associated drag pads, restore activeState value if it's different
                     TEXTREGISTRY[textKey].isActive = true
                     setText(textKey, textData.activeText)
                     setLayer(textObj, textData.activeLayer)
+                    if (textData.shadowID)
+                        (getObj("text", textData.shadowID) || {set: () => false}).set("layer", textData.activeLayer)
                     return true                   
                 }
             }
@@ -8818,8 +8726,11 @@ const Media = (() => {
         removeText = (textRef, isUnregOnly, isStillKillingShadow) => {
             const textObj = getTextObj(textRef),
                 textData = getTextData(textRef)
-            if (hasShadowObj(textObj))
-                removeText(textData.shadow, isUnregOnly && !isStillKillingShadow)
+            if (textData.shadowID) {
+                const shadowObj = getObj("text", textData.shadowID)
+                if (shadowObj && !isUnregOnly || isStillKillingShadow)
+                    shadowObj.remove()
+            }
             if (textObj && !isUnregOnly)
                 textObj.remove()
             if (textData) {
@@ -8890,8 +8801,8 @@ const Media = (() => {
                 IMGREGISTRY[padName].zIndex = ZLEVELS.dragpads
                 allImgDatas.push(IMGREGISTRY[padName])
             }
-            sortedMediaObjs.push(..._.compact(_.keys(TEXTREGISTRY).filter(x => !x.includes("Shadow")).map(x => getTextObj(x) || null)))
-            sortedMediaObjs.push(..._.compact(_.keys(TEXTREGISTRY).filter(x => x.includes("Shadow")).map(x => getTextObj(x) || null)))
+            sortedMediaObjs.push(..._.compact(_.keys(TEXTREGISTRY).map(x => getTextObj(x) || null)))
+            sortedMediaObjs.push(..._.compact(_.keys(TEXTREGISTRY).filter(x => TEXTREGISTRY[x].shadowID).map(x => getObj("text", TEXTREGISTRY[x].shadowID) || null)))
             sortedMediaObjs.push(..._.compact(allImgDatas.sort((a,b) => b.zIndex - a.zIndex).map(x => getImgObj(x.id) || null)))
             for (let i = 0; i < sortedMediaObjs.length; i++)
                 toBack(sortedMediaObjs[i])

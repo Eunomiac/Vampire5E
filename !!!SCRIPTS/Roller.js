@@ -1661,7 +1661,7 @@ const Roller = (() => {
                     /* Media.SetImgTemp(`rollerImage_${row}Mid_${i+1}`, {left: left})
                     Media.SetImg(`rollerImage_${row}Mid_${i+1}`, "base") */
                     Media.SetImgTemp(imgs[i], {left})
-                    Media.SetImg(imgs[i], "base")
+                    Media.ToggleImg(imgs[i], true)
                     left += stretchPer
                 }
                 dbLines.push(`Setting ${row}End to ${left}`)
@@ -1672,8 +1672,8 @@ const Roller = (() => {
                 /* const frameEndObj = Media.GetImg("rollerImage_bottomEnd_1"),
                     frameRightSide = frameEndObj.get("left") + 0.5 * frameEndObj.get("width")
                 if (row === "bottom") {
-                    Media.SetText("redMods", {left: frameRightSide, shiftleft: 20 })
-                    Media.SetText("goldMods", {left: frameRightSide, shiftleft: Media.GetTextWidth("redMods") + 40 })
+                    Media.SetText("redMods", {left: frameRightSide, shiftLeft: 20 })
+                    Media.SetText("goldMods", {left: frameRightSide, shiftLeft: Media.GetTextWidth("redMods") + 40 })
                 } */
 
                 DB(dbLines.join("<br>"), "scaleFrame")
@@ -3035,16 +3035,16 @@ const Roller = (() => {
                         rollLines.posMods = {
                             text: `+ ${posFlagLines.join(" + ")}`,
                         }
-                        rollLines.mainRoll.shifttop = -20
+                        rollLines.mainRoll.shiftTop = -20
                         if (rollFlags.isHidingTraitVals)
                             rollLines.posMods.text = rollLines.posMods.text.replace(/\(?[+-]*?[\d●~]+?\)?/gu, "")
                     }
                     if (negFlagLines.length && !(rollFlags.isHidingDicePool && rollFlags.isHidingTraits)) {
                         rollLines.negMods = {
                             text: `- ${negFlagLines.join(" - ")}`,
-                            shiftleft: 20 + Media.GetTextWidth("posMods", rollLines.posMods ? rollLines.posMods.text : " ")
+                            shiftLeft: 20 + Media.GetTextWidth("posMods", rollLines.posMods ? rollLines.posMods.text : " ")
                         }
-                        rollLines.mainRoll.shifttop = -20
+                        rollLines.mainRoll.shiftTop = -20
                     }
                     if (redFlagLines.length)
                         rollLines.redMods = {
@@ -3057,7 +3057,7 @@ const Roller = (() => {
                         if (rollFlags.isHidingTraitVals)
                             rollLines.goldMods.text = rollLines.goldMods.text.replace(/\(?[+-]*?[\d●~]+?\)?/gu, "")
                         if (redFlagLines.length)
-                            rollLines.redMods.shifttop = 40
+                            rollLines.redMods.shiftTop = 40
                     }
                 /* falls through */
                 case "willpower":
@@ -3092,8 +3092,7 @@ const Roller = (() => {
                     return THROW(`Unrecognized rollType: ${D.JS(rollData.rollType)}`, "APPLYROLL: START")
             }
 
-            if (rollData.diff === 0)
-                Media.SetImg("rollerImage_diffFrame", "blank")
+            Media.ToggleImg("rollerImage_diffFrame", rollData.diff > 0)
 
             _.each(_.keys(rollLines), line => {
                 if (_.isString(COLORSCHEMES[rollData.type][line]))
@@ -3530,30 +3529,32 @@ const Roller = (() => {
                     bottomEndData = Media.GetImgData("rollerImage_bottomEnd")
                 bottomEndData.left = Media.GetImg("rollerImage_bottomEnd").get("left")
                 if (!filteredDice.length) {
-                    rollLines.outcome.shifttop = rollLines.outcome.shifttop || 0 - 95
-                    rollLines.subOutcome.shifttop = rollLines.subOutcome.shifttop || 0 - 95
-                    rollLines.difficulty.shifttop = rollLines.difficulty.shifttop || 0 - 98
-                    rollLines.margin.shifttop = rollLines.margin.shifttop || 0 - 95
-                    rollLines.resultCount.shifttop = rollLines.resultCount.shifttop || 0 - 95
-                    rollLines.goldMods.shifttop = rollLines.goldMods.shifttop || 0 - 95
-                    rollLines.goldMods.shiftleft = (rollLines.outcome.shiftleft || 0) + outcomePos.width + 20
-                    rollLines.redMods.shifttop = rollLines.redMods.shifttop || 0 - 95
-                    rollLines.redMods.shiftleft = (rollLines.outcome.shiftleft || 0) + outcomePos.width + 20
+                    rollLines.outcome.shiftTop = rollLines.outcome.shiftTop || 0 - 95
+                    rollLines.subOutcome.shiftTop = rollLines.subOutcome.shiftTop || 0 - 95
+                    rollLines.difficulty.shiftTop = rollLines.difficulty.shiftTop || 0 - 98
+                    rollLines.margin.shiftTop = rollLines.margin.shiftTop || 0 - 95
+                    rollLines.resultCount.shiftTop = rollLines.resultCount.shiftTop || 0 - 95
+                    rollLines.goldMods.shiftTop = rollLines.goldMods.shiftTop || 0 - 95
+                    rollLines.goldMods.shiftLeft = (rollLines.outcome.shiftLeft || 0) + outcomePos.width + 20
+                    rollLines.redMods.shiftTop = rollLines.redMods.shiftTop || 0 - 95
+                    rollLines.redMods.shiftLeft = (rollLines.outcome.shiftLeft || 0) + outcomePos.width + 20
                     Media.SetImgTemp("rollerImage_diffFrame", {top: 150})
                     // D.Alert("RollLines Set to No Bottom")
                 } else if (bottomEndData.left + 0.5 * bottomEndData.width - 100 < outcomePos.left + outcomePos.width) {
-                    rollLines.redMods.shifttop = (rollLines.redMods.shifttop || 0) - 95
-                    rollLines.goldMods.shifttop = (rollLines.goldMods.shifttop || 0) - 95
-                    rollLines.redMods.shiftleft = bottomEndData.left - outcomePos.left + 0.5 * bottomEndData.width + 20
-                    rollLines.goldMods.shiftleft = bottomEndData.left - outcomePos.left + 0.5 * bottomEndData.width + 20
+                    rollLines.redMods.shiftTop = (rollLines.redMods.shiftTop || 0) - 95
+                    rollLines.goldMods.shiftTop = (rollLines.goldMods.shiftTop || 0) - 95
+                    rollLines.redMods.shiftLeft = bottomEndData.left - outcomePos.left + 0.5 * bottomEndData.width + 20
+                    rollLines.goldMods.shiftLeft = bottomEndData.left - outcomePos.left + 0.5 * bottomEndData.width + 20
                     Media.SetImgTemp("rollerImage_diffFrame", {top: 250})
                 } else {
-                    rollLines.redMods.shiftleft = outcomePos.width + 20
-                    rollLines.goldMods.shiftleft = outcomePos.width + 20
+                    rollLines.redMods.shiftLeft = outcomePos.width + 20
+                    rollLines.goldMods.shiftLeft = outcomePos.width + 20
                     Media.SetImgTemp("rollerImage_diffFrame", {top: 250})
                 }
                 _.each(rollLines, (args, name) => {
-                    Media.SetText(name, args)
+                    D.Alert(`Setting Text Data: ${D.JS(_.omit(args, "text"))}`, name)
+                    Media.SetTextData(name, _.omit(args, "text"))
+                    Media.SetText(name, args.text, true)
                     txtWidths[name] = Media.GetTextWidth(name)
                 })
                 spread = Math.max((txtWidths.posMods || 0) + (txtWidths.negMods || 0) + 20, txtWidths.mainRoll)

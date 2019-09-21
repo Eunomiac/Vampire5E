@@ -1,7 +1,7 @@
 void MarkStart("Char")
 const Char = (() => {
     // ************************************** CLEAN DISABLE (UNCOMMENT TO DISABLE SCRIPT) *******************************************
-    /*return {
+    /* return {
         RegisterEventHandlers: () => false,
         CheckInstall:  () => false,
         REGISTRY: () => false,
@@ -17,7 +17,7 @@ const Char = (() => {
         RefreshDisplays:  () => false,
         get SelectedChar() { return false },
         get SelectedTraits() { return false }
-    }*/
+    } */
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Char",
         CHATCOMMAND = "!char",
@@ -242,6 +242,24 @@ const Char = (() => {
                     }
                     break
                 }
+                case "lock": case "unlock": {
+                    switch(args.shift().toLowerCase()) {
+                        case "weekly": case "resource": case "weeklyresource": {
+                            if (args.length === 3) {
+                                const [init, rowNum, amount] = [args.shift().toUpperCase(), parseInt(args.shift()), parseInt(args.shift())],
+                                    [curTot, curLock] = [STATEREF.weeklyResources[init][rowNum - 1][2], STATEREF.weeklyResources[init][rowNum - 1][3]],
+                                    newLock = Math.max(0, Math.min(curTot, curLock + (call === "lock" ? amount : -amount)))
+                                STATEREF.weeklyResources[init][rowNum - 1][3] = newLock
+                            } else {
+                                D.Alert("Syntax:<br><br><b>!char reg (initial) (name) (total)<br>!char unreg/set/lock/unlock (initial) (rowNum) [amount]<br>!char set weekly reset</b>")
+                            }
+                            displayResources()
+                            break
+                        }
+                        // no default
+                    }
+                    break
+                }
                 case "set": {
                     switch (args.shift().toLowerCase()) {
                         case "stat": case "stats": case "attr": case "attrs": {
@@ -270,7 +288,7 @@ const Char = (() => {
                             break
                         }                                               
                         case "weekly": case "resource": case "weeklyresource": {
-                            if (args[0] && args[0].length > 2)
+                            if (args[0] && args[0] === "reset" || args.length === 3)
                                 switch ((args[0] || "").toLowerCase()) {
                                     case "reset":
                                         resetResources()
@@ -279,6 +297,8 @@ const Char = (() => {
                                         adjustResource(args.shift().toUpperCase(), parseInt(args.shift()), parseInt(args.shift()))
                                         break
                                 }
+                            else                                
+                                D.Alert("Syntax:<br><br><b>!char reg (initial) (name) (total)<br>!char unreg/set/lock/unlock (initial) (rowNum) [amount]<br>!char set weekly reset</b>")
                             displayResources()
                             break
                         }
@@ -869,7 +889,7 @@ const Char = (() => {
                 const desireObj = Media.GetText(`${charData.shortName}Desire`)
                 if (VAL({textObj: desireObj})) {
                     let desireVal = (D.GetRepStat(charData.id, "desire", "top", "desire") || {val: ""}).val
-                    //D.Poke(`Desire Val for ${charData.name}: '${D.JS(desireVal)}'`)
+                    // D.Poke(`Desire Val for ${charData.name}: '${D.JS(desireVal)}'`)
                     if ((!desireVal || desireVal === "") && addAttrData && addAttrData.charID === charData.id)
                         desireVal = addAttrData.val
                     if (!desireVal || desireVal === "")
@@ -903,6 +923,7 @@ const Char = (() => {
             displayResources()
         },
         adjustResource = (initial, rowNum, amount) => {
+            D.Alert(`Adjusting: ${initial}, ${rowNum}, ${amount}`)
             const entry = STATEREF.weeklyResources[initial.toUpperCase()] && STATEREF.weeklyResources[initial.toUpperCase()][rowNum - 1]
             if (entry)
                 entry[1] = Math.max(0, Math.min(entry[2], entry[1] + amount))
@@ -915,7 +936,7 @@ const Char = (() => {
         resetResources = () => {
             _.each(STATEREF.weeklyResources, (data, init) => {
                 // D.Alert(`Init: ${D.JS(init)}, Data: ${D.JS(data, true)}<br>Map: ${D.JS(_.map(data, v => [v[0], 0, v[2]]))}`)
-                STATEREF.weeklyResources[init] = _.map(data, v => [v[0], 0, v[2]])
+                STATEREF.weeklyResources[init] = _.map(data, v => [v[0], 0, v[2], v[3] || 0])
                 D.Chat(D.GetChar(init), C.CHATHTML.colorBlock([
                     C.CHATHTML.colorBody("Your weekly resources have been refreshed.", C.STYLES.whiteMarble.body)
                 ], C.STYLES.whiteMarble.block))
@@ -929,16 +950,19 @@ const Char = (() => {
             if (_.flatten(_.values(STATEREF.weeklyResources)).length === 0) {
                 Media.SetText("weeklyResources", {text: " "})
             } else {
-                _.each(STATEREF.weeklyResources, (data, init) => {
+                const sortedInits = _.sortBy(_.keys(STATEREF.weeklyResources))
+                for(const init of sortedInits) {
+                    const data = STATEREF.weeklyResources[init]
                     let thisString = `[${init}]`
                     _.each(data, v => {
                         DB(`thisString: ${D.JS(thisString)}, col1width: ${Media.GetTextWidth(textObj, thisString, false)}, col2width: ${Media.GetTextWidth(textObj, v[0], false)}`, "displayResources")
                         resStrings.push(`${thisString}${Media.Buffer(textObj, col1Width - Media.GetTextWidth(textObj, thisString, false))}${
                             v[0]}${Media.Buffer(textObj, col2Width - Media.GetTextWidth(textObj, v[0], false))}${
-                            "●".repeat(v[2]-v[1])}${"○".repeat(v[1])}`)
+                            `${"●".repeat(v[2]-v[1]-(v[3] || 0))}${"○".repeat(v[1])}${"◊".repeat(v[3] || 0)}`.replace(/^(\S\S\S\S\S)/gu, "$1  ")
+                        }`)
                         thisString = " "
                     })
-                })            
+                }            
                 Media.SetText("weeklyResources", resStrings.join("\n"))
             }
             displayStakes()
@@ -959,11 +983,13 @@ const Char = (() => {
                     Media.GetText("stakedAdvantages")
                 ],
                 [stakeData, coterieStakes] = [[],{}],
-                [stakeStrings, coterieStakeStrings] = [[], []]
-            for (const charObj of D.GetChars("registered")) {
-                const projectStakes = [],
-                    [, coterieAdvs] = sortCoterieStakes(charObj),
-                    initial = _.values(D.GetCharVals(charObj, "initial"))[0]
+                [stakeStrings, coterieStakeStrings] = [[], []],
+                sortedCharData = _.sortBy(_.values(D.KeyMapObj(_.values(REGISTRY), null, v => ({initial: v.initial, charObj: D.GetChar(v.id)}))), "initial")
+            // D.Alert(`Initials Sort: ${D.JS(initials)}`)
+            for (const charData of sortedCharData) {
+                const {initial, charObj} = charData,
+                    projectStakes = [],
+                    [, coterieAdvs] = sortCoterieStakes(charObj)
                 for (const attrName of ["projectstake1", "projectstake2", "projectstake3"])
                     projectStakes.push(...D.GetRepStats(charObj, "project", {projectstakes_toggle: "1"}, attrName))
                 DB(`Project Stakes: ${D.JS(projectStakes, true)}`, "displayStakes")
