@@ -63,6 +63,29 @@ const Tester = (() => {
         handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
             let [isKilling, isWriting] = [false, false]
             switch (call) {
+                case "funcqueue": {
+                    const funcs = [
+                            (first, second) => {
+                                D.Alert(`Function 1: ${first}, ${second}`)   
+                            },
+                            (third, fourth) => {
+                                D.Alert(`Function 2: ${third}, ${fourth}`)
+                            },
+                            (fifth, sixth) => {
+                                D.Alert(`Function 3: ${fifth}, ${sixth}`)
+                            }
+                        ],
+                        params = [
+                            ["one", "two"],
+                            ["three", "four"],
+                            ["five", "six"]
+                        ]
+                    D.Queue(funcs[0], params[2])
+                    D.Queue(funcs[1], params[1])
+                    D.Queue(funcs[2], params[0])
+                    D.Run()
+                    break
+                }
                 case "exist": {
                     if (args[1])
                         D.Alert(`${args[0].toUpperCase()} Object with ID ${args[1]}: ${Boolean(getObj(args[0], args[1])) && "Exists" || "Does NOT Exist"}`)

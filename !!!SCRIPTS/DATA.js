@@ -116,11 +116,12 @@ const D = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-    // #region DECLARATIONS: Reference Variables
+    // #region DECLARATIONS: Reference Variables, Temporary Storage Variables
         VALS = {
             PAGEID: () => Campaign().get("playerpageid"),
             CELLSIZE: () => C.PIXELSPERSQUARE * getObj("page", Campaign().get("playerpageid")).get("snapping_increment")
         },
+        FunctionQueue = [],
     // #endregion
 
     // #region DECLARATIONS: Dependent Variables
@@ -132,42 +133,143 @@ const D = (() => {
         ],
     // #endregion
 
+    // #region ASYNC FUNCTION HANDLING: Function Queing, Running
+    /* const $binCheck = (tracker) => {        
+        switch (tracker.toLowerCase()) {
+            case "health": break
+            default:
+                return false
+        }
+        return cback => {
+            getAttrs(attrs, ATTRS => {
+                cback(null, attrList)
+            })
+        }
+    },
+    doTracker = (tracker, eInfo = {sourceAttribute: ""}, cback) => {
+        const attrList = {},
+            $funcs = []
+        switch (tracker.toLowerCase()) {
+            case "health":
+            case "willpower":
+                $funcs.push($binCheck(tracker))
+                break
+            case "blood potency":
+                $funcs.push(cbk => { getAttrs(["clan", "blood_potency"], ATTRS => { cbk(null, attrList) }) } )
+                break
+            case "humanity":
+                $funcs.push(cbk => { getAttrs(["stains", "humanity", "incap"], ATTRS => { cbk(null, attrList) }) } )
+                break
+            default: return
+        }
+        $funcs.push($set)
+        run$($funcs, cback ? () => cback(null) : undefined)
+    },
+    $doTracker = (tracker, eInfo) => cback => doTracker(tracker, eInfo, cback), */
+        queueFunc = (func, args = [], waitSecs = 3) => {
+            // D.Alert(`QueFunc: ${D.JS(func)}, ${D.JS(args)}`)
+            try {
+                if (_.isUndefined(func) || _.isUndefined(args)) {
+                    D.Alert(`Either func or args is undefined: ${D.JS(func)}, ${D.JS(args)}`)
+                } else if (!_.isFunction(func)) {
+                    D.Alert(`${D.JS(func)} with args ${D.JS(args)} is not a function!`, "queueFunc")
+                } else {
+                    const funcWrapper = (cback) => {
+                        func(...args)
+                        setTimeout(cback, waitSecs * 1000)
+                    }
+                    FunctionQueue.push(funcWrapper)
+                }
+            } catch (errObj) {
+                D.Alert(`QueFunc Error on ${D.JS(func)}, ${D.JS(args)}`)
+            }
+        },
+        runFuncQueue = (cback) => {
+            let current = 0
+            const done = (empty, ...args) => {
+                    const end = () => {
+                        const newArgs = args ? [].concat(empty, args) : [empty]
+                        if (cback)
+                            cback(...newArgs)
+                    }
+                    end()
+                },
+                each = (empty, ...args) => {
+                    if (++current >= FunctionQueue.length || empty)
+                        done(empty, args)
+                    else
+                        FunctionQueue[current].apply(undefined, [].concat(args, each))
+                }
+
+            if (FunctionQueue.length) {
+                FunctionQueue[0](each)
+            } else {
+                done(null)
+                FunctionQueue.length = 0
+            }
+        },
+    // #endregion
+
     // #region PARSING & STRING MANIPULATION: Converting data types to strings, formatting strings, converting strings into objects.
         jStr = (data, isVerbose = false) => {
         /* Parses a value of any type via JSON.stringify, and then further styles it for display either
           in Roll20 chat, in the API console log, or both. */
             try {
                 const replacer = (k, v) => {
-                    let returnVal = v
-                    if (!isVerbose && 
+                        let returnVal = v
+                        if (!isVerbose && 
                         (k.slice(0, 3).toLowerCase() === "obj" ||
-                        v && (v.get || v._type)))
-                        returnVal = "OBJECT"
-                    else if (_.isUndefined(v))
-                        returnVal = "<UNDEFINED>"
-                    else if (_.isNull(v))
-                        returnVal = "<NULL>"
-                    else if (_.isNaN(v))
-                        returnVal = "<NaN>"
-                    else if (_.isFunction(v))
-                        returnVal = "<FUNCTION>"
-                    if (_.isString(returnVal) || _.isNumber(returnVal))
-                        returnVal = `${v}`.
-                            replace(/[\t\\]/gu, ""). // Strips tabs and escape slashes.
-                            replace(/\n/gu, "<br/>"). // Converts line breaks into HTML breaks.
-                            replace(/(\s)\s+/gu, "$1") // Removes excess whitespace. */
-                    return returnVal
-                }
+                        v && (v.get || v._type))) {
+                            returnVal = `<b>&lt;OBJ: ${v.get && v.get("name") || v.name || v.get && v.get("_type") || v._type}&gt;</b>`
+                        } else if (_.isUndefined(v)) {
+                            returnVal = "<b>&lt;UNDEFINED&gt;</b>"
+                        } else if (_.isNull(v)) {
+                            returnVal = "<b>NULL</b>"
+                        } else if (_.isNaN(v)) {
+                            returnVal = "<b>&lt;NaN&gt;</b>"
+                        } else if (_.isFunction(v)) {
+                            returnVal = "<b>&lt;FUNCTION&gt;</b>"
+                        } else if (_.isArray(v) && v.join("").length < 100) {
+                            returnVal = `[ ${v.map(x => _.isString(x) ? `&quot;${x}&quot;` : x).join(", ")} ]`.replace(/\[\s+\]/gu, "[]")
+                        } else if (_.isObject(v) && JSON.stringify(v).length < 100) {
+                            const listDelver = (list) => {
+                                const returns = []
+                                for (const key of _.keys(list))
+                                    returns.push(`${key}: ${replacer(key, list[key])}`.replace(/\s\s*/gu, " "))
+                                // returns.push(`${key}: ${_.isObject(list[key]) || _.isArray(list[key]) ? listDelver(list[key]) : replacer(key, list[key])}`)
+                                    // (_.isString(list[key]) && `"${list[key]}"` : list[key].toString()}"`}}`)
+                                return `{ ${returns.join(", ")} }`.replace(/\{\s+\}/gu, "{}")
+                            }
+                            returnVal = listDelver(v)
+                        } else if (_.isNumber(v)) {
+                            returnVal = v.toString()
+                        } else if (_.isString(v)) {
+                            returnVal = `&quot;${v}&quot;`
+                        }
+                        if (_.isString(returnVal) && !returnVal.includes("<div") && !returnVal.includes("<span"))
+                            returnVal = returnVal.replace(/"/gu, "") // Removes all double-quotes from non-HTML coded strings.
+                        if (_.isString(returnVal))
+                            returnVal = `${returnVal}`.
+                                replace(/[\t\\]/gu, ""). // Strips tabs and escape slashes.
+                                replace(/\n/gu, "<br/>"). // Converts line breaks into HTML breaks.
+                                replace(/(\s)\s+/gu, "$1"). // Removes excess whitespace.            
+                                replace(/(^"*|"*$)/gu, "") // Removes quotes from beginning and end of string.  
+                        return returnVal 
+                    },
 
-                return JSON.stringify(data, replacer, 4).
-                    replace(/"\{/gu, "{").replace(/\}"/gu, "}").
-                    replace(/(\s*?)"([^"]*?)"\s*?:/gu, "$1$2:"). // Removes quotes from keys of a list or object.
-                    replace(/ (?= )/gu, "&nbsp;"). // Replaces any length of whitespace with one '&nbsp;'
-                    replace(/@T@/gu, "&nbsp;&nbsp;&nbsp;&nbsp;"). // Converts custom '@T@' tab character to four spaces
-                    replace(/"\[/gu, "[").replace(/\]"/gu, "]"). // Removes quotes from around array strings.
-                    replace(/\\"/gu, "\""). // Escapes quote marks                
-                    replace(/(^"|"$)/gu, ""). // Removes quote marks from the beginning and end of the string                    
-                    replace(/&amp;quot;/gu, "\"") 
+                    finalString = JSON.stringify(data, replacer, 4).
+                        replace(/"\{/gu, "{").replace(/\}"/gu, "}").
+                        replace(/(\s*?)"([^"]*?)"\s*?:/gu, "$1$2:"). // Removes quotes from keys of a list or object.
+                        replace(/ (?= )/gu, "&nbsp;"). // Replaces any length of whitespace with one '&nbsp;'
+                        replace(/@T@/gu, "&nbsp;&nbsp;&nbsp;&nbsp;"). // Converts custom '@T@' tab character to four spaces
+                        replace(/"\[/gu, "[").replace(/\]"/gu, "]"). // Removes quotes from around array strings.
+                        replace(/\\"/gu, "\""). // Escapes quote marks                
+                        replace(/(^"*|"*$)/gu, ""). // Removes quote marks from the beginning and end of the string  
+                        replace(/>&quot;/gu, ">").replace(/&quot;</gu, "<"). // Removes quotes from within entire HTML tags.
+                        replace(/&amp;quot;/gu, "\"").
+                        replace(/&quot;\/w/gu, "/w") // Fix whisper.
+
+                return finalString// .replace(/@B@/gu, "<b>").replace(/@b@/gu, "</b>") // Encodes bolding from replacer function.  
             } catch (errObj) {
                 return JSON.stringify(errObj)
             }
@@ -1609,6 +1711,7 @@ const D = (() => {
         get PAGEID() { return VALS.PAGEID() },
         get CELLSIZE() { return VALS.CELLSIZE() },
 
+        Queue: queueFunc, Run: runFuncQueue,
         CHARWIDTH: STATEREF.CHARWIDTH,
         JS: jStr, JSL: jStrL, JSH: jStrH, JSC: jStrC,
         ParseParams: parseParams,

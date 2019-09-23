@@ -220,7 +220,7 @@ let airIntervals = [];
 const airDelayHandler = (func, params) => {
     if (!codebaseRunning) return;
     try {
-        func.apply(null, Array.prototype.slice.call(params));
+        (func || (() => null)).apply(null, Array.prototype.slice.call(params));
     } catch(e) {
         handleCrash(e);
     }

@@ -118,6 +118,10 @@ const TimeTracker = (() => {
                         setManualWeather(args[1] && args[1] + (args[1].length === 1 ? "x" : ""), args[2] && parseInt(args[2]), args[3], args[4])
                         break
                     }
+                    if (args[0] && args[0].toLowerCase().includes("session")) {
+                        setNextSessionDate(parseInt(args[1]) || 0)
+                        break
+                    }
                     unit = "m"
                     delta = Math.ceil(((new Date(Date.UTC(..._.map(args, v => parseInt(v))))).getTime() - STATEREF.dateObj.getTime()) / (1000 * 60))
                 // D.Alert(`Changing Date by ${D.JS(delta)} minutes.`)
@@ -825,30 +829,36 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                 Media.SetText("TimeTracker", `${
                     DAYSOFWEEK[STATEREF.dateObj.getUTCDay()]}, ${
                     MONTHS[STATEREF.dateObj.getUTCMonth()]} ${
-                    D.Ordinal(STATEREF.dateObj.getUTCDate())}, ${
+                    D.Ordinal(STATEREF.dateObj.getUTCDate())} ${
+                    STATEREF.dateObj.getFullYear()}, ${
                     (STATEREF.dateObj.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
                     STATEREF.dateObj.getUTCMinutes() < 10 ? "0" : ""}${STATEREF.dateObj.getUTCMinutes().toString()} ${
                     Math.floor(STATEREF.dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`)
             STATEREF.lastDateStep = STATEREF.dateObj.getTime()
             STATEREF.currentDate = STATEREF.dateObj.getTime()
         },
+        setNextSessionDate = (weekPush = 0) => {
+            const curRealDateObj = new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"})),
+                sessDateObj = new Date(curRealDateObj),
+                daysOut = 7 - (curRealDateObj.getDay() === 0 ? 7 : curRealDateObj.getDay()) + 7 * weekPush
+            sessDateObj.setDate(curRealDateObj.getDate() + daysOut)
+            sessDateObj.setHours(19)
+            sessDateObj.setMinutes(30)
+            sessDateObj.setSeconds(0)
+            if (sessDateObj.getTime() <= curRealDateObj.getTime())
+                sessDateObj.setDate(sessDateObj.getDate() + 7)
+            STATEREF.nextSessionDate = sessDateObj.getTime()
+            return (sessDateObj - curRealDateObj)/1000 - 60
+        },
         tickCountdown = () => {
-            const sessionPush = 1
             if (isCountdownRunning) {
                 const realDateObj = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"})),
-                    sessDateObj = new Date(realDateObj)
-
-                sessDateObj.setDate(realDateObj.getDate() - realDateObj.getDay() + (sessionPush + 1)*7)
-                // sessDateObj.setHours(0)
-                // sessDateObj.setMinutes(56)
-                sessDateObj.setHours(19)
-                sessDateObj.setMinutes(30)
-                sessDateObj.setSeconds(0)
+                    sessDateObj = new Date(STATEREF.nextSessionDate)
 
                 let secsLeft = (sessDateObj - realDateObj)/1000 - 60
-
-                if (secsLeft > (sessionPush+1)*7*24*60*60)
-                    secsLeft -= (sessionPush+1)*7*24*60*60
+                
+                if (secsLeft < 0)
+                    secsLeft = setNextSessionDate()
                 if (secsLeft < 60)
                     Session.ToggleTesting(false)
                     

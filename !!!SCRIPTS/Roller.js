@@ -211,13 +211,7 @@ const Roller = (() => {
                             break
                         }
                         case "charfx": case "chareffect": {
-                            const chars = D.GetChars(msg)
-                            for (const char of chars) {
-                                const rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|"))
-                                rollEffects.push(...args.join(" ").split("|"))
-                                setAttrs(char.id, {rolleffects: _.uniq(rollEffects).join("|")})
-                                D.Alert(`Roll Effects on ${D.GetName(char)} revised to:<br><br>${rollEffects.join("<br>")}`, "ROLLER: !addchareffect")
-                            }
+                            addCharRollEffects(msg, args.join(" ").split("|"))
                             break
                         }
                         case "globalfx": case "globaleffect": {
@@ -320,7 +314,7 @@ const Roller = (() => {
                                 args[0] = ""
                             if (args[1] === "x")
                                 args[1] = ""
-                            displayResonance(...args)
+                            displayResonance(null, ...args)
                             break
                         case "charfx": case "chareffects": {
                             const char = D.GetChar(msg)
@@ -435,7 +429,7 @@ const Roller = (() => {
                     break
                 }
                 case "resonance": {
-                    const location = _.omit(Media.LOCATION, (v, k) => k.includes("Name") || v === "blank"),
+                    const location = D.KeyMapObj(_.omit(Session.Location, v => v === "blank"), null, v => _.flatten(v.slice(0,1))),
                         resArgs = [],
                         deltaAttrs = {}
                 // D.Alert(D.JS(location))
@@ -460,15 +454,15 @@ const Roller = (() => {
                             resArgs[1] += C.SITES[location.SiteLeft].resonance[1] || ""
                         }
                     }
-                // D.Alert(`Location-Based Resonance: ${D.JS(resArgs.join(", "))}`)
+                    D.Alert(`Location-Based Resonance: ${D.JS(resArgs.join(", "))}`)
                     if (resArgs.join("").length > 1) {
-                        resonance = getResonance(...resArgs)
+                        resonance = getResonance(charObjs[0], ...resArgs)
                     } else {
                         if (args[0] === "x")
                             args[0] = ""
                         if (args[1] === "x")
                             args[1] = ""
-                        resonance = getResonance(...args)
+                        resonance = getResonance(charObjs[0], ...args)
                     }
                     switch (resonance[1].toLowerCase()) {
                         case "choleric":
@@ -517,11 +511,11 @@ const Roller = (() => {
                             break
                     // no default
                     }
-                    D.SetStat(charObjs[0], "resonance", deltaAttrs.resonance)
+                    // D.SetStat(charObjs[0], "resonance", deltaAttrs.resonance)
                     sendChat("Resonance Check", C.CHATHTML.colorBlock([
                         C.CHATHTML.colorTitle(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
                         C.CHATHTML.colorHeader(resDetails),
-                        C.CHATHTML.colorBody(resIntLine)
+                        C.CHATHTML.colorBody(resIntLine, {lineHeight: "20px"})
                     ]))
                     break
                 }
@@ -687,7 +681,7 @@ const Roller = (() => {
                         args[0] = ""
                     if (args[1] === "x")
                         args[1] = ""
-                    resonance = getResonance(...args)
+                    resonance = getResonance(null, ...args)
                     break
                 case "!getchareffects": {
                     const char = D.GetChar(msg)
@@ -734,11 +728,13 @@ const Roller = (() => {
                 case "!addchareffect":
                 {
                     const chars = D.GetChars(msg)
-                    for (const char of chars) {
-                        const rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|"))
-                        rollEffects.push(...args.join(" ").split("|"))
-                        setAttrs(char.id, {rolleffects: _.uniq(rollEffects).join("|")})
-                        D.Alert(`Roll Effects on ${D.GetName(char)} revised to:<br><br>${rollEffects.join("<br>")}`, "ROLLER: !addchareffect")
+                    if (VAL({charObj: chars}, "ROLLER: !addchareffect", true)) {
+                        for (const char of chars) {
+                            const rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|"))
+                            rollEffects.push(...args.join(" ").split("|"))
+                            setAttrs(char.id, {rolleffects: _.uniq(rollEffects).join("|")})
+                            D.Alert(`Roll Effects on ${D.GetName(char)} revised to:<br><br>${rollEffects.join("<br>")}`, "ROLLER: !addchareffect")
+                        }
                     }
                     break
                 }
@@ -1096,7 +1092,7 @@ const Roller = (() => {
                 font_size: 32,
                 top: 115,
                 left: 205,
-                color: C.COLORS.red,
+                color: C.COLORS.brightred,
                 text: "negMods",
                 justification: "left"
             },
@@ -1105,7 +1101,7 @@ const Roller = (() => {
                 font_size: 32,
                 top: 166,
                 left: 595,
-                color: C.COLORS.red,
+                color: C.COLORS.brightred,
                 text: "redMods",
                 justification: "left"
             },
@@ -1395,7 +1391,7 @@ const Roller = (() => {
         },
         ROLLRESULTEFFECTS = {
             restriction: ["success", "failure", "basicfail", "critical", "basiccrit", "messycrit", "bestialfail", "totalfail"],
-            rollMod: ["nowpreroll", "doublewpreroll", "freewpreroll", "bestialcancelcrit", "bestialcancelsucc", "bestialcancelall", "totalfailure", "nomessycrit"]
+            rollMod: ["restrictwpreroll1", "restrictwpreroll2", "nowpreroll", "doublewpreroll", "freewpreroll", "bestialcancelcrit", "bestialcancelsucc", "bestialcancelall", "totalfailure", "nomessycrit"]
         },
     // #endregion
 
@@ -1724,7 +1720,7 @@ const Roller = (() => {
                         "selectedDouble"
                 setDie(dieNum, dieCat, selectImg)
                 STATEREF.selected[dieCat].push(dieNum)
-                if (STATEREF.selected[dieCat].length > 3)
+                if (STATEREF.selected[dieCat].length > (rollRecord.rollResults.maxRerollDice || 3))
                     selectDie(STATEREF.selected[dieCat][0], dieCat)
             }
             if (STATEREF.selected[dieCat].length && !isRerollFXOn) {
@@ -1771,7 +1767,7 @@ const Roller = (() => {
                         if (rollResults) {
                         // Does rollMod specify a willpower cost, but it is superceded by a nowpreroll restriction somewhere in the effect?
                             switch (rollMod) {
-                                case "doublewpreroll": case "freewpreroll":
+                                case "doublewpreroll": case "freewpreroll": case "restrictwpreroll1": case "restrictwpreroll2":
                                     if (_.any(rollEffects, v => v.includes("nowpreroll"))) {
                                         DB(`Willpower cost ${rollMod} SUPERCEDED by 'nowpreroll': ${D.JS(rollEffects)}`, "checkRestriction")
                                         return "INAPPLICABLE"
@@ -2078,6 +2074,14 @@ const Roller = (() => {
                     // RollResults rollMods all contain discrete flags/strings, plus digits; can wipe digits for static flag:
                         DB(`Roll Results applies!  Testing rollMod replace switch: ${rollMod.toString().replace(/\d/gu, "")}`, "applyRollEffects")
                         switch (rollMod.toString().replace(/\d/gu, "")) {
+                            case "restrictwpreroll": {
+                                if (rollResults.isNoWPReroll) {
+                                    isEffectMoot = true
+                                    break
+                                }
+                                rollResults.maxRerollDice = parseInt(rollMod.replace(/\D*/gu, ""))
+                                break
+                            }
                             case "freewpreroll":
                                 if (rollResults.isNoWPReroll) {
                                     isEffectMoot = true
@@ -2524,6 +2528,19 @@ const Roller = (() => {
             if (recordRef.rollRecord.length > 10)
                 recordRef.rollRecord.pop()
         },
+    // #endregion
+
+    // #region Adding & Removing Roll Effects & Exclusions
+        addCharRollEffects = (charsRef, newEffects) => {
+            const chars = D.GetChars(charsRef)
+            for (const char of chars) {
+                const rollEffects = _.uniq([_.compact((getAttrByName(char.id, "rolleffects") || "").split("|")), ...newEffects])
+                setAttrs(char.id, {rolleffects: rollEffects.join("|")})
+                D.Alert(`Roll Effects on ${D.GetName(char)} revised to:<br><br>${rollEffects.join("<br>")}`, "Character Roll Effects")
+            }
+        },
+
+    
     // #endregion
 
     // #region Rolling Dice & Formatting Result
@@ -2986,7 +3003,8 @@ const Roller = (() => {
                         text: ""
                     },
                     mainRoll: {
-                        text: ""
+                        text: "",
+                        shiftTop: 0
                     }
                 },
                 logLines = {
@@ -3034,6 +3052,8 @@ const Roller = (() => {
                     if (posFlagLines.length && !rollFlags.isHidingDicePool && !rollFlags.isHidingTraits) {
                         rollLines.posMods = {
                             text: `+ ${posFlagLines.join(" + ")}`,
+                            shiftLeft: 0,
+                            shiftTop: 0
                         }
                         rollLines.mainRoll.shiftTop = -20
                         if (rollFlags.isHidingTraitVals)
@@ -3042,17 +3062,22 @@ const Roller = (() => {
                     if (negFlagLines.length && !(rollFlags.isHidingDicePool && rollFlags.isHidingTraits)) {
                         rollLines.negMods = {
                             text: `- ${negFlagLines.join(" - ")}`,
-                            shiftLeft: 20 + Media.GetTextWidth("posMods", rollLines.posMods ? rollLines.posMods.text : " ")
+                            shiftLeft: 20 + Media.GetTextWidth("posMods", rollLines.posMods ? rollLines.posMods.text : " "),
+                            shiftTop: 0
                         }
                         rollLines.mainRoll.shiftTop = -20
                     }
                     if (redFlagLines.length)
                         rollLines.redMods = {
-                            text: redFlagLines.join(", ")
+                            text: redFlagLines.join(", "),
+                            shiftLeft: 0,
+                            shiftTop: 0
                         }
                     if (goldFlagLines.length && !rollFlags.isHidingDicePool && !rollFlags.isHidingTraits) {
                         rollLines.goldMods = {
-                            text: goldFlagLines.join(", ")
+                            text: goldFlagLines.join(", "),
+                            shiftLeft: 0,
+                            shiftTop: 0
                         }
                         if (rollFlags.isHidingTraitVals)
                             rollLines.goldMods.text = rollLines.goldMods.text.replace(/\(?[+-]*?[\d●~]+?\)?/gu, "")
@@ -3552,7 +3577,7 @@ const Roller = (() => {
                     Media.SetImgTemp("rollerImage_diffFrame", {top: 250})
                 }
                 _.each(rollLines, (args, name) => {
-                    D.Alert(`Setting Text Data: ${D.JS(_.omit(args, "text"))}`, name)
+                    DB(`Setting Text Data: ${D.JS(_.omit(args, "text"))}`, "displayRoll")
                     Media.SetTextData(name, _.omit(args, "text"))
                     Media.SetText(name, args.text, true)
                     txtWidths[name] = Media.GetTextWidth(name)
@@ -3738,8 +3763,10 @@ const Roller = (() => {
     // #endregion
 
     // #region Getting Random Resonance Based On District/Site Parameters
-        getResonance = (posRes = "", negRes = "", isDoubleAcute, testCycles = 0) => {
-            const resonances = {
+        getResonance = (charRef, posRes = "", negRes = "", isDoubleAcute, testCycles = 0) => {
+            D.Alert(`Resonance Args: ${D.JS(charRef)}, ${D.JS(posRes)}, ${D.JS(negRes)}`)
+            const charObj = D.GetChar(charRef),
+                resonances = {
                     c: "Choleric",
                     m: "Melancholic",
                     p: "Phlegmatic",
@@ -3769,6 +3796,7 @@ const Roller = (() => {
                 },
                 countRes = (resRef, resArray) => resArray.filter(x => x === resRef).length
             let oddsKey = ""
+            // D.Alert(`charRef: ${D.JS(charRef)}, charObj: ${D.JS(charObj)}`)
                 
             for(const resRef of _.keys(resonances))
                 if (_.keys(resonances).findIndex(x => x === resRef) <= 3 ||
@@ -3855,6 +3883,10 @@ const Roller = (() => {
                 
                 D.Alert(`${D.JS(_.keys(resBins).map(x => `      <b>${x}</b>: [${resBins[x].join(",")}]`).join(", "))}<br><br><pre>${D.JS(returnRows.join("<br>"))}</pre><br><pre>Flavor..: ${D.JS(resOdds.flavor.map(x => `_: ${parseInt(x*10000)/100}.${"0".repeat(4 - `${parseInt(x*10000)/100}`.length)}%`).join(", "))}]<br>Compared: ${flaResults}</pre><br><br>Int Odds: [${D.JS(resOdds.intensity.map(x => `${x*100}%`).join(", "))}]<br>Compared: ${intResults}`)
             }
+            if (VAL({charObj}) && ["Intense", "Acute"].includes(intChoice))
+                setAttrs(charObj.id, {resonance: resChoice})
+            else
+                setAttrs(charObj.id, {resonance: "None"})
             return [
                 intChoice,
                 resChoice,
@@ -3862,8 +3894,8 @@ const Roller = (() => {
             ]
             // Return ["Acute", "Choleric"];
         },
-        displayResonance = (posRes = "", negRes = "", isDoubleAcute, testCycles = 0) => {
-            const resonance = getResonance(posRes, negRes, isDoubleAcute, testCycles)
+        displayResonance = (charRef, posRes = "", negRes = "", isDoubleAcute, testCycles = 0) => {
+            const resonance = getResonance(charRef, posRes, negRes, isDoubleAcute, testCycles)
             let resDetails, resIntLine
             switch (resonance[1].toLowerCase()) {
                 case "choleric":
@@ -3922,7 +3954,9 @@ const Roller = (() => {
         ROLLERTEXT: TEXTLINES,
         Select: selectDie,
         Reroll: wpReroll,
-        Clean: clearRoller
+        Clean: clearRoller,
+
+        AddCharEffect: (charRef, effect) => { addCharRollEffects(charRef, [effect]) }
     }
 })()
 

@@ -368,9 +368,7 @@ const Char = (() => {
                         if (args.length) {
                             const dmg = (call === "heal" ? -1 : 1) * parseInt(args.shift()) || 0
                             _.each(charObjs, (char) => {
-                                if (adjustDamage(char, trait, dtype, dmg))
-                                    D.Alert(`Dealt ${D.JS(dmg)}${dtype ? ` ${D.JS(dtype)}` : ""} ${D.JS(trait)} damage to ${D.GetName(char)}`, "CHARS:!char dmg")
-                                else
+                                if (!adjustDamage(char, trait, dtype, dmg))
                                     THROW(`FAILED to damage ${D.GetName(char)}`, "!char dmg")
                             })
                         } else {
@@ -1125,7 +1123,7 @@ const Char = (() => {
                     },
                     initTraitVal = parseInt((D.GetStat(charObj, trait) || [0])[0] || defaultTraitVal || 0),
                     finalTraitVal = Math.min(max || Infinity, Math.max(min || -Infinity, initTraitVal + parseInt(amount)))
-                let [bannerString, bodyString, alertString] = ["", "", null]
+                let [bannerString, bodyString, alertString, trackerString] = ["", "", null, ""]
                 DB(`Adjusting Trait: (${D.JS(trait)}, ${D.JS(amount)}, ${D.JS(min)}, ${D.JS(max)}, ${D.JS(defaultTraitVal)}, ${D.JS(deltaType)})
                     ... Initial (${D.JS(initTraitVal)}) + Amount (${D.JS(amount)}) = Final (${D.JS(finalTraitVal)}))`, "adjustTrait")
                 switch (trait.toLowerCase()) {
@@ -1163,22 +1161,24 @@ const Char = (() => {
                                     bannerString = `You suffer ${D.NumToText(Math.abs(amount)).toLowerCase()} (halved) superficial Willpower damage.`
                                     break
                                 case "superficial+":
-                                    bannerString = `You suffer ${D.NumToText(Math.abs(amount)).toLowerCase()} <i>unhalved</i> superficial Willpower damage.`
+                                    bannerString = `You suffer ${D.NumToText(Math.abs(amount)).toLowerCase()} superficial Willpower damage.`
                                     break
                                 case "spent":
                                     bannerString = `You spend ${D.NumToText(Math.abs(amount)).toLowerCase()} Willpower.`
                                     break
                                 // no default
                             }
-                            if (isOverLimit || newAggravated === maxWP)
-                                alertString = "You are completely exhausted!"
-                            else if (newBashing + newAggravated === maxWP)
-                                bodyString = `Exhausted, you are taking <u>aggravated</u> damage!<br>${maxWP - newAggravated} Willpower remaining...`
-                            else
-                                bodyString += `${maxWP - newAggravated - newBashing} (+${maxWP - newAggravated}) Willpower remaining...`
+                            if (isOverLimit || newAggravated === maxWP) {
+                                bodyString = "YOU ARE COMPLETELY EXHAUSTED!"
+                                alertString = "EXHAUSTED: -2 to Social & Mental rolls.<br>You cannot spend Willpower."
+                            } else if (newBashing + newAggravated === maxWP) {
+                                bodyString = "Further strain will cause AGGRAVATED damage!"
+                                alertString = "EXHAUSTED: -2 to Social & Mental rolls."
+                            }
+                            trackerString = C.CHATHTML.trackerLine(maxWP - newBashing - newAggravated, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
                         } else if (amount < 0) {
                             bannerString = `You regain ${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "willpower_bashing")[0]), Math.abs(amount))).toLowerCase()} Willpower.`                            
-                        }
+                        }                        
                         break
                     case "willpower_admg": case "willpower_admg_social":
                         if (amount > 0) {
@@ -1189,16 +1189,19 @@ const Char = (() => {
                                 ],
                                 [newBashing, newAggravated, isOverLimit] = parseDmgTypes(maxWP, curBashing, curAggravated, 0, amount)
                             DB(`MaxWP: ${maxWP}, CurBash: ${curBashing}, CurAggr: ${curAggravated}<br>... Dealing ${amount} --> newBash: ${newBashing}, newAggr: ${newAggravated}`, "adjustTrait")
-                            bannerString = `You suffer ${D.NumToText(Math.abs(amount)).toLowerCase()} AGGRAVATED Willpower damage!`                        
-                            if (isOverLimit || newAggravated === maxWP)
-                                alertString = "You are completely exhausted!"
-                            else if (newBashing + newAggravated === maxWP)
-                                bodyString = `Exhausted, you are taking <u>aggravated</u> damage!<br>${maxWP - newAggravated} Willpower remaining...`
-                            else
-                                bodyString += `${maxWP - newAggravated - newBashing} (+${maxWP - newAggravated}) Willpower remaining...`                        
+                            bannerString = `You suffer ${D.NumToText(Math.abs(amount)).toLowerCase()} AGGRAVATED Willpower damage!`     
+                            if (isOverLimit || newAggravated === maxWP) {
+                                bodyString = "YOU ARE COMPLETELY EXHAUSTED!"
+                                alertString = "EXHAUSTED: -2 to Social & Mental rolls.<br>You cannot spend Willpower."
+                            } else if (newBashing + newAggravated === maxWP) {
+                                bodyString = "Further strain will cause AGGRAVATED damage!"
+                                alertString = "EXHAUSTED: -2 to Social & Mental rolls."            
+                            }
+                            trackerString = C.CHATHTML.trackerLine(maxWP - newBashing - newAggravated, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"}) 
                         } else if (amount < 0) {
                             bannerString = `${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "willpower_aggravated")[0]), Math.abs(amount)))} aggravated Willpower damage downgraded.`                            
                         }
+                        
                         break
                     case "health_sdmg":
                         if (amount > 0) {
@@ -1214,16 +1217,17 @@ const Char = (() => {
                                     bannerString = `You suffer ${D.NumToText(Math.abs(amount)).toLowerCase()} (halved) superficial Health damage.`
                                     break
                                 case "superficial+":
-                                    bannerString = `You suffer ${D.NumToText(Math.abs(amount)).toLowerCase()} <i>unhalved</i> superficial Health damage.`
+                                    bannerString = `You suffer ${D.NumToText(Math.abs(amount)).toLowerCase()} superficial Health damage.`
                                     break
                                 // no default
+                            }                            
+                            if (isOverLimit || newAggravated === maxHealth) {
+                                alertString = "DARKNESS FALLS<br>You sink into torpor..."
+                            } else if (newBashing + newAggravated === maxHealth) {
+                                bodyString = "Further harm will cause AGGRAVATED damage!"
+                                alertString = "WOUNDED: -2 to Physical rolls."
                             }
-                            if (isOverLimit || newAggravated === maxHealth)
-                                alertString = "DARKNESS FALLS: YOU SINK INTO TORPOR"
-                            else if (newBashing + newAggravated === maxHealth)
-                                bodyString = `Wounded, you are taking <u>aggravated</u> damage!<br>${maxHealth - newAggravated} Health remaining...`
-                            else
-                                bodyString = `${maxHealth - newAggravated - newBashing} (+${maxHealth - newAggravated}) Health remaining...`                    
+                            trackerString = C.CHATHTML.trackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})                 
                         } else if (amount < 0) {
                             bannerString = `You heal ${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "health_bashing")[0]), Math.abs(amount))).toLowerCase()} superficial Health damage.` 
                         }
@@ -1237,13 +1241,14 @@ const Char = (() => {
                                 ],
                                 [newBashing, newAggravated, isOverLimit] = parseDmgTypes(maxHealth, curBashing, curAggravated, 0, amount)
                             DB(`MaxHealth: ${maxHealth}, CurBash: ${curBashing}, CurAggr: ${curAggravated}<br>... Dealing ${amount} --> newBash: ${newBashing}, newAggr: ${newAggravated}<br>... IsOverLimit? ${D.JS(isOverLimit)}`, "adjustTrait")
-                            bannerString = `You suffer ${D.NumToText(Math.abs(amount)).toLowerCase()} AGGRAVATED Health damage!`                        
-                            if (isOverLimit || newAggravated === maxHealth)
-                                alertString = "DARKNESS FALLS: YOU SINK INTO TORPOR"
-                            else if (newBashing + newAggravated === maxHealth)
-                                bodyString = `Wounded, you are taking <u>aggravated</u> damage!<br>${maxHealth - newAggravated} Health remaining...`
-                            else
-                                bodyString = `${maxHealth - newAggravated - newBashing} (+${maxHealth - newAggravated}) Health remaining...`              
+                            bannerString = `You suffer ${D.NumToText(Math.abs(amount)).toLowerCase()} AGGRAVATED Health damage!`                                          
+                            if (isOverLimit || newAggravated === maxHealth) {
+                                alertString = "DARKNESS FALLS<br>You sink into torpor..."
+                            } else if (newBashing + newAggravated === maxHealth) {
+                                bodyString = "Further harm will cause AGGRAVATED damage!"
+                                alertString = "WOUNDED: -2 to Physical rolls."
+                            }                       
+                            trackerString = C.CHATHTML.trackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
                         } else if (amount < 0) {
                             bannerString = `${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "health_aggravated")[0]), Math.abs(amount)))} aggravated Health damage downgraded.`                  
                         }
@@ -1254,7 +1259,8 @@ const Char = (() => {
                     D.Chat(charObj, C.CHATHTML.colorBlock(_.compact([
                         C.CHATHTML.colorHeader(bannerString, chatStyles.banner),
                         bodyString ? C.CHATHTML.colorBody(bodyString, chatStyles.body) : null,
-                        alertString ? C.CHATHTML.colorHeader(alertString, chatStyles.alert) : null
+                        trackerString || null,
+                        alertString ? C.CHATHTML.colorHeader(alertString, Object.assign(chatStyles.alert, alertString.includes("<br>") ? {height: "40px"} : {})) : null
                     ]), chatStyles.block))
                 setAttrs(D.GetChar(charObj).id, {[trait.toLowerCase()]: finalTraitVal})
                 return true
@@ -1289,7 +1295,7 @@ const Char = (() => {
                     }
                     // no default
                 }
-                D.Alert(`Adjusting Damage: (${D.JS(trait)}, ${D.JS(dmgType)}, ${D.JS(amount)})`, "adjustDamage")
+                // D.Alert(`Adjusting Damage: (${D.JS(trait)}, ${D.JS(dmgType)}, ${D.JS(amount)})`, "adjustDamage")
                 const returnVal = adjustTrait(charRef, traitName, targetVal, minVal, maxVal, defaultVal, deltaType, isChatting)
                 // if (amount < 0 && deltaType === "aggravated")
                     // adjustTrait(charRef, traitName.replace(/_admg/gu, "_sdmg"), -1 * targetVal, minVal, maxVal, defaultVal, "superficial", false)

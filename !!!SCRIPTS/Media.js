@@ -58,6 +58,15 @@ const Media = (() => {
             for (const areaKey of _.keys(STATEREF.areas))
                 STATEREF.AREADICT.add(areaKey)    
             
+            /* STATEREF.imgregistry.signalLight_Pad_1.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.signalLight_Pad_4.modes))
+            STATEREF.imgregistry.signalLight_Pad_2.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.signalLight_Pad_4.modes))
+            STATEREF.imgregistry.signalLight_Pad_3.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.signalLight_Pad_4.modes))
+            STATEREF.imgregistry.signalLight_PartnerPad_1.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.signalLight_PartnerPad_4.modes))
+            STATEREF.imgregistry.signalLight_PartnerPad_2.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.signalLight_PartnerPad_4.modes))
+            STATEREF.imgregistry.signalLight_PartnerPad_3.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.signalLight_PartnerPad_4.modes))
+            STATEREF.imgregistry.SignalLightTopLeft_1.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.SignalLightBotRight_1.modes))
+            STATEREF.imgregistry.SignalLightTopRight_1.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.SignalLightBotRight_1.modes))
+            STATEREF.imgregistry.SignalLightBotLeft_1.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.SignalLightBotRight_1.modes)) */
             const resetWPPlaceholder = ((isResetting = false) => {
                 if (!isResetting)
                     return null
@@ -327,11 +336,6 @@ const Media = (() => {
                                         params = D.ParseParams(args)
                                     if (VAL({graphicObj: imgObj}, "!img set params"))
                                         setImgTemp(imgObj, params)
-                                    break
-                                }
-                                case "loc": case "location": {                                    
-                                    DB(`SET LOCATION COMMAND RECEIVED.  MSG: ${D.JS(msg)}`, "!img set loc")         
-                                    setLocation(args.join(" "))
                                     break
                                 }
                             // no default
@@ -6952,6 +6956,8 @@ const Media = (() => {
                 for (const imgKey of _.keys(IMGREGISTRY)) 
                     IMGREGISTRY[imgKey].curMode = "Active"
                 
+                setImg("mapButtonDomain_1", "camarilla")
+                
             }
             if (isResetting)
                 resetAllModeData()
@@ -6961,7 +6967,8 @@ const Media = (() => {
                 const imgData = getImgData(imgKey),
                     imgObj = getImgObj(imgKey),
                     imgActiveState = imgData.isActive,
-                    imgSrcs = _.keys(getImgSrcs(imgKey)),
+                    imgSrcData = getImgSrcs(imgKey),
+                    imgSrcs = _.keys(imgSrcData),
                     imgErrors = []
                 // Reset Active status by toggling both ways.
                 if (isToggling) {
@@ -6985,7 +6992,7 @@ const Media = (() => {
                     imgErrors.push(`... bad curSrc: ${imgData.curSrc}`)
                 else if (!(
                     imgData.curSrc === "blank" && imgURL === C.IMAGES.blank ||
-                    imgURL === imgData.srcs[imgData.curSrc]
+                    imgURL === imgSrcData[imgData.curSrc]
                 ))
                     imgErrors.push(`... bad curSrc URL: ${imgURL} (!== "${imgData.curSrc}")`)
                 if (!(
@@ -7041,7 +7048,6 @@ const Media = (() => {
                         `<b>${imgKey}:</b>`,
                         ...imgErrors
                     ])
-                setImg("mapButtonDomain_1", "camarilla")
             }
             errorLines.push("<h3>TEXT ERRORS</h3>")
             for (const textKey of _.keys(TEXTREGISTRY)) {
@@ -7236,6 +7242,7 @@ const Media = (() => {
         },
 
     // #endregion
+    
     // #region IMG OBJECT & AREA GETTERS: Img Object & Data Retrieval
         isRegImg = imgRef => Boolean(getImgKey(imgRef, true)),
         isRandomizerToken = tokenObj => {
@@ -7544,6 +7551,13 @@ const Media = (() => {
 
             return THROW(`Invalid image reference '${D.JSL(imgRef)}'`, "regImg")
         },
+        regPads = (imgRef, padObj, partnerObj) => {
+            const imgKey = getImgKey(imgRef)
+            if (VAL({string: imgKey, graphicObj: [padObj, partnerObj]}, "regPads", true)) {
+                IMGREGISTRY[imgKey].pad = padObj.id
+                IMGREGISTRY[imgKey].partner = partnerObj.id
+            }
+        },
         regRandomizerToken = (imgRef, tokenName) => {
             if (!isRegImg(tokenName))
                 regImg(imgRef, tokenName, "base", "objects", true)            
@@ -7652,96 +7666,6 @@ const Media = (() => {
                 return IMGREGISTRY[imgKey]
             }
             return false
-        },
-        setLocation = (locRefs) => {
-            const hosts = [],
-                hostOverride = {},
-                parsedParams = Object.assign({
-                    DistrictCenter: "blank",
-                    SiteCenter: "blank",
-                    SiteNameCenter: " ",
-                    DistrictRight: "blank",
-                    SiteRight: "blank",
-                    SiteNameRight: " ",
-                    DistrictLeft: "blank",
-                    SiteLeft: "blank",
-                    SiteNameLeft: " "}, VAL({list: locRefs}) ? _.clone(locRefs) : {})
-            let [customNames, params] = [[], []]
-            if (VAL({string: locRefs})) {
-                if (locRefs.includes(":name:"))
-                    customNames = _.map(locRefs.match(new RegExp(":name:([^;]*)", "g")), v => v.replace(/:name:/gu, ""))
-                params = locRefs.replace(/:name:.*?;\s*?/gu, "").split(" ")
-                DB(`CustomNames: ${D.JS(customNames)}, Params: ${D.JS(params)}`, "setLocation")
-                // D.Alert(`PARAMS: ${D.JS(params)}`) .match(/^(\w+):[^:]*:?[^:]*:?(.+$)/ui)
-                for (const param of params) {
-                    if (param.startsWith("Site")) hosts.push(param.split(":")[0])
-                    if (param.includes(":same")) {
-                        const targetHost = param.split(":")[0],
-                            targetType = targetHost.includes("District") ? "District" : "Site"
-                        let imgSrc = getImgSrc(targetHost)
-                        DB(`TargetHost: ${D.JS(targetHost)}, Type: ${D.JS(targetType)}, Src: ${D.JS(imgSrc)}`, "setLocation")
-                        switch (targetHost) {
-                            case "SiteLeft":
-                                if (isImgActive("SiteBarCenter"))
-                                    hostOverride.SiteLeft = getTextObj("SiteNameCenter").get("text")
-                                else if (isImgActive("SiteBarLeft"))
-                                    hostOverride.SiteLeft = getTextObj("SiteNameLeft").get("text")
-                            // falls through
-                            case "SiteRight":                                
-                                if (targetHost === "SiteRight" && isImgActive("SiteBarCenter"))
-                                    hostOverride.SiteRight = getTextObj("SiteNameCenter").get("text")
-                                else if (isImgActive("SiteBarRight"))
-                                    hostOverride.SiteRight = getTextObj("SiteNameRight").get("text")
-                            // falls through
-                            case "DistrictLeft":
-                            case "DistrictRight":
-                                imgSrc = isImgActive(`${targetType }Center`) ? getImgSrc(`${targetType }Center`) : getImgSrc(targetHost)
-                                break
-                            case "SiteCenter":
-                                if (isImgActive("SiteBarLeft"))
-                                    hostOverride.SiteCenter = getTextObj("SiteNameLeft").get("text")
-                                if (isImgActive("SiteBarCenter"))
-                                    hostOverride.SiteCenter = getTextObj("SiteNameCenter").get("text")
-                            // falls through
-                            case "DistrictCenter":
-                                imgSrc = isImgActive(`${targetType }Left`) ? getImgSrc(`${targetType }Left`) : getImgSrc(targetHost)
-                                break
-                        // no default
-                        }
-                        DB(`Final Host: ${D.JS(targetHost)}, Src: ${D.JS(imgSrc)}, HostOverrides: ${D.JS(hostOverride)}`, "setLocation")
-                        parsedParams[targetHost] = imgSrc
-                    } else {
-                        const [targetHost, imgSrc] = param.split(":")
-                        DB(`Final Host: ${D.JS(targetHost)}, Src: ${D.JS(imgSrc)}`, "setLocation")
-                        parsedParams[targetHost] = imgSrc
-                    }
-                }
-                if (parsedParams.DistrictLeft === parsedParams.DistrictRight && parsedParams.DistrictLeft !== "blank") {
-                    parsedParams.DistrictCenter = parsedParams.DistrictLeft
-                    parsedParams.DistrictLeft = "blank"
-                    parsedParams.DistrictRight = "blank"
-                }                    
-                for (let i = 0; i < hosts.length; i++) {
-                    customNames[i] = customNames[i] && customNames[i].trim().length > 0 && customNames[i] || hostOverride[hosts[i]]
-                    if (!customNames[i])
-                        break
-                    parsedParams[hosts[i].replace(/Site/gu, "SiteName")] = customNames[i] === "x" ? " " : customNames[i]                                     
-                }      
-                DB(`Final Parsed Params: ${D.JS(parsedParams, true)}`, "setLocation")
-            }
-            for (const loc of _.keys(parsedParams).filter(x => !x.includes("Name")))
-                if (parsedParams[loc] === "blank")
-                    toggleImg(loc, false)
-                else
-                    setImg(loc, parsedParams[loc], true)            
-            for (const sitePos of ["SiteNameCenter", "SiteNameLeft", "SiteNameRight"]) {
-                toggleImg(sitePos.replace(/Name/gu, "Bar"), parsedParams[sitePos] !== " ")
-                if (parsedParams[sitePos] === " ")
-                    toggleText(sitePos, false)
-                else
-                    setText(sitePos, parsedParams[sitePos])
-            }
-            STATEREF.curLocation = _.clone(parsedParams)
         },
         sortImgs = (imgRefs, modes = "", anchors = []) => {
             const imgObjs = getImgObjs(imgRefs),
@@ -8611,15 +8535,17 @@ const Media = (() => {
                     }
                 }
         },
-        setText = (textRef, text = "", isToggling) => {
+        setText = (textRef, text, isToggling, isForcing = false) => {
             const textKey = getTextKey(textRef),
                 textObj = getTextObj(textRef),
                 textData = getTextData(textKey),
                 textParams = {text}            
             if (isToggling === false || isToggling === true)
                 toggleText(textKey, isToggling)
-            if (textParams.text === null || textParams.text === undefined || textParams.text === textObj.get("text"))
+            if (!isForcing && (textParams.text === null || textParams.text === undefined || textParams.text === textObj.get("text")))
                 return null
+            if (!VAL({string: textParams.text}))
+                textParams.text = textObj.get("text")
             let [totalTopShift, totalLeftShift] = [(textData.shiftTop || 0) + (textData.pushtop || 0), (textData.shiftLeft || 0) + (textData.pushleft || 0)]
             if (VAL({textObj}, ["setText", `textRef: ${D.JS(textRef)}, text: ${D.JS(text)}`])) {
                 if (textData.maxWidth && textParams.text.length) {
@@ -8666,14 +8592,13 @@ const Media = (() => {
             return null
         },
         setTextData = (textRef, params) => {
-            const textKey = getTextKey(textRef),
-                textData = getTextData(textKey)            
+            const textKey = getTextKey(textRef)           
             if (VAL({string: textKey}, "setTextData")) {
                 const textObj = getTextObj(textKey)
                 if (VAL({textObj}, ["setTextData", `Registered object '${textKey}' not found!`])) {
                     const textParams = params, // Object.assign(params, {left: getBlankLeft(textObj)}),
                         objParams = _.omit(_.pick(textParams, C.TEXTPROPS), "text")
-                    //D.Alert(`textParams: ${D.JS(textParams)}<br>objParams: ${D.JS(objParams)}`, `${textKey}`)
+                    // D.Alert(`textParams: ${D.JS(textParams)}<br>objParams: ${D.JS(objParams)}`, `${textKey}`)
                     _.each(textParams, (v, k) => {
                         if (k === "text")
                             D.Alert("Attempt to set 'text' via setTextData: Use setText() to set text values!", "ERROR: setTextData")
@@ -8681,6 +8606,8 @@ const Media = (() => {
                             TEXTREGISTRY[textKey][k] = v
                     })
                     textObj.set(objParams)
+                    if (_.intersection(_.keys(textParams), ["shiftTop", "top", "shiftLeft", "left", "pushtop", "pushleft"]).length)
+                        setText(textKey, null, undefined, true)
                     return getTextData(textKey)
                 }
             }
@@ -8874,7 +8801,7 @@ const Media = (() => {
 
         // CONSTRUCTORS, REGISTERS & DESTROYERS
         MakeImg: makeImg, MakeText: makeText,
-        RegImg: regImg, RegText: regText,
+        RegImg: regImg, RegText: regText, RegPads: regPads,
         RemoveImg: removeImg, RemoveAllImgs: removeImgs, RemoveText: removeText, RemoveAllText: removeTexts,
 
         // SETTERS
@@ -8887,10 +8814,6 @@ const Media = (() => {
         GetBounds: getBounds, GetContents: getContainedImgObjs,
         GetContainedChars: (locRef, options) => getContainedImgObjs(locRef, Object.assign(options, {isCharsOnly: true})),
         SetArea: setImgArea,
-        
-        // LOCATION FUNCTIONS (**MOVE TO SESSION.JS**)
-        SetLocation: setLocation,
-        get LOCATION() { return STATEREF.curLocation },
         
         // ANIMATION FUNCTIONS
         Animate: fireAnimation,

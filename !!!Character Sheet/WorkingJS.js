@@ -2058,8 +2058,8 @@
                                 checkEffects = rollArray => {
                                     const topDisplayStrings = [],
                                         effectChecks = _.compact(ATTRS.effectchecks.split("|"))
-                                    if (parseInt(ATTRS.applybloodsurge) > 0)
-                                        topDisplayStrings.push("Rouse Check Is Automatic")
+                                    /* if (parseInt(ATTRS.applybloodsurge) > 0)
+                                        topDisplayStrings.push("Rouse Check Is Automatic") */
                                     if (parseInt(ATTRS.humanity) + parseInt(ATTRS.stains) > 10)
                                         topDisplayStrings.push("Inhuman (-2)")
                                     if (parseInt(ATTRS.health) === 0 && _.any(rollArray, v => isIn(v, [...ATTRIBUTES.physical, ...SKILLS.physical])))
@@ -2078,7 +2078,7 @@
                                         if (isDisplaying)
                                             topDisplayStrings.push(displayString)
                                     }
-                                    return `${_.uniq(topDisplayStrings).join(", ")  }.`
+                                    return `${_.uniq(topDisplayStrings).join(", ")}.`
                                 }                                        
                             prevRArray.push(..._.compact((ATTRS.rollarray || "").split(",")))
                             log(`>>> PREVRARRAY INITIAL: ${JSON.stringify(prevRArray)}`)

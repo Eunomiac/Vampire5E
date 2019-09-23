@@ -85,7 +85,7 @@ const C = (() => {
             blackMarble: "https://i.imgur.com/kBl8aTO.jpg"
         },
         CHATHTML = {
-            header: content => `<div style="
+            header: content => { return `<div style="
                 display: block;
                 height: auto;
                 width: auto;
@@ -99,7 +99,7 @@ const C = (() => {
                 color: ${COLORS.white};
                 border: 2px solid ${COLORS.black};
                 position: relative;
-            ">${content}</div>`,
+            ">${content}</div>` },
             body: content => `<div style="
                 display: block;
                 width: auto;
@@ -201,12 +201,13 @@ const C = (() => {
                     borderWidth: options.borderWidth || "0px",
                     borderStyle: options.borderStyle || "none",
                     borderColor: options.borderColor || options.color || "black",
-                    boxShadow: options.boxShadow || "none"
+                    boxShadow: options.boxShadow || "none",
+                    lineHeight: options.lineHeight || options.fontSize || "18px"
                 }
                 return D.JSH(`<span style="
                     display: block; 
                     width: 100%; 
-                    line-height: ${params.fontSize};
+                    line-height: ${params.lineHeight};
                     margin: ${params.margin};
                     color: ${params.color};
                     font-size: ${params.fontSize};
@@ -216,6 +217,94 @@ const C = (() => {
                     text-shadow: ${params.textShadow};
                     box-shadow: ${params.boxShadow};
                 ">${content}</span>`)
+            },
+            trackerLine: (numClear, numSuper, numAgg, options = {}) => {
+                const params = {
+                        height: options.height || "32px",
+                        lineHeight: options.lineHeight || options.height || "32px",
+                        margin: options.margin || "-8px 0px 7px 0px"
+                    },
+                    boxes = {
+                        clear: `<span style="
+                            margin-right: 2px;
+                            width: 18px;
+                            text-align: center;
+                            height: 24px;
+                            vertical-align: middle;
+                            color: ${C.COLORS.white};
+                            display: inline-block;
+                            font-size: 32px;
+                            font-family: 'Arial';
+                            text-shadow: none;
+                        ">■</span>`,
+                        superficial: `<span style="
+                            margin-right: 2px;
+                            width: 18px;
+                            text-align: center;
+                            height: 24px;
+                            vertical-align: middle;
+                            color: ${C.COLORS.brightgrey};
+                            display: inline-block;
+                            font-size: 32px;
+                            font-family: 'Arial';
+                            text-shadow: none;
+                        ">■</span><span style="
+                            margin-right: 4px;
+                            width: 18px;
+                            text-align: center;
+                            height: 24px;
+                            vertical-align: middle;
+                            color: ${C.COLORS.darkgrey};
+                            display: inline-block;
+                            margin-left: -22px;
+                            font-size: 60px;
+                            font-family: 'Arial';
+                            text-shadow: none;
+                            margin-top: -14px;
+                        "><span style="
+                            display: inline-block;
+                            overflow: hidden;
+                            height: 18px;
+                            padding-bottom: 5px;
+                            width: 23px;
+                            font-size: 44px;
+                            line-height: 10px;    
+                        ">⸝</span></span>`,
+                        aggravated: `<span style="
+                            margin-right: 2px;
+                            width: 18px;
+                            text-align: center;
+                            height: 24px;
+                            vertical-align: middle;
+                            color: ${C.COLORS.darkred};
+                            display: inline-block;
+                            font-size: 32px;
+                            font-family: 'Arial';
+                            text-shadow: 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black;
+                        ">■</span><span style="
+                            margin-right: 2px;
+                            width: 18px;
+                            text-align: center;
+                            height: 24px;
+                            vertical-align: middle;
+                            color: ${C.COLORS.brightred};
+                            display: inline-block;
+                            margin-left: -20px;
+                            font-size: 34px;
+                            font-family: 'Arial';
+                            margin-bottom: -8px;
+                            text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black;
+                        ">×</span>`
+                    }
+                return D.JSH(`<div style="
+                    display: block;
+                    width: 100%;
+                    height: ${params.height};
+                    line-height: ${params.lineHeight || params.height};
+                    text-align: center;
+                    text-align-last: center;
+                    font-weight: bold;
+                    margin: ${params.margin};"> ${boxes.aggravated.repeat(numAgg) + boxes.superficial.repeat(numSuper) + boxes.clear.repeat(numClear)}</div>`)                
             }
         },       
         MENUHTML = {
