@@ -247,23 +247,55 @@ const Complications = (() => {
             {name: "Ennui", category: "humanity", value: 3, rarity: "R", afterAction: (charRef, isEnhanced) => {
                 Char.Damage(charRef, "humanity", null, isEnhanced ? 2 : 1)
             }},
-            {name: "Espionage", category: "benefit", value: 1, rarity: "R"},
-            {name: "Exhausted", category: "debilitation", value: 2, rarity: "U"},
+            {name: "Espionage", category: "benefit", value: 1, rarity: "R", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(isEnhanced ? "!Reduce Secrecy of a random NPC Project." : "!Discover a random NPC Project.")
+            }},
+            {name: "Exhausted", category: "debilitation", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
+                // Reduce Willpower Refresh
+            }},
             {name: "Faith", category: null, value: 0, rarity: "C"},
             // {name: "FakeNews", category: null, value: 2, rarity: "U"},
-            {name: "FalseLead", category: "project", value: 1, rarity: "U"},
-            {name: "FanTheFlames", category: "attention", value: 3, rarity: "R"},
-            {name: "Favors", category: "prestation", value: 1, rarity: "U"},
-            {name: "FieldWork", category: "blood", value: 1, rarity: "C"},
-            {name: "Friction", category: "attention", value: 1, rarity: "U"},
-            {name: "GuiltByAssociation", category: "advantage", value: 1, rarity: "C"},                                                                                                                                       
-            {name: "ImmortalClay", category: "humanity", value: 2, rarity: "R"},
-            {name: "InABind", category: null, value: 1, rarity: "C"},
-            {name: "InTheRed", category: null, value: 1, rarity: "C"},
-            {name: "IrresistibleOpportunity", category: "attention", value: 2, rarity: "R"},
-            {name: "LooseLips", category: "attention", value: 1, rarity: "U"},
-            {name: "MentalBlock", category: "debilitation", value: 3, rarity: "R"},
-            {name: "Micromanagement", category: "blood", value: 2, rarity: "U"},
+            {name: "FalseLead", category: "project", value: 1, rarity: "U", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(isEnhanced ? "Triple your Project's Increment." : "Double your Project's Increment.")
+            }},
+            {name: "FanTheFlames", category: "attention", value: 3, rarity: "R", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`Reduce all S.I. Project Dice by ${isEnhanced ? "three" : "one"}.`)
+            }},
+            {name: "Favors", category: "prestation", value: 1, rarity: "U", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`Use up a ${isEnhanced ? "major" : "minor"} Boon.`)
+            }},
+            {name: "FieldWork", category: "blood", value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => {
+                Char.AdjustHunger(charRef, isEnhanced ? 2 : 1, false)
+            }},
+            {name: "Friction", category: "attention", value: 1, rarity: "U", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`Attract the ire of an ${isEnhanced ? "elder" : "ancilla"}-level adversary.`)
+            }},
+            {name: "GuiltByAssociation", category: "advantage", value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`Reduce your highest Status by ${isEnhanced ? "two" : "one"}.`)
+            }},                                                                                                                                       
+            {name: "ImmortalClay", category: "humanity", value: 2, rarity: "R", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push("Redesign one of your Convictions.")
+                if (isEnhanced)
+                    STATEREF.endMessageQueue.push("Redesign a Chronicle Tenet.")
+            }},
+            {name: "InABind", category: null, value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`A coterie-mate must stake ${isEnhanced ? "two Advantages" : "one Advantage"}.`)
+            }},
+            {name: "InTheRed", category: null, value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`Stake an additional ${isEnhanced ? "four Advantages" : "one Advantage"}.`)
+            }},
+            {name: "IrresistibleOpportunity", category: "attention", value: 2, rarity: "R", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`Hijack or Loot a random NPC Project${isEnhanced ? " (+2 Bonus)." : "."}`)
+            }},
+            {name: "LooseLips", category: "attention", value: 1, rarity: "U", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(isEnhanced ? "Your Project becomes common knowledge." : "Reduce Project Secrecy by one.")
+            }},
+            {name: "MentalBlock", category: "debilitation", value: 3, rarity: "R", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(isEnhanced ? "Lose access to a chosen Discipline." : "Lose access to a chosen Discipline power.")
+            }},
+            {name: "Micromanagement", category: "blood", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
+                Char.AdjustHunger(charRef, isEnhanced ? 4 : 2, false)
+            }},
             {name: "NecessaryEvils", category: "humanity", value: 2, rarity: "R", afterAction: (charRef, isEnhanced) => {
                 Char.Damage(charRef, "stains", "", isEnhanced ? 2 : 1)
             }},
@@ -305,7 +337,7 @@ const Complications = (() => {
     // #region GETTERS: Active card names
         getActiveCards = () => _.filter(STATEREF.MAT, v => isCardActive(v)),
         getUsedCategories = () => _.uniq(_.compact(_.map(getActiveCards(), v => v.category))),
-        isCardInDeck = card => VAL({list: card}) && card.name && (STATEREF.isRepeatMistakes && STATEREF.isRepeatMistakes() || !getUsedCategories().includes(card.category)) && !_.map(getActiveCards(), v => v.name).includes(card.name),
+        isCardInDeck = card => VAL({list: card}) && card.name && (STATEREF.isRepeatMistakes || !getUsedCategories().includes(card.category)) && !_.map(getActiveCards(), v => v.name).includes(card.name),
         isCardActive = card => VAL({list: card}) && card.isFaceUp && !card.isNegated,
         getRandomSpot = (modes) => {
             const validSpots = []

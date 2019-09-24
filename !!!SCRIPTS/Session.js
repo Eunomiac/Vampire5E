@@ -36,36 +36,9 @@ const Session = (() => {
             STATEREF.tokenRecord = STATEREF.tokenRecord || {}
             STATEREF.SessionScribes = STATEREF.SessionScribes || []
             STATEREF.SessionModes = STATEREF.SessionModes || ["Active", "Inactive", "Daylighter", "Downtime", "Complications"]
-            /* STATEREF.locRecord = STATEREF.locRecord || {
-                Active: {
-                    DistrictCenter: null,
-                    DistrictLeft: null,
-                    DistrictRight: null,
-                    SiteCenter: null,
-                    SiteLeft: null,
-                    SiteRight: null
-                },
-                Inactive: null,
-                Daylighter: {
-                    DistrictCenter: null,
-                    DistrictLeft: null,
-                    DistrictRight: null,
-                    SiteCenter: null,
-                    SiteLeft: null,
-                    SiteRight: null
-                },
-                Downtime: {
-                    DistrictCenter: null,
-                    DistrictLeft: null,
-                    DistrictRight: null,
-                    SiteCenter: null,
-                    SiteLeft: null,
-                    SiteRight: null
-                },
-                Complications: null,
-            } */
-            // delete STATEREF.locRecord
-            STATEREF.locationHistory = STATEREF.locationHistory || {
+            STATEREF.Mode = STATEREF.Mode || "Inactive"
+            STATEREF.LastMode = STATEREF.LastMode || "Inactive"
+            STATEREF.curLocation = STATEREF.curLocation || {
                 DistrictCenter: "blank",
                 DistrictLeft: "blank",
                 DistrictRight: "blank",
@@ -73,35 +46,17 @@ const Session = (() => {
                 SiteLeft: "blank",
                 SiteRight: "blank"
             }
-
-            STATEREF.locationRecord = STATEREF.locationRecord || {
-                DistrictCenter: "blank",
-                DistrictLeft: "blank",
-                DistrictRight: "blank",
-                SiteCenter: "blank",
-                SiteLeft: "blank",
-                SiteRight: "blank"
+            STATEREF.locationRecord = STATEREF.locationRecord || null
+            
+            // delete STATEREF.locationRecord
+            
+            if (!STATEREF.locationRecord) {
+                STATEREF.locationRecord = {}
+                for (const mode of Session.Modes)
+                    STATEREF.locationRecord[mode] = D.Clone(STATEREF.curLocation)
             }
-
-            /* STATEREF.locationHistory = {
-                DistrictCenter: "blank",
-                DistrictLeft: "blank",
-                DistrictRight: "blank",
-                SiteCenter: "blank",
-                SiteLeft: "blank",
-                SiteRight: "blank"
-            }
-
-            STATEREF.locationRecord = {
-                DistrictCenter: "blank",
-                DistrictLeft: "blank",
-                DistrictRight: "blank",
-                SiteCenter: "blank",
-                SiteLeft: "blank",
-                SiteRight: "blank"
-            }
- */
-                        
+                
+                                 
         // STATEREF.SessionScribes = [ "Thaumaterge", "Ava Wong", "banzai", "PixelPuzzler" ]
         },
     // #endregion
@@ -230,7 +185,6 @@ const Session = (() => {
     // #region Starting/Ending Sessions
         startSession = () => {
             const sessionScribe = STATEREF.isTestingActive ? STATEREF.SessionScribes[0] : STATEREF.SessionScribes.shift()
-            STATEREF.Mode = "Active"
             if (STATEREF.isTestingActive)
                 STATEREF.dateRecord = TimeTracker.CurrentDate.getTime()
             else
@@ -251,8 +205,7 @@ const Session = (() => {
                 C.CHATHTML.colorHeader(`Session Scribe: ${sessionScribe}`),
                 C.CHATHTML.colorBody("Thank you for your service!")
             ]))
-            Roller.Clean()
-            Media.SwitchMode()
+            changeMode("Active")
             for (const quadrant of _.keys(Char.REGISTRY)) {
                 const {tokenName} = Char.REGISTRY[quadrant]
                 Media.SetImg(tokenName, STATEREF.tokenRecord[tokenName] || "base")
@@ -265,15 +218,13 @@ const Session = (() => {
         },
         endSession = () => {
             if (remorseCheck()) {
-                STATEREF.Mode = "Inactive"
                 sendChat("Session End", C.CHATHTML.colorBlock([
                     C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
                     C.CHATHTML.colorHeader(`Concluding Session ${D.NumToText(STATEREF.SessionNum, true)}`),
                     C.CHATHTML.colorBody("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "10px 0px 10px 0px"}),
                     C.CHATHTML.colorTitle("See you next week!", {fontSize: "32px"}),
                 ]))
-                Roller.Clean()
-                Media.SwitchMode()
+                changeMode("Inactive")
                 STATEREF.tokenRecord = {}
                 if (!STATEREF.isTestingActive) {
                     STATEREF.dateRecord = null
@@ -296,8 +247,15 @@ const Session = (() => {
     // #region Toggling Session Modes
         changeMode = mode => {
             if (VAL({string: mode}, "changeMode") && STATEREF.SessionModes.map(x => x.toLowerCase()).includes(mode.toLowerCase())) {
-                STATEREF.Mode = D.Capitalize(mode.toLowerCase())
+                const [lastMode, curMode] = [
+                    D.Clone(STATEREF.Mode),
+                    D.Capitalize(mode.toLowerCase())
+                ]
+                STATEREF.Mode = curMode
+                STATEREF.LastMode = lastMode
+                Roller.Clean()
                 Media.SwitchMode()
+                setModeLocations(curMode)
             }
         },
         toggleTesting = (isTesting) => {
@@ -312,13 +270,10 @@ const Session = (() => {
             D.Alert(`Testing Set to ${STATEREF.isTestingActive}`, "!sess test")
         },
         toggleDowntime = () => {
-            STATEREF.Mode = STATEREF.Mode === "Downtime" ? "Active" : "Downtime"
-            Roller.Clean()
-            Media.SwitchMode()
+            changeMode(STATEREF.Mode === "Downtime" ? STATEREF.LastMode : "Downtime")
             if (STATEREF.Mode === "Downtime") {
-                TimeTracker.StopClock()                
-                STATEREF.locationHistory = _.clone(STATEREF.locationRecord)
                 setLocation(BLANKLOCRECORD)
+                TimeTracker.StopClock()
                 Char.SendHome()
                 sendChat("Session Downtime", C.CHATHTML.colorBlock([
                     C.CHATHTML.colorTitle("Session Downtime"),
@@ -326,8 +281,7 @@ const Session = (() => {
                     C.CHATHTML.colorBody("Clock Stopped.")
                 ]))
             } else {
-                TimeTracker.StartClock()  
-                setLocation(STATEREF.locationHistory)    
+                TimeTracker.StartClock()
                 Char.SendBack()
                 sendChat("Session Downtime", C.CHATHTML.colorBlock([
                     C.CHATHTML.colorTitle("Session Downtime"),
@@ -350,19 +304,6 @@ const Session = (() => {
             SiteLeft: "blank",
             SiteRight: "blank"
         },
-
-    //! img set loc DistrictLeft:same|blank|Annex SiteLeft:same|blank|AnarchBar:name:<customName>; DistrictRight:?{Select District (Right)|same|blank|Annex|BayStFinancial|Bennington|Cabbagetown|CentreIsland|Chinatown|Corktown|Danforth|DeerPark|Discovery|Distillery|DupontByTheCastle|GayVillage|HarbordVillage|Humewood|LibertyVillage|LittleItaly|LittlePortugal|PATH|RegentPark|Riverdale|Rosedale|Sewers|StJamesTown|Summerhill|Waterfront|WestQueenWest|Wychwood|YongeHospital|YongeMuseum|YongeStreet|Yorkville} SiteRight:?{Select Site (Right)|same|blank|AnarchBar|ArtGallery|BackAlley|BayTower|BBishopFerry|BrickWorks|CNTower|CasaLoma|Cemetary|CeramicsMuseum|CityApt1|CityHall|CityPark|Distillery|Docks|Drake|Elysium|EvergreenPalisades|FightClub|GayClub|Laboratory|LectureHall|Library|MadinaMasjid|MiddleOfRoad|Nightclub|Office|ParkingLot|PMHospital|ProfOffice|ROM|RedemptionHouse|RegentParkApt|RogersCentre|Rooftops|Sidewalk1|Sidewalk2|Sidewalk3|SiteLotus|SpawningPool|StMichaelsCathedral|StripClub|StudentVillage|SubwayStation|SubwayTunnels|UndergroundMedClinic|UndergroundMedOffice|WalkingPath|WarrensAntechamber|WychwoodPub|YongeDundasSquare|YachtMister|YorkvilleApt1|YorkvilleApt2|YouthShelter}:name:?{Custom Right Name?};
-        setLocHandle = (msg, call, args) => {
-            switch(call) {
-                case "loc": {
-                    // args: DistrictLeft:same|blank|Annex SiteLeft:same|blank|AnarchBar:name:<customName>; DistrictLeft:same|blank|Annex SiteLeft:same|blank|AnarchBar:name:<customName>;
-                    setLocation(parseLocationString(args.join(" ")))
-                    break
-                }
-                // no default
-            }
-        },
-    
         parseLocationString = (locString) => {
             const locParams = [
                 ...(locString.match(/([^:;\s]*):([^:;\s]*):name:(.*?);/gu) || []).map(x => x.match(/([^:;\s]*):([^:;\s]*):name:(.*?);/u).slice(1)),
@@ -371,7 +312,7 @@ const Session = (() => {
             return D.KeyMapObj(locParams, (k, v) => v[0], (v) => _.compact(v.slice(1)))
         },
         getParentLocData = locPos => {
-            const locData = _.omit(STATEREF.locationRecord, v => v === "blank"),
+            const locData = _.omit(STATEREF.curLocation, v => v === "blank"),
                 locType = locPos.replace(/(Right|Left|Center|)/gu, "")
             switch (locPos.replace(/(District|Site)/gu, "")) {
                 case "Center": 
@@ -386,7 +327,7 @@ const Session = (() => {
         },
         setLocation = (locParams) => {
             const newLocData = Object.assign(_.clone(BLANKLOCRECORD), locParams),
-                curLocData = JSON.parse(JSON.stringify(STATEREF.locationRecord)),
+                curLocData = JSON.parse(JSON.stringify(STATEREF.curLocation)),
                 reportStrings = [
                     `Loc Params: ${D.JS(locParams)}`,
                     `New Loc Data: ${D.JS(newLocData)}`,
@@ -407,14 +348,15 @@ const Session = (() => {
                 newLocData.DistrictLeft = "blank"
                 newLocData.DistrictRight = "blank"
             }
-            STATEREF.locationRecord = JSON.parse(JSON.stringify(newLocData))            
+            STATEREF.curLocation = D.Clone(newLocData)
+            STATEREF.locationRecord[Session.Mode] = D.Clone(newLocData)    
             const locDataDelta = _.pick(newLocData, _.keys(newLocData).filter(x => !_.isEqual(newLocData[x], curLocData[x])))
             reportStrings.push(`Loc Data Delta: ${D.JS(locDataDelta)}`)
-            reportStrings.push(`New STATEREF Record: ${D.JS(STATEREF.locationRecord)}`)
-            D.Alert(`<h3>Set Location Processing:</h3>${D.JS(reportStrings.join("<br>"))}`)
+            reportStrings.push(`New STATEREF Record: ${D.JS(STATEREF.locationRecord[Session.Mode])}`)
+            // D.Alert(`<h3>Set Location Processing:</h3>${D.JS(reportStrings.join("<br>"))}`)
             for (const locPos of _.keys(locDataDelta)) {
                 const locData = locDataDelta[locPos]
-                if (locData === "blank") {
+                if (!locData || locData === "blank") {
                     Media.ToggleImg(locPos, false)
                     if (locPos.includes("Site")) {
                         Media.ToggleImg(`SiteBar${locPos.replace(/Site/gu, "")}`, false)
@@ -432,99 +374,7 @@ const Session = (() => {
                 }
             }
         },
-/*
-
-
-
-            const hosts = [],
-                hostOverride = {},
-                parsedParams = Object.assign({
-                    DistrictCenter: "blank",
-                    SiteCenter: "blank",
-                    SiteNameCenter: " ",
-                    DistrictRight: "blank",
-                    SiteRight: "blank",
-                    SiteNameRight: " ",
-                    DistrictLeft: "blank",
-                    SiteLeft: "blank",
-                    SiteNameLeft: " "}, VAL({list: locRefs}) ? _.clone(locRefs) : {})
-            let [customNames, params] = [[], []]
-            if (VAL({string: locRefs})) {
-                if (locRefs.includes(":name:"))
-                    customNames = _.map(locRefs.match(new RegExp(":name:([^;]*)", "g")), v => v.replace(/:name:/gu, ""))
-                params = locRefs.replace(/:name:.*?;\s*?/gu, "").split(" ")
-                DB(`CustomNames: ${D.JS(customNames)}, Params: ${D.JS(params)}`, "setLocation")
-            // D.Alert(`PARAMS: ${D.JS(params)}`) .match(/^(\w+):[^:]*:?[^:]*:?(.+$)/ui)
-                for (const param of params) {
-                    if (param.startsWith("Site")) hosts.push(param.split(":")[0])
-                    if (param.includes(":same")) {
-                        const targetHost = param.split(":")[0],
-                            targetType = targetHost.includes("District") ? "District" : "Site"
-                        let imgSrc = getImgSrc(targetHost)
-                        DB(`TargetHost: ${D.JS(targetHost)}, Type: ${D.JS(targetType)}, Src: ${D.JS(imgSrc)}`, "setLocation")
-                        switch (targetHost) {
-                            case "SiteLeft":
-                                if (isImgActive("SiteBarCenter"))
-                                    hostOverride.SiteLeft = getTextObj("SiteNameCenter").get("text")
-                                else if (isImgActive("SiteBarLeft"))
-                                    hostOverride.SiteLeft = getTextObj("SiteNameLeft").get("text")
-                        // falls through
-                            case "SiteRight":                                
-                                if (targetHost === "SiteRight" && isImgActive("SiteBarCenter"))
-                                    hostOverride.SiteRight = getTextObj("SiteNameCenter").get("text")
-                                else if (isImgActive("SiteBarRight"))
-                                    hostOverride.SiteRight = getTextObj("SiteNameRight").get("text")
-                        // falls through
-                            case "DistrictLeft":
-                            case "DistrictRight":
-                                imgSrc = isImgActive(`${targetType }Center`) ? getImgSrc(`${targetType }Center`) : getImgSrc(targetHost)
-                                break
-                            case "SiteCenter":
-                                if (isImgActive("SiteBarLeft"))
-                                    hostOverride.SiteCenter = getTextObj("SiteNameLeft").get("text")
-                                if (isImgActive("SiteBarCenter"))
-                                    hostOverride.SiteCenter = getTextObj("SiteNameCenter").get("text")
-                        // falls through
-                            case "DistrictCenter":
-                                imgSrc = isImgActive(`${targetType }Left`) ? getImgSrc(`${targetType }Left`) : getImgSrc(targetHost)
-                                break
-                    // no default
-                        }
-                        DB(`Final Host: ${D.JS(targetHost)}, Src: ${D.JS(imgSrc)}, HostOverrides: ${D.JS(hostOverride)}`, "setLocation")
-                        parsedParams[targetHost] = imgSrc
-                    } else {
-                        const [targetHost, imgSrc] = param.split(":")
-                        DB(`Final Host: ${D.JS(targetHost)}, Src: ${D.JS(imgSrc)}`, "setLocation")
-                        parsedParams[targetHost] = imgSrc
-                    }
-                }
-                if (parsedParams.DistrictLeft === parsedParams.DistrictRight && parsedParams.DistrictLeft !== "blank") {
-                    parsedParams.DistrictCenter = parsedParams.DistrictLeft
-                    parsedParams.DistrictLeft = "blank"
-                    parsedParams.DistrictRight = "blank"
-                }                    
-                for (let i = 0; i < hosts.length; i++) {
-                    customNames[i] = customNames[i] && customNames[i].trim().length > 0 && customNames[i] || hostOverride[hosts[i]]
-                    if (!customNames[i])
-                        break
-                    parsedParams[hosts[i].replace(/Site/gu, "SiteName")] = customNames[i] === "x" ? " " : customNames[i]                                     
-                }      
-                DB(`Final Parsed Params: ${D.JS(parsedParams, true)}`, "setLocation")
-            }
-            for (const loc of _.keys(parsedParams).filter(x => !x.includes("Name")))
-                if (parsedParams[loc] === "blank")
-                    toggleImg(loc, false)
-                else
-                    setImg(loc, parsedParams[loc], true)            
-            for (const sitePos of ["SiteNameCenter", "SiteNameLeft", "SiteNameRight"]) {
-                toggleImg(sitePos.replace(/Name/gu, "Bar"), parsedParams[sitePos] !== " ")
-                if (parsedParams[sitePos] === " ")
-                    toggleText(sitePos, false)
-                else
-                    setText(sitePos, parsedParams[sitePos])
-            }
-            STATEREF.curLocation = _.clone(parsedParams)
-        }, */
+        setModeLocations = (mode) => { setLocation(STATEREF.locationRecord[mode]) },
     // #endregion
 
     // #region Waking Up 
@@ -609,6 +459,7 @@ const Session = (() => {
         get Modes() { return STATEREF.SessionModes },
         get IsTesting() { return STATEREF.isTestingActive },
         get Mode() { return STATEREF.Mode },
+        get LastMode() { return STATEREF.LastMode },
         get Location() { return STATEREF.locationRecord }
     }
 })()

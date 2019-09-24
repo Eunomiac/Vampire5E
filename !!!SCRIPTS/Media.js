@@ -558,7 +558,10 @@ const Media = (() => {
                                     break
                                 }
                                 case "names": {
-                                    D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(IMGREGISTRY))}`)
+                                    if (args[0] && args[0].toLowerCase().includes("pad"))
+                                        D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(IMGREGISTRY))}`)
+                                    else
+                                        D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(IMGREGISTRY).filter(x => !IMGREGISTRY[x].name.includes("Pad_")))}`)
                                     break
                                 }
                             // no default
@@ -994,7 +997,7 @@ const Media = (() => {
                     WeatherClouds_1: 105
                 },
                 Banners: {
-                    downtimeBanner_1: 200
+                    downtimeBanner_1: 125
                 },
                 DiceRoller: {
                     Frame: {
@@ -1066,8 +1069,8 @@ const Media = (() => {
                     }
                 },
                 Headers: {
-                    stakedAdvantagesHeader_1: 130,
-                    weeklyResourcesHeader_1: 130
+                    stakedAdvantagesHeader_1: 140,
+                    weeklyResourcesHeader_1: 140
                 },
                 Map: {
                     TorontoMap_1: 1,
@@ -6961,7 +6964,7 @@ const Media = (() => {
             }
             if (isResetting)
                 resetAllModeData()
-            
+
             const errorLines = ["<h3>IMAGE ERRORS:</h3>"]
             for (const imgKey of _.keys(IMGREGISTRY)) {
                 const imgData = getImgData(imgKey),
@@ -6970,6 +6973,7 @@ const Media = (() => {
                     imgSrcData = getImgSrcs(imgKey),
                     imgSrcs = _.keys(imgSrcData),
                     imgErrors = []
+
                 // Reset Active status by toggling both ways.
                 if (isToggling) {
                     toggleImg(imgKey, !imgActiveState)
@@ -7437,8 +7441,7 @@ const Media = (() => {
         getZLevels = () => {
             const imgZLevels = {
                     map: [],
-                    objects: [],
-                    dragpads: []
+                    objects: []
                 },
                 getArray = (obj, topKey) => {
                     const returnArray = []
@@ -7452,8 +7455,6 @@ const Media = (() => {
             for (const cat of ["map", "objects"])
                 for (const key of _.keys(ZLEVELS[cat]))
                     imgZLevels[cat].push(...getArray(ZLEVELS[cat][key], key))
-            for (const padName of _.keys(IMGREGISTRY).filter(x => x.includes("_Pad_") || x.includes("_PartnerPad_")))
-                imgZLevels.dragpads.push(["dragpads", padName, ZLEVELS.dragpads])
             return imgZLevels
         },
         getZLevel = imgRef => {
@@ -7536,27 +7537,14 @@ const Media = (() => {
                     addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, srcName)
                     setImg(name, srcName)
                 }
-                if (!IMGREGISTRY[name].startActive) {
-                    setImg(name, "blank")
-                    layerImgs([name], "gmlayer")
-                } else {
-                    layerImgs([name], IMGREGISTRY[name].activeLayer)
-                }
+                layerImgs([name], IMGREGISTRY[name].activeLayer)
                 if (!isSilent)
                     D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(IMGREGISTRY[name])}`, "MEDIA: regImg")
-                initMedia()
 
                 return getImgData(name)
             }
 
             return THROW(`Invalid image reference '${D.JSL(imgRef)}'`, "regImg")
-        },
-        regPads = (imgRef, padObj, partnerObj) => {
-            const imgKey = getImgKey(imgRef)
-            if (VAL({string: imgKey, graphicObj: [padObj, partnerObj]}, "regPads", true)) {
-                IMGREGISTRY[imgKey].pad = padObj.id
-                IMGREGISTRY[imgKey].partner = partnerObj.id
-            }
         },
         regRandomizerToken = (imgRef, tokenName) => {
             if (!isRegImg(tokenName))
@@ -7876,12 +7864,10 @@ const Media = (() => {
                     activeCheck = false
                 else if (isActive === true || isActive !== false && imgData.isActive === false)
                     activeCheck = true
-                const [pad, partner] = DragPads.GetPadPair(imgData.id, true)
-                if (pad)
-                    toggleImg(pad, activeCheck)
-                if (partner)
-                    toggleImg(partner, false)
-                if (activeCheck === null || imgData.isActive === activeCheck && imgObj.get("layer") === (activeCheck ? imgData.activeLayer : "walls"))
+                if (activeCheck === null)
+                    return null
+                DragPads.Toggle(imgData.name, activeCheck)
+                if (imgData.isActive === activeCheck && imgObj.get("layer") === (activeCheck ? imgData.activeLayer : "walls"))
                     return null
                 if (activeCheck === false) {
                     // TURN OFF: Set layer to walls, toggle off associated drag pads, update activeState value
@@ -7902,6 +7888,7 @@ const Media = (() => {
         removeImg = (imgRef, isUnregOnly) => {
             const imgObj = getImgObj(imgRef),
                 imgData = getImgData(imgRef)
+            DragPads.DelPad(imgObj)
             if (imgObj && !isUnregOnly) {
                 imgObj.remove()
                 delete IMGREGISTRY[imgData.name]
@@ -8724,12 +8711,9 @@ const Media = (() => {
                 }))
                 allImgDatas.push(..._.compact(imgDatas))
             }
-            for (const padName of _.keys(IMGREGISTRY).filter(x => x.includes("_Pad_") || x.includes("_PartnerPad_"))) {
-                IMGREGISTRY[padName].zIndex = ZLEVELS.dragpads
-                allImgDatas.push(IMGREGISTRY[padName])
-            }
             sortedMediaObjs.push(..._.compact(_.keys(TEXTREGISTRY).map(x => getTextObj(x) || null)))
             sortedMediaObjs.push(..._.compact(_.keys(TEXTREGISTRY).filter(x => TEXTREGISTRY[x].shadowID).map(x => getObj("text", TEXTREGISTRY[x].shadowID) || null)))
+            sortedMediaObjs.push(..._.compact(_.flatten(allImgDatas.filter(x => x.padID).sort((a,b) => b.zIndex - a.zIndex).map(x => [getObj("graphic", x.padID), getObj("graphic", x.partnerID)]))))
             sortedMediaObjs.push(..._.compact(allImgDatas.sort((a,b) => b.zIndex - a.zIndex).map(x => getImgObj(x.id) || null)))
             for (let i = 0; i < sortedMediaObjs.length; i++)
                 toBack(sortedMediaObjs[i])
@@ -8801,7 +8785,7 @@ const Media = (() => {
 
         // CONSTRUCTORS, REGISTERS & DESTROYERS
         MakeImg: makeImg, MakeText: makeText,
-        RegImg: regImg, RegText: regText, RegPads: regPads,
+        RegImg: regImg, RegText: regText,
         RemoveImg: removeImg, RemoveAllImgs: removeImgs, RemoveText: removeText, RemoveAllText: removeTexts,
 
         // SETTERS

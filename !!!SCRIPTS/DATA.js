@@ -391,6 +391,7 @@ const D = (() => {
             THROW(`Attempt to capitalize non-string '${jStr(str)}'`, "capitalize")
             return str
         },
+        clone = (obj) => JSON.parse(JSON.stringify(obj)),
     // #endregion
 
     // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
@@ -1719,6 +1720,7 @@ const D = (() => {
         NumToText: numToText, TextToNum: textToNum,
         Ordinal: ordinal,
         Capitalize: capitalize,
+        Clone: clone,
 
         Chat: sendChatMessage,
         Alert: sendToGM,

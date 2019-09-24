@@ -470,9 +470,11 @@ const Char = (() => {
             if (obj.get("current") !== prev.current || obj.get("name").toLowerCase() === "_reporder_repeating_desire")
                 // D.Alert(`Detected change to '${obj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")}'`)
                 switch (obj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")) {
-                    case "hunger":
-                        Media.SetImg(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, obj.get("current"))
+                    case "hunger": {
+                        const hungerLevel = obj.get("current")
+                        Media.SetImg(`Hunger${getAttrByName(obj.get("_characterid"), "sandboxquadrant")}_1`, hungerLevel === "0" ? "blank" : hungerLevel)
                         break
+                    }
                     case "desire": case "_reporder_repeating_desire":
                         displayDesires()
                         break

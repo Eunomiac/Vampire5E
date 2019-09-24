@@ -33,6 +33,19 @@ const DragPads = (() => {
         initialize = () => {
             STATEREF.byPad = STATEREF.byPad || {}
             STATEREF.byGraphic = STATEREF.byGraphic || {}
+
+            for (const imgID of _.keys(STATEREF.byGraphic)) {
+                const imgObj = getObj("graphic", imgID),
+                    imgKey = Media.GetImgKey(imgObj)
+                if (VAL({string: imgKey}, "DP INIT")) {
+                    Media.IMAGES[imgKey].padID = STATEREF.byGraphic[imgID].id
+                    Media.IMAGES[imgKey].partnerID = STATEREF.byGraphic[imgID].pad.partnerID
+                    STATEREF.byGraphic[imgID].pad.name = STATEREF.byGraphic[imgID].pad.name.replace(/(^\w*?)_Pad_\d*$/gu, `${imgKey}_$1_Pad`)
+                    STATEREF.byGraphic[imgID].partnerPad.name = STATEREF.byGraphic[imgID].partnerPad.name.replace(/(^\w*?)_PartnerPad_\d*$/gu, `${imgKey}_$1_PartnerPad`)
+                    STATEREF.byPad[Media.IMAGES[imgKey].padID].name = STATEREF.byGraphic[imgID].pad.name
+                    STATEREF.byPad[Media.IMAGES[imgKey].partnerID].name = STATEREF.byGraphic[imgID].partnerPad.name
+                }
+            }
         },
     // #endregion	
 
@@ -378,18 +391,20 @@ const DragPads = (() => {
 
             return pads
         },
-        getPadPair = (imgID, isSilent = false) => {
-            const padData = GRAPHICREGISTRY[imgID]
-            if (VAL({list: padData}, isSilent ? undefined : ["getPadPair", `imgID: ${D.JS(imgID)}, name: ${(getObj("graphic", imgID) || {get: () => "OBJ NOT FOUND"}).get("name")}`])) {
-                const padImgData = [
-                    Media.GetImgData(padData.id),
-                    Media.GetImgData(padData.pad.partnerID)
-                ]
-                if (!padImgData[0].isActive && padImgData[1].isActive)
-                    return padImgData.reverse().map(x => Media.GetImg(x.name))
-                return padImgData.map(x => Media.GetImg(x.name))
-            }
-            return []
+        getPadPair = (imgRef, isSilent = false) => {
+            const imgData = Media.GetImgData(imgRef)
+            if (VAL({list: imgData}, isSilent ? undefined : "getPadPair"))
+                if (imgData.padID && imgData.partnerID) {
+                    const [padObj, partnerObj] = [
+                        getObj("graphic", imgData.padID),
+                        getObj("graphic", imgData.partnerID)
+                    ]
+                    if (VAL({graphicObj: [padObj, partnerObj]}, "getPadPair", true)) {
+                        if (partnerObj.get("layer") !== "walls")
+                            return [partnerObj, padObj]
+                        return [padObj, partnerObj]
+                    }
+                }
         },
         getGraphic = pad => Media.GetImg((PADREGISTRY[(VAL({object: pad}) && pad || {id: ""}).id] || {id: ""}).id),
 
@@ -404,108 +419,91 @@ const DragPads = (() => {
         "mapButtonSitesTransportation_1",
 */
 
-        makePad = (graphicObj, funcName, params = "deltaTop:0, deltaLeft:0, deltaHeight:0, deltaWidth:0") => {
+        makePad = (imgRef, funcName, params = "deltaTop:0, deltaLeft:0, deltaHeight:0, deltaWidth:0") => {
             // THROW(`Making Pad: ${graphicObj.get("name")}, ${funcName}, ${D.JSL(params)}`, "makePad")
-            let options = {
+            const imgData = Media.GetImgData(imgRef),
+                imgObj = Media.GetImg(imgData.name)
+            
+            if (VAL({graphicObj: imgObj, list: imgData, string: funcName}, "makePad")) {
+                let options = {
+                    _pageid: imgObj.get("_pageid"),
+                    left: imgData.left,
+                    top: imgData.top,
+                    width: imgData.width,
+                    height: imgData.height,
+                    name: `${imgData.name}_${funcName}_Pad`,
+                    layer: imgData.isActive ? "objects" : "walls",
+                    imgsrc: C.IMAGES.blank,
+                    isdrawing: true,
                     controlledby: "all",
-                    startActive: true
-                },
-                [pad, partnerPad] = [null, null]
-            if (_.isString(params))
-                _.each(params.split(/,\s*?(?=\S)/gu),
-                       v => {
-                           const [key, value] = v.split(/\s*?(?=\S):\s*?(?=\S)/gu)
-                           if (key.toLowerCase() === "startactive" && value === "false")
-                               options.startActive = false
-                           else
-                               options[key] = value
-                       })
-            else 
-                try {
+                    showname: false
+                }
+                if (VAL({string: params}))
+                    _.each(params.split(/,\s*?(?=\S)/gu), v => {
+                        const [key, value] = v.split(/\s*?(?=\S):\s*?(?=\S)/gu)
+                        options[key] = value
+                    })
+                else if (VAL({list: params}))
                     options = Object.assign(options, params)
-                } catch (errObj) {
-                    return THROW(`Bad parameters: ${D.JS(params)}`, "makePad")
-                }                
-
-            // D.Alert(`makePad Options: ${D.JS(options)}`, "DRAGPADS.MakePad")
-            if (VAL({graphicObj})) {
-                options._pageid = graphicObj.get("_pageid")
-                options.left = options.left || graphicObj.get("left")
-                options.top = options.top || graphicObj.get("top")
-                options.width = options.width || graphicObj.get("width")
-                options.height = options.height || graphicObj.get("height")
-                options.activeLayer = "objects"
-                options.layer = options.startActive && "objects" || "walls"
-            }
-            if (!options.left || !options.top || !options.width || !options.height)
-                return THROW(`Invalid Options: ${D.JS(options)}.<br><br>Must include reference object OR positions & dimensions to make pad.`, "makePad")
-            options._pageid = options._pageid || D.PAGEID
-            options.left += parseInt(options.deltaLeft || 0)
-            options.top += parseInt(options.deltaTop || 0)
-            options.width += parseInt(options.deltaWidth || 0)
-            options.height += parseInt(options.deltaHeight || 0)
-            delete options.deltaLeft
-            delete options.deltaTop
-            delete options.deltaWidth
-            delete options.deltaHeight
-            pad = Media.MakeImg(`${funcName}_Pad_#`, options, true)
-            if (!graphicObj)
-                graphicObj = pad
-            options.startActive = false
-            options.layer = "walls"
-            partnerPad = Media.MakeImg(`${funcName}_PartnerPad_#`, options, true)
-            PADREGISTRY[pad.id] = {
-                funcName,
-                name: pad.get("name"),
-                left: pad.get("left"),
-                top: pad.get("top"),
-                height: pad.get("height"),
-                width: pad.get("width"),
-                partnerID: partnerPad.id,
-                active: "on"
-            }
-            PADREGISTRY[partnerPad.id] = {
-                funcName,
-                name: partnerPad.get("name"),
-                left: partnerPad.get("left"),
-                top: partnerPad.get("top"),
-                height: partnerPad.get("height"),
-                width: partnerPad.get("width"),
-                partnerID: pad.id,
-                active: "off"
-            }
-            if (VAL({graphicObj})) {
-                PADREGISTRY[pad.id].id = graphicObj.id
-                PADREGISTRY[partnerPad.id].id = graphicObj.id
-                GRAPHICREGISTRY[graphicObj.id] = {
+                options.left += parseInt(options.deltaLeft || 0)
+                options.top += parseInt(options.deltaTop || 0)
+                options.width += parseInt(options.deltaWidth || 0)
+                options.height += parseInt(options.deltaHeight || 0)
+                delete options.deltaLeft
+                delete options.deltaTop
+                delete options.deltaWidth
+                delete options.deltaHeight
+                const pad = createObj("graphic", options),
+                    partnerPad = createObj("graphic", Object.assign(options, {name: `${imgData.name}_${funcName}_PartnerPad`, layer: "walls"}))
+                Media.IMAGES[imgData.name].padID = pad.id
+                Media.IMAGES[imgData.name].partnerID = partnerPad.id
+                PADREGISTRY[pad.id] = {
+                    funcName,
+                    id: imgObj.id,
+                    name: pad.get("name"),
+                    left: pad.get("left"),
+                    top: pad.get("top"),
+                    height: pad.get("height"),
+                    width: pad.get("width"),
+                    partnerID: partnerPad.id,
+                    active: imgData.isActive ? "on" : "off"
+                }
+                PADREGISTRY[partnerPad.id] = {
+                    funcName,
+                    id: imgObj.id,
+                    name: partnerPad.get("name"),
+                    left: partnerPad.get("left"),
+                    top: partnerPad.get("top"),
+                    height: partnerPad.get("height"),
+                    width: partnerPad.get("width"),
+                    partnerID: pad.id,
+                    active: "off"
+                }
+                GRAPHICREGISTRY[imgObj.id] = {
                     id: pad.id,
                     pad: PADREGISTRY[pad.id],
                     partnerPad: PADREGISTRY[partnerPad.id]
                 }
-            }
-            toFront(pad)
-            return pad
+                toFront(pad)
+            }            
         },
         removePad = padRef => {
-            let padData = {}
             const pads = getPads(padRef)
             _.each(pads, pad => {
-                try {
-                    if (PADREGISTRY[pad.id]) {
-                        padData = PADREGISTRY[pad.id]
-                        Media.RemoveImg(padData.name)
-                        if (Media.GetImgData(pad.id))
-                            Media.RemoveImg(pad.id)
-                        delete GRAPHICREGISTRY[padData.id]
-                        if (padData.partnerID) {
-                            Media.RemoveImg(padData.partnerID)
-                            delete PADREGISTRY[padData.partnerID]
-                        }
-                        delete PADREGISTRY[pad.id]
+                const padData = PADREGISTRY[pad.id]
+                if (VAL({list: padData})) {
+                    const imgKey = Media.GetImgKey(padData.id)
+                    if (VAL({string: imgKey}) && Media.IMAGES[imgKey].padID) {
+                        delete Media.IMAGES[imgKey].padID
+                        delete Media.IMAGES[imgKey].partnerID
                     }
-                } catch (errObj) {
-                    THROW(`PadObj: ${D.JS(pad)}<br>PadData: ${D.JS(padData)}<br><br>`, "removePad", errObj)
+                    if (GRAPHICREGISTRY[padData.id])
+                        delete GRAPHICREGISTRY[padData.id]
+                    if (PADREGISTRY[padData.partnerID])
+                        delete PADREGISTRY[padData.partnerID]
+                    delete PADREGISTRY[pad.id]
                 }
+                pad.remove()                
             })
         },
         clearAllPads = funcName => {
@@ -516,20 +514,14 @@ const DragPads = (() => {
                 }),
                 pads = _.filter(graphics, v => v.get("name").includes(funcName))
             for (const pad of pads)
-                if (PADREGISTRY[pad.id])
-                    removePad(pad.id)
-                else
-                    pad.remove()
-
-            _.each(_.omit(PADREGISTRY, v => v.funcName !== funcName), (val, key) => {
-                delete PADREGISTRY[key]
-            })
+                removePad(pad.id)            
         },
         togglePad = (padRef, isActive) => {
-            const padIDs = []
+            const padIDs = [],
+                imgObj = Media.GetImg(padRef)
             // let dbString = `PadRef: ${D.JS(padRef)}`
-            if (GRAPHICREGISTRY[padRef])
-                padIDs.push(GRAPHICREGISTRY[padRef].id)
+            if (VAL({graphicObj: imgObj}) && GRAPHICREGISTRY[imgObj.id])
+                padIDs.push(GRAPHICREGISTRY[imgObj.id].id)
             else if (FUNCTIONS[padRef])
                 padIDs.push(..._.filter(_.keys(PADREGISTRY), v => PADREGISTRY[v].funcName === padRef))
             // DB(`${dbString} ... Found: ${D.JSL(_.map(padIDs, v => PADREGISTRY[v].name))}`)
@@ -541,7 +533,7 @@ const DragPads = (() => {
                     getObj("graphic", pID),
                     getObj("graphic", PADREGISTRY[pID].partnerID)
                 ]
-                if (VAL({graphicObj: pad}) && VAL({graphicObj: partner})) {
+                if (VAL({graphicObj: [pad, partner]}, undefined, true)) {
                     pad.set({
                         layer: isActive && PADREGISTRY[pad.id].active === "on" ? "objects" : "walls"
                     })
