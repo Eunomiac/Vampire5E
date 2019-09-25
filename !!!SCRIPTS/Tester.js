@@ -63,6 +63,15 @@ const Tester = (() => {
         handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
             let [isKilling, isWriting] = [false, false]
             switch (call) {
+                case "home": {
+                    Char.SendHome()
+                    break
+                }
+                case "charlocs": {
+                    const loc = args.shift() || undefined
+                    D.Alert(`Chars In '${D.JS(loc)}':<br><br>${D.JS(Session.CharsIn(loc).map(x => x.get("name")))}`)
+                    break
+                }
                 case "funcqueue": {
                     const funcs = [
                             (first, second) => {

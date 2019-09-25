@@ -67,6 +67,43 @@ const Media = (() => {
             STATEREF.imgregistry.SignalLightTopLeft_1.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.SignalLightBotRight_1.modes))
             STATEREF.imgregistry.SignalLightTopRight_1.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.SignalLightBotRight_1.modes))
             STATEREF.imgregistry.SignalLightBotLeft_1.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.SignalLightBotRight_1.modes)) */
+
+            STATEREF.imgregistry.Spotlight_1.modes = {
+                Active: {
+                    isForcedOn: false,
+                    isForcedState: null,
+                    lastActive: false,
+                    lastState: false
+                },
+                Inactive: {
+                    isForcedOn: false,
+                    isForcedState: null,
+                    lastActive: false,
+                    lastState: false
+                },
+                Daylighter: {
+                    isForcedOn: false,
+                    isForcedState: null
+                },
+                Downtime: {
+                    isForcedOn: false,
+                    isForcedState: null,
+                    lastActive: false,
+                    lastState: false
+                },
+                Complications: {
+                    isForcedOn: null,
+                    isForcedState: null
+                },
+                Spotlight: {
+                    isForcedOn: "LAST",
+                    isForcedState: null,
+                    lastActive: false,
+                    lastState: false
+                }
+            }
+
+
             const resetWPPlaceholder = ((isResetting = false) => {
                 if (!isResetting)
                     return null
@@ -282,11 +319,11 @@ const Media = (() => {
                                         break
                                     }
                                     default: {
-                                        const [hostName, srcName, objLayer, isStartActive] = [args.shift(), args.shift(), args.shift(), args.shift()]
-                                        if (hostName && srcName && objLayer && isStartActive)
-                                            regImg(imgObj, hostName, srcName, objLayer, !isStartActive || isStartActive !== "false", D.ParseToObj(args.join(" ")))
+                                        const [hostName, srcName, objLayer] = [args.shift(), args.shift(), args.shift()]
+                                        if (hostName && srcName && objLayer)
+                                            regImg(imgObj, hostName, srcName, objLayer, D.ParseToObj(args.join(" ")))
                                         else
-                                            D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer&gt; &lt;isStartingActive&gt; [params (\"key:value, key:value\")]", "MEDIA: !img reg")    
+                                            D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;currentSourceName&gt; &lt;activeLayer&gt; [params (\"key:value, key:value\")]", "MEDIA: !img reg")    
                                         break
                                     }
                                 }
@@ -297,14 +334,23 @@ const Media = (() => {
                         case "set": {
                             switch (args.shift().toLowerCase()) {
                                 case "mode": {
-                                    const [hostName, mode, key, val] = args,
+                                    const [hostName, mode] = [args.shift(), args.shift()],
                                         imgKey = getImgKey(hostName)
-                                    if (!Session.Modes.includes(mode) || !["isForcedOn", "isForcedState", "lastActive", "lastState"].includes(key) || !["true", "false", "null", "LAST"].includes(val))
-                                    {D.Alert("Mode Set Syntax:<br><br><b>!img set mode (hostName) (mode) (key) (val)</b>", "!img set mode")}
+                                    // D.Alert(`Sending to ParseParams: ${args.join(" ")} --> ${D.JS(D.ParseParams(args.join(" ")))}`)
+                                    const params = D.ParseParams(args.join(" "))
+                                    // D.Alert(`Params: ${D.JS(params)}`)
+                                    if (!Session.Modes.includes(mode)) {
+                                        D.Alert("Mode Set Syntax:<br><br><b>!img set mode (hostName) (mode) (key:val, key:val...)</b><br><br>isForcedOn: true, false, null, \"LAST\"<br>isForcedState: true, null, (string)<br>lastState: null, (string)<br>lastActive: true, false", "!img set mode")
+                                    }
                                     else {
                                         IMGREGISTRY[imgKey].modes = IMGREGISTRY[imgKey].modes || {}
                                         IMGREGISTRY[imgKey].modes[mode] = IMGREGISTRY[imgKey].modes[mode] || {}
-                                        IMGREGISTRY[imgKey].modes[mode][key] = {true: true, false: false, null: null, LAST: "LAST"}[val]
+                                        for (const key of _.keys(params)) {
+                                            if (["true", "false", "null"].includes(params[key].toLowerCase()))
+                                                params[key] = {true: true, false: false, null: null}[params[key].toLowerCase()]
+                                            IMGREGISTRY[imgKey].modes[mode][key] = params[key]
+                                        }
+                                            
                                         D.Alert(`${mode} mode for ${imgKey} set to ${D.JS(IMGREGISTRY[imgKey].modes[mode])}`, "!img set mode")
                                     }
                                     break
@@ -930,7 +976,8 @@ const Media = (() => {
                 "WeatherMain",
                 "WeatherFog",
                 "WeatherClouds",
-                "WeatherFrost"            
+                "WeatherFrost",
+                "Spotlight"       
             ]
         },
         MAPIMGS = {
@@ -977,10 +1024,10 @@ const Media = (() => {
                     SignalLightTopLeft_1: 120
                 },
                 HungerOverlays: {
-                    HungerBotLeft_1: 100,
-                    HungerTopLeft_1: 100,
-                    HungerTopRight_1: 100,
-                    HungerBotRight_1: 100
+                    HungerBotLeft_1: 108,
+                    HungerTopLeft_1: 108,
+                    HungerTopRight_1: 108,
+                    HungerBotRight_1: 108
                 },
                 TombstoneShrouds: {
                     // ShroudTopLeft_1: 107
@@ -996,8 +1043,11 @@ const Media = (() => {
                     WeatherGround_1: 110,
                     WeatherClouds_1: 105
                 },
+                OtherOverlays: {
+                    Spotlight_1: 107 
+                },
                 Banners: {
-                    downtimeBanner_1: 125
+                    downtimeBanner_1: 106
                 },
                 DiceRoller: {
                     Frame: {
@@ -7145,6 +7195,17 @@ const Media = (() => {
                 return getTextData(mediaRef)
             return getImgData(mediaRef)
         },
+        getModeData = (mediaRef, mode) => {
+            const mediaData = getData(mediaRef)
+            if (VAL({list: [mediaData, mediaData.modes]}, "getModeData", true))
+                return mediaData.modes[mode]            
+        },
+        hasForcedState = (mediaRef) => {
+            const mediaData = getModeData(mediaRef, Session.Mode)
+            if (VAL({list: mediaData}, "hasForcedState"))
+                return VAL({string: mediaData.isForcedState})
+            return false            
+        },
         getModeStatus = mediaRef => {
             const modeStatus = {}
             if (isRegistered(mediaRef)) {
@@ -7434,6 +7495,7 @@ const Media = (() => {
                     return true
                 return false
             })
+            // D.Alert(`Checking ${D.JS(locRef)}, Returning ${D.JS(_.compact(contImgObjs.map(v => D.GetChar(v))))} (${_.compact(contImgObjs.map(v => D.GetChar(v))).length} chars)`)
             if (options.isCharsOnly)
                 return _.compact(contImgObjs.map(v => D.GetChar(v)))
             return contImgObjs
@@ -8771,7 +8833,9 @@ const Media = (() => {
         Get: getMediaObj,
         GetKey: getKey,
         GetData: getData,
+        GetModeData: getModeData,
         IsRegistered: isRegistered,
+        HasForcedState: hasForcedState,
         SwitchMode: switchMode,        
         
         // GETTERS

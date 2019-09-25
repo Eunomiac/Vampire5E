@@ -84,9 +84,9 @@ const Session = (() => {
                             break
                         }
                         case "mode": {
-                            const mode = args.shift()
-                            if (VAL({string: mode}, "!sess add mode") && !D.IsIn(mode, STATEREF.SessionModes)) {
-                                STATEREF.SessionModes.push(args.shift())
+                            const [mode, modeSrc] = [args.shift(), args.shift()]
+                            if (VAL({string: [mode, modeSrc]}, "!sess add mode", true) && D.IsIn(modeSrc, STATEREF.SessionModes)) {
+                                addMode(mode, modeSrc)
                                 D.Alert(`Session Mode '${mode}' Added.<br>Current Modes: ${D.JS(STATEREF.SessionModes)}`, "!sess add mode")
                             }
                             break
@@ -110,6 +110,10 @@ const Session = (() => {
                         case "loc": case "location": {     
                             // args: DistrictLeft:same|blank|Annex SiteLeft:same|blank|AnarchBar:name:<customName>; DistrictLeft:same|blank|Annex SiteLeft:same|blank|AnarchBar:name:<customName>;                            
                             setLocation(parseLocationString(args.join(" ")))
+                            break
+                        }
+                        case "scene": {
+                            setSceneFocus(args[1])
                             break
                         }
                     }
@@ -139,6 +143,13 @@ const Session = (() => {
                 }
                 case "downtime": {
                     toggleDowntime()
+                    break
+                }
+                case "spotlight": {
+                    if (args[0] === "end" || !charObjs || !charObjs[0])
+                        toggleSpotlight()
+                    else
+                        toggleSpotlight(charObjs[0])
                     break
                 }
                 case "daylighters": {
@@ -175,7 +186,7 @@ const Session = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     // #region Getting & Setting Session Data
-        isSessionActive = () => ["Active", "Downtime", "Complications", "Daylighter"].includes(STATEREF.Mode),
+        isSessionActive = () => STATEREF.Mode !== "Inactive",
         setSessionNum = sNum => {
             STATEREF.SessionNum = sNum
             D.Alert(`Session Number <b>${D.NumToText(STATEREF.SessionNum)}</b> SET.`)
@@ -209,8 +220,8 @@ const Session = (() => {
             for (const quadrant of _.keys(Char.REGISTRY)) {
                 const {tokenName} = Char.REGISTRY[quadrant]
                 Media.SetImg(tokenName, STATEREF.tokenRecord[tokenName] || "base")
-                Media.SetArea(tokenName, `${quadrant}Token`)
             }
+            Char.SendBack()
             TimeTracker.StopCountdown()
             TimeTracker.StartClock()
             Char.RefreshDisplays()
@@ -224,6 +235,7 @@ const Session = (() => {
                     C.CHATHTML.colorBody("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "10px 0px 10px 0px"}),
                     C.CHATHTML.colorTitle("See you next week!", {fontSize: "32px"}),
                 ]))
+                Char.SendHome()
                 changeMode("Inactive")
                 STATEREF.tokenRecord = {}
                 if (!STATEREF.isTestingActive) {
@@ -245,6 +257,18 @@ const Session = (() => {
     // #endregion
 
     // #region Toggling Session Modes
+        addMode = (mode, modeSrc) => {
+            if (VAL({string: [mode, modeSrc]}, "addMode", true)) {
+                if (!Session.Modes.includes(mode)) {
+                    Session.Modes.push(mode)
+                    STATEREF.locationRecord[mode] = D.Clone(BLANKLOCRECORD)
+                }
+                for (const imgKey of _.keys(Media.IMAGES))
+                    Media.IMAGES[imgKey].modes[mode] = D.Clone(Media.IMAGES[imgKey].modes[modeSrc])
+                for (const textKey of _.keys(Media.TEXT))
+                    Media.TEXT[textKey].modes[mode] = D.Clone(Media.TEXT[textKey].modes[modeSrc])            
+            }
+        },
         changeMode = mode => {
             if (VAL({string: mode}, "changeMode") && STATEREF.SessionModes.map(x => x.toLowerCase()).includes(mode.toLowerCase())) {
                 const [lastMode, curMode] = [
@@ -253,6 +277,7 @@ const Session = (() => {
                 ]
                 STATEREF.Mode = curMode
                 STATEREF.LastMode = lastMode
+                // D.Alert(`Modes Set: ${STATEREF.Mode}, Last: ${STATEREF.LastMode}`)
                 Roller.Clean()
                 Media.SwitchMode()
                 setModeLocations(curMode)
@@ -270,7 +295,7 @@ const Session = (() => {
             D.Alert(`Testing Set to ${STATEREF.isTestingActive}`, "!sess test")
         },
         toggleDowntime = () => {
-            changeMode(STATEREF.Mode === "Downtime" ? STATEREF.LastMode : "Downtime")
+            changeMode(STATEREF.Mode === "Downtime" ? "Active" : "Downtime")
             if (STATEREF.Mode === "Downtime") {
                 setLocation(BLANKLOCRECORD)
                 TimeTracker.StopClock()
@@ -292,7 +317,44 @@ const Session = (() => {
             Char.RefreshDisplays()
             TimeTracker.Fix()
         },
-
+        toggleSpotlight = (charRef) => {
+            const charObj = D.GetChar(charRef)
+            if (VAL({pc: charObj})) {
+                const charData = D.GetCharData(charObj),
+                    quad = charData.quadrant,
+                    spotlightOn = Media.GetImgData("Spotlight").curSrc,
+                    offTokenKeys = _.values(D.GetCharVals(D.GetChars("registered").filter(x => x.id !== charData.id), "tokenName"))
+                if (STATEREF.Mode !== "Spotlight" || spotlightOn !== quad) {
+                    changeMode("Spotlight")
+                    setLocation(BLANKLOCRECORD)
+                    Char.SendHome()
+                    for (const tokenName of offTokenKeys)
+                        Media.ToggleImg(tokenName, false)
+                    for (const offQuad of _.without(["TopLeft", "BotLeft", "TopRight", "BotRight"], quad)) {
+                        Media.ToggleImg(`SignalLight${offQuad}`, false)
+                        Media.ToggleImg(`Hunger${offQuad}`, false)
+                    }
+                    Media.ToggleImg(charData.tokenName, true)
+                    Media.SetImg("Spotlight", quad, true)
+                    sendChat("Spotlight", C.CHATHTML.colorBlock([
+                        C.CHATHTML.colorTitle("Spotlight:"),
+                        C.CHATHTML.colorHeader(charData.name)
+                    ]))
+                    Char.RefreshDisplays()
+                    TimeTracker.Fix()
+                    return
+                }
+            }
+            changeMode(["Downtime", "Daylighter"].includes(STATEREF.LastMode) ? STATEREF.LastMode : "Active")
+            Char.SendBack()
+            Media.SetImg("Spotlight", "blank")
+            sendChat("Spotlight", C.CHATHTML.colorBlock([
+                C.CHATHTML.colorTitle("Spotlight"),
+                C.CHATHTML.colorHeader("Session Status: Regular Time")
+            ]))
+            Char.RefreshDisplays()
+            TimeTracker.Fix()
+        },
     // #endregion
 
     // #region Location Handling
@@ -304,6 +366,18 @@ const Session = (() => {
             SiteLeft: "blank",
             SiteRight: "blank"
         },
+        getActiveLocations = (sideFocus) => {
+            if (VAL({string: sideFocus}))
+                switch(sideFocus.charAt(0).toLowerCase()) {
+                    case "l":
+                        return _.keys(STATEREF.curLocation).filter(x => !x.endsWith("Right") && STATEREF.curLocation[x] !== "blank")                    
+                    case "r":
+                        return _.keys(STATEREF.curLocation).filter(x => !x.endsWith("Left") && STATEREF.curLocation[x] !== "blank")
+                    // no default
+                }
+            return _.keys(STATEREF.curLocation).filter(x => STATEREF.curLocation[x] !== "blank")
+        },
+        getActiveSceneLocations = () => getActiveLocations(STATEREF.sceneFocus),
         parseLocationString = (locString) => {
             const locParams = [
                 ...(locString.match(/([^:;\s]*):([^:;\s]*):name:(.*?);/gu) || []).map(x => x.match(/([^:;\s]*):([^:;\s]*):name:(.*?);/u).slice(1)),
@@ -373,8 +447,15 @@ const Session = (() => {
                     }
                 }
             }
+            setSceneFocus(STATEREF.sceneFocus)
         },
         setModeLocations = (mode) => { setLocation(STATEREF.locationRecord[mode]) },
+        getCharsInLocation = (locPos) => {
+            const charObjs = []
+            for (const loc of getActiveLocations(locPos))
+                charObjs.push(...Media.GetContainedChars(loc, {padding: 50}))
+            return _.uniq(charObjs)
+        },
     // #endregion
 
     // #region Waking Up 
@@ -438,10 +519,20 @@ const Session = (() => {
                 D.Alert(`Scene Now Includes:<br><ul>${D.JS(STATEREF.sceneChars.map(x => `<li><b>${D.GetName(x)}</b>`).join(""))}</ul>`, "Scene Characters")
             }
         },
+        setSceneFocus = (locPos) => {
+            STATEREF.sceneFocus = locPos
+            const sceneLocs = getActiveSceneLocations()
+            for (const loc of getActiveLocations())
+                if (sceneLocs.includes(loc)) 
+                    Media.SetImgTemp(loc, {tint_color: "transparent"})
+                else
+                    Media.SetImgTemp(loc, {tint_color: "#000000"})
+        },
         endScene = () => {
             for (const charID of STATEREF.sceneChars)
                 D.SetStat(charID, "willpower_social_toggle", "go")
             STATEREF.sceneChars = []
+            setSceneFocus(null)
             D.Alert("Social Willpower Damage partially refunded.", "Scene Ended")
         }
     // #endregion
@@ -453,6 +544,8 @@ const Session = (() => {
 
         AddSceneChar: addCharToScene,
         ChangeMode: changeMode,
+        CharsIn: getCharsInLocation,
+        get SceneChars() { return getCharsInLocation(STATEREF.sceneFocus) },
 
         get SessionNum() { return STATEREF.SessionNum },
         get IsSessionActive() { return isSessionActive() },
@@ -460,7 +553,8 @@ const Session = (() => {
         get IsTesting() { return STATEREF.isTestingActive },
         get Mode() { return STATEREF.Mode },
         get LastMode() { return STATEREF.LastMode },
-        get Location() { return STATEREF.locationRecord }
+        get Location() { return STATEREF.locationRecord },
+        
     }
 })()
 

@@ -1067,7 +1067,9 @@ const Roller = (() => {
                 left: 45,
                 color: C.COLORS.white,
                 text: "rollerName",
-                justification: "left"
+                justification: "left",
+                shiftTop: 0,
+                shiftLeft: 0
             },
             mainRoll: {
                 font_family: "Contrail One",
@@ -1076,7 +1078,9 @@ const Roller = (() => {
                 left: 135,
                 color: C.COLORS.white,
                 text: "mainRoll",
-                justification: "left"
+                justification: "left",
+                shiftTop: 0,
+                shiftLeft: 0
             },
             posMods: {
                 font_family: "Contrail One",
@@ -1085,7 +1089,9 @@ const Roller = (() => {
                 left: 205,
                 color: C.COLORS.white,
                 text: "posMods",
-                justification: "left"
+                justification: "left",
+                shiftTop: 0,
+                shiftLeft: 0
             },
             negMods: {
                 font_family: "Contrail One",
@@ -1094,7 +1100,9 @@ const Roller = (() => {
                 left: 205,
                 color: C.COLORS.brightred,
                 text: "negMods",
-                justification: "left"
+                justification: "left",
+                shiftTop: 0,
+                shiftLeft: 0
             },
             redMods: {
                 font_family: "Contrail One",
@@ -1103,7 +1111,9 @@ const Roller = (() => {
                 left: 595,
                 color: C.COLORS.brightred,
                 text: "redMods",
-                justification: "left"
+                justification: "left",
+                shiftTop: 0,
+                shiftLeft: 0
             },
             goldMods: {
                 font_family: "Contrail One",
@@ -1112,7 +1122,9 @@ const Roller = (() => {
                 left: 595,
                 color: C.COLORS.gold,
                 text: "goldMods",
-                justification: "left"
+                justification: "left",
+                shiftTop: 0,
+                shiftLeft: 0
             },
             dicePool: {
                 font_family: "Candal",
@@ -1121,7 +1133,9 @@ const Roller = (() => {
                 left: 75,
                 color: C.COLORS.white,
                 text: "SS",
-                justification: "center"
+                justification: "center",
+                shiftTop: 0,
+                shiftLeft: 0
             },
             difficulty: {
                 font_family: "Contrail One",
@@ -1130,7 +1144,9 @@ const Roller = (() => {
                 left: 96,
                 color: C.COLORS.white,
                 text: "D",
-                justification: "center"
+                justification: "center",
+                shiftTop: 0,
+                shiftLeft: 0
             },
             resultCount: {
                 font_family: "Candal",
@@ -1139,7 +1155,9 @@ const Roller = (() => {
                 left: 75,
                 color: C.COLORS.white,
                 text: "RC",
-                justification: "center"
+                justification: "center",
+                shiftTop: 0,
+                shiftLeft: 0
             },
             margin: {
                 font_family: "Candal",
@@ -1148,7 +1166,9 @@ const Roller = (() => {
                 left: 133,
                 color: C.COLORS.white,
                 text: "M",
-                justification: "center"
+                justification: "center",
+                shiftTop: 0,
+                shiftLeft: 0
             },
             outcome: {
                 font_family: "Contrail One",
@@ -1157,7 +1177,9 @@ const Roller = (() => {
                 left: 200,
                 color: C.COLORS.white,
                 text: "outcome",
-                justification: "left"
+                justification: "left",
+                shiftTop: 0,
+                shiftLeft: 0
             },
             subOutcome: {
                 font_family: "Contrail One",
@@ -1166,7 +1188,9 @@ const Roller = (() => {
                 left: 360,
                 color: C.COLORS.white,
                 text: "subOutcome",
-                justification: "left"
+                justification: "left",
+                shiftTop: 0,
+                shiftLeft: 0
             }
         },
         COLORSCHEMES = {
@@ -1611,14 +1635,14 @@ const Roller = (() => {
                 if (row === "top") {
                     Media.SetImg("rollerImage_frontFrame_1", "base")
                     for (const thisRow of isChangingOffRow ? ["top", "bottom"] : ["top"]) {
-                        Media.SetImg(`rollerImage_${thisRow}End_1`, "base")
+                        Media.SetImg(`rollerImage_${thisRow}End_1`, "base", true)
                         Media.SetImgTemp(`rollerImage_${thisRow}End_1`, {left: 300})
                         for (let i = 0; i < 9; i++)
                             Media.ToggleImg(`rollerImage_${thisRow}Mid_${i + 1}`, false)
                         Media.ToggleImg("rollerImage_diffFrame_1", false)
                     }
                 } else {
-                    Media.SetImg("rollerImage_frontFrame_1", "topOnly")
+                    Media.SetImg("rollerImage_frontFrame_1", "topOnly", true)
                     // D.Alert("Setting Front Frame to TopOnly")
                     Media.ToggleImg("rollerImage_bottomEnd_1", false)
                     for (let i = 0; i < 9; i++)
@@ -1626,8 +1650,8 @@ const Roller = (() => {
                 }                
             } else {
                 if (row === "bottom" || isChangingOffRow) {
-                    Media.SetImg("rollerImage_frontFrame_1", "base")
-                    Media.SetImg("rollerImage_bottomEnd_1", "base")
+                    Media.SetImg("rollerImage_frontFrame_1", "base", true)
+                    Media.SetImg("rollerImage_bottomEnd_1", "base", true)
                 }
                 const stretchWidth = Math.max(width, 120),
                     imgs = [Media.GetImg(`rollerImage_${row}End`)],
@@ -2443,7 +2467,8 @@ const Roller = (() => {
                 mod: 0,
                 diff: 3
               } */
-            const flagData = parseFlags(charObj, rollType, params, rollFlags = {}),
+            DB(`rollFlags: ${D.JS(rollFlags && rollFlags.isOblivionRoll)}`, "getRollData")
+            const flagData = parseFlags(charObj, rollType, params, rollFlags),
                 traitData = parseTraits(charObj, rollType, params),
                 rollData = {
                     charID: charObj.id,
@@ -2462,12 +2487,15 @@ const Roller = (() => {
                     prefix: "",
                     diff: null,
                     mod: null,
-                    appliedRollEffects: [],
-                    rollFlags,                
-                    isNPCRoll: rollFlags.isNPCRoll,
-                    isOblivionRoll: rollFlags.isOblivionRoll,
-                    isDiscRoll: rollFlags.isDiscRoll
+                    appliedRollEffects: [],                
+                    isNPCRoll: rollFlags && rollFlags.isNPCRoll,
+                    isOblivionRoll: rollFlags && rollFlags.isOblivionRoll,
+                    isDiscRoll: rollFlags && rollFlags.isDiscRoll,
+                    rollFlags
                 }
+            DB(`rollFlags: ${D.JS(rollFlags && rollFlags.isOblivionRoll)}`, "getRollData")
+            rollData.isOblivionRoll = rollFlags && rollFlags.isOblivionRoll
+            DB(`rollData: ${D.JS(rollData)}`, "getRollData")
             rollData.charName = D.GetName(charObj)
             switch (rollType) {
                 case "remorse":
@@ -2505,7 +2533,12 @@ const Roller = (() => {
             return rollData
         },
         getCurrentRoll = (isNPCRoll) => (isNPCRoll ? STATEREF.NPC : STATEREF).rollRecord[(isNPCRoll ? STATEREF.NPC : STATEREF).rollIndex],
-        setCurrentRoll = (rollIndex, isNPCRoll) => { (isNPCRoll ? STATEREF.NPC : STATEREF).rollIndex = rollIndex },
+        setCurrentRoll = (rollIndex, isNPCRoll, isDisplayOnly = false) => {
+            const rollRef = isNPCRoll ? STATEREF.NPC : STATEREF
+            rollRef.rollIndex = rollIndex
+            if (isDisplayOnly)
+                rollRef.rollRecord[rollIndex].rollData.notChangingStats = true
+        },
         replaceRoll = (rollData, rollResults, rollIndex) => {
             const recordRef = rollResults.isNPCRoll ? STATEREF.NPC : STATEREF
             recordRef.rollIndex = rollIndex || recordRef.rollIndex
@@ -2538,9 +2571,7 @@ const Roller = (() => {
                 setAttrs(char.id, {rolleffects: rollEffects.join("|")})
                 D.Alert(`Roll Effects on ${D.GetName(char)} revised to:<br><br>${rollEffects.join("<br>")}`, "Character Roll Effects")
             }
-        },
-
-    
+        },    
     // #endregion
 
     // #region Rolling Dice & Formatting Result
@@ -2818,13 +2849,16 @@ const Roller = (() => {
                     break
                 case "rouse2":
                 case "rouse":
-                    if (rollData.isOblivionRoll) 
+                    if (rollData.isOblivionRoll) {
+                        D.Alert(`Oblivion Roll: ${D.JS(rollResults.rolls)}`)
                         rollResults.diceVals = _.map(rollResults.rolls, rol =>
                             parseInt(rol.slice(1)) === 1 ? "Of" :
                                 parseInt(rol.slice(1)) === 10 ? "Os" :
-                                    parseInt(rol.slice(1)) < 6 ? "Hb" : "Bs")
-                    else
+                                    parseInt(rol.slice(1)) < 6 ? "Hb" : "Bs")                        
+                        D.Alert(`Oblivion Vals: ${D.JS(rollResults.diceVals)}`)
+                    } else {
                         rollResults.diceVals = _.map(rollResults.rolls, rol => parseInt(rol.slice(1)) < 6 ? "Hb" : "Bs")
+                    }
                     if (rollResults.diceVals.length > 1) {
                         // let newDiceVals = []
                         // Of Hb Os Bs
@@ -2850,59 +2884,60 @@ const Roller = (() => {
             
 
 
-            // Now run through again to find consecutive crits and apply them:
+            // Now run through again to find consecutive crits and apply them UNLESS no crits:
 
             
 
-
-            // First, remove ALL valid crits from diceVals:
-            const diceVals = rollResults.diceVals.filter(x => !x.includes("Hc") && !x.includes("Bc"))
-            // Second, find new crit pairs and update the tallies appropriately:           
-            while (rollResults.B.crits + rollResults.H.crits >= 2) {
-                while (rollResults.H.crits >= 2) {
-                    rollResults.H.crits -= 2
-                    rollResults.critPairs.hh++
-                    rollResults.total += 2
+            if (!["rouse", "rouse2", "check"].includes(rollData.type)) {
+                // First, remove ALL valid crits from diceVals:
+                const diceVals = rollResults.diceVals.filter(x => !x.includes("Hc") && !x.includes("Bc"))
+                // Second, find new crit pairs and update the tallies appropriately:           
+                while (rollResults.B.crits + rollResults.H.crits >= 2) {
+                    while (rollResults.H.crits >= 2) {
+                        rollResults.H.crits -= 2
+                        rollResults.critPairs.hh++
+                        rollResults.total += 2
+                    }
+                    if (rollResults.B.crits > 0 && rollResults.H.crits > 0) {
+                        rollResults.B.crits--
+                        rollResults.H.crits--
+                        rollResults.critPairs.hb++
+                        rollResults.total += 2
+                    }
+                    while (rollResults.B.crits >= 2) {
+                        rollResults.B.crits -= 2
+                        rollResults.critPairs.bb++
+                        rollResults.total += 2
+                    }
                 }
-                if (rollResults.B.crits > 0 && rollResults.H.crits > 0) {
-                    rollResults.B.crits--
-                    rollResults.H.crits--
-                    rollResults.critPairs.hb++
-                    rollResults.total += 2
-                }
-                while (rollResults.B.crits >= 2) {
-                    rollResults.B.crits -= 2
-                    rollResults.critPairs.bb++
-                    rollResults.total += 2
-                }
+                // Third, construct the new front end containing ALL crits:
+                const critFrontEnd = []
+                for (let i = 0; i < rollResults.critPairs.hh; i++)
+                    critFrontEnd.push(...["HcL", "HcR"])
+                for (let i = 0; i < rollResults.critPairs.hb; i++)
+                    critFrontEnd.push(...["HcL", "BcR"])
+                for (let i = 0; i < rollResults.critPairs.bb; i++)
+                    critFrontEnd.push(...["BcL", "BcR"])
+                for (let i = 0; i < rollResults.H.crits; i++)
+                    critFrontEnd.push("Hc")
+                for (let i = 0; i < rollResults.B.crits; i++)
+                    critFrontEnd.push("Bc")
+                // Finally, assemble the new diceVals after sorting them:
+                rollResults.diceVals = [
+                    ...critFrontEnd,
+                    ...diceVals.filter(x => x === "Hs"),
+                    ...diceVals.filter(x => x === "Bs"),
+                    ...diceVals.filter(x => x === "HXc"),
+                    ...diceVals.filter(x => x === "BXc"),
+                    ...diceVals.filter(x => x === "HXs"),
+                    ...diceVals.filter(x => x === "BXs"),
+                    ...diceVals.filter(x => x === "Hf"),
+                    ...diceVals.filter(x => x === "Bf"),
+                    ...diceVals.filter(x => x === "HXb"),
+                    ...diceVals.filter(x => x === "Hb"),
+                    ...diceVals.filter(x => x === "HCb")
+                ]
             }
-            // Third, construct the new front end containing ALL crits:
-            const critFrontEnd = []
-            for (let i = 0; i < rollResults.critPairs.hh; i++)
-                critFrontEnd.push(...["HcL", "HcR"])
-            for (let i = 0; i < rollResults.critPairs.hb; i++)
-                critFrontEnd.push(...["HcL", "BcR"])
-            for (let i = 0; i < rollResults.critPairs.bb; i++)
-                critFrontEnd.push(...["BcL", "BcR"])
-            for (let i = 0; i < rollResults.H.crits; i++)
-                critFrontEnd.push("Hc")
-            for (let i = 0; i < rollResults.B.crits; i++)
-                critFrontEnd.push("Bc")
-            // Finally, assemble the new diceVals after sorting them:
-            rollResults.diceVals = [
-                ...critFrontEnd,
-                ...diceVals.filter(x => x === "Hs"),
-                ...diceVals.filter(x => x === "Bs"),
-                ...diceVals.filter(x => x === "HXc"),
-                ...diceVals.filter(x => x === "BXc"),
-                ...diceVals.filter(x => x === "HXs"),
-                ...diceVals.filter(x => x === "BXs"),
-                ...diceVals.filter(x => x === "Hf"),
-                ...diceVals.filter(x => x === "Bf"),
-                ...diceVals.filter(x => x === "HXb"),
-                ...diceVals.filter(x => x === "Hb"),
-                ...diceVals.filter(x => x === "HCb")
-            ]
             return rollResults
         },
         formatDiceLine = (rollData = {}, rollResults, split = 15, rollFlags = {}, isSmall = false) => {
@@ -3038,7 +3073,9 @@ const Roller = (() => {
             switch (rollData.type) {
                 case "project":
                     rollLines.subOutcome = {
-                        text: ""
+                        text: "",
+                        shiftTop: 0,
+                        shiftLeft: 0
                     }
                 /* falls through */
                 case "trait":
@@ -3088,13 +3125,17 @@ const Roller = (() => {
                 case "willpower":
                 case "humanity":
                     rollLines.margin = {
-                        text: ""
+                        text: "",
+                        shiftTop: 0,
+                        shiftLeft: 0
                     }
                 /* falls through */
                 case "frenzy":
                     if (rollData.diff > 0)
                         rollLines.difficulty = {
-                            text: ""
+                            text: "",
+                            shiftTop: 0,
+                            shiftLeft: 0
                         }
 
                 /* falls through */
@@ -3103,14 +3144,26 @@ const Roller = (() => {
                 case "rouse":
                 case "check":
                     rollLines.dicePool = {
-                        text: ""
+                        text: "",
+                        shiftTop: 0,
+                        shiftLeft: 0
                     }
                     rollLines.resultCount = {
-                        text: ""
+                        text: "",
+                        shiftTop: 0,
+                        shiftLeft: 0
                     }
                     rollLines.outcome = {
                         text: "",
-                        justified: "left"
+                        justified: "left",
+                        shiftTop: 0,
+                        shiftLeft: 0
+                    }
+                    rollLines.subOutcome = {
+                        text: "",
+                        justified: "left",
+                        shiftTop: 0,
+                        shiftLeft: 0
                     }
                     break
                 default:
@@ -3553,6 +3606,7 @@ const Roller = (() => {
                 const outcomePos = {left: Media.GetTextData("outcome").left, width: Media.GetTextWidth("outcome", rollLines.outcome.text)},
                     bottomEndData = Media.GetImgData("rollerImage_bottomEnd")
                 bottomEndData.left = Media.GetImg("rollerImage_bottomEnd").get("left")
+                D.Alert(`DiceVals: ${D.JS(rollResults.diceVals)}, Filtered Dice: ${D.JS(filteredDice)}`)
                 if (!filteredDice.length) {
                     rollLines.outcome.shiftTop = rollLines.outcome.shiftTop || 0 - 95
                     rollLines.subOutcome.shiftTop = rollLines.subOutcome.shiftTop || 0 - 95
@@ -3586,14 +3640,14 @@ const Roller = (() => {
                 scaleFrame("top", spread, false)
                 D.RunFX("bloodBolt", POSITIONS.bloodBoltFX)
             }
-            if (_.values(deltaAttrs).length) {
+            if (_.values(deltaAttrs).length && !rollData.notChangingStats) {
                 DB(`CHANGING ATTRIBUTES: ${D.JS(deltaAttrs)}`, "displayRoll")
                 for (const attrName of _.keys(deltaAttrs))
                     if (attrName === "hunger") {
                         Char.AdjustHunger(rollData.charID, deltaAttrs.hunger)
                         delete deltaAttrs.hunger
                     } else if (attrName === "humanity" || attrName === "stains") {
-                        Char.AdjustTrait(rollData.charID, attrName, deltaAttrs[attrName])
+                        Char.AdjustTrait(rollData.charID, attrName, deltaAttrs[attrName], 0, 10)
                         delete deltaAttrs[attrName]
                     }
                 setAttrs(rollData.charID, deltaAttrs)
@@ -3679,7 +3733,7 @@ const Roller = (() => {
         },
         lockRoller = lockToggle => { isLocked = lockToggle === true },
         loadRoll = (rollIndex, isNPCRoll) => {
-            setCurrentRoll(rollIndex, isNPCRoll)
+            setCurrentRoll(rollIndex, isNPCRoll, true)
             displayRoll(false, isNPCRoll)
         },
         loadPrevRoll = (isNPCRoll) => {

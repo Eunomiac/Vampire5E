@@ -438,7 +438,7 @@ const Char = (() => {
                                     STATEREF.traitSelection = _.without(STATEREF.traitSelection, thisTrait)
                                 else
                                     STATEREF.traitSelection.push(thisTrait)
-                                Media.SetText("secretRollTraits", STATEREF.traitSelection.length === 0 ? " " : STATEREF.traitSelection.join("\n"))
+                                Media.SetText("secretRollTraits", STATEREF.traitSelection.length === 0 ? " " : STATEREF.traitSelection.join("\n"), true)
                             } else {
                                 promptTraitSelect()
                             }
@@ -552,16 +552,24 @@ const Char = (() => {
 
     // #region SETTERS: Moving Tokens
         sendCharsHome = () => {
-            const charDatas = D.GetChars("registered").map(x => D.GetCharData(x)),
-                tokenObjs = _.compact(_.values(charDatas).map(x => (findObjs({_pageid: D.PAGEID, _type: "graphic", _subtype: "token", represents: x.id}) || [null])[0]))
-            STATEREF.tokenRecord = tokenObjs && tokenObjs.map(x => ({id: x.id, left: x.get("left"), top: x.get("top")}))
-            for (const charData of charDatas)
-                Media.SetArea(charData.tokenName, `${charData.quadrant}Token`)
+            const charObjs = D.GetChars("sandbox"),
+                charTokens = findObjs({_pageid: D.PAGEID, _type: "graphic", _subtype: "token"}).filter(x => x.get("layer") !== "walls" && _.any(charObjs, xx => xx.id === x.get("represents"))),
+                pcTokens = charTokens.filter(x => VAL({pc: x.get("represents")})),
+                npcTokens = charTokens.filter(x => VAL({npc: x.get("represents")}))
+            // D.Alert(`PCs: ${D.JS(pcTokens.map(x => getObj("character", x.get("represents")).get("name")))}<br><br>NPCs: ${D.JS(npcTokens.map(x => getObj("character", x.get("represents")).get("name")))}`)
+            
+            STATEREF.tokenRecord = charTokens && charTokens.map(x => ({id: x.id, left: x.get("left"), top: x.get("top")}))
+            for (const token of pcTokens) {
+                const quad = D.GetCharData(token).quadrant
+                Media.SetArea(token, `${quad}Token`)
+            }
+            for (const token of npcTokens)
+                token.set("layer", "walls")
         },
         restoreCharsPos = () => {
             for (const tokenData of STATEREF.tokenRecord)
-                (getObj("graphic", tokenData.id) || {set: () => false}).set({left: tokenData.left, top: tokenData.top})
-            
+                (getObj("graphic", tokenData.id) || {set: () => false}).set({left: tokenData.left, top: tokenData.top, layer: "objects"})
+            STATEREF.tokenRecord = []            
         },
     // #endregion
 
@@ -595,7 +603,7 @@ const Char = (() => {
             return charIDs.join(",")
         },
         promptCharSelect = () => {
-            const charObjs = D.GetChars("sandbox"),
+            const charObjs = Session.SceneChars,
                 pcCharObjs = D.GetChars("registered"),
                 npcCharObjs = charObjs.filter(x => VAL({npc: x})),
                 chatLines = [
@@ -643,7 +651,7 @@ const Char = (() => {
                     ["Secret Roll", "!roll @@CHARIDS@@ sroll ", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.purple, color: C.COLORS.white}],
                     ["Get Trait", "!char @@CHARIDS@@ get stat", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.grey, color: C.COLORS.black}],
                     ["@@SINGLEONLY@@Complic's", "!comp @@CHARIDS@@ start ?{Shortfall?}", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.orange, color: C.COLORS.black, fontWeight: "bold", textShadow: "1px 0px red"}],
-                    ["@@SINGLEONLY@@Frenzy", "", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.brightred, color: C.COLORS.black}]
+                    ["@@SINGLEONLY@@Spotlight", "!sess @@CHARIDS@@ spotlight", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.brightred, color: C.COLORS.black}]
                 ],
                 "Health": [
                     [ "S", "!char @@CHARIDS@@ dmg health superficial", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred}],
@@ -1113,10 +1121,18 @@ const Char = (() => {
             }
             return false
         },
-        adjustTrait = (charRef, trait, amount, min, max, defaultTraitVal, deltaType, isChatting = true) => {
-            D.Alert(`Adjusting Trait: ${[charRef, trait, amount, min, max, defaultTraitVal, deltaType, isChatting].map(x => D.JS(x)).join(", ")}`)
+        adjustTrait = (charRef, trait, amount, min = 0, max = Infinity, defaultTraitVal, deltaType, isChatting = true) => {
+            // D.Alert(`Adjusting Trait: ${[charRef, trait, amount, min, max, defaultTraitVal, deltaType, isChatting].map(x => D.JS(x)).join(", ")}`)
             const charObj = D.GetChar(charRef)
             if (VAL({charObj: [charObj], trait: [trait], number: [amount]}, "adjustTrait", true)) {
+                switch (trait.toLowerCase()) {
+                    case "stain": case "stains":
+                    case "humanity": case "hum":
+                        min = 0
+                        max = 10
+                        break
+                    // no default                        
+                }
                 const chatStyles = {
                         block: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.block, {}) : {width: "275px", margin: "0px 0px 0px -50px"},
                         body: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.body, {fontSize: "12px"}) : {fontFamily: "Voltaire", fontSize: "14px", color: "rgb(255,50,50)"},
@@ -1124,9 +1140,10 @@ const Char = (() => {
                         alert: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {}) : {}
                     },
                     initTraitVal = parseInt((D.GetStat(charObj, trait) || [0])[0] || defaultTraitVal || 0),
-                    finalTraitVal = Math.min(max || Infinity, Math.max(min || -Infinity, initTraitVal + parseInt(amount)))
+                    finalTraitVal = Math.min(max, Math.max(min, initTraitVal + parseInt(amount)))
+                amount = finalTraitVal - initTraitVal
                 let [bannerString, bodyString, alertString, trackerString] = ["", "", null, ""]
-                DB(`Adjusting Trait: (${D.JS(trait)}, ${D.JS(amount)}, ${D.JS(min)}, ${D.JS(max)}, ${D.JS(defaultTraitVal)}, ${D.JS(deltaType)})
+                D.Alert(`Adjusting Trait: (${D.JS(trait)}, ${D.JS(amount)}, ${D.JS(min)}, ${D.JS(max)}, ${D.JS(defaultTraitVal)}, ${D.JS(deltaType)})
                     ... Initial (${D.JS(initTraitVal)}) + Amount (${D.JS(amount)}) = Final (${D.JS(finalTraitVal)}))`, "adjustTrait")
                 switch (trait.toLowerCase()) {
                     case "hunger":
@@ -1147,7 +1164,7 @@ const Char = (() => {
                         if (amount > 0)
                             bannerString = `You suffer ${D.NumToText(amount).toLowerCase()} stain${amount > 1 ? "s" : ""} to your Humanity.`
                         else if (amount < 0)
-                            bannerString = `${D.NumToText(Math.abs(amount))} stain${Math.abs(amount) > 1 ? "s" : ""} cleared from your Humanity.`
+                            bannerString = `${D.NumToText(Math.abs(finalTraitVal - initTraitVal))} stain${Math.abs(amount) > 1 ? "s" : ""} cleared from your Humanity.`
                         break
                     case "willpower_sdmg": case "willpower_sdmg_social":
                         if (amount > 0) {

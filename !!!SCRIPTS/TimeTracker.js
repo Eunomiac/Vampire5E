@@ -749,7 +749,8 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
             setHorizon(true)
             setWeather()
             // D.Alert(`Setting Ground Cover: ${groundCover}`)
-            Media.SetImg("WeatherGround", Session.Mode === "Downtime" ? "blank" : getGroundCover())
+            if (!Media.HasForcedState("WeatherGround") && !getWeatherCode().slice(0,2).includes("p"))
+                Media.SetImg("WeatherGround", getGroundCover())
             // Media.OrderImages("map", true)
             setCurrentDate()
         },
@@ -794,31 +795,27 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
         },
         isDay = () => getHorizon().includes("day"),
         setHorizon = (isForced = false) => {
-            if (Session.Mode === "Downtime") {
-                if (STATEREF.lastHorizon !== "night1") {
-                    Media.SetImg("Horizon_1", "night1")
-                    STATEREF.lastHorizon = "night1"
-                }
-            } else {
-                const imgSrcName = getHorizon()
-                if (isRunningFast) {
-                    if (imgSrcName.includes("night") && STATEREF.lastHorizon !== "night") 
-                        // Media.OrderImages(["Horizon_1", "Horizon_2"], true)
-                        STATEREF.lastHorizon = "night"
-                    else if (!imgSrcName.includes("night") && STATEREF.lastHorizon.includes("night")) 
-                        // Media.OrderImages(["Horizon_2", "Horizon_1"], true)
-                        STATEREF.lastHorizon = "day"
-                    
-                } else if (isForced || imgSrcName !== STATEREF.lastHorizon) {
-                    STATEREF.lastHorizon = imgSrcName
-                    // Media.OrderImages("map", true)
-                    Media.SetImg("Horizon_1", imgSrcName)
-                }
+            if (Media.HasForcedState("Horizon")) return false 
+            const imgSrcName = getHorizon()
+            if (isRunningFast) {
+                if (imgSrcName.includes("night") && STATEREF.lastHorizon !== "night") 
+                    // Media.OrderImages(["Horizon_1", "Horizon_2"], true)
+                    STATEREF.lastHorizon = "night"
+                else if (!imgSrcName.includes("night") && STATEREF.lastHorizon.includes("night")) 
+                    // Media.OrderImages(["Horizon_2", "Horizon_1"], true)
+                    STATEREF.lastHorizon = "day"
+                
+            } else if (isForced || imgSrcName !== STATEREF.lastHorizon) {
+                STATEREF.lastHorizon = imgSrcName
+                // Media.OrderImages("map", true)
+                Media.SetImg("Horizon_1", imgSrcName)
             }
+            return true
         },
         setCurrentDate = () => {
             // dateObj = dateObj || new Date(parseInt(STATEREF.currentDate))
             checkAlarm(STATEREF.lastDateStep, STATEREF.dateObj.getTime())
+            if (Media.HasForcedState("TimeTracker")) return false
             if (Session.Mode === "Downtime")
                 Media.SetText("TimeTracker", `${
                     DAYSOFWEEK[STATEREF.dateObj.getUTCDay()]}, ${
@@ -836,6 +833,7 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                     Math.floor(STATEREF.dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`)
             STATEREF.lastDateStep = STATEREF.dateObj.getTime()
             STATEREF.currentDate = STATEREF.dateObj.getTime()
+            return true
         },
         setNextSessionDate = (weekPush = 0) => {
             const curRealDateObj = new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"})),
@@ -889,11 +887,13 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                 updateCountdown()
         },
         updateCountdown = () => {
+            if (Media.HasForcedState("Countdown")) return false
             if (countdownRecord[0] === 6 && countdownRecord[1] === 23 && countdownRecord[2] >= 45 ||
                 countdownRecord[0] === 0 && countdownRecord[1] === 0 && countdownRecord[2] === 0 && secondsLeft <= 5)
                 Media.SetText("Countdown", " ")
             else
                 Media.SetText("Countdown", [...countdownRecord, secondsLeft].map(x => `${x.toString().length === 1 && "0" || ""}${x}`).join(":"))
+            return true
         },
         setIsRunning = runStatus => {
             DB("*** CALLED ***", "setIsRunning")
@@ -921,38 +921,36 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                     }))
                     Char.RefreshDisplays()
                 }
-                if (
-                    Session.Mode !== "Downtime" && (
-                        STATEREF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
-                        STATEREF.dateObj.getMonth() !== lastDate.getMonth() ||
-                        STATEREF.dateObj.getUTCDate() !== lastDate.getUTCDate() ||
-                        STATEREF.dateObj.getUTCHours() !== lastDate.getUTCHours()
-                    )
+                if (                    
+                    STATEREF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
+                    STATEREF.dateObj.getMonth() !== lastDate.getMonth() ||
+                    STATEREF.dateObj.getUTCDate() !== lastDate.getUTCDate() ||
+                    STATEREF.dateObj.getUTCHours() !== lastDate.getUTCHours()
                 ) {
                     // D.Alert("Setting Weather")
                     setWeather()
                     // D.Alert(`Setting Ground Cover to ${groundCover}`)
-                    Media.SetImg("WeatherGround", groundCover)
+                    if (!Media.HasForcedState("WeatherGround") && !getWeatherCode().slice(0,2).includes("p"))
+                        Media.SetImg("WeatherGround", groundCover)
                 }
                 DB(`Setting lastDate (${D.JS(STATEREF.lastDate)}) to currentDate (${D.JS(STATEREF.currentDate)}).`, "setIsRunning")
                 STATEREF.lastDate = STATEREF.dateObj.getTime()
                 setHorizon()
             }
         },
-        setIsRunningFast = runStatus => {
-            if (Session.Mode !== "Downtime")
-                if (runStatus && !isRunningFast) {
-                    isRunningFast = runStatus
-                    Media.SetImg("WeatherMain", "blank")
-                    Media.SetImg("WeatherClouds", "blank")
-                    Media.SetImg("WeatherFog", "blank")
-                    Media.SetImg("ComplicationMat", "blank")
-                    Media.SetImg("Horizon_1", "night3")
-                    // Media.OrderImages(["Horizon_2", "Horizon_1"], true)
-                    // STATEREF.lastHorizon = "day"
-                } else if (!runStatus && isRunningFast) {
-                    isRunningFast = runStatus
-                }
+        setIsRunningFast = runStatus => {            
+            if (runStatus && !isRunningFast) {
+                isRunningFast = runStatus
+                if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", "blank")
+                if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", "blank")
+                if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
+                if (!Media.HasForcedState("ComplicationMat")) Media.SetImg("ComplicationMat", "blank")
+                if (!Media.HasForcedState("Horizon_1")) Media.SetImg("Horizon_1", "night3")
+                // Media.OrderImages(["Horizon_2", "Horizon_1"], true)
+                // STATEREF.lastHorizon = "day"
+            } else if (!runStatus && isRunningFast) {
+                isRunningFast = runStatus
+            }
         },
         easeInOutSine = (curTime, startVal, deltaVal, duration) => -deltaVal / 2 * (Math.cos(Math.PI * curTime / duration) - 1) + startVal,
         tweenClock = finalDate => {
@@ -1036,8 +1034,9 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
             STATEREF.weatherOverride = weatherData
             setWeather()
         },
+        getWeatherCode = () => WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()],
         setWeather = () => {
-            const weatherCode = WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()],
+            const weatherCode = getWeatherCode(),
                 weatherData = {},
                 getCloudSrc = () => {
                     switch (getHorizon()) {
@@ -1079,90 +1078,76 @@ Weather: <b>!time set weather [event] [tempC] [wind] [humidity]</b><table><tr><t
                         default:
                             return `dark${degree.toLowerCase()}snow`
                     }
-                }
-            if (!Session.IsSessionActive || Session.Mode === "Downtime") {
-                for (const textKey of [..._.map(D.GetCharVals("registered", "shortName"), v => `${v}Desire`), "tempF", "tempC", "weather"])
-                    Media.ToggleText(textKey, false)
-                Media.ToggleImg("WeatherMain", false)
-                Media.ToggleImg("WeatherFog", false)
-                Media.ToggleImg("WeatherClouds", false)
-                Media.SetImg("Horizon", "night5", true)
-                if (!Session.IsSessionActive) {
-                    Media.SetImg("WeatherGround", "wet", true)
-                    Media.SetImg("WeatherFrost", "red", true)
-                } else {
-                    Media.ToggleImg("WeatherGround", false)
-                    Media.ToggleImg("WeatherFrost", false)
-                }
-            } else {
-                for (const textKey of [..._.map(D.GetCharVals("registered", "shortName"), v => `${v}Desire`), "tempF", "tempC", "weather"])
-                    Media.ToggleText(textKey, true)
-                const forecastLines = []
+                },
+                forecastLines = []
                 // D.Alert(`Weather Code: ${D.JS(weatherCode)}<br>Month Temp: ${D.JS(getTemp(MONTHTEMP[dateObj.getUTCMonth()]))}<br><br>Delta Temp: ${D.JS(getTemp(weatherCode.charAt(2)))} (Code: ${weatherCode.charAt(2)})`)
-                weatherData.tempC = STATEREF.weatherOverride.tempC || getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(weatherCode.charAt(2))
+            weatherData.tempC = STATEREF.weatherOverride.tempC || getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(weatherCode.charAt(2))
+            if (!Media.HasForcedState("tempC")) {
                 Media.SetText("tempC", `${weatherData.tempC}°C`)
                 Media.SetText("tempF", `(${Math.round(Math.round(9 / 5 * weatherData.tempC + 32))}°F)`)
-                weatherData.event = STATEREF.weatherOverride.event || (getHorizon() === "day" || getHorizon() === "daylighters" ? "xx" : weatherCode.slice(0,2))
-                weatherData.humidity = STATEREF.weatherOverride.humidity || weatherCode.charAt(3)
-                weatherData.wind = STATEREF.weatherOverride.wind || weatherCode.charAt(4)
-                switch (weatherData.event.charAt(0)) {
-                    // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
-                    case "b":
-                        Media.SetImg("WeatherMain", getSnowSrc("heavy"), true)
-                        Media.ToggleImg("WeatherFog", false)
-                        Media.SetImg("WeatherClouds", "stormclouds", true)
-                        break
-                    case "c":
-                        Media.ToggleImg("WeatherMain", false)
-                        Media.ToggleImg("WeatherFog", false)
-                        Media.SetImg("WeatherClouds", getCloudSrc(), true)
-                        break
-                    case "f":
-                        Media.ToggleImg("WeatherMain", false)
-                        Media.SetImg("WeatherFog", getFogSrc(), true)
-                        Media.SetImg("WeatherClouds", getCloudSrc(), true)
-                        break
-                    case "p":
-                        Media.ToggleImg("WeatherFog", false)
-                        Media.SetImg("WeatherMain", "heavyrain", true)
-                        Media.SetImg("WeatherClouds", getCloudSrc(), true)
-                        break
-                    case "s":
-                        Media.ToggleImg("WeatherFog", false)
-                        Media.SetImg("WeatherMain", getSnowSrc("light"), true)
-                        Media.SetImg("WeatherClouds", getCloudSrc(), true)
-                        break
-                    case "t":
-                        Media.ToggleImg("WeatherFog", false)
-                        Media.SetImg("WeatherMain", "heavyrain", true)
-                        Media.SetImg("WeatherClouds", "stormclouds", true)
-                        // Lightning Animations
-                        break
-                    case "w":
-                        Media.ToggleImg("WeatherFog", false)
-                        Media.SetImg("WeatherMain", "lightrain", true)
-                        Media.SetImg("WeatherClouds", getCloudSrc(), true)
-                        break
-                    case "x":
-                        Media.ToggleImg("WeatherMain", false)
-                        Media.ToggleImg("WeatherClouds", false)
-                        if (weatherData.event.charAt(1) === "f")
-                            Media.SetImg("WeatherFog", getFogSrc(), true)
-                        else
-                            Media.ToggleImg("WeatherFog", false)
-                        break
-                    // no default
-                }
-                forecastLines.push(weatherData.event === "xf" ? WEATHERCODES[0][weatherData.event.charAt(1)] : WEATHERCODES[0][weatherData.event.charAt(0)])
-                if (weatherData.humidity !== "x")
-                    forecastLines.push(WEATHERCODES[1][weatherData.humidity])
-                forecastLines.push(weatherData.tempC < WINTERTEMP ? WEATHERCODES[2][weatherData.wind][1] : WEATHERCODES[2][weatherData.wind][0])
-                Media.SetText("weather", `${forecastLines.join(" ♦ ")}`)
-                if (weatherData.tempC > 0)
-                    Media.ToggleImg("WeatherFrost", false)
-                else
-                    Media.SetImg("WeatherFrost", weatherData.tempC > -6 ? "frost1" : weatherData.tempC > -12 ? "frost2" : "frost3", true)
             }
+            weatherData.event = STATEREF.weatherOverride.event || (getHorizon() === "day" || getHorizon() === "daylighters" ? "xx" : weatherCode.slice(0,2))
+            weatherData.humidity = STATEREF.weatherOverride.humidity || weatherCode.charAt(3)
+            weatherData.wind = STATEREF.weatherOverride.wind || weatherCode.charAt(4)
+            switch (weatherData.event.charAt(0)) {
+                    // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
+                case "b":
+                    if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
+                    if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", getSnowSrc("heavy"))
+                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", "stormclouds")
+                    break
+                case "c":
+                    if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
+                    if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", "blank")
+                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", getCloudSrc())
+                    break
+                case "f":
+                    if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", getFogSrc())
+                    if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", "blank")
+                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", getCloudSrc())
+                    break
+                case "p":
+                    if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
+                    if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", "heavyrain")
+                    if (!Media.HasForcedState("WeatherGround")) Media.SetImg("WeatherGround", "wet")
+                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", getCloudSrc())
+                    break
+                case "s":
+                    if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
+                    if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", getSnowSrc("light"))
+                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", getCloudSrc())
+                    break
+                case "t":
+                    if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
+                    if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", "heavyrain")
+                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", "stormclouds")
+                        // Lightning Animations
+                    break
+                case "w":
+                    if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
+                    if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", "lightrain")
+                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", getCloudSrc())
+                    break
+                case "x":
+                    if (!Media.HasForcedState("WeatherFog") && weatherData.event.charAt(1) === "f")
+                        Media.SetImg("WeatherFog", getFogSrc())
+                    else if (!Media.HasForcedState("WeatherFog")) 
+                        Media.SetImg("WeatherFog", "blank")
+                    if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", "blank")
+                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", "blank")
+                    break
+                    // no default
+            }
+            forecastLines.push(weatherData.event === "xf" ? WEATHERCODES[0][weatherData.event.charAt(1)] : WEATHERCODES[0][weatherData.event.charAt(0)])
+            if (weatherData.humidity !== "x")
+                forecastLines.push(WEATHERCODES[1][weatherData.humidity])
+            forecastLines.push(weatherData.tempC < WINTERTEMP ? WEATHERCODES[2][weatherData.wind][1] : WEATHERCODES[2][weatherData.wind][0])
+            if (!Media.HasForcedState("weather"))
+                Media.SetText("weather", `${forecastLines.join(" ♦ ")}`)
+            if (!Media.HasForcedState("WeatherFrost") && weatherData.tempC > 0)
+                Media.SetImg("WeatherFrost", "blank")
+            else if (!Media.HasForcedState("WeatherFrost"))
+                Media.SetImg("WeatherFrost", weatherData.tempC > -6 ? "frost1" : weatherData.tempC > -12 ? "frost2" : "frost3")
         },
         getGroundCover = (isTesting = false, downVal = 0.3, upb = 1, ups = 0.5) => {
             // D.Alert(`IsTesting = ${D.JS(isTesting)}`)

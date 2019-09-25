@@ -311,7 +311,7 @@ const D = (() => {
                 replace(/&gt;&gt;/gu, ">"). // Restores doubled right brackets to code.
                 replace(/&lt;&lt;/gu, "<")}</pre>` // Restores doubled left brackets to code.
         },
-        parseParams = (args, delim = " ") => _.object((VAL({array: args}) ? args.join(" ") : args).split(new RegExp(`,?${delim}+`, "gu")).filter(x => !x.includes(":")).map(x => x.trim().split(":"))),
+        parseParams = (args, delim = " ") => _.object((VAL({array: args}) ? args.join(" ") : args).split(new RegExp(`,?${delim}+`, "gu")).filter(x => x.includes(":")).map(x => x.trim().split(":"))),
         parseCharSelect = (call, args) => {                
             let charObjs, charIDString
             if (["registered", "sandbox", "pcs", "npcs"].includes(call.toLowerCase())) {
