@@ -51,15 +51,21 @@ const D = (() => {
             ])
                 STATEREF.STATSDICT.add(str)
 
-        // Initialize PCDICT Fuzzy Dictionary
+        // Initialize PCDICT Fuzzy Dictionary and PCLIST Strict Lookup
             STATEREF.PCDICT = Fuzzy.Fix()
-            for (const name of _.values(Char.REGISTRY).map(x => x.name))
+            STATEREF.PCLIST = []
+            for (const name of _.values(Char.REGISTRY).map(x => x.name)) {
                 STATEREF.PCDICT.add(name)
+                STATEREF.PCLIST.push(name)
+            }
 
         // Initialize NPCDICT Fuzzy Dictionary
             STATEREF.NPCDICT = Fuzzy.Fix()
-            for (const name of getChars("all").map(x => x.get("name")).filter(x => !_.values(Char.REGISTRY).map(xx => xx.name).includes(x)))
+            STATEREF.NPCLIST = []
+            for (const name of getChars("all").map(x => x.get("name")).filter(x => !_.values(Char.REGISTRY).map(xx => xx.name).includes(x))) {
                 STATEREF.NPCDICT.add(name)
+                STATEREF.NPCLIST.push(name)
+            }
         },
     // #endregion	
 
@@ -109,6 +115,34 @@ const D = (() => {
                     // no default
                     }
                     break
+                }
+                case "refresh": {
+                    switch((args.shift() || "").toLowerCase()) {
+                        case "shortnames": {
+                            refreshShortNames()
+                            break
+                        }
+                        case "tokensrcs": {
+                            refreshShortNames()
+                            const srcData = {}
+                            for (const charObj of D.GetChars("all")) {
+                                const nameKey = getName(charObj, true)
+                                charObj.get("_defaulttoken", function(defToken) {
+                                    const imgMatch = D.JS(defToken).match(/imgsrc:(.*?),/u)
+                                    if (imgMatch && imgMatch.length)
+                                        srcData[nameKey] = imgMatch[1].replace(/med\.png/gu, "thumb.png")
+                                })
+                            }
+                            setTimeout(() => {
+                                state[C.GAMENAME].Media.TokenSrcs = {}
+                                for (const srcRef of _.keys(srcData))
+                                    state[C.GAMENAME].Media.TokenSrcs[srcRef] = srcData[srcRef]
+                                D.Alert(`Finished! Media Token Sources updated to:<br><br>${D.JS(state[C.GAMENAME].Media.TokenSrcs)}`, "!data refresh tokensrcs")
+                            }, 2000)
+                            break
+                        }
+                        // no default
+                    }
                 }
             // no default
             }
@@ -1139,7 +1173,12 @@ const D = (() => {
                 THROW(`None of the selected objects are of type(s) '${jStrL(types)}'`, "getSelected")
             return [...selObjs] 
         },
-        getName = (value, isShort = false) => {
+        refreshShortNames = () => {
+            STATEREF.shortNames = []
+            for (const charObj of getChars("all"))
+                STATEREF.shortNames.push(getName(charObj, true))
+        },
+        getName = (value, isShort = false, isCheckingShort = false) => {
             // Returns the NAME of the Graphic, Character or Player (DISPLAYNAME) given: object or ID.
             const obj = VAL({object: value}) && value ||
                 VAL({char: value}) && getChar(value) ||
@@ -1149,13 +1188,20 @@ const D = (() => {
                 VAL({object: obj}, "getName") && obj.get("name")
 
             if (VAL({string: name}, "getName")) {
-                if (isShort)						// SHORTENING NAME:
-                    if (_.find(_.values(Char.REGISTRY), v => v.name === name)) // If this is a registered character, return its short name.
-                        return _.find(_.values(Char.REGISTRY), v => v.name === name).shortName
-                    else if (name.includes("\""))		// If name contains quotes, remove everything except the quoted portion of the name.
-                        name = name.replace(/.*?["]/iu, "").replace(/["].*/iu, "")
-                    else							// Otherwise, remove the first word.				
-                        name = name.replace(/.*\s/iu, "")
+                if (isShort) {
+                    let shortName = name				// SHORTENING NAME:
+                    if (_.find(_.values(Char.REGISTRY), v => v.name === shortName)) // If this is a registered character, return its short name.
+                        return _.find(_.values(Char.REGISTRY), v => v.name === shortName).shortName
+                    else if (shortName.includes("\""))		// If name contains quotes, remove everything except the quoted portion of the name.
+                        shortName = name.replace(/.*?["]/iu, "").replace(/["].*/iu, "")
+                    else {					// Otherwise, remove the first word.				
+                        shortName = name.replace(/.*\s/iu, "")
+                        // Now, check for any duplicates, with "isCheckingShort" set to true to avoid infinite recursion; if found, return full name.
+                        if (STATEREF.shortNames.filter(x => x === shortName).length > 1)
+                            shortName = name
+                    }
+                    name = shortName
+                }
                 return name.replace(/_/gu, " ")
             }
             return "(UNNAMED)"
@@ -1223,7 +1269,8 @@ const D = (() => {
                     dbstring += ` ... "${jStr(v)}": `                    
                     // If parameter is a STRING, assume it is a character name to fuzzy-match UNLESS isStrict is true.
                 } else if (VAL({string: v})) {
-                    const charName = D.IsIn(v, STATEREF.PCDICT, !isFuzzyMatching) || D.IsIn(v, STATEREF.NPCDICT, !isFuzzyMatching),
+                    const charName = isFuzzyMatching ? D.IsIn(v, STATEREF.PCLIST, true) || D.IsIn(v, STATEREF.NPCDICT, false) :
+                            D.IsIn(v, STATEREF.PCLIST, true) || D.IsIn(v, STATEREF.NPCLIST, true),
                         charObj = charName && (findObjs({_type: "character", name: charName}) || [])[0]
                     if (charObj)
                         charObjs.add(charObj)

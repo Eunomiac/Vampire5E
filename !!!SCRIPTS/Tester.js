@@ -63,6 +63,19 @@ const Tester = (() => {
         handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
             let [isKilling, isWriting] = [false, false]
             switch (call) {
+                case "tokenget": {
+                    const returnStrings = []
+                    for (const charObj of D.GetChars("all"))
+                        charObj.get("_defaulttoken", function(defToken) {
+                            const imgMatch = D.JS(defToken).match(/imgsrc:(.*?),/u)
+                            if (imgMatch && imgMatch.length) {
+                                returnStrings.push(`<b>${D.JS(D.GetName(charObj, true))}</b>: ${D.JS(imgMatch[1].replace(/med\.png/gu, "thumb.png"))}`)
+                                D.Alert(`${returnStrings.length} Strings Found`)
+                            }                      
+                        })
+                    setTimeout(() => D.Alert(returnStrings.join("<br>")), 2000)
+                    break
+                }
                 case "home": {
                     Char.SendHome()
                     break

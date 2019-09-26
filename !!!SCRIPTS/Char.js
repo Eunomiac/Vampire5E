@@ -262,6 +262,30 @@ const Char = (() => {
                 }
                 case "set": {
                     switch (args.shift().toLowerCase()) {
+                        case "npc": {
+                            charObjs = charObjs || D.GetChars(args.shift())
+                            const [charObj] = charObjs
+                            if (VAL({pc: charObj}, "!char set npc")) {
+                                const [quad] = _.values(D.GetCharVals(charObj, "quadrant")),
+                                    [tokenObj] = findObjs({_type: "graphic", _subtype: "token", name: `${_.values(D.GetCharVals(charObj, "tokenName"))[0]}_1`}),
+                                    npcObj = D.GetChar(msg) || D.GetChar(args.join(" "))
+                                DB(`Seeking Token Named: ${D.JS(`${_.values(D.GetCharVals(charObj, "tokenName"))[0]}_1`)}, found: ${D.JS(tokenObj)}`, "!char set npc")
+                                if (VAL({npc: npcObj}, "!char set npc")) {
+                                    Media.SetImg(`Tombstone${quad}`, "npc", true)
+                                    DB(`D.GetName(npcObj) = ${D.JS(D.GetName(npcObj, true))}`, "!char set npc")
+                                    Media.SetImg(`TombstonePic${quad}`, D.GetName(npcObj, true), true)
+                                    let nameString = D.GetName(npcObj)
+                                    if (Media.GetTextWidth(`TombstoneName${quad}`, nameString) > 240)
+                                        nameString = D.GetName(npcObj, true)
+                                    Media.SetText(`TombstoneName${quad}`, nameString, true)
+                                    if (VAL({pc: tokenObj}, "!char set npc")) {
+                                        tokenObj.set("layer", "objects")
+                                        tokenObj.set("imgsrc", state[C.GAMENAME].Media.TokenSrcs[D.GetName(npcObj, true)])
+                                    }
+                                }
+                            }                            
+                            break
+                        }
                         case "stat": case "stats": case "attr": case "attrs": {
                             const charObj = D.GetChar(msg) || D.GetChar(args.shift()),
                                 attrList = {}
@@ -306,6 +330,27 @@ const Char = (() => {
                             charObjs = charObjs || D.GetChars(msg) || D.GetChars(args.shift())
                             for (const charObj of charObjs)
                                 resolveDesire(charObj)
+                            break
+                        }
+                        // no default
+                    }
+                    break
+                }
+                case "clear": {
+                    switch (args.shift().toLowerCase()) {
+                        case "npc": {
+                            const [charObj] = charObjs || D.GetChars(args.shift())
+                            if (VAL({pc: charObj}, "!char clear npc")) {
+                                const [quad] = _.values(D.GetCharVals(charObj, "quadrant")),
+                                    [tokenObj] = findObjs({_type: "graphic", _subtype: "token", name: `${_.values(D.GetCharVals(charObj, "tokenName"))[0]}_1`})
+                                Media.SetImg(tokenObj, "base", null, true)
+                                if(Session.Mode === "Spotlight")
+                                    Media.SetImg(`Tombstone${quad}`, "base", true)
+                                else
+                                    Media.ToggleImg(`Tombstone${quad}`, false)
+                                Media.ToggleImg(`TombstonePic${quad}`, false)
+                                Media.ToggleText(`TombstoneName${quad}`, false)
+                            }
                             break
                         }
                         // no default

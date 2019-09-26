@@ -516,7 +516,7 @@ const DragPads = (() => {
             for (const pad of pads)
                 removePad(pad.id)            
         },
-        togglePad = (padRef, isActive) => {
+        togglePad = (padRef, isActive, isSilent = false) => {
             const padIDs = [],
                 imgObj = Media.GetImg(padRef)
             // let dbString = `PadRef: ${D.JS(padRef)}`
@@ -526,7 +526,7 @@ const DragPads = (() => {
                 padIDs.push(..._.filter(_.keys(PADREGISTRY), v => PADREGISTRY[v].funcName === padRef))
             // DB(`${dbString} ... Found: ${D.JSL(_.map(padIDs, v => PADREGISTRY[v].name))}`)
             if (padIDs.length === 0)
-                return THROW(`No pad found with ID: '${D.JS(padRef)}'`, "togglePad")
+                return !isSilent && THROW(`No pad found with ID: '${D.JS(padRef)}'`, "togglePad")
 
             for (const pID of padIDs) {
                 const [pad, partner] = [
