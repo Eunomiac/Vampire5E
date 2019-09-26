@@ -1248,33 +1248,39 @@ const D = (() => {
                     // If parameters is a TOKEN OBJECT:
                 } else if (VAL({token: v}) && getObj("character", v.get("represents"))) {
                     charObjs.add(getObj("character", v.get("represents")))
-                    dbstring += " ... Token: "
-                    // If parameter is "all":
-                } else if (VAL({string: v}) && v.toLowerCase() === "all") {
-                    _.each(findObjs({_type: "character"}), char => charObjs.add(char))
-                    dbstring += ` ... "${jStr(v)}": `
-                    // If parameter calls for REGISTERED CHARACTERS:
-                } else if (VAL({string: v}) && v.toLowerCase() === "registered") {
-                    _.each(Char.REGISTRY, charData => { if (!charData.name.toLowerCase().includes("Good Lad")) charObjs.add(getObj("character", charData.id)) })
-                    dbstring += ` ... "${jStr(v)}": `
-                    // If parameter is "sandbox", calls for all characters with tokens in the sandbox (do player characters first)
-                } else if (VAL({string: v}) && v.toLowerCase() === "sandbox") {
-                    _.each(Media.GetContainedChars("Sandbox", {padding: 50}), vv => charObjs.add(vv))
-                    dbstring += ` ... "${jStr(v)}": `                    
-                    // If parameter is a SINGLE LETTER, assume it is an INITIAL and search the registry for it.
-                } else if (VAL({string: v}) && v.length === 1) {
-                    const charData = _.find(Char.REGISTRY, data => data.initial.toLowerCase() === v.toLowerCase())
-                    if (charData)
-                        charObjs.add(getObj("character", charData.id))
-                    dbstring += ` ... "${jStr(v)}": `                    
-                    // If parameter is a STRING, assume it is a character name to fuzzy-match UNLESS isStrict is true.
+                    dbstring += " ... Token: "                    
                 } else if (VAL({string: v})) {
-                    const charName = isFuzzyMatching ? D.IsIn(v, STATEREF.PCLIST, true) || D.IsIn(v, STATEREF.NPCDICT, false) :
-                            D.IsIn(v, STATEREF.PCLIST, true) || D.IsIn(v, STATEREF.NPCLIST, true),
-                        charObj = charName && (findObjs({_type: "character", name: charName}) || [])[0]
-                    if (charObj)
-                        charObjs.add(charObj)
-                    dbstring += " ... String: "
+                        // If parameter is "all":
+                    if (v.toLowerCase() === "all") {
+                        _.each(findObjs({_type: "character"}), char => charObjs.add(char))
+                        dbstring += ` ... "${jStr(v)}": `
+                        // If parameter calls for REGISTERED CHARACTERS:
+                    } else if (v.toLowerCase() === "registered") {
+                        _.each(Char.REGISTRY, charData => { if (!charData.name.toLowerCase().includes("Good Lad")) charObjs.add(getObj("character", charData.id)) })
+                        dbstring += ` ... "${jStr(v)}": `
+                        // If parameter is "sandbox", calls for all characters with tokens in the sandbox (do player characters first)
+                    } else if (v.toLowerCase() === "activepc") {
+                        _.each(Char.REGISTRY, charData => { if (charData.isActive && !charData.name.toLowerCase().includes("Good Lad")) charObjs.add(getObj("character", charData.id)) })
+                        dbstring += ` ... "${jStr(v)}": `
+                        // If parameter is "sandbox", calls for all characters with tokens in the sandbox (do player characters first)
+                    } else if (v.toLowerCase() === "sandbox") {
+                        _.each(Media.GetContainedChars("Sandbox", {padding: 50}), vv => charObjs.add(vv))
+                        dbstring += ` ... "${jStr(v)}": `                    
+                        // If parameter is a SINGLE LETTER, assume it is an INITIAL and search the registry for it.
+                    } else if (v.length === 1) {
+                        const charData = _.find(Char.REGISTRY, data => data.initial.toLowerCase() === v.toLowerCase())
+                        if (charData)
+                            charObjs.add(getObj("character", charData.id))
+                        dbstring += ` ... "${jStr(v)}": `                    
+                        // If parameter is a STRING, assume it is a character name to fuzzy-match UNLESS isStrict is true.
+                    } else {
+                        const charName = isFuzzyMatching ? D.IsIn(v, STATEREF.PCLIST, true) || D.IsIn(v, STATEREF.NPCDICT, false) :
+                                D.IsIn(v, STATEREF.PCLIST, true) || D.IsIn(v, STATEREF.NPCLIST, true),
+                            charObj = charName && (findObjs({_type: "character", name: charName}) || [])[0]
+                        if (charObj)
+                            charObjs.add(charObj)
+                        dbstring += " ... String: "
+                    }
                 }
                 dbstring += `${charObjs.size} Characters Found.`
             })

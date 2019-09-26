@@ -1491,35 +1491,16 @@ const Media = (() => {
             return imgData
         },
         getImgSrcs = (imgRef) => {
+            const srcData = Object.assign(C.IMAGES, STATEREF.TokenSrcs)
             let imgData = getImgData(imgRef)
             if (imgData.srcs === "TOKEN")
-                return STATEREF.TokenSrcs
+                return srcData
             while (isRegImg(imgData.srcs))
                 imgData = getImgData(imgData.srcs)
-            return imgData.srcs
+            return Object.assign(srcData, imgData.srcs)
         },
-        getURLFromSrc = (srcRef, srcData) => {
-            if (VAL({string: srcRef, list: srcData}, "getURLFromSrc")) {
-                if (srcData[srcRef])
-                    return srcData[srcRef]
-                if (_.values(srcData).includes(srcRef) && srcRef.includes("http"))
-                    return srcRef
-                if (_.isString(C.IMAGES[srcRef]))
-                    return C.IMAGES[srcRef]
-            }
-            return false
-        },
-        getSrcFromURL = (URLRef, srcData) => {
-            if (VAL({string: URLRef, list: srcData}, "getSrcFromURL")) {
-                let srcRef = _.findKey(srcData, v => v.toLowerCase() === URLRef.toLowerCase())
-                if (srcRef)
-                    return srcRef
-                srcRef = _.findKey(C.IMAGES, v => v.toLowerCase() === URLRef.toLowerCase())
-                if (srcRef)
-                    return srcRef
-            }
-            return false
-        },
+        getURLFromSrc = (srcRef, srcData) => Object.assign(Object.assign(C.IMAGES, STATEREF.TokenSrcs), srcData)[srcRef] || srcRef.includes("http") && srcRef,
+        getSrcFromURL = (URLRef, srcData) => _.findKey(Object.assign(Object.assign(C.IMAGES, STATEREF.TokenSrcs), srcData), v => v.toLowerCase() === URLRef.toLowerCase()) || false,
         getTokenObj = (charRef, isSilent = false) => {
             const charObj = D.GetChar(charRef, isSilent)
             if (charObj)
@@ -1571,7 +1552,7 @@ const Media = (() => {
         },
         getImgSrc = imgRef => (getImgData(imgRef) || {curSrc: false}).curSrc,
         /* getImgSrcs = imgRef => getImgData(imgRef) ? getImgData(imgRef).srcs : false, */
-        isImgActive = imgRef => (getImgData(imgRef) || {isActive: null}).isActive,
+        isActive = mediaRef => (getData(mediaRef) || {isActive: null}).isActive,
         /* eslint-disable-next-line no-unused-vars */
         getContainedImgObjs = (locRef, options = {}) => {
             const findFilter = {
@@ -1582,7 +1563,7 @@ const Media = (() => {
                 findFilter[key.replace(/^sub/gu, "_sub")] = options[key]            
             const contImgObjs = findObjs(findFilter).filter(v => {
                 for (const key of _.intersection(_.keys(options), ["imgsrc", "represents", "left", "top", "width", "height", "controlledby"])) {
-                    if (_.isEmpty(v.get(key)) || isRegImg(v) && !isImgActive(v))
+                    if (_.isEmpty(v.get(key)) || isRegImg(v) && !isActive(v))
                         return false
                     if (options[key] !== true && !v.get(key).toLowerCase().includes(options[key].toLowerCase()))
                         return false                    
@@ -1616,7 +1597,7 @@ const Media = (() => {
             return imgZLevels
         },
         getZLevel = imgRef => {
-            const imgKey = getImgKey(imgRef)
+            const imgKey = getImgKey(imgRef, true) || imgRef
             if (VAL({string: imgKey}, "getZLevel")) {
                 const dredgeList = (list) => {
                     const results = []
@@ -1680,6 +1661,7 @@ const Media = (() => {
                 imgObj.set({name, showname: false})
                 IMGREGISTRY[name] = {
                     id: imgObj.id,
+                    type: imgObj.get("_type") === "text" && "text" || "image",
                     name,
                     left: params.left,
                     top: params.top,
@@ -1687,10 +1669,11 @@ const Media = (() => {
                     width: params.width,
                     activeLayer,
                     zIndex: options.zIndex || (IMGREGISTRY[name] ? IMGREGISTRY[name].zIndex : 200),
-                    srcs: {}
+                    srcs: {},
+                    modes: C.MODEDEFAULTS(imgObj, params.modes)
                 }
                 IMGREGISTRY[name].modes = C.MODEDEFAULTS(imgObj, params.modes)
-                D.Alert(`Modes for ${name}: ${D.JS(IMGREGISTRY[name].modes)}`, "regImg")
+                DB(`Modes for ${name}: ${D.JS(IMGREGISTRY[name].modes)}`, "regImg")
                 if (srcName !== "none") {
                     addImgSrc(imgObj.get("imgsrc").replace(/med/gu, "thumb"), name, srcName)
                     setImg(name, srcName)
@@ -1698,10 +1681,8 @@ const Media = (() => {
                 layerImgs([name], IMGREGISTRY[name].activeLayer)
                 if (!isSilent)
                     D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(IMGREGISTRY[name])}`, "MEDIA: regImg")
-
                 return getImgData(name)
             }
-
             return THROW(`Invalid image reference '${D.JSL(imgRef)}'`, "regImg")
         },
         regRandomizerToken = (imgRef, tokenName) => {
@@ -1766,7 +1747,7 @@ const Media = (() => {
                 if (VAL({string: srcURL}, "setImg")) { 
                     const imgObj = getImgObj(imgData.name)
                     if (VAL({imgObj}, ["setImg", `Key: ${D.JS(imgData.name)}`])) {
-                        if (isImgActive(imgData.name))
+                        if (isActive(imgData.name))
                             IMGREGISTRY[imgData.name].activeSrc = srcRef
                         IMGREGISTRY[imgData.name].curSrc = srcRef
                         imgObj.set("imgsrc", srcURL)                  
@@ -2540,7 +2521,7 @@ const Media = (() => {
     // #endregion
 
     // #region TEXT OBJECT SETTERS: Registering, Changing, Deleting
-        regText = (textRef, hostName, activeLayer, hasShadow, justification, options = {}, isSilent = false) => {
+        regText = (textRef, hostName, activeLayer, hasShadow, justification = "center", options = {}, isSilent = false) => {
             const textObj = getTextObj(textRef)
             DB(`regText(textRef, ${D.JS(hostName)}, ${D.JS(activeLayer)}, ${D.JS(hasShadow)}, ${D.JS(options)}`, "regText")
             if (VAL({text: textObj})) {
@@ -2553,45 +2534,28 @@ const Media = (() => {
                     name = hostName
                 else
                     name = `${hostName.replace(/(_|\d|#)+$/gu, "")}_${_.filter(_.keys(TEXTREGISTRY), k => k.includes(hostName.replace(/(_|\d|#)+$/gu, ""))).length + 1}`
-                const curTextParams = {
-                    left: textObj.get("left"),
-                    top: textObj.get("top"),
-                    width: getMaxWidth(textObj),
-                    font_size: textObj.get("font_size"),
-                    color: textObj.get("color"),
-                    font_family: textObj.get("font_family").toLowerCase().includes("contrail") ? "Contrail One" : textObj.get("font_family"),
-                    text: textObj.get("text").trim(),
-                    layer: activeLayer
-                }
-                options.justification = justification || options.justification || "center"
-                options.maxWidth = options.maxWidth || 0
-                options.lineHeight = D.CHARWIDTH[curTextParams.font_family] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size].lineHeight || textObj.get("height")
-                D.Alert(`CurTextParams: ${D.JS(curTextParams)}<br>NumLineBreaks: ${D.JS((curTextParams.text.match(/\n/gui) || []).length)}`)
-                TEXTREGISTRY[name] = Object.assign(
-                    Object.assign(
-                        curTextParams,
-                        {
-                            id: textObj.id,
-                            name,
-                            top: curTextParams.top - 0.5 * (curTextParams.text.split("\n").length - 1) * options.lineHeight,
-                            activeLayer,
-                            curText: curTextParams.text,
-                            activeText: curTextParams.text,
-                            zIndex: parseInt(options.zIndex) || (TEXTREGISTRY[name] ? TEXTREGISTRY[name].zIndex : 300),
-                            justification: justification || "center",
-                            maxWidth: options.maxWidth || 0,
-                            lineHeight: D.CHARWIDTH[curTextParams.font_family] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size] && D.CHARWIDTH[curTextParams.font_family][curTextParams.font_size].lineHeight || textObj.get("height"),
-                            vertAlign: options.vertAlign || "top",
-                            modes: {}        
-                        }
-                    ),
-                    options
-                )
-                delete TEXTREGISTRY[name].text
+                const [font_family, font_size, curText, height] = [ /* eslint-disable-line camelcase */
+                        textObj.get("font_family").toLowerCase().includes("contrail") ? "Contrail One" : textObj.get("font_family"),
+                        textObj.get("font_size"),
+                        textObj.get("text").trim(),
+                        textObj.get("height")
+                    ],
+                    lineHeight = D.CHARWIDTH[font_family] && D.CHARWIDTH[font_family][font_size] && D.CHARWIDTH[font_family][font_size].lineHeight || height
+                TEXTREGISTRY[name] = Object.assign({name, height, font_family, font_size, activeLayer, lineHeight, justification, curText,
+                                                    id: textObj.id,
+                                                    type: textObj.get("_type") === "text" && "text" || "image",
+                                                    top: textObj.get("top") - 0.5 * (curText.split("\n").length - 1) * lineHeight,
+                                                    color: textObj.get("color"),
+                                                    maxWidth: 0,
+                                                    activeText: curText,
+                                                    vertAlign: "top",
+                                                    curMode: Session.Mode,
+                                                    isActive: true}, _.omit(options, ["text", "layer", "_type", "obj", "object"]))
+                TEXTREGISTRY[name].left = getBlankLeft(textObj, options.justification, options.maxWidth, true)
+                TEXTREGISTRY[name].width = getMaxWidth(textObj)
+                TEXTREGISTRY[name].zIndex = getZLevel(name) || TEXTREGISTRY[name].zIndex || 300
                 TEXTREGISTRY[name].modes = C.MODEDEFAULTS(textObj, options.modes)
-                D.Alert(`Modes for ${name}: ${D.JS(TEXTREGISTRY[name].modes)}`, "regText")          
-                TEXTREGISTRY[name].left = getBlankLeft(textObj, TEXTREGISTRY[name].justification, TEXTREGISTRY[name].maxWidth, true)
-                IDREGISTRY[textObj.id] = name 
+                DB(`Modes for ${name}: ${D.JS(TEXTREGISTRY[name].modes)}`, "regText")  
                 if (hasShadow) {
                     const shadowObj = createObj("text", {
                         _pageid: D.PAGEID,
@@ -2608,7 +2572,8 @@ const Media = (() => {
                 }
                 setText(textObj, TEXTREGISTRY[name].curText, true)
                 setTextData(textObj, _.pick(TEXTREGISTRY[name], C.TEXTPROPS))
-                updateTextShadow(name)       
+                setLayer(name, TEXTREGISTRY[name].activeLayer, true)
+                updateTextShadow(name, true)       
                 D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(TEXTREGISTRY[name])}`, "regText")
                 // initMedia()
                 return getTextData(name)
@@ -2634,7 +2599,7 @@ const Media = (() => {
             regText(textObj, hostName, actLayer, hasShadow, justification, options, isSilent)
             return textObj
         },
-        updateTextShadow = (textRef, isForcing = false) => {
+        updateTextShadow = (textRef) => {
             const textData = getTextData(textRef)
             if (VAL({list: textData}, "updateTextShadow") && textData.shadowID) {
                 const textObj = getTextObj(textData.name),
@@ -2893,7 +2858,8 @@ const Media = (() => {
         GetModeData: getModeData,
         IsRegistered: isRegistered,
         HasForcedState: hasForcedState,
-        SwitchMode: switchMode,        
+        SwitchMode: switchMode,
+        IsActive: isActive,      
         
         // GETTERS
         GetImg: getImgObj, GetText: getTextObj,

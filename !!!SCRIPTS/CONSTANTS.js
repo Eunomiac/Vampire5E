@@ -824,37 +824,40 @@ const C = (() => {
         HANDOUTPROPS = ["avatar", "name", "notes", "gmnotes", "inplayerjournals", "archived", "controlledby"],
 
         MODEDEFAULTS = (obj, modeStatuses = {Active: true, Inactive: false, Daylighter: true, Downtime: null, Complications: null}) => {
-            if (VAL({object: obj}, "MODEDEFAULTS"))
-                switch(obj.get("_type")) {
-                    case "graphic": {
-                        const name = obj.get("name")
-                        if (name.includes("_Pad_")) {
-                            const imgData = Media.GetImgData((DragPads.GetGraphic(obj) || {id: ""}).id)
-                            if (VAL({list: imgData}))
-                                return D.KeyMapObj(imgData.modes, null, v => Object.assign(_.omit(v, "lastState"), {isForcedState: null}))
+            if (VAL({list: modeStatuses}, "MODEDEFAULTS")) {
+                modeStatuses[Session.Mode] = true
+                if (VAL({object: obj}, "MODEDEFAULTS"))
+                    switch(obj.get("_type")) {
+                        case "graphic": {
+                            const name = obj.get("name")
+                            if (name.includes("_Pad_")) {
+                                const imgData = Media.GetImgData((DragPads.GetGraphic(obj) || {id: ""}).id)
+                                if (VAL({list: imgData}))
+                                    return D.KeyMapObj(imgData.modes, null, v => Object.assign(_.omit(v, "lastState"), {isForcedState: null}))
+                            }
+                            if (name.includes("_PartnerPad_"))
+                                return D.KeyMapObj(Session.Modes, (k,v) => v, () => ({isForcedOn: false, isForcedState: null}))
+                            break
                         }
-                        if (name.includes("_PartnerPad_"))
-                            return D.KeyMapObj(Session.Modes, (k,v) => v, () => ({isForcedOn: false, isForcedState: null}))
-                        break
-                    }
-                    case "text": {
-                        const objData = Media.GetTextData(obj) || {name: "", shadowMaster: false}
-                        if (objData.shadowMaster) {
-                            const textData = Media.GetTextData(objData.shadowMaster)
-                            if (VAL({list: textData}))
-                                return textData.modes
+                        case "text": {
+                            const objData = Media.GetTextData(obj) || {name: "", shadowMaster: false}
+                            if (objData.shadowMaster) {
+                                const textData = Media.GetTextData(objData.shadowMaster)
+                                if (VAL({list: textData}))
+                                    return textData.modes
+                            }
+                            break
                         }
-                        break
+                        // no default
                     }
-                // no default
-                }
+            }
             const modeStatus = {}
             _.each(modeStatuses, (v, k) => { modeStatus[k] = v })
             return D.KeyMapObj(modeStatuses, null, v => {
                 switch (v) {
                     case true:
                         return {
-                            isForcedOn: "LAST",
+                            isForcedOn: true,
                             isForcedState: null,
                             lastActive: true
                         }
@@ -871,7 +874,7 @@ const C = (() => {
                         }
                     default:
                         return {
-                            isForcedOn: "LAST",
+                            isForcedOn: true,
                             isForcedState: null,
                             lastActive: true
                         }

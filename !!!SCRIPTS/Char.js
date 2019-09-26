@@ -264,26 +264,9 @@ const Char = (() => {
                     switch (args.shift().toLowerCase()) {
                         case "npc": {
                             charObjs = charObjs || D.GetChars(args.shift())
-                            const [charObj] = charObjs
-                            if (VAL({pc: charObj}, "!char set npc")) {
-                                const [quad] = _.values(D.GetCharVals(charObj, "quadrant")),
-                                    [tokenObj] = findObjs({_type: "graphic", _subtype: "token", name: `${_.values(D.GetCharVals(charObj, "tokenName"))[0]}_1`}),
-                                    npcObj = D.GetChar(msg) || D.GetChar(args.join(" "))
-                                DB(`Seeking Token Named: ${D.JS(`${_.values(D.GetCharVals(charObj, "tokenName"))[0]}_1`)}, found: ${D.JS(tokenObj)}`, "!char set npc")
-                                if (VAL({npc: npcObj}, "!char set npc")) {
-                                    Media.SetImg(`Tombstone${quad}`, "npc", true)
-                                    DB(`D.GetName(npcObj) = ${D.JS(D.GetName(npcObj, true))}`, "!char set npc")
-                                    Media.SetImg(`TombstonePic${quad}`, D.GetName(npcObj, true), true)
-                                    let nameString = D.GetName(npcObj)
-                                    if (Media.GetTextWidth(`TombstoneName${quad}`, nameString) > 240)
-                                        nameString = D.GetName(npcObj, true)
-                                    Media.SetText(`TombstoneName${quad}`, nameString, true)
-                                    if (VAL({pc: tokenObj}, "!char set npc")) {
-                                        tokenObj.set("layer", "objects")
-                                        tokenObj.set("imgsrc", state[C.GAMENAME].Media.TokenSrcs[D.GetName(npcObj, true)])
-                                    }
-                                }
-                            }                            
+                            const [charObj] = charObjs,
+                                npcObj = D.GetChar(msg) || D.GetChar(args.join(" "))
+                            setCharNPC(charObj, npcObj)                      
                             break
                         }
                         case "stat": case "stats": case "attr": case "attrs": {
@@ -340,17 +323,7 @@ const Char = (() => {
                     switch (args.shift().toLowerCase()) {
                         case "npc": {
                             const [charObj] = charObjs || D.GetChars(args.shift())
-                            if (VAL({pc: charObj}, "!char clear npc")) {
-                                const [quad] = _.values(D.GetCharVals(charObj, "quadrant")),
-                                    [tokenObj] = findObjs({_type: "graphic", _subtype: "token", name: `${_.values(D.GetCharVals(charObj, "tokenName"))[0]}_1`})
-                                Media.SetImg(tokenObj, "base", null, true)
-                                if(Session.Mode === "Spotlight")
-                                    Media.SetImg(`Tombstone${quad}`, "base", true)
-                                else
-                                    Media.ToggleImg(`Tombstone${quad}`, false)
-                                Media.ToggleImg(`TombstonePic${quad}`, false)
-                                Media.ToggleText(`TombstoneName${quad}`, false)
-                            }
+                            setCharNPC(charObj, "base")                                  
                             break
                         }
                         // no default
@@ -595,7 +568,7 @@ const Char = (() => {
         },
     // #endregion
 
-    // #region SETTERS: Moving Tokens
+    // #region SETTERS: Moving Tokens, Toggling Characters
         sendCharsHome = () => {
             const charObjs = D.GetChars("sandbox"),
                 charTokens = findObjs({_pageid: D.PAGEID, _type: "graphic", _subtype: "token"}).filter(x => x.get("layer") !== "walls" && _.any(charObjs, xx => xx.id === x.get("represents"))),
@@ -616,9 +589,23 @@ const Char = (() => {
                 (getObj("graphic", tokenData.id) || {set: () => false}).set({left: tokenData.left, top: tokenData.top, layer: "objects"})
             STATEREF.tokenRecord = []            
         },
+        togglePlayerChar = (charRef, isActive) => {
+            if (isActive === true || isActive === false) {
+                const charData = D.GetCharData(charRef),
+                    [tokenObj] = findObjs({_type: "graphic", _subtype: "token", name: `${charData.tokenName}_1`})
+                DB(`Ref: ${D.JS(charRef)}, Data: ${D.JS(charData)}, Token: ${D.JS(tokenObj)}`, "togglePlayerChar")
+                REGISTRY[charData.quadrant].isActive = isActive
+                Media.ToggleImg(tokenObj, isActive, true)
+                Media.SetImg(tokenObj, "base")
+                Media.ToggleImg(`SignalLight${charData.quadrant}`, isActive)
+                Media.ToggleImg(`Hunger${charData.quadrant}`, isActive)
+                // Media.ToggleImg(`TombstoneShroud${charData.quad}`, !isActive)
+            }
+        },
     // #endregion
 
-    // #region GETTERS: Checking Chaacter Status, Character Chat Prompt
+    // #region GETTERS: Checking Character Status, Character Chat Prompt
+        isCharActive = (charRef) => (D.GetCharData(charRef) || {isActive: null}).isActive,    
         getCharIDString = (charsRef) => {
             const charIDs = []
             switch(charsRef.toLowerCase()) {
@@ -903,6 +890,44 @@ const Char = (() => {
         },
     // #endregion
 
+    // #region Character-As-NPC Control
+        setCharNPC = (charRef, npcRef) => {
+            const charObj = D.GetChar(charRef),
+                npcObj = npcRef === "base" && "base" || D.GetChar(npcRef),
+                npcName = npcRef === "base" && "base" || D.GetName(npcObj, true)
+            if (VAL({string: npcName, pc: charObj}, "setCharNPC")) {
+                const [quad] = _.values(D.GetCharVals(charObj, "quadrant")),
+                    closestQuad = _.find(["TopLeft", "TopRight", "BotLeft", "BotRight"], x => x !== quad && x.slice(-4) === quad.slice(-4)),
+                    [tokenObj] = findObjs({_type: "graphic", _subtype: "token", name: `${_.values(D.GetCharVals(charObj, "tokenName"))[0]}_1`})                      
+                if (npcName === "base") {
+                    Media.ToggleImg(`TombstonePic${quad}`, false)
+                    Media.ToggleText(`TombstoneName${quad}`, false)
+                    if (Media.IsActive(`Tombstone${closestQuad}`))
+                        if (["base", "blank"].includes(Media.GetImgSrc(`Tombstone${closestQuad}`))) {
+                            Media.SetImg(`Tombstone${closestQuad}`, "blank")
+                            Media.SetImg(`Tombstone${quad}`, "blank")
+                        } else {
+                            Media.SetImg(`Tombstone${quad}`, "base", true)
+                        }
+                    else
+                        Media.SetImg(`Tombstone${quad}`, "blank")
+                    if (!isCharActive(tokenObj))
+                        Media.ToggleImg(tokenObj, false)
+                    Media.SetImg(tokenObj, "base")
+                } else if (VAL({npc: npcObj}, "!char set npc")) {
+                    let nameString = D.GetName(npcObj)
+                    if (Media.GetTextWidth(`TombstoneName${quad}`, nameString) > 240)
+                        nameString = npcName
+                    Media.SetText(`TombstoneName${quad}`, nameString, true)
+                    Media.SetImg(`Tombstone${quad}`, "npc", true)
+                    Media.SetImg(`TombstonePic${quad}`, D.GetName(npcObj, true), true)
+                    Media.SetImg(tokenObj, npcName, true)
+                    if (Media.GetImgSrc(`Tombstone${closestQuad}`) === "blank")
+                        Media.SetImg(`Tombstone${closestQuad}`, "base", true)
+                }
+            }
+        },
+    // #endregion
     // #region Awarding XP
         awardXP = (charRef, award, reason) => {
             DB(`Award XP Parameters: charRef: ${D.JS(charRef)}, Award: ${D.JS(award)}<br>Reason: ${D.JS(reason)}`, "awardXP")
@@ -1586,6 +1611,7 @@ const Char = (() => {
         RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
         REGISTRY,
+        TogglePC: togglePlayerChar,
         Damage: adjustDamage,
         AdjustTrait: adjustTrait,
         AdjustHunger: adjustHunger,

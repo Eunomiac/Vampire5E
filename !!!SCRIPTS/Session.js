@@ -146,7 +146,7 @@ const Session = (() => {
                     break
                 }
                 case "spotlight": {
-                    if (args[0] === "end" || !charObjs || !charObjs[0])
+                    if (args[0] === "end" || !charObjs || !charObjs[0]) 
                         toggleSpotlight()
                     else
                         toggleSpotlight(charObjs[0])
@@ -323,37 +323,35 @@ const Session = (() => {
                 const charData = D.GetCharData(charObj),
                     quad = charData.quadrant,
                     spotlightOn = Media.GetImgData("Spotlight").curSrc,
-                    offTokenKeys = _.values(D.GetCharVals(D.GetChars("registered").filter(x => x.id !== charData.id), "tokenName"))
+                    otherCharData = D.GetChars("registered").filter(x => x.id !== charData.id).map(x => D.GetCharData(x))
+
+                    // offTokenKeys = _.values(D.GetCharVals(D.GetChars("registered").filter(x => x.id !== charData.id), "tokenName"))
                 if (STATEREF.Mode !== "Spotlight" || spotlightOn !== quad) {
                     changeMode("Spotlight")
                     setLocation(BLANKLOCRECORD)
                     Char.SendHome()
-                    for (const tokenName of offTokenKeys)
-                        Media.ToggleImg(tokenName, false)
-                    for (const offQuad of _.without(["TopLeft", "BotLeft", "TopRight", "BotRight"], quad)) {
-                        Media.ToggleImg(`SignalLight${offQuad}`, false)
-                        Media.ToggleImg(`Hunger${offQuad}`, false)
-                    }
-                    Media.ToggleImg(charData.tokenName, true)
+                    for (const otherData of otherCharData)
+                        Char.TogglePC(otherData.quadrant, false)
+                    Char.TogglePC(quad, true)
                     Media.SetImg("Spotlight", quad, true)
                     sendChat("Spotlight", C.CHATHTML.colorBlock([
                         C.CHATHTML.colorTitle("Spotlight:"),
                         C.CHATHTML.colorHeader(charData.name)
-                    ]))
+                    ]))             
                     Char.RefreshDisplays()
                     TimeTracker.Fix()
-                    return
                 }
-            }
-            changeMode(["Downtime", "Daylighter"].includes(STATEREF.LastMode) ? STATEREF.LastMode : "Active")
-            Char.SendBack()
-            Media.SetImg("Spotlight", "blank")
-            sendChat("Spotlight", C.CHATHTML.colorBlock([
-                C.CHATHTML.colorTitle("Spotlight"),
-                C.CHATHTML.colorHeader("Session Status: Regular Time")
-            ]))
-            Char.RefreshDisplays()
-            TimeTracker.Fix()
+            } else {
+                changeMode(STATEREF.LastMode)
+                for (const charData of D.GetChars("registered").map(x => D.GetCharData(x)))
+                    Char.TogglePC(charData.quadrant, true)
+                Char.SendBack()
+                Media.SetImg("Spotlight", "blank")
+                sendChat("Spotlight", C.CHATHTML.colorBlock([
+                    C.CHATHTML.colorTitle("Spotlight"),
+                    C.CHATHTML.colorHeader("Spotlight Session Closed.")
+                ]))
+            }  
         },
     // #endregion
 
