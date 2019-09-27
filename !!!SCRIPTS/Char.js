@@ -964,7 +964,7 @@ const Char = (() => {
         },
     // #endregion
 
-    // #region Sandbox Displays: Desires, Advantages & Weekly Resources
+    // #region Sandbox Displays: Desires, Advantages, Hunger & Weekly Resources
         displayDesires = (addAttrData) => {     
             for (const charData of _.values(Char.REGISTRY)) {
                 const desireObj = Media.GetText(`${charData.shortName}Desire`)
@@ -1153,6 +1153,14 @@ const Char = (() => {
                     coterieStakeStrings.push(col12String + col3String + thisDate)
                 }                     
                 Media.SetText("stakedCoterieAdvantages", coterieStakeStrings.join("\n"))
+            }
+        },
+        updateHunger = () => {
+            for(const char of D.GetChars("registered")) {
+                const charData = D.GetCharData(char),
+                    quad = charData.quadrant,
+                    hunger = `${D.GetStatVal(char, "hunger")}`
+                Media.SetImg(`Hunger${quad}`, hunger)
             }
         },
     // #endregion
@@ -1625,7 +1633,7 @@ const Char = (() => {
         SendHome: sendCharsHome,
         SendBack: restoreCharsPos,
         PromptTraitSelect: promptTraitSelect,
-        RefreshDisplays: () => { displayDesires(); displayResources(); displayStakes() },
+        RefreshDisplays: () => { displayDesires(); displayResources(); displayStakes(); updateHunger() },
         get SelectedChar() { 
             if (STATEREF.charSelection) {
                 const charObj = getObj("character", STATEREF.charSelection)

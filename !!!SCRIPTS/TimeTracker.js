@@ -34,7 +34,8 @@ const TimeTracker = (() => {
             STATEREF.Alarms = STATEREF.Alarms || {}
             STATEREF.Alarms.Ahead = STATEREF.Alarms.Ahead || []
             STATEREF.Alarms.Behind = STATEREF.Alarms.Behind || []
-            STATEREF.Alarms.AutoAbort = STATEREF.Alarms.AutoAbort || ""
+            STATEREF.Alarms.AutoAbort = STATEREF.Alarms.AutoAbort || []
+            STATEREF.Alarms.AutoDefer = STATEREF.Alarms.AutoDefer || []
             STATEREF.lastDate = STATEREF.lastDate || 0
             STATEREF.weatherOverride = STATEREF.weatherOverride || {}
             STATEREF.timeZoneOffset = parseInt((new Date()).toLocaleString("en-US", {hour: "2-digit", hour12: false, timeZone: "America/New_York"}))
@@ -203,7 +204,8 @@ const TimeTracker = (() => {
                             STATEREF.Alarms = {
                                 Ahead: [],
                                 Behind: [],
-                                AutoAbort: ""
+                                AutoAbort: [],
+                                AutoDefer: []
                             }
                             break
                         }
@@ -1343,12 +1345,13 @@ Weather:<br><b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td styl
         // revActions: ARRAY as above, run when alarm "unfires" instead
         // recurring: if LIST {years: #, months: #, weeks: #, days: #, hours: #, mins: #}, will repeat alarm at that interval
         // isConditional: if true, will stop clock and confirm with GM before firing
-        getDateFromDateString = (dateString) => {
+        getDateFromDateString = (dateString, dateOverride) => {
             if (VAL({date: dateString}))
                 return getDate(dateString)
             if (VAL({string: dateString})) {
                 DB(`Checking ${dateString}: IS STRING`, "getDateFromDateString")
-                const [curDate, curMins] = [STATEREF.dateObj, 60 * STATEREF.dateObj.getUTCHours() + STATEREF.dateObj.getUTCMinutes()]
+                const curDate = VAL({date: dateOverride}) && new Date(dateOverride) || STATEREF.dateObj,
+                    curMins = 60 * curDate.getUTCHours() + curDate.getUTCMinutes()
                 let [startDate, targetDate, targetMins] = [new Date(curDate), new Date(curDate), curMins]
                 for (const dString of dateString.split(/\s*\+\s*/gu)) {
                     DB(`Checking ${dString}`, "getDateFromDateString")
@@ -1449,33 +1452,52 @@ Weather:<br><b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td styl
             STATEREF.Alarms.Ahead[0].wasAborted = true
             const alarmEscrow = D.Clone(STATEREF.Alarms.Ahead.shift())
             STATEREF.Alarms.Behind.unshift(_.omit(D.Clone(alarmEscrow), "recurring"))
-            D.Prompt( // Locks Dice Roller, Stops & Starts Clock
-                C.MENUHTML.Block([
-                    C.MENUHTML.Header(`Fire Alarm '${D.JS(alarm.name)}'?`),
-                    C.MENUHTML.Body(`<b>MESSAGE SUMMARY:</b><br>${D.JS(D.SumHTML(alarm.message))}`, {bgColor: C.COLORS.white, borderStyle: "inset", borderWidth: "3px", borderColor: C.COLORS.darkgrey, width: "95%", margin: "7px 0px 0px 2.5%", fontFamily: "Verdana", fontSize: "10px", lineHeight: "14px", textShadow: "none", color: C.COLORS.black, fontWeight: "normal", textAlign: "left"}),
-                    C.MENUHTML.ButtonLine([
-                        C.MENUHTML.Button("Fire", "!reply confirm true"),
-                        C.MENUHTML.Button("Ignore", "!reply confirm false"),
-                        C.MENUHTML.Button("Ignore Any", "!reply confirm stopfalse")
-                    ].join(""), {height: "36px"})
-                ].join("<br>")),
-                reply => {
-                    STATEREF.Alarms.Ahead.unshift(alarmEscrow)
-                    STATEREF.Alarms.Behind.shift()
-                    STATEREF.Alarms.Ahead[0].wasAborted = reply.includes("false") && true
-                    if (reply.includes("stop")) {
-                        STATEREF.Alarms.AutoAbort = alarm.name
-                        setTimeout(() => { STATEREF.Alarms.AutoAbort = "" }, 6000)
-                    }
-                    fireNextAlarm(reply.includes("false") && true)
+            const replyFunc = reply => {
+                if (reply.includes("defer")) {
+                    delete alarmEscrow.conditionOK
+                    alarmEscrow.time = getDateFromDateString(alarmEscrow.dateString, new Date(alarmEscrow.time + 60 * 60 * 1000)).getTime()
+                    if (reply.includes("stop"))
+                        STATEREF.Alarms.AutoDefer.push(alarmEscrow.name)
+                } else if (reply.includes("stop")) {
+                    STATEREF.Alarms.AutoAbort.push(alarmEscrow.name)
                 }
-            )
+                if (reply.includes("stop"))
+                    setTimeout(() => {
+                        STATEREF.Alarms.AutoAbort = _.without(STATEREF.Alarms.AutoAbort, alarmEscrow.name)
+                        STATEREF.Alarms.AutoDefer = _.without(STATEREF.Alarms.AutoDefer, alarmEscrow.name)
+                    }, 6000)
+                alarmEscrow.wasAborted = reply.includes("false") && true
+                STATEREF.Alarms.Ahead.unshift(D.Clone(alarmEscrow))
+                STATEREF.Alarms.Behind.shift()
+                STATEREF.Alarms.Ahead = _.sortBy(STATEREF.Alarms.Ahead, "time")
+                if (!reply.includes("defer"))
+                    fireNextAlarm(alarmEscrow.wasAborted)
+            }
+            if (STATEREF.Alarms.AutoDefer.includes(alarmEscrow.name))
+                replyFunc("defer")
+            else
+                D.Prompt( // Locks Dice Roller, Stops & Starts Clock
+                    C.MENUHTML.Block([
+                        C.MENUHTML.Header(`Fire Alarm '${D.JS(alarm.name)}'?`),
+                        C.MENUHTML.Body(`<b>MESSAGE SUMMARY:</b><br>${D.JS(D.SumHTML(alarm.message))}`, {bgColor: C.COLORS.white, borderStyle: "inset", borderWidth: "3px", borderColor: C.COLORS.darkgrey, width: "95%", margin: "7px 0px 0px 2.5%", fontFamily: "Verdana", fontSize: "10px", lineHeight: "14px", textShadow: "none", color: C.COLORS.black, fontWeight: "normal", textAlign: "left"}),
+                        C.MENUHTML.ButtonLine([
+                            C.MENUHTML.Button("Fire", "!reply confirm true"),
+                            C.MENUHTML.Button("Ignore", "!reply confirm false"),
+                            C.MENUHTML.Button("Ignore Any", "!reply confirm stopfalse"),
+                            C.MENUHTML.Button("Defer", "!reply confirm defer"),
+                            C.MENUHTML.Button("Defer Any", "!reply confirm deferstop")
+                        ].join(""), {height: "36px"})
+                    ].join("<br>")),
+                    replyFunc
+                )
         },
         fireNextAlarm = (isAborting = false) => {
             const thisAlarm = D.Clone(STATEREF.Alarms.Ahead[0])
             isAborting = isAborting || STATEREF.Alarms.AutoAbort.includes(thisAlarm.name)
             DB(`Firing Alarm: ${D.JS(thisAlarm)}<br>AutoAbort: ${D.JS(STATEREF.Alarms.AutoAbort)} (${STATEREF.Alarms.AutoAbort.includes(thisAlarm.name)})`, "fireNextAlarm")
             if (Session.IsTesting || Session.IsSessionActive) {
+                if (STATEREF.Alarms.AutoDefer.includes(thisAlarm.name))
+                    return checkCondition(thisAlarm)
                 if (!thisAlarm.wasRecurred && VAL({list: thisAlarm.recurring})) {
                     thisAlarm.wasRecurred = true
                     STATEREF.Alarms.Ahead.unshift(D.Clone(thisAlarm))
