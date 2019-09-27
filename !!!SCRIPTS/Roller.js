@@ -512,10 +512,10 @@ const Roller = (() => {
                     // no default
                     }
                     // D.SetStat(charObjs[0], "resonance", deltaAttrs.resonance)
-                    sendChat("Resonance Check", C.CHATHTML.colorBlock([
-                        C.CHATHTML.colorTitle(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
-                        C.CHATHTML.colorHeader(resDetails),
-                        C.CHATHTML.colorBody(resIntLine, {lineHeight: "20px"})
+                    sendChat("Resonance Check", C.CHATHTML.Block([
+                        C.CHATHTML.Title(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
+                        C.CHATHTML.Header(resDetails),
+                        C.CHATHTML.Body(resIntLine, {lineHeight: "20px"})
                     ]))
                     break
                 }
@@ -3990,10 +3990,10 @@ const Roller = (() => {
                     break
                 // no default
             }
-            sendChat("Resonance Check", C.CHATHTML.colorBlock([
-                C.CHATHTML.colorTitle(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
-                C.CHATHTML.colorHeader(resDetails),
-                C.CHATHTML.colorBody(resIntLine)
+            sendChat("Resonance Check", C.CHATHTML.Block([
+                C.CHATHTML.Title(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
+                C.CHATHTML.Header(resDetails),
+                C.CHATHTML.Body(resIntLine)
             ]))
         }
     // #endregion
@@ -4009,6 +4009,7 @@ const Roller = (() => {
         Select: selectDie,
         Reroll: wpReroll,
         Clean: clearRoller,
+        Lock: lockRoller,
 
         AddCharEffect: (charRef, effect) => { addCharRollEffects(charRef, [effect]) }
     }

@@ -64,7 +64,7 @@ const Session = (() => {
     // #region EVENT HANDLERS: (HANDLEINPUT)
         handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
         // D.Alert(`Received Call: ${call}<br>MSG: ${D.JS(msg)}`)
-            let charObjs, charIDString
+            let charObjs, charIDString // eslint-disable-line no-unused-vars
             [charObjs, charIDString, call, args] = D.ParseCharSelection(call, args)
         // D.Alert(`Updated Call: ${call}<br>MSG: ${D.JS(msg)}`)
             switch (call) {
@@ -208,13 +208,13 @@ const Session = (() => {
                 const otherScribes = _.shuffle(_.without(_.pluck(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe), "playerName"), "Storyteller"))
                 STATEREF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, sessionScribe]))
             } 
-            sendChat("Session Start", C.CHATHTML.colorBlock([
-                C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
-                C.CHATHTML.colorBody("Initializing Session...", {margin: "0px 0px 10px 0px"}),
-                C.CHATHTML.colorHeader(`Welcome to Session ${D.NumToText(STATEREF.SessionNum, true)}!`),
-                C.CHATHTML.colorBody("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "10px 0px 10px 0px"}),
-                C.CHATHTML.colorHeader(`Session Scribe: ${sessionScribe}`),
-                C.CHATHTML.colorBody("Thank you for your service!")
+            sendChat("Session Start", C.CHATHTML.Block([
+                C.CHATHTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
+                C.CHATHTML.Body("Initializing Session...", {margin: "0px 0px 10px 0px"}),
+                C.CHATHTML.Header(`Welcome to Session ${D.NumToText(STATEREF.SessionNum, true)}!`),
+                C.CHATHTML.Body("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "10px 0px 10px 0px"}),
+                C.CHATHTML.Header(`Session Scribe: ${sessionScribe}`),
+                C.CHATHTML.Body("Thank you for your service!")
             ]))
             changeMode("Active")
             for (const quadrant of _.keys(Char.REGISTRY)) {
@@ -229,11 +229,11 @@ const Session = (() => {
         },
         endSession = () => {
             if (remorseCheck()) {
-                sendChat("Session End", C.CHATHTML.colorBlock([
-                    C.CHATHTML.colorTitle("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
-                    C.CHATHTML.colorHeader(`Concluding Session ${D.NumToText(STATEREF.SessionNum, true)}`),
-                    C.CHATHTML.colorBody("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "10px 0px 10px 0px"}),
-                    C.CHATHTML.colorTitle("See you next week!", {fontSize: "32px"}),
+                sendChat("Session End", C.CHATHTML.Block([
+                    C.CHATHTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
+                    C.CHATHTML.Header(`Concluding Session ${D.NumToText(STATEREF.SessionNum, true)}`),
+                    C.CHATHTML.Body("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "10px 0px 10px 0px"}),
+                    C.CHATHTML.Title("See you next week!", {fontSize: "32px"}),
                 ]))
                 Char.SendHome()
                 changeMode("Inactive")
@@ -272,7 +272,7 @@ const Session = (() => {
         changeMode = mode => {
             if (VAL({string: mode}, "changeMode") && STATEREF.SessionModes.map(x => x.toLowerCase()).includes(mode.toLowerCase())) {
                 const [lastMode, curMode] = [
-                    D.Clone(STATEREF.Mode),
+                    `${STATEREF.Mode}`,
                     D.Capitalize(mode.toLowerCase())
                 ]
                 STATEREF.Mode = curMode
@@ -300,18 +300,18 @@ const Session = (() => {
                 setLocation(BLANKLOCRECORD)
                 TimeTracker.StopClock()
                 Char.SendHome()
-                sendChat("Session Downtime", C.CHATHTML.colorBlock([
-                    C.CHATHTML.colorTitle("Session Downtime"),
-                    C.CHATHTML.colorHeader("Session Status: Downtime"),
-                    C.CHATHTML.colorBody("Clock Stopped.")
+                sendChat("Session Downtime", C.CHATHTML.Block([
+                    C.CHATHTML.Title("Session Downtime"),
+                    C.CHATHTML.Header("Session Status: Downtime"),
+                    C.CHATHTML.Body("Clock Stopped.")
                 ]))
             } else {
                 TimeTracker.StartClock()
                 Char.SendBack()
-                sendChat("Session Downtime", C.CHATHTML.colorBlock([
-                    C.CHATHTML.colorTitle("Session Downtime"),
-                    C.CHATHTML.colorHeader("Session Status: Regular Time"),
-                    C.CHATHTML.colorBody("Clock Started.")
+                sendChat("Session Downtime", C.CHATHTML.Block([
+                    C.CHATHTML.Title("Session Downtime"),
+                    C.CHATHTML.Header("Session Status: Regular Time"),
+                    C.CHATHTML.Body("Clock Started.")
                 ]))
             }
             Char.RefreshDisplays()
@@ -324,34 +324,37 @@ const Session = (() => {
                     quad = charData.quadrant,
                     spotlightOn = Media.GetImgData("Spotlight").curSrc,
                     otherCharData = D.GetChars("registered").filter(x => x.id !== charData.id).map(x => D.GetCharData(x))
-
-                    // offTokenKeys = _.values(D.GetCharVals(D.GetChars("registered").filter(x => x.id !== charData.id), "tokenName"))
                 if (STATEREF.Mode !== "Spotlight" || spotlightOn !== quad) {
                     changeMode("Spotlight")
                     setLocation(BLANKLOCRECORD)
                     Char.SendHome()
-                    for (const otherData of otherCharData)
+                    for (const otherData of otherCharData) {
                         Char.TogglePC(otherData.quadrant, false)
+                        Char.SetNPC(otherData.id, "base")
+                    }
                     Char.TogglePC(quad, true)
+                    Char.SetNPC(charData.id, "base")
                     Media.SetImg("Spotlight", quad, true)
-                    sendChat("Spotlight", C.CHATHTML.colorBlock([
-                        C.CHATHTML.colorTitle("Spotlight:"),
-                        C.CHATHTML.colorHeader(charData.name)
-                    ]))             
-                    Char.RefreshDisplays()
-                    TimeTracker.Fix()
+                    sendChat("Spotlight", C.CHATHTML.Block([
+                        C.CHATHTML.Title("Spotlight:"),
+                        C.CHATHTML.Header(charData.name)
+                    ]))
                 }
             } else {
-                changeMode(STATEREF.LastMode)
-                for (const charData of D.GetChars("registered").map(x => D.GetCharData(x)))
+                changeMode(STATEREF.LastMode === "Spotlight" && "Active" || STATEREF.LastMode)
+                for (const charData of D.GetChars("registered").map(x => D.GetCharData(x))) {
+                    Char.SetNPC(charData.id, "base")
                     Char.TogglePC(charData.quadrant, true)
+                }
                 Char.SendBack()
                 Media.SetImg("Spotlight", "blank")
-                sendChat("Spotlight", C.CHATHTML.colorBlock([
-                    C.CHATHTML.colorTitle("Spotlight"),
-                    C.CHATHTML.colorHeader("Spotlight Session Closed.")
+                sendChat("Spotlight", C.CHATHTML.Block([
+                    C.CHATHTML.Title("Spotlight"),
+                    C.CHATHTML.Header("Spotlight Session Closed.")
                 ]))
-            }  
+            }                   
+            Char.RefreshDisplays()
+            TimeTracker.Fix()
         },
     // #endregion
 

@@ -79,7 +79,8 @@ const Fuzzy = (() => {
                 },
     
                 levenshtein = function(str1, str2) {
-                    let current = [], prev, value
+                    const current = []
+                    let prev, value
     
                     for (let i = 0; i <= str2.length; i++)
                         for (let j = 0; j <= str1.length; j++) {

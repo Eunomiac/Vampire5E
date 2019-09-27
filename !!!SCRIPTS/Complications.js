@@ -608,15 +608,15 @@ const Complications = (() => {
                 const messageLines = []
                 for (const message of STATEREF.endMessageQueue) 
                     if (message.charAt(0) === "!") 
-                        messageLines.push(C.CHATHTML.colorBody(message.slice(1), {color: C.COLORS.green}))
+                        messageLines.push(C.CHATHTML.Body(message.slice(1), {color: C.COLORS.green}))
                     else
-                        messageLines.push(C.CHATHTML.colorBody(message))
+                        messageLines.push(C.CHATHTML.Body(message))
                 
-                D.Chat(charRef, C.CHATHTML.colorBlock([
-                    C.CHATHTML.colorTitle("COMPLICATION RESULTS", {fontSize: "28px"}),
-                    C.CHATHTML.colorHeader("Endure the Following:"),
+                D.Chat(charRef, C.CHATHTML.Block([
+                    C.CHATHTML.Title("COMPLICATION RESULTS", {fontSize: "28px"}),
+                    C.CHATHTML.Header("Endure the Following:"),
                     messageLines.join(""),
-                    C.CHATHTML.colorHeader("Thank you for playing!", {margin: "8px 0px 0px 0px"})
+                    C.CHATHTML.Header("Thank you for playing!", {margin: "8px 0px 0px 0px"})
                 ]))
             }
         },

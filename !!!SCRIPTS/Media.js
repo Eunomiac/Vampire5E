@@ -57,199 +57,7 @@ const Media = (() => {
         // Initialize AREADICT Fuzzy Dictionary
             STATEREF.AREADICT = Fuzzy.Fix()
             for (const areaKey of _.keys(STATEREF.areas))
-                STATEREF.AREADICT.add(areaKey)  
-            
-            /* STATEREF.imgregistry.signalLight_Pad_1.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.signalLight_Pad_4.modes))
-            STATEREF.imgregistry.signalLight_Pad_2.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.signalLight_Pad_4.modes))
-            STATEREF.imgregistry.signalLight_Pad_3.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.signalLight_Pad_4.modes))
-            STATEREF.imgregistry.signalLight_PartnerPad_1.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.signalLight_PartnerPad_4.modes))
-            STATEREF.imgregistry.signalLight_PartnerPad_2.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.signalLight_PartnerPad_4.modes))
-            STATEREF.imgregistry.signalLight_PartnerPad_3.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.signalLight_PartnerPad_4.modes))
-            STATEREF.imgregistry.SignalLightTopLeft_1.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.SignalLightBotRight_1.modes))
-            STATEREF.imgregistry.SignalLightTopRight_1.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.SignalLightBotRight_1.modes))
-            STATEREF.imgregistry.SignalLightBotLeft_1.modes = JSON.parse(JSON.stringify(STATEREF.imgregistry.SignalLightBotRight_1.modes)) */
-
-            STATEREF.imgregistry.Spotlight_1.modes = {
-                Active: {
-                    isForcedOn: false,
-                    isForcedState: null,
-                    lastActive: false,
-                    lastState: false
-                },
-                Inactive: {
-                    isForcedOn: false,
-                    isForcedState: null,
-                    lastActive: false,
-                    lastState: false
-                },
-                Daylighter: {
-                    isForcedOn: false,
-                    isForcedState: null
-                },
-                Downtime: {
-                    isForcedOn: false,
-                    isForcedState: null,
-                    lastActive: false,
-                    lastState: false
-                },
-                Complications: {
-                    isForcedOn: null,
-                    isForcedState: null
-                },
-                Spotlight: {
-                    isForcedOn: "LAST",
-                    isForcedState: null,
-                    lastActive: false,
-                    lastState: false
-                }
-            }
-
-
-            const resetWPPlaceholder = ((isResetting = false) => {
-                if (!isResetting)
-                    return null
-                DragPads.DelPad("wpReroll")
-                Media.RemoveImg("wpRerollPlaceholder_1")
-                const wpPlaceholderObj = createObj("graphic", {
-                    _pageid: D.PAGEID,
-                    imgsrc: C.IMAGES.blank,
-                    left: 73,
-                    top: 186,
-                    width: 64,
-                    height: 64,
-                    layer: "map",
-                    isdrawing: true,
-                    controlledby: "",
-                    showname: false
-                })
-                DragPads.MakePad(wpPlaceholderObj, "wpReroll", {
-                    top: 186,
-                    left: 73,
-                    height: 64,
-                    width: 64,
-                    startActive: true
-                })
-
-                STATEREF.imgregistry.wpReroll_Pad_1.modes = {
-                    Active: {
-                        isForcedOn: null,
-                        isForcedState: null,
-                        lastActive: false,
-                        lastState: false
-                    },
-                    Inactive: {
-                        isForcedOn: null,
-                        isForcedState: null,
-                        lastActive: false,
-                        lastState: false
-                    },
-                    Daylighter: {
-                        isForcedOn: null,
-                        isForcedState: null
-                    },
-                    Downtime: {
-                        isForcedOn: null,
-                        isForcedState: null,
-                        lastActive: false,
-                        lastState: false
-                    },
-                    Complications: {
-                        isForcedOn: null,
-                        isForcedState: null
-                    }
-                }
-                STATEREF.imgregistry.wpReroll_Pad_1.curSrc = "blank"
-                STATEREF.imgregistry.wpReroll_Pad_1.activeSrc = "blank"
-                STATEREF.imgregistry.wpReroll_Pad_1.curMode = "Active"
-                STATEREF.imgregistry.wpReroll_PartnerPad_1.modes = {
-                    Active: {
-                        isForcedOn: false,
-                        isForcedState: null,
-                        lastActive: false,
-                        lastState: false
-                    },
-                    Inactive: {
-                        isForcedOn: false,
-                        isForcedState: null,
-                        lastActive: false,
-                        lastState: false
-                    },
-                    Daylighter: {
-                        isForcedOn: false,
-                        isForcedState: null
-                    },
-                    Downtime: {
-                        isForcedOn: false,
-                        isForcedState: null,
-                        lastActive: false,
-                        lastState: false
-                    },
-                    Complications: {
-                        isForcedOn: false,
-                        isForcedState: null
-                    }
-                }
-                STATEREF.imgregistry.wpReroll_PartnerPad_1.curSrc = "blank"
-                STATEREF.imgregistry.wpReroll_PartnerPad_1.activeSrc = "blank"
-                STATEREF.imgregistry.wpReroll_PartnerPad_1.curMode = "Active"
-
-
-                STATEREF.imgregistry.wpRerollPlaceholder_1 = {
-                    id: wpPlaceholderObj.id,
-                    name: "wpRerollPlaceholder_1",
-                    left: 73,
-                    top: 186,
-                    height: 64,
-                    width: 64,
-                    activeLayer: "map",
-                    startActive: false,
-                    zIndex: 0,
-                    srcs: {
-                        blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511"
-                    },
-                    leftEdge: 41,
-                    rightEdge: 105,
-                    topEdge: 154,
-                    bottomEdge: 218,
-                    curSrc: "blank",
-                    isActive: true,
-                    modes: {
-                        Active: {
-                            isForcedOn: false,
-                            isForcedState: null,
-                            lastActive: true,
-                            lastState: "blank"
-                        },
-                        Inactive: {
-                            isForcedOn: false,
-                            isForcedState: null,
-                            lastActive: false,
-                            lastState: "null"
-                        },
-                        Daylighter: {
-                            isForcedOn: false,
-                            isForcedState: null,
-                            lastActive: true,
-                            lastState: "blank"
-                        },
-                        Downtime: {
-                            isForcedOn: false,
-                            isForcedState: null,
-                            lastActive: true,
-                            lastState: "blank"
-                        },
-                        Complications: {
-                            isForcedOn: false,
-                            isForcedState: null,
-                            lastActive: true,
-                            lastState: "blank"
-                        }
-                    },
-                    curMode: "Active",
-                    activeSrc: "blank"
-                }
-                return null
-            })()   
+                STATEREF.AREADICT.add(areaKey)
         },
             
         
@@ -1195,6 +1003,21 @@ const Media = (() => {
             },
             dragpads: 700
         },
+        DEFAULTTOKENDATA = {
+            activeLayer: "objects",
+            zIndex: 200,
+            modes: {
+                Active: {isForcedOn: true, isForcedState: null},
+                Inactive: {isForcedOn: false, isForcedState: null},
+                Daylighter: {isForcedOn: true, isForcedState: null},
+                Downtime: {isForcedOn: false, isForcedState: null},
+                Complications: {isForcedOn: null, isForcedState: null},
+                Spotlight: {isForcedOn: false, isForcedState: null}
+            },
+            curSrc: "base",
+            isActive: true,
+            activeSrc: "base"
+        },
     // #endregion
 
     // #region GENERAL MEDIA OBJECT GETTERS:
@@ -1258,13 +1081,6 @@ const Media = (() => {
         // #endregion
 
     // #region GENERAL MEDIA OBJECT SETTERS: 
-        setState = (mediaRef, stateRef) => {
-            if (stateRef === null || stateRef === undefined)
-                return null
-            if (isRegText(mediaRef)) 
-                return setText(mediaRef, stateRef)
-            return setImg(mediaRef, mediaRef)
-        },
         setLayer = (mediaRef, layer, isForcing = false) => {
             const mediaData = getData(mediaRef)
             if (VAL({list: mediaData}, "setLayer")) {
@@ -1393,6 +1209,8 @@ const Media = (() => {
         getImgKey = (imgRef, isSilent = false) => {
             try {
                 let imgKey, imgObj
+                if (VAL({char: imgRef}))
+                    return imgRef
                 if (VAL({string: imgRef})) {
                     if (IMGREGISTRY[imgRef])
                         return imgRef
@@ -1427,6 +1245,8 @@ const Media = (() => {
             // D.Alert("GETTING IMG OBJECT")
             try {
                 let imgObj
+                if (VAL({char: imgRef}))
+                    return (findObjs({_pageid: D.PAGEID, _type: "graphic", _subtype: "token", represents: D.GetChar(imgRef).id}) || [false])[0]
                 if (VAL({imgObj: imgRef}))
                     return imgRef
                 if (VAL({string: imgRef})) {
@@ -1463,10 +1283,29 @@ const Media = (() => {
                 let imgKey, imgObj
                 try {
                     imgKey = getImgKey(imgRef, isSilent)
-                    if (VAL({string: imgKey}))
-                        return IMGREGISTRY[imgKey]
+                    if (VAL({string: imgKey}) || VAL({imgObj: imgKey}) && IMGREGISTRY[imgKey.get("name")])
+                        return IMGREGISTRY[imgKey] || IMGREGISTRY[imgKey.get("name")]
                     imgObj = getImgObj(imgRef, isSilent)
-                    if (VAL({imgObj}))
+                    if (VAL({imgObj}, "getImgData")) {
+                        if (IMGREGISTRY[imgObj.get("name")])
+                            return IMGREGISTRY[imgObj.get("name")]
+                        if (VAL({char: imgKey}) && !IMGREGISTRY[imgObj.get("name")])
+                            return Object.assign(DEFAULTTOKENDATA, {
+                                id: imgObj.id,
+                                name: imgObj.get("name"),
+                                left: imgObj.get("left"),
+                                top: imgObj.get("top"),
+                                height: imgObj.get("height"),
+                                width: imgObj.get("width"),
+                                srcs: {
+                                    base: imgObj.get("imgsrc").replace(/(max\.png|med\.png)/gu, "thumb.png")
+                                },
+                                leftEdge: imgObj.get("left") - 0.5 * imgObj.get("width"),
+                                rightEdge: imgObj.get("left") + 0.5 * imgObj.get("width"),
+                                topEdge: imgObj.get("top") - 0.5 * imgObj.get("height"),
+                                bottomEdge: imgObj.get("top") + 0.5 * imgObj.get("height"),
+                                curMode: Session.Mode
+                            })
                         return {
                             isUnregistered: true,
                             id: imgObj.id,
@@ -1475,8 +1314,17 @@ const Media = (() => {
                             top: parseInt(imgObj.get("top")),
                             height: parseInt(imgObj.get("height")),
                             width: parseInt(imgObj.get("width")),
-                            activeLayer: imgObj.get("layer")
+                            activeLayer: imgObj.get("layer"),
+                            srcs: {
+                                base: imgObj.get("imgsrc").replace(/(max\.png|med\.png)/gu, "thumb.png")
+                            },
+                            leftEdge: imgObj.get("left") - 0.5 * imgObj.get("width"),
+                            rightEdge: imgObj.get("left") + 0.5 * imgObj.get("width"),
+                            topEdge: imgObj.get("top") - 0.5 * imgObj.get("height"),
+                            bottomEdge: imgObj.get("top") + 0.5 * imgObj.get("height"),
+                            curMode: Session.Mode
                         }
+                    }
                     return false
                 } catch (errObj) {
                     return !isSilent && THROW(`Cannot locate image with search value '${D.JS(imgRef)}'`, "getImgData", errObj)
@@ -1552,7 +1400,7 @@ const Media = (() => {
         },
         getImgSrc = imgRef => (getImgData(imgRef) || {curSrc: false}).curSrc,
         /* getImgSrcs = imgRef => getImgData(imgRef) ? getImgData(imgRef).srcs : false, */
-        isActive = mediaRef => (getData(mediaRef) || {isActive: null}).isActive,
+        isObjActive = mediaRef => (getData(mediaRef) || {isActive: null}).isActive,
         /* eslint-disable-next-line no-unused-vars */
         getContainedImgObjs = (locRef, options = {}) => {
             const findFilter = {
@@ -1563,7 +1411,7 @@ const Media = (() => {
                 findFilter[key.replace(/^sub/gu, "_sub")] = options[key]            
             const contImgObjs = findObjs(findFilter).filter(v => {
                 for (const key of _.intersection(_.keys(options), ["imgsrc", "represents", "left", "top", "width", "height", "controlledby"])) {
-                    if (_.isEmpty(v.get(key)) || isRegImg(v) && !isActive(v))
+                    if (_.isEmpty(v.get(key)) || isRegImg(v) && !isObjActive(v))
                         return false
                     if (options[key] !== true && !v.get(key).toLowerCase().includes(options[key].toLowerCase()))
                         return false                    
@@ -1747,7 +1595,7 @@ const Media = (() => {
                 if (VAL({string: srcURL}, "setImg")) { 
                     const imgObj = getImgObj(imgData.name)
                     if (VAL({imgObj}, ["setImg", `Key: ${D.JS(imgData.name)}`])) {
-                        if (isActive(imgData.name))
+                        if (isObjActive(imgData.name))
                             IMGREGISTRY[imgData.name].activeSrc = srcRef
                         IMGREGISTRY[imgData.name].curSrc = srcRef
                         imgObj.set("imgsrc", srcURL)                  
@@ -1987,7 +1835,7 @@ const Media = (() => {
             // Also, verify img status is changing before doing anything.
             if (isActive === null)
                 return null
-            const imgData = getImgData(imgRef)
+            const imgData = getImgData(imgRef) || VAL({graphicObj: imgRef}) && {isActive: imgRef.get("layer") === "walls"}
             if (VAL({list: imgData}, "toggleImg")) {
                 let activeCheck = null
                 if (isActive === false || isActive !== true && imgData.isActive === true)
@@ -1996,7 +1844,7 @@ const Media = (() => {
                     activeCheck = true
                 if (!isForcing && (activeCheck === null || activeCheck === imgData.isActive))
                     return null
-                const imgObj = getImgObj(imgData.name)
+                const imgObj = getImgObj(imgData.name) || VAL({graphicObj: imgRef}) && imgRef
                 DragPads.Toggle(imgData.name, activeCheck, true)
                 if (activeCheck === false) {
                     // TURN OFF: Set layer to walls, toggle off associated drag pads, update activeState value
@@ -2350,12 +2198,6 @@ const Media = (() => {
             return false
         },
         hasShadowObj = textRef => Boolean((getTextData(textRef) || {shadowID: false}).shadowID),
-        getTextShadowObj = (textRef, isSilent = false) => {
-            const textData = getTextData(textRef, isSilent)
-            if (VAL({list: textData}) && textData.shadowID)
-                return getObj("text", textData.shadowID) || !isSilent && THROW(`No shadow text object registered for ${D.JS(textData.name)}`, "getTextShadowObj")
-            return !isSilent && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, "getTextShadowObj")
-        },
         getShadowShift = textRef => C.SHADOWOFFSETS[(getTextObj(textRef) || {get: () => 20}).get("font_size")],
         getTextData = (textRef, isSilent = false) => {
             try {
@@ -2859,7 +2701,8 @@ const Media = (() => {
         IsRegistered: isRegistered,
         HasForcedState: hasForcedState,
         SwitchMode: switchMode,
-        IsActive: isActive,      
+        IsActive: isObjActive,
+        Toggle: toggle,    
         
         // GETTERS
         GetImg: getImgObj, GetText: getTextObj,

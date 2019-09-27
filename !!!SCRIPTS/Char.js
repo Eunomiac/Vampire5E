@@ -231,9 +231,9 @@ const Char = (() => {
                                     returnLines.push(charLines.join(""))
                                 }  
                                 sendChat(D.Capitalize(traitName, true), D.JSH(`/w Storyteller ${
-                                    C.CHATHTML.colorBlock([
-                                        C.CHATHTML.colorHeader(D.Capitalize(traitName, true)),
-                                        C.CHATHTML.colorBody(returnLines.join("<br>"), {color: C.COLORS.white, fontWeight: "normal", fontFamily: "Voltaire", fontSize: "12px", textAlign: "left"})
+                                    C.CHATHTML.Block([
+                                        C.CHATHTML.Header(D.Capitalize(traitName, true)),
+                                        C.CHATHTML.Body(returnLines.join("<br>"), {color: C.COLORS.white, fontWeight: "normal", fontFamily: "Voltaire", fontSize: "12px", textAlign: "left"})
                                     ].join(""))}`))
                             }
                             break
@@ -666,7 +666,6 @@ const Char = (() => {
                 ))
             sendChat("Select a Character", D.JSH(`/w Storyteller ${C.MENUHTML.Block(chatLines.join(""))}`))
         },
-        regCharSelect = charID => { STATEREF.charSelection = charID },
         promptActionMenu = (charsRef) => {
             const chatLines = [],
                 charIDString = getCharIDString(charsRef),
@@ -902,6 +901,7 @@ const Char = (() => {
                 if (npcName === "base") {
                     Media.ToggleImg(`TombstonePic${quad}`, false)
                     Media.ToggleText(`TombstoneName${quad}`, false)
+                    Media.SetArea(tokenObj, `${quad}Token`)
                     if (Media.IsActive(`Tombstone${closestQuad}`))
                         if (["base", "blank"].includes(Media.GetImgSrc(`Tombstone${closestQuad}`))) {
                             Media.SetImg(`Tombstone${closestQuad}`, "blank")
@@ -921,8 +921,11 @@ const Char = (() => {
                     Media.SetText(`TombstoneName${quad}`, nameString, true)
                     Media.SetImg(`Tombstone${quad}`, "npc", true)
                     Media.SetImg(`TombstonePic${quad}`, D.GetName(npcObj, true), true)
+                    D.Alert(D.JS(tokenObj, true))
+                    Media.ToggleImg(tokenObj, true)
                     Media.SetImg(tokenObj, npcName, true)
-                    if (Media.GetImgSrc(`Tombstone${closestQuad}`) === "blank")
+                    Media.SetArea(tokenObj, `npcToken${quad}`)
+                    if (!Media.IsActive(`Tombstone${closestQuad}`) || Media.GetImgSrc(`Tombstone${closestQuad}`) === "blank")
                         Media.SetImg(`Tombstone${closestQuad}`, "base", true)
                 }
             }
@@ -947,9 +950,9 @@ const Char = (() => {
                         D.CopyToSec(charObj.id, "earnedxpright", rightRowIDs[0], "earnedxp")
                         leftRowIDs.push(rightRowIDs.shift())
                     }
-                    D.Chat(charObj, C.CHATHTML.colorBlock([                    
-                        C.CHATHTML.colorBody(`<b>FOR:</b> ${reason}`, C.STYLES.whiteMarble.body),
-                        C.CHATHTML.colorHeader(`You Have Been Awarded ${D.NumToText(award, true)} XP.`, C.STYLES.whiteMarble.header),
+                    D.Chat(charObj, C.CHATHTML.Block([                    
+                        C.CHATHTML.Body(`<b>FOR:</b> ${reason}`, C.STYLES.whiteMarble.body),
+                        C.CHATHTML.Header(`You Have Been Awarded ${D.NumToText(award, true)} XP.`, C.STYLES.whiteMarble.header),
                     ], C.STYLES.whiteMarble.block))                
                 // D.Alert(`Sort Trigger Value: ${D.GetStatVal(charObj, "xpsorttrigger")}`)
                     D.SetStat(charObj, "xpsorttrigger", D.GetStatVal(charObj, "xpsorttrigger") === "1" ? "2" : "1")
@@ -983,8 +986,8 @@ const Char = (() => {
                 desireObj.remove()
                 adjustDamage(charRef, "willpower", "superficial+", -1, false)
                 displayDesires()
-                D.Chat(D.GetChar(charRef), C.CHATHTML.colorBlock([
-                    C.CHATHTML.colorHeader("You have resolved your Desire!<br>One superficial Willpower restored.<br>What do you Desire next?", Object.assign({height: "auto"}, C.STYLES.whiteMarble.header))
+                D.Chat(D.GetChar(charRef), C.CHATHTML.Block([
+                    C.CHATHTML.Header("You have resolved your Desire!<br>One superficial Willpower restored.<br>What do you Desire next?", Object.assign({height: "auto"}, C.STYLES.whiteMarble.header))
                 ], C.STYLES.whiteMarble.block))
             }            
         },
@@ -1005,9 +1008,9 @@ const Char = (() => {
             const entry = STATEREF.weeklyResources[initial.toUpperCase()] && STATEREF.weeklyResources[initial.toUpperCase()][rowNum - 1]
             if (entry)
                 entry[1] = Math.max(0, Math.min(entry[2], entry[1] + amount))
-            D.Chat(D.GetChar(initial), C.CHATHTML.colorBlock([
-                C.CHATHTML.colorHeader("Weekly Resource Updated", C.STYLES.whiteMarble.header),
-                C.CHATHTML.colorBody(amount < 0 ? `${entry[0]} restored by ${-1*amount} to ${entry[2]-entry[1]}/${entry[2]}` : `${Math.abs(amount)} ${entry[0]} spent, ${entry[2]-entry[1]} remaining.`, C.STYLES.whiteMarble.body)
+            D.Chat(D.GetChar(initial), C.CHATHTML.Block([
+                C.CHATHTML.Header("Weekly Resource Updated", C.STYLES.whiteMarble.header),
+                C.CHATHTML.Body(amount < 0 ? `${entry[0]} restored by ${-1*amount} to ${entry[2]-entry[1]}/${entry[2]}` : `${Math.abs(amount)} ${entry[0]} spent, ${entry[2]-entry[1]} remaining.`, C.STYLES.whiteMarble.body)
             ], C.STYLES.whiteMarble.block))
             displayResources()
         },
@@ -1015,8 +1018,8 @@ const Char = (() => {
             _.each(STATEREF.weeklyResources, (data, init) => {
                 // D.Alert(`Init: ${D.JS(init)}, Data: ${D.JS(data, true)}<br>Map: ${D.JS(_.map(data, v => [v[0], 0, v[2]]))}`)
                 STATEREF.weeklyResources[init] = _.map(data, v => [v[0], 0, v[2], v[3] || 0])
-                D.Chat(D.GetChar(init), C.CHATHTML.colorBlock([
-                    C.CHATHTML.colorBody("Your weekly resources have been refreshed.", C.STYLES.whiteMarble.body)
+                D.Chat(D.GetChar(init), C.CHATHTML.Block([
+                    C.CHATHTML.Body("Your weekly resources have been refreshed.", C.STYLES.whiteMarble.body)
                 ], C.STYLES.whiteMarble.block))
             })
             displayResources()
@@ -1264,7 +1267,7 @@ const Char = (() => {
                                 bodyString = "Further strain will cause AGGRAVATED damage!"
                                 alertString = "EXHAUSTED: -2 to Social & Mental rolls."
                             }
-                            trackerString = C.CHATHTML.trackerLine(maxWP - newBashing - newAggravated, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
+                            trackerString = C.CHATHTML.TrackerLine(maxWP - newBashing - newAggravated, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
                         } else if (amount < 0) {
                             bannerString = `You regain ${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "willpower_bashing")[0]), Math.abs(amount))).toLowerCase()} Willpower.`                            
                         }                        
@@ -1286,7 +1289,7 @@ const Char = (() => {
                                 bodyString = "Further strain will cause AGGRAVATED damage!"
                                 alertString = "EXHAUSTED: -2 to Social & Mental rolls."            
                             }
-                            trackerString = C.CHATHTML.trackerLine(maxWP - newBashing - newAggravated, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"}) 
+                            trackerString = C.CHATHTML.TrackerLine(maxWP - newBashing - newAggravated, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"}) 
                         } else if (amount < 0) {
                             bannerString = `${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "willpower_aggravated")[0]), Math.abs(amount)))} aggravated Willpower damage downgraded.`                            
                         }
@@ -1316,7 +1319,7 @@ const Char = (() => {
                                 bodyString = "Further harm will cause AGGRAVATED damage!"
                                 alertString = "WOUNDED: -2 to Physical rolls."
                             }
-                            trackerString = C.CHATHTML.trackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})                 
+                            trackerString = C.CHATHTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})                 
                         } else if (amount < 0) {
                             bannerString = `You heal ${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "health_bashing")[0]), Math.abs(amount))).toLowerCase()} superficial Health damage.` 
                         }
@@ -1337,7 +1340,7 @@ const Char = (() => {
                                 bodyString = "Further harm will cause AGGRAVATED damage!"
                                 alertString = "WOUNDED: -2 to Physical rolls."
                             }                       
-                            trackerString = C.CHATHTML.trackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
+                            trackerString = C.CHATHTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
                         } else if (amount < 0) {
                             bannerString = `${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "health_aggravated")[0]), Math.abs(amount)))} aggravated Health damage downgraded.`                  
                         }
@@ -1345,11 +1348,11 @@ const Char = (() => {
                     // no default
                 }
                 if (amount !== 0 && isChatting)
-                    D.Chat(charObj, C.CHATHTML.colorBlock(_.compact([
-                        C.CHATHTML.colorHeader(bannerString, chatStyles.banner),
-                        bodyString ? C.CHATHTML.colorBody(bodyString, chatStyles.body) : null,
+                    D.Chat(charObj, C.CHATHTML.Block(_.compact([
+                        C.CHATHTML.Header(bannerString, chatStyles.banner),
+                        bodyString ? C.CHATHTML.Body(bodyString, chatStyles.body) : null,
                         trackerString || null,
-                        alertString ? C.CHATHTML.colorHeader(alertString, Object.assign(chatStyles.alert, alertString.includes("<br>") ? {height: "40px"} : {})) : null
+                        alertString ? C.CHATHTML.Header(alertString, Object.assign(chatStyles.alert, alertString.includes("<br>") ? {height: "40px"} : {})) : null
                     ]), chatStyles.block))
                 setAttrs(D.GetChar(charObj).id, {[trait.toLowerCase()]: finalTraitVal})
                 return true
@@ -1400,7 +1403,7 @@ const Char = (() => {
             return false
         },
         sortTimeline = (charRef) => {
-            D.SortRepSec(charRef, "timeline", "tlsortby", true, function(val) {return val || -200})
+            D.SortRepSec(charRef, "timeline", "tlsortby", true, val => val || -200)
         },
         launchProject = (margin = 0, resultString = "SUCCESS") => {
             const charObj = D.GetChar(Roller.LastProjectCharID),
@@ -1612,6 +1615,7 @@ const Char = (() => {
         CheckInstall: checkInstall,
         REGISTRY,
         TogglePC: togglePlayerChar,
+        SetNPC: setCharNPC,
         Damage: adjustDamage,
         AdjustTrait: adjustTrait,
         AdjustHunger: adjustHunger,

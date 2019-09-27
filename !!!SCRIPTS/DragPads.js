@@ -405,6 +405,7 @@ const DragPads = (() => {
                         return [padObj, partnerObj]
                     }
                 }
+            return false
         },
         getGraphic = pad => Media.GetImg((PADREGISTRY[(VAL({object: pad}) && pad || {id: ""}).id] || {id: ""}).id),
 

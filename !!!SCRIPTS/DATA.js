@@ -7,7 +7,7 @@
 const D = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "DATA",
-        CHATCOMMAND = "!data",
+        CHATCOMMAND = ["!data", "!reply"],
         GMONLY = true,
 
     // #region COMMON INITIALIZATION
@@ -24,7 +24,7 @@ const D = (() => {
         regHandlers = () => {
             on("chat:message", msg => {
                 const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
+                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || CHATCOMMAND.includes(args[0]))) {
                     const who = msg.who || "API",
                         call = args.shift()
                     handleInput(msg, who, call, args)
@@ -72,86 +72,100 @@ const D = (() => {
     // #region EVENT HANDLERS: (HANDLEINPUT)
         handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
             switch (call) {
-                case "add": case "set": {
-                    switch(args.shift().toLowerCase()) {
-                        case "blacklist":
-                            setBlackList(args)
-                            break
-                        case "watch": case "dbwatch": case "watchlist":
-                            setWatchList(args)
-                            break
-                    // no default
-                    }
-                    break
-                }
-                case "get": {
-                    switch(args.shift().toLowerCase()) {
-                        case "blacklist":
-                            sendToGM(getBlackList(), "DEBUG BLACKLIST")
-                            break
-                        case "watch": case "dbwatch": case "watchlist":
-                            sendToGM(getWatchList(), "DEBUG SETTINGS")
-                            break
-                        case "debug": case "log": case "dblog":
-                            getDebugRecord()
-                            break
-                    // no default
-                    }
-                    break
-                }
-                case "clear": case "reset": {
-                    switch((args.shift() || "none").toLowerCase()) {
-                        case "watch": case "dbwatch": case "watchlist":
-                            setWatchList("clear")
-                            break
-                        case "blacklist":
-                            setBlackList("clear")
-                            break
-                        case "debug": case "log": case "dblog":
-                            Handouts.RemoveAll("Debug Log", "debug")
-                            Handouts.RemoveAll("... DBLog", "debug")
-                            STATEREF.DEBUGLOG = STATEREF.DEBUGLOG || []
-                            break
-                    // no default
-                    }
-                    break
-                }
-                case "refresh": {
-                    switch((args.shift() || "").toLowerCase()) {
-                        case "shortnames": {
-                            refreshShortNames()
-                            break
-                        }
-                        case "tokensrcs": {
-                            refreshShortNames()
-                            const srcData = {}
-                            for (const charObj of D.GetChars("all")) {
-                                const nameKey = getName(charObj, true)
-                                charObj.get("_defaulttoken", function(defToken) {
-                                    const imgMatch = D.JS(defToken).match(/imgsrc:(.*?),/u)
-                                    if (imgMatch && imgMatch.length)
-                                        srcData[nameKey] = imgMatch[1].replace(/med\.png/gu, "thumb.png")
-                                })
+                case "!data": {
+                    switch (args.shift().toLowerCase()) {
+                        case "add": case "set": {
+                            switch(args.shift().toLowerCase()) {
+                                case "blacklist":
+                                    setBlackList(args)
+                                    break
+                                case "watch": case "dbwatch": case "watchlist":
+                                    setWatchList(args)
+                                    break
+                            // no default
                             }
-                            setTimeout(() => {
-                                state[C.GAMENAME].Media.TokenSrcs = {}
-                                for (const srcRef of _.keys(srcData))
-                                    state[C.GAMENAME].Media.TokenSrcs[srcRef] = srcData[srcRef]
-                                D.Alert(`Finished! Media Token Sources updated to:<br><br>${D.JS(state[C.GAMENAME].Media.TokenSrcs)}`, "!data refresh tokensrcs")
-                            }, 2000)
                             break
                         }
-                        // no default
+                        case "get": {
+                            switch(args.shift().toLowerCase()) {
+                                case "blacklist":
+                                    sendToGM(getBlackList(), "DEBUG BLACKLIST")
+                                    break
+                                case "watch": case "dbwatch": case "watchlist":
+                                    sendToGM(getWatchList(), "DEBUG SETTINGS")
+                                    break
+                                case "debug": case "log": case "dblog":
+                                    getDebugRecord()
+                                    break
+                            // no default
+                            }
+                            break
+                        }
+                        case "clear": case "reset": {
+                            switch((args.shift() || "none").toLowerCase()) {
+                                case "watch": case "dbwatch": case "watchlist":
+                                    setWatchList("clear")
+                                    break
+                                case "blacklist":
+                                    setBlackList("clear")
+                                    break
+                                case "debug": case "log": case "dblog":
+                                    Handouts.RemoveAll("Debug Log", "debug")
+                                    Handouts.RemoveAll("... DBLog", "debug")
+                                    STATEREF.DEBUGLOG = STATEREF.DEBUGLOG || []
+                                    break
+                            // no default
+                            }
+                            break
+                        }
+                        case "refresh": {
+                            switch((args.shift() || "").toLowerCase()) {
+                                case "shortnames": {
+                                    refreshShortNames()
+                                    break
+                                }
+                                case "tokensrcs": {
+                                    refreshShortNames()
+                                    const srcData = {}
+                                    for (const charObj of D.GetChars("all")) {
+                                        const nameKey = getName(charObj, true)
+                                        charObj.get("_defaulttoken", function(defToken) {
+                                            const imgMatch = D.JS(defToken).match(/imgsrc:(.*?),/u)
+                                            if (imgMatch && imgMatch.length)
+                                                srcData[nameKey] = imgMatch[1].replace(/med\.png/gu, "thumb.png")
+                                        })
+                                    }
+                                    setTimeout(() => {
+                                        state[C.GAMENAME].Media.TokenSrcs = {}
+                                        for (const srcRef of _.keys(srcData))
+                                            state[C.GAMENAME].Media.TokenSrcs[srcRef] = srcData[srcRef]
+                                        D.Alert(`Finished! Media Token Sources updated to:<br><br>${D.JS(state[C.GAMENAME].Media.TokenSrcs)}`, "!data refresh tokensrcs")
+                                    }, 2000)
+                                    break
+                                }
+                                // no default
+                            }
+                        }
+                    // no default
                     }
+                    break
                 }
-            // no default
-            }
-        },
+                case "!reply": {
+                    if (args.length) 
+                        receivePrompt(args.join(" "))
+                    else
+                        receivePrompt("")
+                    break
+                }
+                // no default
+            }               
+        }
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
+    let [PROMPTFUNC, PROMPTCLOCK] = [null, false]
     // #region DECLARATIONS: Reference Variables, Temporary Storage Variables
-        VALS = {
+    const VALS = {
             PAGEID: () => Campaign().get("playerpageid"),
             CELLSIZE: () => C.PIXELSPERSQUARE * getObj("page", Campaign().get("playerpageid")).get("snapping_increment")
         },
@@ -365,6 +379,7 @@ const D = (() => {
             // D.Alert(`${(charObjs || []).length} Characters Retrieved: ${(charObjs || []).map(x => D.GetName(x)).join("<br>")}<br>Call: ${call}<br>Args: ${args.join(" ")}`)
             return [charObjs, charIDString, call, args]
         },
+        summarizeHTML = (htmlString = "") => ((htmlString.match(/.*?>([^<>]+)<.*?/g) || [""]).pop().match(/.*?>([^<>]+)<.*?/) || [""]).pop(),
         numToText = (num, isTitleCase = false) => {
             const numString = `${jStr(num)}`,
                 parseThreeDigits = v => {
@@ -425,7 +440,14 @@ const D = (() => {
             THROW(`Attempt to capitalize non-string '${jStr(str)}'`, "capitalize")
             return str
         },
-        clone = (obj) => JSON.parse(JSON.stringify(obj)),
+        clone = (obj) => {
+            if (_.isObject(obj) && _.keys(obj).length) {
+                const objToString = JSON.stringify(obj)
+                if (_.isString(objToString))
+                    return JSON.parse(objToString)
+            }
+            return {}
+        },
     // #endregion
 
     // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
@@ -435,7 +457,7 @@ const D = (() => {
             /* Whispers chat message to player given: display name OR player ID. 
                 If no Title, message is sent without formatting. */
             const player = getPlayer(who) || who,
-                html = title ? jStrH(C.CHATHTML.header(title) + C.CHATHTML.body(jStr(message))) : message
+                html = title ? jStrH(C.CHATHTML.alertHeader(title) + C.CHATHTML.alertBody(jStr(message))) : message
             if (player === "all" || !player)
                 sendChat("", html)
             else if (Session.IsTesting)
@@ -445,6 +467,29 @@ const D = (() => {
                 
         },
         sendToGM = (msg, title = "[ALERT]") => sendChatMessage("Storyteller", msg, title),
+        promptGM = (menuHTML, replyFunc) => {
+            if (VAL({string: menuHTML, func: replyFunc}, "promptGM")) {
+                if (TimeTracker.IsClockRunning) {
+                    DB(`Time Running: Stopping Clock at ${D.JS(TimeTracker.CurrentDate)}`, "promptGM")
+                    STATEREF.PROMPTCLOCK = true
+                    TimeTracker.StopClock()
+                }
+                Roller.Lock(true)
+                sendChatMessage(getGMID(), menuHTML)
+                PROMPTFUNC = replyFunc
+            }
+        },
+        receivePrompt = replyString => {
+            if (VAL({string: replyString, function: PROMPTFUNC}, "receivePrompt")) {
+                PROMPTFUNC(replyString)
+                PROMPTFUNC = null
+                if (STATEREF.PROMPTCLOCK) {
+                    TimeTracker.StartClock()
+                    STATEREF.PROMPTCLOCK = false
+                }
+                Roller.Lock(false)
+            }
+        },
     // #endregion
 
     // #region OBJECT MANIPULATION: Manipulating arrays, mapping objects
@@ -705,9 +750,13 @@ const D = (() => {
                                 if (!_.isString(v) && !_.isNumber(v))
                                     errorLines.push(`Invalid string: ${jStr(v)}`)
                                 break
-                            case "function":
+                            case "func": case "function":
                                 if (!_.isFunction(v))
                                     errorLines.push("Invalid function.")
+                                break
+                            case "bool": case "boolean":
+                                if (v !== true && v !== false)
+                                    errorLines.push(`Invalid boolean: ${jStr(v)}`)
                                 break
                             case "array":
                                 if (!_.isArray(v))
@@ -718,7 +767,7 @@ const D = (() => {
                                     errorLines.push(`Invalid list object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                                 break
                             case "date":
-                                if (!_.isDate(TimeTracker.GetDate(v)))
+                                if (_.isNaN((TimeTracker.GetDate(v) || {getTime: () => false}).getTime()))
                                     errorLines.push(`Invalid date object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
                                 break
                             case "msg": case "selection": case "selected":
@@ -1190,11 +1239,11 @@ const D = (() => {
             if (VAL({string: name}, "getName")) {
                 if (isShort) {
                     let shortName = name				// SHORTENING NAME:
-                    if (_.find(_.values(Char.REGISTRY), v => v.name === shortName)) // If this is a registered character, return its short name.
+                    if (_.find(_.values(Char.REGISTRY), v => v.name === shortName)) { // If this is a registered character, return its short name.
                         return _.find(_.values(Char.REGISTRY), v => v.name === shortName).shortName
-                    else if (shortName.includes("\""))		// If name contains quotes, remove everything except the quoted portion of the name.
+                    } else if (shortName.includes("\"")) {		// If name contains quotes, remove everything except the quoted portion of the name.
                         shortName = name.replace(/.*?["]/iu, "").replace(/["].*/iu, "")
-                    else {					// Otherwise, remove the first word.				
+                    } else {					// Otherwise, remove the first word.				
                         shortName = name.replace(/.*\s/iu, "")
                         // Now, check for any duplicates, with "isCheckingShort" set to true to avoid infinite recursion; if found, return full name.
                         if (STATEREF.shortNames.filter(x => x === shortName).length > 1)
@@ -1770,6 +1819,7 @@ const D = (() => {
         JS: jStr, JSL: jStrL, JSH: jStrH, JSC: jStrC,
         ParseParams: parseParams,
         ParseCharSelection: parseCharSelect,
+        SumHTML: summarizeHTML,
         NumToText: numToText, TextToNum: textToNum,
         Ordinal: ordinal,
         Capitalize: capitalize,
@@ -1781,6 +1831,7 @@ const D = (() => {
             if (Session.IsTesting)
                 sendToGM(msg, title)
         },
+        Prompt: promptGM,
 
         RemoveFirst: removeFirst,
         KeyMapObj: kvpMap,

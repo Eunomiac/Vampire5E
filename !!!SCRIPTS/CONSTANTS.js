@@ -85,7 +85,7 @@ const C = (() => {
             blackMarble: "https://i.imgur.com/kBl8aTO.jpg"
         },
         CHATHTML = {
-            header: content => { return `<div style="
+            alertHeader: content => { return `<div style="
                 display: block;
                 height: auto;
                 width: auto;
@@ -100,7 +100,7 @@ const C = (() => {
                 border: 2px solid ${COLORS.black};
                 position: relative;
             ">${content}</div>` },
-            body: content => `<div style="
+            alertBody: content => `<div style="
                 display: block;
                 width: auto;
                 padding: 5px 5px;
@@ -118,7 +118,7 @@ const C = (() => {
                 background-color: none;
                 position: relative;
             "></div>`,
-            colorBlock: (content, options = {}) => {
+            Block: (content, options = {}) => {
                 const params = {
                     color: options.color || COLORS.crimson,
                     bgImage: options.bgImage || BGIMAGES.blackMarble,
@@ -138,7 +138,7 @@ const C = (() => {
                     width: ${params.width};
                 ">${_.flatten([content]).join("")}</div>`)
             },
-            colorTitle: (content, options = {}) => {
+            Title: (content, options = {}) => {
                 const params = {
                     fontSize: options.fontSize || "32px",
                     color: options.color || COLORS.brightred
@@ -154,7 +154,7 @@ const C = (() => {
                     height: 45px;
                     line-height: 45px;">${content}</span>`
             },
-            colorHeader: (content, options = {}) => {
+            Header: (content, options = {}) => {
                 const params = {
                     height: options.height || "20px",
                     color: options.color || COLORS.black,
@@ -188,9 +188,10 @@ const C = (() => {
                     box-shadow: ${params.boxShadow};
                 ">${content}</span>`)
             },
-            colorBody: (content, options = {}) => {
+            Body: (content, options = {}) => {
                 const params = {
                     color: options.color || COLORS.brightred,
+                    width: options.width || "100%",
                     bgColor: options.bgColor || "none",
                     margin: options.margin || "7px 0px 0px 0px",
                     fontFamily: options.fontFamily || "sexsmith",
@@ -206,7 +207,7 @@ const C = (() => {
                 }
                 return D.JSH(`<span style="
                     display: block; 
-                    width: 100%; 
+                    width: ${params.width}; 
                     line-height: ${params.lineHeight};
                     margin: ${params.margin};
                     color: ${params.color};
@@ -218,7 +219,7 @@ const C = (() => {
                     box-shadow: ${params.boxShadow};
                 ">${content}</span>`)
             },
-            trackerLine: (numClear, numSuper, numAgg, options = {}) => {
+            TrackerLine: (numClear, numSuper, numAgg, options = {}) => {
                 const params = {
                         height: options.height || "32px",
                         lineHeight: options.lineHeight || options.height || "32px",
@@ -307,7 +308,7 @@ const C = (() => {
                     margin: ${params.margin};"> ${boxes.aggravated.repeat(numAgg) + boxes.superficial.repeat(numSuper) + boxes.clear.repeat(numClear)}</div>`)                
             }
         },       
-        MENUHTML = {
+        MENUHTML = { // Block ==> Title, Header, ButtonLine ==> ButtonHeader, Button(label, API command, options = {})
             Block: (content, options = {}) => {
                 const params = {
                     color: options.color || COLORS.crimson,
@@ -382,6 +383,39 @@ const C = (() => {
                     box-shadow: ${params.boxShadow};
             ">${_.flatten([content]).join("")}</span>`)
             },
+            Body: (content, options = {}) => {
+                const params = {
+                    color: options.color || COLORS.brightred,
+                    width: options.width || "100%",
+                    bgColor: options.bgColor || "none",
+                    margin: options.margin || "7px 0px 0px 0px",
+                    fontFamily: options.fontFamily || "sexsmith",
+                    fontSize: options.fontSize || "18px",
+                    fontWeight: options.fontWeight || "bold",
+                    textAlign: options.textAlign || "center",
+                    textShadow: options.textShadow || `0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}`,
+                    borderWidth: options.borderWidth || "0px",
+                    borderStyle: options.borderStyle || "none",
+                    borderColor: options.borderColor || options.color || "black",
+                    boxShadow: options.boxShadow || "none",
+                    lineHeight: options.lineHeight || options.fontSize || "18px"
+                }
+                return D.JSH(`<span style="
+                    display: block; 
+                    width: ${params.width}; 
+                    line-height: ${params.lineHeight};
+                    margin: ${params.margin};
+                    color: ${params.color};
+                    background-color: ${params.bgColor};
+                    font-size: ${params.fontSize};
+                    text-align: ${params.textAlign};
+                    font-family: '${params.fontFamily}';
+                    font-weight: ${params.fontWeight};
+                    text-shadow: ${params.textShadow};
+                    box-shadow: ${params.boxShadow};
+                    border: ${params.borderStyle} ${params.borderWidth} ${params.borderColor};
+                ">${content}</span>`)
+            },
             ButtonLine: (content, options = {}) => {
                 const params = Object.assign({height: "18px",
                                               width: "100%",
@@ -425,7 +459,7 @@ const C = (() => {
                 ">${_.flatten([content]).join("")}</span>`)
             },
             Button: (name, command, options = {}) => {
-                const params = Object.assign({height: "18px",
+                const params = Object.assign({height: "100%",
                                               lineHeight: "8px",
                                               width: "22%",
                                               fontFamily: "Voltaire",
