@@ -31,7 +31,7 @@ const Fuzzy = (() => {
     // #endregion
 
     // #region LOCAL INITIALIZATION
-        initialize = () => { // eslint-disable-line no-empty-function
+        initialize = () => { 
             STATEREF.minMatchScore = STATEREF.minMatchScore || 0.33
         },
     // #endregion	

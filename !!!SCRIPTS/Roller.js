@@ -2389,7 +2389,6 @@ const Roller = (() => {
                 traitList: [],
                 traitData: {}
             }
-
             switch (rollType) {
                 case "frenzy":
                     traits = ["willpower", "humanity"]
@@ -2404,9 +2403,7 @@ const Roller = (() => {
                 default:
                     break
             }
-
             tFull.traitList = traits.map(v => v.replace(/:\d+/gu, ""))
-
             _.each(traits, trt => {
                 if (trt.includes(":")) {
                     const tData = trt.split(":")
@@ -2428,7 +2425,7 @@ const Roller = (() => {
                     tFull.traitList = _.without(tFull.traitList, trt)
                 } else {
                     tFull.traitData[trt] = {
-                        display: D.IsIn(trt) || D.IsIn(trt.replace(/_/gu, " ")) || getAttrByName(charObj.id, `${trt}_name`) || getAttrByName(charObj.id, `${trt.replace(/_/gu, " ")}_name`),
+                        display: D.IsIn(trt, undefined, true) || D.IsIn(trt.replace(/_/gu, " "), undefined, true) || getAttrByName(charObj.id, `${trt}_name`) || getAttrByName(charObj.id, `${trt.replace(/_/gu, " ")}_name`),
                         value: parseInt(getAttrByName(charObj.id, trt) || getAttrByName(charObj.id, trt.replace(/_/gu, " "))) || 0
                     }
                     if (rollType === "frenzy" && trt === "humanity") {
@@ -3325,7 +3322,9 @@ const Roller = (() => {
                             }
                             Media.SetImg("rollerImage_diffFrame", "base")
                             rollLines.difficulty = {
-                                text: rollData.diff.toString()
+                                text: rollData.diff.toString(),
+                                shiftTop: 0,
+                                shiftLeft: 0
                             }
                         }
                         logLines.difficulty = ` vs. ${rollData.diff}`
@@ -3605,6 +3604,8 @@ const Roller = (() => {
                 if (filteredDice.length && (!bookends || bookends.length < 2 || _.isUndefined(bookends[0]) || _.isUndefined(bookends[1])))
                     return THROW(`Bookends Not Found.  DiceObjs.length is ${diceObjs.length}, rollResults.diceVals is ${rollResults.diceVals.length}: ${D.JS(diceObjs)}`, "displayRoll")
 
+                if (!filteredDice.length)
+                    Media.ToggleImg("rollerImage_bottomEdge", false)
                 spread = !filteredDice.length ? -1 : bookends[1].get("left") - bookends[0].get("left")
 
                 scaleFrame("bottom", spread)
@@ -3615,7 +3616,7 @@ const Roller = (() => {
                 const outcomePos = {left: Media.GetTextData("outcome").left, width: Media.GetTextWidth("outcome", rollLines.outcome.text)},
                     bottomEndData = Media.GetImgData("rollerImage_bottomEnd")
                 bottomEndData.left = Media.GetImg("rollerImage_bottomEnd").get("left")
-                D.Alert(`DiceVals: ${D.JS(rollResults.diceVals)}, Filtered Dice: ${D.JS(filteredDice)}`)
+                DB(`DiceVals: ${D.JS(rollResults.diceVals)}, Filtered Dice: ${D.JS(filteredDice)}`, "displayRoll")
                 if (!filteredDice.length) {
                     rollLines.outcome.shiftTop = rollLines.outcome.shiftTop || 0 - 95
                     rollLines.subOutcome.shiftTop = rollLines.subOutcome.shiftTop || 0 - 95
@@ -3864,7 +3865,7 @@ const Roller = (() => {
 
     // #region Getting Random Resonance Based On District/Site Parameters
         getResonance = (charRef, posRes = "", negRes = "", isDoubleAcute, testCycles = 0) => {
-            D.Alert(`Resonance Args: ${D.JS(charRef)}, ${D.JS(posRes)}, ${D.JS(negRes)}`)
+            DB(`Resonance Args: ${D.JS(charRef)}, ${D.JS(posRes)}, ${D.JS(negRes)}`, "getResonance")
             const charObj = D.GetChar(charRef),
                 resonances = {
                     c: "Choleric",
@@ -3949,8 +3950,7 @@ const Roller = (() => {
                     try {                        
                         results = results.map(x => ({Choleric: "Cho", Melancholic: "Mel", Phlegmatic: "Phl", Sanguine: "Sng", Primal: "Pri", Ischemic: "Isc", Mercurial: "Mrc"}[x] || x.slice(0,1)))
                     } catch (errObj) {
-                        D.Alert(`Error: ${D.JS(dbString)}<br><br>Odds: ${D.JS(flavorOdds)}<br>${D.JS(intOdds)}`)
-                        return false
+                        return THROW(`Error: ${D.JS(dbString)}<br><br>Odds: ${D.JS(flavorOdds)}<br>${D.JS(intOdds)}`, "getResonance", errObj)
                     }
                     record[results[1]][results[0]]++
                     record[results[0]][results[1]]++

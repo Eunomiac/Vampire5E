@@ -348,7 +348,7 @@ ${getWeatherReport().join("<br>")}
                 }
             },
             cancelRollEffect: (charRef, effectString) => {
-                
+
             }
         },
         [airLights, airTimes] = [{}, {}],
@@ -1644,7 +1644,12 @@ ${getWeatherReport().join("<br>")}
                     fireAlarm(alarm, false, false)
                 } else if (alarm.isConditional && !alarm.conditionOK) {
                     checkCondition(alarm)
-                } else {          
+                } else {    
+                    if (alarm.displayTo.includes("all"))
+                        sendChat("Alarm", alarm.message)
+                    else
+                        for (const player of alarm.displayTo)
+                            sendChat("Alarm", `/w ${D.GetName(player)} ${alarm.message}`)      
                     for (const action of alarm.actions)
                         if (VAL({array: action})) {
                             if (ALARMFUNCS[action[0]])
@@ -1655,11 +1660,6 @@ ${getWeatherReport().join("<br>")}
                             else
                                 sendChat("", action)
                         }
-                    if (alarm.displayTo.includes("all"))
-                        sendChat("Alarm", alarm.message)
-                    else
-                        for (const player of alarm.displayTo)
-                            sendChat("Alarm", `/w ${D.GetName(player)} ${alarm.message}`)
                     if (alarm.isDailyAlarm)
                         alarm.time = STATEREF.dateObj.getTime()
                     STATEREF.Alarms.Behind.unshift(D.Clone(alarm))
