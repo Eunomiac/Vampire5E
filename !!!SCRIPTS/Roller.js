@@ -407,6 +407,15 @@ const Roller = (() => {
             // D.Alert(`AFTER:<br>CHAROBJS: ${D.JS((charObjs || []).map(x => D.GetName(x)).join("<br>"))}<br>IDSTRING: ${D.JS(charIDString)}<br>CALL: ${call}<br>ARGS: [${args.join(", ")}]`)
         
             switch (call) {
+                case "quickrouse": {
+                    char = charObjs && charObjs[0] || D.GetChar(msg) || D.GetChar(args.shift())
+                    const isObvRouse = args.shift() === "true"
+                    let isDoubleRouse = args[0] === "true"
+                    const forcedResults = _.compact([parseInt(args.pop()), parseInt(args.pop())])
+                    isDoubleRouse = isDoubleRouse || forcedResults.length === 2
+                    quickRouseCheck(char, isDoubleRouse, isObvRouse, forcedResults)
+                    break
+                }
                 case "nxsroll":
                 case "xnsroll":
                 case "xsroll":
@@ -3744,6 +3753,43 @@ const Roller = (() => {
             const recordRef = isNPCRoll ? STATEREF.NPC : STATEREF
             loadRoll(Math.max(recordRef.rollIndex - 1, 0), isNPCRoll)
         },
+        quickRouseCheck = (charRef, isDoubleRouse = false, isOblivionRouse = false) => {
+            const results = isDoubleRouse ? _.sortBy([randomInteger(10), randomInteger(10)]).reverse() : [randomInteger(10)],
+                deltaAttrs = {stain: undefined, hunger: false}
+            let [header, body] = [
+                `${isDoubleRouse ? "Double " : ""}Rouse Check: ${results[0]}${isDoubleRouse ? `, ${results[1]}` : ""}`,
+                ""
+            ]
+            if (isOblivionRouse)
+                if (isDoubleRouse && (
+                    results[0] === 10 && results[1] === 1 || results[0] === results[1] && [1,10].includes(results[0])
+                ) || 
+                    !isDoubleRouse && (
+                        results[0] === 10 || results[0] === 1
+                    ))
+                    deltaAttrs.stain = true
+                else if (isDoubleRouse && results[0] === 10 && results[1] <= 5)
+                    deltaAttrs.stain = null
+            if (results[0] <= 5)
+                deltaAttrs.hunger = true
+            if (deltaAttrs.hunger) {
+                body = C.CHATHTML.Body("Hunger Roused.")
+                Char.AdjustHunger(charRef, 1, false, false)
+            } else if (deltaAttrs.stain !== null) {
+                body = C.CHATHTML.Body("Restrained.", {color: C.COLORS.white})
+            }
+            if (deltaAttrs.stain === true) {
+                body += C.CHATHTML.Body("The Abyss drags you deeper.", {color: C.COLORS.darkpurple, textShadow: "0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white"})
+                Char.AdjustTrait(charRef, "stains", 1, 0, 10, 0, null, false)
+            } else if (deltaAttrs.stain === null) {
+                body += C.CHATHTML.Body("Choose: Your Soul or your Beast?", {color: C.COLORS.darkpurple, textShadow: "0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white"})
+            } else if (isOblivionRouse) {
+                body += C.CHATHTML.Body("Your humanity remains.", {color: C.COLORS.white, textShadow: `0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}`})
+            }
+            D.Chat(charRef, C.CHATHTML.Block([
+                C.CHATHTML.Header(header),
+                body].join("")))
+        },
     // #endregion
 
     // #region Secret Rolls
@@ -4010,6 +4056,7 @@ const Roller = (() => {
         Reroll: wpReroll,
         Clean: clearRoller,
         Lock: lockRoller,
+        QuickRouse: quickRouseCheck,
 
         AddCharEffect: (charRef, effect) => { addCharRollEffects(charRef, [effect]) }
     }

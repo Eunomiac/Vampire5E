@@ -34,6 +34,12 @@ const TimeTracker = (() => {
             STATEREF.Alarms = STATEREF.Alarms || {}
             STATEREF.Alarms.Ahead = STATEREF.Alarms.Ahead || []
             STATEREF.Alarms.Behind = STATEREF.Alarms.Behind || []
+            STATEREF.Alarms.Daily = STATEREF.Alarms.Daily || {
+                midnight: [],
+                dawn: [],
+                noon: [],
+                dusk: []
+            }
             STATEREF.Alarms.AutoAbort = STATEREF.Alarms.AutoAbort || []
             STATEREF.Alarms.AutoDefer = STATEREF.Alarms.AutoDefer || []
             STATEREF.lastDate = STATEREF.lastDate || 0
@@ -109,6 +115,7 @@ const TimeTracker = (() => {
                         case "alarms":
                             getNextAlarms()
                             getPastAlarms()
+                            getDailyAlarms()
                             break
                         case "weather":
                             D.Alert(`Weather Code: ${WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()]}`)
@@ -204,6 +211,12 @@ const TimeTracker = (() => {
                             STATEREF.Alarms = {
                                 Ahead: [],
                                 Behind: [],
+                                Daily: {
+                                    midnight: [],
+                                    dawn: [],
+                                    noon: [],
+                                    dusk: []
+                                },
                                 AutoAbort: [],
                                 AutoDefer: []
                             }
@@ -288,30 +301,31 @@ const TimeTracker = (() => {
                         `<tr><td style="text-align:right; text-align-last:right;">Predawn1 -> DAY</td><td style="text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATEREF.dateObj.getMonth()][0], 0, true)}</td></tr>`
                     ]
                     D.Alert(D.JSH(`
-<b><u>WEATHER REPORT</u></b>
-<br><br>
+<h3>WEATHER REPORT</h3>
 ${getWeatherReport().join("<br>")}
 <br><br>
-<b><u>HORIZON TRANSITIONS</u></b>
-<br><br>
+<h3>HORIZON TRANSITIONS</h3>
 <table>${transitionStrings.join("")}</table>
 <br>
 <b>!time</b> commands are 'add', 'set', 'run' and 'stop'.
 <br><br>
-To set:<br><b>!time set [year] [month] [day] [hour] [min]</b>
-<br><br>
-Weather:<br><b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td style="width:18%;">[EVENT]</td><td style="width:29%;">x: Clear</td><td style="width:29%;">b: Blizzard</td><td style="width:29%;">c: Overcast</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">f: Foggy</td><td style="width:29%;">p: Downpour</td><td style="width:29%;">s: Snowing</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">t: Storm</td><td style="width:29%;">w: Drizzle</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;"><i>(+f for foggy)</i></td></tr>
-<br><tr><td><br></td></tr><tr><td style="width:18%;">[WIND]</td><td style="width:29%;">x: Still</td><td style="width:29%;">s: Soft Breeze</td><td style="width:29%;">b: Breezy</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">w: Blustery</td><td style="width:29%;">g: Driving</td><td style="width:29%;">h: Howling</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">v: Roaring</td></tr>
+<b>!time set [year] [month] [day] [hour] [min]</b>
+<br>
+<b>!time set weather [event] [tC] [w] [humid]</b>
+<table><tr><td style="width:18%;">[EVENT]</td><td style="width:29%;">x: Clear</td><td style="width:29%;">b: Blizzard</td><td style="width:29%;">c: Overcast</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">f: Foggy</td><td style="width:29%;">p: Downpour</td><td style="width:29%;">s: Snowing</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">t: Storm</td><td style="width:29%;">w: Drizzle</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;"><i>(+f for foggy)</i></td></tr>
+<br><tr><td><br></td></tr><tr><td style="width:18%;">[WIND]</td><td style="width:29%;">x: Still</td><td style="width:29%;">s: Soft</td><td style="width:29%;">b: Breezy</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">w: Blustery</td><td style="width:29%;">g: Driving</td><td style="width:29%;">h: Howling</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">v: Roaring</td></tr>
 <br><tr><td><br></td></tr><tr><td style="width:18%;">[HUMID]</td><td style="width:29%;">x: null</td><td style="width:29%;">d: Dry</td><td style="width:29%;">h: Humid</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">m: Muggy</td><td style="width:29%;">s: Swelter</td></tr></table>`), "TIMETRACKER")
                     break
                 }
                 default: {
                     D.Alert(D.JSH(`<b>!time</b> commands are 'add', 'set', 'run' and 'stop'.
 <br><br>
-To set:<br><b>!time set [year] [month] [day] [hour] [min]</b>
+<b>!time set [year] [month] [day] [hour] [min]</b>
+<br>
+<b>!time set weather [event] [tC] [w] [humid]</b>
 <br><br>
-Weather:<br><b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td style="width:18%;">[EVENT]</td><td style="width:29%;">x: Clear</td><td style="width:29%;">b: Blizzard</td><td style="width:29%;">c: Overcast</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">f: Foggy</td><td style="width:29%;">p: Downpour</td><td style="width:29%;">s: Snowing</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">t: Storm</td><td style="width:29%;">w: Drizzle</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;"><i>(+f for foggy)</i></td></tr>
-<br><tr><td><br></td></tr><tr><td style="width:18%;">[WIND]</td><td style="width:29%;">x: Still</td><td style="width:29%;">s: Soft Breeze</td><td style="width:29%;">b: Breezy</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">w: Blustery</td><td style="width:29%;">g: Driving</td><td style="width:29%;">h: Howling</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">v: Roaring</td></tr>
+<h3>WEATHER OVERRIDES</h3><table><tr><td style="width:18%;">[EVENT]</td><td style="width:29%;">x: Clear</td><td style="width:29%;">b: Blizzard</td><td style="width:29%;">c: Overcast</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">f: Foggy</td><td style="width:29%;">p: Downpour</td><td style="width:29%;">s: Snowing</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">t: Storm</td><td style="width:29%;">w: Drizzle</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;"><i>(+f for foggy)</i></td></tr>
+<br><tr><td><br></td></tr><tr><td style="width:18%;">[WIND]</td><td style="width:29%;">x: Still</td><td style="width:29%;">s: Soft</td><td style="width:29%;">b: Breezy</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">w: Blustery</td><td style="width:29%;">g: Driving</td><td style="width:29%;">h: Howling</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">v: Roaring</td></tr>
 <br><tr><td><br></td></tr><tr><td style="width:18%;">[HUMID]</td><td style="width:29%;">x: null</td><td style="width:29%;">d: Dry</td><td style="width:29%;">h: Humid</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">m: Muggy</td><td style="width:29%;">s: Swelter</td></tr></table>`), "TIMETRACKER")
                     break
                 }
@@ -326,7 +340,18 @@ Weather:<br><b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td styl
         countdownRecord = []
 
     // #region Configuration
-    const [airLights, airTimes] = [{}, {}],
+    const ALARMFUNCS = {
+            daysleep: () => {
+                for (const charObj of D.GetChars("registered")) {
+                    Roller.QuickRouse(charObj, false, false)
+                    Char.RefreshWillpower(charObj)
+                }
+            },
+            cancelRollEffect: (charRef, effectString) => {
+                
+            }
+        },
+        [airLights, airTimes] = [{}, {}],
         CLOCKSPEED = 50,
         TWEENDURS = [15, 40, 60, 600, 1440, 3000, 5000, 7000, 8000, 9000, 10000, Infinity],
         RUNNINGFASTAT = 1500000,
@@ -782,7 +807,13 @@ Weather:<br><b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td styl
                 returnDate = new Date(parseInt(dateRef))
             if (!_.isDate(returnDate)) {
                 const strArray = _.compact(dateRef.split(/[\s,]+?/gu))
-                returnDate = new Date(`${strArray[2]}-${["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(strArray[0].slice(0, 3).toLowerCase()) + 1}-${strArray[1]}`)
+                returnDate = new Date(`${
+                    strArray[2]
+                }-${
+                    ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(strArray[0].slice(0, 3).toLowerCase()) + 1
+                }-${
+                    strArray[1]
+                }`)
             }
             if (_.isDate(returnDate))
                 return returnDate
@@ -806,7 +837,15 @@ Weather:<br><b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td styl
             else
                 return `${date.getUTCHours()}:${date.getUTCMinutes()} A.M.`
         },
-        formatDString = (date, isIncludingTime = false) => `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}${isIncludingTime ? `, ${formatTimeString(date)}` : ""}`,
+        formatDString = (date, isIncludingTime = false) => `${
+            ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]
+        } ${
+            date.getUTCDate()
+        }, ${
+            date.getUTCFullYear()
+        }${
+            isIncludingTime ? `, ${formatTimeString(date).replace(/:(\d\s)/gu, ":0$1")}` : ""
+        }`,
         isValidDString = str => _.isString(str) && Boolean(str.match(/\w\w\w\s\d\d?,\s\d\d\d\d/gu)),
         fixDate = () => {
             setHorizon(true)
@@ -874,6 +913,11 @@ Weather:<br><b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td styl
                 Media.SetImg("Horizon_1", imgSrcName)
             }
             return true
+        },
+        refreshTimeAndWeather = () => {
+            setWeather()
+            setCurrentDate()
+            setHorizon()
         },
         setCurrentDate = () => {
             // dateObj = dateObj || new Date(parseInt(STATEREF.currentDate))
@@ -1017,34 +1061,47 @@ Weather:<br><b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td styl
             }
         },
         easeInOutSine = (curTime, startVal, deltaVal, duration) => -deltaVal / 2 * (Math.cos(Math.PI * curTime / duration) - 1) + startVal,
-        tweenClock = finalDate => {
-            // D.Alert(`${D.JS(finalDate)} = ${typeof finalDate}`)
-            STATEREF.TweenTarget = finalDate
-            let [curTime, lastTime] = [0, 0]
-            const deltaTime = finalDate - STATEREF.dateObj,
-                duration = (_.findIndex(TWEENDURS, v => deltaTime / 60000 <= v) + 1) * 1000,
-                startTime = STATEREF.dateObj.getTime(),
-                easeSet = () => {
-                    if (!isRunning) {
-                        clearInterval(timeTimer)
-                        return false
-                    }
-                    if (Math.abs(curTime) >= Math.abs(duration)) {
-                        clearInterval(timeTimer)
-                        setIsRunning(false)
-                        setIsRunningFast(false)
-                        // D.Alert("Is Running: FALSE")
-                        setTimeout(fixDate, 1000)
-                        delete STATEREF.TweenTarget
-                        return true
-                    }
-                    const newDelta = easeInOutSine(curTime, 0, deltaTime, duration)
-                    setIsRunningFast(Math.abs(newDelta - lastTime) > RUNNINGFASTAT)
-                    lastTime = newDelta
-                    STATEREF.dateObj.setTime(startTime + newDelta)
+        tweenClock = (finalDate) => {
+            // D.Alert(`${D.JS(finalDate)} = ${typeof finalDate}`)            
+            if (!(STATEREF.TweenStart && STATEREF.TweenTarget)) {
+                STATEREF.TweenStart = STATEREF.dateObj.getTime()
+                STATEREF.TweenTarget = finalDate.getTime()
+                STATEREF.TweenDelta = STATEREF.TweenTarget - STATEREF.TweenStart
+                STATEREF.TweenDuration = (_.findIndex(TWEENDURS, v => STATEREF.TweenDelta / 60000 <= v) + 1) * 1000
+                STATEREF.TweenCurTime = 0
+                STATEREF.TweenLastTime = 0
+            }   
+            DB(`<h4>Tweening Clock:</h4><b>START</b> (${D.JS(formatDString(getDate(STATEREF.TweenStart), true))})<br><b>TARGET</b> (${D.JS(formatDString(getDate(STATEREF.TweenTarget), true))})<br><b>ACTUAL</b> (${D.JS(formatDString(getDate(STATEREF.dateObj), true))})<br><b>curTime</b>: ${D.JS(STATEREF.TweenCurTime)}, <b>lastTime</b>: ${D.JS(STATEREF.TweenLastTime)}<br><b>startDate</b>: ${D.JS(formatDString(getDate(STATEREF.TweenStart), true))}<br><b>deltaTime:</b> ${D.JS(STATEREF.TweenDelta/1000/60/60)}<br><b>duration:</b> ${D.JS(STATEREF.TweenDuration)}`, "tweenClock")
+            const easeSet = () => {
+                if (!isRunning) {
+                    clearInterval(timeTimer)
+                    timeTimer = null
                     setCurrentDate()
-                    curTime += CLOCKSPEED
+                    refreshTimeAndWeather()
+                    DB(`<h4>Freezing Clock:</h4><b>START</b> (${D.JS(formatDString(getDate(STATEREF.TweenStart), true))})<br><b>TARGET</b> (${D.JS(formatDString(getDate(STATEREF.TweenTarget), true))})<br><b>ACTUAL</b> (${D.JS(formatDString(getDate(STATEREF.dateObj), true))})<br><b>curTime</b>: ${D.JS(STATEREF.TweenCurTime)}, <b>lastTime</b>: ${D.JS(STATEREF.TweenLastTime)}<br><b>startDate</b>: ${D.JS(formatDString(getDate(STATEREF.TweenStart), true))}<br><b>deltaTime:</b> ${D.JS(STATEREF.TweenDelta/1000/60/60)}<br><b>duration:</b> ${D.JS(STATEREF.TweenDuration)}`, "tweenClock")
+                    return false
                 }
+                if (Math.abs(STATEREF.TweenCurTime) >= Math.abs(STATEREF.TweenDuration)) {
+                    clearInterval(timeTimer)
+                    timeTimer = null
+                    setIsRunning(false)
+                    setIsRunningFast(false)
+                    // D.Alert("Is Running: FALSE")
+                    setTimeout(fixDate, 1000)
+                    DB(`<h4>Stopping Clock (Destination Reached)</h4><b>START</b> (${D.JS(formatDString(getDate(STATEREF.TweenStart), true))})<br><b>TARGET</b> (${D.JS(formatDString(getDate(STATEREF.TweenTarget), true))})<br><b>ACTUAL</b> (${D.JS(formatDString(getDate(STATEREF.dateObj), true))})<br><b>curTime</b>: ${D.JS(STATEREF.TweenCurTime)}, <b>lastTime</b>: ${D.JS(STATEREF.TweenLastTime)}<br><b>startDate</b>: ${D.JS(formatDString(getDate(STATEREF.TweenStart), true))}<br><b>deltaTime:</b> ${D.JS(STATEREF.TweenDelta/1000/60/60)}<br><b>duration:</b> ${D.JS(STATEREF.TweenDuration)}`, "tweenClock")
+                    delete STATEREF.TweenTarget
+                    delete STATEREF.TweenStart
+                    STATEREF.TweenCurTime = 0
+                    return true
+                }
+                const newDelta = easeInOutSine(STATEREF.TweenCurTime, 0, STATEREF.TweenDelta, STATEREF.TweenDuration)
+                setIsRunningFast(Math.abs(newDelta - STATEREF.TweenLastTime) > RUNNINGFASTAT)
+                STATEREF.TweenLastTime = newDelta
+                STATEREF.dateObj.setTime(STATEREF.TweenStart + newDelta)
+                setCurrentDate()
+                STATEREF.TweenCurTime += CLOCKSPEED
+                return undefined
+            }
             setIsRunning(true)
             timeTimer = setInterval(easeSet, CLOCKSPEED)
         },
@@ -1071,9 +1128,9 @@ Weather:<br><b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td styl
 			//! time set ${STATEREF.dateObj.getUTCFullYear()} ${STATEREF.dateObj.getUTCMonth() + 1} ${STATEREF.dateObj.getUTCDate()} ${STATEREF.dateObj.getUTCHours()}:${STATEREF.dateObj.getUTCMinutes()}`, "TIMETRACKER !TIME")
         },
         stopClock = () => {
-            clearInterval(timeTimer)
+            // clearInterval(timeTimer)
             // Media.ToggleText("TimeTracker", false)
-            timeTimer = null
+            // timeTimer = null
             isRunning = false
             isTimeRunning = false
             isRunningFast = false
@@ -1320,7 +1377,7 @@ Weather:<br><b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td styl
                             const hourMatch = _.findIndex(WEATHERDATA[m][d], (v, k) => { return v.charAt(0) === code && (k <= 5 || k >= 20) })
                             if (hourMatch >= startHour) {
                                 // debugString += "... MATCHED!<br>"
-                                weatherStrings[WEATHERCODES[0][code]] = `${MONTHS[m].slice(0, 3)} ${d}, ${hourMatch > 12 ? `${hourMatch - 12} PM` : `${hourMatch} AM`}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>!time set ${startYear} ${m} ${d} ${hourMatch}</b>`
+                                weatherStrings[code] = `${MONTHS[m].slice(0, 3)} ${d}, ${hourMatch > 12 ? `${hourMatch - 12} PM` : `${hourMatch} AM`}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>!time set ${startYear} ${m} ${d} ${hourMatch}</b>`
                                 break
                             }
                             startHour = 0
@@ -1390,159 +1447,250 @@ Weather:<br><b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td styl
             } 
             return false        
         },
-        setAlarm = (dateRef, name, message, actions = [], displayTo = [], revActions = [], recurring = false, isConditional = false) => {
-            let targetDate
-            if (VAL({date: dateRef})) {
-                targetDate = getDate(dateRef)
-                DB(`It's a DATE: ${getDate(dateRef)}`, "setAlarm")
-            } else if (VAL({string: dateRef})) {
-                DB(`It's a STRING: ${getDateFromDateString(dateRef)}`, "setAlarm")
-                targetDate = getDateFromDateString(dateRef)
-            }
-            if (VAL({date: targetDate}, "setAlarm")) {     
-                if (VAL({string: actions}))
-                    actions = actions.split(/\s*,\s*/gu)
-                if (VAL({string: revActions}))
-                    revActions = revActions.split(/\s*,\s*/gu)
-                if (VAL({string: displayTo}))
-                    displayTo = displayTo.split(/\s*,\s*/gu)
-                displayTo.push("Storyteller")
-                if (VAL({string: recurring})) {
-                    D.Alert(`Recurring: ${D.JS(recurring)}<br>Reg Exp: ${D.JS(recurring.match(/\S?\d+\s?\w+/gu))}`, "setAlarm")
-                    const recurList = {}
-                    for (const deltaUnit of recurring.match(/\S?\d+\s?\w+/gu).map(x => x.match(/\S?(\d+)\s?(\w+)/u).slice(1))) {
-                        const [delta, unit] = deltaUnit
-                        recurList[unit] = parseFloat(delta)
-                    }
-                    recurring = D.Clone(recurList)
-                }                      
-                STATEREF.Alarms.Ahead.push({
-                    time: targetDate.getTime(),
-                    name,
-                    message, // Message sent to [displayTo] = "all" or display names
-                    actions, // Array of functions (no parameters) and/or chat strings run when alarm fired
-                    revActions, // Array as above, run when alarm "unfires" instead
-                    recurring, // List of recurrence quantity - {years: #, months: #, weeks: #, days: #, hours: #, mins: #}
-                    displayTo: _.uniq(_.flatten([displayTo])),
-                    dateString: VAL({date: dateRef}) && formatDString(getDate(dateRef)) || dateRef,
-                    isConditional: VAL({bool: isConditional}) ? isConditional :
-                        VAL({string: isConditional}) && isConditional.toLowerCase().includes("true") || 
-                                        VAL({string: dateRef}) && ["nextfullnight"].includes(dateRef.toLowerCase()) ||
-                                        false 
-                })
-                STATEREF.Alarms.Ahead = _.sortBy(STATEREF.Alarms.Ahead, "time")
-                D.Alert(`Sorted: ${D.JS(_.map(STATEREF.Alarms.Ahead, v => new Date(v.time).toDateString()))}`)
-                return true
+        getDailyAlarmTrigger = (lastDateStep, thisDateStep, dateOverride) => {
+            if (lastDateStep > thisDateStep)
+                return false
+            const curDate = VAL({date: dateOverride}) && new Date(dateOverride) || STATEREF.dateObj,
+                targetDate = new Date(curDate)
+            targetDate.setUTCHours(0)
+            targetDate.setUTCMinutes(0)
+            // DB(`targetDate: ${D.JS(targetDate)}`, "getDailyAlarmTrigger")
+            if (VAL({date: targetDate}, "getDailyAlarmTrigger") && targetDate.getTime) {
+                const dayTriggers = {
+                    midnight: targetDate.getTime(),
+                    dawn: (new Date((new Date(targetDate)).setUTCMinutes(TWILIGHTMINS[targetDate.getUTCMonth()][0]))).getTime(),
+                    noon: (new Date((new Date(targetDate)).setUTCHours(12))).getTime(),
+                    dusk: (new Date((new Date(targetDate)).setUTCMinutes(TWILIGHTMINS[targetDate.getUTCMonth()][1]))).getTime()
+                }
+                // DB(`dayTriggers: ${D.JS(dayTriggers)}`, "getDailyAlarmTrigger")
+                return _.findKey(dayTriggers, v => v >= lastDateStep && v <= thisDateStep) || false
             }
             return false
-            // D.Alert(`curMins: ${curMins}, targetMins: ${targetMins}<br>Next ${dateString} is ${formatDString(targetDate, true)}`)            
+        },
+        setAlarm = (dateRef, name, message, actions = [], displayTo = [], revActions = [], recurring = false, isConditional = false) => {
+            if (VAL({string: actions}))
+                actions = actions.split(/\s*,\s*/gu)
+            if (VAL({string: revActions}))
+                revActions = revActions.split(/\s*,\s*/gu)
+            if (VAL({string: displayTo}))
+                displayTo = displayTo.split(/\s*,\s*/gu)
+            displayTo.push("Storyteller")
+            D.Alert(`Actions: ${D.JS(actions.map(x => typeof x))}`)
+            if (VAL({string: recurring})) {
+                DB(`Recurring: ${D.JS(recurring)}<br>Reg Exp: ${D.JS(recurring.match(/\S?\d+\s?\w+/gu))}`, "setAlarm")
+                const recurList = {}
+                for (const deltaUnit of recurring.match(/\S?\d+\s?\w+/gu).map(x => x.match(/\S?(\d+)\s?(\w+)/u).slice(1))) {
+                    const [delta, unit] = deltaUnit
+                    recurList[unit] = parseFloat(delta)
+                }
+                recurring = D.Clone(recurList)
+            }
+            if (VAL({string: isConditional}))
+                isConditional = isConditional.toLowerCase().includes("true")            
+            const thisAlarm = {
+                name,
+                message, // Message sent to [displayTo] = "all" or display names
+                actions, // Array of functions (no parameters) and/or chat strings run when alarm fired
+                revActions, // Array as above, run when alarm "unfires" instead
+                recurring, // List of recurrence quantity - {years: #, months: #, weeks: #, days: #, hours: #, mins: #}
+                displayTo: _.uniq(_.flatten([displayTo])),
+                dateString: VAL({date: dateRef}) && formatDString(getDate(dateRef)) || dateRef,
+                isConditional: VAL({bool: isConditional}) && isConditional
+            }
+            if (VAL({date: dateRef})) {
+                thisAlarm.time = getDate(dateRef).getTime()
+                DB(`DateRef '${D.JS(dateRef)}' is a DATE: ${D.JS(getDate(dateRef))}<br>... Time Code: ${D.JS(thisAlarm.time)}`, "setAlarm")
+            } else if (VAL({string: dateRef})) {
+                DB(`DateRef '${D.JS(dateRef)}' is a STRING: ${dateRef}`, "setAlarm")
+                switch (dateRef.toLowerCase()) {
+                    case "nextfullnight":
+                        thisAlarm.isNextFullNight = true
+                        // falls through
+                    case "midnight":
+                    case "dawn":
+                    case "noon":
+                    case "dusk": {
+                        thisAlarm.isDailyAlarm = true
+                        STATEREF.Alarms.Daily[dateRef.toLowerCase().replace(/nextfullnight/gu, "dawn")].push(D.Clone(thisAlarm))
+                        return true
+                    }
+                    // no default
+                }
+                thisAlarm.time = getDateFromDateString(dateRef).getTime()
+            }
+            if (VAL({date: thisAlarm.time}, "setAlarm")) {
+                STATEREF.Alarms.Ahead.push(D.Clone(thisAlarm))
+                STATEREF.Alarms.Ahead = _.sortBy(STATEREF.Alarms.Ahead, "time")
+                return true
+            }
+            return false         
         },
         checkAlarm = (lastDateStep, thisDateStep) => {
-            while (lastDateStep < thisDateStep && STATEREF.Alarms.Ahead[0] && STATEREF.Alarms.Ahead[0].time >= lastDateStep && STATEREF.Alarms.Ahead[0].time <= thisDateStep)
-                fireNextAlarm()
-            while (lastDateStep > thisDateStep && STATEREF.Alarms.Behind[0] && STATEREF.Alarms.Behind[0].time <= lastDateStep && STATEREF.Alarms.Behind[0].time >= thisDateStep)
-                unfireLastAlarm()
+            if (parseInt(thisDateStep/1000/60) !== STATEREF.lastAlarmCheck) {
+                STATEREF.lastAlarmCheck = parseInt(thisDateStep/1000/60)
+                while (lastDateStep < thisDateStep && STATEREF.Alarms.Ahead[0] && STATEREF.Alarms.Ahead[0].time >= lastDateStep && STATEREF.Alarms.Ahead[0].time <= thisDateStep)
+                    fireNextAlarm()
+                while (lastDateStep > thisDateStep && STATEREF.Alarms.Behind[0] && STATEREF.Alarms.Behind[0].time <= lastDateStep && STATEREF.Alarms.Behind[0].time >= thisDateStep)
+                    unfireLastAlarm()
+                const dayTrigger = getDailyAlarmTrigger(lastDateStep, thisDateStep)
+                if (dayTrigger) {
+                    DB(`DayTrigger Hit: ${D.JS(dayTrigger)}<br>This Step: ${D.JS(parseInt(thisDateStep/1000/60))} vs. lastAlarmCheck: ${D.JS(STATEREF.lastAlarmCheck)}`, "checkAlarm")
+                    const dayAlarms = STATEREF.Alarms.Daily[dayTrigger]
+                    for (let i = 0; i < dayAlarms.length; i++)
+                        fireAlarm(dayAlarms[i])
+                }
+            }
         },
         getNextAlarms = () => {
             D.Alert(`<h3>Next Alarms</h3>${D.JS(_.map(STATEREF.Alarms.Ahead, v => `${D.JS(v.name)}: ${formatDString(new Date(v.time), true)}<br>... to: ${D.JSL(v.displayTo)}`))}<h3>Next Full Alarm</h3>${STATEREF.Alarms.Ahead.length && D.JS(Object.assign(D.Clone(STATEREF.Alarms.Ahead[0]), {message: D.SumHTML(STATEREF.Alarms.Ahead[0].message)})) || "none"}`, "Upcoming Alarms")
         },
         getPastAlarms = () => D.Alert(`<h3>Past Alarms</h3>${D.JS(_.map(STATEREF.Alarms.Behind, v => `${D.JS(v.name)}: ${formatDString(new Date(v.time), true)}<br>... to: ${D.JSL(v.displayTo)}`))}<h3>Next Past Alarm</h3>${STATEREF.Alarms.Behind.length && D.JS(Object.assign(D.Clone(STATEREF.Alarms.Behind[0]), {message: D.SumHTML(STATEREF.Alarms.Behind[0].message)})) || "NONE"}`, "Past Alarms"),
+        getDailyAlarms = () => {
+            const returnStrings = ["<h3>Daily Alarms</h3>"]
+            for (const unit of _.keys(STATEREF.Alarms.Daily)) {
+                returnStrings.push(`<h4>${unit}</h4>`)
+                for (const alarm of STATEREF.Alarms.Daily[unit])
+                    returnStrings.push(`${D.JS(alarm.name)}: ${D.JS(Object.assign(D.Clone(alarm), {message: D.SumHTML(alarm.message)}))}`)
+            }
+            D.Alert(returnStrings.join("<br>"))
+        },
+        // !time set alarm dawn|Testing Dawn Alarm|Dawn Alarm FIRED|Dawn Alarm FIRED|Storyteller|Dawn Alarm UNFIRED||true
         checkCondition = alarm => {
-            STATEREF.Alarms.Ahead[0].conditionOK = true
-            STATEREF.Alarms.Ahead[0].wasAborted = true
-            const alarmEscrow = D.Clone(STATEREF.Alarms.Ahead.shift())
-            STATEREF.Alarms.Behind.unshift(_.omit(D.Clone(alarmEscrow), "recurring"))
+            alarm = D.Clone(alarm)
+            alarm.conditionOK = true
+            const alarmEscrow = D.Clone(alarm)
+            alarm.wasAborted = true
+            if (!alarm.isDailyAlarm)
+                STATEREF.Alarms.Behind.unshift(D.Clone(alarm))
             const replyFunc = reply => {
-                if (reply.includes("defer")) {
-                    delete alarmEscrow.conditionOK
-                    alarmEscrow.time = getDateFromDateString(alarmEscrow.dateString, new Date(alarmEscrow.time + 60 * 60 * 1000)).getTime()
-                    if (reply.includes("stop"))
-                        STATEREF.Alarms.AutoDefer.push(alarmEscrow.name)
-                } else if (reply.includes("stop")) {
-                    STATEREF.Alarms.AutoAbort.push(alarmEscrow.name)
-                }
+                if (!alarm.isDailyAlarm) 
+                    STATEREF.Alarms.Behind.shift()
                 if (reply.includes("stop"))
                     setTimeout(() => {
                         STATEREF.Alarms.AutoAbort = _.without(STATEREF.Alarms.AutoAbort, alarmEscrow.name)
                         STATEREF.Alarms.AutoDefer = _.without(STATEREF.Alarms.AutoDefer, alarmEscrow.name)
                     }, 6000)
-                alarmEscrow.wasAborted = reply.includes("false") && true
-                STATEREF.Alarms.Ahead.unshift(D.Clone(alarmEscrow))
-                STATEREF.Alarms.Behind.shift()
-                STATEREF.Alarms.Ahead = _.sortBy(STATEREF.Alarms.Ahead, "time")
-                if (!reply.includes("defer"))
-                    fireNextAlarm(alarmEscrow.wasAborted)
-            }
-            if (STATEREF.Alarms.AutoDefer.includes(alarmEscrow.name))
-                replyFunc("defer")
-            else
-                D.Prompt( // Locks Dice Roller, Stops & Starts Clock
-                    C.MENUHTML.Block([
-                        C.MENUHTML.Header(`Fire Alarm '${D.JS(alarm.name)}'?`),
-                        C.MENUHTML.Body(`<b>MESSAGE SUMMARY:</b><br>${D.JS(D.SumHTML(alarm.message))}`, {bgColor: C.COLORS.white, borderStyle: "inset", borderWidth: "3px", borderColor: C.COLORS.darkgrey, width: "95%", margin: "7px 0px 0px 2.5%", fontFamily: "Verdana", fontSize: "10px", lineHeight: "14px", textShadow: "none", color: C.COLORS.black, fontWeight: "normal", textAlign: "left"}),
-                        C.MENUHTML.ButtonLine([
-                            C.MENUHTML.Button("Fire", "!reply confirm true"),
-                            C.MENUHTML.Button("Ignore", "!reply confirm false"),
-                            C.MENUHTML.Button("Ignore Any", "!reply confirm stopfalse"),
-                            C.MENUHTML.Button("Defer", "!reply confirm defer"),
-                            C.MENUHTML.Button("Defer Any", "!reply confirm deferstop")
-                        ].join(""), {height: "36px"})
-                    ].join("<br>")),
-                    replyFunc
-                )
-        },
-        fireNextAlarm = (isAborting = false) => {
-            const thisAlarm = D.Clone(STATEREF.Alarms.Ahead[0])
-            isAborting = isAborting || STATEREF.Alarms.AutoAbort.includes(thisAlarm.name)
-            DB(`Firing Alarm: ${D.JS(thisAlarm)}<br>AutoAbort: ${D.JS(STATEREF.Alarms.AutoAbort)} (${STATEREF.Alarms.AutoAbort.includes(thisAlarm.name)})`, "fireNextAlarm")
-            if (Session.IsTesting || Session.IsSessionActive) {
-                if (STATEREF.Alarms.AutoDefer.includes(thisAlarm.name))
-                    return checkCondition(thisAlarm)
-                if (!thisAlarm.wasRecurred && VAL({list: thisAlarm.recurring})) {
-                    thisAlarm.wasRecurred = true
-                    STATEREF.Alarms.Ahead.unshift(D.Clone(thisAlarm))
-                    DB(`Recurrence Alarms Created: ${D.JS(STATEREF.Alarms.Ahead)}`, "fireNextAlarm")
-                    for (const unit of _.keys(thisAlarm.recurring))
-                        STATEREF.Alarms.Ahead[1].time = addTime(thisAlarm.time, thisAlarm.recurring[unit], unit).getTime()
-                    delete STATEREF.Alarms.Ahead[1].wasRecurred
-                    STATEREF.Alarms.Ahead = _.sortBy(STATEREF.Alarms.Ahead, "time")
-                    DB(`Recurrence Alarm Set & Sorted: ${D.JS(STATEREF.Alarms.Ahead)}`, "fireNextAlarm")
-                }
-                if (!isAborting) {                    
-                    if (thisAlarm.isConditional && !thisAlarm.conditionOK)
-                        return checkCondition(thisAlarm)
-                    for (const action of thisAlarm.actions)
-                        if (VAL({function: action}))
-                            action()
-                        else if (VAL({string: action}))
-                            sendChat("", action)
-                    if (thisAlarm.displayTo.includes("all")) {
-                        sendChat("Alarm", thisAlarm.message)
-                    } else {
-                        for (const player of thisAlarm.displayTo)
-                            sendChat("Alarm", `/w ${D.GetName(player)} ${thisAlarm.message}`)
-                        // D.Alert(`${D.SumHTML(thisAlarm.message)}<br><br>Sent To: ${D.JS(thisAlarm.displayTo)}`, "TimeTracker: ALARM")
-                    }
+                if (reply.includes("defer")) {
+                    fireAlarm(alarmEscrow, false, true)
+                    if (reply.includes("stop"))
+                        STATEREF.Alarms.AutoDefer.push(alarmEscrow.name)
+                } else if (reply.includes("false")) {
+                    fireAlarm(alarmEscrow, true)
+                    if (reply.includes("stop"))
+                        STATEREF.Alarms.AutoAbort.push(alarmEscrow.name)
                 } else {
-                    STATEREF.Alarms.Ahead[0].wasAborted = true
+                    fireAlarm(alarmEscrow)
                 }
-                STATEREF.Alarms.Behind.unshift(_.omit(STATEREF.Alarms.Ahead.shift(), "recurring"))
             }
+            D.Prompt( // Locks Dice Roller, Stops & Starts Clock
+                C.MENUHTML.Block([
+                    C.MENUHTML.Header(`Fire Alarm '${D.JS(alarm.name)}'?`),
+                    C.MENUHTML.Body(`<b>MESSAGE SUMMARY:</b><br>${D.JS(D.SumHTML(alarm.message))}`, {bgColor: C.COLORS.white, borderStyle: "inset", borderWidth: "3px", borderColor: C.COLORS.darkgrey, width: "95%", margin: "7px 0px 0px 2.5%", fontFamily: "Verdana", fontSize: "10px", lineHeight: "14px", textShadow: "none", color: C.COLORS.black, fontWeight: "normal", textAlign: "left"}),
+                    C.MENUHTML.ButtonLine([
+                        C.MENUHTML.Button("Fire", "!reply confirm true", {width: "16%", margin: "0px 1% 0px 0px"}),
+                        C.MENUHTML.Button("Ignore", "!reply confirm false", {width: "16%", margin: "0px 1% 0px 0px"}),
+                        C.MENUHTML.Button("Ignore Any", "!reply confirm stopfalse", {width: "21%", margin: "0px 1% 0px 0px"}),
+                        C.MENUHTML.Button("Defer", "!reply confirm defer", {width: "16%", margin: "0px 1% 0px 0px"}),
+                        C.MENUHTML.Button("Defer Any", "!reply confirm deferstop", {width: "21%", margin: "0px 1% 0px 0px"})
+                    ].join(""), {height: "36px"})
+                ].join("<br>")),
+                replyFunc
+            )
+        },
+        deferAlarm = (alarm) => {
+            if (!alarm.isDailyAlarm) {
+                const deferredAlarm = D.Clone(alarm)
+                delete deferredAlarm.conditionOK
+                delete deferredAlarm.wasAborted
+                deferredAlarm.time = getDateFromDateString(alarm.dateString, new Date(alarm.time + 60 * 60 * 1000)).getTime()
+                return D.Clone(deferredAlarm)
+            }
+            return false
+        },
+        recurAlarm = (alarm, recurTime) => {
+            if (!alarm.isDailyAlarm) {
+                const recurredAlarm = D.Clone(alarm)
+                for (const unit of _.keys(recurTime))
+                    recurredAlarm.time = addTime(alarm.time, recurTime[unit], unit).getTime()
+                DB(`Recurrence Alarm Created: ${D.JS(recurredAlarm)}`, "recurAlarm")
+                return D.Clone(recurredAlarm)
+            }
+            return false
+        },
+        abortAlarm = (alarm) => {
+            if (!alarm.isDailyAlarm) {
+                alarm.wasAborted = true
+                return D.Clone(alarm)
+            }
+            return false
+        },
+        fireAlarm = (alarm, isAborting = false, isDeferring = false) => {
+            isAborting = alarm.wasAborted || STATEREF.Alarms.AutoAbort.includes(alarm.name) || isAborting
+            isDeferring = !isAborting && (STATEREF.Alarms.AutoDefer.includes(alarm.name) || isDeferring)
+            if (isAborting) {
+                const abortedAlarm = abortAlarm(alarm)
+                if (abortedAlarm)
+                    STATEREF.Alarms.Behind.unshift(abortAlarm(alarm))
+            } else if (isDeferring) {
+                const deferredAlarm = deferAlarm(alarm)
+                if (deferredAlarm)
+                    STATEREF.Alarms.Ahead.unshift(deferredAlarm)
+            } else {
+                if (!alarm.wasRecurred && VAL({list: alarm.recurring})) {
+                    const recurredAlarm = recurAlarm(alarm, alarm.recurring)
+                    if (recurredAlarm)                        
+                        STATEREF.Alarms.Ahead.unshift(recurredAlarm)
+                    alarm.wasRecurred = true
+                    fireAlarm(alarm, false, false)
+                } else if (alarm.isConditional && !alarm.conditionOK) {
+                    checkCondition(alarm)
+                } else {          
+                    for (const action of alarm.actions)
+                        if (VAL({array: action})) {
+                            if (ALARMFUNCS[action[0]])
+                                ALARMFUNCS[action.shift()](...action)                        
+                        } else if (VAL({string: action}, "fireAlarm")) {
+                            if (ALARMFUNCS[action])
+                                ALARMFUNCS[action]()
+                            else
+                                sendChat("", action)
+                        }
+                    if (alarm.displayTo.includes("all"))
+                        sendChat("Alarm", alarm.message)
+                    else
+                        for (const player of alarm.displayTo)
+                            sendChat("Alarm", `/w ${D.GetName(player)} ${alarm.message}`)
+                    if (alarm.isDailyAlarm)
+                        alarm.time = STATEREF.dateObj.getTime()
+                    STATEREF.Alarms.Behind.unshift(D.Clone(alarm))
+                }
+            }
+            STATEREF.Alarms.Ahead = _.sortBy(STATEREF.Alarms.Ahead, "time")
+        },
+        unfireAlarm = (alarm) => {
+            delete alarm.conditionOK
+            if (!alarm.wasAborted)
+                for (const revAction of alarm.revActions)
+                    if (VAL({function: revAction}))
+                        revAction()
+                    else if (VAL({string: revAction}))
+                        sendChat("", revAction)
+            delete alarm.wasAborted
+            if (!alarm.isDailyAlarm)
+                STATEREF.Alarms.Ahead.unshift(D.Clone(alarm))
+            STATEREF.Alarms.Ahead = _.sortBy(STATEREF.Alarms.Ahead, "time")
+        },
+        fireNextAlarm = (isAborting = false, isDeferring = false) => {
+            const thisAlarm = STATEREF.Alarms.Ahead.shift()
+            DB(`Firing Alarm: ${D.JS(thisAlarm)}<br>AutoAbort: ${D.JS(STATEREF.Alarms.AutoAbort)} (${STATEREF.Alarms.AutoAbort.includes(thisAlarm.name)})`, "fireNextAlarm")
+            if (Session.IsTesting || Session.IsSessionActive)
+                fireAlarm(thisAlarm, isAborting, isDeferring)            
         },
         unfireLastAlarm = () => {
             const thisAlarm = STATEREF.Alarms.Behind.shift()
-            if (Session.IsTesting || Session.IsSessionActive) {
-                D.Alert(`Unfiring Alarm: ${D.JS(Object.assign(D.Clone(thisAlarm), {message: D.SumHTML(thisAlarm.message)}))}`, "unfireLastAlarm")
-                delete thisAlarm.conditionOK
-                if (!thisAlarm.wasAborted)
-                    for (const revAction of thisAlarm.revActions)
-                        if (VAL({function: revAction}))
-                            revAction()
-                        else if (VAL({string: revAction}))
-                            sendChat("", revAction)
-                delete thisAlarm.wasAborted
-                STATEREF.Alarms.Ahead.unshift(D.Clone(thisAlarm))
-            }
+            DB(`Unfiring Alarm: ${D.JS(Object.assign(D.Clone(thisAlarm), {message: D.SumHTML(thisAlarm.message)}))}`, "unfireLastAlarm")   
+            if (Session.IsTesting || Session.IsSessionActive)           
+                unfireAlarm(thisAlarm)
         },
     // #endregion
 
@@ -1582,6 +1730,7 @@ Weather:<br><b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td styl
     return {
         RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        ALARMFUNCS,
         StartClock: startClock,
         StopClock: stopClock,
         StartCountdown: startCountdown,
@@ -1599,7 +1748,9 @@ Weather:<br><b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td styl
         IsDay: isDay,
         IsValidDate: isValidDString,
         get IsClockRunning() { return isRunning || isRunningFast || isTimeRunning },
-        UpdateWeather: setWeather
+        UpdateWeather: setWeather,
+
+        SetAlarm: setAlarm
     }
 })()
 

@@ -262,6 +262,10 @@ const Char = (() => {
                 }
                 case "set": {
                     switch (args.shift().toLowerCase()) {
+                        case "daysleep": {
+                            setDaysleepAlarm()
+                            break
+                        }
                         case "npc": {
                             charObjs = charObjs || D.GetChars(args.shift())
                             const [charObj] = charObjs,
@@ -921,7 +925,6 @@ const Char = (() => {
                     Media.SetText(`TombstoneName${quad}`, nameString, true)
                     Media.SetImg(`Tombstone${quad}`, "npc", true)
                     Media.SetImg(`TombstonePic${quad}`, D.GetName(npcObj, true), true)
-                    D.Alert(D.JS(tokenObj, true))
                     Media.ToggleImg(tokenObj, true)
                     Media.SetImg(tokenObj, npcName, true)
                     Media.SetArea(tokenObj, `npcToken${quad}`)
@@ -1220,11 +1223,11 @@ const Char = (() => {
                         banner: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {margin: "0px", fontSize: "12px"}) : {margin: "0px", fontSize: "12px"},
                         alert: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {}) : {}
                     },
-                    initTraitVal = parseInt((D.GetStat(charObj, trait) || [0])[0] || defaultTraitVal || 0),
+                    initTraitVal = VAL({number: parseInt(D.GetStatVal(charObj, trait))}) ? parseInt(D.GetStatVal(charObj, trait)) : defaultTraitVal || 0,
                     finalTraitVal = Math.min(max, Math.max(min, initTraitVal + parseInt(amount)))
                 amount = finalTraitVal - initTraitVal
                 let [bannerString, bodyString, alertString, trackerString] = ["", "", null, ""]
-                D.Alert(`Adjusting Trait: (${D.JS(trait)}, ${D.JS(amount)}, ${D.JS(min)}, ${D.JS(max)}, ${D.JS(defaultTraitVal)}, ${D.JS(deltaType)})
+                DB(`Adjusting Trait: (${D.JS(trait)}, ${D.JS(amount)}, ${D.JS(min)}, ${D.JS(max)}, ${D.JS(defaultTraitVal)}, ${D.JS(deltaType)})
                     ... Initial (${D.JS(initTraitVal)}) + Amount (${D.JS(amount)}) = Final (${D.JS(finalTraitVal)}))`, "adjustTrait")
                 switch (trait.toLowerCase()) {
                     case "hunger":
@@ -1276,7 +1279,7 @@ const Char = (() => {
                                 alertString = "EXHAUSTED: -2 to Social & Mental rolls."
                             }
                             trackerString = C.CHATHTML.TrackerLine(maxWP - newBashing - newAggravated, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
-                        } else if (amount < 0) {
+                        } else if (Math.min(parseInt(D.GetStat(charObj, "willpower_bashing")[0]), Math.abs(amount))) {
                             bannerString = `You regain ${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "willpower_bashing")[0]), Math.abs(amount))).toLowerCase()} Willpower.`                            
                         }                        
                         break
@@ -1298,7 +1301,7 @@ const Char = (() => {
                                 alertString = "EXHAUSTED: -2 to Social & Mental rolls."            
                             }
                             trackerString = C.CHATHTML.TrackerLine(maxWP - newBashing - newAggravated, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"}) 
-                        } else if (amount < 0) {
+                        } else if (Math.min(parseInt(D.GetStat(charObj, "willpower_aggravated")[0]), Math.abs(amount))) {
                             bannerString = `${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "willpower_aggravated")[0]), Math.abs(amount)))} aggravated Willpower damage downgraded.`                            
                         }
                         
@@ -1328,7 +1331,7 @@ const Char = (() => {
                                 alertString = "WOUNDED: -2 to Physical rolls."
                             }
                             trackerString = C.CHATHTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})                 
-                        } else if (amount < 0) {
+                        } else if (Math.min(parseInt(D.GetStat(charObj, "health_bashing")[0]), Math.abs(amount))) {
                             bannerString = `You heal ${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "health_bashing")[0]), Math.abs(amount))).toLowerCase()} superficial Health damage.` 
                         }
                         break
@@ -1349,13 +1352,13 @@ const Char = (() => {
                                 alertString = "WOUNDED: -2 to Physical rolls."
                             }                       
                             trackerString = C.CHATHTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
-                        } else if (amount < 0) {
+                        } else if (Math.min(parseInt(D.GetStat(charObj, "health_aggravated")[0]), Math.abs(amount))) {
                             bannerString = `${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "health_aggravated")[0]), Math.abs(amount)))} aggravated Health damage downgraded.`                  
                         }
                         break
                     // no default
                 }
-                if (amount !== 0 && isChatting)
+                if (bannerString && isChatting)
                     D.Chat(charObj, C.CHATHTML.Block(_.compact([
                         C.CHATHTML.Header(bannerString, chatStyles.banner),
                         bodyString ? C.CHATHTML.Body(bodyString, chatStyles.body) : null,
@@ -1403,10 +1406,10 @@ const Char = (() => {
             }
             return false
         },
-        adjustHunger = (charRef, amount, isKilling = false) => {
+        adjustHunger = (charRef, amount, isKilling = false, isChatting = true) => {
             if (!VAL({char: [charRef], number: [amount], trait: ["bp_slakekill"]}, "AdjustHunger", true))
                 return false
-            if (adjustTrait(charRef, "hunger", parseInt(amount), isKilling ? 0 : parseInt(D.GetStat(charRef, "bp_slakekill") && D.GetStat(charRef, "bp_slakekill")[0] || 1), 5, 1))
+            if (adjustTrait(charRef, "hunger", parseInt(amount), (isKilling || parseInt(amount) > 0) ? 0 : parseInt(D.GetStat(charRef, "bp_slakekill") && D.GetStat(charRef, "bp_slakekill")[0] || 1), 5, 1, null, isChatting))
                 return true
             return false
         },
@@ -1438,6 +1441,21 @@ const Char = (() => {
     // #endregion
 
     // #region Daysleep & Waking Up,
+        setDaysleepAlarm = () => {
+            TimeTracker.SetAlarm("dusk", "Dusk Wake-Up", C.CHATHTML.Block([
+                C.CHATHTML.Header("You Awaken at Dusk:"),
+                C.CHATHTML.Body([
+                    "You rouse your Hunger to wake,",
+                    "and to heal aggravated Health damage.",
+                    "You refresh your Willpower."
+                ].join("<br>"))
+            ].join("")), ["daysleep"], ["all"], [], false, true)
+        },
+        refreshWillpower = (charRef) => {
+            // Need to alter refreshAmount based on card effects that change willpower refresh.
+            const refreshAmount = Math.max(D.GetStatVal(charRef, "composure"), D.GetStatVal(charRef, "resolve"))
+            adjustDamage(charRef, "willpower", "superficial", -refreshAmount)
+        },
         daysleep = () => {
             for (const char of D.GetChars("registered")) {
                 const healWP = Math.max(parseInt(getAttrByName(char.id, "composure")), parseInt(getAttrByName(char.id, "resolve")))
@@ -1627,6 +1645,7 @@ const Char = (() => {
         Damage: adjustDamage,
         AdjustTrait: adjustTrait,
         AdjustHunger: adjustHunger,
+        RefreshWillpower: refreshWillpower,
         DaySleep: daysleep,
         AwardXP: awardXP,
         LaunchProject: launchProject,

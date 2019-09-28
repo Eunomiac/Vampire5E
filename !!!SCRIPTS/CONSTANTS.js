@@ -203,7 +203,7 @@ const C = (() => {
                     borderStyle: options.borderStyle || "none",
                     borderColor: options.borderColor || options.color || "black",
                     boxShadow: options.boxShadow || "none",
-                    lineHeight: options.lineHeight || options.fontSize || "18px"
+                    lineHeight: options.lineHeight || "22px"
                 }
                 return D.JSH(`<span style="
                     display: block; 
