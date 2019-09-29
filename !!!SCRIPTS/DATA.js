@@ -1609,7 +1609,13 @@ const D = (() => {
                     }
                 }                
                 if (VAL({char: playerRef})) {
-                    const charObj = getChar(playerRef, true)
+                    const playerCharData = _.values(Char.REGISTRY)
+                    let charObj = getChar(playerRef, true)                    
+                    for (const charData of playerCharData)
+                        if (charData.isNPC === charObj.id) {
+                            charObj = getChar(charData.id)
+                            break
+                        }
                     playerID = _.filter(charObj.get("controlledby").split(","), v => v !== "all")
                     DB(`PlayerRef identified as Character Object: ${D.JS(charObj.get("name"))}... "controlledby": ${D.JS(playerID)}`, "getPlayerID")
                     if (playerID.length > 1 && !isSilent)

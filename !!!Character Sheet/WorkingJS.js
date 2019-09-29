@@ -18,7 +18,7 @@
             social: ["Animal Ken", "Etiquette", "Insight", "Intimidation", "Leadership", "Performance", "Persuasion", "Streetwise", "Subterfuge"],
             mental: ["Academics", "Awareness", "Finance", "Investigation", "Medicine", "Occult", "Politics", "Science", "Technology"]
         },
-        DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
+        DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy", "True Faith"],
         TRACKERS = ["Health", "Willpower", "Blood Potency", "Humanity"],
         // HUMSEQUENCES = ["BSH", "HBHXS", "SBS", "XHB"],
         ATTRBLACKLIST = ["toggle", "inccounter"],
@@ -66,7 +66,8 @@
             "Banu Haqim": "Your Assamite Blood drives you to feed from those deserving of punishment: especially the Kindred.  Upon slaking Hunger with Cainite Blood, you must roll to resist Hunger Frenzy against a Difficulty of 2 plus your Bane Severity.",
             "Hecata": "Your Hecata Blood is tainted with death.  When feeding, you do not cause ecstasy in your prey, but rather excruciating pain.  Moreover, mortals subconsciously sense your blighted nature:  You suffer a penalty equal to your Bane Severity to all attempts to feed from mortals that do not rely on force.",
             "Ministry": "Yours is the Blood of Set, and it shares His longing for darkness.  You suffer your Bane Severity in additional aggravated damage from sunlight, and an equivalent penalty to all dice pools when bright light is directed straight at you.",
-            "Ravnos": "Your Ravnos Blood instills in you a weakness for a specific vice or crime: theft, deceit, con-artistry, etc.  When commiting your chosen vice would benefit you in some way, failure to act accordingly penalizes your Social and Mental dice pools by an amount equal to your Bane Severity for the remainder of the night."
+            "Ravnos": "Your Ravnos Blood instills in you a weakness for a specific vice or crime: theft, deceit, con-artistry, etc.  When commiting your chosen vice would benefit you in some way, failure to act accordingly penalizes your Social and Mental dice pools by an amount equal to your Bane Severity for the remainder of the night.",
+            "Mortal": ""
         },
         clanDiscs = {
             "Ghoul": ["", "", ""],
@@ -84,7 +85,8 @@
             "Banu Haqim": ["Celerity", "Obfuscate", "Blood Sorcery"],
             "Hecata": ["Auspex", "Fortitude", "Oblivion"],
             "Ministry": ["Obfuscate", "Presence", "Protean"],
-            "Ravnos": ["Animalism", "Fortitude", "Chimerstry"]
+            "Ravnos": ["Animalism", "Fortitude", "Chimerstry"],
+            "Mortal": ["True Faith"]
         },
         genDepts = [
             null,

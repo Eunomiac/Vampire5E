@@ -969,7 +969,7 @@ const C = (() => {
             SCI: "science",
             TEC: "technology"
         },
-        DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy", "Vicissitude"],
+        DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy", "Vicissitude", "True Faith"],
         DISCABBVS = {
             ANI: "Animalism",
             AUS: "Auspex",
@@ -983,7 +983,8 @@ const C = (() => {
             SOR: "Blood Sorcery",
             ALC: "Alchemy",
             OBV: "Oblivion",
-            VIC: "Vicissitude"
+            VIC: "Vicissitude",
+            TRF: "True Faith"
         },
         TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"],
         CLANS = ["Brujah", "Gangrel", "Malkavian", "Nosferatu", "Toreador", "Tremere", "Ventrue", "Lasombra", "Tzimisce", "Banu Haqim", "Ministry", "Hecata", "Ravnos"],

@@ -901,8 +901,9 @@ const Char = (() => {
             if (VAL({string: npcName, pc: charObj}, "setCharNPC")) {
                 const [quad] = _.values(D.GetCharVals(charObj, "quadrant")),
                     closestQuad = _.find(["TopLeft", "TopRight", "BotLeft", "BotRight"], x => x !== quad && x.slice(-4) === quad.slice(-4)),
-                    [tokenObj] = findObjs({_type: "graphic", _subtype: "token", name: `${_.values(D.GetCharVals(charObj, "tokenName"))[0]}_1`})                      
+                    [tokenObj] = findObjs({_type: "graphic", _subtype: "token", name: `${_.values(D.GetCharVals(charObj, "tokenName"))[0]}_1`})                   
                 if (npcName === "base") {
+                    delete Char.REGISTRY[quad].isNPC
                     Media.ToggleImg(`TombstonePic${quad}`, false)
                     Media.ToggleText(`TombstoneName${quad}`, false)
                     Media.SetArea(tokenObj, `${quad}Token`)
@@ -920,6 +921,7 @@ const Char = (() => {
                     Media.SetImg(tokenObj, "base")
                 } else if (VAL({npc: npcObj}, "!char set npc")) {
                     let nameString = D.GetName(npcObj)
+                    Char.REGISTRY[quad].isNPC = npcObj.id
                     if (Media.GetTextWidth(`TombstoneName${quad}`, nameString) > 240)
                         nameString = npcName
                     Media.SetText(`TombstoneName${quad}`, nameString, true)
@@ -1475,7 +1477,7 @@ const Char = (() => {
         social: ["Animal Ken", "Etiquette", "Insight", "Intimidation", "Leadership", "Performance", "Persuasion", "Streetwise", "Subterfuge"],
         mental: ["Academics", "Awareness", "Finance", "Investigation", "Medicine", "Occult", "Politics", "Science", "Technology"]
     },
-    DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy"],
+    DISCIPLINES = ["Animalism", "Auspex", "Celerity", ...],
     TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"], */
         populateDefaults = (charRef) => {
         // Initializes (or resets) a given character with default values for all stats.

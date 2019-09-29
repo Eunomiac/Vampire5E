@@ -122,6 +122,7 @@ module.exports = {
         "Session": true,
         "Player": true,
         "Fuzzy": true,
+        "Tester": true,
         "TimeTracker": true,
         "_": false,
         "state": true,

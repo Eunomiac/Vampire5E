@@ -8,16 +8,16 @@ const XX_SCRIPTNAME_XX = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "XX_SCRIPTNAME_XX",
         CHATCOMMAND = "XX_SCRIPTCOMMAND_XX",
-        GMONLY = true
+        GMONLY = true,
 
     // #region COMMON INITIALIZATION
-    const STATEREF = C.ROOT[SCRIPTNAME]	// eslint-disable-line no-unused-vars
-    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
+        STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
+        VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
+        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
-    const checkInstall = () => {
+        checkInstall = () => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             initialize()
         },
@@ -30,23 +30,23 @@ const XX_SCRIPTNAME_XX = (() => {
                     handleInput(msg, who, call, args)
                 }
             })
-        }
+        },
     // #endregion
 
     // #region LOCAL INITIALIZATION
-    const initialize = () => { // eslint-disable-line no-empty-function
-    }
+        initialize = () => { // eslint-disable-line no-empty-function
+        },
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-    const handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
+        handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
         // const
-        switch (call) {
-            case "":
-                break
+            switch (call) {
+                case "":
+                    break
             // no default
+            }
         }
-    }
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 

@@ -300,33 +300,35 @@ const TimeTracker = (() => {
                         `<tr><td style="text-align:right; text-align-last:right;">-> Predawn1</td><td style="text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATEREF.dateObj.getMonth()][0], -5, true)}</td></tr>`,
                         `<tr><td style="text-align:right; text-align-last:right;">Predawn1 -> DAY</td><td style="text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATEREF.dateObj.getMonth()][0], 0, true)}</td></tr>`
                     ]
-                    D.Alert(D.JSH(`
-<h3>WEATHER REPORT</h3>
-${getWeatherReport().join("<br>")}
-<br><br>
-<h3>HORIZON TRANSITIONS</h3>
-<table>${transitionStrings.join("")}</table>
-<br>
-<b>!time</b> commands are 'add', 'set', 'run' and 'stop'.
-<br><br>
-<b>!time set [year] [month] [day] [hour] [min]</b>
-<br>
-<b>!time set weather [event] [tC] [w] [humid]</b>
-<table><tr><td style="width:18%;">[EVENT]</td><td style="width:29%;">x: Clear</td><td style="width:29%;">b: Blizzard</td><td style="width:29%;">c: Overcast</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">f: Foggy</td><td style="width:29%;">p: Downpour</td><td style="width:29%;">s: Snowing</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">t: Storm</td><td style="width:29%;">w: Drizzle</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;"><i>(+f for foggy)</i></td></tr>
-<br><tr><td><br></td></tr><tr><td style="width:18%;">[WIND]</td><td style="width:29%;">x: Still</td><td style="width:29%;">s: Soft</td><td style="width:29%;">b: Breezy</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">w: Blustery</td><td style="width:29%;">g: Driving</td><td style="width:29%;">h: Howling</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">v: Roaring</td></tr>
-<br><tr><td><br></td></tr><tr><td style="width:18%;">[HUMID]</td><td style="width:29%;">x: null</td><td style="width:29%;">d: Dry</td><td style="width:29%;">h: Humid</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">m: Muggy</td><td style="width:29%;">s: Swelter</td></tr></table>`), "TIMETRACKER")
+                    // const transitionStrings = ["Testing"]
+                    D.Alert(D.JSH([
+                        `<h3>WEATHER REPORT</h3>${getWeatherReport()}`,
+                        `<h3>HORIZON TRANSITIONS</h3><table>${transitionStrings.join("")}</table>`,
+                        "<b>!time</b> commands are 'add', 'set', 'run' and 'stop'.",
+                        "",
+                        "<b>!time set [year] [month] [day] [hour] [min]</b>",
+                        "<b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td style=\"width:18%;\">[EVENT]</td><td style=\"width:29%;\">x: Clear</td><td style=\"width:29%;\">b: Blizzard</td><td style=\"width:29%;\">c: Overcast</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\">f: Foggy</td><td style=\"width:29%;\">p: Downpour</td><td style=\"width:29%;\">s: Snowing</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\">t: Storm</td><td style=\"width:29%;\">w: Drizzle</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\"></td><td style=\"width:29%;\"><i>(+f for foggy)</i></td></tr>",
+                        "<tr><td style=\"width:18%;\">[WIND]</td><td style=\"width:29%;\">x: Still</td><td style=\"width:29%;\">s: Soft</td><td style=\"width:29%;\">b: Breezy</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\">w: Blustery</td><td style=\"width:29%;\">g: Driving</td><td style=\"width:29%;\">h: Howling</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\"></td><td style=\"width:29%;\">v: Roaring</td></tr>",
+                        "<tr><td style=\"width:18%;\">[HUMID]</td><td style=\"width:29%;\">x: null</td><td style=\"width:29%;\">d: Dry</td><td style=\"width:29%;\">h: Humid</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\"></td><td style=\"width:29%;\">m: Muggy</td><td style=\"width:29%;\">s: Swelter</td></tr></table>"
+                    ].join("<br>")), "TIMETRACKER")
                     break
                 }
                 default: {
-                    D.Alert(D.JSH(`<b>!time</b> commands are 'add', 'set', 'run' and 'stop'.
-<br><br>
-<b>!time set [year] [month] [day] [hour] [min]</b>
-<br>
-<b>!time set weather [event] [tC] [w] [humid]</b>
-<br><br>
-<h3>WEATHER OVERRIDES</h3><table><tr><td style="width:18%;">[EVENT]</td><td style="width:29%;">x: Clear</td><td style="width:29%;">b: Blizzard</td><td style="width:29%;">c: Overcast</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">f: Foggy</td><td style="width:29%;">p: Downpour</td><td style="width:29%;">s: Snowing</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">t: Storm</td><td style="width:29%;">w: Drizzle</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;"><i>(+f for foggy)</i></td></tr>
-<br><tr><td><br></td></tr><tr><td style="width:18%;">[WIND]</td><td style="width:29%;">x: Still</td><td style="width:29%;">s: Soft</td><td style="width:29%;">b: Breezy</td></tr><tr><td style="width:18%;"></td><td style="width:29%;">w: Blustery</td><td style="width:29%;">g: Driving</td><td style="width:29%;">h: Howling</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">v: Roaring</td></tr>
-<br><tr><td><br></td></tr><tr><td style="width:18%;">[HUMID]</td><td style="width:29%;">x: null</td><td style="width:29%;">d: Dry</td><td style="width:29%;">h: Humid</td></tr><tr><td style="width:18%;"></td><td style="width:29%;"></td><td style="width:29%;">m: Muggy</td><td style="width:29%;">s: Swelter</td></tr></table>`), "TIMETRACKER")
+                    D.Alert(D.JSH([
+                        "<b>!time</b> commands are 'add', 'set', 'run' and 'stop'.",
+                        "",
+                        "",
+                        "<b>!time set [year] [month] [day] [hour] [min]</b>",
+                        "",
+                        "<b>!time set weather [event] [tC] [w] [humid]</b>",
+                        "<table><tr><td style=\"width:18%;\">[EVENT]</td><td style=\"width:29%;\">x: Clear</td><td style=\"width:29%;\">b: Blizzard</td><td style=\"width:29%;\">c: Overcast</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\">f: Foggy</td><td style=\"width:29%;\">p: Downpour</td><td style=\"width:29%;\">s: Snowing</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\">t: Storm</td><td style=\"width:29%;\">w: Drizzle</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\"></td><td style=\"width:29%;\"><i>(+f for foggy)</i></td></tr>",
+                        "",
+                        "",
+                        "<tr><td style=\"width:18%;\">[WIND]</td><td style=\"width:29%;\">x: Still</td><td style=\"width:29%;\">s: Soft</td><td style=\"width:29%;\">b: Breezy</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\">w: Blustery</td><td style=\"width:29%;\">g: Driving</td><td style=\"width:29%;\">h: Howling</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\"></td><td style=\"width:29%;\">v: Roaring</td></tr>",
+                        "",
+                        "",
+                        "<tr><td style=\"width:18%;\">[HUMID]</td><td style=\"width:29%;\">x: null</td><td style=\"width:29%;\">d: Dry</td><td style=\"width:29%;\">h: Humid</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\"></td><td style=\"width:29%;\">m: Muggy</td><td style=\"width:29%;\">s: Swelter</td></tr></table>"
+                    ].join("<br>")), "TIMETRACKER")
                     break
                 }
             }
@@ -1082,6 +1084,7 @@ ${getWeatherReport().join("<br>")}
                     return false
                 }
                 if (Math.abs(STATEREF.TweenCurTime) >= Math.abs(STATEREF.TweenDuration)) {
+                    STATEREF.dateObj.setTime(STATEREF.TweenTarget)
                     clearInterval(timeTimer)
                     timeTimer = null
                     setIsRunning(false)
@@ -1359,38 +1362,37 @@ ${getWeatherReport().join("<br>")}
         getWeatherReport = () => {
             // const weatherCode = WEATHERDATA[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()],switch(weatherCode.charAt(0)) {
             // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
-            const weatherStrings = {}
-            // let debugString = ""
+            const weatherStrings = {},
+                weatherCodes = {x: "CLR", b: "BLZ", c: "OCST", f: "FOG", p: "DPR", s: "SNW", t: "TST", w: "DRZ"}
             for (const code of ["x", "b", "c", "f", "p", "s", "t", "w"]) {
+                const startMonth = STATEREF.dateObj.getMonth()
                 let startYear = STATEREF.dateObj.getFullYear(),
-                    startMonth = STATEREF.dateObj.getMonth(),
                     startDay = STATEREF.dateObj.getDate(),
-                    startHour = STATEREF.dateObj.getHours()
-                // debugString += dateObj + "<br>"
-                // debugString += `<br><br>${code}: [${startYear}-${startMonth}-${startDay}-${startHour}]`
-                while (_.isUndefined(weatherStrings[WEATHERCODES[0][code]])) {
-                    // debugString += `<br><br>CYCLE START: [${startYear}-${startMonth}-${startDay}-${startHour}]`
-                    for (let m = startMonth; m < 12; m++) {
-                        // debugString += `<br>Month: ${m}, `
-                        for (let d = startDay; d < WEATHERDATA[m].length; d++) {
-                            // debugString += `${d} = [${D.JS(WEATHERDATA[m][d].join(", "))}]<br>... MATCH = ${_.findIndex(WEATHERDATA[m][d], (v, k) => { return v.charAt(0) === code && (k <= 5 || k >= 20) })}, StartHour = ${startHour}<br>`
-                            const hourMatch = _.findIndex(WEATHERDATA[m][d], (v, k) => { return v.charAt(0) === code && (k <= 5 || k >= 20) })
-                            if (hourMatch >= startHour) {
-                                // debugString += "... MATCHED!<br>"
-                                weatherStrings[code] = `${MONTHS[m].slice(0, 3)} ${d}, ${hourMatch > 12 ? `${hourMatch - 12} PM` : `${hourMatch} AM`}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>!time set ${startYear} ${m} ${d} ${hourMatch}</b>`
-                                break
-                            }
-                            startHour = 0
+                    startHour = STATEREF.dateObj.getHours(),
+                    eventFound = false                    
+                for (let mI = 0; mI < 12; mI++) {
+                    const m = (mI + startMonth) % 12
+                    if (mI > 0 && m === 0)
+                        startYear++
+                    for (let d = startDay; d < WEATHERDATA[m].length; d++) {
+                        const hourMatch = _.findIndex(WEATHERDATA[m][d], (v, k) => { return v.charAt(0) === code && (k <= 5 || k >= 20) })
+                        if (hourMatch >= startHour) {
+                            weatherStrings[code] = {
+                                date: `<b>${MONTHS[m].slice(0, 3)} ${d}, ${hourMatch > 12 ? `${hourMatch - 12} PM` : `${hourMatch} AM`}</b>`,
+                                command: `<span style="width: 40px; display: inline-block;"><a href="!time set ${startYear} ${m} ${d} ${hourMatch}">${weatherCodes[code]}</a></span>`
+                            }  
+                            eventFound = true
                         }
-                        if (!_.isUndefined(weatherStrings[WEATHERCODES[0][code]]))
+                        if (eventFound)
                             break
-                        startDay = 1
+                        startHour = 0
                     }
-                    startMonth = 0
-                    startYear++
+                    if (eventFound)
+                        break
+                    startDay = 1
                 }
-            }
-            return _.map(weatherStrings, (v, k) => `${k}: ${v}`)
+            } 
+            return _.values(weatherStrings).map(x => `<div style="display: inline-block; width: 45%; margin: 2px 3% 0px 0px; height: auto;">${x.command} ${x.date}</div>`).join("")
         },
     // #endregion
 
