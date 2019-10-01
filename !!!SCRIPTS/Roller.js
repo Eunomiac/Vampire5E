@@ -53,83 +53,154 @@ const Roller = (() => {
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-    // eslint-disable-next-line no-unused-vars
-        newHandleInput = (msg, who, call, args) => {        
-            let charObj, params, rollType,
+        handleInput = (msg, who, call, args) => {        
+            let char, charObjs, charIDString, params, rollType,
                 name = "",
-                [isSilent, isMaskingTraits] = [false, false]
+                [isSilent, isMaskingTraits] = [false, false];
+            [charObjs, charIDString, call, args] = D.ParseCharSelection(args[0], args.slice(1))
             switch (call) {
-                case "frenzyinit": {	// !projectroll @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
-                    lockRoller(true)
-                    STATEREF.frenzyRoll = `${args.join(" ").split("|")[0]}|`
-                    sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px ${C.COLORS.crimson} outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: ${C.COLORS.white}; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: ${C.COLORS.brightred}; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${args.join(" ").split("|")[0]}</span><br/></div>`)
-                    break
-                }
-                case "frenzy": { rollType = rollType || "frenzy"
-                    lockRoller(false)
-                    args = `${STATEREF.frenzyRoll} ${args[0]}`.split(" ")
-                    DB(`Parsing Frenzy Args: ${D.JS(args)}`, "!frenzyroll")
-                } /* falls through */
-                case "disc": case "trait": rollType = rollType || "trait"
-            /* falls through */
-                case "rouse": case "rouseobv": rollType = rollType || "rouse"
-            /* falls through */
-                case "rouse2": case "rouse2obv": rollType = rollType || "rouse2"
-            /* falls through */
-                case "check": rollType = rollType || "check"
-            /* falls through */
-                case "willpower": rollType = rollType || "willpower"
-            /* falls through */
-                case "humanity": rollType = rollType || "humanity"
-            /* falls through */
-                case "remorse": rollType = rollType || "remorse"
-            /* falls through */
-                case "project": { rollType = rollType || "project"
-                /* all continue below */
-                    params = _.map(args.join(" ").split("|"), v => v.trim())
-                    name = params.shift()
-                    charObj = D.GetChar(name)
-                    DB(`Received Roll: ${D.JS(call)} ${name}|${params.join("|")}
-                            ... PARAMS: [${D.JS(params.join(", "))}]
-                            ... CHAROBJ: ${D.JS(charObj)}`, "handleInput")
-                    if (VAL({charobj: charObj}, "handleInput")) {
-                        if (STATEREF.isNextRollNPC && playerIsGM(msg.playerid)) {
-                            STATEREF.isNextRollNPC = false
-                            makeNewRoll(charObj, rollType, params, Object.assign(_.clone(STATEREF.nextRollFlags), {isDiscRoll: call === "disc", isNPCRoll: true, isOblivionRoll: STATEREF.oblivionRouse === true || call.includes("obv")}))
-                            STATEREF.oblivionRouse = false
-                                // STATEREF.nextRollFlags = {}
-                        } else if (isLocked) {
-                            break
-                        } else if (playerIsGM(msg.playerid)) {
-                            makeNewRoll(charObj, rollType, params, Object.assign(_.clone(STATEREF.nextRollFlags), {isDiscRoll: call === "disc", isNPCRoll: false, isOblivionRoll: STATEREF.oblivionRouse === true || call.includes("obv")}))
-                            STATEREF.oblivionRouse = false
-                                // STATEREF.nextRollFlags = {}                
-                        } else {
-                            makeNewRoll(charObj, rollType, params, {isDiscRoll: call === "disc", isNPCRoll: false, isOblivionRoll: call.includes("obv")})
-                        }
-                        delete STATEREF.frenzyRoll
-                    }
+                case "quickrouse": {
+                    [char] = getRollChars([charObjs && charObjs[0] || D.GetChar(msg) || D.GetChar(args.shift())])
+                    const isObvRouse = args.shift() === "true"
+                    let isDoubleRouse = args[0] === "true"
+                    const forcedResults = _.compact([parseInt(args.pop()), parseInt(args.pop())])
+                    isDoubleRouse = isDoubleRouse || forcedResults.length === 2
+                    quickRouseCheck(char, isDoubleRouse, isObvRouse, forcedResults)
                     break
                 }
                 case "secret": {
                     rollType = "secret"
-                    const flags = args.shift().toLowerCase()
-                    params = args.join(" ").split("|")
-                    isSilent = flags.includes("x")
-                    isMaskingTraits = flags.includes("n")
-                    let chars
-                    if (!msg.selected || !msg.selected[0])
-                        chars = D.GetChars("registered")
-                    else
-                        chars = D.GetChars(msg)
-                    if (params.length >= 1 && params.length <= 3)
-                        makeSecretRoll(chars, params, isSilent, isMaskingTraits)
+                    if (!args.length) {
+                        Char.PromptTraitSelect(charIDString, "!roll @@CHARIDS@@ sroll selected")
+                    } else {
+                        if (args[0].length === 1 || args[0].includes(",")) {
+                            isSilent = args[0].includes("x")
+                            isMaskingTraits = args[0].includes("n")
+                            args.shift()
+                        }
+                        params = args[0] === "selected" && Char.SelectedTraits || args.join(" ").split("|")
+                            // D.Alert(`CharObjs: ${D.JS((charObjs || []).map(x => x.get("name")))}`)
+                        charObjs = getRollChars(charObjs || D.GetChars(msg) || D.GetChars("registered"))     
+                            // D.Alert(`CharObjs: ${D.JS((charObjs || []).map(x => x.get("name")))}`)                   
+                        makeSecretRoll(charObjs, params, isSilent, isMaskingTraits)
+                    }
                     break
                 }
-                case "add": case "set": {
-                    switch (args.shift().toLowerCase()) {
-                        case "sec": case "secret": case "secrecy": {
-                            switch ((args[0] || "").toLowerCase()) {
+                case "resonance": {
+                    displayResonance()
+                    break
+                }
+                case "pcroll": {
+                    switch(args.shift().toLowerCase()) {
+                        case "remorse": {
+                            const charObj = D.GetChar(args.join(" "))
+                            if (VAL({charObj}, "!roll pcroll remorse"))
+                                makeNewRoll(charObj, "remorse")
+                            break
+                        }
+                        // no default
+                    }
+                    break
+                }
+                case "dice": {                    
+                    switch(call = args.shift().toLowerCase()) {
+                        case "frenzyinit":	// !roll dice project @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
+                            lockRoller(true)
+                            STATEREF.frenzyRoll = `${args.join(" ").split("|")[0]}|`
+                            sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px ${C.COLORS.crimson} outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: ${C.COLORS.white}; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: ${C.COLORS.brightred}; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${args.join(" ").split("|")[0]}</span><br/></div>`)
+                            return
+                        case "frenzy": rollType = rollType || "frenzy"
+                            lockRoller(false)
+                            args = `${STATEREF.frenzyRoll} ${args[0]}`.split(" ")
+                            DB(`Parsing Frenzy Args: ${D.JS(args)}`, "!roll dice frenzy")
+                        /* falls through */
+                        case "disc": case "trait": rollType = rollType || "trait"
+                        /* falls through */
+                        case "rouse": case "rouseobv": rollType = rollType || "rouse"
+                        /* falls through */
+                        case "rouse2": case "rouse2obv": rollType = rollType || "rouse2"
+                        /* falls through */
+                        case "check": rollType = rollType || "check"
+                        /* falls through */
+                        case "willpower": rollType = rollType || "willpower"
+                        /* falls through */
+                        case "humanity": rollType = rollType || "humanity"
+                        /* falls through */
+                        case "remorse": rollType = rollType || "remorse"
+                        /* falls through */
+                        case "project": { rollType = rollType || "project"
+                            /* all continue below */
+                            params = _.map(args.join(" ").split("|"), v => v.trim())
+                            if (STATEREF.rollNextAs) {
+                                params.shift()
+                                char = D.GetChar(STATEREF.rollNextAs)
+                                name = D.GetName(char)
+                                delete STATEREF.rollNextAs
+                            } else {
+                                name = params.shift()
+                                char = D.GetChar(name)
+                            }
+                            let rollFlags = _.clone(STATEREF.nextRollFlags)
+                            DB(`Received Roll: ${D.JS(call)} ${name}|${params.join("|")}
+                                ... PARAMS: [${D.JS(params.join(", "))}]
+                                ... CHAROBJ: ${D.JS(char)}`, "handleInput")
+                            if (!VAL({charobj: char}, "handleInput")) return
+                            if (
+                                ["check", "rouse", "rouse2"].includes(rollType) ||
+                                rollType === "frenzy" && STATEREF.frenzyRoll && D.IsIn(STATEREF.frenzyRoll.slice("|")[0], _.map(D.GetChars("registered"), v => v.get("name")), true)
+                            )
+                                rollFlags = {
+                                    isHidingName: false,
+                                    isHidingTraits: false,
+                                    isHidingTraitVals: false,
+                                    isHidingDicePool: false,
+                                    isHidingDifficulty: false,
+                                    isHidingResult: false,
+                                    isHidingOutcome: false
+                                };
+                            [char] = getRollChars([char])
+                            DB(`Fixed Char: ${D.JS(char)}`, "handleInput")
+                            if (STATEREF.isNextRollNPC && playerIsGM(msg.playerid)) {
+                                STATEREF.isNextRollNPC = false
+                                makeNewRoll(char, rollType, params, Object.assign(rollFlags, {isDiscRoll: call === "disc", isNPCRoll: true, isOblivionRoll: STATEREF.oblivionRouse === true || call.includes("obv")}))
+                                STATEREF.oblivionRouse = false
+                            } else if (isLocked) {
+                                return
+                            } else if (playerIsGM(msg.playerid) || VAL({npc: char})) {
+                                makeNewRoll(char, rollType, params, Object.assign(rollFlags, {isDiscRoll: call === "disc", isNPCRoll: false, isOblivionRoll: STATEREF.oblivionRouse === true || call.includes("obv")}))
+                                STATEREF.oblivionRouse = false             
+                            } else {
+                                makeNewRoll(char, rollType, params, {isDiscRoll: call === "disc", isNPCRoll: false, isOblivionRoll: call.includes("obv")})
+                            }
+                            delete STATEREF.frenzyRoll
+                            break
+                        }
+                        // no default
+                    }
+                    break
+                }
+                case "set": {
+                    if (!playerIsGM(msg.playerid)) break
+                    switch(call = args.shift().toLowerCase()) {
+                        case "pc": {
+                            [char] = getRollChars([charObjs && charObjs[0] || D.GetChar(msg) || D.GetChar(args.join(" "))])
+                            if (char) {
+                                STATEREF.rollNextAs = char.id
+                                D.Alert(`Rolling Next As ${D.GetName(char)}`, "Roller: !pcroll")
+                            }
+                            break
+                        }
+                        case "npc": {
+                            STATEREF.isNextRollNPC = true
+                            break
+                        }
+                        case "obvrouse": {
+                            STATEREF.oblivionRouse = !STATEREF.oblivionRouse
+                            D.Alert(`Next SPC Rouse Check ${STATEREF.oblivionRouse && "<b>IS</b>" || "<b>IS NOT</b>"} for Oblivion.`, "!roll set obvrouse")
+                            break
+                        }
+                        case "secrecy": {
+                            switch (args.shift().toLowerCase()) {
                                 case "name": case "identity":
                                     STATEREF.nextRollFlags = {
                                         isHidingName: true,
@@ -196,729 +267,229 @@ const Roller = (() => {
                                         isHidingOutcome: true
                                     }
                                     break
-                                default:
-                                    for (const flag of ["Name", "Traits", "TraitVals", "DicePool", "Difficulty", "Result", "Outcome"])
-                                        _.each(args, v => {
-                                            const isNegating = v.startsWith("!")
-                                            if (D.FuzzyMatch(flag, v.replace(/!/gu, "")))
-                                                STATEREF.nextRollFlags[`isHiding${flag}`] = !isNegating
-                                            if (D.FuzzyMatch("NPC", v.replace(/!/gu, "")))
-                                                STATEREF.isNextRollNPC = !isNegating
-                                        })
-                                    break               
+                                    // no default                        
                             }
                             D.Alert(`Flag Status for Next Roll: ${D.JS(STATEREF.nextRollFlags, true)}`, "NEXT ROLL FLAGS")
                             break
                         }
-                        case "charfx": case "chareffect": {
-                            addCharRollEffects(msg, args.join(" ").split("|"))
+                        case "flags": {
+                            for (const flag of ["Name", "Traits", "TraitVals", "DicePool", "Difficulty", "Result", "Outcome"])
+                                _.each(args, v => {
+                                    const isNegating = v.startsWith("!")
+                                    if (D.FuzzyMatch(flag, v.replace(/!/gu, "")))
+                                        STATEREF.nextRollFlags[`isHiding${flag}`] = !isNegating
+                                    if (D.FuzzyMatch("NPC", v.replace(/!/gu, "")))
+                                        STATEREF.isNextRollNPC = !isNegating
+                                })
+                            D.Alert(`Flag Status for Next Roll: ${D.JS(STATEREF.nextRollFlags, true)}<br><br>Is NPC Roll? ${STATEREF.isNextRollNPC}`, "NEXT ROLL FLAGS")
                             break
                         }
-                        case "globalfx": case "globaleffect": {
-                            for (const effect of _.compact(args.join(" ").split("|")))
-                                STATEREF.rollEffects[effect] = []
-                            const rollStrings = []
-                            for (let i = 0; i < _.keys(STATEREF.rollEffects).length; i++)
-                                rollStrings.push(`${i + 1}: ${_.keys(STATEREF.rollEffects)[i]}`)
-                            D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getglobaleffects")
-                            break
-                        }
-                        case "globalexclude": case "globalex": case "globalexc": {
-                            charObj = D.GetChar(msg) || D.GetChar(args.shift())
-                            if (VAL({charObj}, "!addglobalexclude")) {
-                                let effectString = args.join(" ")
-                                if (VAL({number: effectString}))
-                                    effectString = _.keys(STATEREF.rollEffects)[parseInt(effectString - 1)]
-                                else
-                                    effectString = _.find(_.keys(STATEREF.rollEffects, v => D.FuzzyMatch(effectString, v)))
-                                if (STATEREF.rollEffects[effectString]) {
-                                    STATEREF.rollEffects[effectString].push(charObj.id)
-                                    D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATEREF.rollEffects[effectString])}`, "!addglobalexclude")
-                                } else {
-                                    D.Alert(`No exclusion found for reference '${effectString}'`, "!addglobalexclude")
-                                }
-                            } else {
-                                D.Alert("You must select a character token or supply a valid character reference (without spaces)!", "!addglobalexclude")
-                            }
-                            break
-                        }
-                    // no default                            
-                    }
-                    break
-                }
-                case "toggle": {
-                    switch (args.shift().toLowerCase()) {
-                        case "obliv":
-                            if (playerIsGM(msg.playerid)) {
-                                STATEREF.oblivionRouse = !STATEREF.oblivionRouse
-                                D.Alert(`Next SPC Rouse Check ${STATEREF.oblivionRouse && "<b>IS</b>" || "<b>IS NOT</b>"} for Oblivion.`, "!oblivrouse")
-                            }
-                            break
-                        case "npc":
-                            if (playerIsGM(msg.playerid))
-                                STATEREF.isNextRollNPC = true
-                            break
-                        case "dice":
-                            _.each(STATEREF.diceList, (v, dNum) => {
-                                const thisDie = setDie(dNum, "diceList", "Hs")
-                                if (_.isObject(thisDie)) 
-                                    thisDie.set("isdrawing", false)
-                            
-                            })
-                            _.each(STATEREF.bigDice, (v, dNum) => {
-                                const thisDie = setDie(dNum, "bigDice", "Bs")
-                                if (_.isObject(thisDie)) 
-                                    thisDie.set("isdrawing", false)
-                            
-                            })
-                            break
-                    // no default
-        
-                    }
-                    break
-                }
-                case "init": {                
-                    switch(args.shift().toLowerCase()) {
-                        case "roller":
-                            clearRoller()
-                            break
-                        case "frame":
-                            initFrame()
-                            break
-                    // no default
-                    }
-                    break
-                }
-                case "get": {
-                    switch (args.shift().toLowerCase()) {
-                        case "roll":
-                            changeRoll(parseInt(args.shift()))
-                            break
-                        case "npcroll":
-                            changeRoll(parseInt(args.shift()), true)
-                            break
-                        case "prev": case "last": case "prevroll": case "lastroll":
-                            loadPrevRoll()
-                            break
-                        case "next": case "nextroll":
-                            loadNextRoll()
-                            break
-                        case "prevnpc": case "lastnpc": case "prevnpcroll": case "lastnpcroll":
-                            loadPrevRoll(true)
-                            break
-                        case "nextnpc": case "nextnpcroll":
-                            loadNextRoll(true)
-                            break
-                        case "res": case "resonance":
-                            if (args[0] === "x")
-                                args[0] = ""
-                            if (args[1] === "x")
-                                args[1] = ""
-                            displayResonance(null, ...args)
-                            break
-                        case "charfx": case "chareffects": {
-                            const char = D.GetChar(msg)
-                            if (!char) {
-                                THROW("Select a character token first!", "!getchareffects")
-                                break
-                            }
-                            const rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|")),
-                                rollStrings = []
-                            for (let i = 0; i < rollEffects.length; i++)
-                                rollStrings.push(`${i + 1}: ${rollEffects[i]}`)
-                            D.Alert(`Roll Effects on ${D.GetName(char)}:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getchareffects")
-                            break
-                        }
-                        case "globalfx": case "globaleffects": {
-                            const rollStrings = []
-                            for (let i = 0; i < _.keys(STATEREF.rollEffects).length; i++)
-                                rollStrings.push(`${i + 1}: ${_.keys(STATEREF.rollEffects)[i]}`)
-                            D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getglobaleffects")
-                            break
-                        }
-                    // no default        
-                    }
-                    break
-                }
-                case "clear": case "del": case "rem": {
-                    switch (args.shift().toLowerCase()) {
-                        case "charfx": case "chareffect": {
-                            const char = D.GetChar(msg)
-                            if (!char) {
-                                THROW("Select a character token first!", "!getchareffects")
-                                break
-                            }
-                            const rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|"))
-                            rollEffects.splice(Math.max(0, parseInt(args.shift()) - 1), 1)
-                            setAttrs(char.id, {rolleffects: rollEffects.join("|")})
-                            D.Alert(`Roll Effects on ${D.GetName(char)} revised to:<br><br>${rollEffects.join("<br>")}`, "ROLLER: !delchareffects")
-                            break
-                        }
-                        case "globalfx": case "globaleffect": {
-                            delete STATEREF.rollEffects[_.keys(STATEREF.rollEffects)[Math.max(0, parseInt(args.shift()) - 1)]]
-                            D.Alert(`Global Roll Effects revised to:<br><br>${_.keys(STATEREF.rollEffects).join("<br>")}`, "ROLLER: !delglobaleffect")
-                            break
-                        }
-                        case "globalexclude": case "globalex": case "globalexc": {
-                            charObj = D.GetChar(msg) || D.GetChar(args.shift())
-                            if (VAL({charObj}, "!delglobalexclude")) {
-                                let effectString = args.join(" ")
-                                if (VAL({number: effectString}))
-                                    effectString = _.keys(STATEREF.rollEffects)[parseInt(effectString - 1)]
-                                else
-                                    effectString = _.find(_.keys(STATEREF.rollEffects, v => D.FuzzyMatch(effectString, v)))
-                                if (!STATEREF.rollEffects[effectString]) {
-                                    const checkEffects = _.filter(STATEREF.rollEffects, v => v.includes(charObj.id))
-                                    if (checkEffects.length === 1)
-                                        [effectString] = _.keys(checkEffects)
-                                    else if (checkEffects.length === 0)
-                                        D.Alert(`Character ${D.JS(charObj.get("name"))} is not listed in any roll effect exclusions.`, "!delglobalexclude")
-                                    else if (checkEffects.length > 1)
-                                        D.Alert(`Character ${D.JS(charObj.get("name"))} is present in multiple exclusions, please be more specific: ${D.JS(checkEffects, true)}`, "!delglobalexclude")
-                
-                                }
-                                if (STATEREF.rollEffects[effectString]) {
-                                    STATEREF.rollEffects[effectString] = _.without(STATEREF.rollEffects[effectString], charObj.id)
-                                    D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATEREF.rollEffects[effectString])}`, "!delglobalexclude")
-                                } else {
-                                    D.Alert(`No exclusion found for reference '${effectString}'`, "!delglobalexclude")
-                                }
-                            } else {
-                                D.Alert("You must select a character token or supply a valid character reference (without spaces)!", "!delglobalexclude")
-                            }
-                            break
                         // no default
-                        }
-                    // no default                          
                     }
                     break
                 }
-            // no default
-            }
-        },
-        handleInput = (msg, who, call, args) => {
-            let [rollType, char, diceNums, resonance, resDetails, resIntLine, params] = new Array(7),
-                name = "",
-                [isSilent, isMaskingTraits] = [false, false],            
-                charObjs, charIDString
-            if (call === "!pcroll")
-                args.unshift("!pcroll")
-            if (call === "!roll" || call === "!pcroll") 
-            // D.Alert(`Calling D.ParseCharSelection(<br>CALL: ${D.JS(call)},<br>ARGS: [${D.JS(args.join(", "))}])`);
-                [charObjs, charIDString, call, args] = D.ParseCharSelection(args[0], args.slice(1))
-            // D.Alert(`AFTER:<br>CHAROBJS: ${D.JS((charObjs || []).map(x => D.GetName(x)).join("<br>"))}<br>IDSTRING: ${D.JS(charIDString)}<br>CALL: ${call}<br>ARGS: [${args.join(", ")}]`)
-            // D.Alert(`Call: ${D.JS(call)}, Args: ${D.JS(args)}<br>CharObjs: ${D.JS((charObjs || []).map(x => x.get("name")).join("<br>"))}`)
-            switch (call) {
-                case "quickrouse": {
-                    [char] = getRollChars([charObjs && charObjs[0] || D.GetChar(msg) || D.GetChar(args.shift())])
-                    const isObvRouse = args.shift() === "true"
-                    let isDoubleRouse = args[0] === "true"
-                    const forcedResults = _.compact([parseInt(args.pop()), parseInt(args.pop())])
-                    isDoubleRouse = isDoubleRouse || forcedResults.length === 2
-                    quickRouseCheck(char, isDoubleRouse, isObvRouse, forcedResults)
-                    break
-                }
-                case "nxsroll":
-                case "xnsroll":
-                case "xsroll":
-                case "sxroll":
-                case "snxroll":
-                case "sxnroll":
-                case "nsroll":
-                case "snroll":
-                case "sroll": {
-                    rollType = "secret"
-                    if (!args.length) {
-                        Char.PromptTraitSelect(charIDString, "!roll @@CHARIDS@@ sroll selected")
-                    } else {                    
-                        params = args[0] === "selected" && Char.SelectedTraits.join(",") || args.join(" ").split("|")
-                        isSilent = call.includes("x")
-                        isMaskingTraits = call.includes("n")
-                        // D.Alert(`CharObjs: ${D.JS((charObjs || []).map(x => x.get("name")))}`)
-                        charObjs = getRollChars(charObjs || D.GetChars(msg) || D.GetChars("registered"))     
-                        // D.Alert(`CharObjs: ${D.JS((charObjs || []).map(x => x.get("name")))}`)                   
-                        makeSecretRoll(charObjs, params, isSilent, isMaskingTraits)
-                    }
-                    break
-                }
-                case "resonance": {
-                    const location = D.KeyMapObj(_.omit(Session.Location, v => v === "blank"), null, v => _.flatten(v.slice(0,1))),
-                        resArgs = [],
-                        deltaAttrs = {}
-                    charObjs = getRollChars(charObjs)
-                // D.Alert(D.JS(location))
-                    if (location.DistrictCenter) {
-                        resArgs.push(...C.DISTRICTS[location.DistrictCenter].resonance)
-                        if (location.SiteCenter) {
-                            resArgs[0] += C.SITES[location.SiteCenter].resonance[0] || ""
-                            resArgs[1] += C.SITES[location.SiteCenter].resonance[1] || ""
-                        }
-                    } else if (args[0] && args[0].toLowerCase().slice(0,1) === "r" && location.DistrictRight ||
-                        location.DistrictRight && !location.DistrictLeft) {
-                        resArgs.push(...C.DISTRICTS[location.DistrictRight].resonance)
-                        if (location.SiteRight) {
-                            resArgs[0] += C.SITES[location.SiteRight].resonance[0] || ""
-                            resArgs[1] += C.SITES[location.SiteRight].resonance[1] || ""
-                        }
-                    } else if (args[0] && args[0].toLowerCase().slice(0,1) === "l" && location.DistrictLeft ||
-                        location.DistrictLeft) {
-                        resArgs.push(...C.DISTRICTS[location.DistrictLeft].resonance)
-                        if (location.SiteLeft) {
-                            resArgs[0] += C.SITES[location.SiteLeft].resonance[0] || ""
-                            resArgs[1] += C.SITES[location.SiteLeft].resonance[1] || ""
-                        }
-                    }
-                    D.Alert(`Location-Based Resonance: ${D.JS(resArgs.join(", "))}`)
-                    if (resArgs.join("").length > 1) {
-                        resonance = getResonance(charObjs[0], ...resArgs)
-                    } else {
-                        if (args[0] === "x")
-                            args[0] = ""
-                        if (args[1] === "x")
-                            args[1] = ""
-                        resonance = getResonance(charObjs[0], ...args)
-                    }
-                    switch (resonance[1].toLowerCase()) {
-                        case "choleric":
-                            resDetails = "Angry ♦ Passionate ♦ Violent ♦ Envious"
-                            break
-                        case "sanguine":
-                            resDetails = "Happy ♦ Horny ♦ Addicted ♦ Enthusiastic"
-                            break
-                        case "melancholic":
-                            resDetails = "Sad ♦ Scared ♦ Intellectual ♦ Grounded"
-                            break
-                        case "phlegmatic":
-                            resDetails = "Calm ♦ Apathetic ♦ Lazy ♦ Controlling"
-                            break
-                        case "primal":
-                            resDetails = "Base ♦ Impulsive ♦ Irascible ♦ Insatiable"
-                            break
-                        case "ischemic":
-                            resDetails = "Cold ♦ Amoral ♦ Patient ♦ Nihilistic"
-                            break
-                        case "mercurial":
-                            resDetails = "Fluid ♦ Fatalistic ♦ Inscrutable ♦ Alien"
-                            break
-                    // no default
-                    }
-                    switch (resonance[0].toLowerCase()) {
-                        case "negligible":
-                            deltaAttrs.resonance = "None"
-                            resonance[0] = "Negligibly"
-                            resIntLine = `The blood carries only the smallest hint of ${resonance[1].toLowerCase()} resonance.  It is not strong enough to confer any benefits at all.`
-                            break
-                        case "fleeting":
-                            deltaAttrs.resonance = "None"
-                            resonance[0] = "Fleetingly"
-                            resIntLine = `The blood's faint ${resonance[1].toLowerCase()} resonance can guide you in developing ${resonance[2]}, but lacks any real power.`
-                            break
-                        case "intense":
-                            [,deltaAttrs.resonance] = [resonance]
-                            resonance[0] = "Intensely"
-                            resIntLine = `The blood's strong ${resonance[1].toLowerCase()} resonance spreads through you, infusing your own vitae and enhancing both your control and understanding of ${resonance[2]}.`
-                            break
-                        case "acute":
-                            [,deltaAttrs.resonance] = [resonance]
-                            resonance[0] = "Acutely"
-                            resIntLine = `This blood is special.  In addition to enhancing ${resonance[2]}, its ${resonance[1].toLowerCase()} resonance is so powerful that the emotions within have crystallized into a dyscracias.`
-                            break
-                    // no default
-                    }
-                    // D.SetStat(charObjs[0], "resonance", deltaAttrs.resonance)
-                    sendChat("Resonance Check", C.CHATHTML.Block([
-                        C.CHATHTML.Title(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
-                        C.CHATHTML.Header(resDetails),
-                        C.CHATHTML.Body(resIntLine, {lineHeight: "20px"})
-                    ]))
-                    break
-                }
-                case "pcroll": {
-                    switch(args.shift().toLowerCase()) {
-                        case "remorse": {
-                            const charObj = D.GetChar(args.join(" "))
-                            if (VAL({charObj}, "!roll pcroll remorse"))
-                                makeNewRoll(charObj, "remorse")
-                            break
-                        }
-                    // no default
-                    }
-                    break
-                }
-                case "oblivrouse": {
-                    if (playerIsGM(msg.playerid)) {
-                        STATEREF.oblivionRouse = !STATEREF.oblivionRouse
-                        D.Alert(`Next SPC Rouse Check ${STATEREF.oblivionRouse && "<b>IS</b>" || "<b>IS NOT</b>"} for Oblivion.`, "!oblivrouse")
-                    }
-                    break
-                }
-                case "frenzyinit": case "!frenzyinitroll":	// !projectroll @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
-                    lockRoller(true)
-                    STATEREF.frenzyRoll = `${args.join(" ").split("|")[0]}|`
-                    sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px ${C.COLORS.crimson} outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: ${C.COLORS.white}; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: ${C.COLORS.brightred}; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${args.join(" ").split("|")[0]}</span><br/></div>`)
-                    return
-                case "frenzy": case "!frenzyroll": rollType = rollType || "frenzy"
-                    lockRoller(false)
-                    args = `${STATEREF.frenzyRoll} ${args[0]}`.split(" ")
-                    DB(`Parsing Frenzy Args: ${D.JS(args)}`, "!frenzyroll")
-            /* falls through */
-                case "disc": case "!discroll": case "!traitroll": rollType = rollType || "trait"
-            /* falls through */
-                case "rouse": case "!rouseroll": case "!rouserollobv": rollType = rollType || "rouse"
-            /* falls through */
-                case "rouse2": case "!rouse2roll": case "!rouse2rollobv": rollType = rollType || "rouse2"
-            /* falls through */
-                case "check": case "!checkroll": rollType = rollType || "check"
-            /* falls through */
-                case "willpower": case "!willpowerroll": rollType = rollType || "willpower"
-            /* falls through */
-                case "humanity": case "!humanityroll": rollType = rollType || "humanity"
-            /* falls through */
-                case "remorse": case "!remorseroll": rollType = rollType || "remorse"
-            /* falls through */
-                case "project": case "!projectroll": { rollType = rollType || "project"
-                /* all continue below */
-                    params = _.map(args.join(" ").split("|"), v => v.trim())
-                    if (STATEREF.rollNextAs) {
-                        params.shift()
-                        char = D.GetChar(STATEREF.rollNextAs)
-                        name = D.GetName(char)
-                        delete STATEREF.rollNextAs
-                    } else {
-                        name = params.shift()
-                        char = D.GetChar(name)
-                    }
-                    let rollFlags = _.clone(STATEREF.nextRollFlags)
-                    DB(`Received Roll: ${D.JS(call)} ${name}|${params.join("|")}
-                    ... PARAMS: [${D.JS(params.join(", "))}]
-                    ... CHAROBJ: ${D.JS(char)}`, "handleInput")
-                    if (!VAL({charobj: char}, "handleInput")) return
-                    if (
-                        ["check", "rouse", "rouse2"].includes(rollType) ||
-                    rollType === "frenzy" && STATEREF.frenzyRoll && D.IsIn(STATEREF.frenzyRoll.slice("|")[0], _.map(D.GetChars("registered"), v => v.get("name")), true)
-                    )
-                        rollFlags = {
-                            isHidingName: false,
-                            isHidingTraits: false,
-                            isHidingTraitVals: false,
-                            isHidingDicePool: false,
-                            isHidingDifficulty: false,
-                            isHidingResult: false,
-                            isHidingOutcome: false
-                        };
-                    [char] = getRollChars([char])
-                    DB(`Fixed Char: ${D.JS(char)}`, "handleInput")
-                    if (STATEREF.isNextRollNPC && playerIsGM(msg.playerid)) {
-                        STATEREF.isNextRollNPC = false
-                        makeNewRoll(char, rollType, params, Object.assign(rollFlags, {isDiscRoll: call === "!discroll", isNPCRoll: true, isOblivionRoll: STATEREF.oblivionRouse === true}))
-                        STATEREF.oblivionRouse = false
-                    } else if (isLocked) {
-                        return
-                    } else if (playerIsGM(msg.playerid) || VAL({npc: char})) {
-                        makeNewRoll(char, rollType, params, Object.assign(rollFlags, {isDiscRoll: call === "!discroll", isNPCRoll: false, isOblivionRoll: STATEREF.oblivionRouse === true}))
-                        STATEREF.oblivionRouse = false             
-                    } else {
-                        makeNewRoll(char, rollType, params, {isDiscRoll: call === "!discroll", isNPCRoll: false, isOblivionRoll: call.includes("obv")})
-                    }
-                    delete STATEREF.frenzyRoll
-                    break
-                }
-                case "!pcroll": {
-                // D.Alert("PC roll called.", "!pcroll")
-                    if (!playerIsGM(msg.playerid)) return
-                    // D.Alert(`PCRoll CharObjs: ${D.JS((charObjs || []).map(x => x.get("name")))}`);
-                    [char] = getRollChars([charObjs && charObjs[0] || D.GetChar(msg) || D.GetChar(args.join(" "))])
-                    if (char) {
-                        STATEREF.rollNextAs = char.id
-                        D.Alert(`Rolling Next As ${D.GetName(char)}`, "Roller: !pcroll")
-                    }
-                    break
-                }
-                case "!npcroll": // Run this to lock the roller and declare the NEXT roll to be an NPC roll.
-                    if (!playerIsGM(msg.playerid)) return
-                    STATEREF.isNextRollNPC = true
-                    break
-                case "!cleanRoller":
+                case "clean": {
                     clearRoller()
                     break
-                case "!buildFrame":
+                }
+                case "build": {
                     initFrame()
                     break
-                case "!buildPads": 
-                    makeSelectionPads()
+                }
+                case "change": {
+                    switch(call = args.shift().toLowerCase()) {
+                        case "roll": {
+                            changeRoll(parseInt(args.shift()))
+                            break
+                        }
+                        case "npcroll": {
+                            changeRoll(parseInt(args.shift()), true)
+                            break
+                        }
+                        case "prev": {
+                            loadPrevRoll()
+                            break
+                        }
+                        case "next": {
+                            loadNextRoll()
+                            break
+                        }
+                        case "prevnpc": {
+                            loadPrevRoll(true)
+                            break
+                        }
+                        case "nextnpc": {
+                            loadNextRoll(true)
+                            break
+                        }
+                        // no default
+                    }
                     break
-                case "!clearAllDice":
-                    clearDice(STATECATS.dice[0])
-                    clearDice(STATECATS.dice[1])
-                    break
-                case "!makeAllDice":
-                    diceNums = [parseInt(args.shift() || 25), parseInt(args.shift() || 2)]
-                    makeAllDice(STATECATS.dice[0], diceNums[0])
-                    makeAllDice(STATECATS.dice[1], diceNums[1])
-                    break
-                case "!showDice":
-                    _.each(STATEREF.diceList, (v, dNum) => {
-                        const thisDie = setDie(dNum, "diceList", "Hs")
-                        if (_.isObject(thisDie)) 
-                            thisDie.set("isdrawing", false)
+                }
+                case "effects": {
+                    switch (call = args.shift().toLowerCase()) {                        
+                        case "get": {
+                            switch (call = args.shift().toLowerCase()) {
+                                case "char": {
+                                    [char] = getRollChars([D.GetChar(msg)])
+                                    if (!char) {
+                                        THROW("Select a character token first!", "!getchareffects")
+                                        break
+                                    }
+                                    const rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|")),
+                                        rollStrings = []
+                                    for (let i = 0; i < rollEffects.length; i++)
+                                        rollStrings.push(`${i + 1}: ${rollEffects[i]}`)
+                                    D.Alert(`Roll Effects on ${D.GetName(char)}:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getchareffects")
+                                    break
+                                }
+                                case "global": {
+                                    const rollStrings = []
+                                    for (let i = 0; i < _.keys(STATEREF.rollEffects).length; i++)
+                                        rollStrings.push(`${i + 1}: ${_.keys(STATEREF.rollEffects)[i]}`)
+                                    D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getglobaleffects")
+                                    break
+                                }
+                                case "exclude": {
+                                    const excludeEffects = _.filter(STATEREF.rollEffects, v => v.length)
+                                    D.Alert(`<h3>Global Exclusions</h3>${D.JS(excludeEffects)}`, "ROLLER: !roll effects get exclude")
+                                    break
+                                }
+                                default: {
+                                    charObjs = D.GetChars("all")
+                                    const returnStrings = ["<h3>GLOBAL EFFECTS:</h3><!br>"]
+                                    for (let i = 0; i < _.keys(STATEREF.rollEffects).length; i++)
+                                        returnStrings.push(`${i + 1}: ${_.keys(STATEREF.rollEffects)[i]}`)
+                                    returnStrings.push("")              
+                                    returnStrings.push("<h3>CHARACTER EFFECTS:</h3><!br>")
+                                    for (const charObj of charObjs) {
+                                        const rollEffects = _.compact((getAttrByName(charObj.id, "rolleffects") || "").split("|"))
+                                        if (rollEffects.length) {
+                                            returnStrings.push(`<b>${charObj.get("name").toUpperCase()}</b>`)
+                                            for (let i = 0; i < rollEffects.length; i++)
+                                                returnStrings.push(`${i + 1}: ${rollEffects[i]}`)
+                                            returnStrings.push("")
+                                        }
+                                    }
+                                    D.Alert(returnStrings.join("<br>").replace(/<!br><br>/gu, ""), "Active Roll Effects")
+                                    break
+                                }
+                            }
+                            break
+                        }                        
+                        case "add": {
+                            switch (call = args.shift().toLowerCase()) {
+                                case "char": {
+                                    const chars = getRollChars(D.GetChars(msg))
+                                    if (VAL({charObj: chars}, "ROLLER: !addchareffect", true)) 
+                                        for (const charObj of chars) {
+                                            const rollEffects = _.compact((getAttrByName(charObj.id, "rolleffects") || "").split("|"))
+                                            rollEffects.push(...args.join(" ").split("|"))
+                                            setAttrs(charObj.id, {rolleffects: _.uniq(rollEffects).join("|")})
+                                            D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "ROLLER: !addchareffect")
+                                        }                                        
+                                    break
+                                }
+                                case "global": {
+                                    for (const effect of _.compact(args.join(" ").split("|")))
+                                        STATEREF.rollEffects[effect] = []
+                                    const rollStrings = []
+                                    for (let i = 0; i < _.keys(STATEREF.rollEffects).length; i++)
+                                        rollStrings.push(`${i + 1}: ${_.keys(STATEREF.rollEffects)[i]}`)
+                                    D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getglobaleffects")
+                                    break
+                                }
+                                case "exclude": {
+                                    [char] = getRollChars([D.GetChar(msg) || D.GetChar(args.shift())])
+                                    if (VAL({charObj: char}, "!addglobalexclude")) {
+                                        let effectString = args.join(" ")
+                                        if (VAL({number: effectString}))
+                                            effectString = _.keys(STATEREF.rollEffects)[parseInt(effectString - 1)]
+                                        else
+                                            effectString = _.find(_.keys(STATEREF.rollEffects, v => D.FuzzyMatch(effectString, v)))
+                                        if (STATEREF.rollEffects[effectString]) {
+                                            STATEREF.rollEffects[effectString].push(char.id)
+                                            D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATEREF.rollEffects[effectString])}`, "!addglobalexclude")
+                                        } else {
+                                            D.Alert(`No exclusion found for reference '${effectString}'`, "!addglobalexclude")
+                                        }
+                                    } else {
+                                        D.Alert("You must select a character token or supply a valid character reference (without spaces)!", "!addglobalexclude")
+                                    }
+                                    break
+                                }
+                                // no default
+                            }
+                            break
+                        }                        
+                        case "del": {
+                            switch (call = args.shift().toLowerCase()) {
+                                case "char": {
+                                    [char] = getRollChars([D.GetChar(msg) || D.GetChar(args.shift())])
+                                    if (VAL({charObj: char}, "!delchareffect")) {
+                                        const rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|"))
+                                        rollEffects.splice(Math.max(0, parseInt(args.shift()) - 1), 1)
+                                        setAttrs(char.id, {rolleffects: rollEffects.join("|")})
+                                        D.Alert(`Roll Effects on ${D.GetName(char)} revised to:<br><br>${rollEffects.join("<br>")}`, "ROLLER: !delchareffects")
+                                    }
+                                    break
+                                }
+                                case "global": {
+                                    delete STATEREF.rollEffects[_.keys(STATEREF.rollEffects)[Math.max(0, parseInt(args.shift()) - 1)]]
+                                    D.Alert(`Global Roll Effects revised to:<br><br>${_.keys(STATEREF.rollEffects).join("<br>")}`, "ROLLER: !delglobaleffect")
+                                    break
+                                }
+                                case "exclude": {
+                                    [char] = getRollChars([D.GetChar(msg) || D.GetChar(args.shift())])
+                                    if (VAL({charObj: char}, "!delglobalexclude")) {
+                                        let effectString = args.join(" ")
+                                        if (VAL({number: effectString}))
+                                            effectString = _.keys(STATEREF.rollEffects)[parseInt(effectString - 1)]
+                                        else
+                                            effectString = _.find(_.keys(STATEREF.rollEffects, v => D.FuzzyMatch(effectString, v)))
+                                        if (!STATEREF.rollEffects[effectString]) {
+                                            const checkEffects = _.filter(STATEREF.rollEffects, v => v.includes(char.id))
+                                            if (checkEffects.length === 1)
+                                                [effectString] = _.keys(checkEffects)
+                                            else if (checkEffects.length === 0)
+                                                D.Alert(`Character ${D.JS(char.get("name"))} is not listed in any roll effect exclusions.`, "!delglobalexclude")
+                                            else if (checkEffects.length > 1)
+                                                D.Alert(`Character ${D.JS(char.get("name"))} is present in multiple exclusions, please be more specific: ${D.JS(checkEffects, true)}`, "!delglobalexclude")
                     
-                    })
-                    _.each(STATEREF.bigDice, (v, dNum) => {
-                        const thisDie = setDie(dNum, "bigDice", "Bs")
-                        if (_.isObject(thisDie)) 
-                            thisDie.set("isdrawing", false)
-                    
-                    })
-                    break
-                case "!changeRoll":
-                    changeRoll(parseInt(args.shift()))
-                    break
-                case "!changeNPCRoll":
-                    changeRoll(parseInt(args.shift()), true)
-                    break
-                case "!prevRoll":
-                    loadPrevRoll()
-                    break
-                case "!nextRoll":
-                    loadNextRoll()
-                    break
-                case "!prevNPCRoll":
-                    loadPrevRoll(true)
-                    break
-                case "!nextNPCRoll":
-                    loadNextRoll(true)
-                    break
-                case "!resTest":
-                    if (args[0] === "x")
-                        args[0] = ""
-                    if (args[1] === "x")
-                        args[1] = ""
-                    resonance = getResonance(null, ...args)
-                    break
-                case "!getchareffects": {
-                    [char] = getRollChars([D.GetChar(msg)])
-                    if (!char) {
-                        THROW("Select a character token first!", "!getchareffects")
-                        break
-                    }
-                    const rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|")),
-                        rollStrings = []
-                    for (let i = 0; i < rollEffects.length; i++)
-                        rollStrings.push(`${i + 1}: ${rollEffects[i]}`)
-                    D.Alert(`Roll Effects on ${D.GetName(char)}:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getchareffects")
-                    break
-                }
-                case "!getalleffects": {
-                    const charObjs = D.GetChars("all"),
-                        returnStrings = ["<h3>GLOBAL EFFECTS:</h3><!br>"]
-                    for (let i = 0; i < _.keys(STATEREF.rollEffects).length; i++)
-                        returnStrings.push(`${i + 1}: ${_.keys(STATEREF.rollEffects)[i]}`)
-                    returnStrings.push("")              
-                    returnStrings.push("<h3>CHARACTER EFFECTS:</h3><!br>")
-                    for (const charObj of charObjs) {
-                        const rollEffects = _.compact((getAttrByName(charObj.id, "rolleffects") || "").split("|"))
-                        if (rollEffects.length) {
-                            returnStrings.push(`<b>${charObj.get("name").toUpperCase()}</b>`)
-                            for (let i = 0; i < rollEffects.length; i++)
-                                returnStrings.push(`${i + 1}: ${rollEffects[i]}`)
-                            returnStrings.push("")
+                                        }
+                                        if (STATEREF.rollEffects[effectString]) {
+                                            STATEREF.rollEffects[effectString] = _.without(STATEREF.rollEffects[effectString], char.id)
+                                            D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATEREF.rollEffects[effectString])}`, "!delglobalexclude")
+                                        } else {
+                                            D.Alert(`No exclusion found for reference '${effectString}'`, "!delglobalexclude")
+                                        }
+                                    } else {
+                                        D.Alert("You must select a character token or supply a valid character reference (without spaces)!", "!delglobalexclude")
+                                    }
+                                    break
+                                }
+                                // no default
+                            }
+                            break
                         }
-                    }
-                    D.Alert(returnStrings.join("<br>").replace(/<!br><br>/gu, ""), "Active Roll Effects")
-                    break
-                }
-                case "!delchareffect": {
-                    [char] = getRollChars([D.GetChar(msg) || D.GetChar(args.shift())])
-                    if (VAL({charObj: char}, "!delchareffect")) {
-                        const rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|"))
-                        rollEffects.splice(Math.max(0, parseInt(args.shift()) - 1), 1)
-                        setAttrs(char.id, {rolleffects: rollEffects.join("|")})
-                        D.Alert(`Roll Effects on ${D.GetName(char)} revised to:<br><br>${rollEffects.join("<br>")}`, "ROLLER: !delchareffects")
+                        // no default
                     }
                     break
                 }
-                case "!addchareffect":
-                {
-                    const chars = getRollChars(D.GetChars(msg))
-                    if (VAL({charObj: chars}, "ROLLER: !addchareffect", true)) {
-                        for (const charObj of chars) {
-                            const rollEffects = _.compact((getAttrByName(charObj.id, "rolleffects") || "").split("|"))
-                            rollEffects.push(...args.join(" ").split("|"))
-                            setAttrs(charObj.id, {rolleffects: _.uniq(rollEffects).join("|")})
-                            D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "ROLLER: !addchareffect")
-                        }
-                    }
+                case "fix": {
+                    clearDice(D.FuzzyMatch(args.shift(), STATECATS.dice))
+                    makeDie(D.FuzzyMatch(args.shift(), STATECATS.dice))
+                    makeDie(D.FuzzyMatch(args.shift(), STATECATS.dice))
                     break
                 }
-                case "!getglobaleffects":
-                {
-                    const rollStrings = []
-                    for (let i = 0; i < _.keys(STATEREF.rollEffects).length; i++)
-                        rollStrings.push(`${i + 1}: ${_.keys(STATEREF.rollEffects)[i]}`)
-                    D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getglobaleffects")
-                    break
-                }
-                case "!addglobalexclude":
-                {
-                    [char] = getRollChars([D.GetChar(msg) || D.GetChar(args.shift())])
-                    if (VAL({charObj: char}, "!addglobalexclude")) {
-                        let effectString = args.join(" ")
-                        if (VAL({number: effectString}))
-                            effectString = _.keys(STATEREF.rollEffects)[parseInt(effectString - 1)]
-                        else
-                            effectString = _.find(_.keys(STATEREF.rollEffects, v => D.FuzzyMatch(effectString, v)))
-                        if (STATEREF.rollEffects[effectString]) {
-                            STATEREF.rollEffects[effectString].push(char.id)
-                            D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATEREF.rollEffects[effectString])}`, "!addglobalexclude")
-                        } else {
-                            D.Alert(`No exclusion found for reference '${effectString}'`, "!addglobalexclude")
-                        }
-                    } else {
-                        D.Alert("You must select a character token or supply a valid character reference (without spaces)!", "!addglobalexclude")
-                    }
-                    break
-                }
-                case "!delglobalexclude":
-                {
-                    [char] = getRollChars([D.GetChar(msg) || D.GetChar(args.shift())])
-                    if (VAL({charObj: char}, "!delglobalexclude")) {
-                        let effectString = args.join(" ")
-                        if (VAL({number: effectString}))
-                            effectString = _.keys(STATEREF.rollEffects)[parseInt(effectString - 1)]
-                        else
-                            effectString = _.find(_.keys(STATEREF.rollEffects, v => D.FuzzyMatch(effectString, v)))
-                        if (!STATEREF.rollEffects[effectString]) {
-                            const checkEffects = _.filter(STATEREF.rollEffects, v => v.includes(char.id))
-                            if (checkEffects.length === 1)
-                                [effectString] = _.keys(checkEffects)
-                            else if (checkEffects.length === 0)
-                                D.Alert(`Character ${D.JS(char.get("name"))} is not listed in any roll effect exclusions.`, "!delglobalexclude")
-                            else if (checkEffects.length > 1)
-                                D.Alert(`Character ${D.JS(char.get("name"))} is present in multiple exclusions, please be more specific: ${D.JS(checkEffects, true)}`, "!delglobalexclude")
-
-                        }
-                        if (STATEREF.rollEffects[effectString]) {
-                            STATEREF.rollEffects[effectString] = _.without(STATEREF.rollEffects[effectString], char.id)
-                            D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATEREF.rollEffects[effectString])}`, "!delglobalexclude")
-                        } else {
-                            D.Alert(`No exclusion found for reference '${effectString}'`, "!delglobalexclude")
-                        }
-                    } else {
-                        D.Alert("You must select a character token or supply a valid character reference (without spaces)!", "!delglobalexclude")
-                    }
-                    break
-                }
-                case "!delglobaleffect":
-                {
-                    delete STATEREF.rollEffects[_.keys(STATEREF.rollEffects)[Math.max(0, parseInt(args.shift()) - 1)]]
-                    D.Alert(`Global Roll Effects revised to:<br><br>${_.keys(STATEREF.rollEffects).join("<br>")}`, "ROLLER: !delglobaleffect")
-                    break
-                }
-                case "!addglobaleffect":
-                {
-                    for (const effect of _.compact(args.join(" ").split("|")))
-                        STATEREF.rollEffects[effect] = []
-                    const rollStrings = []
-                    for (let i = 0; i < _.keys(STATEREF.rollEffects).length; i++)
-                        rollStrings.push(`${i + 1}: ${_.keys(STATEREF.rollEffects)[i]}`)
-                    D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "ROLLER: !getglobaleffects")
-                    break
-                }
-                case "!fixbigdice":
-                    clearDice("bigDice")
-                    makeDie("bigDice")
-                    makeDie("bigDice")
-                    break
-                case "!s": case "!sec": case "!secret":
-                    switch (args.shift().toLowerCase()) {
-                        case "name": case "identity":
-                            STATEREF.nextRollFlags = {
-                                isHidingName: true,
-                                isHidingTraits: false,
-                                isHidingTraitVals: false,
-                                isHidingDicePool: false,
-                                isHidingDifficulty: false,
-                                isHidingResult: false,
-                                isHidingOutcome: false
-                            }
-                            break
-                        case "traitvals":
-                            STATEREF.nextRollFlags = {
-                                isHidingName: false,
-                                isHidingTraits: false,
-                                isHidingTraitVals: true,
-                                isHidingDicePool: false,
-                                isHidingDifficulty: false,
-                                isHidingResult: false,
-                                isHidingOutcome: false
-                            }
-                            break
-                        case "traits":
-                            STATEREF.nextRollFlags = {
-                                isHidingName: false,
-                                isHidingTraits: true,
-                                isHidingTraitVals: true,
-                                isHidingDicePool: false,
-                                isHidingDifficulty: false,
-                                isHidingResult: false,
-                                isHidingOutcome: false
-                            }
-                            break
-                        case "dice": case "dicepool": case "pool":
-                            STATEREF.nextRollFlags = {
-                                isHidingName: false,
-                                isHidingTraits: true,
-                                isHidingTraitVals: true,
-                                isHidingDicePool: true,
-                                isHidingDifficulty: false,
-                                isHidingResult: false,
-                                isHidingOutcome: false
-                            }
-                            break
-                        case "result":
-                            STATEREF.nextRollFlags = {
-                                isHidingName: false,
-                                isHidingTraits: true,
-                                isHidingTraitVals: true,
-                                isHidingDicePool: true,
-                                isHidingDifficulty: false,
-                                isHidingResult: true,
-                                isHidingOutcome: false
-                            }
-                            break
-                        case "outcome":
-                            STATEREF.nextRollFlags = {
-                                isHidingName: false,
-                                isHidingTraits: true,
-                                isHidingTraitVals: true,
-                                isHidingDicePool: true,
-                                isHidingDifficulty: false,
-                                isHidingResult: true,
-                                isHidingOutcome: true
-                            }
-                            break
-                        // no default                        
-                    }
-                    D.Alert(`Flag Status for Next Roll: ${D.JS(STATEREF.nextRollFlags, true)}`, "NEXT ROLL FLAGS")
-                    break
-                case "!setrollflags":
-                    for (const flag of ["Name", "Traits", "TraitVals", "DicePool", "Difficulty", "Result", "Outcome"])
-                        _.each(args, v => {
-                            const isNegating = v.startsWith("!")
-                            if (D.FuzzyMatch(flag, v.replace(/!/gu, "")))
-                                STATEREF.nextRollFlags[`isHiding${flag}`] = !isNegating
-                            if (D.FuzzyMatch("NPC", v.replace(/!/gu, "")))
-                                STATEREF.isNextRollNPC = !isNegating
-                        })
-                    D.Alert(`Flag Status for Next Roll: ${D.JS(STATEREF.nextRollFlags, true)}<br><br>Is NPC Roll? ${STATEREF.isNextRollNPC}`, "NEXT ROLL FLAGS")
-                    break
-            // no default
+                // no default
             }
         }
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-    let [isRerollFXOn, rerollFX, isLocked] = [false, null, false]
+    let [isRerollFXOn, isLocked] = [false, false],
+        rerollFX
 
     // #region CONFIGURATION: Image Links, Color Schemes */
     const SETTINGS = {
@@ -1500,7 +1071,6 @@ const Roller = (() => {
             clearDice(category)
             for (let i = 0; i < amount; i++)
                 makeDie(category, category === STATECATS.dice[0])
-
         },
     // #endregion
 
@@ -1616,6 +1186,7 @@ const Roller = (() => {
             })
             for (const diceCat of _.keys(SETTINGS.dice))
                 makeAllDice(diceCat, SETTINGS.dice[diceCat])
+            makeSelectionPads()
             Media.Initialize()
         },
         makeSelectionPads = () => {            
@@ -1751,9 +1322,9 @@ const Roller = (() => {
                 setDie(dieNum, dieCat, STATEREF[dieCat][dieNum].value)
                 STATEREF.selected[dieCat] = _.without(STATEREF.selected[dieCat], dieNum)
             } else {
-                const selectImg = rollRecord.rollResults.wpCost === 0 ? "selectedFree" :
-                    rollRecord.rollResults.wpCost === 1 ? "selected" :
-                        "selectedDouble"
+                const selectImg = rollRecord.rollResults.wpCost === 0 && "selectedFree" ||
+                                  rollRecord.rollResults.wpCost === 1 && "selected" ||
+                                  "selectedDouble"
                 setDie(dieNum, dieCat, selectImg)
                 STATEREF.selected[dieCat].push(dieNum)
                 if (STATEREF.selected[dieCat].length > (rollRecord.rollResults.maxRerollDice || 3))
@@ -2888,9 +2459,10 @@ const Roller = (() => {
                     if (rollData.isOblivionRoll) {
                         D.Alert(`Oblivion Roll: ${D.JS(rollResults.rolls)}`)
                         rollResults.diceVals = _.map(rollResults.rolls, rol =>
-                            parseInt(rol.slice(1)) === 1 ? "Of" :
-                                parseInt(rol.slice(1)) === 10 ? "Os" :
-                                    parseInt(rol.slice(1)) < 6 ? "Hb" : "Bs")                        
+                            parseInt(rol.slice(1)) === 1 && "Of" ||
+                            parseInt(rol.slice(1)) === 10 && "Os" ||
+                            parseInt(rol.slice(1)) < 6 && "Hb" ||
+                            "Bs")                        
                         D.Alert(`Oblivion Vals: ${D.JS(rollResults.diceVals)}`)
                     } else {
                         rollResults.diceVals = _.map(rollResults.rolls, rol => parseInt(rol.slice(1)) < 6 ? "Hb" : "Bs")
@@ -3394,8 +2966,13 @@ const Roller = (() => {
                             rollLines.margin.text = " "
                             break
                         }
-                        rollLines.margin.text = (margin > 0 ? "+" : margin === 0 ? "" : "-") + Math.abs(margin)
-                        logLines.margin = ` (${margin > 0 ? "+" : margin === 0 ? "" : "-"}${Math.abs(margin)})${logLines.margin}`
+                        rollLines.margin.text = (margin > 0 && "+" ||
+                                                 margin === 0 && "" ||
+                                                 "-") + Math.abs(margin)
+                        logLines.margin = ` (${
+                            margin > 0 && "+" ||
+                            margin === 0 && "" ||
+                            "-"}${Math.abs(margin)})${logLines.margin}`
                         rollLines.margin = setColor("margin", rollData.type, rollLines.margin, margin >= 0 ? "good" : "bad")
                         stLines.margin = logLines.margin
                         playerNPCLines.margin = logLines.margin
@@ -4077,7 +3654,22 @@ const Roller = (() => {
             ]
             // Return ["Acute", "Choleric"];
         },
-        displayResonance = (charRef, posRes = "", negRes = "", isDoubleAcute, testCycles = 0) => {
+        displayResonance = (charRef, posRes, negRes, isDoubleAcute, testCycles = 0) => {
+            if (["l", "r", "c", "", undefined, null].includes(posRes)) {
+                const locations = Session.Locations(posRes);
+                [posRes, negRes] = ["", ""]
+                for (const location of _.keys(locations))
+                    if (location.includes("District")) {
+                        posRes += C.DISTRICTS[locations[location]].resonance[0] || ""
+                        negRes += C.DISTRICTS[locations[location]].resonance[1] || ""
+                    } else {                        
+                        posRes += C.SITES[locations[location]].resonance[0] || ""
+                        negRes += C.SITES[locations[location]].resonance[1] || ""
+                    }
+                DB(`Location-Based Resonance: ${D.JS(posRes)}, ${D.JS(negRes)}`, "displayResonance")
+            }
+            posRes = posRes === "x" ? "" : posRes
+            negRes = negRes === "x" ? "" : negRes
             const resonance = getResonance(charRef, posRes, negRes, isDoubleAcute, testCycles)
             let resDetails, resIntLine
             switch (resonance[1].toLowerCase()) {
@@ -4105,16 +3697,20 @@ const Roller = (() => {
                 // no default
             }
             switch (resonance[0].toLowerCase()) {
-                case "negligibly":
+                case "negligible":
+                    resonance[0] = "Negligibly"
                     resIntLine = `The blood carries only the smallest hint of ${resonance[1].toLowerCase()} resonance.  It is not strong enough to confer any benefits at all.`
                     break
-                case "fleetingly":
+                case "fleeting":
+                    resonance[0] = "Fleetingly"
                     resIntLine = `The blood's faint ${resonance[1].toLowerCase()} resonance can guide you in developing ${resonance[2]}, but lacks any real power.`
                     break
-                case "intensely":
+                case "intense":
+                    resonance[0] = "Intensely"
                     resIntLine = `The blood's strong ${resonance[1].toLowerCase()} resonance spreads through you, infusing your own vitae and enhancing both your control and understanding of ${resonance[2]}.`
                     break
-                case "acutely":
+                case "acute":
+                    resonance[0] = "Acutely"
                     resIntLine = `This blood is special.  In addition to enhancing ${resonance[2]}, its ${resonance[1].toLowerCase()} resonance is so powerful that the emotions within have crystallized into a dyscracias.`
                     break
                 // no default
@@ -4122,7 +3718,7 @@ const Roller = (() => {
             sendChat("Resonance Check", C.CHATHTML.Block([
                 C.CHATHTML.Title(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
                 C.CHATHTML.Header(resDetails),
-                C.CHATHTML.Body(resIntLine)
+                C.CHATHTML.Body(resIntLine, {lineHeight: "20px"})
             ]))
         }
     // #endregion

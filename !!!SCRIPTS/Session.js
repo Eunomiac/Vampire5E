@@ -368,15 +368,17 @@ const Session = (() => {
             SiteRight: "blank"
         },
         getActiveLocations = (sideFocus) => {
-            if (VAL({string: sideFocus}))
-                switch(sideFocus.charAt(0).toLowerCase()) {
-                    case "l":
-                        return _.keys(STATEREF.curLocation).filter(x => !x.endsWith("Right") && STATEREF.curLocation[x] !== "blank")                    
-                    case "r":
-                        return _.keys(STATEREF.curLocation).filter(x => !x.endsWith("Left") && STATEREF.curLocation[x] !== "blank")
-                    // no default
-                }
-            return _.keys(STATEREF.curLocation).filter(x => STATEREF.curLocation[x] !== "blank")
+            const activeLocs = _.keys(STATEREF.curLocation).filter(x => STATEREF.curLocation[x] !== "blank")
+            switch({c: "Center", l: "Left", r: "Right", a: "All"}[(sideFocus || STATEREF.sceneFocus || "a").toLowerCase().charAt(0)]) {
+                case "Center":
+                    return activeLocs.filter(x => x.endsWith("Center"))
+                case "Left":
+                    return activeLocs.filter(x => !x.endsWith("Right"))                 
+                case "Right":
+                    return activeLocs.filter(x => !x.endsWith("Left"))   
+                // no default
+            }
+            return activeLocs
         },
         getActiveSceneLocations = () => getActiveLocations(STATEREF.sceneFocus),
         parseLocationString = (locString) => {
@@ -547,6 +549,9 @@ const Session = (() => {
         ChangeMode: changeMode,
         CharsIn: getCharsInLocation,
         get SceneChars() { return getCharsInLocation(STATEREF.sceneFocus) },
+        get SceneFocus() { return STATEREF.sceneFocus },
+        Locations: (locRef) => {
+            return D.KeyMapObject(getActiveLocations(locRef), (k, v) => v, v => STATEREF.curLocation[v]) },
 
         get SessionNum() { return STATEREF.SessionNum },
         get IsSessionActive() { return isSessionActive() },

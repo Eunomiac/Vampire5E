@@ -1052,8 +1052,6 @@ const C = (() => {
     // #endregion
 
     // #region CITY DETAILS
-
-
         DISTRICTS = {
             Annex: {
                 fullName: "the Annex",
