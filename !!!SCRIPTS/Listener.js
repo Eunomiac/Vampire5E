@@ -2,40 +2,17 @@ void MarkStart("Listener")
 const Listener = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Listener",
-        CHATCOMMAND = null,
-        GMONLY = false,
-        SCRIPTCALLS = {
-            MESSAGE: {
-                "!char": {script: Char, gmOnly: true, singleCall: true},
-                "!data": {script: D, gmOnly: true, singleCall: false},
-                "!reply": {script: D, gmOnly: true, singleCall: false},
-                "!dpad": {script: DragPads, gmOnly: true, singleCall: true},
-                "!fuzzy": {script: Fuzzy, gmOnly: true, singleCall: true},
-                "!handouts": {script: Handouts, gmOnly: true, singleCall: true},
-                "!get": {script: Chat, gmOnly: true, singleCall: false},
-                "!set": {script: Chat, gmOnly: true, singleCall: false},
-                "!clear": {script: Chat, gmOnly: true, singleCall: false},
-                "!find": {script: Chat, gmOnly: true, singleCall: false},
-                "!comp": {script: Complications, gmOnly: true, singleCall: true},
-                "!media": {script: Media, gmOnly: true, singleCall: false},
-                "!area": {script: Media, gmOnly: true, singleCall: false},
-                "!img": {script: Media, gmOnly: true, singleCall: false},
-                "!text": {script: Media, gmOnly: true, singleCall: false},
-                "!anim": {script: Media, gmOnly: true, singleCall: false},
-                "!mvc": {script: Player, gmOnly: false, singleCall: false},
-                "!sense": {script: Player, gmOnly: false, singleCall: false},
-                "!awe": {script: Player, gmOnly: false, singleCall: false},
-                "!hide": {script: Player, gmOnly: false, singleCall: false},
-                "!roll": {script: Roller, gmOnly: false, singleCall: true},
-                "!sess": {script: Session, gmOnly: true, singleCall: true},
-                "!test": {script: Tester, gmOnly: true, singleCall: true},
-                "!time": {script: TimeTracker, gmOnly: true, singleCall: true}
-            },
-            CHANGEATTR: {},
-            ADDATTR: {},
-            ADDGRAPHIC: {},
-            MOVEGRAPHIC: {}
-        },
+        SCRIPTCALLS = {},
+        CHARCALLS = [
+            "registered",
+            "active",
+            "center",
+            "left",
+            "right",
+            "all",
+            "npcs",
+            "sandbox"
+        ],
 
     // #region COMMON INITIALIZATION
         STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
@@ -55,11 +32,24 @@ const Listener = (() => {
                     let call = args.shift().toLowerCase()
                     const scriptData = SCRIPTCALLS.MESSAGE[call]
                     msg.who = msg.who || "API"
-                    if (scriptData) {
-                        call = scriptData.singleCall && args.shift() || call
-                        scriptData.script.HandleInput(call, args, msg)
+                    if (scriptData && scriptData.script && VAL({function: scriptData.script.OnChatCall}) && (!scriptData.gmOnly || playerIsGM(msg.playerid) || msg.playerid === "API") ) {
+                        const [objects, returnArgs] = parseMessage(args, msg)
+                        call = scriptData.singleCall && returnArgs.shift() || call
+                        D.Alert([
+                            `<b>${msg.content}</b>`,
+                            `CALL: ${call}`,
+                            `ARGS: ${returnArgs.join(" ")}`,
+                            `OBJECTS: ${D.JS(objects)}`
+                        ].join("<br>"), "LISTENER RESULTS")
+                        scriptData.script.OnChatCall(call, returnArgs, objects, msg)
                     }
                 }
+            })
+            on("change:attribute:current", (attrObj, prevData) => {
+                
+            })
+            on("add:attribute", attrObj => {
+
             })
         },
              /*           const fullArgs = [call, ...args],
@@ -91,53 +81,211 @@ const Listener = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
+            SCRIPTCALLS.MESSAGE = {
+                "!char": {script: Char, gmOnly: true, singleCall: true},
+                "!data": {script: D, gmOnly: true, singleCall: false},
+                "!reply": {script: D, gmOnly: true, singleCall: false},
+                "!dpad": {script: DragPads, gmOnly: true, singleCall: true},
+                "!fuzzy": {script: Fuzzy, gmOnly: true, singleCall: true},
+                "!handouts": {script: Handouts, gmOnly: true, singleCall: true},
+                "!get": {script: Chat, gmOnly: true, singleCall: false},
+                "!set": {script: Chat, gmOnly: true, singleCall: false},
+                "!clear": {script: Chat, gmOnly: true, singleCall: false},
+                "!find": {script: Chat, gmOnly: true, singleCall: false},
+                "!comp": {script: Complications, gmOnly: true, singleCall: true},
+                "!media": {script: Media, gmOnly: true, singleCall: false},
+                "!area": {script: Media, gmOnly: true, singleCall: false},
+                "!img": {script: Media, gmOnly: true, singleCall: false},
+                "!text": {script: Media, gmOnly: true, singleCall: false},
+                "!anim": {script: Media, gmOnly: true, singleCall: false},
+                "!mvc": {script: Player, gmOnly: false, singleCall: false},
+                "!sense": {script: Player, gmOnly: false, singleCall: false},
+                "!awe": {script: Player, gmOnly: false, singleCall: false},
+                "!hide": {script: Player, gmOnly: false, singleCall: false},
+                "!roll": {script: Roller, gmOnly: false, singleCall: true},
+                "!sess": {script: Session, gmOnly: true, singleCall: true},
+                "!test": {script: Tester, gmOnly: true, singleCall: true},
+                "!time": {script: TimeTracker, gmOnly: true, singleCall: true}
+            }
+            SCRIPTCALLS.ATTRCHANGE = [
+                [ ["hunger", "desire", "projectstake", "triggertimelinesort"], {script: Char} ]
+            ]
+            SCRIPTCALLS.ATTRADD = [
+                [ ["desire", "projectstake", "triggertimelinesort"], {script: Char} ]
+            ]
         },
-    // #endregion	
+    // #endregion
 
         parseParams = (args, delim = " ") => _.object(
             (VAL({array: args}) ? args.join(" ") : args).
                 split(new RegExp(`,?${delim}+`, "gu")).
                 filter(x => x.includes(":")).
-                map(x => x.trim().split(":"))
+                map(x => x.trim().split(":").map(xx => parseInt(xx) || xx))
         ),
-        parseCharSelect = (call, args) => {                
-            let charObjs, charIDString
-            if (["registered", "sandbox", "pcs", "npcs"].includes(call.toLowerCase())) {
-                charObjs = D.GetChars(call)
-                charIDString = call.toLowerCase()
-            } else {
-                charObjs = _.compact(call.split(",").map(x => getObj("character", x.trim())))     
-                charIDString = call
-            }  
-            if (VAL({charObj: charObjs}, null, true)) {
-                // D.Alert("Characters Found!")
-                call = args[0] ? args.shift() : call
-            } else {
-                charObjs = undefined
-                charIDString = ""
+        parseArg = {
+            character: (arg, isFuzzy = false) => {
+                const charObjs = []
+                // 1) Check if this could be an ID string:
+                if (arg.length === 20) {
+                    const obj = getObj("character", arg)
+                    if (obj)
+                        charObjs.push(obj)
+                // 2) Check if this is a valid character selection string ("registered", "active", etc.)
+                } else if (CHARCALLS.includes(arg)) {
+                    charObjs.push(...D.GetChars(arg))
+                } else {
+                    // 3) Check if it is a character registry key:
+                    const regKey = _.keys(Char.REGISTRY).find(x => x.toLowerCase() === arg.toLowerCase())
+                    if (regKey)
+                        charObjs.push(getObj("character", Char.REGISTRY[regKey].id))
+                }
+                // *** FUZZY BREAK: Only Continue if Fuzzy-Matching (and no chars found yet) ***
+                if (!charObjs.length && isFuzzy) {
+                    // 4) Check if D.GetChars returns a value:
+                    const objs = D.GetChars(arg, true)
+                    if (objs.length)
+                        charObjs.push(...objs)
+                }
+                DB(`Returning CHARACTERS: ${D.JS(charObjs)}`, "parseArg")
+                return charObjs
+            },
+            graphic: (arg, isFuzzy = false) => {
+                const graphicObjs = []
+                // 1) Check if this could be an ID string:
+                if (arg.length === 20) {
+                    const obj = getObj("graphic", arg)
+                    if (obj)
+                        graphicObjs.push(obj)
+                } else {
+                    // 2) Check if it is a registered graphic object:
+                    const regKey = _.keys(Media.IMAGES).find(x => x.toLowerCase() === arg.toLowerCase() || x.toLowerCase() === arg.toLowerCase().replace(/_\d+$/gu, ""))
+                    if (regKey)
+                        graphicObjs.push(Media.GetImg(regKey))
+                }
+                // *** FUZZY BREAK: Only Continue if Fuzzy-Matching (and no graphics found yet) ***
+                if (!graphicObjs.length && isFuzzy) {
+                    // 4) Check if Media.GetImg returns a value:
+                    const obj = Media.GetImg(arg, true)
+                    if (obj)
+                        graphicObjs.push(obj)
+                }
+                return graphicObjs
+            },
+            text: (arg, isFuzzy = false) => {
+                const textObjs = []
+                // 1) Check if this could be an ID string:
+                if (arg.length === 20) {
+                    const obj = getObj("text", arg)
+                    if (obj)
+                        textObjs.push(obj)
+                } else {
+                    // 2) Check if it is a registered text object:
+                    const regKey = _.keys(Media.TEXT).find(x => x.toLowerCase() === arg.toLowerCase())
+                    if (regKey)
+                        textObjs.push(Media.GetText(regKey))
+                }
+                // *** FUZZY BREAK: Only Continue if Fuzzy-Matching (and no text objects found yet) ***
+                if (!textObjs.length && isFuzzy) {
+                    // 4) Check if Media.GetText returns a value:
+                    const obj = Media.GetText(arg, true)
+                    if (obj)
+                        textObjs.push(obj)
+                }
+                return textObjs
             }
-            // D.Alert(`${(charObjs || []).length} Characters Retrieved: ${(charObjs || []).map(x => D.GetName(x)).join("<br>")}<br>Call: ${call}<br>Args: ${args.join(" ")}`)
-            return [charObjs, charIDString, call, args]
         },
-        getObjsFromArgs = (type, args, msg) => { // returns [objects, args] OR "false" if none found.
-            const objects = []
-            // First, only parse out arguments that aren't easily confused with other things.
-
-            // Now, add selected objects of that type IF no other types of that object found.
-            if (!objects.length && VAL({selection: msg}))
-                objects.push(...D.GetSelected(msg).
-                    map(x => type === "character" && D.GetChar(x) || x).
-                    filter(x => type === "other" && !["character", "graphic", "text"].includes(x.get("type")) || x.get("type") === type)
-                )
-            if (!objects.length) {
-                // NOW parse "easily-confused" argument types.
+        getObjsFromArgs = (args) => { // returns [objects, args]
+            const objects = {},
+                returnArgs = []
+            if (VAL({array: args}, "getObjsFromArgs") && args.length) {
+                // First, grab characters from initial character string
+                const initialCharObjs = _.compact(...(args[0] || "").split(",").map(x => parseArg.character(x.trim(), false)))
+                if (initialCharObjs.length) {
+                    objects.character = [...initialCharObjs]
+                    args.shift()
+                }
+                DB(`Objects: ${D.JS(objects)}, Args: ${D.JS(args)}, <br>LENGTHS: ${D.JS(D.KeyMapObj(objects, null, v => v.length))}`, "getObjsFromArgs")
+                for (const arg of args) {
+                    const [theseObjs, theseReturnArgs] = [{}, []]
+                    // Split the arg as if comma-delimited:
+                    for (const thisArg of arg.split(",")) {
+                        const prevObjCount = _.flatten(_.values(theseObjs)).length
+                        // Check for non-fuzzy references:
+                        for (const type of ["character", "graphic", "text"]) {
+                            const objs = _.compact(parseArg[type](thisArg, false))
+                            if (objs.length) {
+                                theseObjs[type] = theseObjs[type] || []
+                                theseObjs[type].push(...objs)
+                                DB(`Strict Objs Found: ${D.JS(theseObjs)}`, "getObjsFromArgs")
+                            }
+                        }
+                        // If no objs found, try again with fuzzy references:
+                        if (_.flatten(_.values(theseObjs)).length === prevObjCount)
+                            for (const type of ["character", "graphic", "text"]) {
+                                const objs = _.compact(parseArg[type](thisArg, true))
+                                if (objs.length) {
+                                    theseObjs[type] = theseObjs[type] || []
+                                    theseObjs[type].push(...objs)
+                                    DB(`Fuzzy Objs Found: ${D.JS(theseObjs)}`, "getObjsFromArgs")
+                                }
+                            }
+                        // If no objs found, add arg to theseReturnArgs for further processing by HandleInput
+                        if (_.flatten(_.values(theseObjs)).length === prevObjCount)
+                            theseReturnArgs.push(thisArg)
+                    }
+                    // Add found objects and any return args to main variables:
+                    _.each(theseObjs, (objs, type) => { if (objs.length) {
+                        DB(`... OBJECTS: ${D.JS(objects)}<br>LENGTHS: ${D.JS(D.KeyMapObj(objects, null, v => v.length))}`, "getObjsFromArgs")
+                        objects[type] = objects[type] || []
+                        objects[type].push(objs) 
+                        DB(`... type (${type}), length (${objs.length}), adding: ${D.JS(objs)}<br>OBJECTS: ${D.JS(objects)}`, "getObjsFromArgs")
+                    }})
+                    returnArgs.push(theseReturnArgs.join(","))
+                    DB(`Objects: ${D.JS(objects)}`, "getObjsFromArgs")
+                }
+                // Finally, do one last check for a character match with the last two, and then the last three arguments joined:
+                if (returnArgs.length > 1) {
+                    let charNameTest = [returnArgs.pop(), returnArgs.pop()].reverse().join(" "),
+                        charObjTest = D.GetChar(charNameTest)
+                    if (charObjTest) {
+                        objects.character.push([charObjTest])
+                    } else if (returnArgs.length) {
+                        charNameTest = `${returnArgs.pop()} ${charNameTest}`
+                        charObjTest = D.GetChar(charNameTest)
+                        if (charObjTest)
+                            objects.character.push([charObjTest])
+                    }
+                    if (!charObjTest)
+                        returnArgs.push(...charNameTest.split(" "))
+                }
             }
-            return [objects, args]            
+            DB(`Returning:<br>OBJECTS: ${D.JS(objects)}`, "getObjsFromArgs")
+            return [objects, _.compact(returnArgs)]
+        },
+        parseMessage = (args, msg) => {
+            const [objects, returnArgs] = getObjsFromArgs(args)
+            // For each type, if no objects found in args, check selection:
+            if (VAL({selection: msg}))
+                for (const type of ["character", "graphic", "text"]) {
+                    const selObjs = D.GetSelected(msg, type)
+                    if (selObjs.length) {
+                        if (!objects[type] || !objects[type].length) {
+                            objects[type] = objects[type] || []
+                            objects[type].push(selObjs)
+                        }
+                        objects.selected = objects.selected || {}
+                        objects.selected[type] = objects.selected[type] || []
+                        objects.selected[type].push(selObjs)
+                    }
+                }
+            return [objects, returnArgs]
         }
 
     return {
         RegisterEventHandlers: regHandlers,
-        CheckInstall: checkInstall
+        CheckInstall: checkInstall,
+
+        ParseParams: parseParams
     }
 } )()
 

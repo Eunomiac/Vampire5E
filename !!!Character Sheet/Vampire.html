@@ -195,6 +195,10 @@
                 <option value="-10">-10</option>
             </select>
         </div>
+        <div class="sheet-col3" style="position: relative; top: 150px; margin-left: 50px; height: 96px;">
+            <span class="sheet-header3" style="width: 60%; margin-left: 5%;">NPC TOGGLE:</span>
+            <input type="checkbox" name="attr_npctoggle" value="0" style="width:10%; height: 22px;">
+        </div>
     </div>
     <!-- #endregion -->
     <!-- #region NAVBAR -->
@@ -218,8 +222,10 @@
     <div class="sheet-col1" style="height: 30px; z-index: 0;"></div>
     <!-- #endregion -->
 
-    <!-- #region [SINGLE] Marquee Tips -->
-    <div class="sheet-pagecontainer sheet-marquee sheet-singlesheet" style="margin-top: 15px; margin-bottom: 3px;">
+    <!-- #region [SINGLE] Marquee Tips / NPC Box -->    
+    <div class="sheet-pagecontainer sheet-marquee sheet-singlesheet" style="margin-top: 15px; margin-bottom: 3px;">   
+        <input class="sheet-containertoggle" type="radio" name="attr_marquee_toggle" value="0" checked />
+        <input class="sheet-containertoggle" type="radio" name="attr_marquee_toggle" value="1" />
         <div class="sheet-coltight1" style="text-align: center;">
             <div class="sheet-marquee_title">
                 <textarea type="text" name="attr_marquee_title" readonly></textarea>
@@ -237,7 +243,73 @@
                 <textarea type="text" name="attr_marquee" readonly></textarea>
             </div>
         </div>
-        <input type="hidden" name="attr_marquee_tracker" />;
+        <input type="hidden" name="attr_marquee_tracker" />;        
+        <input class="sheet-containertoggle" type="radio" name="attr_npcbox_toggle" value="0"  />
+        <input class="sheet-containertoggle" type="radio" name="attr_npcbox_toggle" value="1" checked />
+        <div class="sheet-coltight1 sheet-npcbox" style="text-align: center;">
+            <div class="sheet-npcbox_title">
+                <textarea class="sheet-header2" type="text" name="attr_npcbox_title" readonly>as Cardinal Collins:</textarea>
+            </div>
+            <div class="sheet-npcstats">
+                <div class="sheet-col3">
+                    <div class="sheet-col1 sheet-npcattrs">
+                        <input class="sheet-attr" type="checkbox" name="attr_strength_flag" value="1" /><span>STR</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_dexterity_flag" value="1" /><span>DEX</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_stamina_flag" value="1" /><span>STA</span>
+                    </div><div class="sheet-col1">
+                        <input class="sheet-attr" type="checkbox" name="attr_athletics_flag" value="1" /><span>Athletics</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_brawl_flag" value="1" /><span>Brawl</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_craft_flag" value="1" /><span>Craft</span>
+                    </div><div class="sheet-col1">
+                        <input class="sheet-attr" type="checkbox" name="attr_drive_flag" value="1" /><span>Drive</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_firearms_flag" value="1" /><span>Firearms</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_melee_flag" value="1" /><span>Melee</span>
+                    </div><div class="sheet-col1">
+                        <input class="sheet-attr" type="checkbox" name="attr_larceny_flag" value="1" /><span>Larceny</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_stealth_flag" value="1" /><span>Stealth</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_survival_flag" value="1" /><span>Survival</span>
+                    </div>
+                </div>
+                <div class="sheet-col3">
+                    <div class="sheet-col1 sheet-npcattrs">
+                        <input class="sheet-attr" type="checkbox" name="attr_charisma_flag" value="1" /><span>CHA</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_manipulation_flag" value="1" /><span>MAN</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_composure_flag" value="1" /><span>COM</span>
+                    </div><div class="sheet-col1">
+                        <input class="sheet-attr" type="checkbox" name="attr_animal ken_flag" value="1" /><span>Animal Ken</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_etiquette_flag" value="1" /><span>Etiquette</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_insight_flag" value="1" /><span>Insight</span>
+                    </div><div class="sheet-col1">
+                        <input class="sheet-attr" type="checkbox" name="attr_intimidation_flag" value="1" /><span>Intimidation</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_leadership_flag" value="1" /><span>Leadership</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_performance_flag" value="1" /><span>Performance</span>
+                    </div><div class="sheet-col1">
+                        <input class="sheet-attr" type="checkbox" name="attr_persuasion_flag" value="1" /><span>Persuasion</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_streetwise_flag" value="1" /><span>Streetwise</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_subterfuge_flag" value="1" /><span>Subterfuge</span>
+                    </div>
+                </div>
+                <div class="sheet-col3">
+                    <div class="sheet-col1 sheet-npcattrs">
+                        <input class="sheet-attr" type="checkbox" name="attr_intelligence_flag" value="1" /><span>INT</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_wits_flag" value="1" /><span>WIT</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_resolve_flag" value="1" /><span>RES</span>
+                    </div><div class="sheet-col1">
+                        <input class="sheet-attr" type="checkbox" name="attr_academics_flag" value="1" /><span>Academics</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_awareness_flag" value="1" /><span>Awareness</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_finance_flag" value="1" /><span>Finance</span>
+                    </div><div class="sheet-col1">
+                        <input class="sheet-attr" type="checkbox" name="attr_investigation_flag" value="1" /><span>Investigation</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_medicine_flag" value="1" /><span>Medicine</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_occult_flag" value="1" /><span>Occult</span>
+                    </div><div class="sheet-col1">
+                        <input class="sheet-attr" type="checkbox" name="attr_politics_flag" value="1" /><span>Politics</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_science_flag" value="1" /><span>Science</span>
+                        <input class="sheet-attr" type="checkbox" name="attr_technology_flag" value="1" /><span>Technology</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <!-- #endregion -->
     <!-- #region [SINGLE] Character Basics -->

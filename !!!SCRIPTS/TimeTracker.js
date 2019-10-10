@@ -108,7 +108,7 @@ const TimeTracker = (() => {
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
         handleInput = (msg, who, call, args) => {
-            let [delta, unit] = [null, null]
+            let [delta, unit, isForcing] = [null, null, false]
             switch ((call || "").toLowerCase()) {
                 case "get":
                     switch (args.shift().toLowerCase()) {
@@ -169,6 +169,9 @@ const TimeTracker = (() => {
                     } else if (args[0] && args[0].toLowerCase().includes("session")) {
                         setNextSessionDate(parseInt(args[1]) || 0)
                         break
+                    } else if (args[0] === "force") {
+                        isForcing = true
+                        args.shift()
                     }
                     unit = "m"
                     delta = Math.ceil(((new Date(Date.UTC(..._.map(args, v => parseInt(v))))).getTime() - STATEREF.dateObj.getTime()) / (1000 * 60))
@@ -178,6 +181,8 @@ const TimeTracker = (() => {
                     delta = delta || parseFloat(args.shift())
                     unit = unit || args.shift().toLowerCase()
                     tweenClock(addTime(STATEREF.dateObj, delta, unit))
+                    if (isForcing)
+                        state[C.GAMENAME].Session.dateRecord = null
                     return
                 case "del": case "delete": 
                     switch (args.shift().toLowerCase()) {

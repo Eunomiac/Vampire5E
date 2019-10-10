@@ -434,7 +434,8 @@
 
 
 	.charsheet div.sheet-pagecontainer:not(.sheet-marquee),
-	.charsheet div.sheet-diceroller {
+	.charsheet div.sheet-diceroller:not(:checked),
+	.charsheet div.sheet-npcblock {
 		display: none;
 	}
 
@@ -947,14 +948,14 @@
 	}
 
 	.charsheet div.sheet-variabledotline input.sheet-dottoggle,
-	.charsheet div.sheet-variabledotline input.sheet-dottoggle:checked~input.sheet-dottoggle+input,
-	.charsheet div.sheet-variabledotline input.sheet-dottoggle:checked~input.sheet-dottoggle+input+span,
-	.charsheet div.sheet-variabledotline input.sheet-dottoggle:checked~input.sheet-dottoggle+div.sheet-dotcontainer {
+	.charsheet div.sheet-variabledotline input.sheet-dottoggle:checked~input.sheet-dottoggle:not(:checked)+input,
+	.charsheet div.sheet-variabledotline input.sheet-dottoggle:checked~input.sheet-dottoggle:not(:checked)+input+span,
+	.charsheet div.sheet-variabledotline input.sheet-dottoggle:checked~input.sheet-dottoggle:not(:checked)+div.sheet-dotcontainer {
 		display: none;
 	}
 
-	.charsheet input.sheet-containertoggle:checked~input.sheet-containertoggle+div,
-	.charsheet input.sheet-containertoggle:checked~input.sheet-containertoggle+span {
+	.charsheet input.sheet-containertoggle:checked~input.sheet-containertoggle:not(:checked)+div,
+	.charsheet input.sheet-containertoggle:checked~input.sheet-containertoggle:not(:checked)+span {
 		display: none !important;
 	}
 
@@ -1473,6 +1474,91 @@
 		/*font-weight: bolder;*/
 		/*font-variant: small-caps;*/
 	}
+
+	/* #endregion */
+	/* #region SECTION: NPC Box */
+	.charsheet div.sheet-npcbox {
+		width: 90%;
+		border: 4px inset;
+		background-color: rgba(0,0,0,0.3);
+		margin-top: 24px;
+		padding-bottom: 5px;
+	}
+	.charsheet div.sheet-npcbox div.sheet-npcbox_title {
+		height: 17px;
+		margin-top: -28px;
+	}
+	.charsheet div.sheet-npcbox div.sheet-npcbox_title textarea {
+		text-align: left;
+		text-align-last: left;
+		font-family: 'Trajan Pro 3' !important;
+		font-size: 16px !important;
+		overflow: hidden;
+		box-shadow: none;
+		color: rgba(150, 0, 0, 1);
+		text-shadow: -1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 2px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc;
+		width: auto;
+		text-indent: 5px;
+		padding-bottom: 5px;
+		font-weight: bold;
+	}
+
+	.charsheet div.sheet-npcbox div.sheet-npcstats div.sheet-col3 {
+		text-align: center;
+		text-align-last: center;
+	}
+	.charsheet div.sheet-npcbox div.sheet-npcstats div.sheet-col3 div.sheet-col1 {
+		text-align: left;
+		text-align-last: left;
+	}
+
+	.charsheet div.sheet-npcbox div.sheet-npcstats input.sheet-attr {
+		width: 30% !important;		
+		height: 13px;
+		margin-bottom: 0px;
+	}
+
+	.charsheet div.sheet-npcbox div.sheet-npcstats input.sheet-attr+span {
+		width: 30% !important;
+		margin-left: -30% !important;	
+		text-shadow: 0px 0px 1px black;
+		color: black;
+		font-weight: bold;
+		font-size: 12px;
+		height: 13px !important;
+		/* hover text-shadow: 0px 0px 4px black, 0px 0px 4px black, 0px 0px 4px black, 0px 0px 4px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black; */
+	}
+
+	.charsheet div.sheet-npcbox div.sheet-npcstats input.sheet-attr:hover+span {
+		text-shadow: 0px 0px 4px red, 0px 0px 4px red, 0px 0px 4px red, 0px 0px 4px red, 0px 0px 1px red, 0px 0px 1px red, 0px 0px 1px red, 0px 0px 1px red;
+		color: black !important;
+		background: none;
+	}
+
+	.charsheet div.sheet-npcbox div.sheet-npcstats input.sheet-attr:checked+span {
+		text-shadow: 0px 0px 4px red, 0px 0px 4px red, 0px 0px 4px red, 0px 0px 4px red, 0px 0px 1px white, 0px 0px 1px white, 0px 0px 1px white, 0px 0px 1px white;
+		color: white !important;
+		background: none;
+	}
+
+
+
+	.charsheet div.sheet-npcbox div.sheet-npcstats div.sheet-npcattrs {
+		margin-bottom: 3px;
+	}
+
+	.charsheet div.sheet-npcbox div.sheet-npcstats div.sheet-npcattrs input.sheet-attr {
+		height: 18px !important
+	}
+
+	.charsheet div.sheet-npcbox div.sheet-npcstats div.sheet-npcattrs input.sheet-attr+span {
+		font-size: 18px;
+		padding-left: 3px;
+		height: 18px !important;
+	}
+
+
+
 
 	/* #endregion */
 	/* #region SECTION: Dice Roller */

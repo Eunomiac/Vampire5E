@@ -72,7 +72,10 @@ const C = (() => {
             crimson: "rgb(220, 20, 60)",
             transparent: "rgba(0,0,0,0)",
             halfwhite: "rgba(255,255,255,0.5)",
-            palegreen: "rgb(175, 255, 175)"
+            palegreen: "rgb(175, 255, 175)",
+            paleblue: "rgb(175, 175, 255)",
+            palered: "rgb(255, 175, 175)",
+            palepurple: "rgb(255, 175, 255)"
         },
     // #endregion
 

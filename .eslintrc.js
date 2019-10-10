@@ -112,6 +112,7 @@ module.exports = {
         "START": true,
         "C": true,
         "D": true,
+        "Listener": true,
         "Char": true,
         "Chat": true,
         "Media": true,

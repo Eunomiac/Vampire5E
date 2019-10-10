@@ -116,6 +116,10 @@ const Session = (() => {
                             setSceneFocus(args[1])
                             break
                         }
+                        case "date": {
+                            STATEREF.dateRecord = null
+                            break
+                        }
                     }
                     break
                 }
@@ -185,6 +189,29 @@ const Session = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
+        MODEFUNCTIONS = {
+            enterMode: {
+                Active: () => {},
+                Inactive: () => {},
+                Downtime: () => {},
+                Daylighter: () => {},
+                Spotlight: () => {},
+                Complications: () => {}
+            },
+            leaveMode: {
+                Active: () => {},
+                Inactive: () => {},
+                Downtime: () => {},
+                Daylighter: () => {},
+                Spotlight: () => {
+                    for (const charData of D.GetChars("registered").map(x => D.GetCharData(x))) {
+                        Char.SetNPC(charData.id, "base")
+                        Char.TogglePC(charData.quadrant, true)
+                    }
+                },
+                Complications: () => {}
+            }
+        },
     // #region Getting & Setting Session Data
         isSessionActive = () => STATEREF.Mode !== "Inactive",
         setSessionNum = sNum => {
@@ -242,10 +269,12 @@ const Session = (() => {
                     STATEREF.dateRecord = null
                     for (const char of D.GetChars("registered"))
                         Char.AwardXP(char, 2, "Session XP award.")
-                } else {
+                } else if (STATEREF.dateRecord) {
                     TimeTracker.CurrentDate = STATEREF.dateRecord
                     TimeTracker.Fix()
                 }
+                for (const charData of D.GetChars("registered").map(x => D.GetCharData(x)))                  
+                    Char.SetNPC(charData.id, "base")
                 TimeTracker.StopClock()
                 TimeTracker.StopLights()
                 TimeTracker.StartCountdown()
@@ -269,18 +298,28 @@ const Session = (() => {
                     Media.TEXT[textKey].modes[mode] = D.Clone(Media.TEXT[textKey].modes[modeSrc])            
             }
         },
+        enterMode = mode => {
+
+        },
+        leaveMode = mode => {
+
+        },
         changeMode = mode => {
             if (VAL({string: mode}, "changeMode") && STATEREF.SessionModes.map(x => x.toLowerCase()).includes(mode.toLowerCase())) {
                 const [lastMode, curMode] = [
                     `${STATEREF.Mode}`,
                     D.Capitalize(mode.toLowerCase())
                 ]
+                if (MODEFUNCTIONS.leaveMode[lastMode])
+                    MODEFUNCTIONS.leaveMode[lastMode]()
                 STATEREF.Mode = curMode
                 STATEREF.LastMode = lastMode
                 // D.Alert(`Modes Set: ${STATEREF.Mode}, Last: ${STATEREF.LastMode}`)
                 Roller.Clean()
                 Media.SwitchMode()
                 setModeLocations(curMode)
+                if (MODEFUNCTIONS.enterMode[curMode])
+                    MODEFUNCTIONS.enterMode[curMode]()
             }
         },
         toggleTesting = (isTesting) => {
@@ -342,10 +381,6 @@ const Session = (() => {
                 }
             } else {
                 changeMode(STATEREF.LastMode === "Spotlight" && "Active" || STATEREF.LastMode)
-                for (const charData of D.GetChars("registered").map(x => D.GetCharData(x))) {
-                    Char.SetNPC(charData.id, "base")
-                    Char.TogglePC(charData.quadrant, true)
-                }
                 Char.SendBack()
                 Media.SetImg("Spotlight", "blank")
                 sendChat("Spotlight", C.CHATHTML.Block([
@@ -489,7 +524,7 @@ const Session = (() => {
                     font-size: 10px;
                     text-align: center;
                     width: 100%;
-                ">[${D.GetName(charObjRow[0])}](!roll pcroll remorse ${D.GetName(charObjRow[0])})${charObjRow[1] ? ` [${D.GetName(charObjRow[1])}](!roll pcroll remorse ${D.GetName(charObjRow[1])})` : ""}</span>`)
+                ">[${D.GetName(charObjRow[0])}](!roll quick remorse ${D.GetName(charObjRow[0])})${charObjRow[1] ? ` [${D.GetName(charObjRow[1])}](!roll quick remorse ${D.GetName(charObjRow[1])})` : ""}</span>`)
             sendChat("REMORSE CHECKS", D.JSH(`/w Storyteller <div style='
                 display: block;
                 background: url(https://i.imgur.com/kBl8aTO.jpg);

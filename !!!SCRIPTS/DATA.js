@@ -7,8 +7,6 @@
 const D = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "DATA",
-        CHATCOMMAND = ["!data", "!reply"],
-        GMONLY = true,
 
     // #region COMMON INITIALIZATION
         STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
@@ -20,16 +18,6 @@ const D = (() => {
         checkInstall = () => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             initialize()
-        },
-        regHandlers = () => {
-            on("chat:message", msg => {
-                const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || CHATCOMMAND.includes(args[0]))) {
-                    const who = msg.who || "API",
-                        call = args.shift()
-                    handleInput(msg, who, call, args)
-                }
-            })
         },
     // #endregion
 
@@ -70,24 +58,24 @@ const D = (() => {
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-        handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
+        onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             switch (call) {
                 case "!data": {
-                    switch (args.shift().toLowerCase()) {
+                    switch (call = (args.shift() || "").toLowerCase()) {
                         case "add": case "set": {
-                            switch(args.shift().toLowerCase()) {
+                            switch(call = (args.shift() || "").toLowerCase()) {
                                 case "blacklist":
                                     setBlackList(args)
                                     break
                                 case "watch": case "dbwatch": case "watchlist":
                                     setWatchList(args)
                                     break
-                            // no default
+                        // no default
                             }
                             break
                         }
                         case "get": {
-                            switch(args.shift().toLowerCase()) {
+                            switch(call = (args.shift() || "").toLowerCase()) {
                                 case "blacklist":
                                     sendToGM(getBlackList(), "DEBUG BLACKLIST")
                                     break
@@ -97,12 +85,12 @@ const D = (() => {
                                 case "debug": case "log": case "dblog":
                                     getDebugRecord()
                                     break
-                            // no default
+                        // no default
                             }
                             break
                         }
                         case "clear": case "reset": {
-                            switch((args.shift() || "none").toLowerCase()) {
+                            switch(call = (args.shift() || "").toLowerCase()) {
                                 case "watch": case "dbwatch": case "watchlist":
                                     setWatchList("clear")
                                     break
@@ -114,12 +102,12 @@ const D = (() => {
                                     Handouts.RemoveAll("... DBLog", "debug")
                                     STATEREF.DEBUGLOG = STATEREF.DEBUGLOG || []
                                     break
-                            // no default
+                        // no default
                             }
                             break
                         }
                         case "refresh": {
-                            switch((args.shift() || "").toLowerCase()) {
+                            switch(call = (args.shift() || "").toLowerCase()) {
                                 case "shortnames": {
                                     refreshShortNames()
                                     break
@@ -143,10 +131,10 @@ const D = (() => {
                                     }, 2000)
                                     break
                                 }
-                                // no default
+                            // no default
                             }
                         }
-                    // no default
+                // no default
                     }
                     break
                 }
@@ -157,7 +145,7 @@ const D = (() => {
                         receivePrompt("")
                     break
                 }
-                // no default
+            // no default
             }               
         }
     // #endregion
@@ -263,12 +251,32 @@ const D = (() => {
         /* Parses a value of any type via JSON.stringify, and then further styles it for display either
           in Roll20 chat, in the API console log, or both. */
             try {
-                const replacer = (k, v) => {
+                const typeColor = type => {
+                        switch ((type || "").toLowerCase()) {
+                            case "character": return C.COLORS.yellow
+                            case "graphic": return C.COLORS.palegreen
+                            case "text": return C.COLORS.paleblue
+                            case "player": return C.COLORS.palepurple
+                            default: return C.COLORS.palegrey
+                        }
+                    }, 
+                    replacer = (k, v) => {
                         let returnVal = v
-                        if (!isVerbose && 
-                        (k.slice(0, 3).toLowerCase() === "obj" ||
-                        v && (v.get || v._type))) {
-                            returnVal = `<b>&lt;OBJ: ${v.get && v.get("name") || v.name || v.get && v.get("_type") || v._type}&gt;</b>`
+                        if (!isVerbose && (
+                            k.slice(0, 3).toLowerCase() === "obj" ||
+                            v && (v.get || v._type)
+                        )) {
+                            const type = v.get && v.get("_type") || v._type || "O"
+                            let name = v.get && v.get("name") || v.name || "(Unnamed)"
+                            if (name === "(Unnamed)" && type === "text") {
+                                const textString = v.get && v.get("text")
+                                if (textString.length > 15)
+                                    name = `${textString.slice(0, 15)}...`
+                                else if (textString)
+                                    name = textString
+                            }
+                            returnVal = `@@NAMESTART${typeColor(type)}@@${name}@@NAMEEND@@`
+                            // returnVal = `<b>&lt;OBJ: ${v.get && v.get("name") || v.name || v.get && v.get("_type") || v._type}&gt;</b>`
                         } else if (_.isUndefined(v)) {
                             returnVal = "<b>&lt;UNDEFINED&gt;</b>"
                         } else if (_.isNull(v)) {
@@ -277,8 +285,11 @@ const D = (() => {
                             returnVal = "<b>&lt;NaN&gt;</b>"
                         } else if (_.isFunction(v)) {
                             returnVal = "<b>&lt;FUNCTION&gt;</b>"
-                        } else if (_.isArray(v) && v.join("").length < 100) {
-                            returnVal = `[ ${v.map(x => _.isString(x) ? `&quot;${x}&quot;` : x).join(", ")} ]`.replace(/\[\s+\]/gu, "[]")
+                        } else if (_.isArray(v)) {
+                            if (v.join("").length < 100)
+                                returnVal = `[ ${v.map(x => replacer(k, x)).join(", ")} ]`.replace(/\[\s+\]/gu, "[]")
+                            else
+                                returnVal = `[ ${v.map(x => replacer(k, x))} ]`
                         } else if (_.isObject(v) && JSON.stringify(v).length < 100) {
                             const listDelver = (list) => {
                                 const returns = []
@@ -315,7 +326,9 @@ const D = (() => {
                         replace(/(^"*|"*$)/gu, ""). // Removes quote marks from the beginning and end of the string  
                         replace(/>&quot;/gu, ">").replace(/&quot;</gu, "<"). // Removes quotes from within entire HTML tags.
                         replace(/&amp;quot;/gu, "\"").
-                        replace(/&quot;\/w/gu, "/w") // Fix whisper.
+                        replace(/&quot;\/w/gu, "/w"). // Fix whisper.
+                        replace(/@@NAMESTART(.*?)@@/gu, "<span style=\"background-color: $1;\"><b>&lt;</b>").
+                        replace(/@@NAMEEND@@/gu, "<b>&gt;</b></span>")
 
                 return finalString// .replace(/@B@/gu, "<b>").replace(/@b@/gu, "</b>") // Encodes bolding from replacer function.  
             } catch (errObj) {
@@ -1811,7 +1824,7 @@ const D = (() => {
 
     return {
         CheckInstall: checkInstall,
-        RegisterEventHandlers: regHandlers,
+        OnChatCall: onChatCall,
 
         get STATSDICT() { return STATEREF.STATSDICT },
         get PCDICT() { return STATEREF.PCDICT },
@@ -1880,7 +1893,6 @@ const D = (() => {
 
 on("ready", () => {
     D.CheckInstall()
-    D.RegisterEventHandlers()
     D.Log("DATA Ready!")
 })
 void MarkStop("DATA")

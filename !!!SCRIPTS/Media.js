@@ -814,7 +814,13 @@ const Media = (() => {
                         SiteBarCenter_1: 150,    
                         SiteBarLeft_1: 150,
                         SiteBarRight_1: 150
-                    }
+                    },
+                    SubSiteTopLeft: 151,
+                    SubSiteTopRight: 151,
+                    SubSiteLeft: 151,
+                    SubSiteRight: 151,
+                    SubSiteBotLeft: 151,
+                    SubSiteBotRight: 151
                 },
                 AirLights: {
                     AirLightLeft_1: 100,
