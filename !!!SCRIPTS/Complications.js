@@ -2,8 +2,6 @@ void MarkStart("Complications")
 const Complications = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Complications",
-        CHATCOMMAND = "!comp",
-        GMONLY = true,
 
     // #region COMMON INITIALIZATION
         STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
@@ -15,16 +13,6 @@ const Complications = (() => {
         checkInstall = () => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             initialize()
-        },
-        regHandlers = () => {
-            on("chat:message", msg => {
-                const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
-                    const who = msg.who || "API",
-                        call = args.shift()
-                    handleInput(msg, who, call, args)
-                }
-            })
         },
     // #endregion
 
@@ -124,17 +112,18 @@ const Complications = (() => {
     // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-        handleInput = (msg, who, call, args) => {
-            let charObjs, charIDString
-            [charObjs, charIDString, call, args] = D.ParseCharSelection(call, args)
+        onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
+            const charObjs = Listener.GetObjects(objects, "character")
             switch (call) {
-                case "target":
-                    setCompVals(call, parseInt(args.shift() || 0))
+                case "target": {
+                    setCompVals(call, D.Int(args.shift()))
                     break
-                case "start":
+                }
+                case "start": {
                     STATEREF.charRef = ((charObjs || [{id: null}])[0] || {id: null}).id
-                    startComplication(parseInt(args.shift() || 0))
+                    startComplication(D.Int(args.shift()))
                     break
+                }
                 case "stop": case "end":
                     endComplication(args.shift() === "true")
                     STATEREF.charRef = null
@@ -143,52 +132,92 @@ const Complications = (() => {
                     resetComplication(true)
                     break
                 case "discard": {
-                    if (args[0] && args[0] === "rand")
-                        discardCard(getRandomSpot(["faceUp", "noLastDrawn"]))
-                    else if (args[0] && args[0] === "last")
-                        discardCard(STATEREF.lastDraw)
-                    else
-                        discardCard(parseInt(args.shift()) - 1)
+                    switch (D.LCase(call = args.shift())) {
+                        case "rand": {
+                            discardCard(getRandomSpot(["faceUp", "noLastDrawn"]))
+                            break
+                        }
+                        case "last": {
+                            discardCard(STATEREF.lastDraw)
+                            break
+                        }
+                        default: {
+                            discardCard(D.Int(call) - 1)
+                            break
+                        }
+                    }                        
                     break
                 }
                 case "enhance": {
-                    if (args[0] && args[0] === "rand")
-                        enhanceCard(getRandomSpot(["faceUp", "noNegated", "noEnhanced", "noLastDrawn"]))
-                    else if (args[0] && args[0] === "last")
-                        enhanceCard(STATEREF.lastDraw)
-                    else
-                        enhanceCard(parseInt(args.shift()) - 1)
+                    switch (D.LCase(call = args.shift())) {
+                        case "rand": {
+                            enhanceCard(getRandomSpot(["faceUp", "noNegated", "noEnhanced", "noLastDrawn"]))
+                            break
+                        }
+                        case "last": {
+                            enhanceCard(STATEREF.lastDraw)
+                            break
+                        }
+                        default: {
+                            enhanceCard(D.Int(call) - 1)
+                            break
+                        }
+                    }                        
                     break
                 }
                 case "negate": {
-                    if (args[0] && args[0] === "rand")
-                        negateCard(getRandomSpot(["faceUp", "noEnhanced", "noNegated", "noLastDrawn"]))
-                    else if (args[0] && args[0] === "last")
-                        negateCard(STATEREF.lastDraw)
-                    else
-                        negateCard(parseInt(args.shift()) - 1)
+                    switch (D.LCase(call = args.shift())) {
+                        case "rand": {
+                            negateCard(getRandomSpot(["faceUp", "noEnhanced", "noNegated", "noLastDrawn"]))
+                            break
+                        }
+                        case "last": {
+                            negateCard(STATEREF.lastDraw)
+                            break
+                        }
+                        default: {
+                            negateCard(D.Int(call) - 1)
+                            break
+                        }
+                    }                        
                     break
                 }
                 case "duplicate": {
-                    if (args[0] && args[0] === "rand")
-                        dupeCard(getRandomSpot(["faceUp", "noNegated", "noDuplicated", "noLastDrawn"]))
-                    else if (args[0] && args[0] === "last")
-                        dupeCard(STATEREF.lastDraw)
-                    else
-                        dupeCard(parseInt(args.shift()) - 1)
+                    switch (D.LCase(call = args.shift())) {
+                        case "rand": {
+                            dupeCard(getRandomSpot(["faceUp", "noNegated", "noDuplicated", "noLastDrawn"]))
+                            break
+                        }
+                        case "last": {
+                            dupeCard(STATEREF.lastDraw)
+                            break
+                        }
+                        default: {
+                            dupeCard(D.Int(call) - 1)
+                            break
+                        }
+                    }                        
                     break
                 }
                 case "revalue": {
-                    if (args[0] && args[0] === "rand") 
-                        promptCardVal(getRandomSpot(["faceUp", "noLastDrawn"]))
-                    else if (args[0] && args[0] === "last")
-                        promptCardVal(STATEREF.lastDraw)
-                    else
-                        promptCardVal(parseInt(args.shift()) - 1)
+                    switch (D.LCase(call = args.shift())) {
+                        case "rand": {
+                            promptCardVal(getRandomSpot(["faceUp", "noLastDrawn"]))
+                            break
+                        }
+                        case "last": {
+                            promptCardVal(STATEREF.lastDraw)
+                            break
+                        }
+                        default: {
+                            promptCardVal(D.Int(call) - 1)
+                            break
+                        }
+                    }                        
                     break
                 }
                 case "setvalue": {
-                    revalueCard(parseInt(args.shift()) - 1, parseInt(args.shift()))
+                    revalueCard(D.Int(args.shift()) - 1, D.Int(args.shift()))
                     break
                 }
                 case "launchproject":
@@ -232,7 +261,7 @@ const Complications = (() => {
                 STATEREF.endMessageQueue.push(isEnhanced ? "!Reduce an Increment Unit by one." : "!Reduce a Project Die by half.")
             }},
             {name: "Cathexis", category: "attention", value: 2, rarity: "R"},
-            {name: "CognitiveDissonance", category: "debilitation", value: 3, rarity: "U", afterAction: (charRef, isEnhanced) => {
+            {name: "CognitiveDissonance", category: "debilitation", value: 3, rarity: "U", afterAction: (charRef) => {
                 Roller.AddCharEffect(charRef, "all;restrictwpreroll2;!Cognitive Dissonance (Max Reroll: 2)")
             }},
             {name: "CollateralDamage", category: "humanity", value: 2, rarity: "R", afterAction: (charRef, isEnhanced) => {
@@ -251,7 +280,7 @@ const Complications = (() => {
                 STATEREF.endMessageQueue.push(isEnhanced ? "!Reduce Secrecy of a random NPC Project." : "!Discover a random NPC Project.")
             }},
             {name: "Exhausted", category: "debilitation", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                // Reduce Willpower Refresh
+                (Char.SetWPRefresh || (() => {}))(charRef, isEnhanced ? 1 : "LOW") // Reduce Willpower Refresh
             }},
             {name: "Faith", category: null, value: 0, rarity: "C"},
             // {name: "FakeNews", category: null, value: 2, rarity: "U"},
@@ -773,15 +802,14 @@ const Complications = (() => {
     // #endregion
 
     return {
-        RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        OnChatCall: onChatCall,
 
         Flip: flipCard
     }
 })()
 
 on("ready", () => {
-    Complications.RegisterEventHandlers()
     Complications.CheckInstall()
     D.Log("Complications Ready!")
 })

@@ -2,8 +2,6 @@ void MarkStart("Session")
 const Session = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Session",
-        CHATCOMMAND = "!sess",
-        GMONLY = true,
 
     // #region COMMON INITIALIZATION
         STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
@@ -15,17 +13,6 @@ const Session = (() => {
         checkInstall = () => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             initialize()
-        },
-        regHandlers = () => {
-            on("chat:message", msg => {
-                const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
-                    const who = msg.who || "API",
-                        call = args.shift()
-                    log(`SESSION CALL: handleInput(${D.JSL(msg)}, ${D.JSL(who)}, ${D.JSL(call)}, ${D.JSL(args)})`)
-                    handleInput(msg, who, call, args)
-                }
-            })
         },
     // #endregion
 
@@ -62,14 +49,10 @@ const Session = (() => {
     // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-        handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
-        // D.Alert(`Received Call: ${call}<br>MSG: ${D.JS(msg)}`)
-            let charObjs, charIDString // eslint-disable-line no-unused-vars
-            [charObjs, charIDString, call, args] = D.ParseCharSelection(call, args)
-        // D.Alert(`Updated Call: ${call}<br>MSG: ${D.JS(msg)}`)
+        onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
+            const charObjs = Listener.GetObjects(objects, "character")
             switch (call) {
                 case "start": case "end": case "toggle": {
-                    log(`... HANDLE INPUT. isSessionActive() = ${D.JSL(isSessionActive())}`)
                     if (isSessionActive())
                         endSession(msg)
                     else
@@ -77,9 +60,8 @@ const Session = (() => {
                     break
                 }
                 case "add": {
-                    switch (args.shift().toLowerCase()) {
+                    switch (D.LCase(call = args.shift())) {
                         case "scene": {
-                            charObjs = charObjs || D.GetChar(msg) || D.GetChar(args.shift())
                             addCharToScene(charObjs)
                             break
                         }
@@ -96,35 +78,33 @@ const Session = (() => {
                     break
                 }
                 case "set": {
-                    switch((args[0] || "").toLowerCase()) {
-                        default: {
-                            setSessionNum(parseInt(args.shift()) || STATEREF.SessionNum)
-                            break
-                        }
+                    switch(D.LCase(call = args.shift())) {
                         case "mode": {
-                            args.shift()
                             STATEREF.Mode = D.IsIn(args.shift(), STATEREF.SessionModes) || STATEREF.Mode
                             D.Alert(`Current Session Mode:<br><h3>${STATEREF.Mode}</h3>`, "!sess set mode")
                             break
                         }
-                        case "loc": case "location": {     
-                            // args: DistrictLeft:same|blank|Annex SiteLeft:same|blank|AnarchBar:name:<customName>; DistrictLeft:same|blank|Annex SiteLeft:same|blank|AnarchBar:name:<customName>;                            
+                        case "loc": case "location": {
                             setLocation(parseLocationString(args.join(" ")))
                             break
                         }
                         case "scene": {
-                            setSceneFocus(args[1])
+                            setSceneFocus(args.snift())
                             break
                         }
                         case "date": {
                             STATEREF.dateRecord = null
                             break
                         }
+                        default: {
+                            setSessionNum(D.Int(call) || STATEREF.SessionNum)
+                            break
+                        }
                     }
                     break
                 }
                 case "delete": case "del": {
-                    switch ((args.shift() || "").toLowerCase()) {
+                    switch (D.LCase(call = args.shift())) {
                         case "mode": {
                             const mode = args.shift()
                             if (VAL({string: mode}, "!sess add mode") && D.IsIn(mode, STATEREF.SessionModes)) {
@@ -150,15 +130,15 @@ const Session = (() => {
                     break
                 }
                 case "spotlight": {
-                    if (args[0] === "end" || !charObjs || !charObjs[0]) 
+                    if (args.shift() === "end" || !charObjs || !charObjs.length) 
                         toggleSpotlight()
                     else
-                        toggleSpotlight(charObjs[0])
+                        toggleSpotlight(charObjs.shift())
                     break
                 }
                 case "daylighters": {
                     STATEREF.Mode = STATEREF.Mode === "Daylighter" ? "Active" : "Daylighter"
-                    D.Alert(`Session Mode Set To: ${STATEREF.Mode}`)
+                    D.Alert(`Session Mode Set To: ${STATEREF.Mode}`, "Session Set Mode")
                     DragPads.Toggle("signalLight", STATEREF.Mode !== "Daylighter")
                     TimeTracker.Fix()
                     for (const charData of _.values(Char.REGISTRY).slice(0, 4)) {
@@ -168,7 +148,6 @@ const Session = (() => {
                             _subtype: "token",
                             represents: charData.id
                         })
-
                         if (STATEREF.Mode === "Daylighter") {
                             Media.SetImgData(token, {isDaylighter: true, unObfSrc: "base"})
                             Media.SetImg(token, "baseDL")
@@ -192,7 +171,11 @@ const Session = (() => {
         MODEFUNCTIONS = {
             enterMode: {
                 Active: () => {},
-                Inactive: () => {},
+                Inactive: () => {
+                    for (const playlist of Media.ActivePlaylists)
+                        Media.StopPlaylist(playlist)
+                    Media.StartPlaylist("SplashScreen")
+                },
                 Downtime: () => {},
                 Daylighter: () => {},
                 Spotlight: () => {},
@@ -200,7 +183,11 @@ const Session = (() => {
             },
             leaveMode: {
                 Active: () => {},
-                Inactive: () => {},
+                Inactive: () => {
+                    for (const playlist of Media.ActivePlaylists)
+                        Media.StopPlaylist(playlist)
+                    Media.StartPlaylist("MainScore")
+                },
                 Downtime: () => {},
                 Daylighter: () => {},
                 Spotlight: () => {
@@ -576,10 +563,10 @@ const Session = (() => {
     // #endregion
 
     return {
-        RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
-        ToggleTesting: toggleTesting,
+        OnChatCall: onChatCall,
 
+        ToggleTesting: toggleTesting,
         AddSceneChar: addCharToScene,
         ChangeMode: changeMode,
         CharsIn: getCharsInLocation,
@@ -600,7 +587,6 @@ const Session = (() => {
 })()
 
 on("ready", () => {
-    Session.RegisterEventHandlers()
     Session.CheckInstall()
     D.Log("Session Ready!")
 })

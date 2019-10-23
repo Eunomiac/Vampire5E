@@ -2,8 +2,6 @@ void MarkStart("Handouts")
 const Handouts = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Handouts",
-        CHATCOMMAND = "!handouts",
-        GMONLY = true,
 
     // #region COMMON INITIALIZATION
         STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
@@ -16,16 +14,6 @@ const Handouts = (() => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             initialize()
         },
-        regHandlers = () => {
-            on("chat:message", msg => {
-                const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
-                    const who = msg.who || "API",
-                        call = args.shift()
-                    handleInput(msg, who, call, args)
-                }
-            })
-        },
     // #endregion
 
     // #region LOCAL INITIALIZATION
@@ -35,11 +23,10 @@ const Handouts = (() => {
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-        handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
-        // const
+        onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             switch (call) {
                 case "get":
-                    switch (args.shift().toLowerCase()) {
+                    switch (D.LCase(call = args.shift())) {
                         case "projects": {
                             summarizeProjects("Project Summary", D.GetChars("registered"))
                             break
@@ -143,7 +130,7 @@ const Handouts = (() => {
             if (VAL({object: handoutObj})) {
                 if (category && STATEREF.noteCounts[category]) {
                     const matcher = handoutObj.get("name").match(/\d+$/u)
-                    if (matcher && parseInt(matcher[0]) === STATEREF.noteCounts[category])
+                    if (matcher && D.Int(matcher[0]) === STATEREF.noteCounts[category])
                         STATEREF.noteCounts[category]--
                 }
                 handoutObj.remove()
@@ -168,8 +155,8 @@ const Handouts = (() => {
                         continue
                     const projLines = []
                     let projGoal = ""
-                    if (parseInt(projectData.projectscope) > 0)
-                        projGoal += `${"●".repeat(parseInt(projectData.projectscope))} `
+                    if (D.Int(projectData.projectscope) > 0)
+                        projGoal += `${"●".repeat(D.Int(projectData.projectscope))} `
                     if (projectData.projectscope_name && projectData.projectscope_name.length > 2)
                         projGoal += projectData.projectscope_name
                     projLines.push(C.HANDOUTHTML.projects.goal(projGoal))
@@ -179,16 +166,15 @@ const Handouts = (() => {
                         projLines.push(C.HANDOUTHTML.smallNote(projectData.projectdetails))
                     let [stakeCheck, teamworkCheck] = [false, false]
                     for (const stakeVar of ["projectstake1_name", "projectstake1", "projectstake2_name", "projectstake2", "projectstake3_name", "projectstake3"])
-                        if (projectData[stakeVar] && (!_.isNaN(parseInt(projectData[stakeVar])) && parseInt(projectData[stakeVar]) > 0 || projectData[stakeVar].length > 2))
+                        if (projectData[stakeVar] && (!_.isNaN(D.Int(projectData[stakeVar])) && D.Int(projectData[stakeVar]) > 0 || projectData[stakeVar].length > 2))
                             stakeCheck = true
-                    if ((parseInt(projectData.projectteamwork1) || 0) + (parseInt(projectData.projectteamwork2) || 0) + (parseInt(projectData.projectteamwork3) || 0) > 0)
-                        teamworkCheck = true
+                    teamworkCheck = D.Int(projectData.projectteamwork1) + D.Int(projectData.projectteamwork2) + D.Int(projectData.projectteamwork3) > 0
                     if (teamworkCheck)
-                        projLines.push(`${C.HANDOUTHTML.projects.tag("TEAMWORK:", C.COLORS.blue)}${C.HANDOUTHTML.projects.teamwork("●".repeat((parseInt(projectData.projectteamwork1) || 0) + (parseInt(projectData.projectteamwork2) || 0) + (parseInt(projectData.projectteamwork3) || 0) || 0))}`)
+                        projLines.push(`${C.HANDOUTHTML.projects.tag("TEAMWORK:", C.COLORS.blue)}${C.HANDOUTHTML.projects.teamwork("●".repeat(D.Int(projectData.projectteamwork1) + D.Int(projectData.projectteamwork2) + D.Int(projectData.projectteamwork3)))}`)
                     if (stakeCheck) {
                         const stakeStrings = []
                         for (let i = 1; i <= 3; i++) {
-                            const [attr, val] = [projectData[`projectstake${i}_name`], parseInt(projectData[`projectstake${i}`])]
+                            const [attr, val] = [projectData[`projectstake${i}_name`], D.Int(projectData[`projectstake${i}`])]
                             if (attr && attr.length > 2 && !_.isNaN(val))
                                 stakeStrings.push(`${attr} ${"●".repeat(val)}`)
                         }
@@ -207,8 +193,8 @@ const Handouts = (() => {
                         projLines.push(C.HANDOUTHTML.projects.succ(""))
                     if (projectData.projectenddate) {
                         projLines.push(C.HANDOUTHTML.projects.endDate(`Ends ${projectData.projectenddate.toUpperCase()}`))
-                        if (parseInt(projectData.projectinccounter) > 0)
-                            projLines.push(`<br>${C.HANDOUTHTML.projects.daysLeft(`(${parseInt(projectData.projectincnum) * parseInt(projectData.projectinccounter)} ${projectData.projectincunit.slice(0, -1)}(s) left)`)}`)
+                        if (D.Int(projectData.projectinccounter) > 0)
+                            projLines.push(`<br>${C.HANDOUTHTML.projects.daysLeft(`(${D.Int(projectData.projectincnum) * D.Int(projectData.projectinccounter)} ${projectData.projectincunit.slice(0, -1)}(s) left)`)}`)
                     }
                     if (projLines.length === 1 && projLines[0] === C.HANDOUTHTML.projects.goal(""))
                         continue
@@ -244,8 +230,8 @@ const Handouts = (() => {
                             continue
                         const projLines = []
                         let projGoal = ""
-                        if (parseInt(prestationData.projectscope) > 0)
-                            projGoal += `${"●".repeat(parseInt(prestationData.projectscope))} `
+                        if (D.Int(prestationData.projectscope) > 0)
+                            projGoal += `${"●".repeat(D.Int(prestationData.projectscope))} `
                         if (prestationData.projectscope_name && prestationData.projectscope_name.length > 2)
                             projGoal += prestationData.projectscope_name
                         projLines.push(C.HANDOUTHTML.projects.goal(projGoal))
@@ -255,16 +241,15 @@ const Handouts = (() => {
                             projLines.push(C.HANDOUTHTML.smallNote(prestationData.projectdetails))
                         let [stakeCheck, teamworkCheck] = [false, false]
                         for (const stakeVar of ["projectstake1_name", "projectstake1", "projectstake2_name", "projectstake2", "projectstake3_name", "projectstake3"])
-                            if (prestationData[stakeVar] && (!_.isNaN(parseInt(prestationData[stakeVar])) && parseInt(prestationData[stakeVar]) > 0 || prestationData[stakeVar].length > 2))
+                            if (prestationData[stakeVar] && (!_.isNaN(D.Int(prestationData[stakeVar])) && D.Int(prestationData[stakeVar]) > 0 || prestationData[stakeVar].length > 2))
                                 stakeCheck = true
-                        if ((parseInt(prestationData.projectteamwork1) || 0) + (parseInt(prestationData.projectteamwork2) || 0) + (parseInt(prestationData.projectteamwork3) || 0) > 0)
-                            teamworkCheck = true
+                        teamworkCheck = D.Int(prestationData.projectteamwork1) + D.Int(prestationData.projectteamwork2) + D.Int(prestationData.projectteamwork3) > 0
                         if (teamworkCheck)
-                            projLines.push(`${C.HANDOUTHTML.projects.tag("TEAMWORK:", C.COLORS.blue)}${C.HANDOUTHTML.projects.teamwork("●".repeat((parseInt(prestationData.projectteamwork1) || 0) + (parseInt(prestationData.projectteamwork2) || 0) + (parseInt(prestationData.projectteamwork3) || 0) || 0))}`)
+                            projLines.push(`${C.HANDOUTHTML.projects.tag("TEAMWORK:", C.COLORS.blue)}${C.HANDOUTHTML.projects.teamwork("●".repeat(D.Int(projectData.projectteamwork1) + D.Int(projectData.projectteamwork2) + D.Int(projectData.projectteamwork3)))}`)
                         if (stakeCheck) {
                             const stakeStrings = []
                             for (let i = 1; i <= 3; i++) {
-                                const [attr, val] = [prestationData[`projectstake${i}_name`], parseInt(prestationData[`projectstake${i}`])]
+                                const [attr, val] = [prestationData[`projectstake${i}_name`], D.Int(prestationData[`projectstake${i}`])]
                                 if (attr && attr.length > 2 && !_.isNaN(val))
                                     stakeStrings.push(`${attr} ${"●".repeat(val)}`)
                             }
@@ -283,8 +268,8 @@ const Handouts = (() => {
                             projLines.push(C.HANDOUTHTML.projects.succ(""))
                         if (prestationData.projectenddate) {
                             projLines.push(C.HANDOUTHTML.projects.endDate(`Ends ${prestationData.projectenddate.toUpperCase()}`))
-                            if (parseInt(prestationData.projectinccounter) > 0)
-                                projLines.push(`<br>${C.HANDOUTHTML.projects.daysLeft(`(${parseInt(prestationData.projectincnum) * parseInt(prestationData.projectinccounter)} ${prestationData.projectincunit.slice(0, -1)}(s) left)`)}`)
+                            if (D.Int(prestationData.projectinccounter) > 0)
+                                projLines.push(`<br>${C.HANDOUTHTML.projects.daysLeft(`(${D.Int(prestationData.projectincnum) * D.Int(prestationData.projectinccounter)} ${prestationData.projectincunit.slice(0, -1)}(s) left)`)}`)
                         }
                         if (projLines.length === 1 && projLines[0] === C.HANDOUTHTML.projects.goal(""))
                             continue
@@ -301,8 +286,8 @@ const Handouts = (() => {
 
 
     return {
-        RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        OnChatCall: onChatCall,
 
         Make: makeHandoutObj,
         Remove: delHandoutObj,
@@ -313,7 +298,6 @@ const Handouts = (() => {
 })()
 
 on("ready", () => {
-    Handouts.RegisterEventHandlers()
     Handouts.CheckInstall()
     D.Log("Handouts Ready!")
 })

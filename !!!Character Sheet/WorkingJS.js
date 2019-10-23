@@ -39,7 +39,7 @@
             advantage: {attribute: "append", skill: "append", discipline: "pass", advantage: "replace", tracker: "pass"},
             tracker: {attribute: "append", skill: "pass", discipline: "pass", advantage: "pass", tracker: "replace"}
         },
-        res_discs = {
+        RESDISCS = {
             None: [" "],
             Choleric: ["Celerity", "Potence"],
             Melancholic: ["Fortitude", "Obfuscate"],
@@ -602,16 +602,16 @@
             if (_.isString(haystack))
                 return haystack.search(new RegExp(needle, "iu")) > -1 && haystack
             const [ndl, hay] = [`\\b${needle}\\b`, haystack],
-                hayArray = _.isArray(hay) ? _.flatten(hay) :
-                    _.isObject(hay) ? _.keys(hay) :
-                        [hay],
+                hayArray = _.isArray(hay) && _.flatten(hay) ||
+                           _.isObject(hay) && _.keys(hay) ||
+                           [hay],
                 index = _.findIndex(hayArray,
                                     v => v.match(new RegExp(ndl, "iu")) !== null ||
-                        v.match(new RegExp(ndl.replace(/_/gu, " "), "iu")) !== null ||
-                        v.match(new RegExp(ndl.replace(/\s/gu, "_"), "iu")) !== null ||
-                        v.match(new RegExp(ndl.replace(/(\w)(?=[A-Z])/gu, "$1 "), "iu")) !== null ||
-                        v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null ||
-                        v.match(new RegExp(ndl.replace(/\s/gu), "iu")) !== null)
+                                         v.match(new RegExp(ndl.replace(/_/gu, " "), "iu")) !== null ||
+                                         v.match(new RegExp(ndl.replace(/\s/gu, "_"), "iu")) !== null ||
+                                         v.match(new RegExp(ndl.replace(/(\w)(?=[A-Z])/gu, "$1 "), "iu")) !== null ||
+                                         v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null ||
+                                         v.match(new RegExp(ndl.replace(/\s/gu), "iu")) !== null)
             return index >= 0 && hayArray[index]
         },
         realName = (attr, ATTRS = {}) => isIn(trimAttr(attr), ATTRDISPNAMES) ||
@@ -874,7 +874,7 @@
                     cback => {
                         getAttrs(["resonance"], ATTRS => {
                             log(`Resonance Attrs: ${JSON.stringify(ATTRS)}`)
-                            attrList.res_discs = ATTRS.resonance === "None" ? " " : `(${_.compact(res_discs[ATTRS.resonance]).join(", ")})`
+                            attrList.res_discs = ATTRS.resonance === "None" ? " " : `(${_.compact(RESDISCS[ATTRS.resonance]).join(", ")})`
                             cback(null, attrList)
                         })
                     },
@@ -1830,14 +1830,14 @@
                     attrArray.earnedxp.push(`repeating_earnedxp_${repID}_${stat}`)
                 })
             })
-            getSectionIDs("earnedxpright", idArray => {
-                _.each(idArray, repID => {
+            getSectionIDs("earnedxpright", rightIDs => {
+                _.each(rightIDs, repID => {
                     _.each(["xp_award"], stat => {
                         attrArray.earnedxpright.push(`repeating_earnedxpright_${repID}_${stat}`)
                     })
                 })
-                getSectionIDs("spentxp", idArray => {
-                    _.each(idArray, repID => {
+                getSectionIDs("spentxp", spentIDs => {
+                    _.each(spentIDs, repID => {
                         _.each(XPREPREFS.spentxp, stat => {
                             attrArray.spentxp.push(`repeating_spentxp_${repID}_${stat}`)
                         })

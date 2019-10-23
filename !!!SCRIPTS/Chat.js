@@ -10,8 +10,6 @@ void MarkStart("Chat")
 const Chat = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Chat",
-        CHATCOMMAND = null,
-        GMONLY = true,
 
     // #region COMMON INITIALIZATION
         STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
@@ -19,143 +17,133 @@ const Chat = (() => {
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
-
-        regHandlers = () => {
-            on("chat:message", msg => {
-                const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
-                    const who = msg.who || "API",
-                        call = args.shift()
-                    handleInput(msg, who, call, args)
-                }
-            })
-        },
     // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-        handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
+        onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             const params = {}
             let [obj, attrList] = [{}, {}],
                 [objsToKill, returnVals, theseArgs] = [[], [], []],
                 [objType, objID, pattern] = ["", "", ""]
             switch (call) {
                 case "!get": {
-                    if ((args[0] || "").toLowerCase() === "text") {
-                        args.shift()
-                        switch (args.shift().toLowerCase()) {
-                            case "check": {
-                                if (!msg.selected || !msg.selected[0])
+                    switch (D.LCase(call = args.shift())) {
+                        case "text": {
+                            switch (D.LCase(call = args.shift())) {
+                                case "check": {
+                                    if (msg.selected && msg.selected.length) {
+                                        [obj] = findObjs({
+                                            _id: msg.selected[0]._id
+                                        });
+                                        ((font = obj.get("font_family").split(" "), size = obj.get("font_size")) => {
+                                            D.Alert(`There are ${_.values(state.DATA.CHARWIDTH[font][size]).length} entries.`, `${D.JS(font).toUpperCase()} ${D.JS(size)}`)
+                                        })()
+                                    }
                                     break
-                                [obj] = findObjs({
-                                    _id: msg.selected[0]._id
-                                });
-                                ((font = obj.get("font_family").split(" "), size = obj.get("font_size")) => {
-                                    D.Alert(`There are ${_.values(state.DATA.CHARWIDTH[font][size]).length} entries.`, `${D.JS(font).toUpperCase()} ${D.JS(size)}`)
-                                })()
-                                break
+                                }
+                                // no default
                             }
-                            // no default
+                            break
                         }
-                        break
-                    }
-                    if (D.GetSelected(msg))
-                        [obj] = D.GetSelected(msg)
-                    else
-                        for (let i = 1; i < args.length; i++) {
-                            [obj] = findObjs({
-                                _id: args[i]
-                            })
-                            if (obj) {
-                                args.splice(i, 1)
-                                break
+                        default: {
+                            if (D.GetSelected(msg))
+                                [obj] = D.GetSelected(msg)
+                            else
+                                for (let i = 1; i < args.length; i++) {
+                                    [obj] = findObjs({
+                                        _id: args[i]
+                                    })
+                                    if (obj) {
+                                        args.splice(i, 1)
+                                        break
+                                    }
+                                }
+                            switch (call) {
+                                case "all":
+                                    if (!getSelected(obj, true))
+                                        sendHelpMsg()
+                                    break
+                                case "id":
+                                    D.Alert(obj.id)
+                                    break
+                                case "name":
+                                    if (!getName(obj))
+                                        sendHelpMsg()
+                                    break
+                                case "gm":
+                                    D.Alert(`The player ID of the GM is ${D.GMID()}`, "!GET GM")
+                                    break
+                                case "img":
+                                    if (!getImg(obj))
+                                        sendHelpMsg()
+                                    break
+                                case "chars":
+                                case "allchars":
+                                    if (!getAllChars())
+                                        sendHelpMsg()
+                                    break
+                                case "char":
+                                    if (!getChar(obj))
+                                        sendHelpMsg()
+                                    break
+                                case "pos": case "position":
+                                    if (!getPos(obj))
+                                        sendHelpMsg()
+                                    break
+                                case "attrs":
+                                    if (!getCharAttrs(args.shift() || obj))
+                                        sendHelpMsg()
+                                    break
+                                case "attr":
+                                    if (!getCharAttrs(obj, _.compact(args.join(" ").replace(/(\[|,)/gu, "").replace(/\s+/gu, "|").
+                                        split("|"))))
+                                        sendHelpMsg()
+                                    break
+                                case "prop":
+                                case "property":
+                                    if (!getProperty(obj, args.shift()))
+                                        sendHelpMsg()
+                                    break
+                                case "state":
+                                    if (!getStateData(args))
+                                        sendHelpMsg()
+                                    break
+                                case "statekeys":
+                                    if (!getStateData(args, true))
+                                        sendHelpMsg()
+                                    break
+                                case "statevals": { // !get statevals name, id|VAMPIRE Media ...
+                                    returnVals = args.join(" ").split("|")[0].replace(/\s+/gu, "").split(",")
+                                    theseArgs = args.join(" ").split("|")[1].split(/\s+/gu)
+                                    if (!getStateData(theseArgs, returnVals))
+                                        sendHelpMsg()
+                                    break
+                                }
+                                case "page":
+                                    D.Alert(D.JS(Campaign().get("playerpageid")), "Page ID")
+                                    break
+                                default:
+                                    sendHelpMsg()
+                                    break
                             }
+                            break
                         }
-                    switch (args.shift().toLowerCase()) {
-                        case null:
-                            if (!getSelected(obj))
-                                sendHelpMsg()
-                            break
-                        case "all":
-                            if (!getSelected(obj, true))
-                                sendHelpMsg()
-                            break
-                        case "id":
-                            D.Alert(obj.id)
-                            break
-                        case "name":
-                            if (!getName(obj))
-                                sendHelpMsg()
-                            break
-                        case "gm":
-                            D.Alert(`The player ID of the GM is ${D.GMID()}`, "!GET GM")
-                            break
-                        case "img":
-                            if (!getImg(obj))
-                                sendHelpMsg()
-                            break
-                        case "chars":
-                        case "allchars":
-                            if (!getAllChars())
-                                sendHelpMsg()
-                            break
-                        case "char":
-                            if (!getChar(obj))
-                                sendHelpMsg()
-                            break
-                        case "pos": case "position":
-                            if (!getPos(obj))
-                                sendHelpMsg()
-                            break
-                        case "attrs":
-                            if (!getCharAttrs(args.shift() || obj))
-                                sendHelpMsg()
-                            break
-                        case "attr":
-                            if (!getCharAttrs(obj, _.compact(args.join(" ").replace(/(\[|,)/gu, "").replace(/\s+/gu, "|").
-                                split("|"))))
-                                sendHelpMsg()
-                            break
-                        case "prop":
-                        case "property":
-                            if (!getProperty(obj, args.shift()))
-                                sendHelpMsg()
-                            break
-                        case "state":
-                            if (!getStateData(args))
-                                sendHelpMsg()
-                            break
-                        case "statekeys":
-                            if (!getStateData(args, true))
-                                sendHelpMsg()
-                            break
-                        case "statevals": // !get statevals name, id|VAMPIRE Media ...
-                            returnVals = args.join(" ").split("|")[0].replace(/\s+/gu, "").split(","),
-                            theseArgs = args.join(" ").split("|")[1].split(/\s+/gu)
-                            if (!getStateData(theseArgs, returnVals))
-                                sendHelpMsg()
-                            break
-                        case "page":
-                            D.Alert(D.JS(Campaign().get("playerpageid")), "Page ID")
-                            break
-                        default:
-                            sendHelpMsg()
-                            break
+                        // no default
                     }
                     break
                 }
-                case "!set":
-                {
-                    switch (args.shift()) {
+                case "!set": {
+                    switch (D.LCase(call = args.shift())) {
                         case "pos": case "position":
                             if (D.GetSelected(msg)) {
                                 let [left, top] = [args.shift(), args.shift()]
-                                left = parseInt(left) || null
-                                top = parseInt(top) || null
-                                for (const obj of D.GetSelected(msg)) {
+                                left = D.Int(left) || null
+                                top = D.Int(top) || null
+                                for (const selObj of D.GetSelected(msg)) {
                                     if (left)
-                                        obj.set({left})
+                                        selObj.set({left})
                                     if (top)
-                                        obj.set({top})
+                                        selObj.set({top})
                                 }
                             }
                             break
@@ -166,7 +154,7 @@ const Chat = (() => {
                                     if (obj) {
                                         attrList = args.join(" ").split(/|\s*/gu)
                                         _.each(attrList, v => {
-                                            params[v.split(":")[0]] = parseInt(v.split(":")[1]) || v.split(":")[1]
+                                            params[v.split(":")[0]] = D.Int(v.split(":")[1]) || v.split(":")[1]
                                         })
                                         obj.set(params)
                                     }
@@ -176,8 +164,8 @@ const Chat = (() => {
                         case "text": {
                             switch (args.shift().toLowerCase()) {
                                 case "prep": {
-                                    const font = VAL({number: args[0]}) ? ["Candal", "Contrail One", "Arial", "Patrick Hand", "Shadows Into Light"][parseInt(args.shift())] : args.shift(),
-                                        sizes = _.map(args, v => parseInt(v)) || [20, 22, 26, 32, 40, 56, 72, 100]                        
+                                    const font = VAL({number: args[0]}) ? ["Candal", "Contrail One", "Arial", "Patrick Hand", "Shadows Into Light"][D.Int(args.shift())] : args.shift(),
+                                        sizes = _.map(args, v => D.Int(v)) || [20, 22, 26, 32, 40, 56, 72, 100]                        
                                     prepText(font, sizes)
                                     break
                                 }
@@ -205,8 +193,8 @@ const Chat = (() => {
                     }
                     break
                 }
-                case "!clear":
-                    switch (args.shift()) {
+                case "!clear": {
+                    switch (D.LCase(call = args.shift())) {
                         case "obj":
                             [objType, pattern] = [args.shift(), args.shift()]
                             objsToKill = _.filter(findObjs({
@@ -220,12 +208,12 @@ const Chat = (() => {
                             if (!clearStateData(args))
                                 sendHelpMsg()
                             break
-
-                    // no default
+                        // no default
                     }
                     break
-                case "!find":
-                    switch (args.shift()) {
+                }
+                case "!find": {
+                    switch (D.LCase(call = args.shift())) {
                         case "obj":
                         case "object":
                             [objType, objID] = [args.shift(), args.shift()]
@@ -244,6 +232,7 @@ const Chat = (() => {
                             break
                     }
                     break
+                }
             // no default
             }
         },
@@ -574,8 +563,8 @@ const Chat = (() => {
                 [font] = trueFont.split(" ")
                 D.CHARWIDTH[font] = D.CHARWIDTH[font] || {}
                 D.CHARWIDTH[font][size] = D.CHARWIDTH[font][size] || {}
-                D.CHARWIDTH[font][size][char] = parseInt(width * 100 / 40) / 100
-                D.CHARWIDTH[font][size].lineHeight = parseInt(height * 10) / 10
+                D.CHARWIDTH[font][size][char] = D.Int(width * 100 / 40) / 100
+                D.CHARWIDTH[font][size].lineHeight = D.Int(height * 10) / 10
             }
             if (trueFont !== font)
                 D.CHARWIDTH[trueFont] = D.CHARWIDTH[font]
@@ -586,7 +575,7 @@ const Chat = (() => {
                     charCount[fontName][fontSize] = `${_.keys(D.CHARWIDTH[fontName][fontSize]).length}: `
                     const colorList = ["red", "blue", "green", "purple"]
                     for (const char of ["M", "t", " ", "0"])
-                        charCount[fontName][fontSize] += `<span style="color: ${C.COLORS[colorList.pop()]};"><b>${char}</b>: ${parseInt(D.CHARWIDTH[fontName][fontSize][char] * 100)/100}</span>, `
+                        charCount[fontName][fontSize] += `<span style="color: ${C.COLORS[colorList.pop()]};"><b>${char}</b>: ${D.Int(D.CHARWIDTH[fontName][fontSize][char] * 100)/100}</span>, `
                     charCount[fontName][fontSize] = `${charCount[fontName][fontSize].slice(0, -2) }<br><b>Line Height: ${D.CHARWIDTH[fontName][fontSize].lineHeight}</b>`
                 }
             }
@@ -600,12 +589,11 @@ const Chat = (() => {
     // #endregion
 
     return {
-        RegisterEventHandlers: regHandlers
+        OnChatCall: onChatCall
     }
 })()
 
 on("ready", () => {
-    Chat.RegisterEventHandlers()
     D.Log("Chat Ready!")
 })
 void MarkStop("Chat")

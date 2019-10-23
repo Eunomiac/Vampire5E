@@ -4,8 +4,6 @@ void MarkStart("Fuzzy")
 const Fuzzy = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Fuzzy",
-        CHATCOMMAND = "!fuzzy",
-        GMONLY = true,
 
     // #region COMMON INITIALIZATION
         STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
@@ -18,42 +16,29 @@ const Fuzzy = (() => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             initialize()
         },
-        regHandlers = () => {
-            on("chat:message", msg => {
-                const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
-                    const who = msg.who || "API",
-                        call = args.shift()
-                    handleInput(msg, who, call, args)
-                }
-            })
-        },
     // #endregion
 
     // #region LOCAL INITIALIZATION
         initialize = () => { 
             STATEREF.minMatchScore = STATEREF.minMatchScore || 0.33
         },
-    // #endregion	
-
-    
+    // #endregion  
   
     // #region EVENT HANDLERS: (HANDLEINPUT)
-        handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
-        // const
+        onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             switch (call) {
                 case "set": {
-                    switch (args[0] && args.shift().toLowerCase() || "") {
+                    switch (D.LCase(call = args.shift())) {
                         case "minmatch": default: {
-                            if (args[0])
-                                STATEREF.minMatchScore = parseFloat(args.shift()) || 0.33
+                            STATEREF.minMatchScore = D.Float(args.shift()) || 0.33
                             break
                         }
                     }
+                    args.unshift(call)
                 }
             // falls through
                 case "get": {
-                    switch (args[0] && args.shift().toLowerCase() || "") {
+                    switch (D.LCase(call = args.shift())) {
                         case "minmatch": default: {
                             D.Alert(`Fuzzy Minimum Match Score is <b>${STATEREF.minMatchScore}</b><br><br>Default = 0.33; <b>!fuzzy set minmatch &lt;#&gt;</b> to change.`, "!fuzzy set minmatch")
                             break
@@ -67,6 +52,7 @@ const Fuzzy = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
+    /* eslint-disable */
         Fix = function(dict) {
             dict = dict || []
             const fuzzyset = {
@@ -342,16 +328,17 @@ const Fuzzy = (() => {
     
             return fuzzyset
         }
+    /* eslint-enable */
 
     return {
-        RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        OnChatCall: onChatCall,
+
         Fix
     }
 } )()
 
 on("ready", () => {
-    Fuzzy.RegisterEventHandlers()
     Fuzzy.CheckInstall()
     D.Log("Fuzzy Ready!")
 } )

@@ -100,34 +100,34 @@ const Char = (() => {
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
-            let charObjs = _.compact([...objects.characters || [], ...objects.selected && objects.selected.characters || []])
+            let charObjs = Listener.GetObjects(objects, "character")
             switch (call) {
                 case "reg": {
-                    switch(call = (args.shift() || "").toLowerCase()) {                        
+                    switch(D.LCase(call = args.shift())) {                        
                         case "char":
                             if (VAL({selection: msg}, "!char reg char"))
-                                registerChar(msg, parseInt(args.shift()), args.shift(), args.shift(), args.shift())
+                                registerChar(msg, D.Int(args.shift()), args.shift(), args.shift(), args.shift())
                             else
                                 D.Alert("Select character tokens first!  Syntax: !char reg char <shortName> <initial> <quadrant>", "!char reg char")
                             break
                         case "weekly": case "resource": case "weeklyresource": {
                             const resInitial = args.shift().toUpperCase(),
-                                resAmount = parseInt(args.pop()),
+                                resAmount = D.Int(args.pop()),
                                 resName = args.join(" ")
                             regResource(resInitial, resName, resAmount)
                             break
                         }
                         case "stake": {
-                            switch (call = (args.shift() || "").toLowerCase()) {
+                            switch (D.LCase(call = args.shift())) {
                                 case "coterie": {                                  
                                     const [name, value, max, date] = args.join(" ").split("|")
-                                    STATEREF.customStakes.coterie.push([name, parseInt(value), parseInt(max), date])
+                                    STATEREF.customStakes.coterie.push([name, D.Int(value), D.Int(max), date])
                                     break
                                 }
                                 default: {
                                     const initial = call,
                                         [name, value, max, date] = args.join(" ").split("|")
-                                    STATEREF.customStakes.personal[initial].push([name, parseInt(value), parseInt(max), date])
+                                    STATEREF.customStakes.personal[initial].push([name, D.Int(value), D.Int(max), date])
                                     break
                                 }
                             }
@@ -139,15 +139,15 @@ const Char = (() => {
                     break
                 }
                 case "unreg": {
-                    switch(call = (args.shift() || "").toLowerCase()) {  
+                    switch(D.LCase(call = args.shift())) {  
                         case "char":
                             unregisterChar(args.shift())
                             break                      
                         case "weekly": case "resource": case "weeklyresource":
-                            unregResource(args.shift(), parseInt(args.shift()))
+                            unregResource(args.shift(), D.Int(args.shift()))
                             break
                         case "stake": {
-                            switch (call = (args.shift() || "").toLowerCase()) {
+                            switch (D.LCase(call = args.shift())) {
                                 case "coterie": {
                                     STATEREF.customStakes.coterie = STATEREF.customStakes.coterie.filter(x => x[0].toLowerCase() !== args.join(" ").toLowerCase())
                                     break
@@ -166,7 +166,7 @@ const Char = (() => {
                     break
                 }
                 case "get": {
-                    switch (call = (args.shift() || "").toLowerCase()) {
+                    switch (D.LCase(call = args.shift())) {
                         case "stat": {
                             if (args.length) {
                                 const traitName = args[0].toLowerCase() === "selected" && STATEREF.traitSelection.shift() || args.shift(),
@@ -184,7 +184,7 @@ const Char = (() => {
                                                 const statData = D.GetStat(thisCharObj, traitName, true) || D.GetRepStat(thisCharObj, "*", null, traitName, true);
                                                 [name, traitVal] = [
                                                     VAL({pc: thisCharObj}) ? `<b>${D.GetName(thisCharObj, true).toUpperCase()}</b>` : D.GetName(thisCharObj, true),
-                                                    parseInt(statData && statData[0] || statData && statData.val) ? "●".repeat(parseInt(statData && statData[0] || statData && statData.val)) : "~"
+                                                    D.Int(statData && (statData[0] || statData.val)) ? "●".repeat(D.Int(statData && (statData[0] || statData.val))) : "~"
                                                 ]
                                             }
                                         } else {
@@ -215,7 +215,7 @@ const Char = (() => {
                                         C.CHATHTML.Body(returnLines.join("<br>"), {color: C.COLORS.white, fontWeight: "normal", fontFamily: "Voltaire", fontSize: "12px", textAlign: "left"})
                                     ].join(""))}`))
                             } else {
-                                promptTraitSelect(objects.characters.map(x => x.id).join(","), null, "!char @@CHARIDS@@ get stat @@TRAITNAME@@")
+                                promptTraitSelect(charObjs.map(x => x.id).join(","), null, "!char @@CHARIDS@@ get stat @@TRAITNAME@@")
                             }
                             break
                         }
@@ -224,10 +224,10 @@ const Char = (() => {
                     break
                 }
                 case "lock": case "unlock": {
-                    switch(call = (args.shift() || "").toLowerCase()) {
+                    switch(D.LCase(call = args.shift())) {
                         case "weekly": case "resource": case "weeklyresource": {
                             if (args.length === 3) {
-                                const [init, rowNum, amount] = [args.shift().toUpperCase(), parseInt(args.shift()), parseInt(args.shift())],
+                                const [init, rowNum, amount] = [args.shift().toUpperCase(), D.Int(args.shift()), D.Int(args.shift())],
                                     [curTot, curLock] = [STATEREF.weeklyResources[init][rowNum - 1][2], STATEREF.weeklyResources[init][rowNum - 1][3]],
                                     newLock = Math.max(0, Math.min(curTot, curLock + (call === "lock" ? amount : -amount)))
                                 STATEREF.weeklyResources[init][rowNum - 1][3] = newLock
@@ -242,7 +242,7 @@ const Char = (() => {
                     break
                 }
                 case "set": {
-                    switch (call = (args.shift() || "").toLowerCase()) {
+                    switch (D.LCase(call = args.shift())) {
                         case "daysleep": {
                             setDaysleepAlarm()
                             break
@@ -264,7 +264,7 @@ const Char = (() => {
                         case "xp": {
                             DB(`!char xp COMMAND RECEIVED<br><br>Characters: ${D.JS(_.map(charObjs, v => v.get("name")))}`, "!char set xp")
                             if (VAL({charObj: charObjs}, "!char set xp", true)) {
-                                const amount = parseInt(args.shift()) || 0
+                                const amount = D.Int(args.shift())
                                 for (const charObj of charObjs)
                                     if (awardXP(charObj, amount, args.join(" ")))
                                         D.Alert(`${amount} XP awarded to ${D.GetName(charObj)}`, "!char set xp")
@@ -274,14 +274,14 @@ const Char = (() => {
                             break
                         }                                               
                         case "weekly": case "resource": case "weeklyresource": {
-                            switch (call = (args.shift() || "").toLowerCase()) {
+                            switch (D.LCase(call = args.shift())) {
                                 case "reset": {
                                     resetResources()
                                     break
                                 } 
                                 default: {
                                     if (args.length === 2)
-                                        adjustResource(charObjs[0], parseInt(args.shift()), parseInt(args.shift()))
+                                        adjustResource(charObjs[0], D.Int(args.shift()), D.Int(args.shift()))
                                     else                           
                                         D.Alert("Syntax:<br><br><b>!char reg (initial) (name) (total)<br>!char unreg/set/lock/unlock (initial) (rowNum) [amount]<br>!char set weekly reset</b>")
                                     break
@@ -300,7 +300,7 @@ const Char = (() => {
                     break
                 }
                 case "clear": {
-                    switch (call = (args.shift() || "").toLowerCase()) {
+                    switch (D.LCase(call = args.shift())) {
                         case "npc": {
                             for (const charObj of charObjs)
                                 setCharNPC(charObj, "base")                                  
@@ -311,7 +311,7 @@ const Char = (() => {
                     break
                 }
                 case "list": {
-                    switch (call = (args.shift() || "").toLowerCase()) {
+                    switch (D.LCase(call = args.shift())) {
                         case "reg": case "registry": case "registered": {
                             D.Alert(REGISTRY, "Registered Player Characters")
                             break
@@ -345,7 +345,7 @@ const Char = (() => {
                             case "hunger": {
                                 if (args.length) 
                                     for (const charObj of charObjs)
-                                        adjustHunger(charObj, parseInt(args[0]) || 0, isKilling)
+                                        adjustHunger(charObj, D.Int(args[0]), isKilling)
                                 else 
                                     promptNumber(`${fullCommand} @@AMOUNT@@`)                                
                                 break
@@ -361,7 +361,7 @@ const Char = (() => {
                             trait = args.shift().toLowerCase(),
                             dtype = ["hum", "humanity", "stain", "stains"].includes(trait) ? null : args.shift()
                         if (args.length) {
-                            const dmg = (call === "heal" ? -1 : 1) * parseInt(args.shift()) || 0
+                            const dmg = (call === "heal" ? -1 : 1) * D.Int(args.shift())
                             for (const charObj of charObjs)
                                 if (!adjustDamage(charObj, trait, dtype, dmg))
                                     THROW(`FAILED to damage ${D.GetName(charObj)}`, "!char dmg")
@@ -372,7 +372,7 @@ const Char = (() => {
                     break
                 }
                 case "process": {
-                    switch (call = (args.shift() || "").toLowerCase()) {
+                    switch (D.LCase(call = args.shift())) {
                         case "defaults": {
                             populateDefaults(args.shift())
                             break
@@ -387,7 +387,7 @@ const Char = (() => {
                                 npcHungers = npcVamps.map(x => [
                                     x[1],
                                     x[0],
-                                    Math.max(parseInt(getAttrByName(x[1], "bp_slakekill")) + randomInteger(5 - parseInt(getAttrByName(x[1], "bp_slakekill"))) - 2, parseInt(getAttrByName(x[1], "bp_slakekill")))                                    
+                                    Math.max(D.Int(getAttrByName(x[1], "bp_slakekill")) + randomInteger(5 - D.Int(getAttrByName(x[1], "bp_slakekill"))) - 2, D.Int(getAttrByName(x[1], "bp_slakekill")))                                    
                                 ])
                             for (const hungerData of npcHungers)
                                 setAttrs(hungerData[0], {hunger: hungerData[2]})
@@ -402,7 +402,7 @@ const Char = (() => {
                     break
                 }
                 case "send": {
-                    switch (call = (args.shift() || "").toLowerCase()) {
+                    switch (D.LCase(call = args.shift())) {
                         case "home": {
                             sendCharsHome()
                             break
@@ -422,7 +422,7 @@ const Char = (() => {
                     break
                 }
                 case "select": {
-                    switch(call = (args.shift() || "").toLowerCase()) {
+                    switch(D.LCase(call = args.shift())) {
                         case "trait": {
                             if (args.length) {
                                 const thisTrait = args.shift().toLowerCase()
@@ -445,10 +445,10 @@ const Char = (() => {
                         }
                         default: {
                             // D.Alert(`Args: ${D.JS(args.join(","))}`)
-                            if (call === "")
-                                promptCharSelect()
+                            if (charObjs.length)
+                                promptActionMenu(charObjs)
                             else
-                                promptActionMenu(call)
+                                promptCharSelect()                                
                             break
                         }
                     }
@@ -457,8 +457,8 @@ const Char = (() => {
             // no default
             }
         },
-        onAttrChange = (call, attrObj, prevData) => {
-            switch (attrObj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")) {
+        onAttrChange = (call, attrObj) => {
+            switch (call) {
                 case "hunger": {
                     const hungerLevel = attrObj.get("current")
                     Media.SetImg(`Hunger${getAttrByName(attrObj.get("_characterid"), "sandboxquadrant")}_1`, hungerLevel === "0" ? "blank" : hungerLevel)
@@ -479,13 +479,22 @@ const Char = (() => {
                 // no default
             }
         },
-        onAttrAdd = (attrObj) => {
-            if (attrObj.get("name").includes("projectstake"))
-                displayStakes()
-            else if (attrObj.get("name").includes("triggertimelinesort"))
-                sortTimeline(attrObj.get("_characterid"))
-            else if (attrObj.get("name").includes("desire"))
-                displayDesires({charID: attrObj.get("_characterid"), val: attrObj.get("current")})
+        onAttrAdd = (call, attrObj) => {
+            switch (call) {
+                case "desire": case "_reporder_repeating_desire": {
+                    displayDesires({charID: attrObj.get("_characterid"), val: attrObj.get("current")})
+                    break
+                }
+                case "projectstake1": case "projectstake2": case "projectstake3": case "projectstake1_name": case "projectstake2_name": case "projectstake3_name": {
+                    displayStakes()
+                    break
+                }
+                case "triggertimelinesort": {
+                    sortTimeline(attrObj.get("_characterid"))
+                    break
+                }
+                // no default
+            }
         },
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
@@ -582,30 +591,36 @@ const Char = (() => {
         isCharActive = (charRef) => (D.GetCharData(charRef) || {isActive: null}).isActive,    
         getCharIDString = (charsRef) => {
             const charIDs = []
-            switch(charsRef.toLowerCase()) {
-                case "registered": {
-                    charIDs.push(...D.GetChars("registered").map(x => x.id))
-                    break
+            D.Alert(`CharsRef: ${D.JS(charsRef)}<br><br>CharIDs: ${D.JS(charsRef.map(x => x.id || "Huh?"))}<br><br>CharID Final: ${D.JS(charIDs)}`)
+            if (!charsRef || !charsRef.length)
+                return ""
+            if (VAL({charObj: charsRef}, "getCharIDString", true))
+                charIDs.push(...charsRef.map(x => x.id))
+            else
+                switch(charsRef.toLowerCase()) {
+                    case "registered": {
+                        charIDs.push(...D.GetChars("registered").map(x => x.id))
+                        break
+                    }
+                    case "npcs": {
+                        charIDs.push(...D.GetChars("sandbox").filter(x => VAL({npc: x})).map(x => x.id))
+                        break
+                    }
+                    case "pcs": {
+                        charIDs.push(...D.GetChars("sandbox").filter(x => VAL({pc: x})).map(x => x.id))
+                        break
+                    }
+                    case "sandbox": {
+                        charIDs.push(...D.GetChars("sandbox").map(x => x.id))
+                        break
+                    }
+                    default: {
+                        for (const id of charsRef.split(",").map(x => x.trim()))
+                            if (getObj("character", id))
+                                charIDs.push(id)
+                        break
+                    }
                 }
-                case "npcs": {
-                    charIDs.push(...D.GetChars("sandbox").filter(x => VAL({npc: x})).map(x => x.id))
-                    break
-                }
-                case "pcs": {
-                    charIDs.push(...D.GetChars("sandbox").filter(x => VAL({pc: x})).map(x => x.id))
-                    break
-                }
-                case "sandbox": {
-                    charIDs.push(...D.GetChars("sandbox").map(x => x.id))
-                    break
-                }
-                default: {
-                    for (const id of charsRef.split(",").map(x => x.trim()))
-                        if (getObj("character", id))
-                            charIDs.push(id)
-                    break
-                }
-            }
             return charIDs.join(",")
         },
         promptCharSelect = () => {
@@ -967,7 +982,7 @@ const Char = (() => {
             }            
         },
         regResource = (charRef, name, amount) => {
-            const initial = ((D.GetCharData(charRef) || {initial: false}).initial || "").toUpperCase()
+            const initial = D.UCase((D.GetCharData(charRef) || {initial: false}).initial)
             if (initial !== "") {
                 STATEREF.weeklyResources[initial] = STATEREF.weeklyResources[initial] || []
                 STATEREF.weeklyResources[initial].push([name, 0, amount])
@@ -975,7 +990,7 @@ const Char = (() => {
             displayResources()
         },
         unregResource = (charRef, rowNum) => {
-            const initial = ((D.GetCharData(charRef) || {initial: false}).initial || "").toUpperCase()
+            const initial = D.UCase((D.GetCharData(charRef) || {initial: false}).initial)
             if (initial !== "")
                 if (STATEREF.weeklyResources[initial].length <= 1 && rowNum === 1)
                     delete STATEREF.weeklyResources[initial]
@@ -984,7 +999,7 @@ const Char = (() => {
             displayResources()
         },
         adjustResource = (charRef, rowNum, amount) => {
-            const initial = ((D.GetCharData(charRef) || {initial: false}).initial || "").toUpperCase()
+            const initial = D.UCase((D.GetCharData(charRef) || {initial: false}).initial)
             if (initial !== "") {
                 D.Alert(`Adjusting: ${initial}, ${rowNum}, ${amount}`)
                 const entry = STATEREF.weeklyResources[initial] && STATEREF.weeklyResources[initial][rowNum - 1]
@@ -1064,18 +1079,18 @@ const Char = (() => {
                     }<br>... RepStats (Coterie): ${D.JS(_.keys(coterieAdvs), true)
                     }<br>... Parsed End Date (${D.JS(TimeTracker.GetDate(endDate).getTime())}) vs. Current Date (${TimeTracker.CurrentDate.getTime()
                     }<br>... Comparing: ${TimeTracker.CurrentDate.getTime() < TimeTracker.GetDate(endDate).getTime()}`, "displayStakes")
-                    if (advMax && parseInt(stake.val) > 0 && TimeTracker.CurrentDate.getTime() < TimeTracker.GetDate(endDate).getTime())
+                    if (advMax && D.Int(stake.val) > 0 && TimeTracker.CurrentDate.getTime() < TimeTracker.GetDate(endDate).getTime())
                         if (_.keys(coterieAdvs).includes(stake.name))
                             coterieStakes[stake.name] = {
                                 name: stake.name,
-                                total: (coterieStakes[stake.name] && coterieStakes[stake.name].total || 0) + parseInt(stake.val),
+                                total: (coterieStakes[stake.name] && coterieStakes[stake.name].total || 0) + D.Int(stake.val),
                                 inits: _.uniq([...(coterieStakes[stake.name] || {inits: []}).inits, initial]),
                                 dates: _.uniq([...(coterieStakes[stake.name] || {dates: []}).dates, endDate]),
                                 dateStamp: [...(coterieStakes[stake.name] || {dateStamp: []}).dateStamp, TimeTracker.GetDate(endDate).getTime()],
-                                max: parseInt(advMax)
+                                max: D.Int(advMax)
                             }
                         else
-                            stakeData.push([initial, stake.name, Math.min(parseInt(stake.val), advMax), parseInt(advMax), endDate])
+                            stakeData.push([initial, stake.name, Math.min(D.Int(stake.val), advMax), D.Int(advMax), endDate])
                 }
                 for (const stake of STATEREF.customStakes.personal[initial]) {
                     const [name, val, max, dateStamp] = [stake[0], stake[1], stake[2], TimeTracker.GetDate(stake[3])]
@@ -1203,8 +1218,8 @@ const Char = (() => {
                         banner: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {margin: "0px", fontSize: "12px"}) : {margin: "0px", fontSize: "12px"},
                         alert: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {}) : {}
                     },
-                    initTraitVal = VAL({number: parseInt(D.GetStatVal(charObj, trait))}) ? parseInt(D.GetStatVal(charObj, trait)) : defaultTraitVal || 0,
-                    finalTraitVal = Math.min(max, Math.max(min, initTraitVal + parseInt(amount)))
+                    initTraitVal = VAL({number: D.Int(D.GetStatVal(charObj, trait))}) ? D.Int(D.GetStatVal(charObj, trait)) : defaultTraitVal || 0,
+                    finalTraitVal = Math.min(max, Math.max(min, initTraitVal + D.Int(amount)))
                 amount = finalTraitVal - initTraitVal
                 let [bannerString, bodyString, alertString, trackerString] = ["", "", null, ""]
                 DB(`Adjusting Trait: (${D.JS(trait)}, ${D.JS(amount)}, ${D.JS(min)}, ${D.JS(max)}, ${D.JS(defaultTraitVal)}, ${D.JS(deltaType)})
@@ -1233,9 +1248,9 @@ const Char = (() => {
                     case "willpower_sdmg": case "willpower_sdmg_social":
                         if (amount > 0) {
                             const [maxWP, curBashing, curAggravated] = [
-                                    parseInt(D.GetStat(charObj, "willpower_max")[0]),
-                                    parseInt(D.GetStat(charObj, "willpower_bashing")[0]),
-                                    parseInt(D.GetStat(charObj, "willpower_aggravated")[0])
+                                    D.Int(D.GetStat(charObj, "willpower_max")[0]),
+                                    D.Int(D.GetStat(charObj, "willpower_bashing")[0]),
+                                    D.Int(D.GetStat(charObj, "willpower_aggravated")[0])
                                 ],
                                 [newBashing, newAggravated, isOverLimit] = parseDmgTypes(maxWP, curBashing, curAggravated, amount, 0)
                             DB(`MaxWP: ${maxWP}, CurBash: ${curBashing}, CurAggr: ${curAggravated}<br>... Dealing ${amount} --> newBash: ${newBashing}, newAggr: ${newAggravated}`, "adjustTrait")
@@ -1259,16 +1274,16 @@ const Char = (() => {
                                 alertString = "EXHAUSTED: -2 to Social & Mental rolls."
                             }
                             trackerString = C.CHATHTML.TrackerLine(maxWP - newBashing - newAggravated, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
-                        } else if (Math.min(parseInt(D.GetStat(charObj, "willpower_bashing")[0]), Math.abs(amount))) {
-                            bannerString = `You regain ${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "willpower_bashing")[0]), Math.abs(amount))).toLowerCase()} Willpower.`                            
+                        } else if (Math.min(D.Int(D.GetStat(charObj, "willpower_bashing")[0]), Math.abs(amount))) {
+                            bannerString = `You regain ${D.NumToText(Math.min(D.Int(D.GetStat(charObj, "willpower_bashing")[0]), Math.abs(amount))).toLowerCase()} Willpower.`                            
                         }                        
                         break
                     case "willpower_admg": case "willpower_admg_social":
                         if (amount > 0) {
                             const [maxWP, curBashing, curAggravated] = [
-                                    parseInt(D.GetStat(charObj, "willpower_max")[0]),
-                                    parseInt(D.GetStat(charObj, "willpower_bashing")[0]),
-                                    parseInt(D.GetStat(charObj, "willpower_aggravated")[0])
+                                    D.Int(D.GetStat(charObj, "willpower_max")[0]),
+                                    D.Int(D.GetStat(charObj, "willpower_bashing")[0]),
+                                    D.Int(D.GetStat(charObj, "willpower_aggravated")[0])
                                 ],
                                 [newBashing, newAggravated, isOverLimit] = parseDmgTypes(maxWP, curBashing, curAggravated, 0, amount)
                             DB(`MaxWP: ${maxWP}, CurBash: ${curBashing}, CurAggr: ${curAggravated}<br>... Dealing ${amount} --> newBash: ${newBashing}, newAggr: ${newAggravated}`, "adjustTrait")
@@ -1281,17 +1296,17 @@ const Char = (() => {
                                 alertString = "EXHAUSTED: -2 to Social & Mental rolls."            
                             }
                             trackerString = C.CHATHTML.TrackerLine(maxWP - newBashing - newAggravated, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"}) 
-                        } else if (Math.min(parseInt(D.GetStat(charObj, "willpower_aggravated")[0]), Math.abs(amount))) {
-                            bannerString = `${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "willpower_aggravated")[0]), Math.abs(amount)))} aggravated Willpower damage downgraded.`                            
+                        } else if (Math.min(D.Int(D.GetStat(charObj, "willpower_aggravated")[0]), Math.abs(amount))) {
+                            bannerString = `${D.NumToText(Math.min(D.Int(D.GetStat(charObj, "willpower_aggravated")[0]), Math.abs(amount)))} aggravated Willpower damage downgraded.`                            
                         }
                         
                         break
                     case "health_sdmg":
                         if (amount > 0) {
                             const [maxHealth, curBashing, curAggravated] = [
-                                    parseInt(D.GetStat(charObj, "health_max")[0]),
-                                    parseInt(D.GetStat(charObj, "health_bashing")[0]),
-                                    parseInt(D.GetStat(charObj, "health_aggravated")[0])
+                                    D.Int(D.GetStat(charObj, "health_max")[0]),
+                                    D.Int(D.GetStat(charObj, "health_bashing")[0]),
+                                    D.Int(D.GetStat(charObj, "health_aggravated")[0])
                                 ],
                                 [newBashing, newAggravated, isOverLimit] = parseDmgTypes(maxHealth, curBashing, curAggravated, amount, 0)
                             DB(`MaxHealth: ${maxHealth}, CurBash: ${curBashing}, CurAggr: ${curAggravated}<br>... Dealing ${amount} --> newBash: ${newBashing}, newAggr: ${newAggravated}`, "adjustTrait")
@@ -1311,16 +1326,16 @@ const Char = (() => {
                                 alertString = "WOUNDED: -2 to Physical rolls."
                             }
                             trackerString = C.CHATHTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})                 
-                        } else if (Math.min(parseInt(D.GetStat(charObj, "health_bashing")[0]), Math.abs(amount))) {
-                            bannerString = `You heal ${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "health_bashing")[0]), Math.abs(amount))).toLowerCase()} superficial Health damage.` 
+                        } else if (Math.min(D.Int(D.GetStat(charObj, "health_bashing")[0]), Math.abs(amount))) {
+                            bannerString = `You heal ${D.NumToText(Math.min(D.Int(D.GetStat(charObj, "health_bashing")[0]), Math.abs(amount))).toLowerCase()} superficial Health damage.` 
                         }
                         break
                     case "health_admg":
                         if (amount > 0) {
                             const [maxHealth, curBashing, curAggravated] = [
-                                    parseInt(D.GetStat(charObj, "health_max")[0]),
-                                    parseInt(D.GetStat(charObj, "health_bashing")[0]),
-                                    parseInt(D.GetStat(charObj, "health_aggravated")[0])
+                                    D.Int(D.GetStat(charObj, "health_max")[0]),
+                                    D.Int(D.GetStat(charObj, "health_bashing")[0]),
+                                    D.Int(D.GetStat(charObj, "health_aggravated")[0])
                                 ],
                                 [newBashing, newAggravated, isOverLimit] = parseDmgTypes(maxHealth, curBashing, curAggravated, 0, amount)
                             DB(`MaxHealth: ${maxHealth}, CurBash: ${curBashing}, CurAggr: ${curAggravated}<br>... Dealing ${amount} --> newBash: ${newBashing}, newAggr: ${newAggravated}<br>... IsOverLimit? ${D.JS(isOverLimit)}`, "adjustTrait")
@@ -1332,8 +1347,8 @@ const Char = (() => {
                                 alertString = "WOUNDED: -2 to Physical rolls."
                             }                       
                             trackerString = C.CHATHTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
-                        } else if (Math.min(parseInt(D.GetStat(charObj, "health_aggravated")[0]), Math.abs(amount))) {
-                            bannerString = `${D.NumToText(Math.min(parseInt(D.GetStat(charObj, "health_aggravated")[0]), Math.abs(amount)))} aggravated Health damage downgraded.`                  
+                        } else if (Math.min(D.Int(D.GetStat(charObj, "health_aggravated")[0]), Math.abs(amount))) {
+                            bannerString = `${D.NumToText(Math.min(D.Int(D.GetStat(charObj, "health_aggravated")[0]), Math.abs(amount)))} aggravated Health damage downgraded.`                  
                         }
                         break
                     // no default
@@ -1351,23 +1366,23 @@ const Char = (() => {
             return false
         },
         adjustDamage = (charRef, trait, dType, delta, isChatting = true) => {
-            const amount = parseInt(delta),
+            const amount = D.Int(delta),
                 charObj = D.GetChar(charRef),
                 dmgType = dType
-            let [minVal, maxVal, targetVal, defaultVal, traitName, deltaType] = [0, 5, parseInt(amount), 0, "", ""]
+            let [minVal, maxVal, targetVal, defaultVal, traitName, deltaType] = [0, 5, D.Int(amount), 0, "", ""]
             if (VAL({charObj: [charObj], number: [amount]}, "AdjustDamage", true)) {
                 switch (trait.toLowerCase()) {
                     case "hum": case "humanity":
-                        [minVal, maxVal, targetVal, defaultVal, traitName] = [0, 10, parseInt(amount), 7, "humanity"]
+                        [minVal, maxVal, targetVal, defaultVal, traitName] = [0, 10, D.Int(amount), 7, "humanity"]
                         break
                     case "stain": case "stains":
-                        [minVal, maxVal, targetVal, defaultVal, traitName] = [0, 10, parseInt(amount), 0, "stains"]
+                        [minVal, maxVal, targetVal, defaultVal, traitName] = [0, 10, D.Int(amount), 0, "stains"]
                         break
                     case "health": case "willpower": case "wp": {
                         [minVal, maxVal, targetVal, defaultVal, traitName, deltaType] = [
                             -Infinity,
                             Infinity,
-                            parseInt(amount) >= 0 && dmgType.endsWith("superficial") ? parseInt(Math.ceil(amount / 2)) : parseInt(amount),
+                            D.Int(amount) >= 0 && dmgType.endsWith("superficial") ? D.Int(Math.ceil(amount / 2)) : D.Int(amount),
                             0,
                             trait.toLowerCase() + (["superficial", "superficial+", "spent"].includes(dmgType.replace(/social_/gu, "")) ? "_sdmg" : "_admg") + (dmgType.includes("social") ? "_social" : ""),
                             dmgType.replace(/social_/gu, "")
@@ -1387,11 +1402,18 @@ const Char = (() => {
             return false
         },
         adjustHunger = (charRef, amount, isKilling = false, isChatting = true) => {
-            if (!VAL({char: [charRef], number: [amount], trait: ["bp_slakekill"]}, "AdjustHunger", true))
-                return false
-            if (adjustTrait(charRef, "hunger", parseInt(amount), (isKilling || parseInt(amount) > 0) ? 0 : parseInt(D.GetStat(charRef, "bp_slakekill") && D.GetStat(charRef, "bp_slakekill")[0] || 1), 5, 1, null, isChatting))
-                return true
-            return false
+            if (VAL({char: [charRef], number: [amount], trait: ["bp_slakekill"]}, "AdjustHunger", true))
+                return adjustTrait(
+                    charRef, 
+                    "hunger", 
+                    D.Int(amount), 
+                    isKilling || D.Int(amount) > 0 ? 0 : D.Int(D.GetStat(charRef, "bp_slakekill") && D.GetStat(charRef, "bp_slakekill")[0] || 1),
+                    5,
+                    1,
+                    null,
+                    isChatting
+                )
+            return false            
         },
         sortTimeline = (charRef) => {
             D.SortRepSec(charRef, "timeline", "tlsortby", true, val => val || -200)
@@ -1414,8 +1436,8 @@ const Char = (() => {
             attrList[p("projectlaunchroll_toggle")] = 2
             attrList[p("projectlaunchresults")] = resultString
             attrList[p("projectstakes_toggle")] = 1
-            attrList[p("projecttotalstake")] = parseInt(scope) + 1 - margin
-            attrList[p("projectlaunchresultsmargin")] = `${parseInt(scope) + 1 - margin} Stake Required, (${parseInt(scope) + 1 - margin} to Go)`
+            attrList[p("projecttotalstake")] = D.Int(scope) + 1 - margin
+            attrList[p("projectlaunchresultsmargin")] = `${D.Int(scope) + 1 - margin} Stake Required, (${D.Int(scope) + 1 - margin} to Go)`
             setAttrs(charObj.id, attrList)
         },
     // #endregion
@@ -1438,7 +1460,7 @@ const Char = (() => {
         },
         daysleep = () => {
             for (const char of D.GetChars("registered")) {
-                const healWP = Math.max(parseInt(getAttrByName(char.id, "composure")), parseInt(getAttrByName(char.id, "resolve")))
+                const healWP = Math.max(D.Int(getAttrByName(char.id, "composure")), D.Int(getAttrByName(char.id, "resolve")))
                 adjustDamage(char, "willpower", "superficial+", -1 * healWP)
             }
         },
@@ -1465,11 +1487,11 @@ const Char = (() => {
                 npcStats = JSON.parse(NPCSTATS),
                 npcDefaults = JSON.parse(NPCDEFAULTS)
             _.each(npcDefaults, (v, k) => { attrList[k] = v })
-            if (_.isNaN(parseInt(charRef))) {
+            if (_.isNaN(D.Int(charRef))) {
                 charIDs.push(D.GetChar(charRef).id)
             } else {
-                charIDs.push(..._.keys(npcStats).slice(parseInt(charRef), parseInt(charRef) + 10))
-                D.Alert(`Setting Defaults on characters ${parseInt(charRef)} - ${parseInt(charRef) + 10} of ${_.keys(npcStats).length} ...`)
+                charIDs.push(..._.keys(npcStats).slice(D.Int(charRef), D.Int(charRef) + 10))
+                D.Alert(`Setting Defaults on characters ${D.Int(charRef)} - ${D.Int(charRef) + 10} of ${_.keys(npcStats).length} ...`)
             }
             const reportLine = []
             for (const charID of charIDs) {
@@ -1545,7 +1567,7 @@ const Char = (() => {
                         errorLog += `<br>Duplicate Skill(s) on ${D.GetName(charID)}: ${_.sortBy(skillDupeCheck, v => v).join(" ")}`
                     else
                         for (const skillAbv of _.keys(C.SKILLABBVS))
-                            attrList[C.SKILLABBVS[skillAbv]] = parseInt(_.findKey(charData.skills, v => v.includes(skillAbv)) || 0)
+                            attrList[C.SKILLABBVS[skillAbv]] = D.Int(_.findKey(charData.skills, v => v.includes(skillAbv)))
 
 
                 }
@@ -1567,7 +1589,7 @@ const Char = (() => {
                             repDiscs[discData.name] = {
                                 sec: section,
                                 rowID,
-                                val: parseInt(discData.val) || 0
+                                val: D.Int(discData.val)
                             }
                         else
                             D.DeleteRow(charID, section, rowID)
@@ -1586,13 +1608,13 @@ const Char = (() => {
                             const discName = C.DISCABBVS[discAbv]
                             if (_.keys(repDiscs).includes(discName))
                                 if (_.findKey(charData.otherdiscs, v => v.includes(discAbv)))
-                                    attrList[`repeating_${repDiscs[discName].sec}_${repDiscs[discName].rowID}_disc`] = parseInt(_.findKey(charData.otherdiscs, v => v.includes(discAbv)))
+                                    attrList[`repeating_${repDiscs[discName].sec}_${repDiscs[discName].rowID}_disc`] = D.Int(_.findKey(charData.otherdiscs, v => v.includes(discAbv)))
                                 else {
                                     D.DeleteRow(charID, repDiscs[discName].sec, repDiscs[discName].rowID)
                                     rowCount[repDiscs[discName].sec]--
                                 }
                             else if (_.findKey(charData.otherdiscs, v => v.includes(discAbv)))
-                                otherDiscs.push([discName, parseInt(_.findKey(charData.otherdiscs, v => v.includes(discAbv)))])
+                                otherDiscs.push([discName, D.Int(_.findKey(charData.otherdiscs, v => v.includes(discAbv)))])
 
                         }
                         while (otherDiscs.length) {
@@ -1608,7 +1630,7 @@ const Char = (() => {
                 attrList.rollpooldisplay = ""
                 setAttrs(charID, attrList, {}, () => {
                     // D.Alert("Callback Function Passed!")
-                    setAttrs(charID, {hunger: Math.max(1, parseInt(getAttrByName("bp_slakekill")))})
+                    setAttrs(charID, {hunger: Math.max(1, D.Int(getAttrByName("bp_slakekill")))})
                 })
                 D.Alert(`ATTRLIST FOR ${D.GetName(charID)}:<br><br>${D.JS(attrList)}`)
             }

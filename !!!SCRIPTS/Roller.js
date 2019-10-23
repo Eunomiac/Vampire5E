@@ -43,14 +43,14 @@ const Roller = (() => {
     // #region EVENT HANDLERS: (ONCHATCALL)
         onChatCall = (call, args, objects, msg) => {
             let rollType, charName, charObj,
-                [params, charObjs] = [ [], _.compact([...objects.characters || [], ...objects.selected && objects.selected.characters || []]) ]
+                [params, charObjs] = [ [], Listener.GetObjects(objects, "character") ]
             if (!charObjs.length)
                 charObjs = D.GetChars("registered")
             switch (call) {
                 case "dice": {
                     [charObj] = charObjs
                     if (VAL({charObj, array: args}, "!roll dice"))
-                        switch(call = (args.shift() || "").toLowerCase()) {
+                        switch(D.LCase(call = args.shift())) {
                             case "frenzyinit": {	// !roll dice project @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
                                 lockRoller(true)
                                 STATEREF.frenzyRoll = `${args.join(" ").split("|")[0]}|`
@@ -103,7 +103,7 @@ const Roller = (() => {
                                         isHidingOutcome: false
                                     };
                                 [charObj] = getRollChars([charObj])
-                                DB(`Fixed Char: ${D.JS(charObj)}`, "handleInput")
+                                DB(`Fixed Char: ${D.JSL(charObj)}`, "handleInput")
                                 if (STATEREF.isNextRollNPC && playerIsGM(msg.playerid)) {
                                     STATEREF.isNextRollNPC = false
                                     makeNewRoll(charObj, rollType, params, Object.assign(rollFlags, {isDiscRoll: call === "disc", isNPCRoll: true, isOblivionRoll: STATEREF.oblivionRouse === true || call.includes("obv")}))
@@ -129,15 +129,15 @@ const Roller = (() => {
                         Char.PromptTraitSelect(charObjs.map(x => x.id).join(","), "!roll @@CHARIDS@@ secret selected")
                     } else {
                         params = args[0] === "selected" && Char.SelectedTraits || args.join(" ").split("|").map(x => x.trim())
-                        charObjs = getRollChars(charObjs)             
-                        makeSecretRoll(charObjs, params)
+                        charObjs = getRollChars(charObjs)
+                        makeSecretRoll(charObjs, params.join(","))
                     }
                     break
                 }
                 case "quick": {
                     [charObj] = getRollChars([charObjs[0]])
                     if(VAL({charObj}, "!roll quick"))
-                        switch ((args.shift() || "").toLowerCase()) {
+                        switch (D.LCase(call = args.shift())) {
                             case "rouse": {
                                 const isObvRouse = args.shift() === "true",
                                     isDoubleRouse = args[0] === "true"
@@ -158,7 +158,7 @@ const Roller = (() => {
                 }
                 case "set": {
                     if (!playerIsGM(msg.playerid)) break
-                    switch(call = (args.shift() || "").toLowerCase()) {
+                    switch(D.LCase(call = args.shift())) {
                         case "pc": {
                             [charObj] = getRollChars([charObjs[0]])
                             if (VAL({charObj}, "!roll set pc")) {
@@ -177,7 +177,7 @@ const Roller = (() => {
                             break
                         }
                         case "secrecy": {
-                            switch ((args.shift() || "").toLowerCase()) {
+                            switch (D.LCase(call = args.shift())) {
                                 case "name": case "identity":
                                     STATEREF.nextRollFlags = {
                                         isHidingName: true,
@@ -274,13 +274,13 @@ const Roller = (() => {
                     break
                 }
                 case "change": {
-                    switch(call = (args.shift() || "").toLowerCase()) {
+                    switch(D.LCase(call = args.shift())) {
                         case "roll": {
-                            changeRoll(parseInt(args.shift()))
+                            changeRoll(D.Int(args.shift()))
                             break
                         }
                         case "npcroll": {
-                            changeRoll(parseInt(args.shift()), true)
+                            changeRoll(D.Int(args.shift()), true)
                             break
                         }
                         case "prev": {
@@ -304,9 +304,9 @@ const Roller = (() => {
                     break
                 }
                 case "effects": {
-                    switch (call = (args.shift() || "").toLowerCase()) {                        
+                    switch (D.LCase(call = args.shift())) {                        
                         case "get": {
-                            switch (call = (args.shift() || "").toLowerCase()) {
+                            switch (D.LCase(call = args.shift())) {
                                 case "char": {
                                     [charObj] = getRollChars([charObjs[0]])
                                     if (VAL({charObj}, "!roll effects get char")) {
@@ -353,7 +353,7 @@ const Roller = (() => {
                             break
                         }                        
                         case "add": {
-                            switch (call = (args.shift() || "").toLowerCase()) {
+                            switch (D.LCase(call = args.shift())) {
                                 case "char": {
                                     charObjs = getRollChars(charObjs)
                                     if (VAL({charObj: charObjs}, "!roll effects add char", true)) 
@@ -376,7 +376,7 @@ const Roller = (() => {
                             break
                         }                        
                         case "del": {
-                            switch (call = (args.shift() || "").toLowerCase()) {
+                            switch (D.LCase(call = args.shift())) {
                                 case "char": {
                                     [charObj] = getRollChars([charObjs[0]])
                                     if (VAL({charObj}, "!roll effects del char"))
@@ -1437,11 +1437,11 @@ const Roller = (() => {
                 // Parse the effectString for all of the relevant parameters
                     let [rollRestrictions, rollMod, rollLabel, removeWhen] = effectString.split(";"),
                         [rollTarget, rollTraits, rollFlags] = ["", {}, {}];
-                    [rollMod, rollTarget] = _.map(rollMod.split(":"), v => parseInt(v) || v.toLowerCase())
+                    [rollMod, rollTarget] = _.map(rollMod.split(":"), v => D.Int(v) || v.toLowerCase())
                     rollRestrictions = _.map(rollRestrictions.split("+"), v => v.toLowerCase())
                     rollTraits = _.object(
                         _.map(_.keys(rollInput.traitData), v => v.toLowerCase()),
-                        _.map(_.values(rollInput.traitData), v => parseInt(v.value) || 0)
+                        _.map(_.values(rollInput.traitData), v => D.Int(v.value))
                     )
                 // Before parsing rollFlags, filter out the ones that have already been converted into strings:
                     DB(`Checking Filtered Flag Error: ${D.JS([...rollInput.posFlagLines, ...rollInput.negFlagLines, ...rollInput.redFlagLines, ...rollInput.goldFlagLines])}`, "applyRollEffects")
@@ -1523,9 +1523,9 @@ const Roller = (() => {
                         } else {
                         // If rollMod isn't a number, is it adding or subtracting a trait value?
                             if (rollMod.includes("postrait"))
-                                rollMod = parseInt(getAttrByName(rollData.charID, rollMod.replace(/postrait/gu, ""))) || 0
+                                rollMod = D.Int(getAttrByName(rollData.charID, rollMod.replace(/postrait/gu, "")))
                             else if (rollMod.includes("negtrait"))
-                                rollMod = -1 * (parseInt(getAttrByName(rollData.charID, rollMod.replace(/negtrait/gu, ""))) || 0)
+                                rollMod = -1 * D.Int(getAttrByName(rollData.charID, rollMod.replace(/negtrait/gu, "")))
                         // If not postrait/negtrait, is it a multiplier?
                             else if (rollMod.startsWith("x") && VAL({number: rollMod.replace(/x/gu, "")}))
                             // If so, is there a rollTarget?
@@ -1626,7 +1626,7 @@ const Roller = (() => {
                                     isEffectMoot = true
                                     break
                                 }
-                                rollResults.maxRerollDice = parseInt(rollMod.replace(/\D*/gu, ""))
+                                rollResults.maxRerollDice = D.Int(rollMod.replace(/\D*/gu, ""))
                                 break
                             }
                             case "freewpreroll":
@@ -1856,15 +1856,15 @@ const Roller = (() => {
                 traitList = _.compact(
                     _.map((params && params.args && params.args[1] || _.isArray(params) && params[0] || _.isString(params) && params || "").split(","), v => v.replace(/:\d+/gu, "").replace(/_/gu, " "))
                 ),
-                bloodPot = parseInt(getAttrByName(charObj.id, "blood_potency")) || 0,
+                bloodPot = D.Int(getAttrByName(charObj.id, "blood_potency")),
                 charID = D.GetPlayer(charObj) ? Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === D.GetPlayer(charObj).id)].id : charObj.id
             if (["rouse", "rouse2", "remorse", "check", "project", "secret", "humanity"].includes(rollType))
                 return flagData
-            if (parseInt(getAttrByName(charID, "applyspecialty")) > 0)
+            if (D.Int(getAttrByName(charID, "applyspecialty")) > 0)
                 flagData.posFlagLines.push([1, "Specialty (<.>)"])
-            if (parseInt(getAttrByName(charID, "applyresonance")) > 0)
+            if (D.Int(getAttrByName(charID, "applyresonance")) > 0)
                 flagData.posFlagLines.push([1, "Resonance (<.>)"])
-            if (parseInt(getAttrByName(charID, "applybloodsurge")) > 0)
+            if (D.Int(getAttrByName(charID, "applybloodsurge")) > 0)
                 flagData.posFlagLines.push([C.BLOODPOTENCY[bloodPot].bp_surge, "Blood Surge (<.>)"])
             if (rollFlags.isDiscRoll)
                 flagData.posFlagLines.push([C.BLOODPOTENCY[bloodPot].bp_discbonus, "Discipline (<.>)"])
@@ -1900,6 +1900,7 @@ const Roller = (() => {
         },
         parseTraits = (charObj, rollType, params = {}) => {
             let traits = _.compact((params && params.args && params.args[1] || _.isArray(params) && params[0] || _.isString(params) && params || "").split(","))
+            DB(`Traits: ${D.JS(traits)}`, "parseTraits")
             const tFull = {
                 traitList: [],
                 traitData: {}
@@ -1924,24 +1925,24 @@ const Roller = (() => {
                     const tData = trt.split(":")
                     tFull.traitData[tData[0]] = {
                         display: D.Capitalize(tData[0].replace(/_/gu, " "), true),
-                        value: parseInt(tData[1])
+                        value: D.Int(tData[1])
                     }
                     if (rollType === "frenzy" && tData[0] === "humanity") {
                         tFull.traitData.humanity.display = "⅓ Humanity"
                         tFull.traitData.humanity.value = Math.floor(tFull.traitData.humanity.value / 3)
                     } else if (rollType === "remorse" && tData[0] === "stains") {
                         tFull.traitData.humanity.display = "Human Potential"
-                        tFull.traitData.humanity.value = 10 - tFull.traitData.humanity.value - parseInt(tData[1])
+                        tFull.traitData.humanity.value = 10 - tFull.traitData.humanity.value - D.Int(tData[1])
                         tFull.traitList = _.without(tFull.traitList, "stains")
                         delete tFull.traitData[tData[0]]
                     }
-                } else if (!_.isNaN(parseInt(trt))) {
-                    tFull.mod = parseInt(trt)
+                } else if (D.Int(trt) || trt === "0") {
+                    tFull.mod = D.Int(trt)
                     tFull.traitList = _.without(tFull.traitList, trt)
                 } else {
                     tFull.traitData[trt] = {
                         display: D.IsIn(trt, undefined, true) || D.IsIn(trt.replace(/_/gu, " "), undefined, true) || getAttrByName(charObj.id, `${trt}_name`) || getAttrByName(charObj.id, `${trt.replace(/_/gu, " ")}_name`),
-                        value: parseInt(getAttrByName(charObj.id, trt) || getAttrByName(charObj.id, trt.replace(/_/gu, " "))) || 0
+                        value: D.Int(getAttrByName(charObj.id, trt) || getAttrByName(charObj.id, trt.replace(/_/gu, " ")))
                     }
                     if (rollType === "frenzy" && trt === "humanity") {
                         tFull.traitData.humanity.display = "⅓ Humanity"
@@ -1950,7 +1951,7 @@ const Roller = (() => {
                         tFull.traitData.humanity.display = "Human Potential"
                         tFull.traitData.humanity.value = 10 -
                             tFull.traitData.humanity.value -
-                            (parseInt(getAttrByName(charObj.id, "stains")) || 0)
+                            D.Int(getAttrByName(charObj.id, "stains"))
                     } else if (!tFull.traitData[trt].display) {
                         D.Chat(charObj, `Error determining NAME of trait '${D.JS(trt)}'.`, "ERROR: Dice Roller")
                     }
@@ -1994,7 +1995,7 @@ const Roller = (() => {
                 rollData = {
                     charID: charObj.id,
                     type: rollType,
-                    hunger: parseInt(getAttrByName(charObj.id, "hunger")),
+                    hunger: D.Int(getAttrByName(charObj.id, "hunger")),
                     posFlagLines: flagData.posFlagLines,
                     negFlagLines: flagData.negFlagLines,
                     redFlagLines: flagData.redFlagLines,
@@ -2024,9 +2025,7 @@ const Roller = (() => {
                     rollData.mod = 0
                     break
                 case "project":
-                    rollData.diff = parseInt(params[1] || 0)
-                    rollData.mod = parseInt(params[2] || 0)
-                    rollData.diffMod = parseInt(params[3] || 0)
+                    [rollData.diff, rollData.mod, rollData.diffMod] = params.slice(0,3).map(x => D.Int(x))
                     rollData.prefix = ["repeating", "project", D.GetRepStat(charObj, "project", params[4]).rowID, ""].join("_")
                     STATEREF.lastProjectPrefix = rollData.prefix
                     STATEREF.lastProjectCharID = rollData.charID
@@ -2037,16 +2036,15 @@ const Roller = (() => {
                     rollData.mod = _.isNumber(traitData.mod) ? traitData.mod : 0
                     break
                 case "frenzy":
-                    rollData.diff = parseInt(params[0] || 0)
-                    rollData.mod = parseInt(params[1] || 0)
+                    [rollData.diff, rollData.mod] = params.slice(0,2).map(x => D.Int(x))
                     break
                 default:
                     if (D.GetPlayer(charObj)) {
-                        rollData.diff = rollData.diff === null ? parseInt(getAttrByName(Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === D.GetPlayer(charObj).id)].id, "rolldiff")) : rollData.diff
-                        rollData.mod = rollData.mod === null ? parseInt(getAttrByName(Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === D.GetPlayer(charObj).id)].id, "rollmod")) : rollData.diff
+                        rollData.diff = rollData.diff === null ? D.Int(getAttrByName(Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === D.GetPlayer(charObj).id)].id, "rolldiff")) : rollData.diff
+                        rollData.mod = rollData.mod === null ? D.Int(getAttrByName(Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === D.GetPlayer(charObj).id)].id, "rollmod")) : rollData.diff
                     } else {
-                        rollData.diff = rollData.diff === null ? parseInt(getAttrByName(charObj.id, "rolldiff")) : rollData.diff
-                        rollData.mod = rollData.mod === null ? parseInt(getAttrByName(charObj.id, "rollmod")) : rollData.mod
+                        rollData.diff = rollData.diff === null ? D.Int(getAttrByName(charObj.id, "rolldiff")) : rollData.diff
+                        rollData.mod = rollData.mod === null ? D.Int(getAttrByName(charObj.id, "rollmod")) : rollData.mod
                     }
                     break
             }
@@ -2105,7 +2103,7 @@ const Roller = (() => {
             if (VAL({charObj: [charObj], string: effectStrings}, "delCharRollEffects", true)) {
                 for (const effect of effectStrings)
                     if (VAL({number: effect}))
-                        rollEffects.splice(Math.max(0, parseInt(effect) - 1), 1)
+                        rollEffects.splice(Math.max(0, D.Int(effect) - 1), 1)
                     else
                         rollEffects = _.without(rollEffects, effect)
                 setAttrs(charObj.id, {rolleffects: rollEffects.join("|")})
@@ -2125,7 +2123,7 @@ const Roller = (() => {
         delGlobalRollEffects = effectStrings => {
             for (const effectString of effectStrings)
                 if (VAL({number: effectString}))
-                    delete STATEREF.rollEffects[_.keys(STATEREF.rollEffects)[Math.max(0, parseInt(effectString) - 1)]]
+                    delete STATEREF.rollEffects[_.keys(STATEREF.rollEffects)[Math.max(0, D.Int(effectString) - 1)]]
                 else
                     STATEREF.rollEffects = _.without(STATEREF.rollEffects, effectString)
             D.Alert(`Global Roll Effects revised to:<br><br>${_.keys(STATEREF.rollEffects).join("<br>")}`, "delGlobalRollEffects")
@@ -2136,7 +2134,7 @@ const Roller = (() => {
                 for (const effect of effectStrings) {
                     let effectString = effect
                     if (VAL({number: effectString}))
-                        effectString = _.keys(STATEREF.rollEffects)[parseInt(effectString - 1)]
+                        effectString = _.keys(STATEREF.rollEffects)[D.Int(effectString - 1)]
                     else
                         effectString = _.find(_.keys(STATEREF.rollEffects, v => D.FuzzyMatch(effectString, v)))        
                     if (STATEREF.rollEffects[effectString]) {
@@ -2153,7 +2151,7 @@ const Roller = (() => {
                 for (const effect of effectStrings) {
                     let effectString = effect
                     if (VAL({number: effectString}))
-                        effectString = _.keys(STATEREF.rollEffects)[parseInt(effectString - 1)]
+                        effectString = _.keys(STATEREF.rollEffects)[D.Int(effectString - 1)]
                     else
                         effectString = _.find(_.keys(STATEREF.rollEffects, v => D.FuzzyMatch(effectString, v)))
                     if (!STATEREF.rollEffects[effectString]) {
@@ -2229,9 +2227,9 @@ const Roller = (() => {
                     return rollData
                 default:
                     _.each(_.values(rollData.traitData), v => {
-                        rollData.dicePool += parseInt(v.value) || 0
+                        rollData.dicePool += D.Int(v.value)
                     })
-                    rollData.dicePool += parseInt(rollData.mod) || 0
+                    rollData.dicePool += D.Int(rollData.mod)
                     break
             }
             if (rollData.traits.length === 0 && rollData.dicePool <= 0) {
@@ -2251,7 +2249,7 @@ const Roller = (() => {
 			   _.each(rollData.traits, (trt) => {
 			   RollData.traitData[trt] = {
 			   Display: D.IsIn(trt) || D.IsIn(getAttrByName(charObj.id, trt + "_name")),
-			   Value: parseInt(getAttrByName(charObj.id, trt)) || 0
+			   Value: D.Int(getAttrByName(charObj.id, trt))
 			   };
 			   If (rollData.type === "frenzy" && trt === "Humanity") {
 			   RollData.traitData.Humanity.display = "⅓ Humanity";
@@ -2259,7 +2257,7 @@ const Roller = (() => {
 			   } else if (rollData.type === "remorse" && trt === "Humanity") {
 			   RollData.traitData.Humanity.display = "Human Potential";
 			   RollData.traitData.Humanity.value = 10 - rollData.traitData.Humanity.value
-			   - (parseInt(getAttrByName(charObj.id, "Stains")) || 0);
+			   - D.Int(getAttrByName(charObj.id, "stains"));
 			   } else {
 			   If (rollData.flags.includes("S")) {
 			   _.each(getSpecialty(charObj, trt), (spec) => {
@@ -2377,7 +2375,7 @@ const Roller = (() => {
                     B: rollData.basePool,
                     H: rollData.hungerPool
                 }, (v, dType) => {
-                    for (let i = 0; i < parseInt(v); i++)
+                    for (let i = 0; i < D.Int(v); i++)
                         roll(dType)
                 })
 
@@ -2454,13 +2452,13 @@ const Roller = (() => {
                     if (rollData.isOblivionRoll) {
                         D.Alert(`Oblivion Roll: ${D.JS(rollResults.rolls)}`)
                         rollResults.diceVals = _.map(rollResults.rolls, rol =>
-                            parseInt(rol.slice(1)) === 1 && "Of" ||
-                            parseInt(rol.slice(1)) === 10 && "Os" ||
-                            parseInt(rol.slice(1)) < 6 && "Hb" ||
+                            D.Int(rol.slice(1)) === 1 && "Of" ||
+                            D.Int(rol.slice(1)) === 10 && "Os" ||
+                            D.Int(rol.slice(1)) < 6 && "Hb" ||
                             "Bs")                        
                         D.Alert(`Oblivion Vals: ${D.JS(rollResults.diceVals)}`)
                     } else {
-                        rollResults.diceVals = _.map(rollResults.rolls, rol => parseInt(rol.slice(1)) < 6 ? "Hb" : "Bs")
+                        rollResults.diceVals = _.map(rollResults.rolls, rol => D.Int(rol.slice(1)) < 6 ? "Hb" : "Bs")
                     }
                     if (rollResults.diceVals.length > 1) {
                         // let newDiceVals = []
@@ -2472,7 +2470,7 @@ const Roller = (() => {
                     }
                     break
                 case "check":
-                    rollResults.diceVals = _.map(rollResults.rolls, rol => parseInt(rol.slice(1)) < 6 ? "Hf" : "Bs")
+                    rollResults.diceVals = _.map(rollResults.rolls, rol => D.Int(rol.slice(1)) < 6 ? "Hf" : "Bs")
                     break
                 default:
                     break
@@ -2821,7 +2819,7 @@ const Roller = (() => {
                                             dotline = ""
                                         /* falls through */
                                         case "humanity":
-                                            stains = Math.max(parseInt(getAttrByName(rollData.charID, "stains") || 0), 0)
+                                            stains = Math.max(D.Int(getAttrByName(rollData.charID, "stains")), 0)
                                             if (rollData.type === "frenzy") {
                                                 stains = Math.max(stains === 0 ? 0 : 1, Math.floor(stains / 3))
                                                 maxHumanity = 4
@@ -2832,7 +2830,7 @@ const Roller = (() => {
                                                 dotline += "◌".repeat(Math.max(maxHumanity - dotline.length - (stains || 0)), 0) + "‡".repeat(stains || 0)
                                             break
                                         case "willpower": // Stains
-                                            dotline += "◌".repeat(Math.max(0, parseInt(getAttrByName(rollData.charID, "willpower_max")) - parseInt(rollData.traitData[trt].value)))
+                                            dotline += "◌".repeat(Math.max(0, D.Int(getAttrByName(rollData.charID, "willpower_max")) - D.Int(rollData.traitData[trt].value)))
                                             break
                                         default:
                                             if (rollData.traitData[trt].value === 0)
@@ -3073,7 +3071,7 @@ const Roller = (() => {
                                 }
                                 break
                             case "remorse":
-                                deltaAttrs.stains = -1 * parseInt(getAttrByName(rollData.charID, "stains") || 0)
+                                deltaAttrs.stains = -1 * D.Int(getAttrByName(rollData.charID, "stains"))
                                 if (rollResults.total === 0) {
                                     rollLines.outcome.text = "YOUR HUMANITY FADES..."
                                     logLines.outcome = `${CHATSTYLES.outcomeRed}DEGENERATION</span></div>`
@@ -3343,7 +3341,7 @@ const Roller = (() => {
                     _.omit(
                         STATEREF[dieCat],
                         (v, dNum) => v.value === "blank" ||
-                            STATEREF.selected[dieCat].includes(parseInt(dNum))
+                            STATEREF.selected[dieCat].includes(D.Int(dNum))
                     ), v => v.value
                 ),
                 charObj = getObj("character", rollData.charID)
@@ -3373,7 +3371,7 @@ const Roller = (() => {
             const rollRecord = getCurrentRoll(isNPCRoll),
                 rollData = _.clone(rollRecord.rollData)
             let rollResults = _.clone(rollRecord.rollResults)
-            if (parseInt(deltaDice) < 0) {
+            if (D.Int(deltaDice) < 0) {
                 _.shuffle(rollResults.diceVals)
                 for (let i = 0; i > deltaDice; i--) {
                     const cutIndex = rollResults.diceVals.findIndex(v => v.startsWith("B"))
@@ -3384,10 +3382,10 @@ const Roller = (() => {
             }
             rollResults = rollDice(Object.assign(rollData, {
                 type: "trait",
-                rerollAmt: parseInt(deltaDice) > 0 ? parseInt(deltaDice) : 0,
+                rerollAmt: D.Int(deltaDice) > 0 ? D.Int(deltaDice) : 0,
                 diff: rollData.diff
             }), rollResults.diceVals)
-            rollData.dicePool += parseInt(deltaDice)
+            rollData.dicePool += D.Int(deltaDice)
             rollData.basePool = Math.max(1, rollData.dicePool) - rollData.hungerPool
             replaceRoll(rollData, rollResults)
             displayRoll(true, isNPCRoll)
@@ -3579,7 +3577,7 @@ const Roller = (() => {
             
             // STEP ONE: COMPARE POSRES AND NEGRES FLAGS. CANCEL OUT RESONANCES. ELIMINATE PURE-NEG RARE RESONANCES. DETERMINE ODDS KEY.
                         
-            if (parseInt(testCycles) > 0) {
+            if (D.Int(testCycles) > 0) {
                 const record = {
                         N: {Cho: 0, Mel: 0, Phl: 0, Sng: 0, Pri: 0, Isc: 0, Mrc: 0, TOT: 0, PER: 0},
                         F: {Cho: 0, Mel: 0, Phl: 0, Sng: 0, Pri: 0, Isc: 0, Mrc: 0, TOT: 0, PER: 0},
@@ -3595,7 +3593,7 @@ const Roller = (() => {
                     },
                     resBinsReversed = _.flatten(_.values(resBins)).reverse()
                 let dbString = ""                    
-                for (let i = 0; i < parseInt(testCycles); i++) {                    
+                for (let i = 0; i < D.Int(testCycles); i++) {                    
                     const randNums = [randomInteger(1000), randomInteger(1000)]
                     let results = [
                         resonances[resBinsReversed[flavorOdds.findIndex(x => randNums[0] <= x)]],
@@ -3636,7 +3634,7 @@ const Roller = (() => {
                 const intResults = _.values(record).slice(0,4).map(x => x.PER).join(", "),
                     flaResults = _.keys(record).slice(4).map(k => [k.slice(0,1), parseFloat(record[k].PER.slice(0,-1))]).sort((a,b) => b[1] - a[1]).map(x => `${x[0]}: ${x[1]}%`).join(", ")
                 
-                D.Alert(`${D.JS(_.keys(resBins).map(x => `      <b>${x}</b>: [${resBins[x].join(",")}]`).join(", "))}<br><br><pre>${D.JS(returnRows.join("<br>"))}</pre><br><pre>Flavor..: ${D.JS(resOdds.flavor.map(x => `_: ${parseInt(x*10000)/100}.${"0".repeat(4 - `${parseInt(x*10000)/100}`.length)}%`).join(", "))}]<br>Compared: ${flaResults}</pre><br><br>Int Odds: [${D.JS(resOdds.intensity.map(x => `${x*100}%`).join(", "))}]<br>Compared: ${intResults}`)
+                D.Alert(`${D.JS(_.keys(resBins).map(x => `      <b>${x}</b>: [${resBins[x].join(",")}]`).join(", "))}<br><br><pre>${D.JS(returnRows.join("<br>"))}</pre><br><pre>Flavor..: ${D.JS(resOdds.flavor.map(x => `_: ${D.Int(x*10000)/100}.${"0".repeat(4 - `${D.Int(x*10000)/100}`.length)}%`).join(", "))}]<br>Compared: ${flaResults}</pre><br><br>Int Odds: [${D.JS(resOdds.intensity.map(x => `${x*100}%`).join(", "))}]<br>Compared: ${intResults}`)
             }
             if (VAL({charObj}) && ["Intense", "Acute"].includes(intChoice))
                 setAttrs(charObj.id, {resonance: resChoice})

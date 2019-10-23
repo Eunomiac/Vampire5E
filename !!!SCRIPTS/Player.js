@@ -2,8 +2,6 @@ void MarkStart("Player")
 const Player = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Player",
-        CHATCOMMAND = null,
-        GMONLY = false,
 
     // #region COMMON INITIALIZATION
         STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
@@ -16,16 +14,6 @@ const Player = (() => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             initialize()
         },
-        regHandlers = () => {
-            on("chat:message", msg => {
-                const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
-                    const who = msg.who || "API",
-                        call = args.shift()
-                    handleInput(msg, who, call, args)
-                }
-            })
-        },
     // #endregion
 
     // #region LOCAL INITIALIZATION
@@ -35,11 +23,11 @@ const Player = (() => {
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-        handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
-            let [charID, token, imgData, charData, famToken] = []
+        onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
+            let charID, token, imgData, charData, famToken
             switch (call) {
                 case "!mvc":
-                    MVC({name: who})
+                    MVC({name: msg.who})
                     break
                 case "!sense":
                     charID = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)].id;
@@ -50,7 +38,6 @@ const Player = (() => {
                         represents: charID
                     })
                     imgData = Media.GetImgData(token)
-                // D.Alert(`ImgData: ${D.JS(token)}`)
                     if (imgData.unObfSrc !== "sense") {
                         Media.SetImgData(token, {unObfSrc: "sense"})
                         if (imgData.isObf)
@@ -172,13 +159,12 @@ const Player = (() => {
     // #endregion
 
     return {
-        RegisterEventHandlers: regHandlers,
-        CheckInstall: checkInstall
+        CheckInstall: checkInstall,
+        OnChatCall: onChatCall
     }
 })()
 
 on("ready", () => {
-    Player.RegisterEventHandlers()
     Player.CheckInstall()
     D.Log("Player Ready!")
 })

@@ -2,8 +2,6 @@ void MarkStart("TimeTracker")
 const TimeTracker = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "TimeTracker",
-        CHATCOMMAND = "!time",
-        GMONLY = true,
 
     // #region COMMON INITIALIZATION
         STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
@@ -15,16 +13,6 @@ const TimeTracker = (() => {
         checkInstall = () => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             initialize()
-        },
-        regHandlers = () => {
-            on("chat:message", msg => {
-                const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
-                    const who = msg.who || "API",
-                        call = args.shift()
-                    handleInput(msg, who, call, args)
-                }
-            })
         },
     // #endregion
 
@@ -44,8 +32,8 @@ const TimeTracker = (() => {
             STATEREF.Alarms.AutoDefer = STATEREF.Alarms.AutoDefer || []
             STATEREF.lastDate = STATEREF.lastDate || 0
             STATEREF.weatherOverride = STATEREF.weatherOverride || {}
-            STATEREF.timeZoneOffset = parseInt((new Date()).toLocaleString("en-US", {hour: "2-digit", hour12: false, timeZone: "America/New_York"}))
-        
+            STATEREF.timeZoneOffset = D.Int((new Date()).toLocaleString("en-US", {hour: "2-digit", hour12: false, timeZone: "America/New_York"}))
+            STATEREF.weatherData = STATEREF.weatherData || []        
         
             if (!STATEREF.dateObj) {
                 D.Alert("Date Object Missing! Setting to default date.<br><br>Use !time set [year] [month] [day] [hour] [minute] to correct.", "TimeTracker")
@@ -107,85 +95,114 @@ const TimeTracker = (() => {
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-        handleInput = (msg, who, call, args) => {
-            let [delta, unit, isForcing] = [null, null, false]
-            switch ((call || "").toLowerCase()) {
-                case "get":
-                    switch (args.shift().toLowerCase()) {
-                        case "alarms":
+        onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
+            let isForcing = false
+            switch (call) {
+                case "get": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "alarms": {
                             getNextAlarms()
                             getPastAlarms()
                             getDailyAlarms()
                             break
-                        case "weather":
-                            D.Alert(`Weather Code: ${WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()]}`)
+                        }
+                        case "weather": {
+                            D.Alert(`${WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()]}`, "Weather Code")
+                            break
+                        }
+                        case "codes": {
+                            D.Alert(D.JS(WEATHERDATA), "Weather Codes")
+                            break
+                        }
                     // no default
                     }
                     break
-                case "set":
-                    if (args[0] === "alarm") {
-                        args.shift()
-                        const [dateString, name, message, actions, displayTo, revActions, recurring, isConditional] = args.join(" ").replace(/"/gu, "").split("|"),
-                            messageHTML = C.CHATHTML.Block([
-                                C.CHATHTML.Header(`Alarm Fired: ${name}`),
-                                C.CHATHTML.Body(message)
-                            ].join("<br>"))
-                        D.Prompt(
-                            C.MENUHTML.Block([
-                                C.MENUHTML.Header("Confirm Alarm"),
-                                C.MENUHTML.Body([
-                                    `<b>DateString:</b> ${D.JS(dateString)}`,
-                                    `<b>name:</b> ${D.JS(name)}`,
-                                    `<b>message:</b> ${D.JS(message)}`,
-                                    `<b>actions:</b> ${D.JS(actions)}`,
-                                    `<b>displayTo:</b> ${D.JS(displayTo)}`,
-                                    `<b>revActions:</b> ${D.JS(revActions)}`,
-                                    `<b>recurring:</b> ${D.JS(recurring)}`,
-                                    `<b>isConditional:</b> ${D.JS(isConditional)}`
-                                ].join("<br>").replace(/"/gu, ""), {bgColor: C.COLORS.white, borderStyle: "inset", borderWidth: "3px", borderColor: C.COLORS.darkgrey, width: "95%", margin: "7px 0px 0px 2.5%", fontFamily: "Verdana", fontSize: "10px", lineHeight: "14px", textShadow: "none", color: C.COLORS.black, fontWeight: "normal", textAlign: "left"}),
-                                C.MENUHTML.ButtonLine([
-                                    C.MENUHTML.Button("Yes", "!reply confirm true"),
-                                    C.MENUHTML.Button("No", "!reply confirm false")
-                                ].join(" "))
-                            ].join("<br>")),
-                            reply => { 
-                                if (reply.includes("true")) {
-                                    D.Alert(`Setting Alarm(${D.JS(dateString)}, ${D.JS(name)}, ${D.JS(message)}, ${D.JS(actions)}, ${D.JS(displayTo)}, ${D.JS(revActions)}, ${D.JS(recurring)}, ${D.JS(isConditional)}`, "!time set alarm")
-                                    setAlarm(dateString, name, messageHTML, actions, displayTo, revActions, recurring === "" ? null : recurring, isConditional)
+                }
+                case "set": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "alarm": {
+                            const [dateString, name, message, actions, displayTo, revActions, recurring, isConditional] = args.join(" ").replace(/"/gu, "").split("|"),
+                                messageHTML = C.CHATHTML.Block([
+                                    C.CHATHTML.Header(`Alarm Fired: ${name}`),
+                                    C.CHATHTML.Body(message)
+                                ].join("<br>"))
+                            // dateString: "dawn"/"dusk"/"nextfullnight"/"noon"/"[#] [unit]"   can include multiple with "+"  (use "|" delimiting for chat arg, then set helper macro)
+                            // name: Name of the alarm
+                            // message: fully HTML coded message sent when alarm fires (and unfires)
+                            // actions: ARRAY of functions OR chat strings (can be api commands) to be run when alarm fires
+                            // revActions: ARRAY as above, run when alarm "unfires" instead
+                            // recurring: if LIST {years: #, months: #, weeks: #, days: #, hours: #, mins: #}, will repeat alarm at that interval
+                            // isConditional: if true, will stop clock and confirm with GM before firing
+                            D.Prompt(
+                                C.MENUHTML.Block([
+                                    C.MENUHTML.Header("Confirm Alarm"),
+                                    C.MENUHTML.Body([
+                                        `<b>DateString:</b> ${D.JS(dateString)}`,
+                                        `<b>name:</b> ${D.JS(name)}`,
+                                        `<b>message:</b> ${D.JS(message)}`,
+                                        `<b>actions:</b> ${D.JS(actions)}`,
+                                        `<b>displayTo:</b> ${D.JS(displayTo)}`,
+                                        `<b>revActions:</b> ${D.JS(revActions)}`,
+                                        `<b>recurring:</b> ${D.JS(recurring)}`,
+                                        `<b>isConditional:</b> ${D.JS(isConditional)}`
+                                    ].join("<br>").replace(/"/gu, ""), {bgColor: C.COLORS.white, borderStyle: "inset", borderWidth: "3px", borderColor: C.COLORS.darkgrey, width: "95%", margin: "7px 0px 0px 2.5%", fontFamily: "Verdana", fontSize: "10px", lineHeight: "14px", textShadow: "none", color: C.COLORS.black, fontWeight: "normal", textAlign: "left"}),
+                                    C.MENUHTML.ButtonLine([
+                                        C.MENUHTML.Button("Yes", "!reply confirm true"),
+                                        C.MENUHTML.Button("No", "!reply confirm false")
+                                    ].join(" "))
+                                ].join("<br>")),
+                                reply => { 
+                                    if (reply.includes("true")) {
+                                        D.Alert(`Setting Alarm(${D.JS(dateString)}, ${D.JS(name)}, ${D.JS(message)}, ${D.JS(actions)}, ${D.JS(displayTo)}, ${D.JS(revActions)}, ${D.JS(recurring)}, ${D.JS(isConditional)}`, "!time set alarm")
+                                        setAlarm(dateString, name, messageHTML, actions, displayTo, revActions, recurring === "" ? null : recurring, isConditional)
+                                    }
                                 }
-                            }
-                        )
-                         // dateString: "dawn"/"dusk"/"nextfullnight"/"noon"/"[#] [unit]"   can include multiple with "+"  (use "|" delimiting for chat arg, then set helper macro)
-        // name: Name of the alarm
-        // message: fully HTML coded message sent when alarm fires (and unfires)
-        // actions: ARRAY of functions OR chat strings (can be api commands) to be run when alarm fires
-        // revActions: ARRAY as above, run when alarm "unfires" instead
-        // recurring: if LIST {years: #, months: #, weeks: #, days: #, hours: #, mins: #}, will repeat alarm at that interval
-        // isConditional: if true, will stop clock and confirm with GM before firing
-                        break
-                    } else if (args[0] === "weather") {
-                        setManualWeather(args[1] && args[1] + (args[1].length === 1 ? "x" : ""), args[2] && parseInt(args[2]), args[3], args[4])
-                        break
-                    } else if (args[0] && args[0].toLowerCase().includes("session")) {
-                        setNextSessionDate(parseInt(args[1]) || 0)
-                        break
-                    } else if (args[0] === "force") {
-                        isForcing = true
-                        args.shift()
+                            )
+                            break
+                        }
+                        case "weather": {
+                            setManualWeather(args[0] && args[0] + (args[0].length === 1 ? "x" : ""), args[1] && D.Int(args[1]), args[2], args[3])
+                            break
+                        }
+                        case "session": {
+                            setNextSessionDate(D.Int(args.shift()))
+                            break
+                        }
+                        case "force": {
+                            call = args.shift()
+                            isForcing = true
+                        }
+                        // falls through
+                        default: {
+                            args.unshift(call)
+                            const delta = Math.ceil(((new Date(Date.UTC(..._.map(args, v => D.Int(v))))).getTime() - STATEREF.dateObj.getTime()) / (1000 * 60))
+                            tweenClock(addTime(STATEREF.dateObj, delta, "m"))
+                            if (isForcing)
+                                state[C.GAMENAME].Session.dateRecord = null
+                            break
+                        }
                     }
-                    unit = "m"
-                    delta = Math.ceil(((new Date(Date.UTC(..._.map(args, v => parseInt(v))))).getTime() - STATEREF.dateObj.getTime()) / (1000 * 60))
-                // D.Alert(`Changing Date by ${D.JS(delta)} minutes.`)
-            /* falls through */
-                case "add":
-                    delta = delta || parseFloat(args.shift())
-                    unit = unit || args.shift().toLowerCase()
-                    tweenClock(addTime(STATEREF.dateObj, delta, unit))
-                    if (isForcing)
-                        state[C.GAMENAME].Session.dateRecord = null
-                    return
-                case "del": case "delete": 
-                    switch (args.shift().toLowerCase()) {
+                    break
+                }
+                case "add": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "force": {
+                            call = args.shift()
+                            isForcing = true
+                        }
+                        // falls through
+                        default: {
+                            const [delta, unit] = [call, args.shift()]
+                            tweenClock(addTime(STATEREF.dateObj, D.Float(delta), D.LCase(unit)))
+                            if (isForcing)
+                                state[C.GAMENAME].Session.dateRecord = null
+                            break
+                        }
+                    }
+                    break
+                }
+                case "del": case "delete": {
+                    switch (D.LCase(call = args.shift())) {
                         case "alarm": {
                             STATEREF.Alarms.Ahead.shift()
                             break
@@ -193,25 +210,46 @@ const TimeTracker = (() => {
                         // no default
                     }
                     break
-                case "start":
-                    if (args[0] && args[0].toLowerCase() === "countdown") {
-                        stopClock()
-                        startCountdown()
-                    } else {
-                        stopCountdown()
-                        startClock()
+                }
+                case "start": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "countdown": {
+                            stopClock()
+                            startCountdown()
+                            break
+                        }
+                        case "lights": {                            
+                            startAirLights()
+                            break
+                        }
+                        default: {
+                            stopCountdown()
+                            startClock()
+                            break
+                        }
                     }
                     break
+                }
                 case "stop": {
-                    stopClock()
-                    stopCountdown()
+                    switch (D.LCase(call = args.shift())) {
+                        case "lights": {                            
+                            stopAirLights()
+                            break
+                        }
+                        default: {
+                            stopClock()
+                            stopCountdown()
+                            break
+                        }
+                    }
                     break
                 }
-                case "fix":
+                case "fix": {
                     fixDate()
                     break
+                }
                 case "reset": {
-                    switch (args.shift().toLowerCase()) {
+                    switch (D.LCase(call = args.shift())) {
                         case "alarms": {
                             STATEREF.Alarms = {
                                 Ahead: [],
@@ -227,16 +265,17 @@ const TimeTracker = (() => {
                             }
                             break
                         }
+                        case "precip": case "precipitation": {
+                            upgradeRainCodes()
+                            D.Alert(D.JS(STATEREF.weatherData))
+                            break
+                        }
                         // no default
                     }
                     break
                 }
-                case "stoplights": {
-                    isAirlights = false
-                    break
-                }
                 case "test": {
-                    switch (args.shift().toLowerCase()) {
+                    switch (D.LCase(call = args.shift())) {
                         case "ground": {
                             getGroundCover(true, ...args)
                             break
@@ -251,10 +290,7 @@ const TimeTracker = (() => {
                         }
                         case "date": {
                             const curDateObj = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"})),
-                                sessDateObj = new Date(curDateObj)
-
-                        // shiftedDateObj.setHours(shiftedDateObj.getHours() - STATEREF.timeZoneOffset)
-                        
+                                sessDateObj = new Date(curDateObj)                        
                             sessDateObj.setDate(curDateObj.getDate() - curDateObj.getDay() + 7)
                             sessDateObj.setHours(19)
                             sessDateObj.setMinutes(30)
@@ -265,9 +301,9 @@ const TimeTracker = (() => {
                             if (secsLeft >= 7*24*60*60)
                                 secsLeft -= 7*24*60*60
 
-                            const secsProgress = [secsLeft],
-                    
+                            const secsProgress = [secsLeft],                    
                                 daysLeft = Math.floor(secsLeft / (24 * 60 * 60))
+
                             secsLeft -= daysLeft * 24 * 60 * 60
                             secsProgress.push(secsLeft)
                             const hoursLeft = Math.floor(secsLeft / (60 * 60))
@@ -283,7 +319,7 @@ const TimeTracker = (() => {
                                 `Days: ${daysLeft}, Hours: ${hoursLeft}, Minutes: ${minsLeft}, Seconds: ${secsLeft}`,
                                 `Seconds Progress: [${secsProgress.join(", ")}]`
                             ]
-                            D.Alert(returnLines.join("<br>"))
+                            D.Alert(returnLines.join("<br>"), "Date Test")
                             break
                         }
                     // no default
@@ -347,68 +383,7 @@ const TimeTracker = (() => {
         countdownRecord = []
 
     // #region Configuration
-    const ALARMFUNCS = {
-            daysleep: () => {
-                for (const charObj of D.GetChars("registered")) {
-                    Roller.QuickRouse(charObj, false, false)
-                    Char.RefreshWillpower(charObj)
-                }
-            },
-            cancelRollEffect: (charRef, effectString) => {
-
-            }
-        },
-        [airLights, airTimes] = [{}, {}],
-        CLOCKSPEED = 50,
-        TWEENDURS = [15, 40, 60, 600, 1440, 3000, 5000, 7000, 8000, 9000, 10000, Infinity],
-        RUNNINGFASTAT = 1500000,
-        DAYSOFWEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-        MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-        TWILIGHT = [
-            ["7:44", "17:12"],
-            ["7:11", "17:51"],
-            ["7:22", "19:28"],
-            ["6:26", "20:06"],
-            ["5:48", "20:40"],
-            ["5:35", "21:01"],
-            ["5:54", "20:52"],
-            ["5:48", "20:40"],
-            ["6:26", "20:06"],
-            ["7:22", "19:28"],
-            ["7:11", "17:51"],
-            ["7:44", "17:12"]
-        ],
-        IMAGETIMES = {
-            "0:00": "night2",
-            "1:30": "night3",
-            "3:00": "night4",
-            [-120]: "night5",
-            [-30]: "predawn5",
-            [-20]: "predawn4",
-            [-10]: "predawn3",
-            [-5]: "predawn2",
-            "dawn": "predawn1",
-            "dusk": "day",
-            "22:30": "night1",
-            "24:00": "night2"  
-        },
-        AIRLIGHTS = {
-            AirLightLeft_1: ["on:0", "on:7000", "half:100", "off:100", "half:100", "off:100", "half:100", "off:100"],
-            AirLightMid_1: ["on:0", "on:5000", "off:500"],
-            AirLightTop_1: ["on:0", "on:60000", "off:1000", "on:1000", "off:1000", "on:1000", "off:1000", "on:1000", "off:1000", "on:1000", "off:1000"],
-            /* AirLightCN_1: ["off:0", "off:10000", "on:1000", "off:1000"],
-              AirLightCN_2: ["off:2000", "off:10000", "on:1000", "off:1000"],
-              AirLightCN_3: ["off:6000", "off:10000", "on:1000", "off:1000"], */
-            AirLightCN_4: ["on:0", "on:2000", "off:2000"],
-            AirLightCN_5: ["on:100", "on:2000", "off:2000"]
-        },
-        WEATHERCODES = [
-            {x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"},
-            {x: null, d: "Dry", h: "Humid", m: "Muggy", s: "Sweltering"},
-            {x: ["Still", "Still"], s: ["Soft Breeze", "Cutting Breeze"], b: ["Breezy", "Biting Wind"], w: ["Blustery", "High Winds"], g: ["High Winds", "Driving Winds"], h: ["Howling Winds", "Howling Winds"], v: ["Roaring Winds", "Roaring Winds"]}
-        ],
-        WINTERTEMP = 25,
-        WEATHERDATA = [
+    const RAWWEATHERDATA = [
             ["f",
              ["xxoxs", "xxoxs", "xxnxx", "xxoxx", "xxoxx", "xxoxx", "xxnxs", "cxoxs", "sxoxs", "sxnxx", "cxhxb", "cxexb", "cxdxb", "cxdxw", "sxcxs", "bxdxw", "xxfxb", "xxfxb", "xxgxw", "xxgxw", "xxhxb", "xxjxs", "xxlxs", "xxlxs"],
              ["sxkxx", "sxkxx", "sxjxs", "sxjxx", "cxjxx", "sxexs", "sxdxs", "cxcxw", "bxdxw", "bxexw", "bxexw", "bxcxw", "bxcxw", "cxbxw", "bxbxg", "bxbxw", "cxbxg", "cxbxb", "sxcxb", "bxexw", "sxexb", "sxfxs", "cxfxs", "cxfxs"],
@@ -799,19 +774,81 @@ const TimeTracker = (() => {
              ["cxbxs", "xxaxs", "xxcxx", "xxdxx", "xxexs", "xxexs", "xxexx", "cxdxx", "cxcxx", "cxbxx", "cx0xx", "cxBxs", "cxCxs", "cxCxs", "cxCxs", "wxCxs", "wxCxs", "wfCxs", "wfCxb", "wfCxb", "wfCxb", "wfDxb", "wfDxw", "wfExw"]
             ]
         ],
+        WEATHERDATA = STATEREF.weatherData || RAWWEATHERDATA,
+        ALARMFUNCS = {
+            daysleep: () => {
+                for (const charObj of D.GetChars("registered")) {
+                    Roller.QuickRouse(charObj, false, false)
+                    Char.RefreshWillpower(charObj)
+                }
+            },
+            cancelRollEffect: (charRef, effectString) => {
+
+            }
+        },
+        [airLights, airTimes] = [{}, {}],
+        CLOCKSPEED = 50,
+        TWEENDURS = [15, 40, 60, 600, 1440, 3000, 5000, 7000, 8000, 9000, 10000, Infinity],
+        RUNNINGFASTAT = 1500000,
+        DAYSOFWEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+        TWILIGHT = [
+            ["7:44", "17:12"],
+            ["7:11", "17:51"],
+            ["7:22", "19:28"],
+            ["6:26", "20:06"],
+            ["5:48", "20:40"],
+            ["5:35", "21:01"],
+            ["5:54", "20:52"],
+            ["5:48", "20:40"],
+            ["6:26", "20:06"],
+            ["7:22", "19:28"],
+            ["7:11", "17:51"],
+            ["7:44", "17:12"]
+        ],
+        IMAGETIMES = {
+            "0:00": "night2",
+            "1:30": "night3",
+            "3:00": "night4",
+            [-120]: "night5",
+            [-30]: "predawn5",
+            [-20]: "predawn4",
+            [-10]: "predawn3",
+            [-5]: "predawn2",
+            "dawn": "predawn1",
+            "dusk": "day",
+            "22:30": "night1",
+            "24:00": "night2"  
+        },
+        AIRLIGHTS = {
+            AirLightLeft_1: ["on:0", "on:7000", "half:100", "off:100", "half:100", "off:100", "half:100", "off:100"],
+            AirLightMid_1: ["on:0", "on:5000", "off:500"],
+            AirLightTop_1: ["on:0", "on:60000", "off:1000", "on:1000", "off:1000", "on:1000", "off:1000", "on:1000", "off:1000", "on:1000", "off:1000"],
+            /* AirLightCN_1: ["off:0", "off:10000", "on:1000", "off:1000"],
+              AirLightCN_2: ["off:2000", "off:10000", "on:1000", "off:1000"],
+              AirLightCN_3: ["off:6000", "off:10000", "on:1000", "off:1000"], */
+            AirLightCN_4: ["on:0", "on:2000", "off:2000"],
+            AirLightCN_5: ["on:100", "on:2000", "off:2000"]
+        },
+        WEATHERCODES = [
+            {x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"},
+            {x: null, d: "Dry", h: "Humid", m: "Muggy", s: "Sweltering"},
+            {x: ["Still", "Still"], s: ["Soft Breeze", "Cutting Breeze"], b: ["Breezy", "Biting Wind"], w: ["Blustery", "High Winds"], g: ["High Winds", "Driving Winds"], h: ["Howling Winds", "Howling Winds"], v: ["Roaring Winds", "Roaring Winds"]}
+        ],
+        WINTERTEMP = 25,
         WEATHERTEMP = ["z", "y", "x", "w", "v", "u", "t", "s", "r", "q", "p", "o", "n", "m", "l", "k", "j", "i", "h", "g", "f", "e", "d", "c", "b", "a", "0", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"],
         MONTHTEMP = ["f", "b", "a", "C", "Q", "S", "W", "V", "R", "H", "A", "a"],
     // #endregion
 
     // #region Derivative Stats
-        TWILIGHTMINS = _.map(TWILIGHT, v => _.map(v, v2 => 60 * parseInt(v2.split(":")[0]) + parseInt(v2.split(":")[1]))),
+        TWILIGHTMINS = _.map(TWILIGHT, v => _.map(v, v2 => 60 * D.Int(v2.split(":")[0]) + D.Int(v2.split(":")[1]))),
     // #endregion
 
     // #region Date Functions
         getDate = dateRef => {
             let returnDate = new Date(dateRef)
             if (!_.isDate(returnDate))
-                returnDate = new Date(parseInt(dateRef))
+                returnDate = new Date(D.Int(dateRef))
             if (!_.isDate(returnDate)) {
                 const strArray = _.compact(dateRef.split(/[\s,]+?/gu))
                 returnDate = new Date(`${
@@ -827,7 +864,7 @@ const TimeTracker = (() => {
             return false
         },
         getTime = (timeRef, deltaMins, isParsingString = false) => {
-            const timeNums = VAL({string: timeRef}) ? _.map(timeRef.split(":"), v => parseInt(v) || 0) : timeRef
+            const timeNums = VAL({string: timeRef}) ? _.map(timeRef.split(":"), v => D.Int(v)) : timeRef
             let totMins = timeNums[0] * 60 + timeNums[1] + deltaMins
             if (totMins < 0)
                 totMins += 24 * 60 * Math.ceil(Math.abs(totMins) / (24 * 60))
@@ -886,13 +923,13 @@ const TimeTracker = (() => {
             const [dawn, dusk] = TWILIGHTMINS[STATEREF.dateObj.getMonth()],
                 imgTimes = _.object(_.map(_.keys(IMAGETIMES), k => {
                     if (k.includes(":"))
-                        return 60 * parseInt(k.split(":")[0]) + parseInt(k.split(":")[1])
+                        return 60 * D.Int(k.split(":")[0]) + D.Int(k.split(":")[1])
                     else if (k === "dawn")
                         return dawn
                     else if (k === "dusk")
                         return dusk
 
-                    return dawn + parseInt(k)
+                    return dawn + D.Int(k)
                 }), _.values(IMAGETIMES)),
                 curTime = 60 * STATEREF.dateObj.getUTCHours() + STATEREF.dateObj.getUTCMinutes(),
                 curHoriz = imgTimes[_.find(_.keys(imgTimes), v => curTime <= v)]
@@ -927,7 +964,7 @@ const TimeTracker = (() => {
             setHorizon()
         },
         setCurrentDate = () => {
-            // dateObj = dateObj || new Date(parseInt(STATEREF.currentDate))
+            // dateObj = dateObj || new Date(D.Int(STATEREF.currentDate))
             // DB(`Setting Current Date; Checking Alarms.<br>LastDateStep: ${D.JS(STATEREF.lastDateStep)}`, "setCurrentDate")
             checkAlarm(STATEREF.lastDateStep, STATEREF.dateObj.getTime())
             if (Media.HasForcedState("TimeTracker")) return false
@@ -1018,7 +1055,7 @@ const TimeTracker = (() => {
                 // Media.LayerImages(_.reject(Media.IMAGELAYERS.map, v => v.includes("Horizon")), "objects")
             } else {
                 // Media.LayerImages(_.reject(Media.IMAGELAYERS.map, v => v.includes("Horizon")), "map")
-                const lastDate = new Date(parseInt(STATEREF.lastDate)),
+                const lastDate = new Date(D.Int(STATEREF.lastDate)),
                     groundCover = getGroundCover()
                 STATEREF.currentDate = STATEREF.dateObj.getTime()
                 DB(`Characters: ${D.JS(_.map(D.GetChars("registered")), v => v.get("name"))}`, "setIsRunning")
@@ -1130,7 +1167,7 @@ const TimeTracker = (() => {
             if (STATEREF.TweenTarget)
                 tweenClock(STATEREF.TweenTarget)
             else
-                timeTimer = setInterval(tickClock, parseInt(secsPerMin) * 1000)
+                timeTimer = setInterval(tickClock, D.Int(secsPerMin) * 1000)
             // D.Alert(`Auto clock ticking ENABLED at:
 			
 			//! time set ${STATEREF.dateObj.getUTCFullYear()} ${STATEREF.dateObj.getUTCMonth() + 1} ${STATEREF.dateObj.getUTCDate()} ${STATEREF.dateObj.getUTCHours()}:${STATEREF.dateObj.getUTCMinutes()}`, "TIMETRACKER !TIME")
@@ -1177,6 +1214,78 @@ const TimeTracker = (() => {
             setWeather()
         },
         getWeatherCode = () => WEATHERDATA[STATEREF.dateObj.getUTCMonth()][STATEREF.dateObj.getUTCDate()][STATEREF.dateObj.getUTCHours()],
+        upgradeRainCodes = () => {
+            /* Iterates through all weather codes, upgrading Overcast --> Drizzle --> Downpour --> Thunderstorm
+                For Each Code:
+                    IF tempC < 0, skip.
+                    IF event is NOT "Overcast", "Drizzle" or "Downpour", skip.
+                    IF event is OVERCAST:
+                        Prev. Event = Overcast? --> Drizzle.
+                        Prev. Event = Drizzle ? --> Downpour.
+                        Prev. Event = Downpour ? --> TStorm.
+                        Prev. Event = TStorm ? --> TStorm.
+                    IF event is DRIZZLE:
+                        Prev. Event = Drizzle? --> Downpour.
+                        Prev. Event = Downpour? --> TStorm.
+                        Prev. Event = TStorm ? --> TStorm.
+                    IF event is DOWNPOUR:
+                        Prev. Event = Downpour? --> TStorm.
+                        Prev. Event = TStorm ? --> TStorm.
+                */
+            delete STATEREF.weatherData
+            const newData = [],
+                record = {
+                    original: {
+                        overcast: _.flatten(RAWWEATHERDATA).filter(x => x.charAt(0) === "c").length,
+                        drizzle: _.flatten(RAWWEATHERDATA).filter(x => x.charAt(0) === "w").length,
+                        downpour: _.flatten(RAWWEATHERDATA).filter(x => x.charAt(0) === "p").length,
+                        storm: _.flatten(RAWWEATHERDATA).filter(x => x.charAt(0) === "t").length
+                    },                    
+                    upgraded: {}
+                }
+            let lastCode = _.flatten(RAWWEATHERDATA).pop()            
+            for (let i = 0; i < 12; i++) {
+                const monthTemp = RAWWEATHERDATA[i][0],
+                    monthCodes = RAWWEATHERDATA[i].slice(1)
+                // D.Alert(`Month Codes: ${D.JS(monthCodes)}`)
+                for (let j = 0; j < monthCodes.length; j++)
+                    // D.Alert(`Month ${i} Lengths: ${monthCodes.length} -> J:${j} = ${monthCodes[j].length}`)
+                    for (let k = 0; k < monthCodes[j].length; k++) {
+                        let thisCode = monthCodes[j][k]
+                        const thisTemp = getTemp(monthTemp) + getTemp(thisCode.charAt(2))
+                        if (thisTemp > 0)
+                            switch (thisCode.charAt(0)) {
+                                case "c": {
+                                    if(["c", "w", "p", "t"].includes(lastCode.charAt(0)))
+                                        thisCode = `${{c: "w", w: "p", p: "t", t: "t"}[lastCode.charAt(0)]}${thisCode.slice(1)}`
+                                    break
+                                }
+                                case "w": {
+                                    if(["w", "p", "t"].includes(lastCode.charAt(0)))
+                                        thisCode = `${{w: "p", p: "t", t: "t"}[lastCode.charAt(0)]}${thisCode.slice(1)}`
+                                    break
+                                }
+                                case "p": {
+                                    if(["p", "t"].includes(lastCode.charAt(0)))
+                                        thisCode = `${{p: "t", t: "t"}[lastCode.charAt(0)]}${thisCode.slice(1)}`
+                                    break
+                                }
+                                // no default
+                            }
+                        monthCodes[j][k] = thisCode
+                        lastCode = thisCode
+                    }
+                newData[i] = [monthTemp, ...monthCodes]
+            }
+            STATEREF.weatherData = [...newData]
+            record.upgraded = {            
+                overcast: _.flatten(STATEREF.weatherData).filter(x => x.charAt(0) === "c").length,
+                drizzle: _.flatten(STATEREF.weatherData).filter(x => x.charAt(0) === "w").length,
+                downpour: _.flatten(STATEREF.weatherData).filter(x => x.charAt(0) === "p").length,
+                storm: _.flatten(STATEREF.weatherData).filter(x => x.charAt(0) === "t").length
+            }
+            D.Alert(D.JS(record))
+        },
         setWeather = () => {
             const weatherCode = getWeatherCode(),
                 weatherData = {},
@@ -1231,12 +1340,14 @@ const TimeTracker = (() => {
             weatherData.event = STATEREF.weatherOverride.event || (getHorizon() === "day" || getHorizon() === "daylighters" ? "xx" : weatherCode.slice(0,2))
             weatherData.humidity = STATEREF.weatherOverride.humidity || weatherCode.charAt(3)
             weatherData.wind = STATEREF.weatherOverride.wind || weatherCode.charAt(4)
+            for (const lightningAnim of ["WeatherLightning_1", "WeatherLightning_2"])
+                Media.Kill(lightningAnim)
             switch (weatherData.event.charAt(0)) {
                     // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
                 case "b":
                     if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
                     if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", getSnowSrc("heavy"))
-                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", "stormclouds")
+                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", "stormy")
                     break
                 case "c":
                     if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
@@ -1262,8 +1373,9 @@ const TimeTracker = (() => {
                 case "t":
                     if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
                     if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", "heavyrain")
-                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", "stormclouds")
-                        // Lightning Animations
+                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", "stormy")
+                    Media.Pulse("WeatherLightning_1", 45, 75)
+                    Media.Pulse("WeatherLightning_2", 45, 75)
                     break
                 case "w":
                     if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
@@ -1380,17 +1492,21 @@ const TimeTracker = (() => {
                     if (mI > 0 && m === 0)
                         startYear++
                     for (let d = startDay; d < WEATHERDATA[m].length; d++) {
-                        const hourMatch = _.findIndex(WEATHERDATA[m][d], (v, k) => { return v.charAt(0) === code && (k <= 5 || k >= 20) })
-                        if (hourMatch >= startHour) {
-                            weatherStrings[code] = {
-                                date: `<b>${MONTHS[m].slice(0, 3)} ${d}, ${hourMatch > 12 ? `${hourMatch - 12} PM` : `${hourMatch} AM`}</b>`,
-                                command: `<span style="width: 40px; display: inline-block;"><a href="!time set ${startYear} ${m} ${d} ${hourMatch}">${weatherCodes[code]}</a></span>`
-                            }  
-                            eventFound = true
+                        try {
+                            const hourMatch = _.findIndex(WEATHERDATA[m][d], (v, k) => { return v.charAt(0) === code && (k <= 5 || k >= 20) })
+                            if (hourMatch >= startHour) {
+                                weatherStrings[code] = {
+                                    date: `<b>${MONTHS[m].slice(0, 3)} ${d}, ${hourMatch > 12 ? `${hourMatch - 12} PM` : `${hourMatch} AM`}</b>`,
+                                    command: `<span style="width: 40px; display: inline-block;"><a href="!time set ${startYear} ${m} ${d} ${hourMatch}">${weatherCodes[code]}</a></span>`
+                                }  
+                                eventFound = true
+                            }
+                            if (eventFound)
+                                break
+                            startHour = 0
+                        } catch (errObj) {
+                            D.Alert(`Error at ${mI} ${d}: ${D.JS(errObj)}`, "ERROR")
                         }
-                        if (eventFound)
-                            break
-                        startHour = 0
                     }
                     if (eventFound)
                         break
@@ -1533,15 +1649,15 @@ const TimeTracker = (() => {
             return false         
         },
         checkAlarm = (lastDateStep, thisDateStep) => {
-            if (parseInt(thisDateStep/1000/60) !== STATEREF.lastAlarmCheck) {
-                STATEREF.lastAlarmCheck = parseInt(thisDateStep/1000/60)
+            if (D.Int(thisDateStep/1000/60) !== STATEREF.lastAlarmCheck) {
+                STATEREF.lastAlarmCheck = D.Int(thisDateStep/1000/60)
                 while (lastDateStep < thisDateStep && STATEREF.Alarms.Ahead[0] && STATEREF.Alarms.Ahead[0].time >= lastDateStep && STATEREF.Alarms.Ahead[0].time <= thisDateStep)
                     fireNextAlarm()
                 while (lastDateStep > thisDateStep && STATEREF.Alarms.Behind[0] && STATEREF.Alarms.Behind[0].time <= lastDateStep && STATEREF.Alarms.Behind[0].time >= thisDateStep)
                     unfireLastAlarm()
                 const dayTrigger = getDailyAlarmTrigger(lastDateStep, thisDateStep)
                 if (dayTrigger) {
-                    DB(`DayTrigger Hit: ${D.JS(dayTrigger)}<br>This Step: ${D.JS(parseInt(thisDateStep/1000/60))} vs. lastAlarmCheck: ${D.JS(STATEREF.lastAlarmCheck)}`, "checkAlarm")
+                    DB(`DayTrigger Hit: ${D.JS(dayTrigger)}<br>This Step: ${D.JS(D.Int(thisDateStep/1000/60))} vs. lastAlarmCheck: ${D.JS(STATEREF.lastAlarmCheck)}`, "checkAlarm")
                     const dayAlarms = STATEREF.Alarms.Daily[dayTrigger]
                     for (let i = 0; i < dayAlarms.length; i++)
                         fireAlarm(dayAlarms[i])
@@ -1713,7 +1829,7 @@ const TimeTracker = (() => {
 
             } else {
                 const curTime = airTimes[airlight].shift(),
-                    [curSrc, curDur] = _.map(curTime.split(":"), v => _.isNaN(parseInt(v)) ? v : parseInt(v))
+                    [curSrc, curDur] = _.map(curTime.split(":"), v => _.isNaN(D.Int(v)) ? v : D.Int(v))
                 if (!isStartup)
                     airTimes[airlight].push(curTime)
                 if (curSrc !== Media.GetImgData(airlight).curSrc)
@@ -1735,8 +1851,9 @@ const TimeTracker = (() => {
     // #endregion
 
     return {
-        RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        OnChatCall: onChatCall,
+        
         ALARMFUNCS,
         StartClock: startClock,
         StopClock: stopClock,
@@ -1762,7 +1879,6 @@ const TimeTracker = (() => {
 })()
 
 on("ready", () => {
-    TimeTracker.RegisterEventHandlers()
     TimeTracker.CheckInstall()
     D.Log("TimeTracker Ready!")
 })

@@ -2,8 +2,6 @@ void MarkStart("DragPads")
 const DragPads = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "DragPads",
-        CHATCOMMAND = "!dpad",
-        GMONLY = true,
 
     // #region COMMON INITIALIZATION
         STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
@@ -15,17 +13,6 @@ const DragPads = (() => {
         checkInstall = () => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             initialize()
-        },
-        regHandlers = () => {
-            on("chat:message", msg => {
-                const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
-                    const who = msg.who || "API",
-                        call = args.shift()
-                    handleInput(msg, who, call, args)
-                }
-            })
-            on("change:graphic", handleMove)
         },
     // #endregion
 
@@ -50,7 +37,7 @@ const DragPads = (() => {
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-        handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
+        onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             switch (call) {
                 case "backup": {
                     STATEREF.backup = {
@@ -91,7 +78,7 @@ const DragPads = (() => {
                     const padFilter = args.shift().toLowerCase()
                     _.each(PADREGISTRY, (v, padID) => {
                         const padObj = getObj("graphic", padID)
-                        if (padFilter === "all" || padObj && padObj.get("name").toLowerCase().includes(padFilter)) {                            
+                        if (padFilter === "all" || padObj && D.LCase(padObj.get("name")).includes(padFilter)) {                            
                             padObj.set("imgsrc", "https://s3.amazonaws.com/files.d20.io/images/64184544/CnzRwB8CwKGg-0jfjCkT6w/thumb.png?1538736404")
                             padObj.set("layer", "gmlayer")
                         }
@@ -128,57 +115,7 @@ const DragPads = (() => {
                 }
                 case "reset": {
                     const [padObjs, padNames, padData, graphicList, reportStrings] = [[], [], [], [], []]
-                    switch ((args[0] || "").toLowerCase()) {
-                        default: {
-                            _.each(GRAPHICREGISTRY, (data, hostID) => {
-                                const hostObj = getObj("graphic", hostID) || getObj("text", hostID),
-                                    padObjPair = [getObj("graphic", data.id), getObj("graphic", data.pad.partnerID)]
-                                padObjs.push([padObjPair[0] || null, padObjPair[1] || null, data.pad.funcName])
-                                padNames.push([`${data.pad.name}${padObjPair[0] && "" || " -> MISSING!"}`, `${data.partnerPad.name}${padObjPair[1] && "" || " -> MISSING!"}`])
-                                if (hostObj)
-                                    padData.push({
-                                        hostID,
-                                        funcName: data.pad.funcName,
-                                        options: {
-                                            left: data.left,
-                                            top: data.top,
-                                            height: PADREGISTRY[data.id].height,
-                                            width: PADREGISTRY[data.id].width,
-                                            startActive: data.pad.active === "on" || data.partnerPad.active === "on"
-                                        }
-                                    })
-                                else
-                                    reportStrings.push(`'${Media.GetImgKey(hostID) || "&lt;UNREGISTERED&gt;"}' (${hostID}) for <b>${D.JSL(data.pad.name)}</b>`)
-                            })
-                            if (reportStrings.length)
-                                reportStrings.unshift("<h3>Missing Graphic Objects</h3>")
-                            reportStrings.unshift(...[
-                                "<h3>Initial Image Registry</h3>",
-                                ..._.keys(GRAPHICREGISTRY).map(x => Media.GetImgKey(x) || Media.GetTextKey(x) || `MISSING: ${GRAPHICREGISTRY[x].pad.name}`)
-                            ])
-                            reportStrings.push(`<h3>${padObjs.length} Pad Objects Found</h3>`)
-                            reportStrings.push(...padObjs.map(x => `${
-                                x[0] && PADREGISTRY[x[0].id] && PADREGISTRY[x[0].id].name ? 
-                                    PADREGISTRY[x[0].id].name :
-                                    x[0] ? `(${x[0].get("name")})` : `(${D.JS(x[2])})`
-                            }${
-                                x[0] ? "" : ` <b>&lt;NO PAD</b> (${D.JS(x[0])})<b>&gt;</b>`
-                            }${
-                                x[1] ? "" : ` --> <b>&lt;NO PARTNER</b> (${D.JS(x[1])})<b>&gt;</b>`
-                            }`))
-                            _.each(Media.IMAGES, (imgData, imgName) => {
-                                if (imgName.includes("Pad_") && !_.any(_.flatten(padNames), x => x.includes(imgName)))
-                                    graphicList.push(imgName)
-                            })
-                            if (graphicList.length)
-                                reportStrings.push(...[
-                                    `<h3>${graphicList.length} Unconnected Pad Objects</h3>`,
-                                    ...graphicList
-                                ])
-                            reportStrings.push("<b>!dpad reset confirm</b> to prune registries.")
-                            D.Alert(reportStrings.join("<br>"), "!dpad reset")
-                            break
-                        }
+                    switch (D.LCase(call = args.shift())) {
                         case "confirm": {
                             STATEREF.byPad = {}
                             STATEREF.byGraphic = {}
@@ -200,6 +137,56 @@ const DragPads = (() => {
                             ].join("<br>"), "!dpad reset confirm")
                             break
                         }
+                        default: {
+                            for (const [hostID, data] of Object.entries(GRAPHICREGISTRY)) {
+                                const hostObj = getObj("graphic", hostID) || getObj("text", hostID),
+                                    padObjPair = [getObj("graphic", data.id), getObj("graphic", data.pad.partnerID)]
+                                padObjs.push([padObjPair[0] || null, padObjPair[1] || null, data.pad.funcName])
+                                padNames.push([`${data.pad.name}${padObjPair[0] && "" || " -> MISSING!"}`, `${data.partnerPad.name}${padObjPair[1] && "" || " -> MISSING!"}`])
+                                if (hostObj)
+                                    padData.push({
+                                        hostID,
+                                        funcName: data.pad.funcName,
+                                        options: {
+                                            left: data.left,
+                                            top: data.top,
+                                            height: PADREGISTRY[data.id].height,
+                                            width: PADREGISTRY[data.id].width,
+                                            startActive: data.pad.active === "on" || data.partnerPad.active === "on"
+                                        }
+                                    })
+                                else
+                                    reportStrings.push(`'${Media.GetImgKey(hostID) || "&lt;UNREGISTERED&gt;"}' (${hostID}) for <b>${D.JSL(data.pad.name)}</b>`)
+                            }
+                            if (reportStrings.length)
+                                reportStrings.unshift("<h3>Missing Graphic Objects</h3>")
+                            reportStrings.unshift(...[
+                                "<h3>Initial Image Registry</h3>",
+                                ..._.keys(GRAPHICREGISTRY).map(x => Media.GetImgKey(x) || Media.GetTextKey(x) || `MISSING: ${GRAPHICREGISTRY[x].pad.name}`)
+                            ])
+                            reportStrings.push(`<h3>${padObjs.length} Pad Objects Found</h3>`)
+                            reportStrings.push(...padObjs.map(x => `${
+                                x[0] && PADREGISTRY[x[0].id] && PADREGISTRY[x[0].id].name || 
+                                    VAL({object: x[0]}) && `(${x[0].get("name")})` ||
+                                    `(${D.JS(x[2])})`
+                            }${
+                                x[0] ? "" : ` <b>&lt;NO PAD</b> (${D.JS(x[0])})<b>&gt;</b>`
+                            }${
+                                x[1] ? "" : ` --> <b>&lt;NO PARTNER</b> (${D.JS(x[1])})<b>&gt;</b>`
+                            }`))
+                            _.each(Media.IMAGES, (imgData, imgName) => {
+                                if (imgName.includes("Pad_") && !_.any(_.flatten(padNames), x => x.includes(imgName)))
+                                    graphicList.push(imgName)
+                            })
+                            if (graphicList.length)
+                                reportStrings.push(...[
+                                    `<h3>${graphicList.length} Unconnected Pad Objects</h3>`,
+                                    ...graphicList
+                                ])
+                            reportStrings.push("<b>!dpad reset confirm</b> to prune registries.")
+                            D.Alert(reportStrings.join("<br>"), "!dpad reset")
+                            break
+                        }
                     }
                     break                    
                 }
@@ -217,17 +204,17 @@ const DragPads = (() => {
             // no default
             }
         },
-        handleMove = obj => {
-            if (obj.get("layer") === "walls" || !PADREGISTRY[obj.id])
+        onGraphicChange = imgObj => {
+            if (imgObj.get("layer") === "walls" || !PADREGISTRY[imgObj.id])
                 return false
             // toggle object
-            obj.set({
+            imgObj.set({
                 layer: "walls",
                 controlledby: ""
             })
-            const objData = PADREGISTRY[obj.id],
+            const objData = PADREGISTRY[imgObj.id],
                 partnerObj = getObj("graphic", objData.partnerID)
-            obj.set({
+            imgObj.set({
                 left: objData.left,
                 top: objData.top
             })
@@ -235,7 +222,7 @@ const DragPads = (() => {
                 layer: "objects",
                 controlledby: "all"
             })
-            PADREGISTRY[obj.id].active = "off"
+            PADREGISTRY[imgObj.id].active = "off"
             PADREGISTRY[partnerObj.id].active = "on"
             // D.Alert(`Original Pad: ${D.JS(obj)}<br><br>Partner Pad: ${D.JS(partnerObj)}`)
 
@@ -245,7 +232,7 @@ const DragPads = (() => {
                 id: objData.id
             })
             // D.Alert(`Original Pad: ${D.JS(obj)}<br><br>Partner Pad: ${D.JS(partnerObj)}`)
-            toFront(obj)
+            toFront(imgObj)
             toFront(partnerObj)
 
             return true
@@ -301,7 +288,7 @@ const DragPads = (() => {
                     Media.SetImg(light, "off")
             },
             flipComp(card) {
-                const slot = parseInt(Media.GetImgData(card.id).name.replace(/compCardSpot_/gu, "") || 0) - 1
+                const slot = D.Int(Media.GetImgData(card.id).name.replace(/compCardSpot_/gu, "")) - 1
                 Complications.Flip(slot)
             },
             toggleMapLayer(mapButton) { // mapButtonRoads --> TorontoMapRoadsOverlay
@@ -347,12 +334,10 @@ const DragPads = (() => {
             const pads = []
             if (VAL({object: padRef}))
                 pads.push(getObj("graphic",
-                                 GRAPHICREGISTRY[padRef.id] ?
-                                     GRAPHICREGISTRY[padRef.id].id :
-                                     PADREGISTRY[padRef.id] ?
-                                         padRef.id :
-                                         null))
-            else if (_.isString(padRef))
+                                 GRAPHICREGISTRY[padRef.id] && GRAPHICREGISTRY[padRef.id].id ||
+                                    PADREGISTRY[padRef.id] && padRef.id ||
+                                    null))
+            else if (VAL({string: padRef}))
                 if (FUNCTIONS[padRef]) {
                     pads.push(
                         ..._.map(
@@ -367,17 +352,10 @@ const DragPads = (() => {
                         )
                     )
                 } else {
-                    pads.push(getObj("graphic", GRAPHICREGISTRY[padRef] ?
-                        GRAPHICREGISTRY[padRef].id :
-                        PADREGISTRY[padRef] ?
-                            padRef :
-                            null))
+                    pads.push(getObj("graphic", GRAPHICREGISTRY[padRef] && GRAPHICREGISTRY[padRef].id ||
+                                                    PADREGISTRY[padRef] && padRef ||
+                                                    null))
                 }
-
-
-        /* if (_.compact(pads).length > 1)
-         D.Alert(`Found ${_.compact(pads).length} pads with padRef ${D.JS(padRef)}.`, "DRAGPADS: GET PAD") */
-
             return _.compact(pads)
         },
         getPads = padRef => {
@@ -387,8 +365,6 @@ const DragPads = (() => {
                     pads.push(...getPad(pRef))
             else
                 pads.push(...getPad(padRef))
-
-
             return pads
         },
         getPadPair = (imgRef, isSilent = false) => {
@@ -446,10 +422,10 @@ const DragPads = (() => {
                     })
                 else if (VAL({list: params}))
                     options = Object.assign(options, params)
-                options.left += parseInt(options.deltaLeft || 0)
-                options.top += parseInt(options.deltaTop || 0)
-                options.width += parseInt(options.deltaWidth || 0)
-                options.height += parseInt(options.deltaHeight || 0)
+                options.left += D.Int(options.deltaLeft)
+                options.top += D.Int(options.deltaTop)
+                options.width += D.Int(options.deltaWidth)
+                options.height += D.Int(options.deltaHeight)
                 delete options.deltaLeft
                 delete options.deltaTop
                 delete options.deltaWidth
@@ -551,8 +527,10 @@ const DragPads = (() => {
     // #endregion
 
     return {
-        RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        OnChatCall: onChatCall,
+        OnGraphicChange: onGraphicChange,
+
         MakePad: makePad,
         ClearAllPads: clearAllPads,
         GetPad: getPad,
@@ -565,7 +543,6 @@ const DragPads = (() => {
 })()
 
 on("ready", () => {
-    DragPads.RegisterEventHandlers()
     DragPads.CheckInstall()
     D.Log("DragPads Ready!")
 })

@@ -61,9 +61,9 @@ const D = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             switch (call) {
                 case "!data": {
-                    switch (call = (args.shift() || "").toLowerCase()) {
+                    switch (D.LCase(call = args.shift())) {
                         case "add": case "set": {
-                            switch(call = (args.shift() || "").toLowerCase()) {
+                            switch(D.LCase(call = args.shift())) {
                                 case "blacklist":
                                     setBlackList(args)
                                     break
@@ -75,7 +75,7 @@ const D = (() => {
                             break
                         }
                         case "get": {
-                            switch(call = (args.shift() || "").toLowerCase()) {
+                            switch(D.LCase(call = args.shift())) {
                                 case "blacklist":
                                     sendToGM(getBlackList(), "DEBUG BLACKLIST")
                                     break
@@ -90,7 +90,7 @@ const D = (() => {
                             break
                         }
                         case "clear": case "reset": {
-                            switch(call = (args.shift() || "").toLowerCase()) {
+                            switch(D.LCase(call = args.shift())) {
                                 case "watch": case "dbwatch": case "watchlist":
                                     setWatchList("clear")
                                     break
@@ -107,7 +107,7 @@ const D = (() => {
                             break
                         }
                         case "refresh": {
-                            switch(call = (args.shift() || "").toLowerCase()) {
+                            switch(D.LCase(call = args.shift())) {
                                 case "shortnames": {
                                     refreshShortNames()
                                     break
@@ -117,7 +117,7 @@ const D = (() => {
                                     const srcData = {}
                                     for (const charObj of D.GetChars("all")) {
                                         const nameKey = getName(charObj, true)
-                                        charObj.get("_defaulttoken", function(defToken) {
+                                        charObj.get("_defaulttoken", defToken => {
                                             const imgMatch = D.JS(defToken).match(/imgsrc:(.*?),/u)
                                             if (imgMatch && imgMatch.length)
                                                 srcData[nameKey] = imgMatch[1].replace(/med\.png/gu, "thumb.png")
@@ -151,7 +151,7 @@ const D = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-    let [PROMPTFUNC, PROMPTCLOCK] = [null, false]
+    let PROMPTFUNC
     // #region DECLARATIONS: Reference Variables, Temporary Storage Variables
     const VALS = {
             PAGEID: () => Campaign().get("playerpageid"),
@@ -252,7 +252,7 @@ const D = (() => {
           in Roll20 chat, in the API console log, or both. */
             try {
                 const typeColor = type => {
-                        switch ((type || "").toLowerCase()) {
+                        switch (pLowerCase(type)) {
                             case "character": return C.COLORS.yellow
                             case "graphic": return C.COLORS.palegreen
                             case "text": return C.COLORS.paleblue
@@ -393,6 +393,10 @@ const D = (() => {
             return [charObjs, charIDString, call, args]
         },
         summarizeHTML = (htmlString = "") => ((htmlString.match(/.*?>([^<>]+)<.*?/g) || [""]).pop().match(/.*?>([^<>]+)<.*?/) || [""]).pop(),
+        pInt = strRef => parseInt(strRef) || 0,
+        pFloat = strRef => parseFloat(strRef) || 0,
+        pLowerCase = strRef => `${strRef || ""}`.toLowerCase(),
+        pUpperCase = strRef => `${strRef || ""}`.toUpperCase(),
         numToText = (num, isTitleCase = false) => {
             const numString = `${jStr(num)}`,
                 parseThreeDigits = v => {
@@ -1240,7 +1244,7 @@ const D = (() => {
             for (const charObj of getChars("all"))
                 STATEREF.shortNames.push(getName(charObj, true))
         },
-        getName = (value, isShort = false, isCheckingShort = false) => {
+        getName = (value, isShort = false) => {
             // Returns the NAME of the Graphic, Character or Player (DISPLAYNAME) given: object or ID.
             const obj = VAL({object: value}) && value ||
                 VAL({char: value}) && getChar(value) ||
@@ -1839,6 +1843,7 @@ const D = (() => {
         ParseParams: parseParams,
         ParseCharSelection: parseCharSelect,
         SumHTML: summarizeHTML,
+        Int: pInt, Float: pFloat, LCase: pLowerCase, UCase: pUpperCase,
         NumToText: numToText, TextToNum: textToNum,
         Ordinal: ordinal,
         Capitalize: capitalize,

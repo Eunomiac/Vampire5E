@@ -46,37 +46,34 @@ const Listener = (() => {
                 }
             })
             on("change:attribute:current", (attrObj, prevData) => {
-                
+                if (attrObj.get("current") !== prevData.current) {
+                    const call = attrObj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")
+                    for (const [attrKeys, scriptData] of SCRIPTCALLS.ATTRCHANGE)
+                        for (const attrKey of attrKeys)
+                            if (call.includes(attrKey))
+                                return scriptData.script.OnAttrChange(call, attrObj)
+                }
+                return false
             })
             on("add:attribute", attrObj => {
-
+                const call = attrObj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")
+                for (const [attrKeys, scriptData] of SCRIPTCALLS.ATTRADD)
+                    for (const attrKey of attrKeys)
+                        if (call.includes(attrKey))
+                            return scriptData.script.OnAttrAdd(call, attrObj)
+                return false
+            })
+            on("add:graphic", imgObj => {
+                for (const scriptData of SCRIPTCALLS.IMGADD)
+                    return scriptData.script.OnGraphicAdd(imgObj)
+                return false
+            })
+            on("change:graphic", imgObj => {
+                for (const scriptData of SCRIPTCALLS.IMGCHANGE)
+                    return scriptData.script.OnGraphicChange(imgObj)
+                return false
             })
         },
-             /*           const fullArgs = [call, ...args],
-                            selected = D.GetSelected(msg).map(x => D.GetChar(x) || x),
-                            objects = {
-                                character: [],
-                                graphic: [],
-                                text: [],
-                                other: []
-                            }
-                        // --> Search each argument. 
-                        // If ANY found, put an array of all of them in the right property IN ORDER of argument.
-                        // Index of each property should correspond to argument position in the chat call string.
-                        // Then remove that argument from the args passed to the actual script.
-                        // Make sure arguments that are easily confused (i.e. characters referenced by initial) are ONLY applied if no other objects in that set.
-                        // Retain unfiltered args in "fullArgs" variable.
-                        for (const objType of _.keys(objects))
-                            [objects[objType], args] = getObjsFromArgs(objType, args, msg)
-                                // getObjsFromArgs = (type, args, prioritySelect) --> returns [objects, args] OR "false" if none found.
-                                // If "prioritySelect" contains a message object, will ONLY parse "easily confused" args into objects if they're the only representation of that object in the set.
-                        // "Selected" contains all selected objects, regardless of type.
-                        // If "selected" contains objects whose MAIN properties are empty, move them from selected into that property.
-                        
-                    }
-                }
-            })
-        }, */
     // #endregion
 
     // #region LOCAL INITIALIZATION
@@ -98,6 +95,7 @@ const Listener = (() => {
                 "!img": {script: Media, gmOnly: true, singleCall: false},
                 "!text": {script: Media, gmOnly: true, singleCall: false},
                 "!anim": {script: Media, gmOnly: true, singleCall: false},
+                "!sound": {script: Media, gmOnly: true, singleCall: false},
                 "!mvc": {script: Player, gmOnly: false, singleCall: false},
                 "!sense": {script: Player, gmOnly: false, singleCall: false},
                 "!awe": {script: Player, gmOnly: false, singleCall: false},
@@ -113,14 +111,24 @@ const Listener = (() => {
             SCRIPTCALLS.ATTRADD = [
                 [ ["desire", "projectstake", "triggertimelinesort"], {script: Char} ]
             ]
+            SCRIPTCALLS.IMGCHANGE = [
+                {script: DragPads}
+            ]
+            SCRIPTCALLS.IMGADD = [
+                {script: Media}
+            ]
         },
     // #endregion
 
+        getAllObjs = (objects, type) => {
+            type = D.IsIn(type, ["character", "graphic", "text"])
+            return _.uniq(_.flatten(_.compact([...objects[type] || [], ...objects.selected && objects.selected[type] || []])))
+        },
         parseParams = (args, delim = " ") => _.object(
             (VAL({array: args}) ? args.join(" ") : args).
                 split(new RegExp(`,?${delim}+`, "gu")).
                 filter(x => x.includes(":")).
-                map(x => x.trim().split(":").map(xx => parseInt(xx) || xx))
+                map(x => x.trim().split(":").map(xx => VAL({number: xx}) ? D.Int(xx) : xx))
         ),
         parseArg = {
             character: (arg, isFuzzy = false) => {
@@ -199,7 +207,7 @@ const Listener = (() => {
                 returnArgs = []
             if (VAL({array: args}, "getObjsFromArgs") && args.length) {
                 // First, grab characters from initial character string
-                const initialCharObjs = _.compact(...(args[0] || "").split(",").map(x => parseArg.character(x.trim(), false)))
+                const initialCharObjs = _.uniq(_.flatten(_.compact((args[0] || "").split(",").map(x => parseArg.character(x.trim(), false)))))
                 if (initialCharObjs.length) {
                     objects.character = [...initialCharObjs]
                     args.shift()
@@ -234,7 +242,7 @@ const Listener = (() => {
                             theseReturnArgs.push(thisArg)
                     }
                     // Add found objects and any return args to main variables:
-                    _.each(theseObjs, (objs, type) => { if (objs.length) {
+                    _.each(theseObjs, (objs, type) => { if (_.flatten(objs).length) {
                         DB(`... OBJECTS: ${D.JS(objects)}<br>LENGTHS: ${D.JS(D.KeyMapObj(objects, null, v => v.length))}`, "getObjsFromArgs")
                         objects[type] = objects[type] || []
                         objects[type].push(objs) 
@@ -285,7 +293,8 @@ const Listener = (() => {
         RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
 
-        ParseParams: parseParams
+        ParseParams: parseParams,
+        GetObjects: getAllObjs
     }
 } )()
 

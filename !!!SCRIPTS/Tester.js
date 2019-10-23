@@ -2,8 +2,6 @@ void MarkStart("Tester")
 const Tester = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Tester",
-        CHATCOMMAND = "!test",
-        GMONLY = true,
 
     // #region COMMON INITIALIZATION
         STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
@@ -15,16 +13,6 @@ const Tester = (() => {
         checkInstall = () => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             initialize()
-        },
-        regHandlers = () => {
-            on("chat:message", msg => {
-                const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || args.shift() === CHATCOMMAND)) {
-                    const who = msg.who || "API",
-                        call = args.shift()
-                    handleInput(msg, who, call, args)
-                }
-            })
         },
     // #endregion
 
@@ -60,13 +48,13 @@ const Tester = (() => {
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-        handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
-            let [isKilling, isWriting] = [false, false]
+        onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
+            let isKilling, isWriting
             switch (call) {
                 case "tokenget": {
                     const returnStrings = []
                     for (const charObj of D.GetChars("all"))
-                        charObj.get("_defaulttoken", function(defToken) {
+                        charObj.get("_defaulttoken", defToken => {
                             const imgMatch = D.JS(defToken).match(/imgsrc:(.*?),/u)
                             if (imgMatch && imgMatch.length) {
                                 returnStrings.push(`<b>${D.JS(D.GetName(charObj, true))}</b>: ${D.JS(imgMatch[1].replace(/med\.png/gu, "thumb.png"))}`)
@@ -114,7 +102,7 @@ const Tester = (() => {
                     break
                 }
                 case "fuzzy": {
-                    switch(args.shift().toLowerCase()) {
+                    switch(D.LCase(call = args.shift())) {
                         case "stat": {
                             D.Alert(D.JS(D.IsIn(args.join(" "))))
                             break
@@ -160,7 +148,7 @@ const Tester = (() => {
                             if (!str || !str.match)
                                 return str
                             if (!str.match(/\D/gu))
-                                return new Date(parseInt(str))
+                                return new Date(D.Int(str))
                             if (_.isString(str) && str !== "") {
                                 let [month, day, year] = _.compact(str.match(/([\d]+)[^\w\d]*?([\d]+)[^\w\d]*?([\d]+)|(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*[^\w\d]*?([\d]+){1,2}\w*?[^\w\d]*?(\d+)/imuy)).slice(1)                
                                 if (!month || !day || !year)
@@ -170,8 +158,8 @@ const Tester = (() => {
                                 if (!["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].includes(month.toLowerCase()))
                                     month = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"][month - 1]
                                 if (`${year}`.length < 3)
-                                    year = parseInt(year) + 2000
-                                day = parseInt(day)
+                                    year = D.Int(year) + 2000
+                                day = D.Int(day)
                                 return new Date([year, ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(month.toLowerCase())+1, day])
                             }
                             return str
@@ -263,11 +251,13 @@ const Tester = (() => {
                     D.Alert(`Token: ${D.JS(tokenObj)}<br>Char: ${D.JS(charObj)}`, "!test token")
                     break
                 }
-                case "killtext":
+                case "killtext": {
                     isKilling = true
+                }
                 // falls through
-                case "writetext":
+                case "writetext": {
                     isWriting = !isKilling
+                }
                 // falls through
                 case "text": {
                     const regData = _.values(state[C.GAMENAME].Media.textregistry),
@@ -323,13 +313,12 @@ const Tester = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     return {
-        RegisterEventHandlers: regHandlers,
-        CheckInstall: checkInstall
+        CheckInstall: checkInstall,
+        OnChatCall: onChatCall
     }
 } )()
 
 on("ready", () => {
-    Tester.RegisterEventHandlers()
     Tester.CheckInstall()
     D.Log("Tester Ready!")
 } )

@@ -96,9 +96,9 @@ let scriptRanges = [],
 const GetScriptLine = (traceable, markMode) => {
     const match = (traceable && traceable.stack || "").match(/apiscript.js:(\d+)/g) || ["", ""];
     if (markMode) {
-        return parseInt(match[1].split(':')[1]);
+        return D.Int(match[1].split(':')[1]);
     }
-    return parseInt(match[0].split(':')[1]);
+    return D.Int(match[0].split(':')[1]);
 };
 
 // The last range entry that was added
@@ -255,7 +255,7 @@ const handleCrash = (e) => {
 
     let stackLines = _.map((e && e.stack || "").split(/\n|apiscript\.js/gu), v => {
 		if (v.startsWith(":")) {
-			const globalLineNum = parseInt(v.match(/^:(\d+):/u)[1]),
+			const globalLineNum = D.Int(v.match(/^:(\d+):/u)[1]),
 				  localLine = ConvertGlobalLineToLocal(globalLineNum)
 			return v.replace(/^:\d+:/gu, `@@${localLine.Name}:${localLine.Line}:`).trim()
 		}

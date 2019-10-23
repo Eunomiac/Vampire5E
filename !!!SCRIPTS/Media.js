@@ -2,8 +2,6 @@ void MarkStart("Media")
 const Media = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Media",
-        CHATCOMMAND = ["!media", "!area", "!img", "!text", "!anim"],
-        GMONLY = true,
 
     // #region COMMON INITIALIZATION
         STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
@@ -16,30 +14,20 @@ const Media = (() => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
             initialize()
         },
-        regHandlers = () => {
-            on("chat:message", msg => {
-                const args = msg.content.split(/\s+/u)
-                if (msg.type === "api" && (!GMONLY || playerIsGM(msg.playerid) || msg.playerid === "API") && (!CHATCOMMAND || CHATCOMMAND.includes(args[0]))) {
-                    const who = msg.who || "API",
-                        call = [args.shift(), args.shift()]
-                    handleInput(msg, who, call, args)
-                }
-            })
-            on("add:graphic", handleAdd)
-        },
     // #endregion
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
             STATEREF.imgregistry = STATEREF.imgregistry || {}
             STATEREF.textregistry = STATEREF.textregistry || {}
+            STATEREF.animregistry = STATEREF.animregistry || {}
             STATEREF.idregistry = STATEREF.idregistry || {}
             STATEREF.areas = STATEREF.areas || {}
             STATEREF.tokenregistry = STATEREF.tokenregistry || {}
+            STATEREF.activePlaylists = STATEREF.activePlaylists || []
             STATEREF.TokenSrcs = STATEREF.TokenSrcs || {}
             STATEREF.imgResizeDims = STATEREF.imgResizeDims || {height: 100, width: 100}
-            STATEREF.activeAnimations = STATEREF.activeAnimations || []
-            STATEREF.activeTimeouts = STATEREF.activeTimeouts || []
+            STATEREF.activeAnimations = STATEREF.activeAnimations || {}
             STATEREF.curLocation = STATEREF.curLocation || "DistrictCenter:blank SiteCenter:blank"
 
             // STATEREF.imgregistry.mapButtonDomain_1.cycleSrcs = ["camarilla", "nodomain", "anarch"]
@@ -58,17 +46,22 @@ const Media = (() => {
             STATEREF.AREADICT = Fuzzy.Fix()
             for (const areaKey of _.keys(STATEREF.areas))
                 STATEREF.AREADICT.add(areaKey)
+
+
+            STATEREF.animregistry.WeatherLightning_1.name = "WeatherLightning_1"
+            const animObj = getObj("graphic", STATEREF.animregistry.WeatherLightning_1.id)
+            animObj.set("name", "WeatherLightning_1")
         },
             
         
     // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-        handleInput = (msg, who, call, args) => { 	// eslint-disable-line no-unused-vars
+        onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
             let textParams, textModes
-            switch (call.shift().toLowerCase()) {
+            switch (call) {
                 case "!media": {
-                    switch (call.shift().toLowerCase()) {
+                    switch (D.LCase(call = args.shift())) {
                         case "fix": {
                             const imgReport = fixImgObjs(),
                                 textReport = fixTextObjs()
@@ -80,16 +73,17 @@ const Media = (() => {
                     break
                 }
                 case "!area": {
-                    switch (call.shift().toLowerCase()) {
+                    const [imgObj] = Listener.GetObjects(objects, "graphic")
+                    switch (D.LCase(call = args.shift())) {
                         case "reg": case "register": {
-                            if (!args[0])
-                                D.Alert("Syntax: !area reg &lt;areaName&gt;", "!area reg")                                
-                            else if (VAL({graphicObj: getImgObj(msg)}, "!area reg"))
-                                regArea(getImgObj(msg), args.shift())                                        
+                            if (args.length && VAL({imgObj}, "!area register"))
+                                regArea(imgObj, args.shift())
+                            else       
+                                D.Alert("Syntax: !area reg &lt;areaName&gt;", "!area reg")
                             break
                         }
                         case "get": {
-                            switch (args.shift().toLowerCase()) {
+                            switch (D.LCase(call = args.shift())) {
                                 case "names": {
                                     D.Alert(`Registered Areas:<br>${D.JS(_.keys(AREAREGISTRY))}`)
                                     break
@@ -102,7 +96,8 @@ const Media = (() => {
                     break
                 }
                 case "!img": {
-                    switch (call.shift().toLowerCase()) {
+                    const imgObjs = Listener.GetObjects(objects, "graphic")
+                    switch (D.LCase(call = args.shift())) {
                         case "backup": {
                             STATEREF.backup = {
                                 arearegistry: JSON.parse(JSON.stringify(AREAREGISTRY)),
@@ -113,18 +108,17 @@ const Media = (() => {
                             break
                         }
                         case "reg": case "register": {
-                            const imgObj = getImgObj(msg)
-                            if (args[0] && VAL({graphicObj: imgObj}, "!img reg"))                                
-                                switch (args[0]) {
+                            const [imgObj] = imgObjs
+                            if (VAL({imgObj}, "!img register"))                                
+                                switch (D.LCase(call = args.shift())) {
                                     case "token": {
-                                        args.shift()
                                         const tokenName = args.shift()
-                                        if (VAL({string: tokenName}, "!img reg token"))
+                                        if (VAL({string: tokenName}, "!img register token"))
                                             regRandomizerToken(imgObj, tokenName)
                                         break
                                     }
                                     default: {
-                                        const [hostName, srcName, objLayer] = [args.shift(), args.shift(), args.shift()]
+                                        const [hostName, srcName, objLayer] = [call, args.shift(), args.shift()]
                                         if (hostName && srcName && objLayer)
                                             regImg(imgObj, hostName, srcName, objLayer, D.ParseToObj(args.join(" ")))
                                         else
@@ -137,13 +131,13 @@ const Media = (() => {
                             break
                         }
                         case "set": {
-                            switch (args.shift().toLowerCase()) {
+                            switch (D.LCase(call = args.shift())) {
                                 case "mode": {
-                                    const [hostName, mode] = [args.shift(), args.shift()],
+                                    const [hostName, mode, ...paramArgs] = args,
                                         imgKey = getImgKey(hostName),
-                                    // D.Alert(`Sending to ParseParams: ${args.join(" ")} --> ${D.JS(D.ParseParams(args.join(" ")))}`)
-                                        params = D.ParseParams(args.join(" "))
-                                    // D.Alert(`Params: ${D.JS(params)}`)
+                                        // D.Alert(`Sending to ParseParams: ${args.join(" ")} --> ${D.JS(D.ParseParams(args.join(" ")))}`)
+                                        params = D.ParseParams(paramArgs.join(" "))
+                                        // D.Alert(`Params: ${D.JS(params)}`)
                                     if (!Session.Modes.includes(mode)) {
                                         D.Alert("Mode Set Syntax:<br><br><b>!img set mode (hostName) (mode) (key:val, key:val...)</b><br><br>isForcedOn: true, false, null, \"LAST\"<br>isForcedState: true, null, (string)<br>lastState: null, (string)<br>lastActive: true, false", "!img set mode")
                                     }
@@ -151,23 +145,17 @@ const Media = (() => {
                                         IMGREGISTRY[imgKey].modes = IMGREGISTRY[imgKey].modes || {}
                                         IMGREGISTRY[imgKey].modes[mode] = IMGREGISTRY[imgKey].modes[mode] || {}
                                         for (const key of _.keys(params)) {
-                                            if (["true", "false", "null"].includes(params[key].toLowerCase()))
-                                                params[key] = {true: true, false: false, null: null}[params[key].toLowerCase()]
+                                            if (["true", "false", "null"].includes(D.LCase(params[key])))
+                                                params[key] = {true: true, false: false, null: null}[D.LCase(params[key])]
                                             IMGREGISTRY[imgKey].modes[mode][key] = params[key]
-                                        }
-                                            
+                                        }                                                
                                         D.Alert(`${mode} mode for ${imgKey} set to ${D.JS(IMGREGISTRY[imgKey].modes[mode])}`, "!img set mode")
                                     }
                                     break
                                 }
                                 case "source": case "src": {
-                                    let [hostName, srcName] = ["", ""]
-                                    if (VAL({token: (D.GetSelected(msg) || [])[0]})) {
-                                        hostName = Media.GetImgData(D.GetSelected(msg)[0]).name;
-                                        [srcName] = args
-                                    } else {
-                                        [hostName, srcName] = args
-                                    }
+                                    const [imgObj] = imgObjs,
+                                        [hostName, srcName] = [getImgKey(imgObj), args.shift()]
                                     if (isRegImg(hostName))
                                         setImg(hostName, srcName)
                                     else
@@ -175,47 +163,50 @@ const Media = (() => {
                                     break
                                 }
                                 case "area": {
-                                    const imgObj = getImgObj(msg)
-                                    if (!imgObj)
-                                        D.Alert("Select an image first!", "MEDIA: !img set area")
-                                    else
+                                    const [imgObj] = imgObjs
+                                    if (VAL({imgObj}, "!img set area"))
                                         setImgArea(imgObj, args.shift(), args.shift().toLowerCase === "resize")
                                     break
                                 }
                                 case "params": {
-                                    const imgObj = getImgObj(args[0]) || getImgObj(msg),
+                                    const [imgObj] = imgObjs,
                                         params = D.ParseParams(args)
-                                    if (VAL({graphicObj: imgObj}, "!img set params"))
+                                    if (VAL({imgObj}, "!img set params"))
                                         setImgTemp(imgObj, params)
                                     break
                                 }
-                            // no default
+                                // no default
                             }
                             break
                         }
                         case "clean": case "cleanreg": case "cleanregistry": {
-                            if (args[0] && args[0].toLowerCase() === "confirm")
-                                cleanRegistryConfirm()
-                            else
-                                cleanRegistry()
+                            switch (D.LCase(call = args.shift())) {
+                                case "confirm": {
+                                    cleanRegistryConfirm()
+                                    break
+                                }
+                                default: {
+                                    cleanRegistry()
+                                    break
+                                }
+                            }
                             break
                         }
                         case "add": {
-                            let hostName, srcName
-                            switch (args.shift().toLowerCase()) {
+                            const hostName = getImgKey(imgObjs.shift())
+                            let srcName
+                            switch (D.LCase(call = args.shift())) {
                                 case "cyclesrc": case "cycle": {
-                                    [hostName, srcName] = args
-                                    if (isRegImg(hostName)) {
-                                        IMGREGISTRY[getImgKey(hostName)].cycleSrcs = IMGREGISTRY[getImgKey(hostName)].cycleSrcs || []
-                                        IMGREGISTRY[getImgKey(hostName)].cycleSrcs.push(srcName)
+                                    srcName = args.shift()
+                                    if (VAL({string: srcName}, "!img add cyclesrc") && isRegImg(hostName)) {
+                                        IMGREGISTRY[hostName].cycleSrcs = IMGREGISTRY[hostName].cycleSrcs || []
+                                        IMGREGISTRY[hostName].cycleSrcs.push(srcName)
                                     }
                                 }
                                 // falls through
                                 case "src": case "source": {
-                                    hostName = hostName || args[0]
-                                    srcName = srcName || args[1]
-                                    if (isRegImg(hostName)) {
-                                        hostName = getImgKey(hostName)
+                                    srcName = srcName || args.shift()
+                                    if (VAL({string: srcName}, "!img add cyclesrc") && isRegImg(hostName)) {
                                         if (!_.isObject(IMGREGISTRY[hostName].srcs))
                                             IMGREGISTRY[hostName].srcs = {}
                                         if (srcName)
@@ -228,9 +219,9 @@ const Media = (() => {
                                     break
                                 }
                                 case "tokensrc": case "tokensource": {
-                                    const tokenName = args.shift()
+                                    const [tokenName] = args
                                     if (isRegImg(tokenName))
-                                        addTokenSrc(getImgObj(msg), tokenName)
+                                        addTokenSrc(hostName, tokenName)
                                     break
                                 }
                                 default: {
@@ -241,60 +232,58 @@ const Media = (() => {
                             break
                         }
                         case "del": case "delete": {
-                            if ((args[0] || "").toLowerCase() === "all") {
-                                args.shift()
-                                for (const hostName of _.keys(IMGREGISTRY))
-                                    if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
-                                        removeImg(hostName)
-                            } else if (getImgObjs(msg).length) {
-                                for (const obj of getImgObjs(msg))
-                                    removeImg(obj)
-
-                            } else if (args[0] && getImgObj(args.join(" "))) {
-                                removeImg(args.join(" "))
-                            } else {
-                                D.Alert(`Provide "all" (plus an optional host name substring), a registered host name, or select image objects. <b>Syntax:</b><br><br><pre>!img del all <hostSubstring>
-                    !img del <hostName></pre>`, "MEDIA: !img del")
+                            switch (D.LCase(call = args.shift())) {
+                                case "all": {
+                                    for (const hostName of _.keys(IMGREGISTRY))
+                                        if (D.LCase(hostName).includes(D.LCase(args.join(" "))))
+                                            removeImg(hostName)
+                                    break
+                                }
+                                default: {
+                                    for (const imgObj of imgObjs)
+                                        removeImg(imgObj)
+                                    break
+                                }
                             }
                             break
                         }
                         case "unreg": case "unregister": {
-                        // D.Alert(`ARGS: ${D.JS(args)}<br><br>getImgObj('${D.JS(args.join(" "))}'):<br><br>${D.JS(getImgObj(args.join(" ")))}`)
-                            if ((args[0] || "").toLowerCase() === "all") {
-                                args.shift()
-                                for (const hostName of _.keys(IMGREGISTRY))
-                                    if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
-                                        removeImg(hostName, true)
-                            } else if (_.compact(getImgObjs(msg)).length) {
-                                for (const obj of getImgObjs(msg))
-                                    removeImg(obj, true)
-
-                            } else if (args[0] && getImgObj(args.join(" "))) {
-                                removeImg(args.join(" "), true)
-                            } else if (args[0] && IMGREGISTRY[args.join(" ")]) {
-                                delete IMGREGISTRY[args.join(" ")]
-                            } else {
-                                D.Alert("Provide \"all\", a registered host name, or select image objects. <b>Syntax:</b><br><br><pre>!img unreg all/<<hostName>>")
+                            switch (D.LCase(call = args.shift())) {
+                                case "all": {
+                                    for (const hostName of _.keys(IMGREGISTRY))
+                                        if (D.LCase(hostName).includes(D.LCase(args.join(" "))))
+                                            removeImg(hostName, true)
+                                    break
+                                }
+                                default: {
+                                    const imgKey = getImgKey(args.join(" "))
+                                    args.unshift(call)
+                                    if (imgObjs.length)
+                                        for (const imgObj of imgObjs)
+                                            removeImg(imgObj, true)
+                                    else if (imgKey)
+                                        delete IMGREGISTRY[imgKey]
+                                    break
+                                }
                             }
                             break
                         }
                         case "reset": {
-                            switch (args.shift().toLowerCase()) {
+                            switch (D.LCase(call = args.shift())) {
                                 case "pos": case "position": {
-                                    const imgObjs = D.GetSelected(msg)
                                     for (const imgObj of imgObjs)
-                                        if (VAL({graphicObj: imgObj}, "!img set pos")) {
+                                        if (VAL({imgObj}, "!img set pos")) {
                                             const hostName = getImgKey(imgObj)
-                                            IMGREGISTRY[hostName].top = parseInt(imgObj.get("top"))
-                                            IMGREGISTRY[hostName].left = parseInt(imgObj.get("left"))
-                                            IMGREGISTRY[hostName].height = parseInt(imgObj.get("height"))
-                                            IMGREGISTRY[hostName].width = parseInt(imgObj.get("width"))
+                                            IMGREGISTRY[hostName].top = D.Int(imgObj.get("top"))
+                                            IMGREGISTRY[hostName].left = D.Int(imgObj.get("left"))
+                                            IMGREGISTRY[hostName].height = D.Int(imgObj.get("height"))
+                                            IMGREGISTRY[hostName].width = D.Int(imgObj.get("width"))
                                             D.Alert(`Position Set for Img ${hostName}<br><br><pre>${D.JS(IMGREGISTRY[hostName])}</pre>`)
                                         }
                                     break
                                 }
                                 case "cyclesrc": case "cyclesrcs": {
-                                    const imgKey = getImgKey(D.GetSelected(msg)[0]) || getImgKey(args.shift())
+                                    const imgKey = getImgKey(imgObjs.shift())
                                     if (isRegImg(imgKey))
                                         delete IMGREGISTRY[imgKey].cycleSrcs
                                     break
@@ -304,18 +293,15 @@ const Media = (() => {
                             break
                         }
                         case "toggle": {
-                            DB(`TOGGLE COMMAND RECEIVED.  MESSAGE IS AS FOLLOWS:<br><br>${D.JS(msg)}`, "!img toggle")
-                            switch (args.shift().toLowerCase()) {
+                            switch (D.LCase(call = args.shift())) {
                                 case "on": {
-                                    DB(`Toggling ON: ${D.JS(args)}`, "!img toggle")
-                                    for (const param of args)
-                                        toggleImg(param, true)
+                                    for (const imgObj of imgObjs)
+                                        toggleImg(imgObj, true)
                                     break
                                 }
                                 case "off": {
-                                    DB(`Toggling OFF: ${D.JS(args)}`, "!img toggle")
-                                    for (const param of args)
-                                        toggleImg(param, false)
+                                    for (const imgObj of imgObjs)
+                                        toggleImg(imgObj, false)
                                     break
                                 }
                                 case "log": {
@@ -347,12 +333,11 @@ const Media = (() => {
                             break
                         }
                         case "align": {
-                            if (D.GetSelected(msg))
-                                alignImgs(msg, ...args)
+                            alignImgs(imgObjs, ...args)
                             break
                         }
                         case "get": {
-                            switch (args.shift().toLowerCase()) {
+                            switch (D.LCase(call = args.shift())) {
                                 case "zlevels": {
                                     const sortFunc = (a, b) => {
                                             let [aVal, bVal] = [1000*a[2], 1000*b[2]]
@@ -375,54 +360,22 @@ const Media = (() => {
                                     D.Alert(`<h2>MAP</h2><table><tr><td style="width: 60px;"></td><td style="width: 100px;"></td><td style="width: 100px;"></td></tr>${reportTables[0]}</table><h2>OBJECTS</h2><table><tr><td style="width: 60px;"></td><td style="width: 100px;"></td><td style="width: 100px;"></td></tr>${reportTables[1]}</table>`)
                                     break
                                 }
-                                case "active": {
-                                    const startActiveNames = {
-                                            objects: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer === "objects" && x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`),
-                                            map: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer === "map" && x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`),
-                                            other: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`)
-                                        },
-                                        startInactiveNames = {
-                                            objects: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer === "objects" && !x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`),
-                                            map: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer === "map" && !x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`),
-                                            other: [..._.values(IMGREGISTRY), ..._.values(TEXTREGISTRY)].filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && !x.startActive).map(x => `${x.srcs ? "I" : "T"}: ${x.name}`)
-                                        }
-                                    D.Alert([
-                                        "<h2>ACTIVE OBJECTS</h2>",
-                                        ...startActiveNames.objects,
-                                        "<h2>ACTIVE MAP</h2>",
-                                        ...startActiveNames.map,
-                                        "<h2>ACTIVE OTHER</h2>",
-                                        ...startActiveNames.other,
-                                        "<h2>INACTIVE OBJECTS</h2>",
-                                        ...startInactiveNames.objects,
-                                        "<h2>INACTIVE MAP</h2>",
-                                        ...startInactiveNames.map,
-                                        "<h2>INACTIVE OTHER</h2>",
-                                        ...startInactiveNames.other
-                                    ].join("<br>"))
-                                    break
-                                }
                                 case "data": {
-                                    const imgData = getImgData(msg, true) || getImgData(args.shift())
-                                    if (VAL({list: imgData}, "!img get data"))
-                                        D.Alert(D.JS(args[0] && imgData[args[0]] || imgData), "MEDIA, !img get data")
+                                    D.Alert(D.JS(getImgData(imgObjs.shift())), "MEDIA, !img get data")
                                     break
                                 }
                                 case "names": {
-                                    if (args[0] && args[0].toLowerCase().includes("pad"))
-                                        D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(IMGREGISTRY))}`)
-                                    else
-                                        D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(IMGREGISTRY).filter(x => !IMGREGISTRY[x].name.includes("Pad_")))}`)
+                                    D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(IMGREGISTRY))}`)
                                     break
                                 }
-                            // no default
+                                // no default
                             }
                             break
                         }
                         case "fix": {
-                            switch ((args.shift() || "").toLowerCase()) {
+                            switch (D.LCase(call = args.shift())) {
                                 case "layers": {
-                                    setActiveLayers(args[0] === "true")
+                                    setActiveLayers(args.shift() === "true")
                                     break
                                 }
                                 case "zlevels": {
@@ -451,41 +404,39 @@ const Media = (() => {
                             break
                         }
                         case "adjust": {
-                            const imgObjs = D.GetSelected(msg) || [getImgObj(args.shift())],
-                                [deltaX, deltaY] = args.map(x => x === "x" ? 0 : parseFloat(x))
+                            const [deltaX, deltaY] = args.map(x => D.Float(x))
                             for (const imgObj of imgObjs)
-                                if (VAL({graphic: imgObj}))
-                                    setImgTemp(imgObj, {
-                                        left: parseFloat(imgObj.get("left")) + (deltaX || 0),
-                                        top: parseFloat(imgObj.get("top")) + (deltaY || 0)
-                                    })
+                                setImgTemp(imgObj, {
+                                    left: D.Float(imgObj.get("left")) + deltaX,
+                                    top: D.Float(imgObj.get("top")) + deltaY
+                                })
                             break
                         }
-                    // no default
+                        // no default
                     }
                     break
                 }
                 case "!text": {
-                    switch (call.shift().toLowerCase()) {                                                
-                        case "get":
-                            switch (args.shift().toLowerCase()) {
+                    const textObjs = Listener.GetObjects(objects, "text")
+                    switch (D.LCase(call = args.shift())) {                                                
+                        case "get": {
+                            switch (D.LCase(call = args.shift())) {
                                 case "data": {
-                                    const textObj = VAL({selection: msg}) ? getTextObj(msg) : getTextObj(args.shift())
-                                    if (textObj)
+                                    const [textObj] = textObjs
+                                    if (VAL({textObj}, "!text get data"))
                                         D.Alert(D.JS(getTextData(textObj)), "!text get data")
-                                    else
-                                        D.Alert("Syntax: !text get data [<name>] (or select a text object object)", "!text get data")
                                     break
                                 }
                                 case "width": {
-                                    const textObj = getTextObj(msg),
+                                    const [textObj] = textObjs,
                                         textString = msg.content.match(/@@(.*?)@@/ui)[1]
                                     D.Alert(`The width of @@${textString}@@ is ${getTextWidth(textObj, textString, false)}`)
                                     break
                                 }
-                                case "names":
+                                case "names": {
                                     D.Alert(D.JS(_.keys(TEXTREGISTRY)), "!text get names")
                                     break
+                                }
                                 case "widths": {
                                     const dbStrings = []
                                     for (const textData of _.values(STATEREF.textregistry)) {
@@ -507,40 +458,13 @@ const Media = (() => {
                                     D.Alert(`${dbStrings.join("<br>")}`, "Text Width Check")
                                     break
                                 }
-                                case "active": {
-                                    const startActiveNames = {
-                                            objects: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "objects" && x.startActive).map(x => x.name),
-                                            map: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "map" && x.startActive).map(x => x.name),
-                                            other: _.values(TEXTREGISTRY).filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && x.startActive).map(x => x.name)
-                                        },
-                                        startInactiveNames = {
-                                            objects: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "objects" && !x.startActive).map(x => x.name),
-                                            map: _.values(TEXTREGISTRY).filter(x => x.activeLayer === "map" && !x.startActive).map(x => x.name),
-                                            other: _.values(TEXTREGISTRY).filter(x => x.activeLayer !== "objects" && x.activeLayer !== "map" && !x.startActive).map(x => x.name)
-                                        }
-                                    D.Alert([
-                                        "<h2>ACTIVE OBJECTS</h2>",
-                                        ...startActiveNames.objects,
-                                        "<h2>ACTIVE MAP</h2>",
-                                        ...startActiveNames.map,
-                                        "<h2>ACTIVE OTHER</h2>",
-                                        ...startActiveNames.other,
-                                        "<h2>INACTIVE OBJECTS</h2>",
-                                        ...startInactiveNames.objects,
-                                        "<h2>INACTIVE MAP</h2>",
-                                        ...startInactiveNames.map,
-                                        "<h2>INACTIVE OTHER</h2>",
-                                        ...startInactiveNames.other
-                                    ].join("<br>"))
-                                    break
-                                }
-                                // no default
+                                    // no default
                             }
                             break
-                        case "set":
-                            switch ((args[0] || "").toLowerCase()) {
+                        }
+                        case "set": {
+                            switch (D.LCase(call = args.shift())) {
                                 case "mode": {
-                                    args.shift()
                                     const [hostName, mode, key, val] = args,
                                         textKey = getTextKey(hostName)
                                     if (!Session.Modes.includes(mode) || !["isForcedOn", "isForcedState", "lastActive", "lastState"].includes(key) || !["true", "false", "null", "LAST"].includes(val))
@@ -554,68 +478,56 @@ const Media = (() => {
                                     break
                                 }
                                 case "updateslave": {
-                                    updateSlaveText(args[1])
+                                    updateSlaveText(args.shift())
                                     break
                                 }
                                 case "slave": {
-                                    args.shift()
                                     try {
-                                        const textObj = getTextObj(msg),
-                                            [hostName, edgeDir] = [args.shift(), args.shift()],
-                                            horizPad = parseInt(args[0] ? args.shift() : 0),
-                                            vertPad = parseInt(args[0] ? args.shift() : 0)
-                                        linkText(hostName, {[edgeDir]: [getTextKey(textObj)]}, horizPad, vertPad)
+                                        const [textObj] = textObjs,
+                                            [hostName, edgeDir, horizPad, vertPad] = args
+                                        linkText(hostName, {[edgeDir]: [getTextKey(textObj)]}, D.Int(horizPad), D.Int(vertPad))
                                     } catch (errObj) {
                                         D.Alert(`Syntax: !text set slave (hostName) (edgeDirection) (horizPad) (vertPad)<br>${JSON.stringify(errObj)}`, "!text set slave")
                                     }
                                     break
                                 }
                                 case "justify": case "justification": case "just": {
-                                    args.shift()
                                     const justification = args.shift() || "center"
-                                    if (VAL({selection: msg})) 
-                                        for(const textObj of D.GetSelected(msg))
-                                            justifyText(textObj, justification)
-                                    else 
-                                        for (const textKey of args)
-                                            justifyText(textKey, justification)                            
+                                    for (const textObj of textObjs)
+                                        justifyText(textObj, justification)
                                     break
                                 }
                                 case "params": {
-                                    args.shift()
-                                    const textObj = getTextObj(args[0]) || getTextObj(msg),
+                                    const [textObj] = textObjs,
                                         params = D.ParseParams(args)
                                     if (VAL({textObj}, "!text set params"))
                                         setTextData(textObj, params)
                                     break   
                                 }
                                 default: {
-                                    const textObj = getTextObj(args[0], true) || D.GetSelected(msg)[0]
-                                    if (getTextObj(args[0], true))
-                                        args.shift()
+                                    const [textObj] = textObjs
                                     if (VAL({textObj}, "!text set"))
-                                        setText(textObj, args[0] && args.join(" ") || " ")
+                                        setText(textObj, args.join(" ") || " ")
                                     break
                                 }
-                            // no default                                    
+                                // no default                                    
                             }
                             break
-                        case "clean": case "cleanreg": case "cleanregistry":
+                        }
+                        case "clean": case "cleanreg": case "cleanregistry": {
                             cleanTextRegistry()
                             break
+                        }
                         case "reset": case "resetreg": case "resetregistry": {
-                            switch((args[0] || "").toLowerCase()) {
+                            switch (D.LCase(call = args.shift())) {
                                 case "pos": case "position": {
-                                    args.shift()
-                                    const textObj = getTextObj(msg)
-                                    if (!textObj) {
-                                        D.Alert("Select a text object first!", "MEDIA: !text set position")
-                                    } else if (!IDREGISTRY[textObj.id]) {
-                                        D.Alert("Text not registered.  To register selected text:<br><br><pre>!text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; &lt;isMakingShadow&gt; [params (\"key:value, key:value\")]</pre>", "!text set position")
-                                    } else {
-                                        const hostName = getTextKey(msg)
-                                        setTextData(textObj, {top: parseInt(textObj.get("top")), left: getBlankLeft(textObj), layer: textObj.get("layer")})
+                                    const [textObj] = textObjs
+                                    if (isRegText(textObj)) {
+                                        const hostName = getTextKey(textObj)
+                                        setTextData(textObj, {top: D.Int(textObj.get("top")), left: getBlankLeft(textObj), layer: textObj.get("layer")})
                                         D.Alert(`Position Set for Text ${hostName}<br><br><pre>${D.JS(TEXTREGISTRY[hostName])}</pre>`)
+                                    } else {
+                                        D.Alert("Select a text object first!", "MEDIA: !text set position")
                                     }
                                     break
                                 }
@@ -627,24 +539,24 @@ const Media = (() => {
                             break
                         }
                         case "del": case "delete": {
-                            if ((args[0] || "").toLowerCase() === "all") {
-                                args.shift()
-                                for (const hostName of _.keys(TEXTREGISTRY))
-                                    if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
-                                        removeText(hostName)
-                            } else if (getTextObjs(msg).length) {
-                                for (const obj of getTextObjs(msg))
-                                    removeText(obj)
-                            } else if (args[0] && getTextObj(args.join(" "))) {
-                                removeText(args.join(" "))
-                            } else {
-                                D.Alert(`Provide "all" (plus an optional host name substring), a registered host name, or select text objects. <b>Syntax:</b><br><br><pre>!text del all <hostSubstring>
-                    !text del <hostName></pre>`, "!text del")
+                            switch (D.LCase(call = args.shift())) {
+                                case "all": {
+                                    for (const hostName of _.keys(TEXTREGISTRY))
+                                        if (D.LCase(hostName).includes(D.LCase(args.join(" "))))
+                                            removeText(hostName)
+                                    break
+                                }
+                                default: {
+                                    for (const textObj of textObjs)
+                                        removeText(textObj)
+                                    break
+                                }
                             }
                             break
                         }
                         case "rereg": case "reregister": {
-                            if (VAL({selection: msg})) {                         
+                            const [textObj] = textObjs
+                            if (isRegText(textObj)) {                         
                                 const textData = getTextData(msg, true)
                                 args[0] = args[0] || textData.name
                                 args[1] = args[1] || textData.activeLayer
@@ -662,15 +574,11 @@ const Media = (() => {
                         }
                         // falls through
                         case "reg": case "register": {
-                            if (!args[0]) {
-                                D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
-                            } else {
-                                const textObj = getTextObj(msg)
-                                if (!textObj) {
-                                    D.Alert("Select a text object first!", "MEDIA: !text reg")
-                                } else {
-                                    const [hostName, objLayer, isShadow, justification] = [args.shift(), args.shift(), args.shift(), args.shift()]
-                                    textParams = textParams || args.join(" ")
+                            if (args.length) {
+                                const [textObj] = textObjs
+                                if (textObj) {
+                                    const [hostName, objLayer, isShadow, justification, ...paramArgs] = args
+                                    textParams = textParams || paramArgs.join(" ")
                                     if (hostName && objLayer) {
                                         regText(textObj, hostName, objLayer, !isShadow || isShadow !== "false", justification || "center", D.ParseToObj(textParams))
                                         if (textModes)
@@ -678,72 +586,130 @@ const Media = (() => {
                                     } else {
                                         D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
                                     }
+                                } else {
+                                    D.Alert("Select a text object first!", "MEDIA: !text reg")
                                 }
+                            } else {
+                                D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
                             }
                             break
                         }
                         case "unreg": case "unregister": {
-                            if ((args[0] || "").toLowerCase() === "all") {
-                                args.shift()
-                                for (const hostName of _.keys(TEXTREGISTRY))
-                                    if (!args[0] || hostName.toLowerCase().includes(args.join(" ").toLowerCase()))
-                                        removeText(hostName, true, true)
-                            } else if (args[0]) {
-                                removeText(args.join(" "), true, true)
-                            } else if (_.compact(getTextObjs(msg)).length) {
-                                for (const obj of getTextObjs(msg))
-                                    removeText(obj, true, true)
-                            } else {
-                                D.Alert("Provide \"all\", a registered host name, or select text objects. <b>Syntax:</b><br><br><pre>!text unreg all/<<hostName>>")
+                            switch (D.LCase(call = args.shift())) {
+                                case "all": {
+                                    for (const hostName of _.keys(TEXTREGISTRY))
+                                        if (D.LCase(hostName).includes(D.LCase(args.join(" "))))
+                                            removeText(hostName, true)
+                                    break
+                                }
+                                default: {
+                                    for (const textObj of textObjs)
+                                        removeText(textObj, true)
+                                    break
+                                }
                             }
                             break
                         }
-                        case "toggle":
-                            switch (args.shift().toLowerCase()) {
-                                case "on":
-                                    DB(`Toggling ON: ${D.JS(args)}`, "!text toggle")
-                                    for (const param of args)
-                                        toggleText(param, true)
+                        case "toggle": {
+                            switch (D.LCase(call = args.shift())) {
+                                case "on": {
+                                    for (const textObj of textObjs)
+                                        toggleText(textObj, true)
                                     break
-                                case "off":
-                                    DB(`Toggling OFF: ${D.JS(args)}`, "!text toggle")
-                                    for (const param of args)
-                                        toggleText(param, false)
+                                }
+                                case "off": {
+                                    for (const textObj of textObjs)
+                                        toggleText(textObj, false)
                                     break
-                                default:
+                                }
+                                default: {
                                     D.Alert("Must state either 'on' or 'off'.  <b>Syntax:</b><br><br><pre>!text toggle &lt;on/off&gt; &lt;hostnames&gt;</pre>", "MEDIA: !text toggle")
                                     break
+                                }
                             }
                             break
-                    // no default
+                        }
+                        // no default
                     }
                     break
                 }
                 case "!anim": {
-                    switch (call.shift().toLowerCase()) {
-                        case "reg": case "register":
-                            if (!args[0] || !D.GetSelected(msg)) 
-                                D.Alert("Select an animation first!<br><br>Syntax: !anim reg &lt;animName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;timeout&gt;", "MEDIA: !anim reg")
+                    const imgObjs = Listener.GetObjects(objects, "graphic")
+                    switch(D.LCase(call = args.shift())) {
+                        case "reg": case "register": {
+                            const [imgObj] = imgObjs,
+                                [animName, timeOut] = args
+                            if (VAL({imgObj, string: animName, number: timeOut}, "!anim register"))
+                                regAnimation(imgObj, animName, D.Float(timeOut))
                             else
-                                regAnimation(msg, args.shift(), args.shift(), args.shift())
+                                D.Alert("Syntax: <b>!anim register <animName> <timeOut [ms]></b>", "!anim register")
                             break
-                        case "fire":
-                            fireAnimation(args.shift())
-                            break
-                        case "kill": {
-                            switch (args.shift().toLowerCase()) {
-                                case "all": {
-                                    killAllAnimations()
-                                    D.Alert("All animations cleared.", "!anim kill all")
+                        }
+                        case "set": {
+                            switch (D.LCase(call = args.shift())) {
+                                case "timeout": {
+                                    const hostName = getImgKey(imgObjs.shift()),
+                                        timeOut = args.shift()
+                                    if (VAL({string: hostName, number: timeOut}, "!anim set timeout")) {
+                                        ANIMREGISTRY[hostName].timeOut = D.Int(1000 * D.Float(timeOut))
+                                        flashAnimation(hostName)
+                                    }
                                     break
                                 }
-                                case "time": case "timers": case "timeouts": {
-                                    killAllTimeouts()
-                                    D.Alert("All timeouts cleared.", "!anim kill timeouts")
+                                case "data": {
+                                    const hostName = getImgKey(imgObjs.shift()),
+                                        [minTime, maxTime, soundName] = args
+                                    if (VAL({string: [hostName, soundName], number: [minTime, maxTime]}, "!anim set sound", true)) {
+                                        setAnimData(hostName, minTime, maxTime, soundName)
+                                        D.Alert(D.JS(ANIMREGISTRY[hostName]), "!anim set sound")
+                                    }
                                     break
                                 }
                                 // no default
                             }
+                            break
+                        }
+                        case "activate": {
+                            activateAnimation(getImgKey(imgObjs.shift()) || args.shift(), args.shift(), args.shift())
+                            break
+                        }
+                        case "deactivate": {
+                            deactivateAnimation(getImgKey(imgObjs.shift()) || args.shift())
+                            break
+                        }
+                        case "flash": {
+                            flashAnimation(getImgKey(imgObjs.shift()) || args.shift())
+                            break
+                        }
+                        case "kill": {
+                            switch (D.LCase(call = args.shift())) {
+                                case "all": {
+                                    killAllAnims()
+                                    break
+                                }
+                                default: {
+                                    killAnimation(imgObjs.shift())
+                                    break
+                                }
+                            }
+                            break
+                        }
+                        // no default
+                    }
+                    break
+                }
+                case "!sound": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "test": {
+                            switch(D.LCase(call = args.shift())) {
+                                case "objs": {
+                                    const soundObjects = findObjs({_type: "jukeboxtrack"})
+                                    D.Alert(D.JS(soundObjects.map(x => x.get("title"))))
+                                    break
+                                }
+                                // no default
+                            }
+                            break
                         }
                         // no default
                     }
@@ -752,23 +718,26 @@ const Media = (() => {
                 // no default
             }
         },
-        handleAdd = obj => {
+        onGraphicAdd = imgObj => {
             if (imgRecord)
-                LOG(obj.get("imgsrc"))
+                LOG(imgObj.get("imgsrc"))
             if (imgResize)
-                obj.set(STATEREF.imgResizeDims)
-            if (isRandomizerToken(obj))
-                setRandomizerToken(obj)
+                imgObj.set(STATEREF.imgResizeDims)
+            if (isRandomizerToken(imgObj))
+                setRandomizerToken(imgObj)
         }
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     let [imgRecord, imgResize] = [false, false]
+    const activeTimers = {},
 
     // #region CONFIGURATION
-    const IMGREGISTRY = STATEREF.imgregistry,
+        IMGREGISTRY = STATEREF.imgregistry,
         IDREGISTRY = STATEREF.idregistry,
         TEXTREGISTRY = STATEREF.textregistry,
+        ANIMREGISTRY = STATEREF.animregistry,
+        GRAPHICREGISTRY = Object.assign({}, ANIMREGISTRY, IMGREGISTRY),
         AREAREGISTRY = STATEREF.areas,
         TOKENREGISTRY = STATEREF.tokenregistry,
         BGIMGS = {
@@ -857,7 +826,9 @@ const Media = (() => {
                     WeatherFrost_1: 139,
                     WeatherFog_1: 125,
                     WeatherMain_1: 124, 
-                    // WeatherLightning: 110,
+                    WeatherLightning_1: 110,
+                    WeatherLightning_2: 110,
+                    WeatherLightning_3: 110,
                     WeatherGround_1: 119,
                     WeatherClouds_1: 105
                 },
@@ -1182,10 +1153,13 @@ const Media = (() => {
                 sortedMediaObjs = []
             for (const category of ["map", "objects"]) {
                 const imgDatas = _.compact(getZLevels()[category].map(x => {
-                    if (!IMGREGISTRY[x[1]])
-                        return false;// THROW(`No image Registered for ZIndex Entry '${x[1]}'`, "setZIndices")
-                    [,,IMGREGISTRY[x[1]].zIndex] = x
-                    return IMGREGISTRY[x[1]]
+                    if (IMGREGISTRY[x[1]]) 
+                        [,,IMGREGISTRY[x[1]].zIndex] = x
+                    else if (ANIMREGISTRY[x[1]])
+                        [,,ANIMREGISTRY[x[1]].zIndex] = x
+                    else
+                        return false // THROW(`No image Registered for ZIndex Entry '${x[1]}'`, "setZIndices")
+                    return IMGREGISTRY[x[1]] || ANIMREGISTRY[x[1]]
                 }))
                 allImgDatas.push(..._.compact(imgDatas))
             }
@@ -1218,9 +1192,9 @@ const Media = (() => {
                 if (VAL({char: imgRef}))
                     return imgRef
                 if (VAL({string: imgRef})) {
-                    if (IMGREGISTRY[imgRef])
+                    if (GRAPHICREGISTRY[imgRef])
                         return imgRef
-                    if (IMGREGISTRY[`${imgRef}_1`])
+                    if (GRAPHICREGISTRY[`${imgRef}_1`])
                         return `${imgRef}_1`
                     imgObj = getObj("graphic", imgRef)                    
                 } else if (VAL({imgObj: imgRef})) {
@@ -1230,16 +1204,16 @@ const Media = (() => {
                 }
                 if (VAL({imgObj})) {
                     imgKey = getImgKey(imgObj.get("name"), true)
-                    if (IMGREGISTRY[imgKey])
+                    if (GRAPHICREGISTRY[imgKey])
                         return imgKey
                     imgKey = getImgKey(imgObj.get("name"), true)
-                    if (IMGREGISTRY[imgKey])
+                    if (GRAPHICREGISTRY[imgKey])
                         return imgKey
                     imgKey = getImgKey((_.find(_.values(Char.REGISTRY), x => x.id === imgObj.get("represents")) || {tokenName: false}).tokenName, true)
-                    if (IMGREGISTRY[imgKey])
+                    if (GRAPHICREGISTRY[imgKey])
                         return imgKey
                     imgKey = getImgKey(`${getObj("character", imgObj.get("represents")).get("name").replace(/\s+/gu, "")}Token`, true)
-                    if (IMGREGISTRY[imgKey])
+                    if (GRAPHICREGISTRY[imgKey])
                         return imgKey
                 }
                 return !isSilent && THROW(`Cannot find name of image from reference '${D.JSL(imgRef)}'`, "GetImgKey")
@@ -1267,7 +1241,7 @@ const Media = (() => {
                 }
                 const imgKey = getImgKey(imgRef)
                 if (VAL({string: imgKey}))
-                    imgObj = getObj("graphic", IMGREGISTRY[imgKey].id)
+                    imgObj = getObj("graphic", GRAPHICREGISTRY[imgKey].id)
                 if (VAL({imgObj}))
                     return imgObj
                 return false
@@ -1277,7 +1251,7 @@ const Media = (() => {
         },
         getImgObjs = (imgRefs, isSilent = false) => {
             // D.Alert(`GetSelected ImgRefs: ${D.JS(D.GetSelected(imgRefs))}`)
-            imgRefs = VAL({selection: imgRefs}) ? D.GetSelected(imgRefs) : imgRefs || _.keys(IMGREGISTRY)
+            imgRefs = VAL({selection: imgRefs}) ? D.GetSelected(imgRefs) : imgRefs || _.keys(GRAPHICREGISTRY)
             const imgObjs = []
             if (VAL({array: imgRefs}))
                 for (const imgRef of imgRefs)
@@ -1289,14 +1263,14 @@ const Media = (() => {
                 let imgKey, imgObj
                 try {
                     imgKey = getImgKey(imgRef, isSilent)
-                    if (VAL({string: imgKey}) || VAL({imgObj: imgKey}) && IMGREGISTRY[imgKey.get("name")])
-                        return IMGREGISTRY[imgKey] || IMGREGISTRY[imgKey.get("name")]
+                    if (VAL({string: imgKey}) || VAL({imgObj: imgKey}) && GRAPHICREGISTRY[imgKey.get("name")])
+                        return GRAPHICREGISTRY[imgKey] || GRAPHICREGISTRY[imgKey.get("name")]
                     imgObj = getImgObj(imgRef, isSilent)
                     if (VAL({imgObj}, "getImgData")) {
-                        if (IMGREGISTRY[imgObj.get("name")])
-                            return IMGREGISTRY[imgObj.get("name")]
-                        if (VAL({char: imgKey}) && !IMGREGISTRY[imgObj.get("name")])
-                            return Object.assign(DEFAULTTOKENDATA, {
+                        if (GRAPHICREGISTRY[imgObj.get("name")])
+                            return GRAPHICREGISTRY[imgObj.get("name")]
+                        if (VAL({char: imgKey}) && !GRAPHICREGISTRY[imgObj.get("name")])
+                            return Object.assign({}, DEFAULTTOKENDATA, {
                                 id: imgObj.id,
                                 name: imgObj.get("name"),
                                 left: imgObj.get("left"),
@@ -1316,10 +1290,10 @@ const Media = (() => {
                             isUnregistered: true,
                             id: imgObj.id,
                             name: imgObj.get("name"),
-                            left: parseInt(imgObj.get("left")),
-                            top: parseInt(imgObj.get("top")),
-                            height: parseInt(imgObj.get("height")),
-                            width: parseInt(imgObj.get("width")),
+                            left: D.Int(imgObj.get("left")),
+                            top: D.Int(imgObj.get("top")),
+                            height: D.Int(imgObj.get("height")),
+                            width: D.Int(imgObj.get("width")),
                             activeLayer: imgObj.get("layer"),
                             srcs: {
                                 base: imgObj.get("imgsrc").replace(/(max\.png|med\.png)/gu, "thumb.png")
@@ -1560,10 +1534,10 @@ const Media = (() => {
             const imgObj = getImgObj(imgRef)
             if (VAL({graphicObj: imgObj}, "regArea")) {
                 AREAREGISTRY[areaName] = {
-                    top: parseInt(imgObj.get("top")),
-                    left: parseInt(imgObj.get("left")),
-                    height: parseInt(imgObj.get("height")),
-                    width: parseInt(imgObj.get("width"))
+                    top: D.Int(imgObj.get("top")),
+                    left: D.Int(imgObj.get("left")),
+                    height: D.Int(imgObj.get("height")),
+                    width: D.Int(imgObj.get("width"))
                 }
                 D.Alert(`Area Registered: ${areaName}<br><br><pre>${D.JS(AREAREGISTRY[areaName])}</pre>`, "Media: Register Area")
             }
@@ -1646,10 +1620,10 @@ const Media = (() => {
                     const params = {
                         id: obj.id,
                         obj,
-                        height: parseInt(obj.get("height")),
-                        width: parseInt(obj.get("width")),
-                        top: parseInt(obj.get("top")),
-                        left: parseInt(obj.get("left"))
+                        height: D.Int(obj.get("height")),
+                        width: D.Int(obj.get("width")),
+                        top: D.Int(obj.get("top")),
+                        left: D.Int(obj.get("left"))
                     }
                     return Object.assign(params, getBounds(obj, params))
                 }),
@@ -1832,7 +1806,7 @@ const Media = (() => {
 				const attrList = {}		
 				for (const param of params)
 					if (VAL({number: param.split(":")[1]}))
-						attrList[param.split(":")[0]] = parseInt(param.split(":")[1])
+						attrList[param.split(":")[0]] = D.Int(param.split(":")[1])
 				setImgTemp(imgObj, attrList)
 			}
 		}, */
@@ -1972,7 +1946,7 @@ const Media = (() => {
             DB(`minOverlap: ${minOverlap}, maxOverlap: ${maxOverlap}`)
             if (VAL({list: [leftData, rightData, ...midData], number: [spread]}, "spreadImgs", true)) {
                 setImgTemp(leftData.id, {top: leftData.top, left: leftData.left})
-                dbString += `Setting Left to {left: ${parseInt(leftData.left)}}<br>`
+                dbString += `Setting Left to {left: ${D.Int(leftData.left)}}<br>`
                 // If one imgRef supplied, check to see if it is a reference to a group of consecutively-named imgs:
                 if (midData.length === 1) {
                     const imgName = midData[0].name.replace(/_\d*$/gu, "")
@@ -1983,10 +1957,10 @@ const Media = (() => {
                 }
                 // If the spread is smaller than the combined width of the bookends, then set the minimum possible spread and blank all mid imgs.
                 if (spread <= leftData.width + rightData.width) {
-                    dbString += `Spread ${parseInt(spread)} less than ${parseInt(leftData.width + rightData.width)} (${parseInt(leftData.width)} + ${parseInt(rightData.width)})<br>`
+                    dbString += `Spread ${D.Int(spread)} less than ${D.Int(leftData.width + rightData.width)} (${D.Int(leftData.width)} + ${D.Int(rightData.width)})<br>`
                     for (const imgData of midData)
                         setImg(imgData.id, "blank")
-                    DB(`${dbString }Setting Right to {left: ${parseInt(leftData.rightEdge)} + 0.5x${parseInt(rightData.width)} = ${parseInt(leftData.rightEdge + 0.5*rightData.width)}}`, "spreadImgs")
+                    DB(`${dbString }Setting Right to {left: ${D.Int(leftData.rightEdge)} + 0.5x${D.Int(rightData.width)} = ${D.Int(leftData.rightEdge + 0.5*rightData.width)}}`, "spreadImgs")
                     return setImgTemp(rightData.id, {
                         top: leftData.top,
                         left: leftData.rightEdge + 0.5*rightData.width
@@ -1994,7 +1968,7 @@ const Media = (() => {
                 }
                 // Otherwise, determine how much space will be in the middle.
                 const totalMidWidth = spread - leftData.width - rightData.width
-                dbString += `Total Mid Width = ${parseInt(totalMidWidth)} (spr:${parseInt(spread)} - L.w:${parseInt(leftData.width)} - R.w:${parseInt(rightData.width)})<br>`
+                dbString += `Total Mid Width = ${D.Int(totalMidWidth)} (spr:${D.Int(spread)} - L.w:${D.Int(leftData.width)} - R.w:${D.Int(rightData.width)})<br>`
                 if (midData.length === 1) {
                     // If only one middle img, stretch it out... BUT have to stretch the minOverlap by the same ratio.
                     // So: need to determine percentage of width that is taken up by minOverlap
@@ -2005,20 +1979,20 @@ const Media = (() => {
                         stretchFactor = Math.min(totalMidWidth / (coveragePercent * midData[0].width), maxOverlap / minOverlap),
                         stretchOverlap = minOverlap * stretchFactor,
                         stretchWidth = midData[0].width * stretchFactor
-                    dbString += `overlapPercent = ${parseInt(overlapPercent * 100)/100} = (2×mO:${parseInt(minOverlap)} / M.w:${parseInt(midData[0].width)})<br>`
-                    dbString += `coveragePercent = ${parseInt(coveragePercent * 100)/100} = (1 - O%:${parseInt(overlapPercent * 100)/100})<br>`
-                    dbString += `stretchFactor = ${parseInt(stretchFactor * 100)/100} = MIN(TM.w:${parseInt(totalMidWidth)} / (C%:${parseInt(coveragePercent * 100)/100} × M.w:${parseInt(midData[0].width)}), xO:${parseInt(maxOverlap)}/mO:${parseInt(minOverlap)})<br>`
-                    dbString += `stretchOverlap = ${parseInt(stretchOverlap)} = (mO:${parseInt(minOverlap)} × SF:${parseInt(stretchFactor * 100)/100})<br>`
-                    dbString += `stretchWidth = ${parseInt(stretchWidth)}<br>`
+                    dbString += `overlapPercent = ${D.Int(overlapPercent * 100)/100} = (2×mO:${D.Int(minOverlap)} / M.w:${D.Int(midData[0].width)})<br>`
+                    dbString += `coveragePercent = ${D.Int(coveragePercent * 100)/100} = (1 - O%:${D.Int(overlapPercent * 100)/100})<br>`
+                    dbString += `stretchFactor = ${D.Int(stretchFactor * 100)/100} = MIN(TM.w:${D.Int(totalMidWidth)} / (C%:${D.Int(coveragePercent * 100)/100} × M.w:${D.Int(midData[0].width)}), xO:${D.Int(maxOverlap)}/mO:${D.Int(minOverlap)})<br>`
+                    dbString += `stretchOverlap = ${D.Int(stretchOverlap)} = (mO:${D.Int(minOverlap)} × SF:${D.Int(stretchFactor * 100)/100})<br>`
+                    dbString += `stretchWidth = ${D.Int(stretchWidth)}<br>`
                     // Now, set the left side of the mid img to account for the stretched overlap, and the stretched width
-                    dbString += `Setting Mid Img to: {left: ${parseInt(leftData.rightEdge - stretchOverlap + 0.5*stretchWidth)} (L.re:${parseInt(leftData.rightEdge)} - sO:${parseInt(stretchOverlap)} + 0.5×sW:${parseInt(stretchWidth)})}<br>`
+                    dbString += `Setting Mid Img to: {left: ${D.Int(leftData.rightEdge - stretchOverlap + 0.5*stretchWidth)} (L.re:${D.Int(leftData.rightEdge)} - sO:${D.Int(stretchOverlap)} + 0.5×sW:${D.Int(stretchWidth)})}<br>`
                     setImg(midData[0].id, "base")
                     setImgTemp(midData[0].id, {
                         top: leftData.top + 20,
                         left: leftData.rightEdge - stretchOverlap + 0.5*stretchWidth,
                         width: stretchWidth
                     })
-                    dbString += `Setting Right Img to: {left: ${parseInt(leftData.rightEdge - 2*stretchOverlap + stretchWidth + 0.5*rightData.width)} (L.re:${parseInt(leftData.rightEdge)} - 2×sO:${parseInt(stretchOverlap)} + sW:${parseInt(stretchWidth)} + 0.5×R.w:${parseInt(rightData.width)})}<br>`
+                    dbString += `Setting Right Img to: {left: ${D.Int(leftData.rightEdge - 2*stretchOverlap + stretchWidth + 0.5*rightData.width)} (L.re:${D.Int(leftData.rightEdge)} - 2×sO:${D.Int(stretchOverlap)} + sW:${D.Int(stretchWidth)} + 0.5×R.w:${D.Int(rightData.width)})}<br>`
                     setImgTemp(rightData.id, {
                         top: leftData.top + 40,
                         left: leftData.rightEdge - 2*stretchOverlap + stretchWidth + 0.5*rightData.width
@@ -2034,7 +2008,7 @@ const Media = (() => {
                             Math.max(0, midImgWidth - 1.5*minOverlap)
                         ],
                         midImgIDs = []
-                    dbString += `midWidth: ${parseInt(midData[0].width)}, maxCover: ${parseInt(maxCover)}, minCover: ${parseInt(minCover)}<br>`
+                    dbString += `midWidth: ${D.Int(midData[0].width)}, maxCover: ${D.Int(maxCover)}, minCover: ${D.Int(minCover)}<br>`
                     // Now add mid imgs one by one until their total MAX cover equals or exceeds the spread:
                     let coveredSpread = 0
                     while (midData.length) {
@@ -2045,19 +2019,19 @@ const Media = (() => {
                         } else {
                             setImg(midData.pop().id, "blank")
                         }
-                        dbString += `... adding ${_.last(midImgIDs)} (cover: ${parseInt(coveredSpread)}), ${midData.length} remaining<br>`
+                        dbString += `... adding ${_.last(midImgIDs)} (cover: ${D.Int(coveredSpread)}), ${midData.length} remaining<br>`
                     }
                     // Now divide up the spread among the imgs, and check that each img's cover is between min and max:
                     const spreadPerImg = totalMidWidth / midImgIDs.length
-                    dbString += `SPI = ${parseInt(spreadPerImg)} = TMW:${parseInt(totalMidWidth)} / #Mids:${midImgIDs.length}<br>`
+                    dbString += `SPI = ${D.Int(spreadPerImg)} = TMW:${D.Int(totalMidWidth)} / #Mids:${midImgIDs.length}<br>`
                     if (spreadPerImg < minCover || spreadPerImg > maxCover)
                         THROW(`Unable to spread given images over spread ${spread}: per-img spread of ${spreadPerImg} outside bounds of ${minCover} - ${maxCover}`, "spreadImgs")
                     // Get the actual overlap between imgs, dividing by two to get the value for one side,
                     // and use this number to get the left position for the first middle img.
                     const sideOverlap = 0.5*(midImgWidth - spreadPerImg),
                         firstMidLeft = leftData.rightEdge - sideOverlap + 0.5*midImgWidth
-                    dbString += `Side Overlap: ${parseInt(sideOverlap)} = 0.5x(M.w:${parseInt(midImgWidth)} - SPI:${parseInt(spreadPerImg)})<br>`
-                    dbString += `L.l: ${parseInt(leftData.left)}, L.re: ${parseInt(leftData.rightEdge)}, firstMidLeft: ${parseInt(firstMidLeft)} (L.re - sO:${parseInt(sideOverlap)} + 0.5xM.w:${parseInt(midImgWidth)})<br>`
+                    dbString += `Side Overlap: ${D.Int(sideOverlap)} = 0.5x(M.w:${D.Int(midImgWidth)} - SPI:${D.Int(spreadPerImg)})<br>`
+                    dbString += `L.l: ${D.Int(leftData.left)}, L.re: ${D.Int(leftData.rightEdge)}, firstMidLeft: ${D.Int(firstMidLeft)} (L.re - sO:${D.Int(sideOverlap)} + 0.5xM.w:${D.Int(midImgWidth)})<br>`
                     // Turn on each midImg being used and set the left positioning of each mid img by recursively adding the spreadPerImg:
                     let currentLeft = firstMidLeft
                     for (const imgID of midImgIDs) {
@@ -2066,7 +2040,7 @@ const Media = (() => {
                             left: currentLeft
                         })
                         currentLeft += spreadPerImg
-                        dbString += `... Spreading Mid to ${parseInt(currentLeft)}<br>`
+                        dbString += `... Spreading Mid to ${D.Int(currentLeft)}<br>`
                         // testVertSpread += 5
                     }
                     // Then, turn off all the unused middle imgs.
@@ -2088,63 +2062,90 @@ const Media = (() => {
     // #endregion
 
     // #region ANIMATIONS: Creating, Timeouts, Controlling WEBM Animations
-        regAnimation = (selectionRef, animName, activeLayer, timeout) => {
-            const [animRefObj] = D.GetSelected(selectionRef)
-            if (VAL({imgObj: animRefObj}, "regAnimation")) {
-                IMGREGISTRY[animName] = {
+        regAnimation = (imgObj, animName, timeOut, activeLayer = "map") => {
+            if (VAL({imgObj}, "regAnimation")) {
+                imgObj.set("name", animName)
+                imgObj.set("layer", "gmlayer")
+                ANIMREGISTRY[animName] = {
                     name: animName,
-                    left: animRefObj.get("left"),
-                    top: animRefObj.get("top"),
-                    height: animRefObj.get("height"),
-                    width: animRefObj.get("width"),
+                    id: imgObj.id,
+                    left: imgObj.get("left"),
+                    top: imgObj.get("top"),
+                    height: imgObj.get("height"),
+                    width: imgObj.get("width"),
                     activeLayer,
-                    imgsrc: animRefObj.get("imgsrc").replace(/med/gu, "thumb"),
-                    timeOut: parseInt(1000 * (parseFloat(timeout) || 0))
+                    imgsrc: imgObj.get("imgsrc").replace(/med/gu, "thumb"),
+                    timeOut: D.Int(1000 * D.Float(timeOut)),
+                    minTimeBetween: 0,
+                    maxTimeBetween: 100,
+                    isActive: false,
+                    soundEffect: null
                 }
-                IMGREGISTRY[animName].leftEdge = IMGREGISTRY[animName].left - 0.5 * IMGREGISTRY[animName].width
-                IMGREGISTRY[animName].rightEdge = IMGREGISTRY[animName].left + 0.5 * IMGREGISTRY[animName].width
-                IMGREGISTRY[animName].topEdge = IMGREGISTRY[animName].top - 0.5 * IMGREGISTRY[animName].height
-                IMGREGISTRY[animName].bottomEdge = IMGREGISTRY[animName].top + 0.5 * IMGREGISTRY[animName].height
-                animRefObj.remove()
+                ANIMREGISTRY[animName].leftEdge = ANIMREGISTRY[animName].left - 0.5 * ANIMREGISTRY[animName].width
+                ANIMREGISTRY[animName].rightEdge = ANIMREGISTRY[animName].left + 0.5 * ANIMREGISTRY[animName].width
+                ANIMREGISTRY[animName].topEdge = ANIMREGISTRY[animName].top - 0.5 * ANIMREGISTRY[animName].height
+                ANIMREGISTRY[animName].bottomEdge = ANIMREGISTRY[animName].top + 0.5 * ANIMREGISTRY[animName].height
             }
         },
-        fireAnimation = animName => {
-            const animData = IMGREGISTRY[animName]
-            if (VAL({list: animData}, "fireAnimation")) {
-                const animObj = createObj("graphic", {
-                    imgsrc: animData.imgsrc,
-                    left: animData.left,
-                    top: animData.top,
-                    height: animData.height,
-                    width: animData.width,
-                    layer: animData.activeLayer
-                })
-                STATEREF.activeAnimations.push(animObj.id)
-                if (animData.timeOut) {
-                    STATEREF.activeTimeouts.push(animObj.id)
+        setAnimData = (animName, minTimeBetween = 0, maxTimeBetween = 100, soundEffect = null) => {
+            const animData = getImgData(animName)
+            animData.minTimeBetween = D.Int(1000 * D.Float(minTimeBetween))
+            animData.maxTimeBetween = D.Int(1000 * D.Float(maxTimeBetween))
+            animData.soundEffect = soundEffect
+        },
+        flashAnimation = (animName) => {
+            const animData = getImgData(animName)
+            if (animData.isActive) {
+                const animObj = getImgObj(animName)
+                animObj.set("layer", animData.activeLayer)
+                if (animData.soundEffect)
+                    playSoundEffect(animData.soundEffect)
+                if (animData.timeOut)
                     setTimeout(() => killAnimation(animObj), animData.timeOut)
-                }
             }
+        },
+        activateAnimation = (animName, minTime = 0, maxTime = 100) => {
+            const animData = getImgData(animName)
+            if (activeTimers[animName]) {
+                clearTimeout(activeTimers[animName])
+                delete activeTimers[animName]
+            }
+            animData.isActive = true
+            animData.minTimeBetween = D.Int(1000 * D.Float(minTime))
+            animData.maxTimeBetween = D.Int(1000 * D.Float(maxTime))
+            setTimeout(() => { 
+                pulseAnimation(animName)
+            }, randomInteger(animData.maxTimeBetween - animData.minTimeBetween) + animData.minTimeBetween)
+        },
+        pulseAnimation = (animName) => {
+            const animData = getImgData(animName)
+            if (activeTimers[animName]) {
+                clearTimeout(activeTimers[animName])
+                delete activeTimers[animName]
+            }
+            if (animData.isActive) {
+                const timeBetween = randomInteger(animData.maxTimeBetween - animData.minTimeBetween) + animData.minTimeBetween
+                flashAnimation(animName)
+                activeTimers[animName] = setTimeout(() => { pulseAnimation(animName) }, timeBetween)                
+            }
+            // D.Alert(JSON.stringify(activeTimers[animName]))
+        },
+        deactivateAnimation = (animName) => {
+            const animData = getImgData(animName)
+            if (activeTimers[animName]) {
+                clearTimeout(activeTimers[animName])
+                delete activeTimers[animName]
+            }
+            animData.isActive = false
         },
         killAnimation = animObj => {
-            if (VAL({graphicObj: animObj}, "killAnimation")) {
-                STATEREF.activeAnimations = _.without(STATEREF.activeAnimations, animObj.id)
-                STATEREF.activeTimeouts = _.without(STATEREF.activeTimeouts, animObj.id)
-                animObj.remove()
-            }
+            if (VAL({imgObj: animObj}, "killAnimation"))
+                animObj.set("layer", "gmlayer")
         },
-        killAllTimeouts = () => {
-            for (const animID of STATEREF.activeTimeouts)
-                (getObj("graphic", animID) || {remove: () => false}).remove()
-            STATEREF.activeTimeouts = []            
+        killAllAnims = () => {
+            for (const animData of _.values(ANIMREGISTRY))
+                (getObj("graphic", animData.id) || {set: () => false}).set("layer", "gmlayer")
         },
-        killAllAnimations = () => {
-            for (const animID of STATEREF.activeAnimations)
-                (getObj("graphic", animID) || {remove: () => false}).remove()
-            STATEREF.activeAnimations = []
-        },
-
-
     // #endregion
 
     // #region TEXT OBJECT GETTERS: Text Object, Width Measurements, Data Retrieval    
@@ -2214,10 +2215,10 @@ const Media = (() => {
                     DB(`Retrieving data for UNREGISTERED Text Object ${D.JS(textRef)}`, "getTextData")
                     return {
                         id: textObj.id,
-                        left: parseInt(textObj.get("left")),
-                        top: parseInt(textObj.get("top")),
-                        height: parseInt(textObj.get("height")),
-                        width: parseInt(textObj.get("width")),
+                        left: D.Int(textObj.get("left")),
+                        top: D.Int(textObj.get("top")),
+                        height: D.Int(textObj.get("height")),
+                        width: D.Int(textObj.get("width")),
                         font: textObj.get("font_family"),
                         fontSize: textObj.get("font_size"),
                         color: textObj.get("color"),
@@ -2245,7 +2246,7 @@ const Media = (() => {
                     return 0
                 if (!fontRef || !charRef) {
                     DB(`No font reference for '${font}' at size '${size}', attempting default`, "getTextWidth")
-                    return textString.length * (parseInt(textObj.get("width")) / textObj.get("text").length)
+                    return textString.length * (D.Int(textObj.get("width")) / textObj.get("text").length)
                 }
                 let textLines = []
                 if (maxWidth !== false && maxW)
@@ -2689,12 +2690,28 @@ const Media = (() => {
                     ...reportLines
                 ].join("<br>")
             return "ALL TEXT OBJECTS OK!"
+        },
+    // #endregion
+
+    // #region SOUND OBJECT GETTERS: Registering & Manipulating Music & Sound Effects 
+        startPlaylist = playlist => {
+            STATEREF.activePlaylists = _.uniq([...STATEREF.activePlaylists, playlist])
+            sendChat("", `!roll20AM --audio,play,mode:shuffle|${playlist}`)
+        },
+        stopPlaylist = playlist => {
+            STATEREF.activePlaylists = _.without(STATEREF.activePlaylists, playlist)
+            sendChat("", `!roll20AM --audio,stop|${playlist}`)
+        },
+        playSoundEffect = soundEffect => {            
+            sendChat("", `!roll20AM --audio,stop|${soundEffect}`)
+            sendChat("", `!roll20AM --audio,play,mode:single|${soundEffect}`)
         }
     // #endregion
 
     return {
-        RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
+        OnChatCall: onChatCall,
+        OnGraphicAdd: onGraphicAdd,
 
         // REGISTRIES
         IMAGES: IMGREGISTRY, TEXT: TEXTREGISTRY, AREAS: AREAREGISTRY,
@@ -2736,7 +2753,14 @@ const Media = (() => {
         SetArea: setImgArea,
         
         // ANIMATION FUNCTIONS
-        Animate: fireAnimation,
+        Flash: flashAnimation,
+        Pulse: activateAnimation,
+        Kill: deactivateAnimation,
+
+        // SOUND FUNCTIONS
+        StartPlaylist: startPlaylist,
+        StopPlaylist: stopPlaylist,
+        get ActivePlaylists() { return STATEREF.activePlaylists },
         
         // REINITIALIZE MEDIA OBJECTS (i.e. on MODE CHANGE)
         Fix: () => {
@@ -2747,7 +2771,6 @@ const Media = (() => {
 })()
 
 on("ready", () => {
-    Media.RegisterEventHandlers()
     Media.CheckInstall()
     D.Log("Media Ready!")
 })
