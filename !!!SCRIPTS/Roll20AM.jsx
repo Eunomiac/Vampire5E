@@ -1,3 +1,4 @@
+void MarkStart("Roll20AM")
 /* eslint-disable */
 /*
 Roll20AM script:
@@ -211,6 +212,7 @@ var Roll20AM = Roll20AM || (function() {
         var mvTextButton,tracksButton,playlistButton,restrictButton,volumeButton,muteButton,playButton,addButton,increaseButton,decreaseButton,fadeInButton,tagButton,
         deleteButton,APIButton,tagButton,templateButton,commandButton,rollButton,textButton,accessButton,modeButton,importButton,backButton,fadeOutButton,tagDeleteButton,
         output,outputWho;
+        // D.Alert(`menu: ${D.JS(menu)}<br>who: ${D.JS(who)}<br>${D.JS(filter)}`, "outputConfig Call")
         if (state.Roll20AM.API == 'gm'){
             outputWho = '/w gm';
         }else if (state.Roll20AM.API == "All"){
@@ -310,21 +312,22 @@ var Roll20AM = Roll20AM || (function() {
         //ends the first div
         output += '<div style="margin-bottom:30px;">'  
         output += '</div>';
-        if (menu){
-            if (state.Roll20AM.menu != 'nomenu' && state.Roll20AM.nomenu == 'On'){
-               sendChat(who,outputWho + output,null,{noarchive:true});
+        if (who !== "gm")
+            if (menu){
+                if (state.Roll20AM.menu != 'nomenu' && state.Roll20AM.nomenu == 'On'){
+                sendChat(who,outputWho + output,null,{noarchive:true});
+                        //if Roll20AM is configured to send menus to a player, then send again to GM
+                    if (state.Roll20AM.API != 'All' && state.Roll20AM.API != 'gm'){
+                            sendChat(who,'/w gm' + output,null,{noarchive:true});
+                    }
+                }               
+            } else {
+                sendChat(who,outputWho + output,null,{noarchive:true});
                     //if Roll20AM is configured to send menus to a player, then send again to GM
-                if (state.Roll20AM.API != 'All' && state.Roll20AM.API != 'gm'){
+                if (state.Roll20AM.API != 'All' && state.Roll20AM.API != 'GM'){
                         sendChat(who,'/w gm' + output,null,{noarchive:true});
                 }
-            }               
-        } else {
-            sendChat(who,outputWho + output,null,{noarchive:true});
-                //if Roll20AM is configured to send menus to a player, then send again to GM
-            if (state.Roll20AM.API != 'All' && state.Roll20AM.API != 'GM'){
-                    sendChat(who,'/w gm' + output,null,{noarchive:true});
-            }
-        }    
+            }    
     },
     //output each individual track.  Called from menus above
     outputTrack = function(track,menu){
@@ -774,6 +777,8 @@ var Roll20AM = Roll20AM || (function() {
         }else{
             showHelp(who);
         }
+
+        
     },  
     // handles playlist actions, start/stop/fadein/fadeout
     trackHandler = function(cmdDetails,trackDetails,who,restrict){
@@ -1005,7 +1010,7 @@ var Roll20AM = Roll20AM || (function() {
 	    return _.findWhere(state.Roll20AM.trackDetails,{id:trackID});
 	},
 	getTrackID = function(trackTitle){
-	    return state.Roll20AM.trackDetails[trackTitle].id;
+	    return (state.Roll20AM.trackDetails[trackTitle] || {id: false}).id;
 	},	
 	getJukeBox = function(trackID){
 	    return getObj('jukeboxtrack',trackID);
@@ -1186,8 +1191,7 @@ var Roll20AM = Roll20AM || (function() {
             list.currentTrack.push(trackID);
             playTrack(trackID,volume,null,who);
         }) 
-	},  
-
+	},
 	//stops the indicated tracks from playing
 	stopList = function(list,who){
 	    if (debug){
@@ -1259,7 +1263,7 @@ var Roll20AM = Roll20AM || (function() {
 	    })
 	    trackDetails.playing = true;
 	    trackDetails.who = who;
-        jbTrack.set({playing:true,softstop:false,volume:level});
+        jbTrack.set({playing:true,softstop:false,volume:level,loop:loop === "loop"});
         if (displayTrack){
             sendChat(who,'Now Playing:' + trackDetails.title ,null,{noarchive:true});
         }    
@@ -1443,7 +1447,7 @@ var Roll20AM = Roll20AM || (function() {
         list.fadetime = level;
         _.each(list.trackids,(trackID)=>{
             changeFadeTimeTrack(trackID,level)
-        })            
+        })           
 	},	
 	changeDelayList = function(list,level){
 	    if (debug){
@@ -1954,10 +1958,151 @@ var Roll20AM = Roll20AM || (function() {
     
     return {
         CheckInstall: checkInstall,
-    	RegisterEventHandlers: RegisterEventHandlers
+        RegisterEventHandlers: RegisterEventHandlers,
+        
+        ChangeVolume: (soundRef, volume) => {
+            const soundData = getPlayList(soundRef) || getTrackDetails(getTrackID(soundRef))
+            if (soundData && volume) {
+                if (getPlayList(soundRef))
+                    changeVolumeList(getPlayList(soundRef), D.Int(volume))
+                else if (getTrackID(soundRef))
+                    changeVolumeTrack(getTrackID(soundRef), D.Int(volume))
+                /* if (soundData.playing) {
+                    Roll20AM.StopSound(soundRef)
+                    Roll20AM.PlaySound(soundRef)
+                } */
+            }
+        },
+        GetPlaylistTrackNames: (listRef) => {
+            const playlist = getPlayList(listRef),
+                trackNames = []
+            if (playlist)
+                for (const trackID of playlist.trackids)
+                    trackNames.push(getTrackDetails(trackID).title)                
+            return trackNames
+        },
+        SetSoundMode: (soundRef, mode) => {
+            const modeDetails = {details: {}},
+                isPlaylist = Boolean(getPlayList(soundRef))
+            if (!isPlaylist && !getTrackID(soundRef))
+                return
+            modeDetails.details.mode = true
+            switch (D.LCase(mode)) {
+                case "randomsingle": {
+                    modeDetails.details.random = isPlaylist
+                    modeDetails.details.single = "single"
+                    break
+                }
+                case "randomloop": {
+                    modeDetails.details.random = isPlaylist
+                    modeDetails.details.loop = "loop"
+                    break
+                }
+                case "single": {
+                    modeDetails.details.single = "single"
+                    break
+                }
+                case "loop": {
+                    modeDetails.details.loop = "loop"
+                    break
+                }
+                case "shuffle": {
+                    if (isPlaylist)
+                        modeDetails.details.shuffle = "shuffle"
+                    else
+                        D.Alert(`Can't set TRACK '${soundRef}' to PLAYLIST MODE 'shuffle'`, "Roll20AM: SetSoundMode")
+                    break
+                }
+                case "together": {
+                    if (isPlaylist)
+                        modeDetails.details.together = "together"
+                    else
+                        D.Alert(`Can't set TRACK '${soundRef}' to PLAYLIST MODE 'together'`, "Roll20AM: SetSoundMode")
+                    break
+                }
+                // no default
+            }
+            editHandler(modeDetails, getPlayList(soundRef), getTrackDetails(getTrackID(soundRef)), "gm")
+            if (!isPlaylist)
+                D.Alert(`Setting ${soundRef} to ${mode}<br><br>${D.JS(getTrackDetails(getTrackID(soundRef)))}`)
+
+        },
+        SetPlaylistTrackModes: (listRef, mode) => {
+            for (const trackName of Roll20AM.GetPlaylistTrackNames(listRef))
+                Roll20AM.SetSoundMode(trackName, mode)            
+        },
+        PlaySound: (soundRef, mode, fadeIn = null) => {
+            // D.Alert(`SoundRef: ${D.JS(soundRef)}<br>Playlist: ${D.JS(getPlayList(soundRef))}`)
+            if (mode)
+                Roll20AM.SetSoundMode(soundRef, mode)
+            if (getPlayList(soundRef)) {
+                const playlist = getPlayList(soundRef)
+                if (fadeIn !== null)
+                    changeFadeTimeList(playlist, D.Float(fadeIn))
+                fadeIn = D.Float(playlist.fadetime)
+                // D.Alert(`FadeIn = ${D.JS(fadeIn)}. Sending to List Handler:<br>${D.JS({details: {play: fadeIn === 0, fade: fadeIn > 0, in: fadeIn > 0}})}`)
+                listHandler({details: {play: fadeIn === 0, fade: fadeIn > 0, in: fadeIn > 0}}, playlist, "gm")
+            } else if (getTrackID(soundRef)) {
+                const trackID = getTrackID(soundRef),
+                    trackDetails = getTrackDetails(trackID)
+                if (fadeIn !== null)
+                    changeFadeTimeTrack(trackID, D.Float(fadeIn))
+                fadeIn = D.Float(trackDetails.fadetime)
+                trackHandler({details: {play: fadeIn === 0, fade: fadeIn > 0, in: fadeIn > 0}}, trackDetails, "gm")
+            }
+        },
+        StopSound: (soundRef, fadeOut = null) => {
+            if (soundRef === "all") 
+                stopAll("gm")
+            else
+                if (getPlayList(soundRef)) {
+                    const playlist = getPlayList(soundRef)
+                    if (fadeOut !== null)
+                        changeFadeTimeList(playlist, fadeOut)
+                    fadeOut = D.Float(playlist.fadetime)
+                    listHandler({details: {stop: fadeOut === 0, fade: fadeOut > 0, out: fadeOut > 0}}, playlist, "gm")
+                } else if (getTrackID(soundRef)) {
+                    const trackID = getTrackID(soundRef),
+                        trackDetails = getTrackDetails(trackID)
+                    if (fadeOut !== null)
+                        changeFadeTimeTrack(trackID, fadeOut)
+                    fadeOut = D.Float(trackDetails.fadetime)
+                    trackHandler({details: {stop: fadeOut === 0, fade: fadeOut > 0, out: fadeOut > 0}}, trackDetails, "gm")
+                }
+        },
+        GetPlaylist: (soundRef) => {
+            D.Alert(`SoundRef: ${D.JS(soundRef)}<br>Playlist: ${D.JS(getPlayList(soundRef))}`)
+        },
+        GetLoopingSounds: () => {
+            const playListTrackIDs = [],
+                loopingSoundRefs = []
+            for (const [playListName, playListData] of Object.entries(state.Roll20AM.playLists)) {
+                if (playListData.playing && ["loop", "shuffle", "randomLoop"].includes(playListData.mode)) {
+                    loopingSoundRefs.push(playListName)
+                    playListTrackIDs.push(...playListData.trackids)
+                }
+            }
+            for (const [trackName, trackData] of Object.entries(state.Roll20AM.trackDetails).filter(x => !playListTrackIDs.includes(x[1].id)))
+                if (trackData.playing && trackData.mode === "loop")
+                    loopingSoundRefs.push(trackName)
+            return loopingSoundRefs
+        },
+        GetActiveSounds: () => {
+            const playListTrackIDs = [],
+                loopingSoundRefs = []
+            for (const [playListName, playListData] of Object.entries(state.Roll20AM.playLists)) {
+                if (playListData.playing) {
+                    loopingSoundRefs.push(playListName)
+                    playListTrackIDs.push(...playListData.trackids)
+                }
+            }
+            for (const [trackName, trackData] of Object.entries(state.Roll20AM.trackDetails).filter(x => !playListTrackIDs.includes(x[1].id)))
+                if (trackData.playing)
+                    loopingSoundRefs.push(trackName)
+            return loopingSoundRefs
+        },
+        IsPlaying: (soundRef) => Roll20AM.GetActiveSounds().includes(soundRef)
 	}
-	
-    
 }());
 
 
@@ -1967,3 +2112,4 @@ on("ready",function(){
     Roll20AM.CheckInstall();
     Roll20AM.RegisterEventHandlers();
 });
+void MarkStop("Roll20AM")

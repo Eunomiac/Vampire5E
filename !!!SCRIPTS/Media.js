@@ -24,7 +24,7 @@ const Media = (() => {
             STATEREF.idregistry = STATEREF.idregistry || {}
             STATEREF.areas = STATEREF.areas || {}
             STATEREF.tokenregistry = STATEREF.tokenregistry || {}
-            STATEREF.activePlaylists = STATEREF.activePlaylists || []
+            STATEREF.soundregistry = STATEREF.soundregistry || {}
             STATEREF.TokenSrcs = STATEREF.TokenSrcs || {}
             STATEREF.imgResizeDims = STATEREF.imgResizeDims || {height: 100, width: 100}
             STATEREF.activeAnimations = STATEREF.activeAnimations || {}
@@ -47,10 +47,8 @@ const Media = (() => {
             for (const areaKey of _.keys(STATEREF.areas))
                 STATEREF.AREADICT.add(areaKey)
 
-
-            STATEREF.animregistry.WeatherLightning_1.name = "WeatherLightning_1"
-            const animObj = getObj("graphic", STATEREF.animregistry.WeatherLightning_1.id)
-            animObj.set("name", "WeatherLightning_1")
+            STATEREF.animregistry.WeatherLightning_1.soundEffect = "Thunder"
+            STATEREF.animregistry.WeatherLightning_2.soundEffect = "Thunder"
         },
             
         
@@ -645,6 +643,10 @@ const Media = (() => {
                                 D.Alert("Syntax: <b>!anim register <animName> <timeOut [ms]></b>", "!anim register")
                             break
                         }
+                        case "get": {
+                            D.Alert(D.JS(ANIMREGISTRY[args.shift()]), "!anim get")
+                            break
+                        }
                         case "set": {
                             switch (D.LCase(call = args.shift())) {
                                 case "timeout": {
@@ -658,9 +660,9 @@ const Media = (() => {
                                 }
                                 case "data": {
                                     const hostName = getImgKey(imgObjs.shift()),
-                                        [minTime, maxTime, soundName] = args
+                                        [minTime, maxTime, soundName, validModes] = args
                                     if (VAL({string: [hostName, soundName], number: [minTime, maxTime]}, "!anim set sound", true)) {
-                                        setAnimData(hostName, minTime, maxTime, soundName)
+                                        setAnimData(hostName, minTime, maxTime, soundName === "x" ? null : soundName, validModes)
                                         D.Alert(D.JS(ANIMREGISTRY[hostName]), "!anim set sound")
                                     }
                                     break
@@ -700,11 +702,42 @@ const Media = (() => {
                 }
                 case "!sound": {
                     switch (D.LCase(call = args.shift())) {
+                        case "reg": case "register": {
+                            const [soundName, volume, soundType, soundTags] = args
+                            if (VAL({string: [soundName, volume, soundType]}, "!sound register", true)) 
+                                regSound(soundName, D.Int(volume), soundType, (soundTags || "").split("|"))
+                            else
+                                D.Alert("<b>Syntax:</b><br>!sound reg (name) (volume) (type) (tag|tag)", "!sound register")
+                            break
+                        }
+                        case "set": {
+                            switch (D.LCase(call = args.shift())) {
+                                case "trackmodes": {
+                                    Roll20AM.SetPlaylistTrackModes(args.shift(), args.shift())
+                                    break
+                                }
+                                // no default
+                            }
+                            break
+                        }
+                        case "stopall": {
+                            STATEREF.isRunningSilent = true
+                            Roll20AM.StopSound("all")
+                            break
+                        }
+                        case "startall": {
+                            STATEREF.isRunningSilent = false
+                            Media.UpdateSoundscape()
+                            break
+                        }
                         case "test": {
                             switch(D.LCase(call = args.shift())) {
-                                case "objs": {
-                                    const soundObjects = findObjs({_type: "jukeboxtrack"})
-                                    D.Alert(D.JS(soundObjects.map(x => x.get("title"))))
+                                case "update": {
+                                    updateSounds()
+                                    break
+                                }
+                                case "playlist": {
+                                    Roll20AM.GetPlaylist("MainScore")
                                     break
                                 }
                                 // no default
@@ -738,6 +771,7 @@ const Media = (() => {
         TEXTREGISTRY = STATEREF.textregistry,
         ANIMREGISTRY = STATEREF.animregistry,
         GRAPHICREGISTRY = Object.assign({}, ANIMREGISTRY, IMGREGISTRY),
+        SOUNDREGISTRY = STATEREF.soundregistry,
         AREAREGISTRY = STATEREF.areas,
         TOKENREGISTRY = STATEREF.tokenregistry,
         BGIMGS = {
@@ -2077,8 +2111,9 @@ const Media = (() => {
                     imgsrc: imgObj.get("imgsrc").replace(/med/gu, "thumb"),
                     timeOut: D.Int(1000 * D.Float(timeOut)),
                     minTimeBetween: 0,
-                    maxTimeBetween: 100,
+                    maxTimeBetween: 100000,
                     isActive: false,
+                    validModes: ["Active"],
                     soundEffect: null
                 }
                 ANIMREGISTRY[animName].leftEdge = ANIMREGISTRY[animName].left - 0.5 * ANIMREGISTRY[animName].width
@@ -2087,19 +2122,22 @@ const Media = (() => {
                 ANIMREGISTRY[animName].bottomEdge = ANIMREGISTRY[animName].top + 0.5 * ANIMREGISTRY[animName].height
             }
         },
-        setAnimData = (animName, minTimeBetween = 0, maxTimeBetween = 100, soundEffect = null) => {
+        setAnimData = (animName, minTimeBetween = 0, maxTimeBetween = 100, soundEffect = null, validModes = "Active") => {
             const animData = getImgData(animName)
             animData.minTimeBetween = D.Int(1000 * D.Float(minTimeBetween))
             animData.maxTimeBetween = D.Int(1000 * D.Float(maxTimeBetween))
             animData.soundEffect = soundEffect
+            animData.validModes = validModes.split("|")
         },
         flashAnimation = (animName) => {
             const animData = getImgData(animName)
-            if (animData.isActive) {
+            if (!animData.validModes.includes(Session.Mode)) {
+                deactivateAnimation(animName)
+            } else if (animData.isActive) {
                 const animObj = getImgObj(animName)
                 animObj.set("layer", animData.activeLayer)
-                if (animData.soundEffect)
-                    playSoundEffect(animData.soundEffect)
+                if (animData.soundEffect && animData.validModes.includes(Session.Mode))
+                    startSound(animData.soundEffect)
                 if (animData.timeOut)
                     setTimeout(() => killAnimation(animObj), animData.timeOut)
             }
@@ -2140,11 +2178,11 @@ const Media = (() => {
         },
         killAnimation = animObj => {
             if (VAL({imgObj: animObj}, "killAnimation"))
-                animObj.set("layer", "gmlayer")
+                animObj.set("layer", "walls")
         },
         killAllAnims = () => {
             for (const animData of _.values(ANIMREGISTRY))
-                (getObj("graphic", animData.id) || {set: () => false}).set("layer", "gmlayer")
+                (getObj("graphic", animData.id) || {set: () => false}).set("layer", "walls")
         },
     // #endregion
 
@@ -2693,18 +2731,154 @@ const Media = (() => {
         },
     // #endregion
 
-    // #region SOUND OBJECT GETTERS: Registering & Manipulating Music & Sound Effects 
-        startPlaylist = playlist => {
-            STATEREF.activePlaylists = _.uniq([...STATEREF.activePlaylists, playlist])
-            sendChat("", `!roll20AM --audio,play,mode:shuffle|${playlist}`)
+    // #region SOUND OBJECT GETTERS: Track Object, Playlist Object, Data Retrieval
+        getSoundData = (soundRef) => SOUNDREGISTRY[soundRef],
+        getScore = (mode) => ({[`${Object.keys(SOUNDREGISTRY).find(x => SOUNDREGISTRY[x].tags.includes(mode) && SOUNDREGISTRY[x].type === "score")}`]: C.SOUNDVOLUME.defaults.score}),
+        getWeatherSounds = (locations, weatherCode) => {
+            // 0: x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
+            // 4: {x: ["Still", "Still"], s: ["Soft Breeze", "Cutting Breeze"], b: ["Breezy", "Biting Wind"], w: ["Blustery", "High Winds"], g: ["High Winds", "Driving Winds"], h: ["Howling Winds", "Howling Winds"], v: ["Roaring Winds", "Roaring Winds"]}
+            let weatherSounds = {}
+            switch (weatherCode.charAt(0)) {
+                case "b":
+                    weatherSounds.Blizzard = C.SOUNDVOLUME.Blizzard || C.SOUNDVOLUME.defaults.weather
+                    break
+                case "p":
+                case "t":
+                    weatherSounds.Rain = C.SOUNDVOLUME.Rain || C.SOUNDVOLUME.defaults.weather
+                    break
+                // no default
+            }
+            switch (weatherCode.charAt(4)) {
+                case "s":
+                    weatherSounds.Wind1 = C.SOUNDVOLUME.Wind1 || C.SOUNDVOLUME.defaults.weather
+                    break
+                case "b":
+                    weatherSounds.Wind2 = C.SOUNDVOLUME.Wind2 || C.SOUNDVOLUME.defaults.weather
+                    break
+                case "w":
+                    weatherSounds.Wind3 = C.SOUNDVOLUME.Wind3 || C.SOUNDVOLUME.defaults.weather
+                    break
+                case "g":
+                    weatherSounds.Wind4 = C.SOUNDVOLUME.Wind4 || C.SOUNDVOLUME.defaults.weather
+                    break
+                case "h":
+                    weatherSounds.Wind5 = C.SOUNDVOLUME.Wind5 || C.SOUNDVOLUME.defaults.weather
+                    break
+                case "v":
+                    weatherSounds.Wind6 = C.SOUNDVOLUME.Wind6 || C.SOUNDVOLUME.defaults.weather
+                    break
+                // no default
+            }
+            weatherSounds.Wind4 = C.SOUNDVOLUME.Wind4 || C.SOUNDVOLUME.defaults.weather
+            // D.Alert(D.JS(_.values(locations).map(x => x[0])))
+            // return {}
+            if (_.values(locations).map(x => x[0]).filter(x => !C.LOCATIONS[x].outside).length)
+                weatherSounds = D.KeyMapObj(weatherSounds, null, v => v * C.SOUNDVOLUME.indoorMultiplier)
+            // D.Alert(D.JS(weatherSounds), "Weather Sounds")
+            return weatherSounds
         },
-        stopPlaylist = playlist => {
-            STATEREF.activePlaylists = _.without(STATEREF.activePlaylists, playlist)
-            sendChat("", `!roll20AM --audio,stop|${playlist}`)
+        getLocationSounds = (locations) => {
+            const locRefs = D.KeyMapObj(locations, k => k.replace(/(Left|Center|Right)/gu, ""), v => v[0])
+            let locSound = {}
+            for (const locRef of ["District", "Site"]) {
+                if (!locRefs[locRef]) continue
+                const [thisSound] = C.LOCATIONS[locRefs[locRef]].soundScape
+                if (thisSound === "(TOTALSILENCE)")
+                    return {TOTALSILENCE: 0}
+                if (thisSound)
+                    if (locRef === "District" || (thisSound !== "(NONE)" || !C.LOCATIONS[locRefs[locRef]].outside))
+                        locSound = {[thisSound]: C.SOUNDVOLUME[thisSound] || C.SOUNDVOLUME.defaults.location}                
+                // D.Alert(D.JS(locSound), `${locRef} Sound`)
+            }
+            return locSound
         },
-        playSoundEffect = soundEffect => {            
-            sendChat("", `!roll20AM --audio,stop|${soundEffect}`)
-            sendChat("", `!roll20AM --audio,play,mode:single|${soundEffect}`)
+    // #endregion
+
+    // #region SOUND OBJECT SETTERS: Registering & Manipulating Music & Sound Effects 
+        regSound = (soundName, volume, soundType, soundTags = []) => {
+            SOUNDREGISTRY[soundName] = {
+                name: soundName,
+                type: soundType,
+                tags: soundTags,
+                volume,
+                isActive: false
+            }
+            Roll20AM.ChangeVolume(soundName, volume)
+            switch (soundType) {
+                case "score": {
+                    Roll20AM.SetSoundMode(soundName, "randomloop")
+                    SOUNDREGISTRY[soundName].isLooping = true
+                    break
+                }
+                case "weather":
+                case "location": {
+                    Roll20AM.SetSoundMode(soundName, "loop")
+                    SOUNDREGISTRY[soundName].isLooping = true
+                    break
+                }
+                case "effect": {
+                    Roll20AM.SetSoundMode(soundName, "randomsingle")
+                    SOUNDREGISTRY[soundName].isLooping = false
+                    break
+                }
+                // no default
+            }
+            Roll20AM.SetSoundMode(soundName)
+        },
+        updateSounds = () => {
+            if (STATEREF.isRunningSilent)
+                return
+            /* Check MODE:
+                Inactive = Inactive Score ONLY
+                Active = Main Score + Weather + Location
+                Downtime = Main Score + Location
+                Complication = Complication Theme
+                Spotlight = Main Score + Location
+                Daylighter = Daylighter Theme + Location
+            
+            Process SCORE:
+                Add appropriate playlist to soundscape list.
+            
+            Process LOCATION:
+                IF either District or Site = "(TOTALSILENCE)", turn off ALL sound.
+                IF Site is blank OR Site sound is "(NONE)" AND Site is Outside --> Play District Sound.
+                Else play Site Sound.
+            
+            Process WEATHER:
+                IF all locations are Outside, set weather volume to full.
+                Else, set weather volume to minimal.
+                Get weather code and apply sounds:
+                    - Wind
+                    - Rain
+            */
+            const soundsToPlay = {}
+            switch (Session.Mode) {
+                case "Active":
+                    Object.assign(soundsToPlay, getWeatherSounds(Session.Locations(), TimeTracker.WeatherCode))
+                    // falls through
+                case "Downtime":
+                case "Spotlight":
+                case "Daylighter":
+                    Object.assign(soundsToPlay, getLocationSounds(Session.Locations()))
+                    // falls through
+                default:
+                    Object.assign(soundsToPlay, getScore(Session.Mode))
+                    break
+            }
+            D.Alert(`To Play: ${D.JS(soundsToPlay)}<br>Looping: ${D.JS(Roll20AM.GetLoopingSounds())}<br>Turning Off: ${D.JS(Roll20AM.GetLoopingSounds().filter(x => !_.keys(soundsToPlay).includes(x)))}`, "Update Sounds Test")
+            for (const offSound of Roll20AM.GetLoopingSounds().filter(x => !_.keys(soundsToPlay).includes(x)))
+                stopSound(offSound)
+            for (const [onSound, volume] of Object.entries(soundsToPlay))
+                startSound(onSound, volume)
+        },
+        startSound = (soundRef, volume, fadeIn = null) => {
+            if (VAL({number: volume}))
+                Roll20AM.ChangeVolume(soundRef, volume)
+            if (!Roll20AM.IsPlaying(soundRef))
+                Roll20AM.PlaySound(soundRef, undefined, fadeIn)
+        },
+        stopSound = (soundRef, fadeOut = null) => {
+            Roll20AM.StopSound(soundRef, fadeOut)
         }
     // #endregion
 
@@ -2758,9 +2932,7 @@ const Media = (() => {
         Kill: deactivateAnimation,
 
         // SOUND FUNCTIONS
-        StartPlaylist: startPlaylist,
-        StopPlaylist: stopPlaylist,
-        get ActivePlaylists() { return STATEREF.activePlaylists },
+        UpdateSoundscape: updateSounds,
         
         // REINITIALIZE MEDIA OBJECTS (i.e. on MODE CHANGE)
         Fix: () => {

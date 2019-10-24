@@ -42,6 +42,9 @@ const Session = (() => {
                 for (const mode of Session.Modes)
                     STATEREF.locationRecord[mode] = D.Clone(STATEREF.curLocation)
             }
+
+            Roll20AM.StopSound("all")
+            Media.UpdateSoundscape()
                 
                                  
         // STATEREF.SessionScribes = [ "Thaumaterge", "Ava Wong", "banzai", "PixelPuzzler" ]
@@ -77,6 +80,24 @@ const Session = (() => {
                     }
                     break
                 }
+                case "get": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "locations": case "location": case "loc": {
+                            D.Alert(D.JS(Session.Locations()), "Current Location Data")
+                            break
+                        }
+                        case "activelocs": {
+                            D.Alert(D.JS(getActiveLocations()), "All Active Locations")
+                            break
+                        }
+                        case "scenelocs": {
+                            D.Alert(D.JS(getActiveSceneLocations()), "Active Scene Locations")
+                            break
+                        }
+                        // no default
+                    }
+                    break
+                }
                 case "set": {
                     switch(D.LCase(call = args.shift())) {
                         case "mode": {
@@ -85,11 +106,13 @@ const Session = (() => {
                             break
                         }
                         case "loc": case "location": {
+                            const sceneFocus = args.pop()
                             setLocation(parseLocationString(args.join(" ")))
+                            setSceneFocus(sceneFocus)
                             break
                         }
                         case "scene": {
-                            setSceneFocus(args.snift())
+                            setSceneFocus(args.shift())
                             break
                         }
                         case "date": {
@@ -171,11 +194,7 @@ const Session = (() => {
         MODEFUNCTIONS = {
             enterMode: {
                 Active: () => {},
-                Inactive: () => {
-                    for (const playlist of Media.ActivePlaylists)
-                        Media.StopPlaylist(playlist)
-                    Media.StartPlaylist("SplashScreen")
-                },
+                Inactive: () => {},
                 Downtime: () => {},
                 Daylighter: () => {},
                 Spotlight: () => {},
@@ -183,11 +202,7 @@ const Session = (() => {
             },
             leaveMode: {
                 Active: () => {},
-                Inactive: () => {
-                    for (const playlist of Media.ActivePlaylists)
-                        Media.StopPlaylist(playlist)
-                    Media.StartPlaylist("MainScore")
-                },
+                Inactive: () => {},
                 Downtime: () => {},
                 Daylighter: () => {},
                 Spotlight: () => {
@@ -307,6 +322,7 @@ const Session = (() => {
                 setModeLocations(curMode)
                 if (MODEFUNCTIONS.enterMode[curMode])
                     MODEFUNCTIONS.enterMode[curMode]()
+                Media.UpdateSoundscape()
             }
         },
         toggleTesting = (isTesting) => {
@@ -391,7 +407,7 @@ const Session = (() => {
         },
         getActiveLocations = (sideFocus) => {
             const activeLocs = _.keys(STATEREF.curLocation).filter(x => STATEREF.curLocation[x] !== "blank")
-            switch({c: "Center", l: "Left", r: "Right", a: "All"}[(sideFocus || STATEREF.sceneFocus || "a").toLowerCase().charAt(0)]) {
+            switch({c: "Center", l: "Left", r: "Right", a: "All"}[(sideFocus || "a").toLowerCase().charAt(0)]) {
                 case "Center":
                     return activeLocs.filter(x => x.endsWith("Center"))
                 case "Left":
@@ -545,13 +561,14 @@ const Session = (() => {
             }
         },
         setSceneFocus = (locPos) => {
-            STATEREF.sceneFocus = locPos
+            STATEREF.sceneFocus = D.LCase(locPos).charAt(0)
             const sceneLocs = getActiveSceneLocations()
             for (const loc of getActiveLocations())
                 if (sceneLocs.includes(loc)) 
                     Media.SetImgTemp(loc, {tint_color: "transparent"})
                 else
-                    Media.SetImgTemp(loc, {tint_color: "#000000"})
+                    Media.SetImgTemp(loc, {tint_color: "#000000"})            
+            Media.UpdateSoundscape()
         },
         endScene = () => {
             for (const charID of STATEREF.sceneChars)
@@ -573,7 +590,7 @@ const Session = (() => {
         get SceneChars() { return getCharsInLocation(STATEREF.sceneFocus) },
         get SceneFocus() { return STATEREF.sceneFocus },
         Locations: (locRef) => {
-            return D.KeyMapObject(getActiveLocations(locRef), (k, v) => v, v => STATEREF.curLocation[v]) },
+            return D.KeyMapObj(getActiveSceneLocations(), (k, v) => v, v => STATEREF.curLocation[v]) },
 
         get SessionNum() { return STATEREF.SessionNum },
         get IsSessionActive() { return isSessionActive() },

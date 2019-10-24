@@ -125,6 +125,7 @@ module.exports = {
         "Fuzzy": true,
         "Tester": true,
         "TimeTracker": true,
+        "Roll20AM": true,
         "_": false,
         "state": true,
         "getAttrs": false,

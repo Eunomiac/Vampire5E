@@ -1402,6 +1402,7 @@ const TimeTracker = (() => {
                 Media.SetImg("WeatherFrost", "blank")
             else if (!Media.HasForcedState("WeatherFrost"))
                 Media.SetImg("WeatherFrost", weatherData.tempC < -12 && "frost3" || weatherData.tempC < -6 && "frost2" || "frost1")
+            Media.UpdateSoundscape()
         },
         getGroundCover = (isTesting = false, downVal = 0.3, upb = 1, ups = 0.5) => {
             // D.Alert(`IsTesting = ${D.JS(isTesting)}`)
@@ -1491,7 +1492,7 @@ const TimeTracker = (() => {
                     const m = (mI + startMonth) % 12
                     if (mI > 0 && m === 0)
                         startYear++
-                    for (let d = startDay; d < WEATHERDATA[m].length; d++) {
+                    for (let d = startDay; d < WEATHERDATA[m].length; d++)
                         try {
                             const hourMatch = _.findIndex(WEATHERDATA[m][d], (v, k) => { return v.charAt(0) === code && (k <= 5 || k >= 20) })
                             if (hourMatch >= startHour) {
@@ -1506,8 +1507,7 @@ const TimeTracker = (() => {
                             startHour = 0
                         } catch (errObj) {
                             D.Alert(`Error at ${mI} ${d}: ${D.JS(errObj)}`, "ERROR")
-                        }
-                    }
+                        }                    
                     if (eventFound)
                         break
                     startDay = 1
@@ -1873,6 +1873,7 @@ const TimeTracker = (() => {
         IsValidDate: isValidDString,
         get IsClockRunning() { return isRunning || isRunningFast || isTimeRunning },
         UpdateWeather: setWeather,
+        get WeatherCode () { return getWeatherCode() },
 
         SetAlarm: setAlarm
     }

@@ -807,6 +807,19 @@ const C = (() => {
         },
     // #endregion
 
+    // #region SOUND EFFECT CONSTANTS
+        SOUNDVOLUME = {
+            indoorMultiplier: 0.2,
+            defaults: {
+                base: 50,
+                score: 45,
+                location: 45,
+                weather: 45,
+                effect: 60
+            }
+        },
+    // #endregion
+
     // #region SANDBOX CONFIGURATION & DEFINITIONS
         PIXELSPERSQUARE = 70,
         SANDBOX = {
@@ -1061,501 +1074,675 @@ const C = (() => {
                 resonance: ["p", "m"],
                 huntDiff: 3,
                 homestead: [4, 2, 2, 1],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CityChatter"],
+                outside: true
             },
             BayStFinancial: {
                 fullName: "the Bay St. Financial District",
                 resonance: ["p", "s"],
                 huntDiff: 4,
                 homestead: [5, 4, 6, 5],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CityTraffic"],
+                outside: true
             },
             Bennington: {
                 fullName: "Bennington Heights",
                 resonance: ["p", "s"],
                 huntDiff: 6,
                 homestead: [5, 1, 5, 1],
-                rollEffects: ["loc:Bennington+blood surge;nobloodsurge;[-1]Total Eclipse of the Heart;Aspect: No Blood Surge"]
+                rollEffects: ["loc:Bennington+blood surge;nobloodsurge;[-1]Total Eclipse of the Heart;District Quirk: No Blood Surge"],
+                soundScape: ["CitySuburb"],
+                outside: true
             },
             Cabbagetown: {
                 fullName: "Cabbagetown",
                 resonance: ["i", "s"],
                 huntDiff: 2,
                 homestead: [2, 1, 1, 1],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CityTraffic"],
+                outside: true
             },
             CentreIsland: {
                 fullName: "Centre Island",
                 resonance: ["s", "p"],
                 huntDiff: 6,
                 homestead: [2, 3, 0, 2],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CityPark"],
+                outside: true
             },
             Chinatown: {
                 fullName: "Chinatown",
                 resonance: ["s", "m"],
                 huntDiff: 2,
                 homestead: [2, 4, 4, 2],
-                rollEffects: ["loc:Chinatown+brawl;2;[+1]<#> Kung-Fu Fighting|loc;Chinatown+firearms/melee;-2;[-1]<#> Kung-Fu Fighting"]
+                rollEffects: ["loc:Chinatown+brawl;2;[+1]<#> Kung-Fu Fighting|loc;Chinatown+firearms/melee;-2;[-1]<#> Kung-Fu Fighting"],
+                soundScape: ["CityTraffic"],
+                outside: true
             },
             Corktown: {
                 fullName: "Corktown",
                 resonance: ["c", "p"],
                 huntDiff: 2,
                 homestead: [2, 3, 1, 0],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CityTraffic"],
+                outside: true
             },
             Danforth: {
                 fullName: "the Danforth",
                 resonance: ["s", "p"],
                 huntDiff: 3,
                 homestead: [4, 2, 4, 2],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CityWalking"],
+                outside: true
             },
             DeerPark: {
                 fullName: "Deer Park",
                 resonance: ["r", "s"],
                 huntDiff: 5,
                 homestead: [2, 1, 2, 3],
-                rollEffects: ["loc:DeerPark;bestialcancel;[!1]Bad Moon Rising"]
+                rollEffects: ["loc:DeerPark;bestialcancel;[!1]Bad Moon Rising"],
+                soundScape: ["CitySuburb"],
+                outside: true
             },
             Discovery: {
                 fullName: "the Discovery District",
                 resonance: ["m", "c"],
                 huntDiff: 4,
                 homestead: [5, 2, 3, 3],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CityChatter"],
+                outside: true
             },
             Distillery: {
                 fullName: "the Distillery District",
                 resonance: ["c", "s"],
                 huntDiff: 5,
                 homestead: [1, 2, 4, 4],
-                rollEffects: ["loc:Distillery+firearms;2;[+1]<#> Janie's Got a Gun|loc:Distillery+brawl/melee;-2;[-1]<#> Janie's Got a Gun"]
+                rollEffects: ["loc:Distillery+firearms;2;[+1]<#> Janie's Got a Gun|loc:Distillery+brawl/melee;-2;[-1]<#> Janie's Got a Gun"],
+                soundScape: ["Industry"],
+                outside: true
             },
             DupontByTheCastle: {
                 fullName: "Dupont by the Castle",
                 resonance: ["m", "c"],
                 huntDiff: 4,
                 homestead: [5, 3, 5, 2],
-                rollEffects: ["loc:DupontByTheCastle+messycrit;;[!1]Can't Stop the Feeling"]
+                rollEffects: ["loc:DupontByTheCastle+messycrit;;[!1]Can't Stop the Feeling"],
+                soundScape: ["CityWalking"],
+                outside: true
             },
             GayVillage: {
                 fullName: "the Gay Village",
                 resonance: ["s", "m"],
                 huntDiff: 2,
                 homestead: [4, 3, 2, 3],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CityTraffic"],
+                outside: true
             },
             HarbordVillage: {
                 fullName: "Harbord Village",
                 resonance: ["c", "p"],
                 huntDiff: 4,
                 homestead: [3, 5, 3, 4],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CityTraffic"],
+                outside: true
             },
             Humewood: {
                 fullName: "Humewood",
                 resonance: ["r", "s"],
                 huntDiff: 3,
                 homestead: [2, 1, 4, 2],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CitySuburb"],
+                outside: true
             },
             LibertyVillage: {
                 fullName: "Liberty Village",
                 resonance: ["c", "m"],
                 huntDiff: 3,
                 homestead: [3, 3, 2, 1],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CityChatter"],
+                outside: true
             },
             LittleItaly: {
                 fullName: "Little Italy",
                 resonance: ["c", "p"],
                 huntDiff: 2,
                 homestead: [3, 3, 3, 3],
-                rollEffects: ["loc:LittleItaly+melee;2;[+1]<#> Beat It|loc:LittleItaly+firearms/melee;-2;[-1]<#> Beat It"]
+                rollEffects: ["loc:LittleItaly+melee;2;[+1]<#> Beat It|loc:LittleItaly+firearms/melee;-2;[-1]<#> Beat It"],
+                soundScape: ["(TOTALSILENCE)"],
+                outside: true
             },
             LittlePortugal: {
                 fullName: "Little Portugal",
                 resonance: ["m", "p"],
                 huntDiff: 2,
                 homestead: [1, 4, 3, 3],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(TOTALSILENCE)"],
+                outside: true
             },
             PATH: {
                 fullName: "P.A.T.H.",
                 resonance: ["p", "c"],
                 huntDiff: 4,
                 homestead: [3, 6, 4, 5],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CityWalking"],
+                outside: false
             },
             RegentPark: {
                 fullName: "Regent Park",
                 resonance: ["p", "c"],
                 huntDiff: 3,
                 homestead: [4, 4, 3, 4],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CitySuburb"],
+                outside: true
             },
             Riverdale: {
                 fullName: "Riverdale",
                 resonance: ["q", "m"],
                 huntDiff: 3,
                 homestead: [3, 5, 4, 3],
-                rollEffects: ["loc:Riverdale+messycrit;nomessycrit;Aspect: Steady As She Goes"]
+                rollEffects: ["loc:Riverdale+messycrit;nomessycrit;[LOC]Steady As She Goes"],
+                soundScape: ["CitySuburb"],
+                outside: true
             },
             Rosedale: {
                 fullName: "Rosedale",
                 resonance: ["p", "m"],
                 huntDiff: 6,
                 homestead: [5, 1, 5, 4],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CitySuburb"],
+                outside: true
             },
             Sewers: {
                 fullName: "the Sewers",
                 resonance: ["m", "s"],
                 huntDiff: "~",
                 homestead: [0, 1, 4, 5],
-                rollEffects: ["loc:Sewers+Nosferatu+physical/discipline;2;[+1]<#> Demons"]
+                rollEffects: ["loc:Sewers+Nosferatu+physical/discipline;2;[+1]<#> Demons"],
+                soundScape: ["Sewers"],
+                outside: false
             },
             StJamesTown: {
                 fullName: "St. James Town",
                 resonance: ["i", "p"],
                 huntDiff: 2,
                 homestead: [1, 1, 4, 1],
-                rollEffects: ["loc:StJamesTown+Lasombra+Dominate;2;[+1]<#> Music of the Night"]
+                rollEffects: ["loc:StJamesTown+Lasombra+Dominate;2;[+1]<#> Music of the Night"],
+                soundScape: ["CityTraffic"],
+                outside: true
             },
             Summerhill: {
                 fullName: "Summerhill",
                 resonance: ["m", "s"],
                 huntDiff: 2,
                 homestead: [1, 3, 3, 2],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CitySuburb"],
+                outside: true
             },
             Waterfront: {
                 fullName: "the Waterfront",
                 resonance: ["s", "c"],
                 huntDiff: 4,
                 homestead: [6, 5, 4, 5],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CityTraffic"],
+                outside: true
             },
             WestQueenWest: {
                 fullName: "West Queen West",
                 resonance: ["s", "p"],
                 huntDiff: 3,
                 homestead: [4, 4, 3, 4],
-                rollEffects: ["loc:WestQueenWest+success+rouse;reroll;[!1]Hungry Like the Wolf"]
+                rollEffects: ["loc:WestQueenWest+success+rouse;reroll;[!1]Hungry Like the Wolf"],
+                soundScape: ["CityTraffic"],
+                outside: true
             },
             Wychwood: {
                 fullName: "Wychwood",
                 resonance: ["s", "c"],
                 huntDiff: 5,
                 homestead: [2, 0, 5, 1],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CitySuburb"],
+                outside: true
             },
             YongeHospital: {
-                fullName: "the Yonge & College Hospital District",
-                resonance: ["p", "c"],
-                huntDiff: 4,
-                homestead: [4, 4, 4, 5],
-                rollEffects: []
-            },
-            YongeMuseum: {
                 fullName: "the Yonge & Bloor Museum District",
                 resonance: ["m", "c"],
                 huntDiff: 4,
                 homestead: [5, 4, 4, 3],
-                rollEffects: []            
+                rollEffects: [],
+                soundScape: ["CityChatter"],
+                outside: true
+            },
+            YongeMuseum: {
+                fullName: "the Yonge & College Hospital District",
+                resonance: ["p", "c"],
+                huntDiff: 4,
+                homestead: [4, 4, 4, 5],
+                rollEffects: [],
+                soundScape: ["CityTraffic"],
+                outside: true
             },
             YongeStreet: {
                 fullName: "Yonge Street",
                 resonance: ["q", "m"],
                 huntDiff: 3,
                 homestead: [4, 5, 4, 6],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CityTraffic"],
+                outside: true
             },
             Yorkville: {
                 fullName: "Yorkville",
                 resonance: ["c", "m"],
                 huntDiff: 6,
                 homestead: [5, 2, 4, 5],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CitySuburb"],
+                outside: true
             }
         },
         SITES = {
             AnarchBar: {
-                fullName: "an Anarch Dive Bar",
+                fullName: "Anarch Dive Bar",
                 resonance: ["c", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["DiveBar"],
+                outside: false
             },
             ArtGallery: {
-                fullName: "the Art Gallery of Ontario",
+                fullName: "Art Gallery of Ontario",
                 resonance: ["s", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["SoftIndoor"],
+                outside: false
             },
             BackAlley: {
-                fullName: "a Back Alley",
+                fullName: "Back Alley",
                 resonance: [null, "s"],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["UrbanDark"],
+                outside: true
             },
             BayTower: {
-                fullName: "the Bay Wellington Tower",
+                fullName: "Bay Wellington Tower",
                 resonance: ["p", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["Office"],
+                outside: false
             },
             BBishopFerry: {
-                fullName: "the Billy Bishop Ferry",
+                fullName: "Billy Bishop Ferry",
                 resonance: [],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["Waterside"],
+                outside: false
             },
             CasaLoma: {
                 fullName: "Casa Loma",
                 resonance: [null, "m"],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["Church"],
+                outside: false
             },
             Cemetary: {
-                fullName: "a Cemetary",
+                fullName: "Cemetary",
                 resonance: ["m", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CityPark"],
+                outside: true
             },
             CityApt1: {
-                fullName: "a City Apartment",
+                fullName: "City Apartment [1]",
                 resonance: ["c", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             CityHall: {
                 fullName: "City Hall",
                 resonance: ["p", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             CityPark: {
-                fullName: "a City Park",
+                fullName: "City Park",
                 resonance: ["s", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["CityPark"],
+                outside: true
             },
             CNTower: {
-                fullName: "the CN Tower",
+                fullName: "CN Tower",
                 resonance: ["s", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             Docks: {
-                fullName: "the Docks",
+                fullName: "Docks, The",
                 resonance: ["c", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["Waterside"],
+                outside: true
             },
             Drake: {
-                fullName: "the Drake Hotel",
+                fullName: "Drake Hotel, The",
                 resonance: ["s", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(TOTALSILENCE)"],
+                outside: false
             },
             Elysium: {
                 fullName: "Elysium",
                 resonance: [null, "c"],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             BrickWorks: {
-                fullName: "the Evergreen Brick Works",
+                fullName: "Evergreen Brick Works",
                 resonance: [null, "s"],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             EvergreenPalisades: {
-                fullName: "the Evergreen Palisades",
+                fullName: "Evergreen Palisades",
                 resonance: ["i", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             FightClub: {
-                fullName: "a Fight Club",
+                fullName: "Fight Club",
                 resonance: ["c", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             CeramicsMuseum: {
-                fullName: "the Gardiner Ceramics Museum",
+                fullName: "Gardiner Ceramics Museum",
                 resonance: ["p", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             GayClub: {
-                fullName: "a Gay Nightclub",
+                fullName: "Gay Nightclub",
                 resonance: ["s", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             Distillery: {
-                fullName: "the Historic Distillery",
+                fullName: "Historic Distillery, The",
                 resonance: ["m", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             Laboratory: {
-                fullName: "a Laboratory",
+                fullName: "Laboratory",
                 resonance: ["m", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             LectureHall: {
-                fullName: "a Lecture Hall",
+                fullName: "Lecture Hall",
                 resonance: ["m", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             Library: {
-                fullName: "a Library",
+                fullName: "Library",
                 resonance: ["p", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             MadinaMasjid: {
                 fullName: "Madina Masjid",
                 resonance: ["p", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             MiddleOfRoad: {
-                fullName: "the Middle Of The Road",
+                fullName: "Middle Of The Road",
                 resonance: ["m", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: true
             },
             Nightclub: {
-                fullName: "a Nightclub",
+                fullName: "Nightclub",
                 resonance: ["s", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             Office: {
-                fullName: "an Office",
+                fullName: "Office",
                 resonance: [null, "c"],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             ParkingLot: {
-                fullName: "a Parking Lot",
+                fullName: "Parking Lot",
                 resonance: [null, "p"],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: true
             },
             PMHospital: {
                 fullName: "Princess Margaret Hospital",
                 resonance: ["p", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             ProfOffice: {
-                fullName: "a Professor's Office",
+                fullName: "Professor's Office",
                 resonance: ["p", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             RedemptionHouse: {
                 fullName: "Redemption House",
                 resonance: [null, "p"],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             RegentParkApt: {
-                fullName: "a Regent Park Apartment",
+                fullName: "Regent Park Apartment",
                 resonance: ["i", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             RogersCentre: {
-                fullName: "the Rogers Centre",
+                fullName: "Rogers Centre",
                 resonance: ["c", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: true
             },
             Rooftops: {
-                fullName: "the Rooftops",
+                fullName: "Rooftops",
                 resonance: ["m", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: true
             },
             ROM: {
-                fullName: "the Royal Ontario Museum",
+                fullName: "Royal Ontario Museum",
                 resonance: ["m", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             Sidewalk1: {
-                fullName: "the Sidewalk",
+                fullName: "Sidewalk [1]",
                 resonance: [null, "s"],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: true
             },
             Sidewalk2: {
-                fullName: "the Sidewalk",
+                fullName: "Sidewalk [2]",
                 resonance: ["q", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: true
             },
             Sidewalk3: {
-                fullName: "the Sidewalk",
+                fullName: "Sidewalk [3]",
                 resonance: ["p", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: true
             },
             SiteLotus: {
                 fullName: "Site: Lotus",
                 resonance: [null, null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             SpawningPool: {
-                fullName: "a Spawning Pool",
+                fullName: "Spawning Pool",
                 resonance: ["m", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             StMichaelsCathedral: {
                 fullName: "St. Michael's Cathedral Basilica",
                 resonance: ["p", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             StripClub: {
-                fullName: "a Strip Club",
+                fullName: "Strip Club",
                 resonance: ["s", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             StudentVillage: {
-                fullName: "the Student Village",
+                fullName: "Student Village",
                 resonance: ["s", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: true
             },
             SubwayStation: {
-                fullName: "a Subway Station",
+                fullName: "Subway Station",
                 resonance: ["c", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             SubwayTunnels: {
-                fullName: "the Subway Tunnels",
+                fullName: "Subway Tunnels",
                 resonance: [null, "s"],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             UndergroundMedClinic: {
-                fullName: "an Underground Medical Clinic",
+                fullName: "Underground Medical Clinic",
                 resonance: ["m", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             UndergroundMedOffice: {
-                fullName: "an Underground Medical Office",
+                fullName: "Underground Medical Office",
                 resonance: [null, "c"],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             WalkingPath: {
-                fullName: "a Walking Path",
+                fullName: "Walking Path",
                 resonance: ["q", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: true
             },
             WarrensAntechamber: {
-                fullName: "the Warrens: Antechamber",
+                fullName: "Warrens: Antechamber",
                 resonance: ["m", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             WychwoodPub: {
-                fullName: "a Wychwood Pub",
+                fullName: "Wychwood Pub",
                 resonance: [null, "c"],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             YachtMister: {
-                fullName: "a Yacht",
+                fullName: "Yacht",
                 resonance: [],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             YongeDundasSquare: {
                 fullName: "Yonge & Dundas Square",
                 resonance: ["c", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: true
             },
             YorkvilleApt1: {
-                fullName: "a Yorkville Apartment",
+                fullName: "Yorkville Apartment [1]",
                 resonance: ["m", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             YorkvilleApt2: {
-                fullName: "a Yorkville Apartment",
+                fullName: "Yorkville Apartment [2]",
                 resonance: ["m", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             },
             YouthShelter: {
-                fullName: "a Youth Shelter",
+                fullName: "Youth Shelter",
                 resonance: ["c", null],
-                rollEffects: []
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
             }
         },
     // #endregion
@@ -1829,6 +2016,9 @@ const C = (() => {
         RESONANCEODDS,
 
         DISTRICTS, SITES,
+        get LOCATIONS() { return Object.assign({}, DISTRICTS, SITES) },
+
+        SOUNDVOLUME,
 
         MVCVALS,
         FX
