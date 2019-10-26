@@ -589,17 +589,16 @@ const Session = (() => {
         CharsIn: getCharsInLocation,
         get SceneChars() { return getCharsInLocation(STATEREF.sceneFocus) },
         get SceneFocus() { return STATEREF.sceneFocus },
-        Locations: (locRef) => {
-            return D.KeyMapObj(getActiveSceneLocations(), (k, v) => v, v => STATEREF.curLocation[v]) },
+        Locations: () => D.KeyMapObj(getActiveSceneLocations(), (k, v) => v, v => STATEREF.curLocation[v]),
+        get Location() { return STATEREF.locationRecord },
 
         get SessionNum() { return STATEREF.SessionNum },
         get IsSessionActive() { return isSessionActive() },
-        get Modes() { return STATEREF.SessionModes },
         get IsTesting() { return STATEREF.isTestingActive },
+
         get Mode() { return STATEREF.Mode },
-        get LastMode() { return STATEREF.LastMode },
-        get Location() { return STATEREF.locationRecord },
-        
+        get Modes() { return STATEREF.SessionModes },
+        get LastMode() { return STATEREF.LastMode }        
     }
 })()
 

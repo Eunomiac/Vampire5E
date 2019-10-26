@@ -2226,20 +2226,6 @@ const Media = (() => {
                 return !isSilent && THROW(`Bad text reference: ${D.JS(textRef)}`, "getTextObj", errObj)
             }
         },
-        getTextObjs = textRefs => {
-            const tRefs = VAL({msg: textRefs}) ? D.GetSelected(textRefs) || [] : textRefs,
-                textObjs = []
-            if (VAL({array: tRefs})) {
-                for (const tRef of tRefs)
-                    textObjs.push(getTextObj(tRef))
-                return textObjs
-            } else if (textRefs === "all") {
-                for (const tRef of _.values(TEXTREGISTRY))
-                    textObjs.push(getTextObj(tRef.id))
-                return textObjs
-            }
-            return false
-        },
         hasShadowObj = textRef => Boolean((getTextData(textRef) || {shadowID: false}).shadowID),
         getShadowShift = textRef => C.SHADOWOFFSETS[(getTextObj(textRef) || {get: () => 20}).get("font_size")],
         getTextData = (textRef, isSilent = false) => {
