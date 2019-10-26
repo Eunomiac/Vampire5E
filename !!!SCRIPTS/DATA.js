@@ -27,6 +27,7 @@ const D = (() => {
             STATEREF.BLACKLIST = STATEREF.BLACKLIST || []
             STATEREF.CHARWIDTH = STATEREF.CHARWIDTH || {}
             STATEREF.DEBUGLOG = STATEREF.DEBUGLOG || []
+            STATEREF.ALERTTHROTTLE = []
 
         // Initialize STATSDICT Fuzzy Dictionary
             STATEREF.STATSDICT = Fuzzy.Fix()
@@ -483,7 +484,15 @@ const D = (() => {
                 sendChat("", `/w "${player.get("_displayname")}" ${html}`)
                 
         },
-        sendToGM = (msg, title = "[ALERT]") => sendChatMessage("Storyteller", msg, title),
+        sendToGM = (msg, title = "[ALERT]", throttle = 0) => {
+            if (STATEREF.ALERTTHROTTLE.includes(title)) {
+                return
+            } else if (throttle > 0) {
+                STATEREF.ALERTTHROTTLE.push(title)
+                setTimeout(() => { STATEREF.ALERTTHROTTLE = _.without(STATEREF.ALERTTHROTTLE, title) }, throttle)
+            }
+            sendChatMessage("Storyteller", msg, title)
+        },
         promptGM = (menuHTML, replyFunc) => {
             if (VAL({string: menuHTML, func: replyFunc}, "promptGM")) {
                 if (TimeTracker.IsClockRunning) {

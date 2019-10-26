@@ -28,6 +28,7 @@ const Media = (() => {
             STATEREF.TokenSrcs = STATEREF.TokenSrcs || {}
             STATEREF.imgResizeDims = STATEREF.imgResizeDims || {height: 100, width: 100}
             STATEREF.activeAnimations = STATEREF.activeAnimations || {}
+            STATEREF.activeSounds = STATEREF.activeSounds || []
             STATEREF.curLocation = STATEREF.curLocation || "DistrictCenter:blank SiteCenter:blank"
 
             // STATEREF.imgregistry.mapButtonDomain_1.cycleSrcs = ["camarilla", "nodomain", "anarch"]
@@ -46,6 +47,9 @@ const Media = (() => {
             STATEREF.AREADICT = Fuzzy.Fix()
             for (const areaKey of _.keys(STATEREF.areas))
                 STATEREF.AREADICT.add(areaKey)
+
+            STATEREF.imgregistry.DistrictCenter_1.srcs.DistilleryDist = "https://s3.amazonaws.com/files.d20.io/images/93590743/sebxxMaOpGClxwHDcJqA1A/thumb.png?1570253503"
+            delete STATEREF.imgregistry.DistrictCenter_1.srcs.Distillery
         },
             
         
@@ -709,12 +713,32 @@ const Media = (() => {
                         }
                         case "set": {
                             switch (D.LCase(call = args.shift())) {
+                                case "volume": case "vol": {
+                                    const [soundName, volume] = args
+                                    if (VAL({string: soundName, number: volume}, "!sound set volume"))
+                                        Roll20AM.ChangeVolume(soundName, volume)
+                                    break
+                                }
                                 case "trackmodes": {
                                     Roll20AM.SetPlaylistTrackModes(args.shift(), args.shift())
                                     break
                                 }
                                 // no default
                             }
+                            break
+                        }
+                        case "reset": {
+                            switch (D.LCase(call = args.shift())) {
+                                case "modes": {
+                                    initSoundModes()
+                                    break
+                                }
+                                // no default
+                            }
+                            break
+                        }
+                        case "fix": {
+                            updateSounds()
                             break
                         }
                         case "stopall": {
@@ -2135,7 +2159,7 @@ const Media = (() => {
                 const animObj = getImgObj(animName)
                 animObj.set("layer", animData.activeLayer)
                 if (animData.soundEffect && animData.validModes.includes(Session.Mode))
-                    startSound(animData.soundEffect)
+                    startSound(animData.soundEffect, undefined, undefined, true)
                 if (animData.timeOut)
                     setTimeout(() => killAnimation(animObj), animData.timeOut)
             }
@@ -2716,23 +2740,28 @@ const Media = (() => {
     // #endregion
 
     // #region SOUND OBJECT GETTERS: Track Object, Playlist Object, Data Retrieval
-        getScore = (mode) => ({[`${Object.keys(SOUNDREGISTRY).find(x => SOUNDREGISTRY[x].tags.includes(mode) && SOUNDREGISTRY[x].type === "score")}`]: C.SOUNDVOLUME.defaults.score}),
+        getScore = (mode) => {
+            const scoreRef = Object.keys(SOUNDREGISTRY).find(x => SOUNDREGISTRY[x].tags.includes(mode) && SOUNDREGISTRY[x].type === "score")
+            let volume = C.SOUNDVOLUME[scoreRef] || C.SOUNDVOLUME.defaults.score
+            return {[scoreRef]: volume}
+        },
         getWeatherSounds = (locations, weatherCode) => {
             // 0: x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
             // 4: {x: ["Still", "Still"], s: ["Soft Breeze", "Cutting Breeze"], b: ["Breezy", "Biting Wind"], w: ["Blustery", "High Winds"], g: ["High Winds", "Driving Winds"], h: ["Howling Winds", "Howling Winds"], v: ["Roaring Winds", "Roaring Winds"]}
-            let weatherSounds = {}
+            const weatherSounds = {}
             if (["p", "t"].includes(weatherCode.charAt(0)))
                 weatherSounds.Rain = C.SOUNDVOLUME.Rain || C.SOUNDVOLUME.defaults.weather
             const windPrefix = `Wind${TimeTracker.TempC <= 0 ? "Winter" : ""}`
             switch (weatherCode.charAt(4)) {
+                case "s":
                 case "b":
-                    weatherSounds[`${windPrefix}Low`] = (C.SOUNDVOLUME[`${windPrefix}Low`] || C.SOUNDVOLUME.defaults.weather) * 0.75
+                    weatherSounds[`${windPrefix}Low`] = (C.SOUNDVOLUME[`${windPrefix}Low`] || C.SOUNDVOLUME.defaults.weather).map(x => x * 0.75)
                     break
                 case "w":
                     weatherSounds[`${windPrefix}Low`] = C.SOUNDVOLUME[`${windPrefix}Low`] || C.SOUNDVOLUME.defaults.weather
                     break
                 case "g":
-                    weatherSounds[`${windPrefix}Med`] = (C.SOUNDVOLUME[`${windPrefix}Med`] || C.SOUNDVOLUME.defaults.weather) * 0.75
+                    weatherSounds[`${windPrefix}Med`] = (C.SOUNDVOLUME[`${windPrefix}Med`] || C.SOUNDVOLUME.defaults.weather).map(x => x * 0.75)
                     break
                 case "h":
                     weatherSounds[`${windPrefix}Med`] = C.SOUNDVOLUME[`${windPrefix}Med`] || C.SOUNDVOLUME.defaults.weather
@@ -2742,10 +2771,6 @@ const Media = (() => {
                     break
                 // no default
             }
-            // D.Alert(D.JS(_.values(locations).map(x => x[0])))
-            // return {}
-            if (_.values(locations).map(x => x[0]).filter(x => !C.LOCATIONS[x].outside).length)
-                weatherSounds = D.KeyMapObj(weatherSounds, null, v => v * C.SOUNDVOLUME.indoorMultiplier)
             // D.Alert(D.JS(weatherSounds), "Weather Sounds")
             return weatherSounds
         },
@@ -2756,7 +2781,7 @@ const Media = (() => {
                 if (!locRefs[locRef]) continue
                 const [thisSound] = C.LOCATIONS[locRefs[locRef]].soundScape
                 if (thisSound === "(TOTALSILENCE)")
-                    return {TOTALSILENCE: 0}
+                    return {TOTALSILENCE: [0]}
                 if (thisSound)
                     if (locRef === "District" || (thisSound !== "(NONE)" || !C.LOCATIONS[locRefs[locRef]].outside))
                         locSound = {[thisSound]: C.SOUNDVOLUME[thisSound] || C.SOUNDVOLUME.defaults.location}                
@@ -2767,6 +2792,16 @@ const Media = (() => {
     // #endregion
 
     // #region SOUND OBJECT SETTERS: Registering & Manipulating Music & Sound Effects 
+        initSoundModes = () => {            
+            const [listsRef, tracksRef] = [
+                state.Roll20AM.playLists,
+                state.Roll20AM.trackDetails
+            ]
+            for (const listName of Object.keys(listsRef))
+                Roll20AM.SetSoundMode(listName)
+            for (const trackName of _.intersection(_.keys(C.SOUNDMODES), _.keys(tracksRef)))
+                Roll20AM.SetSoundMode(trackName)
+        },
         regSound = (soundName, volume, soundType, soundTags = []) => {
             SOUNDREGISTRY[soundName] = {
                 name: soundName,
@@ -2797,56 +2832,104 @@ const Media = (() => {
             }
             Roll20AM.SetSoundMode(soundName)
         },
-        updateSounds = () => {
-            if (STATEREF.isRunningSilent)
+        updateSounds = (isDoubleChecking = true) => {
+            if (STATEREF.isRunningSilent && STATEREF.isRunningSilent !== "TOTALSILENCE")
                 return
-            /* Check MODE:
-                Inactive = Inactive Score ONLY
-                Active = Main Score + Weather + Location
-                Downtime = Main Score + Location
-                Complication = Complication Theme
-                Spotlight = Main Score + Location
-                Daylighter = Daylighter Theme + Location
-            
-            Process SCORE:
-                Add appropriate playlist to soundscape list.
-            
-            Process LOCATION:
-                IF either District or Site = "(TOTALSILENCE)", turn off ALL sound.
-                IF Site is blank OR Site sound is "(NONE)" AND Site is Outside --> Play District Sound.
-                Else play Site Sound.
-            
-            Process WEATHER:
-                IF all locations are Outside, set weather volume to full.
-                Else, set weather volume to minimal.
-                Get weather code and apply sounds:
-                    - Wind
-                    - Rain
-            */
             const soundsToPlay = {}
             switch (Session.Mode) {
                 case "Active":
-                    Object.assign(soundsToPlay, getWeatherSounds(Session.Locations(), TimeTracker.WeatherCode))
+                    Object.assign(soundsToPlay, _.omit(D.KeyMapObj(getWeatherSounds(Session.Locations(), TimeTracker.WeatherCode), null, (v, k) => {
+                        let volume = v[0]
+                        if (!Session.IsOutside)
+                            if (VAL({number: v[1]}))
+                                [,volume] = v
+                            else if (VAL({number: C.SOUNDVOLUME.indoorMult[k]}))
+                                volume *= C.SOUNDVOLUME.indoorMult[k]
+                            else if (VAL({number: C.SOUNDVOLUME.indoorMult.defaults.weather}))
+                                volume *= C.SOUNDVOLUME.indoorMult.defaults.weather
+                            else
+                                volume *= C.SOUNDVOLUME.indoorMult.defaults.base
+                        else if (getWeatherSounds(Session.Locations(), TimeTracker.WeatherCode).Rain)
+                            if (VAL({number: C.SOUNDVOLUME.rainMult[k]}))
+                                volume *= C.SOUNDVOLUME.rainMult[k]
+                            else if (VAL({number: C.SOUNDVOLUME.rainMult.defaults.weather}))
+                                volume *= C.SOUNDVOLUME.rainMult.defaults.weather
+                            else
+                                volume *= C.SOUNDVOLUME.rainMult.defaults.base
+                        return volume
+                    }), "(NONE)"))
                     // falls through
                 case "Downtime":
                 case "Spotlight":
                 case "Daylighter":
-                    Object.assign(soundsToPlay, getLocationSounds(Session.Locations()))
+                    Object.assign(soundsToPlay, _.omit(D.KeyMapObj(getLocationSounds(Session.Locations()), null, (v, k) => {
+                        let volume = v[0]
+                        if (!Session.IsOutside)
+                            volume = v[1] || v[0] * (C.SOUNDVOLUME.indoorMult[k] || C.SOUNDVOLUME.indoorMult.defaults.location || C.SOUNDVOLUME.indoorMult.defaults.base)
+                        else if (Session.Mode === "Active" && getWeatherSounds(Session.Locations(), TimeTracker.WeatherCode).Rain)
+                            volume *= C.SOUNDVOLUME.rainMult[k] || C.SOUNDVOLUME.rainMult.defaults.location || C.SOUNDVOLUME.rainMult.defaults.base
+                        return volume
+                    }), "(NONE)"))
                     // falls through
                 default:
-                    Object.assign(soundsToPlay, getScore(Session.Mode))
+                    Object.assign(soundsToPlay, _.omit(D.KeyMapObj(getScore(Session.Mode), null, (v, k) => {
+                        let volume = v[0]
+                        if (!Session.IsOutside)
+                            volume = v[1] || v[0] * (C.SOUNDVOLUME.indoorMult[k] || C.SOUNDVOLUME.indoorMult.defaults.score || C.SOUNDVOLUME.indoorMult.defaults.base)
+                        else if (Session.Mode === "Active" && getWeatherSounds(Session.Locations(), TimeTracker.WeatherCode).Rain)
+                            volume *= C.SOUNDVOLUME.rainMult[k] || C.SOUNDVOLUME.rainMult.defaults.score || C.SOUNDVOLUME.rainMult.defaults.base
+                        return volume
+                    }), "(NONE)"))
                     break
             }
-            D.Alert(`To Play: ${D.JS(soundsToPlay)}<br>Looping: ${D.JS(Roll20AM.GetLoopingSounds())}<br>Turning Off: ${D.JS(Roll20AM.GetLoopingSounds().filter(x => !_.keys(soundsToPlay).includes(x)))}`, "Update Sounds Test")
-            for (const offSound of Roll20AM.GetLoopingSounds().filter(x => !_.keys(soundsToPlay).includes(x)))
-                stopSound(offSound)
-            for (const [onSound, volume] of Object.entries(soundsToPlay))
-                startSound(onSound, volume)
+
+            if (_.keys(soundsToPlay).includes("TOTALSILENCE")) {
+                STATEREF.isRunningSilent = "TOTALSILENCE"
+                Roll20AM.StopSound("all")
+            } else if (STATEREF.isRunningSilent === "TOTALSILENCE") {
+                STATEREF.isRunningSilent = false
+                updateSounds()
+            } else {
+                const thunderVolumeData = {}
+                for (const thunderSoundRef of ["Thunder", ..._.intersection(Roll20AM.GetPlaylistTrackNames("Thunder"), Object.keys(C.SOUNDVOLUME))]) {
+                    let thunderVol = C.SOUNDVOLUME[thunderSoundRef] || thunderSoundRef === "Thunder" && C.SOUNDVOLUME.defaults.effect
+                    if (thunderVol) {
+                        if (Session.IsOutside)
+                            thunderVol = VAL({number: thunderVol[0]}) ? thunderVol[0] : thunderVol
+                        else
+                            thunderVol = VAL({number: thunderVol[1]}) ? thunderVol[1] : thunderVol[0] * (C.SOUNDVOLUME.indoorMult[thunderSoundRef] || C.SOUNDVOLUME.indoorMult.defaults.effect || C.SOUNDVOLUME.indoorMult.defaults.base)
+                        if (thunderSoundRef === "Thunder")
+                            Roll20AM.ChangeVolume(thunderSoundRef, thunderVol)
+                        else
+                            thunderVolumeData[thunderSoundRef] = thunderVol
+                    }
+                }
+                for (const thunderSoundRef of Object.keys(thunderVolumeData))
+                    Roll20AM.ChangeVolume(thunderSoundRef, thunderVolumeData[thunderSoundRef])
+
+                const debugLines = [Session.IsOutside ? "Outdoors" : "Indoors"],
+                    initialLoop = _.clone(Media.LoopingSounds)
+                for (const offSound of Media.LoopingSounds.filter(x => !_.keys(soundsToPlay).includes(x))) {
+                    debugLines.push(`... turning OFF ${D.JS(offSound)}`)
+                    stopSound(offSound)
+                }
+                for (const [onSound, volume] of Object.entries(soundsToPlay)) {
+                    debugLines.push(`... turning ON ${D.JS(onSound)} at ${D.JS(volume)}`)
+                    if (volume === 0)
+                        stopSound(onSound)
+                    else
+                        startSound(onSound, volume)
+                }
+                debugLines.push(`${D.JS(initialLoop)} --> ${D.JS(Media.LoopingSounds)}`)
+                D.Alert(debugLines.join("<br>"), `Update Sounds Test${isDoubleChecking ? " (1)" : " (2)"}`, 1000)
+                if (isDoubleChecking)
+                    setTimeout(() => updateSounds(false), 2000)
+            }
         },
-        startSound = (soundRef, volume, fadeIn = null) => {
+        startSound = (soundRef, volume, fadeIn = null, isOverlapping = false) => {
             if (VAL({number: volume}))
                 Roll20AM.ChangeVolume(soundRef, volume)
-            if (!Roll20AM.IsPlaying(soundRef))
+            if (!Roll20AM.IsPlaying(soundRef) || isOverlapping)
                 Roll20AM.PlaySound(soundRef, undefined, fadeIn)
         },
         stopSound = (soundRef, fadeOut = null) => {
@@ -2904,7 +2987,14 @@ const Media = (() => {
         Kill: deactivateAnimation,
 
         // SOUND FUNCTIONS
+        ResetSoundModes: initSoundModes,
         UpdateSoundscape: updateSounds,
+        get LoopingSounds() { return STATEREF.loopingSounds },
+        set LoopingSounds(soundRef) {
+            if (soundRef)
+                STATEREF.loopingSounds = _.uniq([...STATEREF.loopingSounds, soundRef])
+            D.Alert(`Adding ${D.JS(soundRef)} to Looping Sounds: ${D.JS(STATEREF.loopingSounds)}`, `Media.LoopingSounds = ${D.JSL(soundRef)}`, 1000)
+        },
         
         // REINITIALIZE MEDIA OBJECTS (i.e. on MODE CHANGE)
         Fix: () => {

@@ -809,13 +809,54 @@ const C = (() => {
 
     // #region SOUND EFFECT CONSTANTS
         SOUNDVOLUME = {
-            indoorMultiplier: 0.2,
+            indoorMult: {
+                defaults: {
+                    base: 1,
+                    score: 0.33,
+                    location: 1,
+                    weather: 0,
+                    effect: 0.4
+                }
+            },
+            rainMult: {
+                defaults: {
+                    base: 1,
+                    location: 1.75,
+                    score: 2
+                }
+            },
+            CityChatter: [10],
+            CityWalking: [40],
+            CityPark: [80],
+            CityTraffic: [30],
+            Church: [100],
+            Rain: [80],
+            Thunder: [100],
+            SplashScreen: [15],
             defaults: {
-                base: 50,
-                score: 45,
-                location: 45,
-                weather: 45,
-                effect: 60
+                base: [50],
+                score: [30],
+                location: [45],
+                weather: [45],
+                effect: [60]
+            }
+        },
+        SOUNDMODES = {
+            Thunder: {
+                mode: "randomSingle",
+                innerMode: "single"
+            },
+            MainScore: {
+                mode: "randomLoop",
+                innerMode: "single"
+            },
+            SplashScreen: {
+                mode: "loop",
+                innerMode: "loop"
+            },
+            defaults: {
+                mode: "loop",
+                innerMode: "loop"
             }
         },
     // #endregion
@@ -1159,13 +1200,13 @@ const C = (() => {
                 soundScape: ["CityChatter"],
                 outside: true
             },
-            Distillery: {
+            DistilleryDist: {
                 fullName: "the Distillery District",
                 resonance: ["c", "s"],
                 huntDiff: 5,
                 homestead: [1, 2, 4, 4],
-                rollEffects: ["loc:Distillery+firearms;2;[+1]<#> Janie's Got a Gun|loc:Distillery+brawl/melee;-2;[-1]<#> Janie's Got a Gun"],
-                soundScape: ["Industry"],
+                rollEffects: ["loc:DistilleryDist+firearms;2;[+1]<#> Janie's Got a Gun|loc:DistilleryDist+brawl/melee;-2;[-1]<#> Janie's Got a Gun"],
+                soundScape: ["CityTraffic"],
                 outside: true
             },
             DupontByTheCastle: {
@@ -1384,7 +1425,7 @@ const C = (() => {
                 fullName: "Bay Wellington Tower",
                 resonance: ["p", null],
                 rollEffects: [],
-                soundScape: ["Office"],
+                soundScape: ["SoftIndoor"],
                 outside: false
             },
             BBishopFerry: {
@@ -1643,7 +1684,7 @@ const C = (() => {
                 fullName: "St. Michael's Cathedral Basilica",
                 resonance: ["p", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["SoftIndoor"],
                 outside: false
             },
             StripClub: {
@@ -1657,21 +1698,21 @@ const C = (() => {
                 fullName: "Student Village",
                 resonance: ["s", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["CityChatter"],
                 outside: true
             },
             SubwayStation: {
                 fullName: "Subway Station",
                 resonance: ["c", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["Subway"],
                 outside: false
             },
             SubwayTunnels: {
                 fullName: "Subway Tunnels",
                 resonance: [null, "s"],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["Subway"],
                 outside: false
             },
             UndergroundMedClinic: {
@@ -2018,7 +2059,7 @@ const C = (() => {
         DISTRICTS, SITES,
         get LOCATIONS() { return Object.assign({}, DISTRICTS, SITES) },
 
-        SOUNDVOLUME,
+        SOUNDVOLUME, SOUNDMODES,
 
         MVCVALS,
         FX

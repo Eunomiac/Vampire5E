@@ -35,12 +35,12 @@ const Listener = (() => {
                     if (scriptData && scriptData.script && VAL({function: scriptData.script.OnChatCall}) && (!scriptData.gmOnly || playerIsGM(msg.playerid) || msg.playerid === "API") ) {
                         const [objects, returnArgs] = parseMessage(args, msg)
                         call = scriptData.singleCall && returnArgs.shift() || call
-                        D.Alert([
+                        /* D.Alert([
                             `<b>${msg.content}</b>`,
                             `CALL: ${call}`,
                             `ARGS: ${returnArgs.join(" ")}`,
                             `OBJECTS: ${D.JS(objects)}`
-                        ].join("<br>"), "LISTENER RESULTS")
+                        ].join("<br>"), "LISTENER RESULTS") */
                         scriptData.script.OnChatCall(call, returnArgs, objects, msg)
                     }
                 }

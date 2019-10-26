@@ -42,9 +42,6 @@ const Session = (() => {
                 for (const mode of Session.Modes)
                     STATEREF.locationRecord[mode] = D.Clone(STATEREF.curLocation)
             }
-
-            Roll20AM.StopSound("all")
-            Media.UpdateSoundscape()
                 
                                  
         // STATEREF.SessionScribes = [ "Thaumaterge", "Ava Wong", "banzai", "PixelPuzzler" ]
@@ -419,6 +416,18 @@ const Session = (() => {
             return activeLocs
         },
         getActiveSceneLocations = () => getActiveLocations(STATEREF.sceneFocus),
+        getActiveDistrict = () => {
+            const [activePos] = getActiveSceneLocations().filter(x => x.includes("District"))
+            return activePos && STATEREF.curLocations[activePos][0]
+        },
+        getActiveSite = () => {
+            const [activePos] = getActiveSceneLocations().filter(x => x.includes("Site"))
+            return activePos && STATEREF.curLocations[activePos][0]
+        },
+        isOutside = () => {
+            const sceneLocs = _.compact(getActiveSceneLocations().map(x => STATEREF.curLocation[x][0]))
+            return sceneLocs.filter(x => !C.LOCATIONS[x].outside).length === 0
+        },
         parseLocationString = (locString) => {
             const locParams = [
                 ...(locString.match(/([^:;\s]*):([^:;\s]*):name:(.*?);/gu) || []).map(x => x.match(/([^:;\s]*):([^:;\s]*):name:(.*?);/u).slice(1)),
@@ -569,6 +578,7 @@ const Session = (() => {
                 else
                     Media.SetImgTemp(loc, {tint_color: "#000000"})            
             Media.UpdateSoundscape()
+            setTimeout(Media.UpdateSoundscape, 1000)
         },
         endScene = () => {
             for (const charID of STATEREF.sceneChars)
@@ -591,6 +601,9 @@ const Session = (() => {
         get SceneFocus() { return STATEREF.sceneFocus },
         Locations: () => D.KeyMapObj(getActiveSceneLocations(), (k, v) => v, v => STATEREF.curLocation[v]),
         get Location() { return STATEREF.locationRecord },
+        get District() { return getActiveDistrict() },
+        get Site() { return getActiveSite() },
+        get IsOutside() { return isOutside() },
 
         get SessionNum() { return STATEREF.SessionNum },
         get IsSessionActive() { return isSessionActive() },

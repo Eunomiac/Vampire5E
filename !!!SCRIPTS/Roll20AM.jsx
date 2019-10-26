@@ -8,6 +8,7 @@ Thanks to: The Aaron, Arcane Scriptomancer and Stephen S. for their help Alpha a
 */
 
 var Roll20AM = Roll20AM || (function() {
+    // #region THIRD-PARTY SCRIPT
     'use strict';
 
     var version = '2.12',
@@ -1129,6 +1130,7 @@ var Roll20AM = Roll20AM || (function() {
 	    }
 	    //Set list playing to true, used later to determine lists that are active
         list.playing = true;
+        Media.LoopingSounds = list.name
         playNextTrack(list,list.trackids,startVolume,who)
 	},  
 	//plays tracks randomly
@@ -1140,6 +1142,9 @@ var Roll20AM = Roll20AM || (function() {
 	    var trackID;
 	    //Set list playing to true, used later to determine lists that are active.  Since random, we aren't tracking current played tracks
         list.playing = true;
+        if (["loop", "shuffle", "randomLoop"].includes(list.mode)) {
+            Media.LoopingSounds = list.name
+        }
         list.currentTrack = [];
         trackID = list.trackids[randomInteger(list.trackids.length)- 1]
         playNextTrack(list,[trackID],startVolume,who)
@@ -1151,6 +1156,7 @@ var Roll20AM = Roll20AM || (function() {
 	    }
 	    //Set list playing to true, used later to determine lists that are active
         list.playing = true;
+        Media.LoopingSounds = list.name
         if (list.shuffleIds.length == 0){
     	    if (debug){
     	        log('Creating Shuffle')
@@ -1177,6 +1183,7 @@ var Roll20AM = Roll20AM || (function() {
 	    var volume, trackID
 	    //Set list playing to true, used later to determine lists that are active
         list.playing = true;
+        Media.LoopingSounds = list.name
         //Set start volume
 	    if (startVolume!=0){
 	        volume = list.volume
@@ -1198,7 +1205,9 @@ var Roll20AM = Roll20AM || (function() {
 	        log('Stopping:' + list.name)
 	    }
 	    //stop list and clear current tracks
-        list.playing = false;
+        list.playing = false;    
+        state.VAMPIRE.Media.loopingSounds = _.without(Media.LoopingSounds, list.name)              
+        D.Alert(`Removing LIST ${D.JS(list.name)}: ${D.JS(Media.LoopingSounds)}`, `stopList(${D.JSL(list.name)})`, 1000)
         _.each(list.currentTrack,(trackID)=>{
             if (debug){
                 log('Stopping:' + trackID)
@@ -1255,34 +1264,51 @@ var Roll20AM = Roll20AM || (function() {
 	    if (debug){
 	        log("Starting Track:" + trackID)
 	        log('Start Volume:'+level)
-	    }
+        }
+        let isLoopingTrackOnly = true
 	    _.each(state.Roll20AM.playLists,list =>{
 	        if (list.trackids.indexOf(trackID) >= 0){
-	            list.playing = true
+                list.playing = true
+                if (Media.LoopingSounds.includes(list.name)) {
+                    // D.Alert(`Loop Sounds INCLUDES ${D.JS(list.name)} so not adding ${D.JS(trackDetails.title)}`, "playTrack")
+                    isLoopingTrackOnly = false
+                }
 	        }
 	    })
-	    trackDetails.playing = true;
-	    trackDetails.who = who;
-        jbTrack.set({playing:true,softstop:false,volume:level,loop:loop === "loop"});
+        trackDetails.playing = true;
+        if (trackDetails.mode === "loop" && isLoopingTrackOnly)
+            Media.LoopingSounds = trackDetails.title
+        trackDetails.who = who;
+        if (jbTrack)
+            jbTrack.set({playing:true,softstop:false,volume:level,loop:loop === "loop"});
         if (displayTrack){
             sendChat(who,'Now Playing:' + trackDetails.title ,null,{noarchive:true});
         }    
 	}, 
 	//stops the track.  Either Track ID or Track Title will come into this function
 	stopTrack = function(trackID,extra){
-	    var jbTrack=getJukeBox(trackID),trackDetails=getTrackDetails(trackID)
+        var jbTrack=getJukeBox(trackID),trackDetails=getTrackDetails(trackID)
+        let didRemovePlaylist = false
 
 	    _.each(state.Roll20AM.playLists,list =>{
 	        if (list.playing){
 	            if (list.trackids.indexOf(trackID) >= 0){
-	                list.playing = false
+                    list.playing = false
+                    state.VAMPIRE.Media.loopingSounds = _.without(Media.LoopingSounds, list.name)           
+                    D.Alert(`StopTRACK: Removing LIST ${D.JS(list.name)}: ${D.JS(Media.LoopingSounds)}`, `stopTrack(${D.JSL(trackDetails.title)}) (LIST)`, 1000)     
+                    didRemovePlaylist = true
 	            }
 	        }     
-	    })
+        })
+        if (!didRemovePlaylist) {
+            state.VAMPIRE.Media.loopingSounds = _.without(Media.LoopingSounds, trackDetails.title)                  
+            D.Alert(`StopTRACK: Removing TRACK ${D.JS(trackDetails.title)}: ${D.JS(Media.LoopingSounds)}`, `stopTrack(${D.JSL(trackDetails.title)}) (TRACK)`, 1000)
+        }
 	    
 	    //set playing to true in Track Details, get Jukebox Object and set to playing
-	    trackDetails.playing=false;
-        jbTrack.set({playing:false,softstop:true,loop:false});
+	    trackDetails.playing=false;        
+        if (jbTrack)
+            jbTrack.set({playing:false,softstop:true,loop:false});
 	},   
     //fade in starts at zero an incrementally increases volume to the fade in volume
 	fadeInTrack = function(trackID,target,seconds,who){
@@ -1308,7 +1334,8 @@ var Roll20AM = Roll20AM || (function() {
             log("New Volume:" + level)
             level = level + levelChange*1;
             if (+level <= +target){
-                jbTrack.set({volume:level});
+                if (jbTrack)
+                    jbTrack.set({volume:level});
             }else{
                 log('Clearing Timeout')
                 clearTimeout(timer)
@@ -1342,7 +1369,8 @@ var Roll20AM = Roll20AM || (function() {
             level = +level - levelChange;
             //Decrement volume every 1 1/2 seconds until volume is at fade down volume.  ClearTimerout stops the setinterval function. Output config refreshes the play button
             if ( +level > target){
-                jbTrack.set({volume:level});
+                if (jbTrack)
+                    jbTrack.set({volume:level});
             }else{
                 if(debug){    
                     log('Clearing Timer')
@@ -1512,7 +1540,8 @@ var Roll20AM = Roll20AM || (function() {
 	    }
         level = trackDetails.volume*1 + 5
         trackDetails.volume = level
-        jbTrack.set({volume:level});
+        if (jbTrack)
+            jbTrack.set({volume:level});
     },	    
     decreaseTrack = function(trackID,who){
         var level, trackDetails=getTrackDetails(trackID),jbTrack=getJukeBox(trackID)     
@@ -1523,7 +1552,8 @@ var Roll20AM = Roll20AM || (function() {
         
         level = trackDetails.volume*1 - 5
         trackDetails.volume = level
-        jbTrack.set({volume:level});
+        if (jbTrack)
+            jbTrack.set({volume:level});
     },	
     //Import everything from Jukebox
     removeJukebox = function(who){  
@@ -1584,6 +1614,7 @@ var Roll20AM = Roll20AM || (function() {
         importList("Tag4")        
 
         sendChat(who,'All Playlists and Tracks have been imported',null,{noarchive:true});
+        Media.ResetSoundModes()
     },	
     importList = function(listName,who){
         if (debug){
@@ -1954,26 +1985,26 @@ var Roll20AM = Roll20AM || (function() {
 		        generateHelp();
             }
         });
-    };     
+    };
+    // #endregion
+    /* eslint-enable */
     
-    return {
-        CheckInstall: checkInstall,
-        RegisterEventHandlers: RegisterEventHandlers,
-        
-        ChangeVolume: (soundRef, volume) => {
-            const soundData = getPlayList(soundRef) || getTrackDetails(getTrackID(soundRef))
-            if (soundData && volume) {
-                if (getPlayList(soundRef))
-                    changeVolumeList(getPlayList(soundRef), D.Int(volume))
-                else if (getTrackID(soundRef))
-                    changeVolumeTrack(getTrackID(soundRef), D.Int(volume))
-                /* if (soundData.playing) {
-                    Roll20AM.StopSound(soundRef)
-                    Roll20AM.PlaySound(soundRef)
-                } */
-            }
+    // #region GETTERS
+    const getTrackObjs = (trackRef) => {
+            const trackObjs = []
+            if (trackRef === undefined)
+                for (const trackName of getActiveSounds()) 
+                    trackObjs.push(getObj("jukeboxtrack", getTrackID(trackName)))
+            else
+                for (const trackName of Object.keys(state.Roll20AM.trackDetails))
+                    if (trackName.includes(trackRef))
+                        trackObjs.push(getObj("jukeboxtrack", getTrackID(trackName)))
+            return _.compact(trackObjs)
         },
-        GetPlaylistTrackNames: (listRef) => {
+        isPlayList = (soundRef) => Boolean(getPlayList(soundRef)),
+        isTrack = (soundRef) => Boolean(getTrackID(soundRef)),
+        getTrackObj = (trackRef) => getTrackObjs(trackRef)[0],
+        getPlaylistTrackNames = (listRef) => {
             const playlist = getPlayList(listRef),
                 trackNames = []
             if (playlist)
@@ -1981,12 +2012,76 @@ var Roll20AM = Roll20AM || (function() {
                     trackNames.push(getTrackDetails(trackID).title)                
             return trackNames
         },
-        SetSoundMode: (soundRef, mode) => {
+        getPlaylistOfTrack = (trackRef) => (_.values(state.Roll20AM.playLists).find(x => x.trackids.includes(getTrackID(trackRef))) || {name: false}).name,
+        getTrackMode = (trackRef) => {
+            if (C.SOUNDMODES[trackRef])
+                return C.SOUNDMODES[trackRef].mode
+            const listName = getPlaylistOfTrack(trackRef)
+            if (listName && C.SOUNDMODES[listName] && C.SOUNDMODES[listName].innerMode)
+                return C.SOUNDMODES[listName].innerMode
+            if (listName)
+                return C.SOUNDMODES.defaults.innerMode
+            return C.SOUNDMODES.defaults.mode
+        },
+        getPlaylist = (soundRef) => { D.Alert(`SoundRef: ${D.JS(soundRef)}<br>Playlist: ${D.JS(getPlayList(soundRef))}`) },
+        getActiveSounds = (isReturningTracks = false) => {
+            const playListTrackIDs = [],
+                loopingSoundRefs = []
+            for (const [playListName, playListData] of Object.entries(state.Roll20AM.playLists)) 
+                if (playListData.playing) {
+                    if (isReturningTracks) {
+                        const playingTrack = getPlayingListTrack(playListName)
+                        if (playingTrack)
+                            loopingSoundRefs.push(playingTrack)
+                        else
+                            loopingSoundRefs.push(getTrackDetails(playListData.trackids[0]).title)
+                    } else {
+                        loopingSoundRefs.push(playListName)
+                    }
+                    playListTrackIDs.push(...playListData.trackids)
+                }
+            for (const [trackName, trackData] of Object.entries(state.Roll20AM.trackDetails).filter(x => isReturningTracks && !loopingSoundRefs.includes(x[0]) || !isReturningTracks && !playListTrackIDs.includes(x[1].id)))
+                if (trackData.playing)
+                    loopingSoundRefs.push(trackName)
+            return loopingSoundRefs
+        },
+        getActiveLoopingSounds = (isReturningTracks = false) => getActiveSounds(isReturningTracks).filter(x => getTrackMode(x) === "loop"),
+        isPlaying = (soundRef) => Roll20AM.GetActiveSounds().includes(soundRef),
+        getPlayingListTracks = (listRef) => {
+            const listDetails = getPlayList(listRef),
+                playingTracks = listDetails && _.uniq(listDetails.trackids.map(x => getObj("jukeboxtrack", x)).filter(x => x.get("playing")).map(x => x.get("title")))
+            if (!playingTracks || !playingTracks.length)
+                return [null]
+            return playingTracks
+        },
+        getPlayingListTrack = (listRef) => getPlayingListTracks(listRef)[0],
+    // #endregion
+
+    // #region SETTERS: Mode, Volume
+        changeVolume = (soundRef, volume) => {
+            const soundData = getPlayList(soundRef) || getTrackDetails(getTrackID(soundRef))
+            if (soundData && volume) 
+                if (getPlayList(soundRef)) {
+                    changeVolumeList(getPlayList(soundRef), D.Int(volume))
+                    for (const trackDetails of soundData.trackids.map(x => getTrackDetails(x))) {
+                        changeVolumeTrack(trackDetails.id, D.Int(volume))
+                        if (trackDetails.playing)
+                            getTrackObj(trackDetails.title).set("volume", D.Int(volume))
+                    }
+                } else if (getTrackID(soundRef)) {
+                    changeVolumeTrack(soundData.id, D.Int(volume))
+                    if (soundData.playing)
+                        getTrackObj(soundData.title).set("volume", D.Int(volume))
+                }            
+        },
+        setSoundMode = (soundRef, mode) => {
             const modeDetails = {details: {}},
                 isPlaylist = Boolean(getPlayList(soundRef))
             if (!isPlaylist && !getTrackID(soundRef))
                 return
             modeDetails.details.mode = true
+            mode = mode || (C.SOUNDMODES[soundRef] || C.SOUNDMODES.defaults).mode
+            // D.Alert(`Sound: ${D.JS(soundRef)}. Mode: ${D.JS(mode)}`)
             switch (D.LCase(mode)) {
                 case "randomsingle": {
                     modeDetails.details.random = isPlaylist
@@ -2024,92 +2119,132 @@ var Roll20AM = Roll20AM || (function() {
             }
             editHandler(modeDetails, getPlayList(soundRef), getTrackDetails(getTrackID(soundRef)), "gm")
             if (!isPlaylist)
-                D.Alert(`Setting ${soundRef} to ${mode}<br><br>${D.JS(getTrackDetails(getTrackID(soundRef)))}`)
-
+                D.Alert(`Setting ${soundRef} to ${mode}`)
+            else
+                setPlaylistTrackModes(soundRef, (C.SOUNDMODES[soundRef] || C.SOUNDMODES.defaults).innerMode || C.SOUNDMODES.defaults.innerMode)
         },
-        SetPlaylistTrackModes: (listRef, mode) => {
+        setPlaylistTrackModes = (listRef, mode) => {
             for (const trackName of Roll20AM.GetPlaylistTrackNames(listRef))
                 Roll20AM.SetSoundMode(trackName, mode)            
         },
-        PlaySound: (soundRef, mode, fadeIn = null) => {
-            // D.Alert(`SoundRef: ${D.JS(soundRef)}<br>Playlist: ${D.JS(getPlayList(soundRef))}`)
-            if (mode)
-                Roll20AM.SetSoundMode(soundRef, mode)
-            if (getPlayList(soundRef)) {
-                const playlist = getPlayList(soundRef)
-                if (fadeIn !== null)
-                    changeFadeTimeList(playlist, D.Float(fadeIn))
-                fadeIn = D.Float(playlist.fadetime)
-                // D.Alert(`FadeIn = ${D.JS(fadeIn)}. Sending to List Handler:<br>${D.JS({details: {play: fadeIn === 0, fade: fadeIn > 0, in: fadeIn > 0}})}`)
-                listHandler({details: {play: fadeIn === 0, fade: fadeIn > 0, in: fadeIn > 0}}, playlist, "gm")
-            } else if (getTrackID(soundRef)) {
-                const trackID = getTrackID(soundRef),
-                    trackDetails = getTrackDetails(trackID)
-                if (fadeIn !== null)
-                    changeFadeTimeTrack(trackID, D.Float(fadeIn))
-                fadeIn = D.Float(trackDetails.fadetime)
-                trackHandler({details: {play: fadeIn === 0, fade: fadeIn > 0, in: fadeIn > 0}}, trackDetails, "gm")
+        verifyOneTrackPlaying = (listRef) => {
+            const listData = getPlayList(listRef)
+            if (listData) {
+                const playingTracks = _.compact(getPlayingListTracks(listRef))
+                if (playingTracks.length === 0) {
+                    D.Alert(`No Tracks Playing for ${D.JS(listRef)}!<br>... Restarting Playlist.`, `VerifyOneTrackPlaying(${D.JSL(listRef)})`)
+                    stopSound(listRef, 0, false)
+                    playSound(listRef, undefined, undefined, false)
+                } else if (playingTracks.length > 1 && listData.mode !== "together") {
+                    D.Alert(`Too Many Tracks Playing for ${D.JS(listRef)}: ${D.JS(playingTracks)}<br>... Stopping: ${D.JS(playingTracks.slice(1))}<br>... Restarting: ${D.JS(playingTracks[0])}`, `VerifyOneTrackPlaying(${D.JSL(listRef)})`)
+                    for (let i = 1; i < playingTracks.length; i++) {
+                        stopSound(playingTracks[i], 0, false)
+                        getTrackObj(playingTracks[i]).set({playing:false})
+                    }
+                    playSound(playingTracks[0], undefined, undefined, false)
+                }
+                if (["randomLoop", "loop", "shuffle"].includes(listData.mode))
+                    Media.LoopingSounds = listRef
             }
         },
-        StopSound: (soundRef, fadeOut = null) => {
-            if (soundRef === "all") 
-                stopAll("gm")
-            else
+    // #endregion
+
+    // #region Track Control: Playing, Stopping  
+        playSound = (soundRef, mode, fadeIn = null, isDoubleChecking = true) => {
+            // D.Alert(`SoundRef: ${D.JS(soundRef)}<br>Playlist: ${D.JS(getPlayList(soundRef))}`)
+            const soundData = getPlayList(soundRef) || getTrackDetails(getTrackID(soundRef))
+            if (soundData) {
+                if (mode)
+                    Roll20AM.SetSoundMode(soundRef, mode)
                 if (getPlayList(soundRef)) {
                     const playlist = getPlayList(soundRef)
-                    if (fadeOut !== null)
-                        changeFadeTimeList(playlist, fadeOut)
-                    fadeOut = D.Float(playlist.fadetime)
-                    listHandler({details: {stop: fadeOut === 0, fade: fadeOut > 0, out: fadeOut > 0}}, playlist, "gm")
+                    if (fadeIn !== null)
+                        changeFadeTimeList(playlist, D.Float(fadeIn))
+                    fadeIn = D.Float(playlist.fadetime)
+                // D.Alert(`FadeIn = ${D.JS(fadeIn)}. Sending to List Handler:<br>${D.JS({details: {play: fadeIn === 0, fade: fadeIn > 0, in: fadeIn > 0}})}`)
+                    listHandler({details: {play: fadeIn === 0, fade: fadeIn > 0, in: fadeIn > 0}}, playlist, "gm")
                 } else if (getTrackID(soundRef)) {
                     const trackID = getTrackID(soundRef),
                         trackDetails = getTrackDetails(trackID)
-                    if (fadeOut !== null)
-                        changeFadeTimeTrack(trackID, fadeOut)
-                    fadeOut = D.Float(trackDetails.fadetime)
-                    trackHandler({details: {stop: fadeOut === 0, fade: fadeOut > 0, out: fadeOut > 0}}, trackDetails, "gm")
+                    if (fadeIn !== null)
+                        changeFadeTimeTrack(trackID, D.Float(fadeIn))
+                    fadeIn = D.Float(trackDetails.fadetime)
+                    trackHandler({details: {play: fadeIn === 0, fade: fadeIn > 0, in: fadeIn > 0}}, trackDetails, "gm")
                 }
-        },
-        GetPlaylist: (soundRef) => {
-            D.Alert(`SoundRef: ${D.JS(soundRef)}<br>Playlist: ${D.JS(getPlayList(soundRef))}`)
-        },
-        GetLoopingSounds: () => {
-            const playListTrackIDs = [],
-                loopingSoundRefs = []
-            for (const [playListName, playListData] of Object.entries(state.Roll20AM.playLists)) {
-                if (playListData.playing && ["loop", "shuffle", "randomLoop"].includes(playListData.mode)) {
-                    loopingSoundRefs.push(playListName)
-                    playListTrackIDs.push(...playListData.trackids)
-                }
+                if (isDoubleChecking)
+                    setTimeout(() => verifyTracksPlaying(), 2000)
+                // D.Alert(`Playing ${D.JS(soundRef)}<br>LoopingSounds: ${D.JS(Media.LoopingSounds)}`)
             }
-            for (const [trackName, trackData] of Object.entries(state.Roll20AM.trackDetails).filter(x => !playListTrackIDs.includes(x[1].id)))
-                if (trackData.playing && trackData.mode === "loop")
-                    loopingSoundRefs.push(trackName)
-            return loopingSoundRefs
         },
-        GetActiveSounds: () => {
-            const playListTrackIDs = [],
-                loopingSoundRefs = []
-            for (const [playListName, playListData] of Object.entries(state.Roll20AM.playLists)) {
-                if (playListData.playing) {
-                    loopingSoundRefs.push(playListName)
-                    playListTrackIDs.push(...playListData.trackids)
-                }
+        stopSound = (soundRef, fadeOut = null, isDoubleChecking = true) => {
+            if (soundRef === "all") {
+                stopAll("gm")
+            } else if (getPlayList(soundRef)) {
+                const playlist = getPlayList(soundRef)
+                if (fadeOut !== null)
+                    changeFadeTimeList(playlist, fadeOut)
+                fadeOut = D.Float(playlist.fadetime)
+                listHandler({details: {stop: fadeOut === 0, fade: fadeOut > 0, out: fadeOut > 0}}, playlist, "gm")
+            } else if (getTrackID(soundRef)) {
+                const trackID = getTrackID(soundRef),
+                    trackDetails = getTrackDetails(trackID)
+                if (fadeOut !== null)
+                    changeFadeTimeTrack(trackID, fadeOut)
+                fadeOut = D.Float(trackDetails.fadetime)
+                trackHandler({details: {stop: fadeOut === 0, fade: fadeOut > 0, out: fadeOut > 0}}, trackDetails, "gm")
             }
-            for (const [trackName, trackData] of Object.entries(state.Roll20AM.trackDetails).filter(x => !playListTrackIDs.includes(x[1].id)))
-                if (trackData.playing)
-                    loopingSoundRefs.push(trackName)
-            return loopingSoundRefs
+            if (isDoubleChecking)
+                setTimeout(() => verifyTracksPlaying(), 2000)
         },
-        IsPlaying: (soundRef) => Roll20AM.GetActiveSounds().includes(soundRef)
-	}
-}());
-
-
-on("ready",function(){
-    'use strict';
+        verifyTracksPlaying = () => {
+            const allPlayingTracks = _.uniq(findObjs({_type: "jukeboxtrack", playing: true}).map(x => x.get("title")).filter(x => getTrackMode(x) === "loop")),
+                allActiveTracks = getActiveLoopingSounds(true),
+                tracksToggleOn = _.without(allActiveTracks, ...allPlayingTracks),
+                tracksToggleOff = _.without(allPlayingTracks, ...allActiveTracks),
+                tracksClearSoftStop = _.without(_.uniq([...allPlayingTracks, ...allActiveTracks]), ...tracksToggleOff, ...tracksToggleOn).filter(x => (getTrackDetails(getTrackID(x)) || {mode: false}).mode === "loop" && (getTrackObj(x) || {get: () => false}).get("softstop"))
+            const allPlayingTest = _.uniq(findObjs({_type: "jukeboxtrack", playing: true}).map(x => x.get("title")).filter(x => getTrackMode(x) === "loop")).map(x => getTrackObj(x)).map(x => `${x.get("title")} --- ${_.compact([
+                x.get("playing") && "Playing",
+                x.get("softstop") && "SoftStop",
+                x.get("loop") && "Loop"
+            ]).join(", ")}`)
+            D.Alert(`<b>PLAYING</b>: ${D.JS(allPlayingTracks.sort())}<br><b>ACTIVE :</b> ${D.JS(allActiveTracks.sort())}${allPlayingTest.length ? ["","",...allPlayingTest].join("<br>") : ""}`, "verifyTracksPlaying", 1000)       
+            if (_.uniq([...tracksToggleOn, ...tracksToggleOff, ...tracksClearSoftStop]).length)
+                D.Alert(`Toggling ON: ${D.JS(tracksToggleOn)}<br>Toggling OFF: ${D.JS(tracksToggleOff)}<br>Clearing SoftStop: ${D.JS(tracksClearSoftStop)}`, "Verify Tracks Playing")
+            for (const trackObj of tracksToggleOn.map(x => getTrackObj(x)))
+                trackObj.set({playing: true, softstop: false})
+            for (const trackObj of tracksToggleOff.map(x => getTrackObj(x)))
+                trackObj.set({playing: false})
+            for (const trackObj of tracksClearSoftStop.map(x => getTrackObj(x)))
+                trackObj.set({softstop: false})
+            for (const activePlaylist of Media.LoopingSounds.filter(x => isPlayList(x) && getPlayList(x).mode !== "together"))
+                verifyOneTrackPlaying(activePlaylist)
+        }
+    // #endregion 
     
-    Roll20AM.CheckInstall();
-    Roll20AM.RegisterEventHandlers();
-});
+    return {
+        CheckInstall: checkInstall,
+        RegisterEventHandlers,
+
+        GetTracks: getTrackObjs, GetTrack: getTrackObj,
+        GetTrackData: (trackRef) => getTrackDetails(getTrackID(trackRef) || trackRef),
+        GetPlaylistTrackNames: getPlaylistTrackNames,
+        GetPlaylist: getPlaylist,
+        GetActiveSounds: getActiveSounds,
+        IsPlaying: isPlaying,
+        
+        ChangeVolume: changeVolume,
+        SetSoundMode: setSoundMode,
+        SetPlaylistTrackModes: setPlaylistTrackModes,
+
+        PlaySound: playSound,
+        StopSound: stopSound,
+        VerifyTracksPlaying: verifyTracksPlaying
+    }
+}())
+
+on("ready", () => {
+    Roll20AM.CheckInstall()
+    Roll20AM.RegisterEventHandlers()
+    D.Log("Roll20AM Ready!")
+})
 void MarkStop("Roll20AM")

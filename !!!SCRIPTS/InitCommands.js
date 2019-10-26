@@ -1,12 +1,7 @@
-/* SETTING UP TEMPLATE:
-    1) Replace "XX_SCRIPTNAME_XX" with name of script (e.g. "Chars")
-    2) Replace "XX_SCRIPTCOMMAND_XX" with api chat command trigger (e.g. "!char")
-    3) Delete these instructions, so "void MarkStart()" is the very first line.
-*/
-void MarkStart("XX_SCRIPTNAME_XX")
-const XX_SCRIPTNAME_XX = (() => {
+void MarkStart("InitCommands")
+const InitCommands = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
-    const SCRIPTNAME = "XX_SCRIPTNAME_XX",
+    const SCRIPTNAME = "InitCommands",
 
     // #region COMMON INITIALIZATION
         STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
@@ -23,6 +18,8 @@ const XX_SCRIPTNAME_XX = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
+            // Roll20AM.StopSound("all")
+            // Media.UpdateSoundscape()
         },
     // #endregion	
 
@@ -37,27 +34,6 @@ const XX_SCRIPTNAME_XX = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-    /*
-    *
-    *
-    *
-    * 
-    * 
-    * 
-    * 
-    * 
-    * 
-    *   SCRIPT BODY
-    * 
-    * 
-    * 
-    * 
-    * 
-    * 
-    * 
-    * 
-    */
-
     return {
         CheckInstall: checkInstall,
         OnChatCall: onChatCall
@@ -65,7 +41,7 @@ const XX_SCRIPTNAME_XX = (() => {
 } )()
 
 on("ready", () => {
-    XX_SCRIPTNAME_XX.CheckInstall()
-    D.Log("XX_SCRIPTNAME_XX Ready!")
+    InitCommands.CheckInstall()
+    D.Log("InitCommands Ready!")
 } )
-void MarkStop("XX_SCRIPTNAME_XX")
+void MarkStop("InitCommands")
