@@ -46,9 +46,6 @@ const Media = (() => {
             STATEREF.AREADICT = Fuzzy.Fix()
             for (const areaKey of _.keys(STATEREF.areas))
                 STATEREF.AREADICT.add(areaKey)
-
-            STATEREF.animregistry.WeatherLightning_1.soundEffect = "Thunder"
-            STATEREF.animregistry.WeatherLightning_2.soundEffect = "Thunder"
         },
             
         
@@ -864,13 +861,14 @@ const Media = (() => {
                     WeatherLightning_2: 110,
                     WeatherLightning_3: 110,
                     WeatherGround_1: 119,
-                    WeatherClouds_1: 105
+                    WeatherClouds_1: 105,
+                    WeatherGlow_1: 106
                 },
                 OtherOverlays: {
                     Spotlight_1: 117 
                 },
                 Banners: {
-                    downtimeBanner_1: 106
+                    downtimeBanner_1: 107
                 },
                 DiceRoller: {
                     Frame: {
@@ -2732,44 +2730,32 @@ const Media = (() => {
     // #endregion
 
     // #region SOUND OBJECT GETTERS: Track Object, Playlist Object, Data Retrieval
-        getSoundData = (soundRef) => SOUNDREGISTRY[soundRef],
         getScore = (mode) => ({[`${Object.keys(SOUNDREGISTRY).find(x => SOUNDREGISTRY[x].tags.includes(mode) && SOUNDREGISTRY[x].type === "score")}`]: C.SOUNDVOLUME.defaults.score}),
         getWeatherSounds = (locations, weatherCode) => {
             // 0: x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
             // 4: {x: ["Still", "Still"], s: ["Soft Breeze", "Cutting Breeze"], b: ["Breezy", "Biting Wind"], w: ["Blustery", "High Winds"], g: ["High Winds", "Driving Winds"], h: ["Howling Winds", "Howling Winds"], v: ["Roaring Winds", "Roaring Winds"]}
             let weatherSounds = {}
-            switch (weatherCode.charAt(0)) {
-                case "b":
-                    weatherSounds.Blizzard = C.SOUNDVOLUME.Blizzard || C.SOUNDVOLUME.defaults.weather
-                    break
-                case "p":
-                case "t":
-                    weatherSounds.Rain = C.SOUNDVOLUME.Rain || C.SOUNDVOLUME.defaults.weather
-                    break
-                // no default
-            }
+            if (["p", "t"].includes(weatherCode.charAt(0)))
+                weatherSounds.Rain = C.SOUNDVOLUME.Rain || C.SOUNDVOLUME.defaults.weather
+            const windPrefix = `Wind${TimeTracker.TempC <= 0 ? "Winter" : ""}`
             switch (weatherCode.charAt(4)) {
-                case "s":
-                    weatherSounds.Wind1 = C.SOUNDVOLUME.Wind1 || C.SOUNDVOLUME.defaults.weather
-                    break
                 case "b":
-                    weatherSounds.Wind2 = C.SOUNDVOLUME.Wind2 || C.SOUNDVOLUME.defaults.weather
+                    weatherSounds[`${windPrefix}Low`] = (C.SOUNDVOLUME[`${windPrefix}Low`] || C.SOUNDVOLUME.defaults.weather) * 0.75
                     break
                 case "w":
-                    weatherSounds.Wind3 = C.SOUNDVOLUME.Wind3 || C.SOUNDVOLUME.defaults.weather
+                    weatherSounds[`${windPrefix}Low`] = C.SOUNDVOLUME[`${windPrefix}Low`] || C.SOUNDVOLUME.defaults.weather
                     break
                 case "g":
-                    weatherSounds.Wind4 = C.SOUNDVOLUME.Wind4 || C.SOUNDVOLUME.defaults.weather
+                    weatherSounds[`${windPrefix}Med`] = (C.SOUNDVOLUME[`${windPrefix}Med`] || C.SOUNDVOLUME.defaults.weather) * 0.75
                     break
                 case "h":
-                    weatherSounds.Wind5 = C.SOUNDVOLUME.Wind5 || C.SOUNDVOLUME.defaults.weather
+                    weatherSounds[`${windPrefix}Med`] = C.SOUNDVOLUME[`${windPrefix}Med`] || C.SOUNDVOLUME.defaults.weather
                     break
                 case "v":
-                    weatherSounds.Wind6 = C.SOUNDVOLUME.Wind6 || C.SOUNDVOLUME.defaults.weather
+                    weatherSounds[`${windPrefix}Max`] = C.SOUNDVOLUME[`${windPrefix}Max`] || C.SOUNDVOLUME.defaults.weather
                     break
                 // no default
             }
-            weatherSounds.Wind4 = C.SOUNDVOLUME.Wind4 || C.SOUNDVOLUME.defaults.weather
             // D.Alert(D.JS(_.values(locations).map(x => x[0])))
             // return {}
             if (_.values(locations).map(x => x[0]).filter(x => !C.LOCATIONS[x].outside).length)

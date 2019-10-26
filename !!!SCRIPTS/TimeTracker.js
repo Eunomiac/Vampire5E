@@ -52,6 +52,8 @@ const TimeTracker = (() => {
         
             if (_.keys(STATEREF.weatherOverride).length)
                 D.Alert(`Weather Override in effect: ${D.JS(STATEREF.weatherOverride)}<br><b>!time set weather</b> to clear.`, "Alert: Weather Override")
+
+            TimeTracker.Fix()
             // startAirLights()
 
         // Media.GetText("Countdown").set("font_size", 200)
@@ -1305,7 +1307,7 @@ const TimeTracker = (() => {
                         case "night5":
                             return "darkclouds"
                         default:
-                            return `brightclouds${randomInteger(3)}`
+                            return "brightclouds"
                     }
                 },
                 getFogSrc = () => {
@@ -1330,6 +1332,11 @@ const TimeTracker = (() => {
                             return `dark${degree.toLowerCase()}snow`
                     }
                 },
+                getGlowSrc = (cloudSrcOverride) => {
+                    if (["stormy", "night1clouds", "darkclouds", "brightclouds"].includes(cloudSrcOverride || getCloudSrc()))
+                        return getHorizon()
+                    return "blank"
+                },
                 forecastLines = []
                 // D.Alert(`Weather Code: ${D.JS(weatherCode)}<br>Month Temp: ${D.JS(getTemp(MONTHTEMP[dateObj.getUTCMonth()]))}<br><br>Delta Temp: ${D.JS(getTemp(weatherCode.charAt(2)))} (Code: ${weatherCode.charAt(2)})`)
             weatherData.tempC = STATEREF.weatherOverride.tempC || getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(weatherCode.charAt(2))
@@ -1348,32 +1355,38 @@ const TimeTracker = (() => {
                     if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
                     if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", getSnowSrc("heavy"))
                     if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", "stormy")
+                    if (!Media.HasForcedState("WeatherGlow")) Media.SetImg("WeatherGlow", getGlowSrc("stormy"))
                     break
                 case "c":
                     if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
                     if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", "blank")
                     if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", getCloudSrc())
+                    if (!Media.HasForcedState("WeatherGlow")) Media.SetImg("WeatherGlow", getGlowSrc())
                     break
                 case "f":
                     if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", getFogSrc())
                     if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", "blank")
                     if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", getCloudSrc())
+                    if (!Media.HasForcedState("WeatherGlow")) Media.SetImg("WeatherGlow", getGlowSrc())
                     break
                 case "p":
                     if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
                     if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", "heavyrain")
                     if (!Media.HasForcedState("WeatherGround")) Media.SetImg("WeatherGround", "wet")
                     if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", getCloudSrc())
+                    if (!Media.HasForcedState("WeatherGlow")) Media.SetImg("WeatherGlow", getGlowSrc())
                     break
                 case "s":
                     if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
                     if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", getSnowSrc("light"))
                     if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", getCloudSrc())
+                    if (!Media.HasForcedState("WeatherGlow")) Media.SetImg("WeatherGlow", getGlowSrc())
                     break
                 case "t":
                     if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
                     if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", "heavyrain")
                     if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", "stormy")
+                    if (!Media.HasForcedState("WeatherGlow")) Media.SetImg("WeatherGlow", getGlowSrc("stormy"))
                     Media.Pulse("WeatherLightning_1", 45, 75)
                     Media.Pulse("WeatherLightning_2", 45, 75)
                     break
@@ -1381,6 +1394,7 @@ const TimeTracker = (() => {
                     if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
                     if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", "lightrain")
                     if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", getCloudSrc())
+                    if (!Media.HasForcedState("WeatherGlow")) Media.SetImg("WeatherGlow", getGlowSrc())
                     break
                 case "x":
                     if (!Media.HasForcedState("WeatherFog") && weatherData.event.charAt(1) === "f")
@@ -1389,6 +1403,7 @@ const TimeTracker = (() => {
                         Media.SetImg("WeatherFog", "blank")
                     if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", "blank")
                     if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", "blank")
+                    if (!Media.HasForcedState("WeatherGlow")) Media.SetImg("WeatherGlow", getGlowSrc())
                     break
                     // no default
             }
@@ -1863,6 +1878,7 @@ const TimeTracker = (() => {
         StopLights: stopAirLights,
         get CurrentDate() { return new Date(STATEREF.dateObj) },
         GetDate: getDate,
+        get TempC () { return getTemp(MONTHTEMP[STATEREF.dateObj.getUTCMonth()]) + getTemp(getWeatherCode().charAt(2)) },
         set CurrentDate(dateRef) {
             if (dateRef)
                 STATEREF.dateObj = getDate(dateRef)
