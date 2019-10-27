@@ -810,9 +810,10 @@ const C = (() => {
     // #region SOUND EFFECT CONSTANTS
         SOUNDVOLUME = {
             indoorMult: {
+                Thunder: 0.07,
                 defaults: {
                     base: 1,
-                    score: 0.33,
+                    score: 0.5,
                     location: 1,
                     weather: 0,
                     effect: 0.4
@@ -829,9 +830,15 @@ const C = (() => {
             CityWalking: [40],
             CityPark: [80],
             CityTraffic: [30],
-            Church: [100],
+            Church: [60],
             Rain: [80],
             Thunder: [100],
+            WindLow: [60],
+            WindWinterLow: [28],
+            WindMed: [80],
+            WindWinterMed: [90],
+            WindMax: [100],
+            WindWinterMax: [100],
             SplashScreen: [15],
             defaults: {
                 base: [50],
@@ -842,6 +849,15 @@ const C = (() => {
             }
         },
         SOUNDMODES = {
+            /* Regarding Playlists:
+
+                PLAYLIST MODE       PLAYLIST MODE               TRACK MODE          EXPLANATION
+                  In JUKEBOX          In ROLL20AM                 (Inner Mode)    
+
+                    Loop                RandomLoop                  Single          The PLAYLIST loops RANDOMLY, playing each track once before moving onto another.
+                    Shuffle             Shuffle                     Loop            The playlist is merely storage for the TRACKS, which are chosen by name and loop until another is chosen.
+                    Play Once           RandomSingle                Single          The playlist selects a track at random and plays it once.
+            */
             Thunder: {
                 mode: "randomSingle",
                 innerMode: "single"
@@ -851,11 +867,11 @@ const C = (() => {
                 innerMode: "single"
             },
             SplashScreen: {
-                mode: "loop",
-                innerMode: "loop"
+                mode: "randomLoop",
+                innerMode: "single"
             },
             defaults: {
-                mode: "loop",
+                mode: "shuffle",
                 innerMode: "loop"
             }
         },
@@ -1116,7 +1132,7 @@ const C = (() => {
                 huntDiff: 3,
                 homestead: [4, 2, 2, 1],
                 rollEffects: [],
-                soundScape: ["CityChatter"],
+                soundScape: ["CityRevelers"],
                 outside: true
             },
             BayStFinancial: {
@@ -1251,7 +1267,7 @@ const C = (() => {
                 huntDiff: 3,
                 homestead: [3, 3, 2, 1],
                 rollEffects: [],
-                soundScape: ["CityChatter"],
+                soundScape: ["CityRevelers"],
                 outside: true
             },
             LittleItaly: {
@@ -1278,7 +1294,7 @@ const C = (() => {
                 huntDiff: 4,
                 homestead: [3, 6, 4, 5],
                 rollEffects: [],
-                soundScape: ["CityWalking"],
+                soundScape: ["IndoorMarket"],
                 outside: false
             },
             RegentPark: {
@@ -1450,7 +1466,7 @@ const C = (() => {
                 outside: true
             },
             CityApt1: {
-                fullName: "City Apartment [1]",
+                fullName: "City Apartment",
                 resonance: ["c", null],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
@@ -1460,7 +1476,7 @@ const C = (() => {
                 fullName: "City Hall",
                 resonance: ["p", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["SoftIndoor"],
                 outside: false
             },
             CityPark: {
@@ -1474,18 +1490,18 @@ const C = (() => {
                 fullName: "CN Tower",
                 resonance: ["s", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["RoofTop"],
                 outside: false
             },
             Docks: {
-                fullName: "Docks, The",
+                fullName: "the Docks",
                 resonance: ["c", null],
                 rollEffects: [],
                 soundScape: ["Waterside"],
                 outside: true
             },
             Drake: {
-                fullName: "Drake Hotel, The",
+                fullName: "the Drake Hotel",
                 resonance: ["s", null],
                 rollEffects: [],
                 soundScape: ["(TOTALSILENCE)"],
@@ -1495,14 +1511,14 @@ const C = (() => {
                 fullName: "Elysium",
                 resonance: [null, "c"],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["SoftIndoor"],
                 outside: false
             },
             BrickWorks: {
                 fullName: "Evergreen Brick Works",
                 resonance: [null, "s"],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["Industry"],
                 outside: false
             },
             EvergreenPalisades: {
@@ -1523,21 +1539,21 @@ const C = (() => {
                 fullName: "Gardiner Ceramics Museum",
                 resonance: ["p", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["SoftIndoor"],
                 outside: false
             },
             GayClub: {
                 fullName: "Gay Nightclub",
                 resonance: ["s", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["Nightclub"],
                 outside: false
             },
             Distillery: {
-                fullName: "Historic Distillery, The",
+                fullName: "the Historic Distillery",
                 resonance: ["m", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["Industry"],
                 outside: false
             },
             Laboratory: {
@@ -1551,42 +1567,42 @@ const C = (() => {
                 fullName: "Lecture Hall",
                 resonance: ["m", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["SoftIndoor"],
                 outside: false
             },
             Library: {
                 fullName: "Library",
                 resonance: ["p", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["SoftIndoor"],
                 outside: false
             },
             MadinaMasjid: {
                 fullName: "Madina Masjid",
                 resonance: ["p", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["Church"],
                 outside: false
             },
             MiddleOfRoad: {
-                fullName: "Middle Of The Road",
+                fullName: "Middle of the Road",
                 resonance: ["m", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["CityTraffic"],
                 outside: true
             },
             Nightclub: {
                 fullName: "Nightclub",
                 resonance: ["s", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["Nightclub"],
                 outside: false
             },
             Office: {
                 fullName: "Office",
                 resonance: [null, "c"],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["SoftIndoor"],
                 outside: false
             },
             ParkingLot: {
@@ -1600,21 +1616,21 @@ const C = (() => {
                 fullName: "Princess Margaret Hospital",
                 resonance: ["p", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["Hospital"],
                 outside: false
             },
             ProfOffice: {
                 fullName: "Professor's Office",
                 resonance: ["p", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["SoftIndoor"],
                 outside: false
             },
             RedemptionHouse: {
                 fullName: "Redemption House",
                 resonance: [null, "p"],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["SoftIndoor"],
                 outside: false
             },
             RegentParkApt: {
@@ -1635,32 +1651,32 @@ const C = (() => {
                 fullName: "Rooftops",
                 resonance: ["m", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["RoofTop"],
                 outside: true
             },
             ROM: {
                 fullName: "Royal Ontario Museum",
                 resonance: ["m", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["SoftIndoor"],
                 outside: false
             },
             Sidewalk1: {
-                fullName: "Sidewalk [1]",
+                fullName: "Sidewalk",
                 resonance: [null, "s"],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
                 outside: true
             },
             Sidewalk2: {
-                fullName: "Sidewalk [2]",
+                fullName: "Sidewalk",
                 resonance: ["q", null],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
                 outside: true
             },
             Sidewalk3: {
-                fullName: "Sidewalk [3]",
+                fullName: "Sidewalk",
                 resonance: ["p", null],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
@@ -1670,35 +1686,35 @@ const C = (() => {
                 fullName: "Site: Lotus",
                 resonance: [null, null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["SoftHum"],
                 outside: false
             },
             SpawningPool: {
                 fullName: "Spawning Pool",
                 resonance: ["m", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["Sewers"],
                 outside: false
             },
             StMichaelsCathedral: {
                 fullName: "St. Michael's Cathedral Basilica",
                 resonance: ["p", null],
                 rollEffects: [],
-                soundScape: ["SoftIndoor"],
+                soundScape: ["Church"],
                 outside: false
             },
             StripClub: {
                 fullName: "Strip Club",
                 resonance: ["s", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["Nightclub"],
                 outside: false
             },
             StudentVillage: {
                 fullName: "Student Village",
                 resonance: ["s", null],
                 rollEffects: [],
-                soundScape: ["CityChatter"],
+                soundScape: ["CityRevelers"],
                 outside: true
             },
             SubwayStation: {
@@ -1712,35 +1728,35 @@ const C = (() => {
                 fullName: "Subway Tunnels",
                 resonance: [null, "s"],
                 rollEffects: [],
-                soundScape: ["Subway"],
+                soundScape: ["Sewers"],
                 outside: false
             },
             UndergroundMedClinic: {
                 fullName: "Underground Medical Clinic",
                 resonance: ["m", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["Hospital"],
                 outside: false
             },
             UndergroundMedOffice: {
                 fullName: "Underground Medical Office",
                 resonance: [null, "c"],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["SoftIndoor"],
                 outside: false
             },
             WalkingPath: {
                 fullName: "Walking Path",
                 resonance: ["q", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["CityPark"],
                 outside: true
             },
             WarrensAntechamber: {
                 fullName: "Warrens: Antechamber",
                 resonance: ["m", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["Sewers"],
                 outside: false
             },
             WychwoodPub: {
@@ -1754,7 +1770,7 @@ const C = (() => {
                 fullName: "Yacht",
                 resonance: [],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["Waterside"],
                 outside: false
             },
             YongeDundasSquare: {
@@ -1765,14 +1781,14 @@ const C = (() => {
                 outside: true
             },
             YorkvilleApt1: {
-                fullName: "Yorkville Apartment [1]",
+                fullName: "Yorkville Apartment",
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
                 outside: false
             },
             YorkvilleApt2: {
-                fullName: "Yorkville Apartment [2]",
+                fullName: "Yorkville Apartment",
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
@@ -1782,7 +1798,7 @@ const C = (() => {
                 fullName: "Youth Shelter",
                 resonance: ["c", null],
                 rollEffects: [],
-                soundScape: ["(NONE)"],
+                soundScape: ["CityRevelers"],
                 outside: false
             }
         },

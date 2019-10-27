@@ -711,6 +711,20 @@ const Media = (() => {
                                 D.Alert("<b>Syntax:</b><br>!sound reg (name) (volume) (type) (tag|tag)", "!sound register")
                             break
                         }
+                        case "get": {
+                            switch (D.LCase(call = args.shift())) {
+                                case "playing": {
+                                    Roll20AM.GetPlayingSounds()
+                                    break
+                                }
+                                case "looping": {
+                                    Roll20AM.GetLoopingSounds()
+                                    break
+                                }
+                                // no default
+                            }
+                            break
+                        }
                         case "set": {
                             switch (D.LCase(call = args.shift())) {
                                 case "volume": case "vol": {
@@ -2741,19 +2755,44 @@ const Media = (() => {
 
     // #region SOUND OBJECT GETTERS: Track Object, Playlist Object, Data Retrieval
         getScore = (mode) => {
-            const scoreRef = Object.keys(SOUNDREGISTRY).find(x => SOUNDREGISTRY[x].tags.includes(mode) && SOUNDREGISTRY[x].type === "score")
-            let volume = C.SOUNDVOLUME[scoreRef] || C.SOUNDVOLUME.defaults.score
+            const scoreRef = Object.keys(SOUNDREGISTRY).find(x => SOUNDREGISTRY[x].tags.includes(mode) && SOUNDREGISTRY[x].type === "score"),
+                volume = C.SOUNDVOLUME[scoreRef] || C.SOUNDVOLUME.defaults.score
             return {[scoreRef]: volume}
         },
         getWeatherSounds = (locations, weatherCode) => {
             // 0: x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
             // 4: {x: ["Still", "Still"], s: ["Soft Breeze", "Cutting Breeze"], b: ["Breezy", "Biting Wind"], w: ["Blustery", "High Winds"], g: ["High Winds", "Driving Winds"], h: ["Howling Winds", "Howling Winds"], v: ["Roaring Winds", "Roaring Winds"]}
+            
             const weatherSounds = {}
             if (["p", "t"].includes(weatherCode.charAt(0)))
                 weatherSounds.Rain = C.SOUNDVOLUME.Rain || C.SOUNDVOLUME.defaults.weather
             const windPrefix = `Wind${TimeTracker.TempC <= 0 ? "Winter" : ""}`
-            switch (weatherCode.charAt(4)) {
-                case "s":
+            switch (weatherCode.charAt(4)) {            
+            // const [weatherSounds, windPrefix, windChar] = [{Rain: C.SOUNDVOLUME.Rain}, "Wind", "s"]
+            // const [weatherSounds, windPrefix, windChar] = [{}, "Wind", "s"]
+            // const [weatherSounds, windPrefix, windChar] = [{}, "Winter", "s"]
+            // 
+            // const [weatherSounds, windPrefix, windChar] = [{Rain: C.SOUNDVOLUME.Rain}, "Wind", "b"]
+            // const [weatherSounds, windPrefix, windChar] = [{}, "Wind", "b"]
+            // const [weatherSounds, windPrefix, windChar] = [{}, "WindWinter", "b"]
+            // 
+            // const [weatherSounds, windPrefix, windChar] = [{Rain: C.SOUNDVOLUME.Rain}, "Wind", "w"]
+            // const [weatherSounds, windPrefix, windChar] = [{}, "Wind", "w"]
+            // const [weatherSounds, windPrefix, windChar] = [{}, "WindWinter", "w"]
+            // 
+            // const [weatherSounds, windPrefix, windChar] = [{Rain: C.SOUNDVOLUME.Rain}, "Wind", "g"]
+            // const [weatherSounds, windPrefix, windChar] = [{}, "Wind", "g"]
+            // const [weatherSounds, windPrefix, windChar] = [{}, "WindWinter", "g"]
+            // 
+            // const [weatherSounds, windPrefix, windChar] = [{Rain: C.SOUNDVOLUME.Rain}, "Wind", "h"]
+            // const [weatherSounds, windPrefix, windChar] = [{}, "Wind", "h"]
+            // const [weatherSounds, windPrefix, windChar] = [{}, "WindWinter", "h"]
+            // 
+            // const [weatherSounds, windPrefix, windChar] = [{Rain: C.SOUNDVOLUME.Rain}, "Wind", "v"]
+            // const [weatherSounds, windPrefix, windChar] = [{}, "Wind", "v"]
+            // const [weatherSounds, windPrefix, windChar] = [{}, "WindWinter", "v"]
+            // 
+            // switch (windChar) {
                 case "b":
                     weatherSounds[`${windPrefix}Low`] = (C.SOUNDVOLUME[`${windPrefix}Low`] || C.SOUNDVOLUME.defaults.weather).map(x => x * 0.75)
                     break
@@ -2921,9 +2960,9 @@ const Media = (() => {
                         startSound(onSound, volume)
                 }
                 debugLines.push(`${D.JS(initialLoop)} --> ${D.JS(Media.LoopingSounds)}`)
-                D.Alert(debugLines.join("<br>"), `Update Sounds Test${isDoubleChecking ? " (1)" : " (2)"}`, 1000)
+                // D.Alert(debugLines.join("<br>"), `Update Sounds Test${isDoubleChecking ? " (1)" : " (2)"}`, 1000)
                 if (isDoubleChecking)
-                    setTimeout(() => updateSounds(false), 2000)
+                    setTimeout(() => updateSounds(false), 5000)
             }
         },
         startSound = (soundRef, volume, fadeIn = null, isOverlapping = false) => {
@@ -2993,7 +3032,7 @@ const Media = (() => {
         set LoopingSounds(soundRef) {
             if (soundRef)
                 STATEREF.loopingSounds = _.uniq([...STATEREF.loopingSounds, soundRef])
-            D.Alert(`Adding ${D.JS(soundRef)} to Looping Sounds: ${D.JS(STATEREF.loopingSounds)}`, `Media.LoopingSounds = ${D.JSL(soundRef)}`, 1000)
+            // D.Alert(`Adding ${D.JS(soundRef)} to Looping Sounds: ${D.JS(STATEREF.loopingSounds)}`, `Media.LoopingSounds = ${D.JSL(soundRef)}`, 1000)
         },
         
         // REINITIALIZE MEDIA OBJECTS (i.e. on MODE CHANGE)

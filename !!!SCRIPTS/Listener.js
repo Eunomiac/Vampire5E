@@ -35,7 +35,7 @@ const Listener = (() => {
                     if (scriptData && scriptData.script && VAL({function: scriptData.script.OnChatCall}) && (!scriptData.gmOnly || playerIsGM(msg.playerid) || msg.playerid === "API") ) {
                         const [objects, returnArgs] = parseMessage(args, msg)
                         call = scriptData.singleCall && returnArgs.shift() || call
-                        /* D.Alert([
+                        /* D.Poke([
                             `<b>${msg.content}</b>`,
                             `CALL: ${call}`,
                             `ARGS: ${returnArgs.join(" ")}`,

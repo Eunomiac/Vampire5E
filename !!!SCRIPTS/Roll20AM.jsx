@@ -1207,8 +1207,8 @@ var Roll20AM = Roll20AM || (function() {
 	    //stop list and clear current tracks
         list.playing = false;    
         state.VAMPIRE.Media.loopingSounds = _.without(Media.LoopingSounds, list.name)              
-        D.Alert(`Removing LIST ${D.JS(list.name)}: ${D.JS(Media.LoopingSounds)}`, `stopList(${D.JSL(list.name)})`, 1000)
-        _.each(list.currentTrack,(trackID)=>{
+        // D.Alert(`Removing LIST ${D.JS(list.name)}: ${D.JS(Media.LoopingSounds)}`, `stopList(${D.JSL(list.name)})`, 1000)
+        _.each(list.trackids,(trackID)=>{
             if (debug){
                 log('Stopping:' + trackID)
             }
@@ -1295,14 +1295,14 @@ var Roll20AM = Roll20AM || (function() {
 	            if (list.trackids.indexOf(trackID) >= 0){
                     list.playing = false
                     state.VAMPIRE.Media.loopingSounds = _.without(Media.LoopingSounds, list.name)           
-                    D.Alert(`StopTRACK: Removing LIST ${D.JS(list.name)}: ${D.JS(Media.LoopingSounds)}`, `stopTrack(${D.JSL(trackDetails.title)}) (LIST)`, 1000)     
+                    // D.Alert(`StopTRACK: Removing LIST ${D.JS(list.name)}: ${D.JS(Media.LoopingSounds)}`, `stopTrack(${D.JSL(trackDetails.title)}) (LIST)`, 1000)     
                     didRemovePlaylist = true
 	            }
 	        }     
         })
         if (!didRemovePlaylist) {
             state.VAMPIRE.Media.loopingSounds = _.without(Media.LoopingSounds, trackDetails.title)                  
-            D.Alert(`StopTRACK: Removing TRACK ${D.JS(trackDetails.title)}: ${D.JS(Media.LoopingSounds)}`, `stopTrack(${D.JSL(trackDetails.title)}) (TRACK)`, 1000)
+            // D.Alert(`StopTRACK: Removing TRACK ${D.JS(trackDetails.title)}: ${D.JS(Media.LoopingSounds)}`, `stopTrack(${D.JSL(trackDetails.title)}) (TRACK)`, 1000)
         }
 	    
 	    //set playing to true in Track Details, get Jukebox Object and set to playing
@@ -1563,7 +1563,7 @@ var Roll20AM = Roll20AM || (function() {
     },    
     //Import everything from Jukebox
     importJukebox = function(who){
-        var shuffleState = {'s':'shuffle','a':'together','b':'single'};
+        var shuffleState = {'s':'shuffle','a':'together','b':'loop','o':'single'};
         var lists        = JSON.parse(Campaign().get('jukeboxfolder'));
         var tagName,track,title,unique,trackID,trackDetails
 
@@ -1594,7 +1594,7 @@ var Roll20AM = Roll20AM || (function() {
         
         _.each(lists,list=>{
             if (list.n != undefined){
-                importList(list.n)
+                importList(list.n, undefined, shuffleState[list.s])
                 _.each(list.i,(t)=>{
                     track =  getJukeBox(t)
                     if (track != undefined){
@@ -1616,7 +1616,7 @@ var Roll20AM = Roll20AM || (function() {
         sendChat(who,'All Playlists and Tracks have been imported',null,{noarchive:true});
         Media.ResetSoundModes()
     },	
-    importList = function(listName,who){
+    importList = function(listName,who,mode){
         if (debug){
             log('Importing List:'+listName) 
         }        
@@ -1629,7 +1629,7 @@ var Roll20AM = Roll20AM || (function() {
                 currentTrack:[],
                 lastTrack:null,
                 access:'gm',
-                mode:'loop',
+                mode:mode || 'loop',
                 delay:0,
                 volume:state.Roll20AM.masterVolume,
                 fadeup:state.Roll20AM.fadeVolumeUp,
@@ -2046,6 +2046,18 @@ var Roll20AM = Roll20AM || (function() {
             return loopingSoundRefs
         },
         getActiveLoopingSounds = (isReturningTracks = false) => getActiveSounds(isReturningTracks).filter(x => getTrackMode(x) === "loop"),
+        getPlayingSounds = (isAlerting = false, isLoopingOnly = false) => {
+            const allPlayingSounds = _.uniq(findObjs({_type: "jukeboxtrack", playing: true})).map(x => x.get("title")).filter(x => !isLoopingOnly || getTrackMode(x) === "loop"),
+                allPlayingLists = allPlayingSounds.filter(x => isPlayList(x)),
+                allPlayingTracks = allPlayingSounds.filter(x => isTrack(x) && (!isLoopingOnly || getTrackMode(x) === "loop"))
+            if (isAlerting)
+                D.Alert(`<b>SOUNDS:</b> ${D.JS(allPlayingSounds.sort())}<br><b>LISTS</b>: ${D.JS(allPlayingLists.sort())}<br><b>TRACKS</b>: ${D.JS(allPlayingTracks.sort())}`, "getPlayingSounds", 1000)
+            return [allPlayingSounds, allPlayingLists, allPlayingTracks]
+        },
+        getPlayingLoopingSounds = () => {
+            const [, loopingLists, loopingTracks] = getPlayingSounds(false, true)
+            return [loopingLists, loopingTracks.filter(x => getTrackMode(x) === "loop")]
+        },
         isPlaying = (soundRef) => Roll20AM.GetActiveSounds().includes(soundRef),
         getPlayingListTracks = (listRef) => {
             const listDetails = getPlayList(listRef),
@@ -2197,19 +2209,19 @@ var Roll20AM = Roll20AM || (function() {
                 setTimeout(() => verifyTracksPlaying(), 2000)
         },
         verifyTracksPlaying = () => {
-            const allPlayingTracks = _.uniq(findObjs({_type: "jukeboxtrack", playing: true}).map(x => x.get("title")).filter(x => getTrackMode(x) === "loop")),
+            const [allPlayingLists, allPlayingTracks] = getPlayingLoopingSounds(),
                 allActiveTracks = getActiveLoopingSounds(true),
                 tracksToggleOn = _.without(allActiveTracks, ...allPlayingTracks),
                 tracksToggleOff = _.without(allPlayingTracks, ...allActiveTracks),
                 tracksClearSoftStop = _.without(_.uniq([...allPlayingTracks, ...allActiveTracks]), ...tracksToggleOff, ...tracksToggleOn).filter(x => (getTrackDetails(getTrackID(x)) || {mode: false}).mode === "loop" && (getTrackObj(x) || {get: () => false}).get("softstop"))
-            const allPlayingTest = _.uniq(findObjs({_type: "jukeboxtrack", playing: true}).map(x => x.get("title")).filter(x => getTrackMode(x) === "loop")).map(x => getTrackObj(x)).map(x => `${x.get("title")} --- ${_.compact([
-                x.get("playing") && "Playing",
-                x.get("softstop") && "SoftStop",
-                x.get("loop") && "Loop"
-            ]).join(", ")}`)
-            D.Alert(`<b>PLAYING</b>: ${D.JS(allPlayingTracks.sort())}<br><b>ACTIVE :</b> ${D.JS(allActiveTracks.sort())}${allPlayingTest.length ? ["","",...allPlayingTest].join("<br>") : ""}`, "verifyTracksPlaying", 1000)       
-            if (_.uniq([...tracksToggleOn, ...tracksToggleOff, ...tracksClearSoftStop]).length)
-                D.Alert(`Toggling ON: ${D.JS(tracksToggleOn)}<br>Toggling OFF: ${D.JS(tracksToggleOff)}<br>Clearing SoftStop: ${D.JS(tracksClearSoftStop)}`, "Verify Tracks Playing")
+            // const allPlayingTest = _.uniq(findObjs({_type: "jukeboxtrack", playing: true}).map(x => x.get("title")).filter(x => getTrackMode(x) === "loop")).map(x => getTrackObj(x)).map(x => `${x.get("title")} --- ${_.compact([
+            //     x.get("playing") && "Playing",
+            //     x.get("softstop") && "SoftStop",
+            //     x.get("loop") && "Loop"
+            // ]).join(", ")}`)
+            // D.Alert(`<b>PLAYING LISTS</b>: ${D.JS(allPlayingLists.sort())}<br><b>PLAYING TRACKS</b>: ${D.JS(allPlayingTracks.sort())}<br><b>ACTIVE   :</b> ${D.JS(allActiveTracks.sort())}`, /* ${allPlayingTest.length ? ["","",...allPlayingTest].join("<br>") : ""}` */ "verifyTracksPlaying", 1000)       
+            // if (_.uniq([...tracksToggleOn, ...tracksToggleOff, ...tracksClearSoftStop]).length)
+            //     D.Alert(`Toggling ON: ${D.JS(tracksToggleOn)}<br>Toggling OFF: ${D.JS(tracksToggleOff)}<br>Clearing SoftStop: ${D.JS(tracksClearSoftStop)}`, "Verify Tracks Playing")
             for (const trackObj of tracksToggleOn.map(x => getTrackObj(x)))
                 trackObj.set({playing: true, softstop: false})
             for (const trackObj of tracksToggleOff.map(x => getTrackObj(x)))
@@ -2224,6 +2236,10 @@ var Roll20AM = Roll20AM || (function() {
     return {
         CheckInstall: checkInstall,
         RegisterEventHandlers,
+
+        GetPlayingSounds: () => getPlayingSounds(true, false),
+        // GetLoopingSounds: () => { D.Alert(D.JS(JSON.parse(Campaign().get("jukeboxfolder")))) },
+        GetLoopingSounds: () => getPlayingSounds(true, true),
 
         GetTracks: getTrackObjs, GetTrack: getTrackObj,
         GetTrackData: (trackRef) => getTrackDetails(getTrackID(trackRef) || trackRef),

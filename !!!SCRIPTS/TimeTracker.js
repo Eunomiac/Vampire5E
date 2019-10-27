@@ -162,7 +162,8 @@ const TimeTracker = (() => {
                             )
                             break
                         }
-                        case "weather": {
+                        case "weath": {
+                            D.Alert("Weather Running!")
                             setManualWeather(args[0] && args[0] + (args[0].length === 1 ? "x" : ""), args[1] && D.Int(args[1]), args[2], args[3])
                             break
                         }
@@ -176,6 +177,7 @@ const TimeTracker = (() => {
                         }
                         // falls through
                         default: {
+                            D.Alert("Default Running!")
                             args.unshift(call)
                             const delta = Math.ceil(((new Date(Date.UTC(..._.map(args, v => D.Int(v))))).getTime() - STATEREF.dateObj.getTime()) / (1000 * 60))
                             tweenClock(addTime(STATEREF.dateObj, delta, "m"))

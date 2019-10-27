@@ -18,8 +18,13 @@ const InitCommands = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
-            // Roll20AM.StopSound("all")
-            // Media.UpdateSoundscape()
+            Roll20AM.StopSound("all")
+            setTimeout(() => {
+                TimeTracker.UpdateWeather()
+                setTimeout(() => {
+                    Media.UpdateSoundscape()
+                }, 2000)
+            }, 2000)
         },
     // #endregion	
 
