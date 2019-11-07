@@ -224,12 +224,14 @@ const Char = (() => {
                     break
                 }
                 case "lock": case "unlock": {
+                    const isLocking = call === "lock"
                     switch(D.LCase(call = args.shift())) {
                         case "weekly": case "resource": case "weeklyresource": {
-                            if (args.length === 3) {
-                                const [init, rowNum, amount] = [args.shift().toUpperCase(), D.Int(args.shift()), D.Int(args.shift())],
+                            if (args.length === 2) {
+                                const init = D.GetCharData(charObjs[0]).initial, 
+                                    [rowNum, amount] = args.map(x => D.Int(x)),
                                     [curTot, curLock] = [STATEREF.weeklyResources[init][rowNum - 1][2], STATEREF.weeklyResources[init][rowNum - 1][3]],
-                                    newLock = Math.max(0, Math.min(curTot, curLock + (call === "lock" ? amount : -amount)))
+                                    newLock = Math.max(0, Math.min(curTot, curLock + (isLocking ? amount : -amount)))
                                 STATEREF.weeklyResources[init][rowNum - 1][3] = newLock
                             } else {
                                 D.Alert("Syntax:<br><br><b>!char reg (initial) (name) (total)<br>!char unreg/set/lock/unlock (initial) (rowNum) [amount]<br>!char set weekly reset</b>")
@@ -280,6 +282,7 @@ const Char = (() => {
                                     break
                                 } 
                                 default: {
+                                    args.unshift(call)
                                     if (args.length === 2)
                                         adjustResource(charObjs[0], D.Int(args.shift()), D.Int(args.shift()))
                                     else                           
@@ -591,7 +594,7 @@ const Char = (() => {
         isCharActive = (charRef) => (D.GetCharData(charRef) || {isActive: null}).isActive,    
         getCharIDString = (charsRef) => {
             const charIDs = []
-            D.Alert(`CharsRef: ${D.JS(charsRef)}<br><br>CharIDs: ${D.JS(charsRef.map(x => x.id || "Huh?"))}<br><br>CharID Final: ${D.JS(charIDs)}`)
+            // D.Alert(`CharsRef: ${D.JS(charsRef)}<br><br>CharIDs: ${D.JS(charsRef.map(x => x.id || "Huh?"))}<br><br>CharID Final: ${D.JS(charIDs)}`)
             if (!charsRef || !charsRef.length)
                 return ""
             if (VAL({charObj: charsRef}, "getCharIDString", true))
@@ -921,6 +924,7 @@ const Char = (() => {
             }
         },
     // #endregion
+    
     // #region Awarding XP
         awardXP = (charRef, award, reason) => {
             DB(`Award XP Parameters: charRef: ${D.JS(charRef)}, Award: ${D.JS(award)}<br>Reason: ${D.JS(reason)}`, "awardXP")
@@ -1226,12 +1230,12 @@ const Char = (() => {
                     ... Initial (${D.JS(initTraitVal)}) + Amount (${D.JS(amount)}) = Final (${D.JS(finalTraitVal)}))`, "adjustTrait")
                 switch (trait.toLowerCase()) {
                     case "hunger":
-                        chatStyles.block = {}
                         chatStyles.header = {margin: "0px"}
                         if (amount > 0) 
                             bannerString = `Your hunger increases by ${D.NumToText(amount).toLowerCase()}`
                         else if (amount < 0)
-                            bannerString = `You sate your hunger by ${D.NumToText(amount).toLowerCase()}`
+                            bannerString = `You sate your hunger by ${D.NumToText(Math.abs(amount)).toLowerCase()}`
+                        Media.SetImg(`Hunger${getAttrByName(charObj.id, "sandboxquadrant")}_1`, D.Int(finalTraitVal) === "0" ? "blank" : `${finalTraitVal}`)
                         break
                     case "hum": case "humanity":
                         if (amount > 0)

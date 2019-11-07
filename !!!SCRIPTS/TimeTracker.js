@@ -39,30 +39,21 @@ const TimeTracker = (() => {
                 D.Alert("Date Object Missing! Setting to default date.<br><br>Use !time set [year] [month] [day] [hour] [minute] to correct.", "TimeTracker")
                 STATEREF.dateObj = new Date(2019, 11, 1, 18, 55)
                 STATEREF.currentDate = STATEREF.dateObj.getTime()
-                setCurrentDate()
-            }
-
-            if (Session.IsSessionActive) {
-                stopCountdown()
-                startClock()
-            } else {
-                stopClock()
-                startCountdown()
             }
         
             if (_.keys(STATEREF.weatherOverride).length)
                 D.Alert(`Weather Override in effect: ${D.JS(STATEREF.weatherOverride)}<br><b>!time set weather</b> to clear.`, "Alert: Weather Override")
 
-            TimeTracker.Fix()
-            // startAirLights()
-
+            
         // Media.GetText("Countdown").set("font_size", 200)
         // Media.GetText("CountdownShadow").set("font_size", 200)
         /* Media.IMAGES.WeatherMain_1.srcs = {
-            heavysnow: "",
-            lightsnow: "",
+            lightrain: "",
             heavyrain: "",
-            lightrain: ""
+            brightlightsnow: "",
+            darklightsnow: "",
+            brightheavysnow: "",
+            darkheavysnow: ""
         }
         Media.IMAGES.WeatherGround_1.srcs = {
             wet: "",
@@ -249,7 +240,7 @@ const TimeTracker = (() => {
                     break
                 }
                 case "fix": {
-                    fixDate()
+                    fixTimeStatus()
                     break
                 }
                 case "reset": {
@@ -895,14 +886,21 @@ const TimeTracker = (() => {
             isIncludingTime ? `, ${formatTimeString(date).replace(/:(\d\s)/gu, ":0$1")}` : ""
         }`,
         isValidDString = str => _.isString(str) && Boolean(str.match(/\w\w\w\s\d\d?,\s\d\d\d\d/gu)),
-        fixDate = () => {
+        fixTimeStatus = () => {
             setHorizon(true)
             setWeather()
             // D.Alert(`Setting Ground Cover: ${groundCover}`)
             if (!Media.HasForcedState("WeatherGround") && !getWeatherCode().slice(0,2).includes("p"))
                 Media.SetImg("WeatherGround", getGroundCover())
             // Media.OrderImages("map", true)
-            setCurrentDate()
+            setCurrentDate()            
+            if (Session.IsSessionActive) {
+                stopCountdown()
+                startClock()
+            } else {
+                stopClock()
+                startCountdown()
+            }
         },
         addTime = (dateRef, delta, unit) => {
             if (VAL({date: dateRef}, "addTime")) {
@@ -1136,7 +1134,7 @@ const TimeTracker = (() => {
                     setIsRunning(false)
                     setIsRunningFast(false)
                     // D.Alert("Is Running: FALSE")
-                    setTimeout(fixDate, 1000)
+                    setTimeout(fixTimeStatus, 1000)
                     DB(`<h4>Stopping Clock (Destination Reached)</h4><b>START</b> (${D.JS(formatDString(getDate(STATEREF.TweenStart), true))})<br><b>TARGET</b> (${D.JS(formatDString(getDate(STATEREF.TweenTarget), true))})<br><b>ACTUAL</b> (${D.JS(formatDString(getDate(STATEREF.dateObj), true))})<br><b>curTime</b>: ${D.JS(STATEREF.TweenCurTime)}, <b>lastTime</b>: ${D.JS(STATEREF.TweenLastTime)}<br><b>startDate</b>: ${D.JS(formatDString(getDate(STATEREF.TweenStart), true))}<br><b>deltaTime:</b> ${D.JS(STATEREF.TweenDelta/1000/60/60)}<br><b>duration:</b> ${D.JS(STATEREF.TweenDuration)}`, "tweenClock")
                     delete STATEREF.TweenTarget
                     delete STATEREF.TweenStart
@@ -1309,7 +1307,7 @@ const TimeTracker = (() => {
                         case "night5":
                             return "darkclouds"
                         default:
-                            return "brightclouds"
+                            return `brightclouds${randomInteger(3)}`
                     }
                 },
                 getFogSrc = () => {
@@ -1356,7 +1354,7 @@ const TimeTracker = (() => {
                 case "b":
                     if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
                     if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", getSnowSrc("heavy"))
-                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", "stormy")
+                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", "stormclouds")
                     if (!Media.HasForcedState("WeatherGlow")) Media.SetImg("WeatherGlow", getGlowSrc("stormy"))
                     break
                 case "c":
@@ -1387,7 +1385,7 @@ const TimeTracker = (() => {
                 case "t":
                     if (!Media.HasForcedState("WeatherFog")) Media.SetImg("WeatherFog", "blank")
                     if (!Media.HasForcedState("WeatherMain")) Media.SetImg("WeatherMain", "heavyrain")
-                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", "stormy")
+                    if (!Media.HasForcedState("WeatherClouds")) Media.SetImg("WeatherClouds", "stormclouds")
                     if (!Media.HasForcedState("WeatherGlow")) Media.SetImg("WeatherGlow", getGlowSrc("stormy"))
                     Media.Pulse("WeatherLightning_1", 45, 75)
                     Media.Pulse("WeatherLightning_2", 45, 75)
@@ -1870,6 +1868,8 @@ const TimeTracker = (() => {
     return {
         CheckInstall: checkInstall,
         OnChatCall: onChatCall,
+
+        Fix: fixTimeStatus,
         
         ALARMFUNCS,
         StartClock: startClock,
@@ -1886,11 +1886,9 @@ const TimeTracker = (() => {
                 STATEREF.dateObj = getDate(dateRef)
         },
         FormatDate: formatDString,
-        Fix: fixDate,
         IsDay: isDay,
         IsValidDate: isValidDString,
         get IsClockRunning() { return isRunning || isRunningFast || isTimeRunning },
-        UpdateWeather: setWeather,
         get WeatherCode () { return getWeatherCode() },
 
         SetAlarm: setAlarm

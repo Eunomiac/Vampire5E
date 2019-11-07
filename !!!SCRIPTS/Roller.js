@@ -54,7 +54,7 @@ const Roller = (() => {
                             case "frenzyinit": {	// !roll dice project @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
                                 lockRoller(true)
                                 STATEREF.frenzyRoll = `${args.join(" ").split("|")[0]}|`
-                                sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px ${C.COLORS.crimson} outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](!#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: ${C.COLORS.white}; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: ${C.COLORS.brightred}; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${args.join(" ").split("|")[0]}</span><br/></div>`)
+                                sendChat("ROLLER", `/w Storyteller <br/><div style='display: block; background: url(https://i.imgur.com/kBl8aTO.jpg); text-align: center; border: 4px ${C.COLORS.crimson} outset;'><br/><span style='display: block; font-size: 16px; text-align: center; width: 100%'>[Set Frenzy Diff](#Frenzy)</span><span style='display: block; text-align: center; font-size: 12px; font-weight: bolder; color: ${C.COLORS.white}; font-variant: small-caps; margin-top: 4px; width: 100%'>~ for ~</span><span style='display: block; font-size: 14px; color: ${C.COLORS.brightred}; text-align: center; font-weight: bolder; font-variant: small-caps; width: 100%'>${args.join(" ").split("|")[0]}</span><br/></div>`)
                                 break
                             }
                             case "frenzy": { rollType = rollType || "frenzy"
@@ -3327,7 +3327,9 @@ const Roller = (() => {
                 ... DISC ROLL? ${D.JS(rollFlags.isDiscRoll)}
                 ... NPC ROLL? ${D.JS(rollFlags.isNPCRoll)}
                 ... OBLIV ROLL? ${D.JS(rollFlags.isOblivionRoll)}
-				PARAMS: [${D.JS(params.join(", "))}] (length: ${params.length})`, "makeNewRoll")
+                PARAMS: [${D.JS(params.join(", "))}] (length: ${params.length})`, "makeNewRoll")
+            if (D.Int(getAttrByName(charObj.id, "applybloodsurge")) > 0)                
+                quickRouseCheck(charObj, false, false, true)
             const rollData = buildDicePool(getRollData(charObj, rollType, params, rollFlags))
             recordRoll(rollData, rollDice(rollData, null, rollFlags))
             displayRoll(true, rollFlags.isNPCRoll)
@@ -3404,11 +3406,11 @@ const Roller = (() => {
             const recordRef = isNPCRoll ? STATEREF.NPC : STATEREF
             loadRoll(Math.max(recordRef.rollIndex - 1, 0), isNPCRoll)
         },
-        quickRouseCheck = (charRef, isDoubleRouse = false, isOblivionRouse = false) => {
+        quickRouseCheck = (charRef, isDoubleRouse = false, isOblivionRouse = false, isPublic = false) => {
             const results = isDoubleRouse ? _.sortBy([randomInteger(10), randomInteger(10)]).reverse() : [randomInteger(10)],
                 deltaAttrs = {stain: undefined, hunger: false}
             let [header, body] = [
-                `${isDoubleRouse ? "Double " : ""}Rouse Check: ${results[0]}${isDoubleRouse ? `, ${results[1]}` : ""}`,
+                `${isPublic ? `${D.GetName(charRef)}'s `: ""}${isDoubleRouse ? "Double " : ""}Rouse Check: ${results[0]}${isDoubleRouse ? `, ${results[1]}` : ""}`,
                 ""
             ]
             if (isOblivionRouse)
@@ -3437,7 +3439,7 @@ const Roller = (() => {
             } else if (isOblivionRouse) {
                 body += C.CHATHTML.Body("Your humanity remains.", {color: C.COLORS.white, textShadow: `0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}`})
             }
-            D.Chat(charRef, C.CHATHTML.Block([
+            D.Chat(isPublic && "all" || charRef, C.CHATHTML.Block([
                 C.CHATHTML.Header(header),
                 body].join("")))
         },

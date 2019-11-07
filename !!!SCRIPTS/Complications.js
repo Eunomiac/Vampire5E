@@ -328,12 +328,20 @@ const Complications = (() => {
             {name: "NecessaryEvils", category: "humanity", value: 2, rarity: "R", afterAction: (charRef, isEnhanced) => {
                 Char.Damage(charRef, "stains", "", isEnhanced ? 2 : 1)
             }},
-            {name: "Obsessed", category: "debilitation", value: 2, rarity: "U"},
+            {name: "Obsessed", category: "debilitation", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Obsessed)`)
+            }},
             {name: "Options", category: null, value: 0, rarity: "C"},
-            {name: "Overwhelmed", category: "debilitation", value: 2, rarity: "U"},
+            {name: "Overwhelmed", category: "debilitation", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Overwhelmed)`)
+            }},
             {name: "Powderkeg", category: null, value: 0, rarity: "V"},
-            {name: "Preoccupied", category: "debilitation", value: 1, rarity: "C"},
-            {name: "ProlongedAbsence", category: null, value: 1, rarity: "U"},
+            {name: "Preoccupied", category: "debilitation", value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Preoccupied)`)
+            }},
+            {name: "ProlongedAbsence", category: null, value: 1, rarity: "U", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Prolonged Absence)`)
+            }},
             {name: "PyrrhicVictory", category: "project", value: 4, rarity: "R"},
             {name: "RecklessGamble", category: "complication", value: 0, rarity: "U"},
             {name: "RepeatMistakes", category: null, value: 0, rarity: "R", action: () => {
@@ -344,21 +352,39 @@ const Complications = (() => {
             {name: "Reverie", category: null, value: 0, rarity: "R"},
             {name: "RippleEffects", category: "complication", value: 1, rarity: "U"},
             // {name: "RockyStart", category: null, value: -1, rarity: ""},
-            {name: "SilentBeneficiary", category: null, value: 1, rarity: "U"},
+            {name: "SilentBeneficiary", category: null, value: 1, rarity: "U", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Silent Beneficiary)`)
+            }},
             // {name: "SimmeringResentment", category: null, value: -1, rarity: ""},
-            {name: "SpreadThin", category: "debilitation", value: 1, rarity: "C"},
-            {name: "TangledWebs", category: "attention", value: 1, rarity: "R"},
-            {name: "TheBeastAscendant", category: "beast", value: 2, rarity: "U"},
+            {name: "SpreadThin", category: "debilitation", value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Spread Thin)`)
+            }},
+            {name: "TangledWebs", category: "attention", value: 1, rarity: "R", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Tangled Webs)`)
+            }},
+            {name: "TheBeastAscendant", category: "beast", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Ascendant)`)
+            }},
             // {name: "TheBeastInsatiable", category: "beast", value: 1, rarity: "U"},
-            {name: "TheBeastRampant", category: "beast", value: 2, rarity: "C"},
-            {name: "TheBeastRavenous", category: "beast", value: 2, rarity: "U"},
-            {name: "TheBeastScorned", category: "beast", value: 2, rarity: "U"},
-            {name: "Tilted", category: "debilitation", value: 1, rarity: "C"},
+            {name: "TheBeastRampant", category: "beast", value: 2, rarity: "C", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Rampant)`)
+            }},
+            {name: "TheBeastRavenous", category: "beast", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Ravenous)`)
+            }},
+            {name: "TheBeastScorned", category: "beast", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Scorned)`)
+            }},
+            {name: "Tilted", category: "debilitation", value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Tilted)`)
+            }},
             // {name: "Triage", category: null, value: -1, rarity: ""},
             {name: "TunnelVision", category: "complication", value: 1, rarity: "U"},
             {name: "UnderTheBus", category: null, value: 1, rarity: "U"},
             {name: "UnfinishedBusiness", category: null, value: 0, rarity: "U"},
-            {name: "WeightOfTheWorld", category: "debilitation", value: 2, rarity: "U"}
+            {name: "WeightOfTheWorld", category: "debilitation", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
+                STATEREF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Weight of the World)`)
+            }}
         ],
         CARDQTYS = {V: 12, C: 6, U: 3, R: 1},
     // #endregion

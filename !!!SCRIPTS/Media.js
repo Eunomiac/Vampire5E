@@ -31,25 +31,53 @@ const Media = (() => {
             STATEREF.activeSounds = STATEREF.activeSounds || []
             STATEREF.curLocation = STATEREF.curLocation || "DistrictCenter:blank SiteCenter:blank"
 
-            // STATEREF.imgregistry.mapButtonDomain_1.cycleSrcs = ["camarilla", "nodomain", "anarch"]
-        // delete STATEREF.tokenregistry["85239212/An9D7-g4OmLdjhKm-NbKnA/1561848759"]
-        // Initialize IMGDICT Fuzzy Dictionary
+            // Initialize IMGDICT Fuzzy Dictionary
             STATEREF.IMGDICT = Fuzzy.Fix()
             for (const imgKey of _.keys(STATEREF.imgregistry))
                 STATEREF.IMGDICT.add(imgKey)
 
-        // Initialize TEXTDICT Fuzzy Dictionary
+            // Initialize TEXTDICT Fuzzy Dictionary
             STATEREF.TEXTDICT = Fuzzy.Fix()
             for (const textKey of _.keys(STATEREF.textregistry))
                 STATEREF.TEXTDICT.add(textKey)
         
-        // Initialize AREADICT Fuzzy Dictionary
+            // Initialize AREADICT Fuzzy Dictionary
             STATEREF.AREADICT = Fuzzy.Fix()
             for (const areaKey of _.keys(STATEREF.areas))
                 STATEREF.AREADICT.add(areaKey)
+            return
 
-            STATEREF.imgregistry.DistrictCenter_1.srcs.DistilleryDist = "https://s3.amazonaws.com/files.d20.io/images/93590743/sebxxMaOpGClxwHDcJqA1A/thumb.png?1570253503"
-            delete STATEREF.imgregistry.DistrictCenter_1.srcs.Distillery
+            const srcsToAdd = {
+                Horizon_1: {
+                    night1: "https://s3.amazonaws.com/files.d20.io/images/96325997/MpxC9gfKRM1xtCCPjYT46g/thumb.jpg?1573105648"
+                },
+                WeatherClouds_1: {
+                    night1clouds: "https://s3.amazonaws.com/files.d20.io/images/96326509/6xytUfwtm1-NarmVnpy0nw/thumb.png?1573106351"
+                }
+            }
+            for (const [imgName, imgData] of Object.entries(STATEREF.imgregistry))
+                if (_.keys(srcsToAdd).includes(imgName)) {
+                    const imgSrcs = Object.assign({}, imgData.srcs)
+                    for (const srcName of _.keys(imgSrcs))
+                        delete STATEREF.imgregistry[imgName].srcs[srcName]
+                    for (const [srcName, srcString] of Object.entries(srcsToAdd[imgName]))
+                        STATEREF.imgregistry[imgName].srcs[srcName] = srcString                    
+                    for (const [srcName, srcString] of Object.entries(imgSrcs))
+                        STATEREF.imgregistry[imgName].srcs[srcName] = srcString
+                }
+            // "SubSiteTopRight_1","SubSiteRight_1","SubSiteBotRight_1","SubSiteTopLeft_1","SubSiteLeft_1","SubSiteBotLeft_1"
+            // STATEREF.imgregistry.SubLocTopRight_1 = D.Clone(STATEREF.imgregistry.SubSiteTopRight_1)
+            // STATEREF.imgregistry.SubLocRight_1 = D.Clone(STATEREF.imgregistry.SubSiteRight_1)
+            // STATEREF.imgregistry.SubLocBotRight_1 = D.Clone(STATEREF.imgregistry.SubSiteBotRight_1)
+            // STATEREF.imgregistry.SubLocTopLeft_1 = D.Clone(STATEREF.imgregistry.SubSiteTopLeft_1)
+            // STATEREF.imgregistry.SubLocLeft_1 = D.Clone(STATEREF.imgregistry.SubSiteLeft_1)
+            // STATEREF.imgregistry.SubLocBotLeft_1 = D.Clone(STATEREF.imgregistry.SubSiteBotLeft_1)
+            // delete STATEREF.imgregistry.SubSiteTopRight_1
+            // delete STATEREF.imgregistry.SubSiteRight_1
+            // delete STATEREF.imgregistry.SubSiteBotRight_1
+            // delete STATEREF.imgregistry.SubSiteTopLeft_1
+            // delete STATEREF.imgregistry.SubSiteLeft_1
+            // delete STATEREF.imgregistry.SubSiteBotLeft_1
         },
             
         
@@ -741,6 +769,14 @@ const Media = (() => {
                             }
                             break
                         }
+                        case "play": {
+                            startSound(args.shift(), undefined, undefined, true)
+                            break
+                        }
+                        case "stop": {
+                            stopSound(args.shift())
+                            break
+                        }
                         case "reset": {
                             switch (D.LCase(call = args.shift())) {
                                 case "modes": {
@@ -805,7 +841,11 @@ const Media = (() => {
         IDREGISTRY = STATEREF.idregistry,
         TEXTREGISTRY = STATEREF.textregistry,
         ANIMREGISTRY = STATEREF.animregistry,
-        GRAPHICREGISTRY = Object.assign({}, ANIMREGISTRY, IMGREGISTRY),
+        GRAPHIC = {
+            get REGISTRY() {
+                return Object.assign({}, ANIMREGISTRY, IMGREGISTRY)
+            }
+        },
         SOUNDREGISTRY = STATEREF.soundregistry,
         AREAREGISTRY = STATEREF.areas,
         TOKENREGISTRY = STATEREF.tokenregistry,
@@ -821,6 +861,7 @@ const Media = (() => {
                 "WeatherFog",
                 "WeatherClouds",
                 "WeatherFrost",
+                "WeatherGlow",
                 "Spotlight"       
             ]
         },
@@ -1262,9 +1303,9 @@ const Media = (() => {
                 if (VAL({char: imgRef}))
                     return imgRef
                 if (VAL({string: imgRef})) {
-                    if (GRAPHICREGISTRY[imgRef])
+                    if (GRAPHIC.REGISTRY[imgRef])
                         return imgRef
-                    if (GRAPHICREGISTRY[`${imgRef}_1`])
+                    if (GRAPHIC.REGISTRY[`${imgRef}_1`])
                         return `${imgRef}_1`
                     imgObj = getObj("graphic", imgRef)                    
                 } else if (VAL({imgObj: imgRef})) {
@@ -1274,16 +1315,16 @@ const Media = (() => {
                 }
                 if (VAL({imgObj})) {
                     imgKey = getImgKey(imgObj.get("name"), true)
-                    if (GRAPHICREGISTRY[imgKey])
+                    if (GRAPHIC.REGISTRY[imgKey])
                         return imgKey
                     imgKey = getImgKey(imgObj.get("name"), true)
-                    if (GRAPHICREGISTRY[imgKey])
+                    if (GRAPHIC.REGISTRY[imgKey])
                         return imgKey
                     imgKey = getImgKey((_.find(_.values(Char.REGISTRY), x => x.id === imgObj.get("represents")) || {tokenName: false}).tokenName, true)
-                    if (GRAPHICREGISTRY[imgKey])
+                    if (GRAPHIC.REGISTRY[imgKey])
                         return imgKey
                     imgKey = getImgKey(`${getObj("character", imgObj.get("represents")).get("name").replace(/\s+/gu, "")}Token`, true)
-                    if (GRAPHICREGISTRY[imgKey])
+                    if (GRAPHIC.REGISTRY[imgKey])
                         return imgKey
                 }
                 return !isSilent && THROW(`Cannot find name of image from reference '${D.JSL(imgRef)}'`, "GetImgKey")
@@ -1311,7 +1352,7 @@ const Media = (() => {
                 }
                 const imgKey = getImgKey(imgRef)
                 if (VAL({string: imgKey}))
-                    imgObj = getObj("graphic", GRAPHICREGISTRY[imgKey].id)
+                    imgObj = getObj("graphic", GRAPHIC.REGISTRY[imgKey].id)
                 if (VAL({imgObj}))
                     return imgObj
                 return false
@@ -1321,7 +1362,7 @@ const Media = (() => {
         },
         getImgObjs = (imgRefs, isSilent = false) => {
             // D.Alert(`GetSelected ImgRefs: ${D.JS(D.GetSelected(imgRefs))}`)
-            imgRefs = VAL({selection: imgRefs}) ? D.GetSelected(imgRefs) : imgRefs || _.keys(GRAPHICREGISTRY)
+            imgRefs = VAL({selection: imgRefs}) ? D.GetSelected(imgRefs) : imgRefs || _.keys(GRAPHIC.REGISTRY)
             const imgObjs = []
             if (VAL({array: imgRefs}))
                 for (const imgRef of imgRefs)
@@ -1333,13 +1374,13 @@ const Media = (() => {
                 let imgKey, imgObj
                 try {
                     imgKey = getImgKey(imgRef, isSilent)
-                    if (VAL({string: imgKey}) || VAL({imgObj: imgKey}) && GRAPHICREGISTRY[imgKey.get("name")])
-                        return GRAPHICREGISTRY[imgKey] || GRAPHICREGISTRY[imgKey.get("name")]
+                    if (VAL({string: imgKey}) || VAL({imgObj: imgKey}) && GRAPHIC.REGISTRY[imgKey.get("name")])
+                        return GRAPHIC.REGISTRY[imgKey] || GRAPHIC.REGISTRY[imgKey.get("name")]
                     imgObj = getImgObj(imgRef, isSilent)
                     if (VAL({imgObj}, "getImgData")) {
-                        if (GRAPHICREGISTRY[imgObj.get("name")])
-                            return GRAPHICREGISTRY[imgObj.get("name")]
-                        if (VAL({char: imgKey}) && !GRAPHICREGISTRY[imgObj.get("name")])
+                        if (GRAPHIC.REGISTRY[imgObj.get("name")])
+                            return GRAPHIC.REGISTRY[imgObj.get("name")]
+                        if (VAL({char: imgKey}) && !GRAPHIC.REGISTRY[imgObj.get("name")])
                             return Object.assign({}, DEFAULTTOKENDATA, {
                                 id: imgObj.id,
                                 name: imgObj.get("name"),
@@ -2132,7 +2173,14 @@ const Media = (() => {
     // #endregion
 
     // #region ANIMATIONS: Creating, Timeouts, Controlling WEBM Animations
-        regAnimation = (imgObj, animName, timeOut, activeLayer = "map") => {
+        initAnimations = () => {
+            for (const [animName, animData] of Object.entries(ANIMREGISTRY))
+                if (animData.startActive)
+                    activateAnimation(animName)
+                else
+                    deactivateAnimation(animName)
+        },
+        regAnimation = (imgObj, animName, timeOut, activeLayer = "map", startActive = false) => {
             if (VAL({imgObj}, "regAnimation")) {
                 imgObj.set("name", animName)
                 imgObj.set("layer", "gmlayer")
@@ -2148,7 +2196,8 @@ const Media = (() => {
                     timeOut: D.Int(1000 * D.Float(timeOut)),
                     minTimeBetween: 0,
                     maxTimeBetween: 100000,
-                    isActive: false,
+                    startActive: startActive !== false && startActive !== "false",
+                    isActive: startActive !== false && startActive !== "false",                    
                     validModes: ["Active"],
                     soundEffect: null
                 }
@@ -2178,8 +2227,9 @@ const Media = (() => {
                     setTimeout(() => killAnimation(animObj), animData.timeOut)
             }
         },
-        activateAnimation = (animName, minTime = 0, maxTime = 100) => {
-            const animData = getImgData(animName)
+        activateAnimation = (animName, minTime, maxTime) => {
+            const animData = getImgData(animName);
+            [minTime, maxTime] = [minTime || animData.minTimeBetween, maxTime || animData.maxTimeBetween]
             if (activeTimers[animName]) {
                 clearTimeout(activeTimers[animName])
                 delete activeTimers[animName]
@@ -2755,17 +2805,18 @@ const Media = (() => {
 
     // #region SOUND OBJECT GETTERS: Track Object, Playlist Object, Data Retrieval
         getScore = (mode) => {
-            const scoreRef = Object.keys(SOUNDREGISTRY).find(x => SOUNDREGISTRY[x].tags.includes(mode) && SOUNDREGISTRY[x].type === "score"),
+            // D.Poke(`Score Ref: ${Object.keys(C.SOUNDSCORES).find(x => C.SOUNDSCORES[x].includes(mode))}`)
+            const scoreRef = Object.keys(C.SOUNDSCORES).find(x => C.SOUNDSCORES[x].includes(mode)),
                 volume = C.SOUNDVOLUME[scoreRef] || C.SOUNDVOLUME.defaults.score
             return {[scoreRef]: volume}
         },
-        getWeatherSounds = (locations, weatherCode) => {
+        getWeatherSounds = (weatherCode) => {
             // 0: x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
             // 4: {x: ["Still", "Still"], s: ["Soft Breeze", "Cutting Breeze"], b: ["Breezy", "Biting Wind"], w: ["Blustery", "High Winds"], g: ["High Winds", "Driving Winds"], h: ["Howling Winds", "Howling Winds"], v: ["Roaring Winds", "Roaring Winds"]}
             
             const weatherSounds = {}
             if (["p", "t"].includes(weatherCode.charAt(0)))
-                weatherSounds.Rain = C.SOUNDVOLUME.Rain || C.SOUNDVOLUME.defaults.weather
+                weatherSounds.Rain = C.SOUNDVOLUME.Rain || C.SOUNDVOLUME.defaults.weather || C.SOUNDVOLUME.defaults.base
             const windPrefix = `Wind${TimeTracker.TempC <= 0 ? "Winter" : ""}`
             switch (weatherCode.charAt(4)) {            
             // const [weatherSounds, windPrefix, windChar] = [{Rain: C.SOUNDVOLUME.Rain}, "Wind", "s"]
@@ -2794,36 +2845,39 @@ const Media = (() => {
             // 
             // switch (windChar) {
                 case "b":
-                    weatherSounds[`${windPrefix}Low`] = (C.SOUNDVOLUME[`${windPrefix}Low`] || C.SOUNDVOLUME.defaults.weather).map(x => x * 0.75)
+                    weatherSounds[`${windPrefix}Low`] = (C.SOUNDVOLUME[`${windPrefix}Low`] || C.SOUNDVOLUME.defaults.weather || C.SOUNDVOLUME.defaults.base).map(x => x * 0.75)
                     break
                 case "w":
-                    weatherSounds[`${windPrefix}Low`] = C.SOUNDVOLUME[`${windPrefix}Low`] || C.SOUNDVOLUME.defaults.weather
+                    weatherSounds[`${windPrefix}Low`] = C.SOUNDVOLUME[`${windPrefix}Low`] || C.SOUNDVOLUME.defaults.weather || C.SOUNDVOLUME.defaults.base
                     break
                 case "g":
-                    weatherSounds[`${windPrefix}Med`] = (C.SOUNDVOLUME[`${windPrefix}Med`] || C.SOUNDVOLUME.defaults.weather).map(x => x * 0.75)
+                    weatherSounds[`${windPrefix}Med`] = (C.SOUNDVOLUME[`${windPrefix}Med`] || C.SOUNDVOLUME.defaults.weather || C.SOUNDVOLUME.defaults.base).map(x => x * 0.75)
                     break
                 case "h":
-                    weatherSounds[`${windPrefix}Med`] = C.SOUNDVOLUME[`${windPrefix}Med`] || C.SOUNDVOLUME.defaults.weather
+                    weatherSounds[`${windPrefix}Med`] = C.SOUNDVOLUME[`${windPrefix}Med`] || C.SOUNDVOLUME.defaults.weather || C.SOUNDVOLUME.defaults.base
                     break
                 case "v":
-                    weatherSounds[`${windPrefix}Max`] = C.SOUNDVOLUME[`${windPrefix}Max`] || C.SOUNDVOLUME.defaults.weather
+                    weatherSounds[`${windPrefix}Max`] = C.SOUNDVOLUME[`${windPrefix}Max`] || C.SOUNDVOLUME.defaults.weather || C.SOUNDVOLUME.defaults.base
                     break
                 // no default
             }
             // D.Alert(D.JS(weatherSounds), "Weather Sounds")
             return weatherSounds
         },
-        getLocationSounds = (locations) => {
-            const locRefs = D.KeyMapObj(locations, k => k.replace(/(Left|Center|Right)/gu, ""), v => v[0])
+        getLocationSounds = () => {
+            const locRefs = {
+                District: Session.District,
+                Site: Session.Site
+            }
             let locSound = {}
-            for (const locRef of ["District", "Site"]) {
-                if (!locRefs[locRef]) continue
-                const [thisSound] = C.LOCATIONS[locRefs[locRef]].soundScape
+            for (const [loc, locName] of Object.entries(locRefs)) {
+                if (!locName) continue
+                const [thisSound] = C.LOCATIONS[locName].soundScape
                 if (thisSound === "(TOTALSILENCE)")
                     return {TOTALSILENCE: [0]}
                 if (thisSound)
-                    if (locRef === "District" || (thisSound !== "(NONE)" || !C.LOCATIONS[locRefs[locRef]].outside))
-                        locSound = {[thisSound]: C.SOUNDVOLUME[thisSound] || C.SOUNDVOLUME.defaults.location}                
+                    if (loc === "District" || thisSound !== "(NONE)" || !Session.IsOutside)
+                        locSound = {[thisSound]: C.SOUNDVOLUME[thisSound] || C.SOUNDVOLUME.defaults.location || C.SOUNDVOLUME.defaults.base}                
                 // D.Alert(D.JS(locSound), `${locRef} Sound`)
             }
             return locSound
@@ -2877,7 +2931,7 @@ const Media = (() => {
             const soundsToPlay = {}
             switch (Session.Mode) {
                 case "Active":
-                    Object.assign(soundsToPlay, _.omit(D.KeyMapObj(getWeatherSounds(Session.Locations(), TimeTracker.WeatherCode), null, (v, k) => {
+                    Object.assign(soundsToPlay, _.omit(D.KeyMapObj(getWeatherSounds(TimeTracker.WeatherCode), null, (v, k) => {
                         let volume = v[0]
                         if (!Session.IsOutside)
                             if (VAL({number: v[1]}))
@@ -2888,7 +2942,7 @@ const Media = (() => {
                                 volume *= C.SOUNDVOLUME.indoorMult.defaults.weather
                             else
                                 volume *= C.SOUNDVOLUME.indoorMult.defaults.base
-                        else if (getWeatherSounds(Session.Locations(), TimeTracker.WeatherCode).Rain)
+                        else if (getWeatherSounds(TimeTracker.WeatherCode).Rain)
                             if (VAL({number: C.SOUNDVOLUME.rainMult[k]}))
                                 volume *= C.SOUNDVOLUME.rainMult[k]
                             else if (VAL({number: C.SOUNDVOLUME.rainMult.defaults.weather}))
@@ -2901,11 +2955,11 @@ const Media = (() => {
                 case "Downtime":
                 case "Spotlight":
                 case "Daylighter":
-                    Object.assign(soundsToPlay, _.omit(D.KeyMapObj(getLocationSounds(Session.Locations()), null, (v, k) => {
+                    Object.assign(soundsToPlay, _.omit(D.KeyMapObj(getLocationSounds(), null, (v, k) => {
                         let volume = v[0]
                         if (!Session.IsOutside)
                             volume = v[1] || v[0] * (C.SOUNDVOLUME.indoorMult[k] || C.SOUNDVOLUME.indoorMult.defaults.location || C.SOUNDVOLUME.indoorMult.defaults.base)
-                        else if (Session.Mode === "Active" && getWeatherSounds(Session.Locations(), TimeTracker.WeatherCode).Rain)
+                        else if (Session.Mode === "Active" && getWeatherSounds(TimeTracker.WeatherCode).Rain)
                             volume *= C.SOUNDVOLUME.rainMult[k] || C.SOUNDVOLUME.rainMult.defaults.location || C.SOUNDVOLUME.rainMult.defaults.base
                         return volume
                     }), "(NONE)"))
@@ -2915,7 +2969,7 @@ const Media = (() => {
                         let volume = v[0]
                         if (!Session.IsOutside)
                             volume = v[1] || v[0] * (C.SOUNDVOLUME.indoorMult[k] || C.SOUNDVOLUME.indoorMult.defaults.score || C.SOUNDVOLUME.indoorMult.defaults.base)
-                        else if (Session.Mode === "Active" && getWeatherSounds(Session.Locations(), TimeTracker.WeatherCode).Rain)
+                        else if (Session.Mode === "Active" && getWeatherSounds(TimeTracker.WeatherCode).Rain)
                             volume *= C.SOUNDVOLUME.rainMult[k] || C.SOUNDVOLUME.rainMult.defaults.score || C.SOUNDVOLUME.rainMult.defaults.base
                         return volume
                     }), "(NONE)"))
@@ -2931,7 +2985,7 @@ const Media = (() => {
             } else {
                 const thunderVolumeData = {}
                 for (const thunderSoundRef of ["Thunder", ..._.intersection(Roll20AM.GetPlaylistTrackNames("Thunder"), Object.keys(C.SOUNDVOLUME))]) {
-                    let thunderVol = C.SOUNDVOLUME[thunderSoundRef] || thunderSoundRef === "Thunder" && C.SOUNDVOLUME.defaults.effect
+                    let thunderVol = C.SOUNDVOLUME[thunderSoundRef] || thunderSoundRef === "Thunder" && (C.SOUNDVOLUME.defaults.effect || C.SOUNDVOLUME.defaults.base)
                     if (thunderVol) {
                         if (Session.IsOutside)
                             thunderVol = VAL({number: thunderVol[0]}) ? thunderVol[0] : thunderVol
@@ -3021,6 +3075,7 @@ const Media = (() => {
         SetArea: setImgArea,
         
         // ANIMATION FUNCTIONS
+        InitAnims: initAnimations,
         Flash: flashAnimation,
         Pulse: activateAnimation,
         Kill: deactivateAnimation,

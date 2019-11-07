@@ -244,8 +244,8 @@
             </div>
         </div>
         <input type="hidden" name="attr_marquee_tracker" />;        
-        <input class="sheet-containertoggle" type="radio" name="attr_npcbox_toggle" value="0"  />
-        <input class="sheet-containertoggle" type="radio" name="attr_npcbox_toggle" value="1" checked />
+        <input class="sheet-containertoggle" type="radio" name="attr_npcbox_toggle" value="0" checked />
+        <input class="sheet-containertoggle" type="radio" name="attr_npcbox_toggle" value="1"  />
         <div class="sheet-coltight1 sheet-npcbox" style="text-align: center;">
             <div class="sheet-npcbox_title">
                 <textarea class="sheet-header2" type="text" name="attr_npcbox_title" readonly>as Cardinal Collins:</textarea>
@@ -3287,7 +3287,7 @@
             advantage: {attribute: "append", skill: "append", discipline: "pass", advantage: "replace", tracker: "pass"},
             tracker: {attribute: "append", skill: "pass", discipline: "pass", advantage: "pass", tracker: "replace"}
         },
-        res_discs = {
+        RESDISCS = {
             None: [" "],
             Choleric: ["Celerity", "Potence"],
             Melancholic: ["Fortitude", "Obfuscate"],
@@ -3850,16 +3850,16 @@
             if (_.isString(haystack))
                 return haystack.search(new RegExp(needle, "iu")) > -1 && haystack
             const [ndl, hay] = [`\\b${needle}\\b`, haystack],
-                hayArray = _.isArray(hay) ? _.flatten(hay) :
-                    _.isObject(hay) ? _.keys(hay) :
-                        [hay],
+                hayArray = _.isArray(hay) && _.flatten(hay) ||
+                           _.isObject(hay) && _.keys(hay) ||
+                           [hay],
                 index = _.findIndex(hayArray,
                                     v => v.match(new RegExp(ndl, "iu")) !== null ||
-                        v.match(new RegExp(ndl.replace(/_/gu, " "), "iu")) !== null ||
-                        v.match(new RegExp(ndl.replace(/\s/gu, "_"), "iu")) !== null ||
-                        v.match(new RegExp(ndl.replace(/(\w)(?=[A-Z])/gu, "$1 "), "iu")) !== null ||
-                        v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null ||
-                        v.match(new RegExp(ndl.replace(/\s/gu), "iu")) !== null)
+                                         v.match(new RegExp(ndl.replace(/_/gu, " "), "iu")) !== null ||
+                                         v.match(new RegExp(ndl.replace(/\s/gu, "_"), "iu")) !== null ||
+                                         v.match(new RegExp(ndl.replace(/(\w)(?=[A-Z])/gu, "$1 "), "iu")) !== null ||
+                                         v.match(new RegExp(ndl.replace(/_/gu), "iu")) !== null ||
+                                         v.match(new RegExp(ndl.replace(/\s/gu), "iu")) !== null)
             return index >= 0 && hayArray[index]
         },
         realName = (attr, ATTRS = {}) => isIn(trimAttr(attr), ATTRDISPNAMES) ||
@@ -4122,7 +4122,7 @@
                     cback => {
                         getAttrs(["resonance"], ATTRS => {
                             log(`Resonance Attrs: ${JSON.stringify(ATTRS)}`)
-                            attrList.res_discs = ATTRS.resonance === "None" ? " " : `(${_.compact(res_discs[ATTRS.resonance]).join(", ")})`
+                            attrList.res_discs = ATTRS.resonance === "None" ? " " : `(${_.compact(RESDISCS[ATTRS.resonance]).join(", ")})`
                             cback(null, attrList)
                         })
                     },
@@ -5078,14 +5078,14 @@
                     attrArray.earnedxp.push(`repeating_earnedxp_${repID}_${stat}`)
                 })
             })
-            getSectionIDs("earnedxpright", idArray => {
-                _.each(idArray, repID => {
+            getSectionIDs("earnedxpright", rightIDs => {
+                _.each(rightIDs, repID => {
                     _.each(["xp_award"], stat => {
                         attrArray.earnedxpright.push(`repeating_earnedxpright_${repID}_${stat}`)
                     })
                 })
-                getSectionIDs("spentxp", idArray => {
-                    _.each(idArray, repID => {
+                getSectionIDs("spentxp", spentIDs => {
+                    _.each(spentIDs, repID => {
                         _.each(XPREPREFS.spentxp, stat => {
                             attrArray.spentxp.push(`repeating_spentxp_${repID}_${stat}`)
                         })
@@ -5308,8 +5308,8 @@
                                 checkEffects = rollArray => {
                                     const topDisplayStrings = [],
                                         effectChecks = _.compact(ATTRS.effectchecks.split("|"))
-                                    /* if (parseInt(ATTRS.applybloodsurge) > 0)
-                                        topDisplayStrings.push("Rouse Check Is Automatic") */
+                                    if (parseInt(ATTRS.applybloodsurge) > 0)
+                                        topDisplayStrings.push("Rouse Check Is Automatic")
                                     if (parseInt(ATTRS.humanity) + parseInt(ATTRS.stains) > 10)
                                         topDisplayStrings.push("Inhuman (-2)")
                                     if (parseInt(ATTRS.health) === 0 && _.any(rollArray, v => isIn(v, [...ATTRIBUTES.physical, ...SKILLS.physical])))

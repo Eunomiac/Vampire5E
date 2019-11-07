@@ -24,11 +24,12 @@ const runMsg = "[API OPERATIONAL]";
 const airLog = (logMsg, chatMsg, dbMsg) => {
         log(logMsg);
         sendChat("Airbag", `/w gm ${chatMsg || logMsg}`);
-        state.VAMPIRE.DATA.DEBUGLOG.push({
-            timeStamp: (new Date()).getTime(),
-            title: "[AIRBAG RAW STACK TRACE]",
-            contents: dbMsg
-        })
+        if (state && state.VAMPIRE && state.VAMPIRE.DATA && state.VAMPIRE.DATA.DEBUGLOG)
+            state.VAMPIRE.DATA.DEBUGLOG.push({
+                timeStamp: (new Date()).getTime(),
+                title: "[AIRBAG RAW STACK TRACE]",
+                contents: dbMsg
+            })
     };
 
 // HTML Styles for Reporting
@@ -96,9 +97,9 @@ let scriptRanges = [],
 const GetScriptLine = (traceable, markMode) => {
     const match = (traceable && traceable.stack || "").match(/apiscript.js:(\d+)/g) || ["", ""];
     if (markMode) {
-        return D.Int(match[1].split(':')[1]);
+        return parseInt(match[1].split(':')[1]) || 0;
     }
-    return D.Int(match[0].split(':')[1]);
+    return parseInt(match[0].split(':')[1]) || 0;
 };
 
 // The last range entry that was added
@@ -255,7 +256,7 @@ const handleCrash = (e) => {
 
     let stackLines = _.map((e && e.stack || "").split(/\n|apiscript\.js/gu), v => {
 		if (v.startsWith(":")) {
-			const globalLineNum = D.Int(v.match(/^:(\d+):/u)[1]),
+			const globalLineNum = parseInt(v.match(/^:(\d+):/u)[1]) || 0,
 				  localLine = ConvertGlobalLineToLocal(globalLineNum)
 			return v.replace(/^:\d+:/gu, `@@${localLine.Name}:${localLine.Line}:`).trim()
 		}

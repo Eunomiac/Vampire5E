@@ -1,10 +1,16 @@
-void MarkStart("CONSTANTS")
-const C = (() => {
-    const GAMENAME = "VAMPIRE",
-        ROOT = state[GAMENAME], 
-    // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
-        SCRIPTNAME = "CONSTANTS",
+void MarkStart("C")
 
+const GAMENAME = "VAMPIRE",
+    SCRIPTNAME = "C",
+    SCRIPTS = ["C", "D", "Listener", "Fuzzy", "Char", "Media", "Player", "Session", "TimeTracker", "DragPads", "Roller", "Roll20AM", "Complications", "Handouts", "Chat", "Tester", "InitCommands", "GamePrep"]
+state = state || {}
+state[GAMENAME] = state[GAMENAME] || {}
+for (const scriptName of SCRIPTS)
+    state[GAMENAME][scriptName] = state[GAMENAME][scriptName] || {}
+
+const C = (() => {
+    const ROOT = state[GAMENAME],
+    // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     // #region COMMON INITIALIZATION
         STATEREF = ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
@@ -81,7 +87,7 @@ const C = (() => {
 
     // #region IMAGE DEFAULTS, HTML FORMATS, BACKGROUND IMAGES    
         IMAGES = {
-            blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511"
+            blank: "https://s3.amazonaws.com/files.d20.io/images/96332109/U-Rven0Fa3Dc07Tf2RYeKQ/thumb.png?1573116236"
         },
         BGIMAGES = {
             whiteMarble: "https://i.imgur.com/heiyoaB.jpg",
@@ -811,6 +817,7 @@ const C = (() => {
         SOUNDVOLUME = {
             indoorMult: {
                 Thunder: 0.07,
+                WolfHowl: 1,
                 defaults: {
                     base: 1,
                     score: 0.5,
@@ -839,6 +846,7 @@ const C = (() => {
             WindWinterMed: [90],
             WindMax: [100],
             WindWinterMax: [100],
+            WolfHowl: [100, 100],
             SplashScreen: [15],
             defaults: {
                 base: [50],
@@ -854,10 +862,15 @@ const C = (() => {
                 PLAYLIST MODE       PLAYLIST MODE               TRACK MODE          EXPLANATION
                   In JUKEBOX          In ROLL20AM                 (Inner Mode)    
 
-                    Loop                RandomLoop                  Single          The PLAYLIST loops RANDOMLY, playing each track once before moving onto another.
-                    Shuffle             Shuffle                     Loop            The playlist is merely storage for the TRACKS, which are chosen by name and loop until another is chosen.
-                    Play Once           RandomSingle                Single          The playlist selects a track at random and plays it once.
+                (DEF) Shuffle             Shuffle                     Loop            The playlist is merely storage for the TRACKS, which are CHOSEN by name and LOOP until another is chosen.
+                      Loop                RandomLoop                  Single          The PLAYLIST loops RANDOMLY, playing each track once before moving onto another.
+                      Play Once           Single                      Single          The playlist is merely storage for the TRACKS, which are CHOSEN by name and PLAY ONCE.
+                      SimulPlay           RandomSingle                Single          The playlist selects a track at random and plays it once.
             */
+            Effects: {
+                mode: "single",
+                innerMode: "single"
+            },
             Thunder: {
                 mode: "randomSingle",
                 innerMode: "single"
@@ -875,18 +888,22 @@ const C = (() => {
                 innerMode: "loop"
             }
         },
+        SOUNDSCORES = {
+            MainScore: ["Active", "Downtime", "Daylighter", "Spotlight", "Complication"],
+            SplashScreen: ["Inactive"]
+        },
     // #endregion
 
     // #region SANDBOX CONFIGURATION & DEFINITIONS
-        PIXELSPERSQUARE = 70,
+        PIXELSPERSQUARE = 10,
         SANDBOX = {
-            height: 1750,
-            width: 2680
+            height: 1040,
+            width: 1590
         }
     SANDBOX.top = SANDBOX.height/2
     SANDBOX.left = SANDBOX.width/2
     const MAP = {            
-        height: 3520,
+        height: 2040,
         width: SANDBOX.width
     }
     MAP.top = MAP.height/2 + SANDBOX.height
@@ -1276,7 +1293,7 @@ const C = (() => {
                 huntDiff: 2,
                 homestead: [3, 3, 3, 3],
                 rollEffects: ["loc:LittleItaly+melee;2;[+1]<#> Beat It|loc:LittleItaly+firearms/melee;-2;[-1]<#> Beat It"],
-                soundScape: ["(TOTALSILENCE)"],
+                soundScape: ["CityTraffic"],
                 outside: true
             },
             LittlePortugal: {
@@ -2075,7 +2092,7 @@ const C = (() => {
         DISTRICTS, SITES,
         get LOCATIONS() { return Object.assign({}, DISTRICTS, SITES) },
 
-        SOUNDVOLUME, SOUNDMODES,
+        SOUNDVOLUME, SOUNDMODES, SOUNDSCORES,
 
         MVCVALS,
         FX
@@ -2083,7 +2100,8 @@ const C = (() => {
 })()
 
 on("ready", () => {
+    InitCommands.PreInitialization()
     C.CheckInstall()
     D.Log("CONSTANTS Ready!")
 })
-void MarkStop("CONSTANTS")
+void MarkStop("C")

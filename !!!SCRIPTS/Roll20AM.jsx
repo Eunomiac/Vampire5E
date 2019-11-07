@@ -2144,11 +2144,11 @@ var Roll20AM = Roll20AM || (function() {
             if (listData) {
                 const playingTracks = _.compact(getPlayingListTracks(listRef))
                 if (playingTracks.length === 0) {
-                    D.Alert(`No Tracks Playing for ${D.JS(listRef)}!<br>... Restarting Playlist.`, `VerifyOneTrackPlaying(${D.JSL(listRef)})`)
+                    D.Alert(`No Tracks Playing for ${D.JS(listRef)}! ... Restarting.`, `VOneTrack(${D.JSL(listRef)})`)
                     stopSound(listRef, 0, false)
                     playSound(listRef, undefined, undefined, false)
                 } else if (playingTracks.length > 1 && listData.mode !== "together") {
-                    D.Alert(`Too Many Tracks Playing for ${D.JS(listRef)}: ${D.JS(playingTracks)}<br>... Stopping: ${D.JS(playingTracks.slice(1))}<br>... Restarting: ${D.JS(playingTracks[0])}`, `VerifyOneTrackPlaying(${D.JSL(listRef)})`)
+                    D.Alert(`Too Many Tracks Playing for ${D.JS(listRef)}!<br>... Stopping: ${D.JS(playingTracks.slice(1))}<br>... Restarting: ${D.JS(playingTracks[0])}`, `VOneTrack(${D.JSL(listRef)})`)
                     for (let i = 1; i < playingTracks.length; i++) {
                         stopSound(playingTracks[i], 0, false)
                         getTrackObj(playingTracks[i]).set({playing:false})

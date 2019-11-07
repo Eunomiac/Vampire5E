@@ -51,6 +51,16 @@ const Tester = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting
             switch (call) {
+                case "macro": {
+                    const macroName = args.shift(),
+                        macroObjs = findObjs({_type: "macro", _playerid: D.GMID()}),
+                        [macroObj] = macroObjs.filter(x => x.get("name") === macroName) 
+                    if (macroObj)
+                        D.Alert(`${D.JS(macroObj.get("action"))}<br><br>Length: ${D.JS(macroObj.get("action").length)}`, `MACRO: ${D.JS(macroObj.get("name"))}`)
+                    else
+                        D.Alert(`Couldn't find macro '${D.JS(macroName)}'<br>Available macros:<br><br>${D.JS(macroObjs.map(x => x.get("name")).join(", "))}`)
+                    break
+                }
                 case "tokenget": {
                     const returnStrings = []
                     for (const charObj of D.GetChars("all"))

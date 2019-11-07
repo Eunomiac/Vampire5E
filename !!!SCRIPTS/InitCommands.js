@@ -18,11 +18,18 @@ const InitCommands = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
-            Roll20AM.StopSound("all")
+            return 
+            if (Roll20AM && Roll20AM.StopSound)
+                Roll20AM.StopSound("all")
+            if (Media && Media.InitAnims())
+                Media.InitAnims()
             setTimeout(() => {
-                TimeTracker.UpdateWeather()
+                if (TimeTracker && TimeTracker.Fix)
+                    TimeTracker.Fix()
                 setTimeout(() => {
-                    Media.UpdateSoundscape()
+                    if (Media && Media.UpdateSoundScape)
+                        Media.UpdateSoundscape()
+                    D.Alert("Initialization Complete!", "INITIALIZATION")
                 }, 2000)
             }, 2000)
         },
@@ -35,11 +42,16 @@ const InitCommands = (() => {
                     break
             // no default
             }
-        }
+        },
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
+        preInitialization = () => {
+            Handouts.PreInitialize()
+        }
+
     return {
+        PreInitialization: preInitialization,
         CheckInstall: checkInstall,
         OnChatCall: onChatCall
     }

@@ -1,12 +1,12 @@
-﻿void MarkStart("DATA")
-/* DATA.js, "DATA".  Exposed as "D" in the API sandbox.
+﻿void MarkStart("D")
+/* DATA.js, "D".  Exposed as "D" in the API sandbox.
    >>> DATA is both a library of handy resources for other scripts to use, and a master configuration file for your
    game.  You can find a list of all of the available methods at the end of the script.  Configuration is a bit
    trickier, but is contained in the CONFIGURATION and DECLARATIONS #regions. */
 
 const D = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
-    const SCRIPTNAME = "DATA",
+    const SCRIPTNAME = "D",
 
     // #region COMMON INITIALIZATION
         STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
@@ -17,7 +17,7 @@ const D = (() => {
 
         checkInstall = () => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
-            initialize()
+            initialize()            
         },
     // #endregion
 
@@ -28,32 +28,37 @@ const D = (() => {
             STATEREF.CHARWIDTH = STATEREF.CHARWIDTH || {}
             STATEREF.DEBUGLOG = STATEREF.DEBUGLOG || []
             STATEREF.ALERTTHROTTLE = []
+            STATEREF.isReportingListener = STATEREF.isReportingListener || false
 
         // Initialize STATSDICT Fuzzy Dictionary
-            STATEREF.STATSDICT = Fuzzy.Fix()
-            for (const str of [
-                ..._.flatten(_.values(C.ATTRIBUTES)),
-                ..._.flatten(_.values(C.SKILLS)),
-                ...C.DISCIPLINES,
-                ...C.TRACKERS,
-                ...C.MISCATTRS
-            ])
-                STATEREF.STATSDICT.add(str)
+            try {
+                STATEREF.STATSDICT = Fuzzy.Fix()
+                for (const str of [
+                    ..._.flatten(_.values(C.ATTRIBUTES)),
+                    ..._.flatten(_.values(C.SKILLS)),
+                    ...C.DISCIPLINES,
+                    ...C.TRACKERS,
+                    ...C.MISCATTRS
+                ])
+                    STATEREF.STATSDICT.add(str)
 
-        // Initialize PCDICT Fuzzy Dictionary and PCLIST Strict Lookup
-            STATEREF.PCDICT = Fuzzy.Fix()
-            STATEREF.PCLIST = []
-            for (const name of _.values(Char.REGISTRY).map(x => x.name)) {
-                STATEREF.PCDICT.add(name)
-                STATEREF.PCLIST.push(name)
-            }
+            // Initialize PCDICT Fuzzy Dictionary and PCLIST Strict Lookup
+                STATEREF.PCDICT = Fuzzy.Fix()
+                STATEREF.PCLIST = []
+                for (const name of _.values(Char.REGISTRY).map(x => x.name)) {
+                    STATEREF.PCDICT.add(name)
+                    STATEREF.PCLIST.push(name)
+                }
 
-        // Initialize NPCDICT Fuzzy Dictionary
-            STATEREF.NPCDICT = Fuzzy.Fix()
-            STATEREF.NPCLIST = []
-            for (const name of getChars("all").map(x => x.get("name")).filter(x => !_.values(Char.REGISTRY).map(xx => xx.name).includes(x))) {
-                STATEREF.NPCDICT.add(name)
-                STATEREF.NPCLIST.push(name)
+            // Initialize NPCDICT Fuzzy Dictionary
+                STATEREF.NPCDICT = Fuzzy.Fix()
+                STATEREF.NPCLIST = []
+                for (const name of getChars("all").map(x => x.get("name")).filter(x => !_.values(Char.REGISTRY).map(xx => xx.name).includes(x))) {
+                    STATEREF.NPCDICT.add(name)
+                    STATEREF.NPCLIST.push(name)
+                }
+            } catch (errObj) {
+                THROW("Initialization Error", "Initialize", errObj)
             }
         },
     // #endregion	
@@ -134,6 +139,24 @@ const D = (() => {
                                 }
                             // no default
                             }
+                            break
+                        }
+                        case "toggle": {
+                            switch(D.LCase(call = args.shift())) {
+                                case "report": {
+                                    switch(D.LCase(call = args.shift())) {
+                                        case "listen": case "listener": {
+                                            STATEREF.isReportingListener = !STATEREF.isReportingListener
+                                            D.Alert(STATEREF.isReportingListener && "Now reporting Listener events." || "No longer reporting Listener events.", "!data toggle report listener")
+                                            break
+                                        }
+                                        // no default
+                                    }
+                                    break
+                                }
+                                // no default                               
+                            }
+                            break
                         }
                 // no default
                     }
@@ -476,10 +499,10 @@ const D = (() => {
                 If no Title, message is sent without formatting. */
             const player = getPlayer(who) || who,
                 html = title ? jStrH(C.CHATHTML.alertHeader(title) + C.CHATHTML.alertBody(jStr(message))) : message
-            if (player === "all" || !player)
+            if (who === "all" || player === "all" || !player)
                 sendChat("", html)
             else if (Session.IsTesting)
-                sendChat("", `/w Storyteller ${html}`)
+                sendChat("", `/w Storyteller (TO ${player.get("_displayname")})<br>${html}`)
             else
                 sendChat("", `/w "${player.get("_displayname")}" ${html}`)
                 
@@ -1159,7 +1182,7 @@ const D = (() => {
         },
         getBlackList = () => sendToGM(`${jStr(STATEREF.BLACKLIST)}`, "DEBUG BLACKLIST"),
         logDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
-            if (Session.IsTesting || !Session.IsSessionActive) {                
+            if (_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive) {                
                 if (funcName) {
                     STATEREF.DEBUGLOG.push({
                         timeStamp: (new Date()).getTime(),
@@ -1842,12 +1865,14 @@ const D = (() => {
         get STATSDICT() { return STATEREF.STATSDICT },
         get PCDICT() { return STATEREF.PCDICT },
         get NPCDICT() { return STATEREF.NPCDICT },
+        get CHARWIDTH() { return STATEREF.CHARWIDTH },
 
         get PAGEID() { return VALS.PAGEID() },
         get CELLSIZE() { return VALS.CELLSIZE() },
 
+        get IsReportingListener() { return STATEREF.isReportingListener },
+
         Queue: queueFunc, Run: runFuncQueue,
-        CHARWIDTH: STATEREF.CHARWIDTH,
         JS: jStr, JSL: jStrL, JSH: jStrH, JSC: jStrC,
         ParseParams: parseParams,
         ParseCharSelection: parseCharSelect,
@@ -1909,4 +1934,4 @@ on("ready", () => {
     D.CheckInstall()
     D.Log("DATA Ready!")
 })
-void MarkStop("DATA")
+void MarkStop("D")

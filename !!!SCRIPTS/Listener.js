@@ -35,12 +35,13 @@ const Listener = (() => {
                     if (scriptData && scriptData.script && VAL({function: scriptData.script.OnChatCall}) && (!scriptData.gmOnly || playerIsGM(msg.playerid) || msg.playerid === "API") ) {
                         const [objects, returnArgs] = parseMessage(args, msg)
                         call = scriptData.singleCall && returnArgs.shift() || call
-                        /* D.Poke([
-                            `<b>${msg.content}</b>`,
-                            `CALL: ${call}`,
-                            `ARGS: ${returnArgs.join(" ")}`,
-                            `OBJECTS: ${D.JS(objects)}`
-                        ].join("<br>"), "LISTENER RESULTS") */
+                        if (D.IsReportingListener)
+                            D.Poke([
+                                `<b>${msg.content}</b>`,
+                                `CALL: ${call}`,
+                                `ARGS: ${returnArgs.join(" ")}`,
+                                `OBJECTS: ${D.JS(objects)}`
+                            ].join("<br>"), "LISTENER RESULTS")
                         scriptData.script.OnChatCall(call, returnArgs, objects, msg)
                     }
                 }
@@ -78,7 +79,7 @@ const Listener = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
-            SCRIPTCALLS.MESSAGE = {
+            SCRIPTCALLS.MESSAGE = _.omit({
                 "!char": {script: Char, gmOnly: true, singleCall: true},
                 "!data": {script: D, gmOnly: true, singleCall: false},
                 "!reply": {script: D, gmOnly: true, singleCall: false},
@@ -104,19 +105,19 @@ const Listener = (() => {
                 "!sess": {script: Session, gmOnly: true, singleCall: true},
                 "!test": {script: Tester, gmOnly: true, singleCall: true},
                 "!time": {script: TimeTracker, gmOnly: true, singleCall: true}
-            }
-            SCRIPTCALLS.ATTRCHANGE = [
+            }, v => v.script === {})
+            SCRIPTCALLS.ATTRCHANGE = _.reject([
                 [ ["hunger", "desire", "projectstake", "triggertimelinesort"], {script: Char} ]
-            ]
-            SCRIPTCALLS.ATTRADD = [
+            ], v => v[1].script === {})
+            SCRIPTCALLS.ATTRADD = _.reject([
                 [ ["desire", "projectstake", "triggertimelinesort"], {script: Char} ]
-            ]
-            SCRIPTCALLS.IMGCHANGE = [
+            ], v => v[1].script === {})
+            SCRIPTCALLS.IMGCHANGE = _.reject([
                 {script: DragPads}
-            ]
-            SCRIPTCALLS.IMGADD = [
+            ], v => v.script === {})
+            SCRIPTCALLS.IMGADD = _.reject([
                 {script: Media}
-            ]
+            ], v => v.script === {})
         },
     // #endregion
 

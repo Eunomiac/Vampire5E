@@ -12,13 +12,12 @@ const Handouts = (() => {
 
         checkInstall = () => {
             C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
-            initialize()
         },
     // #endregion
 
     // #region LOCAL INITIALIZATION
-        initialize = () => {
-            STATEREF.noteCounts = STATEREF.noteCounts || {projects: 0}
+        preInitialize = () => {
+            STATEREF.noteCounts = STATEREF.noteCounts || {projects: 0, debug: 0}
         },
     // #endregion	
 
@@ -45,7 +44,7 @@ const Handouts = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     // #region GETTERS: Retrieving Notes, Data
-        getCount = category => STATEREF.noteCounts[category],
+        getCount = category => STATEREF.noteCounts && STATEREF.noteCounts[category] || 0,
         getHandoutObj = (title, charRef) => {
             const notes = findObjs({
                 _type: "handout",
@@ -113,8 +112,8 @@ const Handouts = (() => {
     // #region SETTERS: Setting Notes, Deleting Handouts, Appending to Handouts
         makeHandoutObj = (title, category, contents) => {
             if (category)
-                STATEREF.noteCounts[category] = STATEREF.noteCounts[category] ? STATEREF.noteCounts[category] + 1 : 1
-            const noteObj = createObj("handout", {name: `${title} ${category && STATEREF.noteCounts[category] && STATEREF.noteCounts[category] > 1 ? STATEREF.noteCounts[category] - 1 : ""}`})
+                STATEREF.noteCounts[category] = getCount(category) + 1
+            const noteObj = createObj("handout", {name: `${title} ${category && getCount(category) > 1 ? getCount(category) - 1 : ""}`})
             if (contents)
                 noteObj.set("notes", C.HANDOUTHTML.main(D.JS(contents)))
             return noteObj
@@ -130,8 +129,8 @@ const Handouts = (() => {
             if (VAL({object: handoutObj})) {
                 if (category && STATEREF.noteCounts[category]) {
                     const matcher = handoutObj.get("name").match(/\d+$/u)
-                    if (matcher && D.Int(matcher[0]) === STATEREF.noteCounts[category])
-                        STATEREF.noteCounts[category]--
+                    if (matcher && D.Int(matcher[0]) === getCount(category))
+                        STATEREF.noteCounts[category] = getCount(category) - 1
                 }
                 handoutObj.remove()
             }                
@@ -286,6 +285,7 @@ const Handouts = (() => {
 
 
     return {
+        PreInitialize: preInitialize,
         CheckInstall: checkInstall,
         OnChatCall: onChatCall,
 

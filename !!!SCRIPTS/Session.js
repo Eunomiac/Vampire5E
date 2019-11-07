@@ -18,20 +18,30 @@ const Session = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
+            // delete STATEREF.curLocation
+            // delete STATEREF.locationRecord
             STATEREF.isTestingActive = STATEREF.isTestingActive || false
             STATEREF.sceneChars = STATEREF.sceneChars || []
             STATEREF.tokenRecord = STATEREF.tokenRecord || {}
             STATEREF.SessionScribes = STATEREF.SessionScribes || []
-            STATEREF.SessionModes = STATEREF.SessionModes || ["Active", "Inactive", "Daylighter", "Downtime", "Complications"]
+            STATEREF.SessionModes = STATEREF.SessionModes || ["Active", "Inactive", "Daylighter", "Downtime", "Complications", "Spotlight"]
             STATEREF.Mode = STATEREF.Mode || "Inactive"
             STATEREF.LastMode = STATEREF.LastMode || "Inactive"
             STATEREF.curLocation = STATEREF.curLocation || {
-                DistrictCenter: "blank",
-                DistrictLeft: "blank",
-                DistrictRight: "blank",
-                SiteCenter: "blank",
-                SiteLeft: "blank",
-                SiteRight: "blank"
+                DistrictCenter: ["blank"],
+                DistrictLeft: ["blank"],
+                DistrictRight: ["blank"],
+                SiteCenter: ["blank"],
+                SiteLeft: ["blank"],
+                SiteRight: ["blank"],
+                SubLocs: {
+                    TopLeft: "blank",
+                    Left: "blank",
+                    BotLeft: "blank",
+                    TopRight: "blank",
+                    Right: "blank",
+                    BotRight: "blank"
+                }
             }
             STATEREF.locationRecord = STATEREF.locationRecord || null
             
@@ -116,6 +126,10 @@ const Session = (() => {
                             STATEREF.dateRecord = null
                             break
                         }
+                        case "macros": {
+                            resetLocationMacros()
+                            break
+                        }
                         default: {
                             setSessionNum(D.Int(call) || STATEREF.SessionNum)
                             break
@@ -139,10 +153,6 @@ const Session = (() => {
                 }
                 case "scene": {
                     endScene()
-                    break
-                }
-                case "test": {
-                    toggleTesting()
                     break
                 }
                 case "downtime": {
@@ -178,6 +188,65 @@ const Session = (() => {
                         } else {
                             Media.SetImgData(token, {isDaylighter: false, unObfSrc: "base"})
                             Media.SetImg(token, "base")
+                        }
+                    }
+                    break
+                }
+                case "test": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "location": case "loc": {
+                            switch (D.LCase(call = args.shift())) {
+                                case "activelocs": {
+                                    D.Alert(D.JS(getActiveLocations(args[0])), `Testing getActiveLocations(${args[0] || ""})`)
+                                    break
+                                }
+                                case "activescenelocs": {
+                                    D.Alert(D.JS(getActiveSceneLocations()), "Testing getActiveSceneLocations()")
+                                    break
+                                }
+                                case "activedistrict": {
+                                    D.Alert(D.JS(getActiveDistrict()), "Testing getActiveDistrict()")
+                                    break
+                                }
+                                case "activesite": {
+                                    D.Alert(D.JS(getActiveSite()), "Testing getActiveSite()")
+                                    break
+                                }
+                                case "sublocs": {
+                                    D.Alert(D.JS(getSubLocs()), "Testing getSubLocs()")
+                                    break
+                                }
+                                case "isoutside": {
+                                    D.Alert(D.JS(isOutside()), "Testing isOutside()")
+                                    break
+                                }
+                                case "curloc": {
+                                    D.Alert(D.JS(STATEREF.curLocation), "Testing STATE.curLocation")
+                                    break
+                                }
+                                case "locrecord": {
+                                    D.Alert(D.JS(STATEREF.locationRecord), "Testing STATE.locationRecord")
+                                    break
+                                }
+                                case "parseloc": {
+                                    D.Alert(D.JS(parseLocationString(args.join(" "))), `Testing parseLocationString(${args.join(" ")})`)
+                                    break
+                                }
+                                case "parentloc": {
+                                    D.Alert(D.JS(getParentLocData(args[0])), `Testing getParentLocData(${args[0] || ""})`)
+                                    break
+                                }
+                                case "locchars": {
+                                    D.Alert(D.JS(getCharsInLocation(args[0])), `Testing getCharsInLocation(${args[0] || ""})`)
+                                    break
+                                }
+                                // no default
+                            }
+                            break
+                        }
+                        default: {
+                            toggleTesting()
+                            break
                         }
                     }
                     break
@@ -261,7 +330,7 @@ const Session = (() => {
                     C.CHATHTML.Body("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "10px 0px 10px 0px"}),
                     C.CHATHTML.Title("See you next week!", {fontSize: "32px"}),
                 ]))
-                Char.SendHome()
+                // Char.SendHome()
                 changeMode("Inactive")
                 STATEREF.tokenRecord = {}
                 if (!STATEREF.isTestingActive) {
@@ -277,7 +346,7 @@ const Session = (() => {
                 TimeTracker.StopClock()
                 TimeTracker.StopLights()
                 TimeTracker.StartCountdown()
-                TimeTracker.UpdateWeather()
+                TimeTracker.Fix()
                 if (!STATEREF.isTestingActive)
                     STATEREF.SessionNum++
             }
@@ -395,15 +464,23 @@ const Session = (() => {
 
     // #region Location Handling
         BLANKLOCRECORD = {
-            DistrictCenter: "blank",
-            DistrictLeft: "blank",
-            DistrictRight: "blank",
-            SiteCenter: "blank",
-            SiteLeft: "blank",
-            SiteRight: "blank"
+            DistrictCenter: ["blank"],
+            DistrictLeft: ["blank"],
+            DistrictRight: ["blank"],
+            SiteCenter: ["blank"],
+            SiteLeft: ["blank"],
+            SiteRight: ["blank"],
+            SubLocs: {
+                TopLeft: "blank",
+                Left: "blank",
+                BotLeft: "blank",
+                TopRight: "blank",
+                Right: "blank",
+                BotRight: "blank"
+            }
         },
         getActiveLocations = (sideFocus) => {
-            const activeLocs = _.keys(STATEREF.curLocation).filter(x => STATEREF.curLocation[x] !== "blank")
+            const activeLocs = _.keys(STATEREF.curLocation).filter(x => x !== "SubLocs" && STATEREF.curLocation[x][0] !== "blank")
             switch({c: "Center", l: "Left", r: "Right", a: "All"}[(sideFocus || "a").toLowerCase().charAt(0)]) {
                 case "Center":
                     return activeLocs.filter(x => x.endsWith("Center"))
@@ -413,41 +490,66 @@ const Session = (() => {
                     return activeLocs.filter(x => !x.endsWith("Left"))   
                 // no default
             }
-            return activeLocs
+            return activeLocs // [ "DistrictCenter", "DistrictLeft", "DistrictRight", "SiteCenter", "SiteLeft", "SiteRight" ]
         },
-        getActiveSceneLocations = () => getActiveLocations(STATEREF.sceneFocus),
+        getActiveSceneLocations = () => getActiveLocations(STATEREF.sceneFocus), // [ "DistrictCenter", "SiteCenter" ]
         getActiveDistrict = () => {
             const [activePos] = getActiveSceneLocations().filter(x => x.includes("District"))
-            return activePos && STATEREF.curLocations[activePos][0]
+            return activePos && STATEREF.curLocation[activePos] && STATEREF.curLocation[activePos][0] || false
         },
         getActiveSite = () => {
-            const [activePos] = getActiveSceneLocations().filter(x => x.includes("Site"))
-            return activePos && STATEREF.curLocations[activePos][0]
+            const [activePos] = getActiveSceneLocations().filter(x => x.startsWith("Site"))
+            return activePos && STATEREF.curLocation[activePos] && STATEREF.curLocation[activePos][0] || false
+        },
+        getSubLocs = () => {
+
+
         },
         isOutside = () => {
             const sceneLocs = _.compact(getActiveSceneLocations().map(x => STATEREF.curLocation[x][0]))
+            // D.Poke(D.JS(sceneLocs))
             return sceneLocs.filter(x => !C.LOCATIONS[x].outside).length === 0
         },
         parseLocationString = (locString) => {
             const locParams = [
                 ...(locString.match(/([^:;\s]*):([^:;\s]*):name:(.*?);/gu) || []).map(x => x.match(/([^:;\s]*):([^:;\s]*):name:(.*?);/u).slice(1)),
-                ...locString.split(" ").filter(x => !x.includes(":name") && x.includes(":")).map(x => x.split(":"))
-            ]
-            return D.KeyMapObj(locParams, (k, v) => v[0], (v) => _.compact(v.slice(1)))
+                ...locString.split(" ").filter(x => !x.includes(":name") && x.includes(":") && !x.includes("SubLocs")).map(x => x.split(":")),
+                _.compact((locString.split(" ").filter(x => x.startsWith("SubLocs"))[0] || "").split(/[:|]/gu))
+            ].filter(x => x.length)
+            // D.Poke(`locString: ${D.JS(locString)}<br>.split(): ${D.JS(locString.split(" "))}<br>.filter(): ${D.JS(locString.split(" ").filter(x => x.startsWith("SubLocs")))}<br>[0].split(): ${D.JS(locString.split(" ").filter(x => x.startsWith("SubLocs"))[0].split(/[:|]/gu))}`)
+            D.Poke(D.JS(locParams), "Final Loc Params")
+            return D.KeyMapObj(locParams, (k, v) => v[0], (v) => {
+                if (v[0] === "SubLocs")
+                    if (v.length === 7)
+                        return {
+                            TopLeft: v[1],
+                            Left: v[2],
+                            BotLeft: v[3],
+                            TopRight: v[4],
+                            Right: v[5],
+                            BotRight: v[6]
+                        }
+                    else
+                        return false
+                else
+                    return _.compact(v.slice(1))
+            })
         },
         getParentLocData = locPos => {
-            const locData = _.omit(STATEREF.curLocation, v => v === "blank"),
-                locType = locPos.replace(/(Right|Left|Center|)/gu, "")
-            switch (locPos.replace(/(District|Site)/gu, "")) {
-                case "Center": 
+            const locData = _.omit(STATEREF.curLocation, (v, k) => k !== "SubLocs" && v[0] === "blank"),
+                locType = locPos.replace(/(Right|Left|Center)/gu, "")
+            switch (locPos.replace(/(District|Site)/gu, "") || [""]) {
+                case "Center":
                     return locData[`${locType}Center`] || locData[`${locType}Left`] || locData[`${locType}Right`]
                 case "Left": 
                     return locData[`${locType}Left`] || locData[`${locType}Center`] || locData[`${locType}Right`]
                 case "Right": 
                     return locData[`${locType}Right`] || locData[`${locType}Center`] || locData[`${locType}Left`]
+                case "SubLocs":
+                    return locData.SubLocs
                 // no default
             }
-            return undefined
+            return false
         },
         setLocation = (locParams) => {
             const newLocData = Object.assign(_.clone(BLANKLOCRECORD), locParams),
@@ -457,30 +559,36 @@ const Session = (() => {
                     `New Loc Data: ${D.JS(newLocData)}`,
                     `Cur Loc Data: ${D.JS(curLocData)}`
                 ]
-            for (const locPos of _.keys(newLocData)) {
-                const locData = _.clone(newLocData[locPos])
-                if (locData[0] === "same") {
+            for (const [locPos, locData] of Object.entries(newLocData))
+                if (locPos === "SubLocs") {
+                    continue
+                } else if (locData[0] === "same") {
                     newLocData[locPos] = getParentLocData(locPos)
-                    if (locData[1] && newLocData[locPos] !== "blank")
+                    if (locData[1] && newLocData[locPos])
                         [,newLocData[locPos][1]] = locData
+                    if (locPos === "SiteCenter")
+                        newLocData.SubLocs = D.Clone(curLocData.SubLocs)
                 } else if (locData[0] === "blank") {
-                    newLocData[locPos] = "blank"
+                    newLocData[locPos] = ["blank"]
                 }
-            }
-            if (_.isEqual(newLocData.DistrictLeft, newLocData.DistrictRight) && newLocData.DistrictLeft !== "blank") {
+            if (_.isEqual(newLocData.DistrictLeft, newLocData.DistrictRight) && newLocData.DistrictLeft[0] !== "blank") {
                 newLocData.DistrictCenter = [..._.flatten([newLocData.DistrictLeft])]
-                newLocData.DistrictLeft = "blank"
-                newLocData.DistrictRight = "blank"
+                newLocData.DistrictLeft = ["blank"]
+                newLocData.DistrictRight = ["blank"]
             }
+            if (newLocData.SiteCenter[0] === "blank")
+                newLocData.SubLocs = {TopLeft: "blank", Left: "blank", BotLeft: "blank", TopRight: "blank", Right: "blank", BotRight: "blank"}
             STATEREF.curLocation = D.Clone(newLocData)
-            STATEREF.locationRecord[Session.Mode] = D.Clone(newLocData)    
-            const locDataDelta = _.pick(newLocData, _.keys(newLocData).filter(x => !_.isEqual(newLocData[x], curLocData[x])))
+            STATEREF.locationRecord[Session.Mode] = D.Clone(newLocData) 
+            const locDataDelta = _.pick(newLocData, _.keys(newLocData).filter(x => x !== "SubLocs" && !_.isEqual(newLocData[x], curLocData[x])))
+            for (const [subLocPos, subLocName] of Object.entries(newLocData.SubLocs || {}))
+                if (curLocData.SubLocs[subLocPos] !== subLocName)
+                    locDataDelta[`SubLoc${subLocPos}`] = subLocName
             reportStrings.push(`Loc Data Delta: ${D.JS(locDataDelta)}`)
             reportStrings.push(`New STATEREF Record: ${D.JS(STATEREF.locationRecord[Session.Mode])}`)
-            // D.Alert(`<h3>Set Location Processing:</h3>${D.JS(reportStrings.join("<br>"))}`)
-            for (const locPos of _.keys(locDataDelta)) {
-                const locData = locDataDelta[locPos]
-                if (!locData || locData === "blank") {
+            D.Poke(`<h3>Set Location Processing:</h3>${D.JS(reportStrings.join("<br>"))}`)
+            for (const [locPos, locData] of Object.entries(locDataDelta))
+                if (locData[0] === "blank") {
                     Media.ToggleImg(locPos, false)
                     if (locPos.includes("Site")) {
                         Media.ToggleImg(`SiteBar${locPos.replace(/Site/gu, "")}`, false)
@@ -496,7 +604,6 @@ const Session = (() => {
                         Media.ToggleText(`SiteName${locPos.replace(/Site/gu, "")}`, false)
                     }
                 }
-            }
             setSceneFocus(STATEREF.sceneFocus)
         },
         setModeLocations = (mode) => { setLocation(STATEREF.locationRecord[mode]) },
@@ -506,6 +613,35 @@ const Session = (() => {
                 charObjs.push(...Media.GetContainedChars(loc, {padding: 50}))
             return _.uniq(charObjs)
         },
+        resetLocationMacros = () => {
+            const distList = ["same", "blank", ..._.uniq(_.keys(Media.IMAGES.DistrictCenter_1.srcs))],
+                siteList = ["same", "blank", ..._.uniq(_.keys(Media.IMAGES.SiteCenter_1.srcs))],
+                macros = {
+                    "L:C": `!sess set loc DistrictCenter:?{Select District|${distList.join("|")}} SiteCenter:?{Select Site|${siteList.join("|")}} Center`,
+                    "C*": `!sess set loc DistrictCenter:?{Select District|${distList.join("|")}} SiteCenter:?{Select Site|${siteList.join("|")}}:name:?{Custom Name?}; Center`,
+                    "L:B": `!sess set loc DistrictLeft:?{Select District (Left)|${distList.join("|")}} SiteLeft:?{Select Site (Left)|${siteList.join("|")}} DistrictRight:?{Select District (Right)|${distList.join("|")}} SiteRight:?{Select Site (Right)|${siteList.join("|")}} ?{Initial Focus?|Left|Right}`,
+                    "B*": `!sess set loc DistrictLeft:?{Select District (Left)|${distList.join("|")}} SiteLeft:?{Select Site (Left)|${siteList.join("|")}}:name:?{Custom Name?}; DistrictRight:?{Select District (Right)|${distList.join("|")}} SiteRight:?{Select Site (Right)|${siteList.join("|")}}:name:?{Custom Name?}; ?{Initial Focus?|Left|Right}`
+                }
+            for (const [macroName, macroAction] of Object.entries(macros)) {
+                const [macroObj] = (findObjs({_type: "macro", _playerid: D.GMID()}) || []).filter(x => x.get("name") === macroName)
+                if (macroObj)
+                    macroObj.set("action", macroAction)
+            }
+        },
+        setSubLocMacro = () => {
+            const subLocList = ["blank", ..._.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => !x.includes("_") || x.startsWith(`${getActiveSite()}_`)).map(x => `${`(${(x.match(/^[^_]*?([A-Z])[^_]*?([A-Z])[^_]*?_/u) || ["", ""]).slice(1).join("")}) `.replace("() ", "")}${x.replace(/.*?_/gu, "")},${x}`)],
+                macros = {
+                    "L:sub": `!sess set loc SubLocs:?{Top Left|${subLocList.join("|")}}|?{Left|${subLocList.join("|")}}|?{Bottom Left|${subLocList.join("|")}}|?{Top Right|${subLocList.join("|")}}|?{Right|${subLocList.join("|")}}|?{Bottom Right|${subLocList.join("|")}} Center`
+                }
+            D.Poke(`Registry: ${D.JSL(Media.IMAGES.DistrictCenter_1)}<br>Keys: ${D.JS(_.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).join(", "))}<br>Filter: ${D.JS(_.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => !x.includes("_") || x.startsWith(`${getActiveSite()}_`)))}`, "Testing")          
+            for (const [macroName, macroAction] of Object.entries(macros)) {
+                const [macroObj] = (findObjs({_type: "macro", _playerid: D.GMID()}) || []).filter(x => x.get("name") === macroName)
+                if (macroObj)
+                    macroObj.set("action", macroAction)
+            }
+        },
+
+        // subLocList = ["blank", ..._.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).map(x => `${`(${(x.match(/^[^_]*?([A-Z])[^_]*?([A-Z])[^_]*?_/u) || ["", ""]).slice(1).join("")}) `.replace("() ", "")}${x.replace(/.*?_/gu, "")}`)],
     // #endregion
 
     // #region Waking Up 
@@ -578,6 +714,8 @@ const Session = (() => {
                 else
                     Media.SetImgTemp(loc, {tint_color: "#000000"})            
             Media.UpdateSoundscape()
+            if (STATEREF.sceneFocus === "c")
+                setSubLocMacro()
             setTimeout(Media.UpdateSoundscape, 1000)
         },
         endScene = () => {
@@ -599,7 +737,7 @@ const Session = (() => {
         CharsIn: getCharsInLocation,
         get SceneChars() { return getCharsInLocation(STATEREF.sceneFocus) },
         get SceneFocus() { return STATEREF.sceneFocus },
-        Locations: () => D.KeyMapObj(getActiveSceneLocations(), (k, v) => v, v => STATEREF.curLocation[v]),
+        Locations: () => D.KeyMapObj(getActiveSceneLocations(), (k, v) => v, v => STATEREF.curLocation[v][0] !== "blank" && STATEREF.curLocation[v][0]),
         get Location() { return STATEREF.locationRecord },
         get District() { return getActiveDistrict() },
         get Site() { return getActiveSite() },
