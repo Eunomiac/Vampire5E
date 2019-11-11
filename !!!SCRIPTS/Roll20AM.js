@@ -96,10 +96,10 @@ var Roll20AM = Roll20AM || (function() {
     })(),
     
     checkInstall = function() {
-        log('-=> Roll20AM v'+version+' <=-  ['+(new Date(lastUpdate*1000))+']');
+        // log('-=> Roll20AM v'+version+' <=-  ['+(new Date(lastUpdate*1000))+']');
         if( ! _.has(state,'Roll20AM') || state.Roll20AM.version !== schemaVersion) {
             state.Roll20AM=state.Roll20AM || {};
-            log('  > Updating Schema to v'+schemaVersion+' <');
+            // log('  > Updating Schema to v'+schemaVersion+' <');
             state.Roll20AM.version = schemaVersion;
 		}
 		initialize();
@@ -114,12 +114,12 @@ var Roll20AM = Roll20AM || (function() {
 		        }).id;
 		    }
 		}
-        log('  >Roll20AM has had a significant update. The command syntax has changed and any currently existing macros will need to be updated. Please check the **[forum thread](permalink to your release post)**');
-		log('  >Stored settings loaded<');
+        // log('  >Roll20AM has had a significant update. The command syntax has changed and any currently existing macros will need to be updated. Please check the **[forum thread](permalink to your release post)**');
+		// log('  >Stored settings loaded<');
 //		storeTracks();
 //		log('  >Tracks updated<');
 		generateHelp();
-		log('  >Help handout updated<');
+		// log('  >Help handout updated<');
 		buildTemplates();
 		helpLink = 'https://journal.roll20.net/handout/'+state.Roll20AM.help;
     },
@@ -2209,7 +2209,7 @@ var Roll20AM = Roll20AM || (function() {
                 setTimeout(() => verifyTracksPlaying(), 2000)
         },
         verifyTracksPlaying = () => {
-            const [allPlayingLists, allPlayingTracks] = getPlayingLoopingSounds(),
+            const [/* allPlayingLists, */ allPlayingTracks] = getPlayingLoopingSounds(),
                 allActiveTracks = getActiveLoopingSounds(true),
                 tracksToggleOn = _.without(allActiveTracks, ...allPlayingTracks),
                 tracksToggleOff = _.without(allPlayingTracks, ...allActiveTracks),

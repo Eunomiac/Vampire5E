@@ -296,7 +296,7 @@ const Session = (() => {
             else
                 STATEREF.dateRecord = null
             if (STATEREF.SessionScribes.length === 0) {
-                DB(`Scribe: ${sessionScribe}, SessionScribes: ${D.JS(STATEREF.SessionScribes)}
+                DB(`Scribe: ${sessionScribe}, SessionScribes: ${D.JSL(STATEREF.SessionScribes)}
                     PICK: ${D.JS(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe))}
                     PLUCK: ${D.JS(_.pluck(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe), "playerName"))}
                     WITHOUT: ${D.JS(_.without(_.pluck(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe), "playerName"), "Storyteller"))}`, "startSession")
@@ -366,10 +366,10 @@ const Session = (() => {
                     Media.TEXT[textKey].modes[mode] = D.Clone(Media.TEXT[textKey].modes[modeSrc])            
             }
         },
-        enterMode = mode => {
+        enterMode = mode => { // eslint-disable-line no-unused-vars
 
         },
-        leaveMode = mode => {
+        leaveMode = mode => { // eslint-disable-line no-unused-vars
 
         },
         changeMode = mode => {
@@ -517,7 +517,7 @@ const Session = (() => {
                 _.compact((locString.split(" ").filter(x => x.startsWith("SubLocs"))[0] || "").split(/[:|]/gu))
             ].filter(x => x.length)
             // D.Poke(`locString: ${D.JS(locString)}<br>.split(): ${D.JS(locString.split(" "))}<br>.filter(): ${D.JS(locString.split(" ").filter(x => x.startsWith("SubLocs")))}<br>[0].split(): ${D.JS(locString.split(" ").filter(x => x.startsWith("SubLocs"))[0].split(/[:|]/gu))}`)
-            D.Poke(D.JS(locParams), "Final Loc Params")
+            // D.Poke(D.JS(locParams), "Final Loc Params")
             return D.KeyMapObj(locParams, (k, v) => v[0], (v) => {
                 if (v[0] === "SubLocs")
                     if (v.length === 7)
@@ -552,13 +552,23 @@ const Session = (() => {
             return false
         },
         setLocation = (locParams) => {
-            const newLocData = Object.assign(_.clone(BLANKLOCRECORD), locParams),
+            const newLocData = Object.assign(_.clone(BLANKLOCRECORD), locParams, _.omit(STATEREF.curLocation, (v,k) => k === "SubLocs" || _.keys(locParams).includes(k))),
                 curLocData = JSON.parse(JSON.stringify(STATEREF.curLocation)),
                 reportStrings = [
                     `Loc Params: ${D.JS(locParams)}`,
                     `New Loc Data: ${D.JS(newLocData)}`,
                     `Cur Loc Data: ${D.JS(curLocData)}`
                 ]
+            if(_.keys(locParams).includes("DistrictCenter")) {
+                newLocData.DistrictLeft = ["blank"]
+                newLocData.DistrictRight = ["blank"]
+                newLocData.SiteLeft = ["blank"]
+                newLocData.SiteRight = ["blank"]
+            } else if (_.keys(locParams).includes("DistrictRight")) {
+                newLocData.DistrictCenter = ["blank"]
+                newLocData.SiteCenter = ["blank"]
+                newLocData.SubLocs = _.clone(BLANKLOCRECORD.SubLocs)
+            }
             for (const [locPos, locData] of Object.entries(newLocData))
                 if (locPos === "SubLocs") {
                     continue
@@ -576,7 +586,7 @@ const Session = (() => {
                 newLocData.DistrictLeft = ["blank"]
                 newLocData.DistrictRight = ["blank"]
             }
-            if (newLocData.SiteCenter[0] === "blank")
+            if (!newLocData.SiteCenter || newLocData.SiteCenter[0] === "blank")
                 newLocData.SubLocs = {TopLeft: "blank", Left: "blank", BotLeft: "blank", TopRight: "blank", Right: "blank", BotRight: "blank"}
             STATEREF.curLocation = D.Clone(newLocData)
             STATEREF.locationRecord[Session.Mode] = D.Clone(newLocData) 
@@ -586,16 +596,17 @@ const Session = (() => {
                     locDataDelta[`SubLoc${subLocPos}`] = subLocName
             reportStrings.push(`Loc Data Delta: ${D.JS(locDataDelta)}`)
             reportStrings.push(`New STATEREF Record: ${D.JS(STATEREF.locationRecord[Session.Mode])}`)
-            D.Poke(`<h3>Set Location Processing:</h3>${D.JS(reportStrings.join("<br>"))}`)
-            for (const [locPos, locData] of Object.entries(locDataDelta))
-                if (locData[0] === "blank") {
+            DB(`<h3>Set Location Processing:</h3>${D.JS(reportStrings.join("<br>"))}`, "setLocation")
+            for (const [locPos, locData] of Object.entries(locDataDelta)) {
+                const locSrc = VAL({string: locData}) ? locData : locData[0]
+                if (locSrc === "blank") {
                     Media.ToggleImg(locPos, false)
                     if (locPos.includes("Site")) {
                         Media.ToggleImg(`SiteBar${locPos.replace(/Site/gu, "")}`, false)
                         Media.ToggleText(`SiteName${locPos.replace(/Site/gu, "")}`, false)
                     }
                 } else {
-                    Media.SetImg(locPos, locData[0], true)
+                    Media.SetImg(locPos, locSrc, true)
                     if (locPos.includes("Site") && locData[1]) {
                         Media.ToggleImg(`SiteBar${locPos.replace(/Site/gu, "")}`, true)
                         Media.SetText(`SiteName${locPos.replace(/Site/gu, "")}`, locData[1], true)
@@ -604,6 +615,7 @@ const Session = (() => {
                         Media.ToggleText(`SiteName${locPos.replace(/Site/gu, "")}`, false)
                     }
                 }
+            }
             setSceneFocus(STATEREF.sceneFocus)
         },
         setModeLocations = (mode) => { setLocation(STATEREF.locationRecord[mode]) },
@@ -617,11 +629,12 @@ const Session = (() => {
             const distList = ["same", "blank", ..._.uniq(_.keys(Media.IMAGES.DistrictCenter_1.srcs))],
                 siteList = ["same", "blank", ..._.uniq(_.keys(Media.IMAGES.SiteCenter_1.srcs))],
                 macros = {
-                    "L:C": `!sess set loc DistrictCenter:?{Select District|${distList.join("|")}} SiteCenter:?{Select Site|${siteList.join("|")}} Center`,
-                    "C*": `!sess set loc DistrictCenter:?{Select District|${distList.join("|")}} SiteCenter:?{Select Site|${siteList.join("|")}}:name:?{Custom Name?}; Center`,
-                    "L:B": `!sess set loc DistrictLeft:?{Select District (Left)|${distList.join("|")}} SiteLeft:?{Select Site (Left)|${siteList.join("|")}} DistrictRight:?{Select District (Right)|${distList.join("|")}} SiteRight:?{Select Site (Right)|${siteList.join("|")}} ?{Initial Focus?|Left|Right}`,
-                    "B*": `!sess set loc DistrictLeft:?{Select District (Left)|${distList.join("|")}} SiteLeft:?{Select Site (Left)|${siteList.join("|")}}:name:?{Custom Name?}; DistrictRight:?{Select District (Right)|${distList.join("|")}} SiteRight:?{Select Site (Right)|${siteList.join("|")}}:name:?{Custom Name?}; ?{Initial Focus?|Left|Right}`
+                    "LOC-Center": `!sess set loc DistrictCenter:?{Select District|${distList.join("|")}} SiteCenter:?{Select Site|${siteList.join("|")}} Center`,
+                    "LOC-Center-Rename": `!sess set loc DistrictCenter:?{Select District|${distList.join("|")}} SiteCenter:?{Select Site|${siteList.join("|")}}:name:?{Custom Name?}; Center`,
+                    "LOC-Sides": `!sess set loc DistrictLeft:?{Select District (Left)|${distList.join("|")}} SiteLeft:?{Select Site (Left)|${siteList.join("|")}} DistrictRight:?{Select District (Right)|${distList.join("|")}} SiteRight:?{Select Site (Right)|${siteList.join("|")}} ?{Initial Focus?|Left|Right}`,
+                    "LOC-Sides-Rename": `!sess set loc DistrictLeft:?{Select District (Left)|${distList.join("|")}} SiteLeft:?{Select Site (Left)|${siteList.join("|")}}:name:?{Custom Name?}; DistrictRight:?{Select District (Right)|${distList.join("|")}} SiteRight:?{Select Site (Right)|${siteList.join("|")}}:name:?{Custom Name?}; ?{Initial Focus?|Left|Right}`
                 }
+            D.Alert(`Macro Text:<br><br>${D.JS(_.values(D.KeyMapObj(macros, null, (v,k) => `<b>${k}</b>: ${v}`)).join("<br>"))}`)
             for (const [macroName, macroAction] of Object.entries(macros)) {
                 const [macroObj] = (findObjs({_type: "macro", _playerid: D.GMID()}) || []).filter(x => x.get("name") === macroName)
                 if (macroObj)
@@ -629,11 +642,11 @@ const Session = (() => {
             }
         },
         setSubLocMacro = () => {
-            const subLocList = ["blank", ..._.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => !x.includes("_") || x.startsWith(`${getActiveSite()}_`)).map(x => `${`(${(x.match(/^[^_]*?([A-Z])[^_]*?([A-Z])[^_]*?_/u) || ["", ""]).slice(1).join("")}) `.replace("() ", "")}${x.replace(/.*?_/gu, "")},${x}`)],
+            const subLocList = ["blank", ...[..._.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => x.startsWith(`${getActiveSite()}_`)).sort(), ..._.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => !x.includes("_")).sort()].map(x => `${`(${(x.match(/^[^_]*?([A-Z])[^_]*?([A-Z])[^_]*?_/u) || ["", ""]).slice(1).join("")}) `.replace("() ", "")}${x.replace(/.*?_/gu, "")},${x}`)],
                 macros = {
-                    "L:sub": `!sess set loc SubLocs:?{Top Left|${subLocList.join("|")}}|?{Left|${subLocList.join("|")}}|?{Bottom Left|${subLocList.join("|")}}|?{Top Right|${subLocList.join("|")}}|?{Right|${subLocList.join("|")}}|?{Bottom Right|${subLocList.join("|")}} Center`
+                    "LOC-SubLocations": `!sess set loc SubLocs:?{Top Left|${subLocList.join("|")}}|?{Left|${subLocList.join("|")}}|?{Bottom Left|${subLocList.join("|")}}|?{Top Right|${subLocList.join("|")}}|?{Right|${subLocList.join("|")}}|?{Bottom Right|${subLocList.join("|")}} Center`
                 }
-            D.Poke(`Registry: ${D.JSL(Media.IMAGES.DistrictCenter_1)}<br>Keys: ${D.JS(_.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).join(", "))}<br>Filter: ${D.JS(_.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => !x.includes("_") || x.startsWith(`${getActiveSite()}_`)))}`, "Testing")          
+            // D.Poke(`Registry: ${D.JSL(_.keys(Media.IMAGES.DistrictCenter_1.srcs))}<br><br>Keys: ${D.JS(_.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).join(", "))}<br><br>Filter: ${D.JS(_.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => !x.includes("_") || x.startsWith(`${getActiveSite()}_`)))}`, "Testing")          
             for (const [macroName, macroAction] of Object.entries(macros)) {
                 const [macroObj] = (findObjs({_type: "macro", _playerid: D.GMID()}) || []).filter(x => x.get("name") === macroName)
                 if (macroObj)

@@ -18,18 +18,21 @@ const InitCommands = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
-            return 
-            if (Roll20AM && Roll20AM.StopSound)
-                Roll20AM.StopSound("all")
-            if (Media && Media.InitAnims())
-                Media.InitAnims()
+            // if (Roll20AM && Roll20AM.StopSound)
+            //    Roll20AM.StopSound("all")
+            // if (Media && Media.InitAnims())
+            //    Media.InitAnims()
             setTimeout(() => {
                 if (TimeTracker && TimeTracker.Fix)
                     TimeTracker.Fix()
                 setTimeout(() => {
                     if (Media && Media.UpdateSoundScape)
                         Media.UpdateSoundscape()
-                    D.Alert("Initialization Complete!", "INITIALIZATION")
+                    setTimeout(() => {
+                        if (Char && Char.RefreshDisplays)
+                            Char.RefreshDisplays()
+                        D.Alert("Initialization Complete!", "INITIALIZATION")
+                    }, 2000)
                 }, 2000)
             }, 2000)
         },

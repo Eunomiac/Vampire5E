@@ -244,7 +244,7 @@ const DragPads = (() => {
             blank: "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
             signalLight: "https://s3.amazonaws.com/files.d20.io/images/66320080/pUJEq-Vo-lx_-Nn16TvhYQ/thumb.png?1541372292" // 455 x 514
         },
-        DICECATS = ["diceList", "bigDice"],
+        DICECATS = ["Main", "Big"],
         GRAPHICREGISTRY = STATEREF.byGraphic,
         PADREGISTRY = STATEREF.byPad,
     // #endregion
@@ -255,15 +255,8 @@ const DragPads = (() => {
    {  id: <id of graphic object beneath> } */
         FUNCTIONS = {
             selectDie(args) {
-                const diceCats = [...DICECATS],
-                    idRef = args.id
-                let dieCat = "",
-                    dieId = 0
-                do {
-                    dieCat = diceCats.pop()
-                    dieId = C.ROOT.Roller[dieCat].findIndex(v => v.id === idRef)
-                } while (dieId === -1)
-                Roller.Select(dieId, dieCat) // (dieNum, dieCat, dieVal, params)
+                const [, dieCat, dieNum] = Media.GetImgKey(args.id).split("_")
+                Roller.Select(dieCat, D.Int(dieNum))
             },
             wpReroll() {
                 const stateVar = C.ROOT.Roller.selected,
@@ -343,7 +336,7 @@ const DragPads = (() => {
                         ..._.map(
                             _.keys(
                                 _.omit(PADREGISTRY, pData => {
-                                    DB(`... pData: ${D.JS(pData)}`, "getPad")
+                                    DB(`... pData: ${D.JSL(pData)}`, "getPad")
 
                                     return pData.funcName !== padRef
                                 })
@@ -367,9 +360,9 @@ const DragPads = (() => {
                 pads.push(...getPad(padRef))
             return pads
         },
-        getPadPair = (imgRef, isSilent = false) => {
+        getPadPair = (imgRef, funcName = false) => {
             const imgData = Media.GetImgData(imgRef)
-            if (VAL({list: imgData}, isSilent ? undefined : "getPadPair"))
+            if (VAL({list: imgData}, VAL({string: funcName}) ? `${D.JSL(funcName)} > getPadPair` : null))
                 if (imgData.padID && imgData.partnerID) {
                     const [padObj, partnerObj] = [
                         getObj("graphic", imgData.padID),
@@ -396,7 +389,7 @@ const DragPads = (() => {
         "mapButtonSitesTransportation_1",
 */
 
-        makePad = (imgRef, funcName, params = "deltaTop:0, deltaLeft:0, deltaHeight:0, deltaWidth:0") => {
+        makePad = (imgRef, funcName, params = {deltaTop: 0, deltaLeft: 0, deltaHeight: 0, deltaWidth: 0}) => {
             // THROW(`Making Pad: ${graphicObj.get("name")}, ${funcName}, ${D.JSL(params)}`, "makePad")
             const imgData = Media.GetImgData(imgRef),
                 imgObj = Media.GetImg(imgData.name)
@@ -493,7 +486,7 @@ const DragPads = (() => {
             for (const pad of pads)
                 removePad(pad.id)            
         },
-        togglePad = (padRef, isActive, isSilent = false) => {
+        togglePad = (padRef, isActive, funcName = false) => {
             const padIDs = [],
                 imgObj = Media.GetImg(padRef)
             // let dbString = `PadRef: ${D.JS(padRef)}`
@@ -503,7 +496,7 @@ const DragPads = (() => {
                 padIDs.push(..._.filter(_.keys(PADREGISTRY), v => PADREGISTRY[v].funcName === padRef))
             // DB(`${dbString} ... Found: ${D.JSL(_.map(padIDs, v => PADREGISTRY[v].name))}`)
             if (padIDs.length === 0)
-                return !isSilent && THROW(`No pad found with ID: '${D.JS(padRef)}'`, "togglePad")
+                return VAL({string: funcName}) && THROW(`No pad found with ID: '${D.JSL(padRef)}'`, `${D.JSL(funcName)} > togglePad`)
 
             for (const pID of padIDs) {
                 const [pad, partner] = [

@@ -237,7 +237,7 @@ const Fuzzy = (() => {
                         newResults.push([scoreWordPair[0], this.exactSet[scoreWordPair[1]]])
                 
                 }.bind(this))
-                DB(`Needle: ${D.JS(value)}<br>Sorted Matches:${D.JS(newResults.map(x => `${x[0]}: "${x[1]}"`))}`, "fuzzyMatch")
+                DB(`Needle: ${D.JSL(value)}<br>Sorted Matches:${D.JSL(newResults.map(x => `${x[0]}: "${x[1]}"`))}`, "fuzzyMatch")
                 return newResults
             }
     

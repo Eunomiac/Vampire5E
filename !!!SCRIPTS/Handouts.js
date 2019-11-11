@@ -210,7 +210,7 @@ const Handouts = (() => {
         },
         summarizePrestation = (title, charObjs) => {
             delHandoutObjs("Prestation Summary", "prestation")
-            const noteObj = makeHandoutObj(title, "prestation"),
+            const // noteObj = makeHandoutObj(title, "prestation"),
                 noteSections = []
             for (const charObj of charObjs) {
                 const charLines = {
@@ -225,30 +225,31 @@ const Handouts = (() => {
                         /* for (const item of ["projectdetails", "projectgoal", "projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectscope_name", "projectscope", ]) {
                             projectData[item] = projectData[item] || ""
                         } */
-                        if (prestationData.projectenddate && TimeTracker.GetDate(prestationData.projectenddate) < TimeTracker.CurrentDate)
+                        if (boonData.projectenddate && TimeTracker.GetDate(boonData.projectenddate) < TimeTracker.CurrentDate)
                             continue
                         const projLines = []
                         let projGoal = ""
-                        if (D.Int(prestationData.projectscope) > 0)
-                            projGoal += `${"●".repeat(D.Int(prestationData.projectscope))} `
-                        if (prestationData.projectscope_name && prestationData.projectscope_name.length > 2)
-                            projGoal += prestationData.projectscope_name
+                        if (D.Int(boonData.projectscope) > 0)
+                            projGoal += `${"●".repeat(D.Int(boonData.projectscope))} `
+                        if (boonData.projectscope_name && boonData.projectscope_name.length > 2)
+                            projGoal += boonData.projectscope_name
                         projLines.push(C.HANDOUTHTML.projects.goal(projGoal))
-                        if (prestationData.projectgoal && prestationData.projectgoal.length > 2)
-                            projLines.push(`${C.HANDOUTHTML.projects.tag("HOOK:")}${C.HANDOUTHTML.projects.hook(prestationData.projectgoal)}`)
-                        if (prestationData.projectdetails && prestationData.projectdetails.length > 2)
-                            projLines.push(C.HANDOUTHTML.smallNote(prestationData.projectdetails))
+                        if (boonData.projectgoal && boonData.projectgoal.length > 2)
+                            projLines.push(`${C.HANDOUTHTML.projects.tag("HOOK:")}${C.HANDOUTHTML.projects.hook(boonData.projectgoal)}`)
+                        if (boonData.projectdetails && boonData.projectdetails.length > 2)
+                            projLines.push(C.HANDOUTHTML.smallNote(boonData.projectdetails))
+                        /*
                         let [stakeCheck, teamworkCheck] = [false, false]
                         for (const stakeVar of ["projectstake1_name", "projectstake1", "projectstake2_name", "projectstake2", "projectstake3_name", "projectstake3"])
-                            if (prestationData[stakeVar] && (!_.isNaN(D.Int(prestationData[stakeVar])) && D.Int(prestationData[stakeVar]) > 0 || prestationData[stakeVar].length > 2))
+                            if (boonData[stakeVar] && (!_.isNaN(D.Int(boonData[stakeVar])) && D.Int(boonData[stakeVar]) > 0 || boonData[stakeVar].length > 2))
                                 stakeCheck = true
-                        teamworkCheck = D.Int(prestationData.projectteamwork1) + D.Int(prestationData.projectteamwork2) + D.Int(prestationData.projectteamwork3) > 0
+                        teamworkCheck = D.Int(boonData.projectteamwork1) + D.Int(boonData.projectteamwork2) + D.Int(boonData.projectteamwork3) > 0
                         if (teamworkCheck)
                             projLines.push(`${C.HANDOUTHTML.projects.tag("TEAMWORK:", C.COLORS.blue)}${C.HANDOUTHTML.projects.teamwork("●".repeat(D.Int(projectData.projectteamwork1) + D.Int(projectData.projectteamwork2) + D.Int(projectData.projectteamwork3)))}`)
                         if (stakeCheck) {
                             const stakeStrings = []
                             for (let i = 1; i <= 3; i++) {
-                                const [attr, val] = [prestationData[`projectstake${i}_name`], D.Int(prestationData[`projectstake${i}`])]
+                                const [attr, val] = [boonData[`projectstake${i}_name`], D.Int(boonData[`projectstake${i}`])]
                                 if (attr && attr.length > 2 && !_.isNaN(val))
                                     stakeStrings.push(`${attr} ${"●".repeat(val)}`)
                             }
@@ -258,21 +259,22 @@ const Handouts = (() => {
                         } else if (teamworkCheck) {
                             projLines.push(`${C.HANDOUTHTML.projects.tag("")}${C.HANDOUTHTML.projects.stake("")}`)
                         }          
-                        if (prestationData.projectlaunchresults && prestationData.projectlaunchresults.length > 2)
-                            if (prestationData.projectlaunchresults.includes("CRITICAL"))
+                        if (boonData.projectlaunchresults && boonData.projectlaunchresults.length > 2)
+                            if (boonData.projectlaunchresults.includes("CRITICAL"))
                                 projLines.push(C.HANDOUTHTML.projects.critSucc("CRITICAL"))
                             else
-                                projLines.push(C.HANDOUTHTML.projects.succ(`Success (+${prestationData.projectlaunchresultsmargin})`))
+                                projLines.push(C.HANDOUTHTML.projects.succ(`Success (+${boonData.projectlaunchresultsmargin})`))
                         else
                             projLines.push(C.HANDOUTHTML.projects.succ(""))
-                        if (prestationData.projectenddate) {
-                            projLines.push(C.HANDOUTHTML.projects.endDate(`Ends ${prestationData.projectenddate.toUpperCase()}`))
-                            if (D.Int(prestationData.projectinccounter) > 0)
-                                projLines.push(`<br>${C.HANDOUTHTML.projects.daysLeft(`(${D.Int(prestationData.projectincnum) * D.Int(prestationData.projectinccounter)} ${prestationData.projectincunit.slice(0, -1)}(s) left)`)}`)
+                        if (boonData.projectenddate) {
+                            projLines.push(C.HANDOUTHTML.projects.endDate(`Ends ${boonData.projectenddate.toUpperCase()}`))
+                            if (D.Int(boonData.projectinccounter) > 0)
+                                projLines.push(`<br>${C.HANDOUTHTML.projects.daysLeft(`(${D.Int(boonData.projectincnum) * D.Int(boonData.projectinccounter)} ${boonData.projectincunit.slice(0, -1)}(s) left)`)}`)
                         }
                         if (projLines.length === 1 && projLines[0] === C.HANDOUTHTML.projects.goal(""))
                             continue
                         charLines.push(C.HANDOUTHTML.main(projLines.join("")))
+                        */
                     }
                 
                 if (charLines.length === 0)

@@ -24,116 +24,40 @@ const Player = (() => {
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
-            let charID, token, imgData, charData, famToken
             switch (call) {
-                case "!mvc":
+                case "!mvc": {
                     MVC({name: msg.who})
                     break
-                case "!sense":
-                    charID = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)].id;
-                    [token] = findObjs({
-                        _pageid: D.PAGEID,
-                        _type: "graphic",
-                        _subtype: "token",
-                        represents: charID
-                    })
-                    imgData = Media.GetImgData(token)
-                    if (imgData.unObfSrc !== "sense") {
-                        Media.SetImgData(token, {unObfSrc: "sense"})
-                        if (imgData.isObf)
-                            Media.SetImg(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
-                        else
-                            Media.SetImg(token, `sense${imgData.isDaylighter ? "DL" : ""}`)
-                    } else {
-                        Media.SetImgData(token, {unObfSrc: "base"})
-                        if (imgData.isObf)
-                            Media.SetImg(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
-                        else
-                            Media.SetImg(token, `base${imgData.isDaylighter ? "DL" : ""}`)
-                    }
-                    break
-                case "!awe": {
-                    charID = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)].id;
-                    [token] = findObjs({
-                        _pageid: D.PAGEID,
-                        _type: "graphic",
-                        _subtype: "token",
-                        represents: charID
-                    })
-                    imgData = Media.GetImgData(token)
-                    if (imgData.curSrc === "base")
-                        Media.SetImg(token, "awe")
-                    else
-                        Media.SetImg(token, "base")
+                }
+                case "!token": {
+                    const charID = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)].id,
+                        tokenSrcName = D.Capitalize(args.shift())
+                    Media.ToggleToken(charID, tokenSrcName)
                     break
                 }
-                case "!hide":
-                    charID = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)].id;
-                // D.Alert(`Char ID[${D.JS(_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid))}] = ${D.JS(charID)}`);
-                    [token] = findObjs({
-                        _pageid: D.PAGEID,
-                        _type: "graphic",
-                        _subtype: "token",
-                        represents: charID
-                    })
-                // D.Alert(`Token: ${D.JS(token)}`)
-                    imgData = Media.GetImgData(token)
-                // D.Alert(`ImgData: ${D.JS(token)}`)
-                    if (imgData.isObf) {
-                        Media.SetImg(token, `${imgData.unObfSrc || "base"}${imgData.isDaylighter ? "DL" : ""}`)
-                        Media.SetImgData(token, {isObf: false})
-                    } else if (imgData.unObfSrc === "sense") {
-                        Media.SetImg(token, `senseObf${imgData.isDaylighter ? "DL" : ""}`)
-                        Media.SetImgData(token, {isObf: true})
-                    } else {
-                        Media.SetImg(token, `obf${imgData.isDaylighter ? "DL" : ""}`)
-                        Media.SetImgData(token, {isObf: true})
-                    }
-                    break
-                case "!mask":
-                    charID = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)].id;
-                    [token] = findObjs({
-                        _pageid: D.PAGEID,
-                        _type: "graphic",
-                        _subtype: "token",
-                        represents: charID
-                    })
-                    imgData = Media.GetImgData(token)
-                    if (imgData.isDaylighter)
-                        break
-                // D.Alert(`ImgData: ${D.JS(token)}`)
-                    if (imgData.unObfSrc === "mask") {
-                        Media.SetImgData(token, {unObfSrc: "base"})
-                        if (!imgData.isObf)
-                            Media.SetImg(token, "base")
-                    } else {
-                        Media.SetImgData(token, {unObfSrc: "mask"})
-                        if (!imgData.isObf)
-                            Media.SetImg(token, "mask")
-                    }
-                    break
-                case "!famulus":
+                case "!famulus": {
                     if (C.ROOT.Char.isDaylighterSession)
                         break
-                    charData = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)]
-                    charID = charData.id;
-                    [token] = findObjs({
-                        _pageid: D.PAGEID,
-                        _type: "graphic",
-                        _subtype: "token",
-                        represents: charID
-                    })
+                    const charData = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)],
+                        charID = charData.id,
+                        [charToken] = findObjs({
+                            _pageid: D.PAGEID,
+                            _type: "graphic",
+                            _subtype: "token",
+                            represents: charID
+                        })
                     if (!charData.famulusTokenID)
                         break
-                    famToken = Media.GetImg(charData.famulusTokenID)
+                    const famToken = Media.GetImg(charData.famulusTokenID)
                     if (famToken.get("layer") !== "objects")
                         Media.SetImgTemp(famToken, {
-                            top: token.get("top") - 100,
-                            left: token.get("left") + 100
+                            top: charToken.get("top") - 100,
+                            left: charToken.get("left") + 100
                         })
                     toFront(famToken)
                     Media.ToggleImg(famToken, famToken.get("layer") !== "objects")
                     break
+                }
             // no default
             }
         },

@@ -1,5 +1,4 @@
 void MarkStart("C")
-
 const GAMENAME = "VAMPIRE",
     SCRIPTNAME = "C",
     SCRIPTS = ["C", "D", "Listener", "Fuzzy", "Char", "Media", "Player", "Session", "TimeTracker", "DragPads", "Roller", "Roll20AM", "Complications", "Handouts", "Chat", "Tester", "InitCommands", "GamePrep"]
@@ -26,7 +25,7 @@ const C = (() => {
 
     // #region CORE CONFIGURATION & BASIC REFERENCES
         TEXTCHARS = "0123456789LMNQSOPRUWXTVZY-=●(+ABCFHDEGJIKalmnqsopruwxtvzyfhdegjikbc )?![]:;,.○~♠◌‡⅓°♦\"'", // eslint-disable-line quotes
-        TEXTPAGEID = "-LNoXCt3hlI0Rz_Snw1s",
+        TEXTPAGEID = "-LtEZInDvTCwXXSROD49",
         NUMBERWORDS = {
             low: ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen", "Twenty"],
             tens: ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"],
@@ -87,7 +86,7 @@ const C = (() => {
 
     // #region IMAGE DEFAULTS, HTML FORMATS, BACKGROUND IMAGES    
         IMAGES = {
-            blank: "https://s3.amazonaws.com/files.d20.io/images/96332109/U-Rven0Fa3Dc07Tf2RYeKQ/thumb.png?1573116236"
+            blank: "https://s3.amazonaws.com/files.d20.io/images/96594791/NKN-0QyHbcOXS2_o5X6Y2A/thumb.png?1573368252"
         },
         BGIMAGES = {
             whiteMarble: "https://i.imgur.com/heiyoaB.jpg",
@@ -915,12 +914,16 @@ const C = (() => {
             BotRight: {}
         },
         SHADOWOFFSETS = {
-            20: 3,
-            22: 3,
-            26: 4,
-            32: 4,
-            40: 4,
-            56: 7,
+            12: 2,
+            14: 2,
+            16: 2,
+            18: 2,
+            20: 2,
+            22: 2,
+            26: 2.5,
+            32: 3,
+            40: 3,
+            56: 5,
             72: 7,
             100: 8,
             200: 16
@@ -1141,6 +1144,124 @@ const C = (() => {
         },
     // #endregion
 
+        CHARACTERS = [
+            "Adrian Gerrard",
+            "Agnes Bellanger",
+            "Alexander",
+            "Alexandra",
+            "Alistair Etrata",
+            "Amos Jax",
+            "Anita Morris",
+            "Antoinne LaGritte",
+            "Aryana Mortazavi",
+            "Baroness Monika Eulenberg",
+            "Ben Blinker",
+            "Bertrice",
+            "Bob Johnston",
+            "Bookies Enforcer",
+            "Calvin Wallace",
+            "Cardinal Collins",
+            "Christianne",
+            "Cyrus Raza",
+            "Damien Abanda",
+            "David Greene",
+            "Drake",
+            "Emily, the Dusk Rose",
+            "Flamenco",
+            "Frederik Scheer, Seneschal",
+            "Husain",
+            "I.Q.",
+            "Ian Rammond",
+            "Inquisitor Delta",
+            "J",
+            "Jack-be-Nimble",
+            "Jane 'JD' Doe",
+            "Jason",
+            "Jesse, Good Lad That He Is",
+            "Jonathan Harker",
+            "Kai",
+            "Kingston 'King' Black",
+            "Kit Edwards",
+            "Laz, Sheriff",
+            "Leah Hawk",
+            "Mason Schmidt",
+            "Maxwell 'Max' Floyd",
+            "Mr. Easy",
+            "Old Quentin",
+            "Prince Osborne Lowell",
+            "Professor Ethan Keen",
+            "Raphael Bishop",
+            "Reaper",
+            "Ren",
+            "Rosie",
+            "Sage Sam",
+            "Sang-Froid",
+            "Sinclair Rodriguez",
+            "Soraya Mortazavi",
+            "Stalker Todd",
+            "Suyin",
+            "Terry",
+            "The Aristocrat",
+            "The Island Devil",
+            "The Piece-Taker",
+            "The Stranger",
+            "Tommy",
+            "Toni Gomez",
+            "Twist",
+            "Tyler",
+            "Victor Vex",
+            "Wallflower",
+            "Wesley Richardson",
+            "Xavier Whitchurch",
+            "Yusef Shamsin"
+        ],
+        ROLLERDICELIST = {
+            selected: "https://s3.amazonaws.com/files.d20.io/images/87031339/qYj5D-gURif-qN4xSMuzsA/thumb.png?1563696190",
+            selectedFree: "https://s3.amazonaws.com/files.d20.io/images/87031341/LcuQLLoPqrcsgBqYZfC5AQ/thumb.png?1563696193",
+            selectedDouble: "https://s3.amazonaws.com/files.d20.io/images/87031344/GLCqnybOBoY1a0gKN3KeBQ/thumb.png?1563696197",
+            Bf: "https://s3.amazonaws.com/files.d20.io/images/87031347/5KnJOyDS1EqlvPL-XSr_Zw/thumb.png?1563696202",
+            Bs: "https://s3.amazonaws.com/files.d20.io/images/87031351/dFCCFy_4TGY0oAKPx_97tA/thumb.png?1563696206",
+            Bc: "https://s3.amazonaws.com/files.d20.io/images/87031356/kk7JrIgxOxDjsB7-Tx1Hgg/thumb.png?1563696210",
+            BcL: "https://s3.amazonaws.com/files.d20.io/images/87032655/4aaFfq5J3JARalsoj-FojQ/thumb.png?1563697877",
+            BcR: "https://s3.amazonaws.com/files.d20.io/images/87032656/_5dWegpwW40iJnX1KZbrhg/thumb.png?1563697881",
+            Hb: "https://s3.amazonaws.com/files.d20.io/images/87031371/oJ0DAobJYHsJ-yqKp1JROg/thumb.png?1563696227",
+            Hf: "https://s3.amazonaws.com/files.d20.io/images/87031372/tuAwFgBv2InNa4f3dG0lYQ/thumb.png?1563696231",
+            Hs: "https://s3.amazonaws.com/files.d20.io/images/87031378/v5vwY2PkvetYTGN_EHMAqw/thumb.png?1563696235",
+            Hc: "https://s3.amazonaws.com/files.d20.io/images/87031383/gVLuEp2mP4jlPytjzeoFFw/thumb.png?1563696239",
+            HcL: "https://s3.amazonaws.com/files.d20.io/images/87032695/FrEXcG2S4W2wp42b1QxaVQ/thumb.png?1563697900",
+            HcR: "https://s3.amazonaws.com/files.d20.io/images/87032700/VudTzvmWVMynpxS-5focJw/thumb.png?1563697904",
+            HcRb: "https://s3.amazonaws.com/files.d20.io/images/87032703/65M52wU1gqyULUWinCabww/thumb.png?1563697907",
+            HcLb: "https://s3.amazonaws.com/files.d20.io/images/87032708/Ui_y4n4driMHJv0mdYAn7A/thumb.png?1563697910",
+            BXc: "https://s3.amazonaws.com/files.d20.io/images/91336100/ESSgeEN2h4llmYgujVpJjQ/thumb.png?1567943808",
+            BXs: "https://s3.amazonaws.com/files.d20.io/images/91336101/xsSpdIN3Lktcq0275avnmw/thumb.png?1567943808",
+            HXc: "https://s3.amazonaws.com/files.d20.io/images/87031427/FuGfrl1aiw9HTsVy46-m1A/thumb.png?1563696289",
+            HXs: "https://s3.amazonaws.com/files.d20.io/images/87031430/ucYeuAXpDbaIjkqbzoRqWQ/thumb.png?1563696294",
+            HXb: "https://s3.amazonaws.com/files.d20.io/images/87031432/JoFhDPGehZCF2wnpCU652w/thumb.png?1563696299",
+            HCb: "https://s3.amazonaws.com/files.d20.io/images/87031435/8qE4d1bTkLGhK01Tgg-OGQ/thumb.png?1563696304"
+        },        
+        ROLLERBIGDICE = {
+            selected: "https://s3.amazonaws.com/files.d20.io/images/87031660/sUuDsKDSc5EWReOhOyRfFw/thumb.png?1563696663",
+            selectedFree: "https://s3.amazonaws.com/files.d20.io/images/87031668/ZXnVqbO7nfQA5-BuTKJQXQ/thumb.png?1563696668",
+            selectedDouble: "https://s3.amazonaws.com/files.d20.io/images/87031670/BoAzpEDrxSvndz-imHV5-Q/thumb.png?1563696671",
+            Bf: "https://s3.amazonaws.com/files.d20.io/images/87031671/HYJelRirzViDAhJzBsZ51w/thumb.png?1563696674",
+            Hf: "https://s3.amazonaws.com/files.d20.io/images/87031674/bvrFCzyt8m7iOFLqzXTW-A/thumb.png?1563696679",
+            Bs: "https://s3.amazonaws.com/files.d20.io/images/87031676/xpWcXpa175_ushoG8Ozy7g/thumb.png?1563696683",
+            Of: "https://s3.amazonaws.com/files.d20.io/images/87031681/vTU_pKd-LzYrfHAzxhQNlg/thumb.png?1563696687",
+            Os: "https://s3.amazonaws.com/files.d20.io/images/87031687/lR5ndvbW1mm-lweHIoLQcA/thumb.png?1563696692",
+            Hb: "https://s3.amazonaws.com/files.d20.io/images/87031371/oJ0DAobJYHsJ-yqKp1JROg/thumb.png?1563696227"
+        },
+        ROLLERTOP = {
+            mid1: "https://s3.amazonaws.com/files.d20.io/images/64683716/nPNGOLxzJ8WU0BzLNisuwg/thumb.png?1539327926",
+            mid2: "https://s3.amazonaws.com/files.d20.io/images/64683714/VPzeYN8xpO_cPmqg1rgFRQ/thumb.png?1539327926",
+            mid3: "https://s3.amazonaws.com/files.d20.io/images/64683715/xUCVS7pOmfS3ravsS2Vzpw/thumb.png?1539327926",
+            end: "https://s3.amazonaws.com/files.d20.io/images/64683713/4IwPjcY7x5ZCLJ9ey2lICA/thumb.png?1539327926"
+        },
+        ROLLERBOTTOM = {
+            mid1: "https://s3.amazonaws.com/files.d20.io/images/64683716/nPNGOLxzJ8WU0BzLNisuwg/thumb.png?1539327926",
+            mid2: "https://s3.amazonaws.com/files.d20.io/images/64683714/VPzeYN8xpO_cPmqg1rgFRQ/thumb.png?1539327926",
+            mid3: "https://s3.amazonaws.com/files.d20.io/images/64683715/xUCVS7pOmfS3ravsS2Vzpw/thumb.png?1539327926",
+            end: "https://s3.amazonaws.com/files.d20.io/images/64683713/4IwPjcY7x5ZCLJ9ey2lICA/thumb.png?1539327926"
+        },
     // #region CITY DETAILS
         DISTRICTS = {
             Annex: {
@@ -2089,6 +2210,7 @@ const C = (() => {
         BLOODPOTENCY,
         RESONANCEODDS,
 
+        CHARACTERS, ROLLERDICELIST, ROLLERBIGDICE, ROLLERTOP, ROLLERBOTTOM,
         DISTRICTS, SITES,
         get LOCATIONS() { return Object.assign({}, DISTRICTS, SITES) },
 

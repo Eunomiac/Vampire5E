@@ -356,7 +356,7 @@ const D = (() => {
 
                 return finalString// .replace(/@B@/gu, "<b>").replace(/@b@/gu, "</b>") // Encodes bolding from replacer function.  
             } catch (errObj) {
-                return JSON.stringify(errObj)
+                return `ERROR: ${JSON.stringify(errObj)}`
             }
         },
         jStrH = data => {
@@ -366,10 +366,15 @@ const D = (() => {
                 return _.escape("<UNDEFINED>")
             /* if (VAL({ string: data }))
                 data = data.replace(/(\r\n|\n|\r)/gu, " ") */
+            const strData = jStr(VAL({string: data}) ? `${data}`.replace(/<br\/?>/gu, "<br>") : data)
 
-            return jStr(VAL({string: data}) ? data.replace(/<br\/?>/gu, "<br>") : data).
-                replace(/<br\/>/gu, "").
-                replace(/<br>/gu, "<br/>")
+            try {
+                if (VAL({string: strData}, "jStrH"))
+                    return strData.replace(/<br\/>/gu, "").replace(/<br>/gu, "<br/>")
+            } catch (errObj) {
+                return THROW("PARSING ERROR", "jStrH", errObj)
+            }
+            return "<ERROR PARSING VALUE>"
         },
         jStrL = data => {
             /* Parses data in a way that is appropriate to the console log, removing line breaks and redundant characters. */
@@ -396,7 +401,11 @@ const D = (() => {
                 replace(/&gt;&gt;/gu, ">"). // Restores doubled right brackets to code.
                 replace(/&lt;&lt;/gu, "<")}</pre>` // Restores doubled left brackets to code.
         },
-        parseParams = (args, delim = " ") => _.object((VAL({array: args}) ? args.join(" ") : args).split(new RegExp(`,?${delim}+`, "gu")).filter(x => x.includes(":")).map(x => x.trim().split(":"))),
+        parseParams = (args, delim = " ") => {
+            const returnVal = _.object((VAL({array: args}) ? args.join(" ") : args).split(new RegExp(`,?${delim}+`, "gu")).filter(x => x.includes(":")).map(x => x.trim().split(":")))
+            D.Alert(`Args: ${D.JS(args)}<br>Delim: '${D.JS(delim)}'<br>Return: ${D.JS(returnVal)}`)
+            return returnVal
+        },
         parseCharSelect = (call, args) => {                
             let charObjs, charIDString
             if (["registered", "sandbox", "pcs", "npcs"].includes(call.toLowerCase())) {
@@ -519,7 +528,7 @@ const D = (() => {
         promptGM = (menuHTML, replyFunc) => {
             if (VAL({string: menuHTML, func: replyFunc}, "promptGM")) {
                 if (TimeTracker.IsClockRunning) {
-                    DB(`Time Running: Stopping Clock at ${D.JS(TimeTracker.CurrentDate)}`, "promptGM")
+                    DB(`Time Running: Stopping Clock at ${D.JSL(TimeTracker.CurrentDate)}`, "promptGM")
                     STATEREF.PROMPTCLOCK = true
                     TimeTracker.StopClock()
                 }
@@ -646,7 +655,7 @@ const D = (() => {
                         return match && match[1]
                     }
                 }
-                return THROW(`Needle must be a string: ${D.JS(needle)}`, "isIn")
+                return THROW(`Needle must be a string: ${D.JSL(needle)}`, "isIn")
             } catch (errObj) {
                 return THROW(`Error locating '${D.JSL(needle)}' in ${D.JSL(haystack)}'`, "isIn", errObj)
             }
@@ -695,7 +704,7 @@ const D = (() => {
                             hay = haystack
                             break
                         default:
-                            return THROW(`Haystack must be a string, a list or an array: ${D.JS(haystack)}`, "IsIn")
+                            return THROW(`Haystack must be a string, a list or an array: ${D.JSL(haystack)}`, "IsIn")
                     }
                     // STEP TWO: SEARCH HAY FOR NEEDLE USING PROGRESSIVELY MORE FUZZY MATCHING. SKIP "*" STEPS IF ISFUZZYMATCHING IS FALSE.
                             // STRICT: Search for exact match, case sensitive.
@@ -766,7 +775,7 @@ const D = (() => {
                         return match && match[1]
                     }
                 }
-                return THROW(`Needle must be a string: ${D.JS(needle)}`, "isIn")
+                return THROW(`Needle must be a string: ${D.JSL(needle)}`, "isIn")
             } catch (errObj) {
                 return THROW(`Error locating '${D.JSL(needle)}' in ${D.JSL(haystack)}'`, "isIn", errObj)
             }
@@ -926,8 +935,8 @@ const D = (() => {
                 if (!funcName || !scriptName)
                     return false
                 if (detailsMsg)
-                    return THROW(`[From ${jStr(scriptName).toUpperCase()}:${jStr(funcName)}]<br><b>MSG</b>: ${detailsMsg}<br>... ${errorLines.join("<br>... ")}`, "validate")
-                return THROW(`[From ${jStr(scriptName).toUpperCase()}:${jStr(funcName)}]<br>... ${errorLines.join("<br>... ")}`, "validate")
+                    return THROW(`[From ${D.JSL(scriptName).toUpperCase()}:${D.JSL(funcName)}]<br><b>MSG</b>: ${detailsMsg}<br>... ${errorLines.join("<br>... ")}`, "validate")
+                return THROW(`[From ${D.JSL(scriptName).toUpperCase()}:${D.JSL(funcName)}]<br>... ${errorLines.join("<br>... ")}`, "validate")
             }
             return true
         },
@@ -1304,7 +1313,7 @@ const D = (() => {
             }
             return "(UNNAMED)"
         },
-        getChars = (charRef, isSilent = false, isFuzzyMatching = false) => {
+        getChars = (charRef, funcName = false, isFuzzyMatching = false) => {
 			/* Returns an ARRAY OF CHARACTERS given: "all", "registered", a character ID, a character Name,
 				a token object, a message with selected tokens, OR an array of such parameters. */
             const charObjs = new Set()
@@ -1315,7 +1324,7 @@ const D = (() => {
                     dbstring += `REF: Msg.  RETURNING: ${jStr(...charObjs)}`
                     if (charObjs.size > 0)
                         return [...charObjs]
-                    return isSilent && THROW("Must Select a Token!", "getChars")
+                    return VAL({string: funcName}) && THROW("Must Select a Token!", `${D.JSL(funcName)} > getChars`)
                 } else if (VAL({array: charRef})) {
                     searchParams = charRef
                     dbstring += `REF: [${jStr(...searchParams)}] `
@@ -1323,16 +1332,16 @@ const D = (() => {
                     searchParams.push(charRef)
                     dbstring += `REF: ${capitalize(jStr(typeof charRef), true)} `
                 } else {
-                    return isSilent ? false : THROW(`Invalid character reference: ${jStr(charRef)}`, "getChars")
+                    return VAL({string: funcName}) && THROW(`Invalid character reference: ${jStr(charRef)}`, `${D.JSL(funcName)} > getChars`)
                 }
             } catch (errObj) {
-                return isSilent ? false : THROW("", "getChars", errObj)
+                return VAL({string: funcName}) && THROW("", `${D.JSL(funcName)} > getChars`, errObj)
             }
             _.each(searchParams, v => {
                 if (searchParams.length > 1)
                     dbstring += "<br>"
                 // If parameter is a digit corresponding to a REGISTERED CHARACTER:
-                if (VAL({string: v}) && ["TopLeft", "BotLeft", "TopRight", "BotRight"].includes(v)) {
+                if (VAL({string: v}) && ["TopLeft", "BotLeft", "TopRight", "BotRight"].includes(v) && Char.REGISTRY[v] && Char.REGISTRY[v].id) {
                     charObjs.add(getObj("character", Char.REGISTRY[v].id))
                     dbstring += " ... Registry #: "
                     // If parameter is a CHARACTER OBJECT already: */
@@ -1365,7 +1374,7 @@ const D = (() => {
                         _.each(Media.GetContainedChars("Sandbox", {padding: 50}), vv => charObjs.add(vv))
                         dbstring += ` ... "${jStr(v)}": `                    
                         // If parameter is a SINGLE LETTER, assume it is an INITIAL and search the registry for it.
-                    } else if (v.length === 1) {
+                    } else if (v.length === 1 && _.find(Char.REGISTRY, data => data.initial.toLowerCase() === v.toLowerCase())) {
                         const charData = _.find(Char.REGISTRY, data => data.initial.toLowerCase() === v.toLowerCase())
                         if (charData)
                             charObjs.add(getObj("character", charData.id))
@@ -1385,9 +1394,9 @@ const D = (() => {
             if (!STATEREF.BLACKLIST.includes("getChars"))
                 DB(dbstring, "getChars")
             if (charObjs.size === 0)
-                return !isSilent && THROW(`No Characters Found using Search Parameters:<br>${jStr(searchParams)} in Character Reference<br>${jStr(charRef)}`, "getChars")
+                return VAL({string: funcName}) && THROW(`No Characters Found using Search Parameters:<br>${jStr(searchParams)} in Character Reference<br>${jStr(charRef)}`, `${D.JSL(funcName)} > getChars`)
             return _.reject([...charObjs], v => v.get("name") === "Jesse, Good Lad That He Is")
-        }, getChar = (charRef, isSilent = false) => Char.SelectedChar || (getChars(charRef, isSilent) || [false])[0],
+        }, getChar = (charRef, funcName = false) => Char.SelectedChar || (getChars(charRef, funcName) || [false])[0],
         getCharData = (charRef) => {
             const charObj = getChar(charRef)
             if (VAL({playerchar: charObj}, "getCharData"))
@@ -1405,20 +1414,20 @@ const D = (() => {
                 }
             return false
         },
-        getCharsProps = (charRefs, property, isSilent = false) => {
-            const charObjs = getChars(charRefs, isSilent),
+        getCharsProps = (charRefs, property, funcName = false) => {
+            const charObjs = getChars(charRefs, funcName),
                 propData = {}
             for (const char of charObjs)
-                propData[char.id] = getCharData(char, isSilent)[property]
+                propData[char.id] = getCharData(char, funcName)[property]
             return propData
         },
-        getStat = (charRef, statName, isSilent = false) => {
+        getStat = (charRef, statName, funcName = false) => {
             const charObj = getChar(charRef),
                 isGettingMax = statName.endsWith("_max"),
                 stat = statName.replace(/_max$/gu, "")
             let attrValueObj = null,
                 attrValue = null
-            if (VAL({charObj, string: stat}, isSilent ? null : "getStat")) {
+            if (VAL({charObj, string: stat}, VAL({string: funcName}) && `${D.JSL(funcName)} > getStat` || null)) {
                 const attrObjs = _.filter(findObjs({_type: "attribute", _characterid: charObj.id}), v => stat.includes("repeating") || !fuzzyMatch("repeating", v.get("name"))) // UNLESS "statName" includes "repeating_", don't return repeating fieldset attributes.
                 // D.Alert(`All Attr Objs: ${D.JS(_.map(allAttrObjs, v => v.get("name")))}<br><br>Filtered Attr Objs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
                 // First try for a direct match, then a fuzzy match:
@@ -1433,7 +1442,7 @@ const D = (() => {
                     if (!_.isNaN(parseInt(attrValue)))
                         attrValue = parseInt(attrValue)
                 }
-                DB(`StatName: ${D.JS(stat)}
+                DB(`StatName: ${D.JSL(stat)}
                 AttrValueObj: ${D.JS(attrValueObj, true)}
                 Boolean: ${Boolean(attrValueObj)}
                 Current: ${D.JS(attrValueObj && attrValueObj.get(isGettingMax ? "max" : "current"))}
@@ -1441,11 +1450,11 @@ const D = (() => {
             }
             return attrValueObj ? [attrValue, attrValueObj] : null
         },
-        getStatVal = (charRef, statName, isSilent = false) => (getStat(charRef, statName, isSilent) || [false])[0],
-        getRepIDs = (charRef, section, rowFilter, isSilent = false) => {
+        getStatVal = (charRef, statName, funcName = false) => (getStat(charRef, statName, funcName) || [false])[0],
+        getRepIDs = (charRef, section, rowFilter, funcName = false) => {
             // rowRef: rowID (string), stat:value (list, with special "name" entry for shortname), array of either (array), or null (all)
             DB(`GetRepIDs(${jStr(charRef, true)}, ${section}, ${jStr(rowFilter)})`, "getRepIDs")
-            const charObj = getChar(charRef, isSilent),
+            const charObj = getChar(charRef, funcName),
                 getUniqIDs = attrObjs => _.uniq(_.map(attrObjs, v => v.get("name").match("repeating_[^_]*?_(.*?)_")[1]))
             let validRowIDs = [],
                 dbstring = ""
@@ -1506,7 +1515,7 @@ const D = (() => {
                 } else if (VAL({array: rowFilter})) {
                     // RowRef is an array of nested rowrefs, requiring recursion.
                     for (const ref of rowFilter)
-                        validRowIDs.push(...getRepIDs(charRef, section, ref, isSilent))
+                        validRowIDs.push(...getRepIDs(charRef, section, ref, funcName))
                 } else if (!rowFilter) {
                     // No rowRef means the IDs of all section rows are returned.
                     validRowIDs.push(...rowIDs)
@@ -1515,7 +1524,7 @@ const D = (() => {
             }
             return _.uniq(validRowIDs)
         },
-        getRepStats = (charRef, section, rowFilter = {}, statName, groupBy, pickProperty, isSilent = false) => {
+        getRepStats = (charRef, section, rowFilter = {}, statName, groupBy, pickProperty, funcName = false) => {
             const charObj = getChar(charRef)
             // D.Alert(`CharRef: ${D.JS(charRef)}, CharObj: ${D.JS(charObj)}`)
             DB(`getRepStats(${jStr([charObj.get("name"), section, rowFilter, statName, groupBy, pickProperty])})`, "getRepStats")
@@ -1524,10 +1533,10 @@ const D = (() => {
                 // STEP ONE: USE THE ROW FILTER TO GET VALID ROW IDS TO SEARCH
                 const filter = VAL({string: statName, list: rowFilter}) ? Object.assign({[statName]: "*"}, rowFilter) :
                         rowFilter,
-                    rowIDs = _.compact(getRepIDs(charObj, section, filter, isSilent)),
+                    rowIDs = _.compact(getRepIDs(charObj, section, filter, funcName)),
                     attrObjs = []
                 if (filter === "top" && !rowIDs.length)
-                    rowIDs.push(..._.compact(getRepIDs(charObj, section, null, isSilent)))
+                    rowIDs.push(..._.compact(getRepIDs(charObj, section, null, funcName)))
                 attrObjs.push(..._.filter(findObjs({_type: "attribute", _characterid: charObj.id}), v => v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`) &&
                     rowIDs.includes(v.get("name").match(`repeating_${section === "*" ? ".*?" : section}_(.*?)_`)[1])))
                 // STEP TWO: ITERATE THROUGH EACH ROW TO LOOK FOR REQUESTED STAT(S)
@@ -1570,7 +1579,7 @@ const D = (() => {
                                 obj: foundStat,
                                 val: foundStat.get("current")
                             })
-                            DB(`FinalRepData: ${D.JS(finalRepData, true)}`, "getRepStats")
+                            DB(`FinalRepData: ${D.JSL(finalRepData, true)}`, "getRepStats")
                         } else {
                             DB(`No matches to statName ${statName}`, "getRepStats")
                         }
@@ -1605,19 +1614,19 @@ const D = (() => {
                 }
             }
             return finalRepData
-        }, getRepStat = (charRef, section, rowFilter, statName, isSilent = false) => getRepStats(charRef, section, rowFilter, statName, null, null, isSilent)[0],
-        getPlayerID = (playerRef, isSilent = false) => {
+        }, getRepStat = (charRef, section, rowFilter, statName, funcName = false) => getRepStats(charRef, section, rowFilter, statName, null, null, funcName)[0],
+        getPlayerID = (playerRef, funcName = false) => {
             // Returns a PLAYER ID given: display name, token object, character reference.
             let playerID = null
             try {
                 if (VAL({object: playerRef}) && playerRef.get("_type") === "player") {
-                    DB(`PlayerRef identified as Player Object: ${D.JS(playerRef, true)}<br><br>... returning ID: ${playerRef.id}`, "getPlayerID")
+                    DB(`PlayerRef identified as Player Object: ${D.JSL(playerRef, true)}<br><br>... returning ID: ${playerRef.id}`, "getPlayerID")
                     return playerRef.id
                 }
                 if (VAL({string: playerRef})) {
-                    DB(`PlayerRef identified as String: ${D.JS(playerRef)}`, "getPlayerID")
+                    DB(`PlayerRef identified as String: ${D.JSL(playerRef)}`, "getPlayerID")
                     if (getObj("player", playerRef)) {
-                        DB(`... String is Player ID. Returning ${D.JS(getObj("player", playerRef).id)}`, "getPlayerID")
+                        DB(`... String is Player ID. Returning ${D.JSL(getObj("player", playerRef).id)}`, "getPlayerID")
                         return getObj("player", playerRef).id
                     } else if (findObjs({
                         _type: "player",
@@ -1666,17 +1675,17 @@ const D = (() => {
                             break
                         }
                     playerID = _.filter(charObj.get("controlledby").split(","), v => v !== "all")
-                    DB(`PlayerRef identified as Character Object: ${D.JS(charObj.get("name"))}... "controlledby": ${D.JS(playerID)}`, "getPlayerID")
-                    if (playerID.length > 1 && !isSilent)
-                        THROW(`WARNING: Finding MULTIPLE player IDs connected to character reference '${jStr(playerRef)}': ${jStr(playerID)}`, "getPlayerID")
+                    DB(`PlayerRef identified as Character Object: ${D.JSL(charObj.get("name"))}... "controlledby": ${D.JSL(playerID)}`, "getPlayerID")
+                    if (playerID.length > 1 && VAL({string: funcName}))
+                        THROW(`WARNING: Finding MULTIPLE player IDs connected to character reference '${jStr(playerRef)}': ${jStr(playerID)}`, `${D.JSL(funcName)} > getPlayerID`)
                     return playerID[0]
                 }
-                return isSilent ? false : THROW(`Unable to find player connected to reference '${jStr(playerRef)}'`, "getPlayerID")
+                return VAL({string: funcName}) && THROW(`Unable to find player connected to reference '${jStr(playerRef)}'`, `${D.JSL(funcName)} > getPlayerID`)
             } catch (errObj) {
-                return isSilent ? false : THROW(`Unable to find player connected to reference '${jStr(playerRef)}'.<br><br>${jStr(errObj)}`, "getPlayerID")
+                return VAL({string: funcName}) && THROW(`Unable to find player connected to reference '${jStr(playerRef)}'.<br><br>${jStr(errObj)}`, `${D.JSL(funcName)} > getPlayerID`)
             }
         },
-        getPlayer = (playerRef, isSilent = false) => {
+        getPlayer = (playerRef, funcName = false) => {
             const playerID = getPlayerID(playerRef, true)
             if (VAL({string: playerID}) && VAL({object: getObj("player", playerID)})) 
                 return getObj("player", playerID)
@@ -1686,7 +1695,7 @@ const D = (() => {
                 .. String? ${VAL({string: playerID})}
                 .. Player Object? ${jStr(getObj("player", playerID))}`, "getPlayer")
             
-            return isSilent ? false : THROW(`Unable to find a player object for reference '${jStr(playerRef)}`, "getPlayer")
+            return VAL({string: funcName}) && THROW(`Unable to find a player object for reference '${jStr(playerRef)}`, `${D.JSL(funcName)} > getPlayer`)
         },
     // #endregion
 
@@ -1696,8 +1705,8 @@ const D = (() => {
             if (VAL({charObj, list: statList}, "setStats"))
                 setAttrs(charObj.id, statList)
         }, setStat = (charRef, statName, statValue) => setStats(charRef, {[statName]: statValue}),
-        setRepStats = (charRef, section, rowID, statList, isSilent = false) => {
-            const charObj = getChar(charRef, isSilent)
+        setRepStats = (charRef, section, rowID, statList, funcName = false) => {
+            const charObj = getChar(charRef, funcName)
             if (VAL({char: [charObj], string: [section], list: [statList]}, "setRepAttrs", true)) {
                 const attrList = {}
                 _.each(statList, (value, statName) => {
@@ -1705,7 +1714,7 @@ const D = (() => {
                 })
                 setAttrs(charObj.id, attrList)
             }
-        }, setRepStat = (charRef, section, rowID, statName, statValue, isSilent = false) => setRepStats(charRef, section, rowID, {[statName]: statValue}, isSilent),
+        }, setRepStat = (charRef, section, rowID, statName, statValue, funcName = false) => setRepStats(charRef, section, rowID, {[statName]: statValue}, funcName),
     // #endregion
 
     // #region Repeating Section Manipulation
@@ -1719,7 +1728,7 @@ const D = (() => {
             return [repStatName, repStatName, repStatName]
         },
         makeRepRow = (charRef, secName, attrs) => {            
-            DB(`CharRef: ${D.JS(charRef)}, secName: ${secName}, Attrs: ${D.JS(attrs, true)}`, "makeRepRow")
+            DB(`CharRef: ${D.JSL(charRef)}, secName: ${secName}, Attrs: ${D.JSL(attrs, true)}`, "makeRepRow")
             const IDa = 0,
                 IDb = [],
                 charID = D.GetChar(charRef).id,
@@ -1764,7 +1773,7 @@ const D = (() => {
                     THROW(`Failure at makeRepRow(charRef, ${D.JSL(secName)}, ${D.JSL(attrs)})<br>...Prefix (${D.JSL(prefix)}) + K (${D.JSL(k)}) is NOT A STRING)`, "makeRepRow")
                 }
             })
-            // DB(`Setting Attributes: ${D.JS(attrList, true)}`, "makeRepRow")
+            // DB(`Setting Attributes: ${D.JSL(attrList, true)}`, "makeRepRow")
             // setAttrs(charID, attrList)
 
             return rowID
@@ -1782,7 +1791,7 @@ const D = (() => {
         },
         copyToRepSec = (charRef, sourceSec, sourceRowID, targetSec) => {
             const attrList = kvpMap(getRepStats(charRef, sourceSec, sourceRowID), (k, v) => v.name, v => v.val)
-            DB(`CharRef: ${D.JS(charRef)}, SourceSec: ${sourceSec}, RowID: ${sourceRowID}, TargetSec: ${targetSec}<br>... AttrList: ${D.JS(attrList, true)}`, "copyToRepSec")
+            DB(`CharRef: ${D.JSL(charRef)}, SourceSec: ${sourceSec}, RowID: ${sourceRowID}, TargetSec: ${targetSec}<br>... AttrList: ${D.JSL(attrList, true)}`, "copyToRepSec")
             makeRepRow(charRef, targetSec, attrList)
             deleteRepRow(charRef, sourceSec, sourceRowID)
         },

@@ -6,9 +6,6 @@ const Listener = (() => {
         CHARCALLS = [
             "registered",
             "active",
-            "center",
-            "left",
-            "right",
             "all",
             "npcs",
             "sandbox"
@@ -155,7 +152,7 @@ const Listener = (() => {
                     if (objs.length)
                         charObjs.push(...objs)
                 }
-                DB(`Returning CHARACTERS: ${D.JS(charObjs)}`, "parseArg")
+                DB(`Returning CHARACTERS: ${D.JSL(charObjs)}`, "parseArg")
                 return charObjs
             },
             graphic: (arg, isFuzzy = false) => {
@@ -213,7 +210,7 @@ const Listener = (() => {
                     objects.character = [...initialCharObjs]
                     args.shift()
                 }
-                DB(`Objects: ${D.JS(objects)}, Args: ${D.JS(args)}, <br>LENGTHS: ${D.JS(D.KeyMapObj(objects, null, v => v.length))}`, "getObjsFromArgs")
+                DB(`Objects: ${D.JSL(objects)}, Args: ${D.JSL(args)}, <br>LENGTHS: ${D.JSL(D.KeyMapObj(objects, null, v => v.length))}`, "getObjsFromArgs")
                 for (const arg of args) {
                     const [theseObjs, theseReturnArgs] = [{}, []]
                     // Split the arg as if comma-delimited:
@@ -225,7 +222,7 @@ const Listener = (() => {
                             if (objs.length) {
                                 theseObjs[type] = theseObjs[type] || []
                                 theseObjs[type].push(...objs)
-                                DB(`Strict Objs Found: ${D.JS(theseObjs)}`, "getObjsFromArgs")
+                                DB(`Strict Objs Found: ${D.JSL(theseObjs)}`, "getObjsFromArgs")
                             }
                         }
                         // If no objs found, try again with fuzzy references:
@@ -235,7 +232,7 @@ const Listener = (() => {
                                 if (objs.length) {
                                     theseObjs[type] = theseObjs[type] || []
                                     theseObjs[type].push(...objs)
-                                    DB(`Fuzzy Objs Found: ${D.JS(theseObjs)}`, "getObjsFromArgs")
+                                    DB(`Fuzzy Objs Found: ${D.JSL(theseObjs)}`, "getObjsFromArgs")
                                 }
                             }
                         // If no objs found, add arg to theseReturnArgs for further processing by HandleInput
@@ -244,13 +241,13 @@ const Listener = (() => {
                     }
                     // Add found objects and any return args to main variables:
                     _.each(theseObjs, (objs, type) => { if (_.flatten(objs).length) {
-                        DB(`... OBJECTS: ${D.JS(objects)}<br>LENGTHS: ${D.JS(D.KeyMapObj(objects, null, v => v.length))}`, "getObjsFromArgs")
+                        DB(`... OBJECTS: ${D.JSL(objects)}<br>LENGTHS: ${D.JSL(D.KeyMapObj(objects, null, v => v.length))}`, "getObjsFromArgs")
                         objects[type] = objects[type] || []
                         objects[type].push(objs) 
-                        DB(`... type (${type}), length (${objs.length}), adding: ${D.JS(objs)}<br>OBJECTS: ${D.JS(objects)}`, "getObjsFromArgs")
+                        DB(`... type (${type}), length (${objs.length}), adding: ${D.JSL(objs)}<br>OBJECTS: ${D.JSL(objects)}`, "getObjsFromArgs")
                     }})
                     returnArgs.push(theseReturnArgs.join(","))
-                    DB(`Objects: ${D.JS(objects)}`, "getObjsFromArgs")
+                    DB(`Objects: ${D.JSL(objects)}`, "getObjsFromArgs")
                 }
                 // Finally, do one last check for a character match with the last two, and then the last three arguments joined:
                 if (returnArgs.length > 1) {
@@ -268,7 +265,7 @@ const Listener = (() => {
                         returnArgs.push(...charNameTest.split(" "))
                 }
             }
-            DB(`Returning:<br>OBJECTS: ${D.JS(objects)}`, "getObjsFromArgs")
+            DB(`Returning:<br>OBJECTS: ${D.JSL(objects)}`, "getObjsFromArgs")
             return [objects, _.compact(returnArgs)]
         },
         parseMessage = (args, msg) => {

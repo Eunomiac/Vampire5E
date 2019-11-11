@@ -17,6 +17,10 @@ const Chat = (() => {
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
+
+        checkInstall = () => {
+            C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
+        },
     // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
@@ -59,7 +63,11 @@ const Chat = (() => {
                                     }
                                 }
                             switch (call) {
-                                case "all":
+                                case "pages":
+                                    if (!getPages())
+                                        sendHelpMsg()
+                                    break
+                                case "data":
                                     if (!getSelected(obj, true))
                                         sendHelpMsg()
                                     break
@@ -82,10 +90,11 @@ const Chat = (() => {
                                     if (!getAllChars())
                                         sendHelpMsg()
                                     break
-                                case "char":
-                                    if (!getChar(obj))
+                                case "char": {
+                                    if (!getChar(obj, args[0] !== "id"))
                                         sendHelpMsg()
                                     break
+                                }
                                 case "pos": case "position":
                                     if (!getPos(obj))
                                         sendHelpMsg()
@@ -147,6 +156,18 @@ const Chat = (() => {
                                 }
                             }
                             break
+                        case "dim": case "dims": case "dimensions": {
+                            if (D.GetSelected(msg)) {
+                                const [width, height] = [args.shift(), args.shift()].map(x => D.Int(x) || null)
+                                for (const selObj of D.GetSelected(msg)) {
+                                    if (width)
+                                        selObj.set({width})
+                                    if (height)
+                                        selObj.set({height})
+                                }
+                            }
+                            break
+                        }
                         case "params":
                             if (msg.selected && msg.selected[0])
                                 for (const objData of msg.selected) {
@@ -165,7 +186,7 @@ const Chat = (() => {
                             switch (args.shift().toLowerCase()) {
                                 case "prep": {
                                     const font = VAL({number: args[0]}) ? ["Candal", "Contrail One", "Arial", "Patrick Hand", "Shadows Into Light"][D.Int(args.shift())] : args.shift(),
-                                        sizes = _.map(args, v => D.Int(v)) || [20, 22, 26, 32, 40, 56, 72, 100]                        
+                                        sizes = _.map(args, v => D.Int(v)) || [12, 14, 16, 18, 20, 22, 26, 32, 40, 56, 72]                        
                                     prepText(font, sizes)
                                     break
                                 }
@@ -250,7 +271,7 @@ const Chat = (() => {
 					<ul>
 						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
 							<span style="font-weight: bolder; font-family: serif;">
-								!get all
+								!get data
 							</span> - Gets a JSON stringified list of all the object's properties
 						</li>
 						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
@@ -373,6 +394,14 @@ const Chat = (() => {
     // #endregion
 
     // #region Get Data Functions
+        getPages = () => {
+            const pageObjs = findObjs({_type: "page"}),
+                msgLines = []
+            for (const pageObj of pageObjs)
+                msgLines.push(`Page '${pageObj.get("name")}' = '${pageObj.id}'`)
+            D.Alert(msgLines.join("<br>"), "getPages")
+            return true
+        },
         getSelected = (obj, isGettingAll) => {
             if (!VAL({object: obj}))
                 return false
@@ -404,14 +433,17 @@ const Chat = (() => {
 
             return true
         },
-        getChar = obj => {
+        getChar = (obj, isGettingAll = false) => {
             if (!VAL({token: obj}))
                 return false
             try {
                 const charObj = getObj("character", obj.get("represents")),
                     name = charObj.get("name"),
                     playerID = charObj.get("controlledby").replace("all,", "")
-                D.Alert(`<b>Name:</b> ${name}<br/><b>CharID:</b> ${charObj.id}<br/><b>PlayerID:</b> ${playerID}`, "Character Data")
+                if (isGettingAll)
+                    D.Alert(D.JS(charObj, true), "Character Data")
+                else
+                    D.Alert(`<b>Name:</b> ${name}<br/><b>CharID:</b> ${charObj.id}<br/><b>PlayerID:</b> ${playerID}`, "Character Data")
             } catch (errObj) {
                 return THROW("", "getChar", errObj)
             }
@@ -589,11 +621,13 @@ const Chat = (() => {
     // #endregion
 
     return {
+        CheckInstall: checkInstall,
         OnChatCall: onChatCall
     }
 })()
 
 on("ready", () => {
+    Chat.CheckInstall()
     D.Log("Chat Ready!")
 })
 void MarkStop("Chat")
