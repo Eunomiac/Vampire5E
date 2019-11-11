@@ -6917,6 +6917,7 @@ const Media = (() => {
         ToggleImg: toggleImg, ToggleText: toggleText, ToggleToken: toggleTokenSrc,
         SetImgData: setImgData, SetTextData: setTextData,
         SetImgTemp: setImgTemp, // SetTextTemp: setTextTemp,
+        Spread: spreadImgs,
 
         // AREA FUNCTIONS
         GetBounds: getBounds, GetContents: getContainedImgObjs,
