@@ -9,30 +9,30 @@ const D = (() => {
     const SCRIPTNAME = "D",
 
     // #region COMMON INITIALIZATION
-        STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
+        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }}, // eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
         checkInstall = () => {
-            C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
+            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
             initialize()            
         },
     // #endregion
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
-            STATEREF.WATCHLIST = STATEREF.WATCHLIST || []
-            STATEREF.BLACKLIST = STATEREF.BLACKLIST || []
-            STATEREF.CHARWIDTH = STATEREF.CHARWIDTH || {}
-            STATEREF.DEBUGLOG = STATEREF.DEBUGLOG || []
-            STATEREF.ALERTTHROTTLE = []
-            STATEREF.isReportingListener = STATEREF.isReportingListener || false
+            STATE.REF.WATCHLIST = STATE.REF.WATCHLIST || []
+            STATE.REF.BLACKLIST = STATE.REF.BLACKLIST || []
+            STATE.REF.CHARWIDTH = STATE.REF.CHARWIDTH || {}
+            STATE.REF.DEBUGLOG = STATE.REF.DEBUGLOG || []
+            STATE.REF.ALERTTHROTTLE = []
+            STATE.REF.isReportingListener = STATE.REF.isReportingListener || false
 
         // Initialize STATSDICT Fuzzy Dictionary
             try {
-                STATEREF.STATSDICT = Fuzzy.Fix()
+                STATE.REF.STATSDICT = Fuzzy.Fix()
                 for (const str of [
                     ..._.flatten(_.values(C.ATTRIBUTES)),
                     ..._.flatten(_.values(C.SKILLS)),
@@ -40,22 +40,22 @@ const D = (() => {
                     ...C.TRACKERS,
                     ...C.MISCATTRS
                 ])
-                    STATEREF.STATSDICT.add(str)
+                    STATE.REF.STATSDICT.add(str)
 
             // Initialize PCDICT Fuzzy Dictionary and PCLIST Strict Lookup
-                STATEREF.PCDICT = Fuzzy.Fix()
-                STATEREF.PCLIST = []
+                STATE.REF.PCDICT = Fuzzy.Fix()
+                STATE.REF.PCLIST = []
                 for (const name of _.values(Char.REGISTRY).map(x => x.name)) {
-                    STATEREF.PCDICT.add(name)
-                    STATEREF.PCLIST.push(name)
+                    STATE.REF.PCDICT.add(name)
+                    STATE.REF.PCLIST.push(name)
                 }
 
             // Initialize NPCDICT Fuzzy Dictionary
-                STATEREF.NPCDICT = Fuzzy.Fix()
-                STATEREF.NPCLIST = []
+                STATE.REF.NPCDICT = Fuzzy.Fix()
+                STATE.REF.NPCLIST = []
                 for (const name of getChars("all").map(x => x.get("name")).filter(x => !_.values(Char.REGISTRY).map(xx => xx.name).includes(x))) {
-                    STATEREF.NPCDICT.add(name)
-                    STATEREF.NPCLIST.push(name)
+                    STATE.REF.NPCDICT.add(name)
+                    STATE.REF.NPCLIST.push(name)
                 }
             } catch (errObj) {
                 THROW("Initialization Error", "Initialize", errObj)
@@ -106,7 +106,7 @@ const D = (() => {
                                 case "debug": case "log": case "dblog":
                                     Handouts.RemoveAll("Debug Log", "debug")
                                     Handouts.RemoveAll("... DBLog", "debug")
-                                    STATEREF.DEBUGLOG = STATEREF.DEBUGLOG || []
+                                    STATE.REF.DEBUGLOG = STATE.REF.DEBUGLOG || []
                                     break
                         // no default
                             }
@@ -146,8 +146,8 @@ const D = (() => {
                                 case "report": {
                                     switch(D.LCase(call = args.shift())) {
                                         case "listen": case "listener": {
-                                            STATEREF.isReportingListener = !STATEREF.isReportingListener
-                                            D.Alert(STATEREF.isReportingListener && "Now reporting Listener events." || "No longer reporting Listener events.", "!data toggle report listener")
+                                            STATE.REF.isReportingListener = !STATE.REF.isReportingListener
+                                            D.Alert(STATE.REF.isReportingListener && "Now reporting Listener events." || "No longer reporting Listener events.", "!data toggle report listener")
                                             break
                                         }
                                         // no default
@@ -181,7 +181,7 @@ const D = (() => {
             PAGEID: () => Campaign().get("playerpageid"),
             CELLSIZE: () => C.PIXELSPERSQUARE * getObj("page", Campaign().get("playerpageid")).get("snapping_increment")
         },
-        FunctionQueue = [],
+        FunctionQueue = {},
     // #endregion
 
     // #region DECLARATIONS: Dependent Variables
@@ -226,47 +226,55 @@ const D = (() => {
         run$($funcs, cback ? () => cback(null) : undefined)
     },
     $doTracker = (tracker, eInfo) => cback => doTracker(tracker, eInfo, cback), */
-        queueFunc = (func, args = [], waitSecs = 3) => {
-            // D.Alert(`QueFunc: ${D.JS(func)}, ${D.JS(args)}`)
+        isFuncQueueClear = (queueName) => {
+            if (!FunctionQueue[queueName])
+                FunctionQueue[queueName] = []
+            return FunctionQueue[queueName].length === 0
+        },
+        queueFunc = (func, args = [], queueName = "main", waitAfterSecs = 2) => {
             try {
-                if (_.isUndefined(func) || _.isUndefined(args)) {
-                    D.Alert(`Either func or args is undefined: ${D.JS(func)}, ${D.JS(args)}`)
-                } else if (!_.isFunction(func)) {
-                    D.Alert(`${D.JS(func)} with args ${D.JS(args)} is not a function!`, "queueFunc")
-                } else {
+                if (VAL({function: func, array: args})) {
                     const funcWrapper = (cback) => {
                         func(...args)
-                        setTimeout(cback, waitSecs * 1000)
+                        setTimeout(cback, waitAfterSecs * 1000)
                     }
-                    FunctionQueue.push(funcWrapper)
+                    FunctionQueue[queueName] = FunctionQueue[queueName] || []
+                    FunctionQueue[queueName].push(funcWrapper)
+                    DB(`QueFunc: ${D.JS(func)}, ${D.JS(queueName)}, ${D.JS(args)}<br><br>${D.JS(FunctionQueue)}`, "queueFunc")
+                } else {
+                    return THROW(`Invalid function (${D.JSL(func)}) OR Invalid args array (${D.JSL(args)})`, "queueFunc")
                 }
             } catch (errObj) {
-                D.Alert(`QueFunc Error on ${D.JS(func)}, ${D.JS(args)}`)
+                return THROW("Error queing function.", "queueFunc", errObj)
             }
+            return true
         },
-        runFuncQueue = (cback) => {
-            let current = 0
-            const done = (empty, ...args) => {
-                    const end = () => {
-                        const newArgs = args ? [].concat(empty, args) : [empty]
-                        if (cback)
-                            cback(...newArgs)
+        runFuncQueue = (queueName = "main") => {
+            DB(`Running Function Queue ${queueName}`, "runFuncQueue")
+            return ((cback) => {
+                DB(`... running function #${FunctionQueue[queueName].length}`, "runFuncQueue")
+                let current = 0
+                const done = (empty, ...args) => {
+                        const end = () => {
+                            const newArgs = args ? [].concat(empty, args) : [empty]
+                            if (cback)
+                                cback(...newArgs)
+                        }
+                        end()
+                    },
+                    each = (empty, ...args) => {
+                        if (++current >= FunctionQueue[queueName].length || empty)
+                            done(empty, args)
+                        else
+                            FunctionQueue[queueName][current].apply(undefined, [].concat(args, each))
                     }
-                    end()
-                },
-                each = (empty, ...args) => {
-                    if (++current >= FunctionQueue.length || empty)
-                        done(empty, args)
-                    else
-                        FunctionQueue[current].apply(undefined, [].concat(args, each))
+                if (FunctionQueue[queueName].length) {
+                    FunctionQueue[queueName][0](each)
+                } else {
+                    done(null)
+                    FunctionQueue[queueName].length = 0
                 }
-
-            if (FunctionQueue.length) {
-                FunctionQueue[0](each)
-            } else {
-                done(null)
-                FunctionQueue.length = 0
-            }
+            })()
         },
     // #endregion
 
@@ -428,6 +436,11 @@ const D = (() => {
         summarizeHTML = (htmlString = "") => ((htmlString.match(/.*?>([^<>]+)<.*?/g) || [""]).pop().match(/.*?>([^<>]+)<.*?/) || [""]).pop(),
         pInt = strRef => parseInt(strRef) || 0,
         pFloat = strRef => parseFloat(strRef) || 0,
+        roundSig = (num, digits) => {
+            if (VAL({number: digits}) && D.Int(digits) > 0)
+                return Math.round( num * 10**D.Int(digits) + Number.EPSILON ) / 10**D.Int(digits)
+            return D.Int(num)            
+        },
         pLowerCase = strRef => `${strRef || ""}`.toLowerCase(),
         pUpperCase = strRef => `${strRef || ""}`.toUpperCase(),
         numToText = (num, isTitleCase = false) => {
@@ -517,11 +530,11 @@ const D = (() => {
                 
         },
         sendToGM = (msg, title = "[ALERT]", throttle = 0) => {
-            if (STATEREF.ALERTTHROTTLE.includes(title)) {
+            if (STATE.REF.ALERTTHROTTLE.includes(title)) {
                 return
             } else if (throttle > 0) {
-                STATEREF.ALERTTHROTTLE.push(title)
-                setTimeout(() => { STATEREF.ALERTTHROTTLE = _.without(STATEREF.ALERTTHROTTLE, title) }, throttle)
+                STATE.REF.ALERTTHROTTLE.push(title)
+                setTimeout(() => { STATE.REF.ALERTTHROTTLE = _.without(STATE.REF.ALERTTHROTTLE, title) }, throttle)
             }
             sendChatMessage("Storyteller", msg, title)
         },
@@ -529,7 +542,7 @@ const D = (() => {
             if (VAL({string: menuHTML, func: replyFunc}, "promptGM")) {
                 if (TimeTracker.IsClockRunning) {
                     DB(`Time Running: Stopping Clock at ${D.JSL(TimeTracker.CurrentDate)}`, "promptGM")
-                    STATEREF.PROMPTCLOCK = true
+                    STATE.REF.PROMPTCLOCK = true
                     TimeTracker.StopClock()
                 }
                 Roller.Lock(true)
@@ -541,9 +554,9 @@ const D = (() => {
             if (VAL({string: replyString, function: PROMPTFUNC}, "receivePrompt")) {
                 PROMPTFUNC(replyString)
                 PROMPTFUNC = null
-                if (STATEREF.PROMPTCLOCK) {
+                if (STATE.REF.PROMPTCLOCK) {
                     TimeTracker.StartClock()
-                    STATEREF.PROMPTCLOCK = false
+                    STATE.REF.PROMPTCLOCK = false
                 }
                 Roller.Lock(false)
             }
@@ -665,7 +678,7 @@ const D = (() => {
             if (isExact)
                 return isInExact(needle, haystack)
             if (!haystack) {
-                dict = STATEREF.STATSDICT
+                dict = STATE.REF.STATSDICT
             } else if (haystack.add) {
                 dict = haystack
             } else {
@@ -1162,43 +1175,43 @@ const D = (() => {
     // #region DEBUGGING & ERROR MANAGEMENT
         setWatchList = keywords => {
             if (keywords === "clear") {
-                STATEREF.WATCHLIST = []
+                STATE.REF.WATCHLIST = []
             } else {
                 const watchwords = _.flatten([keywords])
                 _.each(watchwords, v => {
                     if (v.startsWith("!"))
-                        STATEREF.WATCHLIST = _.without(STATEREF.WATCHLIST, v.slice(1))
+                        STATE.REF.WATCHLIST = _.without(STATE.REF.WATCHLIST, v.slice(1))
                     else
-                        STATEREF.WATCHLIST = _.uniq([...STATEREF.WATCHLIST, v])
+                        STATE.REF.WATCHLIST = _.uniq([...STATE.REF.WATCHLIST, v])
                 })
             }
-            sendToGM(`Currently displaying debug information tagged with:<br><br>${jStr(STATEREF.WATCHLIST.join("<br>"))}`, formatTitle("setWatchList", SCRIPTNAME))
+            sendToGM(`Currently displaying debug information tagged with:<br><br>${jStr(STATE.REF.WATCHLIST.join("<br>"))}`, formatTitle("setWatchList", SCRIPTNAME))
         },
-        getWatchList = () => sendToGM(`${jStr(STATEREF.WATCHLIST)}`, "DEBUG WATCH LIST"),
+        getWatchList = () => sendToGM(`${jStr(STATE.REF.WATCHLIST)}`, "DEBUG WATCH LIST"),
         setBlackList = keywords => {
             if (keywords === "clear") {
-                STATEREF.BLACKLIST = []
+                STATE.REF.BLACKLIST = []
             } else {
                 const watchwords = _.flatten([keywords])
                 _.each(watchwords, v => {
                     if (v.startsWith("!"))
-                        STATEREF.BLACKLIST = _.without(STATEREF.BLACKLIST, v.slice(1))
+                        STATE.REF.BLACKLIST = _.without(STATE.REF.BLACKLIST, v.slice(1))
                     else
-                        STATEREF.BLACKLIST = _.uniq([...STATEREF.BLACKLIST, v])
+                        STATE.REF.BLACKLIST = _.uniq([...STATE.REF.BLACKLIST, v])
                 })
             }
-            sendToGM(`Currently NOT logging debug information tagged with:<br><br>${jStr(STATEREF.BLACKLIST.join("<br>"))}`, formatTitle("setBlackList", SCRIPTNAME))
+            sendToGM(`Currently NOT logging debug information tagged with:<br><br>${jStr(STATE.REF.BLACKLIST.join("<br>"))}`, formatTitle("setBlackList", SCRIPTNAME))
         },
-        getBlackList = () => sendToGM(`${jStr(STATEREF.BLACKLIST)}`, "DEBUG BLACKLIST"),
+        getBlackList = () => sendToGM(`${jStr(STATE.REF.BLACKLIST)}`, "DEBUG BLACKLIST"),
         logDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
             if (_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive) {                
                 if (funcName) {
-                    STATEREF.DEBUGLOG.push({
+                    STATE.REF.DEBUGLOG.push({
                         timeStamp: (new Date()).getTime(),
                         title: formatTitle(funcName, scriptName, prefix),
                         contents: msg
                     })
-                    if (STATEREF.DEBUGLOG.length > 100) {
+                    if (STATE.REF.DEBUGLOG.length > 100) {
                         if (Handouts.Count("debug") > 20)
                             Handouts.RemoveAll("... DBLog", "debug")
                         getDebugRecord("... DBLog")
@@ -1209,11 +1222,12 @@ const D = (() => {
         },
         throwError = (msg, funcName, scriptName, errObj) => sendDebugAlert(`${msg}${errObj ? `${errObj.name}<br>${errObj.message}<br><br>${errObj.stack}` : ""}`, funcName, scriptName, "ERROR"),
         sendDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
-            if (!STATEREF.BLACKLIST.includes(funcName) && !STATEREF.BLACKLIST.includes(scriptName)) {
-                logDebugAlert(msg, funcName, scriptName, prefix)
-                if (funcName && STATEREF.WATCHLIST.includes(funcName) || scriptName && STATEREF.WATCHLIST.includes(scriptName) || !funcName && !scriptName)
-                    sendToGM(msg, formatTitle(funcName, scriptName, prefix))
-            }
+            if (!Session.IsSessionActive || Session.IsTesting)
+                if (!STATE.REF.BLACKLIST.includes(funcName) && !STATE.REF.BLACKLIST.includes(scriptName)) {
+                    logDebugAlert(msg, funcName, scriptName, prefix)
+                    if (funcName && STATE.REF.WATCHLIST.includes(funcName) || scriptName && STATE.REF.WATCHLIST.includes(scriptName) || !funcName && !scriptName)
+                        sendToGM(msg, formatTitle(funcName, scriptName, prefix))
+                }
         },
         getDebugRecord = (title = "Debug Log", isClearing = false) => {
             const logLines = []
@@ -1222,7 +1236,7 @@ const D = (() => {
                 Handouts.RemoveAll("Debug Log", "debug")
                 Handouts.RemoveAll("... DBLog", "debug")
             }
-            for (const logData of STATEREF.DEBUGLOG) {
+            for (const logData of STATE.REF.DEBUGLOG) {
                 if (lastTimeStamp && logData.timeStamp - lastTimeStamp > 7200000) {
                     logLines.length = 0
                     Handouts.RemoveAll("Debug Log", "debug")
@@ -1248,7 +1262,7 @@ const D = (() => {
             }
             logLines.push("</div>")
             Handouts.Make(title, "debug", logLines.join(""))
-            STATEREF.DEBUGLOG.length = 0
+            STATE.REF.DEBUGLOG.length = 0
         },
     // #endregion
 
@@ -1281,9 +1295,9 @@ const D = (() => {
             return [...selObjs] 
         },
         refreshShortNames = () => {
-            STATEREF.shortNames = []
+            STATE.REF.shortNames = []
             for (const charObj of getChars("all"))
-                STATEREF.shortNames.push(getName(charObj, true))
+                STATE.REF.shortNames.push(getName(charObj, true))
         },
         getName = (value, isShort = false) => {
             // Returns the NAME of the Graphic, Character or Player (DISPLAYNAME) given: object or ID.
@@ -1304,7 +1318,7 @@ const D = (() => {
                     } else {					// Otherwise, remove the first word.				
                         shortName = name.replace(/.*\s/iu, "")
                         // Now, check for any duplicates, with "isCheckingShort" set to true to avoid infinite recursion; if found, return full name.
-                        if (STATEREF.shortNames.filter(x => x === shortName).length > 1)
+                        if (STATE.REF.shortNames.filter(x => x === shortName).length > 1)
                             shortName = name
                     }
                     name = shortName
@@ -1381,8 +1395,8 @@ const D = (() => {
                         dbstring += ` ... "${jStr(v)}": `                    
                         // If parameter is a STRING, assume it is a character name to fuzzy-match UNLESS isStrict is true.
                     } else {
-                        const charName = isFuzzyMatching ? D.IsIn(v, STATEREF.PCLIST, true) || D.IsIn(v, STATEREF.NPCDICT, false) :
-                                D.IsIn(v, STATEREF.PCLIST, true) || D.IsIn(v, STATEREF.NPCLIST, true),
+                        const charName = isFuzzyMatching ? D.IsIn(v, STATE.REF.PCLIST, true) || D.IsIn(v, STATE.REF.NPCDICT, false) :
+                                D.IsIn(v, STATE.REF.PCLIST, true) || D.IsIn(v, STATE.REF.NPCLIST, true),
                             charObj = charName && (findObjs({_type: "character", name: charName}) || [])[0]
                         if (charObj)
                             charObjs.add(charObj)
@@ -1391,7 +1405,7 @@ const D = (() => {
                 }
                 dbstring += `${charObjs.size} Characters Found.`
             })
-            if (!STATEREF.BLACKLIST.includes("getChars"))
+            if (!STATE.REF.BLACKLIST.includes("getChars"))
                 DB(dbstring, "getChars")
             if (charObjs.size === 0)
                 return VAL({string: funcName}) && THROW(`No Characters Found using Search Parameters:<br>${jStr(searchParams)} in Character Reference<br>${jStr(charRef)}`, `${D.JSL(funcName)} > getChars`)
@@ -1871,22 +1885,23 @@ const D = (() => {
         CheckInstall: checkInstall,
         OnChatCall: onChatCall,
 
-        get STATSDICT() { return STATEREF.STATSDICT },
-        get PCDICT() { return STATEREF.PCDICT },
-        get NPCDICT() { return STATEREF.NPCDICT },
-        get CHARWIDTH() { return STATEREF.CHARWIDTH },
+        get STATSDICT() { return STATE.REF.STATSDICT },
+        get PCDICT() { return STATE.REF.PCDICT },
+        get NPCDICT() { return STATE.REF.NPCDICT },
+        get CHARWIDTH() { return STATE.REF.CHARWIDTH },
 
         get PAGEID() { return VALS.PAGEID() },
         get CELLSIZE() { return VALS.CELLSIZE() },
 
-        get IsReportingListener() { return STATEREF.isReportingListener },
+        get IsReportingListener() { return STATE.REF.isReportingListener },
 
-        Queue: queueFunc, Run: runFuncQueue,
+        Queue: queueFunc, Run: runFuncQueue, IsFuncQueueClear: isFuncQueueClear,
         JS: jStr, JSL: jStrL, JSH: jStrH, JSC: jStrC,
         ParseParams: parseParams,
         ParseCharSelection: parseCharSelect,
         SumHTML: summarizeHTML,
         Int: pInt, Float: pFloat, LCase: pLowerCase, UCase: pUpperCase,
+        Round: roundSig,
         NumToText: numToText, TextToNum: textToNum,
         Ordinal: ordinal,
         Capitalize: capitalize,

@@ -4,30 +4,30 @@ const Session = (() => {
     const SCRIPTNAME = "Session",
 
     // #region COMMON INITIALIZATION
-        STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
+        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
         checkInstall = () => {
-            C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
+            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
             initialize()
         },
     // #endregion
 
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
-            // delete STATEREF.curLocation
-            // delete STATEREF.locationRecord
-            STATEREF.isTestingActive = STATEREF.isTestingActive || false
-            STATEREF.sceneChars = STATEREF.sceneChars || []
-            STATEREF.tokenRecord = STATEREF.tokenRecord || {}
-            STATEREF.SessionScribes = STATEREF.SessionScribes || []
-            STATEREF.SessionModes = STATEREF.SessionModes || ["Active", "Inactive", "Daylighter", "Downtime", "Complications", "Spotlight"]
-            STATEREF.Mode = STATEREF.Mode || "Inactive"
-            STATEREF.LastMode = STATEREF.LastMode || "Inactive"
-            STATEREF.curLocation = STATEREF.curLocation || {
+            // delete STATE.REF.curLocation
+            // delete STATE.REF.locationRecord
+            STATE.REF.isTestingActive = STATE.REF.isTestingActive || false
+            STATE.REF.sceneChars = STATE.REF.sceneChars || []
+            STATE.REF.tokenRecord = STATE.REF.tokenRecord || {}
+            STATE.REF.SessionScribes = STATE.REF.SessionScribes || []
+            STATE.REF.SessionModes = STATE.REF.SessionModes || ["Active", "Inactive", "Daylighter", "Downtime", "Complications", "Spotlight"]
+            STATE.REF.Mode = STATE.REF.Mode || "Inactive"
+            STATE.REF.LastMode = STATE.REF.LastMode || "Inactive"
+            STATE.REF.curLocation = STATE.REF.curLocation || {
                 DistrictCenter: ["blank"],
                 DistrictLeft: ["blank"],
                 DistrictRight: ["blank"],
@@ -43,18 +43,20 @@ const Session = (() => {
                     BotRight: "blank"
                 }
             }
-            STATEREF.locationRecord = STATEREF.locationRecord || null
+            STATE.REF.locationRecord = STATE.REF.locationRecord || null
             
-            // delete STATEREF.locationRecord
+            // delete STATE.REF.locationRecord
             
-            if (!STATEREF.locationRecord) {
-                STATEREF.locationRecord = {}
+            if (!STATE.REF.locationRecord) {
+                STATE.REF.locationRecord = {}
                 for (const mode of Session.Modes)
-                    STATEREF.locationRecord[mode] = D.Clone(STATEREF.curLocation)
+                    STATE.REF.locationRecord[mode] = D.Clone(STATE.REF.curLocation)
             }
+
+            STATE.REF.locationRecord.Inactive = _.clone(BLANKLOCRECORD)
                 
                                  
-        // STATEREF.SessionScribes = [ "Thaumaterge", "Ava Wong", "banzai", "PixelPuzzler" ]
+        // STATE.REF.SessionScribes = [ "Thaumaterge", "Ava Wong", "banzai", "PixelPuzzler" ]
         },
     // #endregion
 
@@ -77,9 +79,9 @@ const Session = (() => {
                         }
                         case "mode": {
                             const [mode, modeSrc] = [args.shift(), args.shift()]
-                            if (VAL({string: [mode, modeSrc]}, "!sess add mode", true) && D.IsIn(modeSrc, STATEREF.SessionModes)) {
+                            if (VAL({string: [mode, modeSrc]}, "!sess add mode", true) && D.IsIn(modeSrc, STATE.REF.SessionModes)) {
                                 addMode(mode, modeSrc)
-                                D.Alert(`Session Mode '${mode}' Added.<br>Current Modes: ${D.JS(STATEREF.SessionModes)}`, "!sess add mode")
+                                D.Alert(`Session Mode '${mode}' Added.<br>Current Modes: ${D.JS(STATE.REF.SessionModes)}`, "!sess add mode")
                             }
                             break
                         }
@@ -108,14 +110,18 @@ const Session = (() => {
                 case "set": {
                     switch(D.LCase(call = args.shift())) {
                         case "mode": {
-                            STATEREF.Mode = D.IsIn(args.shift(), STATEREF.SessionModes) || STATEREF.Mode
-                            D.Alert(`Current Session Mode:<br><h3>${STATEREF.Mode}</h3>`, "!sess set mode")
+                            STATE.REF.Mode = D.IsIn(args.shift(), STATE.REF.SessionModes) || STATE.REF.Mode
+                            D.Alert(`Current Session Mode:<br><h3>${STATE.REF.Mode}</h3>`, "!sess set mode")
                             break
                         }
                         case "loc": case "location": {
-                            const sceneFocus = args.pop()
-                            setLocation(parseLocationString(args.join(" ")))
-                            setSceneFocus(sceneFocus)
+                            let sceneFocus = args[args.length - 1]
+                            if (["center", "left", "right", "all"].includes(D.LCase(sceneFocus)))
+                                args.pop()
+                            else
+                                sceneFocus = undefined
+                            setLocation(parseLocationString(args.join(" ")), sceneFocus)
+                            setTimeout(Media.UpdateSoundscape, 1000)
                             break
                         }
                         case "scene": {
@@ -123,7 +129,7 @@ const Session = (() => {
                             break
                         }
                         case "date": {
-                            STATEREF.dateRecord = null
+                            STATE.REF.dateRecord = null
                             break
                         }
                         case "macros": {
@@ -131,7 +137,7 @@ const Session = (() => {
                             break
                         }
                         default: {
-                            setSessionNum(D.Int(call) || STATEREF.SessionNum)
+                            setSessionNum(D.Int(call) || STATE.REF.SessionNum)
                             break
                         }
                     }
@@ -141,9 +147,9 @@ const Session = (() => {
                     switch (D.LCase(call = args.shift())) {
                         case "mode": {
                             const mode = args.shift()
-                            if (VAL({string: mode}, "!sess add mode") && D.IsIn(mode, STATEREF.SessionModes)) {
-                                STATEREF.SessionModes = _.without(STATEREF.SessionModes, D.IsIn(mode, STATEREF.SessionModes))
-                                D.Alert(`Session Mode '${mode}' Removed.<br>Current Modes: ${D.JS(STATEREF.SessionModes)}`, "!sess del mode")
+                            if (VAL({string: mode}, "!sess add mode") && D.IsIn(mode, STATE.REF.SessionModes)) {
+                                STATE.REF.SessionModes = _.without(STATE.REF.SessionModes, D.IsIn(mode, STATE.REF.SessionModes))
+                                D.Alert(`Session Mode '${mode}' Removed.<br>Current Modes: ${D.JS(STATE.REF.SessionModes)}`, "!sess del mode")
                             }
                             break
                         }
@@ -167,9 +173,9 @@ const Session = (() => {
                     break
                 }
                 case "daylighters": {
-                    STATEREF.Mode = STATEREF.Mode === "Daylighter" ? "Active" : "Daylighter"
-                    D.Alert(`Session Mode Set To: ${STATEREF.Mode}`, "Session Set Mode")
-                    DragPads.Toggle("signalLight", STATEREF.Mode !== "Daylighter")
+                    STATE.REF.Mode = STATE.REF.Mode === "Daylighter" ? "Active" : "Daylighter"
+                    D.Alert(`Session Mode Set To: ${STATE.REF.Mode}`, "Session Set Mode")
+                    DragPads.Toggle("signalLight", STATE.REF.Mode !== "Daylighter")
                     TimeTracker.Fix()
                     for (const charData of _.values(Char.REGISTRY).slice(0, 4)) {
                         const [token] = findObjs({
@@ -178,7 +184,7 @@ const Session = (() => {
                             _subtype: "token",
                             represents: charData.id
                         })
-                        if (STATEREF.Mode === "Daylighter") {
+                        if (STATE.REF.Mode === "Daylighter") {
                             Media.SetImgData(token, {isDaylighter: true, unObfSrc: "base"})
                             Media.SetImg(token, "baseDL")
                             if (charData.famulusTokenID) {
@@ -221,11 +227,11 @@ const Session = (() => {
                                     break
                                 }
                                 case "curloc": {
-                                    D.Alert(D.JS(STATEREF.curLocation), "Testing STATE.curLocation")
+                                    D.Alert(D.JS(STATE.REF.curLocation), "Testing STATE.curLocation")
                                     break
                                 }
                                 case "locrecord": {
-                                    D.Alert(D.JS(STATEREF.locationRecord), "Testing STATE.locationRecord")
+                                    D.Alert(D.JS(STATE.REF.locationRecord), "Testing STATE.locationRecord")
                                     break
                                 }
                                 case "parseloc": {
@@ -281,40 +287,40 @@ const Session = (() => {
             }
         },
     // #region Getting & Setting Session Data
-        isSessionActive = () => STATEREF.Mode !== "Inactive",
+        isSessionActive = () => STATE.REF.Mode !== "Inactive",
         setSessionNum = sNum => {
-            STATEREF.SessionNum = sNum
-            D.Alert(`Session Number <b>${D.NumToText(STATEREF.SessionNum)}</b> SET.`)
+            STATE.REF.SessionNum = sNum
+            D.Alert(`Session Number <b>${D.NumToText(STATE.REF.SessionNum)}</b> SET.`)
         },
     // #endregion
 
     // #region Starting/Ending Sessions
         startSession = () => {
-            const sessionScribe = STATEREF.isTestingActive ? STATEREF.SessionScribes[0] : STATEREF.SessionScribes.shift()
-            if (STATEREF.isTestingActive)
-                STATEREF.dateRecord = TimeTracker.CurrentDate.getTime()
+            const sessionScribe = STATE.REF.isTestingActive ? STATE.REF.SessionScribes[0] : STATE.REF.SessionScribes.shift()
+            if (STATE.REF.isTestingActive)
+                STATE.REF.dateRecord = TimeTracker.CurrentDate.getTime()
             else
-                STATEREF.dateRecord = null
-            if (STATEREF.SessionScribes.length === 0) {
-                DB(`Scribe: ${sessionScribe}, SessionScribes: ${D.JSL(STATEREF.SessionScribes)}
+                STATE.REF.dateRecord = null
+            if (STATE.REF.SessionScribes.length === 0) {
+                DB(`Scribe: ${sessionScribe}, SessionScribes: ${D.JSL(STATE.REF.SessionScribes)}
                     PICK: ${D.JS(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe))}
                     PLUCK: ${D.JS(_.pluck(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe), "playerName"))}
                     WITHOUT: ${D.JS(_.without(_.pluck(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe), "playerName"), "Storyteller"))}`, "startSession")
                 const otherScribes = _.shuffle(_.without(_.pluck(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe), "playerName"), "Storyteller"))
-                STATEREF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, sessionScribe]))
+                STATE.REF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, sessionScribe]))
             } 
             sendChat("Session Start", C.CHATHTML.Block([
                 C.CHATHTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
                 C.CHATHTML.Body("Initializing Session...", {margin: "0px 0px 10px 0px"}),
-                C.CHATHTML.Header(`Welcome to Session ${D.NumToText(STATEREF.SessionNum, true)}!`),
+                C.CHATHTML.Header(`Welcome to Session ${D.NumToText(STATE.REF.SessionNum, true)}!`),
                 C.CHATHTML.Body("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "10px 0px 10px 0px"}),
-                C.CHATHTML.Header(`Session Scribe: ${sessionScribe}`),
+                C.CHATHTML.Header(`Session Scribe: ${sessionScribe || "(None Set)"}`),
                 C.CHATHTML.Body("Thank you for your service!")
             ]))
-            changeMode("Active")
+            changeMode("Active", true)
             for (const quadrant of _.keys(Char.REGISTRY)) {
                 const {tokenName} = Char.REGISTRY[quadrant]
-                Media.SetImg(tokenName, STATEREF.tokenRecord[tokenName] || "base")
+                Media.SetImg(tokenName, STATE.REF.tokenRecord[tokenName] || "base")
             }
             Char.SendBack()
             TimeTracker.StopCountdown()
@@ -326,19 +332,19 @@ const Session = (() => {
             if (remorseCheck()) {
                 sendChat("Session End", C.CHATHTML.Block([
                     C.CHATHTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
-                    C.CHATHTML.Header(`Concluding Session ${D.NumToText(STATEREF.SessionNum, true)}`),
+                    C.CHATHTML.Header(`Concluding Session ${D.NumToText(STATE.REF.SessionNum, true)}`),
                     C.CHATHTML.Body("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "10px 0px 10px 0px"}),
                     C.CHATHTML.Title("See you next week!", {fontSize: "32px"}),
                 ]))
                 // Char.SendHome()
-                changeMode("Inactive")
-                STATEREF.tokenRecord = {}
-                if (!STATEREF.isTestingActive) {
-                    STATEREF.dateRecord = null
+                changeMode("Inactive", true)
+                STATE.REF.tokenRecord = {}
+                if (!STATE.REF.isTestingActive) {
+                    STATE.REF.dateRecord = null
                     for (const char of D.GetChars("registered"))
                         Char.AwardXP(char, 2, "Session XP award.")
-                } else if (STATEREF.dateRecord) {
-                    TimeTracker.CurrentDate = STATEREF.dateRecord
+                } else if (STATE.REF.dateRecord) {
+                    TimeTracker.CurrentDate = STATE.REF.dateRecord
                     TimeTracker.Fix()
                 }
                 for (const charData of D.GetChars("registered").map(x => D.GetCharData(x)))                  
@@ -347,8 +353,8 @@ const Session = (() => {
                 TimeTracker.StopLights()
                 TimeTracker.StartCountdown()
                 TimeTracker.Fix()
-                if (!STATEREF.isTestingActive)
-                    STATEREF.SessionNum++
+                if (!STATE.REF.isTestingActive)
+                    STATE.REF.SessionNum++
             }
         },
     // #endregion
@@ -358,7 +364,7 @@ const Session = (() => {
             if (VAL({string: [mode, modeSrc]}, "addMode", true)) {
                 if (!Session.Modes.includes(mode)) {
                     Session.Modes.push(mode)
-                    STATEREF.locationRecord[mode] = D.Clone(BLANKLOCRECORD)
+                    STATE.REF.locationRecord[mode] = D.Clone(BLANKLOCRECORD)
                 }
                 for (const imgKey of _.keys(Media.IMAGES))
                     Media.IMAGES[imgKey].modes[mode] = D.Clone(Media.IMAGES[imgKey].modes[modeSrc])
@@ -372,39 +378,41 @@ const Session = (() => {
         leaveMode = mode => { // eslint-disable-line no-unused-vars
 
         },
-        changeMode = mode => {
-            if (VAL({string: mode}, "changeMode") && STATEREF.SessionModes.map(x => x.toLowerCase()).includes(mode.toLowerCase())) {
+        changeMode = (mode, isUpdatingMedia = true) => {
+            if (VAL({string: mode}, "changeMode") && STATE.REF.SessionModes.map(x => x.toLowerCase()).includes(mode.toLowerCase())) {
                 const [lastMode, curMode] = [
-                    `${STATEREF.Mode}`,
+                    `${STATE.REF.Mode}`,
                     D.Capitalize(mode.toLowerCase())
                 ]
                 if (MODEFUNCTIONS.leaveMode[lastMode])
                     MODEFUNCTIONS.leaveMode[lastMode]()
-                STATEREF.Mode = curMode
-                STATEREF.LastMode = lastMode
-                // D.Alert(`Modes Set: ${STATEREF.Mode}, Last: ${STATEREF.LastMode}`)
-                Roller.Clean()
-                Media.SwitchMode()
-                setModeLocations(curMode)
-                if (MODEFUNCTIONS.enterMode[curMode])
-                    MODEFUNCTIONS.enterMode[curMode]()
-                Media.UpdateSoundscape()
+                STATE.REF.Mode = curMode
+                STATE.REF.LastMode = lastMode
+                // D.Alert(`Modes Set: ${STATE.REF.Mode}, Last: ${STATE.REF.LastMode}`)
+                if (isUpdatingMedia) {
+                    Roller.Clean()
+                    Media.SwitchMode()
+                    setModeLocations(curMode)
+                    if (MODEFUNCTIONS.enterMode[curMode])
+                        MODEFUNCTIONS.enterMode[curMode]()
+                    Media.UpdateSoundscape()
+                }
             }
         },
         toggleTesting = (isTesting) => {
             if (isTesting === false || isTesting === true) {
-                if (isTesting === STATEREF.isTestingActive)
+                if (isTesting === STATE.REF.isTestingActive)
                     return
-                STATEREF.isTestingActive = isTesting
+                STATE.REF.isTestingActive = isTesting
             } else {
-                STATEREF.isTestingActive = !STATEREF.isTestingActive
+                STATE.REF.isTestingActive = !STATE.REF.isTestingActive
             }
-            Media.ToggleText("testSessionNotice", STATEREF.isTestingActive)
-            D.Alert(`Testing Set to ${STATEREF.isTestingActive}`, "!sess test")
+            Media.ToggleText("testSessionNotice", STATE.REF.isTestingActive)
+            D.Alert(`Testing Set to ${STATE.REF.isTestingActive}`, "!sess test")
         },
         toggleDowntime = () => {
-            changeMode(STATEREF.Mode === "Downtime" ? "Active" : "Downtime")
-            if (STATEREF.Mode === "Downtime") {
+            changeMode(STATE.REF.Mode === "Downtime" ? "Active" : "Downtime")
+            if (STATE.REF.Mode === "Downtime") {
                 setLocation(BLANKLOCRECORD)
                 TimeTracker.StopClock()
                 Char.SendHome()
@@ -432,7 +440,7 @@ const Session = (() => {
                     quad = charData.quadrant,
                     spotlightOn = Media.GetImgData("Spotlight").curSrc,
                     otherCharData = D.GetChars("registered").filter(x => x.id !== charData.id).map(x => D.GetCharData(x))
-                if (STATEREF.Mode !== "Spotlight" || spotlightOn !== quad) {
+                if (STATE.REF.Mode !== "Spotlight" || spotlightOn !== quad) {
                     changeMode("Spotlight")
                     setLocation(BLANKLOCRECORD)
                     Char.SendHome()
@@ -449,7 +457,7 @@ const Session = (() => {
                     ]))
                 }
             } else {
-                changeMode(STATEREF.LastMode === "Spotlight" && "Active" || STATEREF.LastMode)
+                changeMode(STATE.REF.LastMode === "Spotlight" && "Active" || STATE.REF.LastMode)
                 Char.SendBack()
                 Media.SetImg("Spotlight", "blank")
                 sendChat("Spotlight", C.CHATHTML.Block([
@@ -479,8 +487,16 @@ const Session = (() => {
                 BotRight: "blank"
             }
         },
+        isLocCentered = () => {
+            const activeLocs = _.keys(STATE.REF.curLocation).filter(x => x !== "SubLocs" && STATE.REF.curLocation[x][0] !== "blank")
+            if (activeLocs.includes("DistrictCenter") && !activeLocs.includes("SiteLeft") && !activeLocs.includes("SiteRight"))
+                return true
+            if (activeLocs.includes("DistrictLeft") || activeLocs.includes("DistrictRight") || activeLocs.includes("SiteLeft") || activeLocs.includes("SiteRight"))
+                return false
+            return null
+        },
         getActiveLocations = (sideFocus) => {
-            const activeLocs = _.keys(STATEREF.curLocation).filter(x => x !== "SubLocs" && STATEREF.curLocation[x][0] !== "blank")
+            const activeLocs = _.keys(STATE.REF.curLocation).filter(x => x !== "SubLocs" && STATE.REF.curLocation[x][0] !== "blank")
             switch({c: "Center", l: "Left", r: "Right", a: "All"}[(sideFocus || "a").toLowerCase().charAt(0)]) {
                 case "Center":
                     return activeLocs.filter(x => x.endsWith("Center"))
@@ -492,21 +508,21 @@ const Session = (() => {
             }
             return activeLocs // [ "DistrictCenter", "DistrictLeft", "DistrictRight", "SiteCenter", "SiteLeft", "SiteRight" ]
         },
-        getActiveSceneLocations = () => getActiveLocations(STATEREF.sceneFocus), // [ "DistrictCenter", "SiteCenter" ]
+        getActiveSceneLocations = () => getActiveLocations(STATE.REF.sceneFocus), // [ "DistrictCenter", "SiteCenter" ]
         getActiveDistrict = () => {
             const [activePos] = getActiveSceneLocations().filter(x => x.includes("District"))
-            return activePos && STATEREF.curLocation[activePos] && STATEREF.curLocation[activePos][0] || false
+            return activePos && STATE.REF.curLocation[activePos] && STATE.REF.curLocation[activePos][0] || false
         },
         getActiveSite = () => {
             const [activePos] = getActiveSceneLocations().filter(x => x.startsWith("Site"))
-            return activePos && STATEREF.curLocation[activePos] && STATEREF.curLocation[activePos][0] || false
+            return activePos && STATE.REF.curLocation[activePos] && STATE.REF.curLocation[activePos][0] || false
         },
         getSubLocs = () => {
 
 
         },
         isOutside = () => {
-            const sceneLocs = _.compact(getActiveSceneLocations().map(x => STATEREF.curLocation[x][0]))
+            const sceneLocs = _.compact(getActiveSceneLocations().map(x => STATE.REF.curLocation[x][0]))
             // D.Poke(D.JS(sceneLocs))
             return sceneLocs.filter(x => !C.LOCATIONS[x].outside).length === 0
         },
@@ -536,7 +552,7 @@ const Session = (() => {
             })
         },
         getParentLocData = locPos => {
-            const locData = _.omit(STATEREF.curLocation, (v, k) => k !== "SubLocs" && v[0] === "blank"),
+            const locData = _.omit(STATE.REF.curLocation, (v, k) => k !== "SubLocs" && v[0] === "blank"),
                 locType = locPos.replace(/(Right|Left|Center)/gu, "")
             switch (locPos.replace(/(District|Site)/gu, "") || [""]) {
                 case "Center":
@@ -551,9 +567,9 @@ const Session = (() => {
             }
             return false
         },
-        setLocation = (locParams) => {
-            const newLocData = Object.assign(_.clone(BLANKLOCRECORD), locParams, _.omit(STATEREF.curLocation, (v,k) => k === "SubLocs" || _.keys(locParams).includes(k))),
-                curLocData = JSON.parse(JSON.stringify(STATEREF.curLocation)),
+        setLocation = (locParams, sceneFocus) => {
+            const newLocData = Object.assign(_.clone(BLANKLOCRECORD), locParams, _.omit(STATE.REF.curLocation, (v,k) => k === "SubLocs" || _.keys(locParams).includes(k))),
+                curLocData = JSON.parse(JSON.stringify(STATE.REF.curLocation)),
                 reportStrings = [
                     `Loc Params: ${D.JS(locParams)}`,
                     `New Loc Data: ${D.JS(newLocData)}`,
@@ -588,14 +604,14 @@ const Session = (() => {
             }
             if (!newLocData.SiteCenter || newLocData.SiteCenter[0] === "blank")
                 newLocData.SubLocs = {TopLeft: "blank", Left: "blank", BotLeft: "blank", TopRight: "blank", Right: "blank", BotRight: "blank"}
-            STATEREF.curLocation = D.Clone(newLocData)
-            STATEREF.locationRecord[Session.Mode] = D.Clone(newLocData) 
+            STATE.REF.curLocation = D.Clone(newLocData)
+            STATE.REF.locationRecord[Session.Mode] = D.Clone(newLocData) 
             const locDataDelta = _.pick(newLocData, _.keys(newLocData).filter(x => x !== "SubLocs" && !_.isEqual(newLocData[x], curLocData[x])))
             for (const [subLocPos, subLocName] of Object.entries(newLocData.SubLocs || {}))
                 if (curLocData.SubLocs[subLocPos] !== subLocName)
                     locDataDelta[`SubLoc${subLocPos}`] = subLocName
             reportStrings.push(`Loc Data Delta: ${D.JS(locDataDelta)}`)
-            reportStrings.push(`New STATEREF Record: ${D.JS(STATEREF.locationRecord[Session.Mode])}`)
+            reportStrings.push(`New STATE.REF Record: ${D.JS(STATE.REF.locationRecord[Session.Mode])}`)
             DB(`<h3>Set Location Processing:</h3>${D.JS(reportStrings.join("<br>"))}`, "setLocation")
             for (const [locPos, locData] of Object.entries(locDataDelta)) {
                 const locSrc = VAL({string: locData}) ? locData : locData[0]
@@ -616,9 +632,9 @@ const Session = (() => {
                     }
                 }
             }
-            setSceneFocus(STATEREF.sceneFocus)
+            setSceneFocus(sceneFocus || STATE.REF.sceneFocus)
         },
-        setModeLocations = (mode) => { setLocation(STATEREF.locationRecord[mode]) },
+        setModeLocations = (mode) => { setLocation(STATE.REF.locationRecord[mode]) },
         getCharsInLocation = (locPos) => {
             const charObjs = []
             for (const loc of getActiveLocations(locPos))
@@ -711,30 +727,29 @@ const Session = (() => {
             const charObjs = D.GetChars(charRef)
             if (VAL({charObj: charObjs}, "addCharToScene", true)) {
                 for (const charObj of charObjs) {
-                    if (STATEREF.sceneChars.includes(charObj.id))
+                    if (STATE.REF.sceneChars.includes(charObj.id))
                         continue
-                    STATEREF.sceneChars.push(charObj.id)
+                    STATE.REF.sceneChars.push(charObj.id)
                 }
-                D.Alert(`Scene Now Includes:<br><ul>${D.JS(STATEREF.sceneChars.map(x => `<li><b>${D.GetName(x)}</b>`).join(""))}</ul>`, "Scene Characters")
+                D.Alert(`Scene Now Includes:<br><ul>${D.JS(STATE.REF.sceneChars.map(x => `<li><b>${D.GetName(x)}</b>`).join(""))}</ul>`, "Scene Characters")
             }
         },
         setSceneFocus = (locPos) => {
-            STATEREF.sceneFocus = D.LCase(locPos).charAt(0)
+            locPos = locPos || isLocCentered() === true && "Center" || isLocCentered() === false && "Left" || STATE.REF.sceneFocus 
+            STATE.REF.sceneFocus = D.LCase(locPos).charAt(0)
             const sceneLocs = getActiveSceneLocations()
             for (const loc of getActiveLocations())
                 if (sceneLocs.includes(loc)) 
                     Media.SetImgTemp(loc, {tint_color: "transparent"})
                 else
                     Media.SetImgTemp(loc, {tint_color: "#000000"})            
-            Media.UpdateSoundscape()
-            if (STATEREF.sceneFocus === "c")
-                setSubLocMacro()
-            setTimeout(Media.UpdateSoundscape, 1000)
+            if (STATE.REF.sceneFocus === "c")
+                setSubLocMacro()    
         },
         endScene = () => {
-            for (const charID of STATEREF.sceneChars)
+            for (const charID of STATE.REF.sceneChars)
                 D.SetStat(charID, "willpower_social_toggle", "go")
-            STATEREF.sceneChars = []
+            STATE.REF.sceneChars = []
             setSceneFocus(null)
             D.Alert("Social Willpower Damage partially refunded.", "Scene Ended")
         }
@@ -748,21 +763,21 @@ const Session = (() => {
         AddSceneChar: addCharToScene,
         ChangeMode: changeMode,
         CharsIn: getCharsInLocation,
-        get SceneChars() { return getCharsInLocation(STATEREF.sceneFocus) },
-        get SceneFocus() { return STATEREF.sceneFocus },
-        Locations: () => D.KeyMapObj(getActiveSceneLocations(), (k, v) => v, v => STATEREF.curLocation[v][0] !== "blank" && STATEREF.curLocation[v][0]),
-        get Location() { return STATEREF.locationRecord },
+        get SceneChars() { return getCharsInLocation(STATE.REF.sceneFocus) },
+        get SceneFocus() { return STATE.REF.sceneFocus },
+        Locations: () => D.KeyMapObj(getActiveSceneLocations(), (k, v) => v, v => STATE.REF.curLocation[v][0] !== "blank" && STATE.REF.curLocation[v][0]),
+        get Location() { return STATE.REF.locationRecord },
         get District() { return getActiveDistrict() },
         get Site() { return getActiveSite() },
         get IsOutside() { return isOutside() },
 
-        get SessionNum() { return STATEREF.SessionNum },
+        get SessionNum() { return STATE.REF.SessionNum },
         get IsSessionActive() { return isSessionActive() },
-        get IsTesting() { return STATEREF.isTestingActive },
+        get IsTesting() { return STATE.REF.isTestingActive },
 
-        get Mode() { return STATEREF.Mode },
-        get Modes() { return STATEREF.SessionModes },
-        get LastMode() { return STATEREF.LastMode }        
+        get Mode() { return STATE.REF.Mode },
+        get Modes() { return STATE.REF.SessionModes },
+        LastMode: STATE.REF.LastMode        
     }
 })()
 

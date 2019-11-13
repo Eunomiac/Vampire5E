@@ -22,29 +22,29 @@ const Char = (() => {
     const SCRIPTNAME = "Char",
 
     // #region COMMON INITIALIZATION
-        STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
+        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
         checkInstall = () => {
-            C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
+            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
             initialize()
         },
     // #endregion
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
-            STATEREF.registry = STATEREF.registry || {}
-            STATEREF.weeklyResources = STATEREF.weeklyResources || {}
-            STATEREF.customStakes = STATEREF.customStakes || {}
-            STATEREF.customStakes.coterie = STATEREF.customStakes.coterie || []
-            STATEREF.customStakes.personal = STATEREF.customStakes.personal || {A: [], L: [], N: [], R: []}
-            STATEREF.tokenRecord = STATEREF.tokenRecord || []
-            STATEREF.traitSelection = STATEREF.traitSelection || []
+            STATE.REF.registry = STATE.REF.registry || {}
+            STATE.REF.weeklyResources = STATE.REF.weeklyResources || {}
+            STATE.REF.customStakes = STATE.REF.customStakes || {}
+            STATE.REF.customStakes.coterie = STATE.REF.customStakes.coterie || []
+            STATE.REF.customStakes.personal = STATE.REF.customStakes.personal || {A: [], L: [], N: [], R: []}
+            STATE.REF.tokenRecord = STATE.REF.tokenRecord || []
+            STATE.REF.traitSelection = STATE.REF.traitSelection || []
 
-        /* STATEREF.registry = {
+        /* STATE.REF.registry = {
             TopLeft: {
                 id: "-LluFXX9vtlTeb_D7t4y",
                 name: "Locke Ulrich",
@@ -88,13 +88,13 @@ const Char = (() => {
         } */
 
         // Storyteller Override:
-        // STATEREF.registry.TopLeft.playerID = "-LLIBpH_GL5I-9lAOiw9"
+        // STATE.REF.registry.TopLeft.playerID = "-LLIBpH_GL5I-9lAOiw9"
 
         // Return Player Control:
-        // STATEREF.registry.TopLeft.playerID = "-LMGDQqIvyL87oIfrVDX"
-        // STATEREF.registry.BotLeft.playerID = "-LN6n-fR8cSNR2E_N_3q"
-        // STATEREF.registry.TopRight.playerID = "-LN7lNnjuWmFuvVPW76H"
-        // STATEREF.registry.BotRight.playerID = "-LMGDbZCKw4bZk8ztfNf"
+        // STATE.REF.registry.TopLeft.playerID = "-LMGDQqIvyL87oIfrVDX"
+        // STATE.REF.registry.BotLeft.playerID = "-LN6n-fR8cSNR2E_N_3q"
+        // STATE.REF.registry.TopRight.playerID = "-LN7lNnjuWmFuvVPW76H"
+        // STATE.REF.registry.BotRight.playerID = "-LMGDbZCKw4bZk8ztfNf"
         },
     // #endregion
 
@@ -129,13 +129,13 @@ const Char = (() => {
                             switch (D.LCase(call = args.shift())) {
                                 case "coterie": {                                  
                                     const [name, value, max, date] = args.join(" ").split("|")
-                                    STATEREF.customStakes.coterie.push([name, D.Int(value), D.Int(max), date])
+                                    STATE.REF.customStakes.coterie.push([name, D.Int(value), D.Int(max), date])
                                     break
                                 }
                                 default: {
                                     const initial = call,
                                         [name, value, max, date] = args.join(" ").split("|")
-                                    STATEREF.customStakes.personal[initial].push([name, D.Int(value), D.Int(max), date])
+                                    STATE.REF.customStakes.personal[initial].push([name, D.Int(value), D.Int(max), date])
                                     break
                                 }
                             }
@@ -163,13 +163,13 @@ const Char = (() => {
                         case "stake": {
                             switch (D.LCase(call = args.shift())) {
                                 case "coterie": {
-                                    STATEREF.customStakes.coterie = STATEREF.customStakes.coterie.filter(x => x[0].toLowerCase() !== args.join(" ").toLowerCase())
+                                    STATE.REF.customStakes.coterie = STATE.REF.customStakes.coterie.filter(x => x[0].toLowerCase() !== args.join(" ").toLowerCase())
                                     break
                                 }
                                 default: {
                                     const initial = call,
                                         name = args.join(" ")
-                                    STATEREF.customStakes.personal[initial] = STATEREF.customStakes.personal[initial].filter(x => x[0].toLowerCase() !== name.toLowerCase())
+                                    STATE.REF.customStakes.personal[initial] = STATE.REF.customStakes.personal[initial].filter(x => x[0].toLowerCase() !== name.toLowerCase())
                                     break
                                 }
                             }
@@ -183,7 +183,7 @@ const Char = (() => {
                     switch (D.LCase(call = args.shift())) {
                         case "stat": {
                             if (args.length) {
-                                const traitName = args[0].toLowerCase() === "selected" && STATEREF.traitSelection.shift() || args.shift(),
+                                const traitName = args[0].toLowerCase() === "selected" && STATE.REF.traitSelection.shift() || args.shift(),
                                     returnLines = []                                
                                 if (!charObjs.length)
                                     charObjs = D.GetChars("registered")
@@ -244,9 +244,9 @@ const Char = (() => {
                             if (args.length === 2) {
                                 const init = D.GetCharData(charObjs[0]).initial, 
                                     [rowNum, amount] = args.map(x => D.Int(x)),
-                                    [curTot, curLock] = [STATEREF.weeklyResources[init][rowNum - 1][2], STATEREF.weeklyResources[init][rowNum - 1][3]],
+                                    [curTot, curLock] = [STATE.REF.weeklyResources[init][rowNum - 1][2], STATE.REF.weeklyResources[init][rowNum - 1][3]],
                                     newLock = Math.max(0, Math.min(curTot, curLock + (isLocking ? amount : -amount)))
-                                STATEREF.weeklyResources[init][rowNum - 1][3] = newLock
+                                STATE.REF.weeklyResources[init][rowNum - 1][3] = newLock
                             } else {
                                 D.Alert("Syntax:<br><br><b>!char reg (initial) (name) (total)<br>!char unreg/set/lock/unlock (initial) (rowNum) [amount]<br>!char set weekly reset</b>")
                             }
@@ -451,11 +451,11 @@ const Char = (() => {
                         case "trait": {
                             if (args.length) {
                                 const thisTrait = args.shift().toLowerCase()
-                                if (STATEREF.traitSelection.includes(thisTrait))
-                                    STATEREF.traitSelection = _.without(STATEREF.traitSelection, thisTrait)
+                                if (STATE.REF.traitSelection.includes(thisTrait))
+                                    STATE.REF.traitSelection = _.without(STATE.REF.traitSelection, thisTrait)
                                 else
-                                    STATEREF.traitSelection.push(thisTrait)
-                                Media.SetText("secretRollTraits", STATEREF.traitSelection.length === 0 ? " " : STATEREF.traitSelection.join("\n"), true)
+                                    STATE.REF.traitSelection.push(thisTrait)
+                                Media.SetText("secretRollTraits", STATE.REF.traitSelection.length === 0 ? " " : STATE.REF.traitSelection.join("\n"), true)
                             } else {
                                 promptTraitSelect()
                             }
@@ -523,7 +523,7 @@ const Char = (() => {
         },
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
-        REGISTRY = STATEREF.registry,
+        REGISTRY = STATE.REF.registry,
         ATTRNAMES = _.values(C.ATTRIBUTES).map(x => x.map(xx => xx.replace(/\s/gu, "_"))),
         SKILLNAMES = _.values(C.SKILLS).map(x => x.map(xx => xx.replace(/\s/gu, "_"))),
         DISCNAMES = C.DISCIPLINES.map(x => x.replace(/\s/gu, "_")),
@@ -584,7 +584,7 @@ const Char = (() => {
                 npcTokens = charTokens.filter(x => VAL({npc: x.get("represents")}))
             // D.Alert(`PCs: ${D.JS(pcTokens.map(x => getObj("character", x.get("represents")).get("name")))}<br><br>NPCs: ${D.JS(npcTokens.map(x => getObj("character", x.get("represents")).get("name")))}`)
             
-            STATEREF.tokenRecord = charTokens && charTokens.map(x => ({id: x.id, left: x.get("left"), top: x.get("top")}))
+            STATE.REF.tokenRecord = charTokens && charTokens.map(x => ({id: x.id, left: x.get("left"), top: x.get("top")}))
             for (const token of pcTokens) {
                 const quad = D.GetCharData(token).quadrant
                 Media.SetArea(token, `${quad}Token`)
@@ -593,9 +593,9 @@ const Char = (() => {
                 token.set("layer", "walls")
         },
         restoreCharsPos = () => {
-            for (const tokenData of STATEREF.tokenRecord)
+            for (const tokenData of STATE.REF.tokenRecord)
                 (getObj("graphic", tokenData.id) || {set: () => false}).set({left: tokenData.left, top: tokenData.top, layer: "objects"})
-            STATEREF.tokenRecord = []            
+            STATE.REF.tokenRecord = []            
         },
         togglePlayerChar = (charRef, isActive) => {
             if (isActive === true || isActive === false) {
@@ -1010,25 +1010,25 @@ const Char = (() => {
         regResource = (charRef, name, amount) => {
             const initial = D.UCase((D.GetCharData(charRef) || {initial: false}).initial)
             if (initial !== "") {
-                STATEREF.weeklyResources[initial] = STATEREF.weeklyResources[initial] || []
-                STATEREF.weeklyResources[initial].push([name, 0, amount])
+                STATE.REF.weeklyResources[initial] = STATE.REF.weeklyResources[initial] || []
+                STATE.REF.weeklyResources[initial].push([name, 0, amount])
             }
             displayResources()
         },
         unregResource = (charRef, rowNum) => {
             const initial = D.UCase((D.GetCharData(charRef) || {initial: false}).initial)
             if (initial !== "")
-                if (STATEREF.weeklyResources[initial].length <= 1 && rowNum === 1)
-                    delete STATEREF.weeklyResources[initial]
+                if (STATE.REF.weeklyResources[initial].length <= 1 && rowNum === 1)
+                    delete STATE.REF.weeklyResources[initial]
                 else
-                    STATEREF.weeklyResources[initial] = [..._.first(STATEREF.weeklyResources[initial], rowNum - 1), ..._.rest(STATEREF.weeklyResources[initial], rowNum)]
+                    STATE.REF.weeklyResources[initial] = [..._.first(STATE.REF.weeklyResources[initial], rowNum - 1), ..._.rest(STATE.REF.weeklyResources[initial], rowNum)]
             displayResources()
         },
         adjustResource = (charRef, rowNum, amount) => {
             const initial = D.UCase((D.GetCharData(charRef) || {initial: false}).initial)
             if (initial !== "") {
                 D.Alert(`Adjusting: ${initial}, ${rowNum}, ${amount}`)
-                const entry = STATEREF.weeklyResources[initial] && STATEREF.weeklyResources[initial][rowNum - 1]
+                const entry = STATE.REF.weeklyResources[initial] && STATE.REF.weeklyResources[initial][rowNum - 1]
                 if (entry)
                     entry[1] = Math.max(0, Math.min(entry[2], entry[1] + amount))
                 D.Chat(D.GetChar(initial), C.CHATHTML.Block([
@@ -1039,9 +1039,9 @@ const Char = (() => {
             displayResources()
         },
         resetResources = () => {
-            _.each(STATEREF.weeklyResources, (data, init) => {
+            _.each(STATE.REF.weeklyResources, (data, init) => {
                 // D.Alert(`Init: ${D.JS(init)}, Data: ${D.JS(data, true)}<br>Map: ${D.JS(_.map(data, v => [v[0], 0, v[2]]))}`)
-                STATEREF.weeklyResources[init] = _.map(data, v => [v[0], 0, v[2], v[3] || 0])
+                STATE.REF.weeklyResources[init] = _.map(data, v => [v[0], 0, v[2], v[3] || 0])
                 D.Chat(D.GetChar(init), C.CHATHTML.Block([
                     C.CHATHTML.Body("Your weekly resources have been refreshed.", C.STYLES.whiteMarble.body)
                 ], C.STYLES.whiteMarble.block))
@@ -1052,12 +1052,12 @@ const Char = (() => {
             const [col1Width, col2Width] = [20, 250],
                 textObj = Media.GetText("weeklyResources"),
                 resStrings = []
-            if (_.flatten(_.values(STATEREF.weeklyResources)).length === 0) {
+            if (_.flatten(_.values(STATE.REF.weeklyResources)).length === 0) {
                 Media.SetText("weeklyResources", {text: " "})
             } else {
-                const sortedInits = _.sortBy(_.keys(STATEREF.weeklyResources))
+                const sortedInits = _.sortBy(_.keys(STATE.REF.weeklyResources))
                 for(const init of sortedInits) {
-                    const data = STATEREF.weeklyResources[init]
+                    const data = STATE.REF.weeklyResources[init]
                     let thisString = `[${init}]`
                     _.each(data, v => {
                         DB(`thisString: ${D.JSL(thisString)}, col1width: ${Media.GetTextWidth(textObj, thisString, false)}, col2width: ${Media.GetTextWidth(textObj, v[0], false)}`, "displayResources")
@@ -1118,14 +1118,14 @@ const Char = (() => {
                         else
                             stakeData.push([initial, stake.name, Math.min(D.Int(stake.val), advMax), D.Int(advMax), endDate])
                 }
-                for (const stake of STATEREF.customStakes.personal[initial]) {
+                for (const stake of STATE.REF.customStakes.personal[initial]) {
                     const [name, val, max, dateStamp] = [stake[0], stake[1], stake[2], TimeTracker.GetDate(stake[3])]
                     if (max && val > 0 && TimeTracker.CurrentDate.getTime() < dateStamp.getTime())
                         stakeData.push([initial, name, val, max, TimeTracker.FormatDate(dateStamp)])
                 }
                     
             }
-            for (const stake of STATEREF.customStakes.coterie) {
+            for (const stake of STATE.REF.customStakes.coterie) {
                 const [name, val, max, dateStamp] = [stake[0], stake[1], stake[2], TimeTracker.GetDate(stake[3])]
                 stakeStrings.push(" ")
                 if (max && val > 0 && TimeTracker.CurrentDate.getTime() < dateStamp.getTime())
@@ -1682,17 +1682,17 @@ const Char = (() => {
         PromptTraitSelect: promptTraitSelect,
         RefreshDisplays: () => { displayDesires(); displayResources(); displayStakes(); updateHunger() },
         get SelectedChar() { 
-            if (STATEREF.charSelection) {
-                const charObj = getObj("character", STATEREF.charSelection)
-                delete STATEREF.charSelection
+            if (STATE.REF.charSelection) {
+                const charObj = getObj("character", STATE.REF.charSelection)
+                delete STATE.REF.charSelection
                 return charObj
             } else {
                 return false
             }
         },
         get SelectedTraits() {
-            const selTraits = [...STATEREF.traitSelection]
-            STATEREF.traitSelection = []
+            const selTraits = [...STATE.REF.traitSelection]
+            STATE.REF.traitSelection = []
             Media.SetText("secretRollTraits", " ")
             return selTraits.length && selTraits || false
         }

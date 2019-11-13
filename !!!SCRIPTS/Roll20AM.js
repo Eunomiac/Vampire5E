@@ -10,6 +10,14 @@ Thanks to: The Aaron, Arcane Scriptomancer and Stephen S. for their help Alpha a
 var Roll20AM = Roll20AM || (function() {
     // #region THIRD-PARTY SCRIPT
     'use strict';
+    const SCRIPTNAME = "Roll20AM",
+
+    // #region COMMON INITIALIZATION
+        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
+        VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
+        DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+        LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
+        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj) // eslint-disable-line no-unused-vars
 
     var version = '2.12',
         lastUpdate = 1491352004,
@@ -2082,8 +2090,11 @@ var Roll20AM = Roll20AM || (function() {
                     }
                 } else if (getTrackID(soundRef)) {
                     changeVolumeTrack(soundData.id, D.Int(volume))
-                    if (soundData.playing)
-                        getTrackObj(soundData.title).set("volume", D.Int(volume))
+                    if (soundData.playing) {
+                        const trackObj = getTrackObj(soundData.title)
+                        if (trackObj)
+                            trackObj.set("volume", D.Int(volume))
+                    }
                 }            
         },
         setSoundMode = (soundRef, mode) => {
@@ -2144,11 +2155,11 @@ var Roll20AM = Roll20AM || (function() {
             if (listData) {
                 const playingTracks = _.compact(getPlayingListTracks(listRef))
                 if (playingTracks.length === 0) {
-                    D.Alert(`No Tracks Playing for ${D.JS(listRef)}! ... Restarting.`, `VOneTrack(${D.JSL(listRef)})`)
+                    DB(`No Tracks Playing for ${D.JS(listRef)}! ... Restarting.`, "verifyOneTrackPlaying")
                     stopSound(listRef, 0, false)
                     playSound(listRef, undefined, undefined, false)
                 } else if (playingTracks.length > 1 && listData.mode !== "together") {
-                    D.Alert(`Too Many Tracks Playing for ${D.JS(listRef)}!<br>... Stopping: ${D.JS(playingTracks.slice(1))}<br>... Restarting: ${D.JS(playingTracks[0])}`, `VOneTrack(${D.JSL(listRef)})`)
+                    DB(`Too Many Tracks Playing for ${D.JS(listRef)}!<br>... Stopping: ${D.JS(playingTracks.slice(1))}<br>... Restarting: ${D.JS(playingTracks[0])}`, "verifyOneTrackPlaying")
                     for (let i = 1; i < playingTracks.length; i++) {
                         stopSound(playingTracks[i], 0, false)
                         getTrackObj(playingTracks[i]).set({playing:false})

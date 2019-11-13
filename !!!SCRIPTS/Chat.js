@@ -12,14 +12,14 @@ const Chat = (() => {
     const SCRIPTNAME = "Chat",
 
     // #region COMMON INITIALIZATION
-        STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
+        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
         checkInstall = () => {
-            C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
+            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
         },
     // #endregion
 
@@ -484,16 +484,18 @@ const Chat = (() => {
         getPos = obj => {
             if (!obj)
                 return false
-            const gridInfo = `<b>Center:</b> ${obj.get("left") / D.CELLSIZE}, ${obj.get("top") / D.CELLSIZE
-                }<br/> <b>Left:</b> ${(obj.get("left") - 0.5 * obj.get("width")) / D.CELLSIZE
-                }<br/> <b>Top:</b> ${(obj.get("top") - 0.5 * obj.get("height")) / D.CELLSIZE
-                }<br/> <b>Dimensions:</b> ${obj.get("width") / D.CELLSIZE} x ${obj.get("height") / D.CELLSIZE}`,
-                pixelInfo = ` Center (Base Left, Top):</b> ${obj.get("left")}, ${obj.get("top")
-                }<br/> <b>Left Edge:</b> ${obj.get("left") - 0.5 * obj.get("width")
-                }<br/> <b>Top Edge:</b> ${obj.get("top") - 0.5 * obj.get("height")
-                }<br/> <b>Dimensions (Width x Height):</b> ${obj.get("width")} x ${obj.get("height")}`
-            D.Alert(`<b><u>GRID</u>:</b><br/>${gridInfo}<br/><b><u>PIXELS</u>:</b><br/>${pixelInfo}`, "Position Data")
-
+            const posInfo = [
+                "<div style='display: block; width: 100%; height: 150px; margin: 0px; padding: 0px; text-align: center; text-align-last: center; font-size: 8px;'>",
+                `<div style="display: block; margin: 0px; padding: 0px; width: 100%; height: 20px; text-align:center; text-align-last: center; font-weight: bold; line-height: 20px;">${D.Round(obj.get("top") - 0.5*obj.get("height"), 2)}</div>`,
+                "<div style='display: block; margin: 0px; padding: 0px; width: 100%; height: auto;'>",
+                `<div style="display: inline-block; margin: 0px; padding: 0px; width: 25%; height: 110px; line-height: 110px; text-align: center; text-align-last: center; font-weight: bold;">${D.Round(obj.get("left") - 0.5 * obj.get("width"), 2)}</div>`,
+                `<div style="display: inline-block; margin: 0px; padding: 0px; width: 49%; background-color: #FFFFCC; border: 1px dotted black; text-align: center; text-align-last: center; vertical-align: middle; padding-top: 40px; padding-bottom: 40px;"><b>${D.Round(obj.get("left"), 2)}</b>, <b>${D.Round(obj.get("top"), 2)}</b><br>(<b>${D.Round(obj.get("width"), 2)}</b> x <b>${D.Round(obj.get("height"), 2)}</b>)</div>`,
+                `<div style="display: inline-block; margin: 0px; padding: 0px; width: 25%; height: 110px; line-height: 110px; text-align: center; text-align-last: center; font-weight: bold;">${D.Round(obj.get("left") + 0.5 * obj.get("width"), 2)}</div>`,
+                "</div>",
+                `<div style="display: block; margin: 0px; padding: 0px; width: 100%; height: 20px; text-align:center; text-align-last: center; font-weight: bold; line-height: 20px;">${D.Round(obj.get("top") + 0.5*obj.get("height"), 2)}</div>`,
+                "</div>"
+            ]
+            D.Alert(posInfo.join(""), `${obj.get("name") || ""} Position Data `)
             return true
         },
         getProperty = (obj, property) => {

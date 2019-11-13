@@ -4,33 +4,33 @@ const DragPads = (() => {
     const SCRIPTNAME = "DragPads",
 
     // #region COMMON INITIALIZATION
-        STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
+        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
         checkInstall = () => {
-            C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
+            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
             initialize()
         },
     // #endregion
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
-            STATEREF.byPad = STATEREF.byPad || {}
-            STATEREF.byGraphic = STATEREF.byGraphic || {}
+            STATE.REF.byPad = STATE.REF.byPad || {}
+            STATE.REF.byGraphic = STATE.REF.byGraphic || {}
 
-            for (const imgID of _.keys(STATEREF.byGraphic)) {
+            for (const imgID of _.keys(STATE.REF.byGraphic)) {
                 const imgObj = getObj("graphic", imgID),
                     imgKey = Media.GetImgKey(imgObj)
                 if (VAL({string: imgKey}, "DP INIT")) {
-                    Media.IMAGES[imgKey].padID = STATEREF.byGraphic[imgID].id
-                    Media.IMAGES[imgKey].partnerID = STATEREF.byGraphic[imgID].pad.partnerID
-                    STATEREF.byGraphic[imgID].pad.name = STATEREF.byGraphic[imgID].pad.name.replace(/(^\w*?)_Pad_\d*$/gu, `${imgKey}_$1_Pad`)
-                    STATEREF.byGraphic[imgID].partnerPad.name = STATEREF.byGraphic[imgID].partnerPad.name.replace(/(^\w*?)_PartnerPad_\d*$/gu, `${imgKey}_$1_PartnerPad`)
-                    STATEREF.byPad[Media.IMAGES[imgKey].padID].name = STATEREF.byGraphic[imgID].pad.name
-                    STATEREF.byPad[Media.IMAGES[imgKey].partnerID].name = STATEREF.byGraphic[imgID].partnerPad.name
+                    Media.IMAGES[imgKey].padID = STATE.REF.byGraphic[imgID].id
+                    Media.IMAGES[imgKey].partnerID = STATE.REF.byGraphic[imgID].pad.partnerID
+                    STATE.REF.byGraphic[imgID].pad.name = STATE.REF.byGraphic[imgID].pad.name.replace(/(^\w*?)_Pad_\d*$/gu, `${imgKey}_$1_Pad`)
+                    STATE.REF.byGraphic[imgID].partnerPad.name = STATE.REF.byGraphic[imgID].partnerPad.name.replace(/(^\w*?)_PartnerPad_\d*$/gu, `${imgKey}_$1_PartnerPad`)
+                    STATE.REF.byPad[Media.IMAGES[imgKey].padID].name = STATE.REF.byGraphic[imgID].pad.name
+                    STATE.REF.byPad[Media.IMAGES[imgKey].partnerID].name = STATE.REF.byGraphic[imgID].partnerPad.name
                 }
             }
         },
@@ -40,7 +40,7 @@ const DragPads = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             switch (call) {
                 case "backup": {
-                    STATEREF.backup = {
+                    STATE.REF.backup = {
                         byPad: JSON.parse(JSON.stringify(PADREGISTRY)),
                         byGraphic: JSON.parse(JSON.stringify(GRAPHICREGISTRY))
                     }
@@ -48,8 +48,8 @@ const DragPads = (() => {
                     break
                 }
                 case "restore": {
-                    STATEREF.byPad = JSON.parse(JSON.stringify(STATEREF.backup.byPad))
-                    STATEREF.byGraphic = JSON.parse(JSON.stringify(STATEREF.backup.byGraphic))
+                    STATE.REF.byPad = JSON.parse(JSON.stringify(STATE.REF.backup.byPad))
+                    STATE.REF.byGraphic = JSON.parse(JSON.stringify(STATE.REF.backup.byGraphic))
                     D.Alert("Drag Pad Backup Restored.", "!dpad restore")
                     break
                 }
@@ -101,7 +101,7 @@ const DragPads = (() => {
                     const funcName = args.shift(),
                         imgKeys = []
                     for (const padID of _.keys(PADREGISTRY))
-                        if (funcName === "all" || PADREGISTRY[padID].funcName === funcName) {
+                        if (funcName === "allpads" || PADREGISTRY[padID].funcName === funcName) {
                             const padObj = getObj("graphic", padID)
                             imgKeys.push(PADREGISTRY[padID].name)
                             if (padObj)
@@ -117,8 +117,8 @@ const DragPads = (() => {
                     const [padObjs, padNames, padData, graphicList, reportStrings] = [[], [], [], [], []]
                     switch (D.LCase(call = args.shift())) {
                         case "confirm": {
-                            STATEREF.byPad = {}
-                            STATEREF.byGraphic = {}
+                            STATE.REF.byPad = {}
+                            STATE.REF.byGraphic = {}
                             _.each(_.flatten(padObjs), pad => {
                                 if (Media.IsRegistered(pad))
                                     Media.RemoveImg(pad, true)
@@ -245,8 +245,8 @@ const DragPads = (() => {
             signalLight: "https://s3.amazonaws.com/files.d20.io/images/66320080/pUJEq-Vo-lx_-Nn16TvhYQ/thumb.png?1541372292" // 455 x 514
         },
         DICECATS = ["Main", "Big"],
-        GRAPHICREGISTRY = STATEREF.byGraphic,
-        PADREGISTRY = STATEREF.byPad,
+        GRAPHICREGISTRY = STATE.REF.byGraphic,
+        PADREGISTRY = STATE.REF.byPad,
     // #endregion
 
     // #region PERSONAL FUNCTION SETTINGS
@@ -259,7 +259,7 @@ const DragPads = (() => {
                 Roller.Select(dieCat, D.Int(dieNum))
             },
             wpReroll() {
-                const stateVar = C.ROOT.Roller.selected,
+                const stateVar = C.RO.OT.Roller.selected,
                     diceCats = [...DICECATS]
                 let dieCat = ""
                 do {
@@ -324,14 +324,21 @@ const DragPads = (() => {
 
     // #region Pad Management
         getPad = padRef => {
-            const pads = []
-            if (VAL({object: padRef}))
+            const pads = [],
+                imgObj = Media.GetImg(padRef)
+            if (VAL({imgObj}) && Media.IsRegistered(imgObj)) {
+                const imgData = Media.GetImgData(imgObj.id)
+                if (imgData.padID)
+                    pads.push(getObj("graphic", imgData.padID))
+                if (imgData.partnerID)
+                    pads.push(getObj("graphic", imgData.partnerID))
+            } else if (VAL({object: padRef})) {
                 pads.push(getObj("graphic",
                                  GRAPHICREGISTRY[padRef.id] && GRAPHICREGISTRY[padRef.id].id ||
                                     PADREGISTRY[padRef.id] && padRef.id ||
                                     null))
-            else if (VAL({string: padRef}))
-                if (FUNCTIONS[padRef]) {
+            } else if (VAL({string: padRef})) {
+                if (FUNCTIONS[padRef])
                     pads.push(
                         ..._.map(
                             _.keys(
@@ -344,11 +351,11 @@ const DragPads = (() => {
                             pID => getObj("graphic", pID)
                         )
                     )
-                } else {
+                else
                     pads.push(getObj("graphic", GRAPHICREGISTRY[padRef] && GRAPHICREGISTRY[padRef].id ||
                                                     PADREGISTRY[padRef] && padRef ||
                                                     null))
-                }
+            }
             return _.compact(pads)
         },
         getPads = padRef => {
@@ -488,13 +495,13 @@ const DragPads = (() => {
         },
         togglePad = (padRef, isActive, funcName = false) => {
             const padIDs = [],
-                imgObj = Media.GetImg(padRef)
-            // let dbString = `PadRef: ${D.JS(padRef)}`
+                imgObj = Media.GetImg(padRef),
+                dbStrings = [`PadRef: ${D.JS(padRef)} --> ${D.JS(imgObj ? imgObj.get("name") : "NO IMAGE")}`]
             if (VAL({graphicObj: imgObj}) && GRAPHICREGISTRY[imgObj.id])
                 padIDs.push(GRAPHICREGISTRY[imgObj.id].id)
             else if (FUNCTIONS[padRef])
                 padIDs.push(..._.filter(_.keys(PADREGISTRY), v => PADREGISTRY[v].funcName === padRef))
-            // DB(`${dbString} ... Found: ${D.JSL(_.map(padIDs, v => PADREGISTRY[v].name))}`)
+            dbStrings.push(`... Found: ${D.JSL(_.map(padIDs, v => PADREGISTRY[v].name))}`)
             if (padIDs.length === 0)
                 return VAL({string: funcName}) && THROW(`No pad found with ID: '${D.JSL(padRef)}'`, `${D.JSL(funcName)} > togglePad`)
 
@@ -503,17 +510,31 @@ const DragPads = (() => {
                     getObj("graphic", pID),
                     getObj("graphic", PADREGISTRY[pID].partnerID)
                 ]
+                dbStrings.push(`...PAD: ${pad ? pad.get("name") : "NONE"}<br>... PARTNER: ${partner ? partner.get("name") : "NONE"}<br>`)
+
                 if (VAL({graphicObj: [pad, partner]}, undefined, true)) {
                     pad.set({
                         layer: isActive && PADREGISTRY[pad.id].active === "on" ? "objects" : "walls"
                     })
+                    dbStrings.push(`... SETTING PAD to ${isActive && PADREGISTRY[pad.id].active === "on" ? "objects" : "walls"} --> ${pad.get("layer")}`)
+                    dbStrings.push(`... ... ${D.JSL(isActive)}, ${D.JSL(PADREGISTRY[pad.id].active)}`)
                     partner.set({
                         layer: isActive && PADREGISTRY[partner.id].active === "on" ? "objects" : "walls"
                     })
+                    dbStrings.push(`... SETTING PARTNER to ${isActive && PADREGISTRY[partner.id].active === "on" ? "objects" : "walls"} --> ${partner.get("layer")}`)
+                    dbStrings.push(`... ... ${D.JSL(isActive)}, ${D.JSL(PADREGISTRY[partner.id].active)}`)
+                    if (isActive && PADREGISTRY[pad.id].active === "off" && PADREGISTRY[partner.id].active === "off") {
+                        PADREGISTRY[pad.id].active = "on"
+                        pad.set({layer: "objects"})
+                    }
                     toFront(pad)
                     toFront(partner)
+                } else {
+                    dbStrings.push("... INVALID PAD/PARTNER.")
                 }
+                dbStrings.push("")
             }
+            DB(dbStrings.join("<br>"), "togglePad")
 
             return true
         }
@@ -523,6 +544,8 @@ const DragPads = (() => {
         CheckInstall: checkInstall,
         OnChatCall: onChatCall,
         OnGraphicChange: onGraphicChange,
+
+        get PadsByGraphic() { return STATE.REF.byGraphic }, get PadsByID() { return STATE.REF.byPad },
 
         MakePad: makePad,
         ClearAllPads: clearAllPads,

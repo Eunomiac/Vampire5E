@@ -36,7 +36,7 @@ const airLog = (logMsg, chatMsg, dbMsg) => {
 const HTML = {
     ChatBox: content => `<div style="${[
             "display: block;",
-            "width: 100%;",
+            "width: auto;",
             "padding: 5px 5px;",
             "margin: -30px 0px 0px -42px;",
             "border: 3px outset rgb(255, 0, 0);",
@@ -61,9 +61,9 @@ const HTML = {
     StackBox: content => `<div style="${[
             "display: block;",
             "width: auto;",
-            "padding: 5px 5px;",
+            "padding: 5px 0px 5px 3px;",
             "font-family: input, verdana, sans-serif;",
-            "font-size: 10px;",
+            "font-size: 9px;",
             "background-color: rgb(255, 255, 255);",
             "border: 2px solid rgb(0,0,0);",
             "line-height: 14px;",
@@ -72,8 +72,8 @@ const HTML = {
     MessageBox: content => `<div style="${[
             "display: block;",
             "width: auto;",
-            "padding: 5px 25px;",
-            "font-family: input, verdana, sans-serif;",
+            "padding: 5px 0px 5px 3px;",
+            "font-family: voltaire, verdana, sans-serif;",
             "font-size: 12px;",
             "text-align: center;",
             "text-align-last: center;",
@@ -298,12 +298,12 @@ const handleCrash = (e) => {
     filteredStackLines[0] = `<br>${filteredStackLines[0]}`
 
     const styledErrorMsg = HTML.ChatBox(_.compact([
-        HTML.TitleBox(`AIRBAG DEPLOYED${src.Line > 0 ? ` at ${src.Name}: ${src.Line}` : ""}`),
+        HTML.TitleBox(`AIRBAG DEPLOYED${src.Line > 0 ? ` at<br>${src.Name}: ${src.Line}` : ""}`),
         HTML.MessageBox(e.message),
         HTML.StackBox(filteredStackLines.join("\n")).
             replace(/\n/gu, "<br>").
             replace(/<br>@@/gu, "").
-            replace(/<br>at\b/gu, "<br><i><span style=\"margin-left: 20px; color: rgb(150, 150, 150); display: inline-block; width: auto; \">at ... </span></i>").
+            replace(/<br>at\b/gu, "<br><i><span style=\"color: rgb(150, 150, 150); display: inline-block; width: auto; \"> @ </span></i>").
             replace(/[^\s\(]+underscore\.js:(\d*?):/gu, "<span style=\"color: rgb(0,0,255);\">_</span>@@<span style=\"color: rgb(0,0,255);\">$1</span>@@").
             replace(/[^\s\(]+firebase-node\.js:(\d*?):/gu, "<span style=\"color: rgb(0,195,0);\">firebase</span>@@<span style=\"color: rgb(0,195,0);\">$1</span>@@").
             replace(/\/home\/node\/d20-api-server\/api\.js/gu, "API").

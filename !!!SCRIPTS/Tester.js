@@ -4,14 +4,14 @@ const Tester = (() => {
     const SCRIPTNAME = "Tester",
 
     // #region COMMON INITIALIZATION
-        STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
+        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
         checkInstall = () => {
-            C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
+            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
             initialize()
         },
     // #endregion
@@ -51,6 +51,13 @@ const Tester = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting
             switch (call) {
+                case "spread": {
+                    const leftRef = "spreadTest_Left_1",
+                        endRef = "spreadTest_End_1",
+                        midRefs = ["spreadTest_Mid_1", "spreadTest_Mid_2", "spreadTest_Mid_3", "spreadTest_Mid_4", "spreadTest_Mid_5", "spreadTest_Mid_6"]
+                    Media.Spread(leftRef, endRef, midRefs, D.Int(args.shift()) || 800, D.Int(args.shift()) || 50, D.Int(args.shift()) || 150)
+                    break
+                }
                 case "macro": {
                     const macroName = args.shift(),
                         macroObjs = findObjs({_type: "macro", _playerid: D.GMID()}),
@@ -192,55 +199,7 @@ const Tester = (() => {
                     })
                     sendChat("", `/w Storyteller ${playerObjs.map(x => `${x.get("displayname")}: ${x.id}<br>`)}`)
                     break
-                } case "killimg":
-                    isKilling = true
-                // falls through
-                case "images": {
-                    const regData = _.values(state[C.GAMENAME].Media.imgregistry),
-                        [reportLines, missingImgData, unregImgObjs] = [ [], [], [] ],
-                        allImgObjs = findObjs({
-                            _type: "graphic",
-                            _pageid: D.PAGEID
-                        })
-                    reportLines.push(
-                        `${allImgObjs.length} graphic objects found.`,
-                        `${_.keys(state[C.GAMENAME].Media.imgregistry).length} registered graphic objects.`,
-                        ""
-                    )
-                // First, verify that all registered objects are present.
-                    for (const imgData of regData)
-                        if (!allImgObjs.map(x => x.id).includes(imgData.id))
-                            missingImgData.push(imgData)
-                    if (missingImgData.length)
-                        reportLines.push(
-                            `${missingImgData.length} registered images missing:`,
-                            ...missingImgData.map(x => ` ...     ${x.name} (${x.id})`),
-                            ""
-                        )
-                // Next, find images that aren't registered:
-                    for (const imgObj of allImgObjs)
-                        if (!regData.map(x => x.id).includes(imgObj.id))
-                            unregImgObjs.push(imgObj)
-                    if (unregImgObjs.length)
-                        reportLines.push(
-                            `${unregImgObjs.length} unregistered graphic objects found:`,
-                            ...unregImgObjs.map(x => ` ...     <b>${x.get("name")}</b> (${x.id}) on ${x.get("layer")}<br> ...      ...     ${x.get("imgsrc")}<br>`),
-                            ""
-                        )
-                    if (isKilling) {
-                        const urlsToKill = []
-                        let count = 0
-                        for (const url of urlsToKill) {
-                            const imgObjs = unregImgObjs.filter(x => x.get("imgsrc").includes(url))
-                            count += imgObjs.length
-                            for (const imgObj of imgObjs)
-                                imgObj.remove()
-                        }
-                        reportLines.push(`${count} graphic objects removed.`)
-                    }
-                    D.Alert(reportLines.join("<br>"), "Image Survey & Verification")
-                    break
-                }
+                } 
                 case "contimages": {
                     const imgObjs = Media.GetContents(args.shift(), {padding: 50})
                     D.Alert(`Contained Images: ${imgObjs.map(v => v.get("name"))}`, "!test contimages")

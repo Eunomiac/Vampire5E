@@ -4,24 +4,25 @@ const InitCommands = (() => {
     const SCRIPTNAME = "InitCommands",
 
     // #region COMMON INITIALIZATION
-        STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
+        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
         checkInstall = () => {
-            C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
+            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
             initialize()
         },
     // #endregion
 
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
-            // if (Roll20AM && Roll20AM.StopSound)
-            //    Roll20AM.StopSound("all")
-            // if (Media && Media.InitAnims())
-            //    Media.InitAnims()
+            Listener.Lock()
+            if (Roll20AM && Roll20AM.StopSound)
+                Roll20AM.StopSound("all")
+            if (Media && Media.InitAnims())
+                Media.InitAnims()
             setTimeout(() => {
                 if (TimeTracker && TimeTracker.Fix)
                     TimeTracker.Fix()
@@ -31,7 +32,10 @@ const InitCommands = (() => {
                     setTimeout(() => {
                         if (Char && Char.RefreshDisplays)
                             Char.RefreshDisplays()
-                        D.Alert("Initialization Complete!", "INITIALIZATION")
+                        setTimeout(() => {
+                            D.Alert("Initialization Complete!", "INITIALIZATION")
+                            Listener.Unlock()
+                        }, 2000)
                     }, 2000)
                 }, 2000)
             }, 2000)

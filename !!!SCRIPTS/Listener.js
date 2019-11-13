@@ -12,18 +12,20 @@ const Listener = (() => {
         ],
 
     // #region COMMON INITIALIZATION
-        STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
+        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
         checkInstall = () => {
-            C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
+            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
             initialize()
         },
         regHandlers = () => {
             on("chat:message", msg => {
+                if (STATE.REF.isLocked)
+                    return false
                 const args = msg.content.split(/\s+/u)
                 if (msg.type === "api") {
                     let call = args.shift().toLowerCase()
@@ -42,6 +44,7 @@ const Listener = (() => {
                         scriptData.script.OnChatCall(call, returnArgs, objects, msg)
                     }
                 }
+                return true
             })
             on("change:attribute:current", (attrObj, prevData) => {
                 if (attrObj.get("current") !== prevData.current) {
@@ -76,6 +79,7 @@ const Listener = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
+            STATE.REF.isLocked = STATE.REF.isLocked || false
             SCRIPTCALLS.MESSAGE = _.omit({
                 "!char": {script: Char, gmOnly: true, singleCall: true},
                 "!data": {script: D, gmOnly: true, singleCall: false},
@@ -285,14 +289,18 @@ const Listener = (() => {
                     }
                 }
             return [objects, returnArgs]
-        }
+        },
+        lockListener = () => { STATE.REF.isLocked = true },
+        unlockListener = () => { STATE.REF.isLocked = false }
 
     return {
         RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
 
         ParseParams: parseParams,
-        GetObjects: getAllObjs
+        GetObjects: getAllObjs,
+        Lock: lockListener,
+        Unlock: unlockListener
     }
 } )()
 

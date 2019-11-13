@@ -8,17 +8,17 @@ for (const scriptName of SCRIPTS)
     state[GAMENAME][scriptName] = state[GAMENAME][scriptName] || {}
 
 const C = (() => {
-    const ROOT = state[GAMENAME],
+    const RO = {get OT() { return state[GAMENAME] }},
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     // #region COMMON INITIALIZATION
-        STATEREF = ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
+        STATE = {get REF() { return RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
         checkInstall = () => {
-            ROOT[SCRIPTNAME] = ROOT[SCRIPTNAME] || {}
+            RO.OT[SCRIPTNAME] = RO.OT[SCRIPTNAME] || {}
         },
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
@@ -1250,18 +1250,6 @@ const C = (() => {
             Os: "https://s3.amazonaws.com/files.d20.io/images/87031687/lR5ndvbW1mm-lweHIoLQcA/thumb.png?1563696692",
             Hb: "https://s3.amazonaws.com/files.d20.io/images/87031371/oJ0DAobJYHsJ-yqKp1JROg/thumb.png?1563696227"
         },
-        ROLLERTOP = {
-            mid1: "https://s3.amazonaws.com/files.d20.io/images/64683716/nPNGOLxzJ8WU0BzLNisuwg/thumb.png?1539327926",
-            mid2: "https://s3.amazonaws.com/files.d20.io/images/64683714/VPzeYN8xpO_cPmqg1rgFRQ/thumb.png?1539327926",
-            mid3: "https://s3.amazonaws.com/files.d20.io/images/64683715/xUCVS7pOmfS3ravsS2Vzpw/thumb.png?1539327926",
-            end: "https://s3.amazonaws.com/files.d20.io/images/64683713/4IwPjcY7x5ZCLJ9ey2lICA/thumb.png?1539327926"
-        },
-        ROLLERBOTTOM = {
-            mid1: "https://s3.amazonaws.com/files.d20.io/images/64683716/nPNGOLxzJ8WU0BzLNisuwg/thumb.png?1539327926",
-            mid2: "https://s3.amazonaws.com/files.d20.io/images/64683714/VPzeYN8xpO_cPmqg1rgFRQ/thumb.png?1539327926",
-            mid3: "https://s3.amazonaws.com/files.d20.io/images/64683715/xUCVS7pOmfS3ravsS2Vzpw/thumb.png?1539327926",
-            end: "https://s3.amazonaws.com/files.d20.io/images/64683713/4IwPjcY7x5ZCLJ9ey2lICA/thumb.png?1539327926"
-        },
     // #region CITY DETAILS
         DISTRICTS = {
             Annex: {
@@ -2172,7 +2160,7 @@ const C = (() => {
         CheckInstall: checkInstall,
 
         GAMENAME,
-        ROOT,
+        RO,
         TEXTCHARS, TEXTPAGEID,        
        
         NUMBERWORDS,
@@ -2210,7 +2198,7 @@ const C = (() => {
         BLOODPOTENCY,
         RESONANCEODDS,
 
-        CHARACTERS, ROLLERDICELIST, ROLLERBIGDICE, ROLLERTOP, ROLLERBOTTOM,
+        CHARACTERS, ROLLERDICELIST, ROLLERBIGDICE,
         DISTRICTS, SITES,
         get LOCATIONS() { return Object.assign({}, DISTRICTS, SITES) },
 

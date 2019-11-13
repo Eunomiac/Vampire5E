@@ -4,20 +4,20 @@ const Handouts = (() => {
     const SCRIPTNAME = "Handouts",
 
     // #region COMMON INITIALIZATION
-        STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
+        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
         checkInstall = () => {
-            C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
+            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
         },
     // #endregion
 
     // #region LOCAL INITIALIZATION
         preInitialize = () => {
-            STATEREF.noteCounts = STATEREF.noteCounts || {projects: 0, debug: 0}
+            STATE.REF.noteCounts = STATE.REF.noteCounts || {projects: 0, debug: 0}
         },
     // #endregion	
 
@@ -44,7 +44,7 @@ const Handouts = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     // #region GETTERS: Retrieving Notes, Data
-        getCount = category => STATEREF.noteCounts && STATEREF.noteCounts[category] || 0,
+        getCount = category => STATE.REF.noteCounts && STATE.REF.noteCounts[category] || 0,
         getHandoutObj = (title, charRef) => {
             const notes = findObjs({
                 _type: "handout",
@@ -112,7 +112,7 @@ const Handouts = (() => {
     // #region SETTERS: Setting Notes, Deleting Handouts, Appending to Handouts
         makeHandoutObj = (title, category, contents) => {
             if (category)
-                STATEREF.noteCounts[category] = getCount(category) + 1
+                STATE.REF.noteCounts[category] = getCount(category) + 1
             const noteObj = createObj("handout", {name: `${title} ${category && getCount(category) > 1 ? getCount(category) - 1 : ""}`})
             if (contents)
                 noteObj.set("notes", C.HANDOUTHTML.main(D.JS(contents)))
@@ -122,15 +122,15 @@ const Handouts = (() => {
             for (const handout of _.filter(findObjs({_type: "handout", inplayerjournals: "", archived: false}), v => D.FuzzyMatch(v.get("name"), titleRef)))
                 handout.remove()
             if (category)
-                STATEREF.noteCounts[category] = 0
+                STATE.REF.noteCounts[category] = 0
         },
         delHandoutObj = (title, category) => {
             const handoutObj = _.find(findObjs({_type: "handout", inplayerjournals: "", archived: false}), v => v.get("name").toLowerCase().startsWith(title.toLowerCase()))
             if (VAL({object: handoutObj})) {
-                if (category && STATEREF.noteCounts[category]) {
+                if (category && STATE.REF.noteCounts[category]) {
                     const matcher = handoutObj.get("name").match(/\d+$/u)
                     if (matcher && D.Int(matcher[0]) === getCount(category))
-                        STATEREF.noteCounts[category] = getCount(category) - 1
+                        STATE.REF.noteCounts[category] = getCount(category) - 1
                 }
                 handoutObj.remove()
             }                

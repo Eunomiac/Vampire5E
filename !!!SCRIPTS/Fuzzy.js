@@ -6,21 +6,21 @@ const Fuzzy = (() => {
     const SCRIPTNAME = "Fuzzy",
 
     // #region COMMON INITIALIZATION
-        STATEREF = C.ROOT[SCRIPTNAME],	// eslint-disable-line no-unused-vars
+        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
         checkInstall = () => {
-            C.ROOT[SCRIPTNAME] = C.ROOT[SCRIPTNAME] || {}
+            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
             initialize()
         },
     // #endregion
 
     // #region LOCAL INITIALIZATION
         initialize = () => { 
-            STATEREF.minMatchScore = STATEREF.minMatchScore || 0.33
+            STATE.REF.minMatchScore = STATE.REF.minMatchScore || 0.33
         },
     // #endregion  
   
@@ -30,7 +30,7 @@ const Fuzzy = (() => {
                 case "set": {
                     switch (D.LCase(call = args.shift())) {
                         case "minmatch": default: {
-                            STATEREF.minMatchScore = D.Float(args.shift()) || 0.33
+                            STATE.REF.minMatchScore = D.Float(args.shift()) || 0.33
                             break
                         }
                     }
@@ -40,7 +40,7 @@ const Fuzzy = (() => {
                 case "get": {
                     switch (D.LCase(call = args.shift())) {
                         case "minmatch": default: {
-                            D.Alert(`Fuzzy Minimum Match Score is <b>${STATEREF.minMatchScore}</b><br><br>Default = 0.33; <b>!fuzzy set minmatch &lt;#&gt;</b> to change.`, "!fuzzy set minmatch")
+                            D.Alert(`Fuzzy Minimum Match Score is <b>${STATE.REF.minMatchScore}</b><br><br>Default = 0.33; <b>!fuzzy set minmatch &lt;#&gt;</b> to change.`, "!fuzzy set minmatch")
                             break
                         }
                     }
