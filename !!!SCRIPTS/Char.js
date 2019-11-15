@@ -123,6 +123,7 @@ const Char = (() => {
                             } else {
                                 D.Alert("Invalid character.<br><br>Syntax: !char reg weekly <charRef> <resName> <resAmount>", "!char reg weekly")
                             }
+                            Char.RefreshDisplays()
                             break
                         }
                         case "stake": {
@@ -133,13 +134,18 @@ const Char = (() => {
                                     break
                                 }
                                 default: {
-                                    const initial = call,
-                                        [name, value, max, date] = args.join(" ").split("|")
-                                    STATE.REF.customStakes.personal[initial].push([name, D.Int(value), D.Int(max), date])
+                                    args.unshift(call)
+                                    const [charObj] = charObjs
+                                    if (VAL({charObj}, "!char reg stake")) {
+                                        const {initial} = D.GetCharData(charObj) || {initial: "X"},
+                                            [name, value, max, date] = args.join(" ").split("|")
+                                        STATE.REF.customStakes.personal[initial] = STATE.REF.customStakes.personal[initial] || []
+                                        STATE.REF.customStakes.personal[initial].push([name, D.Int(value), D.Int(max), date])
+                                    }
                                     break
                                 }
                             }
-                            displayStakes()
+                            Char.RefreshDisplays()
                             break
                         }
                         // no default
@@ -158,22 +164,35 @@ const Char = (() => {
                                 unregResource(charData.initial, D.Int(args.shift()))
                             else
                                 D.Alert("Invalid character.<br><br>Syntax: !char unreg weekly <charRef> <rowNum>", "!char unreg weekly")
+                            Char.RefreshDisplays()
                             break
                         }
                         case "stake": {
                             switch (D.LCase(call = args.shift())) {
                                 case "coterie": {
-                                    STATE.REF.customStakes.coterie = STATE.REF.customStakes.coterie.filter(x => x[0].toLowerCase() !== args.join(" ").toLowerCase())
+                                    const rowNum = args.pop()
+                                    if (VAL({number: rowNum})) {
+                                        STATE.REF.customStakes.coterie[rowNum-1] = false
+                                        STATE.REF.customStakes.coterie = _.compact(STATE.REF.customStakes.coterie)
+                                    }
                                     break
                                 }
                                 default: {
-                                    const initial = call,
-                                        name = args.join(" ")
-                                    STATE.REF.customStakes.personal[initial] = STATE.REF.customStakes.personal[initial].filter(x => x[0].toLowerCase() !== name.toLowerCase())
+                                    args.unshift(call)
+                                    const [charObj] = charObjs
+                                    if (VAL({charObj}, "!char unreg stake")) {
+                                        const {initial} = D.GetCharData(charObj) || {initial: "X"},
+                                            rowNum = args.pop()
+                                        if (VAL({number: rowNum})) {
+                                            STATE.REF.customStakes.personal[initial][rowNum-1] = false
+                                            STATE.REF.customStakes.personal[initial] = _.compact(STATE.REF.customStakes.personal[initial])
+                                        }
+                                    }
                                     break
                                 }
                             }
-                            displayStakes()
+                            Char.RefreshDisplays()
+                            break
                         }
                         // no default
                     }
@@ -310,6 +329,11 @@ const Char = (() => {
                         case "desire": {
                             for (const charObj of charObjs)
                                 resolveDesire(charObj)
+                            break
+                        }
+                        case "cols": {
+                            const [colNum, shift] = args
+                            adjustDisplayCols(D.Int(colNum), D.Float(shift))
                             break
                         }
                         // no default
@@ -1024,6 +1048,7 @@ const Char = (() => {
                     STATE.REF.weeklyResources[initial] = [..._.first(STATE.REF.weeklyResources[initial], rowNum - 1), ..._.rest(STATE.REF.weeklyResources[initial], rowNum)]
             displayResources()
         },
+        adjustDisplayCols = (colNum, shift) => [`Weekly_Char_Col${colNum}`, `Stakes_Coterie_Col${colNum}`, `Stakes_Char_Col${colNum}`].map(x => Media.IsRegistered(x) && Media.SetTextData(x, {left: Media.GetTextData(x).left + D.Float(shift)})),
         adjustResource = (charRef, rowNum, amount) => {
             const initial = D.UCase((D.GetCharData(charRef) || {initial: false}).initial)
             if (initial !== "") {
@@ -1049,29 +1074,43 @@ const Char = (() => {
             displayResources()
         },
         displayResources = () => {
-            const [col1Width, col2Width] = [20, 250],
-                textObj = Media.GetText("weeklyResources"),
-                resStrings = []
             if (_.flatten(_.values(STATE.REF.weeklyResources)).length === 0) {
-                Media.SetText("weeklyResources", {text: " "})
+                Media.ToggleImg("weeklyResourcesHeader", false)
+                Media.ToggleText("Weekly_Char_Col1", false)
+                Media.ToggleText("Weekly_Char_Col2", false)
+                Media.ToggleText("Weekly_Char_Col3", false)
+                Media.SetImgData("stakedAdvantagesHeader", {top: Media.GetImgData("weeklyResourcesHeader").top}, true)
             } else {
-                const sortedInits = _.sortBy(_.keys(STATE.REF.weeklyResources))
-                for(const init of sortedInits) {
-                    const data = STATE.REF.weeklyResources[init]
-                    let thisString = `[${init}]`
-                    _.each(data, v => {
-                        DB(`thisString: ${D.JSL(thisString)}, col1width: ${Media.GetTextWidth(textObj, thisString, false)}, col2width: ${Media.GetTextWidth(textObj, v[0], false)}`, "displayResources")
-                        resStrings.push(`${thisString}${Media.Buffer(textObj, col1Width - Media.GetTextWidth(textObj, thisString, false))}${
-                            v[0]}${Media.Buffer(textObj, col2Width - Media.GetTextWidth(textObj, v[0], false))}${
-                            `${"●".repeat(v[2]-v[1]-(v[3] || 0))}${"○".repeat(v[1])}${"◊".repeat(v[3] || 0)}`.replace(/^(\S\S\S\S\S)/gu, "$1  ")
-                        }`)
-                        thisString = " "
-                    })
-                }            
-                Media.SetText("weeklyResources", resStrings.join("\n"))
+                Media.ToggleImg("weeklyResourcesHeader", true)
+                Media.ToggleText("Weekly_Char_Col1", true)
+                Media.ToggleText("Weekly_Char_Col2", true)
+                Media.ToggleText("Weekly_Char_Col3", true)
+                Media.SetImgData("stakedAdvantagesHeader", {top: Media.GetImgData("weeklyResourcesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height + _.flatten(_.values(STATE.REF.weeklyResources), true).length * Media.GetLineHeight("Weekly_Char_Col1") + 20}, true)
+                /* STATE.REF.weeklyResources = { 
+                    N: [
+                        ["Herd (Bookies)", 0, 6],
+                        ["Herd (Clinic)", 0, 4]
+                    ]
+                } */
+                const columns = {
+                    Col1: [],
+                    Col2: [],
+                    Col3: []
+                }
+                for (const init of _.sortBy(_.keys(STATE.REF.weeklyResources))) {
+                    const data = _.sortBy(STATE.REF.weeklyResources[init], x => x[0])
+                    columns.Col1.push(`[${init}]`, ...new Array(data.length - 1).fill(""))
+                    columns.Col2.push(...data.map(x => x[0]))
+                    columns.Col3.push(...data.map(x => `${"●".repeat(x[2]-x[1]-(x[3] || 0))}${"○".repeat(x[1] || 0)}${"◊".repeat(x[3] || 0)}`.replace(/^(\S{5})/gu, "$1  ")))
+                }
+                for (const [col, lines] of Object.entries(columns))
+                    Media.SetText(`Weekly_Char_${col}`, lines.join("\n"))
             }
-            displayStakes()
-        },
+            /* Media.SetImgData("stakedAdvantagesHeader", {top: Media.GetImgData("weeklyResourcesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height + Media.GetTextHeight("weeklyResources") + 20}, true)
+            Media.SetTextData("stakedCoterieAdvantages", {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height})
+            Media.SetTextData("stakedAdvantages", {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height})
+            displayStakes() */
+        },  
         sortCoterieStakes = (charRef) => {
             const charObj = D.GetChar(charRef),
                 coterieRows = _.keys(_.omit(D.GetRepStats(charObj, "advantage", null, "advantage_type", "rowID", "val"), v => v[0] !== "Coterie")),
@@ -1082,14 +1121,12 @@ const Char = (() => {
             return [charAdvData, coterieAdvData]
         },
         displayStakes = () => {
-            const [col1Width, col2Width, col3Width] = [20, 175, 80],
-                [coterieObj, personalObj] = [
-                    Media.GetText("stakedCoterieAdvantages"),
-                    Media.GetText("stakedAdvantages")
-                ],
-                [stakeData, coterieStakes] = [[],{}],
-                [stakeStrings, coterieStakeStrings] = [[], []],
-                sortedCharData = _.sortBy(_.values(D.KeyMapObj(_.values(REGISTRY), null, v => ({initial: v.initial, charObj: D.GetChar(v.id)}))), "initial")
+            const [stakeData, coterieStakes] = [[],{}],
+                sortedCharData = _.sortBy(_.values(D.KeyMapObj(_.values(REGISTRY), null, v => ({initial: v.initial, charObj: D.GetChar(v.id)}))), "initial"),
+                coterieColRefs = [1, 2, 3, 4].map(x => `Stakes_Coterie_Col${x}`),
+                charColRefs = [1, 2, 3, 4].map(x => `Stakes_Char_Col${x}`),
+                coterieCols = D.KeyMapObj(coterieColRefs, (k,v) => v, () => []),
+                charCols = D.KeyMapObj(charColRefs, (k,v) => v, () => [])
             // D.Alert(`Initials Sort: ${D.JS(initials)}`)
             for (const charData of sortedCharData) {
                 const {initial, charObj} = charData,
@@ -1127,7 +1164,6 @@ const Char = (() => {
             }
             for (const stake of STATE.REF.customStakes.coterie) {
                 const [name, val, max, dateStamp] = [stake[0], stake[1], stake[2], TimeTracker.GetDate(stake[3])]
-                stakeStrings.push(" ")
                 if (max && val > 0 && TimeTracker.CurrentDate.getTime() < dateStamp.getTime())
                     if (coterieStakes[name]) {
                         coterieStakes[name].total += val
@@ -1141,45 +1177,38 @@ const Char = (() => {
                             max
                         }
                     }
-            }
-                
+            }                
             DB(`Coterie Stakes: ${D.JSL(_.keys(coterieStakes), true)}`, "displayStakes")
-            // PERSONAL STAKES
-            if (_.keys(stakeData).length === 0)
-                Media.SetText("stakedAdvantages", " ")
-            let lastInit = ""
-            Media.SetTextData("stakedAdvantages", {shiftTop: Media.GetLineHeight("stakedAdvantages") * _.keys(coterieStakes).length})
-            for (const data of stakeData) {
-                const [init, name, staked, max, endDate] = data
-                let thisString = " "
-                if (init !== lastInit) {
-                    thisString = `[${init}]`
-                    lastInit = init
-                }
-                let col1String = thisString,
-                    col2String = name,
-                    col3String = "○".repeat(staked) + "●".repeat(max - staked)
-                col1String += Media.Buffer(personalObj, col1Width - Media.GetTextWidth(personalObj, col1String, false))
-                col2String += Media.Buffer(personalObj, col1Width + col2Width - Media.GetTextWidth(personalObj, col1String + col2String, false))
-                col3String += Media.Buffer(personalObj, col1Width + col2Width + col3Width - Media.GetTextWidth(personalObj, col1String + col2String + col3String, false))
-                stakeStrings.push(col1String + col2String + col3String + endDate)
-            }        
-            Media.SetText("stakedAdvantages", stakeStrings.join("\n"))
-
             // COTERIE STAKES
             if (_.keys(coterieStakes).length === 0) {
-                Media.SetText("stakedCoterieAdvantages", " ")
+                coterieColRefs.map(x => Media.ToggleText(x, false))
+                charColRefs.map(x => Media.SetTextData(x, {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height, shiftTop: 0}))
             } else {
-                for (const coterieData of _.values(coterieStakes)) {
-                    const thisDate = TimeTracker.FormatDate(new Date(_.sortBy(coterieData.dateStamp, v => v)[0]))
-                    let col12String = coterieData.name.toUpperCase(),
-                        col3String = "○".repeat(coterieData.total) + "●".repeat(coterieData.max - coterieData.total)
-                    col12String += Media.Buffer(coterieObj, col1Width + col2Width - Media.GetTextWidth(coterieObj, col12String, false))
-                    col3String += Media.Buffer(coterieObj, col1Width + col2Width + col3Width - Media.GetTextWidth(coterieObj, col12String + col3String, false))
-                    coterieStakeStrings.push(col12String + col3String + thisDate)
-                }                     
-                Media.SetText("stakedCoterieAdvantages", coterieStakeStrings.join("\n"))
+                coterieColRefs.map(x => { Media.ToggleText(x, true); return Media.SetTextData(x, {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height}) })
+                charColRefs.map(x => Media.SetTextData(x, {top: Media.GetTextData("Stakes_Coterie_Col1").top, shiftTop: _.keys(coterieStakes).length * Media.GetLineHeight("Stakes_Coterie_Col1")}))
+                coterieCols[coterieColRefs[0]] = new Array(_.keys(coterieStakes).length).fill("")
+                coterieCols[coterieColRefs[1]] = _.values(coterieStakes).map(x => x.name.toUpperCase())
+                coterieCols[coterieColRefs[2]] = _.values(coterieStakes).map(x => "○".repeat(x.total) + "●".repeat(x.max - x.total))
+                coterieCols[coterieColRefs[3]] = _.values(coterieStakes).map(x => TimeTracker.FormatDate(new Date(_.sortBy(x.dateStamp, v => v)[0])))
+                for (const [col, lines] of Object.entries(coterieCols))
+                    Media.SetText(col, lines.join("\n"))
             }
+
+            // PERSONAL STAKES
+            if (_.keys(stakeData).length === 0) {
+                charColRefs.map(x => Media.ToggleText(x, false))
+                if (_.keys(coterieStakes).length === 0)
+                    Media.ToggleImg("stakedAdvantagesHeader", false)
+            } else {
+                charColRefs.map(x => Media.ToggleText(x, true))
+                charCols[charColRefs[0]] = stakeData.map((x, i) => i > 0 && x[0] === stakeData[i-1][0] ? "" : `[${x[0]}]`)
+                charCols[charColRefs[1]] = stakeData.map(x => x[1])
+                charCols[charColRefs[2]] = stakeData.map(x => "○".repeat(x[2]) + "●".repeat(x[3] - x[2]))
+                charCols[charColRefs[3]] = stakeData.map(x => x[4])
+                for (const [col, lines] of Object.entries(charCols))
+                    Media.SetText(col, lines.join("\n"))
+            }
+            Media.AdjustImg("stakedAdvantagesHeader", 0, -3)
         },
         updateHunger = () => {
             for(const char of D.GetChars("registered")) {

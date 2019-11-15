@@ -834,6 +834,7 @@ const Roller = (() => {
             Media.SetImg("RollerFrame_Left", "top")
             Media.ToggleImg("RollerFrame_BottomEnd", false)
             Media.Spread("RollerFrame_Left", "RollerFrame_TopEnd", topMidRefs, 1, SETTINGS.frame.mids.minSpread, SETTINGS.frame.mids.maxSpread)
+            DragPads.Toggle("wpReroll", false)
             // Media.Fix()
         },
         killRoller = () => {
@@ -919,6 +920,10 @@ const Roller = (() => {
                 DragPads.Toggle(dieKey, true)
             else
                 DragPads.Toggle(dieKey, false)
+            if (_.flatten(_.values(STATE.REF.selected)).length)            
+                DragPads.Toggle("wpReroll", true)
+            else
+                DragPads.Toggle("wpReroll", false)
         },
         selectDie = (dieCat, dieNum) => {
             const rollRecord = getCurrentRoll(false),

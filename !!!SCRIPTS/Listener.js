@@ -134,6 +134,7 @@ const Listener = (() => {
         ),
         parseArg = {
             character: (arg, isFuzzy = false) => {
+                DB(`Seeking CHARACTER for arg ${D.JSL(arg)}`, "parseArg")
                 const charObjs = []
                 // 1) Check if this could be an ID string:
                 if (arg.length === 20) {
@@ -204,16 +205,97 @@ const Listener = (() => {
                 return textObjs
             }
         },
-        getObjsFromArgs = (args) => { // returns [objects, args]
+        getObjsFromArgs = (args) => {
             const objects = {},
-                returnArgs = []
+                ids = [],
+                objRefsFound = [],
+                allObjs = findObjs({
+                    _pageid: D.PAGEID
+                })
+            if (VAL({array: args}, "getObjsFromArgs") && args.length) {
+                // STEP 1: For each argument, check if it is a string of object IDs.  If so, add those objects and strip out that argument.
+                for (let i = 0; i < args.length; i++)
+                    if (args[i] && _.all(args[i].split(/,\s*/gu), x => x.match(/^-[-_a-zA-Z0-9]{19}$/gu))) {
+                        ids.push(...args[i].split(/,\s*/gu))
+                        args[i] = "#OMIT#"
+                    }
+                args = args.filter(x => x !== "#OMIT#")
+                if (ids.length)
+                    for (const obj of allObjs.filter(x => ids.includes(x.id))) {
+                        objects[obj.get("type")] = objects[obj.get("type")] || []
+                        objects[obj.get("type")].push(obj)                        
+                    }
+                // STEP 2: Extract all arguments with the object prefix '@', and grab their objects.
+                // - for each argument, if nothing is found, ALSO try appending the next one then two args in sequence
+                for (const objRef of args.filter(x => x.startsWith("@")).map(x => x.slice(1))) {
+                    const argsIndex = args.findIndex(x => x === `@${objRef}`),
+                        combinedArgs = _.uniq([`${objRef} ${args[argsIndex+1] || ""}`, `${objRef} ${args[argsIndex+1] || ""} ${args[argsIndex+2] || ""}`].map(y => y.trim().replace(/^@/gu, "")).filter(x => x !== objRef))
+                    for (const objType of ["character", "graphic", "text"]) {
+                        const objs = parseArg[objType](objRef)
+                        if (objs.length) {
+                            objects[objType] = objects[objType] || []
+                            objects[objType].push(...objs)
+                            objRefsFound.push(objRef)
+                        }
+                    }
+                    if (objRefsFound.includes(objRef))
+                        continue
+
+                    // STEP 2B: Now check the combined arguments (i.e. the argument, plus the next one or two arguments, separated by spaces)
+                    for (const combinedArg of combinedArgs)
+                        for (const objType of ["character", "graphic", "text"]) {
+                            const objs = parseArg[objType](combinedArg)
+                            if (objs.length) {
+                                objects[objType] = objects[objType] || []
+                                objects[objType].push(...objs)
+                                objRefsFound.push(...combinedArg.split(/\s/gu))
+                            }
+                        }
+                    if (objRefsFound.includes(objRef))
+                        continue
+                    
+                    // STEP 2C: Repeat above for each argument for which nothing was found, except with fuzzy matching.
+                   
+                    for (const objType of ["character", "graphic", "text"]) {
+                        const objs = parseArg[objType](objRef, true)
+                        if (objs.length) {
+                            objects[objType] = objects[objType] || []
+                            objects[objType].push(...objs)
+                            objRefsFound.push(objRef)
+                        }
+                    } 
+                    if (objRefsFound.includes(objRef))
+                        continue
+
+                    for (const combinedArg of combinedArgs)
+                        for (const objType of ["character", "graphic", "text"]) {
+                            const objs = parseArg[objType](combinedArg, true)
+                            if (objs.length) {
+                                objects[objType] = objects[objType] || []
+                                objects[objType].push(...objs)
+                                objRefsFound.push(...combinedArg.split(/\s/gu))
+                            }
+                        }
+                }         
+                args = args.filter(x => !x.startsWith("@") && !objRefsFound.includes(x))
+            }
+            return [objects, _.compact(args)]
+        },
+        /* getObjsFromArgsOld = (args) => { // returns [objects, args]
+            const objects = {},
+                ids = [],
+                objRefsFound = [],
+                returnArgs = [],
+                allObjs = findObjs({
+                    _pageid: D.PAGEID
+                })
             if (VAL({array: args}, "getObjsFromArgs") && args.length) {
                 // First, grab characters from initial character string
                 const initialCharObjs = _.uniq(_.flatten(_.compact((args[0] || "").split(",").map(x => parseArg.character(x.trim(), false)))))
                 if (initialCharObjs.length) {
                     objects.character = [...initialCharObjs]
                     args.shift()
-                }
+                } // -LtIoGrnj8M4-Dt15glw
                 DB(`Objects: ${D.JSL(objects)}, Args: ${D.JSL(args)}, <br>LENGTHS: ${D.JSL(D.KeyMapObj(objects, null, v => v.length))}`, "getObjsFromArgs")
                 for (const arg of args) {
                     const [theseObjs, theseReturnArgs] = [{}, []]
@@ -271,7 +353,7 @@ const Listener = (() => {
             }
             DB(`Returning:<br>OBJECTS: ${D.JSL(objects)}`, "getObjsFromArgs")
             return [objects, _.compact(returnArgs)]
-        },
+        }, */
         parseMessage = (args, msg) => {
             const [objects, returnArgs] = getObjsFromArgs(args)
             // For each type, if no objects found in args, check selection:

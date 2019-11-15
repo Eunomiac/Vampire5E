@@ -87,7 +87,7 @@ const Media = (() => {
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
-            let textParams, textModes
+            let imgParams, imgModes
             switch (call) {
                 case "!media": {
                     const mediaObjs = [...Listener.GetObjects(objects, "graphic"), ...Listener.GetObjects(objects, "text")]
@@ -161,6 +161,19 @@ const Media = (() => {
                             D.Alert("Media Registry Backup Updated.", "!img backup")
                             break
                         }
+                        case "rereg": case "reregister": {
+                            const [imgObj] = imgObjs
+                            if (isRegImg(imgObj)) {                         
+                                const imgData = getImgData(msg, true)
+                                args[0] = args[0] || imgData.name
+                                args[1] = args[1] || imgData.curSrc
+                                args[2] = args[2] || imgData.activeLayer
+                                imgParams = args.slice(2).join(" ")
+                                imgModes = JSON.parse(JSON.stringify(imgData.modes))
+                                removeImg(msg, true)
+                            }
+                        }
+                        // falls through
                         case "reg": case "register": {
                             const [imgObj] = imgObjs
                             if (VAL({imgObj}, "!img register"))                                
@@ -172,9 +185,11 @@ const Media = (() => {
                                         break
                                     }
                                     default: {
-                                        const [hostName, srcName, objLayer] = [call, args.shift(), args.shift()]
+                                        if (call)
+                                            args.unshift(call)
+                                        const [hostName, srcName, objLayer, ...paramArgs] = args
                                         if (hostName && srcName && objLayer)
-                                            regImg(imgObj, hostName, srcName, objLayer, D.ParseToObj(args.join(" ")))
+                                            regImg(imgObj, hostName, srcName, objLayer, D.ParseToObj(paramArgs.join(" ")))
                                         else
                                             D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;(ref:)currentSourceName&gt; &lt;activeLayer&gt; [params (\"key:value, key:value\")]", "MEDIA: !img reg")    
                                         break
@@ -526,12 +541,7 @@ const Media = (() => {
                             break
                         }
                         case "adjust": {
-                            const [deltaX, deltaY] = args.map(x => D.Float(x))
-                            for (const imgObj of imgObjs)
-                                setImgTemp(imgObj, {
-                                    left: D.Float(imgObj.get("left")) + deltaX,
-                                    top: D.Float(imgObj.get("top")) + deltaY
-                                })
+                            adjustImg(imgObjs, ...args.map(x => D.Float(x)))
                             break
                         }
                         // no default
@@ -679,18 +689,18 @@ const Media = (() => {
                         case "rereg": case "reregister": {
                             const [textObj] = textObjs
                             if (isRegText(textObj)) {                         
-                                const textData = getTextData(msg, true)
+                                const textData = getTextData(msg)
                                 args[0] = args[0] || textData.name
                                 args[1] = args[1] || textData.activeLayer
                                 args[2] = args[2] || hasShadowObj(msg)
                                 args[3] = args[3] || textData.justification
-                                textParams = args.slice(3).join(" ")
-                                textParams = _.compact([
-                                    textParams.includes("vertAlign") ? "" : `vertAlign:${textData.vertAlign || "top"}`,
-                                    textData.maxWidth && !textParams.includes("maxWidth") ? `maxWidth:${textData.maxWidth}` : "",
-                                    textParams.includes("zIndex") ? "" : `zIndex:${textData.zIndex || 300}`
-                                ]).join(",") + textParams
-                                textModes = JSON.parse(JSON.stringify(textData.modes))
+                                imgParams = args.slice(3).join(" ")
+                                imgParams = _.compact([
+                                    imgParams.includes("vertAlign") ? "" : `vertAlign:${textData.vertAlign || "top"}`,
+                                    textData.maxWidth && !imgParams.includes("maxWidth") ? `maxWidth:${textData.maxWidth}` : "",
+                                    imgParams.includes("zIndex") ? "" : `zIndex:${textData.zIndex || 300}`
+                                ]).join(",") + imgParams
+                                imgModes = JSON.parse(JSON.stringify(textData.modes))
                                 removeText(msg, true, true)
                             }
                         }
@@ -700,11 +710,11 @@ const Media = (() => {
                                 const [textObj] = textObjs
                                 if (textObj) {
                                     const [hostName, objLayer, isShadow, justification, ...paramArgs] = args
-                                    textParams = textParams || paramArgs.join(" ")
+                                    imgParams = imgParams || paramArgs.join(" ")
                                     if (hostName && objLayer) {
-                                        regText(textObj, hostName, objLayer, !isShadow || isShadow !== "false", justification || "center", D.ParseToObj(textParams))
-                                        if (textModes)
-                                            REGISTRY.TEXT[getTextKey(textObj)].modes = textModes
+                                        regText(textObj, hostName, objLayer, !isShadow || isShadow !== "false", justification || "center", D.ParseToObj(imgParams))
+                                        if (imgModes)
+                                            REGISTRY.TEXT[getTextKey(textObj)].modes = imgModes
                                     } else {
                                         D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
                                     }
@@ -1250,9 +1260,13 @@ const Media = (() => {
     // #region GENERAL MEDIA OBJECT GETTERS:
         isRegistered = mediaRef => isRegText(mediaRef) || isRegImg(mediaRef),
         getMediaObj = mediaRef => {
+            if (VAL({object: mediaRef}))
+                return mediaRef
             if (isRegText(mediaRef))
                 return getTextObj(mediaRef)
-            return getImgObj(mediaRef)
+            else if (isRegImg(mediaRef))
+                return getImgObj(mediaRef)
+            return mediaRef
         },
         getKey = (mediaRef, funcName = false) => {
             if (isRegText(mediaRef))
@@ -1377,7 +1391,7 @@ const Media = (() => {
                 mediaObjs[i].set(posRef, mediaObjs[i].get(posRef) + shift * (i + 1))
         },
         alignObjs = (mediaRefs, objAlignFrom = "center", anchorAlignTo) => {
-            const mediaObjs = mediaRefs.map(x => getMediaObj(x)),
+            const mediaObjs = _.compact(mediaRefs.map(x => getMediaObj(x) || VAL({object: x}) && x || false)),
                 alignGuides = {left: STATE.REF.anchorObj.left, top: STATE.REF.anchorObj.top}
             anchorAlignTo = anchorAlignTo || objAlignFrom
             switch (D.LCase(anchorAlignTo)) {
@@ -5888,6 +5902,13 @@ const Media = (() => {
             }
             return false
         },
+        adjustImg = (imgRefs, deltaX, deltaY) => {
+            for (const imgObj of _.flatten([imgRefs]).map(x => getImgObj(x)))
+                setImgTemp(imgObj, {
+                    left: D.Float(imgObj.get("left")) + deltaX,
+                    top: D.Float(imgObj.get("top")) + deltaY
+                })
+        },
         setImgData = (imgRef, params, isSettingObject = false) => {
             const imgKey = getImgKey(imgRef)
             if (VAL({string: imgKey}, "setImgData")) {
@@ -6466,46 +6487,64 @@ const Media = (() => {
             }
             return false
         },
-        getTextWidth = (textRef, text, maxWidth = 0) => {
+        getTextWidth = (textRef, text, maxWidth = 0, isSilent = true) => {
             const textObj = getTextObj(textRef),
-                textData = getTextData(textObj),
-                maxW = textData && textData.maxWidth || maxWidth || 0
+                dbLines = [
+                    `<b>TEXTREF:</b> ${D.JSL(textRef)}`,
+                    `<b>TEXT:</b> ${D.JSL(text).replace(/ /gu, "⸰")}`,
+                    `<b>MAXWIDTH:</b> ${D.JSL(maxWidth)}`,
+                    ""
+                ]
             if (VAL({textObj}, "getTextWidth")) {
-                const font = textObj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
+                const textData = getTextData(textObj),
+                    maxW = textData && textData.maxWidth || maxWidth || 0,
+                    textString = text === "" ? "" : text && `${text}` || textObj && textObj.get && `${textObj.get("text")}` || false,
+                    font = textObj.get("font_family").split(" ")[0].replace(/[^a-zA-Z]/gu, ""),
                     size = textObj.get("font_size"),
-                    textString = text === "" ? "" : text || textObj.get("text") || "",
                     chars = textString.split(""),
                     fontRef = D.CHARWIDTH[font],
                     charRef = fontRef && fontRef[size]
                 let width = 0
-                if (!textString || textString === "" || textString.length === 0)
+                dbLines.push(chars.length === textString.length ? "TEXT OK!" : `TEXT LENGTH MISMATCH: ${chars.length} chars, ${textString.length} text length.<br>`)
+                if (!textString || textString === "" || textString.length === 0) {
+                    dbLines.push("Empty/Blank Text String: Returning '0'.")
+                    DB(dbLines.join("<br>"), "getTextWidth")
                     return 0
+                }
                 if (!fontRef || !charRef) {
-                    DB(`No font reference for '${font}' at size '${size}', attempting default`, "getTextWidth")
+                    dbLines.push(`No font/character reference for '${font}' at size '${size}': Returning default`, "getTextWidth")
+                    DB(dbLines.join("<br>"), "getTextWidth")
                     return textString.length * (D.Int(textObj.get("width")) / textObj.get("text").length)
                 }
                 let textLines = []
                 if (maxWidth !== false && maxW)
                     textLines = _.compact(splitTextLines(textObj, textString, maxW, textData && textData.justification))
                 else if (maxWidth !== false && textString && textString.includes("\n"))
-                    textLines = _.compact(textString.split(/\s*\n+\s*/gu))
+                    textLines = textString.split(/\n/gu).filter(x => x || x === "" || x === 0).map(x => x.trim())
                 if (textLines.length) {
+                    dbLines.push(`Text split into text lines:<br>${textLines.map(x => `▐${x.replace(/ /gu, "⸰")}▌ ► ${x.length} Chars`).join("<br>")}`)
                     let maxLine = textLines[0]
-                    // D.Alert(`TextLines = ${textLines}`)
-                    for (const textLine of textLines)
-                        // D.Alert(`MAX {${getTextWidth(textObj, maxLine)}} = ${maxLine}<br>TEXT: {${getTextWidth(textObj, textLine)}} = ${textLine}`)
-                        maxLine = getTextWidth(textObj, maxLine, false) < getTextWidth(textObj, textLine.trim(), false) ? textLine.trim() : maxLine
-                    
-                    // D.Alert(`Max Line = ${D.JS(maxLine)}, ${getTextWidth(textObj, maxLine)}`)
-                    // D.Alert(`GetTextWidth called. Text: ${text} MaxLine: ${maxLine} with maxWidth ${D.JS(maxWidth)} and maxW ${D.JS(maxW)}<br>Width: ${getTextWidth(textObj, maxLine, false)}`)
-                    return getTextWidth(textObj, maxLine, false)
+                    dbLines.push("Iterating Max-Line...")
+                    for (const textLine of textLines) {
+                        dbLines.push(`... MAX: ${D.Round(getTextWidth(textObj, maxLine, false, true), 2)} vs. TEXT: ${D.Round(getTextWidth(textObj, textLine, false, true), 2)}`)
+                        maxLine = getTextWidth(textObj, maxLine, false, true) < getTextWidth(textObj, textLine, false, true) ? textLine : maxLine
+                    }
+                    dbLines.push(`Max Line: ▐${maxLine}▌ ► Returning maxline width (${D.Round(getTextWidth(textObj, maxLine, false, true),2)})`)
+                    if (!isSilent)
+                        DB(dbLines.join("<br>"), "getTextWidth")
+                    return getTextWidth(textObj, maxLine, false, true)
                 }
-                _.each(chars, char => {
-                    if (char !== "\n" && !charRef[char] && charRef[char] !== " " && charRef[char] !== 0)
+                let charString = ""
+                for (const char of chars) {
+                    charString += char
+                    if (char !== "\n" && !charRef[char])
                         DB(`... MISSING '${char}' in '${font}' at size '${size}'`, "getTextWidth")
                     else
-                        width += charRef[char]
-                })
+                        width += charRef[char]                    
+                }
+                dbLines.push(`Chars measured: ▐${charString}▌ ► Returning width (${D.Round(width, 2)}`)
+                if (!isSilent)
+                    DB(dbLines.join("<br>"), "getTextWidth")
                 /* if (maxWidth !== false)
                     D.Alert(`GetTextWidth called on ${text} with maxWidth ${D.JS(maxWidth)} and maxW ${D.JS(maxW)}`) */
                 return width
@@ -6560,98 +6599,101 @@ const Media = (() => {
         buffer = (textRef, width) => " ".repeat(Math.max(0, Math.round(width/getTextWidth(textRef, " ", false)))),
         splitTextLines = (textRef, text, maxWidth, justification = "left") => {
             const textObj = getTextObj(textRef)
-            let textStrings = text.split(/(\s|-)/gu).filter(x => x.match(/\S/gu)),
-                splitStrings = [],
-                highWidth = 0
-            for (let i = 0; i < textStrings.length; i++)
-                if (textStrings[i] === "-") {
-                    textStrings[i-1] = `${textStrings[i-1] }-`
-                    textStrings = [...[...textStrings].splice(0,i), ...[...textStrings].splice(i+1)]
-                }
-            for (let i = 0; true; i++) { // eslint-disable-line no-constant-condition
-                if (getTextWidth(textObj, textStrings[i], false) > maxWidth) {
-                    let [prevLine, curLine, nextLine] = [
-                        i > 0 ? textStrings[i-1] : false,
-                        textStrings[i],
-                        i < textStrings.length - 1 ? textStrings[i+1] : false
-                    ]
-                    if (prevLine !== false && prevLine.charAt(prevLine.length - 1) === " ")
-                        prevLine = prevLine.slice(0, -1)
-                    if (nextLine !== false && nextLine.charAt(0) === " ")
-                        nextLine = nextLine.slice(1)
-                    if (curLine.charAt(curLine.length - 1) === " ")
-                        curLine = curLine.slice(0, -1)
-                    if (curLine.charAt(0) === " ")
-                        curLine = curLine.slice(1)
-                    const [prevLineSpace, nextLineSpace] = [
-                            prevLine === false ? maxWidth : maxWidth - getTextWidth(textObj, prevLine, false),
-                            nextLine === false ? maxWidth : maxWidth - getTextWidth(textObj, nextLine, false)
-                        ], // Set PERCENTAGE of maxWidth that free space must take up in previous line to prefer it.
-                        PREVLINEPERCENT = 0.75
-                    if (prevLineSpace >= maxWidth * PREVLINEPERCENT || prevLineSpace >= nextLineSpace) {
-                        let shiftString = curLine.charAt(0)
-                        curLine = curLine.slice(1)
-                        for (let j = 0; j < curLine.length; j++) {
-                            if (getTextWidth(textObj, ` ${shiftString}${curLine.charAt(0)}-`, false) > prevLineSpace)
-                                break
-                            shiftString += curLine.charAt(0)
-                            curLine = curLine.slice(1)
-                        }
-                        prevLine = `${(prevLine && `${prevLine} ` || "").replace(/-$/gu, "")}${shiftString}-`
+            if (VAL({textObj}, "splitTextLines")) {
+                let textStrings = text.split(/(\s|-)/gu).filter(x => x.match(/\S/gu)),
+                    splitStrings = [],
+                    highWidth = 0
+                for (let i = 0; i < textStrings.length; i++)
+                    if (textStrings[i] === "-") {
+                        textStrings[i-1] = `${textStrings[i-1] }-`
+                        textStrings = [...[...textStrings].splice(0,i), ...[...textStrings].splice(i+1)]
                     }
-                    if (getTextWidth(textObj, `${curLine}-`, false) > maxWidth) {
-                        let shiftString = curLine.charAt(curLine.length - 1)
-                        curLine = curLine.slice(0, -1)
-                        for (let j = 0; j < curLine.length; j++) {
-                            if (getTextWidth(textObj, `${curLine}-`, false) <= maxWidth)
-                                break                            
-                            shiftString = curLine.charAt(curLine.length - 1)
+                for (let i = 0; true; i++) { // eslint-disable-line no-constant-condition
+                    if (getTextWidth(textObj, textStrings[i], false) > maxWidth) {
+                        let [prevLine, curLine, nextLine] = [
+                            i > 0 ? textStrings[i-1] : false,
+                            textStrings[i],
+                            i < textStrings.length - 1 ? textStrings[i+1] : false
+                        ]
+                        if (prevLine !== false && prevLine.charAt(prevLine.length - 1) === " ")
+                            prevLine = prevLine.slice(0, -1)
+                        if (nextLine !== false && nextLine.charAt(0) === " ")
+                            nextLine = nextLine.slice(1)
+                        if (curLine.charAt(curLine.length - 1) === " ")
                             curLine = curLine.slice(0, -1)
-                        }     
-                        curLine = `${curLine}-`                   
-                        nextLine = `${shiftString}${(nextLine && ` ${nextLine}` || "").replace(/^-/gu, "")}`
+                        if (curLine.charAt(0) === " ")
+                            curLine = curLine.slice(1)
+                        const [prevLineSpace, nextLineSpace] = [
+                                prevLine === false ? maxWidth : maxWidth - getTextWidth(textObj, prevLine, false),
+                                nextLine === false ? maxWidth : maxWidth - getTextWidth(textObj, nextLine, false)
+                            ], // Set PERCENTAGE of maxWidth that free space must take up in previous line to prefer it.
+                            PREVLINEPERCENT = 0.75
+                        if (prevLineSpace >= maxWidth * PREVLINEPERCENT || prevLineSpace >= nextLineSpace) {
+                            let shiftString = curLine.charAt(0)
+                            curLine = curLine.slice(1)
+                            for (let j = 0; j < curLine.length; j++) {
+                                if (getTextWidth(textObj, ` ${shiftString}${curLine.charAt(0)}-`, false) > prevLineSpace)
+                                    break
+                                shiftString += curLine.charAt(0)
+                                curLine = curLine.slice(1)
+                            }
+                            prevLine = `${(prevLine && `${prevLine} ` || "").replace(/-$/gu, "")}${shiftString}-`
+                        }
+                        if (getTextWidth(textObj, `${curLine}-`, false) > maxWidth) {
+                            let shiftString = curLine.charAt(curLine.length - 1)
+                            curLine = curLine.slice(0, -1)
+                            for (let j = 0; j < curLine.length; j++) {
+                                if (getTextWidth(textObj, `${curLine}-`, false) <= maxWidth)
+                                    break                            
+                                shiftString = curLine.charAt(curLine.length - 1)
+                                curLine = curLine.slice(0, -1)
+                            }     
+                            curLine = `${curLine}-`                   
+                            nextLine = `${shiftString}${(nextLine && ` ${nextLine}` || "").replace(/^-/gu, "")}`
+                        }
+                        if (i === 0 && prevLine) {
+                            if (nextLine)
+                                textStrings = [prevLine, curLine, nextLine, ...textStrings.slice(2)]
+                            else
+                                textStrings = [prevLine, curLine]
+                            i++
+                        } else {
+                            textStrings[i-1] = prevLine || textStrings[i-1]
+                            textStrings[i] = curLine
+                            if (nextLine)
+                                textStrings[i+1] = nextLine
+                        }
                     }
-                    if (i === 0 && prevLine) {
-                        if (nextLine)
-                            textStrings = [prevLine, curLine, nextLine, ...textStrings.slice(2)]
-                        else
-                            textStrings = [prevLine, curLine]
-                        i++
-                    } else {
-                        textStrings[i-1] = prevLine || textStrings[i-1]
-                        textStrings[i] = curLine
-                        if (nextLine)
-                            textStrings[i+1] = nextLine
+                    if (i >= textStrings.length - 1)
+                        break
+                }
+                // let [stringCount, lineCount] = [0, 0]
+                    
+                while (textStrings.length) {
+                    let thisString = "",
+                        nextWidth = getTextWidth(textObj, textStrings[0] + (textStrings[0].endsWith("-") ? "" : " "), false)
+                    // lineCount++
+                    // stringCount = 0
+                    // DB(`LINE ${lineCount}.  NextWidth: ${nextWidth}`, "splitTextLines")
+                    while (nextWidth < maxWidth && textStrings.length) {
+                        thisString += textStrings[0].endsWith("-") ? `${textStrings.shift()}` : `${textStrings.shift()} `
+                        nextWidth = textStrings.length ? getTextWidth(textObj, thisString + textStrings[0] + (textStrings[0].endsWith("-") ? "" : " "), false) : 0
+                        // stringCount++
+                        // DB(`... STRING ${stringCount}: ${thisString}  NextWidth: ${nextWidth}`, "splitTextLines")
                     }
+                    // DB(`ADDING LINE: ${thisString} with width ${getTextWidth(textObj, thisString, false)}`, "splitTextLines")
+                    splitStrings.push(thisString)
+                    highWidth = Math.max(getTextWidth(textObj, thisString, false), highWidth)
                 }
-                if (i >= textStrings.length - 1)
-                    break
+                if (justification === "center")
+                    splitStrings = _.map(splitStrings, v => `${buffer(textObj, 0.5 * (highWidth - getTextWidth(textObj, v, false)))}${v}${buffer(textObj, 0.5 * (highWidth - getTextWidth(textObj, v, false)))}`)
+                else if (justification === "right")
+                // D.Alert(`spaceWidth: ${spaceWidth}, repeating ${D.JS(Math.round((highWidth - getTextWidth(textObj, splitStrings[0], false))/spaceWidth))} Times.`)
+                    splitStrings = _.map(splitStrings, v => `${buffer(textObj, highWidth - getTextWidth(textObj, v, false))}${v}`)
+        // D.Alert(`SplitTextLines Called.  Returning: ${D.JS(splitStrings)}`)
+                return splitStrings
             }
-            // let [stringCount, lineCount] = [0, 0]
-                
-            while (textStrings.length) {
-                let thisString = "",
-                    nextWidth = getTextWidth(textObj, textStrings[0] + (textStrings[0].endsWith("-") ? "" : " "), false)
-                // lineCount++
-                // stringCount = 0
-                // DB(`LINE ${lineCount}.  NextWidth: ${nextWidth}`, "splitTextLines")
-                while (nextWidth < maxWidth && textStrings.length) {
-                    thisString += textStrings[0].endsWith("-") ? `${textStrings.shift()}` : `${textStrings.shift()} `
-                    nextWidth = textStrings.length ? getTextWidth(textObj, thisString + textStrings[0] + (textStrings[0].endsWith("-") ? "" : " "), false) : 0
-                    // stringCount++
-                    // DB(`... STRING ${stringCount}: ${thisString}  NextWidth: ${nextWidth}`, "splitTextLines")
-                }
-                // DB(`ADDING LINE: ${thisString} with width ${getTextWidth(textObj, thisString, false)}`, "splitTextLines")
-                splitStrings.push(thisString)
-                highWidth = Math.max(getTextWidth(textObj, thisString, false), highWidth)
-            }
-            if (justification === "center")
-                splitStrings = _.map(splitStrings, v => `${buffer(textObj, 0.5 * (highWidth - getTextWidth(textObj, v, false)))}${v}${buffer(textObj, 0.5 * (highWidth - getTextWidth(textObj, v, false)))}`)
-            else if (justification === "right")
-            // D.Alert(`spaceWidth: ${spaceWidth}, repeating ${D.JS(Math.round((highWidth - getTextWidth(textObj, splitStrings[0], false))/spaceWidth))} Times.`)
-                splitStrings = _.map(splitStrings, v => `${buffer(textObj, highWidth - getTextWidth(textObj, v, false))}${v}`)
-       // D.Alert(`SplitTextLines Called.  Returning: ${D.JS(splitStrings)}`)
-            return splitStrings
+            return [text]
         },
         justifyText = (textRef, justification, maxWidth = 0) => {
             const textObj = getTextObj(textRef)
@@ -7234,7 +7276,7 @@ const Media = (() => {
         GetImgData: getImgData, GetTextData: getTextData,
         GetImgSrc: getImgSrc,
         GetToken: getTokenObj,
-        GetLineHeight: getLineHeight, GetTextWidth: getTextWidth,
+        GetLineHeight: getLineHeight, GetTextWidth: getTextWidth, GetTextHeight: getTextHeight,
         Buffer: buffer,
 
         // CONSTRUCTORS, REGISTERS & DESTROYERS
@@ -7244,7 +7286,7 @@ const Media = (() => {
         AddImgSrc: addImgSrc,
 
         // SETTERS
-        SetImg: setImg, SetText: setText,        
+        SetImg: setImg, SetText: setText, AdjustImg: adjustImg,  
         ToggleImg: toggleImg, ToggleText: toggleText, ToggleToken: toggleTokenSrc,
         SetImgData: setImgData, SetTextData: setTextData,
         SetImgTemp: setImgTemp, // SetTextTemp: setTextTemp,
