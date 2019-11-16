@@ -62,7 +62,7 @@ const InitCommands = (() => {
         CheckInstall: checkInstall,
         OnChatCall: onChatCall
     }
-} )()
+})()
 
 on("ready", () => {
     InitCommands.CheckInstall()

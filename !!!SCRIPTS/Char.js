@@ -241,12 +241,11 @@ const Char = (() => {
                                         ">${traitVal}</span></div>`)
                                     }
                                     returnLines.push(charLines.join(""))
-                                }  
-                                sendChat(D.Capitalize(traitName, true), D.JSH(`/w Storyteller ${
-                                    C.CHATHTML.Block([
-                                        C.CHATHTML.Header(D.Capitalize(traitName, true)),
-                                        C.CHATHTML.Body(returnLines.join("<br>"), {color: C.COLORS.white, fontWeight: "normal", fontFamily: "Voltaire", fontSize: "12px", textAlign: "left"})
-                                    ].join(""))}`))
+                                }
+                                D.Chat("Storyteller", C.CHATHTML.Block([
+                                    C.CHATHTML.Header(D.Capitalize(traitName, true)),
+                                    C.CHATHTML.Body(returnLines.join("<br>"), {color: C.COLORS.white, fontWeight: "normal", fontFamily: "Voltaire", fontSize: "12px", textAlign: "left"})
+                                ].join("")), null, D.RandomString(10))
                             } else {
                                 promptTraitSelect(charObjs.map(x => x.id).join(","), null, "!char @@CHARIDS@@ get stat @@TRAITNAME@@")
                             }
@@ -702,7 +701,7 @@ const Char = (() => {
                         {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.crimson}
                     )).join("")
                 ))
-            sendChat("Select a Character", D.JSH(`/w Storyteller ${C.MENUHTML.Block(chatLines.join(""))}`))
+            D.Chat("Storyteller", C.MENUHTML.Block(chatLines.join("")), null, D.RandomString(10))
         },
         promptActionMenu = (charsRef) => {
             const chatLines = [],
@@ -1208,7 +1207,7 @@ const Char = (() => {
                 for (const [col, lines] of Object.entries(charCols))
                     Media.SetText(col, lines.join("\n"))
             }
-            Media.AdjustImg("stakedAdvantagesHeader", 0, -3)
+            Media.Adjust("stakedAdvantagesHeader", 0, -3)
         },
         updateHunger = () => {
             for(const char of D.GetChars("registered")) {

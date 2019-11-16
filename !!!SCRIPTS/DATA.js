@@ -29,6 +29,7 @@ const D = (() => {
             STATE.REF.DEBUGLOG = STATE.REF.DEBUGLOG || []
             STATE.REF.ALERTTHROTTLE = []
             STATE.REF.isReportingListener = STATE.REF.isReportingListener || false
+            STATE.REF.FuncQueueName = STATE.REF.FuncQueueName || []
 
         // Initialize STATSDICT Fuzzy Dictionary
             try {
@@ -249,32 +250,39 @@ const D = (() => {
             }
             return true
         },
-        runFuncQueue = (queueName = "main") => {
-            DB(`Running Function Queue ${queueName}`, "runFuncQueue")
-            return ((cback) => {
-                DB(`... running function #${FunctionQueue[queueName].length}`, "runFuncQueue")
-                let current = 0
-                const done = (empty, ...args) => {
-                        const end = () => {
-                            const newArgs = args ? [].concat(empty, args) : [empty]
-                            if (cback)
-                                cback(...newArgs)
-                        }
-                        end()
-                    },
-                    each = (empty, ...args) => {
-                        if (++current >= FunctionQueue[queueName].length || empty)
-                            done(empty, args)
-                        else
-                            FunctionQueue[queueName][current].apply(undefined, [].concat(args, each))
+        $runFuncQueue = (cback) => {
+            const queueName = STATE.REF.FuncQueueName.pop()
+            if (!queueName)
+                return THROW("Attempt to run function queue without any queue names.", "runFuncQueue")            
+            let current = 0
+            const done = (empty, ...args) => {
+                    const end = () => {
+                        const newArgs = args ? [].concat(empty, args) : [empty]
+                        if (cback)
+                            cback(...newArgs)
                     }
-                if (FunctionQueue[queueName].length) {
-                    FunctionQueue[queueName][0](each)
-                } else {
-                    done(null)
-                    FunctionQueue[queueName].length = 0
+                    end()
+                },
+                each = (empty, ...args) => {
+                    if (++current >= FunctionQueue[queueName].length || empty)
+                        done(empty, args)
+                    else
+                        FunctionQueue[queueName][current].apply(undefined, [].concat(args, each))
                 }
-            })()
+            if (FunctionQueue[queueName].length) {
+                DB(`... running ${queueName} function, ${FunctionQueue[queueName].length - 1} remaining.`, "runFuncQueue")
+                FunctionQueue[queueName][0](each)
+            } else {
+                done(null)
+                FunctionQueue[queueName].length = 0
+                DB(`Function Queue ${queueName} Complete!`, "runFuncQueue")
+            }
+            return true
+        },
+        runFuncQueue = (queueName = "main", cback) => {
+            DB(`Beginning Function Queue ${queueName}`, "runFuncQueue")
+            STATE.REF.FuncQueueName.push(queueName)
+            $runFuncQueue(cback)
         },
     // #endregion
 
@@ -433,6 +441,10 @@ const D = (() => {
             // D.Alert(`${(charObjs || []).length} Characters Retrieved: ${(charObjs || []).map(x => D.GetName(x)).join("<br>")}<br>Call: ${call}<br>Args: ${args.join(" ")}`)
             return [charObjs, charIDString, call, args]
         },
+        randomString = (length = 10) => {
+            const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+            return _.sample(characters.split(""), D.Int(length)).join("")
+        },
         summarizeHTML = (htmlString = "") => ((htmlString.match(/.*?>([^<>]+)<.*?/g) || [""]).pop().match(/.*?>([^<>]+)<.*?/) || [""]).pop(),
         pInt = strRef => parseInt(strRef) || 0,
         pFloat = strRef => parseFloat(strRef) || 0,
@@ -516,17 +528,17 @@ const D = (() => {
     // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
         formatTitle = (funcName, scriptName, prefix = "") => `[${prefix}${VAL({string: funcName}) || VAL({string: scriptName}) ? " " : ""}${VAL({string: scriptName}) ? `${scriptName.toUpperCase()}` : ""}${VAL({string: [scriptName, funcName]}, null, true) ? ": " : ""}${funcName || ""}]`,
         formatLogLine = (msg, funcName, scriptName, prefix = "", isShortForm = false) => `${formatTitle(funcName, scriptName, prefix)} ${jStrL(msg, isShortForm, true)}`,
-        sendChatMessage = (who, message = "", title) => {
+        sendChatMessage = (who, message = "", title, from = "") => {
             /* Whispers chat message to player given: display name OR player ID. 
                 If no Title, message is sent without formatting. */
             const player = getPlayer(who) || who,
                 html = title ? jStrH(C.CHATHTML.alertHeader(title) + C.CHATHTML.alertBody(jStr(message))) : message
             if (who === "all" || player === "all" || !player)
-                sendChat("", html)
+                sendChat(from, html)
             else if (Session.IsTesting)
-                sendChat("", `/w Storyteller (TO ${player.get("_displayname")})<br>${html}`)
+                sendChat(from, `/w Storyteller (TO ${player.get("_displayname")})<br>${html}`)
             else
-                sendChat("", `/w "${player.get("_displayname")}" ${html}`)
+                sendChat(from, `/w "${player.get("_displayname")}" ${html}`)
                 
         },
         sendToGM = (msg, title = "[ALERT]", throttle = 0) => {
@@ -1899,6 +1911,7 @@ const D = (() => {
         JS: jStr, JSL: jStrL, JSH: jStrH, JSC: jStrC,
         ParseParams: parseParams,
         ParseCharSelection: parseCharSelect,
+        RandomString: randomString,
         SumHTML: summarizeHTML,
         Int: pInt, Float: pFloat, LCase: pLowerCase, UCase: pUpperCase,
         Round: roundSig,

@@ -209,9 +209,11 @@ const Listener = (() => {
             const objects = {},
                 ids = [],
                 objRefsFound = [],
-                allObjs = findObjs({
+                allObjs = [...findObjs({
                     _pageid: D.PAGEID
-                })
+                }), ...findObjs({
+                    _type: "character"
+                })]
             if (VAL({array: args}, "getObjsFromArgs") && args.length) {
                 // STEP 1: For each argument, check if it is a string of object IDs.  If so, add those objects and strip out that argument.
                 for (let i = 0; i < args.length; i++)

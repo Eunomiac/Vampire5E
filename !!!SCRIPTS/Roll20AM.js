@@ -1356,7 +1356,7 @@ var Roll20AM = Roll20AM || (function() {
 
         // verify that the list is actualy playing
         if(!trackDetails.playing){
-            sendChat('Roll20AM','/w "'+who+'" In order to fade a track, it must be playing.',null,{noarchive:true})
+            // sendChat('Roll20AM','/w "'+who+'" In order to fade a track, it must be playing.',null,{noarchive:true})
             return;
         }
 	    if(debug){
@@ -2141,9 +2141,7 @@ var Roll20AM = Roll20AM || (function() {
                 // no default
             }
             editHandler(modeDetails, getPlayList(soundRef), getTrackDetails(getTrackID(soundRef)), "gm")
-            if (!isPlaylist)
-                D.Alert(`Setting ${soundRef} to ${mode}`)
-            else
+            if (isPlaylist)
                 setPlaylistTrackModes(soundRef, (C.SOUNDMODES[soundRef] || C.SOUNDMODES.defaults).innerMode || C.SOUNDMODES.defaults.innerMode)
         },
         setPlaylistTrackModes = (listRef, mode) => {

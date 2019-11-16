@@ -308,15 +308,15 @@ const Session = (() => {
                     WITHOUT: ${D.JS(_.without(_.pluck(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe), "playerName"), "Storyteller"))}`, "startSession")
                 const otherScribes = _.shuffle(_.without(_.pluck(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe), "playerName"), "Storyteller"))
                 STATE.REF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, sessionScribe]))
-            } 
-            sendChat("Session Start", C.CHATHTML.Block([
+            }
+            D.Chat("all", C.CHATHTML.Block([
                 C.CHATHTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
                 C.CHATHTML.Body("Initializing Session...", {margin: "0px 0px 10px 0px"}),
                 C.CHATHTML.Header(`Welcome to Session ${D.NumToText(STATE.REF.SessionNum, true)}!`),
                 C.CHATHTML.Body("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "10px 0px 10px 0px"}),
                 C.CHATHTML.Header(`Session Scribe: ${sessionScribe || "(None Set)"}`),
                 C.CHATHTML.Body("Thank you for your service!")
-            ]))
+            ]), null, D.RandomString(10))
             changeMode("Active", true)
             for (const quadrant of _.keys(Char.REGISTRY)) {
                 const {tokenName} = Char.REGISTRY[quadrant]
@@ -330,12 +330,12 @@ const Session = (() => {
         },
         endSession = () => {
             if (remorseCheck()) {
-                sendChat("Session End", C.CHATHTML.Block([
+                D.Chat("all", C.CHATHTML.Block([
                     C.CHATHTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
                     C.CHATHTML.Header(`Concluding Session ${D.NumToText(STATE.REF.SessionNum, true)}`),
                     C.CHATHTML.Body("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "10px 0px 10px 0px"}),
                     C.CHATHTML.Title("See you next week!", {fontSize: "32px"}),
-                ]))
+                ]), null, D.RandomString(10))
                 // Char.SendHome()
                 changeMode("Inactive", true)
                 STATE.REF.tokenRecord = {}
@@ -379,6 +379,8 @@ const Session = (() => {
 
         },
         changeMode = (mode, isUpdatingMedia = true) => {
+            if (D.Capitalize(D.LCase(mode)) === Session.Mode)
+                return null
             if (VAL({string: mode}, "changeMode") && STATE.REF.SessionModes.map(x => x.toLowerCase()).includes(mode.toLowerCase())) {
                 const [lastMode, curMode] = [
                     `${STATE.REF.Mode}`,
@@ -398,6 +400,7 @@ const Session = (() => {
                     Media.UpdateSoundscape()
                 }
             }
+            return true
         },
         toggleTesting = (isTesting) => {
             if (isTesting === false || isTesting === true) {
@@ -416,19 +419,19 @@ const Session = (() => {
                 setLocation(BLANKLOCRECORD)
                 TimeTracker.StopClock()
                 Char.SendHome()
-                sendChat("Session Downtime", C.CHATHTML.Block([
+                D.Chat("all", C.CHATHTML.Block([
                     C.CHATHTML.Title("Session Downtime"),
                     C.CHATHTML.Header("Session Status: Downtime"),
                     C.CHATHTML.Body("Clock Stopped.")
-                ]))
+                ]), null, D.RandomString(10))
             } else {
                 TimeTracker.StartClock()
                 Char.SendBack()
-                sendChat("Session Downtime", C.CHATHTML.Block([
+                D.Chat("all", C.CHATHTML.Block([
                     C.CHATHTML.Title("Session Downtime"),
                     C.CHATHTML.Header("Session Status: Regular Time"),
                     C.CHATHTML.Body("Clock Started.")
-                ]))
+                ]), null, D.RandomString(10))
             }
             Char.RefreshDisplays()
             TimeTracker.Fix()
@@ -451,19 +454,19 @@ const Session = (() => {
                     Char.TogglePC(quad, true)
                     Char.SetNPC(charData.id, "base")
                     Media.SetImg("Spotlight", quad, true)
-                    sendChat("Spotlight", C.CHATHTML.Block([
+                    D.Chat("all", C.CHATHTML.Block([
                         C.CHATHTML.Title("Spotlight:"),
                         C.CHATHTML.Header(charData.name)
-                    ]))
+                    ]), null, D.RandomString(10))
                 }
             } else {
                 changeMode(STATE.REF.LastMode === "Spotlight" && "Active" || STATE.REF.LastMode)
                 Char.SendBack()
                 Media.SetImg("Spotlight", "blank")
-                sendChat("Spotlight", C.CHATHTML.Block([
+                D.Chat("all", C.CHATHTML.Block([
                     C.CHATHTML.Title("Spotlight"),
                     C.CHATHTML.Header("Spotlight Session Closed.")
-                ]))
+                ]), null, D.RandomString(10))
             }                   
             Char.RefreshDisplays()
             TimeTracker.Fix()
@@ -567,7 +570,7 @@ const Session = (() => {
             }
             return false
         },
-        setLocation = (locParams, sceneFocus) => {
+        setLocation = (locParams, sceneFocus, isForcing = false) => {
             const newLocData = Object.assign(_.clone(BLANKLOCRECORD), locParams, _.omit(STATE.REF.curLocation, (v,k) => k === "SubLocs" || _.keys(locParams).includes(k))),
                 curLocData = JSON.parse(JSON.stringify(STATE.REF.curLocation)),
                 reportStrings = [
@@ -606,9 +609,9 @@ const Session = (() => {
                 newLocData.SubLocs = {TopLeft: "blank", Left: "blank", BotLeft: "blank", TopRight: "blank", Right: "blank", BotRight: "blank"}
             STATE.REF.curLocation = D.Clone(newLocData)
             STATE.REF.locationRecord[Session.Mode] = D.Clone(newLocData) 
-            const locDataDelta = _.pick(newLocData, _.keys(newLocData).filter(x => x !== "SubLocs" && !_.isEqual(newLocData[x], curLocData[x])))
+            const locDataDelta = _.pick(newLocData, _.keys(newLocData).filter(x => x !== "SubLocs" && (isForcing || !_.isEqual(newLocData[x], curLocData[x]))))
             for (const [subLocPos, subLocName] of Object.entries(newLocData.SubLocs || {}))
-                if (curLocData.SubLocs[subLocPos] !== subLocName)
+                if (isForcing || curLocData.SubLocs[subLocPos] !== subLocName)
                     locDataDelta[`SubLoc${subLocPos}`] = subLocName
             reportStrings.push(`Loc Data Delta: ${D.JS(locDataDelta)}`)
             reportStrings.push(`New STATE.REF Record: ${D.JS(STATE.REF.locationRecord[Session.Mode])}`)
@@ -634,7 +637,7 @@ const Session = (() => {
             }
             setSceneFocus(sceneFocus || STATE.REF.sceneFocus)
         },
-        setModeLocations = (mode) => { setLocation(STATE.REF.locationRecord[mode]) },
+        setModeLocations = (mode, isForcing = false) => { setLocation(STATE.REF.locationRecord[mode], null, isForcing) },
         getCharsInLocation = (locPos) => {
             const charObjs = []
             for (const loc of getActiveLocations(locPos))
@@ -763,6 +766,7 @@ const Session = (() => {
         AddSceneChar: addCharToScene,
         ChangeMode: changeMode,
         CharsIn: getCharsInLocation,
+        ResetLocations: setModeLocations,
         get SceneChars() { return getCharsInLocation(STATE.REF.sceneFocus) },
         get SceneFocus() { return STATE.REF.sceneFocus },
         Locations: () => D.KeyMapObj(getActiveSceneLocations(), (k, v) => v, v => STATE.REF.curLocation[v][0] !== "blank" && STATE.REF.curLocation[v][0]),

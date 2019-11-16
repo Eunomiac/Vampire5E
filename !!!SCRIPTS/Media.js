@@ -18,6 +18,8 @@ const Media = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
+            delete STATE.REF.imgRegClean
+
             STATE.REF.imgregistry = STATE.REF.imgregistry || {}
             STATE.REF.textregistry = STATE.REF.textregistry || {}
             STATE.REF.animregistry = STATE.REF.animregistry || {}
@@ -103,9 +105,18 @@ const Media = (() => {
                             break
                         }
                         case "fix": {
-                            const imgReport = fixImgObjs(),
-                                textReport = fixTextObjs()
-                            D.Alert(`${imgReport}<br>${textReport}`, "!media fix")
+                            switch (D.LCase(call = args.shift())) {
+                                case "all": {
+                                    fixAll(args[0] && args[0].includes("kill"))
+                                    break
+                                }
+                                default: {
+                                    const imgReport = fixImgObjs(),
+                                        textReport = fixTextObjs()
+                                    D.Alert(`${imgReport}<br>${textReport}`, "!media fix")
+                                    break
+                                }
+                            }                            
                             break
                         }                        
                         case "align": {
@@ -118,6 +129,10 @@ const Media = (() => {
                         }
                         case "dist": {
                             distObjs(D.GetSelected(msg) || mediaObjs, args.shift())
+                            break
+                        }                        
+                        case "adjust": {
+                            adjustObj(mediaObjs, ...args.map(x => D.Float(x)))
                             break
                         }
                         // no default
@@ -258,20 +273,11 @@ const Media = (() => {
                             break
                         }
                         case "clean": case "cleanreg": case "cleanregistry": {
-                            switch (D.LCase(call = args.shift())) {
-                                case "confirm": {
-                                    cleanImgRegistryConfirm()
-                                    break
-                                }
-                                default: {
-                                    cleanImgRegistry()
-                                    break
-                                }
-                            }
+                            clearMissingRegImgs(args[0] && args[0].includes("kill"))
                             break
                         }
-                        case "clearunreg": case "killunreg": {
-                            clearUnregImgs(call === "killunreg")
+                        case "clearunreg": {
+                            clearUnregImgs(args[0] && args[0].includes("kill"))
                             break
                         }
                         case "add": {
@@ -540,10 +546,6 @@ const Media = (() => {
                             }
                             break
                         }
-                        case "adjust": {
-                            adjustImg(imgObjs, ...args.map(x => D.Float(x)))
-                            break
-                        }
                         // no default
                     }
                     break
@@ -646,8 +648,8 @@ const Media = (() => {
                             }
                             break
                         }
-                        case "clean": case "cleanreg": case "cleanregistry": {
-                            clearUnregText()
+                        case "clearunreg": case "killunreg": {
+                            clearUnregText(call === "killunreg")
                             break
                         }
                         case "reset": case "resetreg": case "resetregistry": {
@@ -1279,6 +1281,7 @@ const Media = (() => {
             return getImgData(mediaRef)
         },
         getModeData = (mediaRef, mode) => {
+            mode = mode || Session.Mode
             const mediaData = getData(mediaRef)
             if (VAL({list: [mediaData, mediaData.modes]}, "getModeData", true))
                 return mediaData.modes[mode]
@@ -1322,32 +1325,47 @@ const Media = (() => {
         // #endregion
 
     // #region GENERAL MEDIA OBJECT SETTERS:
-        /* fixAll = () => {
+        fixAll = (isKilling = false) => {
             const [isTesting, currentMode] = [Session.IsTesting, Session.Mode]
 
-            Session.ToggleTesting(true)
-            Session.ChangeMode("Active")
-            
-            D.Queue(Session.ToggleTesting, [true], "Media")
-            D.Queue(Session.ChangeMode, ["Active"], "Media")
-            D.Queue(Roller.Kill, [], "Media")
-            D.Queue(Roller.Init, [], "Media")
+            // Session.ToggleTesting(true)
+            // Session.ChangeMode("Active")
+
+            D.Queue(Session.ToggleTesting, [true], "Media", 0.1)
+            if (currentMode !== "Active")
+                D.Queue(Session.ChangeMode, ["Active"], "Media", 5)
+            D.Queue(D.Chat, ["all", "<h2><span style='color: purple;'>Beginning Initialization of Media Assets</span></h2>", "API Initialization", D.RandomString(10)], "Media", 3)
+            D.Queue(Roller.Kill, [], "Media", 5)
+            D.Queue(Roller.Init, [false], "Media", 10)
+            D.Queue(Roller.Clean, [], "Media")
             D.Queue(clearMissingRegImgs, [], "Media")
             D.Queue(clearMissingRegText, [], "Media")
-            D.Queue(clearUnregText, [true], "Media")
-            D.Queue(clearUnregImgs, [true], "Media")
-            D.Queue(initAnimations, [], "Media")
-            D.Queue(resetModes, [true], "Media")
-            D.Queue(setActiveLayers, [], "Media")
+            D.Queue(clearUnregImgs, [isKilling], "Media")
+            D.Queue(clearUnregText, [isKilling], "Media")
+            // D.Queue(initAnimations, [], "Media")
+            D.Queue(D.Chat, ["all", "<h3><span style='color: green;'>Animations OK!</span></h3>", "Initializing Animations", D.RandomString(10)], "Media")
+            D.Queue(resetModes, [true], "Media", 15)
             D.Queue(setZIndices, [], "Media")
-            D.Queue(fixImgObjs, [], "Media")
             D.Queue(resetBGImgs, [], "Media")
-            D.Queue(fixTextObjs, [], "Media")
-            D.Queue(initSoundModes, [], "Media")
+            D.Queue(() => {
+                TimeTracker.Fix()
+                D.Chat("all", "<h3><span style='color: green;'>Time, Weather & Horizon Data Updated!</span></h3>", "Calibrating TimeTracker", D.RandomString(10))
+            }, [], "Media")
+            D.Queue(() => {
+                Session.ResetLocations("Active", true)
+                D.Chat("all", "<h3><span style='color: green;'>Locations Updated!</span></h3>", "Setting Location", D.RandomString(10))
+            }, [], "Media")
+            D.Queue(fixImgObjs, [], "Media", 10)
+            D.Queue(fixTextObjs, [], "Media", 5)
+            D.Queue(initSoundModes, [], "Media")            
 
-            Session.ToggleTesting(isTesting)
-            Session.ChangeMode(currentMode)
-        }, */
+            D.Queue(Session.ToggleTesting, [isTesting], "Media", 0.1)
+            if (currentMode !== "Active")
+                D.Queue(Session.ChangeMode, [currentMode], "Media")
+            D.Queue(D.Chat, ["all", "<h2><span style='color: purple;'>Initialization of Media Assets Complete!</span></h2><h3>Please reload the sandbox to re-sync.", "API Initialization", D.RandomString(10)], "Media", 3)
+
+            D.Run("Media")
+        },
         setLayer = (mediaRef, layer, isForcing = false) => {
             const mediaData = getData(mediaRef)
             if (VAL({list: mediaData}, "setLayer")) {
@@ -1359,6 +1377,11 @@ const Media = (() => {
                 return true
             }
             return false
+        },
+        setMediaTemp = (mediaRef, params = {}) => {
+            const mediaObj = getMediaObj(mediaRef)
+            if (VAL({object: mediaObj}))
+                mediaObj.set(params)
         },
         toggle = (mediaRef, isActive, isForcing = false) => {
             if (isActive !== true && isActive !== false)
@@ -1462,6 +1485,14 @@ const Media = (() => {
                     }
                 }
             return true
+        },        
+        adjustObj = (mediaRefs, deltaX, deltaY) => {
+            for (const mediaObj of _.flatten([mediaRefs]).map(x => getMediaObj(x)))
+                if (VAL({object: mediaObj}))
+                    setMediaTemp({
+                        left: D.Float(mediaObj.get("left")) + D.Float(deltaX),
+                        top: D.Float(mediaObj.get("top")) + D.Float(deltaY)
+                    })
         },
         modeUpdate = (mediaRef) => {
             if (isRegText(mediaRef)) {
@@ -1556,6 +1587,7 @@ const Media = (() => {
             sortedMediaObjs.push(..._.compact(allImgDatas.sort((a,b) => b.zIndex - a.zIndex).map(x => getImgObj(x.id) || null)))
             for (let i = 0; i < sortedMediaObjs.length; i++)
                 toBack(sortedMediaObjs[i])
+            D.Chat("all", "<h3><span style='color: green;'>Z-Indices Reset!</span></h3>", "Setting Z-Indices", D.RandomString(10)) 
         },
         switchMode = () => {
             DB(`Switching Mode to ${Session.Mode}`, "switchMode")
@@ -5400,11 +5432,13 @@ const Media = (() => {
                     const imgObj = getImgObj(objName),
                         imgData = getImgData(objName)
                     if (VAL({imgObj})) {
-                        const srcRef = getSrcFromURL(imgObj.get("imgsrc"), imgData.srcs)
+                        if (!`${imgObj.get("imgsrc")}`.includes("http"))
+                            setImg(imgObj, "blank")
+                        const srcRef = getSrcFromURL(imgObj.get("imgsrc"), getImgSrcs(imgObj))
                         if (srcRef) {
                             value = srcRef
-                        } else {
-                            errorLines.push(`Failure finding current source of ${objName}`)
+                        } else {                            
+                            errorLines.push(`Failure finding current source of ${objName}<br>URL: ${D.JS(imgObj.get("imgsrc"))}<br>SRCS: ${D.JS(imgData.srcs)}<br>SRCREF: ${D.JS(srcRef)}<br>GETSRCfromURL: ${D.JS(getSrcFromURL(imgObj.get("imgsrc"), imgData.srcs))}<br>`)
                             continue
                         }                        
                     } else {
@@ -5418,8 +5452,9 @@ const Media = (() => {
             for (const imgKey of _.uniq(updatedKeys.IMG))
                 REGISTRY.IMG[imgKey].wasModeUpdated = true
             for (const textKey of _.uniq(updatedKeys.TEXT))
-                REGISTRY.TEXT[textKey].wasModeUpdated = true
-            D.Alert(returnMsg.join("<br>"), "Mode Reset Complete!")
+                REGISTRY.TEXT[textKey].wasModeUpdated = true   
+            D.Chat("all", "<h3><span style='color: green;'>Mode Data Reset!</span></h3>", "Resetting Mode Data", D.RandomString(10))
+            // D.Alert(returnMsg.join("<br>"), "Mode Reset Complete!")
             if (errorLines.length)
                 D.Alert(errorLines.join("<br>"), "ERRORS: Mode Reset")
         },
@@ -5563,16 +5598,32 @@ const Media = (() => {
             return imgData
         },
         getImgSrcs = (imgRef) => {
-            const srcData = Object.assign(C.IMAGES, STATE.REF.TokenSrcs)
             let imgData = getImgData(imgRef)
-            if (imgData.srcs === "TOKEN")
-                return srcData
-            while (isRegImg(imgData.srcs))
-                imgData = getImgData(imgData.srcs)
-            return Object.assign(srcData, imgData.srcs)
+            if (VAL({list: imgData})) {
+                while (isRegImg(imgData.srcs))
+                    imgData = getImgData(imgData.srcs)
+                return Object.assign(C.IMAGES, imgData.srcs)
+            }
+            return false
         },
-        getURLFromSrc = (srcRef, srcData) => Object.assign(Object.assign(C.IMAGES, STATE.REF.TokenSrcs), srcData)[srcRef] || VAL({string: srcRef}) && srcRef.includes("http") && srcRef,
-        getSrcFromURL = (URLRef, srcData) => _.findKey(Object.assign(Object.assign(C.IMAGES, STATE.REF.TokenSrcs), srcData), v => v.toLowerCase() === URLRef.toLowerCase()) || false,
+        getURLFromSrc = (srcRef, srcData) => {
+            if (VAL({string: srcRef})) {
+                if (srcRef.includes("http"))
+                    return srcRef
+                if (VAL({string: srcData}))
+                    srcData = getImgSrcs(srcData)
+                if (VAL({list: srcData}, "getURLFromSrc"))
+                    return srcData[srcRef] || false
+            }
+            return false
+        },
+        getSrcFromURL = (URLRef, srcData) => {
+            if (VAL({string: srcData}))
+                srcData = getImgSrcs(srcData)
+            if (VAL({string: URLRef, list: srcData}, "getSrcFromURL"))
+                return _.findKey(srcData, v => v.toLowerCase() === URLRef.toLowerCase()) || false
+            return false
+        },
         getTokenObj = (charRef, funcName = false) => {
             const charObj = D.GetChar(charRef, funcName)
             if (charObj)
@@ -5773,7 +5824,8 @@ const Media = (() => {
                     activeLayer,
                     zIndex: options.zIndex || (REGISTRY.IMG[name] ? REGISTRY.IMG[name].zIndex : 200),
                     srcs: {},
-                    modes: options.modes || C.MODEDEFAULTS(imgObj, params.modes)
+                    modes: options.modes || C.MODEDEFAULTS(imgObj, params.modes),
+                    isActive: true
                 }
                 if (options.modes)
                     REGISTRY.IMG[name].wasModeUpdated = true
@@ -5783,6 +5835,8 @@ const Media = (() => {
                     setImg(name, srcName.includes("ref:") ? "base" : srcName)
                 }
                 layerImgs([name], REGISTRY.IMG[name].activeLayer)
+                if (options.isActive === false)
+                    toggleImg(name, false, true)
                 if (VAL({string: funcName}) && !isSilent)
                     D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(REGISTRY.IMG[name])}`, "MEDIA: regImg")
                 return getImgData(name)
@@ -5870,7 +5924,7 @@ const Media = (() => {
                 if (VAL({string: srcURL}, "setImg")) { 
                     const imgObj = getImgObj(imgData.name)
                     if (VAL({imgObj}, ["setImg", `Key: ${D.JS(imgData.name)}`])) {
-                        if (isObjActive(imgData.name))
+                        if (isObjActive(imgData.name) && srcRef !== "blank")
                             REGISTRY.IMG[imgData.name].activeSrc = srcRef
                         REGISTRY.IMG[imgData.name].curSrc = srcRef
                         imgObj.set("imgsrc", srcURL)                  
@@ -5902,13 +5956,6 @@ const Media = (() => {
             }
             return false
         },
-        adjustImg = (imgRefs, deltaX, deltaY) => {
-            for (const imgObj of _.flatten([imgRefs]).map(x => getImgObj(x)))
-                setImgTemp(imgObj, {
-                    left: D.Float(imgObj.get("left")) + deltaX,
-                    top: D.Float(imgObj.get("top")) + deltaY
-                })
-        },
         setImgData = (imgRef, params, isSettingObject = false) => {
             const imgKey = getImgKey(imgRef)
             if (VAL({string: imgKey}, "setImgData")) {
@@ -5929,29 +5976,30 @@ const Media = (() => {
         toggleImg = (imgRef, isActive, isForcing = false) => {
             // NON-PERMANENT.  If turning off, set activeSrc to curSrc.
             // Also, verify img status is changing before doing anything.
-            if (isActive === null)
-                return null
-            const imgData = getImgData(imgRef) || VAL({graphicObj: imgRef}) && {isActive: imgRef.get("layer") === "walls"}
-            if (VAL({list: imgData}, "toggleImg")) {
+            if (isActive === null) return null
+            const imgData = getImgData(imgRef) || VAL({object: imgRef}) && {isActive: imgRef.get("layer") === "walls"},
+                modeData = getModeData(imgRef, Session.Mode)
+            if (VAL({list: [imgData, modeData]}, "toggleImg", true)) {
                 let activeCheck = null
-                if (isActive === false || isActive !== true && imgData.isActive === true)
-                    activeCheck = false
-                else if (isActive === true || isActive !== false && imgData.isActive === false)
+                if ((isActive === true || isActive !== false && !imgData.isActive) && modeData.isForcedOn !== false)
                     activeCheck = true
-                if (!isForcing && (activeCheck === null || activeCheck === imgData.isActive))
+                else if (isActive === false || isActive !== true && imgData.isActive)
+                    activeCheck = false
+                if (activeCheck === null || !isForcing && imgData.isActive === activeCheck)
                     return null
                 const imgObj = getImgObj(imgData.name) || VAL({graphicObj: imgRef}) && imgRef
                 DragPads.Toggle(imgData.name, activeCheck, true)
                 if (activeCheck === false) {
                     // TURN OFF: Set layer to walls, toggle off associated drag pads, update activeState value
-                    REGISTRY.IMG[imgData.name].activeSrc = imgData.curSrc
+                    REGISTRY.IMG[imgData.name].activeSrc = imgData.curSrc === "blank" && imgData.activeSrc || imgData.curSrc
                     REGISTRY.IMG[imgData.name].isActive = false
                     setLayer(imgObj, "walls", isForcing)
                     return false                   
                 } else if (activeCheck === true) {
                     // TURN ON: Set layer to active layer, toggle on associated drag pads, restore activeState value if it's different
                     REGISTRY.IMG[imgData.name].isActive = true
-                    // setImg(imgData.name, imgData.activeSrc)
+                    if (imgData.curSrc === "blank" && imgData.activeSrc !== "blank")
+                        setImg(imgData.name, imgData.activeSrc)
                     setLayer(imgObj, imgData.activeLayer, isForcing)
                     return true                   
                 }
@@ -6030,25 +6078,15 @@ const Media = (() => {
                     continue
                 } */
         },
-        cleanImgRegistry = () => {
-            STATE.REF.imgRegClean = []
+        clearMissingRegImgs = () => {
+            const returnLines = []
             for (const imgName of _.keys(REGISTRY.IMG))
                 if (!getImgObj(imgName))
-                    STATE.REF.imgRegClean.push(imgName)
-            if (STATE.REF.imgRegClean.length)
-                D.Alert(`The following registered images are missing:<br><br>${D.JS(STATE.REF.imgRegClean)}<br><br><b>!img clean confirm</b> to purge registry.`, "IMAGE REGISTRY CLEAN")
+                    returnLines.push(`... ${imgName} Missing Object, Removing: ${removeImg(imgName) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`)
+            if (returnLines.length)
+                D.Chat("all", ["<h3>Removing Missing Image Objects from Registry...</h3>", returnLines.join(", ")].join(""), "Pruning Image Registry", D.RandomString(10))
             else
-                D.Alert("No missing image objects found!", "IMAGE REGISTRY CLEAN")
-        },
-        cleanImgRegistryConfirm = () => {
-            for (const imgName of STATE.REF.imgRegClean)
-                removeImg(imgName)
-            D.Alert(`The following registry entries have been purged:<br><br>${D.JS(STATE.REF.imgRegClean)}`, "IMAGE REGISTRY CLEAN CONFIRMED")
-            STATE.REF.imgRegClean = []
-        },
-        clearMissingRegImgs = () => {
-            cleanImgRegistry()
-            cleanImgRegistryConfirm()
+                D.Chat("all", "<h3><span style='color: green;'>Registered Image Objects OK!</span></h3>", "Pruning Image Registry", D.RandomString(10))
         },
         resetBGImgs = () => {                                        
             for (const imgObj of getImgObjs(BGIMGS.keys))
@@ -6065,59 +6103,27 @@ const Media = (() => {
                     height: MAPIMGS.height,
                     width: MAPIMGS.width
                 }, true)
+            D.Chat("all", "<h3><span style='color: green;'>Background Images OK!</span></h3>", "Background & Overlay Correction", D.RandomString(10))
         },
-        clearUnregImgs = isKilling => {
-            const regData = _.values(REGISTRY.IMG),
-                [reportLines, missingImgData, unregImgObjs] = [ [], [], [] ],
+        clearUnregImgs = (isKilling = false) => {
+            const returnLines = [],
                 allImgObjs = findObjs({
+                    _pageid: D.PAGEID,
                     _type: "graphic",
-                    _pageid: D.PAGEID
-                })
-            reportLines.push(
-                `${allImgObjs.length} graphic objects found.`,
-                `${_.keys(REGISTRY.IMG).length} registered graphic objects.`,
-                ""
-            )
-        // First, verify that all registered objects are present.
-            for (const imgData of regData)
-                if (!allImgObjs.map(x => x.id).includes(imgData.id))
-                    missingImgData.push(imgData)
-            if (missingImgData.length)
-                reportLines.push(
-                    `<b>${missingImgData.length} registered images missing:</b>`,
-                    ...missingImgData.map(x => ` ...     ${x.name} (${x.id})`),
-                    ""
-                )
-        // Next, find images that aren't registered:
-            const urlsToKill = []
-            for (const imgObj of allImgObjs)
-                if (!regData.map(x => x.id).includes(imgObj.id)) {
-                    unregImgObjs.push(imgObj)
-                    urlsToKill.push(imgObj.get("imgsrc"))
-                }
-            if (unregImgObjs.length)
-                reportLines.push(
-                    `<b>${unregImgObjs.length} unregistered graphic objects found:</b>`,
-                    ...unregImgObjs.map(x => `<div style="display: inline-block; height: 30px; width: 50%;"><b>${
-                        D.UCase(x.get("layer"))
-                    }: ${
-                        x.get("name")
-                    }</b><br>(${
-                        x.id
-                    })</div><div style="display: inline-block; height: 30px; width: 50%; background: no-repeat #DDDDFF center/100% url('${x.get("imgsrc")}');"></div>`),
-                    ""
-                )
-            if (isKilling) {
-                let count = 0
-                for (const url of urlsToKill) {
-                    const imgObjsToKill = unregImgObjs.filter(x => x.get("imgsrc").includes(url))
-                    count += imgObjsToKill.length
-                    for (const imgObj of imgObjsToKill)
-                        imgObj.remove()
-                }
-                reportLines.push(`${count} graphic objects removed.`)
+                }),
+                regPadIDs = Object.values(REGISTRY.IMG).filter(x => x.padID).map(x => x.padID),
+                regPartnerIDs = Object.values(REGISTRY.IMG).filter(x => x.partnerID).map(x => x.partnerID),
+                unregImgObjs = allImgObjs.filter(x => !isRegImg(x) && !isRegToken(x) && !regPadIDs.includes(x.id) && !regPartnerIDs.includes(x.id))
+            // D.Alert(`RegPadIDs: ${D.JSL(regPadIDs)}<br><br>PartnerIDs: ${D.JSL(regPartnerIDs)}`)
+            for (const imgObj of unregImgObjs) {
+                returnLines.push(`<b>${imgObj.get("name") || "(UNNAMED)"}</b> <span style='color: red;'><b>REMOVED</b></span>`)
+                if (isKilling)
+                    imgObj.remove()
             }
-            D.Alert(reportLines.join("<br>"), "Image Survey & Verification")
+            if (returnLines.length)
+                D.Chat("all", ["<h3>Removing Unregistered Image Objects...</h3>", returnLines.join(", ")].join(""), "Clearing Unregistered Image Objects", D.RandomString(10))
+            else
+                D.Chat("all", "<h3><span style='color: green;'>All Image Objects Registered!</span></h3>", "Clearing Unregistered Image Objects", D.RandomString(10))
         },
         fixImgObjs = () => {
             const imgKeys = _.keys(REGISTRY.IMG),
@@ -6125,18 +6131,26 @@ const Media = (() => {
                 reportLines = []
             for (const [imgData, imgObj] of imgPairs) {
                 const reportStrings = []
-                if (imgData.isActive && imgObj.get("layer") === "walls")
-                    reportStrings.push("[Active] layer: 'walls'")
-                if (!imgData.isActive && imgObj.get("layer") !== "walls")
-                    reportStrings.push(`[Inactive] layer: '${imgObj.get("layer")}'`)
+                if (!imgData.isActive && imgData.isActive !== false) {
+                    reportStrings.push(`Missing 'isActive'. On '${imgObj.get("layer")}' SO Setting ${imgObj.get("layer") === "walls" ? "FALSE" : "TRUE"}`)
+                    REGISTRY.IMG[imgData.name].isActive = imgObj.get("layer") !== "walls" 
+                }
+                if (imgData.isActive && imgObj.get("layer") === "walls") {
+                    reportStrings.push(`Active object on 'walls' --> moving to '${D.JS(imgData.activeLayer)}'`)
+                    imgObj.set("layer", imgData.activeLayer)
+                }
+                if (!imgData.isActive && imgObj.get("layer") !== "walls") {
+                    reportStrings.push(`Inactive object on '${imgObj.get("layer")}' --> moving to 'walls'`)
+                    imgObj.set("layer", "walls")
+                }
                 const srcURL = getURLFromSrc(imgData.curSrc, getImgSrcs(imgData.name))
                 if (srcURL !== imgObj.get("imgsrc")) {
-                    reportStrings.push(`[URL] '${imgData.curSrc}' URL (${srcURL}) !== '${imgObj.get("imgsrc")}'`)
-                    REGISTRY.IMG[imgData.name].curSrc = getSrcFromURL(imgObj.get("imgsrc"), getImgSrcs(imgData.name))
+                    reportStrings.push(`Image source URL doesn't match registry source (${D.JS(imgData.curSrc)}) --> Updating <b><u>OBJECT</u></b>`)
+                    imgObj.set("imgsrc", srcURL)
                 }
                 const srcRef = getSrcFromURL(imgObj.get("imgsrc"), getImgSrcs(imgData.name))
                 if (srcRef !== imgData.curSrc) {
-                    reportStrings.push(`[SRC] curSrc '${imgData.curSrc}' !== '${D.JS(srcRef)}'`)
+                    reportStrings.push(`Registry source (${D.JS(imgData.curSrc)}) doesn't match object source (${D.JS(srcRef)}) --> Updating <b><u>REGISTRY</u></b>`)
                     REGISTRY.IMG[imgData.name].curSrc = srcRef
                 }
                 toggleImg(imgData.name, imgData.isActive, true)
@@ -6145,11 +6159,9 @@ const Media = (() => {
                     reportLines.push(`<b>${imgData.name}</b>: ${reportStrings.join(", ")}`)
             }
             if (reportLines.length)
-                return [
-                    "<h3>FIXED IMAGE OBJECTS:</h3>",
-                    ...reportLines
-                ].join("<br>")
-            return "ALL IMAGE OBJECTS OK!"
+                D.Chat("all", ["<h3>Fixing Image Inconsistencies...</h3>", reportLines.join("<br>"), "<h3><span style='color: green;'>Image Data OK!</span></h3>"].join(""), "Final Image Object Pass", D.RandomString(10))
+            else
+                D.Chat("all", "<h3><span style='color: green;'>Image Data OK!</span></h3>", "Final Image Object Pass", D.RandomString(10))
         },
         layerImgs = (imgRefs, layer) => {
             const imgObjs = getImgObjs(imgRefs)
@@ -6188,6 +6200,8 @@ const Media = (() => {
             let dbString = `Width: ${spread}, MinOverlap: ${parseFloat(minOverlap)}, MaxOverlap: ${parseFloat(maxOverlap)}<br><br>`
             DB(`minOverlap: ${minOverlap}, maxOverlap: ${maxOverlap}`)
             if (VAL({list: [leftData, rightData, ...midData], number: [spread]}, "spreadImgs", true)) {
+                for (const imgRef of [leftData.name, rightData.name])
+                    toggleImg(imgRef, true)
                 setImgTemp(leftData.id, {left: leftData.left})
                 dbString += `Setting Left to {left: ${D.Int(leftData.left)}}<br>`
                 // If the spread is smaller than the combined width of the bookends, then set the minimum possible spread and blank all mid imgs.
@@ -6247,7 +6261,8 @@ const Media = (() => {
                 // Now add mid imgs one by one until their total MAX cover equals or exceeds the spread:
                 let coveredSpread = 0
                 while (coveredSpread < totalMidWidth)
-                    if (midData.length) {                    
+                    if (midData.length) {
+                        toggleImg(_.last(midData).id, true)                    
                         setImg(_.last(midData).id, "base", true, true)
                         midImgIDs.push(midData.pop().id)
                         coveredSpread += maxCover
@@ -6407,7 +6422,7 @@ const Media = (() => {
     // #endregion
 
     // #region TEXT OBJECT GETTERS: Text Object, Width Measurements, Data Retrieval    
-        isRegText = textRef => Boolean(getTextKey(textRef, true)), 
+        isRegText = textRef => Boolean(getTextKey(textRef, true)) || VAL({object: textRef}) && _.findKey(REGISTRY.TEXT, v => v.shadowID === textRef.id), 
         getTextKey = (textRef, funcName = false) => {
             try {
                 let textObj
@@ -6737,7 +6752,7 @@ const Media = (() => {
                                                      activeText: curText,
                                                      vertAlign: "top",
                                                      curMode: Session.Mode,
-                                                     isActive: true}, _.omit(options, (v, k) => ["text", "layer", "_type", "obj", "object"].includes(k) || v === undefined))
+                                                     isActive: true}, _.omit(options, (v, k) => ["text", "layer", "_type", "obj", "object", "isActive", "modes"].includes(k) || v === undefined))
                 REGISTRY.TEXT[name].left = getBlankLeft(textObj, options.justification || justification, options.maxWidth, true)
                 REGISTRY.TEXT[name].width = getMaxWidth(textObj)
                 REGISTRY.TEXT[name].zIndex = getZLevel(name) || REGISTRY.TEXT[name].zIndex || 300
@@ -6761,7 +6776,9 @@ const Media = (() => {
                 setTextData(textObj, _.pick(REGISTRY.TEXT[name], C.TEXTPROPS))
                 setText(textObj, REGISTRY.TEXT[name].curText)
                 setLayer(name, REGISTRY.TEXT[name].activeLayer, true)
-                updateTextShadow(name, true)       
+                updateTextShadow(name, true)
+                if (options.isActive === false)
+                    toggleText(name, false, true)    
                 D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(REGISTRY.TEXT[name])}`, "regText")
                 // initMedia()
                 return getTextData(name)
@@ -6908,6 +6925,7 @@ const Media = (() => {
                         updateTextShadow(textKey)
                     if (textData.linkedText)
                         updateSlaveText(textKey)
+                    REGISTRY.TEXT[textData.name].width = getTextWidth(textKey, textParams.text, textData.maxWidth)
                     return textObj
                 }
             }
@@ -6939,15 +6957,16 @@ const Media = (() => {
             // NON-PERMANENT.  If turning off, set activeSrc to curSrc.
             // Also, verify img status is changing before doing anything.
             if (isActive === null) return null
-            const textData = getTextData(textRef)
-            if (VAL({list: textData}, "toggleText")) {
+            const textData = getTextData(textRef),
+                modeData = getModeData(textRef, Session.Mode)
+            if (VAL({list: [textData, modeData]}, "toggleText", true)) {
                 let activeCheck = null
-                if (isActive === true || isActive !== false && textData.isActive === false)
+                if ((isActive === true || isActive !== false && !textData.isActive) && modeData.isForcedOn !== false)
                     activeCheck = true
-                else if (isActive === false || isActive !== true && textData.isActive === true)
+                else if (isActive === false || isActive !== true && textData.isActive)
                     activeCheck = false
                 DB(`ToggleText(${D.JSL(textRef)}, ${D.JSL(isActive)}, ${D.JSL(isForcing)})<br>... Active Check: ${D.JSL(activeCheck)}, textData.isActive: ${D.JSL(textData.isActive)}`, "toggleText")
-                if (!isForcing && textData.isActive === activeCheck)
+                if (activeCheck === null || !isForcing && textData.isActive === activeCheck)
                     return null                
                 const textKey = textData.name,
                     textObj = getTextObj(textKey)             
@@ -6998,31 +7017,33 @@ const Media = (() => {
             const textNames = _.filter(_.keys(REGISTRY.TEXT), v => v.includes(textString))
             for (const textName of textNames)
                 removeText(textName, isUnregOnly)
-        },    
-        cleanTextRegistry = () => {
-            STATE.REF.textRegClean = []
-            for (const textName of _.keys(REGISTRY.TEXT))
-                if (!getTextObj(textName))
-                    STATE.REF.textRegClean.push(textName)
-            if (STATE.REF.textRegClean.length)
-                D.Alert(`The following registered text objects are missing:<br><br>${D.JS(STATE.REF.textRegClean)}<br><br><b>!text clean confirm</b> to purge registry.`, "TEXT REGISTRY CLEAN")
-            else
-                D.Alert("No missing text objects found!", "TEXT REGISTRY CLEAN")
-        },
-        cleanTextRegistryConfirm = () => {
-            for (const textName of STATE.REF.textRegClean)
-                removeText(textName)
-            D.Alert(`The following registry entries have been purged:<br><br>${D.JS(STATE.REF.textRegClean)}`, "TEXT REGISTRY CLEAN CONFIRMED")
-            STATE.REF.textRegClean = []
         },
         clearMissingRegText = () => {
-            cleanTextRegistry()
-            cleanTextRegistryConfirm()
-        }, 
-        clearUnregText = () => {
+            const returnLines = []
             for (const textName of _.keys(REGISTRY.TEXT))
                 if (!getTextObj(textName))
-                    removeText(textName)
+                    returnLines.push(`... ${textName} Missing Object, Removing: ${removeText(textName) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`)
+            if (returnLines.length)
+                D.Chat("all", ["<h3>Removing Missing Text Objects from Registry...</h3>", returnLines.join(", ")].join(""), "Pruning Text Registry", D.RandomString(10))
+            else
+                D.Chat("all", "<h3><span style='color: green;'>Registered Text Objects OK!</span></h3>", "Pruning Text Registry", D.RandomString(10))
+        },
+        clearUnregText = (isKilling = false) => {
+            const returnLines = [],
+                allTextObjs = findObjs({
+                    _pageid: D.PAGEID,
+                    _type: "text",
+                }),
+                unregTextObjs = allTextObjs.filter(x => !isRegText(x))
+            for (const textObj of unregTextObjs) {
+                returnLines.push(`"<span style='color: ${textObj.get("color")}; background-color: #AAAAAA;'> ${textObj.get("text").slice(0, 15)}... </span>" <span style='color: red;'><b>REMOVED</b></span>`)
+                if (isKilling)
+                    textObj.remove()
+            }
+            if (returnLines.length)
+                D.Chat("all", ["<h3>Removing Unregistered Text Objects...</h3>", returnLines.join(", ")].join(""), "Clearing Unregistered Text Objects", D.RandomString(10))
+            else
+                D.Chat("all", "<h3><span style='color: green;'>All Text Objects Registered!</span></h3>", "Clearing Unregistered Text Objects", D.RandomString(10))
         },
         resetTextRegistry = () => {
             STATE.REF.textregistry = {}
@@ -7034,23 +7055,35 @@ const Media = (() => {
                 reportLines = []
             for (const [textData, textObj] of textPairs) {
                 const reportStrings = []
-                if (textData.isActive && textObj.get("layer") === "walls")
-                    reportStrings.push("[Active] layer: 'walls'")
-                if (!textData.isActive && textObj.get("layer") !== "walls")
-                    reportStrings.push(`[Inactive] layer: '${textObj.get("layer")}'`)
-                if (textData.curText !== textObj.get("text")) 
-                    reportStrings.push(`[TEXT] curText '${textData.curText}' !== '${textObj.get("text")}'`)
+                if (!textData.isActive && textData.isActive !== false) {
+                    reportStrings.push(`Missing 'isActive' --> On '${textObj.get("layer")}' SO Setting ${textObj.get("layer") === "walls" ? "FALSE" : "TRUE"}`)
+                    REGISTRY.TEXT[textData.name].isActive = textObj.get("layer") !== "walls" 
+                }
+                if (textData.isActive && textObj.get("layer") === "walls") {
+                    reportStrings.push(`Active object on 'walls' --> Moving to '${D.JS(textData.activeLayer)}`)
+                    textObj.set("layer", textData.activeLayer)
+                }
+                if (!textData.isActive && textObj.get("layer") !== "walls") {
+                    reportStrings.push(`Inactive object on '${textObj.get("layer")}' --> Moving to 'walls'`)
+                    textObj.set("layer", "walls")
+                }
+                if (textData.curText !== textObj.get("text"))
+                    if (VAL({string: textData.curText})) {                        
+                        reportStrings.push(`Object text (<span style='background-color: #AAAAAA;'> ${D.JS(textObj.get("text"))} </span>) doesn't match registry text (<span style='background-color: #AAAAAA;'> ${D.JS(textData.curText)} </span>) --> Updating <b><u>OBJECT</u></b>`)
+                        textObj.set("text", textData.curText)
+                    } else {
+                        reportStrings.push(`Registry text (<span style='background-color: #AAAAAA;'> ${D.JS(textData.curText)} </span>) doesn't match object text (<span style='background-color: #AAAAAA;'> ${D.JS(textObj.get("text"))} </span>) --> Updating <b><u>REGISTRY</u></b>`)
+                        REGISTRY.TEXT[textData.name].text = textObj.get("text")
+                    }
                 toggleText(textData.name, textData.isActive, true)
                 setText(textData.name, textData.curText, null, true)                
                 if (reportStrings.length)
-                    reportLines.push(`<b>${textData.name}</b>: ${reportStrings.join(", ")}`)
+                    reportLines.push(`<b>${textData.name}</b>: ${reportStrings.join("♦")}`)
             }
             if (reportLines.length)
-                return [
-                    "<h3>FIXED TEXT OBJECTS:</h3>",
-                    ...reportLines
-                ].join("<br>")
-            return "ALL TEXT OBJECTS OK!"
+                D.Chat("all", ["<h3>Fixing Text Inconsistencies...</h3>", reportLines.join("<br>"), "<h3><span style='color: green;'>Text Data OK!</span></h3>"].join(""), "Final Text Object Pass", D.RandomString(10))
+            else
+                D.Chat("all", "<h3><span style='color: green;'>Text Data OK!</span></h3>", "Final Text Object Pass", D.RandomString(10))        
         },
     // #endregion
 
@@ -7144,7 +7177,8 @@ const Media = (() => {
             for (const listName of Object.keys(listsRef))
                 Roll20AM.SetSoundMode(listName)
             for (const trackName of _.intersection(_.keys(C.SOUNDMODES), _.keys(tracksRef)))
-                Roll20AM.SetSoundMode(trackName)
+                Roll20AM.SetSoundMode(trackName)                        
+            D.Chat("all", "<h3><span style='color: green;'>Soundscape Configured!</span></h3>", "Initializating Soundscape", D.RandomString(10))
         },
         updateSounds = (isDoubleChecking = true) => {
             if (STATE.REF.isRunningSilent && STATE.REF.isRunningSilent !== "TOTALSILENCE")
@@ -7268,7 +7302,8 @@ const Media = (() => {
         HasForcedState: hasForcedState,
         SwitchMode: switchMode,
         IsActive: isObjActive,
-        Toggle: toggle,    
+        Toggle: toggle,
+        Adjust: adjustObj,
         
         // GETTERS
         GetImg: getImgObj, GetText: getTextObj,
@@ -7286,7 +7321,7 @@ const Media = (() => {
         AddImgSrc: addImgSrc,
 
         // SETTERS
-        SetImg: setImg, SetText: setText, AdjustImg: adjustImg,  
+        SetImg: setImg, SetText: setText, 
         ToggleImg: toggleImg, ToggleText: toggleText, ToggleToken: toggleTokenSrc,
         SetImgData: setImgData, SetTextData: setTextData,
         SetImgTemp: setImgTemp, // SetTextTemp: setTextTemp,

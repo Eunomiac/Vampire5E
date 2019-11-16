@@ -30,25 +30,22 @@ const Roller = (() => {
             STATE.REF.lastProjectPrefix = STATE.REF.lastProjectPrefix || ""
             STATE.REF.lastProjectCharID = STATE.REF.lastProjectCharID || ""
             STATE.REF.nextRollFlags = STATE.REF.nextRollFlags || {}
+            STATE.REF.forcedMods = STATE.REF.forcedMods || {
+                posMods: [],
+                negMods: [],
+                redMods: [],
+                goldMods: []
+            }
 
+    
             for (const dieCat of Object.keys(SETTINGS.dice)) {
+                delete STATE.REF[dieCat]
                 STATE.REF.selected[dieCat] = STATE.REF.selected[dieCat] || []
                 STATE.REF.diceVals[dieCat] = STATE.REF.diceVals[dieCat] || []
-                STATE.REF[dieCat] = STATE.REF[dieCat] || []
             }
 
-            Media.IMAGES.RollerDie_Main_1.modes.Active = {
-                isForcedOn: "LAST",
-                isForcedState: true,
-                lastActive: false,
-                lastState: "Bf"
-            }
-            Media.IMAGES.RollerDie_Big_1.modes.Active = {
-                isForcedOn: "LAST",
-                isForcedState: true,
-                lastActive: false,
-                lastState: "Bf"
-            }
+            if (_.compact(_.flatten(_.values(STATE.REF.forcedMods))).length)
+                D.Alert("WARNING: Roll Mod Overrides Set for Roller<br><b>!roll force mods</b> to clear.")
         },
 
     // #endregion	
@@ -278,6 +275,35 @@ const Roller = (() => {
                     }
                     break
                 }
+                case "force": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "mods": {
+                            if (args.length) {
+                                const type = _.findKey({
+                                        posMods: ["p", "pos", "posmod", "posmods"],
+                                        negMods: ["n", "neg", "negmod", "negmods"],
+                                        goldMods: ["g", "gold", "goldmod", "goldmods"],
+                                        redMods: ["r", "red", "redmod", "redmods"]
+                                    }, v => v.includes(D.LCase(args[0]))),
+                                    val = D.Int(args.pop()),
+                                    flag = args.slice(1).join(" ")                                
+                                STATE.REF.forcedMods[type].push([val, flag])
+                                D.Alert(`Currently forcing mods:<br><br>${D.JS(STATE.REF.forcedMods)}`, "!roll force mods")
+                            } else {
+                                STATE.REF.forcedMods = {
+                                    posMods: [],
+                                    negMods: [],
+                                    goldMods: [],
+                                    redMods: []
+                                }
+                                D.Alert("Forced mods CLEARED.", "!roll force mods")
+                            }
+                            break
+                        }
+                        // no default
+                    }
+                    break
+                }
                 case "clean": {
                     clearRoller()
                     break
@@ -469,6 +495,35 @@ const Roller = (() => {
                 "subOutcome"
             ],
             shifts: { // Must set TEXT and TOGGLE STATE of all roller objects before applying shifts.
+                get modShiftData() {
+                    const lineShifts = {
+                        // rollerName: Media.GetTextData("rollerName").left + Media.GetTextWidth("rollerName") - Media.GetTextData("outcome").left + 45,
+                            mainRoll: Media.GetImg("RollerFrame_TopEnd").get("left") + 0.5 * Media.GetImgData("RollerFrame_TopEnd").width - Media.GetTextData("outcome").left + 10,
+                            diceLine: Media.IsActive("RollerFrame_BottomEnd") ? Media.GetImg("RollerFrame_BottomEnd").get("left") + 0.5 * Media.GetImgData("RollerFrame_BottomEnd").width - Media.GetTextData("outcome").left + 20 : Infinity,
+                            outcome: Media.GetTextWidth("outcome") + 45
+                        },
+                        shifts = { // rollerNameLow, mainRollHigh, mainRollLow, diceLineHigh, diceLineLow, outcomeHigh
+                        // rollerNameLow: {top: -1 * Media.GetImgData("RollerFrame_TopEnd").height + 4, left: lineShifts.rollerName, extendDir: -1},
+                        // mainRollHigh: {top: -30, left: lineShifts.mainRoll, extendDir: 0},
+                            mainRollLow: {top: 0, left: lineShifts.mainRoll, extending: "goldMods"},
+                            diceLineHigh: {top: 25, left: lineShifts.diceLine, extending: "redMods"},
+                            diceLineLow: {top: Media.GetImgData("RollerFrame_TopEnd").height, left: lineShifts.diceLine, extending: "goldMods"},
+                            outcomeHigh: {top: Media.GetImgData("RollerFrame_TopEnd").height + 20, left: lineShifts.outcome, extending: "redMods"}
+                        },
+                        flagSpace = {
+                        // rollerNameLow: lineShifts.mainRoll - lineShifts.rollerName,
+                        // mainRollHigh: lineShifts.rollerName - lineShifts.mainRoll,
+                            mainRollLow: (Media.IsActive("RollerFrame_BottomEnd") ? lineShifts.diceLine : lineShifts.outcome) - lineShifts.mainRoll,
+                            diceLineHigh: Media.IsActive("RollerFrame_BottomEnd") ? lineShifts.mainRoll - lineShifts.diceLine : 0,
+                            diceLineLow: (Media.IsActive("RollerFrame_BottomEnd") ? lineShifts.outcome - lineShifts.diceLine : 0) * 0.75,
+                            outcomeHigh: (Media.IsActive("RollerFrame_BottomEnd") ? lineShifts.diceLine : lineShifts.mainRoll) - lineShifts.outcome,
+                        }
+                /* if (Math.max(Media.GetTextWidth("goldMods"), Media.IsActive("redMods") && Media.GetTextWidth("redMods") || 0) < 1.5 * flagSpace.mainRollHigh)
+                    flagSpace.rollerNameLow = flagSpace.mainRollHigh - 1
+                if (Math.max(Media.GetTextWidth("goldMods"), Media.IsActive("redMods") && Media.GetTextWidth("redMods") || 0) < 1.5 * flagSpace.mainRollLow)
+                    flagSpace.rollerNameLow = Math.min(flagSpace.rollerNameLow, flagSpace.mainRollLow - 1) */
+                    return shifts[_.findKey(flagSpace, v => v && v === Math.max(..._.values(flagSpace)))]
+                },
                 rollerName: {top: 0, left: 0},
                 mainRoll: {
                     get top() { return (Media.IsActive("posMods") || Media.IsActive("negMods")) && -10 || 0 },
@@ -509,26 +564,22 @@ const Roller = (() => {
                 },
                 goldMods: {
                     get top() {
-                        return Media.GetImgData("RollerFrame_Left").curSrc === "top" /* || topBarWidth < botBarWidth */ &&
-                               -1 * Media.GetImgData("RollerFrame_BottomEnd").height ||
-                               0
+                        const shiftData = Object.assign({}, SETTINGS.shifts.modShiftData)
+                        return shiftData.top +
+                               (Media.IsActive("redMods") && shiftData.extending === "goldMods" && -18 || 0)
                     },
                     get left() {
-                        return Media.GetImgData("RollerFrame_Left").curSrc === "top" && Media.IsActive("outcome") &&
-                               (Media.GetTextData("outcome").shiftLeft || 0 + Media.GetTextWidth("outcome") + SETTINGS.frame.flagBuffer) ||
-                               0
+                        return SETTINGS.shifts.modShiftData.left
                     }
                 },
                 redMods: {
-                    get top() { 
-                        return SETTINGS.shifts.goldMods.top + 
-                               Media.IsActive("goldMods") && Media.GetLineHeight("goldMods") ||
-                               0
+                    get top() {
+                        const shiftData = Object.assign({}, SETTINGS.shifts.modShiftData)
+                        return shiftData.top +
+                               (Media.IsActive("goldMods") && shiftData.extending === "redMods" && 18 || 0)
                     },
                     get left() {
-                        return SETTINGS.shifts.goldMods.left +
-                               Media.IsActive("goldMods") && Media.GetTextWidth("goldMods") + SETTINGS.frame.flagBuffer ||
-                               0
+                        return SETTINGS.shifts.modShiftData.left
                     }
                 }
             }
@@ -700,7 +751,7 @@ const Roller = (() => {
             }
         },
         CHATSTYLES = {
-            fullBox: `<div style="display: block;width: 259px;padding: 5px 5px;margin-left: -42px;color: ${C.COLORS.white};font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset ${C.COLORS.darkred};background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;">`,
+            fullBox: `<div style="display: block;width: 259px;padding: 5px 5px;margin-left: -42px;margin-top: -30px; color: ${C.COLORS.white};font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset ${C.COLORS.darkred};background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;">`,
             space10: "<span style=\"display: inline-block; width: 10px;\"></span>",
             space30: "<span style=\"display: inline-block; width: 30px;\"></span>",
             space40: "<span style=\"display: inline-block; width: 40px;\"></span>",
@@ -756,7 +807,7 @@ const Roller = (() => {
                 startBlock: "<div style=\"display: inline-block; width: 48%; margin: 0% 1%; text-align: center;\">",
                 blockNameStart: "<div style=\"display: block; width: 100%; font-size: 13px; margin-bottom: -5px; margin-top: 10px;\">",
                 lineStart: "<div style=\"display: block; width: 100%; font-size: 12px;\">",
-                startPlayerBlock: `<div style="display: block; width: 280px; padding: 45px 5px; margin-left: -58px; margin-top: -22px; margin-bottom: -5px; color: ${C.COLORS.white}; font-family: Percolator; text-align: left; font-size: 16px; background: url('https://t4.ftcdn.net/jpg/00/78/66/11/240_F_78661103_aowhE8PWKrHRtoCUogPvkfWs22U54SuU.jpg') center no-repeat; background-size: 100% 100%; z-index: 100; position: relative;">`,
+                startPlayerBlock: `<div style="display: block; width: 280px; padding: 45px 5px; margin-left: -58px; margin-top: -30px; margin-bottom: -5px; color: ${C.COLORS.white}; font-family: Percolator; text-align: left; font-size: 16px; background: url('https://t4.ftcdn.net/jpg/00/78/66/11/240_F_78661103_aowhE8PWKrHRtoCUogPvkfWs22U54SuU.jpg') center no-repeat; background-size: 100% 100%; z-index: 100; position: relative;">`,
                 playerTopLineStart: "<div style=\"display: block; margin-left: 28px;  width: 100%; font-size: 24px; font-family: Percolator; height: 12px; padding: 3px 0px; text-align: left;  margin-top: -16px;\">",
                 playerBotLineStart: `<div style="width: 100%; margin-left: 48px; height: auto; line-height: 15px; display: block;  text-align: left; color: ${C.COLORS.white}; margin-top: 8px;">`,
                 grey: `<span style="display:inline-block; color: ${C.COLORS.brightgrey}; font-size: 24px; font-weight: bold;">`,
@@ -788,28 +839,36 @@ const Roller = (() => {
                 controlledby: "",
                 showname: false,
                 activeLayer: "map",
-                modes: rootData.modes
+                modes: rootData.modes,
+                isActive: false
             }, false, true)
             Media.AddImgSrc(null, dieKey, `ref:${rootData.name}`, true)
             Media.SetImg(dieKey, "Bf", true)
             DragPads.MakePad(dieKey, "selectDie", {deltaHeight: padShift, deltaWidth: padShift})
+            return true
         },
         clearDice = diceCat => {
+            const returnLines = []
             DragPads.DelPad(`RollerDie_${diceCat}_1`)
             for (let i = 2; i <= SETTINGS.dice[diceCat].qty; i++) {
                 const imgKey = `RollerDie_${diceCat}_${i}`,
                     imgData = Media.GetImgData(imgKey)
                 if (VAL({list: imgData}))
-                    Media.RemoveImg(imgKey)
+                    returnLines.push(`[${i}] ${Media.RemoveImg(imgKey) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`)
             }
-            return Media.GetImg(`RollerDie_${diceCat}_1`)
+            returnLines[0] = `<b>Removing <u>${diceCat}</u> Dice:</b> [1] <span style='color: green;'><b>OK!</b></span>, ${returnLines[0]}`
+            return returnLines
         },
         makeAllDice = (diceCat) => {
-            clearDice(diceCat)
+            const returnLines = []
+            if (Media.IsRegistered(`RollerDie_${diceCat}_2`))
+                clearDice(diceCat)
             const padShift = -0.5 * Media.GetImgData(`RollerDie_${diceCat}_1`).width
             DragPads.MakePad(`RollerDie_${diceCat}_1`, "selectDie", {deltaHeight: padShift, deltaWidth: padShift})
             for (let i = 2; i <= SETTINGS.dice[diceCat].qty; i++)
-                makeDie(diceCat, i)
+                returnLines.push(`[${i}] ${makeDie(diceCat, i) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`)
+            returnLines[0] = `<b>Creating <u>${diceCat}</u> Dice:</b> [1] <span style='color: green;'><b>OK!</b></span>, ${returnLines[0]}`
+            return returnLines            
         },
     // #endregion
 
@@ -822,76 +881,114 @@ const Roller = (() => {
         clearRoller = () => {
             const topMidRefs = []
             for (const textKey of SETTINGS.textKeys)
-                Media.ToggleText(textKey, false)
+                Media.ToggleText(textKey, false, true)
             for (const [diceCat, diceData] of Object.entries(SETTINGS.dice))
                 for (let i = 1; i <= diceData.qty; i++)
-                    Media.ToggleImg(`RollerDie_${diceCat}_${i}`, false)  
+                    Media.ToggleImg(`RollerDie_${diceCat}_${i}`, false, true)  
             for (let i = 1; i <= SETTINGS.frame.mids.qty; i++) {
                 topMidRefs.push(`RollerFrame_TopMid_${i}`)
-                Media.ToggleImg(`RollerFrame_BottomMid_${i}`, false)   
+                Media.ToggleImg(`RollerFrame_BottomMid_${i}`, false, true)   
             }
-            Media.ToggleImg("RollerFrame_Diff", false)
+            Media.ToggleImg("RollerFrame_Diff", false, true)
+            Media.ToggleImg("RollerFrame_Left", true, true)
             Media.SetImg("RollerFrame_Left", "top")
-            Media.ToggleImg("RollerFrame_BottomEnd", false)
+            Media.ToggleImg("RollerFrame_BottomEnd", false, true)
             Media.Spread("RollerFrame_Left", "RollerFrame_TopEnd", topMidRefs, 1, SETTINGS.frame.mids.minSpread, SETTINGS.frame.mids.maxSpread)
             DragPads.Toggle("wpReroll", false)
             // Media.Fix()
-        },
+        }, // "<h3><span style='color: green;'>Time, Weather & Horizon Data Updated!</span></h3>"
         killRoller = () => {
+            const returnLines = [ 
+                {header: "<h3>Clearing Dice Roller Frame...</h3>", entries: []},
+                {header: "<h3>Clearing Drag Pads...</h3>", entries: []},
+                {header: "<h3>Clearing Dice...</h3>", entries: []}
+            ]
             for (let i = 2; i <= SETTINGS.frame.mids.qty; i++) {
-                Media.RemoveImg(`RollerFrame_TopMid_${i}`)
-                Media.RemoveImg(`RollerFrame_BottomMid_${i}`) 
+                const topImgName = `RollerFrame_TopMid_${i}`,
+                    bottomImgName = `RollerFrame_BottomMid_${i}`
+                returnLines[0].entries.push(
+                    `... Removing <b>${topImgName}</b>: ${Media.RemoveImg(topImgName) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`,
+                    `... Removing <b>${bottomImgName}</b>: ${Media.RemoveImg(bottomImgName) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`
+                )
             }
             DragPads.DelPad("selectDie")
+            returnLines[1].entries.push("... Removing <b>Main Dice</b> Drag Pads (x30): <span style='color:green;'><b>OK!</b></span> (x30)", "... Removing <b>Big Dice</b> Drag Pads (x2): <span style='color:green;'><b>OK!</b></span> (x2)")
             DragPads.DelPad("wpReroll")
+            returnLines[1].entries.push("... Removing <b>Willpower Reroll</b> Drag Pad: <span style='color:green;'><b>OK!</b></span>")
             for (const diceCat of Object.keys(SETTINGS.dice))
-                clearDice(diceCat)  
+                returnLines[2].entries.push(clearDice(diceCat).join(", "))
+            D.Chat("all", [
+                `${returnLines[0].header}${returnLines[0].entries.join("<br>")}`,
+                `${returnLines[1].header}${returnLines[1].entries.join("<br>")}`,
+                `${returnLines[2].header}${returnLines[2].entries.join("<br>")}`
+            ].join(""), "Clearing Dice Roller", D.RandomString(10))
         },
     // #endregion
 
     // #region Dice Frame
-        initFrame = () => {
-            D.Alert("Initializing Roller Frame.", "Initializing Roller")
-            if (D.IsFuncQueueClear("Roller")) {
-                D.Queue(clearRoller, [], "Roller")
-                D.Queue(killRoller, [], "Roller")
-                D.Queue(() => {
-                    const imgDataTop = Media.GetImgData("RollerFrame_TopMid_1"),
-                        imgDataBottom = Media.GetImgData("RollerFrame_BottomMid_1")
-                    for (let i = 2; i <= SETTINGS.frame.mids.qty; i++) {
-                        const imgKeyTop = `RollerFrame_TopMid_${i}`,
-                            imgKeyBottom = `RollerFrame_BottomMid_${i}`
-                        Media.MakeImg(imgKeyTop, {
-                            imgsrc: imgDataTop.srcs.base,
-                            top: imgDataTop.top,
-                            left: imgDataTop.top + SETTINGS.frame.mids.minSpread * (i - 1),
-                            height: imgDataTop.height,
-                            width: imgDataTop.width,
-                            activeLayer: "map",
-                            modes: imgDataTop.modes
-                        }, false, true )
-                        Media.MakeImg(imgKeyBottom, {
-                            imgsrc: imgDataBottom.srcs.base,
-                            top: imgDataBottom.top,
-                            left: imgDataBottom.top + SETTINGS.frame.mids.minSpread * (i - 1),
-                            height: imgDataBottom.height,
-                            width: imgDataBottom.width,
-                            activeLayer: "map",
-                            modes: imgDataBottom.modes
-                        }, false, true )
-                    }
-                    DragPads.MakePad("RollerFrame_WPRerollPlaceholder_1", "wpReroll")
-
-                    for (const diceCat of Object.keys(SETTINGS.dice))
-                        makeAllDice(diceCat)
-                }, [], "Roller", 5)
-                D.Queue(clearRoller, [], "Roller")
-                D.Queue(Media.Fix, [], "Roller")
-                D.Queue(D.Alert, ["Roller Rebuilt!", "Initialize Roller Frame"], "Roller")
-                D.Run("Roller")
-            } else {
-                THROW("Attempt to queue functions into busy queue!", "initFrame")
+        initFrame = (isQueuing = true) => {
+            const initFunc = () => {
+                const imgDataTop = Media.GetImgData("RollerFrame_TopMid_1"),
+                    imgDataBottom = Media.GetImgData("RollerFrame_BottomMid_1"),
+                    returnLines = [ 
+                        {header: "<h3>Creating Dice Roller Frame...</h3>", entries: []},
+                        {header: "<h3>Creating Drag Pads...</h3>", entries: []},
+                        {header: "<h3>Creating Dice...</h3>", entries: []}
+                    ]
+                for (let i = 2; i <= SETTINGS.frame.mids.qty; i++) {
+                    const imgKeyTop = `RollerFrame_TopMid_${i}`,
+                        imgKeyBottom = `RollerFrame_BottomMid_${i}`
+                    Media.MakeImg(imgKeyTop, {
+                        imgsrc: imgDataTop.srcs.base,
+                        top: imgDataTop.top,
+                        left: imgDataTop.top + SETTINGS.frame.mids.minSpread * (i - 1),
+                        height: imgDataTop.height,
+                        width: imgDataTop.width,
+                        activeLayer: "map",
+                        modes: imgDataTop.modes,
+                        isActive: false
+                    }, false, true )
+                    Media.MakeImg(imgKeyBottom, {
+                        imgsrc: imgDataBottom.srcs.base,
+                        top: imgDataBottom.top,
+                        left: imgDataBottom.top + SETTINGS.frame.mids.minSpread * (i - 1),
+                        height: imgDataBottom.height,
+                        width: imgDataBottom.width,
+                        activeLayer: "map",
+                        modes: imgDataBottom.modes,
+                        isActive: false
+                    }, false, true )
+                    returnLines[0].entries.push(
+                        `... Creating <b>${imgKeyTop}</b>: <span style='color: green;'><b>OK!</b></span>`,
+                        `... Creating <b>${imgKeyBottom}</b>: <span style='color: green;'><b>OK!</b></span>`
+                    )
+                }
+                returnLines[1].entries.push("... Creating <b>Main Dice</b> Drag Pads (x30): <span style='color:green;'><b>OK!</b></span> (x30)", "... Creating <b>Big Dice</b> Drag Pads (x2): <span style='color:green;'><b>OK!</b></span> (x2)")
+                returnLines[1].entries.push("... Creating <b>Willpower Reroll</b> Drag Pad: <span style='color:green;'><b>OK!</b></span>")
+                for (const diceCat of Object.keys(SETTINGS.dice))
+                    returnLines[2].entries.push(makeAllDice(diceCat).join(", "))
+                return [
+                    `${returnLines[0].header}${returnLines[0].entries.join("<br>")}`,
+                    `${returnLines[1].header}${returnLines[1].entries.join("<br>")}`,
+                    `${returnLines[2].header}${returnLines[2].entries.join("<br>")}`
+                ]
             }
+            if (isQueuing)
+                if (D.IsFuncQueueClear("Roller")) {
+                    D.Queue(clearRoller, [], "Roller")
+                    D.Queue(killRoller, [], "Roller")
+                    D.Queue(initFunc, [], "Roller", 5)
+                    D.Queue(DragPads.MakePad, ["RollerFrame_WPRerollPlaceholder_1", "wpReroll"], "Roller")
+                    D.Queue(clearRoller, [], "Roller")
+                    D.Queue(Media.Fix, [], "Roller")
+                    D.Queue(D.Alert, ["Roller Rebuilt!", "Initialize Roller Frame"], "Roller")
+                    D.Run("Roller")
+                } else {
+                    THROW("Attempt to queue functions into busy queue!", "initFrame")
+                }
+            else
+                D.Chat("all", initFunc().join(""), "Building Dice Roller", D.RandomString(10))
+                
         },
     // #endregion
 
@@ -1556,6 +1653,11 @@ const Roller = (() => {
                 flagData.posFlagLines.push([C.BLOODPOTENCY[bloodPot].bp_surge, "Blood Surge (<.>)"])
             if (rollFlags.isDiscRoll)
                 flagData.posFlagLines.push([C.BLOODPOTENCY[bloodPot].bp_discbonus, "Discipline (<.>)"])
+
+            const flagDefs = {posMods: "posFlagLines", negMods: "negFlagLines", goldMods: "goldFlagLines", redMods: "redFlagLines"}
+            for (const [type, data] of Object.entries(STATE.REF.forcedMods))
+                if (data.length)
+                    flagData[flagDefs[type]].push(...data)
 
             _.each(_.compact(_.flatten([
                 getAttrByName(charObj.id, "incap") ? getAttrByName(charObj.id, "incap").split(",") : [],
@@ -2912,11 +3014,11 @@ const Roller = (() => {
             }
 
             if (isLogging)
-                sendChat("", logString)
+                D.Chat("all", logString, undefined, D.RandomString(10))
             if (rollFlags.isHidingResult || rollFlags.isHidingOutcome || rollFlags.isHidingDicePool || rollFlags.isHidingDifficulty) {
-                D.Chat("Storyteller", stString)
+                D.Chat("Storyteller", stString, undefined, D.RandomString(10))
                 if (VAL({object: D.GetPlayer(rollData.charID)}))
-                    D.Chat(D.GetPlayer(rollData.charID), playerNPCString)
+                    D.Chat(D.GetPlayer(rollData.charID), playerNPCString, undefined, D.RandomString(10))
             }
 
             return deltaAttrs
@@ -3101,7 +3203,7 @@ const Roller = (() => {
                 if (!rollData.isSilent) {
                     const playerObj = D.GetPlayer(char)
                     if (VAL({object: playerObj}))
-                        sendChat("Storyteller", `/w ${playerObj.get("_displayname")} ${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}you are being tested ...</div>${CHATSTYLES.secret.playerBotLineStart}${playerLine}</div></div>`)
+                        D.Chat(playerObj.get("_displayname"), `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}you are being tested ...</div>${CHATSTYLES.secret.playerBotLineStart}${playerLine}</div></div>`, null, D.RandomString(10))
                     confirmString = `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}you are being tested ...</div>${CHATSTYLES.secret.playerBotLineStart}${playerLine}</div></div>`
                 } else {
                     confirmString = `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}<span style="width: 100%; text-align: center; text-align-last: center;">(SECRET ROLL)</span></div></div>`
@@ -3305,11 +3407,11 @@ const Roller = (() => {
                     break
                 // no default
             }
-            sendChat("Resonance Check", C.CHATHTML.Block([
+            D.Chat("all", C.CHATHTML.Block([
                 C.CHATHTML.Title(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
                 C.CHATHTML.Header(resDetails),
                 C.CHATHTML.Body(resIntLine, {lineHeight: "20px"})
-            ]))
+            ], null, D.RandomString(10)))
         }
     // #endregion
 

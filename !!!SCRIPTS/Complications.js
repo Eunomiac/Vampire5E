@@ -42,72 +42,6 @@ const Complications = (() => {
             ]
             STATE.REF.DISCARDS = STATE.REF.DISCARDS || []
             STATE.REF.FXQUEUE = STATE.REF.FXQUEUE || []
-            
-           /* Media.IMAGES.compCardSpot_1.srcs = {
-                cardBack: "https://s3.amazonaws.com/files.d20.io/images/88065314/frlnhSBmBUgfAXMaC8f0cQ/thumb.png?1564720670",
-                "AMatterOfPride": "https://s3.amazonaws.com/files.d20.io/images/88065307/Fc0lL3TQqzh5xGsX-KW0KA/thumb.png?1564720656",
-                "AMomentOfDespair": "https://s3.amazonaws.com/files.d20.io/images/88065308/sv4eABfbP3o649To0Xuinw/thumb.png?1564720665",
-                "AMomentOfInsight": "https://s3.amazonaws.com/files.d20.io/images/88065133/Vx08z7z8Xtc-mI1fwfjEYw/thumb.png?1564720473",
-                "AMomentOfInspiration": "https://s3.amazonaws.com/files.d20.io/images/88074416/ECko9TjMssHDWV3MeFf8Wg/thumb.png?1564736656",
-                "AtCrossPurposes": "https://s3.amazonaws.com/files.d20.io/images/88065284/wzwTfvSnGfW2mGUBWsn3Xw/thumb.png?1564720634",
-                "Betrayal": "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
-                "BloodRush": "https://s3.amazonaws.com/files.d20.io/images/88065105/T3JzVUOfKBva_jnL_kBLxA/thumb.png?1564720439",
-                "Breakthrough": "https://s3.amazonaws.com/files.d20.io/images/88065139/Z0brQfXsdwNmRGeRry50Jw/thumb.png?1564720483",
-                "Cathexis": "https://s3.amazonaws.com/files.d20.io/images/88074421/HLVgRvBxXCuyMrOCdCmH9A/thumb.png?1564736661",
-                "CognitiveDissonance": "https://s3.amazonaws.com/files.d20.io/images/88074424/Tvi0GuaXStxTBwiSPO3zXQ/thumb.png?1564736667",
-                "CollateralDamage": "https://s3.amazonaws.com/files.d20.io/images/88065238/pbmou_JBuuGmHyy2Ej1Z8Q/thumb.png?1564720574",
-                "CostlyBlunder": "https://s3.amazonaws.com/files.d20.io/images/88074428/W6Ls7fT1837xwsLL74NEOg/thumb.png?1564736673",
-                "CrisisManagement": "https://s3.amazonaws.com/files.d20.io/images/88065289/y-rScSE5Bw1mbOdYLZTxpQ/thumb.png?1564720639",
-                "Ennui": "https://s3.amazonaws.com/files.d20.io/images/88074431/PmMeF0TL2g6cNf1iy4uJYA/thumb.png?1564736678",
-                "Espionage": "https://s3.amazonaws.com/files.d20.io/images/88065142/GfgKGSQ46Dhls_CHbLcazA/thumb.png?1564720488",
-                "Exhausted": "https://s3.amazonaws.com/files.d20.io/images/88065184/CJPnr84KpG8hzv28U7NZtQ/thumb.png?1564720525",
-                "Faith": "https://s3.amazonaws.com/files.d20.io/images/88065331/HoWW87KVyQlUBD8OcUzRBQ/thumb.png?1564720691",
-                "FakeNews": "https://s3.amazonaws.com/files.d20.io/images/88074435/yX9p5a0H2wxWUhccIqimLw/thumb.png?1564736683",
-                "FalseLead": "https://s3.amazonaws.com/files.d20.io/images/88065295/3um-Lw2bBc9zYmHkyfgMhg/thumb.png?1564720644",
-                "FanTheFlames": "https://s3.amazonaws.com/files.d20.io/images/88074439/yUBMCaKQEEu4WkDK39jJEw/thumb.png?1564736689",
-                "Favors": "https://s3.amazonaws.com/files.d20.io/images/88065281/UB4DbryuJB3UP4P1sv2TnQ/thumb.png?1564720629",
-                "FieldWork": "https://s3.amazonaws.com/files.d20.io/images/88065149/JR8yVja7GtQ3ZFbQddpXsw/thumb.png?1564720493",
-                "Friction": "https://s3.amazonaws.com/files.d20.io/images/88065087/TL1dQyLwgIQMXD6YOvgF3g/thumb.png?1564720417",
-                "GuiltByAssociation": "https://s3.amazonaws.com/files.d20.io/images/88065063/4Omu-OdEwkdsZSUlpVp0XA/thumb.png?1564720387",
-                "ImmortalClay": "https://s3.amazonaws.com/files.d20.io/images/88074442/DTqriPA9XQINl8vEbZs3DA/thumb.png?1564736694",
-                "InABind": "https://s3.amazonaws.com/files.d20.io/images/88065336/r1-GAWcmD9uRKs5qHLutGw/thumb.png?1564720697",
-                "InTheRed": "https://s3.amazonaws.com/files.d20.io/images/88065340/kMZnduR1l7YNS-pcqZ5fqw/thumb.png?1564720701",
-                "IrresistibleOpportunity": "https://s3.amazonaws.com/files.d20.io/images/88074450/ALTfXNwA7wViT4YKke2y0Q/thumb.png?1564736701",
-                "LooseLips": "https://s3.amazonaws.com/files.d20.io/images/88065093/37Q2vLlJXj46jwRCQSvtcg/thumb.png?1564720428",
-                "MentalBlock": "https://s3.amazonaws.com/files.d20.io/images/88065193/gJcPomViedw24Xa_4IliAg/thumb.png?1564720531",
-                "Micromanagement": "https://s3.amazonaws.com/files.d20.io/images/88065155/RfV9kLvVjIQBnPxuB8H1ag/thumb.png?1564720499",
-                "NecessaryEvils": "https://s3.amazonaws.com/files.d20.io/images/88065279/TiVeVqY1LwFDC7Skv6eRPg/thumb.png?1564720624",
-                "Obsessed": "https://s3.amazonaws.com/files.d20.io/images/88065198/nIsWPeCmYYBufE_Q3lwdtQ/thumb.png?1564720539",
-                "Options": "https://s3.amazonaws.com/files.d20.io/images/88065350/yAtFeDfnrn3hm6hWc2aDCg/thumb.png?1564720711",
-                "Overwhelmed": "https://s3.amazonaws.com/files.d20.io/images/88065206/mv5yKwFSZilYZwvoiPt19Q/thumb.png?1564720545",
-                "Powderkeg": "https://s3.amazonaws.com/files.d20.io/images/88074453/mfNFo2KPnk7LtSvEWs_12g/thumb.png?1564736707",
-                "Preoccupied": "https://s3.amazonaws.com/files.d20.io/images/88065217/OdaDhMXIV06Ury9XGlEtMA/thumb.png?1564720552",
-                "ProlongedAbsence": "https://s3.amazonaws.com/files.d20.io/images/88065355/RE6delb8vhrszgvIAyHTaQ/thumb.png?1564720717",
-                "PyrrhicVictory": "https://s3.amazonaws.com/files.d20.io/images/88074457/WtyKP4tRrsAPT1u74sXhUA/thumb.png?1564736712",
-                "RepeatMistakes": "https://s3.amazonaws.com/files.d20.io/images/88065357/cri9JfyPMJ8hAxOd8nDgQA/thumb.png?1564720722",
-                "RecklessGamble": "https://s3.amazonaws.com/files.d20.io/images/88074461/aqzut3f3Qbix_figMyOY8g/thumb.png?1564736718",
-                "Reverie": "https://s3.amazonaws.com/files.d20.io/images/88074463/aJs_JS4xWVCnG-jweBjkVw/thumb.png?1564736724",
-                "RippleEffects": "https://s3.amazonaws.com/files.d20.io/images/88065164/KjErmcGO47imlAR9mMmjWQ/thumb.png?1564720509",
-                "RockyStart": "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
-                "SilentBeneficiary": "https://s3.amazonaws.com/files.d20.io/images/88065369/7OvPo5NX-Q0noA0Ch2u6OQ/thumb.png?1564720739",
-                "SimmeringResentment": "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
-                "SpreadThin": "https://s3.amazonaws.com/files.d20.io/images/88065223/loWJjAtIGbNpZDTU8SDtJA/thumb.png?1564720557",
-                "TangledWebs": "https://s3.amazonaws.com/files.d20.io/images/88074469/QRLj2J_cxIoKMxti5q7N6g/thumb.png?1564736730",
-                "TheBeast...": "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
-                "TheBeastAscendant": "https://s3.amazonaws.com/files.d20.io/images/88065112/g4E52d9zhlpph-HVQRAcWA/thumb.png?1564720450",
-                "TheBeastRampant": "https://s3.amazonaws.com/files.d20.io/images/88065118/76VUHu1UgmrAo7FikuWjoQ/thumb.png?1564720457",
-                "TheBeastRavenous": "https://s3.amazonaws.com/files.d20.io/images/88074472/0HsnQ8kTvQ57Ey5GwuTrkQ/thumb.png?1564736735",
-                "TheBeastScorned": "https://s3.amazonaws.com/files.d20.io/images/88065127/SF3HnDCSowKCl93IoY8UcA/thumb.png?1564720467",
-                "Tilted": "https://s3.amazonaws.com/files.d20.io/images/88065229/IlqTurlRczzNSVFBg4o_dw/thumb.png?1564720562",
-                "Triage": "https://s3.amazonaws.com/files.d20.io/images/63990142/MQ_uNU12WcYYmLUMQcbh0w/thumb.png?1538455511",
-                "TunnelVision": "https://s3.amazonaws.com/files.d20.io/images/88065170/Fsg8q7oyYNdTCTNTiXn8qg/thumb.png?1564720515",
-                "UnderTheBus": "https://s3.amazonaws.com/files.d20.io/images/88074476/ouv0wcAakOtEFsvGkKHWNw/thumb.png?1564736741",
-                "UnfinishedBusiness": "https://s3.amazonaws.com/files.d20.io/images/88065379/_A0OoKzz8rXL9JUVJdGSUw/thumb.png?1564720760",
-                "WeightOfTheWorld": "https://s3.amazonaws.com/files.d20.io/images/88065231/L2T1utZx997A5XemGbXWxQ/thumb.png?1564720567"
-            }
-            for (let i = 2; i <= 10; i++)
-                Media.IMAGES[`compCardSpot_${i}`].srcs = "compCardSpot_1"
-                */
         },
     // #endregion
 
@@ -429,7 +363,6 @@ const Complications = (() => {
                 if (isThisCardValid)
                     validSpots.push(i)
             }
-            // D.Alert(`Valid Spots: ${D.JS(validSpots)}`, "getRandomSpot")
             return _.sample(validSpots)
         },
     // #endregion
@@ -676,154 +609,120 @@ const Complications = (() => {
             }
         },
         sendGMPanel = () => {
-            sendChat("COMPLICATION", D.JSH(`/w Storyteller <div style='
-                display: block;
-                background: url(https://i.imgur.com/kBl8aTO.jpg);
-                text-align: center;
-                border: 4px ${C.COLORS.crimson} outset;
-                box-sizing: border-box;
-                margin-left: -42px;
-                width: 275px;
-            '><div style="display: inline-block; width: 49%; font-size: 0px;"><br><span style='
-                    display: block;
-                    font-size: 16px;
-                    text-align: center;
-                    width: 100%;
-                    font-family: Voltaire;
-                    color: ${C.COLORS.brightred};
-                    font-weight: bold;
-                '>DISCARD</span><span style='                    
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[1](!comp discard 1) [2](!comp discard 2) [3](!comp discard 3) [4](!comp discard 4) [5](!comp discard 5)</span><span style='
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[6](!comp discard 6) [7](!comp discard 7) [8](!comp discard 8) [9](!comp discard 9) [0](!comp discard 10)</span><span style='
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[LAST](!comp discard last) [RANDOM](!comp discard rand)</span><br><span style='
-                    display: block;
-                    font-size: 16px;
-                    text-align: center;
-                    width: 100%;
-                    font-family: Voltaire;
-                    color: ${C.COLORS.brightred};
-                    font-weight: bold;
-                '>ENHANCE</span><span style='                    
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[1](!comp enhance 1) [2](!comp enhance 2) [3](!comp enhance 3) [4](!comp enhance 4) [5](!comp enhance 5)</span><span style='
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[6](!comp enhance 6) [7](!comp enhance 7) [8](!comp enhance 8) [9](!comp enhance 9) [0](!comp enhance 10)</span><span style='
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[LAST](!comp enhance last) [RANDOM](!comp enhance rand)</span></div><div style="display: inline-block; width: 49%; font-size: 0px;"><br><span style='
-                    display: block;
-                    font-size: 16px;
-                    text-align: center;
-                    width: 100%;
-                    font-family: Voltaire;
-                    color: ${C.COLORS.brightred};
-                    font-weight: bold;
-                '>NEGATE</span><span style='                    
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[1](!comp negate 1) [2](!comp negate 2) [3](!comp negate 3) [4](!comp negate 4) [5](!comp negate 5)</span><span style='
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[6](!comp negate 6) [7](!comp negate 7) [8](!comp negate 8) [9](!comp negate 9) [0](!comp negate 10)</span><span style='
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[LAST](!comp negate last) [RANDOM](!comp negate rand)</span><br><span style='
-                    display: block;
-                    font-size: 16px;
-                    text-align: center;
-                    width: 100%;
-                    font-family: Voltaire;
-                    color: ${C.COLORS.brightred};
-                    font-weight: bold;
-                '>REVALUE</span><span style='                    
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[1](!comp revalue 1) [2](!comp revalue 2) [3](!comp revalue 3) [4](!comp revalue 4) [5](!comp revalue 5)</span><span style='
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[6](!comp revalue 6) [7](!comp revalue 7) [8](!comp revalue 8) [9](!comp revalue 9) [0](!comp revalue 10)</span><span style='
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[LAST](!comp revalue last) [RANDOM](!comp revalue rand)</span></div><span style='
-                display: block;
-                font-size: 16px;
-                text-align: center;
-                width: 100%;
-                font-family: Voltaire;
-                color: ${C.COLORS.brightred};
-                font-weight: bold;
-            '><br>DUPLICATE</span><span style='                    
-                display: block;
-                font-size: 10px;
-                text-align: center;
-                width: 100%
-            '>[1](!comp duplicate 1) [2](!comp duplicate 2) [3](!comp duplicate 3) [4](!comp duplicate 4) [5](!comp duplicate 5)</span><span style='
-                display: block;
-                font-size: 10px;
-                text-align: center;
-                width: 100%
-            '>[6](!comp duplicate 6) [7](!comp duplicate 7) [8](!comp duplicate 8) [9](!comp duplicate 9) [0](!comp duplicate 10)</span><span style='
-                display: block;
-                font-size: 10px;
-                text-align: center;
-                width: 100%
-            '>[LAST](!comp duplicate last) [RANDOM](!comp duplicate rand)</span><br></div>`))
-        },  
+            sendChat("COMPLICATION", D.JSH(`/w Storyteller ${
+                C.HTML.COMP.promptFullBox([
+                    C.HTML.COMP.column([
+                        C.HTML.COMP.header("DISCARD"),
+                        C.HTML.COMP.commandLine({
+                            1: "!comp discard 1",
+                            2: "!comp discard 2",
+                            3: "!comp discard 3",
+                            4: "!comp discard 4",
+                            5: "!comp discard 5"
+                        }),
+                        C.HTML.COMP.commandLine({
+                            6: "!comp discard 6",
+                            7: "!comp discard 7",
+                            8: "!comp discard 8",
+                            9: "!comp discard 9",
+                            10: "!comp discard 10"
+                        }),
+                        C.HTML.COMP.commandLine({
+                            LAST: "!comp discard last",
+                            RANDOM: "!comp discard random"
+                        }),
+                        C.HTML.COMP.header("ENHANCE"),
+                        C.HTML.COMP.commandLine({
+                            1: "!comp enhance 1",
+                            2: "!comp enhance 2",
+                            3: "!comp enhance 3",
+                            4: "!comp enhance 4",
+                            5: "!comp enhance 5"
+                        }),
+                        C.HTML.COMP.commandLine({
+                            6: "!comp enhance 6",
+                            7: "!comp enhance 7",
+                            8: "!comp enhance 8",
+                            9: "!comp enhance 9",
+                            10: "!comp enhance 10"
+                        }),
+                        C.HTML.COMP.commandLine({
+                            LAST: "!comp enhance last",
+                            RANDOM: "!comp enhance random"
+                        })
+                    ].join("<br>")),
+                    C.HTML.COMP.column([
+                        C.HTML.COMP.header("NEGATE"),
+                        C.HTML.COMP.commandLine({
+                            1: "!comp negate 1",
+                            2: "!comp negate 2",
+                            3: "!comp negate 3",
+                            4: "!comp negate 4",
+                            5: "!comp negate 5"
+                        }),
+                        C.HTML.COMP.commandLine({
+                            6: "!comp negate 6",
+                            7: "!comp negate 7",
+                            8: "!comp negate 8",
+                            9: "!comp negate 9",
+                            10: "!comp negate 10"
+                        }),
+                        C.HTML.COMP.commandLine({
+                            LAST: "!comp negate last",
+                            RANDOM: "!comp negate random"
+                        }),
+                        C.HTML.COMP.header("REVALUE"),
+                        C.HTML.COMP.commandLine({
+                            1: "!comp revalue 1",
+                            2: "!comp revalue 2",
+                            3: "!comp revalue 3",
+                            4: "!comp revalue 4",
+                            5: "!comp revalue 5"
+                        }),
+                        C.HTML.COMP.commandLine({
+                            6: "!comp revalue 6",
+                            7: "!comp revalue 7",
+                            8: "!comp revalue 8",
+                            9: "!comp revalue 9",
+                            10: "!comp revalue 10"
+                        }),
+                        C.HTML.COMP.commandLine({
+                            LAST: "!comp revalue last",
+                            RANDOM: "!comp revalue random"
+                        })
+                    ].join("<br>")),
+                    C.HTML.COMP.header("DUPLICATE"),
+                    C.HTML.COMP.commandLine({
+                        1: "!comp duplicate 1",
+                        2: "!comp duplicate 2",
+                        3: "!comp duplicate 3",
+                        4: "!comp duplicate 4",
+                        5: "!comp duplicate 5"
+                    }),
+                    C.HTML.COMP.commandLine({
+                        6: "!comp duplicate 6",
+                        7: "!comp duplicate 7",
+                        8: "!comp duplicate 8",
+                        9: "!comp duplicate 9",
+                        10: "!comp duplicate 10"
+                    }),
+                    C.HTML.COMP.commandLine({
+                        LAST: "!comp duplicate last",
+                        RANDOM: "!comp duplicate random"
+                    }),
+                ].join(""))
+            }`))
+        },
         promptCardVal = (cardSpot) => {
-            sendChat("COMPLICATION", D.JSH(`/w Storyteller <div style='
-                display: block;
-                background: url(https://i.imgur.com/kBl8aTO.jpg);
-                text-align: center;
-                border: 4px ${C.COLORS.crimson} outset;
-                box-sizing: border-box;
-                margin-left: -42px;
-                width: 275px;
-            '><br/><span style='
-                display: block;
-                font-size: 16px;
-                text-align: center;
-                width: 100%;
-                font-family: Voltaire;
-                color: ${C.COLORS.brightred};
-                font-weight: bold;
-            '>Set Card Value:</span><span style='                    
-                display: block;
-                font-size: 10px;
-                text-align: center;
-                width: 100%
-            '>[0](!comp setvalue ${cardSpot+1} 0) [1](!comp setvalue ${cardSpot+1} 1) [2](!comp setvalue ${cardSpot+1} 2) [3](!comp setvalue ${cardSpot+1} 3) [4](!comp setvalue ${cardSpot+1} 4)</span></div>`))
+            sendChat("COMPLICATION", D.JSH(`/w Storyteller ${
+                C.HTML.COMP.prompt("Set Card Value:", {
+                    0: `!comp setvalue ${cardSpot+1} 0`,
+                    1: `!comp setvalue ${cardSpot+1} 1`,
+                    2: `!comp setvalue ${cardSpot+1} 2`,
+                    3: `!comp setvalue ${cardSpot+1} 3`,
+                    4: `!comp setvalue ${cardSpot+1} 4`
+                })
+            }`))
         }
     // #endregion
 

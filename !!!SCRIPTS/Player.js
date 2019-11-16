@@ -68,16 +68,16 @@ const Player = (() => {
         MVC = (params) => {
             const results = []
             for (const mvc of C.MVCVALS) {
-                results.push(C.bHTML.div.title.start + mvc[0] + C.bHTML.div.title.stop)
+                results.push(C.HTML.MVC.title(mvc[0]))
                 for (const [fType, ...mvcItems] of mvc.slice(1))
                     try {
-                        results.push(C.bHTML.div[fType].start + _.shuffle(mvcItems)[0] + C.bHTML.div[fType].stop)
+                        results.push(C.HTML.MVC[fType](_.shuffle(mvcItems)[0]))
                     } catch (errObj) {
                         return THROW(`ERRORED returning '${D.JSL(fType)}' for '${D.JSL(mvcItems)}' of '${D.JSL(mvc)}'`, "MVC", errObj)
                     }
 
             }
-            D.Chat(params.name, C.HTML.start + results.join("") + C.HTML.stop, " ")
+            D.Chat(params.name, C.HTML.MVC.fullBox(results.join("")), " ")
             return true
         }
     // #endregion

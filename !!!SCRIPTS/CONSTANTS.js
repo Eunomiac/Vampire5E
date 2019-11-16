@@ -84,13 +84,112 @@ const C = (() => {
         },
     // #endregion
 
-    // #region IMAGE DEFAULTS, HTML FORMATS, BACKGROUND IMAGES    
+    // #region IMAGE DEFAULTS BACKGROUND IMAGES    
         IMAGES = {
             blank: "https://s3.amazonaws.com/files.d20.io/images/96594791/NKN-0QyHbcOXS2_o5X6Y2A/thumb.png?1573368252"
         },
         BGIMAGES = {
             whiteMarble: "https://i.imgur.com/heiyoaB.jpg",
             blackMarble: "https://i.imgur.com/kBl8aTO.jpg"
+        },
+    // #endregion
+
+    // #region HTML & CHAT STYLES
+        HTML = {
+            COMP: {
+                promptFullBox: content => { return `<div style='
+                    display: block;
+                    background: url(https://i.imgur.com/kBl8aTO.jpg);
+                    text-align: center;
+                    border: 4px ${C.COLORS.crimson} outset;
+                    box-sizing: border-box;
+                    margin-left: -42px;
+                    width: 275px;
+                '>${content}</div>` },
+                header: content => { return `<span style='
+                    display: block;
+                    font-size: 16px;
+                    text-align: center;
+                    width: 100%;
+                    font-family: Voltaire;
+                    color: ${C.COLORS.brightred};
+                    font-weight: bold;
+                '>${content}</span>` },
+                column: content => { return `<div style="
+                    display: inline-block;
+                    width: 49%;
+                    font-size: 0px;
+                ">${content}</div>`},
+                commandLine: (commands) => { return `<span style='
+                    display: block;
+                    font-size: 10px;
+                    text-align: center;
+                    width: 100%
+                '>${_.values(D.KeyMapObj(commands, null, (v, k) => `[${k}](${v})`)).join(" ")}</span>` }
+            },
+            MVC: {
+                fullBox: content => { return `<div style="
+                    display: block;
+                    width: 100%;
+                    padding: 5px 5px;
+                    margin-left: -10px;
+                    margin-top: -20px;
+                    margin-bottom: -5px;
+                    color: ${COLORS.white};
+                    font-variant: small-caps;
+                    font-family: 'Bodoni SvtyTwo ITC TT';
+                    text-align: left; font-size: 16px;
+                    border: 3px outset ${COLORS.darkred};
+                    background: url('https://imgur.com/kBl8aTO.jpg') top;
+                    bg-color: ${COLORS.black};
+                    z-index: 100;
+                    position: relative;
+                    ">${content}</div>` },
+                title: content => { return `<div style="
+                    display:block;
+                    width: 120%;
+                    margin: 10px -10%;
+                    color: ${COLORS.white};
+                    text-align: center;
+                    font: normal normal 22px/22px Effloresce;
+                    border-bottom: 1px ${COLORS.white} solid;
+                    ">${content}</div>` },
+                header: content => { return `<div style="
+                    display:block; 
+                    width: 120%; 
+                    margin: 0px -10% 0px -10%;
+                    color: ${COLORS.white}; 
+                    text-align: center; 
+                    font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT'; 
+                    ">${content}</div>` },
+                headerL: content => { return `<div style="
+                    display:inline-block; 
+                    width: 120%; 
+                    margin: 5% -10% 0px -10%;
+                    color: ${COLORS.white}; 
+                    text-align: center; 
+                    font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT';
+                    ">${content}` },
+                headerR: content => { return ` ${content}</div>` },
+                para: content => { return `<div style="
+                    display:block; 
+                    width: 103%; 
+                    margin: 5px 0px;
+                    color: ${COLORS.white}; 
+                    text-align: left; 
+                    font: normal normal 12px/14px Rockwell; 
+                    ">${content}</div>` },
+                paraStart: content => { return `<div style="
+                    display:block; 
+                    width: 100%; 
+                    margin: 5px 0px;
+                    color: ${COLORS.white}; 
+                    text-align: left; 
+                    font: normal normal 12px/14px Rockwell; 
+                    ">${content}` },
+                paraMid: content => { return ` ${content} `},
+                paraEnd: content => { return `${content}</div>`}
+            }
         },
         CHATHTML = {
             alertHeader: content => { return `<div style="
@@ -108,7 +207,7 @@ const C = (() => {
                 border: 2px solid ${COLORS.black};
                 position: relative;
             ">${content}</div>` },
-            alertBody: content => `<div style="
+            alertBody: content => { return `<div style="
                 display: block;
                 width: auto;
                 padding: 5px 5px;
@@ -125,15 +224,15 @@ const C = (() => {
                 margin-left: -42px;
                 background-color: none;
                 position: relative;
-            "></div>`,
+            "></div>` },
             Block: (content, options = {}) => {
                 const params = {
                     color: options.color || COLORS.crimson,
                     bgImage: options.bgImage || BGIMAGES.blackMarble,
                     borderColor: options.borderColor || options.color || COLORS.crimson,
                     borderStyle: options.borderStyle || "outset",
-                    margin: options.margin || "0px 0px 0px -40px",
-                    width: options.width || "255px"
+                    margin: options.margin || "-30px 0px 0px -42px",
+                    width: options.width || "267px"
                 }
                 return D.JSH(`<div style="
                     display: block;
@@ -144,6 +243,7 @@ const C = (() => {
                     border: 4px ${params.borderColor} ${params.borderStyle};
                     padding: 5px;
                     width: ${params.width};
+                    position: relative;
                 ">${_.flatten([content]).join("")}</div>`)
             },
             Title: (content, options = {}) => {
@@ -323,8 +423,8 @@ const C = (() => {
                     bgImage: options.bgImage || BGIMAGES.blackMarble,
                     borderColor: options.borderColor || options.color || COLORS.crimson,
                     borderStyle: options.borderStyle || "outset",
-                    margin: options.margin || "0px 0px 0px -42px",
-                    width: options.width || "255px"
+                    margin: options.margin || "-30px 0px 0px -42px",
+                    width: options.width || "267px"
                 }
                 return D.JSH(`<div style="
                     display: block;
@@ -336,6 +436,7 @@ const C = (() => {
                     border: 4px ${params.borderColor} ${params.borderStyle};
                     box-sizing: border-box;
                     padding: 0px;
+                    position: relative;
             ">${_.flatten([content]).join("")}</div>`)
             },
             Title: (content, options = {}) => {
@@ -518,11 +619,11 @@ const C = (() => {
             }
         },
         HANDOUTHTML = {
-            main: content => `<div style="
+            main: content => { return `<div style="
                 display: block;
                 width: 600px;
-            ">${content}</div>`,
-            title: content => `<span style="
+            ">${content}</div>` },
+            title: content => { return `<span style="
                 display: block;
                 width: 602px;
                 height: 16px;
@@ -534,8 +635,8 @@ const C = (() => {
                 padding: 3px 3px;
                 box-sizing: border-box;
                 margin-top: 10px;
-            ">${content}</span>`,
-            subTitle: content => `<span style="
+            ">${content}</span>` },
+            subTitle: content => { return `<span style="
                 display: block;
                 width: 600px;
                 height: 12px;
@@ -546,8 +647,8 @@ const C = (() => {
                 font-family: 'Century Gothic';
                 font-size: 12px;
                 padding-bottom: 3px;
-            ">${content}</span>`,
-            bodyParagraph: (content, params = {}) => `<span style="
+            ">${content}</span>` },
+            bodyParagraph: (content, params = {}) => { return `<span style="
                 display: block;
                 width: 586px;
                 font-family: 'Trebuchet MS';
@@ -558,8 +659,8 @@ const C = (() => {
                 border-left: 1px solid ${COLORS.grey};
                 border-right: 1px solid ${COLORS.grey};
                 padding: 3px 10px;
-            ">${content}</span>`,
-            smallNote: (content, color = COLORS.black) => `<span style="
+            ">${content}</span>` },
+            smallNote: (content, color = COLORS.black) => { return `<span style="
                 display:block; 
                 width: 560px; 
                 font-size: 10px;
@@ -568,17 +669,17 @@ const C = (() => {
                 margin: 0px 20px;
                 padding: 0px 3px;
                 background-color: ${COLORS.fadedblack};
-            ">${content}</span>`,
+            ">${content}</span>` },
             projects: {
-                charName: content => `<span style="
+                charName: content => { return `<span style="
                     display: block; 
                     width: 600px;
                     font-size: 32px; 
                     color: ${COLORS.darkred}; 
                     font-family: Voltaire; 
                     font-variant: small-caps;
-                ">${content}</span>`,
-                goal: content => `<span style="
+                ">${content}</span>` },
+                goal: content => { return `<span style="
                     display: block; 
                     width: 600px; 
                     height: 24px; 
@@ -591,8 +692,8 @@ const C = (() => {
                     border-bottom: 1px solid ${COLORS.black}; 
                     border-top: 1px solid ${COLORS.black};
                     overflow: hidden;
-                ">${content}</span>`,
-                tag: (content, color = COLORS.black) => `<span style="
+                ">${content}</span>` },
+                tag: (content, color = COLORS.black) => { return `<span style="
                     display:inline-block; 
                     width: 60px; 
                     font-size: 14px; 
@@ -604,8 +705,8 @@ const C = (() => {
                     margin-right: 10px;
                     height: 20px;
                     line-height: 20px;
-                ">${content}</span>`,
-                hook: content => `<span style="
+                ">${content}</span>` },
+                hook: content => { return `<span style="
                     display:inline-block; 
                     width: 530px; 
                     font-size: 12px; 
@@ -614,24 +715,24 @@ const C = (() => {
                     vertical-align: top; 
                     padding-top: 2px;
                     overflow: hidden;
-                ">${content}</span>`,
-                critSucc: content => `<span style="
+                ">${content}</span>` },
+                critSucc: content => { return `<span style="
                     display: inline-block; 
                     width: 300px; 
                     font-size: 20px; 
                     color: ${COLORS.purple}; 
                     font-family: Voltaire; 
                     font-weight: bold;
-                ">${content}</span>`,
-                succ: content => `<span style="
+                ">${content}</span>` },
+                succ: content => { return `<span style="
                     display: inline-block; 
                     width: 300px; 
                     font-size: 20px; 
                     color: ${COLORS.black}; 
                     font-family: goodfish; 
                     font-weight: bold;
-                ">${content}</span>`,
-                endDate: content => `<span style="
+                ">${content}</span>` },
+                endDate: content => { return `<span style="
                     display: inline-block; 
                     width: 300px; 
                     font-size: 20px; 
@@ -639,8 +740,8 @@ const C = (() => {
                     font-family: Voltaire; 
                     font-weight: bold; 
                     text-align: right;
-                ">${content}</span>`,
-                daysLeft: content => `<span style="
+                ">${content}</span>` },
+                daysLeft: content => { return `<span style="
                     display: inline-block; 
                     width: 600px; 
                     font-size: 14px; 
@@ -648,15 +749,15 @@ const C = (() => {
                     font-family: 'Alice Regular'; 
                     font-style: italic; 
                     text-align: right;
-                ">${content}</span>`,
-                stake: content => `<span style="
+                ">${content}</span>` },
+                stake: content => { return `<span style="
                     display: inline-block; 
                     width: 410px; 
                     font-family: 'Alice Regular';
                     height: 20px;
                     line-height: 20px;
-                ">${content}</span>`,
-                teamwork: content => `<span style="
+                ">${content}</span>` },
+                teamwork: content => { return `<span style="
                     display: inline-block; 
                     width: 50px; 
                     font-family: 'Alice Regular'; 
@@ -665,7 +766,7 @@ const C = (() => {
                     height: 20px;
                     line-height: 20px;
                     font-size: 16px;
-                ">${content}</span>`
+                ">${content}</span>` }
             },
         },
         ROLLERHTML = {
@@ -708,82 +809,6 @@ const C = (() => {
             outcome: (content, color) => `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[color] || COLORS.white}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`,
             smallOutcome: (content, color) => `<div style="display: block; width: 100%; margin-top: 5px; height: 14px; line-height: 14px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[color] || COLORS.white}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`,
             subOutcome: (content, color) => `<div style="display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[color] || COLORS.white}; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`
-        },
-        HTML = {
-            start: `<div style="display: block; width: 100%; padding: 5px 5px; margin-left: -10px; margin-top: -20px; margin-bottom: -5px; color: ${COLORS.white}; font-variant: small-caps; font-family: 'Bodoni SvtyTwo ITC TT'; text-align: left; font-size: 16px;  border: 3px outset ${COLORS.darkred}; background: url('https://imgur.com/kBl8aTO.jpg') top; bg-color: ${COLORS.black}; z-index: 100; position: relative;">`,
-            stop: "</div>",
-        },
-        bHTML = {
-            div: {
-                title: {
-                    start: `<div style="
-                        display:block;
-                        width: 120%;
-                        margin: 10px -10%;
-                        color: ${COLORS.white};
-                        text-align: center;
-                        font: normal normal 22px/22px Effloresce;
-                        border-bottom: 1px ${COLORS.white} solid;
-                        ">`,
-                    stop: "</div>",
-                },
-                header: {
-                    start: `<div style="
-                        display:block; 
-                        width: 120%; 
-                        margin: 0px -10% 0px -10%;
-                        color: ${COLORS.white}; 
-                        text-align: center; 
-                        font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT'; 
-                        ">`,
-                    stop: "</div>",
-                },
-                headerL: {
-                    start: `<div style="
-                        display:inline-block; 
-                        width: 120%; 
-                        margin: 5% -10% 0px -10%;
-                        color: ${COLORS.white}; 
-                        text-align: center; 
-                        font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT';
-                        ">`,
-                    stop: "",
-                },
-                headerR: {
-                    start: " ",
-                    stop: "</div>",
-                },
-                para: {
-                    start: `<div style="
-                        display:block; 
-                        width: 103%; 
-                        margin: 5px 0px;
-                        color: ${COLORS.white}; 
-                        text-align: left; 
-                        font: normal normal 12px/14px Rockwell; 
-                        ">`,
-                    stop: "</div>",
-                },
-                paraStart: {
-                    start: `<div style="
-                        display:block; 
-                        width: 100%; 
-                        margin: 5px 0px;
-                        color: ${COLORS.white}; 
-                        text-align: left; 
-                        font: normal normal 12px/14px Rockwell; 
-                        ">`,
-                    stop: "",
-                },
-                paraMid: {
-                    start: " ",
-                    stop: " ",
-                },
-                paraEnd: {
-                    start: "",
-                    stop: "</div>",
-                },
-            }
         },
         STYLES = {
             whiteMarble: {
@@ -2172,7 +2197,7 @@ const C = (() => {
         MENUHTML,
         HANDOUTHTML,
         ROLLERHTML,
-        HTML, bHTML,
+        HTML,
         STYLES,
 
         PIXELSPERSQUARE,
