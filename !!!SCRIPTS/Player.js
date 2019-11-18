@@ -30,9 +30,9 @@ const Player = (() => {
                     break
                 }
                 case "!token": {
-                    const charID = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)].id,
-                        tokenSrcName = D.Capitalize(args.shift())
-                    Media.ToggleToken(charID, tokenSrcName)
+                    const charObj = D.GetChar(msg.playerid)
+                    if (VAL({pc: charObj}))
+                        Media.CombineTokenSrc(charObj.id, D.Capitalize(args.shift()))
                     break
                 }
                 case "!famulus": {

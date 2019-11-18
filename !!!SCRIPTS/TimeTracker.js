@@ -1799,10 +1799,10 @@ const TimeTracker = (() => {
                     checkCondition(alarm)
                 } else {    
                     if (alarm.displayTo.includes("all"))
-                        D.Chat("all", alarm.message, null, D.RandomString(10))
+                        D.Chat("all", alarm.message, null, D.RandomString(3))
                     else
                         for (const player of alarm.displayTo)
-                            D.Chat(D.GetName(player), alarm.message, null, D.RandomString(10))      
+                            D.Chat(D.GetName(player), alarm.message, null, D.RandomString(3))      
                     for (const action of alarm.actions)
                         if (VAL({array: action})) {
                             if (ALARMFUNCS[action[0]])

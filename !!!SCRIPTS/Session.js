@@ -44,6 +44,7 @@ const Session = (() => {
                 }
             }
             STATE.REF.locationRecord = STATE.REF.locationRecord || null
+            STATE.REF.locationDetails = STATE.REF.locationDetails || {}
             
             // delete STATE.REF.locationRecord
             
@@ -53,10 +54,9 @@ const Session = (() => {
                     STATE.REF.locationRecord[mode] = D.Clone(STATE.REF.curLocation)
             }
 
-            STATE.REF.locationRecord.Inactive = _.clone(BLANKLOCRECORD)
                 
                                  
-        // STATE.REF.SessionScribes = [ "Thaumaterge", "Ava Wong", "banzai", "PixelPuzzler" ]
+            STATE.REF.SessionScribes = [ "PixelPuzzler", "Ava Wong", "banzai" ]
         },
     // #endregion
 
@@ -83,6 +83,12 @@ const Session = (() => {
                                 addMode(mode, modeSrc)
                                 D.Alert(`Session Mode '${mode}' Added.<br>Current Modes: ${D.JS(STATE.REF.SessionModes)}`, "!sess add mode")
                             }
+                            break
+                        }
+                        case "macro": {
+                            const [charObj] = charObjs,
+                                [macroName, macroAction] = args.join(" ").split("!").map(x => x.trim())
+                            setMacro(charObj, macroName, `!${macroAction}`)
                             break
                         }
                     // no default
@@ -316,11 +322,15 @@ const Session = (() => {
                 C.CHATHTML.Body("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "10px 0px 10px 0px"}),
                 C.CHATHTML.Header(`Session Scribe: ${sessionScribe || "(None Set)"}`),
                 C.CHATHTML.Body("Thank you for your service!")
-            ]), null, D.RandomString(10))
-            changeMode("Active", true)
-            for (const quadrant of _.keys(Char.REGISTRY)) {
-                const {tokenName} = Char.REGISTRY[quadrant]
-                Media.SetImg(tokenName, STATE.REF.tokenRecord[tokenName] || "base")
+            ]), null, D.RandomString(3))
+            changeMode("Active", true)            
+            for (const tokenObj of _.compact(Media.GetTokens("all")))
+                Media.ToggleToken(tokenObj, true)
+            for (const charObj of D.GetChars("registered")) {
+                const tokenObj = Media.GetToken(charObj)
+                Media.ToggleToken(charObj, true)
+                if (tokenObj)
+                    Media.SetToken(charObj, STATE.REF.tokenRecord[tokenObj.get("name")] || "base")
             }
             Char.SendBack()
             TimeTracker.StopCountdown()
@@ -335,10 +345,11 @@ const Session = (() => {
                     C.CHATHTML.Header(`Concluding Session ${D.NumToText(STATE.REF.SessionNum, true)}`),
                     C.CHATHTML.Body("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "10px 0px 10px 0px"}),
                     C.CHATHTML.Title("See you next week!", {fontSize: "32px"}),
-                ]), null, D.RandomString(10))
+                ]), null, D.RandomString(3))
                 // Char.SendHome()
                 changeMode("Inactive", true)
-                STATE.REF.tokenRecord = {}
+                for (const tokenObj of _.compact(Media.GetTokens("all")))
+                    Media.ToggleToken(tokenObj, false)
                 if (!STATE.REF.isTestingActive) {
                     STATE.REF.dateRecord = null
                     for (const char of D.GetChars("registered"))
@@ -347,8 +358,6 @@ const Session = (() => {
                     TimeTracker.CurrentDate = STATE.REF.dateRecord
                     TimeTracker.Fix()
                 }
-                for (const charData of D.GetChars("registered").map(x => D.GetCharData(x)))                  
-                    Char.SetNPC(charData.id, "base")
                 TimeTracker.StopClock()
                 TimeTracker.StopLights()
                 TimeTracker.StartCountdown()
@@ -423,7 +432,7 @@ const Session = (() => {
                     C.CHATHTML.Title("Session Downtime"),
                     C.CHATHTML.Header("Session Status: Downtime"),
                     C.CHATHTML.Body("Clock Stopped.")
-                ]), null, D.RandomString(10))
+                ]), null, D.RandomString(3))
             } else {
                 TimeTracker.StartClock()
                 Char.SendBack()
@@ -431,7 +440,7 @@ const Session = (() => {
                     C.CHATHTML.Title("Session Downtime"),
                     C.CHATHTML.Header("Session Status: Regular Time"),
                     C.CHATHTML.Body("Clock Started.")
-                ]), null, D.RandomString(10))
+                ]), null, D.RandomString(3))
             }
             Char.RefreshDisplays()
             TimeTracker.Fix()
@@ -457,7 +466,7 @@ const Session = (() => {
                     D.Chat("all", C.CHATHTML.Block([
                         C.CHATHTML.Title("Spotlight:"),
                         C.CHATHTML.Header(charData.name)
-                    ]), null, D.RandomString(10))
+                    ]), null, D.RandomString(3))
                 }
             } else {
                 changeMode(STATE.REF.LastMode === "Spotlight" && "Active" || STATE.REF.LastMode)
@@ -466,7 +475,7 @@ const Session = (() => {
                 D.Chat("all", C.CHATHTML.Block([
                     C.CHATHTML.Title("Spotlight"),
                     C.CHATHTML.Header("Spotlight Session Closed.")
-                ]), null, D.RandomString(10))
+                ]), null, D.RandomString(3))
             }                   
             Char.RefreshDisplays()
             TimeTracker.Fix()
@@ -535,24 +544,42 @@ const Session = (() => {
                 ...locString.split(" ").filter(x => !x.includes(":name") && x.includes(":") && !x.includes("SubLocs")).map(x => x.split(":")),
                 _.compact((locString.split(" ").filter(x => x.startsWith("SubLocs"))[0] || "").split(/[:|]/gu))
             ].filter(x => x.length)
-            // D.Poke(`locString: ${D.JS(locString)}<br>.split(): ${D.JS(locString.split(" "))}<br>.filter(): ${D.JS(locString.split(" ").filter(x => x.startsWith("SubLocs")))}<br>[0].split(): ${D.JS(locString.split(" ").filter(x => x.startsWith("SubLocs"))[0].split(/[:|]/gu))}`)
-            // D.Poke(D.JS(locParams), "Final Loc Params")
-            return D.KeyMapObj(locParams, (k, v) => v[0], (v) => {
+            DB(`locString: ${D.JS(locString)}<br><br>locParams: ${D.JS(locParams)}`, "parseLocationString")
+            const newLocParams = D.KeyMapObj(locParams, (k, v) => v[0], (v) => {
+                if (v[0].includes("Site") && v[2] === "" && STATE.REF.locationDetails[v[1]] && STATE.REF.locationDetails[v[1]].siteName)
+                    return _.compact([v[1], STATE.REF.locationDetails[v[1]].siteName])
                 if (v[0] === "SubLocs")
-                    if (v.length === 7)
-                        return {
-                            TopLeft: v[1],
-                            Left: v[2],
-                            BotLeft: v[3],
-                            TopRight: v[4],
-                            Right: v[5],
-                            BotRight: v[6]
-                        }
-                    else
-                        return false
+                    return {
+                        TopLeft: v[1] || false,
+                        Left: v[2] || false,
+                        BotLeft: v[3] || false,
+                        TopRight: v[4] || false,
+                        Right: v[5] || false,
+                        BotRight: v[6] || false
+                    }
                 else
                     return _.compact(v.slice(1))
             })
+            DB(`New Loc Params: ${D.JS(newLocParams)}`, "parseLocationString")
+            const siteCenterKey = newLocParams.SiteCenter && newLocParams.SiteCenter[0] || STATE.REF.curLocation.SiteCenter[0] !== "blank" && STATE.REF.curLocation.SiteCenter[0]
+            if (siteCenterKey && (!newLocParams.SubLocs || _.any(newLocParams.SubLocs, v => v === false)) && STATE.REF.locationDetails[siteCenterKey] && STATE.REF.locationDetails[siteCenterKey].subLocs)
+                newLocParams.SubLocs = Object.assign({}, BLANKLOCRECORD.SubLocs, STATE.REF.locationDetails[siteCenterKey].subLocs, _.omit(newLocParams.SubLocs, v => v === false))
+            if (siteCenterKey && newLocParams.SubLocs) {                
+                STATE.REF.locationDetails[siteCenterKey] = STATE.REF.locationDetails[siteCenterKey] || {}
+                STATE.REF.locationDetails[siteCenterKey].subLocs = Object.assign({}, BLANKLOCRECORD.SubLocs, STATE.REF.locationDetails[siteCenterKey].subLocs || {}, _.omit(newLocParams.SubLocs, v => v === false))
+            }
+            for (const [locPos, locDetails] of Object.entries(newLocParams).filter(x => x[0].includes("Site")))
+                if (locDetails[1] && locDetails[1] === " ") {
+                    STATE.REF.locationDetails[locDetails[0]] = STATE.REF.locationDetails[locDetails[0]] || {}
+                    delete STATE.REF.locationDetails[locDetails[0]].siteName
+                    newLocParams[locPos] = newLocParams[locPos].slice(0, 1)
+                } else if (STATE.REF.locationDetails[locDetails[0]] && STATE.REF.locationDetails[locDetails[0]].siteName && !locDetails[1]) {
+                    newLocParams[locPos][1] = STATE.REF.locationDetails[locDetails[0]].siteName
+                } else {
+                    STATE.REF.locationDetails[locDetails[0]] = STATE.REF.locationDetails[locDetails[0]] || {};
+                    [, STATE.REF.locationDetails[locDetails[0]].siteName] = locDetails
+                }
+            return newLocParams
         },
         getParentLocData = locPos => {
             const locData = _.omit(STATE.REF.curLocation, (v, k) => k !== "SubLocs" && v[0] === "blank"),
@@ -628,7 +655,7 @@ const Session = (() => {
                     Media.SetImg(locPos, locSrc, true)
                     if (locPos.includes("Site") && locData[1]) {
                         Media.ToggleImg(`SiteBar${locPos.replace(/Site/gu, "")}`, true)
-                        Media.SetText(`SiteName${locPos.replace(/Site/gu, "")}`, locData[1], true)
+                        Media.SetText(`SiteName${locPos.replace(/Site/gu, "")}`, locData[1], true) 
                     } else {
                         Media.ToggleImg(`SiteBar${locPos.replace(/Site/gu, "")}`, false)
                         Media.ToggleText(`SiteName${locPos.replace(/Site/gu, "")}`, false)
@@ -644,21 +671,38 @@ const Session = (() => {
                 charObjs.push(...Media.GetContainedChars(loc, {padding: 50}))
             return _.uniq(charObjs)
         },
+
+        // subLocList = ["blank", ..._.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).map(x => `${`(${(x.match(/^[^_]*?([A-Z])[^_]*?([A-Z])[^_]*?_/u) || ["", ""]).slice(1).join("")}) `.replace("() ", "")}${x.replace(/.*?_/gu, "")}`)],
+    // #endregion
+
+    // #region Macros
+        setMacro = (playerRef, macroName, macroAction) => {
+            const playerID = D.GetPlayerID(playerRef)
+            if (playerID) {
+                getObj("player", playerID).set({showmacrobar: true})
+                let [macroObj] = (findObjs({_type: "macro", _playerid: playerID}) || []).filter(x => D.LCase(x.get("name")) === D.LCase(macroName))
+                if (macroObj)
+                    macroObj.set("action", macroAction)
+                    // D.Alert(`Macro Set: ${JSON.stringify(macroObj)}`)
+                else
+                    macroObj = createObj("macro", {name: macroName, action: macroAction, visibleto: playerID, playerid: D.GMID()})
+                    // D.Alert(`Macro Created: ${JSON.stringify(macroObj)}`)
+            } else { 
+                D.Alert(`Invalid played ID (${D.JS(playerID)}) from playerRef '${D.JS(playerRef)}'`)
+            }
+        },
         resetLocationMacros = () => {
-            const distList = ["same", "blank", ..._.uniq(_.keys(Media.IMAGES.DistrictCenter_1.srcs))],
-                siteList = ["same", "blank", ..._.uniq(_.keys(Media.IMAGES.SiteCenter_1.srcs))],
+            const distList = ["same", "blank", ..._.uniq(_.keys(Media.IMAGES.DistrictCenter_1.srcs)).sort()],
+                siteList = ["same", "blank", ..._.uniq(_.keys(Media.IMAGES.SiteCenter_1.srcs)).sort()],
                 macros = {
                     "LOC-Center": `!sess set loc DistrictCenter:?{Select District|${distList.join("|")}} SiteCenter:?{Select Site|${siteList.join("|")}} Center`,
                     "LOC-Center-Rename": `!sess set loc DistrictCenter:?{Select District|${distList.join("|")}} SiteCenter:?{Select Site|${siteList.join("|")}}:name:?{Custom Name?}; Center`,
                     "LOC-Sides": `!sess set loc DistrictLeft:?{Select District (Left)|${distList.join("|")}} SiteLeft:?{Select Site (Left)|${siteList.join("|")}} DistrictRight:?{Select District (Right)|${distList.join("|")}} SiteRight:?{Select Site (Right)|${siteList.join("|")}} ?{Initial Focus?|Left|Right}`,
                     "LOC-Sides-Rename": `!sess set loc DistrictLeft:?{Select District (Left)|${distList.join("|")}} SiteLeft:?{Select Site (Left)|${siteList.join("|")}}:name:?{Custom Name?}; DistrictRight:?{Select District (Right)|${distList.join("|")}} SiteRight:?{Select Site (Right)|${siteList.join("|")}}:name:?{Custom Name?}; ?{Initial Focus?|Left|Right}`
                 }
-            D.Alert(`Macro Text:<br><br>${D.JS(_.values(D.KeyMapObj(macros, null, (v,k) => `<b>${k}</b>: ${v}`)).join("<br>"))}`)
-            for (const [macroName, macroAction] of Object.entries(macros)) {
-                const [macroObj] = (findObjs({_type: "macro", _playerid: D.GMID()}) || []).filter(x => x.get("name") === macroName)
-                if (macroObj)
-                    macroObj.set("action", macroAction)
-            }
+            // D.Alert(`Macro Text:<br><br>${D.JS(_.values(D.KeyMapObj(macros, null, (v,k) => `<b>${k}</b>: ${v}`)).join("<br>"))}`)
+            for (const [macroName, macroAction] of Object.entries(macros))
+                setMacro(D.GMID(), macroName, macroAction)
         },
         setSubLocMacro = () => {
             const subLocList = ["blank", ...[..._.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => x.startsWith(`${getActiveSite()}_`)).sort(), ..._.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => !x.includes("_")).sort()].map(x => `${`(${(x.match(/^[^_]*?([A-Z])[^_]*?([A-Z])[^_]*?_/u) || ["", ""]).slice(1).join("")}) `.replace("() ", "")}${x.replace(/.*?_/gu, "")},${x}`)],
@@ -666,14 +710,9 @@ const Session = (() => {
                     "LOC-SubLocations": `!sess set loc SubLocs:?{Top Left|${subLocList.join("|")}}|?{Left|${subLocList.join("|")}}|?{Bottom Left|${subLocList.join("|")}}|?{Top Right|${subLocList.join("|")}}|?{Right|${subLocList.join("|")}}|?{Bottom Right|${subLocList.join("|")}} Center`
                 }
             // D.Poke(`Registry: ${D.JSL(_.keys(Media.IMAGES.DistrictCenter_1.srcs))}<br><br>Keys: ${D.JS(_.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).join(", "))}<br><br>Filter: ${D.JS(_.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => !x.includes("_") || x.startsWith(`${getActiveSite()}_`)))}`, "Testing")          
-            for (const [macroName, macroAction] of Object.entries(macros)) {
-                const [macroObj] = (findObjs({_type: "macro", _playerid: D.GMID()}) || []).filter(x => x.get("name") === macroName)
-                if (macroObj)
-                    macroObj.set("action", macroAction)
-            }
+            for (const [macroName, macroAction] of Object.entries(macros))
+                setMacro(D.GMID(), macroName, macroAction)            
         },
-
-        // subLocList = ["blank", ..._.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).map(x => `${`(${(x.match(/^[^_]*?([A-Z])[^_]*?([A-Z])[^_]*?_/u) || ["", ""]).slice(1).join("")}) `.replace("() ", "")}${x.replace(/.*?_/gu, "")}`)],
     // #endregion
 
     // #region Waking Up 
@@ -781,7 +820,9 @@ const Session = (() => {
 
         get Mode() { return STATE.REF.Mode },
         get Modes() { return STATE.REF.SessionModes },
-        LastMode: STATE.REF.LastMode        
+        get LastMode() { return STATE.REF.LastMode },
+        
+        SetMacro: setMacro
     }
 })()
 

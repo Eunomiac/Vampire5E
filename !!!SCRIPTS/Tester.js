@@ -51,6 +51,52 @@ const Tester = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting
             switch (call) {
+                case "buttons": {
+                    /* MENU DATA:
+                    {
+                        title: <string>
+                        rows: [
+                            Each element represents a full-width horizontal <div> block, contained with "block".
+                            Elements should be of the form:
+                                {
+                                    type: <string: "Title", "Header", "Body", "ButtonLine", "ButtonSubheader">
+                                    contents: <
+                                        for TITLE, HEADLINE, TEXT: <string>
+                                        for BUTTONS: <array: each element represents a line of buttons, of form:
+                                                        <list: {name, command, [styles]}>   >
+                                    [buttonStyles]: <list of styles to apply to ALL of the buttons in a ButtonLine
+                                    [styles]: <list of styles for the div, to override the defaults, where keys are style tags and values are the settings>
+                                } 
+                        ]
+                        [blockStyles:] <override C.CHATHTML.Block 'options' parameter.
+                    }
+                    */
+                    
+                    const frenzyCharObj = D.GetChar("L")
+                    D.CommandMenu({
+                        rows: [
+                            {type: "Header", contents: `Set Frenzy Diff for ${D.JSL(D.GetName(frenzyCharObj, true))}`},
+                            {type: "ButtonLine", contents: [
+                                20,                                
+                                {name: "1", command: "!roll dice frenzy 1"},
+                                {name: "2", command: "!roll dice frenzy 2"},
+                                {name: "3", command: "!roll dice frenzy 3"},
+                                {name: "4", command: "!roll dice frenzy 4"},
+                                {name: "5", command: "!roll dice frenzy 5"},
+                                20
+                            ], styles: {bgColor: C.COLORS.darkred}}
+                        ]
+                    })
+                    break
+                }
+                case "gm": {
+                    D.Alert(D.GMID())
+                    break
+                }
+                case "pcs": {
+                    D.Alert(D.JS(D.GetChars("registered").map(x => x.get("name"))))
+                    break
+                }
                 case "spread": {
                     const leftRef = "spreadTest_Left_1",
                         endRef = "spreadTest_End_1",

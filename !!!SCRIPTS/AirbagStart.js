@@ -38,7 +38,7 @@ const HTML = {
             "display: block;",
             "width: auto;",
             "padding: 5px 5px;",
-            "margin: -30px 0px 0px -42px;",
+            "margin: -25px 0px 0px -42px;",
             "border: 3px outset rgb(255, 0, 0);",
             "background-color: rgb(120, 0, 0);",
             "position: relative;"

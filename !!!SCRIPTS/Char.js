@@ -104,6 +104,22 @@ const Char = (() => {
             switch (call) {
                 case "reg": {
                     switch(D.LCase(call = args.shift())) {                        
+                        case "players": {
+                            const allChars = _.compact(findObjs({_type: "character"})),
+                                allPlayers = _.compact(findObjs({_type: "player"}))// .filter(x => x.id !== D.GMID())
+                            for (const playerObj of allPlayers) {
+                                const charObj = allChars.find(x => x.get("controlledby").includes(playerObj.id))
+                                if (VAL({charObj})) {
+                                    const quad = _.findKey(Char.REGISTRY, v => v.id === charObj.id)
+                                    if (VAL({string: quad})) {
+                                        Char.REGISTRY[quad].playerID = playerObj.id
+                                        Char.REGISTRY[quad].playerName = playerObj.get("_displayname")
+                                    }                                    
+                                    D.Alert(`Registering <b>${playerObj.get("_displayname")}</b> with <b>${charObj.get("name")}</b> at <b>${quad}</b>`, "!char reg players")
+                                }
+                            }
+                            break
+                        }
                         case "char": {
                             const [shortName, initial, quadrant] = args
                             if (VAL({selection: [msg], string: [shortName, initial, quadrant]}, "!char reg char", true))
@@ -245,7 +261,7 @@ const Char = (() => {
                                 D.Chat("Storyteller", C.CHATHTML.Block([
                                     C.CHATHTML.Header(D.Capitalize(traitName, true)),
                                     C.CHATHTML.Body(returnLines.join("<br>"), {color: C.COLORS.white, fontWeight: "normal", fontFamily: "Voltaire", fontSize: "12px", textAlign: "left"})
-                                ].join("")), null, D.RandomString(10))
+                                ].join("")), null, D.RandomString(3))
                             } else {
                                 promptTraitSelect(charObjs.map(x => x.id).join(","), null, "!char @@CHARIDS@@ get stat @@TRAITNAME@@")
                             }
@@ -289,9 +305,10 @@ const Char = (() => {
                         }
                         case "stat": case "stats": case "attr": case "attrs": {
                             const [charObj] = charObjs
-                            if (VAL({charObj}, "!char set stat"))
+                            if (VAL({charObj}, "!char set stat")) {
+                                D.Alert(D.JS(Listener.ParseParams(args, "|")))
                                 D.SetStats(charObj.id, Listener.ParseParams(args, "|"))
-                            else
+                            } else
                                 D.Alert("Select a character or provide a character reference first!", "!char set stat")
                             break
                         }
@@ -601,11 +618,9 @@ const Char = (() => {
 
     // #region SETTERS: Moving Tokens, Toggling Characters
         sendCharsHome = () => {
-            const charObjs = D.GetChars("sandbox"),
-                charTokens = findObjs({_pageid: D.PAGEID, _type: "graphic", _subtype: "token"}).filter(x => x.get("layer") !== "walls" && _.any(charObjs, xx => xx.id === x.get("represents"))),
-                pcTokens = charTokens.filter(x => VAL({pc: x.get("represents")})),
-                npcTokens = charTokens.filter(x => VAL({npc: x.get("represents")}))
-            // D.Alert(`PCs: ${D.JS(pcTokens.map(x => getObj("character", x.get("represents")).get("name")))}<br><br>NPCs: ${D.JS(npcTokens.map(x => getObj("character", x.get("represents")).get("name")))}`)
+            const charTokens = _.compact(Media.GetTokens("sandbox")),
+                pcTokens = _.compact(Media.GetTokens("registered")),
+                npcTokens = charTokens.filter(x => !pcTokens.map(xx => xx.id).includes(x.id))
             
             STATE.REF.tokenRecord = charTokens && charTokens.map(x => ({id: x.id, left: x.get("left"), top: x.get("top")}))
             for (const token of pcTokens) {
@@ -701,7 +716,7 @@ const Char = (() => {
                         {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.crimson}
                     )).join("")
                 ))
-            D.Chat("Storyteller", C.MENUHTML.Block(chatLines.join("")), null, D.RandomString(10))
+            D.Chat("Storyteller", C.MENUHTML.Block(chatLines.join("")), null, D.RandomString(3))
         },
         promptActionMenu = (charsRef) => {
             const chatLines = [],

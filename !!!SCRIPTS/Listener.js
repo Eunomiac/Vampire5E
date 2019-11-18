@@ -99,9 +99,7 @@ const Listener = (() => {
                 "!anim": {script: Media, gmOnly: true, singleCall: false},
                 "!sound": {script: Media, gmOnly: true, singleCall: false},
                 "!mvc": {script: Player, gmOnly: false, singleCall: false},
-                "!sense": {script: Player, gmOnly: false, singleCall: false},
-                "!awe": {script: Player, gmOnly: false, singleCall: false},
-                "!hide": {script: Player, gmOnly: false, singleCall: false},
+                "!token": {script: Player, gmOnly: false, singleCall: false},
                 "!roll": {script: Roller, gmOnly: false, singleCall: true},
                 "!sess": {script: Session, gmOnly: true, singleCall: true},
                 "!test": {script: Tester, gmOnly: true, singleCall: true},
@@ -126,12 +124,14 @@ const Listener = (() => {
             type = D.IsIn(type, ["character", "graphic", "text"])
             return _.uniq(_.flatten(_.compact([...objects[type] || [], ...objects.selected && objects.selected[type] || []])))
         },
-        parseParams = (args, delim = " ") => _.object(
-            (VAL({array: args}) ? args.join(" ") : args).
-                split(new RegExp(`,?${delim}+`, "gu")).
-                filter(x => x.includes(":")).
-                map(x => x.trim().split(":").map(xx => VAL({number: xx}) ? D.Int(xx) : xx))
-        ),
+        parseParams = (args, delim = " ") => {
+            return _.object(
+                (VAL({array: args}) ? args.join(" ") : args).
+                    split(new RegExp(`,?${delim.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}+`, "gu")).
+                    filter(x => x.includes(":")).
+                    map(x => x.trim().split(":").map(xx => VAL({number: xx}) ? D.Int(xx) : xx))
+            )
+        },
         parseArg = {
             character: (arg, isFuzzy = false) => {
                 DB(`Seeking CHARACTER for arg ${D.JSL(arg)}`, "parseArg")

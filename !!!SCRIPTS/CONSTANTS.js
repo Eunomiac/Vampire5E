@@ -80,7 +80,8 @@ const C = (() => {
             palegreen: "rgb(175, 255, 175)",
             paleblue: "rgb(175, 175, 255)",
             palered: "rgb(255, 175, 175)",
-            palepurple: "rgb(255, 175, 255)"
+            palepurple: "rgb(255, 175, 255)",
+            brightbrightgrey: "rgb(200, 200, 200)"
         },
     // #endregion
 
@@ -198,7 +199,7 @@ const C = (() => {
                 width: auto;
                 line-height: 23px;
                 padding: 0px 5px;
-                margin: -30px 0px 0px -42px;
+                margin: -25px 0px 0px -42px;
                 font-family: 'copperplate gothic';
                 font-variant: small-caps;
                 font-size: 16px;
@@ -231,7 +232,7 @@ const C = (() => {
                     bgImage: options.bgImage || BGIMAGES.blackMarble,
                     borderColor: options.borderColor || options.color || COLORS.crimson,
                     borderStyle: options.borderStyle || "outset",
-                    margin: options.margin || "-30px 0px 0px -42px",
+                    margin: options.margin || "-25px 0px 0px -42px",
                     width: options.width || "267px"
                 }
                 return D.JSH(`<div style="
@@ -423,7 +424,7 @@ const C = (() => {
                     bgImage: options.bgImage || BGIMAGES.blackMarble,
                     borderColor: options.borderColor || options.color || COLORS.crimson,
                     borderStyle: options.borderStyle || "outset",
-                    margin: options.margin || "-30px 0px 0px -42px",
+                    margin: options.margin || "-25px 0px 0px -42px",
                     width: options.width || "267px"
                 }
                 return D.JSH(`<div style="
@@ -462,7 +463,7 @@ const C = (() => {
                     color: options.color || COLORS.black,
                     bgColor: options.bgColor || COLORS.brightred,
                     fontFamily: options.fontFamily || "Voltaire",
-                    margin: options.margin || "0px",
+                    margin: options.margin || "0px 0px 5px 0px",
                     fontSize: options.fontSize || "16px",
                     borderWidth: options.borderWidth || "1px 0px 1px 0px",
                     borderStyle: options.borderStyle || "solid none solid none",
@@ -573,6 +574,7 @@ const C = (() => {
                                               width: "22%",
                                               fontFamily: "Voltaire",
                                               margin: "0px 3% 0px 0px",
+                                              padding: "0px 0px 0px 0px",
                                               fontSize: "10px",
                                               bgColor: COLORS.brightred,
                                               color: COLORS.white,
@@ -580,13 +582,14 @@ const C = (() => {
                                               fontWeight: "normal",
                                               textShadow: "none",
                                               buttonHeight: "8px",
-                                              buttonWidth: "83%"}, options)
+                                              buttonWidth: "83%",
+                                              buttonPadding: "5%"}, options)
                 return D.JSH(`<span style="   
                     height: ${params.height};
                     width: ${params.width};                 
                     display: inline-block;
                     margin: ${params.margin};
-                    padding: 0px;
+                    padding: ${params.padding};
                     font-size: 0px;
                     overflow: hidden;
                 "><a style="
@@ -602,7 +605,7 @@ const C = (() => {
                     font-family: ${params.fontFamily};
                     text-transform: uppercase;
                     text-align: center;
-                    padding: 5%;
+                    padding: ${params.buttonPadding};
                     font-weight: ${params.fontWeight};
                     text-shadow: ${params.textShadow};
                 " href="${command}">${name}</a></span>`)
@@ -1331,6 +1334,15 @@ const C = (() => {
                 soundScape: ["CityTraffic"],
                 outside: true
             },
+            CityStreets: {
+                fullName: "City Streets",
+                resonance: ["c", "m"],
+                huntDiff: 6,
+                homestead: [2, 2, 2, 4],
+                rollEffects: [],
+                soundScape: ["CityTraffic"],
+                outside: true
+            },
             Corktown: {
                 fullName: "Corktown",
                 resonance: ["c", "p"],
@@ -1616,6 +1628,13 @@ const C = (() => {
                 soundScape: ["CityPark"],
                 outside: true
             },
+            ChristiePitsPark: {
+                fullName: "Christie Pits Park",
+                resonance: ["m", null],
+                rollEffects: [],
+                soundScape: ["CityPark"],
+                outside: true
+            },
             CityApt1: {
                 fullName: "City Apartment",
                 resonance: ["c", null],
@@ -1896,6 +1915,41 @@ const C = (() => {
                 soundScape: ["SoftIndoor"],
                 outside: false
             },
+            VacantLot: {
+                fullName: "Vacant Lot",
+                resonance: ["i", null],
+                rollEffects: [],
+                soundScape: ["UrbanDark"],
+                outside: true
+            },
+            Vehicle2: {
+                fullName: "Vehicle",
+                resonance: [null, null],
+                rollEffects: [],
+                soundScape: ["CityTraffic"],
+                outside: true
+            },
+            Vehicle4: {
+                fullName: "Vehicle",
+                resonance: [null, null],
+                rollEffects: [],
+                soundScape: ["CityTraffic"],
+                outside: true
+            },
+            Vehicle5: {
+                fullName: "Vehicle",
+                resonance: [null, null],
+                rollEffects: [],
+                soundScape: ["CityTraffic"],
+                outside: true
+            },
+            Vehicle7: {
+                fullName: "Vehicle",
+                resonance: [null, null],
+                rollEffects: [],
+                soundScape: ["CityTraffic"],
+                outside: true
+            },
             WalkingPath: {
                 fullName: "Walking Path",
                 resonance: ["q", null],
@@ -1954,7 +2008,7 @@ const C = (() => {
             }
         },
     // #endregion
-
+// Rosie, Yusef,
     // #region MVC: Minimally-Viable Character Design
         MVCVALS = [
             [

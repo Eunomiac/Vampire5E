@@ -551,15 +551,17 @@ const D = (() => {
             sendChatMessage("Storyteller", msg, title)
         },
         promptGM = (menuHTML, replyFunc) => {
-            if (VAL({string: menuHTML, func: replyFunc}, "promptGM")) {
-                if (TimeTracker.IsClockRunning) {
-                    DB(`Time Running: Stopping Clock at ${D.JSL(TimeTracker.CurrentDate)}`, "promptGM")
-                    STATE.REF.PROMPTCLOCK = true
-                    TimeTracker.StopClock()
+            if (VAL({string: menuHTML}, "promptGM")) {
+                if (VAL({func: replyFunc})) {
+                    if (TimeTracker.IsClockRunning) {
+                        DB(`Time Running: Stopping Clock at ${D.JSL(TimeTracker.CurrentDate)}`, "promptGM")
+                        STATE.REF.PROMPTCLOCK = true
+                        TimeTracker.StopClock()
+                    }
+                    Roller.Lock(true)
+                    PROMPTFUNC = replyFunc
                 }
-                Roller.Lock(true)
                 sendChatMessage(getGMID(), menuHTML)
-                PROMPTFUNC = replyFunc
             }
         },
         receivePrompt = replyString => {
@@ -572,6 +574,70 @@ const D = (() => {
                 }
                 Roller.Lock(false)
             }
+        },
+        commandMenu = (menuData = {}, replyFunc = null) => {
+            /* MENU DATA:
+                {
+                    title: <string>
+                    rows: [
+                        Each element represents a full-width horizontal <div> block, contained with "block".
+                        Elements should be of the form:
+                            {
+                                type: <string: "Title", "Header", "Body", "ButtonLine", "ButtonSubheader">
+                                contents: <
+                                    for TITLE, HEADLINE, TEXT: <string>
+                                    for BUTTONS: <array: each element represents a line of buttons, of form:
+                                                    for BUTTONS: <list: {name, command, [styles]}>
+                                                    for SPACERS: <number: percentage of width, or 0 for equal spacing > 
+                                [buttonStyles]: <list of styles to apply to ALL of the buttons in a ButtonLine
+                                [styles]: <list of styles for the div, to override the defaults, where keys are style tags and values are the settings>
+                            } 
+                    ]
+                    [blockStyles:] <override C.CHATHTML.Block 'options' parameter.
+                }
+                */
+            const htmlRows = [],
+                customStyles = {
+                    Body: {
+                        color: C.COLORS.brightbrightgrey,
+                        lineHeight: "1.25em",
+                        fontFamily: "goodfish",
+                        fontSize: "1em",
+                        margin: "7px 0px 7px 0px"
+                    },
+                    ButtonSubheader: {
+                        width: "100%",
+                        textAlign: "center",
+                        lineHeight: "25px",
+                        fontSize: "12px"
+                    },
+                    Button: {
+                        margin: "0px 1% 0px 0px",
+                        lineHeight: "10px",
+                        buttonHeight: "9px",
+                        fontFamily: "Arial Narrow"
+                    }
+                }
+            for (const rowData of menuData.rows)
+                if (["Title", "Header", "Body", "ButtonSubheader"].includes(rowData.type)) {
+                    htmlRows.push(C.MENUHTML[rowData.type](rowData.contents, Object.assign({}, customStyles[rowData.type] || {}, rowData.styles || {})))
+                } else if (rowData.type === "ButtonLine") {
+                    const buttonsCode = [],
+                        strictSpacing = rowData.contents.filter(x => VAL({number: x})).reduce((tot, x) => tot + x),
+                        entityWidth = (100 - strictSpacing) / rowData.contents.filter(x => VAL({list: x}) || VAL({number: x}) && x === 0).length - 1
+                    rowData.contents = rowData.contents.map(x => VAL({list: x}) && Object.assign(x, {styles: Object.assign({}, {width: `${entityWidth}%`}, x.styles)}) ||
+                                                                 VAL({number: x}) && x === 0 && entityWidth ||
+                                                                 VAL({number: x}) && x)               
+                    for (const entity of rowData.contents)
+                        if (VAL({number: entity}))
+                            buttonsCode.push(C.MENUHTML.ButtonSpacer(`${D.Int(entity)}%`))
+                        else
+                            buttonsCode.push(C.MENUHTML.Button(entity.name, entity.command, Object.assign({width: `${entityWidth}%`}, customStyles.Button, rowData.buttonStyles || {}, entity.styles || {})))
+                    htmlRows.push(C.MENUHTML.ButtonLine(buttonsCode, rowData.styles || {}))
+                }
+            if (menuData.title)
+                htmlRows.unshift(C.MENUHTML.Title(menuData.title))
+            promptGM(C.MENUHTML.Block(htmlRows.join(""), menuData.blockParams || {}), replyFunc)
         },
     // #endregion
 
@@ -1314,26 +1380,18 @@ const D = (() => {
         getName = (value, isShort = false) => {
             // Returns the NAME of the Graphic, Character or Player (DISPLAYNAME) given: object or ID.
             const obj = VAL({object: value}) && value ||
-                VAL({char: value}) && getChar(value) ||
-                VAL({player: value}) && getPlayer(value) ||
-                VAL({string: value}) && getObj("graphic", value)
-            let name = VAL({player: obj}) && obj.get("_displayname") ||
-                VAL({object: obj}, "getName") && obj.get("name")
-
-            if (VAL({string: name}, "getName")) {
+                    VAL({char: value}) && getChar(value) ||
+                    VAL({player: value}) && getPlayer(value) ||
+                    VAL({string: value}) && getObj("graphic", value),
+                name = VAL({player: obj}) && obj.get("_displayname") ||
+                    VAL({object: obj}, "getName") && obj.get("name")
+            if (VAL({object: obj, string: name}, "getName")) {
                 if (isShort) {
-                    let shortName = name				// SHORTENING NAME:
-                    if (_.find(_.values(Char.REGISTRY), v => v.name === shortName)) { // If this is a registered character, return its short name.
-                        return _.find(_.values(Char.REGISTRY), v => v.name === shortName).shortName
-                    } else if (shortName.includes("\"")) {		// If name contains quotes, remove everything except the quoted portion of the name.
-                        shortName = name.replace(/.*?["]/iu, "").replace(/["].*/iu, "")
-                    } else {					// Otherwise, remove the first word.				
-                        shortName = name.replace(/.*\s/iu, "")
-                        // Now, check for any duplicates, with "isCheckingShort" set to true to avoid infinite recursion; if found, return full name.
-                        if (STATE.REF.shortNames.filter(x => x === shortName).length > 1)
-                            shortName = name
-                    }
-                    name = shortName
+                    if (_.find(_.values(Char.REGISTRY), v => v.name === name)) // If this is a registered character, return its short name.
+                        return _.find(_.values(Char.REGISTRY), v => v.name === name).shortName
+                    if (name.includes("\""))	// If name contains quotes, remove everything except the quoted portion of the name.
+                        return name.replace(/.*?["]/iu, "").replace(/["].*/iu, "")
+                    return name.split(/\s+/gu).pop().replace(/_/gu, " ") // Otherwise, return the last word in the name only, replacing underscores with spaces.                    
                 }
                 return name.replace(/_/gu, " ")
             }
@@ -1349,8 +1407,8 @@ const D = (() => {
                     _.each(getSelected(charRef, "character"), charObj => { charObjs.add(charObj) })
                     dbstring += `REF: Msg.  RETURNING: ${jStr(...charObjs)}`
                     if (charObjs.size > 0)
-                        return [...charObjs]
-                    return VAL({string: funcName}) && THROW("Must Select a Token!", `${D.JSL(funcName)} > getChars`)
+                        return [...charObjs || []]
+                    return VAL({string: funcName}) && THROW("Must Select a Token!", `${D.JSL(funcName)} > getChars`) || []
                 } else if (VAL({array: charRef})) {
                     searchParams = charRef
                     dbstring += `REF: [${jStr(...searchParams)}] `
@@ -1358,10 +1416,10 @@ const D = (() => {
                     searchParams.push(charRef)
                     dbstring += `REF: ${capitalize(jStr(typeof charRef), true)} `
                 } else {
-                    return VAL({string: funcName}) && THROW(`Invalid character reference: ${jStr(charRef)}`, `${D.JSL(funcName)} > getChars`)
+                    return VAL({string: funcName}) && THROW(`Invalid character reference: ${jStr(charRef)}`, `${D.JSL(funcName)} > getChars`) || []
                 }
             } catch (errObj) {
-                return VAL({string: funcName}) && THROW("", `${D.JSL(funcName)} > getChars`, errObj)
+                return VAL({string: funcName}) && THROW("", `${D.JSL(funcName)} > getChars`, errObj) || []
             }
             _.each(searchParams, v => {
                 if (searchParams.length > 1)
@@ -1377,6 +1435,14 @@ const D = (() => {
                     // If parameter is a CHARACTER ID:
                 } else if (VAL({string: v}) && getObj("character", v)) {
                     charObjs.add(getObj("character", v))
+                    dbstring += " ... CharID: "
+                    // If parameter is a (NON-GM) PLAYER OBJECT:
+                } else if (VAL({object: v}) && v.id !== getGMID() && _.findKey(Char.REGISTRY, vv => vv.playerID === v.id)) {
+                    charObjs.add(getObj("character", Char.REGISTRY[_.findKey(Char.REGISTRY, vv => vv.playerID === v)].id))
+                    dbstring += " ... CharID: "
+                    // If parameters is a REGISTERED PLAYER ID:
+                } else if (VAL({string: v}) && v !== getGMID() && _.findKey(Char.REGISTRY, vv => vv.playerID === v)) {
+                    charObjs.add(getObj("character", Char.REGISTRY[_.findKey(Char.REGISTRY, vv => vv.playerID === v)].id))
                     dbstring += " ... CharID: "
                     // If parameters is a TOKEN OBJECT:
                 } else if (VAL({token: v}) && getObj("character", v.get("represents"))) {
@@ -1420,8 +1486,8 @@ const D = (() => {
             if (!STATE.REF.BLACKLIST.includes("getChars"))
                 DB(dbstring, "getChars")
             if (charObjs.size === 0)
-                return VAL({string: funcName}) && THROW(`No Characters Found using Search Parameters:<br>${jStr(searchParams)} in Character Reference<br>${jStr(charRef)}`, `${D.JSL(funcName)} > getChars`)
-            return _.reject([...charObjs], v => v.get("name") === "Jesse, Good Lad That He Is")
+                return VAL({string: funcName}) && THROW(`No Characters Found using Search Parameters:<br>${jStr(searchParams)} in Character Reference<br>${jStr(charRef)}`, `${D.JSL(funcName)} > getChars`) || []
+            return _.compact([...charObjs || []])
         }, getChar = (charRef, funcName = false) => Char.SelectedChar || (getChars(charRef, funcName) || [false])[0],
         getCharData = (charRef) => {
             const charObj = getChar(charRef)
@@ -1693,18 +1759,15 @@ const D = (() => {
                     }
                 }                
                 if (VAL({char: playerRef})) {
-                    const playerCharData = _.values(Char.REGISTRY)
-                    let charObj = getChar(playerRef, true)                    
-                    for (const charData of playerCharData)
+                    let charObj = getChar(playerRef, true)
+                    for (const charData of _.values(Char.REGISTRY))
                         if (charData.isNPC === charObj.id) {
                             charObj = getChar(charData.id)
                             break
                         }
-                    playerID = _.filter(charObj.get("controlledby").split(","), v => v !== "all")
+                    [playerID] = charObj.get("controlledby").split(",").filter(x => !["all", "", getGMID()].includes(x))
                     DB(`PlayerRef identified as Character Object: ${D.JSL(charObj.get("name"))}... "controlledby": ${D.JSL(playerID)}`, "getPlayerID")
-                    if (playerID.length > 1 && VAL({string: funcName}))
-                        THROW(`WARNING: Finding MULTIPLE player IDs connected to character reference '${jStr(playerRef)}': ${jStr(playerID)}`, `${D.JSL(funcName)} > getPlayerID`)
-                    return playerID[0]
+                    return playerID || getGMID()
                 }
                 return VAL({string: funcName}) && THROW(`Unable to find player connected to reference '${jStr(playerRef)}'`, `${D.JSL(funcName)} > getPlayerID`)
             } catch (errObj) {
@@ -1927,6 +1990,7 @@ const D = (() => {
                 sendToGM(msg, title)
         },
         Prompt: promptGM,
+        CommandMenu: commandMenu,
 
         RemoveFirst: removeFirst,
         KeyMapObj: kvpMap,
