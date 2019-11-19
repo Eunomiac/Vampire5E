@@ -288,8 +288,8 @@ const D = (() => {
 
     // #region PARSING & STRING MANIPULATION: Converting data types to strings, formatting strings, converting strings into objects.
         jStr = (data, isVerbose = false) => {
-        /* Parses a value of any type via JSON.stringify, and then further styles it for display either
-          in Roll20 chat, in the API console log, or both. */
+            /* Parses a value of any type via JSON.stringify, and then further styles it for display either
+                in Roll20 chat, in the API console log, or both. */
             try {
                 const typeColor = type => {
                         switch (pLowerCase(type)) {
@@ -316,7 +316,6 @@ const D = (() => {
                                     name = textString
                             }
                             returnVal = `@@NAMESTART${typeColor(type)}@@${name}@@NAMEEND@@`
-                            // returnVal = `<b>&lt;OBJ: ${v.get && v.get("name") || v.name || v.get && v.get("_type") || v._type}&gt;</b>`
                         } else if (_.isUndefined(v)) {
                             returnVal = "<b>&lt;UNDEFINED&gt;</b>"
                         } else if (_.isNull(v)) {
@@ -325,52 +324,71 @@ const D = (() => {
                             returnVal = "<b>&lt;NaN&gt;</b>"
                         } else if (_.isFunction(v)) {
                             returnVal = "<b>&lt;FUNCTION&gt;</b>"
-                        } else if (_.isArray(v)) {
-                            if (v.join("").length < 100)
-                                returnVal = `[ ${v.map(x => replacer(k, x)).join(", ")} ]`.replace(/\[\s+\]/gu, "[]")
-                            else
-                                returnVal = `[ ${v.map(x => replacer(k, x))} ]`
-                        } else if (_.isObject(v) && JSON.stringify(v).length < 100) {
-                            const listDelver = (list) => {
-                                const returns = []
-                                for (const key of _.keys(list))
-                                    returns.push(`${key}: ${replacer(key, list[key])}`.replace(/\s\s*/gu, " "))
-                                // returns.push(`${key}: ${_.isObject(list[key]) || _.isArray(list[key]) ? listDelver(list[key]) : replacer(key, list[key])}`)
-                                    // (_.isString(list[key]) && `"${list[key]}"` : list[key].toString()}"`}}`)
-                                return `{ ${returns.join(", ")} }`.replace(/\{\s+\}/gu, "{}")
+                        } else if (_.isArray(v)) {							
+                            if (v.map(x => replacer(k, x)).join(",&nbsp;").length < 150) {
+                                returnVal = `<b>[</b> ${v.map(x => replacer(k, x)).join(",&nbsp;")} <b>]</b>`.replace(/\[\s+\]/gu, "<b>[]</b>")
+                            } else {
+                                const arrayDelver = (array) => {
+                                    const returns = []
+                                    for (const val of array)
+                                        returns.push(`<div style="display: block; margin-left: 7px;">${replacer(k, val)},</div>`)
+                                    return `<b>[</b><div style="display: block; margin-left: 7px;">${returns.join("").slice(0, -7)}</div></div><b>]</b>`
+                                }
+                                returnVal = arrayDelver(v)
                             }
-                            returnVal = listDelver(v)
+                        } else if (_.isObject(v)) {
+                            const stringifyTest = `<b>{</b> ${Object.values(kvpMap(v, null, (val, key) => `${key}: ${replacer(k, val)}`)).join(", ")} <b>}</b>`.replace(/\{\s+\}/gu, "<b>{}</b>")
+                            if (stringifyTest.length < 150) {
+                                returnVal = stringifyTest
+                            } else {
+                                const listDelver = (list) => {
+                                    const returns = []
+                                    for (const key of _.keys(list))
+                                        returns.push(`<div style="display: block; margin-left: 7px;">${key}: ${replacer(key, list[key])},</div>`)
+                                    return `<b>{</b><div style="display: block; margin-left: 7px;">${returns.join("").slice(0, -7)}</div></div><b>}</b>`
+                                }
+                                returnVal = listDelver(v)
+                            }
                         } else if (_.isNumber(v)) {
                             returnVal = v.toString()
                         } else if (_.isString(v)) {
-                            returnVal = `&quot;${v}&quot;`
+                            returnVal = `ϙQϙ${v}ϙQϙ`
                         }
-                        if (_.isString(returnVal) && !returnVal.includes("<div") && !returnVal.includes("<span"))
-                            returnVal = returnVal.replace(/"/gu, "") // Removes all double-quotes from non-HTML coded strings.
                         if (_.isString(returnVal))
                             returnVal = `${returnVal}`.
-                                replace(/[\t\\]/gu, ""). // Strips tabs and escape slashes.
+                                replace(/[\n\r]/gu, "ϙNϙ").
+                                replace(/<(.*?)>/gu, x => x.replace(/"/gu, "ϙHϙ").replace(/ϙNϙ/gu, "").replace(/\s\s+/gu, " ")). // Hides HTML-code quotes so they aren't replaced AND strips line breaks from inside HTML tags.
+                                replace(/"/gu, ""). // Removes all double-quotes.
+                                // replace(/[\t\n\r]/gu, "").
+                                // replace(/\\/gu, ""). // Strips tabs and escape slashes.
                                 replace(/\n/gu, "<br/>"). // Converts line breaks into HTML breaks.
-                                replace(/(\s)\s+/gu, "$1"). // Removes excess whitespace.            
-                                replace(/(^"*|"*$)/gu, "") // Removes quotes from beginning and end of string.  
-                        return returnVal 
-                    },
+                                replace(/(\s)\s+/gu, "$1"). // Removes excess whitespace.
+                                replace(/\\t/gu, "").
+                                replace(/\\n/gu, "")
+                        return returnVal
+                    }
 
-                    finalString = JSON.stringify(data, replacer, 4).
-                        replace(/"\{/gu, "{").replace(/\}"/gu, "}").
-                        replace(/(\s*?)"([^"]*?)"\s*?:/gu, "$1$2:"). // Removes quotes from keys of a list or object.
-                        replace(/ (?= )/gu, "&nbsp;"). // Replaces any length of whitespace with one '&nbsp;'
-                        replace(/@T@/gu, "&nbsp;&nbsp;&nbsp;&nbsp;"). // Converts custom '@T@' tab character to four spaces
-                        replace(/"\[/gu, "[").replace(/\]"/gu, "]"). // Removes quotes from around array strings.
-                        replace(/\\"/gu, "\""). // Escapes quote marks                
-                        replace(/(^"*|"*$)/gu, ""). // Removes quote marks from the beginning and end of the string  
-                        replace(/>&quot;/gu, ">").replace(/&quot;</gu, "<"). // Removes quotes from within entire HTML tags.
-                        replace(/&amp;quot;/gu, "\"").
-                        replace(/&quot;\/w/gu, "/w"). // Fix whisper.
-                        replace(/@@NAMESTART(.*?)@@/gu, "<span style=\"background-color: $1;\"><b>&lt;</b>").
-                        replace(/@@NAMEEND@@/gu, "<b>&gt;</b></span>")
-
-                return finalString// .replace(/@B@/gu, "<b>").replace(/@b@/gu, "</b>") // Encodes bolding from replacer function.  
+                let finalString = JSON.stringify(data, replacer, 4).
+                    replace(/ (?= )/gu, "&nbsp;"). // Replaces any length of whitespace with one '&nbsp;'
+                    replace(/@T@/gu, "&nbsp;&nbsp;&nbsp;&nbsp;"). // Converts custom '@T@' tab character to four spaces
+                        // replace(/\\"/gu, "\""). // Escapes quote marks                
+                        // replace(/(^"*|"*$)/gu, ""). // Removes quote marks from the beginning and end of the string  
+                        // replace(/>&quot;/gu, ">").replace(/&quot;</gu, "<"). // Removes quotes from within entire HTML tags.
+                        // replace(/&amp;quot;/gu, "\"").
+                    replace(/ϙ[A-Z]ϙ\/w/gu, "/w"). // Fix whisper.
+                    replace(/@@NAMESTART(.*?)@@/gu, "<span style=\"background-color: $1;\"><b>&lt;</b>").
+                    replace(/@@NAMEEND@@/gu, "<b>&gt;</b></span>").
+                    replace(/ϙHϙ/gu, "\""). // Restores deliberate quotes to HTML code.
+                    replace(/ϙQϙ/gu, "&quot;"). // Restores quotes everywhere else
+                    replace(/ϙNϙ/gu, "\\n"). // Restores deliberate line breaks.
+                    replace(/$(\n|\s|\t|"|&quot;)*?/gu, ""). // Restores deliberate line breaks.
+                    replace(/(\n|\s|\t|"|&quot;)*?^/gu, ""). // Removes lines that are JUST white space and quotes.
+                    replace(/\n/gu, "<br>") // Replaces line breaks with <br>.
+                if (finalString.slice(0, 7) === "\"&quot;")
+                    finalString = finalString.slice(7)
+                if (finalString.slice(-7) === "&quot;\"")
+                    finalString = finalString.slice(0, -7)
+                return finalString
             } catch (errObj) {
                 return `ERROR: ${JSON.stringify(errObj)}`
             }
@@ -527,19 +545,41 @@ const D = (() => {
 
     // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
         formatTitle = (funcName, scriptName, prefix = "") => `[${prefix}${VAL({string: funcName}) || VAL({string: scriptName}) ? " " : ""}${VAL({string: scriptName}) ? `${scriptName.toUpperCase()}` : ""}${VAL({string: [scriptName, funcName]}, null, true) ? ": " : ""}${funcName || ""}]`,
-        formatLogLine = (msg, funcName, scriptName, prefix = "", isShortForm = false) => `${formatTitle(funcName, scriptName, prefix)} ${jStrL(msg, isShortForm, true)}`,
+        formatLogLine = (msg, funcName, scriptName, prefix = "") => `${formatTitle(funcName, scriptName, prefix)} ${formatMsgContents(msg, false)}`,
+        formatMsgContents = (msg, isHTMLOk = true) => {
+            if (typeof msg === "object" && !Array.isArray(msg))
+                if (isHTMLOk)
+                    msg = Object.values(kvpMap(msg, null, (v, k) => `<b>${jStr(k)}:</b> ${jStr(v)}`)).join("<br>")
+                else
+                    msg = Object.values(kvpMap(msg, null, (v, k) => `${jStrL(k)}: ${jStrL(v)}`)).join(" ")
+            else if (Array.isArray(msg) || typeof msg === "string")
+                if (isHTMLOk)
+                    msg = _.flatten([msg], true).map(x => jStr(x)).join("")
+                else
+                    msg = _.flatten([msg], true).map(x => jStrL(x)).join(" ")
+            else if (isHTMLOk)
+                msg = jStr(msg)
+            else
+                msg = jStrL(msg)
+
+            if (!isHTMLOk)
+                msg = msg.replace(/<[a-z/\s]*>/gu, " ").replace(/\s\s+/gu, " ")
+            
+            return msg
+        },
         sendChatMessage = (who, message = "", title, from = "") => {
             /* Whispers chat message to player given: display name OR player ID. 
                 If no Title, message is sent without formatting. */
             const player = getPlayer(who) || who,
-                html = title ? jStrH(C.CHATHTML.alertHeader(title) + C.CHATHTML.alertBody(jStr(message))) : message
-            if (who === "all" || player === "all" || !player)
+                html = title ? jStr(C.CHATHTML.MAINBLOCK(C.CHATHTML.alertHeader(title) + C.CHATHTML.alertBody(message))) : message
+
+            // sendChat(from, `/direct <pre>${JSON.stringify(html)}</pre>`)
+            if (who === "all" || player === "all" || !player) 
                 sendChat(from, html)
-            else if (Session.IsTesting)
-                sendChat(from, `/w Storyteller (TO ${player.get("_displayname")})<br>${html}`)
+            else if (Session.IsTesting && !playerIsGM(player.id)) 
+                sendChat(from, `/w Storyteller ${html}<div style="display: block; height: 10px; margin-bottom: -7px; position: relative; width: 230px; color: blue; z-index: 999; text-align: right; text-align-last: right; font-size: 10px; line-height: 10px;">(TO: ${player.get("_displayname")})</div>`)
             else
-                sendChat(from, `/w "${player.get("_displayname")}" ${html}`)
-                
+                sendChat(from, `/w "${player.get("_displayname")}" ${html}`)                
         },
         sendToGM = (msg, title = "[ALERT]", throttle = 0) => {
             if (STATE.REF.ALERTTHROTTLE.includes(title)) {
@@ -556,7 +596,7 @@ const D = (() => {
                     if (TimeTracker.IsClockRunning) {
                         DB(`Time Running: Stopping Clock at ${D.JSL(TimeTracker.CurrentDate)}`, "promptGM")
                         STATE.REF.PROMPTCLOCK = true
-                        TimeTracker.StopClock()
+                        TimeTracker.ToggleClock(false)
                     }
                     Roller.Lock(true)
                     PROMPTFUNC = replyFunc
@@ -569,7 +609,7 @@ const D = (() => {
                 PROMPTFUNC(replyString)
                 PROMPTFUNC = null
                 if (STATE.REF.PROMPTCLOCK) {
-                    TimeTracker.StartClock()
+                    TimeTracker.ToggleClock(true)
                     STATE.REF.PROMPTCLOCK = false
                 }
                 Roller.Lock(false)
@@ -1282,6 +1322,7 @@ const D = (() => {
         },
         getBlackList = () => sendToGM(`${jStr(STATE.REF.BLACKLIST)}`, "DEBUG BLACKLIST"),
         logDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
+            msg = formatMsgContents(msg, false)
             if (_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive) {                
                 if (funcName) {
                     STATE.REF.DEBUGLOG.push({
@@ -1298,13 +1339,13 @@ const D = (() => {
                 log(formatLogLine(msg, funcName, scriptName, prefix))
             }
         },
-        throwError = (msg, funcName, scriptName, errObj) => sendDebugAlert(`${msg}${errObj ? `${errObj.name}<br>${errObj.message}<br><br>${errObj.stack}` : ""}`, funcName, scriptName, "ERROR"),
+        throwError = (msg, funcName, scriptName, errObj) => sendDebugAlert(`${formatMsgContents(msg, false)}${errObj ? `${errObj.name}<br>${errObj.message}<br><br>${errObj.stack}` : ""}`, funcName, scriptName, "ERROR"),
         sendDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
             if (!Session.IsSessionActive || Session.IsTesting)
                 if (!STATE.REF.BLACKLIST.includes(funcName) && !STATE.REF.BLACKLIST.includes(scriptName)) {
                     logDebugAlert(msg, funcName, scriptName, prefix)
                     if (funcName && STATE.REF.WATCHLIST.includes(funcName) || scriptName && STATE.REF.WATCHLIST.includes(scriptName) || !funcName && !scriptName)
-                        sendToGM(msg, formatTitle(funcName, scriptName, prefix))
+                        sendToGM(formatMsgContents(msg), formatTitle(funcName, scriptName, prefix))
                 }
         },
         getDebugRecord = (title = "Debug Log", isClearing = false) => {

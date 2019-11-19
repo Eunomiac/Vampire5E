@@ -52,15 +52,12 @@ const Roller = (() => {
 
     // #region EVENT HANDLERS: (ONCHATCALL)
         onChatCall = (call, args, objects, msg) => {
-            let rollType, charName, charObj,
-                [params, charObjs] = [ [], Listener.GetObjects(objects, "character") ]
-            if (!charObjs.length)
-                charObjs = D.GetChars("registered")
             switch (call) {
-                case "dice": {
-                    [charObj] = charObjs
-                    if (VAL({charObj, array: args}, "!roll dice"))
-                        switch(D.LCase(call = args.shift())) {
+                case "dice": {                     
+                    const [charObj] = Listener.GetObjects(objects, "character")
+                    let rollType
+                    if (VAL({array: args}, "!roll dice"))
+                        switch (D.LCase(call = args.shift())) {
                             case "frenzyinit": {	// !roll dice project @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
                                 lockRoller(true)
                                 STATE.REF.frenzyRoll = `${args.join(" ").split("|")[0]}|`
@@ -101,64 +98,43 @@ const Roller = (() => {
                             case "remorse": { rollType = rollType || "remorse" }
                             /* falls through */
                             case "project": { rollType = rollType || "project" /* all continue below */
-                                params = args.join(" ").split("|").map(x => x.trim())
-                                if (STATE.REF.rollNextAs) {
-                                    params.shift()
-                                    charObj = D.GetChar(STATE.REF.rollNextAs)
-                                    charName = D.GetName(charObj)
-                                    delete STATE.REF.rollNextAs
-                                } else {
-                                    charName = params.shift()
-                                    charObj = D.GetChar(charName)
+                                const params = args.join(" ").split("|").map(x => x.trim()),
+                                    [rollCharObj] = getRollChars(D.GetChars(STATE.REF.rollNextAs || params[0]))
+                                DB(`Received Roll: ${D.JSL(call)} ${params.join("|")}<br>... PARAMS: [${D.JSL(params.join(", "))}]<br>... CHAROBJ: ${D.JSL(rollCharObj)}`, "onChatCall")
+                                params.shift()
+                                if (VAL({charobj: rollCharObj}, "onChatCall")) {
+                                    const rollFlags = ["check", "rouse", "rouse2"].includes(rollType) ||
+                                                        VAL({pc: rollCharObj}) && (!playerIsGM(msg.playerid) || rollType === "frenzy") ? {} : _.clone(STATE.REF.nextRollFlags)
+                                    rollFlags.isNPCRoll = STATE.REF.isNextRollNPC && playerIsGM(msg.playerid)
+                                    rollFlags.isDiscRoll = call === "disc"
+                                    rollFlags.isOblivionRoll = call.includes("obv") || STATE.REF.oblivionRouse && (rollFlags.isNPCRoll || playerIsGM(msg.playerid) || VAL({npc: rollCharObj})) 
+                                    DB(`Fixed Char: ${D.JSL(rollCharObj)}`, "handleInput")
+                                    if (isLocked && !rollFlags.isNPCRoll)
+                                        break
+                                    makeNewRoll(rollCharObj, rollType, params, rollFlags)
+                                    delete STATE.REF.rollNextAs  
+                                    delete STATE.REF.frenzyRoll
+                                    delete STATE.REF.oblivionRouse
+                                    delete STATE.REF.isNextRollNPC
                                 }
-                                let rollFlags = _.clone(STATE.REF.nextRollFlags)
-                                DB(`Received Roll: ${D.JSL(call)} ${charName}|${params.join("|")}<br>... PARAMS: [${D.JSL(params.join(", "))}]<br>... CHAROBJ: ${D.JSL(charObj)}`, "onChatCall")
-                                if (!VAL({charobj: charObj}, "onChatCall"))
-                                    return
-                                if (["check", "rouse", "rouse2"].includes(rollType) || rollType === "frenzy" && STATE.REF.frenzyRoll && D.IsIn(STATE.REF.frenzyRoll.slice("|")[0], _.map(D.GetChars("registered"), v => v.get("name")), true))
-                                    rollFlags = {
-                                        isHidingName: false,
-                                        isHidingTraits: false,
-                                        isHidingTraitVals: false,
-                                        isHidingDicePool: false,
-                                        isHidingDifficulty: false,
-                                        isHidingResult: false,
-                                        isHidingOutcome: false
-                                    };
-                                [charObj] = getRollChars([charObj])
-                                DB(`Fixed Char: ${D.JSL(charObj)}`, "handleInput")
-                                if (STATE.REF.isNextRollNPC && playerIsGM(msg.playerid)) {
-                                    STATE.REF.isNextRollNPC = false
-                                    makeNewRoll(charObj, rollType, params, Object.assign(rollFlags, {isDiscRoll: call === "disc", isNPCRoll: true, isOblivionRoll: STATE.REF.oblivionRouse === true || call.includes("obv")}))
-                                    STATE.REF.oblivionRouse = false
-                                } else if (isLocked) {
-                                    break
-                                } else if (playerIsGM(msg.playerid) || VAL({npc: charObj})) {
-                                    makeNewRoll(charObj, rollType, params, Object.assign(rollFlags, {isDiscRoll: call === "disc", isNPCRoll: false, isOblivionRoll: STATE.REF.oblivionRouse === true || call.includes("obv")}))
-                                    STATE.REF.oblivionRouse = false             
-                                } else {
-                                    makeNewRoll(charObj, rollType, params, {isDiscRoll: call === "disc", isNPCRoll: false, isOblivionRoll: call.includes("obv")})
-                                }
-                                delete STATE.REF.frenzyRoll
                                 break
                             }
                             // no default
                         }
                     break
                 }
-                case "secret": { 
-                    rollType = "secret"
+                case "secret": {
+                    const charObjs = Listener.GetObjects(objects, "character")
                     if (!args.length) {
                         Char.PromptTraitSelect(charObjs.map(x => x.id).join(","), "!roll @@CHARIDS@@ secret selected")
                     } else {
-                        params = args[0] === "selected" && Char.SelectedTraits || args.join(" ").split("|").map(x => x.trim())
-                        charObjs = getRollChars(charObjs)
-                        makeSecretRoll(charObjs, params.join(","))
+                        const params = args[0] === "selected" && Char.SelectedTraits || args.join(" ").split("|").map(x => x.trim())
+                        makeSecretRoll(getRollChars(charObjs), params.join(","))
                     }
                     break
                 }
                 case "quick": {
-                    [charObj] = getRollChars([charObjs[0]])
+                    const [charObj] = getRollChars(Listener.GetObjects(objects, "character")[0])
                     if(VAL({charObj}, "!roll quick"))
                         switch (D.LCase(call = args.shift())) {
                             case "rouse": {
@@ -176,14 +152,15 @@ const Roller = (() => {
                     break
                 }
                 case "resonance": {
-                    displayResonance()
+                    const [charObj] = Listener.GetObjects(objects, "character")
+                    displayResonance(charObj)
                     break
                 }
                 case "set": {
                     if (!playerIsGM(msg.playerid)) break
                     switch(D.LCase(call = args.shift())) {
                         case "pc": {
-                            [charObj] = getRollChars([charObjs[0]])
+                            const [charObj] = getRollChars(Listener.GetObjects(objects, "character")[0])
                             if (VAL({charObj}, "!roll set pc")) {
                                 STATE.REF.rollNextAs = charObj.id
                                 D.Alert(`Rolling Next As ${D.GetName(charObj)}`, "!roll set pc")
@@ -371,7 +348,7 @@ const Roller = (() => {
                         case "get": {
                             switch (D.LCase(call = args.shift())) {
                                 case "char": {
-                                    [charObj] = getRollChars([charObjs[0]])
+                                    const [charObj] = getRollChars(Listener.GetObjects(objects, "character")[0])
                                     if (VAL({charObj}, "!roll effects get char")) {
                                         const rollEffects = _.compact((getAttrByName(charObj.id, "rolleffects") || "").split("|")),
                                             rollStrings = []
@@ -394,8 +371,8 @@ const Roller = (() => {
                                     break
                                 }
                                 default: {
-                                    charObjs = D.GetChars("all")
-                                    const returnStrings = ["<h3>GLOBAL EFFECTS:</h3><!br>"]
+                                    const charObjs = D.GetChars("all"),
+                                        returnStrings = ["<h3>GLOBAL EFFECTS:</h3><!br>"]
                                     for (let i = 0; i < _.keys(STATE.REF.rollEffects).length; i++)
                                         returnStrings.push(`${i + 1}: ${_.keys(STATE.REF.rollEffects)[i]}`)
                                     returnStrings.push("")              
@@ -418,7 +395,7 @@ const Roller = (() => {
                         case "add": {
                             switch (D.LCase(call = args.shift())) {
                                 case "char": {
-                                    charObjs = getRollChars(charObjs)
+                                    const charObjs = getRollChars(Listener.GetObjects(objects, "character")[0])
                                     if (VAL({charObj: charObjs}, "!roll effects add char", true)) 
                                         for (const char of charObjs)
                                             addCharRollEffects(char, _.compact(args.join(" ").split("|")))                      
@@ -429,7 +406,7 @@ const Roller = (() => {
                                     break
                                 }
                                 case "exclude": {
-                                    [charObj] = getRollChars([charObjs[0]])
+                                    const [charObj] = getRollChars(Listener.GetObjects(objects, "character")[0])
                                     if (VAL({charObj}, "!roll effects add exclude"))
                                         addGlobalExclusion(charObj, _.compact(args.join(" ").split("|")))
                                     break
@@ -441,7 +418,7 @@ const Roller = (() => {
                         case "del": {
                             switch (D.LCase(call = args.shift())) {
                                 case "char": {
-                                    [charObj] = getRollChars([charObjs[0]])
+                                    const [charObj] = getRollChars(Listener.GetObjects(objects, "character")[0])
                                     if (VAL({charObj}, "!roll effects del char"))
                                         delCharRollEffects(charObj, _.compact(args.join(" ").split("|")))
                                     break
@@ -451,7 +428,7 @@ const Roller = (() => {
                                     break
                                 }
                                 case "exclude": {
-                                    [charObj] = getRollChars([charObjs[0]])
+                                    const [charObj] = getRollChars(Listener.GetObjects(objects, "character")[0])
                                     if (VAL({charObj}, "!roll effects del exclude"))
                                         delGlobalExclusion(charObj, _.compact(args.join(" ").split("|")))
                                     break
@@ -462,25 +439,6 @@ const Roller = (() => {
                         }
                         // no default
                     }
-                    break
-                }
-                case "reset": {
-                    const foundImages = []
-                    for (const imgObj of findObjs({_type: "graphic"}))
-                        if (["RollerFrame_Left_1", "RollerFrame_TopMid_1", "RollerFrame_BottomMid_1", "RollerFrame_TopEnd_1", "RollerFrame_BottomEnd_1", "RollerDie_Main_1", "RollerDie_Big_1"].includes(imgObj.get("name"))) {
-                            if (foundImages.includes(imgObj.get("name")))
-                                if (Media.IsRegistered(imgObj.id))
-                                    Media.RemoveImg(imgObj.id)
-                                else
-                                    imgObj.remove()
-                            else if (Media.IsRegistered(imgObj.id))
-                                foundImages.push(imgObj.get("name"))
-                        } else if (imgObj.get("name").startsWith("RollerFrame_TopMid") || imgObj.get("name").startsWith("RollerFrame_BottomMid") || imgObj.get("name").startsWith("RollerDie")) {
-                            if (Media.IsRegistered(imgObj.id))
-                                Media.RemoveImg(imgObj)
-                            else
-                                imgObj.remove()
-                        }
                     break
                 }
                 // no default
@@ -1089,6 +1047,7 @@ const Roller = (() => {
 
     // #region Getting Information & Setting State Roll Record
         getRollChars = (charObjs) => {
+            DB({charObjs}, "getRollChars")
             const dbStrings = [`CharObjs: ${D.JS((charObjs || []).map(x => x.get("name")))}`],
                 playerCharObjs = charObjs.filter(x => VAL({pc: x})),
                 npcCharObjs = charObjs.filter(x => VAL({npc: x})),
@@ -1886,9 +1845,11 @@ const Roller = (() => {
         getCurrentRoll = (isNPCRoll) => (isNPCRoll ? STATE.REF.NPC : STATE.REF).rollRecord[(isNPCRoll ? STATE.REF.NPC : STATE.REF).rollIndex],
         setCurrentRoll = (rollIndex, isNPCRoll, isDisplayOnly = false) => {
             const rollRef = isNPCRoll ? STATE.REF.NPC : STATE.REF
-            rollRef.rollIndex = rollIndex
-            if (isDisplayOnly)
-                rollRef.rollRecord[rollIndex].rollData.notChangingStats = true
+            if (rollRef && rollRef.rollRecord && rollRef.rollRecord.length) {
+                rollRef.rollIndex = rollIndex
+                if (isDisplayOnly)
+                    rollRef.rollRecord[rollIndex].rollData.notChangingStats = true
+            }
         },
         replaceRoll = (rollData, rollResults, rollIndex) => {
             const recordRef = rollResults.isNPCRoll ? STATE.REF.NPC : STATE.REF
@@ -3133,12 +3094,14 @@ const Roller = (() => {
             displayRoll(false, isNPCRoll)
         },
         loadPrevRoll = (isNPCRoll) => {
-            const recordRef = isNPCRoll ? STATE.REF.NPC : STATE.REF
-            loadRoll(Math.min(recordRef.rollIndex + 1, Math.max(recordRef.rollRecord.length - 1, 0)), isNPCRoll)
+            const recordRef = isNPCRoll ? STATE.REF.NPC : STATE.REF            
+            if (recordRef && recordRef.rollRecord && recordRef.rollRecord.length)
+                loadRoll(Math.min(recordRef.rollIndex + 1, Math.max(recordRef.rollRecord.length - 1, 0)), isNPCRoll)
         },
         loadNextRoll = (isNPCRoll) => {
             const recordRef = isNPCRoll ? STATE.REF.NPC : STATE.REF
-            loadRoll(Math.max(recordRef.rollIndex - 1, 0), isNPCRoll)
+            if (recordRef && recordRef.rollRecord && recordRef.rollRecord.length)
+                loadRoll(Math.max(recordRef.rollIndex - 1, 0), isNPCRoll)
         },
         quickRouseCheck = (charRef, isDoubleRouse = false, isOblivionRouse = false, isPublic = false) => {
             const results = isDoubleRouse ? _.sortBy([randomInteger(10), randomInteger(10)]).reverse() : [randomInteger(10)],
@@ -3249,6 +3212,19 @@ const Roller = (() => {
             sendChat("Storyteller", `/w Storyteller ${confirmString}`)
             sendChat("Storyteller", `/w Storyteller ${resultLine}`)
         },
+    // #endregion
+
+    // #region Discipline Power Handling
+        checkPrerequisites = (charObj) => {
+            // Scans character sheet for discipline powers missing prerequisites.
+        },
+        displayDiscPanel = (charObj, discName, discPower, options = {}) => {
+            // Outputs to CHAT information about a discipline, calculating stat-based parameters (e.g. Soaring Leap's jump distance).  May include buttons for player to configure how they will use it.
+        },
+        parseDiscResult = (charObj, discName, discPower, rollResults, options = {}) => {
+            // Outputs to CHAT the specific effects of a power. RollResults only needed if power requires a roll. If no result configured, calls displayDiscPanel instead.
+        },
+
     // #endregion
 
     // #region Getting Random Resonance Based On District/Site Parameters
@@ -3394,7 +3370,7 @@ const Roller = (() => {
                         posRes += C.SITES[locations[location]].resonance[0] || ""
                         negRes += C.SITES[locations[location]].resonance[1] || ""
                     }
-                DB(`Location-Based Resonance: ${D.JSL(posRes)}, ${D.JSL(negRes)}`, "displayResonance")
+                DB({locations, posRes, negRes}, "displayResonance")
             }
             posRes = posRes === "x" ? "" : posRes
             negRes = negRes === "x" ? "" : negRes
@@ -3447,7 +3423,7 @@ const Roller = (() => {
                 C.CHATHTML.Title(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
                 C.CHATHTML.Header(resDetails),
                 C.CHATHTML.Body(resIntLine, {lineHeight: "20px"})
-            ], null, D.RandomString(3)))
+            ], undefined, D.RandomString(3)))
         }
     // #endregion
 

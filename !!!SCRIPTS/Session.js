@@ -321,6 +321,7 @@ const Session = (() => {
                 C.CHATHTML.Header(`Welcome to Session ${D.NumToText(STATE.REF.SessionNum, true)}!`),
                 C.CHATHTML.Body("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "10px 0px 10px 0px"}),
                 C.CHATHTML.Header(`Session Scribe: ${sessionScribe || "(None Set)"}`),
+                C.CHATHTML.Body("(Click <a style = \"color: white; font-weight: normal; background-color: rgba(255,0,0,0.5);\" href=\"https://docs.google.com/document/d/1GsGGDdYTVeHVHgGe9zrztEIN4Qmtpb2xZA8I-_WBnDM/edit?usp=sharing\" target=\"_blank\">&nbsp;here&nbsp;</a> to open the template in a new tab,<br>then create a copy to use for this session.)", {fontSize: "14px", lineHeight: "14px"}),
                 C.CHATHTML.Body("Thank you for your service!")
             ]), null, D.RandomString(3))
             changeMode("Active", true)            
@@ -333,8 +334,8 @@ const Session = (() => {
                     Media.SetToken(charObj, STATE.REF.tokenRecord[tokenObj.get("name")] || "base")
             }
             Char.SendBack()
-            TimeTracker.StopCountdown()
-            TimeTracker.StartClock()
+            TimeTracker.ToggleCountdown(false)
+            TimeTracker.ToggleClock(true)
             Char.RefreshDisplays()
             TimeTracker.Fix()
         },
@@ -358,9 +359,8 @@ const Session = (() => {
                     TimeTracker.CurrentDate = STATE.REF.dateRecord
                     TimeTracker.Fix()
                 }
-                TimeTracker.StopClock()
-                TimeTracker.StopLights()
-                TimeTracker.StartCountdown()
+                TimeTracker.ToggleClock(false)
+                TimeTracker.ToggleCountdown(true)
                 TimeTracker.Fix()
                 if (!STATE.REF.isTestingActive)
                     STATE.REF.SessionNum++
@@ -426,7 +426,7 @@ const Session = (() => {
             changeMode(STATE.REF.Mode === "Downtime" ? "Active" : "Downtime")
             if (STATE.REF.Mode === "Downtime") {
                 setLocation(BLANKLOCRECORD)
-                TimeTracker.StopClock()
+                TimeTracker.ToggleClock(false)
                 Char.SendHome()
                 D.Chat("all", C.CHATHTML.Block([
                     C.CHATHTML.Title("Session Downtime"),
@@ -434,7 +434,7 @@ const Session = (() => {
                     C.CHATHTML.Body("Clock Stopped.")
                 ]), null, D.RandomString(3))
             } else {
-                TimeTracker.StartClock()
+                TimeTracker.ToggleClock(true)
                 Char.SendBack()
                 D.Chat("all", C.CHATHTML.Block([
                     C.CHATHTML.Title("Session Downtime"),

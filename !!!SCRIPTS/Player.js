@@ -35,27 +35,19 @@ const Player = (() => {
                         Media.CombineTokenSrc(charObj.id, D.Capitalize(args.shift()))
                     break
                 }
-                case "!famulus": {
-                    if (C.RO.OT.Char.isDaylighterSession)
-                        break
-                    const charData = Char.REGISTRY[_.findKey(Char.REGISTRY, v => v.playerID === msg.playerid)],
-                        charID = charData.id,
-                        [charToken] = findObjs({
-                            _pageid: D.PAGEID,
-                            _type: "graphic",
-                            _subtype: "token",
-                            represents: charID
-                        })
-                    if (!charData.famulusTokenID)
-                        break
-                    const famToken = Media.GetImg(charData.famulusTokenID)
-                    if (famToken.get("layer") !== "objects")
-                        Media.SetImgTemp(famToken, {
-                            top: charToken.get("top") - 100,
-                            left: charToken.get("left") + 100
-                        })
-                    toFront(famToken)
-                    Media.ToggleImg(famToken, famToken.get("layer") !== "objects")
+                case "link": case "!links": {
+                    D.Chat(msg.playerid, C.CHATHTML.Block([
+                        C.MENUHTML.Header("VAMPIRE: Toronto By Night Resources", {margin: "0px"}),
+                        C.MENUHTML.Body("(Each link opens in a new tab.)", {fontSize: "14px", lineHeight: "14px", margin: "5px 0px"}),
+                        C.MENUHTML.ButtonLine([
+                            C.MENUHTML.Button("Chronicle Logs", "https://drive.google.com/open?id=1UYxbCeoSi6zEtX534FG-umh5CMzsE7_F", {width: "33%", color: "white", bgColor: C.COLORS.darkblue}),
+                            C.MENUHTML.Button("Districts & Sites", "https://docs.google.com/spreadsheets/d/1ol1JOQNZER7QGsmBoeVXbKFNmCjYvKc-xibXtS3sFKk/edit?usp=sharing", {width: "33%", color: "white", bgColor: C.COLORS.darkgreen})
+                        ].join("")),
+                        C.MENUHTML.ButtonLine([
+                            C.MENUHTML.Button("Rules & Reference", "https://drive.google.com/open?id=1QMAPnl7wYMpXVyp-BYbi_c-gl1V20UTe", {width: "33%", color: "white"}),
+                            C.MENUHTML.Button("House Rules", "https://drive.google.com/open?id=18v4b45LEQwfx5Kw-qLVd-sFnQ2tnj4CR", {width: "33%", color: "white"})
+                        ].join(""))
+                    ].join(""), undefined, D.RandomString(3)))
                     break
                 }
             // no default

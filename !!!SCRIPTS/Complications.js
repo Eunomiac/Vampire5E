@@ -565,7 +565,7 @@ const Complications = (() => {
             STATE.REF.lastMode = Session.Mode
             STATE.REF.endMessageQueue = []
             Session.ChangeMode("Complications")
-            TimeTracker.StopClock()
+            TimeTracker.ToggleClock(false)
             resetComplication(true)
             setCompVals("current", 0)
             setCompVals("target", startVal)
@@ -583,7 +583,7 @@ const Complications = (() => {
             D.Queue(sendEndMsgQueue, [STATE.REF.charRef], "Comp", 0.5)
             D.Queue(resetComplication, [false], "Comp", 0.5)            
             if (Session.IsSessionActive)
-                D.Queue(TimeTracker.StartClock, [], "Comp", 0.5)
+                D.Queue(TimeTracker.ToggleClock, [true], "Comp", 0.5)
             D.Queue(Session.ChangeMode, [STATE.REF.lastMode], "Comp", 0.5)
             if (isLaunchingProject)
                 D.Queue(Char.LaunchProject, [STATE.REF.currentVal - STATE.REF.targetVal, "COMPLICATION"], "Comp", 0.5)

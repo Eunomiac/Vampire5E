@@ -24,7 +24,7 @@ const Listener = (() => {
         },
         regHandlers = () => {
             on("chat:message", msg => {
-                if (STATE.REF.isLocked)
+                if (STATE.REF.isLocked && !Session.IsTesting)
                     return false
                 const args = msg.content.split(/\s+/u)
                 if (msg.type === "api") {
@@ -100,6 +100,7 @@ const Listener = (() => {
                 "!sound": {script: Media, gmOnly: true, singleCall: false},
                 "!mvc": {script: Player, gmOnly: false, singleCall: false},
                 "!token": {script: Player, gmOnly: false, singleCall: false},
+                "!links": {script: Player, gmOnly: false, singleCall: false},
                 "!roll": {script: Roller, gmOnly: false, singleCall: true},
                 "!sess": {script: Session, gmOnly: true, singleCall: true},
                 "!test": {script: Tester, gmOnly: true, singleCall: true},
@@ -127,7 +128,7 @@ const Listener = (() => {
         parseParams = (args, delim = " ") => {
             return _.object(
                 (VAL({array: args}) ? args.join(" ") : args).
-                    split(new RegExp(`,?${delim.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}+`, "gu")).
+                    split(new RegExp(`,?${delim.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}+`, "gu")).
                     filter(x => x.includes(":")).
                     map(x => x.trim().split(":").map(xx => VAL({number: xx}) ? D.Int(xx) : xx))
             )

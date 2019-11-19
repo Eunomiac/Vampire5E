@@ -216,34 +216,21 @@ const TimeTracker = (() => {
                 case "start": {
                     switch (D.LCase(call = args.shift())) {
                         case "countdown": {
-                            stopClock()
-                            startCountdown()
-                            break
-                        }
-                        case "lights": {                            
-                            startAirLights()
+                            toggleCountdown(true)
+                            toggleClock(false)
                             break
                         }
                         default: {
-                            stopCountdown()
-                            startClock()
+                            toggleCountdown(false)
+                            toggleClock(true)
                             break
                         }
                     }
                     break
                 }
                 case "stop": {
-                    switch (D.LCase(call = args.shift())) {
-                        case "lights": {                            
-                            stopAirLights()
-                            break
-                        }
-                        default: {
-                            stopClock()
-                            stopCountdown()
-                            break
-                        }
-                    }
+                    toggleCountdown(false)
+                    toggleClock(false)
                     break
                 }
                 case "fix": {
@@ -380,7 +367,7 @@ const TimeTracker = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     let [timeTimer, secTimer] = [null, null],
-        [isRunning, isRunningFast, isAirlights, isTimeRunning, isCountdownRunning] = [false, false, false, false, false],
+        [isRunning, isRunningFast, isTimeRunning, isCountdownRunning] = [false, false, false, false, false],
         secondsLeft = 0,
         countdownRecord = []
 
@@ -788,7 +775,6 @@ const TimeTracker = (() => {
 
             }
         },
-        [airLights, airTimes] = [{}, {}],
         CLOCKSPEED = 50,
         TWEENDURS = [15, 40, 60, 600, 1440, 3000, 5000, 7000, 8000, 9000, 10000, Infinity],
         RUNNINGFASTAT = 1500000,
@@ -821,16 +807,6 @@ const TimeTracker = (() => {
             "dusk": "day",
             "22:30": "night1",
             "24:00": "night2"  
-        },
-        AIRLIGHTS = {
-            AirLightLeft_1: ["on:0", "on:7000", "half:100", "off:100", "half:100", "off:100", "half:100", "off:100"],
-            AirLightMid_1: ["on:0", "on:5000", "off:500"],
-            AirLightTop_1: ["on:0", "on:60000", "off:1000", "on:1000", "off:1000", "on:1000", "off:1000", "on:1000", "off:1000", "on:1000", "off:1000"],
-            /* AirLightCN_1: ["off:0", "off:10000", "on:1000", "off:1000"],
-              AirLightCN_2: ["off:2000", "off:10000", "on:1000", "off:1000"],
-              AirLightCN_3: ["off:6000", "off:10000", "on:1000", "off:1000"], */
-            AirLightCN_4: ["on:0", "on:2000", "off:2000"],
-            AirLightCN_5: ["on:100", "on:2000", "off:2000"]
         },
         WEATHERCODES = [
             {x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"},
@@ -883,7 +859,7 @@ const TimeTracker = (() => {
             else
                 return `${date.getUTCHours()}:${date.getUTCMinutes()} A.M.`
         },
-        formatDString = (date, isIncludingTime = false) => `${
+        formatDString = (date, isIncludingTime = false) => { return `${
             ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]
         } ${
             date.getUTCDate()
@@ -891,22 +867,8 @@ const TimeTracker = (() => {
             date.getUTCFullYear()
         }${
             isIncludingTime ? `, ${formatTimeString(date).replace(/:(\d\s)/gu, ":0$1")}` : ""
-        }`,
-        isValidDString = str => _.isString(str) && Boolean(str.match(/\w\w\w\s\d\d?,\s\d\d\d\d/gu)),
-        fixTimeStatus = () => {
-            refreshTimeAndWeather()
-            // D.Alert(`Setting Ground Cover: ${groundCover}`)
-            // if (!Media.HasForcedState("WeatherGround") && !getWeatherCode().slice(0,2).includes("p"))
-                // Media.SetImg("WeatherGround", getGroundCover())
-            // Media.OrderImages("map", true)
-            if (Session.IsSessionActive) {
-                stopCountdown()
-                startClock()
-            } else {
-                stopClock()
-                startCountdown()
-            }
-        },
+        }` },
+        isValidDString = str => _.isString(str) && Boolean(str.match(/\w\w\w\s\d\d?,\s\d\d\d\d/gu)),    
         addTime = (dateRef, delta, unit) => {
             if (VAL({date: dateRef}, "addTime")) {
                 const newDate = new Date(getDate(dateRef))
@@ -947,29 +909,6 @@ const TimeTracker = (() => {
                 return curHoriz
         },
         isDay = () => getHorizon().includes("day"),
-        setHorizon = (isForced = false) => {
-            if (Media.HasForcedState("Horizon")) return false 
-            const imgSrcName = getHorizon()
-            if (isRunningFast) {
-                if (imgSrcName.includes("night") && STATE.REF.lastHorizon !== "night") 
-                    // Media.OrderImages(["Horizon_1", "Horizon_2"], true)
-                    STATE.REF.lastHorizon = "night"
-                else if (!imgSrcName.includes("night") && STATE.REF.lastHorizon.includes("night")) 
-                    // Media.OrderImages(["Horizon_2", "Horizon_1"], true)
-                    STATE.REF.lastHorizon = "day"
-                
-            } else if (isForced || imgSrcName !== STATE.REF.lastHorizon) {
-                STATE.REF.lastHorizon = imgSrcName
-                // Media.OrderImages("map", true)
-                Media.SetImg("Horizon_1", imgSrcName)
-            }
-            return true
-        },
-        refreshTimeAndWeather = () => {
-            setWeather()
-            setCurrentDate()
-            setHorizon(true)
-        },
         setCurrentDate = () => {
             // dateObj = dateObj || new Date(D.Int(STATE.REF.currentDate))
             // DB(`Setting Current Date; Checking Alarms.<br>LastDateStep: ${D.JSL(STATE.REF.lastDateStep)}`, "setCurrentDate")
@@ -1166,39 +1105,6 @@ const TimeTracker = (() => {
                 setHorizon()
             }
         },
-        startClock = (secsPerMin = 60) => {
-            stopCountdown()
-            // Media.ToggleText("TimeTracker", true)
-            isTimeRunning = true
-            if (STATE.REF.TweenTarget)
-                tweenClock(STATE.REF.TweenTarget)
-            else
-                timeTimer = setInterval(tickClock, D.Int(secsPerMin) * 1000)
-            // D.Alert(`Auto clock ticking ENABLED at:
-			
-			//! time set ${STATE.REF.dateObj.getUTCFullYear()} ${STATE.REF.dateObj.getUTCMonth() + 1} ${STATE.REF.dateObj.getUTCDate()} ${STATE.REF.dateObj.getUTCHours()}:${STATE.REF.dateObj.getUTCMinutes()}`, "TIMETRACKER !TIME")
-        },
-        stopClock = () => {
-            // clearInterval(timeTimer)
-            // Media.ToggleText("TimeTracker", false)
-            // timeTimer = null
-            isRunning = false
-            isTimeRunning = false
-            isRunningFast = false
-            // D.Alert("Auto clock ticking DISABLED", "TIMETRACKER !TIME")
-        },
-        startCountdown = () => {
-            stopClock()
-            isCountdownRunning = true
-            // Media.ToggleText("Countdown", true)
-            tickCountdown()
-        },
-        stopCountdown = () => {
-            clearInterval(secTimer)
-            isCountdownRunning = false
-            // Media.ToggleText("Countdown", false)
-            secTimer = null
-        },
     // #endregion
 
     // #region Weather Functions 
@@ -1291,6 +1197,147 @@ const TimeTracker = (() => {
                 storm: _.flatten(STATE.REF.weatherData).filter(x => x.charAt(0) === "t").length
             }
             D.Alert(D.JS(record))
+        },
+        getGroundCover = (isTesting = false, downVal = 0.3, upb = 1, ups = 0.5) => {
+            // D.Alert(`IsTesting = ${D.JS(isTesting)}`)
+            const weatherCode = WEATHERDATA[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()]
+            if (STATE.REF.dateObj.getUTCMonth() >= 3 && STATE.REF.dateObj.getUTCMonth() <= 9)
+                return "blank"
+            if (isDay() && Session.Mode === "Daylighter")
+                if (getTemp(MONTHTEMP[STATE.REF.dateObj.getUTCMonth()]) + getTemp(WEATHERDATA[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()].charAt(2)) < 1)
+                    return "frost"
+                else
+                    return "blank"
+
+            const checkDate = new Date(STATE.REF.dateObj)
+            let groundCover = 0,
+                testString = ""
+            checkDate.setUTCDate(checkDate.getUTCDate() - 60)
+
+            // START DEBUG TESTING CODE
+            for (let i = -60; i <= 0; i++) {
+                checkDate.setUTCDate(checkDate.getUTCDate() + 1)
+                if (checkDate.getMonth() === 0 && checkDate.getDate() === 1)
+                    groundCover = 30
+                const dayCodes = WEATHERDATA[checkDate.getUTCMonth()][checkDate.getUTCDate()]
+                testString += `${MONTHS[checkDate.getUTCMonth()].slice(0, 3)} ${checkDate.getUTCDate()}: `
+                for (let j = 0; j < (i === 0 ? checkDate.getUTCHours() : 24); j++) {
+                    const [eventCode, , tempCode] = dayCodes[j].split(""),
+                        tempC = getTemp(tempCode)
+                    if (eventCode === "b")
+                        groundCover += parseFloat(upb)
+                    else if (eventCode === "s")
+                        groundCover += parseFloat(ups)
+                    else if (tempC > -5)
+                        groundCover -= Math.sqrt(Math.max(0, tempC * downVal))
+                    groundCover = Math.round(Math.max(0, groundCover))
+                    let testStyles = "box-sizing: border-box; display: inline-block; text-align: center; width: 30px;"
+                    if (groundCover === 0)
+                        testStyles += " color: #999999; font-weight: normal; font-style: italic;"
+                    else if (groundCover > 50)
+                        testStyles += " background-color: #F88;"
+                    else if (groundCover > 40)
+                        testStyles += " background-color: #FC8;"
+                    else if (groundCover > 30)
+                        testStyles += " background-color: #FF8;"
+                    else if (groundCover > 20)
+                        testStyles += " background-color: #AEF;"
+                    else if (groundCover > 10)
+                        testStyles += " background-color: #ACF;"
+                    else
+                        testStyles += " background-color: #AAF;"
+                    testString += `<span style="${testStyles}">${D.JS(groundCover)}</span>`
+                }
+                testString += "<br>"
+            }
+            if (isTesting)
+                D.Alert(`${testString}<br><br>!testground down10, down0, downneg5, upb, ups`, "GROUND COVER")
+            // END DEBUG TESTING CODE
+
+            if (groundCover > 50)
+                return "snow5"
+            else if (groundCover > 40)
+                return "snow4"
+            else if (groundCover > 30)
+                return "snow3"
+            else if (groundCover > 20)
+                return "snow2"
+            else if (groundCover > 10)
+                return "snow1"
+            else if ("wtp".includes(weatherCode.charAt(0)))
+                return "wet"
+            else if (getTemp(MONTHTEMP[STATE.REF.dateObj.getUTCMonth()]) + getTemp(WEATHERDATA[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()].charAt(2)) < 1)
+                return "frost"
+            else
+                return "blank"
+        },
+        getWeatherReport = () => {
+            // const weatherCode = WEATHERDATA[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()],switch(weatherCode.charAt(0)) {
+            // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
+            const weatherStrings = {},
+                weatherCodes = {x: "CLR", b: "BLZ", c: "OCST", f: "FOG", p: "DPR", s: "SNW", t: "TST", w: "DRZ"}
+            for (const code of ["x", "b", "c", "f", "p", "s", "t", "w"]) {
+                const startMonth = STATE.REF.dateObj.getMonth()
+                let startYear = STATE.REF.dateObj.getFullYear(),
+                    startDay = STATE.REF.dateObj.getDate(),
+                    startHour = STATE.REF.dateObj.getHours(),
+                    eventFound = false                    
+                for (let mI = 0; mI < 12; mI++) {
+                    const m = (mI + startMonth) % 12
+                    if (mI > 0 && m === 0)
+                        startYear++
+                    for (let d = startDay; d < WEATHERDATA[m].length; d++)
+                        try {
+                            const hourMatch = _.findIndex(WEATHERDATA[m][d], (v, k) => { return v.charAt(0) === code && (k <= 5 || k >= 20) })
+                            if (hourMatch >= startHour) {
+                                weatherStrings[code] = {
+                                    date: `<b>${MONTHS[m].slice(0, 3)} ${d}, ${hourMatch > 12 ? `${hourMatch - 12} PM` : `${hourMatch} AM`}</b>`,
+                                    command: `<span style="width: 40px; display: inline-block;"><a href="!time set ${startYear} ${m} ${d} ${hourMatch}">${weatherCodes[code]}</a></span>`
+                                }  
+                                eventFound = true
+                            }
+                            if (eventFound)
+                                break
+                            startHour = 0
+                        } catch (errObj) {
+                            D.Alert(`Error at ${mI} ${d}: ${D.JS(errObj)}`, "ERROR")
+                        }                    
+                    if (eventFound)
+                        break
+                    startDay = 1
+                }
+            } 
+            return _.values(weatherStrings).map(x => `<div style="display: inline-block; width: 45%; margin: 2px 3% 0px 0px; height: auto;">${x.command} ${x.date}</div>`).join("")
+        },
+    // #endregion
+
+    // #region MASTER CONTROL FUNCTIONS
+        fixTimeStatus = () => {            
+            setWeather()
+            setCurrentDate()
+            setHorizon(true)
+            toggleCountdown(!Session.IsSessionActive)
+            toggleClock(Session.IsSessionActive && !Session.IsTesting)
+        },
+        setHorizon = (isForced = false) => {
+            if (Media.HasForcedState("Horizon")) return false 
+            const imgSrcName = getHorizon()
+            if (isRunningFast) {
+                if (imgSrcName.includes("night") && STATE.REF.lastHorizon !== "night") 
+                    // Media.OrderImages(["Horizon_1", "Horizon_2"], true)
+                    STATE.REF.lastHorizon = "night"
+                else if (!imgSrcName.includes("night") && STATE.REF.lastHorizon.includes("night")) 
+                    // Media.OrderImages(["Horizon_2", "Horizon_1"], true)
+                    STATE.REF.lastHorizon = "day"
+                
+            } else if (isForced || imgSrcName !== STATE.REF.lastHorizon) {
+                STATE.REF.lastHorizon = imgSrcName
+                // Media.OrderImages("map", true)
+                Media.SetImg("Horizon_1", imgSrcName)
+            }
+            return true
+        },
+        refreshTimeAndWeather = () => {
         },
         setWeather = () => {
             const weatherCode = getWeatherCode(),
@@ -1434,116 +1481,26 @@ const TimeTracker = (() => {
                 }
             Media.UpdateSoundscape()
         },
-        getGroundCover = (isTesting = false, downVal = 0.3, upb = 1, ups = 0.5) => {
-            // D.Alert(`IsTesting = ${D.JS(isTesting)}`)
-            const weatherCode = WEATHERDATA[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()]
-            if (STATE.REF.dateObj.getUTCMonth() >= 3 && STATE.REF.dateObj.getUTCMonth() <= 9)
-                return "blank"
-            if (isDay() && Session.Mode === "Daylighter")
-                if (getTemp(MONTHTEMP[STATE.REF.dateObj.getUTCMonth()]) + getTemp(WEATHERDATA[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()].charAt(2)) < 1)
-                    return "frost"
+        toggleClock = (activeState, secsPerMin = 60) => {
+            isTimeRunning = Boolean(activeState)
+            if (activeState) {
+                if (STATE.REF.TweenTarget)
+                    tweenClock(STATE.REF.TweenTarget)
                 else
-                    return "blank"
-
-            const checkDate = new Date(STATE.REF.dateObj)
-            let groundCover = 0,
-                testString = ""
-            checkDate.setUTCDate(checkDate.getUTCDate() - 60)
-
-            // START DEBUG TESTING CODE
-            for (let i = -60; i <= 0; i++) {
-                checkDate.setUTCDate(checkDate.getUTCDate() + 1)
-                if (checkDate.getMonth() === 0 && checkDate.getDate() === 1)
-                    groundCover = 30
-                const dayCodes = WEATHERDATA[checkDate.getUTCMonth()][checkDate.getUTCDate()]
-                testString += `${MONTHS[checkDate.getUTCMonth()].slice(0, 3)} ${checkDate.getUTCDate()}: `
-                for (let j = 0; j < (i === 0 ? checkDate.getUTCHours() : 24); j++) {
-                    const [eventCode, , tempCode] = dayCodes[j].split(""),
-                        tempC = getTemp(tempCode)
-                    if (eventCode === "b")
-                        groundCover += parseFloat(upb)
-                    else if (eventCode === "s")
-                        groundCover += parseFloat(ups)
-                    else if (tempC > -5)
-                        groundCover -= Math.sqrt(Math.max(0, tempC * downVal))
-                    groundCover = Math.round(Math.max(0, groundCover))
-                    let testStyles = "box-sizing: border-box; display: inline-block; text-align: center; width: 30px;"
-                    if (groundCover === 0)
-                        testStyles += " color: #999999; font-weight: normal; font-style: italic;"
-                    else if (groundCover > 50)
-                        testStyles += " background-color: #F88;"
-                    else if (groundCover > 40)
-                        testStyles += " background-color: #FC8;"
-                    else if (groundCover > 30)
-                        testStyles += " background-color: #FF8;"
-                    else if (groundCover > 20)
-                        testStyles += " background-color: #AEF;"
-                    else if (groundCover > 10)
-                        testStyles += " background-color: #ACF;"
-                    else
-                        testStyles += " background-color: #AAF;"
-                    testString += `<span style="${testStyles}">${D.JS(groundCover)}</span>`
-                }
-                testString += "<br>"
+                    timeTimer = setInterval(tickClock, D.Int(secsPerMin) * 1000)
+            } else {
+                isTimeRunning = false
+                isRunningFast = false
             }
-            if (isTesting)
-                D.Alert(`${testString}<br><br>!testground down10, down0, downneg5, upb, ups`, "GROUND COVER")
-            // END DEBUG TESTING CODE
-
-            if (groundCover > 50)
-                return "snow5"
-            else if (groundCover > 40)
-                return "snow4"
-            else if (groundCover > 30)
-                return "snow3"
-            else if (groundCover > 20)
-                return "snow2"
-            else if (groundCover > 10)
-                return "snow1"
-            else if ("wtp".includes(weatherCode.charAt(0)))
-                return "wet"
-            else if (getTemp(MONTHTEMP[STATE.REF.dateObj.getUTCMonth()]) + getTemp(WEATHERDATA[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()].charAt(2)) < 1)
-                return "frost"
-            else
-                return "blank"
         },
-        getWeatherReport = () => {
-            // const weatherCode = WEATHERDATA[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()],switch(weatherCode.charAt(0)) {
-            // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
-            const weatherStrings = {},
-                weatherCodes = {x: "CLR", b: "BLZ", c: "OCST", f: "FOG", p: "DPR", s: "SNW", t: "TST", w: "DRZ"}
-            for (const code of ["x", "b", "c", "f", "p", "s", "t", "w"]) {
-                const startMonth = STATE.REF.dateObj.getMonth()
-                let startYear = STATE.REF.dateObj.getFullYear(),
-                    startDay = STATE.REF.dateObj.getDate(),
-                    startHour = STATE.REF.dateObj.getHours(),
-                    eventFound = false                    
-                for (let mI = 0; mI < 12; mI++) {
-                    const m = (mI + startMonth) % 12
-                    if (mI > 0 && m === 0)
-                        startYear++
-                    for (let d = startDay; d < WEATHERDATA[m].length; d++)
-                        try {
-                            const hourMatch = _.findIndex(WEATHERDATA[m][d], (v, k) => { return v.charAt(0) === code && (k <= 5 || k >= 20) })
-                            if (hourMatch >= startHour) {
-                                weatherStrings[code] = {
-                                    date: `<b>${MONTHS[m].slice(0, 3)} ${d}, ${hourMatch > 12 ? `${hourMatch - 12} PM` : `${hourMatch} AM`}</b>`,
-                                    command: `<span style="width: 40px; display: inline-block;"><a href="!time set ${startYear} ${m} ${d} ${hourMatch}">${weatherCodes[code]}</a></span>`
-                                }  
-                                eventFound = true
-                            }
-                            if (eventFound)
-                                break
-                            startHour = 0
-                        } catch (errObj) {
-                            D.Alert(`Error at ${mI} ${d}: ${D.JS(errObj)}`, "ERROR")
-                        }                    
-                    if (eventFound)
-                        break
-                    startDay = 1
-                }
-            } 
-            return _.values(weatherStrings).map(x => `<div style="display: inline-block; width: 45%; margin: 2px 3% 0px 0px; height: auto;">${x.command} ${x.date}</div>`).join("")
+        toggleCountdown = (activeState) => {
+            isCountdownRunning = Boolean(activeState)
+            if (activeState) {
+                tickCountdown()
+            } else {
+                clearInterval(secTimer)
+                secTimer = null
+            }
         },
     // #endregion
 
@@ -1844,39 +1801,6 @@ const TimeTracker = (() => {
             DB(`Unfiring Alarm: ${D.JSL(Object.assign(D.Clone(thisAlarm), {message: D.SumHTML(thisAlarm.message)}))}`, "unfireLastAlarm")   
             if (Session.IsTesting || Session.IsSessionActive)           
                 unfireAlarm(thisAlarm)
-        },
-    // #endregion
-
-    // #region Airplane Lights
-        tickAirLight = (airlight, isStartup) => {
-            if (!isAirlights || (getHorizon() === "day" || getHorizon() === "daylighters")) {
-                for (const alight of _.keys(airLights)) {
-                    clearTimeout(airLights[alight])
-                    delete airLights[alight]
-                }
-                for (const alight of _.keys(AIRLIGHTS))
-                    Media.SetImg(alight, "off")
-
-            } else {
-                const curTime = airTimes[airlight].shift(),
-                    [curSrc, curDur] = _.map(curTime.split(":"), v => _.isNaN(D.Int(v)) ? v : D.Int(v))
-                if (!isStartup)
-                    airTimes[airlight].push(curTime)
-                if (curSrc !== Media.GetImgData(airlight).curSrc)
-                    Media.SetImg(airlight, curSrc)
-                airLights[airlight] = setTimeout(() => { tickAirLight(airlight) }, curDur)
-            }
-        },
-        stopAirLights = () => {
-            isAirlights = false
-        },
-        startAirLights = () => {
-            stopAirLights()
-            isAirlights = true
-            for (const alight of _.keys(AIRLIGHTS)) {
-                airTimes[alight] = [...AIRLIGHTS[alight]]
-                tickAirLight(alight, true)
-            }
         }
     // #endregion
 
@@ -1887,12 +1811,9 @@ const TimeTracker = (() => {
         Fix: fixTimeStatus,
         
         ALARMFUNCS,
-        StartClock: startClock,
-        StopClock: stopClock,
-        StartCountdown: startCountdown,
-        StopCountdown: stopCountdown,
-        StartLights: startAirLights,
-        StopLights: stopAirLights,
+        ToggleClock: toggleClock,
+        ToggleCountdown: toggleCountdown,
+
         get CurrentDate() { return new Date(STATE.REF.dateObj) },
         GetDate: getDate,
         get TempC () { return getTemp(MONTHTEMP[STATE.REF.dateObj.getUTCMonth()]) + getTemp(getWeatherCode().charAt(2)) },

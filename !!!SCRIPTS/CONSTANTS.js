@@ -81,7 +81,8 @@ const C = (() => {
             paleblue: "rgb(175, 175, 255)",
             palered: "rgb(255, 175, 175)",
             palepurple: "rgb(255, 175, 255)",
-            brightbrightgrey: "rgb(200, 200, 200)"
+            brightbrightgrey: "rgb(200, 200, 200)",
+            darkgreen: "rgb(0, 125, 0)"
         },
     // #endregion
 
@@ -193,39 +194,39 @@ const C = (() => {
             }
         },
         CHATHTML = {
+            MAINBLOCK: content => { return `<div style="
+                display: block;
+                height: auto;
+                width: auto;
+                padding: 0px;
+                margin: -25px 0px 0px -42px;
+                position: relative;
+            ">${content}</div>` },
             alertHeader: content => { return `<div style="
                 display: block;
                 height: auto;
                 width: auto;
                 line-height: 23px;
                 padding: 0px 5px;
-                margin: -25px 0px 0px -42px;
+                margin: 0px;
                 font-family: 'copperplate gothic';
                 font-variant: small-caps;
                 font-size: 16px;
                 background-color: ${COLORS.darkgrey};
                 color: ${COLORS.white};
                 border: 2px solid ${COLORS.black};
-                position: relative;
             ">${content}</div>` },
             alertBody: content => { return `<div style="
                 display: block;
                 width: auto;
                 padding: 5px 5px;
-                margin-left: -42px;
                 font-family: input, verdana, sans-serif;
                 font-size: 10px;
                 background-color: ${COLORS.white};
                 border: 2px solid ${COLORS.black};
                 line-height: 14px;
                 position: relative;
-            ">${content}</div><div style="
-                display: block;
-                width: auto;
-                margin-left: -42px;
-                background-color: none;
-                position: relative;
-            "></div>` },
+            ">${content}</div>` },
             Block: (content, options = {}) => {
                 const params = {
                     color: options.color || COLORS.crimson,
@@ -570,7 +571,7 @@ const C = (() => {
             },
             Button: (name, command, options = {}) => {
                 const params = Object.assign({height: "100%",
-                                              lineHeight: "8px",
+                                              lineHeight: "10px",
                                               width: "22%",
                                               fontFamily: "Voltaire",
                                               margin: "0px 3% 0px 0px",
@@ -583,7 +584,7 @@ const C = (() => {
                                               textShadow: "none",
                                               buttonHeight: "8px",
                                               buttonWidth: "83%",
-                                              buttonPadding: "5%"}, options)
+                                              buttonPadding: "3px"}, options)
                 return D.JSH(`<span style="   
                     height: ${params.height};
                     width: ${params.width};                 
@@ -608,6 +609,7 @@ const C = (() => {
                     padding: ${params.buttonPadding};
                     font-weight: ${params.fontWeight};
                     text-shadow: ${params.textShadow};
+                    box-sizing: border-box;
                 " href="${command}">${name}</a></span>`)
             },            
             ButtonSpacer: (width) => {
