@@ -93,6 +93,7 @@ module.exports = {
         "no-unreachable": 0,
         "no-unused-vars": "warn",
         "no-use-before-define": 0,
+        "no-useless-computed-key": 0,
         //"no-magic-numbers": ["warn", { "ignoreArrayIndexes": true, "ignore": [0, 1], "enforceConst": true } ],
         "no-void": 0,
         "one-var": ["error", "consecutive"],

@@ -308,8 +308,9 @@ const Char = (() => {
                             if (VAL({charObj}, "!char set stat")) {
                                 D.Alert(D.JS(Listener.ParseParams(args, "|")))
                                 D.SetStats(charObj.id, Listener.ParseParams(args, "|"))
-                            } else
+                            } else {
                                 D.Alert("Select a character or provide a character reference first!", "!char set stat")
+                            }
                             break
                         }
                         case "xp": {
@@ -566,7 +567,7 @@ const Char = (() => {
         REGISTRY = STATE.REF.registry,
         ATTRNAMES = _.values(C.ATTRIBUTES).map(x => x.map(xx => xx.replace(/\s/gu, "_"))),
         SKILLNAMES = _.values(C.SKILLS).map(x => x.map(xx => xx.replace(/\s/gu, "_"))),
-        DISCNAMES = C.DISCIPLINES.map(x => x.replace(/\s/gu, "_")),
+        DISCNAMES = _.keys(C.DISCIPLINES).map(x => x.replace(/\s/gu, "_")),
 
     // #region JSON Text Blocks
     /* eslint-disable-next-line quotes */
@@ -1650,7 +1651,7 @@ const Char = (() => {
                     const sectionData = D.GetRepStats(charID, section, null, null, "rowID")
                     rowCount[section] = _.keys(sectionData).length
                     _.each(sectionData, (rowData, rowID) => {
-                        const discData = _.find(rowData, stat => C.DISCIPLINES.includes(stat.name))
+                        const discData = _.find(rowData, stat => _.keys(C.DISCIPLINES).includes(stat.name))
                         if (discData)
                             repDiscs[discData.name] = {
                                 sec: section,

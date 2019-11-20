@@ -570,21 +570,24 @@ const C = (() => {
                 ">${_.flatten([content]).join("")}</span>`)
             },
             Button: (name, command, options = {}) => {
-                const params = Object.assign({height: "100%",
-                                              lineHeight: "10px",
-                                              width: "22%",
-                                              fontFamily: "Voltaire",
-                                              margin: "0px 3% 0px 0px",
-                                              padding: "0px 0px 0px 0px",
-                                              fontSize: "10px",
-                                              bgColor: COLORS.brightred,
-                                              color: COLORS.white,
-                                              border: "1px solid white",
-                                              fontWeight: "normal",
-                                              textShadow: "none",
-                                              buttonHeight: "8px",
-                                              buttonWidth: "83%",
-                                              buttonPadding: "3px"}, options)
+                const params = Object.assign({
+                    height: "100%",
+                    lineHeight: "10px",
+                    width: "22%",
+                    fontFamily: "Voltaire",
+                    margin: "0px 3% 0px 0px",
+                    padding: "0px 0px 0px 0px",
+                    fontSize: "10px",
+                    bgColor: COLORS.brightred,
+                    color: COLORS.white,
+                    border: "1px solid white",
+                    fontWeight: "normal",
+                    textShadow: "none",
+                    buttonHeight: "8px",
+                    buttonWidth: "83%",
+                    buttonPadding: "3px",
+                    buttonTransform: "uppercase"
+                }, options)
                 return D.JSH(`<span style="   
                     height: ${params.height};
                     width: ${params.width};                 
@@ -604,7 +607,7 @@ const C = (() => {
                     font-size: ${params.fontSize};
                     line-height: ${params.lineHeight};
                     font-family: ${params.fontFamily};
-                    text-transform: uppercase;
+                    text-transform: ${params.buttonTransform};
                     text-align: center;
                     padding: ${params.buttonPadding};
                     font-weight: ${params.fontWeight};
@@ -1092,7 +1095,53 @@ const C = (() => {
             SCI: "science",
             TEC: "technology"
         },
-        DISCIPLINES = ["Animalism", "Auspex", "Celerity", "Chimerstry", "Dominate", "Fortitude", "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood Sorcery", "Alchemy", "Vicissitude", "True Faith"],
+        DISCIPLINES = {
+            ["Animalism"]: {
+
+            },
+            ["Auspex"]: {
+
+            },
+            ["Celerity"]: {
+
+            },
+            ["Chimerstry"]: {
+
+            },
+            ["Dominate"]: {
+
+            },
+            ["Fortitude"]: {
+
+            },
+            ["Obfuscate"]: {
+
+            },
+            ["Oblivion"]: {
+
+            },
+            ["Potence"]: {
+
+            },
+            ["Presence"]: {
+
+            },
+            ["Protean"]: {
+
+            },
+            ["Blood Sorcery"]: {
+
+            },
+            ["Alchemy"]: {
+
+            },
+            ["Vicissitude"]: {
+
+            },
+            ["True Faith"]: {
+
+            }
+        },
         DISCABBVS = {
             ANI: "Animalism",
             AUS: "Auspex",
@@ -1426,6 +1475,15 @@ const C = (() => {
                 soundScape: ["CitySuburb"],
                 outside: true
             },
+            LakeOntario: {
+                fullName: "Lake Ontario",
+                resonance: ["p", "s"],
+                huntDiff: "~",
+                homestead: [2, 1, 4, 4],
+                rollEffects: [],
+                soundScape: ["Waterside"],
+                outside: true
+            },
             LibertyVillage: {
                 fullName: "Liberty Village",
                 resonance: ["c", "m"],
@@ -1543,7 +1601,7 @@ const C = (() => {
                 soundScape: ["CitySuburb"],
                 outside: true
             },
-            YongeHospital: {
+            YongeMuseum: {
                 fullName: "the Yonge & Bloor Museum District",
                 resonance: ["m", "c"],
                 huntDiff: 4,
@@ -1552,7 +1610,7 @@ const C = (() => {
                 soundScape: ["CityChatter"],
                 outside: true
             },
-            YongeMuseum: {
+            YongeHospital: {
                 fullName: "the Yonge & College Hospital District",
                 resonance: ["p", "c"],
                 huntDiff: 4,
@@ -1583,6 +1641,7 @@ const C = (() => {
         SITES = {
             AnarchBar: {
                 fullName: "Anarch Dive Bar",
+                district: null,
                 resonance: ["c", null],
                 rollEffects: [],
                 soundScape: ["DiveBar"],
@@ -1590,6 +1649,7 @@ const C = (() => {
             },
             ArtGallery: {
                 fullName: "Art Gallery of Ontario",
+                district: ["WestQueenWest"],
                 resonance: ["s", null],
                 rollEffects: [],
                 soundScape: ["SoftIndoor"],
@@ -1597,6 +1657,7 @@ const C = (() => {
             },
             BackAlley: {
                 fullName: "Back Alley",
+                district: null,
                 resonance: [null, "s"],
                 rollEffects: [],
                 soundScape: ["UrbanDark"],
@@ -1604,20 +1665,23 @@ const C = (() => {
             },
             BayTower: {
                 fullName: "Bay Wellington Tower",
+                district: ["BayStFinancial"],
                 resonance: ["p", null],
                 rollEffects: [],
                 soundScape: ["SoftIndoor"],
                 outside: false
             },
-            BBishopFerry: {
+            BillyBishopFerry: {
                 fullName: "Billy Bishop Ferry",
-                resonance: [],
+                district: ["Waterfront", "LakeOntario"],
+                resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["Waterside"],
                 outside: false
             },
             CasaLoma: {
                 fullName: "Casa Loma",
+                district: ["DupontByTheCastle"],
                 resonance: [null, "m"],
                 rollEffects: [],
                 soundScape: ["Church"],
@@ -1625,6 +1689,7 @@ const C = (() => {
             },
             Cemetary: {
                 fullName: "Cemetary",
+                district: null,
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["CityPark"],
@@ -1632,6 +1697,7 @@ const C = (() => {
             },
             ChristiePitsPark: {
                 fullName: "Christie Pits Park",
+                district: ["Wychwood"],
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["CityPark"],
@@ -1639,6 +1705,7 @@ const C = (() => {
             },
             CityApt1: {
                 fullName: "City Apartment",
+                district: null,
                 resonance: ["c", null],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
@@ -1646,6 +1713,7 @@ const C = (() => {
             },
             CityHall: {
                 fullName: "City Hall",
+                district: ["WestQueenWest"],
                 resonance: ["p", null],
                 rollEffects: [],
                 soundScape: ["SoftIndoor"],
@@ -1653,6 +1721,7 @@ const C = (() => {
             },
             CityPark: {
                 fullName: "City Park",
+                district: null,
                 resonance: ["s", null],
                 rollEffects: [],
                 soundScape: ["CityPark"],
@@ -1660,6 +1729,7 @@ const C = (() => {
             },
             CNTower: {
                 fullName: "CN Tower",
+                district: ["Waterfront"],
                 resonance: ["s", null],
                 rollEffects: [],
                 soundScape: ["RoofTop"],
@@ -1667,6 +1737,7 @@ const C = (() => {
             },
             Docks: {
                 fullName: "the Docks",
+                district: ["DistilleryDist"],
                 resonance: ["c", null],
                 rollEffects: [],
                 soundScape: ["Waterside"],
@@ -1674,6 +1745,7 @@ const C = (() => {
             },
             Drake: {
                 fullName: "the Drake Hotel",
+                district: ["LittlePortugal"],
                 resonance: ["s", null],
                 rollEffects: [],
                 soundScape: ["(TOTALSILENCE)"],
@@ -1681,6 +1753,7 @@ const C = (() => {
             },
             Elysium: {
                 fullName: "Elysium",
+                district: null,
                 resonance: [null, "c"],
                 rollEffects: [],
                 soundScape: ["SoftIndoor"],
@@ -1688,6 +1761,7 @@ const C = (() => {
             },
             BrickWorks: {
                 fullName: "Evergreen Brick Works",
+                district: ["Rosedale"],
                 resonance: [null, "s"],
                 rollEffects: [],
                 soundScape: ["Industry"],
@@ -1695,6 +1769,7 @@ const C = (() => {
             },
             EvergreenPalisades: {
                 fullName: "Evergreen Palisades",
+                district: ["RegentPark"],
                 resonance: ["i", null],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
@@ -1702,6 +1777,7 @@ const C = (() => {
             },
             FightClub: {
                 fullName: "Fight Club",
+                district: null,
                 resonance: ["c", null],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
@@ -1709,6 +1785,7 @@ const C = (() => {
             },
             CeramicsMuseum: {
                 fullName: "Gardiner Ceramics Museum",
+                district: ["YongeHospital"],
                 resonance: ["p", null],
                 rollEffects: [],
                 soundScape: ["SoftIndoor"],
@@ -1716,6 +1793,7 @@ const C = (() => {
             },
             GayClub: {
                 fullName: "Gay Nightclub",
+                district: null,
                 resonance: ["s", null],
                 rollEffects: [],
                 soundScape: ["Nightclub"],
@@ -1723,6 +1801,7 @@ const C = (() => {
             },
             Distillery: {
                 fullName: "the Historic Distillery",
+                district: ["DistilleryDist"],
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["Industry"],
@@ -1730,6 +1809,7 @@ const C = (() => {
             },
             Laboratory: {
                 fullName: "Laboratory",
+                district: null,
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
@@ -1737,6 +1817,7 @@ const C = (() => {
             },
             LectureHall: {
                 fullName: "Lecture Hall",
+                district: null,
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["SoftIndoor"],
@@ -1744,6 +1825,7 @@ const C = (() => {
             },
             Library: {
                 fullName: "Library",
+                district: null,
                 resonance: ["p", null],
                 rollEffects: [],
                 soundScape: ["SoftIndoor"],
@@ -1751,6 +1833,7 @@ const C = (() => {
             },
             MadinaMasjid: {
                 fullName: "Madina Masjid",
+                district: ["Danforth"],
                 resonance: ["p", null],
                 rollEffects: [],
                 soundScape: ["Church"],
@@ -1758,6 +1841,7 @@ const C = (() => {
             },
             MiddleOfRoad: {
                 fullName: "Middle of the Road",
+                district: null,
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["CityTraffic"],
@@ -1765,6 +1849,7 @@ const C = (() => {
             },
             Nightclub: {
                 fullName: "Nightclub",
+                district: null,
                 resonance: ["s", null],
                 rollEffects: [],
                 soundScape: ["Nightclub"],
@@ -1772,6 +1857,7 @@ const C = (() => {
             },
             Office: {
                 fullName: "Office",
+                district: null,
                 resonance: [null, "c"],
                 rollEffects: [],
                 soundScape: ["SoftIndoor"],
@@ -1779,6 +1865,7 @@ const C = (() => {
             },
             ParkingLot: {
                 fullName: "Parking Lot",
+                district: null,
                 resonance: [null, "p"],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
@@ -1786,6 +1873,7 @@ const C = (() => {
             },
             PMHospital: {
                 fullName: "Princess Margaret Hospital",
+                district: ["YongeMuseum"],
                 resonance: ["p", null],
                 rollEffects: [],
                 soundScape: ["Hospital"],
@@ -1793,6 +1881,7 @@ const C = (() => {
             },
             ProfOffice: {
                 fullName: "Professor's Office",
+                district: ["Discovery"],
                 resonance: ["p", null],
                 rollEffects: [],
                 soundScape: ["SoftIndoor"],
@@ -1800,20 +1889,15 @@ const C = (() => {
             },
             RedemptionHouse: {
                 fullName: "Redemption House",
+                district: ["Danforth"],
                 resonance: [null, "p"],
                 rollEffects: [],
                 soundScape: ["SoftIndoor"],
                 outside: false
             },
-            RegentParkApt: {
-                fullName: "Regent Park Apartment",
-                resonance: ["i", null],
-                rollEffects: [],
-                soundScape: ["(NONE)"],
-                outside: false
-            },
             RogersCentre: {
                 fullName: "Rogers Centre",
+                district: ["Waterfront"],
                 resonance: ["c", null],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
@@ -1821,6 +1905,7 @@ const C = (() => {
             },
             Rooftops: {
                 fullName: "Rooftops",
+                district: null,
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["RoofTop"],
@@ -1828,13 +1913,23 @@ const C = (() => {
             },
             ROM: {
                 fullName: "Royal Ontario Museum",
+                district: ["YongeHospital"],
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["SoftIndoor"],
                 outside: false
             },
+            SheerExcess: {
+                fullName: "sheer eXcess DVD Rental",
+                district: ["GayVillage"],
+                resonance: ["m", null],
+                rollEffects: [],
+                soundScape: ["Nightclub"],
+                outside: false
+            },
             Sidewalk1: {
                 fullName: "Sidewalk",
+                district: null,
                 resonance: [null, "s"],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
@@ -1842,6 +1937,7 @@ const C = (() => {
             },
             Sidewalk2: {
                 fullName: "Sidewalk",
+                district: null,
                 resonance: ["q", null],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
@@ -1849,6 +1945,7 @@ const C = (() => {
             },
             Sidewalk3: {
                 fullName: "Sidewalk",
+                district: null,
                 resonance: ["p", null],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
@@ -1856,6 +1953,7 @@ const C = (() => {
             },
             SiteLotus: {
                 fullName: "Site: Lotus",
+                district: ["YongeStreet"],
                 resonance: [null, null],
                 rollEffects: [],
                 soundScape: ["SoftHum"],
@@ -1863,6 +1961,7 @@ const C = (() => {
             },
             SpawningPool: {
                 fullName: "Spawning Pool",
+                district: ["Sewers"],
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["Sewers"],
@@ -1870,6 +1969,7 @@ const C = (() => {
             },
             StMichaelsCathedral: {
                 fullName: "St. Michael's Cathedral Basilica",
+                district: ["YongeStreet"],
                 resonance: ["p", null],
                 rollEffects: [],
                 soundScape: ["Church"],
@@ -1877,6 +1977,7 @@ const C = (() => {
             },
             StripClub: {
                 fullName: "Strip Club",
+                district: null,
                 resonance: ["s", null],
                 rollEffects: [],
                 soundScape: ["Nightclub"],
@@ -1884,6 +1985,7 @@ const C = (() => {
             },
             StudentVillage: {
                 fullName: "Student Village",
+                district: ["Discovery"],
                 resonance: ["s", null],
                 rollEffects: [],
                 soundScape: ["CityRevelers"],
@@ -1891,6 +1993,7 @@ const C = (() => {
             },
             SubwayStation: {
                 fullName: "Subway Station",
+                district: ["PATH"],
                 resonance: ["c", null],
                 rollEffects: [],
                 soundScape: ["Subway"],
@@ -1898,13 +2001,23 @@ const C = (() => {
             },
             SubwayTunnels: {
                 fullName: "Subway Tunnels",
+                district: ["PATH"],
                 resonance: [null, "s"],
                 rollEffects: [],
                 soundScape: ["Sewers"],
                 outside: false
             },
+            TremereChantry: {
+                fullName: "Tremere Chantry",
+                district: ["Discovery"],
+                resonance: ["p", null],
+                rollEffects: [],
+                soundScape: ["Church"],
+                outside: false
+            },
             UndergroundMedClinic: {
                 fullName: "Underground Medical Clinic",
+                district: ["Discovery"],
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["Hospital"],
@@ -1912,6 +2025,7 @@ const C = (() => {
             },
             UndergroundMedOffice: {
                 fullName: "Underground Medical Office",
+                district: ["Discovery"],
                 resonance: [null, "c"],
                 rollEffects: [],
                 soundScape: ["SoftIndoor"],
@@ -1919,6 +2033,7 @@ const C = (() => {
             },
             VacantLot: {
                 fullName: "Vacant Lot",
+                district: null,
                 resonance: ["i", null],
                 rollEffects: [],
                 soundScape: ["UrbanDark"],
@@ -1926,6 +2041,7 @@ const C = (() => {
             },
             Vehicle2: {
                 fullName: "Vehicle",
+                district: null,
                 resonance: [null, null],
                 rollEffects: [],
                 soundScape: ["CityTraffic"],
@@ -1933,6 +2049,7 @@ const C = (() => {
             },
             Vehicle4: {
                 fullName: "Vehicle",
+                district: null,
                 resonance: [null, null],
                 rollEffects: [],
                 soundScape: ["CityTraffic"],
@@ -1940,6 +2057,7 @@ const C = (() => {
             },
             Vehicle5: {
                 fullName: "Vehicle",
+                district: null,
                 resonance: [null, null],
                 rollEffects: [],
                 soundScape: ["CityTraffic"],
@@ -1947,6 +2065,7 @@ const C = (() => {
             },
             Vehicle7: {
                 fullName: "Vehicle",
+                district: null,
                 resonance: [null, null],
                 rollEffects: [],
                 soundScape: ["CityTraffic"],
@@ -1954,6 +2073,7 @@ const C = (() => {
             },
             WalkingPath: {
                 fullName: "Walking Path",
+                district: null,
                 resonance: ["q", null],
                 rollEffects: [],
                 soundScape: ["CityPark"],
@@ -1961,6 +2081,7 @@ const C = (() => {
             },
             WarrensAntechamber: {
                 fullName: "Warrens: Antechamber",
+                district: ["Sewers"],
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["Sewers"],
@@ -1968,20 +2089,23 @@ const C = (() => {
             },
             WychwoodPub: {
                 fullName: "Wychwood Pub",
+                district: ["Wychwood"],
                 resonance: [null, "c"],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
                 outside: false
             },
-            YachtMister: {
-                fullName: "Yacht",
-                resonance: [],
+            Yacht: {
+                fullName: "Luxury Yacht",
+                district: ["Waterfront", "LakeOntario"],
+                resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["Waterside"],
                 outside: false
             },
             YongeDundasSquare: {
                 fullName: "Yonge & Dundas Square",
+                district: ["YongeStreet"],
                 resonance: ["c", null],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
@@ -1989,6 +2113,7 @@ const C = (() => {
             },
             YorkvilleApt1: {
                 fullName: "Yorkville Apartment",
+                district: ["Yorkville"],
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
@@ -1996,6 +2121,7 @@ const C = (() => {
             },
             YorkvilleApt2: {
                 fullName: "Yorkville Apartment",
+                district: ["Yorkville"],
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["(NONE)"],
@@ -2003,6 +2129,7 @@ const C = (() => {
             },
             YouthShelter: {
                 fullName: "Youth Shelter",
+                district: null,
                 resonance: ["c", null],
                 rollEffects: [],
                 soundScape: ["CityRevelers"],
@@ -2010,7 +2137,7 @@ const C = (() => {
             }
         },
     // #endregion
-// Rosie, Yusef,
+
     // #region MVC: Minimally-Viable Character Design
         MVCVALS = [
             [

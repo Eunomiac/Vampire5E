@@ -37,7 +37,7 @@ const D = (() => {
                 for (const str of [
                     ..._.flatten(_.values(C.ATTRIBUTES)),
                     ..._.flatten(_.values(C.SKILLS)),
-                    ...C.DISCIPLINES,
+                    ..._.keys(C.DISCIPLINES),
                     ...C.TRACKERS,
                     ...C.MISCATTRS
                 ])
@@ -189,7 +189,7 @@ const D = (() => {
         ALLSTATS = [
             ..._.flatten(_.values(C.ATTRIBUTES)),
             ..._.flatten(_.values(C.SKILLS)),
-            ...C.DISCIPLINES,
+            ..._.keys(C.DISCIPLINES),
             ...C.TRACKERS
         ],
     // #endregion
@@ -657,26 +657,33 @@ const D = (() => {
                         buttonHeight: "9px",
                         fontFamily: "Arial Narrow"
                     }
-                }
+                },
+                dbLines = []
             for (const rowData of menuData.rows)
                 if (["Title", "Header", "Body", "ButtonSubheader"].includes(rowData.type)) {
                     htmlRows.push(C.MENUHTML[rowData.type](rowData.contents, Object.assign({}, customStyles[rowData.type] || {}, rowData.styles || {})))
                 } else if (rowData.type === "ButtonLine") {
                     const buttonsCode = [],
-                        strictSpacing = rowData.contents.filter(x => VAL({number: x})).reduce((tot, x) => tot + x),
+                        numberEntities = rowData.contents.filter(x => VAL({number: x})),
+                        strictSpacing = numberEntities.length && rowData.contents.filter(x => VAL({number: x})).reduce((tot, x) => tot + x) || 0,
                         entityWidth = (100 - strictSpacing) / rowData.contents.filter(x => VAL({list: x}) || VAL({number: x}) && x === 0).length - 1
                     rowData.contents = rowData.contents.map(x => VAL({list: x}) && Object.assign(x, {styles: Object.assign({}, {width: `${entityWidth}%`}, x.styles)}) ||
                                                                  VAL({number: x}) && x === 0 && entityWidth ||
                                                                  VAL({number: x}) && x)               
                     for (const entity of rowData.contents)
-                        if (VAL({number: entity}))
+                        if (VAL({number: entity})) {
                             buttonsCode.push(C.MENUHTML.ButtonSpacer(`${D.Int(entity)}%`))
-                        else
+                        } else {
+                            if (entity.name.length > 12)
+                                entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
                             buttonsCode.push(C.MENUHTML.Button(entity.name, entity.command, Object.assign({width: `${entityWidth}%`}, customStyles.Button, rowData.buttonStyles || {}, entity.styles || {})))
+                            dbLines.push(`<b>${entity.name}</b>: ${entity.command}<br>`)
+                        }
                     htmlRows.push(C.MENUHTML.ButtonLine(buttonsCode, rowData.styles || {}))
                 }
             if (menuData.title)
                 htmlRows.unshift(C.MENUHTML.Title(menuData.title))
+            DB(dbLines, "commandMenu")
             promptGM(C.MENUHTML.Block(htmlRows.join(""), menuData.blockParams || {}), replyFunc)
         },
     // #endregion
