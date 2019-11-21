@@ -284,39 +284,14 @@ const DragPads = (() => {
                 const slot = D.Int(Media.GetImgData(card.id).name.replace(/compCardSpot_/gu, "")) - 1
                 Complications.Flip(slot)
             },
-            toggleMapLayer(mapButton) { // mapButtonRoads --> TorontoMapRoadsOverlay
-            // D.Alert(D.JS(mapButton))
-            // D.Alert(D.JS(Media.GetImgKey(mapButton.id)))
+            toggleMapLayer(mapButton) { // MapButton_Autarkis_1 --> MapLayer_Autarkis_1
                 const buttonKey = Media.GetImgKey(mapButton.id),
-                    buttonData = Media.GetImgData(buttonKey),
-                    mapLayerKey = buttonKey.replace(/mapButton(.*?)_1/gu, "TorontoMap$1Overlay"),
-                    mapLayerData = Media.GetImgData(mapLayerKey)
-                let isActive
-            // D.Alert(D.JS(buttonData))
-            // D.Alert(D.JS(mapLayerKey))
-            // D.Alert(D.JS(mapLayerData))
-                if (mapLayerData.cycleSrcs && mapLayerData.cycleSrcs.length) {
-                    isActive = Media.ToggleImg(mapLayerKey, true)
-                    let srcIndex = Math.max(_.findIndex(mapLayerData.cycleSrcs, x => x === mapLayerData.curSrc), 0)
-                // D.Alert(`Map Cycle Srcs: ${srcIndex}`)
-                    if (srcIndex === mapLayerData.cycleSrcs.length - 1)
-                        srcIndex = 0
-                    else
-                        srcIndex++
-                    Media.SetImg(mapLayerKey, mapLayerData.cycleSrcs[srcIndex])
+                    mapLayerKey = buttonKey.replace(/Button/gu, "Layer")
+                if (Media.IsCyclingImg(mapLayerKey)) {
+                    Media.CycleImg(mapLayerKey)
+                    Media.CycleImg(buttonKey)
                 } else {
-                    isActive = Media.ToggleImg(mapLayerKey)
-                }
-                if (buttonData.cycleSrcs && buttonData.cycleSrcs.length) {
-                    let srcIndex = Math.max(_.findIndex(buttonData.cycleSrcs, x => x === buttonData.curSrc), 0)
-                // D.Alert(`Button Cycle Srcs: ${srcIndex}`)
-                    if (srcIndex === buttonData.cycleSrcs.length - 1)
-                        srcIndex = 0
-                    else
-                        srcIndex++
-                    Media.SetImg(mapButton.id, buttonData.cycleSrcs[srcIndex])
-                } else {
-                    Media.SetImg(mapButton.id, isActive && "on" || "off")
+                    Media.SetImg(buttonKey, Media.ToggleImg(mapLayerKey) && "on" || "off")
                 }
             }
         },

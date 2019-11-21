@@ -49,9 +49,8 @@ const Media = (() => {
             STATE.REF.AREADICT = Fuzzy.Fix()
             for (const areaKey of _.keys(STATE.REF.areas))
                 STATE.REF.AREADICT.add(areaKey)
-            return
 
-            const srcsToAdd = {
+            /* const srcsToAdd = {
                 Horizon_1: {
                     night1: "https://s3.amazonaws.com/files.d20.io/images/96325997/MpxC9gfKRM1xtCCPjYT46g/thumb.jpg?1573105648"
                 },
@@ -68,7 +67,7 @@ const Media = (() => {
                         STATE.REF.imgregistry[imgName].srcs[srcName] = srcString                    
                     for (const [srcName, srcString] of Object.entries(imgSrcs))
                         STATE.REF.imgregistry[imgName].srcs[srcName] = srcString
-                }
+                } */
             // "SubSiteTopRight_1","SubSiteRight_1","SubSiteBotRight_1","SubSiteTopLeft_1","SubSiteLeft_1","SubSiteBotLeft_1"
             // STATE.REF.imgregistry.SubLocTopRight_1 = D.Clone(STATE.REF.imgregistry.SubSiteTopRight_1)
             // STATE.REF.imgregistry.SubLocRight_1 = D.Clone(STATE.REF.imgregistry.SubSiteRight_1)
@@ -82,6 +81,26 @@ const Media = (() => {
             // delete STATE.REF.imgregistry.SubSiteTopLeft_1
             // delete STATE.REF.imgregistry.SubSiteLeft_1
             // delete STATE.REF.imgregistry.SubSiteBotLeft_1
+
+            /* "MapButton_Autarkis_1"
+                "MapButton_Districts_1"
+                "MapButton_Domain_1"
+                "MapButton_Parks_1"
+                "MapButton_Rack_1"
+                "MapButton_Roads_1"
+                "MapButton_SitesCulture_1"
+                "MapButton_SitesEducation_1"
+                "MapButton_SitesHavens_1"
+                "MapButton_SitesHealth_1"
+                "MapButton_SitesLandmarks_1"
+                "MapButton_SitesNightlife_1"
+                "MapButton_SitesShopping_1"
+                "MapButton_SitesTransportation_1" */
+
+            // "MapLayer_<Name>"
+            
+            // DOMAIN:  "anarch" --> "camarilla" --> "blank" 
+            // DISTRICTS: "names" --> "fills" --> "both" --> "blank"
         },
             
         
@@ -208,6 +227,17 @@ const Media = (() => {
                                             regRandomizerToken(imgObj, tokenName)
                                         break
                                     }
+                                    case "cyclesrc": case "cycle": {
+                                        if (isRegImg(imgObj)) {
+                                            const hostName = getImgKey(imgObj)
+                                            REGISTRY.IMG[hostName].cycleSrcs = []
+                                            REGISTRY.IMG[hostName].cycleSrcs.push(REGISTRY.IMG[hostName].curSrc)
+                                            D.Alert(`${D.JS(hostName)} Registered as a Cycling Image.<br><br>Currently Displaying '${D.JS(REGISTRY.IMG[hostName].curSrc)}'.`, "!img reg cyclesrc")
+                                        } else {
+                                            D.Alert("Must register the image as normal first!<br><br>Syntax: !img reg <hostname> <srcName> <activeLayer>", "!img reg cyclesrc")
+                                        }
+                                        break
+                                    }
                                     default: {
                                         if (call)
                                             args.unshift(call)
@@ -304,7 +334,12 @@ const Media = (() => {
                                     if (VAL({string: srcName}, "!img add cyclesrc") && isRegImg(hostName)) {
                                         REGISTRY.IMG[hostName].cycleSrcs = REGISTRY.IMG[hostName].cycleSrcs || []
                                         REGISTRY.IMG[hostName].cycleSrcs.push(srcName)
+                                    }                                    
+                                    if (srcName === "blank" || _.keys(REGISTRY.IMG[hostName].srcs).includes(srcName)) {
+                                        D.Alert(`Existing image source '${srcName}' added to cycling queue.<br><br>Current Cycling Queue: ${REGISTRY.IMG[hostName].cycleSrcs}`, "!img add cyclesrc")
+                                        break
                                     }
+                                    D.Alert(`Adding '${srcName}' to cycling queue; proceeding to add image as source.`, "!img add cyclesrc")
                                 }
                                 // falls through
                                 case "src": case "source": {
@@ -499,7 +534,7 @@ const Media = (() => {
                             break
                         }
                         case "resize": {
-                            resizeImgs(imgObjs)
+                            resizeImgs(imgObjs, args)
                             break
                         }
                         case "dist": {
@@ -1048,12 +1083,21 @@ const Media = (() => {
             height: C.MAP.height,
             width: C.MAP.width,
             keys: [
-                "TorontoMap",
-                "TorontoMapDomainsOverlay",
-                "TorontoMapAutarkisOverlay",
-                "TorontoMapRackOverlay",
-                "TorontoMapDistrictsOverlay",
-                "TorontoMapParksOverlay"
+                "MapLayer_Autarkis",
+                "MapLayer_Districts",
+				"MapLayer_Districts_Fill",
+                "MapLayer_Domain",
+                "MapLayer_Parks",
+                "MapLayer_Rack",
+                "MapLayer_Roads",
+                "MapLayer_SitesCulture",
+                "MapLayer_SitesEducation",
+                "MapLayer_SitesHavens",
+                "MapLayer_SitesHealth",
+                "MapLayer_SitesLandmarks",
+                "MapLayer_SitesNightlife",
+                "MapLayer_SitesShopping",
+                "MapLayer_SitesTransportation"
             ]
         },
         ZLEVELS = {
@@ -1192,30 +1236,25 @@ const Media = (() => {
                     weeklyResourcesHeader_1: 140
                 },
                 Map: {
-                    TorontoMap_1: 401,
-                    TorontoMapDomainOverlay_1: 405,
-                    TorontoMapAutarkisOverlay_1: 405,
-                    TorontoMapRackOverlay_1: 404,
-                    TorontoMapRoadsOverlay_1: 406,
-                    TorontoMapDistrictsOverlay_1: 407,
-                    TorontoMapParksOverlay_1: 404,
-                    TorontoMapSitesCultureOverlay_1: 408,
-                    TorontoMapSitesNightlifeOverlay_1: 408,
-                    TorontoMapSitesLandmarksOverlay_1: 408,
-                    TorontoMapSitesTransportationOverlay_1: 408,
-                    TorontoMapSitesShoppingOverlay_1: 408,
-                    TorontoMapSitesEducationOverlay_1: 408,
-                    TorontoMapSitesHealthOverlay_1: 408,
-                    TorontoMapSitesHavensOverlay_1: 408
+                    MapLayer_Base_1: 401,
+					MapLayer_DistrictsFill_1: 403,
+                    MapLayer_Rack_1: 404,
+                    MapLayer_Parks_1: 404,
+                    MapLayer_Domain_1: 405,
+                    MapLayer_Autarkis_1: 405,
+                    MapLayer_Roads_1: 406,
+                    MapLayer_Districts_1: 407,
+                    MapLayer_SitesCulture_1: 408,
+                    MapLayer_SitesNightlife_1: 408,
+                    MapLayer_SitesLandmarks_1: 408,
+                    MapLayer_SitesTransportation_1: 408,
+                    MapLayer_SitesShopping_1: 408,
+                    MapLayer_SitesEducation_1: 408,
+                    MapLayer_SitesHealth_1: 408,
+                    MapLayer_SitesHavens_1: 408
                 }
             },
             objects: {
-                PlayerTokens: {
-                    "Dr.ArthurRoyToken_1": 200,
-                    JohannesNapierToken_1: 200,
-                    AvaWongToken_1: 200,
-                    LockeUlrichToken_1: 200
-                },
                 Complications: {
                     Base: {
                         ComplicationMat_1: 500
@@ -1767,6 +1806,7 @@ const Media = (() => {
                     ["IMG", "SubLocBotRight_1", "isActive", false],
                     ["IMG", "MapLayer_Autarkis_1", "isActive", true],
                     ["IMG", "MapLayer_Districts_1", "isActive", true],
+                    ["IMG", "MapLayer_DistrictsFill_1", "isActive", true],
                     ["IMG", "MapLayer_Domain_1", "isActive", true],
                     ["IMG", "MapLayer_Parks_1", "isActive", true],
                     ["IMG", "MapLayer_Rack_1", "isActive", true],
@@ -1849,7 +1889,7 @@ const Media = (() => {
                     ["IMG", "HungerTopLeft_1", "curSrc", "@@curSrc@@"],
                     ["IMG", "HungerTopRight_1", "curSrc", "@@curSrc@@"],
                     ["IMG", "MapButton_Autarkis_1", "curSrc", "on"],
-                    ["IMG", "MapButton_Districts_1", "curSrc", "on"],
+                    ["IMG", "MapButton_Districts_1", "curSrc", "@@curSrc@@"],
                     ["IMG", "MapButton_Domain_1", "curSrc", "@@curSrc@@"],
                     ["IMG", "MapButton_Parks_1", "curSrc", "on"],
                     ["IMG", "MapButton_Rack_1", "curSrc", "on"],
@@ -1936,7 +1976,8 @@ const Media = (() => {
                     ["IMG", "SubLocBotRight_1", "curSrc", null],
                     ["IMG", "MapLayer_Autarkis_1", "curSrc", "base"],
                     ["IMG", "MapLayer_Districts_1", "curSrc", "base"],
-                    ["IMG", "MapLayer_Domain_1", "curSrc", "base"],
+                    ["IMG", "MapLayer_DistrictsFill_1", "curSrc", "base"],
+                    ["IMG", "MapLayer_Domain_1", "curSrc", "blank"],
                     ["IMG", "MapLayer_Parks_1", "curSrc", "base"],
                     ["IMG", "MapLayer_Rack_1", "curSrc", "base"],
                     ["IMG", "MapLayer_Roads_1", "curSrc", "base"],
@@ -2018,7 +2059,7 @@ const Media = (() => {
                     ["IMG", "HungerTopLeft_1", "activeSrc", "@@curSrc@@"],
                     ["IMG", "HungerTopRight_1", "activeSrc", "@@curSrc@@"],
                     ["IMG", "MapButton_Autarkis_1", "activeSrc", "on"],
-                    ["IMG", "MapButton_Districts_1", "activeSrc", "on"],
+                    ["IMG", "MapButton_Districts_1", "activeSrc", "@@curSrc@@"],
                     ["IMG", "MapButton_Domain_1", "activeSrc", "@@curSrc@@"],
                     ["IMG", "MapButton_Parks_1", "activeSrc", "on"],
                     ["IMG", "MapButton_Rack_1", "activeSrc", "on"],
@@ -2105,7 +2146,8 @@ const Media = (() => {
                     ["IMG", "SubLocBotRight_1", "activeSrc", "@@curSrc@@"],
                     ["IMG", "MapLayer_Autarkis_1", "activeSrc", "base"],
                     ["IMG", "MapLayer_Districts_1", "activeSrc", "base"],
-                    ["IMG", "MapLayer_Domain_1", "activeSrc", "base"],
+                    ["IMG", "MapLayer_DistrictsFill_1", "activeSrc", "base"],
+                    ["IMG", "MapLayer_Domain_1", "activeSrc", "blank"],
                     ["IMG", "MapLayer_Parks_1", "activeSrc", "base"],
                     ["IMG", "MapLayer_Rack_1", "activeSrc", "base"],
                     ["IMG", "MapLayer_Roads_1", "activeSrc", "base"],
@@ -2464,179 +2506,223 @@ const Media = (() => {
                     ["IMG", "MapButton_SitesCulture_1", "modes", "Inactive", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesCulture_1", "modes", "Daylighter", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesCulture_1", "modes", "Downtime", {isForcedOn: null, isForcedState: null}],
-                    ["IMG", "MapButton_SitesCulture_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "MapButton_SitesEducation_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapButton_SitesCulture_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapButton_SitesEducation_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesEducation_1", "modes", "Inactive", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesEducation_1", "modes", "Daylighter", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesEducation_1", "modes", "Downtime", {isForcedOn: null, isForcedState: null}],
-                    ["IMG", "MapButton_SitesEducation_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "MapButton_SitesHavens_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapButton_SitesEducation_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapButton_SitesHavens_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesHavens_1", "modes", "Inactive", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesHavens_1", "modes", "Daylighter", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesHavens_1", "modes", "Downtime", {isForcedOn: null, isForcedState: null}],
-                    ["IMG", "MapButton_SitesHavens_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "MapButton_SitesHealth_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapButton_SitesHavens_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapButton_SitesHealth_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesHealth_1", "modes", "Inactive", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesHealth_1", "modes", "Daylighter", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesHealth_1", "modes", "Downtime", {isForcedOn: null, isForcedState: null}],
-                    ["IMG", "MapButton_SitesHealth_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "MapButton_SitesLandmarks_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapButton_SitesHealth_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapButton_SitesLandmarks_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesLandmarks_1", "modes", "Inactive", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesLandmarks_1", "modes", "Daylighter", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesLandmarks_1", "modes", "Downtime", {isForcedOn: null, isForcedState: null}],
-                    ["IMG", "MapButton_SitesLandmarks_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "MapButton_SitesNightlife_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapButton_SitesLandmarks_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapButton_SitesNightlife_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesNightlife_1", "modes", "Inactive", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesNightlife_1", "modes", "Daylighter", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesNightlife_1", "modes", "Downtime", {isForcedOn: null, isForcedState: null}],
-                    ["IMG", "MapButton_SitesNightlife_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "MapButton_SitesShopping_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapButton_SitesNightlife_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapButton_SitesShopping_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesShopping_1", "modes", "Inactive", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesShopping_1", "modes", "Daylighter", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesShopping_1", "modes", "Downtime", {isForcedOn: null, isForcedState: null}],
-                    ["IMG", "MapButton_SitesShopping_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "MapButton_SitesTransportation_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapButton_SitesShopping_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapButton_SitesTransportation_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesTransportation_1", "modes", "Inactive", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesTransportation_1", "modes", "Daylighter", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapButton_SitesTransportation_1", "modes", "Downtime", {isForcedOn: null, isForcedState: null}],
-                    ["IMG", "MapButton_SitesTransportation_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Big_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "MapButton_SitesTransportation_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Big_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Big_1", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Big_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Big_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Big_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Big_2", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Big_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Big_2", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Big_2", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Big_2", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Big_2", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Big_2", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Big_2", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_1", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_10", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_10", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_10", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_10", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_10", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_10", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_11", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_10", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_11", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_11", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_11", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_11", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_11", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_12", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_11", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_12", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_12", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_12", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_12", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_12", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_13", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_12", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_13", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_13", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_13", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_13", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_13", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_14", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_13", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_14", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_14", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_14", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_14", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_14", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_15", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_14", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_15", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_15", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_15", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_15", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_15", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_16", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_15", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_16", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_16", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_16", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_16", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_16", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_17", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_16", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_17", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_17", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_17", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_17", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_17", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_18", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_17", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_18", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_18", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_18", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_18", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_18", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_19", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_18", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_19", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_19", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_19", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_19", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_19", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_2", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_19", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_2", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_2", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_2", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_2", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_2", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_20", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_2", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_20", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_20", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_20", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_20", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_20", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_21", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_20", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_21", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_21", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_21", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_21", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_21", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_22", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_21", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_22", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_22", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_22", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_22", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_22", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_23", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_22", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_23", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_23", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_23", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_23", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_23", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_24", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_23", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_24", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_24", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_24", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_24", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_24", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_25", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_24", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_25", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_25", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_25", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_25", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_25", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_26", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_25", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_26", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_26", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_26", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_26", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_26", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_27", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_26", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_27", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_27", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_27", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_27", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_27", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_28", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_27", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_28", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_28", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_28", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_28", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_28", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_29", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_28", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_29", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_29", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_29", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_29", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_29", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_3", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_29", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_3", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_3", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_3", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_3", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_3", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_30", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_3", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_30", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_30", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_30", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_30", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_30", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_4", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_30", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_4", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_4", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_4", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_4", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_4", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_5", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_4", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_5", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_5", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_5", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_5", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_5", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_6", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_5", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_6", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_6", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_6", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_6", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_6", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_7", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_6", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_7", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_7", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_7", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_7", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_7", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_8", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_7", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_8", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_8", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_8", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_8", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_8", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerDie_Main_9", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
+                    ["IMG", "RollerDie_Main_8", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerDie_Main_9", "modes", "Active", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_9", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerDie_Main_9", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: true}],
                     ["IMG", "RollerDie_Main_9", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: true}],
-                    ["IMG", "RollerDie_Main_9", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerFrame_BottomEnd_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: null}],
+                    ["IMG", "RollerDie_Main_9", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerFrame_BottomEnd_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: null}],
                     ["IMG", "RollerFrame_BottomEnd_1", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerFrame_BottomEnd_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: null}],
                     ["IMG", "RollerFrame_BottomEnd_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: null}],
-                    ["IMG", "RollerFrame_BottomEnd_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerFrame_BottomMid_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: null}],
+                    ["IMG", "RollerFrame_BottomEnd_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerFrame_BottomMid_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: null}],
                     ["IMG", "RollerFrame_BottomMid_1", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerFrame_BottomMid_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: null}],
                     ["IMG", "RollerFrame_BottomMid_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: null}],
-                    ["IMG", "RollerFrame_BottomMid_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerFrame_BottomMid_2", "modes", "Active", {isForcedOn: "LAST", isForcedState: null}],
+                    ["IMG", "RollerFrame_BottomMid_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerFrame_BottomMid_2", "modes", "Active", {isForcedOn: "LAST", isForcedState: null}],
                     ["IMG", "RollerFrame_BottomMid_2", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerFrame_BottomMid_2", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: null}],
                     ["IMG", "RollerFrame_BottomMid_2", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: null}],
-                    ["IMG", "RollerFrame_BottomMid_2", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerFrame_BottomMid_3", "modes", "Active", {isForcedOn: "LAST", isForcedState: null}],
+                    ["IMG", "RollerFrame_BottomMid_2", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerFrame_BottomMid_3", "modes", "Active", {isForcedOn: "LAST", isForcedState: null}],
                     ["IMG", "RollerFrame_BottomMid_3", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerFrame_BottomMid_3", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: null}],
                     ["IMG", "RollerFrame_BottomMid_3", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: null}],
-                    ["IMG", "RollerFrame_BottomMid_3", "modes", "Complications", {isForcedOn: null, isForcedState: null}], ["IMG", "RollerFrame_BottomMid_4", "modes", "Active", {isForcedOn: "LAST", isForcedState: null}],
+                    ["IMG", "RollerFrame_BottomMid_3", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "RollerFrame_BottomMid_4", "modes", "Active", {isForcedOn: "LAST", isForcedState: null}],
                     ["IMG", "RollerFrame_BottomMid_4", "modes", "Inactive", {isForcedOn: false, isForcedState: null}],
                     ["IMG", "RollerFrame_BottomMid_4", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: null}],
                     ["IMG", "RollerFrame_BottomMid_4", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: null}],
@@ -2826,6 +2912,11 @@ const Media = (() => {
                     ["IMG", "MapLayer_Districts_1", "modes", "Daylighter", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapLayer_Districts_1", "modes", "Downtime", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapLayer_Districts_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Inactive", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Daylighter", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Downtime", {isForcedOn: null, isForcedState: null}],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Complications", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapLayer_Domain_1", "modes", "Active", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapLayer_Domain_1", "modes", "Inactive", {isForcedOn: null, isForcedState: null}],
                     ["IMG", "MapLayer_Domain_1", "modes", "Daylighter", {isForcedOn: null, isForcedState: null}],
@@ -3325,6 +3416,7 @@ const Media = (() => {
                     ["IMG", "SubLocBotRight_1", "modes", "Active", "lastActive", false],
                     ["IMG", "MapLayer_Autarkis_1", "modes", "Active", "lastActive", true],
                     ["IMG", "MapLayer_Districts_1", "modes", "Active", "lastActive", true],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Active", "lastActive", true],
                     ["IMG", "MapLayer_Domain_1", "modes", "Active", "lastActive", true],
                     ["IMG", "MapLayer_Parks_1", "modes", "Active", "lastActive", true],
                     ["IMG", "MapLayer_Rack_1", "modes", "Active", "lastActive", true],
@@ -3407,7 +3499,7 @@ const Media = (() => {
                     ["IMG", "HungerTopLeft_1", "modes", "Active", "lastState", "@@curSrc@@"],
                     ["IMG", "HungerTopRight_1", "modes", "Active", "lastState", "@@curSrc@@"],
                     ["IMG", "MapButton_Autarkis_1", "modes", "Active", "lastState", "on"],
-                    ["IMG", "MapButton_Districts_1", "modes", "Active", "lastState", "on"],
+                    ["IMG", "MapButton_Districts_1", "modes", "Active", "lastState", "@@curSrc@@"],
                     ["IMG", "MapButton_Domain_1", "modes", "Active", "lastState", "@@curSrc@@"],
                     ["IMG", "MapButton_Parks_1", "modes", "Active", "lastState", "on"],
                     ["IMG", "MapButton_Rack_1", "modes", "Active", "lastState", "on"],
@@ -3494,7 +3586,8 @@ const Media = (() => {
                     ["IMG", "SubLocBotRight_1", "modes", "Active", "lastState", null],
                     ["IMG", "MapLayer_Autarkis_1", "modes", "Active", "lastState", "base"],
                     ["IMG", "MapLayer_Districts_1", "modes", "Active", "lastState", "base"],
-                    ["IMG", "MapLayer_Domain_1", "modes", "Active", "lastState", "base"],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Active", "lastState", "base"],
+                    ["IMG", "MapLayer_Domain_1", "modes", "Active", "lastState", "blank"],
                     ["IMG", "MapLayer_Parks_1", "modes", "Active", "lastState", "base"],
                     ["IMG", "MapLayer_Rack_1", "modes", "Active", "lastState", "base"],
                     ["IMG", "MapLayer_Roads_1", "modes", "Active", "lastState", "base"],
@@ -3663,6 +3756,7 @@ const Media = (() => {
                     ["IMG", "SubLocBotRight_1", "modes", "Inactive", "lastActive", false],
                     ["IMG", "MapLayer_Autarkis_1", "modes", "Inactive", "lastActive", true],
                     ["IMG", "MapLayer_Districts_1", "modes", "Inactive", "lastActive", true],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Inactive", "lastActive", true],
                     ["IMG", "MapLayer_Domain_1", "modes", "Inactive", "lastActive", true],
                     ["IMG", "MapLayer_Parks_1", "modes", "Inactive", "lastActive", true],
                     ["IMG", "MapLayer_Rack_1", "modes", "Inactive", "lastActive", true],
@@ -3832,6 +3926,7 @@ const Media = (() => {
                     ["IMG", "SubLocBotRight_1", "modes", "Inactive", "lastState", null],
                     ["IMG", "MapLayer_Autarkis_1", "modes", "Inactive", "lastState", "base"],
                     ["IMG", "MapLayer_Districts_1", "modes", "Inactive", "lastState", "base"],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Inactive", "lastState", "base"],
                     ["IMG", "MapLayer_Domain_1", "modes", "Inactive", "lastState", "base"],
                     ["IMG", "MapLayer_Parks_1", "modes", "Inactive", "lastState", "base"],
                     ["IMG", "MapLayer_Rack_1", "modes", "Inactive", "lastState", "base"],
@@ -4001,6 +4096,7 @@ const Media = (() => {
                     ["IMG", "SubLocBotRight_1", "modes", "Daylighter", "lastActive", false],
                     ["IMG", "MapLayer_Autarkis_1", "modes", "Daylighter", "lastActive", true],
                     ["IMG", "MapLayer_Districts_1", "modes", "Daylighter", "lastActive", true],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Daylighter", "lastActive", true],
                     ["IMG", "MapLayer_Domain_1", "modes", "Daylighter", "lastActive", true],
                     ["IMG", "MapLayer_Parks_1", "modes", "Daylighter", "lastActive", true],
                     ["IMG", "MapLayer_Rack_1", "modes", "Daylighter", "lastActive", true],
@@ -4170,6 +4266,7 @@ const Media = (() => {
                     ["IMG", "SubLocBotRight_1", "modes", "Daylighter", "lastState", null],
                     ["IMG", "MapLayer_Autarkis_1", "modes", "Daylighter", "lastState", "base"],
                     ["IMG", "MapLayer_Districts_1", "modes", "Daylighter", "lastState", "base"],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Daylighter", "lastState", "base"],
                     ["IMG", "MapLayer_Domain_1", "modes", "Daylighter", "lastState", "base"],
                     ["IMG", "MapLayer_Parks_1", "modes", "Daylighter", "lastState", "base"],
                     ["IMG", "MapLayer_Rack_1", "modes", "Daylighter", "lastState", "base"],
@@ -4339,6 +4436,7 @@ const Media = (() => {
                     ["IMG", "SubLocBotRight_1", "modes", "Downtime", "lastActive", false],
                     ["IMG", "MapLayer_Autarkis_1", "modes", "Downtime", "lastActive", true],
                     ["IMG", "MapLayer_Districts_1", "modes", "Downtime", "lastActive", true],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Downtime", "lastActive", true],
                     ["IMG", "MapLayer_Domain_1", "modes", "Downtime", "lastActive", true],
                     ["IMG", "MapLayer_Parks_1", "modes", "Downtime", "lastActive", true],
                     ["IMG", "MapLayer_Rack_1", "modes", "Downtime", "lastActive", true],
@@ -4508,6 +4606,7 @@ const Media = (() => {
                     ["IMG", "SubLocBotRight_1", "modes", "Downtime", "lastState", null],
                     ["IMG", "MapLayer_Autarkis_1", "modes", "Downtime", "lastState", "base"],
                     ["IMG", "MapLayer_Districts_1", "modes", "Downtime", "lastState", "base"],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Downtime", "lastState", "base"],
                     ["IMG", "MapLayer_Domain_1", "modes", "Downtime", "lastState", "base"],
                     ["IMG", "MapLayer_Parks_1", "modes", "Downtime", "lastState", "base"],
                     ["IMG", "MapLayer_Rack_1", "modes", "Downtime", "lastState", "base"],
@@ -4677,6 +4776,7 @@ const Media = (() => {
                     ["IMG", "SubLocBotRight_1", "modes", "Spotlight", "lastActive", false],
                     ["IMG", "MapLayer_Autarkis_1", "modes", "Spotlight", "lastActive", true],
                     ["IMG", "MapLayer_Districts_1", "modes", "Spotlight", "lastActive", true],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Spotlight", "lastActive", true],
                     ["IMG", "MapLayer_Domain_1", "modes", "Spotlight", "lastActive", true],
                     ["IMG", "MapLayer_Parks_1", "modes", "Spotlight", "lastActive", true],
                     ["IMG", "MapLayer_Rack_1", "modes", "Spotlight", "lastActive", true],
@@ -4846,6 +4946,7 @@ const Media = (() => {
                     ["IMG", "SubLocBotRight_1", "modes", "Spotlight", "lastState", null],
                     ["IMG", "MapLayer_Autarkis_1", "modes", "Spotlight", "lastState", "base"],
                     ["IMG", "MapLayer_Districts_1", "modes", "Spotlight", "lastState", "base"],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Spotlight", "lastState", "base"],
                     ["IMG", "MapLayer_Domain_1", "modes", "Spotlight", "lastState", "base"],
                     ["IMG", "MapLayer_Parks_1", "modes", "Spotlight", "lastState", "base"],
                     ["IMG", "MapLayer_Rack_1", "modes", "Spotlight", "lastState", "base"],
@@ -5015,6 +5116,7 @@ const Media = (() => {
                     ["IMG", "SubLocBotRight_1", "modes", "Complications", "lastActive", false],
                     ["IMG", "MapLayer_Autarkis_1", "modes", "Complications", "lastActive", true],
                     ["IMG", "MapLayer_Districts_1", "modes", "Complications", "lastActive", true],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Complications", "lastActive", true],
                     ["IMG", "MapLayer_Domain_1", "modes", "Complications", "lastActive", true],
                     ["IMG", "MapLayer_Parks_1", "modes", "Complications", "lastActive", true],
                     ["IMG", "MapLayer_Rack_1", "modes", "Complications", "lastActive", true],
@@ -5184,6 +5286,7 @@ const Media = (() => {
                     ["IMG", "SubLocBotRight_1", "modes", "Complications", "lastState", null],
                     ["IMG", "MapLayer_Autarkis_1", "modes", "Complications", "lastState", "base"],
                     ["IMG", "MapLayer_Districts_1", "modes", "Complications", "lastState", "base"],
+                    ["IMG", "MapLayer_DistrictsFill_1", "modes", "Complications", "lastState", "base"],
                     ["IMG", "MapLayer_Domain_1", "modes", "Complications", "lastState", "base"],
                     ["IMG", "MapLayer_Parks_1", "modes", "Complications", "lastState", "base"],
                     ["IMG", "MapLayer_Rack_1", "modes", "Complications", "lastState", "base"],
@@ -5953,7 +6056,7 @@ const Media = (() => {
                     ["TEXT", "tempF", "modes", "Complications", "lastState", "@@curText@@"],
                     ["TEXT", "testSessionNotice", "modes", "Complications", "lastState", "@@curText@@"],
                     ["TEXT", "TimeTracker", "modes", "Complications", "lastState", "@@curText@@"],
-                    ["TEXT", "weather", "modes", "Complications", "lastState", "@@curText@@"],
+                    ["TEXT", "weather", "modes", "Complications", "lastState", "@@curText@@"]
                 ],
                 [errorLines, returnMsg, updatedKeys] = [[], [], {IMG: [], TEXT: []}]
             for (const data of modeData) {
@@ -6019,6 +6122,12 @@ const Media = (() => {
         isCharToken = imgObj => VAL({imgObj}) && D.GetName(imgObj.get("represents")) === imgObj.get("name"),
         isRegToken = imgObj => VAL({imgObj}) && REGISTRY.TOKEN[imgObj.get("name")],
         isRandomizerToken = tokenObj => isCharToken(tokenObj) && isRegToken(tokenObj) && REGISTRY.TOKEN[tokenObj.get("name")].randomSrcs && REGISTRY.TOKEN[tokenObj.get("name")].randomSrcs.base,
+        isCyclingImg = imgObj => {
+            const imgData = getImgData(imgObj)
+            if (VAL({list: imgData}))
+                return imgData.cycleSrcs && imgData.cycleSrcs.length
+            return false 
+        },
         getImgKey = (imgRef, funcName = false) => {
             try {
                 let imgKey, imgObj
@@ -6533,6 +6642,14 @@ const Media = (() => {
                 REGISTRY.TOKEN[tokenKey].randomSrcCount = tokenNum
             }
         },
+        cycleImg = (imgRef) => {
+            const imgData = getImgData(imgRef)
+            if (imgData && isCyclingImg(imgData.id)) {
+                const srcIndex = Math.max(_.findIndex(imgData.cycleSrcs, x => x === imgData.curSrc), 0)
+                toggleImg(imgData.name, true)
+                setImg(imgData.name, imgData.cycleSrcs[(srcIndex === imgData.cycleSrcs.length - 1) ? 0 : (srcIndex + 1)])
+            }
+        },
         setImgTemp = (imgRef, params) => {
             const imgObj = getImgObj(imgRef)
             if (VAL({imgObj}, "setImgTemp")) {
@@ -6553,10 +6670,17 @@ const Media = (() => {
             }
             return false
         },
-        resizeImgs = imgRefs => {
+        resizeImgs = (imgRefs, axes = []) => {
             const imgObjs = imgRefs.map(x => getImgObj(x))
-            for (const imgObj of imgObjs)
-                imgObj.set({height: STATE.REF.anchorObj.height, width: STATE.REF.anchorObj.width})
+            for (const imgObj of imgObjs) {
+                const dims = {height: STATE.REF.anchorObj.height, width: STATE.REF.anchorObj.width}
+                if (axes.length === 1)
+                    if (axes.includes("horiz") || axes.includes("width")) 
+                        dims.height = imgObj.get("height") * (dims.width / imgObj.get("width"))
+                    else if (axes.includes("vert") || axes.includes("height"))
+                        dims.width = imgObj.get("width") * (dims.height / imgObj.get("height"))
+                imgObj.set(dims)
+            }
         },
         toggleImg = (imgRef, isActive, isForcing = false) => {
             // NON-PERMANENT.  If turning off, set activeSrc to curSrc.
@@ -7887,6 +8011,7 @@ const Media = (() => {
         HasForcedState: hasForcedState,
         SwitchMode: switchMode,
         IsActive: isObjActive,
+        IsCyclingImg: isCyclingImg,
         Toggle: toggle,
         Adjust: adjustObj,
         
@@ -7908,6 +8033,7 @@ const Media = (() => {
         // SETTERS
         SetImg: setImg, SetText: setText, SetToken: setTokenSrc, CombineTokenSrc: combineTokenSrc,
         ToggleImg: toggleImg, ToggleText: toggleText, ToggleToken: toggleToken,
+        CycleImg: cycleImg,
         SetImgData: setImgData, SetTextData: setTextData,
         SetImgTemp: setImgTemp, // SetTextTemp: setTextTemp,
         Spread: spreadImgs,

@@ -1097,50 +1097,823 @@ const C = (() => {
         },
         DISCIPLINES = {
             ["Animalism"]: {
-
+                ["Bond Famulus"]: {
+                    discName: "Animalism",
+                    powerName: "Bond Famulus",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Sense the Beast"]: {
+                    discName: "Animalism",
+                    powerName: "Sense the Beast",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Feral Whispers"]: {
+                    discName: "Animalism",
+                    powerName: "Feral Whispers",
+                    level: 2,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Animal Succulence"]: {
+                    discName: "Animalism",
+                    powerName: "Animal Succulence",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Quell the Beast"]: {
+                    discName: "Animalism",
+                    powerName: "Quell the Beast",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Unliving Hive"]: {
+                    discName: "Animalism",
+                    powerName: "Unliving Hive",
+                    level: 3,
+                    prereqs: [ ["Obfuscate", 2] ],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Subsume the Spirit"]: {
+                    discName: "Animalism",
+                    powerName: "Subsume the Spirit",
+                    level: 4,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Animal Dominion"]: {
+                    discName: "Animalism",
+                    powerName: "Animal Dominion",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Drawing Out the Beast"]: {
+                    discName: "Animalism",
+                    powerName: "Drawing Out the Beast",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                }
             },
             ["Auspex"]: {
-
+                ["Heightened Senses"]: {
+                    discName: "Auspex",
+                    powerName: "Heightened Senses",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Sense the Unseen"]: {
+                    discName: "Auspex",
+                    powerName: "Sense the Unseen",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Premonition"]: {
+                    discName: "Auspex",
+                    powerName: "Premonition",
+                    level: 2,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Scry the Soul"]: {
+                    discName: "Auspex",
+                    powerName: "Scry the Soul",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Share the Senses"]: {
+                    discName: "Auspex",
+                    powerName: "Share the Senses",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Spirit’s Touch"]: {
+                    discName: "Auspex",
+                    powerName: "Spirit’s Touch",
+                    level: 4,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Clairvoyance"]: {
+                    discName: "Auspex",
+                    powerName: "Clairvoyance",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Possession"]: {
+                    discName: "Auspex",
+                    powerName: "Possession",
+                    level: 5,
+                    prereqs: [ ["Dominate", 3] ],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Telepathy"]: {
+                    discName: "Auspex",
+                    powerName: "Telepathy",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                }
             },
             ["Celerity"]: {
-
-            },
-            ["Chimerstry"]: {
-
+                ["Cat’s Grace"]: {
+                    discName: "Celerity",
+                    powerName: "Cat’s Grace",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Rapid Reflexes"]: {
+                    discName: "Celerity",
+                    powerName: "Rapid Reflexes",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Fleetness"]: {
+                    discName: "Celerity",
+                    powerName: "Fleetness",
+                    level: 2,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Blink"]: {
+                    discName: "Celerity",
+                    powerName: "Blink",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Traversal"]: {
+                    discName: "Celerity",
+                    powerName: "Traversal",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Draught of Elegance"]: {
+                    discName: "Celerity",
+                    powerName: "Draught of Elegance",
+                    level: 4,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Unerring Aim"]: {
+                    discName: "Celerity",
+                    powerName: "Unerring Aim",
+                    level: 4,
+                    prereqs: [ ["Auspex", 2] ],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Lightning Strike"]: {
+                    discName: "Celerity",
+                    powerName: "Lightning Strike",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Split Second"]: {
+                    discName: "Celerity",
+                    powerName: "Split Second",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                }
             },
             ["Dominate"]: {
-
+                ["Cloud Memory"]: {
+                    discName: "Dominate",
+                    powerName: "Cloud Memory",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Compel"]: {
+                    discName: "Dominate",
+                    powerName: "Compel",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Mesmerize"]: {
+                    discName: "Dominate",
+                    powerName: "Mesmerize",
+                    level: 2,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Dementation"]: {
+                    discName: "Dominate",
+                    powerName: "Dementation",
+                    level: 2,
+                    prereqs: [ ["Obfuscate", 2] ],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Psychosomatic Agent"]: {
+                    discName: "Dominate",
+                    powerName: "Psychosomatic Agent",
+                    level: 2,
+                    prereqs: [ ["Obfuscate", 2] ],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["The Forgetful Mind"]: {
+                    discName: "Dominate",
+                    powerName: "The Forgetful Mind",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Submerged Directive"]: {
+                    discName: "Dominate",
+                    powerName: "Submerged Directive",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Rationalize"]: {
+                    discName: "Dominate",
+                    powerName: "Rationalize",
+                    level: 4,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Mass Manipulation"]: {
+                    discName: "Dominate",
+                    powerName: "Mass Manipulation",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Terminal Decree"]: {
+                    discName: "Dominate",
+                    powerName: "Terminal Decree",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                }
             },
             ["Fortitude"]: {
-
+                ["Resilience"]: {
+                    discName: "Fortitude",
+                    powerName: "Resilience",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Unswayable Mind"]: {
+                    discName: "Fortitude",
+                    powerName: "Unswayable Mind",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Toughness"]: {
+                    discName: "Fortitude",
+                    powerName: "Toughness",
+                    level: 2,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Enduring Beasts"]: {
+                    discName: "Fortitude",
+                    powerName: "Enduring Beasts",
+                    level: 2,
+                    prereqs: [ ["Animalism", 1] ],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Defy Bane"]: {
+                    discName: "Fortitude",
+                    powerName: "Defy Bane",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Fortify the Inner Facade"]: {
+                    discName: "Fortitude",
+                    powerName: "Fortify the Inner Facade",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Draught of Endurance"]: {
+                    discName: "Fortitude",
+                    powerName: "Draught of Endurance",
+                    level: 4,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Flesh of Marble"]: {
+                    discName: "Fortitude",
+                    powerName: "Flesh of Marble",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Prowess from Pain"]: {
+                    discName: "Fortitude",
+                    powerName: "Prowess from Pain",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                }
             },
             ["Obfuscate"]: {
-
-            },
-            ["Oblivion"]: {
-
+                ["Cloak of Shadows"]: {
+                    discName: "Obfuscate",
+                    powerName: "Cloak of Shadows",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Silence of Death"]: {
+                    discName: "Obfuscate",
+                    powerName: "Silence of Death",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Unseen Passage"]: {
+                    discName: "Obfuscate",
+                    powerName: "Unseen Passage",
+                    level: 2,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Ghost in the Machine"]: {
+                    discName: "Obfuscate",
+                    powerName: "Ghost in the Machine",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Mask of a Thousand Faces"]: {
+                    discName: "Obfuscate",
+                    powerName: "Mask of a Thousand Faces",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Conceal"]: {
+                    discName: "Obfuscate",
+                    powerName: "Conceal",
+                    level: 4,
+                    prereqs: [ ["Auspex", 3] ],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Vanish"]: {
+                    discName: "Obfuscate",
+                    powerName: "Vanish",
+                    level: 4,
+                    prereqs: [ ["Obfuscate", 1, "Cloak of Shadows"] ],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Impostor Guise"]: {
+                    discName: "Obfuscate",
+                    powerName: "Impostor Guise",
+                    level: 5,
+                    prereqs: [ ["Obfuscate", 3, "Mask of a Thousand Faces"] ],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Cloak the Gathering"]: {
+                    discName: "Obfuscate",
+                    powerName: "Cloak the Gathering",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                }
             },
             ["Potence"]: {
-
+                ["Lethal Body"]: {
+                    discName: "Potence",
+                    powerName: "Lethal Body",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Soaring Leap"]: {
+                    discName: "Potence",
+                    powerName: "Soaring Leap",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Prowess"]: {
+                    discName: "Potence",
+                    powerName: "Prowess",
+                    level: 2,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Brutal Feed"]: {
+                    discName: "Potence",
+                    powerName: "Brutal Feed",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Spark of Rage"]: {
+                    discName: "Potence",
+                    powerName: "Spark of Rage",
+                    level: 3,
+                    prereqs: [ ["Presence", 3] ],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Uncanny Grip"]: {
+                    discName: "Potence",
+                    powerName: "Uncanny Grip",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Draught of Might"]: {
+                    discName: "Potence",
+                    powerName: "Draught of Might",
+                    level: 4,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Earthshock"]: {
+                    discName: "Potence",
+                    powerName: "Earthshock",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Fist of Caine"]: {
+                    discName: "Potence",
+                    powerName: "Fist of Caine",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                }
             },
             ["Presence"]: {
-
+                ["Awe"]: {
+                    discName: "Presence",
+                    powerName: "Awe",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Daunt"]: {
+                    discName: "Presence",
+                    powerName: "Daunt",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Eyes of the Serpent"]: {
+                    discName: "Presence",
+                    powerName: "Eyes of the Serpent",
+                    level: 1,
+                    prereqs: [ ["Protean", 1] ],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Lingering Kiss"]: {
+                    discName: "Presence",
+                    powerName: "Lingering Kiss",
+                    level: 2,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Dread Gaze"]: {
+                    discName: "Presence",
+                    powerName: "Dread Gaze",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Entrancement"]: {
+                    discName: "Presence",
+                    powerName: "Entrancement",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Irresistible Voice"]: {
+                    discName: "Presence",
+                    powerName: "Irresistible Voice",
+                    level: 4,
+                    prereqs: [ ["Dominate", 1] ],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Summon"]: {
+                    discName: "Presence",
+                    powerName: "Summon",
+                    level: 4,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Majesty"]: {
+                    discName: "Presence",
+                    powerName: "Majesty",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Star Magnetism"]: {
+                    discName: "Presence",
+                    powerName: "Star Magnetism",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                }
             },
             ["Protean"]: {
-
+                ["Eyes of the Beast"]: {
+                    discName: "Protean",
+                    powerName: "Eyes of the Beast",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Weight of the Feather"]: {
+                    discName: "Protean",
+                    powerName: "Weight of the Feather",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Feral Weapons"]: {
+                    discName: "Protean",
+                    powerName: "Feral Weapons",
+                    level: 2,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Earth Meld"]: {
+                    discName: "Protean",
+                    powerName: "Earth Meld",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Shapechange"]: {
+                    discName: "Protean",
+                    powerName: "Shapechange",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Metamorphosis"]: {
+                    discName: "Protean",
+                    powerName: "Metamorphosis",
+                    level: 4,
+                    prereqs: [ ["Protean", 3, "Shapechange"] ],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Mist Form"]: {
+                    discName: "Protean",
+                    powerName: "Mist Form",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["The Unfettered Heart"]: {
+                    discName: "Protean",
+                    powerName: "The Unfettered Heart",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                }
             },
             ["Blood Sorcery"]: {
-
+                ["Corrosive Vitae"]: {
+                    discName: "Blood Sorcery",
+                    powerName: "Corrosive Vitae",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["A Taste for Blood"]: {
+                    discName: "Blood Sorcery",
+                    powerName: "A Taste for Blood",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Extinguish Vitae"]: {
+                    discName: "Blood Sorcery",
+                    powerName: "Extinguish Vitae",
+                    level: 2,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Blood of Potency"]: {
+                    discName: "Blood Sorcery",
+                    powerName: "Blood of Potency",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Scorpion's Touch"]: {
+                    discName: "Blood Sorcery",
+                    powerName: "Scorpion's Touch",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Theft of Vitae"]: {
+                    discName: "Blood Sorcery",
+                    powerName: "Theft of Vitae",
+                    level: 4,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Baal's Caress"]: {
+                    discName: "Blood Sorcery",
+                    powerName: "Baal's Caress",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Cauldron of Blood"]: {
+                    discName: "Blood Sorcery",
+                    powerName: "Cauldron of Blood",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                }
             },
-            ["Alchemy"]: {
-
+            ["Oblivion"]: {
+                ["Shadow Cloak"]: {
+                    discName: "Oblivion",
+                    powerName: "Shadow Cloak",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Oblivion's Sight"]: {
+                    discName: "Oblivion",
+                    powerName: "Oblivion's Sight",
+                    level: 1,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Shadow Cast"]: {
+                    discName: "Oblivion",
+                    powerName: "Shadow Cast",
+                    level: 2,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Arms of Ahriman"]: {
+                    discName: "Oblivion",
+                    powerName: "Arms of Ahriman",
+                    level: 2,
+                    prereqs: [ ["Potence", 2] ],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Shadow Perspective"]: {
+                    discName: "Oblivion",
+                    powerName: "Shadow Perspective",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Touch of Oblivion"]: {
+                    discName: "Oblivion",
+                    powerName: "Touch of Oblivion",
+                    level: 3,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Stygian Shroud"]: {
+                    discName: "Oblivion",
+                    powerName: "Stygian Shroud",
+                    level: 4,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Shadow Step"]: {
+                    discName: "Oblivion",
+                    powerName: "Shadow Step",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                },
+                ["Tenebrous Avatar"]: {
+                    discName: "Oblivion",
+                    powerName: "Tenebrous Avatar",
+                    level: 5,
+                    prereqs: [],
+                    sheetHTML: "",
+                    chatPROMPT: ""
+                }
             },
-            ["Vicissitude"]: {
-
-            },
-            ["True Faith"]: {
-
-            }
+            ["Alchemy"]: {},
+            ["Chimerstry"]: {},
+            ["Vicissitude"]: {},
+            ["True Faith"]: {}
         },
         DISCABBVS = {
             ANI: "Animalism",
