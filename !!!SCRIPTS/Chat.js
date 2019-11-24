@@ -191,6 +191,7 @@ const Chat = (() => {
                                     break
                                 }
                                 case "res": case "resolve": {
+                                    D.Alert("Setting ?")
                                     if (!msg.selected || !msg.selected[0])
                                         break
                                     resolveText(D.GetSelected(msg, "text"))

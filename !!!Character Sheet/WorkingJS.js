@@ -582,7 +582,7 @@
             ...BASICATTRS,
             ...BASICFLAGS,
             ..._.map(DISCENUMS, v => `${v}_name`)
-        ], v => v.toLowerCase()),
+        ], v => v.replace(/\s/gu, "_").toLowerCase()),
         ATTRDISPNAMES = _.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS])
     // #endregion
 
@@ -1215,6 +1215,7 @@
                     return
             }
             $funcs.push($set)
+            $funcs.push($doRolls(eInfo.sourceAttribute))
             run$($funcs, cback ? () => cback(null) : undefined)
         },
         $doTracker = (tracker, eInfo) => cback => doTracker(tracker, eInfo, cback),
@@ -1911,7 +1912,8 @@
         })
     }
 
-    on(`change:xpsorttrigger ${getTriggers(null, "", _.keys(XPREPREFS))}`, eInfo => {
+    // change:xpsorttrigger change:_reporder_repeating_spentxp change:repeating_spentxp remove:repeating_spentxp ... plus earnedxp and earnedxpright
+    on(getTriggers(["xpsorttrigger"], "", _.keys(XPREPREFS)), eInfo => {
         log("", "████ doEXP Triggered ████")
         log(`TRIGGER STRING: '${getTriggers(null, "", _.keys(XPREPREFS))}'`, "doEXP")
         log(`EINFO: '${JSON.stringify(eInfo)}'`, "doEXP")
@@ -1960,7 +1962,8 @@
                 ]
             run$($funcs, () => cBack(null, [...ALLATTRS, ...repAttrs]))
         },
-        doRolls = (targetAttr, opts = {}) => {
+        $doRolls = (targetAttr, opts = {}) => cback => doRolls(targetAttr, opts, cback),
+        doRolls = (targetAttr, opts = {}, cback) => {
             const attrList = {},
                 $funcs = [
                     $getRollAttrs(),
@@ -2059,9 +2062,16 @@
                                 },
                                 checkEffects = rollArray => {
                                     const topDisplayStrings = [],
+                                        lastTopDisplayStrings = [],
                                         effectChecks = _.compact(ATTRS.effectchecks.split("|"))
-                                    if (parseInt(ATTRS.applybloodsurge) > 0)
-                                        topDisplayStrings.push("Rouse Check Is Automatic")
+                                    if (parseInt(ATTRS.applybloodsurge) > 0 && "blood_potency" in ATTRS) {
+                                        topDisplayStrings.push(`Blood Surge (+${bpDependants[parseInt(ATTRS.blood_potency)].bp_surge})`)
+                                        lastTopDisplayStrings.push("Rouse Check Is Automatic")
+                                    }
+                                    if (parseInt(ATTRS.applyspecialty) === 1)
+                                        topDisplayStrings.push("Specialty (+1)")
+                                    if (parseInt(ATTRS.applyresonance) === 1)
+                                        topDisplayStrings.push("Resonant (+1)")
                                     if (parseInt(ATTRS.humanity) + parseInt(ATTRS.stains) > 10)
                                         topDisplayStrings.push("Inhuman (-2)")
                                     if (parseInt(ATTRS.health) === 0 && _.any(rollArray, v => isIn(v, [...ATTRIBUTES.physical, ...SKILLS.physical])))
@@ -2080,6 +2090,8 @@
                                         if (isDisplaying)
                                             topDisplayStrings.push(displayString)
                                     }
+                                    if (lastTopDisplayStrings.length)
+                                        topDisplayStrings.push(...lastTopDisplayStrings)
                                     return `${_.uniq(topDisplayStrings).join(", ")}.`
                                 }                                        
                             prevRArray.push(..._.compact((ATTRS.rollarray || "").split(",")))
@@ -2173,7 +2185,11 @@
                     },
                     $set
                 ]
-            run$($funcs, () => {
+            
+            run$($funcs, cback ? () => {
+                LASTEVENT = {}
+                cback(null)
+            } : () => {
                 LASTEVENT = {}
             })
         }

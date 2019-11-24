@@ -251,11 +251,13 @@ const C = (() => {
             Title: (content, options = {}) => {
                 const params = {
                     fontSize: options.fontSize || "32px",
-                    color: options.color || COLORS.brightred
+                    color: options.color || COLORS.brightred,
+                    margin: options.margin || "0px"
                 }
                 return `<span style="
                     display: block;
                     font-weight: bold;
+                    margin: ${params.margin};
                     color: ${params.color};
                     text-align: center;
                     width: 100%;

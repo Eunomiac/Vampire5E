@@ -34,7 +34,7 @@ const Listener = (() => {
                     if (scriptData && scriptData.script && VAL({function: scriptData.script.OnChatCall}) && (!scriptData.gmOnly || playerIsGM(msg.playerid) || msg.playerid === "API") ) {
                         const [objects, returnArgs] = parseMessage(args, msg)
                         call = scriptData.singleCall && returnArgs.shift() || call
-                        if (D.IsReportingListener)
+                        if (D.WatchList.includes("Listen"))
                             D.Poke([
                                 `<b>${msg.content}</b>`,
                                 `CALL: ${call}`,
@@ -69,9 +69,9 @@ const Listener = (() => {
                     return scriptData.script.OnGraphicAdd(imgObj)
                 return false
             })
-            on("change:graphic", imgObj => {
+            on("change:graphic", (imgObj, prevData) => {
                 for (const scriptData of SCRIPTCALLS.IMGCHANGE)
-                    return scriptData.script.OnGraphicChange(imgObj)
+                    return scriptData.script.OnGraphicChange(imgObj, prevData)
                 return false
             })
         },

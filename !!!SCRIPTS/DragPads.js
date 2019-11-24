@@ -204,10 +204,15 @@ const DragPads = (() => {
             // no default
             }
         },
-        onGraphicChange = imgObj => {
-            if (imgObj.get("layer") === "walls" || !PADREGISTRY[imgObj.id])
+        onGraphicChange = (imgObj, prevData) => {
+            if (imgObj.get("layer") === "walls" || !PADREGISTRY[imgObj.id] || imgObj.get("left") === prevData.left && imgObj.get("top") === prevData.top)
                 return false
-            // toggle object
+            const curData = {
+                left: imgObj.get("left"),
+                top: imgObj.get("top")
+            }
+            
+            // First, immediately toggle the DragPad to its partner, to create the responsive "snapping" feedback for the player:
             imgObj.set({
                 layer: "walls",
                 controlledby: ""
@@ -224,14 +229,29 @@ const DragPads = (() => {
             })
             PADREGISTRY[imgObj.id].active = "off"
             PADREGISTRY[partnerObj.id].active = "on"
-            // D.Alert(`Original Pad: ${D.JS(obj)}<br><br>Partner Pad: ${D.JS(partnerObj)}`)
 
             if (!FUNCTIONS[objData.funcName])
                 return false
+            // Determine the direction the pad was moved in, to send to the function.
+            // Will send an array of two directions, one horizontal, one vertical, with the first direction being the largest.
+            const [deltaX, deltaY] = [
+                    curData.left - prevData.left,
+                    curData.top - prevData.top
+                ],
+                moveData = [deltaY > 0 ? "down" : "up"]
+            if (Math.abs(deltaX) > Math.abs(deltaY))
+                moveData.unshift(deltaX > 0 ? "right" : "left")
+            else
+                moveData.push(deltaX > 0 ? "right" : "left")
+            // The third element is "true" if the movement was diagonal, judged roughly by relative magnitudes of the axial shifts:
+            moveData.push(Math.abs(deltaX) / Math.abs(deltaY) >= 0.75 && Math.abs(deltaX) / Math.abs(deltaY) <= 1.33)
+
+            DB({deltaX, deltaY, prevData: {left: prevData.left, top: prevData.top}, curData, moveData}, "toggleMapSlider")
+            
             FUNCTIONS[objData.funcName]({
-                id: objData.id
+                id: objData.id,
+                moveData
             })
-            // D.Alert(`Original Pad: ${D.JS(obj)}<br><br>Partner Pad: ${D.JS(partnerObj)}`)
             toFront(imgObj)
             toFront(partnerObj)
 
@@ -284,21 +304,81 @@ const DragPads = (() => {
                 const slot = D.Int(Media.GetImgData(card.id).name.replace(/compCardSpot_/gu, "")) - 1
                 Complications.Flip(slot)
             },
-            toggleMapLayer(mapButton) { // MapButton_Autarkis_1 --> MapLayer_Autarkis_1
-                const buttonKey = Media.GetImgKey(mapButton.id),
+            toggleMapLayer(padData) {
+                const buttonKey = Media.GetImgKey(padData.id),
                     mapLayerKey = buttonKey.replace(/Button/gu, "Layer")
-                if (Media.IsCyclingImg(mapLayerKey)) {
-                    Media.CycleImg(mapLayerKey)
-                    Media.CycleImg(buttonKey)
+                Media.SetImg(buttonKey, Media.ToggleImg(mapLayerKey) && "on" || "blank")
+                if (MAPPANELTIMER) {
+                    clearTimeout(MAPPANELTIMER)
+                    MAPPANELTIMER = setTimeout(FUNCTIONS.toggleMapPanel, 10000)
+                }
+            },
+            toggleMapSlider(padData) {
+                const sliderData = Media.GetImgData(padData.id),
+                    mapLayerData = Media.GetImgData(sliderData.name.replace(/Button/gu, "Layer")),
+                    newSliderPos = Media.CycleImg(sliderData.id, false, padData.moveData.includes("left"))
+                if (newSliderPos !== false) {
+                    const sliderSrc = sliderData.cycleSrcs[newSliderPos]
+                    switch (sliderSrc) {
+                        case "base": {
+                            Media.ToggleImg(mapLayerData.id, false)
+                            if (sliderData.name.includes("District"))
+                                Media.ToggleImg("MapLayer_DistrictsFill_1", false)
+                            break
+                        }
+                        case "labels": {
+                            Media.ToggleImg(mapLayerData.id, true)
+                            Media.ToggleImg("MapLayer_DistrictsFill_1", false)
+                            break
+                        }
+                        case "fills": {
+                            Media.ToggleImg(mapLayerData.id, false)
+                            Media.ToggleImg("MapLayer_DistrictsFill_1", true)
+                            break
+                        }
+                        case "both": {
+                            Media.ToggleImg(mapLayerData.id, true)
+                            Media.ToggleImg("MapLayer_DistrictsFill_1", true)
+                            break
+                        }
+                        case "anarch":
+                        case "camarilla":
+                        case "autarkis": {
+                            Media.ToggleImg(mapLayerData.id, true)
+                            Media.SetImg(mapLayerData.id, sliderSrc)
+                            break
+                        }
+                        // no default
+                    }
+                }                
+                if (MAPPANELTIMER) {
+                    clearTimeout(MAPPANELTIMER)
+                    MAPPANELTIMER = setTimeout(FUNCTIONS.toggleMapPanel, 10000)
+                }
+            },
+            toggleMapPanel(panelData) {
+                const imgData = Media.GetImgData("MapButton_Panel_1")
+                if (imgData.curSrc === "open" || panelData === undefined) {
+                    for (const buttonName of ["Domain", "Districts", "Roads", "Parks", "Rack", ...["Culture", "Education", "Havens", "Health", "Landmarks", "Nightlife", "Shopping", "Dining", "Transportation"].map(x => `Sites${x}`)])
+                        Media.ToggleImg(`MapButton_${buttonName}`, false)
+                    Media.SetImg(imgData.id, "closed")
+                    if (MAPPANELTIMER)
+                        clearTimeout(MAPPANELTIMER)
+                    MAPPANELTIMER = null
                 } else {
-                    Media.SetImg(buttonKey, Media.ToggleImg(mapLayerKey) && "on" || "off")
+                    for (const buttonName of ["Domain", "Districts", "Roads", "Parks", "Rack", ...["Culture", "Education", "Havens", "Health", "Landmarks", "Nightlife", "Shopping", "Dining", "Transportation"].map(x => `Sites${x}`)])
+                        Media.ToggleImg(`MapButton_${buttonName}`, true)
+                    Media.SetImg(imgData.id, "open")
+                    if (MAPPANELTIMER)
+                        clearTimeout(MAPPANELTIMER)
+                    MAPPANELTIMER = setTimeout(FUNCTIONS.toggleMapPanel, 10000)
                 }
             }
-        },
+        }
     // #endregion
-
+    let MAPPANELTIMER = null
     // #region Pad Management
-        getPad = padRef => {
+    const getPad = padRef => {
             const pads = [],
                 imgObj = Media.GetImg(padRef)
             if (VAL({imgObj}) && Media.IsRegistered(imgObj)) {

@@ -41,9 +41,9 @@ const Char = (() => {
             STATE.REF.customStakes = STATE.REF.customStakes || {}
             STATE.REF.customStakes.coterie = STATE.REF.customStakes.coterie || []
             STATE.REF.customStakes.personal = STATE.REF.customStakes.personal || {A: [], L: [], N: [], R: []}
+            STATE.REF.projectDetails = STATE.REF.projectDetails || []
             STATE.REF.tokenRecord = STATE.REF.tokenRecord || []
             STATE.REF.traitSelection = STATE.REF.traitSelection || []
-
         /* STATE.REF.registry = {
             TopLeft: {
                 id: "-LluFXX9vtlTeb_D7t4y",
@@ -265,6 +265,10 @@ const Char = (() => {
                             } else {
                                 promptTraitSelect(charObjs.map(x => x.id).join(","), null, "!char @@CHARIDS@@ get stat @@TRAITNAME@@")
                             }
+                            break
+                        }
+                        case "projects": {
+                            displayProjects()
                             break
                         }
                         // no default
@@ -1010,7 +1014,8 @@ const Char = (() => {
                         C.CHATHTML.Header(`You Have Been Awarded ${D.NumToText(award, true)} XP.`, C.STYLES.whiteMarble.header),
                     ], C.STYLES.whiteMarble.block))                
                 // D.Alert(`Sort Trigger Value: ${D.GetStatVal(charObj, "xpsorttrigger")}`)
-                    D.SetStat(charObj, "xpsorttrigger", D.GetStatVal(charObj, "xpsorttrigger") === "1" ? "2" : "1")
+                    DB({xpsorttrigger: D.GetStatVal(charObj, "xpsorttrigger")}, "awardXP")
+                    D.SetStat(charObj, "xpsorttrigger", D.GetStatVal(charObj, "xpsorttrigger") === 1 ? 2 : 1)
                 // D.Alert(`New Value: ${D.GetStatVal(charObj, "xpsorttrigger")}`)
                     return true
                 }
@@ -1224,6 +1229,60 @@ const Char = (() => {
                     Media.SetText(col, lines.join("\n"))
             }
             Media.Adjust("stakedAdvantagesHeader", 0, -3)
+        },
+        displayProjects = () => {
+            const projectData = [],
+                projectDetails = [],
+                projectsSorted = [],
+                projectStrings = {
+                    "Projects_Col1": [], // Initial
+                    "Projects_Col2": [], // Goal
+                    "Projects_Col3": [] // End Date
+                }
+            for (const charObj of D.GetChars("registered"))
+                projectData.push(...D.GetRepStats(charObj, "project", {projectlaunchroll_toggle: "2"}))
+            for (const [rowID, projectAttrs] of Object.entries(_.groupBy(projectData, "rowID")))
+                projectDetails.push({
+                    rowID,
+                    init: D.GetCharData(projectAttrs[0].charID).initial,
+                    goal: projectAttrs.find(x => x.attrName === "projectscope_name").val,
+                    endDate: TimeTracker.GetDate(projectAttrs.find(x => x.attrName === "projectenddate").val)
+                })
+            D.Alert(`Project Data: ${D.JS(projectDetails.sort((a,b) => a.endDate - b.endDate))}`)
+            if (projectDetails.length === 0) {
+                Media.ToggleImg("projectsHeader", false)
+                Media.ToggleText("Projects_Col1", false)
+                Media.ToggleText("Projects_Col2", false)
+                Media.ToggleText("Projects_Col3", false)
+                STATE.REF.projectDetails = []
+            } else {
+                Media.ToggleImg("projectsHeader", true)
+                Media.ToggleText("Projects_Col1", true)
+                Media.ToggleText("Projects_Col2", true)
+                Media.ToggleText("Projects_Col3", true)
+                if (Media.IsActive("stakedAdvantagesHeader"))
+                    Media.SetImgData("projectsHeader", {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("projectsHeader").height + [..._.flatten(_.values(STATE.REF.customStakes.personal), true), ..._.values(STATE.REF.customStakes.coterie)].length * Media.GetLineHeight("Stakes_Char_Col1") + 40}, true)
+                else
+                    Media.SetImgData("projectsHeader", {top: Media.GetImgData("stakedAdvantagesHeader").top}, true)
+                for (const projDetails of projectDetails.sort((a,b) => a.endDate - b.endDate)) {
+                    if (STATE.REF.projectDetails.map(x => x.rowID).includes(projDetails.rowID))
+                        projDetails.goal = STATE.REF.projectDetails.find(x => x.rowID === projDetails.rowID).goal
+                    projectsSorted.push(projDetails)   
+                }
+                STATE.REF.projectDetails = projectsSorted
+                for (const projDetails of STATE.REF.projectDetails) {
+                    projectStrings.Projects_Col1.push(`[${projDetails.init}]`)
+                    projectStrings.Projects_Col2.push(projDetails.goal)
+                    projectStrings.Projects_Col3.push(TimeTracker.FormatDate(projDetails.endDate))
+                }
+                for (let i = projectStrings.Projects_Col1.length - 1; i > 0; i--)
+                    if (projectStrings.Projects_Col1[i-1] === projectStrings.Projects_Col1[i])
+                        projectStrings.Projects_Col1[i] = " "
+                for (const [textKey, text] of Object.entries(projectStrings)) {
+                    Media.SetText(textKey, text.join("\n"))
+                    Media.SetTextData(textKey, {top: Media.GetImgData("projectsHeader").top + 0.5 * Media.GetImgData("projectsHeader").height, shiftTop: 0})
+                }
+            }
         },
         updateHunger = () => {
             for(const char of D.GetChars("registered")) {

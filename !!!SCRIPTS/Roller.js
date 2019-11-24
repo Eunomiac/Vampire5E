@@ -1047,6 +1047,7 @@ const Roller = (() => {
 
     // #region Getting Information & Setting State Roll Record
         getRollChars = (charObjs) => {
+            charObjs = _.flatten([charObjs])
             DB({charObjs}, "getRollChars")
             const dbStrings = [`CharObjs: ${D.JS((charObjs || []).map(x => x.get("name")))}`],
                 playerCharObjs = charObjs.filter(x => VAL({pc: x})),
@@ -1718,7 +1719,7 @@ const Roller = (() => {
                         tFull.traitData.humanity.value = Math.floor(tFull.traitData.humanity.value / 3)
                     } else if (rollType === "remorse" && tData[0] === "stains") {
                         tFull.traitData.humanity.display = "Human Potential"
-                        tFull.traitData.humanity.value = 10 - tFull.traitData.humanity.value - D.Int(tData[1])
+                        tFull.traitData.humanity.value = Math.max(0, 10 - tFull.traitData.humanity.value - D.Int(tData[1]))
                         tFull.traitList = _.without(tFull.traitList, "stains")
                         delete tFull.traitData[tData[0]]
                     }
@@ -1735,9 +1736,9 @@ const Roller = (() => {
                         tFull.traitData.humanity.value = Math.floor(tFull.traitData.humanity.value / 3)
                     } else if (rollType === "remorse" && trt === "humanity") {
                         tFull.traitData.humanity.display = "Human Potential"
-                        tFull.traitData.humanity.value = 10 -
+                        tFull.traitData.humanity.value = Math.max(0, 10 -
                             tFull.traitData.humanity.value -
-                            D.Int(getAttrByName(charObj.id, "stains"))
+                            D.Int(getAttrByName(charObj.id, "stains")))
                     } else if (!tFull.traitData[trt].display) {
                         D.Chat(charObj, `Error determining NAME of trait '${D.JS(trt)}'.`, "ERROR: Dice Roller")
                     }
@@ -2508,7 +2509,7 @@ const Roller = (() => {
                         const displayName = rollFlags.isHidingName ? "Someone" : rollData.charName
                         switch (rollData.type) {
                             case "remorse": {
-                                rollLines.rollerName.text = `Does ${D.LCase(displayName)} feel remorse?`
+                                rollLines.rollerName.text = `Does ${displayName.replace(/Someone/gu, "someone")} feel remorse?`
                                 stLines.rollerName = `${CHATSTYLES.rollerName}${rollData.charName} rolls remorse:</div>`
                                 logLines.rollerName = `${CHATSTYLES.rollerName}${displayName} rolls remorse:</div>`
                                 break

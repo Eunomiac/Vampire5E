@@ -27,6 +27,7 @@ const Session = (() => {
             STATE.REF.SessionModes = STATE.REF.SessionModes || ["Active", "Inactive", "Daylighter", "Downtime", "Complications", "Spotlight"]
             STATE.REF.Mode = STATE.REF.Mode || "Inactive"
             STATE.REF.LastMode = STATE.REF.LastMode || "Inactive"
+            STATE.REF.SessionMonologues = STATE.REF.SessionMonologues || []
             STATE.REF.curLocation = STATE.REF.curLocation || {
                 DistrictCenter: ["blank"],
                 DistrictLeft: ["blank"],
@@ -83,6 +84,10 @@ const Session = (() => {
                         endSession(msg)
                     else
                         startSession()
+                    break
+                }
+                case "next": {
+                    sessionMonologue()
                     break
                 }
                 case "add": {
@@ -356,6 +361,7 @@ const Session = (() => {
                 const otherScribes = _.shuffle(_.without(_.pluck(_.pick(Char.REGISTRY, v => v.playerName !== sessionScribe), "playerName"), "Storyteller"))
                 STATE.REF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, sessionScribe]))
             }
+            STATE.REF.SessionMonologues = _.shuffle(D.GetChars("registered").map(x => D.GetCharData(x).name))
             D.Chat("all", C.CHATHTML.Block([
                 C.CHATHTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
                 C.CHATHTML.Body("Initializing Session...", {margin: "0px 0px 10px 0px"}),
@@ -381,7 +387,7 @@ const Session = (() => {
             TimeTracker.Fix()
         },
         endSession = () => {
-            if (remorseCheck()) {
+            if (sessionMonologue() && remorseCheck()) {
                 D.Chat("all", C.CHATHTML.Block([
                     C.CHATHTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
                     C.CHATHTML.Header(`Concluding Session ${D.NumToText(STATE.REF.SessionNum, true)}`),
@@ -406,6 +412,19 @@ const Session = (() => {
                 if (!STATE.REF.isTestingActive)
                     STATE.REF.SessionNum++
             }
+        },
+        sessionMonologue = () => {
+            if (STATE.REF.SessionMonologues.length) {
+                const thisCharName = STATE.REF.SessionMonologues.pop()
+                D.Chat("all", C.CHATHTML.Block([
+                    C.CHATHTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
+                    C.CHATHTML.Title("Session Monologues", {fontSize: "28px", margin: "-10px 0px 0px 0px"}),
+                    C.CHATHTML.Header(thisCharName),
+                    C.CHATHTML.Body("The spotlight is yours!")
+                ]), null, D.RandomString(3))
+                return false
+            }
+            return true
         },
     // #endregion
 
@@ -841,7 +860,7 @@ const Session = (() => {
                     font-size: 10px;
                     text-align: center;
                     width: 100%;
-                ">[${D.GetName(charObjRow[0])}](!roll quick remorse ${D.GetName(charObjRow[0])})${charObjRow[1] ? ` [${D.GetName(charObjRow[1])}](!roll quick remorse ${D.GetName(charObjRow[1])})` : ""}</span>`)
+                ">[${D.GetName(charObjRow[0])}](!roll quick remorse @${D.GetName(charObjRow[0])})${charObjRow[1] ? ` [${D.GetName(charObjRow[1])}](!roll quick remorse @${D.GetName(charObjRow[1])})` : ""}</span>`)
             sendChat("REMORSE CHECKS", D.JSH(`/w Storyteller <div style='
                 display: block;
                 background: url(https://i.imgur.com/kBl8aTO.jpg);

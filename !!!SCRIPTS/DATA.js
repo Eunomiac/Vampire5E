@@ -474,7 +474,7 @@ const D = (() => {
         pLowerCase = strRef => `${strRef || ""}`.toLowerCase(),
         pUpperCase = strRef => `${strRef || ""}`.toUpperCase(),
         numToText = (num, isTitleCase = false) => {
-            const numString = `${jStr(num)}`,
+            const numString = `${num}`,
                 parseThreeDigits = v => {
                     const digits = _.map(v.toString().split(""), vv => parseInt(vv))
                     let result = ""                        
@@ -2051,6 +2051,7 @@ const D = (() => {
 
         SetDebugWatchList: setWatchList,
         GetDebugWatchList: getWatchList,
+        get WatchList() { return STATE.REF.WATCHLIST },
         Log: logDebugAlert,
         ThrowError: throwError,
         DBAlert: sendDebugAlert,
