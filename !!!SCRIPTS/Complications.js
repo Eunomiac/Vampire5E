@@ -26,6 +26,7 @@ const Complications = (() => {
             STATE.REF.isRunning = STATE.REF.isRunning || false
             STATE.REF.lastDraw = STATE.REF.lastDraw || -1
             STATE.REF.endMessageQueue = STATE.REF.endMessageQueue || []
+            STATE.REF.totalCards = STATE.REF.totalCards || []
 
             STATE.REF.DECK = STATE.REF.DECK || []
             STATE.REF.MAT = STATE.REF.MAT || [
@@ -49,6 +50,14 @@ const Complications = (() => {
         onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
             const charObjs = Listener.GetObjects(objects, "character")
             switch (call) {
+                case "set": {
+                    setCard(D.Int(args.shift()) + 1, args.shift(), args.shift() || null)
+                    break
+                }
+                case "flip": {
+                    flipCard(D.Int(args.shift()))
+                    break
+                }
                 case "target": {
                     setCompVals(call, D.Int(args.shift()))
                     break
@@ -321,6 +330,7 @@ const Complications = (() => {
             }}
         ],
         CARDQTYS = {V: 12, C: 6, U: 3, R: 1},
+        CARDNAMES = _.values(CARDS).map(x => x.name),
     // #endregion
 
     // #region GETTERS: Active card names
@@ -381,15 +391,11 @@ const Complications = (() => {
         flipCard = spot => {
             const card = STATE.REF.MAT[spot]
             if (card && card.isFaceUp) {
-                card.isFaceUp = false
-                undoCard(card)       
-                Media.SetImg(`compCardSpot_${spot+1}`, "cardBack")
-                DragPads.Toggle(Media.GetImgData(`compCardSpot_${spot+1}`).id, true)
+                setCard(spot, "faceDown")
+                undoCard(card)
             } else if (card) {
-                card.isFaceUp = true
+                setCard(spot, "faceUp")
                 doCard(card)
-                Media.SetImg(`compCardSpot_${spot+1}`, card.name)
-                DragPads.Toggle(Media.GetImgData(`compCardSpot_${spot+1}`).id, false)
                 STATE.REF.lastDraw = spot
             }
             refreshDraws()
@@ -397,8 +403,91 @@ const Complications = (() => {
     // #endregion
 
     // #region CARD CONTROL: Deck construction, sandbox manipulation
+        setCard = (spot, mode, cardName) => {
+            Media.ToggleImg(`CompSpot_${spot+1}`, true)
+            Media.ToggleImg(`CompCard_Base_${spot+1}`, true)
+            Media.ToggleImg(`CompCard_Text_${spot+1}`, false)
+            cardName = cardName || STATE.REF.MAT[spot].name
+            if (cardName && CARDNAMES.includes(cardName)) {
+                STATE.REF.MAT[spot].name = cardName                     
+                Media.SetText(`CompCard_Name_${spot+1}`, cardName)
+                Media.SetImg(`CompCard_Text_${spot+1}`, cardName) 
+            }
+            switch (mode) {
+                case "faceDown": {
+                    Media.ToggleImg(`CompCard_Negated_${spot+1}`, false)
+                    Media.ToggleImg(`CompCard_Revalue_${spot+1}`, false)
+                    DragPads.Toggle(Media.GetImgData(`CompSpot_${spot+1}`).id, true)
+                    Media.SetImg(`CompCard_Base_${spot+1}`, "cardBack")
+                    STATE.REF.MAT[spot].isFaceUp = false
+                    STATE.REF.MAT[spot].isEnhanced = false
+                    STATE.REF.MAT[spot].isNegated = false
+                    break
+                }
+                case "faceUp": {
+                    Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
+                    Media.ToggleImg(`CompCard_Negated_${spot+1}`, false)
+                    Media.ToggleImg(`CompCard_Revalue_${spot+1}`, false)
+                    DragPads.Toggle(Media.GetImgData(`CompSpot_${spot+1}`).id, false)
+                    Media.SetImg(`CompCard_Base_${spot+1}`, "base")
+                    STATE.REF.MAT[spot].isFaceUp = true
+                    STATE.REF.MAT[spot].isEnhanced = false
+                    STATE.REF.MAT[spot].isNegated = false
+                    break
+                }
+                case "enhanced": {
+                    Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
+                    Media.SetImg(`CompCard_Base_${spot+1}`, "enhanced")
+                    DragPads.Toggle(Media.GetImgData(`CompSpot_${spot+1}`).id, false)
+                    STATE.REF.MAT[spot].isEnhanced = true
+                    break
+                }
+                case "!enhanced": {
+                    Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
+                    Media.SetImg(`CompCard_Base_${spot+1}`, "base")
+                    STATE.REF.MAT[spot].isEnhanced = false
+                    break
+                }
+                case "negated": {
+                    Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
+                    Media.ToggleImg(`CompCard_Negated_${spot+1}`, true)
+                    STATE.REF.MAT[spot].isNegated = true
+                    break
+                }
+                case "!negated": {
+                    Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
+                    Media.ToggleImg(`CompCard_Negated_${spot+1}`, false)
+                    STATE.REF.MAT[spot].isNegated = false
+                    break
+                }
+                case "blank": {
+                    Media.ToggleImg(`CompCard_Base_${spot+1}`, false)
+                    Media.ToggleImg(`CompCard_Negated_${spot+1}`, false)
+                    Media.ToggleImg(`CompCard_Revalue_${spot+1}`, false)
+                    DragPads.Toggle(Media.GetImgData(`CompSpot_${spot+1}`).id, false)
+                    STATE.REF.MAT[spot].isFaceDown = false
+                    STATE.REF.MAT[spot].isEnhanced = false
+                    STATE.REF.MAT[spot].isNegated = false
+                    break
+                }
+                default: {
+                    if (mode.includes("revalue")) {
+                        Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
+                        if (mode.startsWith("!")) {
+                            Media.ToggleImg(`CompCard_Revalue_${spot+1}`, false)
+                        } else {
+                            const newValue = `${D.Int(mode.match(/\d+$/gu).pop())}`
+                            Media.ToggleImg(`CompCard_Revalue_${spot+1}`, true)
+                            Media.SetImg(`CompCard_Revalue_${spot+1}`, newValue)
+                        }
+                    }
+                    break
+                }
+            }
+        },    
         buildDeck = () => {
             STATE.REF.DECK = []
+            STATE.REF.totalCards = CARDS.map(x => CARDQTYS[x.rarity]).reduce((tot, x) => tot + x, 0)
             // STEP ONE: Filter master cardlist to contain only valid cards (i.e. no undefined cards, no duplicates and no duplicate categories)
             const validCards = _.filter(CARDS, v => isCardInDeck(v))
             // STEP TWO: Go through valid cards and add the proper number to the deck, subtracting discards.
@@ -407,7 +496,8 @@ const Complications = (() => {
                 for (let ii = 0; ii < qty; ii++)
                     STATE.REF.DECK.push(validCards[i])            
             }
-            Media.SetText("complicationDeckSize", `DECK: ${STATE.REF.DECK.length} Cards`)
+            Media.SetText("CompCardsRemaining", `${STATE.REF.DECK.length}`)            
+            Media.SetText("CompCardsExcluded", `${STATE.REF.totalCards - STATE.REF.DECK.length}`)
         },
         dealCard = spot => {
             const card = STATE.REF.MAT[spot]
@@ -416,12 +506,11 @@ const Complications = (() => {
             else if (card && card.imgsrc)
                 blinkCard(spot)
             STATE.REF.MAT[spot] = _.clone(_.sample(STATE.REF.DECK))
-            Media.SetText(`compCardName_${spot+1}`, STATE.REF.MAT[spot].name)
-            Media.SetImg(`compCardSpot_${spot+1}`, "cardBack")
-            // DragPads.Toggle(Media.GetImgData(`compCardSpot_${spot+1}`).id, true)
+            setCard(spot, "faceDown", STATE.REF.MAT[spot].name)
+            // DragPads.Toggle(Media.GetImgData(`CompSpot_${spot+1}`).id, true)
         },
         blinkCard = spot => {
-            STATE.REF.FXQUEUE.push(Media.GetImgData(`compCardSpot_${spot+1}`))
+            STATE.REF.FXQUEUE.push(Media.GetImgData(`CompSpot_${spot+1}`))
             const flashCard = () => { 
                 const spotData = STATE.REF.FXQUEUE.pop()
                 D.RunFX("compCardBlink", {left: spotData.left, top: spotData.top})
@@ -431,26 +520,21 @@ const Complications = (() => {
         negateCard = spot => {
             if (VAL({number: spot}, "negateCard")) {
                 const card = STATE.REF.MAT[spot]
-                if (card && card.isNegated) {
-                    Media.SetImgTemp(`compCardSpot_${spot+1}`, {tint_color: "transparent"})
-                    card.isNegated = false
-                    if (card.action)
-                        card.action(STATE.REF.charRef, card.isEnhanced)
-                } else if (card) {
-                    Media.ToggleImg(`complicationEnhanced_${spot+1}`, false)
-                    Media.SetImgTemp(`compCardSpot_${spot+1}`, {tint_color:"#000000"})
-                    card.isNegated = true
-                    if (card.undoAction)
-                        card.undoAction(STATE.REF.charRef, card.isEnhanced)
-                }
+                if (card)
+                    if (card.isNegated) {
+                        setCard(spot, "!negated")
+                        if (card.action)
+                            card.action(STATE.REF.charRef, card.isEnhanced)
+                    } else {
+                        setCard(spot, "negated")
+                        if (card.undoAction)
+                            card.undoAction(STATE.REF.charRef, card.isEnhanced)
+                    }
             }
         },
         discardCard = spot => {
-            if (VAL({number: spot}, "discardCard")) {
-                const card = STATE.REF.MAT[spot]
-                Media.ToggleImg(`complicationEnhanced_${spot+1}`, false)
-                Media.ToggleImg(`complicationZero_${spot+1}`, false)
-                Media.SetImgTemp(`compCardSpot_${spot+1}`, {tint_color: "transparent"})
+            if (VAL({number: spot}, "negateCard")) {
+                const card = STATE.REF.MAT[spot]                
                 if (card && card.isFaceUp)
                     flipCard(spot)
                 dealCard(spot)
@@ -460,10 +544,10 @@ const Complications = (() => {
             if (VAL({number: spot}, "dupeCard")) {
                 const card = STATE.REF.MAT[spot]
                 if (card && card.isDuplicated) {
-                    Media.SetImgTemp(`compCardSpot_${spot+1}`, {tint_color: "transparent"})
+                    Media.SetImgTemp(`CompSpot_${spot+1}`, {tint_color: "transparent"})
                     card.isDuplicated = false
                 } else if (card) {
-                    Media.SetImgTemp(`compCardSpot_${spot+1}`, {tint_color:"#0000FF"})
+                    Media.SetImgTemp(`CompSpot_${spot+1}`, {tint_color:"#0000FF"})
                     card.isDuplicated = true
                 }
             }
@@ -471,36 +555,32 @@ const Complications = (() => {
         enhanceCard = spot => {
             if (VAL({number: spot}, "enhanceCard")) {
                 const card = STATE.REF.MAT[spot]
-                if (card) {
-                    Media.ToggleImg(`complicationEnhanced_${spot+1}`, card.isEnhanced !== true)
-                    card.isEnhanced = card.isEnhanced !== true
-                }
+                if (card && card.isEnhanced)
+                    setCard(spot, "!enhanced")
+                else if (card)
+                    setCard(spot, "enhanced")
             }
         },        
         revalueCard = (spot = 0, value = 0) => {
             const card = STATE.REF.MAT[spot]
-            setCompVals("add", value - card.value)
-            if (value === 0)
-                Media.ToggleImg(`complicationZero_${spot + 1}`, true)
+            if (value === card.value)
+                setCard(spot, "!revalue")
             else
-                Media.ToggleImg(`complicationZero_${spot + 1}`, false)
-            // Media.SetImg(`complicationZero_${index + 1}`, value)
-            toFront(Media.GetImg(`complicationZero_${spot + 1}`))
-            toFront(Media.GetImg(`complicationEnhanced_${spot + 1}`))
+                setCard(spot, `revalue${value}`)
+            setCompVals("add", value - card.value)
             STATE.REF.MAT[spot].value = value
             sendGMPanel()
         },        
         refreshDraws = () => {
             buildDeck()
             for (let i = 0; i < 10; i++) {
+                Media.SetImg(`CompSpot_${i+1}`, "base")
                 const card = STATE.REF.MAT[i]
                 if (card && card.isFaceUp)
                     continue
                 else if (!isCardInDeck(card))
                     dealCard(i)
-                Media.SetImg(`compCardSpot_${i+1}`, "cardBack")
-                // D.Alert(`Setting compCardName_${i+1} to "${card.name}"`)
-                Media.SetText(`compCardName_${i+1}`, STATE.REF.MAT[i].name)
+                // Media.SetImg(`CompSpot_${i+1}`, "cardBack")
             }
         },
 
@@ -510,7 +590,7 @@ const Complications = (() => {
             switch (mode) {
                 case "target": {
                     STATE.REF.targetVal = value
-                    Media.SetText("complicationTarget", `${STATE.REF.targetVal}`)
+                    Media.SetText("CompTarget", `${STATE.REF.targetVal}`)
                     break
                 }
                 case "current": {
@@ -518,19 +598,19 @@ const Complications = (() => {
                 } /* falls through */
                 case "add": case "addVal": case "addValue": {
                     STATE.REF.currentVal += value
-                    Media.SetText("complicationCurrent", `${STATE.REF.currentVal}`)
+                    Media.SetText("CompCurrent", `${STATE.REF.currentVal}`)
                     break
                 }
                 // no default
             }
             STATE.REF.remainingVal = STATE.REF.targetVal - STATE.REF.currentVal
-            Media.SetText("complicationRemaining", `${STATE.REF.remainingVal <= 0 ? "+" : "-"}${Math.abs(STATE.REF.remainingVal)}`, true)
+            Media.SetText("CompRemaining", `${STATE.REF.remainingVal <= 0 ? "+" : "-"}${Math.abs(STATE.REF.remainingVal)}`, true)
             if (STATE.REF.remainingVal <= 0) {
-                Media.SetTextData("complicationCurrent", {color: C.COLORS.green})
-                Media.SetTextData("complicationRemaining", {color: STATE.REF.remainingVal === 0 ? C.COLORS.gold : C.COLORS.green})
+                Media.SetTextData("CompCurrent", {color: C.COLORS.green})
+                Media.SetTextData("CompRemaining", {color: STATE.REF.remainingVal === 0 ? C.COLORS.gold : C.COLORS.green})
             } else {
-                Media.SetTextData("complicationCurrent", {color: C.COLORS.brightred})
-                Media.SetTextData("complicationRemaining", {color: C.COLORS.brightred})
+                Media.SetTextData("CompCurrent", {color: C.COLORS.brightred})
+                Media.SetTextData("CompRemaining", {color: C.COLORS.brightred})
             }
         },
         resetComplication = (isRefreshing = true) => {
@@ -550,12 +630,6 @@ const Complications = (() => {
             STATE.REF.DISCARDS = []
             setCompVals("current", 0)
             setCompVals("target", 0)
-            for (let i = 0; i < 10; i++) {
-                Media.ToggleImg(`complicationZero_${i+1}`, false)
-                Media.ToggleImg(`complicationEnhanced_${i+1}`, false)
-                Media.SetImg(`compCardSpot_${i+1}`, "cardBack", true)
-                Media.SetImgTemp(`compCardSpot_${i+1}`, {tint_color: "transparent"})
-            }
             if (isRefreshing)
                 refreshDraws()
                 
@@ -566,6 +640,13 @@ const Complications = (() => {
             STATE.REF.endMessageQueue = []
             Session.ChangeMode("Complications")
             TimeTracker.ToggleClock(false)
+            Media.ToggleText("CompCurrent", true)
+            Media.ToggleText("CompRemaining", true)
+            Media.ToggleText("CompTarget", true)
+            Media.ToggleText("CompCardsRemaining", true)
+            Media.ToggleText("CompCardsExcluded", true)
+            for (let i = 1; i <= 10; i++)
+                Media.ToggleText(`CompCard_Name_${i}`, true)
             resetComplication(true)
             setCompVals("current", 0)
             setCompVals("target", startVal)
@@ -574,6 +655,13 @@ const Complications = (() => {
         },
         endComplication = (isLaunchingProject, isQueingActions = true) => {
             STATE.REF.isRunning = false
+            Media.ToggleText("CompCurrent", false)
+            Media.ToggleText("CompRemaining", false)
+            Media.ToggleText("CompTarget", false)
+            Media.ToggleText("CompCardsRemaining", false)
+            Media.ToggleText("CompCardsExcluded", false)
+            for (let i = 1; i <= 10; i++)
+                Media.ToggleText(`CompCard_Name_${i}`, false)
             if (isQueingActions)
                 for (const card of getActiveCards().filter(x => x.afterAction)) {
                     D.Queue(card.afterAction, [STATE.REF.charRef, card.isEnhanced], "Comp", 0.5)
@@ -609,120 +697,119 @@ const Complications = (() => {
             }
         },
         sendGMPanel = () => {
-            sendChat("COMPLICATION", D.JSH(`/w Storyteller ${
-                C.HTML.COMP.promptFullBox([
-                    C.HTML.COMP.column([
-                        C.HTML.COMP.header("DISCARD"),
-                        C.HTML.COMP.commandLine({
-                            1: "!comp discard 1",
-                            2: "!comp discard 2",
-                            3: "!comp discard 3",
-                            4: "!comp discard 4",
-                            5: "!comp discard 5"
-                        }),
-                        C.HTML.COMP.commandLine({
-                            6: "!comp discard 6",
-                            7: "!comp discard 7",
-                            8: "!comp discard 8",
-                            9: "!comp discard 9",
-                            10: "!comp discard 10"
-                        }),
-                        C.HTML.COMP.commandLine({
-                            LAST: "!comp discard last",
-                            RANDOM: "!comp discard random"
-                        }),
-                        C.HTML.COMP.header("ENHANCE"),
-                        C.HTML.COMP.commandLine({
-                            1: "!comp enhance 1",
-                            2: "!comp enhance 2",
-                            3: "!comp enhance 3",
-                            4: "!comp enhance 4",
-                            5: "!comp enhance 5"
-                        }),
-                        C.HTML.COMP.commandLine({
-                            6: "!comp enhance 6",
-                            7: "!comp enhance 7",
-                            8: "!comp enhance 8",
-                            9: "!comp enhance 9",
-                            10: "!comp enhance 10"
-                        }),
-                        C.HTML.COMP.commandLine({
-                            LAST: "!comp enhance last",
-                            RANDOM: "!comp enhance random"
-                        })
-                    ].join("<br>")),
-                    C.HTML.COMP.column([
-                        C.HTML.COMP.header("NEGATE"),
-                        C.HTML.COMP.commandLine({
-                            1: "!comp negate 1",
-                            2: "!comp negate 2",
-                            3: "!comp negate 3",
-                            4: "!comp negate 4",
-                            5: "!comp negate 5"
-                        }),
-                        C.HTML.COMP.commandLine({
-                            6: "!comp negate 6",
-                            7: "!comp negate 7",
-                            8: "!comp negate 8",
-                            9: "!comp negate 9",
-                            10: "!comp negate 10"
-                        }),
-                        C.HTML.COMP.commandLine({
-                            LAST: "!comp negate last",
-                            RANDOM: "!comp negate random"
-                        }),
-                        C.HTML.COMP.header("REVALUE"),
-                        C.HTML.COMP.commandLine({
-                            1: "!comp revalue 1",
-                            2: "!comp revalue 2",
-                            3: "!comp revalue 3",
-                            4: "!comp revalue 4",
-                            5: "!comp revalue 5"
-                        }),
-                        C.HTML.COMP.commandLine({
-                            6: "!comp revalue 6",
-                            7: "!comp revalue 7",
-                            8: "!comp revalue 8",
-                            9: "!comp revalue 9",
-                            10: "!comp revalue 10"
-                        }),
-                        C.HTML.COMP.commandLine({
-                            LAST: "!comp revalue last",
-                            RANDOM: "!comp revalue random"
-                        })
-                    ].join("<br>")),
-                    C.HTML.COMP.header("DUPLICATE"),
+            D.Chat("Storyteller", C.HTML.COMP.promptFullBox([
+                C.HTML.COMP.column([
+                    C.HTML.COMP.header("DISCARD"),
                     C.HTML.COMP.commandLine({
-                        1: "!comp duplicate 1",
-                        2: "!comp duplicate 2",
-                        3: "!comp duplicate 3",
-                        4: "!comp duplicate 4",
-                        5: "!comp duplicate 5"
+                        1: "!comp discard 1",
+                        2: "!comp discard 2",
+                        3: "!comp discard 3",
+                        4: "!comp discard 4",
+                        5: "!comp discard 5"
                     }),
                     C.HTML.COMP.commandLine({
-                        6: "!comp duplicate 6",
-                        7: "!comp duplicate 7",
-                        8: "!comp duplicate 8",
-                        9: "!comp duplicate 9",
-                        10: "!comp duplicate 10"
+                        6: "!comp discard 6",
+                        7: "!comp discard 7",
+                        8: "!comp discard 8",
+                        9: "!comp discard 9",
+                        10: "!comp discard 10"
                     }),
                     C.HTML.COMP.commandLine({
-                        LAST: "!comp duplicate last",
-                        RANDOM: "!comp duplicate random"
+                        LAST: "!comp discard last",
+                        RANDOM: "!comp discard random"
                     }),
-                ].join(""))
-            }`))
+                    C.HTML.COMP.header("ENHANCE"),
+                    C.HTML.COMP.commandLine({
+                        1: "!comp enhance 1",
+                        2: "!comp enhance 2",
+                        3: "!comp enhance 3",
+                        4: "!comp enhance 4",
+                        5: "!comp enhance 5"
+                    }),
+                    C.HTML.COMP.commandLine({
+                        6: "!comp enhance 6",
+                        7: "!comp enhance 7",
+                        8: "!comp enhance 8",
+                        9: "!comp enhance 9",
+                        10: "!comp enhance 10"
+                    }),
+                    C.HTML.COMP.commandLine({
+                        LAST: "!comp enhance last",
+                        RANDOM: "!comp enhance random"
+                    })
+                ].join("<br>")),
+                C.HTML.COMP.column([
+                    C.HTML.COMP.header("NEGATE"),
+                    C.HTML.COMP.commandLine({
+                        1: "!comp negate 1",
+                        2: "!comp negate 2",
+                        3: "!comp negate 3",
+                        4: "!comp negate 4",
+                        5: "!comp negate 5"
+                    }),
+                    C.HTML.COMP.commandLine({
+                        6: "!comp negate 6",
+                        7: "!comp negate 7",
+                        8: "!comp negate 8",
+                        9: "!comp negate 9",
+                        10: "!comp negate 10"
+                    }),
+                    C.HTML.COMP.commandLine({
+                        LAST: "!comp negate last",
+                        RANDOM: "!comp negate random"
+                    }),
+                    C.HTML.COMP.header("REVALUE"),
+                    C.HTML.COMP.commandLine({
+                        1: "!comp revalue 1",
+                        2: "!comp revalue 2",
+                        3: "!comp revalue 3",
+                        4: "!comp revalue 4",
+                        5: "!comp revalue 5"
+                    }),
+                    C.HTML.COMP.commandLine({
+                        6: "!comp revalue 6",
+                        7: "!comp revalue 7",
+                        8: "!comp revalue 8",
+                        9: "!comp revalue 9",
+                        10: "!comp revalue 10"
+                    }),
+                    C.HTML.COMP.commandLine({
+                        LAST: "!comp revalue last",
+                        RANDOM: "!comp revalue random"
+                    })
+                ].join("<br>")),
+                C.HTML.COMP.header("DUPLICATE"),
+                C.HTML.COMP.commandLine({
+                    1: "!comp duplicate 1",
+                    2: "!comp duplicate 2",
+                    3: "!comp duplicate 3",
+                    4: "!comp duplicate 4",
+                    5: "!comp duplicate 5"
+                }),
+                C.HTML.COMP.commandLine({
+                    6: "!comp duplicate 6",
+                    7: "!comp duplicate 7",
+                    8: "!comp duplicate 8",
+                    9: "!comp duplicate 9",
+                    10: "!comp duplicate 10"
+                }),
+                C.HTML.COMP.commandLine({
+                    LAST: "!comp duplicate last",
+                    RANDOM: "!comp duplicate random"
+                }),
+            ].join("")), undefined, D.RandomString(3))
         },
         promptCardVal = (cardSpot) => {
-            sendChat("COMPLICATION", D.JSH(`/w Storyteller ${
-                C.HTML.COMP.prompt("Set Card Value:", {
+            D.Chat("Storyteller", C.HTML.COMP.promptFullBox([
+                C.HTML.COMP.header("Set Card Value"),
+                C.HTML.COMP.commandLine({
                     0: `!comp setvalue ${cardSpot+1} 0`,
                     1: `!comp setvalue ${cardSpot+1} 1`,
                     2: `!comp setvalue ${cardSpot+1} 2`,
                     3: `!comp setvalue ${cardSpot+1} 3`,
                     4: `!comp setvalue ${cardSpot+1} 4`
                 })
-            }`))
+            ].join("")), undefined, D.RandomString(3))
         }
     // #endregion
 
@@ -730,7 +817,8 @@ const Complications = (() => {
         CheckInstall: checkInstall,
         OnChatCall: onChatCall,
 
-        Flip: flipCard
+        Flip: flipCard,
+        get Cards() { return CARDS }
     }
 })()
 

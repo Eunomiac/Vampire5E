@@ -23,6 +23,7 @@ const Session = (() => {
             STATE.REF.isTestingActive = STATE.REF.isTestingActive || false
             STATE.REF.sceneChars = STATE.REF.sceneChars || []
             STATE.REF.tokenRecord = STATE.REF.tokenRecord || {}
+            STATE.REF.ActiveTokens = STATE.REF.ActiveTokens || []
             STATE.REF.SessionScribes = STATE.REF.SessionScribes || []
             STATE.REF.SessionModes = STATE.REF.SessionModes || ["Active", "Inactive", "Daylighter", "Downtime", "Complications", "Spotlight"]
             STATE.REF.Mode = STATE.REF.Mode || "Inactive"
@@ -46,6 +47,7 @@ const Session = (() => {
             }
             STATE.REF.locationRecord = STATE.REF.locationRecord || null
             STATE.REF.locationDetails = STATE.REF.locationDetails || {}
+            STATE.REF.locationPointer = STATE.REF.locationPointer || {}
             STATE.REF.FavoriteSites = STATE.REF.FavoriteSites || []
             
             // delete STATE.REF.locationRecord
@@ -81,7 +83,7 @@ const Session = (() => {
             switch (call) {
                 case "start": case "end": case "toggle": {
                     if (isSessionActive())
-                        endSession(msg)
+                        endSession()
                     else
                         startSession()
                     break
@@ -132,6 +134,17 @@ const Session = (() => {
                             D.Alert(D.JS(getActiveSceneLocations()), "Active Scene Locations")
                             break
                         }
+                        case "pointer": {
+                            const pointerObj = Media.GetImg("MapIndicator")
+                            if (pointerObj.get("layer") === "objects") {
+                                pointerObj.set("layer", "map")
+                                Media.GetImg("MapIndicator_Base_1").set("layer", "map")
+                            } else if (pointerObj.get("layer") === "map") {                                
+                                pointerObj.set("layer", "objects")
+                                Media.GetImg("MapIndicator_Base_1").set("layer", "objects")
+                            }
+                            break
+                        }
                         // no default
                     }
                     break
@@ -170,6 +183,14 @@ const Session = (() => {
                                 STATE.REF.pendingLocCommand = {}
                                 setTimeout(Media.UpdateSoundscape, 1000)
                             }
+                            break
+                        }
+                        case "pointer": {
+                            const siteName = Session.Site,
+                                pointerObj = Media.GetImg("MapIndicator"),
+                                pointerPos = {left: pointerObj.get("left"), top: pointerObj.get("top")}
+                            STATE.REF.locationPointer[siteName] = STATE.REF.locationPointer[siteName] || {}
+                            STATE.REF.locationPointer[siteName].pointerPos = pointerPos
                             break
                         }
                         case "scene": {
@@ -371,9 +392,9 @@ const Session = (() => {
                 C.CHATHTML.Body("(Click <a style = \"color: white; font-weight: normal; background-color: rgba(255,0,0,0.5);\" href=\"https://docs.google.com/document/d/1GsGGDdYTVeHVHgGe9zrztEIN4Qmtpb2xZA8I-_WBnDM/edit?usp=sharing\" target=\"_blank\">&nbsp;here&nbsp;</a> to open the template in a new tab,<br>then create a copy to use for this session.)", {fontSize: "14px", lineHeight: "14px"}),
                 C.CHATHTML.Body("Thank you for your service!")
             ]), null, D.RandomString(3))
-            changeMode("Active", true)            
-            for (const tokenObj of _.compact(Media.GetTokens("all")))
-                Media.ToggleToken(tokenObj, true)
+            changeMode("Active", true)
+            Media.ToggleImg("MapIndicator_Base_1", true)
+            Media.ToggleAnim("MapIndicator", true)
             for (const charObj of D.GetChars("registered")) {
                 const tokenObj = Media.GetToken(charObj)
                 Media.ToggleToken(charObj, true)
@@ -381,13 +402,15 @@ const Session = (() => {
                     Media.SetToken(charObj, STATE.REF.tokenRecord[tokenObj.get("name")] || "base")
             }
             Char.SendBack()
+            for (const tokenID of STATE.REF.ActiveTokens)
+                getObj("graphic", tokenID).set("layer", "objects")
             TimeTracker.ToggleCountdown(false)
             TimeTracker.ToggleClock(true)
             Char.RefreshDisplays()
             TimeTracker.Fix()
         },
         endSession = () => {
-            if (sessionMonologue() && remorseCheck()) {
+            if (STATE.REF.isTestingActive || sessionMonologue() && remorseCheck()) {
                 D.Chat("all", C.CHATHTML.Block([
                     C.CHATHTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
                     C.CHATHTML.Header(`Concluding Session ${D.NumToText(STATE.REF.SessionNum, true)}`),
@@ -396,8 +419,6 @@ const Session = (() => {
                 ]), null, D.RandomString(3))
                 // Char.SendHome()
                 changeMode("Inactive", true)
-                for (const tokenObj of _.compact(Media.GetTokens("all")))
-                    Media.ToggleToken(tokenObj, false)
                 if (!STATE.REF.isTestingActive) {
                     STATE.REF.dateRecord = null
                     for (const char of D.GetChars("registered"))
@@ -406,6 +427,15 @@ const Session = (() => {
                     TimeTracker.CurrentDate = STATE.REF.dateRecord
                     TimeTracker.Fix()
                 }
+                const tokenObjs = findObjs({
+                    _pageid: D.PAGEID,
+                    _type: "graphic",
+                    _subtype: "token",
+                    layer: "objects"
+                })
+                for (const tokenObj of tokenObjs)
+                    tokenObj.set("layer", "walls")
+                STATE.REF.ActiveTokens = tokenObjs.map(x => x.id)
                 TimeTracker.ToggleClock(false)
                 TimeTracker.ToggleCountdown(true)
                 TimeTracker.Fix()
@@ -861,7 +891,7 @@ const Session = (() => {
                     text-align: center;
                     width: 100%;
                 ">[${D.GetName(charObjRow[0])}](!roll quick remorse @${D.GetName(charObjRow[0])})${charObjRow[1] ? ` [${D.GetName(charObjRow[1])}](!roll quick remorse @${D.GetName(charObjRow[1])})` : ""}</span>`)
-            sendChat("REMORSE CHECKS", D.JSH(`/w Storyteller <div style='
+            D.Chat("Storyteller", `<div style='
                 display: block;
                 background: url(https://i.imgur.com/kBl8aTO.jpg);
                 text-align: center;
@@ -877,7 +907,7 @@ const Session = (() => {
             font-family: Voltaire;
             color: ${C.COLORS.brightred};
             font-weight: bold;
-        '><br>ROLL REMORSE FOR...</span><br>${chatLines.join("<br>")}<br></div>`))    
+        '><br>ROLL REMORSE FOR...</span><br>${chatLines.join("<br>")}<br></div>`, undefined, D.RandomString(3))  
         },
     // #endregion
 
@@ -898,12 +928,16 @@ const Session = (() => {
             STATE.REF.sceneFocus = D.LCase(locPos).charAt(0)
             const sceneLocs = getActiveSceneLocations()
             for (const loc of getActiveLocations())
-                if (sceneLocs.includes(loc)) 
+                if (sceneLocs.includes(loc))
                     Media.SetImgTemp(loc, {tint_color: "transparent"})
                 else
                     Media.SetImgTemp(loc, {tint_color: "#000000"})            
             if (STATE.REF.sceneFocus === "c")
-                setSubLocMacro()    
+                setSubLocMacro()
+            if (STATE.REF.locationPointer[Session.Site] && STATE.REF.locationPointer[Session.Site].pointerPos) {
+                Media.SetImgData("MapIndicator_Base_1", {left: STATE.REF.locationPointer[Session.Site].pointerPos.left, top: STATE.REF.locationPointer[Session.Site].pointerPos.top}, true)
+                Media.GetImg("MapIndicator").set({left: STATE.REF.locationPointer[Session.Site].pointerPos.left, top: STATE.REF.locationPointer[Session.Site].pointerPos.top})
+            }
         },
         endScene = () => {
             for (const charID of STATE.REF.sceneChars)

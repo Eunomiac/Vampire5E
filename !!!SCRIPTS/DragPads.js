@@ -301,7 +301,7 @@ const DragPads = (() => {
                     Media.SetImg(light, "off")
             },
             flipComp(card) {
-                const slot = D.Int(Media.GetImgData(card.id).name.replace(/compCardSpot_/gu, "")) - 1
+                const slot = D.Int(Media.GetImgData(card.id).name.replace(/CompSpot_/gu, "")) - 1
                 Complications.Flip(slot)
             },
             toggleMapLayer(padData) {

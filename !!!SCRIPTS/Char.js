@@ -813,15 +813,14 @@ const Char = (() => {
                     break
                 }
             }
-            sendChat(title, D.JSH(`/w Storyteller ${
-                C.MENUHTML.Block([
-                    C.MENUHTML.Header(title),
-                    ...chatLines
-                ])}`))
+            D.Chat("Storyteller", C.MENUHTML.Block([
+                C.MENUHTML.Header(title),
+                ...chatLines
+            ]), undefined, D.RandomString(3))
         },
         promptNumber = (fullCommand) => {
             if (VAL({string: fullCommand}, "promptNumber") && fullCommand.includes("@@AMOUNT@@"))
-                sendChat("Amount", D.JSH(`/w Storyteller <div style='
+                D.Chat("Storyteller", `<div style='
                     display: block;
                     background: url(https://i.imgur.com/kBl8aTO.jpg);
                     text-align: center;
@@ -867,7 +866,7 @@ const Char = (() => {
                     font-size: 10px;
                     text-align: center;
                     width: 100%
-                '></span></div>`))
+                '></span></div>`, undefined, D.RandomString(3))
         },
         promptTraitSelect = (charIDString, fullCommand, buttonOverride) => {
             const TRAITLIST = {},
@@ -938,11 +937,10 @@ const Char = (() => {
                         theseCols.push(C.MENUHTML.Button(...button))                
                 chatLines.push(C.MENUHTML.ButtonLine(theseCols.join("")))
             }
-            sendChat("Trait Select", D.JSH(`/w Storyteller ${
-                C.MENUHTML.Block([
-                    C.MENUHTML.Header("Trait Select"),
-                    ...chatLines
-                ].join(""))}`))
+            D.Chat("Storyteller", C.MENUHTML.Block([
+                C.MENUHTML.Header("Trait Select"),
+                ...chatLines
+            ].join("")), undefined, D.RandomString(3))
         },
     // #endregion
 

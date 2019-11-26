@@ -877,6 +877,10 @@ const Roller = (() => {
             Media.ToggleImg("RollerFrame_BottomEnd", false, true)
             Media.Spread("RollerFrame_Left", "RollerFrame_TopEnd", topMidRefs, 1, SETTINGS.frame.mids.minSpread, SETTINGS.frame.mids.maxSpread)
             DragPads.Toggle("wpReroll", false)
+            Media.ToggleAnim("Roller_WPReroller_1", false)
+            Media.ToggleImg("Roller_WPReroller_Base_1", false)
+            Media.ToggleAnim("Roller_WPReroller_2", false)
+            Media.ToggleImg("Roller_WPReroller_Base_2", false)
             // Media.Fix()
         }, // "<h3><span style='color: green;'>Time, Weather & Horizon Data Updated!</span></h3>"
         killRoller = () => {
@@ -1012,10 +1016,19 @@ const Roller = (() => {
                 DragPads.Toggle(dieKey, true)
             else
                 DragPads.Toggle(dieKey, false)
-            if (_.flatten(_.values(STATE.REF.selected)).length)            
+            if (_.flatten(_.values(STATE.REF.selected)).length) {          
                 DragPads.Toggle("wpReroll", true)
-            else
+                Media.ToggleAnim("Roller_WPReroller_1", true)
+                Media.ToggleImg("Roller_WPReroller_Base_1", true)
+                Media.ToggleAnim("Roller_WPReroller_2", true)
+                Media.ToggleImg("Roller_WPReroller_Base_2", true)
+            } else {
                 DragPads.Toggle("wpReroll", false)
+                Media.ToggleAnim("Roller_WPReroller_1", false)
+                Media.ToggleImg("Roller_WPReroller_Base_1", false)
+                Media.ToggleAnim("Roller_WPReroller_2", false)
+                Media.ToggleImg("Roller_WPReroller_Base_2", false)
+            }
         },
         selectDie = (dieCat, dieNum) => {
             const rollRecord = getCurrentRoll(false),
@@ -1025,18 +1038,20 @@ const Roller = (() => {
             setDie(dieCat, dieNum, selectType)
             if (STATE.REF.selected[dieCat].length > (rollRecord.rollResults.maxRerollDice || 3))
                 selectDie(dieCat, STATE.REF.selected[dieCat][0])
-            if (STATE.REF.selected[dieCat].length && !isRerollFXOn) {
-                isRerollFXOn = true
+            if (STATE.REF.selected[dieCat].length) {
                 lockRoller(true)
-                D.RunFX("bloodCloud1", Media.GetTextData("resultCount"))
-                rerollFX = setInterval(D.RunFX, 1800, "bloodCloud1", Media.GetTextData("resultCount"))
                 DragPads.Toggle("wpReroll", true)
+                Media.ToggleAnim("Roller_WPReroller_1", true)
+                Media.ToggleImg("Roller_WPReroller_Base_1", true)
+                Media.ToggleAnim("Roller_WPReroller_2", true)
+                Media.ToggleImg("Roller_WPReroller_Base_2", true)
             } else if (STATE.REF.selected[dieCat].length === 0) {
-                isRerollFXOn = false
                 lockRoller(false)
-                clearInterval(rerollFX)
-                rerollFX = null
                 DragPads.Toggle("wpReroll", false)
+                Media.ToggleAnim("Roller_WPReroller_1", false)
+                Media.ToggleImg("Roller_WPReroller_Base_1", false)
+                Media.ToggleAnim("Roller_WPReroller_2", false)
+                Media.ToggleImg("Roller_WPReroller_Base_2", false)
             }
         },
         setDieCat = (dieCat, dieVals = [], rollType) => {
@@ -3037,8 +3052,6 @@ const Roller = (() => {
             displayRoll(true, rollFlags.isNPCRoll)
         },
         wpReroll = (dieCat, isNPCRoll) => {
-            clearInterval(rerollFX);
-            [isRerollFXOn, rerollFX] = [false, null]
             const rollRecord = getCurrentRoll(isNPCRoll),
                 rollData = _.clone(rollRecord.rollData),
                 rolledDice = D.KeyMapObj(STATE.REF.diceVals[dieCat], null, (v, k) => { return !STATE.REF.selected[dieCat].includes(D.Int(k)) && v || false }),
@@ -3064,6 +3077,10 @@ const Roller = (() => {
             // Media.SetText("goldMods", Media.GetTextData("goldMods").text.replace(/District Bonus \(Free Reroll\)/gu, ""))
             lockRoller(false)
             DragPads.Toggle("wpReroll", false)
+            Media.ToggleAnim("Roller_WPReroller_1", false)
+            Media.ToggleImg("Roller_WPReroller_Base_1", false)
+            Media.ToggleAnim("Roller_WPReroller_2", false)
+            Media.ToggleImg("Roller_WPReroller_Base_2", false)
         },
         changeRoll = (deltaDice, isNPCRoll) => {
             const rollRecord = getCurrentRoll(isNPCRoll),
@@ -3210,8 +3227,8 @@ const Roller = (() => {
                 }
             })
             resultLine = `${CHATSTYLES.fullBox + CHATSTYLES.secret.topLineStart + (rollData.isSilent ? "Silently Rolling" : "Secretly Rolling") + (rollData.isHidingTraits ? " (Traits Hidden)" : " ...")}</div>${CHATSTYLES.secret.traitLineStart}${traitLine}${rollData.diff > 0 ? ` vs. ${rollData.diff}` : ""}</div>${blocks.join("")}</div></div>`
-            sendChat("Storyteller", `/w Storyteller ${confirmString}`)
-            sendChat("Storyteller", `/w Storyteller ${resultLine}`)
+            D.Chat("Storyteller", confirmString, undefined, D.RandomString(3))
+            D.Chat("Storyteller", resultLine, undefined, D.RandomString(3))
         },
     // #endregion
 

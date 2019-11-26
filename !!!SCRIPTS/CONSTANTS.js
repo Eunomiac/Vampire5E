@@ -99,7 +99,7 @@ const C = (() => {
     // #region HTML & CHAT STYLES
         HTML = {
             COMP: {
-                promptFullBox: content => { return `<div style='
+                promptFullBox: content => { return D.JSH(`<div style='
                     display: block;
                     background: url(https://i.imgur.com/kBl8aTO.jpg);
                     text-align: center;
@@ -107,8 +107,8 @@ const C = (() => {
                     box-sizing: border-box;
                     margin-left: -42px;
                     width: 275px;
-                '>${content}</div>` },
-                header: content => { return `<span style='
+                '>${content}</div>`) },
+                header: content => { return D.JSH(`<span style='
                     display: block;
                     font-size: 16px;
                     text-align: center;
@@ -116,21 +116,21 @@ const C = (() => {
                     font-family: Voltaire;
                     color: ${C.COLORS.brightred};
                     font-weight: bold;
-                '>${content}</span>` },
-                column: content => { return `<div style="
+                '>${content}</span>`) },
+                column: content => { return D.JSH(`<div style="
                     display: inline-block;
                     width: 49%;
                     font-size: 0px;
-                ">${content}</div>`},
-                commandLine: (commands) => { return `<span style='
+                ">${content}</div>`)},
+                commandLine: (commands) => { return D.JSH(`<span style='
                     display: block;
                     font-size: 10px;
                     text-align: center;
                     width: 100%
-                '>${_.values(D.KeyMapObj(commands, null, (v, k) => `[${k}](${v})`)).join(" ")}</span>` }
+                '>${_.values(D.KeyMapObj(commands, null, (v, k) => `[${k}](${v})`)).join(" ")}</span>`) }
             },
             MVC: {
-                fullBox: content => { return `<div style="
+                fullBox: content => { return D.JSH(`<div style="
                     display: block;
                     width: 100%;
                     padding: 5px 5px;
@@ -146,8 +146,8 @@ const C = (() => {
                     bg-color: ${COLORS.black};
                     z-index: 100;
                     position: relative;
-                    ">${content}</div>` },
-                title: content => { return `<div style="
+                    ">${content}</div>`) },
+                title: content => { return D.JSH(`<div style="
                     display:block;
                     width: 120%;
                     margin: 10px -10%;
@@ -155,54 +155,54 @@ const C = (() => {
                     text-align: center;
                     font: normal normal 22px/22px Effloresce;
                     border-bottom: 1px ${COLORS.white} solid;
-                    ">${content}</div>` },
-                header: content => { return `<div style="
+                    ">${content}</div>`) },
+                header: content => { return D.JSH(`<div style="
                     display:block; 
                     width: 120%; 
                     margin: 0px -10% 0px -10%;
                     color: ${COLORS.white}; 
                     text-align: center; 
                     font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT'; 
-                    ">${content}</div>` },
-                headerL: content => { return `<div style="
+                    ">${content}</div>`) },
+                headerL: content => { return D.JSH(`<div style="
                     display:inline-block; 
                     width: 120%; 
                     margin: 5% -10% 0px -10%;
                     color: ${COLORS.white}; 
                     text-align: center; 
                     font: normal normal 16px / 20px 'Bodoni SvtyTwo ITC TT';
-                    ">${content}` },
-                headerR: content => { return ` ${content}</div>` },
-                para: content => { return `<div style="
+                    ">${content}`) },
+                headerR: content => { return D.JSH(` ${content}</div>`) },
+                para: content => { return D.JSH(`<div style="
                     display:block; 
                     width: 103%; 
                     margin: 5px 0px;
                     color: ${COLORS.white}; 
                     text-align: left; 
                     font: normal normal 12px/14px Rockwell; 
-                    ">${content}</div>` },
-                paraStart: content => { return `<div style="
+                    ">${content}</div>`) },
+                paraStart: content => { return D.JSH(`<div style="
                     display:block; 
                     width: 100%; 
                     margin: 5px 0px;
                     color: ${COLORS.white}; 
                     text-align: left; 
                     font: normal normal 12px/14px Rockwell; 
-                    ">${content}` },
-                paraMid: content => { return ` ${content} `},
-                paraEnd: content => { return `${content}</div>`}
+                    ">${content}`) },
+                paraMid: content => { return D.JSH(` ${content} `)},
+                paraEnd: content => { return D.JSH(`${content}</div>`)}
             }
         },
         CHATHTML = {
-            MAINBLOCK: content => { return `<div style="
+            MAINBLOCK: content => { return D.JSH(`<div style="
                 display: block;
                 height: auto;
                 width: auto;
                 padding: 0px;
                 margin: -25px 0px 0px -42px;
                 position: relative;
-            ">${content}</div>` },
-            alertHeader: content => { return `<div style="
+            ">${content}</div>`) },
+            alertHeader: content => { return D.JSH(`<div style="
                 display: block;
                 height: auto;
                 width: auto;
@@ -215,8 +215,8 @@ const C = (() => {
                 background-color: ${COLORS.darkgrey};
                 color: ${COLORS.white};
                 border: 2px solid ${COLORS.black};
-            ">${content}</div>` },
-            alertBody: content => { return `<div style="
+            ">${content}</div>`) },
+            alertBody: content => { return D.JSH(`<div style="
                 display: block;
                 width: auto;
                 padding: 5px 5px;
@@ -226,7 +226,7 @@ const C = (() => {
                 border: 2px solid ${COLORS.black};
                 line-height: 14px;
                 position: relative;
-            ">${content}</div>` },
+            ">${content}</div>`) },
             Block: (content, options = {}) => {
                 const params = {
                     color: options.color || COLORS.crimson,
@@ -254,7 +254,7 @@ const C = (() => {
                     color: options.color || COLORS.brightred,
                     margin: options.margin || "0px"
                 }
-                return `<span style="
+                return D.JSH(`<span style="
                     display: block;
                     font-weight: bold;
                     margin: ${params.margin};
@@ -264,7 +264,7 @@ const C = (() => {
                     font-family: sexsmith;
                     font-size: ${params.fontSize};
                     height: 45px;
-                    line-height: 45px;">${content}</span>`
+                    line-height: 45px;">${content}</span>`)
             },
             Header: (content, options = {}) => {
                 const params = {
@@ -417,7 +417,7 @@ const C = (() => {
                     text-align: center;
                     text-align-last: center;
                     font-weight: bold;
-                    margin: ${params.margin};"> ${boxes.aggravated.repeat(numAgg) + boxes.superficial.repeat(numSuper) + boxes.clear.repeat(numClear)}</div>`)                
+                    margin: ${params.margin};"> ${boxes.aggravated.repeat(numAgg) + boxes.superficial.repeat(numSuper) + boxes.clear.repeat(numClear)}</div>`)             
             }
         },       
         MENUHTML = { // Block ==> Title, Header, ButtonLine ==> ButtonHeader, Button(label, API command, options = {})
@@ -629,11 +629,11 @@ const C = (() => {
             }
         },
         HANDOUTHTML = {
-            main: content => { return `<div style="
+            main: content => { return D.JSH(`<div style="
                 display: block;
                 width: 600px;
-            ">${content}</div>` },
-            title: content => { return `<span style="
+            ">${content}</div>`) },
+            title: content => { return D.JSH(`<span style="
                 display: block;
                 width: 602px;
                 height: 16px;
@@ -645,8 +645,8 @@ const C = (() => {
                 padding: 3px 3px;
                 box-sizing: border-box;
                 margin-top: 10px;
-            ">${content}</span>` },
-            subTitle: content => { return `<span style="
+            ">${content}</span>`) },
+            subTitle: content => { return D.JSH(`<span style="
                 display: block;
                 width: 600px;
                 height: 12px;
@@ -657,8 +657,8 @@ const C = (() => {
                 font-family: 'Century Gothic';
                 font-size: 12px;
                 padding-bottom: 3px;
-            ">${content}</span>` },
-            bodyParagraph: (content, params = {}) => { return `<span style="
+            ">${content}</span>`) },
+            bodyParagraph: (content, params = {}) => { return D.JSH(`<span style="
                 display: block;
                 width: 586px;
                 font-family: 'Trebuchet MS';
@@ -669,8 +669,8 @@ const C = (() => {
                 border-left: 1px solid ${COLORS.grey};
                 border-right: 1px solid ${COLORS.grey};
                 padding: 3px 10px;
-            ">${content}</span>` },
-            smallNote: (content, color = COLORS.black) => { return `<span style="
+            ">${content}</span>`) },
+            smallNote: (content, color = COLORS.black) => { return D.JSH(`<span style="
                 display:block; 
                 width: 560px; 
                 font-size: 10px;
@@ -679,17 +679,17 @@ const C = (() => {
                 margin: 0px 20px;
                 padding: 0px 3px;
                 background-color: ${COLORS.fadedblack};
-            ">${content}</span>` },
+            ">${content}</span>`) },
             projects: {
-                charName: content => { return `<span style="
+                charName: content => { return D.JSH(`<span style="
                     display: block; 
                     width: 600px;
                     font-size: 32px; 
                     color: ${COLORS.darkred}; 
                     font-family: Voltaire; 
                     font-variant: small-caps;
-                ">${content}</span>` },
-                goal: content => { return `<span style="
+                ">${content}</span>`) },
+                goal: content => { return D.JSH(`<span style="
                     display: block; 
                     width: 600px; 
                     height: 24px; 
@@ -702,8 +702,8 @@ const C = (() => {
                     border-bottom: 1px solid ${COLORS.black}; 
                     border-top: 1px solid ${COLORS.black};
                     overflow: hidden;
-                ">${content}</span>` },
-                tag: (content, color = COLORS.black) => { return `<span style="
+                ">${content}</span>`) },
+                tag: (content, color = COLORS.black) => { return D.JSH(`<span style="
                     display:inline-block; 
                     width: 60px; 
                     font-size: 14px; 
@@ -715,8 +715,8 @@ const C = (() => {
                     margin-right: 10px;
                     height: 20px;
                     line-height: 20px;
-                ">${content}</span>` },
-                hook: content => { return `<span style="
+                ">${content}</span>`) },
+                hook: content => { return D.JSH(`<span style="
                     display:inline-block; 
                     width: 530px; 
                     font-size: 12px; 
@@ -725,24 +725,24 @@ const C = (() => {
                     vertical-align: top; 
                     padding-top: 2px;
                     overflow: hidden;
-                ">${content}</span>` },
-                critSucc: content => { return `<span style="
+                ">${content}</span>`) },
+                critSucc: content => { return D.JSH(`<span style="
                     display: inline-block; 
                     width: 300px; 
                     font-size: 20px; 
                     color: ${COLORS.purple}; 
                     font-family: Voltaire; 
                     font-weight: bold;
-                ">${content}</span>` },
-                succ: content => { return `<span style="
+                ">${content}</span>`) },
+                succ: content => { return D.JSH(`<span style="
                     display: inline-block; 
                     width: 300px; 
                     font-size: 20px; 
                     color: ${COLORS.black}; 
                     font-family: goodfish; 
                     font-weight: bold;
-                ">${content}</span>` },
-                endDate: content => { return `<span style="
+                ">${content}</span>`) },
+                endDate: content => { return D.JSH(`<span style="
                     display: inline-block; 
                     width: 300px; 
                     font-size: 20px; 
@@ -750,8 +750,8 @@ const C = (() => {
                     font-family: Voltaire; 
                     font-weight: bold; 
                     text-align: right;
-                ">${content}</span>` },
-                daysLeft: content => { return `<span style="
+                ">${content}</span>`) },
+                daysLeft: content => { return D.JSH(`<span style="
                     display: inline-block; 
                     width: 600px; 
                     font-size: 14px; 
@@ -759,15 +759,15 @@ const C = (() => {
                     font-family: 'Alice Regular'; 
                     font-style: italic; 
                     text-align: right;
-                ">${content}</span>` },
-                stake: content => { return `<span style="
+                ">${content}</span>`) },
+                stake: content => { return D.JSH(`<span style="
                     display: inline-block; 
                     width: 410px; 
                     font-family: 'Alice Regular';
                     height: 20px;
                     line-height: 20px;
-                ">${content}</span>` },
-                teamwork: content => { return `<span style="
+                ">${content}</span>`) },
+                teamwork: content => { return D.JSH(`<span style="
                     display: inline-block; 
                     width: 50px; 
                     font-family: 'Alice Regular'; 
@@ -776,7 +776,7 @@ const C = (() => {
                     height: 20px;
                     line-height: 20px;
                     font-size: 16px;
-                ">${content}</span>` }
+                ">${content}</span>`) }
             },
         },
         ROLLERHTML = {
@@ -791,34 +791,34 @@ const C = (() => {
             smallResult: content => `<div style="display: block ; width: 100% ; height: 24px ; line-height: 20px ; text-align: center ; font-weight: bold ; text-shadow: 0px 0px 2px ${COLORS.white} , 0px 0px 2px ${COLORS.white} , 0px 0px 2px ${COLORS.white} , 0px 0px 2px ${COLORS.white} ; ">${content}</div>`,
             die: (dieVal) => { switch (dieVal) {
                 case "BcL":
-                    return `<span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span><span style="width: 10px; text-align: center; height: 20px; vertical-align: middle; color: ${COLORS.white}; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; text-shadow: none; ">+</span>`
+                    return D.JSH(`<span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span><span style="width: 10px; text-align: center; height: 20px; vertical-align: middle; color: ${COLORS.white}; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; text-shadow: none; ">+</span>`)
                 case "BcR":
-                    return `<span style="width: 10px; text-align: center; height: 20px; vertical-align: middle; color: ${COLORS.white}; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; margin-right: -3px; text-shadow: none; ">+</span><span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span>`
+                    return D.JSH(`<span style="width: 10px; text-align: center; height: 20px; vertical-align: middle; color: ${COLORS.white}; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; margin-right: -3px; text-shadow: none; ">+</span><span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span>`)
                 case "HcL":
-                    return `<span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span><span style="width: 10px; text-align: center; height: 20px; vertical-align: middle; color: ${COLORS.brightred}; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; text-shadow: none; ">+</span>`
+                    return D.JSH(`<span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span><span style="width: 10px; text-align: center; height: 20px; vertical-align: middle; color: ${COLORS.brightred}; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; text-shadow: none; ">+</span>`)
                 case "HcR":
-                    return `<span style="width: 10px; text-align: center; height: 20px; vertical-align: middle; color: ${COLORS.brightred}; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; margin-right: -3px; text-shadow: none; ">+</span><span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span>`
+                    return D.JSH(`<span style="width: 10px; text-align: center; height: 20px; vertical-align: middle; color: ${COLORS.brightred}; display: inline-block; font-size: 16px; font-family: 'Arial'; margin-left: -5px; margin-right: -3px; text-shadow: none; ">+</span><span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span>`)
                 case "Bc":
-                    return `<span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span>`
+                    return D.JSH(`<span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span>`)
                 case "Hc":
-                    return `<span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span>`
+                    return D.JSH(`<span style="margin-right: 2px; width: 10px; text-align: center; height: 22px; vertical-align: middle; color: ${COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial';">♦</span>`)
                 case "Bs":
-                    return `<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle; color: ${COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial';">■</span>`
+                    return D.JSH(`<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle; color: ${COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial';">■</span>`)
                 case "Hs":
-                    return `<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial';">■</span>`
+                    return D.JSH(`<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial';">■</span>`)
                 case "Bf":
-                    return `<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: none;">■</span><span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${COLORS.black}; display: inline-block; margin-left: -12px; font-size: 18px; font-family: 'Arial'; margin-bottom: -4px; text-shadow: none;">×</span>`
+                    return D.JSH(`<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: none;">■</span><span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${COLORS.black}; display: inline-block; margin-left: -12px; font-size: 18px; font-family: 'Arial'; margin-bottom: -4px; text-shadow: none;">×</span>`)
                 case "Hf": 
-                    return `<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: none;">■</span><span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${COLORS.black}; display: inline-block; margin-left: -12px; font-size: 18px; font-family: 'Arial'; margin-bottom: -4px; text-shadow: none;">×</span>`
+                    return D.JSH(`<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${COLORS.brightred}; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: none;">■</span><span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${COLORS.black}; display: inline-block; margin-left: -12px; font-size: 18px; font-family: 'Arial'; margin-bottom: -4px; text-shadow: none;">×</span>`)
                 case "Hb":
-                    return `<span style="margin-right: 2px; width: 10px; text-align: center; color: ${COLORS.black}; height: 24px; vertical-align: middle; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}; line-height: 22px;">♠</span>`
+                    return D.JSH(`<span style="margin-right: 2px; width: 10px; text-align: center; color: ${COLORS.black}; height: 24px; vertical-align: middle; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}, 0px 0px 2px ${COLORS.brightred}; line-height: 22px;">♠</span>`)
                 default:
-                    return `<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: none;">■</span><span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${COLORS.black}; display: inline-block; margin-left: -12px; font-size: 18px; font-family: 'Arial'; margin-bottom: -4px; text-shadow: none;">×</span>`
+                    return D.JSH(`<span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${COLORS.white}; display: inline-block; font-size: 18px; font-family: 'Arial'; text-shadow: none;">■</span><span style="margin-right: 2px; width: 10px; text-align: center; height: 24px; vertical-align: middle;color: ${COLORS.black}; display: inline-block; margin-left: -12px; font-size: 18px; font-family: 'Arial'; margin-bottom: -4px; text-shadow: none;">×</span>`)
             } },
-            margin: (content, width, topMargin) => `<div style="display: inline-block; width: ${width}px; vertical-align: top; margin-top:${topMargin}px; text-align: left; height: 100%; "><span style="display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none; height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: left; margin-left: 10px; font-size: 12px;">${content}</span></div>`,
-            outcome: (content, color) => `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[color] || COLORS.white}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`,
-            smallOutcome: (content, color) => `<div style="display: block; width: 100%; margin-top: 5px; height: 14px; line-height: 14px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[color] || COLORS.white}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`,
-            subOutcome: (content, color) => `<div style="display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[color] || COLORS.white}; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`
+            margin: (content, width, topMargin) => D.JSH(`<div style="display: inline-block; width: ${width}px; vertical-align: top; margin-top:${topMargin}px; text-align: left; height: 100%; "><span style="display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none; height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: left; margin-left: 10px; font-size: 12px;">${content}</span></div>`),
+            outcome: (content, color) => D.JSH(`<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[color] || COLORS.white}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`),
+            smallOutcome: (content, color) => D.JSH(`<div style="display: block; width: 100%; margin-top: 5px; height: 14px; line-height: 14px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[color] || COLORS.white}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`),
+            subOutcome: (content, color) => D.JSH(`<div style="display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;"><span style="color: ${COLORS[color] || COLORS.white}; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';">${content}</span></div>`)
         },
         STYLES = {
             whiteMarble: {
@@ -847,6 +847,7 @@ const C = (() => {
         },
     // #endregion
 
+        
     // #region SOUND EFFECT CONSTANTS
         SOUNDVOLUME = {
             indoorMult: {

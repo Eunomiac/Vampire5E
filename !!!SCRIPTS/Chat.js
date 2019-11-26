@@ -157,9 +157,13 @@ const Chat = (() => {
                             }
                             break
                         case "dim": case "dims": case "dimensions": {
-                            if (D.GetSelected(msg)) {
-                                const [width, height] = [args.shift(), args.shift()].map(x => D.Int(x) || null)
+                            if (D.GetSelected(msg)) {                                
+                                let [width, height] = [args.shift(), args.shift()].map(x => x === "x" ? x : D.Int(x) || null)
                                 for (const selObj of D.GetSelected(msg)) {
+                                    if (width === "x" && height)
+                                        width = selObj.get("width") * height / selObj.get("height")
+                                    else if (height === "x" && width)
+                                        height = selObj.get("height") * width / selObj.get("width")
                                     if (width)
                                         selObj.set({width})
                                     if (height)
