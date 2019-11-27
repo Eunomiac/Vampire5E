@@ -183,6 +183,8 @@ const D = (() => {
             CELLSIZE: () => C.PIXELSPERSQUARE * getObj("page", Campaign().get("playerpageid")).get("snapping_increment")
         },
         FunctionQueue = {},
+        ISRUNNINGQUEUE = {},
+        WAITINGQUEUES = [],
     // #endregion
 
     // #region DECLARATIONS: Dependent Variables
@@ -230,9 +232,13 @@ const D = (() => {
         isFuncQueueClear = (queueName) => {
             if (!FunctionQueue[queueName])
                 FunctionQueue[queueName] = []
-            return FunctionQueue[queueName].length === 0
+            return !ISRUNNINGQUEUE[queueName] && FunctionQueue[queueName].length === 0
         },
         queueFunc = (func, args = [], queueName = "main", waitAfterSecs = 2) => {
+            if (ISRUNNINGQUEUE[queueName]) {
+                D.Alert(`Attempting to add function to <b>${queueName}</b>, but it's running!`, "ERROR: Function Queue")
+                return false
+            }
             try {
                 if (VAL({function: func, array: args})) {
                     const funcWrapper = (cback) => {
@@ -240,7 +246,7 @@ const D = (() => {
                         setTimeout(cback, waitAfterSecs * 1000)
                     }
                     FunctionQueue[queueName] = FunctionQueue[queueName] || []
-                    FunctionQueue[queueName].push(funcWrapper)
+                    FunctionQueue[queueName].push([funcWrapper, func.name])
                     DB(`QueFunc: ${D.JS(func)}, ${D.JS(queueName)}, ${D.JS(args)}<br><br>${D.JS(FunctionQueue)}`, "queueFunc")
                 } else {
                     return THROW(`Invalid function (${D.JSL(func)}) OR Invalid args array (${D.JSL(args)})`, "queueFunc")
@@ -253,36 +259,55 @@ const D = (() => {
         $runFuncQueue = (cback) => {
             const queueName = STATE.REF.FuncQueueName.pop()
             if (!queueName)
-                return THROW("Attempt to run function queue without any queue names.", "runFuncQueue")            
+                return THROW("Attempt to run function queue without any queue names.", "runFuncQueue")           
+            DB(`Beginning Function Queue ${queueName}`, "runFuncQueue")
+            ISRUNNINGQUEUE[queueName] = true             
             let current = 0
             const done = (empty, ...args) => {
                     const end = () => {
                         const newArgs = args ? [].concat(empty, args) : [empty]
+                        if (STATE.REF.WATCHLIST.includes("runFuncQueue"))
+                            D.Chat("Storyteller", C.CHATHTML.Block(C.CHATHTML.Header(`Done <b>${queueName}</b>!`, {margin: "0px", fontFamily: "Candal", fontSize: "10px", fontWeight: "normal"}), {margin: "-33px 0px 0px -42px", padding: "0px"}), undefined, D.RandomString(3))
+                        ISRUNNINGQUEUE[queueName] = false
+                        FunctionQueue[queueName] = []
                         if (cback)
                             cback(...newArgs)
+                        if (WAITINGQUEUES.length) {
+                            const [nextQueueName, nextQueueCBack] = WAITINGQUEUES.shift()
+                            runFuncQueue(nextQueueName, nextQueueCBack)
+                        }
                     }
                     end()
                 },
                 each = (empty, ...args) => {
-                    if (++current >= FunctionQueue[queueName].length || empty)
+                    if (++current >= FunctionQueue[queueName].length || empty) {                            
                         done(empty, args)
-                    else
-                        FunctionQueue[queueName][current].apply(undefined, [].concat(args, each))
+                    } else {
+                        if (STATE.REF.WATCHLIST.includes("runFuncQueue"))
+                            D.Chat("Storyteller", C.CHATHTML.Block(C.CHATHTML.Body(`<b>${FunctionQueue[queueName][current][1]}</b> (${queueName} ${current + 1} / ${FunctionQueue[queueName].length})`, {margin: "0px", fontFamily: "Candal", fontSize: "10px", fontWeight: "normal", lineHeight: "18px"}), {margin: "-33px 0px 0px -42px", padding: "0px"}), undefined, D.RandomString(3))
+                        FunctionQueue[queueName][current][0].apply(undefined, [].concat(args, each))
+                    }
                 }
-            if (FunctionQueue[queueName].length) {
-                DB(`... running ${queueName} function, ${FunctionQueue[queueName].length - 1} remaining.`, "runFuncQueue")
-                FunctionQueue[queueName][0](each)
-            } else {
+            if (FunctionQueue[queueName].length)                 
+                FunctionQueue[queueName][0][0](each)
+            else
                 done(null)
-                FunctionQueue[queueName].length = 0
-                DB(`Function Queue ${queueName} Complete!`, "runFuncQueue")
-            }
             return true
         },
         runFuncQueue = (queueName = "main", cback) => {
-            DB(`Beginning Function Queue ${queueName}`, "runFuncQueue")
-            STATE.REF.FuncQueueName.push(queueName)
-            $runFuncQueue(cback)
+            const runningQueues = Object.keys(ISRUNNINGQUEUE).filter(x => ISRUNNINGQUEUE[x] === true)
+            if (ISRUNNINGQUEUE[queueName]) {
+                D.Alert(`Attempting to run <b>${queueName}</b>, but it's already running!`, "ERROR: Function Queue")
+                return false
+            } else if (runningQueues.length) {
+                WAITINGQUEUES.push([queueName, cback])
+                D.Alert(`Delaying ${queueName} until queue(s) complete: ${D.JS(runningQueues)}`, "Run Function Queue")
+                return false
+            } else {            
+                STATE.REF.FuncQueueName.push(queueName)
+                $runFuncQueue(cback)
+                return true
+            }
         },
     // #endregion
 
@@ -623,9 +648,12 @@ const D = (() => {
                         Each element represents a full-width horizontal <div> block, contained with "block".
                         Elements should be of the form:
                             {
-                                type: <string: "Title", "Header", "Body", "ButtonLine", "ButtonSubheader">
+                                type: <string: "Column", "Title", "Header", "Body", "ButtonLine", "ButtonSubheader">
                                 contents: <
                                     for TITLE, HEADLINE, TEXT: <string>
+                                    for COLUMN: <array: each element represents a HORIZONTAL panel, each given in the form of nested MENU DATA objects:
+                                        <list: {title: <string>, rows: <as MENU DATA>}>
+                                            - when columns have been exhausted, will proceed with a new block.
                                     for BUTTONS: <array: each element represents a line of buttons, of form:
                                                     for BUTTONS: <list: {name, command, [styles]}>
                                                     for SPACERS: <number: percentage of width, or 0 for equal spacing > 
@@ -658,29 +686,42 @@ const D = (() => {
                         fontFamily: "Arial Narrow"
                     }
                 },
-                dbLines = []
-            for (const rowData of menuData.rows)
-                if (["Title", "Header", "Body", "ButtonSubheader"].includes(rowData.type)) {
-                    htmlRows.push(C.MENUHTML[rowData.type](rowData.contents, Object.assign({}, customStyles[rowData.type] || {}, rowData.styles || {})))
-                } else if (rowData.type === "ButtonLine") {
-                    const buttonsCode = [],
-                        numberEntities = rowData.contents.filter(x => VAL({number: x})),
-                        strictSpacing = numberEntities.length && rowData.contents.filter(x => VAL({number: x})).reduce((tot, x) => tot + x) || 0,
-                        entityWidth = (100 - strictSpacing) / rowData.contents.filter(x => VAL({list: x}) || VAL({number: x}) && x === 0).length - 1
-                    rowData.contents = rowData.contents.map(x => VAL({list: x}) && Object.assign(x, {styles: Object.assign({}, {width: `${entityWidth}%`}, x.styles)}) ||
-                                                                 VAL({number: x}) && x === 0 && entityWidth ||
-                                                                 VAL({number: x}) && x)               
-                    for (const entity of rowData.contents)
-                        if (VAL({number: entity})) {
-                            buttonsCode.push(C.MENUHTML.ButtonSpacer(`${D.Int(entity)}%`))
-                        } else {
-                            if (entity.name.length > 12)
-                                entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
-                            buttonsCode.push(C.MENUHTML.Button(entity.name, entity.command, Object.assign({width: `${entityWidth}%`}, customStyles.Button, rowData.buttonStyles || {}, entity.styles || {})))
-                            dbLines.push(`<b>${entity.name}</b>: ${entity.command}<br>`)
+                dbLines = [],
+                parseSection = (sectionData) => {
+                    const sectionHTML = []
+                    for (const rowData of sectionData.rows)
+                        if (["Title", "Header", "Body", "ButtonSubheader"].includes(rowData.type)) {
+                            sectionHTML.push(C.MENUHTML[rowData.type](rowData.contents, Object.assign({}, customStyles[rowData.type] || {}, rowData.styles || {})))
+                        } else if (rowData.type === "ButtonLine") {
+                            const buttonsCode = [],
+                                numberEntities = rowData.contents.filter(x => VAL({number: x})),
+                                strictSpacing = numberEntities.length && rowData.contents.filter(x => VAL({number: x})).reduce((tot, x) => tot + x) || 0,
+                                entityWidth = (100 - strictSpacing) / rowData.contents.filter(x => VAL({list: x}) || VAL({number: x}) && x === 0).length - 1
+                            rowData.contents = rowData.contents.map(x => VAL({list: x}) && Object.assign(x, {styles: Object.assign({}, {width: `${entityWidth}%`}, x.styles)}) ||
+                                                                         VAL({number: x}) && x === 0 && entityWidth ||
+                                                                         VAL({number: x}) && x)               
+                            for (const entity of rowData.contents)
+                                if (VAL({number: entity})) {
+                                    buttonsCode.push(C.MENUHTML.ButtonSpacer(`${D.Int(entity)}%`))
+                                } else {
+                                    if (entity.name.length > 12)
+                                        entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
+                                    buttonsCode.push(C.MENUHTML.Button(entity.name, entity.command, Object.assign({width: `${entityWidth}%`}, customStyles.Button, rowData.buttonStyles || {}, entity.styles || {})))
+                                    dbLines.push(`<b>${entity.name}</b>: ${entity.command}<br>`)
+                                }
+                            sectionHTML.push(C.MENUHTML.ButtonLine(buttonsCode, rowData.styles || {}))
+                        } else if (rowData.type === "Column") {
+                            const numColumns = rowData.contents.length,
+                                colWidth = `${D.Int(100 / numColumns) - 1}%`,
+                                colHTML = []
+                            for (const colData of rowData.contents)
+                                colHTML.push(C.MENUHTML.Column(parseSection(colData), Object.assign({width: colWidth}, rowData.style)))
+                            sectionHTML.push(C.MENUHTML.SubBlock(colHTML.join("")))
                         }
-                    htmlRows.push(C.MENUHTML.ButtonLine(buttonsCode, rowData.styles || {}))
+                    return sectionHTML.join("")
                 }
+
+            htmlRows.push(parseSection(menuData))
             if (menuData.title)
                 htmlRows.unshift(C.MENUHTML.Title(menuData.title))
             DB(dbLines, "commandMenu")

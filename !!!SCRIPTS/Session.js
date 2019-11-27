@@ -20,9 +20,10 @@ const Session = (() => {
         initialize = () => { // eslint-disable-line no-empty-function
             // delete STATE.REF.curLocation
             // delete STATE.REF.locationRecord
+            // delete STATE.REF.tokenRecord
             STATE.REF.isTestingActive = STATE.REF.isTestingActive || false
             STATE.REF.sceneChars = STATE.REF.sceneChars || []
-            STATE.REF.tokenRecord = STATE.REF.tokenRecord || {}
+            STATE.REF.tokenRecord = STATE.REF.tokenRecord || {Active: {}, Inactive: {}, Daylighter: {}, Downtime: {}, Complications: {}, Spotlight: {}}
             STATE.REF.ActiveTokens = STATE.REF.ActiveTokens || []
             STATE.REF.SessionScribes = STATE.REF.SessionScribes || []
             STATE.REF.SessionModes = STATE.REF.SessionModes || ["Active", "Inactive", "Daylighter", "Downtime", "Complications", "Spotlight"]
@@ -51,23 +52,7 @@ const Session = (() => {
             STATE.REF.FavoriteSites = STATE.REF.FavoriteSites || []
             
             // delete STATE.REF.locationRecord
-            STATE.REF.locationDetails = {
-                SiteLotus: {
-                    subLocs: {
-                        TopLeft: "SiteLotus_LockeQuarters",
-                        Left: "Security",
-                        BotLeft: "SiteLotus_RoyQuarters",
-                        TopRight: "SiteLotus_NapierQuarters",
-                        Right: "Laboratory",
-                        BotRight: "SiteLotus_AvaQuarters"
-                    },
-                    siteName: "Site: Orchid"
-                },
-                Vehicle5: {
-                    subLocs: {TopLeft: "blank", Left: "blank", BotLeft: "blank", TopRight: "blank", Right: "blank", BotRight: "blank"},
-                    siteName: "Locke's BMW"
-                }
-            }
+            
             if (!STATE.REF.locationRecord) {
                 STATE.REF.locationRecord = {}
                 for (const mode of Session.Modes)
@@ -338,25 +323,93 @@ const Session = (() => {
 
         MODEFUNCTIONS = {
             enterMode: {
-                Active: () => {},
-                Inactive: () => {},
-                Downtime: () => {},
+                Active: () => {                            
+                    Char.RefreshDisplays()
+                    if (!STATE.REF.isTestingActive)
+                        TimeTracker.ToggleClock(true)
+                },
+                Inactive: () => {
+                    Media.ToggleTokens(null, false)
+                    TimeTracker.ToggleClock(false)
+                    TimeTracker.ToggleCountdown(true)
+                },
+                Downtime: () => {                    
+                    setLocation(BLANKLOCRECORD)
+                    TimeTracker.ToggleClock(false)
+                    Char.SendHome()
+                    if (STATE.REF.LastMode !== "Complications")
+                        D.Chat("all", C.CHATHTML.Block([
+                            C.CHATHTML.Title("Session Downtime"),
+                            C.CHATHTML.Header("Session Status: Downtime"),
+                            C.CHATHTML.Body("Clock Stopped.")
+                        ]), null, D.RandomString(3))
+                },
                 Daylighter: () => {},
-                Spotlight: () => {},
-                Complications: () => {}
+                Spotlight: (charRef) => {
+                    const charObj = D.GetChar(charRef)
+                    Char.SendHome()
+                    if (VAL({pc: charObj})) {
+                        const charData = D.GetCharData(charObj),
+                            quad = charData.quadrant,
+                            otherCharData = D.GetChars("registered").filter(x => x.id !== charData.id).map(x => D.GetCharData(x))                
+                        for (const otherData of otherCharData) {
+                            Char.TogglePC(otherData.quadrant, false)
+                            Char.SetNPC(otherData.id, "base")
+                        }
+                        Char.TogglePC(quad, true)
+                        Char.SetNPC(charData.id, "base")
+                        Media.SetImg("Spotlight", quad, true)
+                        D.Chat("all", C.CHATHTML.Block([
+                            C.CHATHTML.Title("Spotlight:"),
+                            C.CHATHTML.Header(charData.name)
+                        ]), null, D.RandomString(3))
+                    }
+                    setLocation(BLANKLOCRECORD)
+                    Char.RefreshDisplays()
+                },
+                Complications: () => {
+                    Media.ToggleTokens(null, false)
+                    TimeTracker.ToggleClock(false)
+                },
+                Testing: () => {
+                    STATE.REF.isTestingActive = true
+                    Media.ToggleText("testSessionNotice", true)
+                    D.Alert("Test Session <b>ACTIVE</b>.", "!sess test")
+                }
             },
             leaveMode: {
                 Active: () => {},
-                Inactive: () => {},
-                Downtime: () => {},
+                Inactive: () => {                    
+                    TimeTracker.ToggleClock(true)
+                    TimeTracker.ToggleCountdown(false)
+                },
+                Downtime: () => {
+                    D.Chat("all", C.CHATHTML.Block([
+                        C.CHATHTML.Title("Session Downtime"),
+                        C.CHATHTML.Header("Session Status: Regular Time"),
+                        C.CHATHTML.Body("Clock Started.")
+                    ]), null, D.RandomString(3))
+                },
                 Daylighter: () => {},
                 Spotlight: () => {
                     for (const charData of D.GetChars("registered").map(x => D.GetCharData(x))) {
                         Char.SetNPC(charData.id, "base")
                         Char.TogglePC(charData.quadrant, true)
                     }
+                    // Media.SetImg("Spotlight", "blank")
+                    D.Chat("all", C.CHATHTML.Block([
+                        C.CHATHTML.Title("Spotlight"),
+                        C.CHATHTML.Header("Spotlight Session Closed.")
+                    ]), null, D.RandomString(3))
                 },
-                Complications: () => {}
+                Complications: () => {
+                    TimeTracker.ToggleClock(true)
+                },
+                Testing: () => {
+                    STATE.REF.isTestingActive = false
+                    Media.ToggleText("testSessionNotice", false)
+                    D.Alert("Test Session <b>DISABLED</b>.", "!sess test")
+                }
             }
         },
     // #region Getting & Setting Session Data
@@ -393,21 +446,10 @@ const Session = (() => {
                 C.CHATHTML.Body("Thank you for your service!")
             ]), null, D.RandomString(3))
             changeMode("Active", true)
-            Media.ToggleImg("MapIndicator_Base_1", true)
-            Media.ToggleAnim("MapIndicator", true)
-            for (const charObj of D.GetChars("registered")) {
-                const tokenObj = Media.GetToken(charObj)
-                Media.ToggleToken(charObj, true)
-                if (tokenObj)
-                    Media.SetToken(charObj, STATE.REF.tokenRecord[tokenObj.get("name")] || "base")
-            }
-            Char.SendBack()
-            for (const tokenID of STATE.REF.ActiveTokens)
-                getObj("graphic", tokenID).set("layer", "objects")
-            TimeTracker.ToggleCountdown(false)
-            TimeTracker.ToggleClock(true)
-            Char.RefreshDisplays()
-            TimeTracker.Fix()
+            // Media.ToggleImg("MapIndicator_Base_1", true)
+            // Media.ToggleAnim("MapIndicator", true)
+
+
         },
         endSession = () => {
             if (STATE.REF.isTestingActive || sessionMonologue() && remorseCheck()) {
@@ -421,26 +463,12 @@ const Session = (() => {
                 changeMode("Inactive", true)
                 if (!STATE.REF.isTestingActive) {
                     STATE.REF.dateRecord = null
+                    STATE.REF.SessionNum++
                     for (const char of D.GetChars("registered"))
                         Char.AwardXP(char, 2, "Session XP award.")
                 } else if (STATE.REF.dateRecord) {
                     TimeTracker.CurrentDate = STATE.REF.dateRecord
-                    TimeTracker.Fix()
-                }
-                const tokenObjs = findObjs({
-                    _pageid: D.PAGEID,
-                    _type: "graphic",
-                    _subtype: "token",
-                    layer: "objects"
-                })
-                for (const tokenObj of tokenObjs)
-                    tokenObj.set("layer", "walls")
-                STATE.REF.ActiveTokens = tokenObjs.map(x => x.id)
-                TimeTracker.ToggleClock(false)
-                TimeTracker.ToggleCountdown(true)
-                TimeTracker.Fix()
-                if (!STATE.REF.isTestingActive)
-                    STATE.REF.SessionNum++
+                }                    
             }
         },
         sessionMonologue = () => {
@@ -455,6 +483,29 @@ const Session = (() => {
                 return false
             }
             return true
+        },
+        logTokens = (mode) => {
+            const tokenObjs = findObjs({
+                _pageid: D.PAGEID,
+                _type: "graphic",
+                _subtype: "token"
+            }).filter(x => x.get("represents"))
+            STATE.REF.tokenRecord[mode] = {}
+            for (const tokenObj of tokenObjs)
+                STATE.REF.tokenRecord[mode][tokenObj.id] = {
+                    charID: tokenObj.get("represents"),
+                    left: tokenObj.get("left"),
+                    top: tokenObj.get("top"),
+                    layer: tokenObj.get("layer"),
+                    src: (Media.TOKENS[D.GetName(tokenObj.get("represents"))] || {curSrc: "base"}).curSrc || "base"
+                }            
+        },
+        restoreTokens = (mode) => {
+            for (const [tokenID, tokenData] of Object.entries(STATE.REF.tokenRecord[mode])) {
+                Media.ToggleToken(tokenData.charID, true)
+                Media.SetToken(tokenData.charID, tokenData.src)
+                Media.SetImgTemp(tokenID, _.omit(tokenData, "src"))
+            }
         },
     // #endregion
 
@@ -471,13 +522,7 @@ const Session = (() => {
                     Media.TEXT[textKey].modes[mode] = D.Clone(Media.TEXT[textKey].modes[modeSrc])            
             }
         },
-        enterMode = mode => { // eslint-disable-line no-unused-vars
-
-        },
-        leaveMode = mode => { // eslint-disable-line no-unused-vars
-
-        },
-        changeMode = (mode, isUpdatingMedia = true) => {
+        changeMode = (mode, args) => {
             if (D.Capitalize(D.LCase(mode)) === Session.Mode)
                 return null
             if (VAL({string: mode}, "changeMode") && STATE.REF.SessionModes.map(x => x.toLowerCase()).includes(mode.toLowerCase())) {
@@ -485,90 +530,46 @@ const Session = (() => {
                     `${STATE.REF.Mode}`,
                     D.Capitalize(mode.toLowerCase())
                 ]
-                if (MODEFUNCTIONS.leaveMode[lastMode])
-                    MODEFUNCTIONS.leaveMode[lastMode]()
-                STATE.REF.Mode = curMode
-                STATE.REF.LastMode = lastMode
-                // D.Alert(`Modes Set: ${STATE.REF.Mode}, Last: ${STATE.REF.LastMode}`)
-                if (isUpdatingMedia) {
-                    Roller.Clean()
-                    Media.SwitchMode()
-                    setModeLocations(curMode)
-                    if (MODEFUNCTIONS.enterMode[curMode])
-                        MODEFUNCTIONS.enterMode[curMode]()
-                    Media.UpdateSoundscape()
-                }
+
+                D.Queue(D.Chat, ["Storyteller", `Leaving <b>${lastMode}</b>...`, "Changing Mode"], "ModeSwitch", 0.1)
+                D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1)
+                D.Queue(MODEFUNCTIONS.leaveMode[lastMode], [args], "ModeSwitch", 1)
+                D.Queue(() => { STATE.REF.Mode = curMode; STATE.REF.LastMode = lastMode }, [], "ModeSwitch", 0.1)
+                D.Queue(D.Chat, ["Storyteller", "Configuring Mode Assets...", "Changing Mode"], "ModeSwitch", 0.1)
+                D.Queue(Roller.Clean, [], "ModeSwitch", 1)
+                D.Queue(Media.SwitchMode, [], "ModeSwitch", 2)
+                D.Queue(setModeLocations, [curMode], "ModeSwitch", 1)
+                D.Queue(Media.UpdateSoundscape, [], "ModeSwitch", 1)
+                D.Queue(D.Chat, ["Storyteller", `Entering <b>${curMode}</b>...`, "Changing Mode"], "ModeSwitch", 0.1)
+                D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1)
+                D.Queue(MODEFUNCTIONS.enterMode[curMode], [args], "ModeSwitch", 1)
+                D.Queue(TimeTracker.Fix, [], "ModeSwitch", 0.1)
+                D.Queue(D.Chat, ["Storyteller", "Mode Change Complete!", "Changing Mode"], "ModeSwitch", 0.1)
+                D.Run("ModeSwitch")
             }
             return true
         },
         toggleTesting = (isTesting) => {
-            if (isTesting === false || isTesting === true) {
-                if (isTesting === STATE.REF.isTestingActive)
-                    return
-                STATE.REF.isTestingActive = isTesting
-            } else {
-                STATE.REF.isTestingActive = !STATE.REF.isTestingActive
-            }
-            Media.ToggleText("testSessionNotice", STATE.REF.isTestingActive)
-            D.Alert(`Testing Set to ${STATE.REF.isTestingActive}`, "!sess test")
+            if (isTesting === true)
+                MODEFUNCTIONS.enterMode.Testing()
+            else if (isTesting === false)
+                MODEFUNCTIONS.leaveMode.Testing()
+            else if (STATE.REF.isTestingActive)
+                MODEFUNCTIONS.leaveMode.Testing()
+            else
+                MODEFUNCTIONS.enterMode.Testing()
         },
         toggleDowntime = () => {
-            changeMode(STATE.REF.Mode === "Downtime" ? "Active" : "Downtime")
-            if (STATE.REF.Mode === "Downtime") {
-                setLocation(BLANKLOCRECORD)
-                TimeTracker.ToggleClock(false)
-                Char.SendHome()
-                D.Chat("all", C.CHATHTML.Block([
-                    C.CHATHTML.Title("Session Downtime"),
-                    C.CHATHTML.Header("Session Status: Downtime"),
-                    C.CHATHTML.Body("Clock Stopped.")
-                ]), null, D.RandomString(3))
-            } else {
-                TimeTracker.ToggleClock(true)
-                Char.SendBack()
-                D.Chat("all", C.CHATHTML.Block([
-                    C.CHATHTML.Title("Session Downtime"),
-                    C.CHATHTML.Header("Session Status: Regular Time"),
-                    C.CHATHTML.Body("Clock Started.")
-                ]), null, D.RandomString(3))
-            }
-            Char.RefreshDisplays()
-            TimeTracker.Fix()
+            if (STATE.REF.Mode === "Downtime")
+                changeMode(STATE.REF.LastMode)
+            else
+                changeMode("Downtime")
         },
         toggleSpotlight = (charRef) => {
-            const charObj = D.GetChar(charRef)
-            if (VAL({pc: charObj})) {
-                const charData = D.GetCharData(charObj),
-                    quad = charData.quadrant,
-                    spotlightOn = Media.GetImgData("Spotlight").curSrc,
-                    otherCharData = D.GetChars("registered").filter(x => x.id !== charData.id).map(x => D.GetCharData(x))
-                if (STATE.REF.Mode !== "Spotlight" || spotlightOn !== quad) {
-                    changeMode("Spotlight")
-                    setLocation(BLANKLOCRECORD)
-                    Char.SendHome()
-                    for (const otherData of otherCharData) {
-                        Char.TogglePC(otherData.quadrant, false)
-                        Char.SetNPC(otherData.id, "base")
-                    }
-                    Char.TogglePC(quad, true)
-                    Char.SetNPC(charData.id, "base")
-                    Media.SetImg("Spotlight", quad, true)
-                    D.Chat("all", C.CHATHTML.Block([
-                        C.CHATHTML.Title("Spotlight:"),
-                        C.CHATHTML.Header(charData.name)
-                    ]), null, D.RandomString(3))
-                }
-            } else {
-                changeMode(STATE.REF.LastMode === "Spotlight" && "Active" || STATE.REF.LastMode)
-                Char.SendBack()
-                Media.SetImg("Spotlight", "blank")
-                D.Chat("all", C.CHATHTML.Block([
-                    C.CHATHTML.Title("Spotlight"),
-                    C.CHATHTML.Header("Spotlight Session Closed.")
-                ]), null, D.RandomString(3))
-            }                   
-            Char.RefreshDisplays()
-            TimeTracker.Fix()
+            if (STATE.REF.Mode === "Spotlight")
+                changeMode(STATE.REF.LastMode)
+            else             
+                changeMode("Spotlight", charRef)
         },
     // #endregion
 

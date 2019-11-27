@@ -1287,7 +1287,7 @@ const Char = (() => {
                 const charData = D.GetCharData(char),
                     quad = charData.quadrant,
                     hunger = `${D.GetStatVal(char, "hunger")}`
-                Media.SetImg(`Hunger${quad}`, hunger)
+                Media.SetImg(`Hunger${quad}`, hunger === "0" ? "blank" : hunger)
             }
         },
     // #endregion

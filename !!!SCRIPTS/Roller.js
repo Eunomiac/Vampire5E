@@ -733,7 +733,7 @@ const Roller = (() => {
             }
         },
         CHATSTYLES = {
-            fullBox: `<div style="display: block;width: 259px;padding: 5px 5px;margin-left: -42px;margin-top: -25px; color: ${C.COLORS.white};font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset ${C.COLORS.darkred};background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;">`,
+            fullBox: `<div style="display: block;width: 259px;padding: 5px 5px;margin-left: -42px;margin-top: -33px; color: ${C.COLORS.white};font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset ${C.COLORS.darkred};background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;">`,
             space10: "<span style=\"display: inline-block; width: 10px;\"></span>",
             space30: "<span style=\"display: inline-block; width: 30px;\"></span>",
             space40: "<span style=\"display: inline-block; width: 40px;\"></span>",
@@ -789,7 +789,7 @@ const Roller = (() => {
                 startBlock: "<div style=\"display: inline-block; width: 48%; margin: 0% 1%; text-align: center;\">",
                 blockNameStart: "<div style=\"display: block; width: 100%; font-size: 13px; margin-bottom: -5px; margin-top: 10px;\">",
                 lineStart: "<div style=\"display: block; width: 100%; font-size: 12px;\">",
-                startPlayerBlock: `<div style="display: block; width: 280px; padding: 45px 5px; margin-left: -58px; margin-top: -25px; margin-bottom: -5px; color: ${C.COLORS.white}; font-family: Percolator; text-align: left; font-size: 16px; background: url('https://t4.ftcdn.net/jpg/00/78/66/11/240_F_78661103_aowhE8PWKrHRtoCUogPvkfWs22U54SuU.jpg') center no-repeat; background-size: 100% 100%; z-index: 100; position: relative;">`,
+                startPlayerBlock: `<div style="display: block; width: 280px; padding: 45px 5px; margin-left: -58px; margin-top: -33px; margin-bottom: -5px; color: ${C.COLORS.white}; font-family: Percolator; text-align: left; font-size: 16px; background: url('https://t4.ftcdn.net/jpg/00/78/66/11/240_F_78661103_aowhE8PWKrHRtoCUogPvkfWs22U54SuU.jpg') center no-repeat; background-size: 100% 100%; z-index: 100; position: relative;">`,
                 playerTopLineStart: "<div style=\"display: block; margin-left: 28px;  width: 100%; font-size: 24px; font-family: Percolator; height: 12px; padding: 3px 0px; text-align: left;  margin-top: -16px;\">",
                 playerBotLineStart: `<div style="width: 100%; height: auto; line-height: 15px; display: block;  text-align: left; color: ${C.COLORS.white}; margin: 3px 0px 9px 48px;">`,
                 grey: `<span style="display:inline-block; color: ${C.COLORS.brightgrey}; font-size: 24px; font-weight: bold;">`,

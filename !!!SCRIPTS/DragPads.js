@@ -450,7 +450,7 @@ const DragPads = (() => {
         "mapButtonSitesShopping_1",
         "mapButtonSitesTransportation_1",
 */
-
+        
         makePad = (imgRef, funcName, params = {deltaTop: 0, deltaLeft: 0, deltaHeight: 0, deltaWidth: 0}) => {
             // THROW(`Making Pad: ${graphicObj.get("name")}, ${funcName}, ${D.JSL(params)}`, "makePad")
             const imgData = Media.GetImgData(imgRef),

@@ -50,6 +50,26 @@ const Complications = (() => {
         onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
             const charObjs = Listener.GetObjects(objects, "character")
             switch (call) {
+                case "getstats": {
+                    getCardStats()
+                    break
+                }
+                case "make": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "dragpads": {
+                            DragPads.ClearAllPads("flipComp")
+                            for (let i = 1; i <= 10; i++)
+                                DragPads.MakePad(`CompSpot_${i}`, "flipComp", {deltaWidth: -75, deltaHeight: -90})
+                            break
+                        }
+                        // no default
+                    }
+                    break
+                }
+                case "panel": {
+                    sendGMPanel()
+                    break
+                }
                 case "set": {
                     setCard(D.Int(args.shift()) + 1, args.shift(), args.shift() || null)
                     break
@@ -68,7 +88,7 @@ const Complications = (() => {
                     break
                 }
                 case "stop": case "end":
-                    endComplication(args.shift() === "true")
+                    endComplication(args.shift() === "true", args.shift() === "true")
                     STATE.REF.charRef = null
                     break
                 case "reset":
@@ -76,7 +96,7 @@ const Complications = (() => {
                     break
                 case "discard": {
                     switch (D.LCase(call = args.shift())) {
-                        case "rand": {
+                        case "random": {
                             discardCard(getRandomSpot(["faceUp", "noLastDrawn"]))
                             break
                         }
@@ -93,7 +113,7 @@ const Complications = (() => {
                 }
                 case "enhance": {
                     switch (D.LCase(call = args.shift())) {
-                        case "rand": {
+                        case "random": {
                             enhanceCard(getRandomSpot(["faceUp", "noNegated", "noEnhanced", "noLastDrawn"]))
                             break
                         }
@@ -110,8 +130,8 @@ const Complications = (() => {
                 }
                 case "negate": {
                     switch (D.LCase(call = args.shift())) {
-                        case "rand": {
-                            negateCard(getRandomSpot(["faceUp", "noEnhanced", "noNegated", "noLastDrawn"]))
+                        case "random": {
+                            negateCard(getRandomSpot(["isUndoable", "faceUp", "noEnhanced", "noNegated", "noLastDrawn"]))
                             break
                         }
                         case "last": {
@@ -127,7 +147,7 @@ const Complications = (() => {
                 }
                 case "duplicate": {
                     switch (D.LCase(call = args.shift())) {
-                        case "rand": {
+                        case "random": {
                             dupeCard(getRandomSpot(["faceUp", "noNegated", "noDuplicated", "noLastDrawn"]))
                             break
                         }
@@ -144,7 +164,7 @@ const Complications = (() => {
                 }
                 case "revalue": {
                     switch (D.LCase(call = args.shift())) {
-                        case "rand": {
+                        case "random": {
                             promptCardVal(getRandomSpot(["faceUp", "noLastDrawn"]))
                             break
                         }
@@ -175,169 +195,296 @@ const Complications = (() => {
     // #region CONFIGURATION: Card Definitions
 
         CARDS = [             
-            {name: "AMatterOfPride", category: null, value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => { 
-                Char.Damage(charRef, "willpower", "superficial+", 2)
-                if (isEnhanced) 
-                    Char.Damage(charRef, "willpower", "aggravated", 1)
-            }},
-            {name: "AMomentOfDespair", category: null, value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => { 
-                Char.Damage(charRef, "willpower", "superficial+", isEnhanced ? 3 : 1)
-            }},
-            {name: "AMomentOfInsight", category: "benefit", value: 1, rarity: "R", afterAction: (charRef, isEnhanced) => {
-                Char.AwardXP(charRef, isEnhanced ? 2 : 4, "A Moment of Insight")
-            }},
-            {name: "AMomentOfInspiration", category: "benefit", value: 1, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                Char.Damage(charRef, "willpower", "superficial+", isEnhanced ? -1 : -100)
-            }},
-            {name: "AtCrossPurposes", category: "project", value: 1, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push("Reset a random Project Die to 10")
-                if (isEnhanced)
-                    STATE.REF.endMessageQueue.push("... and increase the Increment Unit by one!")
-            }},
-            // {name: "Betrayal", category: null, value: -1, rarity: ""},
-            {name: "BloodRush", category: "beast", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push("Trigger your Clan Compulsion.")
-                if (isEnhanced)
-                    Roller.AddCharEffect(charRef, "messycrit;;!Blood Rush (Clan Compulsion)")
-            }},
-            {name: "Breakthrough", category: "benefit", value: 1, rarity: "R", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(isEnhanced ? "!Reduce an Increment Unit by one." : "!Reduce a Project Die by half.")
-            }},
-            {name: "Cathexis", category: "attention", value: 2, rarity: "R"},
-            {name: "CognitiveDissonance", category: "debilitation", value: 3, rarity: "U", afterAction: (charRef) => {
-                Roller.AddCharEffect(charRef, "all;restrictwpreroll2;!Cognitive Dissonance (Max Reroll: 2)")
-            }},
-            {name: "CollateralDamage", category: "humanity", value: 2, rarity: "R", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(isEnhanced ? "You endanger a Touchstone!" : "One of your Touchstones is endangered.")
-            }},
-            {name: "CostlyBlunder", category: null, value: 1, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                Char.Damage(charRef, "health", "aggravated", isEnhanced ? 2 : 1)
-            }},
-            {name: "CrisisManagement", category: "project", value: 3, rarity: "R", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(isEnhanced ? "Rush a random Project!" : "Rush a random Project (halve Project Die).")
-            }},
-            {name: "Ennui", category: "humanity", value: 3, rarity: "R", afterAction: (charRef, isEnhanced) => {
-                Char.Damage(charRef, "humanity", null, isEnhanced ? 2 : 1)
-            }},
-            {name: "Espionage", category: "benefit", value: 1, rarity: "R", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(isEnhanced ? "!Reduce Secrecy of a random NPC Project." : "!Discover a random NPC Project.")
-            }},
-            {name: "Exhausted", category: "debilitation", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                (Char.SetWPRefresh || (() => {}))(charRef, isEnhanced ? 1 : "LOW") // Reduce Willpower Refresh
-            }},
-            {name: "Faith", category: null, value: 0, rarity: "C"},
-            // {name: "FakeNews", category: null, value: 2, rarity: "U"},
-            {name: "FalseLead", category: "project", value: 1, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(isEnhanced ? "Triple your Project's Increment." : "Double your Project's Increment.")
-            }},
-            {name: "FanTheFlames", category: "attention", value: 3, rarity: "R", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`Reduce all S.I. Project Dice by ${isEnhanced ? "three" : "one"}.`)
-            }},
-            {name: "Favors", category: "prestation", value: 1, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`Use up a ${isEnhanced ? "major" : "minor"} Boon.`)
-            }},
-            {name: "FieldWork", category: "blood", value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => {
-                Char.AdjustHunger(charRef, isEnhanced ? 2 : 1, false)
-            }},
-            {name: "Friction", category: "attention", value: 1, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`Attract the ire of an ${isEnhanced ? "elder" : "ancilla"}-level adversary.`)
-            }},
-            {name: "GuiltByAssociation", category: "advantage", value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`Reduce your highest Status by ${isEnhanced ? "two" : "one"}.`)
-            }},                                                                                                                                       
-            {name: "ImmortalClay", category: "humanity", value: 2, rarity: "R", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push("Redesign one of your Convictions.")
-                if (isEnhanced)
-                    STATE.REF.endMessageQueue.push("Redesign a Chronicle Tenet.")
-            }},
-            {name: "InABind", category: null, value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`A coterie-mate must stake ${isEnhanced ? "two Advantages" : "one Advantage"}.`)
-            }},
-            {name: "InTheRed", category: null, value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`Stake an additional ${isEnhanced ? "four Advantages" : "one Advantage"}.`)
-            }},
-            {name: "IrresistibleOpportunity", category: "attention", value: 2, rarity: "R", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`Hijack or Loot a random NPC Project${isEnhanced ? " (+2 Bonus)." : "."}`)
-            }},
-            {name: "LooseLips", category: "attention", value: 1, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(isEnhanced ? "Your Project becomes common knowledge." : "Reduce Project Secrecy by one.")
-            }},
-            {name: "MentalBlock", category: "debilitation", value: 3, rarity: "R", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(isEnhanced ? "Lose access to a chosen Discipline." : "Lose access to a chosen Discipline power.")
-            }},
-            {name: "Micromanagement", category: "blood", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                Char.AdjustHunger(charRef, isEnhanced ? 4 : 2, false)
-            }},
-            {name: "NecessaryEvils", category: "humanity", value: 2, rarity: "R", afterAction: (charRef, isEnhanced) => {
-                Char.Damage(charRef, "stains", "", isEnhanced ? 2 : 1)
-            }},
-            {name: "Obsessed", category: "debilitation", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Obsessed)`)
-            }},
-            {name: "Options", category: null, value: 0, rarity: "C"},
-            {name: "Overwhelmed", category: "debilitation", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Overwhelmed)`)
-            }},
-            {name: "Powderkeg", category: null, value: 0, rarity: "V"},
-            {name: "Preoccupied", category: "debilitation", value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Preoccupied)`)
-            }},
-            {name: "ProlongedAbsence", category: null, value: 1, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Prolonged Absence)`)
-            }},
-            {name: "PyrrhicVictory", category: "project", value: 4, rarity: "R"},
-            {name: "RecklessGamble", category: "complication", value: 0, rarity: "U"},
-            {name: "RepeatMistakes", category: null, value: 0, rarity: "R", action: () => {
-                STATE.REF.isRepeatMistakes = true
-            }, undoAction: () => {
-                STATE.REF.isRepeatMistakes = false
-            }},
-            {name: "Reverie", category: null, value: 0, rarity: "R"},
-            {name: "RippleEffects", category: "complication", value: 1, rarity: "U"},
-            // {name: "RockyStart", category: null, value: -1, rarity: ""},
-            {name: "SilentBeneficiary", category: null, value: 1, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Silent Beneficiary)`)
-            }},
-            // {name: "SimmeringResentment", category: null, value: -1, rarity: ""},
-            {name: "SpreadThin", category: "debilitation", value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Spread Thin)`)
-            }},
-            {name: "TangledWebs", category: "attention", value: 1, rarity: "R", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Tangled Webs)`)
-            }},
-            {name: "TheBeastAscendant", category: "beast", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Ascendant)`)
-            }},
-            // {name: "TheBeastInsatiable", category: "beast", value: 1, rarity: "U"},
-            {name: "TheBeastRampant", category: "beast", value: 2, rarity: "C", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Rampant)`)
-            }},
-            {name: "TheBeastRavenous", category: "beast", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Ravenous)`)
-            }},
-            {name: "TheBeastScorned", category: "beast", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Scorned)`)
-            }},
-            {name: "Tilted", category: "debilitation", value: 1, rarity: "C", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Tilted)`)
-            }},
-            // {name: "Triage", category: null, value: -1, rarity: ""},
-            {name: "TunnelVision", category: "complication", value: 1, rarity: "U"},
-            {name: "UnderTheBus", category: null, value: 1, rarity: "U"},
-            {name: "UnfinishedBusiness", category: null, value: 0, rarity: "U"},
-            {name: "WeightOfTheWorld", category: "debilitation", value: 2, rarity: "U", afterAction: (charRef, isEnhanced) => {
-                STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Weight of the World)`)
-            }}
+            {name: "AMatterOfPride", displayName: "A Matter of Pride", category: null, value: 1, rarity: "C",
+             afterAction: (charRef, spot, isEnhanced) => { 
+                 Char.Damage(charRef, "willpower", "superficial+", 2)
+                 if (isEnhanced) 
+                     Char.Damage(charRef, "willpower", "aggravated", 1)
+             }},
+            {name: "AMomentOfDespair", displayName: "A Moment of Despair", category: null, value: 1, rarity: "C",
+             afterAction: (charRef, spot, isEnhanced) => { 
+                 Char.Damage(charRef, "willpower", "superficial+", isEnhanced ? 3 : 1)
+             }},
+            {name: "AMomentOfInsight", displayName: "A Moment of Insight", category: "benefit", value: 1, rarity: "R", 
+             afterAction: (charRef, spot, isEnhanced) => {
+                 Char.AwardXP(charRef, spot, isEnhanced ? 2 : 4, "A Moment of Insight")
+             }},
+            {name: "AMomentOfInspiration", displayName: "A Moment of Inspiration", category: "benefit", value: 1, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 Char.Damage(charRef, "willpower", "superficial+", isEnhanced ? -1 : -100)
+             }},
+            {name: "AtCrossPurposes", displayName: "At Cross Purposes", category: "project", value: 1, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push("Reset a random Project Die to 10")
+                 if (isEnhanced)
+                     STATE.REF.endMessageQueue.push("... and increase the Increment Unit by one!")
+             }},
+            // {name: "Betrayal", displayName: "", category: null, value: -1, rarity: ""},
+            {name: "BloodRush", displayName: "Blood Rush", category: "beast", value: 2, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push("Trigger your Clan Compulsion.")
+                 if (isEnhanced)
+                     Roller.AddCharEffect(charRef, "messycrit;;!Blood Rush (Clan Compulsion)")
+             }},
+            {name: "Breakthrough", displayName: "Breakthrough", category: "benefit", value: 1, rarity: "R", 
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(isEnhanced ? "!Reduce an Increment Unit by one." : "!Reduce a Project Die by half.")
+             }},
+            {name: "Cathexis", displayName: "Cathexis", category: "attention", value: 2, rarity: "R",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(isEnhanced ? "Confront an NPC of the Storyteller's choice!" : "Confront an NPC of your sect!")
+             }},
+            {name: "CognitiveDissonance", displayName: "Cognitive Dissonance", category: "debilitation", value: 3, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 Roller.AddCharEffect(charRef, "all;restrictwpreroll2;!Cognitive Dissonance (Max Reroll: 2)")
+             }},
+            {name: "CollateralDamage", displayName: "Collateral Damage", category: "humanity", value: 2, rarity: "R",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(isEnhanced ? "You endanger a Touchstone!" : "One of your Touchstones is endangered.")
+             }},
+            {name: "CostlyBlunder", displayName: "Costly Blunder", category: null, value: 1, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 Char.Damage(charRef, "health", "aggravated", isEnhanced ? 2 : 1)
+             }},
+            {name: "CrisisManagement", displayName: "Crisis Management", category: "project", value: 3, rarity: "R",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(isEnhanced ? "Rush a random Project!" : "Rush a random Project (halve Project Die).")
+             }},
+            {name: "Ennui", displayName: "Ennui", category: "humanity", value: 3, rarity: "R",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 Char.Damage(charRef, "humanity", null, isEnhanced ? 2 : 1)
+             }},
+            {name: "Espionage", displayName: "Espionage", category: "benefit", value: 1, rarity: "R",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(isEnhanced ? "!Reduce Secrecy of a random NPC Project." : "!Discover a random NPC Project.")
+             }},
+            {name: "Exhausted", displayName: "Exhausted", category: "debilitation", value: 2, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 (Char.SetWPRefresh || (() => {}))(charRef, spot, isEnhanced ? 1 : "LOW") // Reduce Willpower Refresh
+             }},
+            {name: "Faith", displayName: "Faith", category: null, value: 0, rarity: "C",
+             action: (charRef, spot) => {
+                 if (STATE.REF.MAT[spot].isEnhanced)
+                     cardAlert(spot, "Draw. The Storyteller will decide if you keep it.", null, " (Enhanced)")
+                 else
+                     cardAlert(spot, "Draw, then choose to keep it or discard it.")
+             },
+             isNotUndoable: true},
+            // {name: "FakeNews", displayName: "", category: null, value: 2, rarity: "U"},
+            {name: "FalseLead", displayName: "False Lead", category: "project", value: 1, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(isEnhanced ? "Triple your Project's Increment." : "Double your Project's Increment.")
+             }},
+            {name: "FanTheFlames", displayName: "Fan the Flames", category: "attention", value: 3, rarity: "R",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`Reduce all S.I. Project Dice by ${isEnhanced ? "three" : "one"}.`)
+             }},
+            {name: "Favors", displayName: "Favors", category: "prestation", value: 1, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`Use up a ${isEnhanced ? "major" : "minor"} Boon.`)
+             }},
+            {name: "FieldWork", displayName: "Field Work", category: "blood", value: 1, rarity: "C",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 Char.AdjustHunger(charRef, spot, isEnhanced ? 2 : 1, false)
+             }},
+            {name: "Friction", displayName: "Friction", category: "attention", value: 1, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`Attract the ire of an ${isEnhanced ? "elder" : "ancilla"}-level adversary.`)
+             }},
+            {name: "GuiltByAssociation", displayName: "Guilt by Association", category: "advantage", value: 1, rarity: "C",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`Reduce your highest Status by ${isEnhanced ? "two" : "one"}.`)
+             }},                                                                                                                                       
+            {name: "ImmortalClay", displayName: "Immortal Clay", category: "humanity", value: 2, rarity: "R",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push("Redesign one of your Convictions.")
+                 if (isEnhanced)
+                     STATE.REF.endMessageQueue.push("Redesign a Chronicle Tenet.")
+             }},
+            {name: "InABind", displayName: "In a Bind", category: null, value: 1, rarity: "C",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`A coterie-mate must stake ${isEnhanced ? "two Advantages" : "one Advantage"}.`)
+             }},
+            {name: "InTheRed", displayName: "In the Red", category: null, value: 1, rarity: "C",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`Stake an additional ${isEnhanced ? "four Advantages" : "one Advantage"}.`)
+             }},
+            {name: "IrresistibleOpportunity", displayName: "Irresistible Opportunity", category: "attention", value: 2, rarity: "R",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`Hijack or Loot a random NPC Project${isEnhanced ? " (+2 Bonus)." : "."}`)
+             }},
+            {name: "LooseLips", displayName: "Loose Lips", category: "attention", value: 1, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(isEnhanced ? "Your Project becomes common knowledge." : "Reduce Project Secrecy by one.")
+             }},
+            {name: "MentalBlock", displayName: "Mental Block", category: "debilitation", value: 3, rarity: "R",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(isEnhanced ? "Lose access to a chosen Discipline." : "Lose access to a chosen Discipline power.")
+             }},
+            {name: "Micromanagement", displayName: "Micromanagement", category: "blood", value: 2, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 Char.AdjustHunger(charRef, spot, isEnhanced ? 4 : 2, false)
+             }},
+            {name: "NecessaryEvils", displayName: "Necessary Evils", category: "humanity", value: 2, rarity: "R",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 Char.Damage(charRef, "stains", "", isEnhanced ? 2 : 1)
+             }},
+            {name: "Obsessed", displayName: "Obsessed", category: "debilitation", value: 2, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 Roller.AddCharEffect(charRef, "social;-2;- Obsessed (<.>)")
+             }},
+            {name: "Options", displayName: "Options", category: null, value: 0, rarity: "C",
+             action: (charRef, spot) => {
+                 DELAYEDUNTILDISCARD = [ null, null ]
+                 if (STATE.REF.MAT[spot].isEnhanced) {
+                     cardAlert(spot, "Draw twice, then discard one of them.<br>Reduce the value of the card you keep to zero.", null, " (Enhanced)")
+                     ISDELAYEDCARDDEVALUED = true
+                 } else {
+                     cardAlert(spot, "Draw twice, then discard one of them.")
+                 }
+             },
+             isNotUndoable: true
+            },
+            {name: "Overwhelmed", displayName: "Overwhelmed", category: "debilitation", value: 2, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {                 
+                 Roller.AddCharEffect(charRef, "mental;-2;- Overwhelmed (<.>)")
+             }},
+            {name: "Powderkeg", displayName: "Powderkeg", category: null, value: 0, rarity: "V",
+             action: (charRef, spot) => {  
+                 cardAlert(spot, "Enhancing next draw.")
+                 ISNEXTDRAWENHANCED = spot
+             },
+             onEnhance: (charRef, spot) => {
+                 const randomSpot = getRandomSpot(["noEnhanced", "noNegated", "faceUp", spot]),
+                     card = STATE.REF.MAT[spot]
+                 card.enhancedCard = randomSpot
+                 cardAlert(spot, `Randomly enhancing a drawn Complication:<br>Enhancing "${getCardName(randomSpot, true)}"!`, null, " (Enhanced)")
+                 enhanceCard(randomSpot)
+             },
+             undoAction: (charRef, spot) => {
+                 const card = STATE.REF.MAT[spot]
+                 if (VAL({number: card.nextDrawEnhance})) {
+                     const enhancedCard = STATE.REF.MAT[card.nextDrawEnhance]
+                     if (enhancedCard && enhancedCard.isFaceUp && enhancedCard.isEnhanced && !enhancedCard.isNegated) {
+                         enhanceCard(card.nextDrawEnhance)
+                         cardAlert(spot, `Unenhancing "${enhancedCard.displayName}".`, "Voiding ")
+                     } 
+                     card.nextDrawEnhance = false
+                 } else if (ISNEXTDRAWENHANCED === spot) {
+                     cardAlert(spot, "No longer enhancing next draw.", "Voiding ")
+                     ISNEXTDRAWENHANCED = false
+                 }            
+             },
+             offEnhance: (charRef, spot) => {
+                 const card = STATE.REF.MAT[spot],
+                     enhancedSpot = card.enhancedCard,
+                     enhancedCard = VAL({number: enhancedSpot}) && STATE.REF.MAT[enhancedSpot]
+                 if (enhancedCard && enhancedCard.isFaceUp && enhancedCard.isEnhanced && !enhancedCard.isNegated) {                        
+                     cardAlert(spot, `Unenhancing "${enhancedCard.displayName}".`, "Unenhancing ")
+                     enhanceCard(enhancedSpot)
+                 }
+                 card.enhancedCard = false
+             }},
+            {name: "Preoccupied", displayName: "Preoccupied", category: "debilitation", value: 1, rarity: "C",
+             afterAction: (charRef, spot, isEnhanced) => {                 
+                 Roller.AddCharEffect(charRef, "social;-1;- Preoccupied (<.>)")
+             }},
+            {name: "ProlongedAbsence", displayName: "Prolonged Absence", category: null, value: 1, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(isEnhanced ? "Negate Domain Control until Project resolved." : "-1 Domain Control until Project resolved.")
+             }},
+            {name: "PyrrhicVictory", displayName: "Pyrrhic Victory", category: "project", value: 4, rarity: "R",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(isEnhanced ? "Halve Project Scope and rewards." : "-1 to Project Scope and rewards.")
+             }},
+            {name: "RecklessGamble", displayName: "Reckless Gamble", category: "complication", value: 0, rarity: "U",
+             action: (charRef, spot) => {
+                 cardAlert(spot, [
+                     "Choose a Complication to negate.",
+                     "Then, a random Complication will be enhanced."
+                 ].join("<br>"))
+             },
+             onEnhance: (charRef, spot) => {
+                 cardAlert(spot, "Enhance a Complication at random.", null, " (Enhanced)")
+             }},
+            {name: "RepeatMistakes", displayName: "Repeat Mistakes", category: null, value: 0, rarity: "R",
+             action: () => {
+                 STATE.REF.isRepeatMistakes = true
+             },
+             onEnhance: () => {
+                 STATE.REF.isEnhancedRepeatMistakes = true
+             },
+             undoAction: () => {
+                 STATE.REF.isRepeatMistakes = false
+             },
+             offEnhance: () => {
+                 STATE.REF.isEnhancedRepeatMistakes = false
+             }},
+            {name: "Reverie", displayName: "Reverie", category: null, value: 0, rarity: "R",
+             action: (charRef, spot) => {
+                 cardAlert(spot, "Enter Memoriam at a difficulty of your choice.<br>If you succeed:<br>Set the value of \"Reverie\" to that difficulty.")
+             },
+             onEnhance: (charRef, spot) => {
+                 cardAlert(spot, "If the Memoriam triggered by \"Reverie\" failed:<br>Suffer a Total Failure.", null, " (Enhanced)")
+             },
+             isNotUndoable: true
+            },
+            {name: "RippleEffects", displayName: "Ripple Effects", category: "complication", value: 1, rarity: "U"},
+            // {name: "RockyStart", displayName: "", category: null, value: -1, rarity: ""},
+            {name: "SilentBeneficiary", displayName: "Silent Beneficiary", category: null, value: 1, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Silent Beneficiary)`)
+             }},
+            // {name: "SimmeringResentment", displayName: "", category: null, value: -1, rarity: ""},
+            {name: "SpreadThin", displayName: "Spread Thin", category: "debilitation", value: 1, rarity: "C",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Spread Thin)`)
+             }},
+            {name: "TangledWebs", displayName: "Tangled Webs", category: "attention", value: 1, rarity: "R",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Tangled Webs)`)
+             }},
+            {name: "TheBeastAscendant", displayName: "The Beast Ascendant", category: "beast", value: 2, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Ascendant)`)
+             }},
+            // {name: "TheBeastInsatiable", displayName: "", category: "beast", value: 1, rarity: "U"},
+            {name: "TheBeastRampant", displayName: "The Beast Rampant", category: "beast", value: 2, rarity: "C",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Rampant)`)
+             }},
+            {name: "TheBeastRavenous", displayName: "The Beast Ravenous", category: "beast", value: 2, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Ravenous)`)
+             }},
+            {name: "TheBeastScorned", displayName: "The Beast Scorned", category: "beast", value: 2, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Scorned)`)
+             }},
+            {name: "Tilted", displayName: "Tilted", category: "debilitation", value: 1, rarity: "C",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Tilted)`)
+             }},
+            // {name: "Triage", displayName: "", category: null, value: -1, rarity: ""},
+            {name: "TunnelVision", displayName: "Tunnel Vision", category: "complication", value: 1, rarity: "U"},
+            {name: "UnderTheBus", displayName: "Under the Bus", category: null, value: 1, rarity: "U"},
+            {name: "UnfinishedBusiness", displayName: "Unfinished Business", category: null, value: 0, rarity: "U"},
+            {name: "WeightOfTheWorld", displayName: "Weight of the World", category: "debilitation", value: 2, rarity: "U",
+             afterAction: (charRef, spot, isEnhanced) => {
+                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Weight of the World)`)
+             }}
         ],
         CARDQTYS = {V: 12, C: 6, U: 3, R: 1},
-        CARDNAMES = _.values(CARDS).map(x => x.name),
+        CARDNAMES = _.values(CARDS).map(x => x.name)
+    let ISNEXTDRAWENHANCED = false, ISDELAYEDCARDDEVALUED = false, DELAYEDUNTILDISCARD = []
     // #endregion
 
     // #region GETTERS: Active card names
-        getActiveCards = () => _.filter(STATE.REF.MAT, v => isCardActive(v)),
+    const getActiveCards = () => _.filter(STATE.REF.MAT, v => isCardActive(v)),
         getUsedCategories = () => _.uniq(_.compact(_.map(getActiveCards(), v => v.category))),
         isCardInDeck = card => VAL({list: card}) && card.name && (STATE.REF.isRepeatMistakes || !getUsedCategories().includes(card.category)) && !_.map(getActiveCards(), v => v.name).includes(card.name),
         isCardActive = card => VAL({list: card}) && card.isFaceUp && !card.isNegated,
+        getCardName = (spot, isReturningFullName = false) => isReturningFullName && STATE.REF.MAT[spot].displayName || STATE.REF.MAT[spot].name,
         getRandomSpot = (modes) => {
             const validSpots = []
             for (let i = 0; i < STATE.REF.MAT.length; i++) {
@@ -345,6 +492,10 @@ const Complications = (() => {
                 let isThisCardValid = true
                 for (const mode of modes) {
                     switch (mode) {
+                        case "isUndoable":
+                            if (card.isNotUndoable)
+                                isThisCardValid = false
+                            break
                         case "noEnhanced":
                             if (card.isEnhanced)
                                 isThisCardValid = false
@@ -365,7 +516,10 @@ const Complications = (() => {
                             if (!card.isFaceUp)
                                 isThisCardValid = false
                             break
-                        // no default
+                        default:
+                            if (i === mode)
+                                isThisCardValid = false
+                            break
                     }
                     if (!isThisCardValid)
                         break
@@ -373,29 +527,55 @@ const Complications = (() => {
                 if (isThisCardValid)
                     validSpots.push(i)
             }
+            DB({validSpots}, "getRandomSpot")
             return _.sample(validSpots)
+        },
+        cardAlert = (spot, message, preTitle, postTitle) => {
+            const card = STATE.REF.MAT[spot],
+                cardName = getCardName(spot, true),
+                title = `${preTitle || ""}${cardName}${postTitle || ""}`
+            D.Chat("all", C.CHATHTML.Block([
+                C.CHATHTML.Header(title),
+                C.CHATHTML.Body(message)
+            ].join("")), undefined, D.RandomString(3))
+        },
+        getCardStats = () => {
+            const cardData = {
+                V: [],
+                C: [],
+                U: [],
+                R: []
+            }
+            for (const card of CARDS)
+                cardData[card.rarity].push(card.name)
+            D.Alert([
+                "<h4>Cards of Each Rarity</h4>",
+                `- ${cardData.V.length}x Very Common (${cardData.V.length * CARDQTYS.V})`,
+                `- ${cardData.C.length}x Common (${cardData.C.length * CARDQTYS.C})`,
+                `- ${cardData.U.length}x Uncommon (${cardData.U.length * CARDQTYS.U})`,
+                `- ${cardData.R.length}x Rare (${cardData.R.length * CARDQTYS.R})`,
+                "",
+                `Total in Deck: ${cardData.V.length * CARDQTYS.V + cardData.C.length * CARDQTYS.C + cardData.U.length * CARDQTYS.U + cardData.R.length * CARDQTYS.R}`,
+                "<h4>Cards in Each Rarity</h4>",
+                D.JS(cardData)
+            ].join("<br>"), "Complications Data")
         },
     // #endregion
 
     // #region CARD ACTIVATION: Turning Over & Activating Cards, Deactivating Cards
-        doCard = card => {
-            setCompVals("add", card.value)
-            if (card.action)
-                card.action(STATE.REF.charRef, Boolean(card.isEnhanced))
-        },
-        undoCard = card => {
-            setCompVals("add", -1 * card.value)
-            if (card.undoAction)
-                card.undoAction(STATE.REF.charRef, Boolean(card.isEnhanced))
-        },
         flipCard = spot => {
             const card = STATE.REF.MAT[spot]
             if (card && card.isFaceUp) {
                 setCard(spot, "faceDown")
-                undoCard(card)
             } else if (card) {
-                setCard(spot, "faceUp")
-                doCard(card)
+                if (VAL({number: ISNEXTDRAWENHANCED})) {
+                    setCard(spot, "faceUpEnhanced")
+                    const enhancingCard = STATE.REF.MAT[ISNEXTDRAWENHANCED]
+                    enhancingCard.nextDrawEnhance = spot
+                    ISNEXTDRAWENHANCED = false
+                } else {
+                    setCard(spot, "faceUp")
+                }
                 STATE.REF.lastDraw = spot
             }
             refreshDraws()
@@ -403,61 +583,136 @@ const Complications = (() => {
     // #endregion
 
     // #region CARD CONTROL: Deck construction, sandbox manipulation
-        setCard = (spot, mode, cardName) => {
+        setCard = (spot, mode) => {
+            DB({spot, mode}, "setCard")
             Media.ToggleImg(`CompSpot_${spot+1}`, true)
             Media.ToggleImg(`CompCard_Base_${spot+1}`, true)
             Media.ToggleImg(`CompCard_Text_${spot+1}`, false)
-            cardName = cardName || STATE.REF.MAT[spot].name
-            if (cardName && CARDNAMES.includes(cardName)) {
-                STATE.REF.MAT[spot].name = cardName                     
-                Media.SetText(`CompCard_Name_${spot+1}`, cardName)
-                Media.SetImg(`CompCard_Text_${spot+1}`, cardName) 
+            const card = STATE.REF.MAT[spot]
+            if (card && CARDNAMES.includes(card.name)) {
+                Media.SetText(`CompCard_Name_${spot+1}`, card.name)
+                Media.SetImg(`CompCard_Text_${spot+1}`, card.name) 
             }
+            let isForcingEnhance = false
             switch (mode) {
+                case "discard": {
+                    DELAYEDUNTILDISCARD = DELAYEDUNTILDISCARD.filter(x => x !== null && x !== spot)
+                    while (DELAYEDUNTILDISCARD.length) {
+                        setCard(DELAYEDUNTILDISCARD.shift(), "activate")
+                        ISDELAYEDCARDDEVALUED = false
+                    }
+                }
+                // falls through
                 case "faceDown": {
                     Media.ToggleImg(`CompCard_Negated_${spot+1}`, false)
                     Media.ToggleImg(`CompCard_Revalue_${spot+1}`, false)
                     DragPads.Toggle(Media.GetImgData(`CompSpot_${spot+1}`).id, true)
                     Media.SetImg(`CompCard_Base_${spot+1}`, "cardBack")
-                    STATE.REF.MAT[spot].isFaceUp = false
-                    STATE.REF.MAT[spot].isEnhanced = false
-                    STATE.REF.MAT[spot].isNegated = false
+                    if (card.isFaceUp) {
+                        setCompVals("add", -1 * card.value)
+                        if (card.isEnhanced && card.offEnhance && card.enhanceTriggered) {
+                            card.offEnhance(STATE.REF.charRef, spot)
+                            card.enhanceTriggered = false
+                        }
+                        if (card.undoAction && card.actionTriggered) {
+                            card.undoAction(STATE.REF.charRef, spot)
+                            card.actionTriggered = false
+                        }
+                    }
+                    card.isFaceUp = false                    
+                    card.isEnhanced = false
+                    card.isNegated = false
                     break
                 }
+                case "faceUpEnhanced": {
+                    isForcingEnhance = true
+                }
+                // falls through
                 case "faceUp": {
                     Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
                     Media.ToggleImg(`CompCard_Negated_${spot+1}`, false)
                     Media.ToggleImg(`CompCard_Revalue_${spot+1}`, false)
                     DragPads.Toggle(Media.GetImgData(`CompSpot_${spot+1}`).id, false)
                     Media.SetImg(`CompCard_Base_${spot+1}`, "base")
-                    STATE.REF.MAT[spot].isFaceUp = true
-                    STATE.REF.MAT[spot].isEnhanced = false
-                    STATE.REF.MAT[spot].isNegated = false
-                    break
+                    card.isFaceUp = true
+                    card.isEnhanced = isForcingEnhance
+                    card.isNegated = false
+                    if (DELAYEDUNTILDISCARD.filter(x => x === null).length) {
+                        DB({DELAYEDUNTILDISCARD}, "setCard")
+                        DELAYEDUNTILDISCARD[DELAYEDUNTILDISCARD.findIndex(x => x === null)] = spot
+                        break
+                    }
                 }
+                // falls through
+                case "activate": {
+                    if (!card.isEnhanced && ISNEXTDRAWENHANCED) {
+                        ISNEXTDRAWENHANCED = false
+                        card.isEnhanced = true
+                    }
+                    if (
+                        card.category && STATE.REF.isEnhancedRepeatMistakes && getUsedCategories().includes(card.category) ||
+                        ISDELAYEDCARDDEVALUED && mode === "activate"
+                    )
+                        revalueCard(spot, 0)                        
+                    Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
+                    setCompVals("add", card.value)
+                    DB(`Activating ${card.name} ...`, "setCard")
+                    if (card.action) {
+                        DB("... Action Detected, Triggering ...", "setCard")
+                        card.action(STATE.REF.charRef, spot)
+                        card.actionTriggered = true
+                    }
+                    if (!card.isEnhanced)
+                        break
+                }
+                // falls through
                 case "enhanced": {
                     Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
                     Media.SetImg(`CompCard_Base_${spot+1}`, "enhanced")
                     DragPads.Toggle(Media.GetImgData(`CompSpot_${spot+1}`).id, false)
-                    STATE.REF.MAT[spot].isEnhanced = true
+                    card.isEnhanced = true
+                    if (card.onEnhance) {
+                        card.onEnhance(STATE.REF.charRef, spot)
+                        card.enhanceTriggered = true
+                    }
                     break
                 }
                 case "!enhanced": {
                     Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
                     Media.SetImg(`CompCard_Base_${spot+1}`, "base")
                     STATE.REF.MAT[spot].isEnhanced = false
+                    if (card.offEnhance && card.enhanceTriggered) {
+                        card.offEnhance(STATE.REF.charRef, spot)
+                        card.enhanceTriggered = false
+                    }
                     break
                 }
                 case "negated": {
                     Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
                     Media.ToggleImg(`CompCard_Negated_${spot+1}`, true)
                     STATE.REF.MAT[spot].isNegated = true
+                    if (card.undoAction && card.actionTriggered) {
+                        card.undoAction(STATE.REF.charRef, spot)
+                        card.actionTriggered = false
+                    }
+                    if (card.isEnhanced && card.offEnhance && card.enhanceTriggered) {
+                        card.offEnhance(STATE.REF.charRef, spot)
+                        card.enhanceTriggered = false
+                    }
                     break
                 }
                 case "!negated": {
                     Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
                     Media.ToggleImg(`CompCard_Negated_${spot+1}`, false)
                     STATE.REF.MAT[spot].isNegated = false
+                    if (card.action && !card.actionTriggered) {
+                        card.action(STATE.REF.charRef, spot)
+                        card.actionTriggered = true
+                    }
+                    if (card.isEnhanced && card.onEnhance && !card.enhanceTriggered) {
+                        card.onEnhance(STATE.REF.charRef, spot)
+                        card.enhanceTriggered = true
+                    }
                     break
                 }
                 case "blank": {
@@ -510,7 +765,7 @@ const Complications = (() => {
             // DragPads.Toggle(Media.GetImgData(`CompSpot_${spot+1}`).id, true)
         },
         blinkCard = spot => {
-            STATE.REF.FXQUEUE.push(Media.GetImgData(`CompSpot_${spot+1}`))
+            STATE.REF.FXQUEUE.push(Media.GetImgData(`CompCard_Base_${spot+1}`))
             const flashCard = () => { 
                 const spotData = STATE.REF.FXQUEUE.pop()
                 D.RunFX("compCardBlink", {left: spotData.left, top: spotData.top})
@@ -523,8 +778,6 @@ const Complications = (() => {
                 if (card)
                     if (card.isNegated) {
                         setCard(spot, "!negated")
-                        if (card.action)
-                            card.action(STATE.REF.charRef, card.isEnhanced)
                     } else {
                         setCard(spot, "negated")
                         if (card.undoAction)
@@ -533,10 +786,10 @@ const Complications = (() => {
             }
         },
         discardCard = spot => {
-            if (VAL({number: spot}, "negateCard")) {
+            if (VAL({number: spot}, "discardCard")) {
                 const card = STATE.REF.MAT[spot]                
                 if (card && card.isFaceUp)
-                    flipCard(spot)
+                    setCard(spot, "discard")
                 dealCard(spot)
             }
         },
@@ -555,10 +808,15 @@ const Complications = (() => {
         enhanceCard = spot => {
             if (VAL({number: spot}, "enhanceCard")) {
                 const card = STATE.REF.MAT[spot]
-                if (card && card.isEnhanced)
+                if (card && card.isEnhanced) {
                     setCard(spot, "!enhanced")
-                else if (card)
+                    if (card.offEnhance)
+                        card.offEnhance(STATE.REF.charRef)
+                } else if (card) {
+                    if (card.onEnhance)
+                        card.onEnhance(STATE.REF.charRef)
                     setCard(spot, "enhanced")
+                }
             }
         },        
         revalueCard = (spot = 0, value = 0) => {
@@ -574,7 +832,6 @@ const Complications = (() => {
         refreshDraws = () => {
             buildDeck()
             for (let i = 0; i < 10; i++) {
-                Media.SetImg(`CompSpot_${i+1}`, "base")
                 const card = STATE.REF.MAT[i]
                 if (card && card.isFaceUp)
                     continue
@@ -606,14 +863,14 @@ const Complications = (() => {
             STATE.REF.remainingVal = STATE.REF.targetVal - STATE.REF.currentVal
             Media.SetText("CompRemaining", `${STATE.REF.remainingVal <= 0 ? "+" : "-"}${Math.abs(STATE.REF.remainingVal)}`, true)
             if (STATE.REF.remainingVal <= 0) {
-                Media.SetTextData("CompCurrent", {color: C.COLORS.green})
-                Media.SetTextData("CompRemaining", {color: STATE.REF.remainingVal === 0 ? C.COLORS.gold : C.COLORS.green})
+                Media.SetTextData("CompCurrent", {color: C.COLORS.tan})
+                Media.SetTextData("CompRemaining", {color: C.COLORS.tan})
             } else {
-                Media.SetTextData("CompCurrent", {color: C.COLORS.brightred})
-                Media.SetTextData("CompRemaining", {color: C.COLORS.brightred})
+                Media.SetTextData("CompCurrent", {color: C.COLORS.crimson})
+                Media.SetTextData("CompRemaining", {color: C.COLORS.crimson})
             }
         },
-        resetComplication = (isRefreshing = true) => {
+        resetComplication = (isRefreshing = true, startVal = 0) => {
             STATE.REF.DECK = []
             STATE.REF.MAT = [
                 {name: null, isFaceUp: false, value: 0},
@@ -629,7 +886,7 @@ const Complications = (() => {
             ]
             STATE.REF.DISCARDS = []
             setCompVals("current", 0)
-            setCompVals("target", 0)
+            setCompVals("target", startVal)
             if (isRefreshing)
                 refreshDraws()
                 
@@ -639,29 +896,12 @@ const Complications = (() => {
             STATE.REF.lastMode = Session.Mode
             STATE.REF.endMessageQueue = []
             Session.ChangeMode("Complications")
-            TimeTracker.ToggleClock(false)
-            Media.ToggleText("CompCurrent", true)
-            Media.ToggleText("CompRemaining", true)
-            Media.ToggleText("CompTarget", true)
-            Media.ToggleText("CompCardsRemaining", true)
-            Media.ToggleText("CompCardsExcluded", true)
-            for (let i = 1; i <= 10; i++)
-                Media.ToggleText(`CompCard_Name_${i}`, true)
-            resetComplication(true)
-            setCompVals("current", 0)
-            setCompVals("target", startVal)
-            refreshDraws()
-            sendGMPanel()
-        },
+            D.Queue(resetComplication, [true, startVal], "Comp", 1)
+            D.Queue(sendGMPanel, [], "Comp", 0.5)
+            D.Run("Comp")
+        },        
         endComplication = (isLaunchingProject, isQueingActions = true) => {
             STATE.REF.isRunning = false
-            Media.ToggleText("CompCurrent", false)
-            Media.ToggleText("CompRemaining", false)
-            Media.ToggleText("CompTarget", false)
-            Media.ToggleText("CompCardsRemaining", false)
-            Media.ToggleText("CompCardsExcluded", false)
-            for (let i = 1; i <= 10; i++)
-                Media.ToggleText(`CompCard_Name_${i}`, false)
             if (isQueingActions)
                 for (const card of getActiveCards().filter(x => x.afterAction)) {
                     D.Queue(card.afterAction, [STATE.REF.charRef, card.isEnhanced], "Comp", 0.5)
@@ -669,12 +909,10 @@ const Complications = (() => {
                         D.Queue(card.afterAction, [STATE.REF.charRef, card.isEnhanced], "Comp", 0.5)
                 }
             D.Queue(sendEndMsgQueue, [STATE.REF.charRef], "Comp", 0.5)
-            D.Queue(resetComplication, [false], "Comp", 0.5)            
-            if (Session.IsSessionActive)
-                D.Queue(TimeTracker.ToggleClock, [true], "Comp", 0.5)
-            D.Queue(Session.ChangeMode, [STATE.REF.lastMode], "Comp", 0.5)
+            D.Queue(resetComplication, [false], "Comp", 0.5)   
             if (isLaunchingProject)
-                D.Queue(Char.LaunchProject, [STATE.REF.currentVal - STATE.REF.targetVal, "COMPLICATION"], "Comp", 0.5)
+                D.Queue(Char.LaunchProject, [STATE.REF.currentVal - STATE.REF.targetVal, "COMPLICATION"], "Comp", 0.5)                
+            D.Queue(Session.ChangeMode, [STATE.REF.lastMode], "Comp", 0.5)
             D.Run("Comp")   
         },
         sendEndMsgQueue = (charRef) => {
@@ -697,119 +935,81 @@ const Complications = (() => {
             }
         },
         sendGMPanel = () => {
-            D.Chat("Storyteller", C.HTML.COMP.promptFullBox([
-                C.HTML.COMP.column([
-                    C.HTML.COMP.header("DISCARD"),
-                    C.HTML.COMP.commandLine({
-                        1: "!comp discard 1",
-                        2: "!comp discard 2",
-                        3: "!comp discard 3",
-                        4: "!comp discard 4",
-                        5: "!comp discard 5"
-                    }),
-                    C.HTML.COMP.commandLine({
-                        6: "!comp discard 6",
-                        7: "!comp discard 7",
-                        8: "!comp discard 8",
-                        9: "!comp discard 9",
-                        10: "!comp discard 10"
-                    }),
-                    C.HTML.COMP.commandLine({
-                        LAST: "!comp discard last",
-                        RANDOM: "!comp discard random"
-                    }),
-                    C.HTML.COMP.header("ENHANCE"),
-                    C.HTML.COMP.commandLine({
-                        1: "!comp enhance 1",
-                        2: "!comp enhance 2",
-                        3: "!comp enhance 3",
-                        4: "!comp enhance 4",
-                        5: "!comp enhance 5"
-                    }),
-                    C.HTML.COMP.commandLine({
-                        6: "!comp enhance 6",
-                        7: "!comp enhance 7",
-                        8: "!comp enhance 8",
-                        9: "!comp enhance 9",
-                        10: "!comp enhance 10"
-                    }),
-                    C.HTML.COMP.commandLine({
-                        LAST: "!comp enhance last",
-                        RANDOM: "!comp enhance random"
-                    })
-                ].join("<br>")),
-                C.HTML.COMP.column([
-                    C.HTML.COMP.header("NEGATE"),
-                    C.HTML.COMP.commandLine({
-                        1: "!comp negate 1",
-                        2: "!comp negate 2",
-                        3: "!comp negate 3",
-                        4: "!comp negate 4",
-                        5: "!comp negate 5"
-                    }),
-                    C.HTML.COMP.commandLine({
-                        6: "!comp negate 6",
-                        7: "!comp negate 7",
-                        8: "!comp negate 8",
-                        9: "!comp negate 9",
-                        10: "!comp negate 10"
-                    }),
-                    C.HTML.COMP.commandLine({
-                        LAST: "!comp negate last",
-                        RANDOM: "!comp negate random"
-                    }),
-                    C.HTML.COMP.header("REVALUE"),
-                    C.HTML.COMP.commandLine({
-                        1: "!comp revalue 1",
-                        2: "!comp revalue 2",
-                        3: "!comp revalue 3",
-                        4: "!comp revalue 4",
-                        5: "!comp revalue 5"
-                    }),
-                    C.HTML.COMP.commandLine({
-                        6: "!comp revalue 6",
-                        7: "!comp revalue 7",
-                        8: "!comp revalue 8",
-                        9: "!comp revalue 9",
-                        10: "!comp revalue 10"
-                    }),
-                    C.HTML.COMP.commandLine({
-                        LAST: "!comp revalue last",
-                        RANDOM: "!comp revalue random"
-                    })
-                ].join("<br>")),
-                C.HTML.COMP.header("DUPLICATE"),
-                C.HTML.COMP.commandLine({
-                    1: "!comp duplicate 1",
-                    2: "!comp duplicate 2",
-                    3: "!comp duplicate 3",
-                    4: "!comp duplicate 4",
-                    5: "!comp duplicate 5"
-                }),
-                C.HTML.COMP.commandLine({
-                    6: "!comp duplicate 6",
-                    7: "!comp duplicate 7",
-                    8: "!comp duplicate 8",
-                    9: "!comp duplicate 9",
-                    10: "!comp duplicate 10"
-                }),
-                C.HTML.COMP.commandLine({
-                    LAST: "!comp duplicate last",
-                    RANDOM: "!comp duplicate random"
-                }),
-            ].join("")), undefined, D.RandomString(3))
+            const subPanels = [],
+                getColor = (action, spot) => {
+                    if (["LAST", "RANDOM"].includes(spot))
+                        return C.COLORS[{
+                            discard: "brightred",
+                            enhance: "brightpurple",
+                            negate: "blue",
+                            revalue: "darkgreen",
+                            duplicate: "orange"
+                        }[action]]
+                    const card = STATE.REF.MAT[spot]
+                    switch (action) {
+                        case "discard":
+                            if (card.isFaceUp)
+                                return C.COLORS.brightred
+                            break
+                        case "enhance":
+                            if (card.isFaceUp && !card.isEnhanced)
+                                return C.COLORS.brightpurple
+                            else if (card.isEnhanced)
+                                return C.COLORS.grey
+                            break
+                        case "negate":
+                            if (card.isFaceUp && !card.isNegated)
+                                return C.COLORS.blue
+                            else if (card.isNegated)
+                                return C.COLORS.brightgrey
+                            break
+                        case "revalue":
+                            if (card.isFaceUp)
+                                return C.COLORS.darkgreen
+                            break
+                        case "duplicate":
+                            if (card.isFaceUp && !card.isDuplicated)
+                                return C.COLORS.orange
+                            else if (card.isDuplicated)
+                                return C.COLORS.brightgrey
+                            break
+                        // no default
+                    }
+                    return C.COLORS.darkgrey
+                }
+            for (const actionType of ["discard", "enhance", "negate", "revalue", "duplicate"])
+                subPanels.push({
+                    title: actionType,
+                    rows: [
+                        {
+                            type: "Header",
+                            contents: D.Capitalize(actionType)
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [1, 2, 3, 4, 5].map(x => ({name: x, command: `!comp ${actionType} ${x}`, styles: {width: "19%", buttonWidth: "60%", bgColor: getColor(actionType, x-1)}})) // , fontSize: "10px", bgColor: C.COLORS.purple, buttonTransform: "none"}}))
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [6, 7, 8, 9, 10].map(x => ({name: x, command: `!comp ${actionType} ${x}`, styles: {width: "19%", buttonWidth: "60%", bgColor: getColor(actionType, x-1)}})) // , fontSize: "10px", bgColor: C.COLORS.purple, buttonTransform: "none"}}))
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: ["LAST", "RANDOM"].map(x => ({name: x, command: `!comp ${actionType} ${D.LCase(x)}`, styles: {width: "45%"}})) // , fontSize: "10px", bgColor: C.COLORS.purple, buttonTransform: "none"}}))
+                        }
+                    ]
+                })            
+            D.CommandMenu({title: "Complications Control", rows: _.values(_.groupBy(subPanels, (x, i) => Math.floor(i / 2))).map(x => ({type: "Column", contents: x, style: {width: "47%", margin: "0px 1% 0% 1%"}}))})
         },
         promptCardVal = (cardSpot) => {
-            D.Chat("Storyteller", C.HTML.COMP.promptFullBox([
-                C.HTML.COMP.header("Set Card Value"),
-                C.HTML.COMP.commandLine({
-                    0: `!comp setvalue ${cardSpot+1} 0`,
-                    1: `!comp setvalue ${cardSpot+1} 1`,
-                    2: `!comp setvalue ${cardSpot+1} 2`,
-                    3: `!comp setvalue ${cardSpot+1} 3`,
-                    4: `!comp setvalue ${cardSpot+1} 4`
-                })
-            ].join("")), undefined, D.RandomString(3))
+            D.CommandMenu({title: "Set Card Value", rows: [
+                {type: "ButtonLine", contents: [                        
+                    {name: 0, command: `!comp setvalue ${cardSpot+1} 0`},
+                    {name: 1, command: `!comp setvalue ${cardSpot+1} 1`},
+                    {name: 2, command: `!comp setvalue ${cardSpot+1} 2`},
+                    {name: 3, command: `!comp setvalue ${cardSpot+1} 3`},
+                    {name: 4, command: `!comp setvalue ${cardSpot+1} 4`}
+                ]}]})
         }
     // #endregion
 
@@ -817,6 +1017,7 @@ const Complications = (() => {
         CheckInstall: checkInstall,
         OnChatCall: onChatCall,
 
+        SetCard: setCard,
         Flip: flipCard,
         get Cards() { return CARDS }
     }

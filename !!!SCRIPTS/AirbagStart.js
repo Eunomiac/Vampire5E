@@ -17,8 +17,8 @@ let airIndex = new Error();
 let codebaseRunning = false;
 
 // System States
-const rezMsg = "[API IS STARTING]";
-const runMsg = "[API OPERATIONAL]";
+const rezMsg = "<div style=\"display: block; height: 32px; width: auto; padding: 0px; margin: -33px 0px 0px -42px; position: relative;\"><div style=\" display: block; height: 32px; width: auto; line-height: 32px; padding: 0px 5px; margin: 0px; font-family: 'copperplate gothic'; font-variant: small-caps; font-size: 16px; background-color: rgb(80, 80, 80); color: white; border: 2px solid black;\">API IS STARTING</div></div>";
+const runMsg = "<div style=\"display: block; height: 32px; width: auto; padding: 0px; margin: -33px 0px 0px -42px; position: relative;\"><div style=\" display: block; height: 32px; width: auto; line-height: 32px; padding: 0px 5px; margin: 0px; font-family: 'copperplate gothic'; font-variant: small-caps; font-size: 16px; background-color: rgb(80, 80, 80); color: white; border: 2px solid black;\">API OPERATIONAL</div></div>";
 
 // Log for Airbag
 const airLog = (logMsg, chatMsg, dbMsg) => {
@@ -38,7 +38,7 @@ const HTML = {
             "display: block;",
             "width: auto;",
             "padding: 5px 5px;",
-            "margin: -25px 0px 0px -42px;",
+            "margin: -33px 0px 0px -42px;",
             "border: 3px outset rgb(255, 0, 0);",
             "background-color: rgb(120, 0, 0);",
             "position: relative;"

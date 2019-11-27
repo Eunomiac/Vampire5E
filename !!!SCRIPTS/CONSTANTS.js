@@ -76,6 +76,7 @@ const C = (() => {
             fadedgrey: "rgba(0, 0, 0, 0.1)",
             crimson: "rgb(220, 20, 60)",
             transparent: "rgba(0,0,0,0)",
+            tan: "rgb(228, 192, 144)",
             halfwhite: "rgba(255,255,255,0.5)",
             palegreen: "rgb(175, 255, 175)",
             paleblue: "rgb(175, 175, 255)",
@@ -199,7 +200,7 @@ const C = (() => {
                 height: auto;
                 width: auto;
                 padding: 0px;
-                margin: -25px 0px 0px -42px;
+                margin: -33px 0px 0px -42px;
                 position: relative;
             ">${content}</div>`) },
             alertHeader: content => { return D.JSH(`<div style="
@@ -233,7 +234,7 @@ const C = (() => {
                     bgImage: options.bgImage || BGIMAGES.blackMarble,
                     borderColor: options.borderColor || options.color || COLORS.crimson,
                     borderStyle: options.borderStyle || "outset",
-                    margin: options.margin || "-25px 0px 0px -42px",
+                    margin: options.margin || "-33px 0px 0px -42px",
                     width: options.width || "267px"
                 }
                 return D.JSH(`<div style="
@@ -243,7 +244,7 @@ const C = (() => {
                     background: url('${params.bgImage}');
                     text-align: center;
                     border: 4px ${params.borderColor} ${params.borderStyle};
-                    padding: 5px;
+                    padding: 2px;
                     width: ${params.width};
                     position: relative;
                 ">${_.flatten([content]).join("")}</div>`)
@@ -274,6 +275,7 @@ const C = (() => {
                     fontFamily: options.fontFamily || "Voltaire",
                     margin: options.margin || "0px",
                     fontSize: options.fontSize || "16px",
+                    fontWeight: options.fontWeight || "bold",
                     borderWidth: options.borderWidth || "1px 0px 1px 0px",
                     borderStyle: options.borderStyle || "solid none solid none",
                     borderColor: options.borderColor || options.color || COLORS.brightred,
@@ -290,7 +292,7 @@ const C = (() => {
                     text-align: center;
                     color: ${params.color};
                     font-family: '${params.fontFamily}';
-                    font-weight: bold;
+                    font-weight: ${params.fontWeight};
                     font-size: ${params.fontSize};
                     background-color: ${params.bgColor};
                     border-width: ${params.borderWidth};
@@ -427,7 +429,7 @@ const C = (() => {
                     bgImage: options.bgImage || BGIMAGES.blackMarble,
                     borderColor: options.borderColor || options.color || COLORS.crimson,
                     borderStyle: options.borderStyle || "outset",
-                    margin: options.margin || "-25px 0px 0px -42px",
+                    margin: options.margin || "-33px 0px 0px -42px",
                     width: options.width || "267px"
                 }
                 return D.JSH(`<div style="
@@ -439,9 +441,19 @@ const C = (() => {
                     text-align: center;
                     border: 4px ${params.borderColor} ${params.borderStyle};
                     box-sizing: border-box;
-                    padding: 0px;
+                    padding: 2px;
                     position: relative;
             ">${_.flatten([content]).join("")}</div>`)
+            },
+            SubBlock: (content, options = {}) => {
+                const params = {
+                    width: options.width || "100%"
+                }
+                return D.JSH(`<div style="
+                    display: inline-block;
+                    width: ${params.width};
+                    font-size: 0px;
+                ">${content}</div>`)
             },
             Title: (content, options = {}) => {
                 const params = {
@@ -528,6 +540,18 @@ const C = (() => {
                     box-shadow: ${params.boxShadow};
                     border: ${params.borderStyle} ${params.borderWidth} ${params.borderColor};
                 ">${content}</span>`)
+            },            
+            Column: (content, options = {}) => {
+                const params = {
+                    width: options.width || "49%",
+                    margin: options.margin || "0px"
+                }
+                return D.JSH(`<div style="
+                    display: inline-block;
+                    width: ${params.width};
+                    margin: ${params.margin};
+                    font-size: 0px;
+                ">${content}</div>`)
             },
             ButtonLine: (content, options = {}) => {
                 const params = Object.assign({height: "18px",
