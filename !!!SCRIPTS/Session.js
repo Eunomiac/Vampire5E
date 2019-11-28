@@ -338,10 +338,10 @@ const Session = (() => {
                     TimeTracker.ToggleClock(false)
                     Char.SendHome()
                     if (STATE.REF.LastMode !== "Complications")
-                        D.Chat("all", C.CHATHTML.Block([
-                            C.CHATHTML.Title("Session Downtime"),
-                            C.CHATHTML.Header("Session Status: Downtime"),
-                            C.CHATHTML.Body("Clock Stopped.")
+                        D.Chat("all", C.HTML.Block([
+                            C.HTML.Title("Session Downtime"),
+                            C.HTML.Header("Session Status: Downtime"),
+                            C.HTML.Body("Clock Stopped.")
                         ]), null, D.RandomString(3))
                 },
                 Daylighter: () => {},
@@ -359,9 +359,9 @@ const Session = (() => {
                         Char.TogglePC(quad, true)
                         Char.SetNPC(charData.id, "base")
                         Media.SetImg("Spotlight", quad, true)
-                        D.Chat("all", C.CHATHTML.Block([
-                            C.CHATHTML.Title("Spotlight:"),
-                            C.CHATHTML.Header(charData.name)
+                        D.Chat("all", C.HTML.Block([
+                            C.HTML.Title("Spotlight:"),
+                            C.HTML.Header(charData.name)
                         ]), null, D.RandomString(3))
                     }
                     setLocation(BLANKLOCRECORD)
@@ -384,10 +384,10 @@ const Session = (() => {
                     TimeTracker.ToggleCountdown(false)
                 },
                 Downtime: () => {
-                    D.Chat("all", C.CHATHTML.Block([
-                        C.CHATHTML.Title("Session Downtime"),
-                        C.CHATHTML.Header("Session Status: Regular Time"),
-                        C.CHATHTML.Body("Clock Started.")
+                    D.Chat("all", C.HTML.Block([
+                        C.HTML.Title("Session Downtime"),
+                        C.HTML.Header("Session Status: Regular Time"),
+                        C.HTML.Body("Clock Started.")
                     ]), null, D.RandomString(3))
                 },
                 Daylighter: () => {},
@@ -397,9 +397,9 @@ const Session = (() => {
                         Char.TogglePC(charData.quadrant, true)
                     }
                     // Media.SetImg("Spotlight", "blank")
-                    D.Chat("all", C.CHATHTML.Block([
-                        C.CHATHTML.Title("Spotlight"),
-                        C.CHATHTML.Header("Spotlight Session Closed.")
+                    D.Chat("all", C.HTML.Block([
+                        C.HTML.Title("Spotlight"),
+                        C.HTML.Header("Spotlight Session Closed.")
                     ]), null, D.RandomString(3))
                 },
                 Complications: () => {
@@ -436,14 +436,14 @@ const Session = (() => {
                 STATE.REF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, sessionScribe]))
             }
             STATE.REF.SessionMonologues = _.shuffle(D.GetChars("registered").map(x => D.GetCharData(x).name))
-            D.Chat("all", C.CHATHTML.Block([
-                C.CHATHTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
-                C.CHATHTML.Body("Initializing Session...", {margin: "0px 0px 10px 0px"}),
-                C.CHATHTML.Header(`Welcome to Session ${D.NumToText(STATE.REF.SessionNum, true)}!`),
-                C.CHATHTML.Body("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "10px 0px 10px 0px"}),
-                C.CHATHTML.Header(`Session Scribe: ${sessionScribe || "(None Set)"}`),
-                C.CHATHTML.Body("(Click <a style = \"color: white; font-weight: normal; background-color: rgba(255,0,0,0.5);\" href=\"https://docs.google.com/document/d/1GsGGDdYTVeHVHgGe9zrztEIN4Qmtpb2xZA8I-_WBnDM/edit?usp=sharing\" target=\"_blank\">&nbsp;here&nbsp;</a> to open the template in a new tab,<br>then create a copy to use for this session.)", {fontSize: "14px", lineHeight: "14px"}),
-                C.CHATHTML.Body("Thank you for your service!")
+            D.Chat("all", C.HTML.Block([
+                C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
+                C.HTML.Body("Initializing Session...", {margin: "0px 0px 10px 0px"}),
+                C.HTML.Header(`Welcome to Session ${D.NumToText(STATE.REF.SessionNum, true)}!`),
+                C.HTML.Body("Clock Running.<br>Animations Online.<br>Roller Ready.", {margin: "10px 0px 10px 0px"}),
+                C.HTML.Header(`Session Scribe: ${sessionScribe || "(None Set)"}`),
+                C.HTML.Body("(Click <a style = \"color: white; font-weight: normal; background-color: rgba(255,0,0,0.5);\" href=\"https://docs.google.com/document/d/1GsGGDdYTVeHVHgGe9zrztEIN4Qmtpb2xZA8I-_WBnDM/edit?usp=sharing\" target=\"_blank\">&nbsp;here&nbsp;</a> to open the template in a new tab,<br>then create a copy to use for this session.)", {fontSize: "14px", lineHeight: "14px"}),
+                C.HTML.Body("Thank you for your service!")
             ]), null, D.RandomString(3))
             changeMode("Active", true)
             // Media.ToggleImg("MapIndicator_Base_1", true)
@@ -453,11 +453,11 @@ const Session = (() => {
         },
         endSession = () => {
             if (STATE.REF.isTestingActive || sessionMonologue() && remorseCheck()) {
-                D.Chat("all", C.CHATHTML.Block([
-                    C.CHATHTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
-                    C.CHATHTML.Header(`Concluding Session ${D.NumToText(STATE.REF.SessionNum, true)}`),
-                    C.CHATHTML.Body("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "10px 0px 10px 0px"}),
-                    C.CHATHTML.Title("See you next week!", {fontSize: "32px"}),
+                D.Chat("all", C.HTML.Block([
+                    C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
+                    C.HTML.Header(`Concluding Session ${D.NumToText(STATE.REF.SessionNum, true)}`),
+                    C.HTML.Body("Clock Stopped.<br>Animations Offline.<br>Session Experience Awarded.", {margin: "10px 0px 10px 0px"}),
+                    C.HTML.Title("See you next week!", {fontSize: "32px"}),
                 ]), null, D.RandomString(3))
                 // Char.SendHome()
                 changeMode("Inactive", true)
@@ -474,11 +474,11 @@ const Session = (() => {
         sessionMonologue = () => {
             if (STATE.REF.SessionMonologues.length) {
                 const thisCharName = STATE.REF.SessionMonologues.pop()
-                D.Chat("all", C.CHATHTML.Block([
-                    C.CHATHTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
-                    C.CHATHTML.Title("Session Monologues", {fontSize: "28px", margin: "-10px 0px 0px 0px"}),
-                    C.CHATHTML.Header(thisCharName),
-                    C.CHATHTML.Body("The spotlight is yours!")
+                D.Chat("all", C.HTML.Block([
+                    C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
+                    C.HTML.Title("Session Monologues", {fontSize: "28px", margin: "-10px 0px 0px 0px"}),
+                    C.HTML.Header(thisCharName),
+                    C.HTML.Body("The spotlight is yours!")
                 ]), null, D.RandomString(3))
                 return false
             }
@@ -531,20 +531,20 @@ const Session = (() => {
                     D.Capitalize(mode.toLowerCase())
                 ]
 
-                D.Queue(D.Chat, ["Storyteller", `Leaving <b>${lastMode}</b>...`, "Changing Mode"], "ModeSwitch", 0.1)
+                D.Queue(D.Chat, ["Storyteller", `Leaving <b>${lastMode}</b>...`, "none"], "ModeSwitch", 0.1)
                 D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.leaveMode[lastMode], [args], "ModeSwitch", 1)
                 D.Queue(() => { STATE.REF.Mode = curMode; STATE.REF.LastMode = lastMode }, [], "ModeSwitch", 0.1)
-                D.Queue(D.Chat, ["Storyteller", "Configuring Mode Assets...", "Changing Mode"], "ModeSwitch", 0.1)
+                D.Queue(D.Chat, ["Storyteller", "Configuring Mode Assets...", "none"], "ModeSwitch", 0.1)
                 D.Queue(Roller.Clean, [], "ModeSwitch", 1)
                 D.Queue(Media.SwitchMode, [], "ModeSwitch", 2)
                 D.Queue(setModeLocations, [curMode], "ModeSwitch", 1)
                 D.Queue(Media.UpdateSoundscape, [], "ModeSwitch", 1)
-                D.Queue(D.Chat, ["Storyteller", `Entering <b>${curMode}</b>...`, "Changing Mode"], "ModeSwitch", 0.1)
+                D.Queue(D.Chat, ["Storyteller", `Entering <b>${curMode}</b>...`, "none"], "ModeSwitch", 0.1)
                 D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.enterMode[curMode], [args], "ModeSwitch", 1)
                 D.Queue(TimeTracker.Fix, [], "ModeSwitch", 0.1)
-                D.Queue(D.Chat, ["Storyteller", "Mode Change Complete!", "Changing Mode"], "ModeSwitch", 0.1)
+                D.Queue(D.Chat, ["Storyteller", "Mode Change Complete!", "none"], "ModeSwitch", 0.1)
                 D.Run("ModeSwitch")
             }
             return true
@@ -768,7 +768,7 @@ const Session = (() => {
                                 [styles]: <list of styles for the div, to override the defaults, where keys are style tags and values are the settings>
                             } 
                     ]
-                    [blockStyles:] <override C.CHATHTML.Block 'options' parameter.
+                    [blockStyles:] <override C.HTML.Block 'options' parameter.
                 }
                 */           
         },
@@ -806,7 +806,7 @@ const Session = (() => {
                                 [styles]: <list of styles for the div, to override the defaults, where keys are style tags and values are the settings>
                             } 
                     ]
-                    [blockStyles:] <override C.CHATHTML.Block 'options' parameter.
+                    [blockStyles:] <override C.HTML.Block 'options' parameter.
                 }
                 */           
         },

@@ -1491,21 +1491,21 @@ const Roller = (() => {
             if (results[0] <= 5)
                 deltaAttrs.hunger = true
             if (deltaAttrs.hunger) {
-                body = C.CHATHTML.Body("Hunger Roused.")
+                body = C.HTML.Body("Hunger Roused.")
                 Char.AdjustHunger(charRef, 1, false, false)
             } else if (deltaAttrs.stain !== null) {
-                body = C.CHATHTML.Body("Restrained.", {color: C.COLORS.white})
+                body = C.HTML.Body("Restrained.", {color: C.COLORS.white})
             }
             if (deltaAttrs.stain === true) {
-                body += C.CHATHTML.Body("The Abyss drags you deeper.", {color: C.COLORS.darkpurple, textShadow: "0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white"})
+                body += C.HTML.Body("The Abyss drags you deeper.", {color: C.COLORS.darkpurple, textShadow: "0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white"})
                 Char.AdjustTrait(charRef, "stains", 1, 0, 10, 0, null, false)
             } else if (deltaAttrs.stain === null) {
-                body += C.CHATHTML.Body("Choose: Your Soul or your Beast?", {color: C.COLORS.darkpurple, textShadow: "0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white"})
+                body += C.HTML.Body("Choose: Your Soul or your Beast?", {color: C.COLORS.darkpurple, textShadow: "0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white"})
             } else if (isOblivionRouse) {
-                body += C.CHATHTML.Body("Your humanity remains.", {color: C.COLORS.white, textShadow: `0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}`})
+                body += C.HTML.Body("Your humanity remains.", {color: C.COLORS.white, textShadow: `0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}`})
             }
-            D.Chat(isPublic && "all" || charRef, C.CHATHTML.Block([
-                C.CHATHTML.Header(header),
+            D.Chat(isPublic && "all" || charRef, C.HTML.Block([
+                C.HTML.Header(header),
                 body].join("")))
         }
     // #endregion

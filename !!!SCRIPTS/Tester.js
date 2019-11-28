@@ -51,6 +51,14 @@ const Tester = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting
             switch (call) {
+                case "allobjs": {
+                    const allObjs = findObjs({
+                        _pageid: D.PAGEID,
+                        _type: args[0]
+                    })
+                    D.Alert(D.JS(allObjs.map(x => `<b>${x.get("name")}</b>: ${x.get("layer") || ""}`)), "All Objects")
+                    break
+                }
                 case "buttons": {
                     /* MENU DATA:
                     {
@@ -68,7 +76,7 @@ const Tester = (() => {
                                     [styles]: <list of styles for the div, to override the defaults, where keys are style tags and values are the settings>
                                 } 
                         ]
-                        [blockStyles:] <override C.CHATHTML.Block 'options' parameter.
+                        [blockStyles:] <override C.HTML.Block 'options' parameter.
                     }
                     */
                     

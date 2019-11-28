@@ -117,9 +117,9 @@ const TimeTracker = (() => {
                     switch (D.LCase(call = args.shift())) {
                         case "alarm": {
                             const [dateString, name, message, actions, displayTo, revActions, recurring, isConditional] = args.join(" ").replace(/"/gu, "").split("|"),
-                                messageHTML = C.CHATHTML.Block([
-                                    C.CHATHTML.Header(`Alarm Fired: ${name}`),
-                                    C.CHATHTML.Body(message)
+                                messageHTML = C.HTML.Block([
+                                    C.HTML.Header(`Alarm Fired: ${name}`),
+                                    C.HTML.Body(message)
                                 ].join("<br>"))
                             // dateString: "dawn"/"dusk"/"nextfullnight"/"noon"/"[#] [unit]"   can include multiple with "+"  (use "|" delimiting for chat arg, then set helper macro)
                             // name: Name of the alarm
@@ -129,9 +129,9 @@ const TimeTracker = (() => {
                             // recurring: if LIST {years: #, months: #, weeks: #, days: #, hours: #, mins: #}, will repeat alarm at that interval
                             // isConditional: if true, will stop clock and confirm with GM before firing
                             D.Prompt(
-                                C.MENUHTML.Block([
-                                    C.MENUHTML.Header("Confirm Alarm"),
-                                    C.MENUHTML.Body([
+                                C.HTML.Block([
+                                    C.HTML.Header("Confirm Alarm"),
+                                    C.HTML.Body([
                                         `<b>DateString:</b> ${D.JS(dateString)}`,
                                         `<b>name:</b> ${D.JS(name)}`,
                                         `<b>message:</b> ${D.JS(message)}`,
@@ -140,10 +140,10 @@ const TimeTracker = (() => {
                                         `<b>revActions:</b> ${D.JS(revActions)}`,
                                         `<b>recurring:</b> ${D.JS(recurring)}`,
                                         `<b>isConditional:</b> ${D.JS(isConditional)}`
-                                    ].join("<br>").replace(/"/gu, ""), {bgColor: C.COLORS.white, borderStyle: "inset", borderWidth: "3px", borderColor: C.COLORS.darkgrey, width: "95%", margin: "7px 0px 0px 2.5%", fontFamily: "Verdana", fontSize: "10px", lineHeight: "14px", textShadow: "none", color: C.COLORS.black, fontWeight: "normal", textAlign: "left"}),
-                                    C.MENUHTML.ButtonLine([
-                                        C.MENUHTML.Button("Yes", "!reply confirm true"),
-                                        C.MENUHTML.Button("No", "!reply confirm false")
+                                    ].join("<br>").replace(/"/gu, ""), {bgColor: C.COLORS.white, border: `3px inset ${C.COLORS.darkgrey}`, width: "95%", margin: "7px 0px 0px 2.5%", fontFamily: "Verdana", fontSize: "10px", lineHeight: "14px", textShadow: "none", color: C.COLORS.black, fontWeight: "normal", textAlign: "left"}),
+                                    C.HTML.ButtonLine([
+                                        C.HTML.Button("Yes", "!reply confirm true"),
+                                        C.HTML.Button("No", "!reply confirm false")
                                     ].join(" "))
                                 ].join("<br>")),
                                 reply => { 
@@ -1693,15 +1693,15 @@ const TimeTracker = (() => {
                 }
             }
             D.Prompt( // Locks Dice Roller, Stops & Starts Clock
-                C.MENUHTML.Block([
-                    C.MENUHTML.Header(`Fire Alarm '${D.JS(alarm.name)}'?`),
-                    C.MENUHTML.Body(`<b>MESSAGE SUMMARY:</b><br>${D.JS(D.SumHTML(alarm.message))}`, {bgColor: C.COLORS.white, borderStyle: "inset", borderWidth: "3px", borderColor: C.COLORS.darkgrey, width: "95%", margin: "7px 0px 0px 2.5%", fontFamily: "Verdana", fontSize: "10px", lineHeight: "14px", textShadow: "none", color: C.COLORS.black, fontWeight: "normal", textAlign: "left"}),
-                    C.MENUHTML.ButtonLine([
-                        C.MENUHTML.Button("Fire", "!reply confirm true", {width: "16%", margin: "0px 1% 0px 0px"}),
-                        C.MENUHTML.Button("Ignore", "!reply confirm false", {width: "16%", margin: "0px 1% 0px 0px"}),
-                        C.MENUHTML.Button("Ignore Any", "!reply confirm stopfalse", {width: "21%", margin: "0px 1% 0px 0px"}),
-                        C.MENUHTML.Button("Defer", "!reply confirm defer", {width: "16%", margin: "0px 1% 0px 0px"}),
-                        C.MENUHTML.Button("Defer Any", "!reply confirm deferstop", {width: "21%", margin: "0px 1% 0px 0px"})
+                C.HTML.Block([
+                    C.HTML.Header(`Fire Alarm '${D.JS(alarm.name)}'?`),
+                    C.HTML.Body(`<b>MESSAGE SUMMARY:</b><br>${D.JS(D.SumHTML(alarm.message))}`, {bgColor: C.COLORS.white, border: `3px inset ${C.COLORS.darkgrey}`, width: "95%", margin: "7px 0px 0px 2.5%", fontFamily: "Verdana", fontSize: "10px", lineHeight: "14px", textShadow: "none", color: C.COLORS.black, fontWeight: "normal", textAlign: "left"}),
+                    C.HTML.ButtonLine([
+                        C.HTML.Button("Fire", "!reply confirm true", {width: "16%", margin: "0px 1% 0px 0px"}),
+                        C.HTML.Button("Ignore", "!reply confirm false", {width: "16%", margin: "0px 1% 0px 0px"}),
+                        C.HTML.Button("Ignore Any", "!reply confirm stopfalse", {width: "21%", margin: "0px 1% 0px 0px"}),
+                        C.HTML.Button("Defer", "!reply confirm defer", {width: "16%", margin: "0px 1% 0px 0px"}),
+                        C.HTML.Button("Defer Any", "!reply confirm deferstop", {width: "21%", margin: "0px 1% 0px 0px"})
                     ].join(""), {height: "36px"})
                 ].join("<br>")),
                 replyFunc

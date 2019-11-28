@@ -36,16 +36,16 @@ const Player = (() => {
                     break
                 }
                 case "link": case "!links": {
-                    D.Chat(msg.playerid, C.CHATHTML.Block([
-                        C.MENUHTML.Header("VAMPIRE: Toronto By Night Resources", {margin: "0px"}),
-                        C.MENUHTML.Body("(Each link opens in a new tab.)", {fontSize: "14px", lineHeight: "14px", margin: "5px 0px"}),
-                        C.MENUHTML.ButtonLine([
-                            C.MENUHTML.Button("Chronicle Logs", "https://drive.google.com/open?id=1UYxbCeoSi6zEtX534FG-umh5CMzsE7_F", {width: "33%", color: "white", bgColor: C.COLORS.darkblue}),
-                            C.MENUHTML.Button("Districts & Sites", "https://docs.google.com/spreadsheets/d/1ol1JOQNZER7QGsmBoeVXbKFNmCjYvKc-xibXtS3sFKk/edit?usp=sharing", {width: "33%", color: "white", bgColor: C.COLORS.darkgreen})
+                    D.Chat(msg.playerid, C.HTML.Block([
+                        C.HTML.Header("VAMPIRE: Toronto By Night Resources", {margin: "0px"}),
+                        C.HTML.Body("(Each link opens in a new tab.)", {fontSize: "14px", lineHeight: "14px", margin: "5px 0px"}),
+                        C.HTML.ButtonLine([
+                            C.HTML.Button("Chronicle Logs", "https://drive.google.com/open?id=1UYxbCeoSi6zEtX534FG-umh5CMzsE7_F", {width: "33%", color: "white", bgColor: C.COLORS.darkblue}),
+                            C.HTML.Button("Districts & Sites", "https://docs.google.com/spreadsheets/d/1ol1JOQNZER7QGsmBoeVXbKFNmCjYvKc-xibXtS3sFKk/edit?usp=sharing", {width: "33%", color: "white", bgColor: C.COLORS.darkgreen})
                         ].join("")),
-                        C.MENUHTML.ButtonLine([
-                            C.MENUHTML.Button("Rules & Reference", "https://drive.google.com/open?id=1QMAPnl7wYMpXVyp-BYbi_c-gl1V20UTe", {width: "33%", color: "white"}),
-                            C.MENUHTML.Button("House Rules", "https://drive.google.com/open?id=18v4b45LEQwfx5Kw-qLVd-sFnQ2tnj4CR", {width: "33%", color: "white"})
+                        C.HTML.ButtonLine([
+                            C.HTML.Button("Rules & Reference", "https://drive.google.com/open?id=1QMAPnl7wYMpXVyp-BYbi_c-gl1V20UTe", {width: "33%", color: "white"}),
+                            C.HTML.Button("House Rules", "https://drive.google.com/open?id=18v4b45LEQwfx5Kw-qLVd-sFnQ2tnj4CR", {width: "33%", color: "white"})
                         ].join(""))
                     ].join(""), undefined, D.RandomString(3)))
                     break

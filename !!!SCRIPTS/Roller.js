@@ -58,7 +58,7 @@ const Roller = (() => {
                     let rollType
                     if (VAL({array: args}, "!roll dice"))
                         switch (D.LCase(call = args.shift())) {
-                            case "frenzyinit": {	// !roll dice project @{character_name}|Politics:3,Resources:2|mod|diff|diffMod|rowID
+                            case "frenzyinit": {	// !roll dice project @{character_name}|Politics:3,Resources:2|diff|mod|diffMod|rowID
                                 lockRoller(true)
                                 STATE.REF.frenzyRoll = `${args.join(" ").split("|")[0]}|`
                                 D.CommandMenu({
@@ -897,7 +897,6 @@ const Roller = (() => {
                     `... Removing <b>${bottomImgName}</b>: ${Media.RemoveImg(bottomImgName) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`
                 )
             }
-            returnLines[0].entries.push(`... Removing <b>RollerFrame_WPReroller_1</b>: ${Media.RemoveImg("RollerFrame_WPReroller_1") ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`)
             DragPads.DelPad("selectDie")
             returnLines[1].entries.push("... Removing <b>Main Dice</b> Drag Pads (x30): <span style='color:green;'><b>OK!</b></span> (x30)", "... Removing <b>Big Dice</b> Drag Pads (x2): <span style='color:green;'><b>OK!</b></span> (x2)")
             DragPads.DelPad("wpReroll")
@@ -956,17 +955,7 @@ const Roller = (() => {
                     returnLines[1].entries.push("... Creating <b>Willpower Reroll</b> Drag Pad: <span style='color:green;'><b>OK!</b></span>")
                     for (const diceCat of Object.keys(SETTINGS.dice))
                         returnLines[2].entries.push(makeAllDice(diceCat).join(", "))
-                    Media.MakeImg("RollerFrame_WPReroller", {
-                        imgsrc: C.IMAGES.blank,
-                        top: resultCountPos.top,
-                        left: resultCountPos.left,
-                        height: resultCountPos.height,
-                        width: resultCountPos.width,
-                        activeLayer: "map",
-                        modes: imgDataTop.modes,
-                        isActive: false,
-                    }, false, true)
-                    DragPads.MakePad("RollerFrame_WPReroller", "wpReroll")
+                    DragPads.MakePad("Roller_WPReroller_Base_1", "wpReroll")
                     return [
                         `${returnLines[0].header}${returnLines[0].entries.join("<br>")}`,
                         `${returnLines[1].header}${returnLines[1].entries.join("<br>")}`,
@@ -1831,7 +1820,7 @@ const Roller = (() => {
                     rollData.mod = 0
                     break
                 case "project":
-                    [rollData.diff, rollData.mod, rollData.diffMod] = params.slice(0,3).map(x => D.Int(x))
+                    [rollData.diff, rollData.mod, rollData.diffMod] = params.slice(1,4).map(x => D.Int(x))
                     rollData.prefix = ["repeating", "project", D.GetRepStat(charObj, "project", params[4]).rowID, ""].join("_")
                     STATE.REF.lastProjectPrefix = rollData.prefix
                     STATE.REF.lastProjectCharID = rollData.charID
@@ -1858,7 +1847,7 @@ const Roller = (() => {
 
             return rollData
         },
-        getCurrentRoll = (isNPCRoll) => (isNPCRoll ? STATE.REF.NPC : STATE.REF).rollRecord[(isNPCRoll ? STATE.REF.NPC : STATE.REF).rollIndex],
+        getCurrentRoll = (isNPCRoll = false) => (isNPCRoll ? STATE.REF.NPC : STATE.REF).rollRecord[(isNPCRoll ? STATE.REF.NPC : STATE.REF).rollIndex],
         setCurrentRoll = (rollIndex, isNPCRoll, isDisplayOnly = false) => {
             const rollRef = isNPCRoll ? STATE.REF.NPC : STATE.REF
             if (rollRef && rollRef.rollRecord && rollRef.rollRecord.length) {
@@ -2728,6 +2717,7 @@ const Roller = (() => {
                     case "outcome": {
                         switch (rollData.type) {
                             case "project": {
+                                STATE.REF.LastProjectCommit = rollResults.commit 
                                 if (rollResults.total === 0) {
                                     stLines.outcome = `${CHATSTYLES.outcomeRed}TOTAL FAILURE!</span></div>`
                                     stLines.subOutcome = `${CHATSTYLES.subOutcomeRed}Enemies Close In</span></div>`
@@ -3024,7 +3014,9 @@ const Roller = (() => {
                         Char.AdjustTrait(rollData.charID, attrName, deltaAttrs[attrName], 0, 10)
                         delete deltaAttrs[attrName]
                     }
-                setAttrs(rollData.charID, deltaAttrs)
+                D.Queue(setAttrs, [rollData.charID, deltaAttrs], "RollerAttrs")
+                D.Queue(Char.RefreshDisplays, [], "RollerAttrs", 0.1)
+                D.Run("RollerAttrs")
             }
 
             if (isLogging)
@@ -3141,21 +3133,21 @@ const Roller = (() => {
             if (results[0] <= 5)
                 deltaAttrs.hunger = true
             if (deltaAttrs.hunger) {
-                body = C.CHATHTML.Body("Hunger Roused.")
+                body = C.HTML.Body("Hunger Roused.")
                 Char.AdjustHunger(charRef, 1, false, false)
             } else if (deltaAttrs.stain !== null) {
-                body = C.CHATHTML.Body("Restrained.", {color: C.COLORS.white})
+                body = C.HTML.Body("Restrained.", {color: C.COLORS.white})
             }
             if (deltaAttrs.stain === true) {
-                body += C.CHATHTML.Body("The Abyss drags you deeper.", {color: C.COLORS.darkpurple, textShadow: "0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white"})
+                body += C.HTML.Body("The Abyss drags you deeper.", {color: C.COLORS.darkpurple, textShadow: "0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white"})
                 Char.AdjustTrait(charRef, "stains", 1, 0, 10, 0, null, false)
             } else if (deltaAttrs.stain === null) {
-                body += C.CHATHTML.Body("Choose: Your Soul or your Beast?", {color: C.COLORS.darkpurple, textShadow: "0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white"})
+                body += C.HTML.Body("Choose: Your Soul or your Beast?", {color: C.COLORS.darkpurple, textShadow: "0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white"})
             } else if (isOblivionRouse) {
-                body += C.CHATHTML.Body("Your humanity remains.", {color: C.COLORS.white, textShadow: `0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}`})
+                body += C.HTML.Body("Your humanity remains.", {color: C.COLORS.white, textShadow: `0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}, 0px 0px 2px ${C.COLORS.darkpurple}`})
             }
-            D.Chat(isPublic && "all" || charRef, C.CHATHTML.Block([
-                C.CHATHTML.Header(header),
+            D.Chat(isPublic && "all" || charRef, C.HTML.Block([
+                C.HTML.Header(header),
                 body].join("")))
         },
     // #endregion
@@ -3437,10 +3429,10 @@ const Roller = (() => {
                     break
                 // no default
             }
-            D.Chat("all", C.CHATHTML.Block([
-                C.CHATHTML.Title(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
-                C.CHATHTML.Header(resDetails),
-                C.CHATHTML.Body(resIntLine, {lineHeight: "20px"})
+            D.Chat("all", C.HTML.Block([
+                C.HTML.Title(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
+                C.HTML.Header(resDetails),
+                C.HTML.Body(resIntLine, {lineHeight: "20px"})
             ], undefined, D.RandomString(3)))
         }
     // #endregion
@@ -3460,6 +3452,8 @@ const Roller = (() => {
         Init: initFrame,
         Lock: lockRoller,
         QuickRouse: quickRouseCheck,
+        get Margin() { return getCurrentRoll().rollResults.margin },
+        get Char() { return D.GetChar(getCurrentRoll().rollData.charID) },
 
         AddCharEffect: (charRef, effect) => { addCharRollEffects(charRef, [effect]) },
         DelCharEffect: (charRef, effect) => { delCharRollEffects(charRef, [effect]) },

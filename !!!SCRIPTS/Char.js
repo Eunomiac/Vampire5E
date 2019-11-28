@@ -258,9 +258,9 @@ const Char = (() => {
                                     }
                                     returnLines.push(charLines.join(""))
                                 }
-                                D.Chat("Storyteller", C.CHATHTML.Block([
-                                    C.CHATHTML.Header(D.Capitalize(traitName, true)),
-                                    C.CHATHTML.Body(returnLines.join("<br>"), {color: C.COLORS.white, fontWeight: "normal", fontFamily: "Voltaire", fontSize: "12px", textAlign: "left"})
+                                D.Chat("Storyteller", C.HTML.Block([
+                                    C.HTML.Header(D.Capitalize(traitName, true)),
+                                    C.HTML.Body(returnLines.join("<br>"), {color: C.COLORS.white, fontWeight: "normal", fontFamily: "Voltaire", fontSize: "12px", textAlign: "left"})
                                 ].join("")), null, D.RandomString(3))
                             } else {
                                 promptTraitSelect(charObjs.map(x => x.id).join(","), null, "!char @@CHARIDS@@ get stat @@TRAITNAME@@")
@@ -696,17 +696,17 @@ const Char = (() => {
                 pcCharObjs = D.GetChars("registered"),
                 npcCharObjs = charObjs.filter(x => VAL({npc: x})),
                 chatLines = [
-                    C.MENUHTML.Header("Character Selection", {margin: "0px 0px 5px 0px"}),
-                    C.MENUHTML.ButtonLine([
+                    C.HTML.Header("Character Selection", {margin: "0px 0px 5px 0px"}),
+                    C.HTML.ButtonLine([
                         ["All PCs", "!char select registered", {width: "24%", height: "16px", buttonHeight: "6px", lineHeight: "8px", fontSize: "12px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue, color: C.COLORS.black}],
                         ["Active PCs", "!char select pcs", {width: "24%", height: "16px", buttonHeight: "6px", lineHeight: "8px", fontSize: "12px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue, color: C.COLORS.black}],
                         ["Active NPCs", "!char select npcs", {width: "24%", height: "16px", buttonHeight: "6px", lineHeight: "8px", fontSize: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue, color: C.COLORS.black}],
                         ["All Active", "!char select sandbox", {width: "24%", height: "16px", buttonHeight: "6px", lineHeight: "8px", fontSize: "12px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue, color: C.COLORS.black}]
-                    ].map(x => C.MENUHTML.Button(...x)), {margin: "0px 0px 5px 0px"})
+                    ].map(x => C.HTML.Button(...x)), {margin: "0px 0px 5px 0px"})
                 ]
             while (pcCharObjs.length)
-                chatLines.push(C.MENUHTML.ButtonLine(
-                    _.compact([pcCharObjs.shift(), pcCharObjs.shift(), pcCharObjs.shift(), pcCharObjs.shift()]).map(x => C.MENUHTML.Button(
+                chatLines.push(C.HTML.ButtonLine(
+                    _.compact([pcCharObjs.shift(), pcCharObjs.shift(), pcCharObjs.shift(), pcCharObjs.shift()]).map(x => C.HTML.Button(
                         D.GetName(x, true),
                         `!char select ${x.id}`,
                         {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: charObjs.map(xx => xx.id).includes(x.id) ? C.COLORS.brightred : C.COLORS.black}
@@ -714,14 +714,14 @@ const Char = (() => {
                     {margin: "0px 0px 10px 0px"}
                 ))        
             while (npcCharObjs.length)
-                chatLines.push(C.MENUHTML.ButtonLine(
-                    _.compact([npcCharObjs.shift(), npcCharObjs.shift(), npcCharObjs.shift(), npcCharObjs.shift()]).map(x => C.MENUHTML.Button(
+                chatLines.push(C.HTML.ButtonLine(
+                    _.compact([npcCharObjs.shift(), npcCharObjs.shift(), npcCharObjs.shift(), npcCharObjs.shift()]).map(x => C.HTML.Button(
                         D.GetName(x, true),
                         `!char select ${x.id}`,
                         {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.crimson}
                     )).join("")
                 ))
-            D.Chat("Storyteller", C.MENUHTML.Block(chatLines.join("")), null, D.RandomString(3))
+            D.Chat("Storyteller", C.HTML.Block(chatLines.join("")), null, D.RandomString(3))
         },
         promptActionMenu = (charsRef) => {
             const chatLines = [],
@@ -773,20 +773,20 @@ const Char = (() => {
                 ]
             }, v => v.map(x => x.map(xx => VAL({string: xx}) && xx.replace(/@@CHARIDS@@/gu, charIDString).replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;") || xx)))                
             for (const subHeader of _.keys(CHARACTIONS)) {
-                const theseCols = [C.MENUHTML.ButtonSubheader(
+                const theseCols = [C.HTML.ButtonSubheader(
                     subHeader.startsWith("_") ? "" : subHeader,
                     subHeader.startsWith("_") ? {margin: "1px 0px 0px 3px", height: "18px", width: "0%"} : {margin: "1px 0.5px 0px 3px", height: "18px", width: "17%"}
                 )]
                 for(const button of CHARACTIONS[subHeader])
                     if (button.length === 1)
-                        theseCols.push(C.MENUHTML.ButtonSpacer(button[0]))
+                        theseCols.push(C.HTML.ButtonSpacer(button[0]))
                     else if (button.length === 2)
-                        theseCols.push(C.MENUHTML.ButtonSubheader(button[0], {margin: "1px 0.5px 0px 0px", height: "18px", width: button[1], textAlign: "right", padding: "0px 3px 0px 0px"}))
+                        theseCols.push(C.HTML.ButtonSubheader(button[0], {margin: "1px 0.5px 0px 0px", height: "18px", width: button[1], textAlign: "right", padding: "0px 3px 0px 0px"}))
                     else if (button[0].includes("@@SINGLEONLY@@") && charIDs.length !== 1)
                         continue
                     else
-                        theseCols.push(C.MENUHTML.Button(...button.map(x => VAL({string: x}) && x.replace(/@@SINGLEONLY@@/gu, "") || x)))                
-                chatLines.push(C.MENUHTML.ButtonLine(theseCols.join(""), {textAlign: "left"}))
+                        theseCols.push(C.HTML.Button(...button.map(x => VAL({string: x}) && x.replace(/@@SINGLEONLY@@/gu, "") || x)))                
+                chatLines.push(C.HTML.ButtonLine(theseCols.join(""), {textAlign: "left"}))
             }
             switch (charsRef) {
                 case "registered": {
@@ -813,60 +813,87 @@ const Char = (() => {
                     break
                 }
             }
-            D.Chat("Storyteller", C.MENUHTML.Block([
-                C.MENUHTML.Header(title),
+            D.Chat("Storyteller", C.HTML.Block([
+                C.HTML.Header(title),
                 ...chatLines
             ]), undefined, D.RandomString(3))
         },
         promptNumber = (fullCommand) => {
             if (VAL({string: fullCommand}, "promptNumber") && fullCommand.includes("@@AMOUNT@@"))
-                D.Chat("Storyteller", `<div style='
-                    display: block;
-                    background: url(https://i.imgur.com/kBl8aTO.jpg);
-                    text-align: center;
-                    border: 4px ${C.COLORS.crimson} outset;
-                    box-sizing: border-box;
-                    margin-left: -42px;
-                    width: 275px;
-                '><br/><span style='
-                    display: block;
-                    font-size: 16px;
-                    text-align: center;
-                    width: 100%;
-                    font-family: Voltaire;
-                    color: ${C.COLORS.brightred};
-                    font-weight: bold;
-                '>Choose Amount:</span><span style='                    
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[1](${fullCommand.replace(/@@AMOUNT@@/gu, "1")}) [2](${fullCommand.replace(/@@AMOUNT@@/gu, "2")}) [3](${fullCommand.replace(/@@AMOUNT@@/gu, "3")}) [4](${fullCommand.replace(/@@AMOUNT@@/gu, "4")}) [5](${fullCommand.replace(/@@AMOUNT@@/gu, "5")})</span><span style='                    
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[6](${fullCommand.replace(/@@AMOUNT@@/gu, "6")}) [7](${fullCommand.replace(/@@AMOUNT@@/gu, "7")}) [8](${fullCommand.replace(/@@AMOUNT@@/gu, "8")}) [9](${fullCommand.replace(/@@AMOUNT@@/gu, "9")}) [10](${fullCommand.replace(/@@AMOUNT@@/gu, "10")})</span><span style='                    
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[0](${fullCommand.replace(/@@AMOUNT@@/gu, "0")})</span><span style='                    
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[-1](${fullCommand.replace(/@@AMOUNT@@/gu, "-1")}) [-2](${fullCommand.replace(/@@AMOUNT@@/gu, "-2")}) [-3](${fullCommand.replace(/@@AMOUNT@@/gu, "-3")}) [-4](${fullCommand.replace(/@@AMOUNT@@/gu, "-4")}) [-5](${fullCommand.replace(/@@AMOUNT@@/gu, "-5")})</span><span style='                    
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '>[-6](${fullCommand.replace(/@@AMOUNT@@/gu, "-6")}) [-7](${fullCommand.replace(/@@AMOUNT@@/gu, "-7")}) [-8](${fullCommand.replace(/@@AMOUNT@@/gu, "-8")}) [-9](${fullCommand.replace(/@@AMOUNT@@/gu, "-9")}) [-10](${fullCommand.replace(/@@AMOUNT@@/gu, "-10")})</span><span style='                    
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%
-                '></span></div>`, undefined, D.RandomString(3))
+            /* MENU DATA:
+                {
+                    title: <string>
+                    rows: [
+                        Each element represents a full-width horizontal <div> block, contained with "block".
+                        Elements should be of the form:
+                            {
+                                type: <string: "Column", "Title", "Header", "Body", "ButtonLine", "ButtonSubheader">
+                                contents: <
+                                    for TITLE, HEADLINE, TEXT: <string>
+                                    for COLUMN: <array: each element represents a HORIZONTAL panel, each given in the form of nested MENU DATA objects:
+                                        <list: {title: <string>, rows: <as MENU DATA>}>
+                                            - when columns have been exhausted, will proceed with a new block.
+                                    for BUTTONS: <array: each element represents a line of buttons, of form:
+                                                    for BUTTONS: <list: {name, command, [styles]}>
+                                                    for SPACERS: <number: percentage of width, or 0 for equal spacing > 
+                                [buttonStyles]: <list of styles to apply to ALL of the buttons in a ButtonLine
+                                [styles]: <list of styles for the div, to override the defaults, where keys are style tags and values are the settings>
+                            } 
+                    ]
+                    [blockStyles:] <override C.HTML.Block 'options' parameter.
+                }
+                */
+                D.CommandMenu({
+                    title: "Choose Amount",
+                    rows: [
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {name: 1, command: fullCommand.replace(/@@AMOUNT@@/gu, "1"), styles: {buttonWidth: "15%"}},
+                                {name: 2, command: fullCommand.replace(/@@AMOUNT@@/gu, "2"), styles: {buttonWidth: "15%"}},
+                                {name: 3, command: fullCommand.replace(/@@AMOUNT@@/gu, "3"), styles: {buttonWidth: "15%"}},
+                                {name: 4, command: fullCommand.replace(/@@AMOUNT@@/gu, "4"), styles: {buttonWidth: "15%"}},
+                                {name: 5, command: fullCommand.replace(/@@AMOUNT@@/gu, "5"), styles: {buttonWidth: "15%"}},
+                            ]
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {name: 6, command: fullCommand.replace(/@@AMOUNT@@/gu, "6"), styles: {buttonWidth: "15%"}},
+                                {name: 7, command: fullCommand.replace(/@@AMOUNT@@/gu, "7"), styles: {buttonWidth: "15%"}},
+                                {name: 8, command: fullCommand.replace(/@@AMOUNT@@/gu, "8"), styles: {buttonWidth: "15%"}},
+                                {name: 9, command: fullCommand.replace(/@@AMOUNT@@/gu, "9"), styles: {buttonWidth: "15%"}},
+                                {name: 10, command: fullCommand.replace(/@@AMOUNT@@/gu, "10"), styles: {buttonWidth: "15%"}},
+                            ]
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {name: 0, command: fullCommand.replace(/@@AMOUNT@@/gu, "0"), styles: {buttonWidth: "15%"}}
+                            ]
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {name: -1, command: fullCommand.replace(/@@AMOUNT@@/gu, "-1"), styles: {buttonWidth: "15%"}},
+                                {name: -2, command: fullCommand.replace(/@@AMOUNT@@/gu, "-2"), styles: {buttonWidth: "15%"}},
+                                {name: -3, command: fullCommand.replace(/@@AMOUNT@@/gu, "-3"), styles: {buttonWidth: "15%"}},
+                                {name: -4, command: fullCommand.replace(/@@AMOUNT@@/gu, "-4"), styles: {buttonWidth: "15%"}},
+                                {name: -5, command: fullCommand.replace(/@@AMOUNT@@/gu, "-5"), styles: {buttonWidth: "15%"}},
+                            ]
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {name: -6, command: fullCommand.replace(/@@AMOUNT@@/gu, "-6"), styles: {buttonWidth: "15%"}},
+                                {name: -7, command: fullCommand.replace(/@@AMOUNT@@/gu, "-7"), styles: {buttonWidth: "15%"}},
+                                {name: -8, command: fullCommand.replace(/@@AMOUNT@@/gu, "-8"), styles: {buttonWidth: "15%"}},
+                                {name: -9, command: fullCommand.replace(/@@AMOUNT@@/gu, "-9"), styles: {buttonWidth: "15%"}},
+                                {name: -10, command: fullCommand.replace(/@@AMOUNT@@/gu, "-10"), styles: {buttonWidth: "15%"}},
+                            ]
+                        },
+                    ]
+                })
         },
         promptTraitSelect = (charIDString, fullCommand, buttonOverride) => {
             const TRAITLIST = {},
@@ -924,21 +951,21 @@ const Char = (() => {
                     ["3%"]
                 ]  
             for (const subHeader of _.keys(TRAITLIST)) {
-                const theseCols = [C.MENUHTML.ButtonSubheader(
+                const theseCols = [C.HTML.ButtonSubheader(
                     subHeader.startsWith("_") ? "" : subHeader,
                     subHeader.startsWith("_") ? {margin: "1px 0px 0px 3px", height: "18px", width: "0%"} : {margin: "1px 0.5px 0px 3px", height: "18px", width: "17%"}
                 )]
                 for(const button of TRAITLIST[subHeader])
                     if (button.length === 1)
-                        theseCols.push(C.MENUHTML.ButtonSpacer(button[0]))
+                        theseCols.push(C.HTML.ButtonSpacer(button[0]))
                     else if (button.length === 2)
-                        theseCols.push(C.MENUHTML.ButtonSubheader(button[0], {margin: "1px 0.5px 0px 0px", height: "18px", width: button[1], textAlign: "right", padding: "0px 3px 0px 0px"}))
+                        theseCols.push(C.HTML.ButtonSubheader(button[0], {margin: "1px 0.5px 0px 0px", height: "18px", width: button[1], textAlign: "right", padding: "0px 3px 0px 0px"}))
                     else
-                        theseCols.push(C.MENUHTML.Button(...button))                
-                chatLines.push(C.MENUHTML.ButtonLine(theseCols.join("")))
+                        theseCols.push(C.HTML.Button(...button))                
+                chatLines.push(C.HTML.ButtonLine(theseCols.join("")))
             }
-            D.Chat("Storyteller", C.MENUHTML.Block([
-                C.MENUHTML.Header("Trait Select"),
+            D.Chat("Storyteller", C.HTML.Block([
+                C.HTML.Header("Trait Select"),
                 ...chatLines
             ].join("")), undefined, D.RandomString(3))
         },
@@ -1007,9 +1034,9 @@ const Char = (() => {
                         D.CopyToSec(charObj.id, "earnedxpright", rightRowIDs[0], "earnedxp")
                         leftRowIDs.push(rightRowIDs.shift())
                     }
-                    D.Chat(charObj, C.CHATHTML.Block([                    
-                        C.CHATHTML.Body(`<b>FOR:</b> ${reason}`, C.STYLES.whiteMarble.body),
-                        C.CHATHTML.Header(`You Have Been Awarded ${D.NumToText(award, true)} XP.`, C.STYLES.whiteMarble.header),
+                    D.Chat(charObj, C.HTML.Block([                    
+                        C.HTML.Body(`<b>FOR:</b> ${reason}`, C.STYLES.whiteMarble.body),
+                        C.HTML.Header(`You Have Been Awarded ${D.NumToText(award, true)} XP.`, C.STYLES.whiteMarble.header),
                     ], C.STYLES.whiteMarble.block))                
                 // D.Alert(`Sort Trigger Value: ${D.GetStatVal(charObj, "xpsorttrigger")}`)
                     DB({xpsorttrigger: D.GetStatVal(charObj, "xpsorttrigger")}, "awardXP")
@@ -1044,8 +1071,8 @@ const Char = (() => {
                 desireObj.remove()
                 adjustDamage(charRef, "willpower", "superficial+", -1, false)
                 displayDesires()
-                D.Chat(D.GetChar(charRef), C.CHATHTML.Block([
-                    C.CHATHTML.Header("You have resolved your Desire!<br>One superficial Willpower restored.<br>What do you Desire next?", Object.assign({height: "auto"}, C.STYLES.whiteMarble.header))
+                D.Chat(D.GetChar(charRef), C.HTML.Block([
+                    C.HTML.Header("You have resolved your Desire!<br>One superficial Willpower restored.<br>What do you Desire next?", Object.assign({height: "auto"}, C.STYLES.whiteMarble.header))
                 ], C.STYLES.whiteMarble.block))
             }            
         },
@@ -1074,9 +1101,9 @@ const Char = (() => {
                 const entry = STATE.REF.weeklyResources[initial] && STATE.REF.weeklyResources[initial][rowNum - 1]
                 if (entry)
                     entry[1] = Math.max(0, Math.min(entry[2], entry[1] + amount))
-                D.Chat(D.GetChar(initial), C.CHATHTML.Block([
-                    C.CHATHTML.Header("Weekly Resource Updated", C.STYLES.whiteMarble.header),
-                    C.CHATHTML.Body(amount < 0 ? `${entry[0]} restored by ${-1*amount} to ${entry[2]-entry[1]}/${entry[2]}` : `${Math.abs(amount)} ${entry[0]} spent, ${entry[2]-entry[1]} remaining.`, C.STYLES.whiteMarble.body)
+                D.Chat(D.GetChar(initial), C.HTML.Block([
+                    C.HTML.Header("Weekly Resource Updated", C.STYLES.whiteMarble.header),
+                    C.HTML.Body(amount < 0 ? `${entry[0]} restored by ${-1*amount} to ${entry[2]-entry[1]}/${entry[2]}` : `${Math.abs(amount)} ${entry[0]} spent, ${entry[2]-entry[1]} remaining.`, C.STYLES.whiteMarble.body)
                 ], C.STYLES.whiteMarble.block))
             }
             displayResources()
@@ -1085,8 +1112,8 @@ const Char = (() => {
             _.each(STATE.REF.weeklyResources, (data, init) => {
                 // D.Alert(`Init: ${D.JS(init)}, Data: ${D.JS(data, true)}<br>Map: ${D.JS(_.map(data, v => [v[0], 0, v[2]]))}`)
                 STATE.REF.weeklyResources[init] = _.map(data, v => [v[0], 0, v[2], v[3] || 0])
-                D.Chat(D.GetChar(init), C.CHATHTML.Block([
-                    C.CHATHTML.Body("Your weekly resources have been refreshed.", C.STYLES.whiteMarble.body)
+                D.Chat(D.GetChar(init), C.HTML.Block([
+                    C.HTML.Body("Your weekly resources have been refreshed.", C.STYLES.whiteMarble.body)
                 ], C.STYLES.whiteMarble.block))
             })
             displayResources()
@@ -1246,7 +1273,7 @@ const Char = (() => {
                     goal: projectAttrs.find(x => x.attrName === "projectscope_name").val,
                     endDate: TimeTracker.GetDate(projectAttrs.find(x => x.attrName === "projectenddate").val)
                 })
-            D.Alert(`Project Data: ${D.JS(projectDetails.sort((a,b) => a.endDate - b.endDate))}`)
+            DB(`Project Data: ${D.JS(projectDetails.sort((a,b) => a.endDate - b.endDate))}`, "displayProjects")
             if (projectDetails.length === 0) {
                 Media.ToggleImg("projectsHeader", false)
                 Media.ToggleText("Projects_Col1", false)
@@ -1270,7 +1297,7 @@ const Char = (() => {
                 STATE.REF.projectDetails = projectsSorted
                 for (const projDetails of STATE.REF.projectDetails) {
                     projectStrings.Projects_Col1.push(`[${projDetails.init}]`)
-                    projectStrings.Projects_Col2.push(projDetails.goal)
+                    projectStrings.Projects_Col2.push(Media.GetTextWidth("Projects_Col2", projDetails.goal, false) > 260 ? `${projDetails.goal.slice(0, 30)}...` : projDetails.goal)
                     projectStrings.Projects_Col3.push(TimeTracker.FormatDate(projDetails.endDate))
                 }
                 for (let i = projectStrings.Projects_Col1.length - 1; i > 0; i--)
@@ -1342,9 +1369,9 @@ const Char = (() => {
                     // no default                        
                 }
                 const chatStyles = {
-                        block: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.block, {}) : {width: "275px", margin: "0px 0px 0px -50px"},
+                        block: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.block, {}) : {width: "275px"},
                         body: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.body, {fontSize: "12px"}) : {fontFamily: "Voltaire", fontSize: "14px", color: "rgb(255,50,50)"},
-                        banner: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {margin: "0px", fontSize: "12px"}) : {margin: "0px", fontSize: "12px"},
+                        banner: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {fontSize: "12px"}) : {fontSize: "12px"},
                         alert: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {}) : {}
                     },
                     initTraitVal = VAL({number: D.Int(D.GetStatVal(charObj, trait))}) ? D.Int(D.GetStatVal(charObj, trait)) : defaultTraitVal || 0,
@@ -1402,7 +1429,7 @@ const Char = (() => {
                                 bodyString = "Further strain will cause AGGRAVATED damage!"
                                 alertString = "EXHAUSTED: -2 to Social & Mental rolls."
                             }
-                            trackerString = C.CHATHTML.TrackerLine(maxWP - newBashing - newAggravated, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
+                            trackerString = C.HTML.TrackerLine(maxWP - newBashing - newAggravated, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
                         } else if (Math.min(D.Int(D.GetStat(charObj, "willpower_bashing")[0]), Math.abs(amount))) {
                             bannerString = `You regain ${D.NumToText(Math.min(D.Int(D.GetStat(charObj, "willpower_bashing")[0]), Math.abs(amount))).toLowerCase()} Willpower.`                            
                         }                        
@@ -1424,7 +1451,7 @@ const Char = (() => {
                                 bodyString = "Further strain will cause AGGRAVATED damage!"
                                 alertString = "EXHAUSTED: -2 to Social & Mental rolls."            
                             }
-                            trackerString = C.CHATHTML.TrackerLine(maxWP - newBashing - newAggravated, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"}) 
+                            trackerString = C.HTML.TrackerLine(maxWP - newBashing - newAggravated, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"}) 
                         } else if (Math.min(D.Int(D.GetStat(charObj, "willpower_aggravated")[0]), Math.abs(amount))) {
                             bannerString = `${D.NumToText(Math.min(D.Int(D.GetStat(charObj, "willpower_aggravated")[0]), Math.abs(amount)))} aggravated Willpower damage downgraded.`                            
                         }
@@ -1454,7 +1481,7 @@ const Char = (() => {
                                 bodyString = "Further harm will cause AGGRAVATED damage!"
                                 alertString = "WOUNDED: -2 to Physical rolls."
                             }
-                            trackerString = C.CHATHTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})                 
+                            trackerString = C.HTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})                 
                         } else if (Math.min(D.Int(D.GetStat(charObj, "health_bashing")[0]), Math.abs(amount))) {
                             bannerString = `You heal ${D.NumToText(Math.min(D.Int(D.GetStat(charObj, "health_bashing")[0]), Math.abs(amount))).toLowerCase()} superficial Health damage.` 
                         }
@@ -1475,7 +1502,7 @@ const Char = (() => {
                                 bodyString = "Further harm will cause AGGRAVATED damage!"
                                 alertString = "WOUNDED: -2 to Physical rolls."
                             }                       
-                            trackerString = C.CHATHTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
+                            trackerString = C.HTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
                         } else if (Math.min(D.Int(D.GetStat(charObj, "health_aggravated")[0]), Math.abs(amount))) {
                             bannerString = `${D.NumToText(Math.min(D.Int(D.GetStat(charObj, "health_aggravated")[0]), Math.abs(amount)))} aggravated Health damage downgraded.`                  
                         }
@@ -1483,11 +1510,11 @@ const Char = (() => {
                     // no default
                 }
                 if (bannerString && isChatting)
-                    D.Chat(charObj, C.CHATHTML.Block(_.compact([
-                        C.CHATHTML.Header(bannerString, chatStyles.banner),
-                        bodyString ? C.CHATHTML.Body(bodyString, chatStyles.body) : null,
+                    D.Chat(charObj, C.HTML.Block(_.compact([
+                        C.HTML.Header(bannerString, chatStyles.banner),
+                        bodyString ? C.HTML.Body(bodyString, chatStyles.body) : null,
                         trackerString || null,
-                        alertString ? C.CHATHTML.Header(alertString, Object.assign(chatStyles.alert, alertString.includes("<br>") ? {height: "40px"} : {})) : null
+                        alertString ? C.HTML.Header(alertString, Object.assign(chatStyles.alert, alertString.includes("<br>") ? {height: "40px"} : {})) : null
                     ]), chatStyles.block))
                 setAttrs(D.GetChar(charObj).id, {[trait.toLowerCase()]: finalTraitVal})
                 return true
@@ -1561,21 +1588,23 @@ const Char = (() => {
                     D.GetRepStat(charObj, "project", rowID, "projectscope").val
                 ]
             attrList[p("projectlaunchresultsummary")] = `${trait1name} (${trait1val}) + ${trait2name} (${trait2val}) vs. ${diff}: ${resultString}`
-            DB(`${attrList[p("projectlaunchresultsummary")]}`, "launchProject")
+            DB({margin, resultString, attrList}, "launchProject")
             attrList[p("projectlaunchroll_toggle")] = 2
             attrList[p("projectlaunchresults")] = resultString
             attrList[p("projectstakes_toggle")] = 1
             attrList[p("projecttotalstake")] = D.Int(scope) + 1 - margin
             attrList[p("projectlaunchresultsmargin")] = `${D.Int(scope) + 1 - margin} Stake Required, (${D.Int(scope) + 1 - margin} to Go)`
-            setAttrs(charObj.id, attrList)
+            D.Queue(setAttrs, [charObj.id, attrList], "LaunchProject")
+            D.Queue(displayProjects, [], "LaunchProject", 0.1)
+            D.Run("LaunchProject")
         },
     // #endregion
 
     // #region Daysleep & Waking Up,
         setDaysleepAlarm = () => {
-            TimeTracker.SetAlarm("dusk", "Dusk Wake-Up", C.CHATHTML.Block([
-                C.CHATHTML.Header("You Awaken at Dusk:"),
-                C.CHATHTML.Body([
+            TimeTracker.SetAlarm("dusk", "Dusk Wake-Up", C.HTML.Block([
+                C.HTML.Header("You Awaken at Dusk:"),
+                C.HTML.Body([
                     "You rouse your Hunger to wake,",
                     "and to heal aggravated Health damage.",
                     "You refresh your Willpower."
@@ -1781,7 +1810,7 @@ const Char = (() => {
         SendHome: sendCharsHome,
         SendBack: restoreCharsPos,
         PromptTraitSelect: promptTraitSelect,
-        RefreshDisplays: () => { displayDesires(); displayResources(); displayStakes(); updateHunger() },
+        RefreshDisplays: () => { displayDesires(); displayResources(); displayStakes(); displayProjects(); updateHunger() },
         get SelectedChar() { 
             if (STATE.REF.charSelection) {
                 const charObj = getObj("character", STATE.REF.charSelection)

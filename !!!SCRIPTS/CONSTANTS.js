@@ -98,37 +98,345 @@ const C = (() => {
     // #endregion
 
     // #region HTML & CHAT STYLES
-        HTML = {
-            COMP: {
-                promptFullBox: content => { return D.JSH(`<div style='
+        HTML = { // Block ==> Title, Header, ButtonLine ==> ButtonHeader, Button(label, API command, options = {})
+            Block: (content, options = {}) => {
+                const params = {
+                    color: options.color || COLORS.crimson,
+                    bgImage: options.bgImage || BGIMAGES.blackMarble,
+                    border: options.border || `4px outset ${options.color || COLORS.crimson}`,
+                    margin: options.margin || "-26px 0px -7px -42px",
+                    width: options.width || "267px",
+                    padding: options.padding || "0px"
+                }  
+                if (D.WatchList.includes("HTML"))
+                    sendChat("HTML", `/w Storyteller <pre>${[D.JS(options), D.JS(params)].join("<br>")}</pre>`)
+                return D.JSH(`<div style="
                     display: block;
-                    background: url(https://i.imgur.com/kBl8aTO.jpg);
+                    margin: ${params.margin};
+                    height: auto;
+                    min-height: 25px;
+                    width: ${params.width};
+                    background: url('${params.bgImage}');
                     text-align: center;
-                    border: 4px ${C.COLORS.crimson} outset;
+                    border: ${params.border};
                     box-sizing: border-box;
-                    margin-left: -42px;
-                    width: 275px;
-                '>${content}</div>`) },
-                header: content => { return D.JSH(`<span style='
-                    display: block;
-                    font-size: 16px;
-                    text-align: center;
-                    width: 100%;
-                    font-family: Voltaire;
-                    color: ${C.COLORS.brightred};
-                    font-weight: bold;
-                '>${content}</span>`) },
-                column: content => { return D.JSH(`<div style="
+                    padding: ${params.padding};
+                    position: relative;
+            ">${_.flatten([content]).join("")}</div>`)
+            },
+            SubBlock: (content, options = {}) => {
+                const params = {
+                    width: options.width || "100%"
+                }  
+                if (D.WatchList.includes("HTML"))
+                    sendChat("HTML", `/w Storyteller <pre>${[D.JS(options), D.JS(params)].join("<br>")}</pre>`)
+                return D.JSH(`<div style="
                     display: inline-block;
-                    width: 49%;
+                    width: ${params.width};
                     font-size: 0px;
-                ">${content}</div>`)},
-                commandLine: (commands) => { return D.JSH(`<span style='
+                ">${content}</div>`)
+            },
+            Title: (content, options = {}) => {
+                const params = {
+                    fontSize: options.fontSize || "32px",
+                    color: options.color || COLORS.brightred,
+                    margin: options.margin || "0px",
+                    fontFamily: options.fontFamily || "sexsmith"
+                }  
+                if (D.WatchList.includes("HTML"))
+                    sendChat("HTML", `/w Storyteller <pre>${[D.JS(options), D.JS(params)].join("<br>")}</pre>`)
+                return D.JSH(`<span style="
                     display: block;
-                    font-size: 10px;
+                    margin: ${params.margin};
+                    font-weight: bold;
+                    color: ${params.color};
                     text-align: center;
-                    width: 100%
-                '>${_.values(D.KeyMapObj(commands, null, (v, k) => `[${k}](${v})`)).join(" ")}</span>`) }
+                    width: auto;
+                    font-family: ${params.fontFamily};
+                    font-size: ${params.fontSize};
+                    height: 45px;
+                    line-height: 45px;
+                ">${_.flatten([content]).join("")}</span>`)
+            },
+            Header: (content, options = {}) => {
+                const params = {
+                    height: options.height || "20px",
+                    width: options.width || "auto",
+                    color: options.color || COLORS.black,
+                    bgColor: options.bgColor || COLORS.brightred,
+                    margin: options.margin || "0px",
+                    padding: options.padding || "0px",
+                    fontSize: options.fontSize || "16px",
+                    fontFamily: options.fontFamily || "Voltaire",
+                    fontVariant: options.fontVariant || "none",
+                    fontWeight: options.fontWeight || "bold",                    
+                    border: options.border || `1px solid ${options.color || COLORS.brightred}`,
+                    textShadow: options.textShadow || "none",
+                    boxShadow: options.boxShadow || "none",
+                    textAlign: options.textAlign || "center",
+                    lineHeight: options.lineHeight || options.height || "20px"
+                }  
+                if (D.WatchList.includes("HTML"))
+                    sendChat("HTML", `/w Storyteller <pre>${[D.JS(options), D.JS(params)].join("<br>")}</pre>`)
+                return D.JSH(`<span style="
+                    display: block;
+                    height: ${params.height};
+                    line-height: ${params.lineHeight}; 
+                    width: ${params.width};
+                    margin: ${params.margin};
+                    padding: ${params.padding};
+                    box-sizing: border-box;
+                    text-align: ${params.textAlign};
+                    text-align-last: ${params.textAlign};
+                    color: ${params.color};
+                    font-family: ${params.fontFamily};
+                    font-weight: ${params.fontWeight};
+                    font-variant: ${params.fontVariant};
+                    font-size: ${params.fontSize};
+                    background-color: ${params.bgColor};
+                    border: ${params.border};
+                    text-shadow: ${params.textShadow};
+                    box-shadow: ${params.boxShadow};
+            ">${_.flatten([content]).join("")}</span>`)
+            },
+            Body: (content, options = {}) => {
+                const params = {
+                    color: options.color || COLORS.brightred,
+                    width: options.width || "auto",
+                    bgColor: options.bgColor || "none",
+                    margin: options.margin || "7px 0px 0px 0px",
+                    padding: options.padding || "0px",
+                    fontFamily: options.fontFamily || "sexsmith",
+                    fontSize: options.fontSize || "18px",
+                    fontWeight: options.fontWeight || "bold",
+                    textAlign: options.textAlign || "center",
+                    textShadow: options.textShadow || `0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}`,
+                    border: options.border || "none",
+                    boxShadow: options.boxShadow || "none",
+                    lineHeight: options.lineHeight || options.fontSize || "18px"
+                }  
+                if (D.WatchList.includes("HTML"))
+                    sendChat("HTML", `/w Storyteller <pre>${[D.JS(options), D.JS(params)].join("<br>")}</pre>`)
+                return D.JSH(`<span style="
+                    display: block; 
+                    width: ${params.width}; 
+                    line-height: ${params.lineHeight};
+                    margin: ${params.margin};
+                    padding: ${params.padding};
+                    color: ${params.color};
+                    background-color: ${params.bgColor};
+                    font-size: ${params.fontSize};
+                    text-align: ${params.textAlign};
+                    font-family: ${params.fontFamily};
+                    font-weight: ${params.fontWeight};
+                    text-shadow: ${params.textShadow};
+                    box-shadow: ${params.boxShadow};
+                    border: ${params.border};
+                ">${content}</span>`)
+            },            
+            Column: (content, options = {}) => {
+                const params = {
+                    width: options.width || "49%",
+                    margin: options.margin || "0px"
+                }     
+                if (D.WatchList.includes("HTML"))
+                    sendChat("HTML", `/w Storyteller <pre>${[D.JS(options), D.JS(params)].join("<br>")}</pre>`)
+                return D.JSH(`<div style="
+                    display: inline-block;
+                    width: ${params.width};
+                    margin: ${params.margin};
+                    font-size: 0px;
+                ">${content}</div>`)
+            },
+            ButtonLine: (content, options = {}) => {
+                const params = Object.assign({height: "18px",
+                                              width: "100%",
+                                              margin: "0px 0px 2px 0px",
+                                              textAlign: "center"}, options)    
+                if (D.WatchList.includes("HTML"))
+                    sendChat("HTML", `/w Storyteller <pre>${[D.JS(options), D.JS(params)].join("<br>")}</pre>`)
+                return D.JSH(`<span style="  
+                    height: ${params.height};
+                    width: ${params.width};             
+                    display: block;
+                    text-align: ${params.textAlign};
+                    margin: ${params.margin};
+                ">${_.flatten([content]).join("")}</span>`)
+            },
+            ButtonSubheader: (content, options = {}) => {
+                const params = Object.assign({height: "18px",
+                                              width: "15%",
+                                              fontFamily: "Voltaire",
+                                              fontSize: "10px",
+                                              bgColor: "transparent",
+                                              color: COLORS.white,
+                                              margin: "0px 3% 0px 0px",
+                                              textAlign: "left",
+                                              textIndent: "3px",
+                                              padding: "0px 0px 0px 0px",
+                                              lineHeight: "16px"}, options)
+                return D.JSH(`<span style="
+                    height: ${params.height};
+                    width: ${params.width};                 
+                    display: inline-block;
+                    margin: ${params.margin};
+                    font-size: ${params.fontSize};
+                    font-family: ${params.fontFamily};
+                    line-height: ${params.lineHeight};
+                    color: ${params.color};
+                    overflow: hidden;
+                    background-color: ${params.bgColor};
+                    text-indent: ${params.textIndent};
+                    text-align: ${params.textAlign};
+                    text-align-last: ${params.textAlign};
+                    padding: ${params.padding};
+                ">${_.flatten([content]).join("")}</span>`)
+            },
+            Button: (name, command, options = {}) => {
+                const params = Object.assign({
+                    height: "100%",
+                    lineHeight: "10px",
+                    width: "22%",
+                    fontFamily: "Voltaire",
+                    margin: "0px 3% 0px 0px",
+                    padding: "0px 0px 0px 0px",
+                    fontSize: "10px",
+                    bgColor: COLORS.brightred,
+                    color: COLORS.white,
+                    border: "1px solid white",
+                    fontWeight: "normal",
+                    textShadow: "none",
+                    buttonHeight: "8px",
+                    buttonWidth: "83%",
+                    buttonPadding: "3px",
+                    buttonTransform: "uppercase"
+                }, options)      
+                if (D.WatchList.includes("HTML"))
+                    sendChat("HTML", `/w Storyteller <pre>${D.JS([options, params], true).join("<br>")}</pre>`)
+                return D.JSH(`<span style="   
+                    height: ${params.height};
+                    width: ${params.width};                 
+                    display: inline-block;
+                    margin: ${params.margin};
+                    padding: ${params.padding};
+                    font-size: 0px;
+                    overflow: hidden;
+                "><a style="
+                    height: ${params.buttonHeight};
+                    width: ${params.buttonWidth};
+                    display: inline-block;
+                    box-sizing: 'border-box';
+                    border: ${params.border};
+                    color: ${params.color};
+                    background-color: ${params.bgColor};
+                    font-size: ${params.fontSize};
+                    line-height: ${params.lineHeight};
+                    font-family: ${params.fontFamily};
+                    text-transform: ${params.buttonTransform};
+                    text-align: center;
+                    padding: ${params.buttonPadding};
+                    font-weight: ${params.fontWeight};
+                    text-shadow: ${params.textShadow};
+                    box-sizing: border-box;
+                " href="${command}">${name}</a></span>`)
+            },            
+            ButtonSpacer: (width) => {
+                return D.JSH(`<span style="   
+                    height: 100%;
+                    width: ${width || "5%"};                 
+                    display: inline-block;
+                    margin: 0px;
+                    padding: 0px;
+                    font-size: 0px;
+                "></span>`)
+            },
+            TrackerLine: (numClear, numSuper, numAgg, options = {}) => {
+                const params = {
+                        height: options.height || "32px",
+                        lineHeight: options.lineHeight || options.height || "32px",
+                        margin: options.margin || "-8px 0px 7px 0px"
+                    },
+                    boxes = {
+                        clear: `<span style="
+                                    margin-right: 2px;
+                                    width: 18px;
+                                    text-align: center;
+                                    height: 24px;
+                                    vertical-align: middle;
+                                    color: ${C.COLORS.white};
+                                    display: inline-block;
+                                    font-size: 32px;
+                                    font-family: 'Arial';
+                                    text-shadow: none;
+                                ">■</span>`,
+                        superficial: `<span style="
+                                    margin-right: 2px;
+                                    width: 18px;
+                                    text-align: center;
+                                    height: 24px;
+                                    vertical-align: middle;
+                                    color: ${C.COLORS.brightgrey};
+                                    display: inline-block;
+                                    font-size: 32px;
+                                    font-family: 'Arial';
+                                    text-shadow: none;
+                                ">■</span><span style="
+                                    margin-right: 4px;
+                                    width: 18px;
+                                    text-align: center;
+                                    height: 24px;
+                                    vertical-align: middle;
+                                    color: ${C.COLORS.darkgrey};
+                                    display: inline-block;
+                                    margin-left: -22px;
+                                    font-size: 60px;
+                                    font-family: 'Arial';
+                                    text-shadow: none;
+                                    margin-top: -14px;
+                                "><span style="
+                                    display: inline-block;
+                                    overflow: hidden;
+                                    height: 18px;
+                                    padding-bottom: 5px;
+                                    width: 23px;
+                                    font-size: 44px;
+                                    line-height: 10px;    
+                                ">⸝</span></span>`,
+                        aggravated: `<span style="
+                                    margin-right: 2px;
+                                    width: 18px;
+                                    text-align: center;
+                                    height: 24px;
+                                    vertical-align: middle;
+                                    color: ${C.COLORS.darkred};
+                                    display: inline-block;
+                                    font-size: 32px;
+                                    font-family: 'Arial';
+                                    text-shadow: 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black;
+                                ">■</span><span style="
+                                    margin-right: 2px;
+                                    width: 18px;
+                                    text-align: center;
+                                    height: 24px;
+                                    vertical-align: middle;
+                                    color: ${C.COLORS.brightred};
+                                    display: inline-block;
+                                    margin-left: -20px;
+                                    font-size: 34px;
+                                    font-family: 'Arial';
+                                    margin-bottom: -8px;
+                                    text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black;
+                                ">×</span>`
+                    }
+                return D.JSH(`<div style="
+                            display: block;
+                            width: 100%;
+                            height: ${params.height};
+                            line-height: ${params.lineHeight || params.height};
+                            text-align: center;
+                            text-align-last: center;
+                            font-weight: bold;
+                            margin: ${params.margin};"> ${boxes.aggravated.repeat(numAgg) + boxes.superficial.repeat(numSuper) + boxes.clear.repeat(numClear)}</div>`)             
             },
             MVC: {
                 fullBox: content => { return D.JSH(`<div style="
@@ -193,464 +501,7 @@ const C = (() => {
                 paraMid: content => { return D.JSH(` ${content} `)},
                 paraEnd: content => { return D.JSH(`${content}</div>`)}
             }
-        },
-        CHATHTML = {
-            MAINBLOCK: content => { return D.JSH(`<div style="
-                display: block;
-                height: auto;
-                width: auto;
-                padding: 0px;
-                margin: -33px 0px 0px -42px;
-                position: relative;
-            ">${content}</div>`) },
-            alertHeader: content => { return D.JSH(`<div style="
-                display: block;
-                height: auto;
-                width: auto;
-                line-height: 23px;
-                padding: 0px 5px;
-                margin: 0px;
-                font-family: 'copperplate gothic';
-                font-variant: small-caps;
-                font-size: 16px;
-                background-color: ${COLORS.darkgrey};
-                color: ${COLORS.white};
-                border: 2px solid ${COLORS.black};
-            ">${content}</div>`) },
-            alertBody: content => { return D.JSH(`<div style="
-                display: block;
-                width: auto;
-                padding: 5px 5px;
-                font-family: input, verdana, sans-serif;
-                font-size: 10px;
-                background-color: ${COLORS.white};
-                border: 2px solid ${COLORS.black};
-                line-height: 14px;
-                position: relative;
-            ">${content}</div>`) },
-            Block: (content, options = {}) => {
-                const params = {
-                    color: options.color || COLORS.crimson,
-                    bgImage: options.bgImage || BGIMAGES.blackMarble,
-                    borderColor: options.borderColor || options.color || COLORS.crimson,
-                    borderStyle: options.borderStyle || "outset",
-                    margin: options.margin || "-33px 0px 0px -42px",
-                    width: options.width || "267px"
-                }
-                return D.JSH(`<div style="
-                    display: block;
-                    margin: ${params.margin};
-                    height: auto;
-                    background: url('${params.bgImage}');
-                    text-align: center;
-                    border: 4px ${params.borderColor} ${params.borderStyle};
-                    padding: 2px;
-                    width: ${params.width};
-                    position: relative;
-                ">${_.flatten([content]).join("")}</div>`)
-            },
-            Title: (content, options = {}) => {
-                const params = {
-                    fontSize: options.fontSize || "32px",
-                    color: options.color || COLORS.brightred,
-                    margin: options.margin || "0px"
-                }
-                return D.JSH(`<span style="
-                    display: block;
-                    font-weight: bold;
-                    margin: ${params.margin};
-                    color: ${params.color};
-                    text-align: center;
-                    width: 100%;
-                    font-family: sexsmith;
-                    font-size: ${params.fontSize};
-                    height: 45px;
-                    line-height: 45px;">${content}</span>`)
-            },
-            Header: (content, options = {}) => {
-                const params = {
-                    height: options.height || "20px",
-                    color: options.color || COLORS.black,
-                    bgColor: options.bgColor || COLORS.brightred,
-                    fontFamily: options.fontFamily || "Voltaire",
-                    margin: options.margin || "0px",
-                    fontSize: options.fontSize || "16px",
-                    fontWeight: options.fontWeight || "bold",
-                    borderWidth: options.borderWidth || "1px 0px 1px 0px",
-                    borderStyle: options.borderStyle || "solid none solid none",
-                    borderColor: options.borderColor || options.color || COLORS.brightred,
-                    textShadow: options.textShadow || "none",
-                    boxShadow: options.boxShadow || "none"
-                }
-                return D.JSH(`<span style="
-                    display: block;
-                    height: ${params.height};
-                    line-height: 20px; 
-                    width: 100%;
-                    margin: ${params.margin};
-                    box-sizing: border-box;
-                    text-align: center;
-                    color: ${params.color};
-                    font-family: '${params.fontFamily}';
-                    font-weight: ${params.fontWeight};
-                    font-size: ${params.fontSize};
-                    background-color: ${params.bgColor};
-                    border-width: ${params.borderWidth};
-                    border-style: ${params.borderStyle};
-                    border-color: ${params.borderColor};
-                    text-shadow: ${params.textShadow};
-                    box-shadow: ${params.boxShadow};
-                ">${content}</span>`)
-            },
-            Body: (content, options = {}) => {
-                const params = {
-                    color: options.color || COLORS.brightred,
-                    width: options.width || "100%",
-                    bgColor: options.bgColor || "none",
-                    margin: options.margin || "7px 0px 0px 0px",
-                    fontFamily: options.fontFamily || "sexsmith",
-                    fontSize: options.fontSize || "18px",
-                    fontWeight: options.fontWeight || "bold",
-                    textAlign: options.textAlign || "center",
-                    textShadow: options.textShadow || `0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}`,
-                    borderWidth: options.borderWidth || "0px",
-                    borderStyle: options.borderStyle || "none",
-                    borderColor: options.borderColor || options.color || "black",
-                    boxShadow: options.boxShadow || "none",
-                    lineHeight: options.lineHeight || "22px"
-                }
-                return D.JSH(`<span style="
-                    display: block; 
-                    width: ${params.width}; 
-                    line-height: ${params.lineHeight};
-                    margin: ${params.margin};
-                    color: ${params.color};
-                    font-size: ${params.fontSize};
-                    text-align: ${params.textAlign};
-                    font-family: '${params.fontFamily}';
-                    font-weight: ${params.fontWeight};
-                    text-shadow: ${params.textShadow};
-                    box-shadow: ${params.boxShadow};
-                ">${content}</span>`)
-            },
-            TrackerLine: (numClear, numSuper, numAgg, options = {}) => {
-                const params = {
-                        height: options.height || "32px",
-                        lineHeight: options.lineHeight || options.height || "32px",
-                        margin: options.margin || "-8px 0px 7px 0px"
-                    },
-                    boxes = {
-                        clear: `<span style="
-                            margin-right: 2px;
-                            width: 18px;
-                            text-align: center;
-                            height: 24px;
-                            vertical-align: middle;
-                            color: ${C.COLORS.white};
-                            display: inline-block;
-                            font-size: 32px;
-                            font-family: 'Arial';
-                            text-shadow: none;
-                        ">■</span>`,
-                        superficial: `<span style="
-                            margin-right: 2px;
-                            width: 18px;
-                            text-align: center;
-                            height: 24px;
-                            vertical-align: middle;
-                            color: ${C.COLORS.brightgrey};
-                            display: inline-block;
-                            font-size: 32px;
-                            font-family: 'Arial';
-                            text-shadow: none;
-                        ">■</span><span style="
-                            margin-right: 4px;
-                            width: 18px;
-                            text-align: center;
-                            height: 24px;
-                            vertical-align: middle;
-                            color: ${C.COLORS.darkgrey};
-                            display: inline-block;
-                            margin-left: -22px;
-                            font-size: 60px;
-                            font-family: 'Arial';
-                            text-shadow: none;
-                            margin-top: -14px;
-                        "><span style="
-                            display: inline-block;
-                            overflow: hidden;
-                            height: 18px;
-                            padding-bottom: 5px;
-                            width: 23px;
-                            font-size: 44px;
-                            line-height: 10px;    
-                        ">⸝</span></span>`,
-                        aggravated: `<span style="
-                            margin-right: 2px;
-                            width: 18px;
-                            text-align: center;
-                            height: 24px;
-                            vertical-align: middle;
-                            color: ${C.COLORS.darkred};
-                            display: inline-block;
-                            font-size: 32px;
-                            font-family: 'Arial';
-                            text-shadow: 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black, 0px 0px 3px black;
-                        ">■</span><span style="
-                            margin-right: 2px;
-                            width: 18px;
-                            text-align: center;
-                            height: 24px;
-                            vertical-align: middle;
-                            color: ${C.COLORS.brightred};
-                            display: inline-block;
-                            margin-left: -20px;
-                            font-size: 34px;
-                            font-family: 'Arial';
-                            margin-bottom: -8px;
-                            text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black;
-                        ">×</span>`
-                    }
-                return D.JSH(`<div style="
-                    display: block;
-                    width: 100%;
-                    height: ${params.height};
-                    line-height: ${params.lineHeight || params.height};
-                    text-align: center;
-                    text-align-last: center;
-                    font-weight: bold;
-                    margin: ${params.margin};"> ${boxes.aggravated.repeat(numAgg) + boxes.superficial.repeat(numSuper) + boxes.clear.repeat(numClear)}</div>`)             
-            }
-        },       
-        MENUHTML = { // Block ==> Title, Header, ButtonLine ==> ButtonHeader, Button(label, API command, options = {})
-            Block: (content, options = {}) => {
-                const params = {
-                    color: options.color || COLORS.crimson,
-                    bgImage: options.bgImage || BGIMAGES.blackMarble,
-                    borderColor: options.borderColor || options.color || COLORS.crimson,
-                    borderStyle: options.borderStyle || "outset",
-                    margin: options.margin || "-33px 0px 0px -42px",
-                    width: options.width || "267px"
-                }
-                return D.JSH(`<div style="
-                    display: block;
-                    margin: ${params.margin};
-                    height: auto;
-                    width: ${params.width};
-                    background: url('${params.bgImage}');
-                    text-align: center;
-                    border: 4px ${params.borderColor} ${params.borderStyle};
-                    box-sizing: border-box;
-                    padding: 2px;
-                    position: relative;
-            ">${_.flatten([content]).join("")}</div>`)
-            },
-            SubBlock: (content, options = {}) => {
-                const params = {
-                    width: options.width || "100%"
-                }
-                return D.JSH(`<div style="
-                    display: inline-block;
-                    width: ${params.width};
-                    font-size: 0px;
-                ">${content}</div>`)
-            },
-            Title: (content, options = {}) => {
-                const params = {
-                    fontSize: options.fontSize || "32px",
-                    color: options.color || COLORS.brightred
-                }
-                return D.JSH(`<span style="
-                    display: block;
-                    font-weight: bold;
-                    color: ${params.color};
-                    text-align: center;
-                    width: 100%;
-                    font-family: sexsmith;
-                    font-size: ${params.fontSize};
-                    height: 45px;
-                    line-height: 45px;
-                ">${_.flatten([content]).join("")}</span>`)
-            },
-            Header: (content, options = {}) => {
-                const params = {
-                    height: options.height || "20px",
-                    color: options.color || COLORS.black,
-                    bgColor: options.bgColor || COLORS.brightred,
-                    fontFamily: options.fontFamily || "Voltaire",
-                    margin: options.margin || "0px 0px 5px 0px",
-                    fontSize: options.fontSize || "16px",
-                    borderWidth: options.borderWidth || "1px 0px 1px 0px",
-                    borderStyle: options.borderStyle || "solid none solid none",
-                    borderColor: options.borderColor || options.color || COLORS.brightred,
-                    textShadow: options.textShadow || "none",
-                    boxShadow: options.boxShadow || "none",
-                    textAlign: options.textAlign || "center"
-                }
-                return D.JSH(`<span style="
-                    display: block;
-                    height: ${params.height};
-                    line-height: ${params.height}; 
-                    width: 100%;
-                    margin: ${params.margin};
-                    box-sizing: border-box;
-                    text-align: ${params.textAlign};
-                    text-align-last: ${params.textAlign};
-                    color: ${params.color};
-                    font-family: '${params.fontFamily}';
-                    font-weight: bold;
-                    font-size: ${params.fontSize};
-                    background-color: ${params.bgColor};
-                    border-width: ${params.borderWidth};
-                    border-style: ${params.borderStyle};
-                    border-color: ${params.borderColor};
-                    text-shadow: ${params.textShadow};
-                    box-shadow: ${params.boxShadow};
-            ">${_.flatten([content]).join("")}</span>`)
-            },
-            Body: (content, options = {}) => {
-                const params = {
-                    color: options.color || COLORS.brightred,
-                    width: options.width || "100%",
-                    bgColor: options.bgColor || "none",
-                    margin: options.margin || "7px 0px 0px 0px",
-                    fontFamily: options.fontFamily || "sexsmith",
-                    fontSize: options.fontSize || "18px",
-                    fontWeight: options.fontWeight || "bold",
-                    textAlign: options.textAlign || "center",
-                    textShadow: options.textShadow || `0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}, 0px 0px 1px ${COLORS.black}`,
-                    borderWidth: options.borderWidth || "0px",
-                    borderStyle: options.borderStyle || "none",
-                    borderColor: options.borderColor || options.color || "black",
-                    boxShadow: options.boxShadow || "none",
-                    lineHeight: options.lineHeight || options.fontSize || "18px"
-                }
-                return D.JSH(`<span style="
-                    display: block; 
-                    width: ${params.width}; 
-                    line-height: ${params.lineHeight};
-                    margin: ${params.margin};
-                    color: ${params.color};
-                    background-color: ${params.bgColor};
-                    font-size: ${params.fontSize};
-                    text-align: ${params.textAlign};
-                    font-family: '${params.fontFamily}';
-                    font-weight: ${params.fontWeight};
-                    text-shadow: ${params.textShadow};
-                    box-shadow: ${params.boxShadow};
-                    border: ${params.borderStyle} ${params.borderWidth} ${params.borderColor};
-                ">${content}</span>`)
-            },            
-            Column: (content, options = {}) => {
-                const params = {
-                    width: options.width || "49%",
-                    margin: options.margin || "0px"
-                }
-                return D.JSH(`<div style="
-                    display: inline-block;
-                    width: ${params.width};
-                    margin: ${params.margin};
-                    font-size: 0px;
-                ">${content}</div>`)
-            },
-            ButtonLine: (content, options = {}) => {
-                const params = Object.assign({height: "18px",
-                                              width: "100%",
-                                              margin: "0px 0px 2px 0px",
-                                              textAlign: "center"}, options)
-                return D.JSH(`<span style="  
-                    height: ${params.height};
-                    width: ${params.width};             
-                    display: block;
-                    text-align: ${params.textAlign};
-                    margin: ${params.margin};
-                ">${_.flatten([content]).join("")}</span>`)
-            },
-            ButtonSubheader: (content, options = {}) => {
-                const params = Object.assign({height: "18px",
-                                              width: "15%",
-                                              fontFamily: "Voltaire",
-                                              fontSize: "10px",
-                                              bgColor: "transparent",
-                                              color: COLORS.white,
-                                              margin: "0px 3% 0px 0px",
-                                              textAlign: "left",
-                                              textIndent: "3px",
-                                              padding: "0px 0px 0px 0px",
-                                              lineHeight: "16px"}, options)
-                return D.JSH(`<span style="
-                    height: ${params.height};
-                    width: ${params.width};                 
-                    display: inline-block;
-                    margin: ${params.margin};
-                    font-size: ${params.fontSize};
-                    font-family: ${params.fontFamily};
-                    line-height: ${params.lineHeight};
-                    color: ${params.color};
-                    overflow: hidden;
-                    background-color: ${params.bgColor};
-                    text-indent: ${params.textIndent};
-                    text-align: ${params.textAlign};
-                    text-align-last: ${params.textAlign};
-                    padding: ${params.padding};
-                ">${_.flatten([content]).join("")}</span>`)
-            },
-            Button: (name, command, options = {}) => {
-                const params = Object.assign({
-                    height: "100%",
-                    lineHeight: "10px",
-                    width: "22%",
-                    fontFamily: "Voltaire",
-                    margin: "0px 3% 0px 0px",
-                    padding: "0px 0px 0px 0px",
-                    fontSize: "10px",
-                    bgColor: COLORS.brightred,
-                    color: COLORS.white,
-                    border: "1px solid white",
-                    fontWeight: "normal",
-                    textShadow: "none",
-                    buttonHeight: "8px",
-                    buttonWidth: "83%",
-                    buttonPadding: "3px",
-                    buttonTransform: "uppercase"
-                }, options)
-                return D.JSH(`<span style="   
-                    height: ${params.height};
-                    width: ${params.width};                 
-                    display: inline-block;
-                    margin: ${params.margin};
-                    padding: ${params.padding};
-                    font-size: 0px;
-                    overflow: hidden;
-                "><a style="
-                    height: ${params.buttonHeight};
-                    width: ${params.buttonWidth};
-                    display: inline-block;
-                    box-sizing: 'border-box';
-                    border: ${params.border};
-                    color: ${params.color};
-                    background-color: ${params.bgColor};
-                    font-size: ${params.fontSize};
-                    line-height: ${params.lineHeight};
-                    font-family: ${params.fontFamily};
-                    text-transform: ${params.buttonTransform};
-                    text-align: center;
-                    padding: ${params.buttonPadding};
-                    font-weight: ${params.fontWeight};
-                    text-shadow: ${params.textShadow};
-                    box-sizing: border-box;
-                " href="${command}">${name}</a></span>`)
-            },            
-            ButtonSpacer: (width) => {
-                return D.JSH(`<span style="   
-                    height: 100%;
-                    width: ${width || "5%"};                 
-                    display: inline-block;
-                    margin: 0px;
-                    padding: 0px;
-                    font-size: 0px;
-                "></span>`)
-            }
+            
         },
         HANDOUTHTML = {
             main: content => { return D.JSH(`<div style="
@@ -854,8 +705,7 @@ const C = (() => {
                     color: COLORS.halfwhite,
                     bgColor: COLORS.transparent,
                     textShadow: "-1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 0px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc",
-                    borderStyle: "none",
-                    margin: "0px"
+                    borderStyle: "none"
                 },
                 body: {
                     color: COLORS.halfwhite,
@@ -863,9 +713,8 @@ const C = (() => {
                     textShadow: "-1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 0px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc",
                     borderStyle: "none",
                     fontSize: "16px",
-                    fontFamily: "Bodoni SvtyTwo ITC TT",
-                    fontWeight: "normal",
-                    margin: "0px 0px 5px 0px"
+                    fontFamily: "'Bodoni SvtyTwo ITC TT'",
+                    fontWeight: "normal"
                 }
             }
         },
@@ -3176,8 +3025,6 @@ const C = (() => {
         COLORS,
 
         IMAGES, BGIMAGES,
-        CHATHTML,
-        MENUHTML,
         HANDOUTHTML,
         ROLLERHTML,
         HTML,

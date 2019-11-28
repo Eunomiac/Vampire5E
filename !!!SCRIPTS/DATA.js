@@ -267,7 +267,7 @@ const D = (() => {
                     const end = () => {
                         const newArgs = args ? [].concat(empty, args) : [empty]
                         if (STATE.REF.WATCHLIST.includes("runFuncQueue"))
-                            D.Chat("Storyteller", C.CHATHTML.Block(C.CHATHTML.Header(`Done <b>${queueName}</b>!`, {margin: "0px", fontFamily: "Candal", fontSize: "10px", fontWeight: "normal"}), {margin: "-33px 0px 0px -42px", padding: "0px"}), undefined, D.RandomString(3))
+                            D.Chat("Storyteller", C.HTML.Block(C.HTML.Header(`Done <b>${queueName}</b>!`, {margin: "0px", fontFamily: "Candal", fontSize: "10px", fontWeight: "normal"}), {margin: "-33px 0px 0px -42px", padding: "0px"}), undefined, D.RandomString(3))
                         ISRUNNINGQUEUE[queueName] = false
                         FunctionQueue[queueName] = []
                         if (cback)
@@ -284,7 +284,7 @@ const D = (() => {
                         done(empty, args)
                     } else {
                         if (STATE.REF.WATCHLIST.includes("runFuncQueue"))
-                            D.Chat("Storyteller", C.CHATHTML.Block(C.CHATHTML.Body(`<b>${FunctionQueue[queueName][current][1]}</b> (${queueName} ${current + 1} / ${FunctionQueue[queueName].length})`, {margin: "0px", fontFamily: "Candal", fontSize: "10px", fontWeight: "normal", lineHeight: "18px"}), {margin: "-33px 0px 0px -42px", padding: "0px"}), undefined, D.RandomString(3))
+                            D.Chat("Storyteller", C.HTML.Block(C.HTML.Body(`<b>${FunctionQueue[queueName][current][1]}</b> (${queueName} ${current + 1} / ${FunctionQueue[queueName].length})`, {margin: "0px", fontFamily: "Candal", fontSize: "10px", fontWeight: "normal", lineHeight: "18px"}), {margin: "-33px 0px 0px -42px", padding: "0px"}), undefined, D.RandomString(3))
                         FunctionQueue[queueName][current][0].apply(undefined, [].concat(args, each))
                     }
                 }
@@ -596,15 +596,59 @@ const D = (() => {
             /* Whispers chat message to player given: display name OR player ID. 
                 If no Title, message is sent without formatting. */
             const player = getPlayer(who) || who,
-                html = title ? jStr(C.CHATHTML.MAINBLOCK(C.CHATHTML.alertHeader(title) + C.CHATHTML.alertBody(message))) : message
-
+                html = title === "none" && jStr(C.HTML.Block(C.HTML.Header(message, {  
+                    height: "auto",
+                    width: "auto",
+                    lineHeight: "25px",
+                    padding: "0px 5px",
+                    margin: "0px",
+                    fontVariant: "small-caps",
+                    fontWeight: "normal",
+                    bgColor: C.COLORS.darkgrey,
+                    color: C.COLORS.white,
+                    border: "none",
+                    textAlign: "left"
+                }), {width: "auto", border: `2px solid ${C.COLORS.black}`})) ||
+                    title && jStr(C.HTML.Block([
+                        C.HTML.Header(title, {  
+                            height: "auto",
+                            width: "auto",
+                            lineHeight: "25px",
+                            padding: "0px 5px",
+                            margin: "0px",
+                            fontFamily: "'copperplate gothic'",
+                            fontVariant: "small-caps",
+                            fontWeight: "normal",
+                            bgColor: C.COLORS.darkgrey,
+                            color: C.COLORS.white,
+                            border: "none",
+                            textAlign: "left"
+                        }),
+                        C.HTML.Body(message, {
+                            padding: "5px",
+                            fontFamily: "input, verdana, sans-serif",
+                            fontSize: "10px",
+                            bgColor: C.COLORS.white,
+                            border: "none",
+                            lineHeight: "14px",
+                            fontWeight: "normal",
+                            color: C.COLORS.black,
+                            margin: "0px",
+                            textShadow: "none",
+                            textAlign: "left"
+                        })
+                    ].join(""), {
+                        width: "auto",
+                        border:  `2px solid ${C.COLORS.black}`
+                    })) ||
+                    message
             // sendChat(from, `/direct <pre>${JSON.stringify(html)}</pre>`)
             if (who === "all" || player === "all" || !player) 
-                sendChat(from, html)
+                sendChat(randomString(3), html)
             else if (Session.IsTesting && !playerIsGM(player.id)) 
-                sendChat(from, `/w Storyteller ${html}<div style="display: block; height: 10px; margin-bottom: -7px; position: relative; width: 230px; color: blue; z-index: 999; text-align: right; text-align-last: right; font-size: 10px; line-height: 10px;">(TO: ${player.get("_displayname")})</div>`)
+                sendChat(randomString(3), `/w Storyteller ${html}<div style="display: block; height: 10px; margin-bottom: -7px; position: relative; width: 230px; color: blue; z-index: 999; text-align: right; text-align-last: right; font-size: 10px; line-height: 10px;">(TO: ${player.get("_displayname")})</div>`)
             else
-                sendChat(from, `/w "${player.get("_displayname")}" ${html}`)                
+                sendChat(randomString(3), `/w "${player.get("_displayname")}" ${html}`)                
         },
         sendToGM = (msg, title = "[ALERT]", throttle = 0) => {
             if (STATE.REF.ALERTTHROTTLE.includes(title)) {
@@ -661,7 +705,7 @@ const D = (() => {
                                 [styles]: <list of styles for the div, to override the defaults, where keys are style tags and values are the settings>
                             } 
                     ]
-                    [blockStyles:] <override C.CHATHTML.Block 'options' parameter.
+                    [blockStyles:] <override C.HTML.Block 'options' parameter.
                 }
                 */
             const htmlRows = [],
@@ -683,7 +727,7 @@ const D = (() => {
                         margin: "0px 1% 0px 0px",
                         lineHeight: "10px",
                         buttonHeight: "9px",
-                        fontFamily: "Arial Narrow"
+                        fontFamily: "'Arial Narrow'"
                     }
                 },
                 dbLines = [],
@@ -691,7 +735,7 @@ const D = (() => {
                     const sectionHTML = []
                     for (const rowData of sectionData.rows)
                         if (["Title", "Header", "Body", "ButtonSubheader"].includes(rowData.type)) {
-                            sectionHTML.push(C.MENUHTML[rowData.type](rowData.contents, Object.assign({}, customStyles[rowData.type] || {}, rowData.styles || {})))
+                            sectionHTML.push(C.HTML[rowData.type](rowData.contents, Object.assign({}, customStyles[rowData.type] || {}, rowData.styles || {})))
                         } else if (rowData.type === "ButtonLine") {
                             const buttonsCode = [],
                                 numberEntities = rowData.contents.filter(x => VAL({number: x})),
@@ -702,30 +746,30 @@ const D = (() => {
                                                                          VAL({number: x}) && x)               
                             for (const entity of rowData.contents)
                                 if (VAL({number: entity})) {
-                                    buttonsCode.push(C.MENUHTML.ButtonSpacer(`${D.Int(entity)}%`))
+                                    buttonsCode.push(C.HTML.ButtonSpacer(`${D.Int(entity)}%`))
                                 } else {
                                     if (entity.name.length > 12)
                                         entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
-                                    buttonsCode.push(C.MENUHTML.Button(entity.name, entity.command, Object.assign({width: `${entityWidth}%`}, customStyles.Button, rowData.buttonStyles || {}, entity.styles || {})))
+                                    buttonsCode.push(C.HTML.Button(entity.name, entity.command, Object.assign({width: `${entityWidth}%`}, customStyles.Button, rowData.buttonStyles || {}, entity.styles || {})))
                                     dbLines.push(`<b>${entity.name}</b>: ${entity.command}<br>`)
                                 }
-                            sectionHTML.push(C.MENUHTML.ButtonLine(buttonsCode, rowData.styles || {}))
+                            sectionHTML.push(C.HTML.ButtonLine(buttonsCode, rowData.styles || {}))
                         } else if (rowData.type === "Column") {
                             const numColumns = rowData.contents.length,
                                 colWidth = `${D.Int(100 / numColumns) - 1}%`,
                                 colHTML = []
                             for (const colData of rowData.contents)
-                                colHTML.push(C.MENUHTML.Column(parseSection(colData), Object.assign({width: colWidth}, rowData.style)))
-                            sectionHTML.push(C.MENUHTML.SubBlock(colHTML.join("")))
+                                colHTML.push(C.HTML.Column(parseSection(colData), Object.assign({width: colWidth}, rowData.style)))
+                            sectionHTML.push(C.HTML.SubBlock(colHTML.join("")))
                         }
                     return sectionHTML.join("")
                 }
 
             htmlRows.push(parseSection(menuData))
             if (menuData.title)
-                htmlRows.unshift(C.MENUHTML.Title(menuData.title))
+                htmlRows.unshift(C.HTML.Title(menuData.title))
             DB(dbLines, "commandMenu")
-            promptGM(C.MENUHTML.Block(htmlRows.join(""), menuData.blockParams || {}), replyFunc)
+            promptGM(C.HTML.Block(htmlRows.join(""), menuData.blockParams || {}), replyFunc)
         },
     // #endregion
 

@@ -83,12 +83,18 @@ const Complications = (() => {
                     break
                 }
                 case "start": {
-                    STATE.REF.charRef = ((charObjs || [{id: null}])[0] || {id: null}).id
-                    startComplication(D.Int(args.shift()))
+                    if (D.LCase(args[0]) === "project") {
+                        STATE.REF.charRef = Roller.Char
+                        startComplication(Math.abs(D.Int(Roller.Margin)))
+                    } else {    
+                        STATE.REF.charRef = ((charObjs || [{id: null}])[0] || {id: null}).id                   
+                        startComplication(D.Int(args.shift()))
+                    }
+                    
                     break
                 }
                 case "stop": case "end":
-                    endComplication(args.shift() === "true", args.shift() === "true")
+                    endComplication(args[0] === "true", args[1] === "true")
                     STATE.REF.charRef = null
                     break
                 case "reset":
@@ -194,6 +200,7 @@ const Complications = (() => {
 
     // #region CONFIGURATION: Card Definitions
 
+        /* eslint-disable no-unused-vars */
         CARDS = [             
             {name: "AMatterOfPride", displayName: "A Matter of Pride", category: null, value: 1, rarity: "C",
              afterAction: (charRef, spot, isEnhanced) => { 
@@ -474,6 +481,7 @@ const Complications = (() => {
                  STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Weight of the World)`)
              }}
         ],
+        /* eslint-enable no-unused-vars */
         CARDQTYS = {V: 12, C: 6, U: 3, R: 1},
         CARDNAMES = _.values(CARDS).map(x => x.name)
     let ISNEXTDRAWENHANCED = false, ISDELAYEDCARDDEVALUED = false, DELAYEDUNTILDISCARD = []
@@ -531,12 +539,11 @@ const Complications = (() => {
             return _.sample(validSpots)
         },
         cardAlert = (spot, message, preTitle, postTitle) => {
-            const card = STATE.REF.MAT[spot],
-                cardName = getCardName(spot, true),
+            const cardName = getCardName(spot, true),
                 title = `${preTitle || ""}${cardName}${postTitle || ""}`
-            D.Chat("all", C.CHATHTML.Block([
-                C.CHATHTML.Header(title),
-                C.CHATHTML.Body(message)
+            D.Chat("all", C.HTML.Block([
+                C.HTML.Header(title),
+                C.HTML.Body(message)
             ].join("")), undefined, D.RandomString(3))
         },
         getCardStats = () => {
@@ -901,6 +908,7 @@ const Complications = (() => {
             D.Run("Comp")
         },        
         endComplication = (isLaunchingProject, isQueingActions = true) => {
+            DB({isLaunchingProject, isQueingActions}, "endComplication")
             STATE.REF.isRunning = false
             if (isQueingActions)
                 for (const card of getActiveCards().filter(x => x.afterAction)) {
@@ -908,10 +916,18 @@ const Complications = (() => {
                     if (card.isDuplicated)
                         D.Queue(card.afterAction, [STATE.REF.charRef, card.isEnhanced], "Comp", 0.5)
                 }
-            D.Queue(sendEndMsgQueue, [STATE.REF.charRef], "Comp", 0.5)
+            D.Queue(sendEndMsgQueue, [STATE.REF.charRef], "Comp", 3)
+            if (isLaunchingProject) {
+                D.Queue(Char.LaunchProject, [STATE.REF.currentVal - STATE.REF.targetVal, "COMPLICATION"], "Comp", 0.5)
+                D.Queue(D.Chat, ["all", C.HTML.Block([
+                    C.HTML.Header("Launching Project"),
+                    C.HTML.Body([
+                        `Launch Margin: ${STATE.REF.currentVal - STATE.REF.targetVal}`,
+                        `Required Stake: ${Math.max(0, Roller.Commit - (STATE.REF.currentVal - STATE.REF.targetVal))}`
+                    ].join("<br>"))
+                ].join(""))], "Comp", 2)
+            } 
             D.Queue(resetComplication, [false], "Comp", 0.5)   
-            if (isLaunchingProject)
-                D.Queue(Char.LaunchProject, [STATE.REF.currentVal - STATE.REF.targetVal, "COMPLICATION"], "Comp", 0.5)                
             D.Queue(Session.ChangeMode, [STATE.REF.lastMode], "Comp", 0.5)
             D.Run("Comp")   
         },
@@ -922,15 +938,15 @@ const Complications = (() => {
                 const messageLines = []
                 for (const message of STATE.REF.endMessageQueue) 
                     if (message.charAt(0) === "!") 
-                        messageLines.push(C.CHATHTML.Body(message.slice(1), {color: C.COLORS.green}))
+                        messageLines.push(C.HTML.Body(message.slice(1), {color: C.COLORS.green}))
                     else
-                        messageLines.push(C.CHATHTML.Body(message))
+                        messageLines.push(C.HTML.Body(message))
                 
-                D.Chat(charRef, C.CHATHTML.Block([
-                    C.CHATHTML.Title("COMPLICATION RESULTS", {fontSize: "28px"}),
-                    C.CHATHTML.Header("Endure the Following:"),
+                D.Chat(charRef, C.HTML.Block([
+                    C.HTML.Title("COMPLICATION RESULTS", {fontSize: "28px"}),
+                    C.HTML.Header("Endure the Following:"),
                     messageLines.join(""),
-                    C.CHATHTML.Header("Thank you for playing!", {margin: "8px 0px 0px 0px"})
+                    C.HTML.Header("Thank you for playing!", {margin: "8px 0px 0px 0px"})
                 ]))
             }
         },
@@ -999,7 +1015,10 @@ const Complications = (() => {
                         }
                     ]
                 })            
-            D.CommandMenu({title: "Complications Control", rows: _.values(_.groupBy(subPanels, (x, i) => Math.floor(i / 2))).map(x => ({type: "Column", contents: x, style: {width: "47%", margin: "0px 1% 0% 1%"}}))})
+            D.CommandMenu({title: "Complications Control", rows: [
+                ..._.values(_.groupBy(subPanels, (x, i) => Math.floor(i / 2))).map(x => ({type: "Column", contents: x, style: {width: "47%", margin: "0px 1% 0% 1%"}})),
+                {type: "ButtonLine", contents: [{name: "Finish", command: "!comp end false true"}, {name: "Launch!", command: "!comp end true true"}]}
+            ]})
         },
         promptCardVal = (cardSpot) => {
             D.CommandMenu({title: "Set Card Value", rows: [
