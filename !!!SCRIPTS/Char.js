@@ -742,34 +742,34 @@ const Char = (() => {
                     ["@@SINGLEONLY@@Spotlight", "!sess @@CHARIDS@@ spotlight", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.brightred, color: C.COLORS.black}]
                 ],
                 "Health": [
-                    [ "S", "!char @@CHARIDS@@ dmg health superficial", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred}],
-                    [ "S+", "!char @@CHARIDS@@ dmg health superficial+", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightredmid}],
-                    [ "A", "!char @@CHARIDS@@ dmg health aggravated", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.red}]
+                    [ "S", "!char @@CHARIDS@@ dmg health superficial", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred}],
+                    [ "S+", "!char @@CHARIDS@@ dmg health superficial+", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightredmid}],
+                    [ "A", "!char @@CHARIDS@@ dmg health aggravated", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.red}]
                 ],
                 "Willpower": [
-                    [ "S", "!char @@CHARIDS@@ dmg willpower superficial", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightblue}],
-                    [ "S+", "!char @@CHARIDS@@ dmg willpower superficial+", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue}],
-                    [ "A", "!char @@CHARIDS@@ dmg willpower aggravated", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkblue}],
+                    [ "S", "!char @@CHARIDS@@ dmg willpower superficial", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightblue}],
+                    [ "S+", "!char @@CHARIDS@@ dmg willpower superficial+", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue}],
+                    [ "A", "!char @@CHARIDS@@ dmg willpower aggravated", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkblue}],
                     ["3%"],
-                    [ "S", "!char @@CHARIDS@@ dmg willpower social_superficial", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightpurple}],
-                    [ "S+", "!char @@CHARIDS@@ dmg willpower social_superficial+", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.purple}],
-                    [ "A", "!char @@CHARIDS@@ dmg willpower social_aggravated", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkpurple}]
+                    [ "S", "!char @@CHARIDS@@ dmg willpower social_superficial", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightpurple}],
+                    [ "S+", "!char @@CHARIDS@@ dmg willpower social_superficial+", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.purple}],
+                    [ "A", "!char @@CHARIDS@@ dmg willpower social_aggravated", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkpurple}]
                 ],
                 "Hunger": [
-                    [ "+1", "!char @@CHARIDS@@ change hunger 1", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkredmid} ],
-                    [ "-1", "!char @@CHARIDS@@ change hunger -1", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkred} ],
-                    [ "Δ", "!char @@CHARIDS@@ change hunger", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.red} ],
+                    [ "+1", "!char @@CHARIDS@@ change hunger 1", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkredmid} ],
+                    [ "-1", "!char @@CHARIDS@@ change hunger -1", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkred} ],
+                    [ "Δ", "!char @@CHARIDS@@ change hunger", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.red} ],
                     ["Kill Slake", "17%"],
-                    [ "-1", "!char @@CHARIDS@@ change hungerkill -1", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightredmid} ],
-                    [ "Δ", "!char @@CHARIDS@@ change hungerkill", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred} ]
+                    [ "-1", "!char @@CHARIDS@@ change hungerkill -1", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightredmid} ],
+                    [ "Δ", "!char @@CHARIDS@@ change hungerkill", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred} ]
                 ],
                 "XP": [
-                    [ "1", "!char @@CHARIDS@@ set xp 1 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
-                    [ "2", "!char @@CHARIDS@@ set xp 2 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
-                    [ "Δ", "!char @@CHARIDS@@ set xp ?{How Much XP?|3|4|5|6|7|8|9|10} ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
+                    [ "1", "!char @@CHARIDS@@ set xp 1 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
+                    [ "2", "!char @@CHARIDS@@ set xp 2 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
+                    [ "Δ", "!char @@CHARIDS@@ set xp ?{How Much XP?|3|4|5|6|7|8|9|10} ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
                     ["Humanity", "17%"],
-                    [ "Stn", "!char @@CHARIDS@@ dmg stains", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.white}],
-                    [ "Hum", "!char @@CHARIDS@@ dmg humanity", {width: "11%", fontFamily: "Verdana", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.white}]
+                    [ "Stn", "!char @@CHARIDS@@ dmg stains", {width: "14%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0px 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.white}],
+                    [ "Hum", "!char @@CHARIDS@@ dmg humanity", {width: "14%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.white}]
                 ]
             }, v => v.map(x => x.map(xx => VAL({string: xx}) && xx.replace(/@@CHARIDS@@/gu, charIDString).replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;") || xx)))                
             for (const subHeader of _.keys(CHARACTIONS)) {

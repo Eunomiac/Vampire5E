@@ -93,6 +93,26 @@ const TimeTracker = (() => {
         onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
             let isForcing = false
             switch (call) {
+                case "moon": {
+                    if (args[0] === "stop") {
+                        isCountdownFrozen = false
+                        tickCountdown()
+                    } else {
+                        if (args[1])
+                            MOON.maxTop = VAL({number: args[1]}) ? D.Int(args[1]) : MOON.maxTop
+                        if (args[2])
+                            MOON.minTop = VAL({number: args[2]}) ? D.Int(args[2]) : MOON.minTop
+                        if (args[3])
+                            MOON.daysToWait = VAL({number: args[3]}) ? D.Int(args[3]) : MOON.daysToWait
+                        isCountdownFrozen = false
+                        if (VAL({number: args[0]}))
+                            tickCountdown({daysIn: D.Float(args[0])})
+                        else
+                            tickCountdown({})
+                        isCountdownFrozen = true
+                    }
+                    break                    
+                }
                 case "get": {
                     switch (D.LCase(call = args.shift())) {
                         case "alarms": {
@@ -362,12 +382,17 @@ const TimeTracker = (() => {
                     break
                 }
             }
-        }
+        },
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
+        MOON = {
+            minTop: 1300,
+            maxTop: 630,
+            daysToWait: 1
+        }
     let [timeTimer, secTimer] = [null, null],
-        [isRunning, isRunningFast, isTimeRunning, isCountdownRunning] = [false, false, false, false, false],
+        [isRunning, isRunningFast, isTimeRunning, isCountdownRunning, isCountdownFrozen] = [false, false, false, false, false, false],
         secondsLeft = 0,
         countdownRecord = []
 
@@ -946,38 +971,71 @@ const TimeTracker = (() => {
             STATE.REF.nextSessionDate = sessDateObj.getTime()
             return (sessDateObj - curRealDateObj)/1000 - 60
         },
-        tickCountdown = () => {
-            if (isCountdownRunning) {
-                const realDateObj = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"})),
-                    sessDateObj = new Date(STATE.REF.nextSessionDate)
+        tickCountdown = (isTesting = false) => {   
+            if (isCountdownFrozen)
+                return         
+            const realDateObj = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"})),
+                sessDateObj = new Date(STATE.REF.nextSessionDate),
+                maxSecs = 7*24*60*60,
+                waitSecs = MOON.daysToWait * 24*60*60,
+                totalSecsLeft = VAL({list: isTesting, number: isTesting.daysIn}) ? (7 - isTesting.daysIn) * 24*60*60 : (sessDateObj - realDateObj)/1000 - 60,
+                totalSecsIn = maxSecs - totalSecsLeft,
+                moonUpPercent = D.Float(Math.max(0, totalSecsIn - waitSecs) / (maxSecs - waitSecs)),
+                moonRisePercent = moonUpPercent,
+                moonTop = MOON.minTop + (MOON.maxTop - MOON.minTop)*moonRisePercent,
+                waterTintGradient = D.Gradient(C.COLORS.black, C.COLORS.darkred, D.Int(moonRisePercent * 100), 100).replace(/[^\d,]/gu, "").split(",").slice(0,3).map(x => D.Int(x)),
+                waterTint = `#${`00${waterTintGradient[0].toString(16)}`.slice(-2)}${`00${waterTintGradient[1].toString(16)}`.slice(-2)}${`00${waterTintGradient[2].toString(16)}`.slice(-2)}`
 
-                let secsLeft = (sessDateObj - realDateObj)/1000 - 60
+
+
+            let secsLeft = totalSecsLeft
+            
+            if (secsLeft < 0)
+                secsLeft = setNextSessionDate()
+            if (secsLeft < 60 && !isTesting)
+                Session.ToggleTesting(false)
                 
-                if (secsLeft < 0)
-                    secsLeft = setNextSessionDate()
-                if (secsLeft < 60)
-                    Session.ToggleTesting(false)
-                    
-                const daysLeft = Math.floor(secsLeft / (24 * 60 * 60))
-                secsLeft -= daysLeft * 24 * 60 * 60
-                const hoursLeft = Math.floor(secsLeft / (60 * 60))
-                secsLeft -= hoursLeft * 60 * 60
-                const minsLeft = Math.floor(secsLeft / 60)
-                secsLeft -= minsLeft * 60
+            const daysLeft = Math.floor(secsLeft / (24 * 60 * 60))
+            secsLeft -= daysLeft * 24 * 60 * 60
+            const hoursLeft = Math.floor(secsLeft / (60 * 60))
+            secsLeft -= hoursLeft * 60 * 60
+            const minsLeft = Math.floor(secsLeft / 60)
+            secsLeft -= minsLeft * 60
 
-                countdownRecord = [daysLeft, hoursLeft, minsLeft]
+            if (VAL({list: isTesting})) {
+                D.Alert([
+                    `<b>Max Secs:</b> ${D.JS(7*24*60*60)} --> ${D.JS(7*24*60*60)}`,
+                    `<b>Total Secs (from now):</b> ${D.JS(totalSecsLeft)} -> ${D.JS(Math.max(0, totalSecsLeft - MOON.daysToWait*24*60*60))}`,
+                    `<b>Days to Wait:</b> ${D.JS(MOON.daysToWait)}`,
+                    `<b>Min Top</b> (${MOON.minTop}) - <b>Max Top</b> (${MOON.maxTop})`,
+                    `<b>Moon Rise Percent:</b> ${D.JS(moonRisePercent)}`,
+                    `<b>Moon Top:</b> ${D.JS(moonTop)}`,
+                    `<b>Water Tint Gradient:</b> ${D.JS(waterTintGradient)}`,
+                    `<b>Water Tint:</b> ${D.JS(waterTint)}`
+                ].join("<br>"), "Rising Moon Test")
+                Media.SetImgData("RisingMoon_1", {top: moonTop}, true)
+                Media.SetImgTemp("WeatherGlow_1", {tint_color: waterTint})
+                isCountdownRunning = false
+            } else if (isCountdownRunning) {
+                countdownRecord = [daysLeft, hoursLeft, minsLeft, moonTop, waterTint]
 
+                Media.SetImgData("RisingMoon_1", {top: moonTop}, true)
+                Media.SetImgTemp("WeatherGlow_1", {tint_color: waterTint})
                 updateCountdown()
 
                 startSecTimer(secsLeft)
             }
         },
         startSecTimer = () => {
+            if (isCountdownFrozen)
+                return
             clearInterval(secTimer)
             secondsLeft = (new Date()).getSeconds()
             secTimer = setInterval(tickCountdownSecond, 1000)            
         },
         tickCountdownSecond = () => {
+            if (isCountdownFrozen)
+                return
             secondsLeft = 59 - (new Date()).getSeconds()
             if (secondsLeft <= 0)
                 tickCountdown()
@@ -985,12 +1043,15 @@ const TimeTracker = (() => {
                 updateCountdown()
         },
         updateCountdown = () => {
-            if (Media.HasForcedState("Countdown")) return false
+            if (isCountdownFrozen || Media.HasForcedState("Countdown")) return false
             if (countdownRecord[0] === 6 && countdownRecord[1] === 23 && countdownRecord[2] >= 45 ||
-                countdownRecord[0] === 0 && countdownRecord[1] === 0 && countdownRecord[2] === 0 && secondsLeft <= 5)
+                countdownRecord[0] === 0 && countdownRecord[1] === 0 && countdownRecord[2] === 0 && secondsLeft <= 5) {
                 Media.SetText("Countdown", " ")
-            else
-                Media.SetText("Countdown", [...countdownRecord, secondsLeft].map(x => `${x.toString().length === 1 && "0" || ""}${x}`).join(":"))
+            } else {
+                Media.SetImgData("RisingMoon_1", {top: countdownRecord[3]}, true)
+                Media.SetImgTemp("WeatherGlow_1", {tint_color: countdownRecord[4]})
+                Media.SetText("Countdown", [...countdownRecord.slice(0, 3), secondsLeft].map(x => `${x.toString().length === 1 && "0" || ""}${x}`).join(":"))
+            }
             return true
         },
         setIsRunning = runStatus => {
@@ -1499,7 +1560,8 @@ const TimeTracker = (() => {
                 tickCountdown()
             } else {
                 clearInterval(secTimer)
-                secTimer = null
+                secTimer = null                
+                Media.SetImgTemp("WeatherGlow_1", {tint_color: "transparent"})
             }
         },
     // #endregion

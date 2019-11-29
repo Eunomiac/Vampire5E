@@ -236,7 +236,7 @@ const D = (() => {
         },
         queueFunc = (func, args = [], queueName = "main", waitAfterSecs = 2) => {
             if (ISRUNNINGQUEUE[queueName]) {
-                D.Alert(`Attempting to add function to <b>${queueName}</b>, but it's running!`, "ERROR: Function Queue")
+                DB(`Attempt to add <b>${func.name}</b> to running <b>${queueName}</b>`, "queueFunc")
                 return false
             }
             try {
@@ -267,7 +267,7 @@ const D = (() => {
                     const end = () => {
                         const newArgs = args ? [].concat(empty, args) : [empty]
                         if (STATE.REF.WATCHLIST.includes("runFuncQueue"))
-                            D.Chat("Storyteller", C.HTML.Block(C.HTML.Header(`Done <b>${queueName}</b>!`, {margin: "0px", fontFamily: "Candal", fontSize: "10px", fontWeight: "normal"}), {margin: "-33px 0px 0px -42px", padding: "0px"}), undefined, D.RandomString(3))
+                            D.Chat("Storyteller", C.HTML.Block(C.HTML.Header(`Done <b>${queueName}</b>!`, {lineHeight: "25px", height: "25px", margin: "0px", fontFamily: "Candal", fontSize: "10px", fontWeight: "normal"})), undefined, D.RandomString(3))
                         ISRUNNINGQUEUE[queueName] = false
                         FunctionQueue[queueName] = []
                         if (cback)
@@ -284,7 +284,7 @@ const D = (() => {
                         done(empty, args)
                     } else {
                         if (STATE.REF.WATCHLIST.includes("runFuncQueue"))
-                            D.Chat("Storyteller", C.HTML.Block(C.HTML.Body(`<b>${FunctionQueue[queueName][current][1]}</b> (${queueName} ${current + 1} / ${FunctionQueue[queueName].length})`, {margin: "0px", fontFamily: "Candal", fontSize: "10px", fontWeight: "normal", lineHeight: "18px"}), {margin: "-33px 0px 0px -42px", padding: "0px"}), undefined, D.RandomString(3))
+                            D.Chat("Storyteller", C.HTML.Block(C.HTML.Body(`<b>${FunctionQueue[queueName][current][1]}</b> (${queueName} ${current + 1} / ${FunctionQueue[queueName].length})`, {lineHeight: "25px", height: "25px", margin: "0px", fontFamily: "Candal", fontSize: "10px", fontWeight: "normal"})), undefined, D.RandomString(3))
                         FunctionQueue[queueName][current][0].apply(undefined, [].concat(args, each))
                     }
                 }
@@ -301,7 +301,7 @@ const D = (() => {
                 return false
             } else if (runningQueues.length) {
                 WAITINGQUEUES.push([queueName, cback])
-                D.Alert(`Delaying ${queueName} until queue(s) complete: ${D.JS(runningQueues)}`, "Run Function Queue")
+                D.Alert(`Delaying ${queueName} for: ${D.JS(runningQueues)}`, "none")
                 return false
             } else {            
                 STATE.REF.FuncQueueName.push(queueName)
@@ -566,6 +566,7 @@ const D = (() => {
             }
             return {}
         },
+        colorGradient = (startColor, endColor, step, totalSteps) => `rgba(${startColor.replace(/[^\d\s,]*/gu, "").split(",").map((x, i) => D[i === 3 ? "Round" : "Int"](x, 2)).map((x, i) => D[i === 3 ? "Round" : "Int"](x + (endColor.replace(/[^\d\s,]*/gu, "").split(",").map((xx, ii) => D[ii === 3 ? "Round" : "Int"](xx, 2))[i] - x) * step / totalSteps, 2)).join(", ")})`,
     // #endregion
 
     // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
@@ -592,7 +593,7 @@ const D = (() => {
             
             return msg
         },
-        sendChatMessage = (who, message = "", title, from = "") => {
+        sendChatMessage = (who, message = "", title) => {
             /* Whispers chat message to player given: display name OR player ID. 
                 If no Title, message is sent without formatting. */
             const player = getPlayer(who) || who,
@@ -2115,6 +2116,7 @@ const D = (() => {
         Ordinal: ordinal,
         Capitalize: capitalize,
         Clone: clone,
+        Gradient: colorGradient,
 
         Chat: sendChatMessage,
         Alert: sendToGM,

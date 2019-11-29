@@ -18,8 +18,43 @@ const Media = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
-            delete STATE.REF.imgRegClean
+            // delete STATE.REF.imgRegClean
+            // delete STATE.REF.animregistry
 
+            STATE.REF.imgregistry.WeatherFrost_1 = {
+                id: "-Luq5BHI5Gqq2ap_WAPm",
+                type: "image",
+                name: "WeatherFrost_1",
+                left: 795,
+                top: 520,
+                height: 1040,
+                width: 1590,
+                activeLayer: "map",
+                zIndex: 139,
+                srcs: {
+                    frost1: "https://s3.amazonaws.com/files.d20.io/images/98105615/Afyl3Cyy4QbBfdoPPLKWKg/thumb.png?1575006917",
+                    frost2: "https://s3.amazonaws.com/files.d20.io/images/98105619/Ij83cp7i76gzO0eZ8io7gw/thumb.png?1575006924",
+                    frost3: "https://s3.amazonaws.com/files.d20.io/images/98105622/1x2L-YDYT8Hy3vmajGcBGA/thumb.png?1575006930",
+                    redoverlay: "https://s3.amazonaws.com/files.d20.io/images/98108217/MiKx_cj5kN4jRg-GVv8rcw/thumb.png?1575012845"
+                },
+                modes: {
+                    Active: {isForcedOn: "LAST", lastActive: true},
+                    Inactive: {isForcedOn: true, isForcedState: "redoverlay", lastState: "redoverlay"},
+                    Daylighter: {isForcedOn: "NEVER"},
+                    Downtime: {isForcedOn: "NEVER"},
+                    Complications: {isForcedOn: null},
+                    Spotlight: {isForcedOn: "NEVER"}
+                },
+                leftEdge: 0,
+                rightEdge: 1590,
+                topEdge: 0,
+                bottomEdge: 1040,
+                curSrc: "redoverlay",
+                curMode: "Active",
+                activeSrc: "redoverlay",
+                isActive: false,
+                wasModeUpdated: true
+            }
             STATE.REF.imgregistry = STATE.REF.imgregistry || {}
             STATE.REF.textregistry = STATE.REF.textregistry || {}
             STATE.REF.animregistry = STATE.REF.animregistry || {}
@@ -27,6 +62,7 @@ const Media = (() => {
             STATE.REF.areas = STATE.REF.areas || {}
             STATE.REF.tokenregistry = STATE.REF.tokenregistry || {}
             STATE.REF.soundregistry = STATE.REF.soundregistry || {}
+            STATE.REF.playlistregistry = STATE.REF.playlistregistry || {}
             STATE.REF.TokenSrcs = STATE.REF.TokenSrcs || {}
             STATE.REF.imgResizeDims = STATE.REF.imgResizeDims || {height: 100, width: 100}
             STATE.REF.activeAnimations = STATE.REF.activeAnimations || {}
@@ -121,21 +157,6 @@ const Media = (() => {
                 case "!media": {
                     const mediaObjs = [...Listener.GetObjects(objects, "graphic"), ...Listener.GetObjects(objects, "text")]
                     switch (D.LCase(call = args.shift())) {
-                        case "togglealltokens": {
-                            toggleTokens(null, false)
-                            break
-                        }
-                        case "togglecomp": {
-                            if (Session.Mode === "Complications")
-                                switchMode("Active")
-                            else
-                                switchMode("Complications")
-                            break
-                        }
-                        case "test": {
-                            getTokenObjs("registered")
-                            break
-                        }
                         case "set": {
                             switch (D.LCase(call = args.shift())) {
                                 case "anchor": {
@@ -368,8 +389,18 @@ const Media = (() => {
                                 case "front": {
                                     const [imgObj] = imgObjs
                                     if (VAL({imgObj}, "!img set front")) {
-                                        D.Alert(`Sending ${D.JS(imgObj)} to Front`, "MEDIA: !img set front")
-                                        toFront(imgObj)
+                                        const modeData = getModeData(imgObj)
+                                        if (!modeData) {
+                                            D.Alert(`No mode data for ${D.JS(imgObj)}!<br>Toggling & sending to front anyways!`, "!img set front")
+                                            toggleImg(imgObj, true, true)
+                                            toFront(imgObj)
+                                        } else if (modeData.isForcedOn === "NEVER") {
+                                            D.Alert(`Can't toggle ${D.JS(imgObj)} on: isForcedOn = "NEVER"`, "!img set front")
+                                        } else {
+                                            D.Alert(`Toggling ON and sending ${D.JS(imgObj)} to Front`, "MEDIA: !img set front")
+                                            toggleImg(imgObj, true, true)
+                                            toFront(imgObj)
+                                        }
                                     }
                                     break
                                 }
@@ -495,7 +526,7 @@ const Media = (() => {
                                     break
                                 }
                                 case "modes": {
-                                    resetModes(true)
+                                    resetModeData(true)
                                     break
                                 }
                                 // no default
@@ -644,6 +675,10 @@ const Media = (() => {
                         }
                         case "fix": {
                             switch (D.LCase(call = args.shift())) {
+                                case "objects": {
+                                    fixImgObjs()
+                                    break
+                                }
                                 case "dragpads": {
                                     checkDragPads()
                                     break
@@ -905,7 +940,7 @@ const Media = (() => {
                             if (VAL({imgObj, string: animName, number: timeOut}, "!anim register"))
                                 regAnimation(imgObj, animName, D.Float(timeOut))
                             else
-                                D.Alert("Syntax: <b>!anim register <animName> <timeOut [ms]></b>", "!anim register")
+                                D.Alert("Syntax: <b>!anim register &lt;animName&gt; &lt;timeOut [ms]&gt;</b>", "!anim register")
                             break
                         }
                         case "get": {
@@ -998,7 +1033,7 @@ const Media = (() => {
                             break
                         }
                         case "play": {
-                            startSound(args.shift(), undefined, undefined, true)
+                            playSound(args.shift(), undefined, undefined, true)
                             break
                         }
                         case "stop": {
@@ -1113,7 +1148,7 @@ const Media = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     let [imgRecord, imgResize, imgSrcAutoReg, imgSrcAutoToken, imgSrcAddingProfilePic] = [false, false, false, false, false]
-    const activeTimers = {},
+    const [activeTimers, listTimers] = [{}, []],
 
     // #region CONFIGURATION
         REGISTRY = {
@@ -1124,8 +1159,30 @@ const Media = (() => {
             get TOKEN() { return STATE.REF.tokenregistry },
             get AREA() { return STATE.REF.areas },
             get SOUND() { return STATE.REF.soundregistry },
-            get GRAPHIC() { return Object.assign({}, REGISTRY.ANIM, REGISTRY.IMG) },
-            get ALL() { return Object.assign({}, REGISTRY.ANIM, REGISTRY.SOUND, REGISTRY.TEXT, REGISTRY.IMG)}
+            get PLAYLIST() { return STATE.REF.playlistregistry },
+            get GRAPHIC() { return Object.assign({}, STATE.REF.animregistry, STATE.REF.imgregistry) },
+            get ALL() { return Object.assign({}, STATE.REF.animregistry, STATE.REF.soundregistry, STATE.REF.textregistry, STATE.REF.imgregistry)}
+        },
+        STYLES = {
+            Initialization: {
+                Block: {
+                    bgColor: C.COLORS.black,
+                    border: "none"
+                },
+                Header: {                     
+                    height: "auto",
+                    width: "auto",
+                    lineHeight: "25px",
+                    padding: "0px 5px",
+                    margin: "0px",
+                    fontVariant: "small-caps",
+                    fontWeight: "normal",
+                    bgColor: "transparent",
+                    color: C.COLORS.white,
+                    border: "none",
+                    textAlign: "left"
+                }
+            }
         },
         BGIMGS = {
             top: C.SANDBOX.top,
@@ -1140,7 +1197,7 @@ const Media = (() => {
                 "WeatherClouds",
                 "WeatherFrost",
                 "WeatherGlow",
-                "Spotlight"       
+                "Spotlight"      
             ]
         },
         MAPIMGS = {
@@ -1214,6 +1271,7 @@ const Media = (() => {
                     Horizon_1: 1
                 },
                 Weather: {
+                    RisingMoon_1: 100,
                     WeatherFrost_1: 139,
                     WeatherFog_1: 125,
                     WeatherMain_1: 124, 
@@ -2545,6 +2603,15 @@ const Media = (() => {
             ["IMG", "MapLayer_SitesTransportation_1", "modes", "Downtime", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesTransportation_1", "modes", "Spotlight", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesTransportation_1", "modes", "Complications", {isForcedOn: null}],
+            ["IMG", "RisingMoon_1", "isActive", false],
+            ["IMG", "RisingMoon_1", "curSrc", "base"],
+            ["IMG", "RisingMoon_1", "activeSrc", "base"],
+            ["IMG", "RisingMoon_1", "modes", "Active", {isForcedOn: "NEVER"}],
+            ["IMG", "RisingMoon_1", "modes", "Inactive", {isForcedOn: true, isForcedState: "base", lastState: "base"}],
+            ["IMG", "RisingMoon_1", "modes", "Daylighter", {isForcedOn: "NEVER"}],
+            ["IMG", "RisingMoon_1", "modes", "Downtime", {isForcedOn: "NEVER"}],
+            ["IMG", "RisingMoon_1", "modes", "Spotlight", {isForcedOn: "NEVER"}],
+            ["IMG", "RisingMoon_1", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "Spotlight_1", "isActive", false],
             ["IMG", "Spotlight_1", "curSrc", "@@curSrc@@"],
             ["IMG", "Spotlight_1", "modes", "Active", {isForcedOn: "NEVER"}],
@@ -2624,393 +2691,393 @@ const Media = (() => {
             ["IMG", "Roller_WPReroller_1", "isActive", false],
             ["IMG", "Roller_WPReroller_1", "curSrc", "ANIM"],
             ["IMG", "Roller_WPReroller_1", "activeSrc", "ANIM"],
-            ["IMG", "Roller_WPReroller_1", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "Roller_WPReroller_1", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "Roller_WPReroller_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "Roller_WPReroller_1", "modes", "Daylighter", {isForcedOn: "LAST", lastActive: true}],
-            ["IMG", "Roller_WPReroller_1", "modes", "Downtime", {isForcedOn: "LAST", lastActive: true}],
-            ["IMG", "Roller_WPReroller_1", "modes", "Spotlight", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "Roller_WPReroller_1", "modes", "Daylighter", {isForcedOn: "LAST", lastActive: false}],
+            ["IMG", "Roller_WPReroller_1", "modes", "Downtime", {isForcedOn: "LAST", lastActive: false}],
+            ["IMG", "Roller_WPReroller_1", "modes", "Spotlight", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "Roller_WPReroller_1", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "Roller_WPReroller_2", "isActive", false],
             ["IMG", "Roller_WPReroller_2", "curSrc", "ANIM"],
             ["IMG", "Roller_WPReroller_2", "activeSrc", "ANIM"],
-            ["IMG", "Roller_WPReroller_2", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "Roller_WPReroller_2", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "Roller_WPReroller_2", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "Roller_WPReroller_2", "modes", "Daylighter", {isForcedOn: "LAST", lastActive: true}],
-            ["IMG", "Roller_WPReroller_2", "modes", "Downtime", {isForcedOn: "LAST", lastActive: true}],
-            ["IMG", "Roller_WPReroller_2", "modes", "Spotlight", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "Roller_WPReroller_2", "modes", "Daylighter", {isForcedOn: "LAST", lastActive: false}],
+            ["IMG", "Roller_WPReroller_2", "modes", "Downtime", {isForcedOn: "LAST", lastActive: false}],
+            ["IMG", "Roller_WPReroller_2", "modes", "Spotlight", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "Roller_WPReroller_2", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "Roller_WPReroller_Base_1", "isActive", false],
             ["IMG", "Roller_WPReroller_Base_1", "curSrc", "base"],
             ["IMG", "Roller_WPReroller_Base_1", "activeSrc", "base"],
-            ["IMG", "Roller_WPReroller_Base_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "Roller_WPReroller_Base_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "Roller_WPReroller_Base_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "Roller_WPReroller_Base_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "Roller_WPReroller_Base_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "Roller_WPReroller_Base_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "Roller_WPReroller_Base_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "Roller_WPReroller_Base_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "Roller_WPReroller_Base_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "Roller_WPReroller_Base_1", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "Roller_WPReroller_Base_2", "isActive", false],
             ["IMG", "Roller_WPReroller_Base_2", "curSrc", "base"],
             ["IMG", "Roller_WPReroller_Base_2", "activeSrc", "base"],
-            ["IMG", "Roller_WPReroller_Base_2", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "Roller_WPReroller_Base_2", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "Roller_WPReroller_Base_2", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "Roller_WPReroller_Base_2", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "Roller_WPReroller_Base_2", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "Roller_WPReroller_Base_2", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "Roller_WPReroller_Base_2", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "Roller_WPReroller_Base_2", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "Roller_WPReroller_Base_2", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "Roller_WPReroller_Base_2", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Big_1", "isActive", false],
             ["IMG", "RollerDie_Big_1", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Big_1", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Big_1", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Big_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Big_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Big_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Big_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Big_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Big_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Big_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Big_1", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Big_2", "isActive", false],
             ["IMG", "RollerDie_Big_2", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Big_2", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Big_2", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Big_2", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Big_2", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Big_2", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Big_2", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Big_2", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Big_2", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Big_2", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Big_2", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_1", "isActive", false],
             ["IMG", "RollerDie_Main_1", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_1", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_1", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_1", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_10", "isActive", false],
             ["IMG", "RollerDie_Main_10", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_10", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_10", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_10", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_10", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_10", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_10", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_10", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_10", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_10", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_10", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_11", "isActive", false],
             ["IMG", "RollerDie_Main_11", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_11", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_11", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_11", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_11", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_11", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_11", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_11", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_11", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_11", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_11", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_12", "isActive", false],
             ["IMG", "RollerDie_Main_12", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_12", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_12", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_12", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_12", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_12", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_12", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_12", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_12", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_12", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_12", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_13", "isActive", false],
             ["IMG", "RollerDie_Main_13", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_13", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_13", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_13", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_13", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_13", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_13", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_13", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_13", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_13", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_13", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_14", "isActive", false],
             ["IMG", "RollerDie_Main_14", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_14", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_14", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_14", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_14", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_14", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_14", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_14", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_14", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_14", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_14", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_15", "isActive", false],
             ["IMG", "RollerDie_Main_15", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_15", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_15", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_15", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_15", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_15", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_15", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_15", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_15", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_15", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_15", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_16", "isActive", false],
             ["IMG", "RollerDie_Main_16", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_16", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_16", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_16", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_16", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_16", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_16", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_16", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_16", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_16", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_16", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_17", "isActive", false],
             ["IMG", "RollerDie_Main_17", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_17", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_17", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_17", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_17", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_17", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_17", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_17", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_17", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_17", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_17", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_18", "isActive", false],
             ["IMG", "RollerDie_Main_18", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_18", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_18", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_18", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_18", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_18", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_18", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_18", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_18", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_18", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_18", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_19", "isActive", false],
             ["IMG", "RollerDie_Main_19", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_19", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_19", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_19", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_19", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_19", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_19", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_19", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_19", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_19", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_19", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_2", "isActive", false],
             ["IMG", "RollerDie_Main_2", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_2", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_2", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_2", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_2", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_2", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_2", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_2", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_2", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_2", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_2", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_20", "isActive", false],
             ["IMG", "RollerDie_Main_20", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_20", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_20", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_20", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_20", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_20", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_20", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_20", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_20", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_20", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_20", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_21", "isActive", false],
             ["IMG", "RollerDie_Main_21", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_21", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_21", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_21", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_21", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_21", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_21", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_21", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_21", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_21", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_21", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_22", "isActive", false],
             ["IMG", "RollerDie_Main_22", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_22", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_22", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_22", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_22", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_22", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_22", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_22", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_22", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_22", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_22", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_23", "isActive", false],
             ["IMG", "RollerDie_Main_23", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_23", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_23", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_23", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_23", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_23", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_23", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_23", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_23", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_23", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_23", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_24", "isActive", false],
             ["IMG", "RollerDie_Main_24", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_24", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_24", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_24", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_24", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_24", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_24", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_24", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_24", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_24", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_24", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_25", "isActive", false],
             ["IMG", "RollerDie_Main_25", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_25", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_25", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_25", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_25", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_25", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_25", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_25", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_25", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_25", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_25", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_26", "isActive", false],
             ["IMG", "RollerDie_Main_26", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_26", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_26", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_26", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_26", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_26", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_26", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_26", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_26", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_26", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_26", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_27", "isActive", false],
             ["IMG", "RollerDie_Main_27", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_27", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_27", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_27", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_27", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_27", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_27", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_27", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_27", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_27", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_27", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_28", "isActive", false],
             ["IMG", "RollerDie_Main_28", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_28", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_28", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_28", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_28", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_28", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_28", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_28", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_28", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_28", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_28", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_29", "isActive", false],
             ["IMG", "RollerDie_Main_29", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_29", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_29", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_29", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_29", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_29", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_29", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_29", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_29", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_29", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_29", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_3", "isActive", false],
             ["IMG", "RollerDie_Main_3", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_3", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_3", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_3", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_3", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_3", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_3", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_3", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_3", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_3", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_3", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_30", "isActive", false],
             ["IMG", "RollerDie_Main_30", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_30", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_30", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_30", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_30", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_30", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_30", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_30", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_30", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_30", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_30", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_4", "isActive", false],
             ["IMG", "RollerDie_Main_4", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_4", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_4", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_4", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_4", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_4", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_4", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_4", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_4", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_4", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_4", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_5", "isActive", false],
             ["IMG", "RollerDie_Main_5", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_5", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_5", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_5", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_5", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_5", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_5", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_5", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_5", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_5", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_5", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_6", "isActive", false],
             ["IMG", "RollerDie_Main_6", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_6", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_6", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_6", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_6", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_6", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_6", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_6", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_6", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_6", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_6", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_7", "isActive", false],
             ["IMG", "RollerDie_Main_7", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_7", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_7", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_7", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_7", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_7", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_7", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_7", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_7", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_7", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_7", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_8", "isActive", false],
             ["IMG", "RollerDie_Main_8", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_8", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_8", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_8", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_8", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_8", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_8", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_8", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_8", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_8", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_8", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerDie_Main_9", "isActive", false],
             ["IMG", "RollerDie_Main_9", "curSrc", "@@curSrc@@"],
-            ["IMG", "RollerDie_Main_9", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
+            ["IMG", "RollerDie_Main_9", "modes", "Active", {isForcedOn: "LAST", lastActive: false}],
             ["IMG", "RollerDie_Main_9", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerDie_Main_9", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_9", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
-            ["IMG", "RollerDie_Main_9", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_9", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_9", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
+            ["IMG", "RollerDie_Main_9", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: false, lastState: "@@curSrc@@"}],
             ["IMG", "RollerDie_Main_9", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_BottomEnd_1", "isActive", false],
             ["IMG", "RollerFrame_BottomEnd_1", "curSrc", "base"],
             ["IMG", "RollerFrame_BottomEnd_1", "activeSrc", "base"],
-            ["IMG", "RollerFrame_BottomEnd_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomEnd_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomEnd_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_BottomEnd_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomEnd_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomEnd_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomEnd_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomEnd_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomEnd_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomEnd_1", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_BottomMid_1", "isActive", false],
             ["IMG", "RollerFrame_BottomMid_1", "curSrc", "base"],
             ["IMG", "RollerFrame_BottomMid_1", "activeSrc", "base"],
-            ["IMG", "RollerFrame_BottomMid_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_BottomMid_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_1", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_BottomMid_2", "isActive", false],
             ["IMG", "RollerFrame_BottomMid_2", "curSrc", "base"],
             ["IMG", "RollerFrame_BottomMid_2", "activeSrc", "base"],
-            ["IMG", "RollerFrame_BottomMid_2", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_2", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_2", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_BottomMid_2", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_2", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_2", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_2", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_2", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_2", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_2", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_BottomMid_3", "isActive", false],
             ["IMG", "RollerFrame_BottomMid_3", "curSrc", "base"],
             ["IMG", "RollerFrame_BottomMid_3", "activeSrc", "base"],
-            ["IMG", "RollerFrame_BottomMid_3", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_3", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_3", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_BottomMid_3", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_3", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_3", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_3", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_3", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_3", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_3", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_BottomMid_4", "isActive", false],
             ["IMG", "RollerFrame_BottomMid_4", "curSrc", "base"],
             ["IMG", "RollerFrame_BottomMid_4", "activeSrc", "base"],
-            ["IMG", "RollerFrame_BottomMid_4", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_4", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_4", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_BottomMid_4", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_4", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_4", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_4", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_4", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_4", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_4", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_BottomMid_5", "isActive", false],
             ["IMG", "RollerFrame_BottomMid_5", "curSrc", "base"],
             ["IMG", "RollerFrame_BottomMid_5", "activeSrc", "base"],
-            ["IMG", "RollerFrame_BottomMid_5", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_5", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_5", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_BottomMid_5", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_5", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_5", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_5", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_5", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_5", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_5", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_BottomMid_6", "isActive", false],
             ["IMG", "RollerFrame_BottomMid_6", "curSrc", "base"],
             ["IMG", "RollerFrame_BottomMid_6", "activeSrc", "base"],
-            ["IMG", "RollerFrame_BottomMid_6", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_6", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_6", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_BottomMid_6", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_6", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_6", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_6", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_6", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_6", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_6", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_BottomMid_7", "isActive", false],
             ["IMG", "RollerFrame_BottomMid_7", "curSrc", "base"],
             ["IMG", "RollerFrame_BottomMid_7", "activeSrc", "base"],
-            ["IMG", "RollerFrame_BottomMid_7", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_7", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_7", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_BottomMid_7", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_7", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_7", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_7", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_7", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_7", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_7", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_BottomMid_8", "isActive", false],
             ["IMG", "RollerFrame_BottomMid_8", "curSrc", "base"],
             ["IMG", "RollerFrame_BottomMid_8", "activeSrc", "base"],
-            ["IMG", "RollerFrame_BottomMid_8", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_8", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_8", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_BottomMid_8", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_8", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_8", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_8", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_8", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_8", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_8", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_BottomMid_9", "isActive", false],
             ["IMG", "RollerFrame_BottomMid_9", "curSrc", "base"],
             ["IMG", "RollerFrame_BottomMid_9", "activeSrc", "base"],
-            ["IMG", "RollerFrame_BottomMid_9", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_9", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_9", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_BottomMid_9", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_9", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_BottomMid_9", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_9", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_9", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_BottomMid_9", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_BottomMid_9", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_Diff_1", "isActive", false],
             ["IMG", "RollerFrame_Diff_1", "curSrc", "base"],
             ["IMG", "RollerFrame_Diff_1", "activeSrc", "base"],
-            ["IMG", "RollerFrame_Diff_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_Diff_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_Diff_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_Diff_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_Diff_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_Diff_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_Diff_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_Diff_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_Diff_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_Diff_1", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_Left_1", "isActive", true],
             ["IMG", "RollerFrame_Left_1", "curSrc", "top"],
@@ -3033,83 +3100,83 @@ const Media = (() => {
             ["IMG", "RollerFrame_TopMid_1", "isActive", false],
             ["IMG", "RollerFrame_TopMid_1", "curSrc", "base"],
             ["IMG", "RollerFrame_TopMid_1", "activeSrc", "base"],
-            ["IMG", "RollerFrame_TopMid_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_TopMid_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_1", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_TopMid_2", "isActive", false],
             ["IMG", "RollerFrame_TopMid_2", "curSrc", "base"],
             ["IMG", "RollerFrame_TopMid_2", "activeSrc", "base"],
-            ["IMG", "RollerFrame_TopMid_2", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_2", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_2", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_TopMid_2", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_2", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_2", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_2", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_2", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_2", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_2", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_TopMid_3", "isActive", false],
             ["IMG", "RollerFrame_TopMid_3", "curSrc", "base"],
             ["IMG", "RollerFrame_TopMid_3", "activeSrc", "base"],
-            ["IMG", "RollerFrame_TopMid_3", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_3", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_3", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_TopMid_3", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_3", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_3", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_3", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_3", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_3", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_3", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_TopMid_4", "isActive", false],
             ["IMG", "RollerFrame_TopMid_4", "curSrc", "base"],
             ["IMG", "RollerFrame_TopMid_4", "activeSrc", "base"],
-            ["IMG", "RollerFrame_TopMid_4", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_4", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_4", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_TopMid_4", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_4", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_4", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_4", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_4", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_4", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_4", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_TopMid_5", "isActive", false],
             ["IMG", "RollerFrame_TopMid_5", "curSrc", "base"],
             ["IMG", "RollerFrame_TopMid_5", "activeSrc", "base"],
-            ["IMG", "RollerFrame_TopMid_5", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_5", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_5", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_TopMid_5", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_5", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_5", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_5", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_5", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_5", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_5", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_TopMid_6", "isActive", false],
             ["IMG", "RollerFrame_TopMid_6", "curSrc", "base"],
             ["IMG", "RollerFrame_TopMid_6", "activeSrc", "base"],
-            ["IMG", "RollerFrame_TopMid_6", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_6", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_6", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_TopMid_6", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_6", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_6", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_6", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_6", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_6", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_6", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_TopMid_7", "isActive", false],
             ["IMG", "RollerFrame_TopMid_7", "curSrc", "base"],
             ["IMG", "RollerFrame_TopMid_7", "activeSrc", "base"],
-            ["IMG", "RollerFrame_TopMid_7", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_7", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_7", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_TopMid_7", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_7", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_7", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_7", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_7", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_7", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_7", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_TopMid_8", "isActive", false],
             ["IMG", "RollerFrame_TopMid_8", "curSrc", "base"],
             ["IMG", "RollerFrame_TopMid_8", "activeSrc", "base"],
-            ["IMG", "RollerFrame_TopMid_8", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_8", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_8", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_TopMid_8", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_8", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_8", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_8", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_8", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_8", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_8", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "RollerFrame_TopMid_9", "isActive", false],
             ["IMG", "RollerFrame_TopMid_9", "curSrc", "base"],
             ["IMG", "RollerFrame_TopMid_9", "activeSrc", "base"],
-            ["IMG", "RollerFrame_TopMid_9", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_9", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_9", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "RollerFrame_TopMid_9", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_9", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
-            ["IMG", "RollerFrame_TopMid_9", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: true, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_9", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_9", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "RollerFrame_TopMid_9", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
             ["IMG", "RollerFrame_TopMid_9", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "Horizon_1", "isActive", true],
             ["IMG", "Horizon_1", "curSrc", "@@curSrc@@"],
@@ -3146,7 +3213,7 @@ const Media = (() => {
             ["IMG", "WeatherGlow_1", "isActive", false],
             ["IMG", "WeatherGlow_1", "curSrc", "@@curSrc@@"],
             ["IMG", "WeatherGlow_1", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
-            ["IMG", "WeatherGlow_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
+            ["IMG", "WeatherGlow_1", "modes", "Inactive", {isForcedOn: true, isForcedState: "redoverlay", lastState: "redoverlay"}],
             ["IMG", "WeatherGlow_1", "modes", "Daylighter", {isForcedOn: "NEVER"}],
             ["IMG", "WeatherGlow_1", "modes", "Downtime", {isForcedOn: "NEVER"}],
             ["IMG", "WeatherGlow_1", "modes", "Spotlight", {isForcedOn: "NEVER"}],
@@ -3258,6 +3325,13 @@ const Media = (() => {
             ["TEXT", "CompCurrent", "modes", "Downtime", {isForcedOn: "NEVER"}],
             ["TEXT", "CompCurrent", "modes", "Spotlight", {isForcedOn: "NEVER"}],
             ["TEXT", "CompCurrent", "modes", "Complications", {isForcedOn: true}],
+            ["TEXT", "CompCardsDiscarded", "isActive", false],
+            ["TEXT", "CompCardsDiscarded", "modes", "Active", {isForcedOn: "NEVER"}],
+            ["TEXT", "CompCardsDiscarded", "modes", "Inactive", {isForcedOn: "NEVER"}],
+            ["TEXT", "CompCardsDiscarded", "modes", "Daylighter", {isForcedOn: "NEVER"}],
+            ["TEXT", "CompCardsDiscarded", "modes", "Downtime", {isForcedOn: "NEVER"}],
+            ["TEXT", "CompCardsDiscarded", "modes", "Spotlight", {isForcedOn: "NEVER"}],
+            ["TEXT", "CompCardsDiscarded", "modes", "Complications", {isForcedOn: true}],
             ["TEXT", "CompRemaining", "isActive", false],
             ["TEXT", "CompRemaining", "modes", "Active", {isForcedOn: "NEVER"}],
             ["TEXT", "CompRemaining", "modes", "Inactive", {isForcedOn: "NEVER"}],
@@ -3556,7 +3630,7 @@ const Media = (() => {
     // #endregion
 
     // #region GENERAL MEDIA OBJECT GETTERS:
-        isRegistered = mediaRef => isRegText(mediaRef) || isRegImg(mediaRef),
+        isRegistered = mediaRef => isRegText(mediaRef) || isRegImg(mediaRef) || isRegAnim(mediaRef),
         getMediaObj = mediaRef => {
             if (VAL({object: mediaRef}))
                 return mediaRef
@@ -3649,41 +3723,61 @@ const Media = (() => {
             // Session.ToggleTesting(true)
             // Session.ChangeMode("Active")
 
-            D.Queue(Session.ToggleTesting, [true], "Media", 0.1)
+            D.Chat("all", C.HTML.Block(C.HTML.Header("Initializing Media Assets", STYLES.Initialization.Header), STYLES.Initialization.Block))
+            if (!isTesting)
+                Session.ToggleTesting(true)
             if (currentMode !== "Active")
-                D.Queue(Session.ChangeMode, ["Active"], "Media", 5)
-            D.Queue(D.Chat, ["all", "<h2><span style='color: purple;'>Beginning Initialization of Media Assets</span></h2>", "API Initialization", D.RandomString(3)], "Media", 3)
-            D.Queue(resetModes, [true], "Media", 15)
+                Session.ChangeMode("Active")           
+            
+            STATE.REF.fixAllCommands = []
+            D.Queue(resetModeData, [true], "Media", 15)
+            D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[1 / 16] Mode Data Reset", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 1, 16)})], "Media", 0.1)
             D.Queue(Roller.Kill, [], "Media", 5)
+            D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[2 / 16] Dice Roller Purged", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 2, 16)})], "Media", 0.1)
             D.Queue(Roller.Init, [false], "Media", 10)
+            D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[3 / 16] Dice Roller Rebuilt", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 3, 16)})], "Media", 0.1)
             D.Queue(clearMissingRegImgs, [], "Media")
+            D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[4 / 16] Image Registry Verified", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 4, 16)})], "Media", 0.1)
             D.Queue(clearMissingRegText, [], "Media")
+            D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[5 / 16] Text Registry Verified", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 5, 16)})], "Media", 0.1)
             D.Queue(clearUnregImgs, [isKilling], "Media")
+            D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[6 / 16] Image Objects Compiled", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 6, 16)})], "Media", 0.1)
             D.Queue(clearUnregText, [isKilling], "Media")
-
-            D.Queue(initAnimations, [], "Media")
-            D.Queue(D.Chat, ["all", "<h3><span style='color: green;'>Animations OK!</span></h3>", "Initializing Animations", D.RandomString(3)], "Media")
-
+            D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[7 / 16] Text Objects Compiled", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 7, 16)})], "Media", 0.1)
+            D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[8 / 16] Animation Objects Compiled", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 8, 16)})], "Media", 0.1)
             D.Queue(setZIndices, [], "Media")
+            D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[9 / 16] Z-Indices Reset", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 9, 16)})], "Media", 0.1)
             D.Queue(resetBGImgs, [], "Media")
+
+            
+            D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[10 / 16] Background & Overlay Images Configured", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 10, 16)})], "Media", 0.1)
             D.Queue(() => {
                 TimeTracker.Fix()
-                D.Chat("all", "<h3><span style='color: green;'>Time, Weather & Horizon Data Updated!</span></h3>", "Calibrating TimeTracker", D.RandomString(3))
+                D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[11 / 16] Time, Weather & Horizon Data Updated", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 11, 16)})], "Media", 0.1)
             }, [], "Media")
             D.Queue(() => {
                 Session.ResetLocations("Active", true)
-                D.Chat("all", "<h3><span style='color: green;'>Locations Updated!</span></h3>", "Setting Location", D.RandomString(3))
+                D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[12 / 16] Districts & Sites Restored", STYLES.Initialization.Header),{border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 12, 16)})], "Media", 0.1)
             }, [], "Media")
             D.Queue(fixImgObjs, [], "Media", 10)
+            D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[13 / 16] Final Image Object Pass: Complete", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 13, 16)})], "Media", 0.1)
             D.Queue(fixTextObjs, [], "Media", 5)
+            D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[14 / 16] Final Text Object Pass: Complete", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 14, 16)})], "Media", 0.1)
             D.Queue(Roller.Clean, [], "Media")
-            D.Queue(initSoundModes, [], "Media")            
+            D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[15 / 16] Dice Roller Cleaned", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 15, 16)})], "Media", 0.1)
+            D.Queue(initSoundModes, [], "Media")    
+            D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[16 / 16] Soundscape Initialized", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 16, 16)})], "Media", 0.1)        
 
-            D.Queue(Session.ToggleTesting, [isTesting], "Media", 0.1)
+            if (isTesting)
+                D.Queue(Session.ToggleTesting, [isTesting], "Media", 0.1)
             if (currentMode !== "Active")
                 D.Queue(Session.ChangeMode, [currentMode], "Media")
-            D.Queue(D.Chat, ["all", "<h2><span style='color: purple;'>Initialization of Media Assets Complete!</span></h2><h3>Please reload the sandbox to re-sync.", "API Initialization", D.RandomString(3)], "Media", 3)
-
+        
+            D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("Media Assets Initialized! Reload Sandbox to Re-Sync.", STYLES.Initialization.Header), STYLES.Initialization.Block)], "Media", 0.1)
+            D.Queue(() => {
+                D.Alert(STATE.REF.fixAllCommands.join("<br>"), "Media Initialization Report")
+                STATE.REF.fixAllCommands = []
+            }, [], "Media", 0.1)
             D.Run("Media")
         },
         setLayer = (mediaRef, layer, isForcing = false) => {
@@ -3812,52 +3906,54 @@ const Media = (() => {
                         top: D.Float(mediaObj.get("top")) + D.Float(deltaY)
                     })
         },
-        modeUpdate = (mediaRef) => {
-            if (isRegText(mediaRef)) {
-                const textData = getTextData(mediaRef),
-                    textKey = textData.name,
-                    modeStatus = getModeStatus(textKey)
-                DB(`Updating '${D.JSL(mediaRef)}'. ModeStatus: ${D.JSL(modeStatus)}`, "modeUpdate")
-                if(VAL({list: modeStatus}, "modeUpdate")) {
-                    const lastMode = textData.curMode
-                    if (lastMode) {
-                        REGISTRY.TEXT[textKey].modes[lastMode].lastActive = textData.isActive
-                        REGISTRY.TEXT[textKey].modes[lastMode].lastState = textData.isActive && (_.isString(textData.activeText) && textData.activeText || textData.curText) || REGISTRY.TEXT[textKey].modes[lastMode].lastState
+        modeUpdate = (mediaRefs = "all") => {
+            mediaRefs = mediaRefs === "all" ? [..._.keys(REGISTRY.IMG), ..._.keys(REGISTRY.TEXT), ..._.keys(REGISTRY.ANIM)] : _.flatten([mediaRefs], true)
+            for (const mediaRef of mediaRefs)
+                if (isRegText(mediaRef)) {
+                    const textData = getTextData(mediaRef),
+                        textKey = textData.name,
+                        modeStatus = getModeStatus(textKey)
+                    DB(`Updating '${D.JSL(mediaRef)}'. ModeStatus: ${D.JSL(modeStatus)}`, "modeUpdate")
+                    if(VAL({list: modeStatus}, "modeUpdate")) {
+                        const lastMode = textData.curMode
+                        if (lastMode) {
+                            REGISTRY.TEXT[textKey].modes[lastMode].lastActive = textData.isActive
+                            REGISTRY.TEXT[textKey].modes[lastMode].lastState = textData.isActive && (_.isString(textData.activeText) && textData.activeText || textData.curText) || REGISTRY.TEXT[textKey].modes[lastMode].lastState
+                        }
+                        REGISTRY.TEXT[textKey].curMode = Session.Mode
+                        if (!_.isUndefined(modeStatus.isActive)) {
+                            DB(`... IsActive OK! toggleText(${D.JSL(textKey)}, ${D.JSL(modeStatus.isActive)})`, "modeUpdate")
+                            toggleText(textKey, modeStatus.isActive)
+                        }                    
+                        if (!_.isUndefined(modeStatus.state)) {
+                            DB(`... State OK! setText(${D.JSL(textKey)}, ${D.JSL(modeStatus.state)})`, "modeUpdate")
+                            setText(textKey, modeStatus.state)
+                        }                    
                     }
-                    REGISTRY.TEXT[textKey].curMode = Session.Mode
-                    if (!_.isUndefined(modeStatus.isActive)) {
-                        DB(`... IsActive OK! toggleText(${D.JSL(textKey)}, ${D.JSL(modeStatus.isActive)})`, "modeUpdate")
-                        toggleText(textKey, modeStatus.isActive)
-                    }                    
-                    if (!_.isUndefined(modeStatus.state)) {
-                        DB(`... State OK! setText(${D.JSL(textKey)}, ${D.JSL(modeStatus.state)})`, "modeUpdate")
-                        setText(textKey, modeStatus.state)
-                    }                    
-                }
-            } else {
-                const graphicData = getImgData(mediaRef),
-                    graphicKey = graphicData.name,
-                    regRef = REGISTRY.IMG[graphicKey] && REGISTRY.IMG || REGISTRY.ANIM[graphicKey] && REGISTRY.ANIM || false,
-                    modeStatus = getModeStatus(graphicKey)
-                DB(`Updating '${D.JSL(mediaRef)}'. ModeStatus: ${D.JSL(modeStatus)}`, "modeUpdate")
-                if(VAL({list: [regRef, modeStatus]}, "modeUpdate", true)) {
-                    const lastMode = graphicData.curMode
+                } else {
+                    const graphicData = getImgData(mediaRef),
+                        graphicKey = graphicData.name,
+                        regRef = REGISTRY.IMG[graphicKey] && REGISTRY.IMG || REGISTRY.ANIM[graphicKey] && REGISTRY.ANIM || false,
+                        modeStatus = getModeStatus(graphicKey)
+                    DB(`Updating '${D.JSL(mediaRef)}'. ModeStatus: ${D.JSL(modeStatus)}`, "modeUpdate")
+                    if(VAL({list: [regRef, modeStatus]}, "modeUpdate", true)) {
+                        const lastMode = graphicData.curMode
 
-                    if (lastMode) {
-                        regRef[graphicKey].modes[lastMode].lastActive = graphicData.isActive
-                        regRef[graphicKey].modes[lastMode].lastState = graphicData.isActive && graphicData.activeSrc || regRef[graphicKey].modes[lastMode].lastState
+                        if (lastMode) {
+                            regRef[graphicKey].modes[lastMode].lastActive = graphicData.isActive
+                            regRef[graphicKey].modes[lastMode].lastState = graphicData.isActive && graphicData.activeSrc || regRef[graphicKey].modes[lastMode].lastState
+                        }
+                        regRef[graphicKey].curMode = Session.Mode
+                        if (!_.isUndefined(modeStatus.isActive)) {
+                            DB(`... IsActive OK! toggleImg(${D.JSL(graphicKey)}, ${D.JSL(modeStatus.isActive)})`, "modeUpdate")
+                            toggleImg(graphicKey, modeStatus.isActive)
+                        }                    
+                        if (!_.isUndefined(modeStatus.state) && REGISTRY.IMG[graphicKey]) {
+                            DB(`... State OK! setImg(${D.JSL(graphicKey)}, ${D.JSL(modeStatus.state)})`, "modeUpdate")
+                            setImg(graphicKey, modeStatus.state)
+                        }                    
                     }
-                    regRef[graphicKey].curMode = Session.Mode
-                    if (!_.isUndefined(modeStatus.isActive)) {
-                        DB(`... IsActive OK! toggleImg(${D.JSL(graphicKey)}, ${D.JSL(modeStatus.isActive)})`, "modeUpdate")
-                        toggleImg(graphicKey, modeStatus.isActive)
-                    }                    
-                    if (!_.isUndefined(modeStatus.state) && REGISTRY.IMG[graphicKey]) {
-                        DB(`... State OK! setImg(${D.JSL(graphicKey)}, ${D.JSL(modeStatus.state)})`, "modeUpdate")
-                        setImg(graphicKey, modeStatus.state)
-                    }                    
                 }
-            }
         },
         setActiveLayers = (isOverridingStartActive = true) => {
             return false
@@ -3913,14 +4009,8 @@ const Media = (() => {
             sortedMediaObjs.push(..._.compact(allMediaDatas.sort((a,b) => b.zIndex - a.zIndex).map(x => getMediaObj(x.id) || null)))
             for (let i = 0; i < sortedMediaObjs.length; i++)
                 toBack(sortedMediaObjs[i])
-            D.Chat("all", "<h3><span style='color: green;'>Z-Indices Reset!</span></h3>", "Setting Z-Indices", D.RandomString(3)) 
         },
-        switchMode = () => {
-            DB(`Switching Mode to ${Session.Mode}`, "switchMode")
-            for (const mediaKey of [..._.keys(REGISTRY.IMG), ..._.keys(REGISTRY.TEXT), ..._.keys(REGISTRY.ANIM)])
-                modeUpdate(mediaKey)
-        },
-        resetModes = (isResettingAll = false) => {
+        resetModeData = (isResettingAll = false) => {
             // ^([^.]+)\.([^.\n=]+)\.([^.\n=]+)\.([^.\n=]+)\.([^.\n=]+) = (.*)
             // ["$1", "$2", "$3", "$4", "$5", $6],
 
@@ -3932,7 +4022,16 @@ const Media = (() => {
                     objFlag = data.shift(),
                     objName = data.shift(),
                     objType = objName in REGISTRY.ANIM && "ANIM" || objFlag
-                let ref = REGISTRY[objType][objName]
+                let ref
+                try {
+                    ref = REGISTRY[objType][objName]
+                } catch (errObj) {
+                    D.Alert(`Error getting REGISTRY[${D.JS(objType)}]`, "resetModes")
+                    DB({objFlag, objName, data, key, value}, "resetModes")
+                    continue
+                }                
+                if (objName === "MapIndicator")
+                    DB({tag: "Starting Mode Reset", objFlag, objName, data, key, value, isActive: REGISTRY.ANIM.MapIndicator.isActive}, "resetModes")
                 if (!ref || !isResettingAll && ref.wasModeUpdated)
                     continue        
                 // errorLines.push(`${D.JSL(mediaName)}: [${data.join(" > ")}] = ${D.JSL(key)}:${D.JSL(value)}`)
@@ -3949,8 +4048,6 @@ const Media = (() => {
                         ref[newKey] = {}
                     ref = ref[newKey]
                 }
-                if (value === "ANIM")
-                    continue
                 if (value === "@@curSrc@@") {
                     if (objType === "ANIM")
                         continue
@@ -3972,7 +4069,9 @@ const Media = (() => {
                     }                     
                 }
                 returnMsg.push(`ref[${D.JSL(key)}] set to ${D.JSL(value)}`)
-                ref[key] = value
+                ref[key] = value                
+                if (objName === "MapIndicator")
+                    DB({tag: "Finished Mode Reset", objFlag, objName, data, key, value, isActive: REGISTRY.ANIM.MapIndicator.isActive}, "resetModes")
             }
             for (const imgKey of _.uniq(updatedKeys.IMG))
                 REGISTRY.IMG[imgKey].wasModeUpdated = true
@@ -3980,17 +4079,16 @@ const Media = (() => {
                 REGISTRY.TEXT[textKey].wasModeUpdated = true
             for (const animKey of _.uniq(updatedKeys.ANIM))
                 REGISTRY.ANIM[animKey].wasModeUpdated = true
-            D.Chat("all", "<h3><span style='color: green;'>Mode Data Reset!</span></h3>", "Resetting Mode Data", D.RandomString(3))
             // D.Alert(returnMsg.join("<br>"), "Mode Reset Complete!")
             if (errorLines.length)
-                D.Alert(errorLines.join("<br>"), "ERRORS: Mode Reset")
+                STATE.REF.fixAllCommands.push(...["<h3><u>Resetting Mode Data</u></h3>", ...errorLines])
         },
     // #endregion
     
     // #region IMG OBJECT & AREA GETTERS: Img Object & Data Retrieval
         isRegImg = imgRef => Boolean(getImgKey(imgRef, true)),        
         isCharToken = imgObj => VAL({imgObj}) && getObj("character", imgObj.get("represents")),
-        isRegToken = imgObj => VAL({imgObj}) && REGISTRY.TOKEN[D.GetName(imgObj.get("represents"))],
+        isRegToken = imgObj => VAL({imgObj}) && Boolean(REGISTRY.TOKEN[D.GetName(imgObj.get("represents"))]),
         isRandomizerToken = tokenObj => isCharToken(tokenObj) && isRegToken(tokenObj) && (REGISTRY.TOKEN[D.GetName(tokenObj.get("represents"))].srcs.randomSrcs || []).length,
         isCyclingImg = imgObj => {
             const imgData = getImgData(imgObj)
@@ -4404,7 +4502,7 @@ const Media = (() => {
                     }
                 if (!params.left || !params.top || !params.height || !params.width)
                     return THROW("Must supply position & dimension to register image.", "RegImg")
-                imgObj.set({name, showname: false})
+                imgObj.set({name, showname: false, isdrawing: options.isDrawing !== false})
                 REGISTRY.IMG[name] = {
                     id: imgObj.id,
                     type: imgObj.get("_type") === "text" && "text" || "image",
@@ -4417,7 +4515,8 @@ const Media = (() => {
                     zIndex: options.zIndex || (REGISTRY.IMG[name] ? REGISTRY.IMG[name].zIndex : 200),
                     srcs: {},
                     modes: options.modes || C.MODEDEFAULTS(imgObj, params.modes),
-                    isActive: true
+                    isActive: true,
+                    isSetToken: imgObj.get("represents") || options.isDrawing === false
                 }
                 if (options.modes)
                     REGISTRY.IMG[name].wasModeUpdated = true
@@ -4708,10 +4807,9 @@ const Media = (() => {
             for (const imgName of _.keys(REGISTRY.IMG))
                 if (!getImgObj(imgName))
                     returnLines.push(`... ${imgName} Missing Object, Removing: ${removeImg(imgName) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`)
+            
             if (returnLines.length)
-                D.Chat("all", ["<h3>Removing Missing Image Objects from Registry...</h3>", returnLines.join(", ")].join(""), "Pruning Image Registry", D.RandomString(3))
-            else
-                D.Chat("all", "<h3><span style='color: green;'>Registered Image Objects OK!</span></h3>", "Pruning Image Registry", D.RandomString(3))
+                STATE.REF.fixAllCommands.push(...["<h3><u>Removing Unlinked Image Registry Entries</u></h3>", ...returnLines])
         },
         resetBGImgs = () => {                                        
             for (const imgObj of getImgObjs(BGIMGS.keys))
@@ -4728,7 +4826,6 @@ const Media = (() => {
                     height: MAPIMGS.height,
                     width: MAPIMGS.width
                 }, true)
-            D.Chat("all", "<h3><span style='color: green;'>Background Images OK!</span></h3>", "Background & Overlay Correction", D.RandomString(3))
         },
         clearUnregImgs = (isKilling = false) => {
             const returnLines = [],
@@ -4740,6 +4837,7 @@ const Media = (() => {
                 regPartnerIDs = Object.values(REGISTRY.IMG).filter(x => x.partnerID).map(x => x.partnerID),
                 allRegIDs = [..._.values(REGISTRY.GRAPHIC).map(x => x.id), ...regPadIDs, ...regPartnerIDs],
                 unregImgObjs = allImgObjs.filter(x => !isRegToken(x) && !allRegIDs.includes(x.id))
+            
             // D.Alert(`RegPadIDs: ${D.JSL(regPadIDs)}<br><br>PartnerIDs: ${D.JSL(regPartnerIDs)}`)
             for (const imgObj of unregImgObjs) {
                 returnLines.push(`<b>${imgObj.get("name") || "(UNNAMED)"}</b> <span style='color: red;'><b>REMOVED</b></span>`)
@@ -4747,33 +4845,48 @@ const Media = (() => {
                     imgObj.remove()
             }
             if (returnLines.length)
-                D.Chat("all", ["<h3>Removing Unregistered Image Objects...</h3>", returnLines.join(", ")].join(""), "Clearing Unregistered Image Objects", D.RandomString(3))
-            else
-                D.Chat("all", "<h3><span style='color: green;'>All Image Objects Registered!</span></h3>", "Clearing Unregistered Image Objects", D.RandomString(3))
+                STATE.REF.fixAllCommands.push(...["<h3><u>Clearing Unregistered Image Objects</u></h3>", ...returnLines])
         },
+
+        /* 
+[ "-LuoUwMHyI6ZViqrma_Z", "MapIndicator" ],
+[ "-LuoOxRVO8zHo0P8KTUA", "Roller_WPReroller_1" ],
+[ "-LuoPFV7RE1S9FnuwReL", "Roller_WPReroller_2" ],
+[ "-LuRnZH1BWXIBnCjVtbB", "MapIndicator" ],
+[ "-LuSj1IYVo8KkDG9-a7z", "Roller_WPReroller_2" ],
+[ "-LuSkRA6ocG72823ydzY", "Roller_WPReroller_1" ] */
+
         fixImgObjs = () => {
+            // D.Alert(`Starting FixImgObjects: ${D.JS(REGISTRY.ANIM.MapIndicator.isActive)}`)
             const imgKeys = [..._.keys(REGISTRY.IMG), ..._.keys(REGISTRY.ANIM)],
                 imgPairs = _.zip(imgKeys.map(x => REGISTRY.IMG[x] || REGISTRY.ANIM[x]), imgKeys.map(x => getObj("graphic", (REGISTRY.IMG[x] || REGISTRY.ANIM[x]).id))),
                 reportLines = []
+            // D.Alert(`Beginning Checks: ${D.JS(REGISTRY.ANIM.MapIndicator.isActive)}`)
             for (const [imgData, imgObj] of imgPairs) {
                 const reportStrings = [],
                     regRef = getRegistryRef(imgData.name)
-                if (!isRegToken(imgObj) && imgObj.get("isdrawing") !== true) {
+                if (!isRegToken(imgObj) && !imgData.isSetToken && imgObj.get("isdrawing") !== true) {
                     reportStrings.push(`Non-token ${imgData.name} not set to drawing --> Updating <b><u>OBJECT</u></b>`)
+                    reportStrings.push(`...${isRegToken(imgObj)}, ${D.JS(imgData.isSetToken)}, ${imgObj.get("isdrawing")}`)
                     imgObj.set("isdrawing", true)
+                }                
+                if ((isRegToken(imgObj) || imgData.isSetToken) && imgObj.get("isdrawing") === true) {
+                    reportStrings.push(`Set-token ${imgData.name} set to drawing --> Updating <b><u>OBJECT</u></b>`)
+                    reportStrings.push(`...${isRegToken(imgObj)}, ${D.JS(imgData.isSetToken)}, ${imgObj.get("isdrawing")}`)
+                    imgObj.set("isdrawing", false)
                 }
-                if (!imgData.isActive && imgData.isActive !== false) {
-                    reportStrings.push(`Missing 'isActive'. On '${imgObj.get("layer")}' SO Setting ${imgObj.get("layer") === "walls" ? "FALSE" : "TRUE"}`)
+                if (imgData.isActive !== true && imgData.isActive !== false) {
+                    reportStrings.push(`Invalid 'isActive' (${D.JS(imgData.isActive)}). On '${imgObj.get("layer")}' SO Setting ${imgObj.get("layer") === "walls" ? "FALSE" : "TRUE"}`)
                     regRef[imgData.name].isActive = imgObj.get("layer") !== "walls" 
                 }
-                if (imgData.isActive && imgObj.get("layer") === "walls") {
+                if (imgData.isActive === true && imgObj.get("layer") === "walls") {
                     reportStrings.push(`Active object on 'walls' --> moving to '${D.JS(imgData.activeLayer)}'`)
                     imgObj.set("layer", imgData.activeLayer)
                 }
-                if (!imgData.isActive && imgObj.get("layer") !== "walls") {
+                if (imgData.isActive === false && imgObj.get("layer") !== "walls") {
                     reportStrings.push(`Inactive object on '${imgObj.get("layer")}' --> moving to 'walls'`)
                     imgObj.set("layer", "walls")
-                }
+                }  
                 if (!isRegAnim(imgObj)) {
                     const srcURL = getURLFromSrc(imgData.curSrc, getImgSrcs(imgData.name))
                     if (srcURL !== imgObj.get("imgsrc")) {
@@ -4791,10 +4904,9 @@ const Media = (() => {
                 if (reportStrings.length)
                     reportLines.push(`<b>${imgData.name}</b>: ${reportStrings.join(", ")}`)
             }
+            
             if (reportLines.length)
-                D.Chat("all", ["<h3>Fixing Image Inconsistencies...</h3>", reportLines.join("<br>"), "<h3><span style='color: green;'>Image Data OK!</span></h3>"].join(""), "Final Image Object Pass", D.RandomString(3))
-            else
-                D.Chat("all", "<h3><span style='color: green;'>Image Data OK!</span></h3>", "Final Image Object Pass", D.RandomString(3))
+                STATE.REF.fixAllCommands.push(...["<h3><u>Final Image Object Pass</u></h3>", ...reportLines])
         },
         layerImgs = (imgRefs, layer) => {
             const imgObjs = getImgObjs(imgRefs)
@@ -4826,6 +4938,7 @@ const Media = (() => {
         },        
         // eslint-disable-next-line no-unused-vars
         spreadImgs = (leftImgRef, rightImgRef, midImgRefOrRefs, width, minOverlap = 20, maxOverlap = 40) => {
+            DB({leftImgRef, rightImgRef, midImgRefOrRefs, width, minOverlap, maxOverlap}, "spreadImgs")
             midImgRefOrRefs = _.flatten([midImgRefOrRefs])
             const [leftObj, rightObj, ...midObjs] = [getImgObj(leftImgRef), getImgObj(rightImgRef), ...midImgRefOrRefs.map(x => getImgObj(x))],
                 [leftData, rightData, ...midData] = [leftObj, rightObj, ...midObjs].map(x => isRegImg(x) && getImgData(x) || {id: x.id, name: x.get("name"), left: x.get("left"), width: x.get("width"), leftEdge: x.get("left") - 0.5*x.get("width"), rightEdge: x.get("left") + 0.5*x.get("width")})
@@ -4966,17 +5079,10 @@ const Media = (() => {
             const imgObj = getImgObj(animRef)
             return imgObj && imgObj.get("name") in REGISTRY.ANIM
         },
-        initAnimations = () => {
-            for (const [animName, animData] of Object.entries(REGISTRY.ANIM))
-                if (animData.startActive)
-                    activateAnimation(animName)
-                else
-                    deactivateAnimation(animName)
-        },
-        regAnimation = (imgObj, animName, timeOut = 0, activeLayer = "map", startActive = false) => {
+        regAnimation = (imgObj, animName, timeOut = 0, activeLayer = "map") => {
             if (VAL({imgObj}, "regAnimation")) {
                 imgObj.set("name", animName)
-                imgObj.set("layer", "gmlayer")
+                imgObj.set("layer", activeLayer)
                 REGISTRY.ANIM[animName] = {
                     name: animName,
                     id: imgObj.id,
@@ -4989,10 +5095,9 @@ const Media = (() => {
                     timeOut: D.Int(1000 * D.Float(timeOut)),
                     minTimeBetween: 0,
                     maxTimeBetween: 100000,
-                    startActive: startActive !== false && startActive !== "false",
-                    isActive: startActive !== false && startActive !== "false",                    
-                    validModes: ["Active"],
-                    soundEffect: null
+                    isActive: true,
+                    soundEffect: null,
+                    isAnimation: true
                 }
                 REGISTRY.ANIM[animName].leftEdge = REGISTRY.ANIM[animName].left - 0.5 * REGISTRY.ANIM[animName].width
                 REGISTRY.ANIM[animName].rightEdge = REGISTRY.ANIM[animName].left + 0.5 * REGISTRY.ANIM[animName].width
@@ -5026,7 +5131,7 @@ const Media = (() => {
                 const animObj = getImgObj(animName)
                 animObj.set("layer", animData.activeLayer)
                 if (animData.soundEffect && animData.validModes.includes(Session.Mode))
-                    startSound(animData.soundEffect, undefined, undefined, true)
+                    playSound(animData.soundEffect, undefined, undefined, true)
                 if (animData.timeOut)
                     setTimeout(() => killAnimation(animObj), animData.timeOut)
             }
@@ -5691,9 +5796,7 @@ const Media = (() => {
                 if (!getTextObj(textName))
                     returnLines.push(`... ${textName} Missing Object, Removing: ${removeText(textName) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`)
             if (returnLines.length)
-                D.Chat("all", ["<h3>Removing Missing Text Objects from Registry...</h3>", returnLines.join(", ")].join(""), "Pruning Text Registry", D.RandomString(3))
-            else
-                D.Chat("all", "<h3><span style='color: green;'>Registered Text Objects OK!</span></h3>", "Pruning Text Registry", D.RandomString(3))
+                STATE.REF.fixAllCommands.push(...["<h3><u>Removing Unlinked Text Registry Entries</u></h3>", ...returnLines])
         },
         clearUnregText = (isKilling = false) => {
             const returnLines = [],
@@ -5708,9 +5811,7 @@ const Media = (() => {
                     textObj.remove()
             }
             if (returnLines.length)
-                D.Chat("all", ["<h3>Removing Unregistered Text Objects...</h3>", returnLines.join(", ")].join(""), "Clearing Unregistered Text Objects", D.RandomString(3))
-            else
-                D.Chat("all", "<h3><span style='color: green;'>All Text Objects Registered!</span></h3>", "Clearing Unregistered Text Objects", D.RandomString(3))
+                STATE.REF.fixAllCommands.push(...["<h3><u>Clearing Unregistered Text Objects</u></h3>", ...returnLines])
         },
         resetTextRegistry = () => {
             STATE.REF.textregistry = {}
@@ -5748,13 +5849,67 @@ const Media = (() => {
                     reportLines.push(`<b>${textData.name}</b>: ${reportStrings.join("♦")}`)
             }
             if (reportLines.length)
-                D.Chat("all", ["<h3>Fixing Text Inconsistencies...</h3>", reportLines.join("<br>"), "<h3><span style='color: green;'>Text Data OK!</span></h3>"].join(""), "Final Text Object Pass", D.RandomString(3))
-            else
-                D.Chat("all", "<h3><span style='color: green;'>Text Data OK!</span></h3>", "Final Text Object Pass", D.RandomString(3))        
+                STATE.REF.fixAllCommands.push(...["<h3><u>Final Text Object Pass</u></h3>", ...reportLines])
         },
     // #endregion
 
     // #region SOUND OBJECT GETTERS: Track Object, Playlist Object, Data Retrieval
+        isRegSound = (soundRef) => Boolean(REGISTRY.SOUND[getSoundKey(soundRef) || ""]),
+        isRegPlaylist = (playlistRef) => Boolean(REGISTRY.PLAYLIST[getPlaylistKey(playlistRef) || ""]),
+        isSoundPlaying = (soundRef) => {
+            const soundObj = getSoundObj(soundRef)
+            return VAL({object: soundObj}) && soundObj.get("playing")
+        },
+        isSoundLooping = (soundRef) => {
+            const soundObj = getSoundObj(soundRef)
+            return VAL({object: soundObj}) && soundObj.get("playing") && soundObj.get("loop")
+        },
+
+        getSoundKey = (soundRef) => {
+            if (VAL({object: soundRef})) {
+                const soundKey = _.keys(REGISTRY.SOUND).findIndex(x => x.id === soundRef.id)
+                return soundKey || soundRef.get("name")
+            }
+            if (VAL({string: soundRef})) {
+                if (REGISTRY.SOUND[soundRef])
+                    return soundRef
+                const soundObj = getObj("jukeboxtrack", soundRef)
+                return soundObj || false
+            }
+            return false
+        },
+        getSoundObj = (soundRef) => {
+            if (VAL({object: soundRef}) && soundRef.get("_type") === "jukeboxtrack")
+                return soundRef
+            const soundKey = getSoundKey(soundRef)
+            if (REGISTRY.SOUND[soundKey || ""])
+                return getObj("jukeboxtrack", REGISTRY.SOUND[soundKey].id)
+            if (VAL({string: soundRef})) {
+                const soundObj = getObj("jukeboxtrack", soundRef)
+                return soundObj || false
+            }
+            return false
+        },
+        getSoundData = (soundRef) => {
+            const soundKey = getSoundKey(soundRef)
+            return REGISTRY.SOUND[soundKey || ""] || false
+        },
+        getPlaylistKey = (playlistRef) => VAL({string: playlistRef}) && REGISTRY.PLAYLIST[playlistRef],
+        getPlaylistTracks = (playlistRef, isPlayingOnly = false) => {
+            const playlistData = getPlaylistData(playlistRef)
+            return VAL({list: playlistData}) && isPlayingOnly ? playlistData.tracks.filter(x => isSoundPlaying(x)) : playlistData.tracks
+        },
+        getPlaylistData = (playlistRef) => VAL({string: playlistRef}) && getPlaylistKey(playlistRef),
+        getRandomSoundKey = (playlistRef, excludeSoundRef, isExcludingPlaying = true) => {
+            const playlistData = getPlaylistData(playlistRef)
+            if (VAL({list: playlistData})) {
+                const randTrackName = _.sample(_.compact(playlistData.tracks.filter(x => (!excludeSoundRef || !getSoundKey(excludeSoundRef) !== x) && (!isExcludingPlaying || !isSoundPlaying(x)))))
+                return VAL({string: randTrackName}) && randTrackName
+            }
+            return false
+        },
+        getPlayingSounds = () => Object.keys(REGISTRY.SOUND).filter(x => isSoundPlaying(x)),
+        getLoopingSounds = () => Object.keys(REGISTRY.SOUND).filter(x => isSoundLooping(x)),
         getScore = (mode) => {
             // D.Poke(`Score Ref: ${Object.keys(C.SOUNDSCORES).find(x => C.SOUNDSCORES[x].includes(mode))}`)
             const scoreRef = Object.keys(C.SOUNDSCORES).find(x => C.SOUNDSCORES[x].includes(mode)),
@@ -5844,8 +5999,42 @@ const Media = (() => {
             for (const listName of Object.keys(listsRef))
                 Roll20AM.SetSoundMode(listName)
             for (const trackName of _.intersection(_.keys(C.SOUNDMODES), _.keys(tracksRef)))
-                Roll20AM.SetSoundMode(trackName)                        
-            D.Chat("all", "<h3><span style='color: green;'>Soundscape Configured!</span></h3>", "Initializating Soundscape", D.RandomString(3))
+                Roll20AM.SetSoundMode(trackName)  
+        },
+        regSound = (objRef, soundName, playlistRef = null, isLooping = true, volume = 100) => {
+            const soundObj = getSoundObj(objRef)
+            if (soundObj) {
+                REGISTRY.SOUND[soundName] = {
+                    id: soundObj.id,
+                    name: soundName,
+                    volume,
+                    isLooping
+                }
+                if (isRegPlaylist(playlistRef))
+                    addSoundToPlaylist(soundName, playlistRef)
+                D.Alert(`Registered Sound: ${D.JS(REGISTRY.SOUND[soundName])}`, "Register Sound")
+            }
+        },
+        regPlaylist = (playlistName, defaultVolume = 100, isPlaylistLooping = true, canPlaylistOverlap = false, isPlaylistRandom = true) => {
+            if (VAL({string: playlistName}))
+                REGISTRY.PLAYLIST[playlistName] = {
+                    name: playlistName,
+                    volume: defaultVolume,
+                    isLooping: isPlaylistLooping,
+                    canOverlap: canPlaylistOverlap,
+                    isRandom: isPlaylistRandom,
+                    tracks: [],
+                    currentTrack: null
+                }
+        },
+        addSoundToPlaylist = (soundRef, playlistRef) => {
+            const soundKey = getSoundKey(soundRef),
+                playlistKey = getPlaylistKey(playlistRef)
+            if (VAL({string: [soundKey, playlistKey]}, null, true)) {
+                REGISTRY.SOUND[soundKey].playlist = playlistKey
+                REGISTRY.PLAYLIST[playlistKey].tracks = _.uniq([...REGISTRY.PLAYLIST[playlistKey].tracks, soundKey])
+                D.Alert(`Added <b>${D.JS(soundKey)}</b> to playlist <b>${D.JS(playlistKey)}</b>`, "Add Track to Playlist")
+            }
         },
         updateSounds = (isDoubleChecking = true) => {
             if (STATE.REF.isRunningSilent && STATE.REF.isRunningSilent !== "TOTALSILENCE")
@@ -5933,7 +6122,7 @@ const Media = (() => {
                     if (volume === 0)
                         stopSound(onSound)
                     else
-                        startSound(onSound, volume)
+                        playSound(onSound, volume)
                 }
                 debugLines.push(`${D.JS(initialLoop)} --> ${D.JS(Media.LoopingSounds)}`)
                 DB(`Update Sounds Test${isDoubleChecking ? " (1)" : " (2)"}<br>${debugLines.join("<br>")}`, "updateSounds")
@@ -5941,12 +6130,41 @@ const Media = (() => {
                     setTimeout(() => updateSounds(false), 5000)
             }
         },
-        startSound = (soundRef, volume, fadeIn = null, isOverlapping = false) => {
+        playSound = (soundRef, volume, fadeIn = null, isOverlapping = false) => {
             if (VAL({number: volume}))
                 Roll20AM.ChangeVolume(soundRef, volume)
             if (!Roll20AM.IsPlaying(soundRef) || isOverlapping)
                 Roll20AM.PlaySound(soundRef, undefined, fadeIn)
         },
+        oldPlaySound = (soundRef, volume, isForcing = false) => { // For playing sounds WITHOUT engaging their playlists.
+            const soundKey = getSoundKey(soundRef)
+            if (soundKey && (isForcing || !isSoundPlaying(soundKey))) {
+                const soundObj = getSoundObj(soundRef),
+                    soundData = getSoundData(soundRef),
+                    soundAttrs = {
+                        playing: true,
+                        softstop: false,
+                        volume,
+                        loop: soundData.isLooping
+                    }
+                if (soundData.playlist) {
+                    const playlistData = getPlaylistData(soundData.playlist)
+                    if (playlistData.currentTrack && !playlistData.canOverlap) {
+                        stopSound(playlistData.currentTrack)
+                        playlistData.currentTrack = soundKey
+                        playlistData.isPlaying = false // False, because not engaging the playlist at all.
+                        clearTimeout(listTimers[playlistData.name])
+                        listTimers[playlistData.name] = null 
+                    }
+                }
+            }
+        },
+        /* playTrack = (playlistRef, trackRef, volume, isForcing = false) => { // For playing sounds THROUGH their playlists.
+
+        },
+        playPlaylist = (playlistRef, volume) => {
+
+        }, */
         stopSound = (soundRef, fadeOut = null) => {
             Roll20AM.StopSound(soundRef, fadeOut)
         }
@@ -5967,7 +6185,7 @@ const Media = (() => {
         GetModeData: getModeData,
         IsRegistered: isRegistered,
         HasForcedState: hasForcedState,
-        SwitchMode: switchMode,
+        ModeUpdate: modeUpdate,
         IsActive: isObjActive,
         IsCyclingImg: isCyclingImg,
         Toggle: toggle,
@@ -6002,7 +6220,6 @@ const Media = (() => {
         SetArea: setImgArea,
         
         // ANIMATION FUNCTIONS
-        InitAnims: initAnimations,
         ToggleAnim: toggleAnimation,
         Flash: flashAnimation,
         Pulse: activateAnimation,
@@ -6021,7 +6238,7 @@ const Media = (() => {
         
         // REINITIALIZE MEDIA OBJECTS (i.e. on MODE CHANGE)
         Fix: () => {
-            resetModes(false)
+            resetModeData(false)
             // setActiveLayers(false)
             setZIndices()
         }

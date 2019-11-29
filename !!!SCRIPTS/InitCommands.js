@@ -21,8 +21,6 @@ const InitCommands = (() => {
             Listener.Lock()
             if (Roll20AM && Roll20AM.StopSound)
                 Roll20AM.StopSound("all")
-            if (Media && Media.InitAnims())
-                Media.InitAnims()
             setTimeout(() => {
                 if (TimeTracker && TimeTracker.Fix)
                     TimeTracker.Fix()
@@ -33,7 +31,7 @@ const InitCommands = (() => {
                         if (Char && Char.RefreshDisplays)
                             Char.RefreshDisplays()
                         setTimeout(() => {
-                            D.Alert("Initialization Complete!", "INITIALIZATION")
+                            D.Alert("Initialization Complete!", "none")
                             Listener.Unlock()
                         }, 2000)
                     }, 2000)

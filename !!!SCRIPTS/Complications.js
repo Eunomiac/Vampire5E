@@ -43,6 +43,8 @@ const Complications = (() => {
             ]
             STATE.REF.DISCARDS = STATE.REF.DISCARDS || []
             STATE.REF.FXQUEUE = STATE.REF.FXQUEUE || []
+
+            setCardFuncs.length = 0
         },
     // #endregion
 
@@ -50,6 +52,14 @@ const Complications = (() => {
         onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
             const charObjs = Listener.GetObjects(objects, "character")
             switch (call) {
+                case "force": {
+                    const card = CARDS.find(x => D.LCase(x.name) === D.LCase(args[0])),
+                        spot = D.Int(args[1]) - 1
+                    STATE.REF.MAT[spot] = _.clone(card)                    
+                    STATE.REF.MAT[spot].spot = spot
+                    setCard(spot, "faceDown", STATE.REF.MAT[spot].name)
+                    break
+                }
                 case "getstats": {
                     getCardStats()
                     break
@@ -103,15 +113,15 @@ const Complications = (() => {
                 case "discard": {
                     switch (D.LCase(call = args.shift())) {
                         case "random": {
-                            discardCard(getRandomSpot(["faceUp", "noLastDrawn"]))
+                            setCard(getRandomSpot(["faceUp", "noLastDrawn"]), "discard")
                             break
                         }
                         case "last": {
-                            discardCard(STATE.REF.lastDraw)
+                            setCard(STATE.REF.lastDraw, "discard")
                             break
                         }
                         default: {
-                            discardCard(D.Int(call) - 1)
+                            setCard(D.Int(call) - 1, "discard")
                             break
                         }
                     }                        
@@ -120,32 +130,46 @@ const Complications = (() => {
                 case "enhance": {
                     switch (D.LCase(call = args.shift())) {
                         case "random": {
-                            enhanceCard(getRandomSpot(["faceUp", "noNegated", "noEnhanced", "noLastDrawn"]))
+                            setCard(getRandomSpot(["faceUp", "noNegated", "noEnhanced", "noLastDrawn"]), "enhanced")
                             break
                         }
                         case "last": {
-                            enhanceCard(STATE.REF.lastDraw)
+                            setCard(STATE.REF.lastDraw, "enhanced")
+                            setCard(STATE.REF.lastDraw, "enhanced")
                             break
                         }
                         default: {
-                            enhanceCard(D.Int(call) - 1)
+                            setCard(D.Int(call) - 1, "enhanced")
                             break
                         }
                     }                        
                     break
                 }
-                case "negate": {
+                case "confirm": {
                     switch (D.LCase(call = args.shift())) {
-                        case "random": {
-                            negateCard(getRandomSpot(["isUndoable", "faceUp", "noEnhanced", "noNegated", "noLastDrawn"]))
-                            break
-                        }
                         case "last": {
-                            negateCard(STATE.REF.lastDraw)
+                            setCard(STATE.REF.lastDraw, "confirm")
                             break
                         }
                         default: {
-                            negateCard(D.Int(call) - 1)
+                            setCard(D.Int(call) - 1, "confirm")
+                            break
+                        }
+                    }
+                    break
+                }
+                case "negate": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "random": {
+                            setCard(getRandomSpot(["isUndoable", "faceUp", "noEnhanced", "noNegated", "noLastDrawn"]), "negated")
+                            break
+                        }
+                        case "last": {
+                            setCard(STATE.REF.lastDraw, "negated")
+                            break
+                        }
+                        default: {
+                            setCard(D.Int(call) - 1, "negated")
                             break
                         }
                     }                        
@@ -200,7 +224,41 @@ const Complications = (() => {
 
     // #region CONFIGURATION: Card Definitions
 
-        /* eslint-disable no-unused-vars */
+        /* eslint-disable no-unused-vars */    
+        ONNEXT = {
+            confirm: [],
+            activate: [],
+            replace: [],
+            faceDown: [],
+            faceUp: [],
+            discard: [],
+            duplicate: [],
+            ["!duplicate"]: [],
+            negated: [],
+            ["!negated"]: [],
+            enhanced: [],
+            ["!enhanced"]: [],
+            revalue: [],
+            ["!revalue"]: [],
+            blank: []
+        },
+        ONALL = {
+            confirm: [],
+            activate: [],
+            replace: [],
+            faceDown: [],
+            faceUp: [],
+            discard: [],
+            duplicate: [],
+            ["!duplicate"]: [],
+            negated: [],
+            ["!negated"]: [],
+            enhanced: [],
+            ["!enhanced"]: [],
+            revalue: [],
+            ["!revalue"]: [],
+            blank: []
+        },
         CARDS = [             
             {name: "AMatterOfPride", displayName: "A Matter of Pride", category: null, value: 1, rarity: "C",
              afterAction: (charRef, spot, isEnhanced) => { 
@@ -230,8 +288,10 @@ const Complications = (() => {
             {name: "BloodRush", displayName: "Blood Rush", category: "beast", value: 2, rarity: "U",
              afterAction: (charRef, spot, isEnhanced) => {
                  STATE.REF.endMessageQueue.push("Trigger your Clan Compulsion.")
-                 if (isEnhanced)
+                 if (isEnhanced) {
                      Roller.AddCharEffect(charRef, "messycrit;;!Blood Rush (Clan Compulsion)")
+                     STATE.REF.endMessageQueue.push("Messy Criticals trigger your Clan Compulsion.")
+                 }
              }},
             {name: "Breakthrough", displayName: "Breakthrough", category: "benefit", value: 1, rarity: "R", 
              afterAction: (charRef, spot, isEnhanced) => {
@@ -244,6 +304,7 @@ const Complications = (() => {
             {name: "CognitiveDissonance", displayName: "Cognitive Dissonance", category: "debilitation", value: 3, rarity: "U",
              afterAction: (charRef, spot, isEnhanced) => {
                  Roller.AddCharEffect(charRef, "all;restrictwpreroll2;!Cognitive Dissonance (Max Reroll: 2)")
+                 STATE.REF.endMessageQueue.push("Spending Willpower rerolls only two dice.")
              }},
             {name: "CollateralDamage", displayName: "Collateral Damage", category: "humanity", value: 2, rarity: "R",
              afterAction: (charRef, spot, isEnhanced) => {
@@ -275,6 +336,7 @@ const Complications = (() => {
                      cardAlert(spot, "Draw. The Storyteller will decide if you keep it.", null, " (Enhanced)")
                  else
                      cardAlert(spot, "Draw, then choose to keep it or discard it.")
+                 ONNEXT.faceUp.push("WAIT:confirm,discard:confirm")
              },
              isNotUndoable: true},
             // {name: "FakeNews", displayName: "", category: null, value: 2, rarity: "U"},
@@ -339,13 +401,17 @@ const Complications = (() => {
             {name: "Obsessed", displayName: "Obsessed", category: "debilitation", value: 2, rarity: "U",
              afterAction: (charRef, spot, isEnhanced) => {
                  Roller.AddCharEffect(charRef, "social;-2;- Obsessed (<.>)")
+                 STATE.REF.endMessageQueue.push(`-2 to Social rolls ${isEnhanced ? "until Project completes" : "for one night"}.`)
              }},
             {name: "Options", displayName: "Options", category: null, value: 0, rarity: "C",
              action: (charRef, spot) => {
-                 DELAYEDUNTILDISCARD = [ null, null ]
+                 ONNEXT.faceUp.push("WAIT:discard:confirm")
+                 ONNEXT.faceUp.push("WAIT:discard:confirm")
                  if (STATE.REF.MAT[spot].isEnhanced) {
-                     cardAlert(spot, "Draw twice, then discard one of them.<br>Reduce the value of the card you keep to zero.", null, " (Enhanced)")
-                     ISDELAYEDCARDDEVALUED = true
+                     cardAlert(spot, "Draw twice, then discard one of them.<br>Reduce the value of the card you keep to zero.", null, " (Enhanced)")                    
+                     ONNEXT.activate.push((keepSpot) => {
+                         revalueCard(keepSpot, 0)
+                     })
                  } else {
                      cardAlert(spot, "Draw twice, then discard one of them.")
                  }
@@ -355,46 +421,55 @@ const Complications = (() => {
             {name: "Overwhelmed", displayName: "Overwhelmed", category: "debilitation", value: 2, rarity: "U",
              afterAction: (charRef, spot, isEnhanced) => {                 
                  Roller.AddCharEffect(charRef, "mental;-2;- Overwhelmed (<.>)")
+                 STATE.REF.endMessageQueue.push(`-2 to Mental rolls ${isEnhanced ? "until Project completes" : "for one night"}.`)
              }},
             {name: "Powderkeg", displayName: "Powderkeg", category: null, value: 0, rarity: "V",
-             action: (charRef, spot) => {  
+             action: (charRef, spot) => {
+                 STATE.REF.MAT[spot].enhancedDraw = true
+                 ONNEXT.activate.push((drawSpot) => {
+                     setCard(drawSpot, "enhanced")
+                     STATE.REF.MAT[spot].enhancedDraw = drawSpot 
+                 })
+                 STATE.REF.MAT[spot].triggerIndex = ONNEXT.confirm.length - 1
                  cardAlert(spot, "Enhancing next draw.")
-                 ISNEXTDRAWENHANCED = spot
              },
              onEnhance: (charRef, spot) => {
-                 const randomSpot = getRandomSpot(["noEnhanced", "noNegated", "faceUp", spot]),
-                     card = STATE.REF.MAT[spot]
-                 card.enhancedCard = randomSpot
-                 cardAlert(spot, `Randomly enhancing a drawn Complication:<br>Enhancing "${getCardName(randomSpot, true)}"!`, null, " (Enhanced)")
-                 enhanceCard(randomSpot)
+                 const randomSpot = getRandomSpot(["noEnhanced", "noNegated", "faceUp", spot])
+                 if (VAL({number: randomSpot})) {
+                     STATE.REF.MAT[spot].enhancedCard = randomSpot
+                     cardAlert(spot, [
+                         "Randomly enhancing a drawn Complication:",
+                         getCardName(randomSpot, true)
+                     ].join("<br>"), null, " (Enhanced)")
+                     setCard(randomSpot, "enhanced")
+                 }
              },
              undoAction: (charRef, spot) => {
-                 const card = STATE.REF.MAT[spot]
-                 if (VAL({number: card.nextDrawEnhance})) {
-                     const enhancedCard = STATE.REF.MAT[card.nextDrawEnhance]
+                 if (VAL({number: STATE.REF.MAT[spot].enhancedDraw})) {
+                     const enhancedCard = STATE.REF.MAT[STATE.REF.MAT[spot].enhancedDraw]
                      if (enhancedCard && enhancedCard.isFaceUp && enhancedCard.isEnhanced && !enhancedCard.isNegated) {
-                         enhanceCard(card.nextDrawEnhance)
+                         setCard(STATE.REF.MAT[spot].enhancedDraw, "enhanced")
                          cardAlert(spot, `Unenhancing "${enhancedCard.displayName}".`, "Voiding ")
                      } 
-                     card.nextDrawEnhance = false
-                 } else if (ISNEXTDRAWENHANCED === spot) {
+                 } else if (STATE.REF.MAT[spot].enhancedDraw === true) {
+                     ONNEXT.activate[STATE.REF.MAT[spot].triggerIndex] = null
                      cardAlert(spot, "No longer enhancing next draw.", "Voiding ")
-                     ISNEXTDRAWENHANCED = false
-                 }            
+                 }       
+                 STATE.REF.MAT[spot].enhancedDraw = false     
              },
              offEnhance: (charRef, spot) => {
-                 const card = STATE.REF.MAT[spot],
-                     enhancedSpot = card.enhancedCard,
+                 const enhancedSpot = STATE.REF.MAT[spot].enhancedCard,
                      enhancedCard = VAL({number: enhancedSpot}) && STATE.REF.MAT[enhancedSpot]
                  if (enhancedCard && enhancedCard.isFaceUp && enhancedCard.isEnhanced && !enhancedCard.isNegated) {                        
                      cardAlert(spot, `Unenhancing "${enhancedCard.displayName}".`, "Unenhancing ")
-                     enhanceCard(enhancedSpot)
+                     setCard(enhancedSpot, "enhanced")
                  }
-                 card.enhancedCard = false
+                 STATE.REF.MAT[spot].enhancedCard = false
              }},
             {name: "Preoccupied", displayName: "Preoccupied", category: "debilitation", value: 1, rarity: "C",
              afterAction: (charRef, spot, isEnhanced) => {                 
                  Roller.AddCharEffect(charRef, "social;-1;- Preoccupied (<.>)")
+                 STATE.REF.endMessageQueue.push(`-1 to Social rolls ${isEnhanced ? "until Project completes" : "for one night"}.`)
              }},
             {name: "ProlongedAbsence", displayName: "Prolonged Absence", category: null, value: 1, rarity: "U",
              afterAction: (charRef, spot, isEnhanced) => {
@@ -410,86 +485,196 @@ const Complications = (() => {
                      "Choose a Complication to negate.",
                      "Then, a random Complication will be enhanced."
                  ].join("<br>"))
+                 ONNEXT.negated.push(() => {
+                     const randomSpot = getRandomSpot(["noEnhanced", "noNegated", "faceUp", spot])
+                     setCard(randomSpot, "enhanced")
+                     cardAlert(spot, [
+                         "Randomly enhancing a drawn Complication:",
+                         getCardName(randomSpot, true)
+                     ].join("<br>"))
+                 })
              },
              onEnhance: (charRef, spot) => {
-                 cardAlert(spot, "Enhance a Complication at random.", null, " (Enhanced)")
+                 const randomSpot = getRandomSpot(["noEnhanced", "noNegated", "faceUp", spot])
+                 setCard(randomSpot, "enhanced")
+                 cardAlert(spot, [
+                     "Randomly enhancing a drawn Complication:",
+                     getCardName(randomSpot, true)
+                 ].join("<br>"), null, " (Enhanced)")
              }},
             {name: "RepeatMistakes", displayName: "Repeat Mistakes", category: null, value: 0, rarity: "R",
-             action: () => {
+             action: (charRef, spot) => {
                  STATE.REF.isRepeatMistakes = true
+                 cardAlert(spot, "Duplicate categories allowed.")
              },
-             onEnhance: () => {
-                 STATE.REF.isEnhancedRepeatMistakes = true
+             onEnhance: (charRef, spot) => {
+                 ONALL.activate.push((checkSpot) => {
+                     if (STATE.REF.MAT[checkSpot].category && getUsedCategories([checkSpot]).includes(STATE.REF.MAT[checkSpot].category))
+                         revalueCard(STATE.REF.MAT[checkSpot].spot, 0)
+                 })
+                 STATE.REF.MAT[spot].triggerIndex = ONALL.activate.length - 1              
+                 cardAlert(spot, "Devaluing duplicate categories.", null, " (Enhanced)")
              },
-             undoAction: () => {
+             undoAction: (charRef, spot) => {
                  STATE.REF.isRepeatMistakes = false
+                 cardAlert(spot, "Duplicate categories no longer allowed.")
              },
-             offEnhance: () => {
-                 STATE.REF.isEnhancedRepeatMistakes = false
+             offEnhance: (charRef, spot) => {
+                 ONALL.activate[STATE.REF.MAT[spot].triggerIndex] = null
+                 cardAlert(spot, "No longer devaluing duplicate categories.")
              }},
             {name: "Reverie", displayName: "Reverie", category: null, value: 0, rarity: "R",
              action: (charRef, spot) => {
-                 cardAlert(spot, "Enter Memoriam at a difficulty of your choice.<br>If you succeed:<br>Set the value of \"Reverie\" to that difficulty.")
+                 cardAlert(spot, [
+                     "Enter Memoriam at a difficulty of your choice.",
+                     "If you succeed:",
+                     "Set the value of \"Reverie\" to that difficulty."
+                 ].join("<br>"))
              },
              onEnhance: (charRef, spot) => {
-                 cardAlert(spot, "If the Memoriam triggered by \"Reverie\" failed:<br>Suffer a Total Failure.", null, " (Enhanced)")
+                 cardAlert(spot, [
+                     "If the Memoriam triggered by \"Reverie\" failed:",
+                     "Suffer a Total Failure."
+                 ].join("<br>"), null, " (Enhanced)")
              },
              isNotUndoable: true
             },
-            {name: "RippleEffects", displayName: "Ripple Effects", category: "complication", value: 1, rarity: "U"},
+            {name: "RippleEffects", displayName: "Ripple Effects", category: "complication", value: 1, rarity: "U",
+             action: (charRef, spot) => {
+                 ONNEXT.activate.push((zeroSpot) => {
+                     revalueCard(zeroSpot, 0)
+                 })
+                 STATE.REF.MAT[spot].triggerIndex = ONNEXT.activate.length - 1
+                 ONNEXT.activate.push((zeroSpot) => {
+                     revalueCard(zeroSpot, 0)
+                 })
+                 cardAlert(spot, "Draw two Complications.")
+             },
+             onEnhance: (charRef, spot) => {
+                 ONNEXT.activate[STATE.REF.MAT[spot].triggerIndex] = (zeroSpot) => {
+                     revalueCard(zeroSpot, 0)
+                     setCard(zeroSpot, "enhanced")
+                 }
+                 cardAlert(spot, "Enhancing next draw.", null, "Enhanced")
+             },
+             isNotUndoable: true
+            },
             // {name: "RockyStart", displayName: "", category: null, value: -1, rarity: ""},
             {name: "SilentBeneficiary", displayName: "Silent Beneficiary", category: null, value: 1, rarity: "U",
              afterAction: (charRef, spot, isEnhanced) => {
-                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Silent Beneficiary)`)
+                 STATE.REF.endMessageQueue.push(isEnhanced ? "Reduce a random NPC Project Die to 1." : "Halve a random NPC Project Die.")
              }},
             // {name: "SimmeringResentment", displayName: "", category: null, value: -1, rarity: ""},
             {name: "SpreadThin", displayName: "Spread Thin", category: "debilitation", value: 1, rarity: "C",
-             afterAction: (charRef, spot, isEnhanced) => {
-                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Spread Thin)`)
+             afterAction: (charRef, spot, isEnhanced) => {                 
+                 Roller.AddCharEffect(charRef, "mental;-1;- Spread Thin (<.>)")
+                 STATE.REF.endMessageQueue.push(`-1 to Mental rolls ${isEnhanced ? "until Project completes" : "for one night"}.`)
              }},
             {name: "TangledWebs", displayName: "Tangled Webs", category: "attention", value: 1, rarity: "R",
              afterAction: (charRef, spot, isEnhanced) => {
-                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Tangled Webs)`)
+                 STATE.REF.endMessageQueue.push(isEnhanced ? "Two NPCs form an alliance against you!" : "Two NPCs oppose your Project!")
              }},
             {name: "TheBeastAscendant", displayName: "The Beast Ascendant", category: "beast", value: 2, rarity: "U",
              afterAction: (charRef, spot, isEnhanced) => {
-                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Ascendant)`)
+                 Roller.AddCharEffect(charRef, "all;bestialcancelsucc;!The Beast Ascendant")
+                 STATE.REF.endMessageQueue.push("Bestial Dice cancel basic successes.")
+                 if (isEnhanced) {
+                     Roller.AddCharEffect(charRef, "all;bestialcancelcrit;!The Beast Ascendant (Enhanced)")
+                     STATE.REF.endMessageQueue.push("Bestial Dice cancel critical dice.")
+                 }
              }},
             // {name: "TheBeastInsatiable", displayName: "", category: "beast", value: 1, rarity: "U"},
             {name: "TheBeastRampant", displayName: "The Beast Rampant", category: "beast", value: 2, rarity: "C",
              afterAction: (charRef, spot, isEnhanced) => {
-                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Rampant)`)
+                 Roller.AddCharEffect(charRef, "messycrit;nowpreroll;!The Beast Rampant (No Reroll);once")
+                 STATE.REF.endMessageQueue.push("You cannot reroll your next Messy Critical.")
+                 if (isEnhanced) {
+                     Roller.AddCharEffect(charRef, "messycrit;doublewpreroll;!The Beast Rampant (Costly Reroll)")
+                     STATE.REF.endMessageQueue.push("Rerolling Messy Criticals costs 2 Willpower.")
+                 }
              }},
             {name: "TheBeastRavenous", displayName: "The Beast Ravenous", category: "beast", value: 2, rarity: "U",
              afterAction: (charRef, spot, isEnhanced) => {
-                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Ravenous)`)
+                 STATE.REF.endMessageQueue.push(`+ ${isEnhanced ? "2" : "1"} Hunger when testing for frenzy.`)
              }},
             {name: "TheBeastScorned", displayName: "The Beast Scorned", category: "beast", value: 2, rarity: "U",
              afterAction: (charRef, spot, isEnhanced) => {
-                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}The Beast Scorned)`)
+                 Roller.AddCharEffect(charRef, "all;nobloodsurge;!The Beast Scorned (No Blood Surge)")
+                 STATE.REF.endMessageQueue.push("You cannot use Blood Surge.")
+                 if (isEnhanced) {
+                     Roller.AddCharEffect(charRef, "all;nodiscbonus;!The Beast Scorned (No Discipline Bonus)")                    
+                     STATE.REF.endMessageQueue.push("You do not gain your Discipline Bonus.")
+                 }
              }},
             {name: "Tilted", displayName: "Tilted", category: "debilitation", value: 1, rarity: "C",
-             afterAction: (charRef, spot, isEnhanced) => {
-                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Tilted)`)
+             afterAction: (charRef, spot, isEnhanced) => {                 
+                 Roller.AddCharEffect(charRef, "physical;-1;- Tilted (<.>)")
+                 STATE.REF.endMessageQueue.push(`-1 to Physical rolls ${isEnhanced ? "until Project completes" : "for one night"}.`)
              }},
             // {name: "Triage", displayName: "", category: null, value: -1, rarity: ""},
-            {name: "TunnelVision", displayName: "Tunnel Vision", category: "complication", value: 1, rarity: "U"},
-            {name: "UnderTheBus", displayName: "Under the Bus", category: null, value: 1, rarity: "U"},
-            {name: "UnfinishedBusiness", displayName: "Unfinished Business", category: null, value: 0, rarity: "U"},
+            {name: "TunnelVision", displayName: "Tunnel Vision", category: "complication", value: 1, rarity: "U",
+             action: (charRef, spot) => {
+                 const randomSpot = getRandomSpot(["faceUp", "noValue0", spot])
+                 revalueCard(randomSpot, 0)
+                 cardAlert(spot, [
+                     "Devaluing a random drawn Complication:",
+                     getCardName(randomSpot, true)
+                 ].join("<br>"))
+             },
+             onEnhance: (charRef, spot) => {                 
+                 const randomSpot = getRandomSpot(["faceUp", "noValue0", "maxValue", spot])
+                 revalueCard(randomSpot, 0)
+                 cardAlert(spot, [
+                     "Devaluing your most valuable Complication:",
+                     getCardName(randomSpot, true)
+                 ].join("<br>"))
+             }},
+            {name: "UnderTheBus", displayName: "Under the Bus", category: null, value: 1, rarity: "U",
+             action: (charRef, spot) => {
+                 ONNEXT.activate.push((zeroSpot) => {
+                     revalueCard(zeroSpot, 0)
+                 })
+                 STATE.REF.MAT[spot].triggerIndex = ONNEXT.activate.length - 1
+                 cardAlert(spot, [
+                     "Choose another coterie member.",
+                     "They must draw and resolve a Complication.",
+                     "(Its value won't contribute to your total.)"
+                 ].join("<br>"))
+             },
+             onEnhance: (charRef, spot) => {
+                 ONNEXT.activate[STATE.REF.MAT[spot].triggerIndex] = (zeroSpot) => {
+                     revalueCard(zeroSpot, 0)
+                     setCard(zeroSpot, "enhanced")
+                 }
+                 cardAlert(spot, "Enhancing your coterie-mate's Complication.", null, " (Enhanced)")
+             }},
+            {name: "UnfinishedBusiness", displayName: "Unfinished Business", category: null, value: 0, rarity: "U",
+             action: (charRef, spot) => {
+                 STATE.REF.MAT[spot].dupeList = STATE.REF.MAT.filter(x => x.isDuplicated).map((x, i) => i)
+                 cardAlert(spot, "Duplicate another Complication of your choice.")
+                 // HOLDUNTIL = ["duplicate"]
+             },
+             onEnhance: (charRef, spot) => {               
+                 ONNEXT.duplicate.push((dupeSpot) => {
+                     setCard(dupeSpot, "enhanced")
+                 })
+                 cardAlert(spot, "Enhancing the chosen Complication.", null, " (Enhanced)")
+             }},
             {name: "WeightOfTheWorld", displayName: "Weight of the World", category: "debilitation", value: 2, rarity: "U",
-             afterAction: (charRef, spot, isEnhanced) => {
-                 STATE.REF.endMessageQueue.push(`(${isEnhanced ? "Enhanced " : ""}Weight of the World)`)
-             }}
+             afterAction: (charRef, spot, isEnhanced) => {                 
+                 Roller.AddCharEffect(charRef, "physical;-2;- Weight of the World (<.>)")
+                 STATE.REF.endMessageQueue.push(`-2 to Physical rolls ${isEnhanced ? "until Project completes" : "for one night"}.`)
+             }},
         ],
         /* eslint-enable no-unused-vars */
         CARDQTYS = {V: 12, C: 6, U: 3, R: 1},
         CARDNAMES = _.values(CARDS).map(x => x.name)
-    let ISNEXTDRAWENHANCED = false, ISDELAYEDCARDDEVALUED = false, DELAYEDUNTILDISCARD = []
+    let DELAYQUEUE = []
     // #endregion
 
     // #region GETTERS: Active card names
     const getActiveCards = () => _.filter(STATE.REF.MAT, v => isCardActive(v)),
-        getUsedCategories = () => _.uniq(_.compact(_.map(getActiveCards(), v => v.category))),
+        getUsedCategories = (omitSpots = []) => _.uniq(_.compact(_.map(getActiveCards(), v => !omitSpots.includes(v.spot) && v.category))),
         isCardInDeck = card => VAL({list: card}) && card.name && (STATE.REF.isRepeatMistakes || !getUsedCategories().includes(card.category)) && !_.map(getActiveCards(), v => v.name).includes(card.name),
         isCardActive = card => VAL({list: card}) && card.isFaceUp && !card.isNegated,
         getCardName = (spot, isReturningFullName = false) => isReturningFullName && STATE.REF.MAT[spot].displayName || STATE.REF.MAT[spot].name,
@@ -500,6 +685,10 @@ const Complications = (() => {
                 let isThisCardValid = true
                 for (const mode of modes) {
                     switch (mode) {
+                        case "maxValue": 
+                            if (card.value < Math.max(...STATE.REF.MAT.map(x => x.value)))
+                                isThisCardValid = false
+                            break
                         case "isUndoable":
                             if (card.isNotUndoable)
                                 isThisCardValid = false
@@ -527,6 +716,8 @@ const Complications = (() => {
                         default:
                             if (i === mode)
                                 isThisCardValid = false
+                            else if (VAL({string: mode}) && `${mode}`.startsWith("noValue") && card.value === D.Int(mode.replace(/\w/gu, "")))
+                                isThisCardValid = false
                             break
                     }
                     if (!isThisCardValid)
@@ -536,7 +727,7 @@ const Complications = (() => {
                     validSpots.push(i)
             }
             DB({validSpots}, "getRandomSpot")
-            return _.sample(validSpots)
+            return validSpots.length && _.sample(validSpots) || false
         },
         cardAlert = (spot, message, preTitle, postTitle) => {
             const cardName = getCardName(spot, true),
@@ -575,14 +766,7 @@ const Complications = (() => {
             if (card && card.isFaceUp) {
                 setCard(spot, "faceDown")
             } else if (card) {
-                if (VAL({number: ISNEXTDRAWENHANCED})) {
-                    setCard(spot, "faceUpEnhanced")
-                    const enhancingCard = STATE.REF.MAT[ISNEXTDRAWENHANCED]
-                    enhancingCard.nextDrawEnhance = spot
-                    ISNEXTDRAWENHANCED = false
-                } else {
-                    setCard(spot, "faceUp")
-                }
+                setCard(spot, "faceUp")
                 STATE.REF.lastDraw = spot
             }
             refreshDraws()
@@ -590,31 +774,107 @@ const Complications = (() => {
     // #endregion
 
     // #region CARD CONTROL: Deck construction, sandbox manipulation
-        setCard = (spot, mode) => {
-            DB({spot, mode}, "setCard")
+        setCardFuncs = [],
+        dealRandomCard = (spot, isShowingFX = true) => {
+            if (isShowingFX)
+                blinkCard(spot)                
+            STATE.REF.MAT[spot] = _.clone(_.sample(STATE.REF.DECK))
+            STATE.REF.MAT[spot].spot = spot
+        },
+        setCard = (spot, mode, isShowingFX = true) => {
+            setCardFuncs.push(`${mode} ${getCardName(spot)}`)
             Media.ToggleImg(`CompSpot_${spot+1}`, true)
             Media.ToggleImg(`CompCard_Base_${spot+1}`, true)
             Media.ToggleImg(`CompCard_Text_${spot+1}`, false)
-            const card = STATE.REF.MAT[spot]
+            const card = STATE.REF.MAT[spot],
+                onNextMode = mode.replace(/\d/gu, "")
             if (card && CARDNAMES.includes(card.name)) {
                 Media.SetText(`CompCard_Name_${spot+1}`, card.name)
                 Media.SetImg(`CompCard_Text_${spot+1}`, card.name) 
             }
-            let isForcingEnhance = false
-            switch (mode) {
-                case "discard": {
-                    DELAYEDUNTILDISCARD = DELAYEDUNTILDISCARD.filter(x => x !== null && x !== spot)
-                    while (DELAYEDUNTILDISCARD.length) {
-                        setCard(DELAYEDUNTILDISCARD.shift(), "activate")
-                        ISDELAYEDCARDDEVALUED = false
-                    }
+            const waitCallIndex = ONNEXT[onNextMode].findIndex(x => VAL({string: x}) && x.includes("WAIT")),
+                delayedCardIndices = DELAYQUEUE.map((x, i) => [x, i]).filter(x => VAL({array: x[0]}) && x[0][0].includes(onNextMode) && x[0][2] !== spot).map(x => x[1]),
+                nextFuncIndex = ONNEXT[onNextMode].map((x, i) => [x, i]).filter(x => VAL({function: x[0]})).map(x => x[1]).shift(),
+                allFuncs = ONALL[onNextMode].filter(x => VAL({function: x}))
+            let nextMode = null
+            DB([
+                `<b>[${mode}] <u>${getCardName(spot)}</u> @ ${spot}</b>`,
+                "**********************************************************",
+                `ONNEXT[${onNextMode}] (wait index: ${waitCallIndex}): ${D.JS(ONNEXT[onNextMode])}`,
+                `ONNEXT Function Indices: ${D.JS(nextFuncIndex)}`,
+                `DELAYQUEUE (ALL): ${D.JS(DELAYQUEUE)}`,
+                `DELAYQUEUE (Filtered Indices): ${D.JS(delayedCardIndices)}`
+            ].join("<br>"), `setCard${["replace", "faceDown"].includes(mode) ? mode : ""}`)
+            
+
+            /*
+                waitCalls = onNextVals.filter(x => VAL({string: x}) && x.includes("WAIT")),
+                funcCalls = onNextVals.filter(x => _.isFunction(x)),
+                delayedCards = DELAYQUEUE.filter(x => x[0].includes(onNextMode)) */
+
+                // ONNEXT.faceUp.push("WAIT:confirm,discard:activate")
+            
+            while (delayedCardIndices.length) {
+                // DB(`Setting delayed Card (${delayedCardIndices.length} left): ${D.JS(DELAYQUEUE[delayedCardIndices[0]])}`, "setCard")
+                const delayedCardIndex = delayedCardIndices.shift(),
+                    delayedCard = _.clone(DELAYQUEUE[delayedCardIndex])
+                DELAYQUEUE[delayedCardIndex] = null
+                
+                if (delayedCard[1] !== onNextMode) {
+                    DB([
+                        ">>> ------------ ",
+                        `>>> DELAYED CARDS: ${delayedCardIndices.length + 1}`,
+                        `>>> >>> SETTING ${getCardName(delayedCard[2])} @ ${delayedCard[2]} (${D.JS(delayedCard)})`,
+                        `>>> NEW DELAY QUEUE: ${D.JS(DELAYQUEUE)}`,
+                        ">>> ============ "
+                    ].join("<br>"), "setCard")          
+                    setCard(delayedCard[2], delayedCard[1])
+                } else {                    
+                    DB([
+                        ">>> ------------ ",
+                        `>>> DELAYED CARDS: ${delayedCardIndices.length + 1}`,
+                        `>>> >>> <u><b>SKIPPING</b></u> ${getCardName(delayedCard[2])} @ ${delayedCard[2]} (${D.JS(delayedCard)})`,
+                        `>>> >>> >>> ... b/c ${delayedCard[2]} === ${onNextMode}`,
+                        `>>> NEW DELAY QUEUE: ${D.JS(DELAYQUEUE)}`,
+                        ">>> ============ "
+                    ].join("<br>"), "setCard")    
                 }
-                // falls through
+            }
+
+            /* if (setCardFuncs.length >= 100) {
+                D.Alert(`Threshold Met! ${D.JS(setCardFuncs)}`)
+                return
+            } */  
+            
+            if (card.isDiscarded) {
+                DB(`Discarded.<br>== <b>FINISHED [${mode}] <u>${getCardName(spot)}</u> @ ${spot}</b> ====`, "setCard")
+                return
+            }
+            switch (mode) {
+                case "replace": {
+                    dealRandomCard(spot, isShowingFX)
+                    nextMode = "faceDown"
+                    break
+                }
+                case "discard": {
+                    card.isDiscarded = true
+                    DELAYQUEUE = DELAYQUEUE.map(x => x && x[2] === spot ? null : x)
+                    STATE.REF.DISCARDS.push(STATE.REF.MAT[spot])
+                    dealRandomCard(spot, isShowingFX)
+                    if (waitCallIndex >= 0) {
+                        DELAYQUEUE.push([...ONNEXT[onNextMode][waitCallIndex].split(":").slice(1), spot])
+                        ONNEXT[onNextMode][waitCallIndex] = null
+                        DB(`Waiting @ "DISCARD"<br>DELAYQUEUE: ${D.JS(DELAYQUEUE)}<br>ONNEXT[${onNextMode}]: ${D.JS(ONNEXT[onNextMode])}<br>== <b>FINISHED [${mode}] <u>${getCardName(spot)}</u> @ ${spot}</b> ====`, "setCard")
+                        break
+                    }
+                    nextMode = "faceDown"
+                    break
+                }
                 case "faceDown": {
                     Media.ToggleImg(`CompCard_Negated_${spot+1}`, false)
                     Media.ToggleImg(`CompCard_Revalue_${spot+1}`, false)
                     DragPads.Toggle(Media.GetImgData(`CompSpot_${spot+1}`).id, true)
-                    Media.SetImg(`CompCard_Base_${spot+1}`, "cardBack")
+                    Media.SetImg(`CompCard_Base_${spot+1}`, "cardBack")  
                     if (card.isFaceUp) {
                         setCompVals("add", -1 * card.value)
                         if (card.isEnhanced && card.offEnhance && card.enhanceTriggered) {
@@ -629,12 +889,14 @@ const Complications = (() => {
                     card.isFaceUp = false                    
                     card.isEnhanced = false
                     card.isNegated = false
+                    if (waitCallIndex >= 0) {
+                        DELAYQUEUE.push([...ONNEXT[onNextMode][waitCallIndex].split(":").slice(1), spot])
+                        ONNEXT[onNextMode][waitCallIndex] = null
+                        DB(`Waiting @ "FACEDOWN"<br>DELAYQUEUE: ${D.JS(DELAYQUEUE)}<br>ONNEXT[${onNextMode}]: ${D.JS(ONNEXT[onNextMode])}<br>== <b>FINISHED [${mode}] <u>${getCardName(spot)}</u> @ ${spot}</b> ====`, "setCard")
+                        break
+                    }
                     break
                 }
-                case "faceUpEnhanced": {
-                    isForcingEnhance = true
-                }
-                // falls through
                 case "faceUp": {
                     Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
                     Media.ToggleImg(`CompCard_Negated_${spot+1}`, false)
@@ -642,46 +904,62 @@ const Complications = (() => {
                     DragPads.Toggle(Media.GetImgData(`CompSpot_${spot+1}`).id, false)
                     Media.SetImg(`CompCard_Base_${spot+1}`, "base")
                     card.isFaceUp = true
-                    card.isEnhanced = isForcingEnhance
+                    card.isEnhanced = false
                     card.isNegated = false
-                    if (DELAYEDUNTILDISCARD.filter(x => x === null).length) {
-                        DB({DELAYEDUNTILDISCARD}, "setCard")
-                        DELAYEDUNTILDISCARD[DELAYEDUNTILDISCARD.findIndex(x => x === null)] = spot
+                    if (waitCallIndex >= 0) {
+                        DELAYQUEUE.push([...ONNEXT[onNextMode][waitCallIndex].split(":").slice(1), spot])
+                        ONNEXT[onNextMode][waitCallIndex] = null
+                        DB(`Waiting @ "FACEUP"<br>DELAYQUEUE: ${D.JS(DELAYQUEUE)}<br>ONNEXT[${onNextMode}]: ${D.JS(ONNEXT[onNextMode])}<br>== <b>FINISHED [${mode}] <u>${getCardName(spot)}</u> @ ${spot}</b> ====`, "setCard")
                         break
                     }
+                    nextMode = "activate"
+                    break   
                 }
-                // falls through
-                case "activate": {
-                    if (!card.isEnhanced && ISNEXTDRAWENHANCED) {
-                        ISNEXTDRAWENHANCED = false
-                        card.isEnhanced = true
+                case "confirm": {
+                    if (waitCallIndex >= 0) {
+                        DELAYQUEUE.push([...ONNEXT[onNextMode][waitCallIndex].split(":").slice(1), spot])
+                        ONNEXT[onNextMode][waitCallIndex] = null
+                        DB(`Waiting @ "CONFIRM"<br>DELAYQUEUE: ${D.JS(DELAYQUEUE)}<br>ONNEXT[${onNextMode}]: ${D.JS(ONNEXT[onNextMode])}<br>== <b>FINISHED [${mode}] <u>${getCardName(spot)}</u> @ ${spot}</b> ====`, "setCard")
+                        break
                     }
-                    if (
-                        card.category && STATE.REF.isEnhancedRepeatMistakes && getUsedCategories().includes(card.category) ||
-                        ISDELAYEDCARDDEVALUED && mode === "activate"
-                    )
-                        revalueCard(spot, 0)                        
+                    nextMode = "activate"
+                    break
+                }
+                case "activate": {                      
                     Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
                     setCompVals("add", card.value)
-                    DB(`Activating ${card.name} ...`, "setCard")
+                    // DB(`Activating ${card.name} ...`, "setCard")
                     if (card.action) {
-                        DB("... Action Detected, Triggering ...", "setCard")
+                        // DB("... Action Detected, Triggering ...", "setCard")
                         card.action(STATE.REF.charRef, spot)
                         card.actionTriggered = true
                     }
-                    if (!card.isEnhanced)
+                    if (card.isEnhanced)
+                        setCard(spot, "enhanced")                                        
+                    if (waitCallIndex >= 0) {
+                        DELAYQUEUE.push([...ONNEXT[onNextMode][waitCallIndex].split(":").slice(1), spot])
+                        ONNEXT[onNextMode][waitCallIndex] = null
+                        DB(`Waiting @ "ACTIVATE"<br>DELAYQUEUE: ${D.JS(DELAYQUEUE)}<br>ONNEXT[${onNextMode}]: ${D.JS(ONNEXT[onNextMode])}<br>== <b>FINISHED [${mode}] <u>${getCardName(spot)}</u> @ ${spot}</b> ====`, "setCard")
                         break
+                    }
+                    break
                 }
-                // falls through
                 case "enhanced": {
                     Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
                     Media.SetImg(`CompCard_Base_${spot+1}`, "enhanced")
                     DragPads.Toggle(Media.GetImgData(`CompSpot_${spot+1}`).id, false)
                     card.isEnhanced = true
-                    if (card.onEnhance) {
+                    // DB(`Enhancing ${card.name}: ${D.JS(card)}`, "setCard")
+                    if (!card.enhanceTriggered && card.onEnhance) {
                         card.onEnhance(STATE.REF.charRef, spot)
                         card.enhanceTriggered = true
                     }
+                    if (waitCallIndex >= 0) {
+                        DELAYQUEUE.push([...ONNEXT[onNextMode][waitCallIndex].split(":").slice(1), spot])
+                        ONNEXT[onNextMode][waitCallIndex] = null
+                        DB(`Waiting @ "ENHANCED"<br>DELAYQUEUE: ${D.JS(DELAYQUEUE)}<br>ONNEXT[${onNextMode}]: ${D.JS(ONNEXT[onNextMode])}<br>== <b>FINISHED [${mode}] <u>${getCardName(spot)}</u> @ ${spot}</b> ====`, "setCard")
+                        break
+                    }      
                     break
                 }
                 case "!enhanced": {
@@ -706,6 +984,12 @@ const Complications = (() => {
                         card.offEnhance(STATE.REF.charRef, spot)
                         card.enhanceTriggered = false
                     }
+                    if (waitCallIndex >= 0) {
+                        DELAYQUEUE.push([...ONNEXT[onNextMode][waitCallIndex].split(":").slice(1), spot])
+                        ONNEXT[onNextMode][waitCallIndex] = null
+                        DB(`Waiting @ "NEGATED"<br>DELAYQUEUE: ${D.JS(DELAYQUEUE)}<br>ONNEXT[${onNextMode}]: ${D.JS(ONNEXT[onNextMode])}<br>== <b>FINISHED [${mode}] <u>${getCardName(spot)}</u> @ ${spot}</b> ====`, "setCard")
+                        break
+                    }      
                     break
                 }
                 case "!negated": {
@@ -737,15 +1021,48 @@ const Complications = (() => {
                         Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
                         if (mode.startsWith("!")) {
                             Media.ToggleImg(`CompCard_Revalue_${spot+1}`, false)
+                            delete card.origValue
                         } else {
                             const newValue = `${D.Int(mode.match(/\d+$/gu).pop())}`
                             Media.ToggleImg(`CompCard_Revalue_${spot+1}`, true)
                             Media.SetImg(`CompCard_Revalue_${spot+1}`, newValue)
                         }
                     }
+                    if (waitCallIndex >= 0) {
+                        DELAYQUEUE.push([...ONNEXT[onNextMode][waitCallIndex].split(":").slice(1), spot])
+                        ONNEXT[onNextMode][waitCallIndex] = null
+                        DB(`Waiting @ "DEFAULT"<br>DELAYQUEUE: ${D.JS(DELAYQUEUE)}<br>ONNEXT[${onNextMode}]: ${D.JS(ONNEXT[onNextMode])}<br>== <b>FINISHED [${mode}] <u>${getCardName(spot)}</u> @ ${spot}</b> ====`, "setCard")
+                        break
+                    }      
                     break
                 }
             }
+
+
+            if (nextFuncIndex || nextFuncIndex === 0) {
+                const nextFunc = [...ONNEXT[onNextMode]][nextFuncIndex]
+                DB(`@@@@@@@@@@@@@@@@@@@@@@<br><b><u>NEXT FUNCTION for ${getCardName(spot)} at ${mode}...<br>`, "setCard")
+                // DB({onNextMode, ONNEXT: ONNEXT[onNextMode], nextFuncIndex, nextFunc}, "setCard")
+                ONNEXT[onNextMode][nextFuncIndex] = null
+                if (VAL({function: nextFunc}))
+                    nextFunc(spot)
+                DB(`@@@@@@@@<br><b><u>FINISHED NEXT FUNCTION for ${getCardName(spot)} at ${mode} @@@@`, "setCard")
+            }
+            for (const allFunc of allFuncs)
+                allFunc(spot)
+                
+            DB([
+                `ONNEXT[${onNextMode}] (wait index: ${waitCallIndex}): ${D.JS(ONNEXT[onNextMode])}`,
+                `ONNEXT Function Indices: ${D.JS(nextFuncIndex)}`,
+                `DELAYQUEUE (ALL): ${D.JS(DELAYQUEUE)}`,
+                `DELAYQUEUE (Filtered Indices): ${D.JS(delayedCardIndices)}`,
+                `== <b>FINISHED [${mode}] <u>${getCardName(spot)}</u> @ ${spot}</b> ====`,
+                nextMode && `>>> PROCEEDING TO ${D.JS(nextMode)} >>>>>>>>>>>>` || "======================"
+            ].join("<br>"), `setCard${["replace", "faceDown"].includes(mode) ? mode : ""}`)
+
+            if (nextMode)
+                setCard(spot, nextMode)
+             
         },    
         buildDeck = () => {
             STATE.REF.DECK = []
@@ -759,17 +1076,8 @@ const Complications = (() => {
                     STATE.REF.DECK.push(validCards[i])            
             }
             Media.SetText("CompCardsRemaining", `${STATE.REF.DECK.length}`)            
-            Media.SetText("CompCardsExcluded", `${STATE.REF.totalCards - STATE.REF.DECK.length}`)
-        },
-        dealCard = spot => {
-            const card = STATE.REF.MAT[spot]
-            if (card && card.isFaceUp)
-                discardCard(spot)
-            else if (card && card.imgsrc)
-                blinkCard(spot)
-            STATE.REF.MAT[spot] = _.clone(_.sample(STATE.REF.DECK))
-            setCard(spot, "faceDown", STATE.REF.MAT[spot].name)
-            // DragPads.Toggle(Media.GetImgData(`CompSpot_${spot+1}`).id, true)
+            Media.SetText("CompCardsExcluded", `${STATE.REF.totalCards - STATE.REF.DECK.length - STATE.REF.DISCARDS.length - STATE.REF.MAT.filter(x => x.isFaceUp).length }`)            
+            Media.SetText("CompCardsDiscarded", `${STATE.REF.DISCARDS.length}`) 
         },
         blinkCard = spot => {
             STATE.REF.FXQUEUE.push(Media.GetImgData(`CompCard_Base_${spot+1}`))
@@ -779,28 +1087,8 @@ const Complications = (() => {
             }
             setTimeout(flashCard, 500 + 300 * STATE.REF.FXQUEUE.length)
         },
-        negateCard = spot => {
-            if (VAL({number: spot}, "negateCard")) {
-                const card = STATE.REF.MAT[spot]
-                if (card)
-                    if (card.isNegated) {
-                        setCard(spot, "!negated")
-                    } else {
-                        setCard(spot, "negated")
-                        if (card.undoAction)
-                            card.undoAction(STATE.REF.charRef, card.isEnhanced)
-                    }
-            }
-        },
-        discardCard = spot => {
-            if (VAL({number: spot}, "discardCard")) {
-                const card = STATE.REF.MAT[spot]                
-                if (card && card.isFaceUp)
-                    setCard(spot, "discard")
-                dealCard(spot)
-            }
-        },
         dupeCard = spot => {
+            spot = spot === "LAST" ? STATE.REF.lastDraw : spot
             if (VAL({number: spot}, "dupeCard")) {
                 const card = STATE.REF.MAT[spot]
                 if (card && card.isDuplicated) {
@@ -811,39 +1099,31 @@ const Complications = (() => {
                     card.isDuplicated = true
                 }
             }
-        },        
-        enhanceCard = spot => {
-            if (VAL({number: spot}, "enhanceCard")) {
-                const card = STATE.REF.MAT[spot]
-                if (card && card.isEnhanced) {
-                    setCard(spot, "!enhanced")
-                    if (card.offEnhance)
-                        card.offEnhance(STATE.REF.charRef)
-                } else if (card) {
-                    if (card.onEnhance)
-                        card.onEnhance(STATE.REF.charRef)
-                    setCard(spot, "enhanced")
-                }
-            }
-        },        
+            return spot
+        },     
         revalueCard = (spot = 0, value = 0) => {
+            spot = spot === "LAST" ? STATE.REF.lastDraw : spot
             const card = STATE.REF.MAT[spot]
-            if (value === card.value)
+            if (card.origValue === value) {
                 setCard(spot, "!revalue")
-            else
+                delete card.origValue
+            } else {
                 setCard(spot, `revalue${value}`)
+                card.origValue = card.value
+            }
             setCompVals("add", value - card.value)
             STATE.REF.MAT[spot].value = value
+            return spot
             sendGMPanel()
         },        
-        refreshDraws = () => {
+        refreshDraws = (isShowingFX = true) => {
             buildDeck()
             for (let i = 0; i < 10; i++) {
                 const card = STATE.REF.MAT[i]
                 if (card && card.isFaceUp)
                     continue
                 else if (!isCardInDeck(card))
-                    dealCard(i)
+                    setCard(i, "replace", isShowingFX)
                 // Media.SetImg(`CompSpot_${i+1}`, "cardBack")
             }
         },
@@ -892,15 +1172,19 @@ const Complications = (() => {
                 {name: null, isFaceUp: false, value: 0}
             ]
             STATE.REF.DISCARDS = []
+            for (const [mode] of Object.entries(ONNEXT)) {
+                ONNEXT[mode] = []
+                ONALL[mode] = []
+            }
+            DELAYQUEUE = []
             setCompVals("current", 0)
             setCompVals("target", startVal)
             if (isRefreshing)
-                refreshDraws()
+                refreshDraws(false)
                 
         },
         startComplication = startVal => {            
             STATE.REF.isRunning = true
-            STATE.REF.lastMode = Session.Mode
             STATE.REF.endMessageQueue = []
             Session.ChangeMode("Complications")
             D.Queue(resetComplication, [true, startVal], "Comp", 1)
@@ -912,24 +1196,26 @@ const Complications = (() => {
             STATE.REF.isRunning = false
             if (isQueingActions)
                 for (const card of getActiveCards().filter(x => x.afterAction)) {
-                    D.Queue(card.afterAction, [STATE.REF.charRef, card.isEnhanced], "Comp", 0.5)
+                    D.Queue(card.afterAction, [STATE.REF.charRef, card.spot, card.isEnhanced], "Comp", 0.5)
                     if (card.isDuplicated)
-                        D.Queue(card.afterAction, [STATE.REF.charRef, card.isEnhanced], "Comp", 0.5)
+                        D.Queue(card.afterAction, [STATE.REF.charRef, card.spot, card.isEnhanced], "Comp", 0.5)
                 }
             D.Queue(sendEndMsgQueue, [STATE.REF.charRef], "Comp", 3)
             if (isLaunchingProject) {
+                const margin = STATE.REF.currentVal - STATE.REF.targetVal,
+                    scope = Roller.Commit - 1 + Roller.Margin
                 D.Queue(Char.LaunchProject, [STATE.REF.currentVal - STATE.REF.targetVal, "COMPLICATION"], "Comp", 0.5)
                 D.Queue(D.Chat, ["all", C.HTML.Block([
                     C.HTML.Header("Launching Project"),
                     C.HTML.Body([
-                        `Launch Margin: ${STATE.REF.currentVal - STATE.REF.targetVal}`,
-                        `Required Stake: ${Math.max(0, Roller.Commit - (STATE.REF.currentVal - STATE.REF.targetVal))}`
+                        `Launch Margin: ${margin >= 0 && "+" || "-"}${Math.abs(margin)}&nbsp;&nbsp;&nbsp;&nbsp;Project Scope: ${scope}`,
+                        `Required Stake: ${Math.max(0, scope + 1 - margin)}`
                     ].join("<br>"))
                 ].join(""))], "Comp", 2)
             } 
             D.Queue(resetComplication, [false], "Comp", 0.5)   
-            D.Queue(Session.ChangeMode, [STATE.REF.lastMode], "Comp", 0.5)
-            D.Run("Comp")   
+            D.Queue(Session.ChangeMode, [Session.LastMode], "Comp", 0.5)
+            D.Run("Comp")
         },
         sendEndMsgQueue = (charRef) => {
             // D.Alert(`End Message Queue: ${D.JS(STATE.REF.endMessageQueue)}`)
@@ -993,7 +1279,7 @@ const Complications = (() => {
                     }
                     return C.COLORS.darkgrey
                 }
-            for (const actionType of ["discard", "enhance", "negate", "revalue", "duplicate"])
+            for (const actionType of ["discard", "enhance", "negate", "revalue", "duplicate", "confirm"])
                 subPanels.push({
                     title: actionType,
                     rows: [
@@ -1021,14 +1307,15 @@ const Complications = (() => {
             ]})
         },
         promptCardVal = (cardSpot) => {
-            D.CommandMenu({title: "Set Card Value", rows: [
-                {type: "ButtonLine", contents: [                        
-                    {name: 0, command: `!comp setvalue ${cardSpot+1} 0`},
-                    {name: 1, command: `!comp setvalue ${cardSpot+1} 1`},
-                    {name: 2, command: `!comp setvalue ${cardSpot+1} 2`},
-                    {name: 3, command: `!comp setvalue ${cardSpot+1} 3`},
-                    {name: 4, command: `!comp setvalue ${cardSpot+1} 4`}
-                ]}]})
+            if (VAL({number: cardSpot}))
+                D.CommandMenu({title: "Set Card Value", rows: [
+                    {type: "ButtonLine", contents: [                        
+                        {name: 0, command: `!comp setvalue ${cardSpot+1} 0`},
+                        {name: 1, command: `!comp setvalue ${cardSpot+1} 1`},
+                        {name: 2, command: `!comp setvalue ${cardSpot+1} 2`},
+                        {name: 3, command: `!comp setvalue ${cardSpot+1} 3`},
+                        {name: 4, command: `!comp setvalue ${cardSpot+1} 4`}
+                    ]}]})
         }
     // #endregion
 

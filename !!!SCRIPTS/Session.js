@@ -374,7 +374,6 @@ const Session = (() => {
                 Testing: () => {
                     STATE.REF.isTestingActive = true
                     Media.ToggleText("testSessionNotice", true)
-                    D.Alert("Test Session <b>ACTIVE</b>.", "!sess test")
                 }
             },
             leaveMode: {
@@ -408,7 +407,6 @@ const Session = (() => {
                 Testing: () => {
                     STATE.REF.isTestingActive = false
                     Media.ToggleText("testSessionNotice", false)
-                    D.Alert("Test Session <b>DISABLED</b>.", "!sess test")
                 }
             }
         },
@@ -537,7 +535,7 @@ const Session = (() => {
                 D.Queue(() => { STATE.REF.Mode = curMode; STATE.REF.LastMode = lastMode }, [], "ModeSwitch", 0.1)
                 D.Queue(D.Chat, ["Storyteller", "Configuring Mode Assets...", "none"], "ModeSwitch", 0.1)
                 D.Queue(Roller.Clean, [], "ModeSwitch", 1)
-                D.Queue(Media.SwitchMode, [], "ModeSwitch", 2)
+                D.Queue(Media.ModeUpdate, [], "ModeSwitch", 2)
                 D.Queue(setModeLocations, [curMode], "ModeSwitch", 1)
                 D.Queue(Media.UpdateSoundscape, [], "ModeSwitch", 1)
                 D.Queue(D.Chat, ["Storyteller", `Entering <b>${curMode}</b>...`, "none"], "ModeSwitch", 0.1)

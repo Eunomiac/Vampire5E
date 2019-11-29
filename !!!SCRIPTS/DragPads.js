@@ -359,14 +359,14 @@ const DragPads = (() => {
             toggleMapPanel(panelData) {
                 const imgData = Media.GetImgData("MapButton_Panel_1")
                 if (imgData.curSrc === "open" || panelData === undefined) {
-                    for (const buttonName of ["Domain", "Districts", "Roads", "Parks", "Rack", ...["Culture", "Education", "Havens", "Health", "Landmarks", "Nightlife", "Shopping", "Dining", "Transportation"].map(x => `Sites${x}`)])
+                    for (const buttonName of ["Domain", "Districts", "Roads", "Parks", "Rack", ...["Culture", "Education", "Havens", "Health", "Landmarks", "Nightlife", "Shopping", "Transportation"].map(x => `Sites${x}`)])
                         Media.ToggleImg(`MapButton_${buttonName}`, false)
                     Media.SetImg(imgData.id, "closed")
                     if (MAPPANELTIMER)
                         clearTimeout(MAPPANELTIMER)
                     MAPPANELTIMER = null
                 } else {
-                    for (const buttonName of ["Domain", "Districts", "Roads", "Parks", "Rack", ...["Culture", "Education", "Havens", "Health", "Landmarks", "Nightlife", "Shopping", "Dining", "Transportation"].map(x => `Sites${x}`)])
+                    for (const buttonName of ["Domain", "Districts", "Roads", "Parks", "Rack", ...["Culture", "Education", "Havens", "Health", "Landmarks", "Nightlife", "Shopping", "Transportation"].map(x => `Sites${x}`)])
                         Media.ToggleImg(`MapButton_${buttonName}`, true)
                     Media.SetImg(imgData.id, "open")
                     if (MAPPANELTIMER)
