@@ -706,19 +706,19 @@ const C = (() => {
             whiteMarble: {
                 block: {
                     bgImage: BGIMAGES.whiteMarble,
-                    borderColor: COLORS.halfwhite
+                    border: `4px outset ${COLORS.halfwhite}`
                 },
                 header: {
                     color: COLORS.halfwhite,
                     bgColor: COLORS.transparent,
                     textShadow: "-1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 0px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc",
-                    borderStyle: "none"
+                    border: "none"
                 },
                 body: {
                     color: COLORS.halfwhite,
                     bgColor: COLORS.transparent,
                     textShadow: "-1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 0px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc",
-                    borderStyle: "none",
+                    border: "none",
                     fontSize: "16px",
                     fontFamily: "'Bodoni SvtyTwo ITC TT'",
                     fontWeight: "normal"

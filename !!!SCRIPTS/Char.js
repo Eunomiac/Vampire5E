@@ -1511,7 +1511,7 @@ const Char = (() => {
                 }
                 if (bannerString && isChatting)
                     D.Chat(charObj, C.HTML.Block(_.compact([
-                        C.HTML.Header(bannerString, chatStyles.banner),
+                        C.HTML.Header(bannerString, Object.assign({}, chatStyles.banner, {lineHeight: "25px"})),
                         bodyString ? C.HTML.Body(bodyString, chatStyles.body) : null,
                         trackerString || null,
                         alertString ? C.HTML.Header(alertString, Object.assign(chatStyles.alert, alertString.includes("<br>") ? {height: "40px"} : {})) : null
