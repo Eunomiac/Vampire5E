@@ -1191,12 +1191,12 @@ const Media = (() => {
             width: C.SANDBOX.width,
             keys: [
                 "Horizon",
+                "Foreground",
                 "WeatherGround",
                 "WeatherMain",
                 "WeatherFog",
                 "WeatherClouds",
                 "WeatherFrost",
-                "WeatherGlow",
                 "Spotlight"      
             ]
         },
@@ -1268,7 +1268,8 @@ const Media = (() => {
                     HungerBotRight_1: 118
                 },
                 HorizonBGs: {
-                    Horizon_1: 1
+                    Horizon_1: 1,
+                    Foreground_1: 118
                 },
                 Weather: {
                     RisingMoon_1: 100,
@@ -1279,8 +1280,6 @@ const Media = (() => {
                     WeatherLightning_2: 110,
                     WeatherLightning_3: 110,
                     WeatherGround_1: 119,
-                    WeatherClouds_1: 105,
-                    WeatherGlow_1: 106,
                     tempC: 400,
                     tempF: 400,
                     weather: 400 
@@ -3186,18 +3185,18 @@ const Media = (() => {
             ["IMG", "Horizon_1", "modes", "Downtime", {isForcedOn: true, isForcedState: "night5", lastState: "night5"}],
             ["IMG", "Horizon_1", "modes", "Spotlight", {isForcedOn: true, isForcedState: "night5", lastState: "night5"}],
             ["IMG", "Horizon_1", "modes", "Complications", {isForcedOn: null}],
-            ["IMG", "WeatherClouds_1", "isActive", false],
-            ["IMG", "WeatherClouds_1", "curSrc", "@@curSrc@@"],
-            ["IMG", "WeatherClouds_1", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
-            ["IMG", "WeatherClouds_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "WeatherClouds_1", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "WeatherClouds_1", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "WeatherClouds_1", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "WeatherClouds_1", "modes", "Complications", {isForcedOn: null}],
+            ["IMG", "Foreground_1", "isActive", true],
+            ["IMG", "Foreground_1", "curSrc", "@@curSrc@@"],
+            ["IMG", "Foreground_1", "modes", "Active", {isForcedOn: true}],
+            ["IMG", "Foreground_1", "modes", "Inactive", {isForcedOn: true, isForcedState: "dark", lastState: "dark"}],
+            ["IMG", "Foreground_1", "modes", "Daylighter", {isForcedOn: true, isForcedState: "daylighters", lastState: "daylighters"}],
+            ["IMG", "Foreground_1", "modes", "Downtime", {isForcedOn: true, isForcedState: "dark", lastState: "dark"}],
+            ["IMG", "Foreground_1", "modes", "Spotlight", {isForcedOn: true, isForcedState: "dark", lastState: "dark"}],
+            ["IMG", "Foreground_1", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "WeatherFog_1", "isActive", false],
             ["IMG", "WeatherFog_1", "curSrc", "@@curSrc@@"],
             ["IMG", "WeatherFog_1", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
-            ["IMG", "WeatherFog_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
+            ["IMG", "WeatherFog_1", "modes", "Inactive", {isForcedOn: true, isForcedState: "redoverlay", lastState: "redoverlay"}],
             ["IMG", "WeatherFog_1", "modes", "Daylighter", {isForcedOn: "NEVER"}],
             ["IMG", "WeatherFog_1", "modes", "Downtime", {isForcedOn: "NEVER"}],
             ["IMG", "WeatherFog_1", "modes", "Spotlight", {isForcedOn: "NEVER"}],
@@ -3210,14 +3209,6 @@ const Media = (() => {
             ["IMG", "WeatherFrost_1", "modes", "Downtime", {isForcedOn: "NEVER"}],
             ["IMG", "WeatherFrost_1", "modes", "Spotlight", {isForcedOn: "NEVER"}],
             ["IMG", "WeatherFrost_1", "modes", "Complications", {isForcedOn: null}],
-            ["IMG", "WeatherGlow_1", "isActive", false],
-            ["IMG", "WeatherGlow_1", "curSrc", "@@curSrc@@"],
-            ["IMG", "WeatherGlow_1", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
-            ["IMG", "WeatherGlow_1", "modes", "Inactive", {isForcedOn: true, isForcedState: "redoverlay", lastState: "redoverlay"}],
-            ["IMG", "WeatherGlow_1", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "WeatherGlow_1", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "WeatherGlow_1", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "WeatherGlow_1", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "WeatherGround_1", "isActive", false],
             ["IMG", "WeatherGround_1", "curSrc", "@@curSrc@@"],
             ["IMG", "WeatherGround_1", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
@@ -3753,11 +3744,11 @@ const Media = (() => {
             D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[10 / 16] Background & Overlay Images Configured", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 10, 16)})], "Media", 0.1)
             D.Queue(() => {
                 TimeTracker.Fix()
-                D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[11 / 16] Time, Weather & Horizon Data Updated", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 11, 16)})], "Media", 0.1)
+                D.Chat("all", C.HTML.Block(C.HTML.Header("[11 / 16] Time, Weather & Horizon Data Updated", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 11, 16)}))
             }, [], "Media")
             D.Queue(() => {
                 Session.ResetLocations("Active", true)
-                D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[12 / 16] Districts & Sites Restored", STYLES.Initialization.Header),{border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 12, 16)})], "Media", 0.1)
+                D.Chat("all", C.HTML.Block(C.HTML.Header("[12 / 16] Districts & Sites Restored", STYLES.Initialization.Header),{border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 12, 16)}))
             }, [], "Media")
             D.Queue(fixImgObjs, [], "Media", 10)
             D.Queue(D.Chat, ["all", C.HTML.Block(C.HTML.Header("[13 / 16] Final Image Object Pass: Complete", STYLES.Initialization.Header), {border: "none", bgColor: D.Gradient(C.COLORS.darkgrey, C.COLORS.darkred, 13, 16)})], "Media", 0.1)

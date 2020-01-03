@@ -113,11 +113,14 @@ const Complications = (() => {
                 case "discard": {
                     switch (D.LCase(call = args.shift())) {
                         case "random": {
-                            setCard(getRandomSpot(["faceUp", "noLastDrawn"]), "discard")
+                            const randomSpot = getRandomSpot(["faceUp", "noLastDrawn"])
+                            if (VAL({number: randomSpot}))
+                                setCard(randomSpot, "discard")
                             break
                         }
                         case "last": {
-                            setCard(STATE.REF.lastDraw, "discard")
+                            if (VAL({number: STATE.REF.lastDraw}))
+                                setCard(STATE.REF.lastDraw, "discard")
                             break
                         }
                         default: {
@@ -130,12 +133,14 @@ const Complications = (() => {
                 case "enhance": {
                     switch (D.LCase(call = args.shift())) {
                         case "random": {
-                            setCard(getRandomSpot(["faceUp", "noNegated", "noEnhanced", "noLastDrawn"]), "enhanced")
+                            const randomSpot = getRandomSpot(["faceUp", "noNegated", "noEnhanced", "noLastDrawn"])
+                            if (VAL({number: randomSpot}))
+                                setCard(randomSpot, "enhanced")
                             break
                         }
                         case "last": {
-                            setCard(STATE.REF.lastDraw, "enhanced")
-                            setCard(STATE.REF.lastDraw, "enhanced")
+                            if (VAL({number: STATE.REF.lastDraw}))
+                                setCard(STATE.REF.lastDraw, "enhanced")
                             break
                         }
                         default: {
@@ -148,7 +153,8 @@ const Complications = (() => {
                 case "confirm": {
                     switch (D.LCase(call = args.shift())) {
                         case "last": {
-                            setCard(STATE.REF.lastDraw, "confirm")
+                            if (VAL({number: STATE.REF.lastDraw}))
+                                setCard(STATE.REF.lastDraw, "confirm")
                             break
                         }
                         default: {
@@ -161,11 +167,14 @@ const Complications = (() => {
                 case "negate": {
                     switch (D.LCase(call = args.shift())) {
                         case "random": {
-                            setCard(getRandomSpot(["isUndoable", "faceUp", "noEnhanced", "noNegated", "noLastDrawn"]), "negated")
+                            const randomSpot = getRandomSpot(["isUndoable", "faceUp", "noEnhanced", "noNegated", "noLastDrawn"])
+                            if (VAL({number: randomSpot}))
+                                setCard(randomSpot, "negated")
                             break
                         }
                         case "last": {
-                            setCard(STATE.REF.lastDraw, "negated")
+                            if (VAL({number: STATE.REF.lastDraw}))
+                                setCard(STATE.REF.lastDraw, "negated")
                             break
                         }
                         default: {
@@ -178,11 +187,14 @@ const Complications = (() => {
                 case "duplicate": {
                     switch (D.LCase(call = args.shift())) {
                         case "random": {
-                            dupeCard(getRandomSpot(["faceUp", "noNegated", "noDuplicated", "noLastDrawn"]))
+                            const randomSpot = getRandomSpot(["faceUp", "noNegated", "noDuplicated", "noLastDrawn"])
+                            if (VAL({number: randomSpot}))
+                                dupeCard(randomSpot)
                             break
                         }
                         case "last": {
-                            dupeCard(STATE.REF.lastDraw)
+                            if (VAL({number: STATE.REF.lastDraw}))
+                                dupeCard(STATE.REF.lastDraw)
                             break
                         }
                         default: {
@@ -195,11 +207,16 @@ const Complications = (() => {
                 case "revalue": {
                     switch (D.LCase(call = args.shift())) {
                         case "random": {
-                            promptCardVal(getRandomSpot(["faceUp", "noLastDrawn"]))
+                            const randomSpot = getRandomSpot(["faceUp", "noLastDrawn"])
+                            if (VAL({number: randomSpot}))
+                                promptCardVal(randomSpot)
+                            break
+                            
                             break
                         }
                         case "last": {
-                            promptCardVal(STATE.REF.lastDraw)
+                            if (VAL({number: STATE.REF.lastDraw}))
+                                promptCardVal(STATE.REF.lastDraw)
                             break
                         }
                         default: {
@@ -487,20 +504,24 @@ const Complications = (() => {
                  ].join("<br>"))
                  ONNEXT.negated.push(() => {
                      const randomSpot = getRandomSpot(["noEnhanced", "noNegated", "faceUp", spot])
-                     setCard(randomSpot, "enhanced")
-                     cardAlert(spot, [
-                         "Randomly enhancing a drawn Complication:",
-                         getCardName(randomSpot, true)
-                     ].join("<br>"))
+                     if (VAL({number: randomSpot})) {
+                         setCard(randomSpot, "enhanced")
+                         cardAlert(spot, [
+                             "Randomly enhancing a drawn Complication:",
+                             getCardName(randomSpot, true)
+                         ].join("<br>"))
+                     }
                  })
              },
              onEnhance: (charRef, spot) => {
                  const randomSpot = getRandomSpot(["noEnhanced", "noNegated", "faceUp", spot])
-                 setCard(randomSpot, "enhanced")
-                 cardAlert(spot, [
-                     "Randomly enhancing a drawn Complication:",
-                     getCardName(randomSpot, true)
-                 ].join("<br>"), null, " (Enhanced)")
+                 if (VAL({number: randomSpot})) {
+                     setCard(randomSpot, "enhanced")
+                     cardAlert(spot, [
+                         "Randomly enhancing a drawn Complication:",
+                         getCardName(randomSpot, true)
+                     ].join("<br>"), null, " (Enhanced)")
+                 }
              }},
             {name: "RepeatMistakes", displayName: "Repeat Mistakes", category: null, value: 0, rarity: "R",
              action: (charRef, spot) => {
@@ -614,20 +635,24 @@ const Complications = (() => {
             // {name: "Triage", displayName: "", category: null, value: -1, rarity: ""},
             {name: "TunnelVision", displayName: "Tunnel Vision", category: "complication", value: 1, rarity: "U",
              action: (charRef, spot) => {
-                 const randomSpot = getRandomSpot(["faceUp", "noValue0", spot])
-                 revalueCard(randomSpot, 0)
-                 cardAlert(spot, [
-                     "Devaluing a random drawn Complication:",
-                     getCardName(randomSpot, true)
-                 ].join("<br>"))
+                 const randomSpot = getRandomSpot(["faceUp", "noValue0", spot])                 
+                 if (VAL({number: randomSpot})) {
+                     revalueCard(randomSpot, 0)
+                     cardAlert(spot, [
+                         "Devaluing a random drawn Complication:",
+                         getCardName(randomSpot, true)
+                     ].join("<br>"))
+                 }
              },
              onEnhance: (charRef, spot) => {                 
                  const randomSpot = getRandomSpot(["faceUp", "noValue0", "maxValue", spot])
-                 revalueCard(randomSpot, 0)
-                 cardAlert(spot, [
-                     "Devaluing your most valuable Complication:",
-                     getCardName(randomSpot, true)
-                 ].join("<br>"))
+                 if (VAL({number: randomSpot})) {
+                     revalueCard(randomSpot, 0)
+                     cardAlert(spot, [
+                         "Devaluing your most valuable Complication:",
+                         getCardName(randomSpot, true)
+                     ].join("<br>"))
+                 }
              }},
             {name: "UnderTheBus", displayName: "Under the Bus", category: null, value: 1, rarity: "U",
              action: (charRef, spot) => {
@@ -710,7 +735,7 @@ const Complications = (() => {
                                 isThisCardValid = false
                             break
                         case "faceUp":
-                            if (!card.isFaceUp)
+                            if (!card.isFaceUp && !card.isDiscarded)
                                 isThisCardValid = false
                             break
                         default:
@@ -726,8 +751,9 @@ const Complications = (() => {
                 if (isThisCardValid)
                     validSpots.push(i)
             }
-            DB({validSpots}, "getRandomSpot")
-            return validSpots.length && _.sample(validSpots) || false
+            const returnSpot = validSpots.length && _.sample(validSpots)
+            DB({validSpots, returnSpot}, "getRandomSpot")
+            return returnSpot
         },
         cardAlert = (spot, message, preTitle, postTitle) => {
             const cardName = getCardName(spot, true),
@@ -777,9 +803,10 @@ const Complications = (() => {
         setCardFuncs = [],
         dealRandomCard = (spot, isShowingFX = true) => {
             if (isShowingFX)
-                blinkCard(spot)                
+                blinkCard(spot)           
             STATE.REF.MAT[spot] = _.clone(_.sample(STATE.REF.DECK))
             STATE.REF.MAT[spot].spot = spot
+            setCard(spot, "faceDown")
         },
         setCard = (spot, mode, isShowingFX = true) => {
             setCardFuncs.push(`${mode} ${getCardName(spot)}`)
@@ -814,6 +841,9 @@ const Complications = (() => {
 
                 // ONNEXT.faceUp.push("WAIT:confirm,discard:activate")
             
+            if (mode === "discard")
+                card.isDiscarded = true
+
             while (delayedCardIndices.length) {
                 // DB(`Setting delayed Card (${delayedCardIndices.length} left): ${D.JS(DELAYQUEUE[delayedCardIndices[0]])}`, "setCard")
                 const delayedCardIndex = delayedCardIndices.shift(),
@@ -845,30 +875,20 @@ const Complications = (() => {
                 D.Alert(`Threshold Met! ${D.JS(setCardFuncs)}`)
                 return
             } */  
-            
-            if (card.isDiscarded) {
-                DB(`Discarded.<br>== <b>FINISHED [${mode}] <u>${getCardName(spot)}</u> @ ${spot}</b> ====`, "setCard")
+            if (mode !== "discard" && card.isDiscarded)
                 return
-            }
+
             switch (mode) {
-                case "replace": {
-                    dealRandomCard(spot, isShowingFX)
-                    nextMode = "faceDown"
-                    break
-                }
                 case "discard": {
                     card.isDiscarded = true
                     DELAYQUEUE = DELAYQUEUE.map(x => x && x[2] === spot ? null : x)
                     STATE.REF.DISCARDS.push(STATE.REF.MAT[spot])
+                }
+                // falls through
+                case "replace": {
+                    DB(`Discarded or Replaced.<br>== <b>FINISHED [${mode}] <u>${getCardName(spot)}</u> @ ${spot}</b> ====`, "setCard")
                     dealRandomCard(spot, isShowingFX)
-                    if (waitCallIndex >= 0) {
-                        DELAYQUEUE.push([...ONNEXT[onNextMode][waitCallIndex].split(":").slice(1), spot])
-                        ONNEXT[onNextMode][waitCallIndex] = null
-                        DB(`Waiting @ "DISCARD"<br>DELAYQUEUE: ${D.JS(DELAYQUEUE)}<br>ONNEXT[${onNextMode}]: ${D.JS(ONNEXT[onNextMode])}<br>== <b>FINISHED [${mode}] <u>${getCardName(spot)}</u> @ ${spot}</b> ====`, "setCard")
-                        break
-                    }
-                    nextMode = "faceDown"
-                    break
+                    return // Needto return, since this card no longer exists after dealRandomCard called.
                 }
                 case "faceDown": {
                     Media.ToggleImg(`CompCard_Negated_${spot+1}`, false)
@@ -928,9 +948,9 @@ const Complications = (() => {
                 case "activate": {                      
                     Media.ToggleImg(`CompCard_Text_${spot+1}`, true)
                     setCompVals("add", card.value)
-                    // DB(`Activating ${card.name} ...`, "setCard")
+                    DB(`Activating ${card.name} ...`, "setCard")
                     if (card.action) {
-                        // DB("... Action Detected, Triggering ...", "setCard")
+                        DB("... Action Detected, Triggering ...", "setCard")
                         card.action(STATE.REF.charRef, spot)
                         card.actionTriggered = true
                     }
@@ -1091,28 +1111,31 @@ const Complications = (() => {
             spot = spot === "LAST" ? STATE.REF.lastDraw : spot
             if (VAL({number: spot}, "dupeCard")) {
                 const card = STATE.REF.MAT[spot]
-                if (card && card.isDuplicated) {
-                    Media.SetImgTemp(`CompSpot_${spot+1}`, {tint_color: "transparent"})
-                    card.isDuplicated = false
-                } else if (card) {
-                    Media.SetImgTemp(`CompSpot_${spot+1}`, {tint_color:"#0000FF"})
-                    card.isDuplicated = true
-                }
+                if (card)
+                    if (card.isDuplicated) {
+                        Media.SetImgTemp(`CompSpot_${spot+1}`, {tint_color: "transparent"})
+                        card.isDuplicated = false
+                    } else {
+                        Media.SetImgTemp(`CompSpot_${spot+1}`, {tint_color:"#0000FF"})
+                        card.isDuplicated = true
+                    }
             }
             return spot
         },     
         revalueCard = (spot = 0, value = 0) => {
             spot = spot === "LAST" ? STATE.REF.lastDraw : spot
             const card = STATE.REF.MAT[spot]
-            if (card.origValue === value) {
-                setCard(spot, "!revalue")
-                delete card.origValue
-            } else {
-                setCard(spot, `revalue${value}`)
-                card.origValue = card.value
+            if (card) {
+                if (card.origValue === value) {
+                    setCard(spot, "!revalue")
+                    delete card.origValue
+                } else {
+                    setCard(spot, `revalue${value}`)
+                    card.origValue = card.value
+                }
+                setCompVals("add", value - card.value)
+                STATE.REF.MAT[spot].value = value
             }
-            setCompVals("add", value - card.value)
-            STATE.REF.MAT[spot].value = value
             return spot
             sendGMPanel()
         },        

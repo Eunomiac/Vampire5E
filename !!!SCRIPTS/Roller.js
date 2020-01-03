@@ -2585,13 +2585,13 @@ const Roller = (() => {
                                     if (trait !== "stains") {
                                         if (rollFlags.isHidingTraitVals) {
                                             mainRollParts.push(`${rollData.traitData[trait].display}`)
-                                            mainRollLog.push(`${rollData.traitData[trait].display}`)
+                                            mainRollLog.push(`${rollData.traitData[trait].display.replace(/\s*?\(.*?\)\s*?$/gu, "")}`)
                                         } else {
                                             mainRollParts.push(`${rollData.traitData[trait].display} (${dotline})`)
-                                            mainRollLog.push(`${rollData.traitData[trait].display} (${rollData.traitData[trait].value})`)
+                                            mainRollLog.push(`${rollData.traitData[trait].display.replace(/\s*?\(.*?\)\s*?$/gu, "")} (${rollData.traitData[trait].value})`)
                                         }
                                         stRollParts.push(`${rollData.traitData[trait].display} (${dotline})`)
-                                        stRollLog.push(`${rollData.traitData[trait].display} (${rollData.traitData[trait].value})`)
+                                        stRollLog.push(`${rollData.traitData[trait].display.replace(/\s*?\(.*?\)\s*?$/gu, "")} (${rollData.traitData[trait].value})`)
                                     }
                                 }
                                 if (rollFlags.isHidingTraits) {
