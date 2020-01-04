@@ -51,6 +51,56 @@ const Tester = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting
             switch (call) {
+                case "days": {
+                    const singleCell = (dateNum) => {
+                            const tempColor = [150 + randomInteger(100), 100, 100, 1],
+                                tempColorString = `rgba(${tempColor.join(", ")})`,
+                                eventSymbol = _.sample(["<span style=\"color: #999999;\"><i>c</i></span>", "o", "<i>d</i>", "p", "<b>T</b>", "ѕ", "<b>S</b>", "f"], 1).join(""),
+                                pointValue = ((randVal = 25 - randomInteger(50)) => `${randVal < 0 ? "-" : "+"}${Math.abs(randVal)}`)(),
+                                groundCoverAmount = randomInteger(5) * 10
+                            return `<div style="
+                                display: inline-block;
+                                width: 20px;
+                                height: 40px;
+                                padding: 0px;
+                                margin: 0px;
+                                font-size: 0px;
+                                border: none;
+                                background-color: ${tempColorString};
+                            ">
+                            <div style="
+                                display: inline-block;
+                                width: 20px;
+                                height: 20px;
+                                padding: 0px;
+                                margin: 0px;
+                                font-family: 'Times New Roman';
+                                font-size: 12px;
+                                text-align: center;
+                                line-height: 19px;
+                                ">${eventSymbol}</div>
+                            <div style="
+                                display: inline-block;
+                                width: 20px;
+                                height: 20px;
+                                padding: 0px;
+                                margin: 0px;
+                                font-family: Voltaire;
+                                font-size: 12px;
+                                text-align: center;
+                                font-weight: bold;
+                                line-height: 18px;
+                                background-image: linear-gradient(${D.RGBtoHEX(tempColor)}, ${D.RGBtoHEX(tempColor)} ${100 - groundCoverAmount}%, #444444 ${groundCoverAmount}%);
+                                ">${pointValue}</div>
+                            </div>`
+                        },
+                        oneDay = []
+                    for (let i = 0; i < 24; i++) 
+                        oneDay.push(singleCell(i+1))	
+
+                    D.Alert(oneDay.join(""))
+                    break
+                }
                 case "allobjs": {
                     const allObjs = findObjs({
                         _pageid: D.PAGEID,

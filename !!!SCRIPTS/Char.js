@@ -1130,7 +1130,7 @@ const Char = (() => {
                 Media.ToggleText("Weekly_Char_Col1", true)
                 Media.ToggleText("Weekly_Char_Col2", true)
                 Media.ToggleText("Weekly_Char_Col3", true)
-                Media.SetImgData("stakedAdvantagesHeader", {top: Media.GetImgData("weeklyResourcesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height + _.flatten(_.values(STATE.REF.weeklyResources), true).length * Media.GetLineHeight("Weekly_Char_Col1") + 20}, true)
+                Media.SetImgData("stakedAdvantagesHeader", {top: Media.GetImgData("weeklyResourcesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height + _.flatten(_.values(STATE.REF.weeklyResources), true).length * Media.GetLineHeight("Weekly_Char_Col1") + 15}, true)
                 /* STATE.REF.weeklyResources = { 
                     N: [
                         ["Herd (Bookies)", 0, 6],
@@ -1179,14 +1179,15 @@ const Char = (() => {
                     [, coterieAdvs] = sortCoterieStakes(charObj)
                 for (const attrName of ["projectstake1", "projectstake2", "projectstake3"])
                     projectStakes.push(...D.GetRepStats(charObj, "project", {projectstakes_toggle: "1"}, attrName))
-                DB(`Project Stakes: ${D.JSL(projectStakes.map(x => D.JSL(x)), true)}`, "displayStakes")
+                DB({projectStakes: D.JSL(projectStakes.map(x => D.JSL(x)), true)}, "displayStakes")
                 for (const stake of projectStakes) {
                     const advMax = (D.GetRepStat(charObj, "advantage", null, stake.name) || {val: null}).val,
                         endDate = (D.GetRepStat(charObj, "project", stake.rowID, "projectenddate") || {val: null}).val
-                    DB(`... AdvMax: ${advMax}, EndDate: ${endDate
+                    DB({advMax, endDate, cotRepStats: _.keys(coterieAdvs)}, "displayStakes")
+                    /* DB(`... AdvMax: ${advMax}, EndDate: ${endDate
                     }<br>... RepStats (Coterie): ${D.JS(_.keys(coterieAdvs), true)
                     }<br>... Parsed End Date (${D.JS(TimeTracker.GetDate(endDate).getTime())}) vs. Current Date (${TimeTracker.CurrentDate.getTime()
-                    }<br>... Comparing: ${TimeTracker.CurrentDate.getTime() < TimeTracker.GetDate(endDate).getTime()}`, "displayStakes")
+                    }<br>... Comparing: ${TimeTracker.CurrentDate.getTime() < TimeTracker.GetDate(endDate).getTime()}`, "displayStakes") */
                     if (advMax && D.Int(stake.val) > 0 && TimeTracker.CurrentDate.getTime() < TimeTracker.GetDate(endDate).getTime())
                         if (_.keys(coterieAdvs).includes(stake.name))
                             coterieStakes[stake.name] = {
@@ -1204,9 +1205,46 @@ const Char = (() => {
                     const [name, val, max, dateStamp] = [stake[0], stake[1], stake[2], TimeTracker.GetDate(stake[3])]
                     if (max && val > 0 && TimeTracker.CurrentDate.getTime() < dateStamp.getTime())
                         stakeData.push([initial, name, val, max, TimeTracker.FormatDate(dateStamp)])
-                }
-                    
+                }       
             }
+
+            // Sorting Coterie Stakes            
+            stakeData.sort((a,b) => {
+                if (a[0] !== b[0])
+                    return a[0] < b[0] && -10000000 || 10000000
+                else
+                    return TimeTracker.GetDate(a[4]).getTime() - TimeTracker.GetDate(b[4]).getTime()
+            })
+
+            // Next, look for duplicated entries. If found, delete the LATER one, but change the dot symbols in the initial entry to show they're still held up.
+            const filteredStakes = []
+            for (const stake of stakeData) {
+                const filteredIndex = filteredStakes.findIndex(x => x[0] === stake[0] && x[1] === stake[1])
+                if (filteredIndex > -1) {
+                    filteredStakes[filteredIndex][5] = filteredStakes[filteredIndex][5] || 0
+                    filteredStakes[filteredIndex][5] += stake[2]
+                } else {
+                    filteredStakes.push([...stake])
+                }
+            }
+            /* stakeData: [
+                    [ "L", "Resources", 5, 5, "Feb 8, 2020" ],
+                    [ "L", "Retainer", 1, 3, "Jan 19, 2020" ],
+                    [ "L", "Retainer", 1, 3, "Feb 8, 2020" ],
+                    [ "L", "Retainer 2", 3, 3, "Feb 8, 2020" ],
+                    [ "L", "Napier`s Bookies", 1, 6, "Jan 19, 2020" ],
+                    [ "N", "Contacts (Ogden Stone)", 2, 2, "Apr 1, 2020" ],
+                    [ "N", "Contacts (The Aristocrat)", 2, 3, "Jan 19, 2020" ],
+                    [ "N", "Allies (Bookies)", 4, 6, "Feb 8, 2020" ],
+                    [ "R", "Ava's Contacts (Anarchs)", 2, 2, "Sep 5, 2020" ]
+                ] */
+
+            // FIRST: if the initials are different, sort by those: initials always sort first.
+
+
+
+            DB({coterieStakes, stakeData, filteredStakes}, "displayStakes")
+            // Check for combining already-entered coterie stakes.
             for (const stake of STATE.REF.customStakes.coterie) {
                 const [name, val, max, dateStamp] = [stake[0], stake[1], stake[2], TimeTracker.GetDate(stake[3])]
                 if (max && val > 0 && TimeTracker.CurrentDate.getTime() < dateStamp.getTime())
@@ -1222,34 +1260,36 @@ const Char = (() => {
                             max
                         }
                     }
-            }                
-            DB(`Coterie Stakes: ${D.JSL(_.keys(coterieStakes), true)}`, "displayStakes")
+            }   
+            // Now, check for repeat personal stakes
+            
+            // DB(`Coterie Stakes: ${D.JSL(_.keys(coterieStakes), true)}`, "displayStakes")
             // COTERIE STAKES
             if (_.keys(coterieStakes).length === 0) {
                 coterieColRefs.map(x => Media.ToggleText(x, false))
                 charColRefs.map(x => Media.SetTextData(x, {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height, shiftTop: 0}))
             } else {
                 coterieColRefs.map(x => { Media.ToggleText(x, true); return Media.SetTextData(x, {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height}) })
-                charColRefs.map(x => Media.SetTextData(x, {top: Media.GetTextData("Stakes_Coterie_Col1").top, shiftTop: _.keys(coterieStakes).length * Media.GetLineHeight("Stakes_Coterie_Col1")}))
+                charColRefs.map(x => Media.SetTextData(x, {top: Media.GetTextData("Stakes_Coterie_Col1").top, shiftTop: _.keys(coterieStakes).length * Media.GetLineHeight("Stakes_Coterie_Col1") - 5}))
                 coterieCols[coterieColRefs[0]] = new Array(_.keys(coterieStakes).length).fill("")
                 coterieCols[coterieColRefs[1]] = _.values(coterieStakes).map(x => x.name.toUpperCase())
-                coterieCols[coterieColRefs[2]] = _.values(coterieStakes).map(x => "○".repeat(x.total) + "●".repeat(x.max - x.total))
+                coterieCols[coterieColRefs[2]] = _.values(coterieStakes).map(x => "●".repeat(x.max - x.total) + "○".repeat(x.total))
                 coterieCols[coterieColRefs[3]] = _.values(coterieStakes).map(x => TimeTracker.FormatDate(new Date(_.sortBy(x.dateStamp, v => v)[0])))
                 for (const [col, lines] of Object.entries(coterieCols))
                     Media.SetText(col, lines.join("\n"))
             }
 
             // PERSONAL STAKES
-            if (_.keys(stakeData).length === 0) {
+            if (_.keys(filteredStakes).length === 0) {
                 charColRefs.map(x => Media.ToggleText(x, false))
                 if (_.keys(coterieStakes).length === 0)
                     Media.ToggleImg("stakedAdvantagesHeader", false)
             } else {
                 charColRefs.map(x => Media.ToggleText(x, true))
-                charCols[charColRefs[0]] = stakeData.map((x, i) => i > 0 && x[0] === stakeData[i-1][0] ? "" : `[${x[0]}]`)
-                charCols[charColRefs[1]] = stakeData.map(x => x[1])
-                charCols[charColRefs[2]] = stakeData.map(x => "○".repeat(x[2]) + "●".repeat(x[3] - x[2]))
-                charCols[charColRefs[3]] = stakeData.map(x => x[4])
+                charCols[charColRefs[0]] = filteredStakes.map((x, i) => i > 0 && x[0] === filteredStakes[i-1][0] ? "" : `[${x[0]}]`)
+                charCols[charColRefs[1]] = filteredStakes.map(x => x[1])
+                charCols[charColRefs[2]] = filteredStakes.map(x => "●".repeat(x[3] - x[2] - (x[5] || 0)) + "○".repeat(x[2]) + "Ծ".repeat(x[5] || 0))
+                charCols[charColRefs[3]] = filteredStakes.map(x => x[4])
                 for (const [col, lines] of Object.entries(charCols))
                     Media.SetText(col, lines.join("\n"))
             }
@@ -1285,10 +1325,10 @@ const Char = (() => {
                 Media.ToggleText("Projects_Col1", true)
                 Media.ToggleText("Projects_Col2", true)
                 Media.ToggleText("Projects_Col3", true)
-                if (Media.IsActive("stakedAdvantagesHeader"))
+                /* if (Media.IsActive("stakedAdvantagesHeader"))
                     Media.SetImgData("projectsHeader", {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("projectsHeader").height + [..._.flatten(_.values(STATE.REF.customStakes.personal), true), ..._.values(STATE.REF.customStakes.coterie)].length * Media.GetLineHeight("Stakes_Char_Col1") + 40}, true)
                 else
-                    Media.SetImgData("projectsHeader", {top: Media.GetImgData("stakedAdvantagesHeader").top}, true)
+                    Media.SetImgData("projectsHeader", {top: Media.GetImgData("stakedAdvantagesHeader").top}, true) */
                 for (const projDetails of projectDetails.sort((a,b) => a.endDate - b.endDate)) {
                     if (STATE.REF.projectDetails.map(x => x.rowID).includes(projDetails.rowID))
                         projDetails.goal = STATE.REF.projectDetails.find(x => x.rowID === projDetails.rowID).goal
@@ -1297,7 +1337,7 @@ const Char = (() => {
                 STATE.REF.projectDetails = projectsSorted
                 for (const projDetails of STATE.REF.projectDetails) {
                     projectStrings.Projects_Col1.push(`[${projDetails.init}]`)
-                    projectStrings.Projects_Col2.push(Media.GetTextWidth("Projects_Col2", projDetails.goal, false) > 260 ? `${projDetails.goal.slice(0, 30)}...` : projDetails.goal)
+                    projectStrings.Projects_Col2.push(Media.GetTextWidth("Projects_Col2", projDetails.goal, false) > 230 ? `${projDetails.goal.slice(0, 45)}...` : projDetails.goal)
                     projectStrings.Projects_Col3.push(TimeTracker.FormatDate(projDetails.endDate))
                 }
                 for (let i = projectStrings.Projects_Col1.length - 1; i > 0; i--)
@@ -1305,7 +1345,7 @@ const Char = (() => {
                         projectStrings.Projects_Col1[i] = " "
                 for (const [textKey, text] of Object.entries(projectStrings)) {
                     Media.SetText(textKey, text.join("\n"))
-                    Media.SetTextData(textKey, {top: Media.GetImgData("projectsHeader").top + 0.5 * Media.GetImgData("projectsHeader").height, shiftTop: 0})
+                    Media.SetTextData(textKey, {top: Media.GetImgData("projectsHeader").top + 0.5 * Media.GetImgData("projectsHeader").height, shiftTop: 3})
                 }
             }
         },

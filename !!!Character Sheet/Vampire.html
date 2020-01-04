@@ -224,8 +224,8 @@
 
     <!-- #region [SINGLE] Marquee Tips / NPC Box -->    
     <div class="sheet-pagecontainer sheet-marquee sheet-singlesheet" style="margin-top: 15px; margin-bottom: 3px;">   
-        <input class="sheet-containertoggle" type="radio" name="attr_marquee_toggle" value="0" checked />
-        <input class="sheet-containertoggle" type="radio" name="attr_marquee_toggle" value="1" />
+        <input class="sheet-containertoggle" type="radio" name="attr_marquee_toggle" value="0" />
+        <input class="sheet-containertoggle" type="radio" name="attr_marquee_toggle" value="1" checked />
         <div class="sheet-coltight1" style="text-align: center;">
             <div class="sheet-marquee_title">
                 <textarea type="text" name="attr_marquee_title" readonly></textarea>
@@ -314,7 +314,7 @@
     <!-- #endregion -->
     <!-- #region [SINGLE] Character Basics -->
     <div class="sheet-pagecontainer sheet-singlesheet sheet-section-1"
-        style="margin-top: 10px; padding-bottom: 0px; margin-bottom: -10px;">
+        style="margin-top: 10px; padding-bottom: 0px;">
 
         <!-- Top Name, DOB, DOE-->
         <div class="sheet-col1 sheet-centered">
@@ -429,111 +429,8 @@
         </div>
     </div>
     <!-- #endregion -->
-    <!-- #region [SINGLE] Dice Roller -->
-    <div class="sheet-pagecontainer sheet-diceroller" style="padding-bottom: 10px;">
-        <div class="sheet-coltight1 sheet-center sheet-effectdisplay sheet-topdisplay">
-            <textarea name="attr_topdisplay" readonly></textarea>
-            <input type="hidden" name="attr_effectchecks" value="" />
-        </div>
-        <div class="sheet-coltight1 sheet-hungercol">
-            <span class="sheet-header2">Hunger</span>
-            <div class="sheet-dotline">
-                <input class="sheet-dot sheet-zero" type="radio" name="attr_hunger" value="0" checked /><span></span>
-                <input class="sheet-dot sheet-hungerdot" type="radio" name="attr_hunger" value="1" /><span></span>
-                <input class="sheet-dot sheet-hungerdot" type="radio" name="attr_hunger" value="2" /><span></span>
-                <input class="sheet-dot sheet-hungerdot" type="radio" name="attr_hunger" value="3" /><span></span>
-                <input class="sheet-dot sheet-hungerdot" type="radio" name="attr_hunger" value="4" /><span></span>
-                <input class="sheet-dot sheet-hungerdot" type="radio" name="attr_hunger" value="5" /><span></span>
-            </div>
-            <span class="sheet-header2">Resonance</span>
-            <select name="attr_resonance" value="">
-                <option value="None" selected>None</option>
-                <option value="Choleric">Choleric</option>
-                <option value="Melancholic">Melancholic</option>
-                <option value="Phlegmatic">Phlegmatic</option>
-                <option value="Sanguine">Sanguine</option>
-                <option value="Primal">Primal</option>
-                <option value="Ischemic">Ischemic</option>
-                <option value="Mercurial">Mercurial</option>
-            </select>
-            <textarea type="text" class="sheet-littlenote sheet-red" name="attr_res_discs" readonly></textarea>
-        </div>
-        <div class="sheet-coltight1 sheet-dicebuttonblock">
-            <div class="sheet-coltight1 sheet-rouserollblock">
-                <div class="sheet-coltight1 sheet-rouse1block">
-                    <button class="sheet-button" type="roll" value="!roll dice rouse @{rollparams}"></button>
-                </div>
-                <div class="sheet-coltight1 sheet-rouse2block">
-                    <button class="sheet-button" type="roll" value="!roll dice rouse2 @{rollparams}"></button>
-                </div>
-                <div class="sheet-coltight1 sheet-discblock">
-                    <button class="sheet-button" type="roll" value="!roll dice disc @{rollparams}"></button>
-                </div>
-                <div class="sheet-coltight1 sheet-rollblock">
-                    <button class="sheet-button" type="roll" value="!roll dice trait @{rollparams}"></button>
-                </div>
-            </div>
-            <div class="sheet-coltight1 sheet-longbuttonblock">
-                <div class="sheet-coltight1 sheet-checkblock">
-                    <button class="sheet-button" type="roll" value="!roll dice check @{rollparams}"></button>
-                </div>
-                <div class="sheet-coltight1 sheet-willpowerblock">
-                    <button class="sheet-button" type="roll" value="!roll dice willpower @{rollparams}"></button>
-                </div>
-                <div class="sheet-coltight1 sheet-humanityblock">
-                    <button class="sheet-button" type="roll" value="!roll dice humanity @{rollparams}"></button>
-                </div>
-                <div class="sheet-coltight1 sheet-frenzyblock">
-                    <button class="sheet-button" type="roll" value="!roll dice frenzyinit @{rollparams}"></button>
-                </div>
-                <div class="sheet-coltight1 sheet-remorseblock">
-                    <button class="sheet-button" type="roll" value="!roll dice remorse @{rollparams}"></button>
-                </div>
-                <input type="hidden" name="attr_rollflagdisplay" value="" />
-                <input type="hidden" name="attr_rollparams" value="" />
-                <div class="sheet-coltight1 sheet-rollpooldisplayblock">
-                    <textarea type="text" name="attr_rollpooldisplay" style="color: grey;" readonly></textarea>
-                </div>
-                <div class="sheet-coltight1 sheet-rollParamsblock">
-                    <span class="sheet-coltight1 sheet-header2" style="width: 73px;">Modifier: </span>
-                    <input name="attr_rollmod" type="number" value="0">
-                    <input class="sheet-attr sheet-diffspan" type="radio" name="attr_rolldiff" value="0" checked /><span
-                        class="sheet-coltight1 sheet-header2 sheet-nohighlight">Difficulty: </span>
-                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="1" /><span> 1 </span>
-                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="2" /><span> 2 </span>
-                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="3" /><span> 3 </span>
-                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="4" /><span> 4 </span>
-                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="5" /><span> 5 </span>
-                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="6" /><span> 6 </span>
-                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="7" /><span> 7 </span>
-                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="8" /><span> 8 </span>
-                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="9" /><span> 9 </span>
-                </div>
-            </div>
-        </div>
-        <div class="sheet-coltight1 sheet-rollflagscol">
-            <input class="sheet-attr" type="checkbox" name="attr_applybloodsurge" value="1" /><span>Blood Surge</span>
-            <input class="sheet-attr" type="checkbox" name="attr_applyspecialty" value="1" /><span>Specialty</span>
-            <input class="sheet-attr" type="checkbox" name="attr_applyresonance" value="1" /><span>Resonant</span>
-            <input type="hidden" name="attr_incap" value="" />
-            <input type="hidden" name="attr_rollarray" value="" />
-            <input type="hidden" name="attr_rolleffects" value="" />
-        </div>
-        <div class="sheet-coltight1 sheet-center sheet-effectdisplay sheet-bottomdisplay">
-            <textarea name="attr_bottomdisplay" readonly></textarea>
-        </div>
-        <div>
-            <input class="sheet-containerselector" type="checkbox" name="attr_dyscrasias_toggle" value="1" />
-            <div class="sheet-coltight1 sheet-dyscrasiasdisplay sheet-engravedFrame">
-                <span class="sheet-header2">Dyscrasias </span><textarea type="text" name="attr_dyscrasias" value=""
-                    readonly></textarea>
-            </div>
-        </div>
-    </div>
-    <!-- #endregion -->
-
-    <!-- #region [SINGLE] TAB 1 Front -->
-    <div class="sheet-pagecontainer sheet-section-1">
+    
+    <div class="sheet-pagecontainer sheet-singlesheet sheet-section-1" style="padding-bottom: 0px;">
         <!-- Health, Willpower, Blood Potency -->
         <div class="sheet-coltight4 sheet-titleblock sheet-centered" style="margin-left:-7px;">
             <div class="sheet-header2">Health</div>
@@ -1129,6 +1026,112 @@
                 </div>
             </div>
         </div>
+    </div>
+    <!-- #region [SINGLE] Dice Roller -->
+    <div class="sheet-pagecontainer sheet-diceroller" style="padding-bottom: 0px;">
+        <div class="sheet-coltight1 sheet-center sheet-effectdisplay sheet-topdisplay">
+            <textarea name="attr_topdisplay" readonly></textarea>
+            <input type="hidden" name="attr_effectchecks" value="" />
+        </div>
+        <div class="sheet-coltight1 sheet-hungercol">
+            <span class="sheet-header2">Hunger</span>
+            <div class="sheet-dotline">
+                <input class="sheet-dot sheet-zero" type="radio" name="attr_hunger" value="0" checked /><span></span>
+                <input class="sheet-dot sheet-hungerdot" type="radio" name="attr_hunger" value="1" /><span></span>
+                <input class="sheet-dot sheet-hungerdot" type="radio" name="attr_hunger" value="2" /><span></span>
+                <input class="sheet-dot sheet-hungerdot" type="radio" name="attr_hunger" value="3" /><span></span>
+                <input class="sheet-dot sheet-hungerdot" type="radio" name="attr_hunger" value="4" /><span></span>
+                <input class="sheet-dot sheet-hungerdot" type="radio" name="attr_hunger" value="5" /><span></span>
+            </div>
+            <span class="sheet-header2">Resonance</span>
+            <select name="attr_resonance" value="">
+                <option value="None" selected>None</option>
+                <option value="Choleric">Choleric</option>
+                <option value="Melancholic">Melancholic</option>
+                <option value="Phlegmatic">Phlegmatic</option>
+                <option value="Sanguine">Sanguine</option>
+                <option value="Primal">Primal</option>
+                <option value="Ischemic">Ischemic</option>
+                <option value="Mercurial">Mercurial</option>
+            </select>
+            <textarea type="text" class="sheet-littlenote sheet-red" name="attr_res_discs" readonly></textarea>
+        </div>
+        <div class="sheet-coltight1 sheet-dicebuttonblock">
+            <div class="sheet-coltight1 sheet-rouserollblock">
+                <div class="sheet-coltight1 sheet-rouse1block">
+                    <button class="sheet-button" type="roll" value="!roll dice rouse @{rollparams}"></button>
+                </div>
+                <div class="sheet-coltight1 sheet-rouse2block">
+                    <button class="sheet-button" type="roll" value="!roll dice rouse2 @{rollparams}"></button>
+                </div>
+                <div class="sheet-coltight1 sheet-discblock">
+                    <button class="sheet-button" type="roll" value="!roll dice disc @{rollparams}"></button>
+                </div>
+                <div class="sheet-coltight1 sheet-rollblock">
+                    <button class="sheet-button" type="roll" value="!roll dice trait @{rollparams}"></button>
+                </div>
+            </div>
+            <div class="sheet-coltight1 sheet-longbuttonblock">
+                <div class="sheet-coltight1 sheet-checkblock">
+                    <button class="sheet-button" type="roll" value="!roll dice check @{rollparams}"></button>
+                </div>
+                <div class="sheet-coltight1 sheet-willpowerblock">
+                    <button class="sheet-button" type="roll" value="!roll dice willpower @{rollparams}"></button>
+                </div>
+                <div class="sheet-coltight1 sheet-humanityblock">
+                    <button class="sheet-button" type="roll" value="!roll dice humanity @{rollparams}"></button>
+                </div>
+                <div class="sheet-coltight1 sheet-frenzyblock">
+                    <button class="sheet-button" type="roll" value="!roll dice frenzyinit @{rollparams}"></button>
+                </div>
+                <div class="sheet-coltight1 sheet-remorseblock">
+                    <button class="sheet-button" type="roll" value="!roll dice remorse @{rollparams}"></button>
+                </div>
+                <input type="hidden" name="attr_rollflagdisplay" value="" />
+                <input type="hidden" name="attr_rollparams" value="" />
+                <div class="sheet-coltight1 sheet-rollpooldisplayblock">
+                    <textarea type="text" name="attr_rollpooldisplay" style="color: grey;" readonly></textarea>
+                </div>
+                <div class="sheet-coltight1 sheet-rollParamsblock">
+                    <span class="sheet-coltight1 sheet-header2" style="width: 73px;">Modifier: </span>
+                    <input name="attr_rollmod" type="number" value="0">
+                    <input class="sheet-attr sheet-diffspan" type="radio" name="attr_rolldiff" value="0" checked /><span
+                        class="sheet-coltight1 sheet-header2 sheet-nohighlight">Difficulty: </span>
+                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="1" /><span> 1 </span>
+                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="2" /><span> 2 </span>
+                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="3" /><span> 3 </span>
+                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="4" /><span> 4 </span>
+                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="5" /><span> 5 </span>
+                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="6" /><span> 6 </span>
+                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="7" /><span> 7 </span>
+                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="8" /><span> 8 </span>
+                    <input class="sheet-attr" type="radio" name="attr_rolldiff" value="9" /><span> 9 </span>
+                </div>
+            </div>
+        </div>
+        <div class="sheet-coltight1 sheet-rollflagscol">
+            <input class="sheet-attr" type="checkbox" name="attr_applybloodsurge" value="1" /><span>Blood Surge</span>
+            <input class="sheet-attr" type="checkbox" name="attr_applyspecialty" value="1" /><span>Specialty</span>
+            <input class="sheet-attr" type="checkbox" name="attr_applyresonance" value="1" /><span>Resonant</span>
+            <input type="hidden" name="attr_incap" value="" />
+            <input type="hidden" name="attr_rollarray" value="" />
+            <input type="hidden" name="attr_rolleffects" value="" />
+        </div>
+        <div class="sheet-coltight1 sheet-center sheet-effectdisplay sheet-bottomdisplay">
+            <textarea name="attr_bottomdisplay" readonly></textarea>
+        </div>
+        <div>
+            <input class="sheet-containerselector" type="checkbox" name="attr_dyscrasias_toggle" value="1" />
+            <div class="sheet-coltight1 sheet-dyscrasiasdisplay sheet-engravedFrame">
+                <span class="sheet-header2">Dyscrasias </span><textarea type="text" name="attr_dyscrasias" value=""
+                    readonly></textarea>
+            </div>
+        </div>
+    </div>
+    <!-- #endregion -->
+
+    <!-- #region [SINGLE] TAB 1 Front -->
+    <div class="sheet-pagecontainer sheet-section-1">
 
         <!--ATTRIBUTES-->
         <div class="sheet-header1">

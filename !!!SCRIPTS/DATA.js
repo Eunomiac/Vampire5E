@@ -566,6 +566,7 @@ const D = (() => {
             }
             return {}
         },
+        rbgToHex = (rgb = [0, 0, 0]) => `#${rgb.slice(0, 3).map(x => x.toString(16)).join("")}`,
         colorGradient = (startColor, endColor, step, totalSteps) => `rgba(${startColor.replace(/[^\d\s,]*/gu, "").split(",").map((x, i) => D[i === 3 ? "Round" : "Int"](x, 2)).map((x, i) => D[i === 3 ? "Round" : "Int"](x + (endColor.replace(/[^\d\s,]*/gu, "").split(",").map((xx, ii) => D[ii === 3 ? "Round" : "Int"](xx, 2))[i] - x) * step / totalSteps, 2)).join(", ")})`,
     // #endregion
 
@@ -2116,7 +2117,7 @@ const D = (() => {
         Ordinal: ordinal,
         Capitalize: capitalize,
         Clone: clone,
-        Gradient: colorGradient,
+        Gradient: colorGradient, RGBtoHEX: rbgToHex,
 
         Chat: sendChatMessage,
         Alert: sendToGM,

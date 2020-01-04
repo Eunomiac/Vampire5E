@@ -59,6 +59,8 @@ const Session = (() => {
                     STATE.REF.locationRecord[mode] = D.Clone(STATE.REF.curLocation)
             }
 
+            verifyStateIntegrity() 
+
         },
     // #endregion
 
@@ -410,6 +412,22 @@ const Session = (() => {
                 }
             }
         },
+        verifyStateIntegrity = () => { // A series of simple validations of registry data.
+            // STATE.REF.locationDetails
+            const [siteNames, distNames, posNames, subPosNames] = [
+                Object.keys(C.SITES),
+                Object.keys(C.DISTRICTS),
+                ["DistrictCenter", "DistrictRight", "DistrictLeft", "SiteCenter", "SiteRight", "SiteLeft", "SubLocs"],
+                ["TopLeft", "Left", "BotLeft", "TopRight", "Right", "BotRight"]
+            ]
+            STATE.REF.locationDetails = _.omit(STATE.REF.locationDetails, (v, k) => ![...siteNames, ...distNames].includes(k) || Object.keys(v).length === 0)
+            STATE.REF.FavouriteSites = _.reject(STATE.REF.FavouriteSites, x => !siteNames.includes(x))
+
+            for (const [modeName] of Object.entries(STATE.REF.locationRecord))
+                STATE.REF.locationRecord[modeName] = _.omit(STATE.REF.locationRecord[modeName], (v, k) => !posNames.includes(k))            
+            
+            STATE.REF.curLocation = _.omit(STATE.REF.curLocation, (v, k) => !posNames.includes(k))
+        },
     // #region Getting & Setting Session Data
         isSessionActive = () => STATE.REF.Mode !== "Inactive",
         setSessionNum = sNum => {
@@ -528,21 +546,22 @@ const Session = (() => {
                     `${STATE.REF.Mode}`,
                     D.Capitalize(mode.toLowerCase())
                 ]
-
-                D.Queue(D.Chat, ["Storyteller", `Leaving <b>${lastMode}</b>...`, "none"], "ModeSwitch", 0.1)
+                D.Queue(Media.ToggleLoadingScreen, [true, `Changing Modes: ${lastMode} ► ${curMode}`], "ModeSwitch", 3)
+                D.Queue(Media.SetLoadingMessage, [`Leaving ${lastMode}...`], "ModeSwitch", 0.1)
                 D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.leaveMode[lastMode], [args], "ModeSwitch", 1)
                 D.Queue(() => { STATE.REF.Mode = curMode; STATE.REF.LastMode = lastMode }, [], "ModeSwitch", 0.1)
-                D.Queue(D.Chat, ["Storyteller", "Configuring Mode Assets...", "none"], "ModeSwitch", 0.1)
+                D.Queue(Media.SetLoadingMessage, ["Configuring Mode Assets..."], "ModeSwitch", 0.1)
                 D.Queue(Roller.Clean, [], "ModeSwitch", 1)
                 D.Queue(Media.ModeUpdate, [], "ModeSwitch", 2)
                 D.Queue(setModeLocations, [curMode], "ModeSwitch", 1)
                 D.Queue(Media.UpdateSoundscape, [], "ModeSwitch", 1)
-                D.Queue(D.Chat, ["Storyteller", `Entering <b>${curMode}</b>...`, "none"], "ModeSwitch", 0.1)
+                D.Queue(Media.SetLoadingMessage, [`Entering ${curMode}...`], "ModeSwitch", 0.1)
                 D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.enterMode[curMode], [args], "ModeSwitch", 1)
                 D.Queue(TimeTracker.Fix, [], "ModeSwitch", 0.1)
-                D.Queue(D.Chat, ["Storyteller", "Mode Change Complete!", "none"], "ModeSwitch", 0.1)
+                D.Queue(Media.SetLoadingMessage, ["Mode Change Complete!"], "ModeSwitch", 1)
+                D.Queue(Media.ToggleLoadingScreen, [false], "ModeSwitch", 0.1)
                 D.Run("ModeSwitch")
             }
             return true
