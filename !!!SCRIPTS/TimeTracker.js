@@ -1573,7 +1573,6 @@ const TimeTracker = (() => {
                 Media.SetText("tempC", `${weatherData.tempC}°C`)
                 Media.SetText("tempF", `(${Math.round(Math.round(9 / 5 * weatherData.tempC + 32))}°F)`)
             }
-
             for (const lightningAnim of ["WeatherLightning_1", "WeatherLightning_2"])
                 Media.Kill(lightningAnim)
             switch (weatherData.event.charAt(0)) {
