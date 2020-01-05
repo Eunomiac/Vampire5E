@@ -690,6 +690,23 @@ const Media = (() => {
                                     }
                                     break
                                 }
+                                case "autopos": {
+                                    const mapIndObj = getImgObj("MapIndicator_Base_1")
+                                    toFront(mapIndObj)
+                                    if (!["confirm", "skip"].includes(args[0])) {
+                                        STATE.REF.siteNamesOnDeck = _.keys(_.omit(C.SITES, (v) => v.district === null))
+                                        D.Alert("Site Names loaded, prepare to identify map locations on my mark!", "Auto Site Movement")
+                                    } else if (args[0] === "confirm") {
+                                        state.VAMPIRE.Session.locationPointer[STATE.REF.siteNamesOnDeck[0]] = { pointerPos: { left: D.Int(mapIndObj.get("left")), top: D.Int(mapIndObj.get("top"))} }
+                                        D.Alert(`Site <b>${STATE.REF.siteNamesOnDeck[0]}</b> placed at: ${D.JS(state.VAMPIRE.Session.locationPointer[STATE.REF.siteNamesOnDeck.shift()])}!`)
+                                    } else if (args[0] === "skip") {
+                                        D.Alert(`Skipping <b>${STATE.REF.siteNamesOnDeck.shift()}</b>`)
+                                    }
+                                    if (STATE.REF.siteNamesOnDeck.length) {
+                                        D.Alert(`Now position site <b>${STATE.REF.siteNamesOnDeck[0]}</b><br><br>!img toggle autopos confirm or skip to continue!`, "Auto Site Movement")
+                                    }
+                                    break
+                                }
                                 case "autosrc": {                                    
                                     const [imgObj] = Listener.GetObjects(objects, "graphic")
                                     if (imgSrcAutoReg) {

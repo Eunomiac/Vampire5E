@@ -749,7 +749,7 @@ const Session = (() => {
                     if (locPos.includes("Site") && locData[1]) {
                         Media.ToggleImg(`SiteBar${locPos.replace(/Site/gu, "")}`, true)
                         Media.SetText(`SiteName${locPos.replace(/Site/gu, "")}`, locData[1], true) 
-                    } else {
+                    } else if (locPos.includes("Site")) {
                         Media.ToggleImg(`SiteBar${locPos.replace(/Site/gu, "")}`, false)
                         Media.ToggleText(`SiteName${locPos.replace(/Site/gu, "")}`, false)
                     }
@@ -764,6 +764,10 @@ const Session = (() => {
             for (const locPos of locPoss)
                 menuSections.push(...[
                     {type:"Header", contents: locPos},
+                    {type: "ButtonLine", contents: [
+                        {name: "blank", command: `!sess set loc District${locPos}@|@blank`, styles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.orange, buttonTransform: "none"}},
+                        {name: "same", command: `!sess set loc District${locPos}@|@same`, styles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.orange, buttonTransform: "none"}}
+                    ]},
                     ...distNames.length ? _.values(_.groupBy(distNames.map(x => ({name: x, command: `!sess set loc District${locPos}@|@${x}`, styles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.purple, buttonTransform: "none"}})), (x, i) => Math.floor(i / 3))).map(x => ({type: "ButtonLine", contents: x})) : []
                 ])
             if (_.compact(menuSections).length)
@@ -790,15 +794,19 @@ const Session = (() => {
                 */           
         },
         promptForSite = (locParams) => {
+            locParams = _.omit(locParams, "SubLocs")
             const locPoss = _.uniq(_.keys(locParams).filter(x => x.startsWith("District") && !locParams[x.replace(/District/gu, "Site")]).map(x => x.replace(/District/gu, ""))),
                 menuSections = []
+            DB({locParams, locPoss}, "promptForSite")
             for (const locPos of locPoss) {
-                const [distName] = locParams[`District${locPos}`],
+                const [distName] = locParams[`District${locPos}`][0] === "same" ? getParentLocData(`District${locPos}`) : locParams[`District${locPos}`],
+                    genericSites = ["blank", "same"],
                     favSites = STATE.REF.FavoriteSites.filter(x => C.SITES[x].district === null || C.SITES[x].district.includes(distName)),
                     distSites = _.keys(C.SITES).filter(x => C.SITES[x].district && C.SITES[x].district.includes(distName)),
                     anySites = _.keys(C.SITES).filter(x => C.SITES[x].district === null)
                 menuSections.push(...[
-                    {type:"Header", contents: C.DISTRICTS[distName].fullName},
+                    {type:"Header", contents: C.DISTRICTS[distName] ? C.DISTRICTS[distName].fullName : distName},
+                    ...genericSites.length ? _.values(_.groupBy(genericSites.map(x => ({name: x, command: `!sess set loc Site${locPos}@|@${x}`, styles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.orange, buttonTransform: "none"}})), (x, i) => Math.floor(i / 3))).map(x => ({type: "ButtonLine", contents: x})) : [],
                     ...favSites.length ? _.values(_.groupBy(favSites.map(x => ({name: x, command: `!sess set loc Site${locPos}@|@${x}`, styles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.purple, buttonTransform: "none"}})), (x, i) => Math.floor(i / 3))).map(x => ({type: "ButtonLine", contents: x})) : [],
                     ...distSites.length ? _.values(_.groupBy(distSites.map(x => ({name: x, command: `!sess set loc Site${locPos}@|@${x}`, styles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.red, buttonTransform: "none"}})), (x, i) => Math.floor(i / 3))).map(x => ({type: "ButtonLine", contents: x})) : [],
                     ...anySites.length ? _.values(_.groupBy(anySites.map(x => ({name: x, command: `!sess set loc Site${locPos}@|@${x}`, styles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.blue, buttonTransform: "none"}})), (x, i) => Math.floor(i / 3))).map(x => ({type: "ButtonLine", contents: x})) : []
