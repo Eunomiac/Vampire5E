@@ -26,7 +26,7 @@ const InitCommands = (() => {
                     TimeTracker.Fix()
                 setTimeout(() => {
                     if (Media && Media.UpdateSoundScape)
-                        Media.UpdateSoundscape()
+                        Media.ResetSoundscape()
                     setTimeout(() => {
                         if (Char && Char.RefreshDisplays)
                             Char.RefreshDisplays()

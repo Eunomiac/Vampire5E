@@ -963,8 +963,13 @@ const Session = (() => {
             if (STATE.REF.sceneFocus === "c")
                 setSubLocMacro()
             if (STATE.REF.locationPointer[Session.Site] && STATE.REF.locationPointer[Session.Site].pointerPos) {
+                Media.ToggleImg("MapIndicator_Base_1", true)
+                Media.ToggleAnim("MapIndicator", true)
                 Media.SetImgData("MapIndicator_Base_1", {left: STATE.REF.locationPointer[Session.Site].pointerPos.left, top: STATE.REF.locationPointer[Session.Site].pointerPos.top}, true)
                 Media.GetImg("MapIndicator").set({left: STATE.REF.locationPointer[Session.Site].pointerPos.left, top: STATE.REF.locationPointer[Session.Site].pointerPos.top})
+            } else {                
+                Media.ToggleImg("MapIndicator_Base_1", false)
+                Media.ToggleAnim("MapIndicator", false)
             }
         },
         endScene = () => {

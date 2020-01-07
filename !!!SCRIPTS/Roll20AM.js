@@ -2031,7 +2031,7 @@ var Roll20AM = Roll20AM || (function() {
                 return C.SOUNDMODES.defaults.innerMode
             return C.SOUNDMODES.defaults.mode
         },
-        getPlaylist = (soundRef) => { D.Alert(`SoundRef: ${D.JS(soundRef)}<br>Playlist: ${D.JS(getPlayList(soundRef))}`) },
+        getPlaylist = (soundRef) => getPlayList(isTrack(soundRef) ? getPlaylistOfTrack(soundRef) : soundRef),
         getActiveSounds = (isReturningTracks = false) => {
             const playListTrackIDs = [],
                 loopingSoundRefs = []

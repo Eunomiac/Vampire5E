@@ -797,6 +797,7 @@ const C = (() => {
             CityTraffic: [30],
             Church: [60],
             Rain: [80],
+            SoftIndoor: [30],
             Thunder: [100],
             WindLow: [60],
             WindWinterLow: [28],

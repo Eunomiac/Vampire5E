@@ -1179,7 +1179,7 @@ const Media = (() => {
                             break
                         }
                         case "fix": {
-                            updateSounds()
+                            updateSounds(true, true)
                             break
                         }
                         case "stopall": {
@@ -6055,7 +6055,7 @@ const Media = (() => {
         isRegPlaylist = (playlistRef) => Boolean(REGISTRY.PLAYLIST[getPlaylistKey(playlistRef) || ""]),
         isSoundPlaying = (soundRef) => {
             const soundObj = getSoundObj(soundRef)
-            return VAL({object: soundObj}) && soundObj.get("playing")
+            return VAL({object: soundObj}) && soundObj.get("playing") && !soundObj.get("softstop")
         },
         isSoundLooping = (soundRef) => {
             const soundObj = getSoundObj(soundRef)
@@ -6105,8 +6105,10 @@ const Media = (() => {
             }
             return false
         },
-        getPlayingSounds = () => Object.keys(REGISTRY.SOUND).filter(x => isSoundPlaying(x)),
-        getLoopingSounds = () => Object.keys(REGISTRY.SOUND).filter(x => isSoundLooping(x)),
+        getPlayingSoundObjs = () => _.uniq(findObjs({_type: "jukeboxtrack"})).filter(x => x.get("playing") && !x.get("softstop")),
+        getLoopingSoundObjs = () => getPlayingSounds.filter(x => x.get("loop") || Roll20AM.GetPlaylist(x.get("name")).mode === "loop"),
+        getPlayingSounds = () => getPlayingSoundObjs.map(x => x.get("name")),
+        getLoopingSounds = () => getLoopingSoundObjs.map(x => x.get("name")),
         getScore = (mode) => {
             // D.Poke(`Score Ref: ${Object.keys(C.SOUNDSCORES).find(x => C.SOUNDSCORES[x].includes(mode))}`)
             const scoreRef = Object.keys(C.SOUNDSCORES).find(x => C.SOUNDSCORES[x].includes(mode)),
@@ -6233,9 +6235,14 @@ const Media = (() => {
                 D.Alert(`Added <b>${D.JS(soundKey)}</b> to playlist <b>${D.JS(playlistKey)}</b>`, "Add Track to Playlist")
             }
         },
-        updateSounds = (isDoubleChecking = true) => {
+        updateSounds = (isDoubleChecking = true, isHardReset = false) => {
             if (STATE.REF.isRunningSilent && STATE.REF.isRunningSilent !== "TOTALSILENCE")
                 return
+            if (isHardReset)
+                for (const soundObj of getPlayingSoundObjs()) {
+                    stopSound(soundObj)
+                    soundObj.set({playing: false, softstop: false})
+                }
             const soundsToPlay = {}
             switch (Session.Mode) {
                 case "Active":
@@ -6283,7 +6290,6 @@ const Media = (() => {
                     }), "(NONE)"))
                     break
             }
-
             if (_.keys(soundsToPlay).includes("TOTALSILENCE")) {
                 STATE.REF.isRunningSilent = "TOTALSILENCE"
                 Roll20AM.StopSound("all")
@@ -6364,6 +6370,7 @@ const Media = (() => {
         }, */
         stopSound = (soundRef, fadeOut = null) => {
             Roll20AM.StopSound(soundRef, fadeOut)
+            STATE.REF.loopingSounds = _.without(STATE.REF.loopingSounds, soundRef)
         }
     // #endregion
 
@@ -6428,6 +6435,8 @@ const Media = (() => {
         // SOUND FUNCTIONS
         ResetSoundModes: initSoundModes,
         UpdateSoundscape: updateSounds,
+        ResetSoundscape: () => updateSounds(true, true),
+        GetLoopingSounds: getLoopingSounds,
         get LoopingSounds() { return STATE.REF.loopingSounds },
         set LoopingSounds(soundRef) {
             if (soundRef)
