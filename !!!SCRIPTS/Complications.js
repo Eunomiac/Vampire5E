@@ -80,6 +80,11 @@ const Complications = (() => {
                     sendGMPanel()
                     break
                 }
+                case "unlock": {
+                    STATE.REF.isRunning = true
+                    D.Alert("Complication Drag Pads unlocked.", "COMPLICATIONS")
+                    break
+                }
                 case "set": {
                     setCard(D.Int(args.shift()) + 1, args.shift(), args.shift() || null)
                     break
@@ -371,7 +376,7 @@ const Complications = (() => {
              }},
             {name: "FieldWork", displayName: "Field Work", category: "blood", value: 1, rarity: "C",
              afterAction: (charRef, spot, isEnhanced) => {
-                 Char.AdjustHunger(charRef, spot, isEnhanced ? 2 : 1, false)
+                 Char.AdjustHunger(charRef, isEnhanced ? 2 : 1, false)
              }},
             {name: "Friction", displayName: "Friction", category: "attention", value: 1, rarity: "U",
              afterAction: (charRef, spot, isEnhanced) => {
@@ -409,7 +414,7 @@ const Complications = (() => {
              }},
             {name: "Micromanagement", displayName: "Micromanagement", category: "blood", value: 2, rarity: "U",
              afterAction: (charRef, spot, isEnhanced) => {
-                 Char.AdjustHunger(charRef, spot, isEnhanced ? 4 : 2, false)
+                 Char.AdjustHunger(charRef, isEnhanced ? 4 : 2, false)
              }},
             {name: "NecessaryEvils", displayName: "Necessary Evils", category: "humanity", value: 2, rarity: "R",
              afterAction: (charRef, spot, isEnhanced) => {
@@ -788,14 +793,16 @@ const Complications = (() => {
 
     // #region CARD ACTIVATION: Turning Over & Activating Cards, Deactivating Cards
         flipCard = spot => {
-            const card = STATE.REF.MAT[spot]
-            if (card && card.isFaceUp) {
-                setCard(spot, "faceDown")
-            } else if (card) {
-                setCard(spot, "faceUp")
-                STATE.REF.lastDraw = spot
+            if (STATE.REF.isRunning) {
+                const card = STATE.REF.MAT[spot]
+                if (card && card.isFaceUp) {
+                    setCard(spot, "faceDown")
+                } else if (card) {
+                    setCard(spot, "faceUp")
+                    STATE.REF.lastDraw = spot
+                }
+                refreshDraws()
             }
-            refreshDraws()
         },
     // #endregion
 
@@ -1206,9 +1213,9 @@ const Complications = (() => {
                 refreshDraws(false)
                 
         },
-        startComplication = startVal => {            
-            STATE.REF.isRunning = true
+        startComplication = startVal => {   
             STATE.REF.endMessageQueue = []
+            STATE.REF.isRunning = false
             Session.ChangeMode("Complications")
             D.Queue(resetComplication, [true, startVal], "Comp", 1)
             D.Queue(sendGMPanel, [], "Comp", 0.5)
@@ -1325,6 +1332,7 @@ const Complications = (() => {
                     ]
                 })            
             D.CommandMenu({title: "Complications Control", rows: [
+                {type: "ButtonLine", contents: [{name: "Unlock", command: "!comp unlock"}]},
                 ..._.values(_.groupBy(subPanels, (x, i) => Math.floor(i / 2))).map(x => ({type: "Column", contents: x, style: {width: "47%", margin: "0px 1% 0% 1%"}})),
                 {type: "ButtonLine", contents: [{name: "Finish", command: "!comp end false true"}, {name: "Launch!", command: "!comp end true true"}]}
             ]})

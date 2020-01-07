@@ -1165,6 +1165,7 @@ const TimeTracker = (() => {
                 return undefined
             }
             setIsRunning(true)
+            clearInterval(timeTimer)
             timeTimer = setInterval(easeSet, CLOCKSPEED)
         },
         tickClock = () => {
@@ -1727,11 +1728,14 @@ const TimeTracker = (() => {
         },
         toggleClock = (activeState, secsPerMin = 60) => {
             isTimeRunning = Boolean(activeState)
+
             if (activeState) {
-                if (STATE.REF.TweenTarget)
+                if (STATE.REF.TweenTarget) {
                     tweenClock(STATE.REF.TweenTarget)
-                else
+                } else {
+                    clearInterval(timeTimer)
                     timeTimer = setInterval(tickClock, D.Int(secsPerMin) * 1000)
+                }
             } else {
                 isTimeRunning = false
                 isRunningFast = false

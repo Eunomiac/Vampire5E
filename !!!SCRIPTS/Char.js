@@ -1054,26 +1054,37 @@ const Char = (() => {
             for (const charData of _.values(Char.REGISTRY)) {
                 const desireObj = Media.GetText(`${charData.shortName}Desire`)
                 if (VAL({textObj: desireObj})) {
-                    let desireVal = (D.GetRepStat(charData.id, "desire", "top", "desire") || {val: ""}).val
-                    // D.Poke(`Desire Val for ${charData.name}: '${D.JS(desireVal)}'`)
-                    if ((!desireVal || desireVal === "") && addAttrData && addAttrData.charID === charData.id)
-                        desireVal = addAttrData.val
-                    if (!desireVal || desireVal === "")
-                        desireVal = " "                    
-                    DB(`<b>${charData.name}</b>: Getting Desire Value = ${desireVal}`, "displayDesires")
+                    let desireVal = (D.GetRepStat(charData.id, "desire", "top", "desire") || {val: false}).val
+                    DB({desireVal, for: charData.name, length: desireVal.length, addAttrData}, "displayDesires")
+                    if (!desireVal || VAL({string: desireVal}) && desireVal.length < 3)
+                        if (addAttrData && VAL({string: addAttrData.val}) && addAttrData.charID === charData.id)
+                            desireVal = addAttrData.val
+                        else
+                            desireVal = "(none)"
+                    DB([
+                        D.JSL(desireVal),
+                        D.JSL(desireVal.length)
+                    ].join(", "), "displayDesires")                 
                     Media.SetText(desireObj, desireVal)
                 }
             }
         },
         resolveDesire = charRef => {
-            const desireObj = (D.GetRepStat(charRef, "desire", "top", "desire") || {obj: null}).obj
-            if (desireObj) {
-                desireObj.remove()
-                adjustDamage(charRef, "willpower", "superficial+", -1, false)
-                displayDesires()
-                D.Chat(D.GetChar(charRef), C.HTML.Block([
-                    C.HTML.Header("You have resolved your Desire!<br>One superficial Willpower restored.<br>What do you Desire next?", Object.assign({height: "auto"}, C.STYLES.whiteMarble.header))
-                ], C.STYLES.whiteMarble.block))
+            let desireObj
+            try {
+                desireObj = (D.GetRepStat(charRef, "desire", "top", "desire") || {obj: null}).obj
+                if (desireObj) {
+                    desireObj.remove()
+                    adjustDamage(charRef, "willpower", "superficial+", -1, false)
+                    displayDesires()
+                    D.Chat(D.GetChar(charRef), C.HTML.Block([
+                        C.HTML.Header("You have resolved your Desire!<br>One superficial Willpower restored.<br>What do you Desire next?", Object.assign({height: "auto"}, C.STYLES.whiteMarble.header))
+                    ], C.STYLES.whiteMarble.block))
+                } else {
+                    D.Alert(`No Desire found for ${D.GetName(charRef)}`, "resolveDesire")
+                }
+            } catch (errObj) {
+                D.Alert(`No Desire found for ${D.GetName(charRef)}`, "resolveDesire")
             }            
         },
         regResource = (charRef, name, amount) => {
@@ -1409,10 +1420,10 @@ const Char = (() => {
                     // no default                        
                 }
                 const chatStyles = {
-                        block: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.block, {}) : {width: "275px"},
-                        body: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.body, {fontSize: "12px"}) : {fontFamily: "Voltaire", fontSize: "14px", color: "rgb(255,50,50)"},
-                        banner: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {fontSize: "12px"}) : {fontSize: "12px"},
-                        alert: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {}) : {}
+                        block: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.block, {}) : Object.assign(C.STYLES.blackMarble.block, {}), // {width: "275px"},
+                        body: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.body, {fontSize: "12px"}) : Object.assign(C.STYLES.blackMarble.body, {fontSize: "12px"}), // {fontFamily: "Voltaire", fontSize: "14px", color: "rgb(255,50,50)"},
+                        banner: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {fontSize: "12px"}) : Object.assign(C.STYLES.blackMarble.header, {fontSize: "12px"}), // {fontSize: "12px"},
+                        alert: trait === "humanity" && amount > 0 || trait !== "humanity" && amount < 0 ? Object.assign(C.STYLES.whiteMarble.header, {}) : Object.assign(C.STYLES.blackMarble.header, {}) // {}
                     },
                     initTraitVal = VAL({number: D.Int(D.GetStatVal(charObj, trait))}) ? D.Int(D.GetStatVal(charObj, trait)) : defaultTraitVal || 0,
                     finalTraitVal = Math.min(max, Math.max(min, initTraitVal + D.Int(amount)))
@@ -1551,7 +1562,7 @@ const Char = (() => {
                 }
                 if (bannerString && isChatting)
                     D.Chat(charObj, C.HTML.Block(_.compact([
-                        C.HTML.Header(bannerString, Object.assign({}, chatStyles.banner, {lineHeight: "25px"})),
+                        C.HTML.Header(bannerString, Object.assign({}, chatStyles.banner, {height: "25px", lineHeight: "25px"})),
                         bodyString ? C.HTML.Body(bodyString, chatStyles.body) : null,
                         trackerString || null,
                         alertString ? C.HTML.Header(alertString, Object.assign(chatStyles.alert, alertString.includes("<br>") ? {height: "40px"} : {})) : null

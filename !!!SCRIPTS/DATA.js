@@ -645,12 +645,13 @@ const D = (() => {
                     })) ||
                     message
             // sendChat(from, `/direct <pre>${JSON.stringify(html)}</pre>`)
-            if (who === "all" || player === "all" || !player) 
+            if (who === "all" || player === "all" || !player) {
                 sendChat(randomString(3), html)
-            else if (Session.IsTesting && !playerIsGM(player.id)) 
-                sendChat(randomString(3), `/w Storyteller ${html}<div style="display: block; height: 10px; margin-bottom: -7px; position: relative; width: 230px; color: blue; z-index: 999; text-align: right; text-align-last: right; font-size: 10px; line-height: 10px;">(TO: ${player.get("_displayname")})</div>`)
-            else
-                sendChat(randomString(3), `/w "${player.get("_displayname")}" ${html}`)                
+            } else {
+                sendChat(randomString(3), `/w "${player.get("_displayname")}" ${html}`)
+                if (!playerIsGM(player.id))                
+                    sendChat(randomString(3), `/w Storyteller ${html}<div style="display: block;height: 10px;position: relative;color: blue;z-index: 999;text-align: right;font-size: 10px;line-height: 10px;margin-top: -12px;margin-bottom: -5px;margin-left: 150px;background-color: rgba(0,0,255,0.2);width: auto;">(TO: ${player.get("_displayname")})</div>`)
+            }
         },
         sendToGM = (msg, title = "[ALERT]", throttle = 0) => {
             if (STATE.REF.ALERTTHROTTLE.includes(title)) {

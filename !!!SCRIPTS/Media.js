@@ -21,40 +21,6 @@ const Media = (() => {
             // delete STATE.REF.imgRegClean
             // delete STATE.REF.animregistry
 
-            STATE.REF.imgregistry.WeatherFrost_1 = {
-                id: "-Luq5BHI5Gqq2ap_WAPm",
-                type: "image",
-                name: "WeatherFrost_1",
-                left: 795,
-                top: 520,
-                height: 1040,
-                width: 1590,
-                activeLayer: "map",
-                zIndex: 139,
-                srcs: {
-                    frost1: "https://s3.amazonaws.com/files.d20.io/images/98105615/Afyl3Cyy4QbBfdoPPLKWKg/thumb.png?1575006917",
-                    frost2: "https://s3.amazonaws.com/files.d20.io/images/98105619/Ij83cp7i76gzO0eZ8io7gw/thumb.png?1575006924",
-                    frost3: "https://s3.amazonaws.com/files.d20.io/images/98105622/1x2L-YDYT8Hy3vmajGcBGA/thumb.png?1575006930",
-                    redoverlay: "https://s3.amazonaws.com/files.d20.io/images/98108217/MiKx_cj5kN4jRg-GVv8rcw/thumb.png?1575012845"
-                },
-                modes: {
-                    Active: {isForcedOn: "LAST", lastActive: true},
-                    Inactive: {isForcedOn: true, isForcedState: "redoverlay", lastState: "redoverlay"},
-                    Daylighter: {isForcedOn: "NEVER"},
-                    Downtime: {isForcedOn: "NEVER"},
-                    Complications: {isForcedOn: null},
-                    Spotlight: {isForcedOn: "NEVER"}
-                },
-                leftEdge: 0,
-                rightEdge: 1590,
-                topEdge: 0,
-                bottomEdge: 1040,
-                curSrc: "redoverlay",
-                curMode: "Active",
-                activeSrc: "redoverlay",
-                isActive: false,
-                wasModeUpdated: true
-            }
             STATE.REF.imgregistry = STATE.REF.imgregistry || {}
             STATE.REF.textregistry = STATE.REF.textregistry || {}
             STATE.REF.animregistry = STATE.REF.animregistry || {}
@@ -87,7 +53,7 @@ const Media = (() => {
                 STATE.REF.AREADICT.add(areaKey)
 
            
-            STATE.REF.imgregistry.Horizon_1.srcs = {
+            /* STATE.REF.imgregistry.Horizon_1.srcs = {
                 night1clear: "https://s3.amazonaws.com/files.d20.io/images/98509811/jMluHoG6qt1m5rvbwML6xA/thumb.jpg?1575435633",
                 night1cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509810/1sLLY_NS7SF_cootY6JCZQ/thumb.jpg?1575435632",
                 night1stormy: "https://s3.amazonaws.com/files.d20.io/images/98509806/oo2w3_LmrwC02hhbtFZfdA/thumb.jpg?1575435632",
@@ -120,7 +86,7 @@ const Media = (() => {
                 predawn1stormy: "https://s3.amazonaws.com/files.d20.io/images/98509832/hg4QLMHetze-2rKMygC0Yg/thumb.jpg?1575435665",	
                 day: "https://s3.amazonaws.com/files.d20.io/images/96326425/CgaFz_GokWBhfOdevEpQCg/thumb.jpg?1573106179"
             }
-
+            */ 
             /* 
             STATE.REF.textregistry.Projects_Col1.font_size = 12
             STATE.REF.textregistry.Projects_Col2.font_size = 12
@@ -697,14 +663,13 @@ const Media = (() => {
                                         STATE.REF.siteNamesOnDeck = _.keys(_.omit(C.SITES, (v) => v.district === null))
                                         D.Alert("Site Names loaded, prepare to identify map locations on my mark!", "Auto Site Movement")
                                     } else if (args[0] === "confirm") {
-                                        state.VAMPIRE.Session.locationPointer[STATE.REF.siteNamesOnDeck[0]] = { pointerPos: { left: D.Int(mapIndObj.get("left")), top: D.Int(mapIndObj.get("top"))} }
+                                        state.VAMPIRE.Session.locationPointer[STATE.REF.siteNamesOnDeck[0]] = {pointerPos: {left: D.Int(mapIndObj.get("left")), top: D.Int(mapIndObj.get("top"))}}
                                         D.Alert(`Site <b>${STATE.REF.siteNamesOnDeck[0]}</b> placed at: ${D.JS(state.VAMPIRE.Session.locationPointer[STATE.REF.siteNamesOnDeck.shift()])}!`)
                                     } else if (args[0] === "skip") {
                                         D.Alert(`Skipping <b>${STATE.REF.siteNamesOnDeck.shift()}</b>`)
                                     }
-                                    if (STATE.REF.siteNamesOnDeck.length) {
+                                    if (STATE.REF.siteNamesOnDeck.length)
                                         D.Alert(`Now position site <b>${STATE.REF.siteNamesOnDeck[0]}</b><br><br>!img toggle autopos confirm or skip to continue!`, "Auto Site Movement")
-                                    }
                                     break
                                 }
                                 case "autosrc": {                                    
@@ -3388,6 +3353,15 @@ const Media = (() => {
             ["IMG", "LoadingMoon", "modes", "Downtime", {isForcedOn: null}],
             ["IMG", "LoadingMoon", "modes", "Spotlight", {isForcedOn: null}],
             ["IMG", "LoadingMoon", "modes", "Complications", {isForcedOn: null}],
+            ["IMG", "LoadingScreen_1", "isActive", true],
+            ["IMG", "LoadingScreen_1", "curSrc", "initializing"],
+            ["IMG", "LoadingScreen_1", "activeSrc", "initializing"],
+            ["IMG", "LoadingScreen_1", "modes", "Active", {isForcedOn: null}],
+            ["IMG", "LoadingScreen_1", "modes", "Inactive", {isForcedOn: null}],
+            ["IMG", "LoadingScreen_1", "modes", "Daylighter", {isForcedOn: null}],
+            ["IMG", "LoadingScreen_1", "modes", "Downtime", {isForcedOn: null}],
+            ["IMG", "LoadingScreen_1", "modes", "Spotlight", {isForcedOn: null}],
+            ["IMG", "LoadingScreen_1", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "WeatherLightning_1", "isActive", false],
             ["IMG", "WeatherLightning_1", "curSrc", "ANIM"],
             ["IMG", "WeatherLightning_1", "activeSrc", "ANIM"],
@@ -3829,7 +3803,7 @@ const Media = (() => {
             ["TEXT", "weather", "modes", "Daylighter", {isForcedOn: true}],
             ["TEXT", "weather", "modes", "Downtime", {isForcedOn: "NEVER"}],
             ["TEXT", "weather", "modes", "Spotlight", {isForcedOn: true}],
-            ["TEXT", "weather", "modes", "Complications", {isForcedOn: null}],
+            ["TEXT", "weather", "modes", "Complications", {isForcedOn: null}]
         ],
     // #endregion
 
@@ -3936,8 +3910,8 @@ const Media = (() => {
                 Session.ChangeMode("Active")           
             
             STATE.REF.fixAllCommands = []
-            Media.ToggleLoadingScreen(true)
-            D.Queue(Media.ToggleLoadingScreen, [true, "Initializating Media Assets!"], "Media", 2)
+            Media.ToggleLoadingScreen("initializing")
+            D.Queue(Media.ToggleLoadingScreen, ["initializing", "Initializating Media Assets!"], "Media", 2)
             D.Queue(Media.SetLoadingMessage, ["[1/16] Reconfiguring Mode Data..."], "Media", 0.1)
             D.Queue(resetModeData, [true], "Media", 15)
             D.Queue(Media.SetLoadingMessage, ["[2/16] Purging Dice Roller..."], "Media", 0.1)
@@ -5053,9 +5027,10 @@ const Media = (() => {
             if (returnLines.length)
                 STATE.REF.fixAllCommands.push(...["<h3><u>Clearing Unregistered Image Objects</u></h3>", ...returnLines])
         },        
-        toggleLoadingScreen = (isActive, customText = " ") => {
-            if (isActive) {
+        toggleLoadingScreen = (imgSrc, customText = " ") => {
+            if (imgSrc) {
                 Media.ToggleImg("LoadingScreen", true)
+                Media.SetImg("LoadingScreen", imgSrc)
                 Media.ToggleAnim("LoadingMoon", true)
                 Media.ToggleText("LoadingMessage", true)
                 setLoadingText(customText)

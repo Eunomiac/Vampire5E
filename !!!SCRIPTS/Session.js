@@ -149,9 +149,11 @@ const Session = (() => {
                             break
                         }
                         case "loc": case "location": {
+                            DB({initPendingLocCommand: STATE.REF.pendingLocCommand, newPendingLocCommand: Object.assign({}, STATE.REF.pendingLocCommand, parseLocationString(args.join(" ")))}, "!set loc")
                             STATE.REF.pendingLocCommand = Object.assign(STATE.REF.pendingLocCommand, parseLocationString(args.join(" ")))
                             const curCommand = STATE.REF.pendingLocCommand,
                                 sceneFocus = curCommand.DistrictCenter && "c" || "l"
+                            DB({curCommand}, "!set loc")
                             let isCommandComplete = true
                             if (curCommand.DistrictLeft && !curCommand.DistrictRight || curCommand.DistrictRight && !curCommand.DistrictLeft)
                                 break
@@ -546,21 +548,21 @@ const Session = (() => {
                     `${STATE.REF.Mode}`,
                     D.Capitalize(mode.toLowerCase())
                 ]
-                D.Queue(Media.ToggleLoadingScreen, [true, `Changing Modes: ${lastMode} ► ${curMode}`], "ModeSwitch", 3)
-                D.Queue(Media.SetLoadingMessage, [`Leaving ${lastMode}...`], "ModeSwitch", 0.1)
+                D.Queue(Media.ToggleLoadingScreen, [curMode === "Inactive" && "concluding" || "loading", `Changing Modes: ${D.UCase(lastMode)} ► ${D.UCase(curMode)}`], "ModeSwitch", 3)
+                D.Queue(Media.SetLoadingMessage, [`[Leaving ${D.UCase(lastMode)}] Logging Status...`], "ModeSwitch", 0.1)
                 D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.leaveMode[lastMode], [args], "ModeSwitch", 1)
                 D.Queue(() => { STATE.REF.Mode = curMode; STATE.REF.LastMode = lastMode }, [], "ModeSwitch", 0.1)
-                D.Queue(Media.SetLoadingMessage, ["Configuring Mode Assets..."], "ModeSwitch", 0.1)
+                D.Queue(Media.SetLoadingMessage, [`[Leaving ${D.UCase(lastMode)}] Retiring Assets...`], "ModeSwitch", 0.1)
                 D.Queue(Roller.Clean, [], "ModeSwitch", 1)
                 D.Queue(Media.ModeUpdate, [], "ModeSwitch", 2)
                 D.Queue(setModeLocations, [curMode], "ModeSwitch", 1)
                 D.Queue(Media.UpdateSoundscape, [], "ModeSwitch", 1)
-                D.Queue(Media.SetLoadingMessage, [`Entering ${curMode}...`], "ModeSwitch", 0.1)
+                D.Queue(Media.SetLoadingMessage, [`[Entering ${D.UCase(curMode)}] Restoring Assets ...`], "ModeSwitch", 0.1)
                 D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.enterMode[curMode], [args], "ModeSwitch", 1)
                 D.Queue(TimeTracker.Fix, [], "ModeSwitch", 0.1)
-                D.Queue(Media.SetLoadingMessage, ["Mode Change Complete!"], "ModeSwitch", 1)
+                D.Queue(Media.SetLoadingMessage, [`${D.UCase(curMode)} Mode Set!`], "ModeSwitch", 1)
                 D.Queue(Media.ToggleLoadingScreen, [false], "ModeSwitch", 0.1)
                 D.Run("ModeSwitch")
             }
@@ -655,7 +657,7 @@ const Session = (() => {
                 locParams[commands.shift()] = commands
             }
             DB({locString, locParams}, "parseLocationString")
-            const siteCenterKey = locParams.SiteCenter && locParams.SiteCenter[0] || STATE.REF.curLocation.SiteCenter[0] !== "blank" && STATE.REF.curLocation.SiteCenter[0]
+            const siteCenterKey = locParams.SiteCenter && locParams.SiteCenter[0] // || STATE.REF.curLocation.SiteCenter[0] !== "blank" && STATE.REF.curLocation.SiteCenter[0]
             if (siteCenterKey && (!locParams.SubLocs || _.any(locParams.SubLocs, v => v === false)) && STATE.REF.locationDetails[siteCenterKey] && STATE.REF.locationDetails[siteCenterKey].subLocs)
                 locParams.SubLocs = Object.assign({}, BLANKLOCRECORD.SubLocs, STATE.REF.locationDetails[siteCenterKey].subLocs, _.omit(locParams.SubLocs, v => v === false))
             if (siteCenterKey && locParams.SubLocs) {                

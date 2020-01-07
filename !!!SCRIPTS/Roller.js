@@ -159,6 +159,11 @@ const Roller = (() => {
                 case "set": {
                     if (!playerIsGM(msg.playerid)) break
                     switch(D.LCase(call = args.shift())) {
+                        case "resbonus": {
+                            STATE.REF.resMarginBonus = D.Int(args.shift())
+                            D.Alert(`The next resonance roll will enjoy a +${STATE.REF.resMarginBonus}0% bonus.`, "Resonance")
+                            break
+                        }
                         case "pc": {
                             const [charObj] = getRollChars(Listener.GetObjects(objects, "character")[0])
                             if (VAL({charObj}, "!roll set pc")) {
@@ -732,7 +737,7 @@ const Roller = (() => {
             }
         },
         CHATSTYLES = { // "-26px 0px -7px -42px"
-            fullBox: `<div style="display: block;width: 259px;padding: 5px 5px;margin-left: -42px;margin-top: -26px; margin-bottom: -7px; color: ${C.COLORS.white};font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset ${C.COLORS.darkred};background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;">`,
+            fullBox: `<div style="display: block;width: 259px;padding: 5px 5px;margin: -26px 0px -7px -42px; color: ${C.COLORS.white};font-family: bodoni svtytwo itc tt;font-size: 16px;border: 3px outset ${C.COLORS.darkred};background: url('http://imgsrv.roll20.net/?src=imgur.com/kBl8aTO.jpg') center no-repeat;position: relative;">`,
             space10: "<span style=\"display: inline-block; width: 10px;\"></span>",
             space30: "<span style=\"display: inline-block; width: 30px;\"></span>",
             space40: "<span style=\"display: inline-block; width: 40px;\"></span>",
@@ -788,7 +793,7 @@ const Roller = (() => {
                 startBlock: "<div style=\"display: inline-block; width: 48%; margin: 0% 1%; text-align: center;\">",
                 blockNameStart: "<div style=\"display: block; width: 100%; font-size: 13px; margin-bottom: -5px; margin-top: 10px;\">",
                 lineStart: "<div style=\"display: block; width: 100%; font-size: 12px;\">",
-                startPlayerBlock: `<div style="display: block; width: 280px; padding: 45px 5px; margin-left: -58px; argin-top: -26px; margin-bottom: -12px; color: ${C.COLORS.white}; font-family: Percolator; text-align: left; font-size: 16px; background: url('https://t4.ftcdn.net/jpg/00/78/66/11/240_F_78661103_aowhE8PWKrHRtoCUogPvkfWs22U54SuU.jpg') center no-repeat; background-size: 100% 100%; z-index: 100; position: relative;">`,
+                startPlayerBlock: `<div style="display: block; width: 280px; padding: 45px 5px; margin: -26px 0px -7px -42px; color: ${C.COLORS.white}; font-family: Percolator; text-align: left; font-size: 16px; background: url('https://t4.ftcdn.net/jpg/00/78/66/11/240_F_78661103_aowhE8PWKrHRtoCUogPvkfWs22U54SuU.jpg') center no-repeat; background-size: 100% 100%; z-index: 100; position: relative;">`,
                 playerTopLineStart: "<div style=\"display: block; margin-left: 28px;  width: 100%; font-size: 24px; font-family: Percolator; height: 12px; padding: 3px 0px; text-align: left;  margin-top: -16px;\">",
                 playerBotLineStart: `<div style="width: 100%; height: auto; line-height: 15px; display: block;  text-align: left; color: ${C.COLORS.white}; margin: 3px 0px 9px 48px;">`,
                 grey: `<span style="display:inline-block; color: ${C.COLORS.brightgrey}; font-size: 24px; font-weight: bold;">`,
@@ -3153,8 +3158,7 @@ const Roller = (() => {
         // D.Alert(`Received Parameters: ${params}`)
             chars = _.flatten([chars])
             let rollData = buildDicePool(getRollData(chars[0], "secret", params)),
-                [traitLine, playerLine] = ["", ""],
-                resultLine = null
+                [traitLine, playerLine] = ["", ""]
             const {
                     dicePool
                 } = rollData,
@@ -3175,7 +3179,6 @@ const Roller = (() => {
             } else {
                 traitLine = rollData.mod + (rollData.mod === 1 ? " Die" : " Dice")
             }
-            let confirmString = ""
             _.each(chars, char => {
                 rollData = getRollData(char, "secret", params)
                 rollData.isSilent = isSilent || false
@@ -3206,17 +3209,12 @@ const Roller = (() => {
                     replace(/height: 24px/gu, "height: 20px").
                     replace(/height: 22px/gu, "height: 18px")}</div>${
                     CHATSTYLES.secret.lineStart}${outcomeLine}</div></div></div>`)
-                if (!rollData.isSilent) {
-                    if (rollData.playerID)
-                        D.Chat(rollData.playerID, `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}you are being tested ...</div>${CHATSTYLES.secret.playerBotLineStart}${playerLine}</div></div>`, null, D.RandomString(3))
-                    confirmString = `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}you are being tested ...</div>${CHATSTYLES.secret.playerBotLineStart}${playerLine}</div></div>`
-                } else {
-                    confirmString = `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}<span style="width: 100%; text-align: center; text-align-last: center;">(SECRET ROLL)</span></div></div>`
-                }
+                if (rollData.isSilent)
+                    D.Chat("Storyteller", `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}<span style="width: 100%; text-align: center; text-align-last: center;">(SECRET ROLL)</span></div></div>`, undefined, D.RandomString(3))
+                else if (rollData.playerID)
+                    D.Chat(rollData.playerID, `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}you are being tested ...</div>${CHATSTYLES.secret.playerBotLineStart}${playerLine}</div></div>`, null, D.RandomString(3))
             })
-            resultLine = `${CHATSTYLES.fullBox + CHATSTYLES.secret.topLineStart + (rollData.isSilent ? "Silently Rolling" : "Secretly Rolling") + (rollData.isHidingTraits ? " (Traits Hidden)" : " ...")}</div>${CHATSTYLES.secret.traitLineStart}${traitLine}${rollData.diff > 0 ? ` vs. ${rollData.diff}` : ""}</div>${blocks.join("")}</div></div>`
-            D.Chat("Storyteller", confirmString, undefined, D.RandomString(3))
-            D.Chat("Storyteller", resultLine, undefined, D.RandomString(3))
+            D.Chat("Storyteller", `${CHATSTYLES.fullBox + CHATSTYLES.secret.topLineStart + (rollData.isSilent ? "Silently Rolling" : "Secretly Rolling") + (rollData.isHidingTraits ? " (Traits Hidden)" : " ...")}</div>${CHATSTYLES.secret.traitLineStart}${traitLine}${rollData.diff > 0 ? ` vs. ${rollData.diff}` : ""}</div>${blocks.join("")}</div></div>`, undefined, D.RandomString(3))
         },
     // #endregion
 
@@ -3234,7 +3232,7 @@ const Roller = (() => {
     // #endregion
 
     // #region Getting Random Resonance Based On District/Site Parameters
-        getResonance = (charRef, posRes = "", negRes = "", isDoubleAcute, testCycles = 0) => {
+        getResonance = (charRef, posRes = "", negRes = "", marginBonus = 0, isDoubleAcute, testCycles = 0) => {
             DB(`Resonance Args: ${D.JSL(charRef)}, ${D.JSL(posRes)}, ${D.JSL(negRes)}`, "getResonance")
             const charObj = D.GetChar(charRef),
                 resonances = {
@@ -3365,6 +3363,8 @@ const Roller = (() => {
             // Return ["Acute", "Choleric"];
         },
         displayResonance = (charRef, posRes, negRes, isDoubleAcute, testCycles = 0) => {
+            const marginBonus = Number(STATE.REF.resMarginBonus)            
+            STATE.REF.resMarginBonus = 0
             if (["l", "r", "c", "", undefined, null].includes(posRes)) {
                 const locations = Session.Locations(posRes);
                 [posRes, negRes] = ["", ""]
@@ -3380,7 +3380,7 @@ const Roller = (() => {
             }
             posRes = posRes === "x" ? "" : posRes
             negRes = negRes === "x" ? "" : negRes
-            const resonance = getResonance(charRef, posRes, negRes, isDoubleAcute, testCycles)
+            const resonance = getResonance(charRef, posRes, negRes, marginBonus, isDoubleAcute, testCycles)
             let resDetails, resIntLine
             switch (resonance[1].toLowerCase()) {
                 case "choleric":
@@ -3425,11 +3425,21 @@ const Roller = (() => {
                     break
                 // no default
             }
+            let huntString = `${D.GetName(charRef, true)} hunts`
+            if (Session.Site && C.SITES[Session.Site])
+                huntString += ` at ${C.SITES[Session.Site].fullName} `
+            else
+                huntString += " "
+            huntString += `in ${C.DISTRICTS[Session.District].fullName}.`
+            if (marginBonus > 0)
+                huntString += `<span style="display: block; text-align: right; text-align-last: right; margin-right: 5px; font-size: 10px; height: 11px; line-height: 11px; color: #AAAAAA; font-weight: normal; font-family: Voltaire;">(Resonance Bonus: +${marginBonus}0%)</span>`
             D.Chat("all", C.HTML.Block([
+                C.HTML.Body(huntString, {lineHeight: "20px", margin: "2px 0px 4px 5px", fontSize: "16px", textAlign: "left"}),
+                C.HTML.Header("The Blood tastes...", {padding: "0px 0px 0px 5px", fontWeight: "normal", textAlign: "left"} ),
                 C.HTML.Title(_.map([resonance[0], resonance[1]], v => v.toUpperCase()).join(" ")),
                 C.HTML.Header(resDetails),
                 C.HTML.Body(resIntLine, {lineHeight: "20px"})
-            ], undefined, D.RandomString(3)))
+            ]))
         }
     // #endregion
 

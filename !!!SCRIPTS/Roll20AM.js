@@ -2157,12 +2157,25 @@ var Roll20AM = Roll20AM || (function() {
                     stopSound(listRef, 0, false)
                     playSound(listRef, undefined, undefined, false)
                 } else if (playingTracks.length > 1 && listData.mode !== "together") {
-                    DB(`Too Many Tracks Playing for ${D.JS(listRef)}!<br>... Stopping: ${D.JS(playingTracks.slice(1))}<br>... Restarting: ${D.JS(playingTracks[0])}`, "verifyOneTrackPlaying")
+                    const realPlayingTracks = []
                     for (let i = 1; i < playingTracks.length; i++) {
-                        stopSound(playingTracks[i], 0, false)
-                        getTrackObj(playingTracks[i]).set({playing:false})
+                        const thisTrack = getTrackObj(playingTracks[i])
+                        if (thisTrack.get("softstop") && thisTrack.get("playing"))
+                            thisTrack.set({playing:false, softstop:false})
+                        else
+                            realPlayingTracks.push(thisTrack)
                     }
-                    playSound(playingTracks[0], undefined, undefined, false)
+                    if (realPlayingTracks.length > 1) {
+                        const realPlayingTitles = realPlayingTracks.map(x => x.get("title"))
+                        DB(`Too Many Tracks Playing for ${D.JS(listRef)}!<br>... Stopping: ${D.JS(realPlayingTitles.slice(1))}<br>... Restarting: ${D.JS(realPlayingTitles[0])}`, "verifyOneTrackPlaying")
+                        for (let i = 1; i < realPlayingTitles.length; i++) {
+                            stopSound(realPlayingTitles[i], 0, false)
+                            getTrackObj(realPlayingTitles[i]).set({playing:false,softstop:false})
+                        }
+                        playSound(realPlayingTitles[0], undefined, undefined, false)
+                    }
+
+                    
                 }
                 if (["randomLoop", "loop", "shuffle"].includes(listData.mode))
                     Media.LoopingSounds = listRef
