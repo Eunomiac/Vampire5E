@@ -6371,8 +6371,21 @@ const Media = (() => {
         stopSound = (soundRef, fadeOut = null) => {
             Roll20AM.StopSound(soundRef, fadeOut)
             STATE.REF.loopingSounds = _.without(STATE.REF.loopingSounds, soundRef)
-        }
+        },
     // #endregion
+
+    // #region SOUND VALIDATION: Verifying that proper tracks are playing at all times.
+        valGetPlayingTrackObjs = () => _.uniq(findObjs({_type: "jukeboxtrack"})).filter(x => x.get("playing") && !x.get("softstop")),
+        valGetPlayingTrackData = () => _.sortBy(valGetPlayingTrackObjs().map(x => ({
+            title: x.get("title"),
+            id: x.id,
+            isLooping: x.get("loop")
+        })), "title"),
+        valGetPlayingTrackNames = () => valGetPlayingTrackData.map(x => x.title),
+        valGetActiveLoops = () => { }
+
+    // #endregion
+
 
     return {
         CheckInstall: checkInstall,
@@ -6443,6 +6456,7 @@ const Media = (() => {
                 STATE.REF.loopingSounds = _.uniq([...STATE.REF.loopingSounds, soundRef])
             DB(`<b>Media.LoopingSounds = ${D.JSL(soundRef)}</b><br><br>Adding ${D.JS(soundRef)} to Looping Sounds: ${D.JS(STATE.REF.loopingSounds)}`, "updateSounds")
         },
+        StopLooping: (soundRef) => { STATE.REF.loopingSounds = _.without(STATE.REF.loopingSounds, soundRef) },
         
         // REINITIALIZE MEDIA OBJECTS (i.e. on MODE CHANGE)
         Fix: () => {

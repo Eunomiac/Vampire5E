@@ -2244,10 +2244,12 @@ var Roll20AM = Roll20AM || (function() {
             // D.Alert(`<b>PLAYING LISTS</b>: ${D.JS(allPlayingLists.sort())}<br><b>PLAYING TRACKS</b>: ${D.JS(allPlayingTracks.sort())}<br><b>ACTIVE   :</b> ${D.JS(allActiveTracks.sort())}`, /* ${allPlayingTest.length ? ["","",...allPlayingTest].join("<br>") : ""}` */ "verifyTracksPlaying", 1000)       
             // if (_.uniq([...tracksToggleOn, ...tracksToggleOff, ...tracksClearSoftStop]).length)
             //     D.Alert(`Toggling ON: ${D.JS(tracksToggleOn)}<br>Toggling OFF: ${D.JS(tracksToggleOff)}<br>Clearing SoftStop: ${D.JS(tracksClearSoftStop)}`, "Verify Tracks Playing")
-            for (const trackObj of tracksToggleOn.map(x => getTrackObj(x)))
-                trackObj.set({playing: true, softstop: false})
+            for (const trackObj of tracksToggleOn.map(x => getTrackObj(x))) {
+                trackObj.set("softstop", false)
+                trackObj.set("playing", true)
+            }
             for (const trackObj of tracksToggleOff.map(x => getTrackObj(x)))
-                trackObj.set({playing: false})
+                trackObj.set({playing: false, softstop: false})
             for (const trackObj of tracksClearSoftStop.map(x => getTrackObj(x)))
                 trackObj.set({softstop: false})
             for (const activePlaylist of Media.LoopingSounds.filter(x => isPlayList(x) && getPlayList(x).mode !== "together"))

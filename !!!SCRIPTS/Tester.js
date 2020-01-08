@@ -58,13 +58,13 @@ const Tester = (() => {
                             id: x.id,
                             status: {isPlaying: x.get("playing"), isSStop: x.get("softstop"), isLoop: x.get("loop")}
                         })), "title"),
-                        soundReport = soundObjsData.map(x => `<tr><td><b>${x.title}</b></td><td style="background-color: ${x.status.isPlaying ? "rgba(0, 255, 0, 0.5)" : "white"};">${x.status.isLoop ? "<b><u>LOOP</u></b>" : ""} ${x.status.isSStop ? "(S)" : ""}</td><td>${x.id}</td></tr>`),
+                        soundReport = soundObjsData.map(x => `<tr><td><b>${x.title}</b></td><td style="background-color: ${x.status.isPlaying ? "rgba(0, 255, 0, 0.5)" : "white"};">${x.status.isLoop ? "<b><u>LOOP</u></b>" : ""} ${x.status.isSStop ? "(S)" : ""}</td><td style="font-family: Voltaire; font-size: 12px;">${x.id}</td></tr>`),
                         playingSounds = soundReport.filter(x => x.includes("255, 0"))
                     D.Alert([
                         // "<h4>All Tracks</h4>",
                         // `<table><tr><th style="width: 150px;">Title</th><th style="width: 60px;">Status</th><th>ID</th></tr>${soundReport.join("")}</table>`,
                         "<h4>Playing Sounds</h4>",
-                        `<table><tr><th style="width: 100px;">Title</th><th style="width: 60px;">Status</th><th>ID</th></tr>${playingSounds.join("")}</table>`
+                        `<table><tr><th style="width: 100px;">Title</th><th style="width: 45px;">Status</th><th style="width: 140px;">ID</th></tr>${playingSounds.join("")}</table>`
                     ].join(""), "Sound Test")
                     break
                 }

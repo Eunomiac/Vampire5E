@@ -843,7 +843,7 @@ const C = (() => {
                 innerMode: "single"
             },
             defaults: {
-                mode: "shuffle",
+                mode: "randomLoop",
                 innerMode: "loop"
             }
         },
