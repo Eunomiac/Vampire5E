@@ -128,6 +128,7 @@ module.exports = {
         "Tester": true,
         "TimeTracker": true,
         "Roll20AM": true,
+        "SoundScape": true,
         "InitCommands": true,
         "_": false,
         "state": true,

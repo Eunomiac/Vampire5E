@@ -1,7 +1,7 @@
 void MarkStart("C")
 const GAMENAME = "VAMPIRE",
     SCRIPTNAME = "C",
-    SCRIPTS = ["C", "D", "Listener", "Fuzzy", "Char", "Media", "Player", "Session", "TimeTracker", "DragPads", "Roller", "Roll20AM", "Complications", "Handouts", "Chat", "Tester", "InitCommands", "GamePrep"]
+    SCRIPTS = ["C", "D", "Listener", "Fuzzy", "Char", "Media", "Player", "Session", "TimeTracker", "DragPads", "Roller", "SoundScape", "Complications", "Handouts", "Chat", "Tester", "InitCommands", "GamePrep"]
 state = state || {}
 state[GAMENAME] = state[GAMENAME] || {}
 for (const scriptName of SCRIPTS)
@@ -788,7 +788,7 @@ const C = (() => {
                 defaults: {
                     base: 1,
                     location: 1.75,
-                    score: 2
+                    score: 2,
                 }
             },
             CityChatter: [10],
@@ -806,10 +806,10 @@ const C = (() => {
             WindMax: [100],
             WindWinterMax: [100],
             WolfHowl: [100, 100],
-            SplashScreen: [15],
+            SplashScreen: [60],
             defaults: {
                 base: [50],
-                score: [30],
+                score: [60],
                 location: [45],
                 weather: [45],
                 effect: [60]
@@ -838,6 +838,22 @@ const C = (() => {
                 mode: "randomLoop",
                 innerMode: "single"
             },
+            ScoreMain: {
+                mode: "randomLoop",
+                innerMode: "single"
+            },
+            ScoreIntense: {
+                mode: "randomLoop",
+                innerMode: "single"
+            },
+            ScoreCombat: {
+                mode: "randomLoop",
+                innerMode: "single"
+            },
+            ScoreSplash: {
+                mode: "randomLoop",
+                innerMode: "single"
+            },
             SplashScreen: {
                 mode: "randomLoop",
                 innerMode: "single"
@@ -848,8 +864,12 @@ const C = (() => {
             }
         },
         SOUNDSCORES = {
+            SplashScreen: ["Inactive"],
             MainScore: ["Active", "Downtime", "Daylighter", "Spotlight", "Complication"],
-            SplashScreen: ["Inactive"]
+            ScoreMain: ["Active", "Downtime", "Daylighter", "Spotlight", "Complication"],
+            ScoreIntense: ["Active", "Downtime", "Daylighter", "Spotlight", "Complication"],
+            ScoreCombat: ["Active", "Downtime", "Daylighter", "Spotlight", "Complication"],
+            ScoreSplash: ["Inactive"]
         },
     // #endregion
 

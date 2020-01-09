@@ -1128,7 +1128,7 @@ const Media = (() => {
                     }
                     break
                 }
-                case "!sound": {
+                case "!snd": {
                     switch (D.LCase(call = args.shift())) {
                         case "get": {
                             switch (D.LCase(call = args.shift())) {

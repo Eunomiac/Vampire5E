@@ -32,7 +32,7 @@ const Listener = (() => {
                     const scriptData = SCRIPTCALLS.MESSAGE[call]
                     msg.who = msg.who || "API"
                     if (scriptData && scriptData.script && VAL({function: scriptData.script.OnChatCall}) && (!scriptData.gmOnly || playerIsGM(msg.playerid) || msg.playerid === "API") ) {
-                        const [objects, returnArgs] = parseMessage(args, msg)
+                        const [objects, returnArgs] = parseMessage(args, msg, SCRIPTCALLS.MESSAGE[call].needsObjects !== false)
                         call = scriptData.singleCall && returnArgs.shift() || call
                         if (D.WatchList.includes("Listen"))
                             D.Poke([
@@ -97,10 +97,11 @@ const Listener = (() => {
                 "!img": {script: Media, gmOnly: true, singleCall: false},
                 "!text": {script: Media, gmOnly: true, singleCall: false},
                 "!anim": {script: Media, gmOnly: true, singleCall: false},
-                "!sound": {script: Media, gmOnly: true, singleCall: false},
-                "!mvc": {script: Player, gmOnly: false, singleCall: false},
+                "!snd": {script: Media, gmOnly: true, singleCall: false},
+                "!sound": {script: SoundScape, gmOnly: true, singleCall: true, needsObjects: false},
+                "!mvc": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!token": {script: Player, gmOnly: false, singleCall: false},
-                "!links": {script: Player, gmOnly: false, singleCall: false},
+                "!links": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!roll": {script: Roller, gmOnly: false, singleCall: true},
                 "!sess": {script: Session, gmOnly: true, singleCall: true},
                 "!test": {script: Tester, gmOnly: true, singleCall: true},
@@ -357,10 +358,10 @@ const Listener = (() => {
             DB(`Returning:<br>OBJECTS: ${D.JSL(objects)}`, "getObjsFromArgs")
             return [objects, _.compact(returnArgs)]
         }, */
-        parseMessage = (args, msg) => {
-            const [objects, returnArgs] = getObjsFromArgs(args)
+        parseMessage = (args, msg, needsObjects) => {
+            const [objects, returnArgs] = needsObjects ? getObjsFromArgs(args) : [{}, args]
             // For each type, if no objects found in args, check selection:
-            if (VAL({selection: msg}))
+            if (needsObjects && VAL({selection: msg}))
                 for (const type of ["character", "graphic", "text"]) {
                     const selObjs = D.GetSelected(msg, type)
                     if (selObjs.length) {
