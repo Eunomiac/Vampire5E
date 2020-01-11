@@ -23,6 +23,9 @@ const D = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
+
+            // delete STATE.REF.MissingChars
+
             STATE.REF.WATCHLIST = STATE.REF.WATCHLIST || []
             STATE.REF.BLACKLIST = STATE.REF.BLACKLIST || []
             STATE.REF.CHARWIDTH = STATE.REF.CHARWIDTH || {}
@@ -30,6 +33,7 @@ const D = (() => {
             STATE.REF.ALERTTHROTTLE = []
             STATE.REF.isReportingListener = STATE.REF.isReportingListener || false
             STATE.REF.FuncQueueName = STATE.REF.FuncQueueName || []
+            STATE.REF.MissingChars = STATE.REF.MissingChars || []
 
         // Initialize STATSDICT Fuzzy Dictionary
             try {
@@ -61,6 +65,10 @@ const D = (() => {
             } catch (errObj) {
                 THROW("Initialization Error", "Initialize", errObj)
             }
+
+            if (STATE.REF.MissingChars.length)
+                D.Alert(`Missing Character Widths for: '<b>${D.JSL(STATE.REF.MissingChars.join(""))}</b>'`, "DATA: Text Widths")
+
         },
     // #endregion	
 
@@ -247,7 +255,7 @@ const D = (() => {
                     }
                     FunctionQueue[queueName] = FunctionQueue[queueName] || []
                     FunctionQueue[queueName].push([funcWrapper, func.name])
-                    DB(`QueFunc: ${D.JS(func)}, ${D.JS(queueName)}, ${D.JS(args)}<br><br>${D.JS(FunctionQueue)}`, "queueFunc")
+                    DB(`QueFunc: ${D.JSL(func)}, ${D.JSL(queueName)}, ${D.JSL(args)}<br><br>${D.JSL(FunctionQueue)}`, "queueFunc")
                 } else {
                     return THROW(`Invalid function (${D.JSL(func)}) OR Invalid args array (${D.JSL(args)})`, "queueFunc")
                 }
@@ -425,15 +433,7 @@ const D = (() => {
                 return _.escape("<UNDEFINED>")
             /* if (VAL({ string: data }))
                 data = data.replace(/(\r\n|\n|\r)/gu, " ") */
-            const strData = jStr(VAL({string: data}) ? `${data}`.replace(/<br\/?>/gu, "<br>") : data)
-
-            try {
-                if (VAL({string: strData}, "jStrH"))
-                    return strData.replace(/<br\/>/gu, "").replace(/<br>/gu, "<br/>")
-            } catch (errObj) {
-                return THROW("PARSING ERROR", "jStrH", errObj)
-            }
-            return "<ERROR PARSING VALUE>"
+            return jStr(_.isString(data) ? `${data}`.replace(/<br\/?>/gu, "<br>") : data).replace(/<br\/>/gu, "").replace(/<br>/gu, "<br/>")
         },
         jStrL = data => {
             /* Parses data in a way that is appropriate to the console log, removing line breaks and redundant characters. */
@@ -555,7 +555,7 @@ const D = (() => {
                     return _.map(_.map(str.split(" "), v => v.slice(0, 1).toUpperCase() + v.slice(1)).join(" ").split("-"), v => v.slice(0, 1).toUpperCase() + v.slice(1)).join("-").replace(/And/gu, "and")
                 else
                     return str.slice(0, 1).toUpperCase() + str.slice(1)
-            THROW(`Attempt to capitalize non-string '${jStr(str)}'`, "capitalize")
+            THROW(`Attempt to capitalize non-string '${jStrL(str)}'`, "capitalize")
             return str
         },
         clone = (obj) => {
@@ -650,7 +650,7 @@ const D = (() => {
             } else {
                 sendChat(randomString(3), `/w "${player.get("_displayname")}" ${html}`)
                 if (!playerIsGM(player.id))                
-                    sendChat(randomString(3), `/w Storyteller ${html}<div style="display: block;height: 10px;position: relative;color: blue;z-index: 999;text-align: right;font-size: 10px;line-height: 10px;margin-top: -12px;margin-bottom: -5px;margin-left: 150px;background-color: rgba(0,0,255,0.2);width: auto;">(TO: ${player.get("_displayname")})</div>`)
+                    sendChat(randomString(3), `/w Storyteller ${html}<div style="display: block;height: 10px;max-height: 10px;position: relative;z-index: 999;text-align: right;width: 100%;margin-top: -10px;margin-bottom: -7px;background-color: transparent;padding: 0px;font-size: 0px;"><span style="font-size: 10px; display:inline-block; line-height: 10px; background-color: blue;color: white;max-height: 10px;width: auto;">(TO: ${player.get("_displayname").slice(0,5)})</span></div>`)
             }
         },
         sendToGM = (msg, title = "[ALERT]", throttle = 0) => {
@@ -783,6 +783,7 @@ const D = (() => {
             return newObj
         },
         removeFirst = (array, element) => array.splice(array.findIndex(v => v === element)),
+        deleteElement = (array, checkFunc) => array.splice(array.findIndex(v => checkFunc(v)), 1),
         parseToObj = val => {
             /* Converts an array or comma-delimited string of parameters ("key:val, key:val, key:val") into an object. */
             const [obj, args] = [{}, []]
@@ -1024,15 +1025,15 @@ const D = (() => {
                         switch (cat.toLowerCase()) {
                             case "object":
                                 if (!(v && v.get && v.id))
-                                    errorLines.push(`Invalid object: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                    errorLines.push(`Invalid object: ${jStrL(v && v.get && v.get("name") || v && v.id || v, true)}`)
                                 break
                             case "number":
                                 if (_.isNaN(parseInt(v)))
-                                    errorLines.push(`Invalid number: ${jStr(v)}`)
+                                    errorLines.push(`Invalid number: ${jStrL(v)}`)
                                 break
                             case "string":
                                 if (!_.isString(v) && !_.isNumber(v))
-                                    errorLines.push(`Invalid string: ${jStr(v)}`)
+                                    errorLines.push(`Invalid string: ${jStrL(v)}`)
                                 break
                             case "func": case "function":
                                 if (!_.isFunction(v))
@@ -1040,19 +1041,19 @@ const D = (() => {
                                 break
                             case "bool": case "boolean":
                                 if (v !== true && v !== false)
-                                    errorLines.push(`Invalid boolean: ${jStr(v)}`)
+                                    errorLines.push(`Invalid boolean: ${jStrL(v)}`)
                                 break
                             case "array":
                                 if (!_.isArray(v))
-                                    errorLines.push(`Invalid array: ${jStr(v)}`)
+                                    errorLines.push(`Invalid array: ${jStrL(v)}`)
                                 break
                             case "list":
                                 if (!_.isObject(v) || _.isFunction(v) || _.isArray(v) || v && v.get && v.get("_type"))
-                                    errorLines.push(`Invalid list object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                    errorLines.push(`Invalid list object: ${jStrL(v && v.get && v.get("name") || v && v.id || v)}`)
                                 break
                             case "date":
                                 if (_.isNaN((TimeTracker.GetDate(v) || {getTime: () => false}).getTime()))
-                                    errorLines.push(`Invalid date object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                    errorLines.push(`Invalid date object: ${jStrL(v && v.get && v.get("name") || v && v.id || v)}`)
                                 break
                             case "msg": case "selection": case "selected":
                                 if (!v || !v.selected || !v.selected[0])
@@ -1060,59 +1061,59 @@ const D = (() => {
                                 break
                             case "char": case "charref":
                                 if (!getChar(v, true))
-                                    errorLines.push(`Invalid character reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                    errorLines.push(`Invalid character reference: ${jStrL(v && v.get && v.get("name") || v && v.id || v, true)}`)
                                 else
                                     charArray.push(getChar(v, true))
                                 break
                             case "charobj":
                                 if (!v || !v.get || v.get("_type") !== "character")
-                                    errorLines.push(`Invalid character object: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                    errorLines.push(`Invalid character object: ${jStrL(v && v.get && v.get("name") || v && v.id || v, true)}`)
                                 else
                                     charArray.push(v)
                                 break                        
                             case "playerchar": case "playercharref": case "pcref": case "pc":
                                 if (!getChar(v, true))
-                                    errorLines.push(`Invalid character reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                    errorLines.push(`Invalid character reference: ${jStrL(v && v.get && v.get("name") || v && v.id || v, true)}`)
                                 else if (!_.values(Char.REGISTRY).map(x => x.id).includes(getChar(v, true).id))
-                                    errorLines.push(`Character reference is not a player character: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                    errorLines.push(`Character reference is not a player character: ${jStrL(v && v.get && v.get("name") || v && v.id || v, true)}`)
                                 break                                               
                             case "npc": case "npcref": case "spc": case "spcref":
                                 if (!getChar(v, true))
-                                    errorLines.push(`Invalid character reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                    errorLines.push(`Invalid character reference: ${jStrL(v && v.get && v.get("name") || v && v.id || v, true)}`)
                                 else if (_.values(Char.REGISTRY).map(x => x.id).includes(getChar(v, true).id))
-                                    errorLines.push(`Character reference is not a non-player character: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                    errorLines.push(`Character reference is not a non-player character: ${jStrL(v && v.get && v.get("name") || v && v.id || v, true)}`)
                                 break
                             case "player": case "playerref":
                                 if (!getPlayer(v, true))
-                                    errorLines.push(`Invalid player reference: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                    errorLines.push(`Invalid player reference: ${jStrL(v && v.get && v.get("name") || v && v.id || v)}`)
                                 break
                             case "playerobj":
                                 if (!v || !v.get || v.get("_type") !== "player")
-                                    errorLines.push(`Invalid player object: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
+                                    errorLines.push(`Invalid player object: ${jStrL(v && v.get && v.get("name") || v && v.id || v, true)}`)
                                 break
                             case "text": case "textref": /*
                                 if (!Media.GetTextObj(v))
-                                    errorLines.push(`Invalid text reference: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                    errorLines.push(`Invalid text reference: ${jStrL(v && v.get && v.get("name") || v && v.id || v)}`)
                                 break       */
                             // fall through
                             case "textobj":
                                 if (!v || !v.get || v.get("_type") !== "text")
-                                    errorLines.push(`Invalid text object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                    errorLines.push(`Invalid text object: ${jStrL(v && v.get && v.get("name") || v && v.id || v)}`)
                                 break
                             case "graphic": case "graphicref": case "image": case "imageref": /*
                                 break       */
                             // fall through
                             case "graphicobj": case "imageobj": case "imgobj":
                                 if (!v || !v.get || v.get("_type") !== "graphic")
-                                    errorLines.push(`Invalid graphic object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                    errorLines.push(`Invalid graphic object: ${jStrL(v && v.get && v.get("name") || v && v.id || v)}`)
                                 break
                             case "attribute": case "attr": case "attributeobj": case "attrobj":
                                 if (!v || !v.get || v.get("_type") !== "attribute")
-                                    errorLines.push(`Invalid attribute object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                    errorLines.push(`Invalid attribute object: ${jStrL(v && v.get && v.get("name") || v && v.id || v)}`)
                                 break
                             case "token": case "tokenobj":
                                 if (!v || !v.get || v.get("_subtype") !== "token" || v.get("represents") === "")
-                                    errorLines.push(`Invalid token object (not a token, or doesn't represent a character): ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
+                                    errorLines.push(`Invalid token object (not a token, or doesn't represent a character): ${jStrL(v && v.get && v.get("name") || v && v.id || v)}`)
                                 break
                             case "trait":
                                 if (charArray.length) {
@@ -1122,9 +1123,9 @@ const D = (() => {
                                             errorCheck.push(charObj.get("name"))
                                     })
                                     if (errorCheck.length)
-                                        errorLines.push(`Invalid trait: ${jStr(v && v.get && v.get("name") || v && v.id || v)} ON ${errorCheck.length}/${(varList && varList["char"] || []).length} character references:<br>${jStr(errorCheck)}`)
+                                        errorLines.push(`Invalid trait: ${jStrL(v && v.get && v.get("name") || v && v.id || v)} ON ${errorCheck.length}/${(varList && varList["char"] || []).length} character references:<br>${jStrL(errorCheck)}`)
                                 } else {
-                                    errorLines.push(`Must validate at least one character before validating traits: ${jStr(varList[cat])}.`)
+                                    errorLines.push(`Must validate at least one character before validating traits: ${jStrL(varList[cat])}.`)
                                 }
                                 break
                             case "reptrait":
@@ -1141,17 +1142,17 @@ const D = (() => {
                                                 errorCheck.push(charObj.get("name"))
                                         })
                                         if (errorCheck.length)
-                                            errorLines.push(`Invalid repeating trait: ${jStr(v && v.get && v.get("name") || v && v.id || v)} ON ${errorCheck.length}/${varList["char"].length} character references:<br>${jStr(errorCheck)}`)
+                                            errorLines.push(`Invalid repeating trait: ${jStrL(v && v.get && v.get("name") || v && v.id || v)} ON ${errorCheck.length}/${varList["char"].length} character references:<br>${jStrL(errorCheck)}`)
                                     } else {
-                                        errorLines.push(`Bad form for repeating trait name: ${jStr(v)}. Must supply full name, or string in the form "section:statname".`)
+                                        errorLines.push(`Bad form for repeating trait name: ${jStrL(v)}. Must supply full name, or string in the form "section:statname".`)
                                     }
                                 } else {
-                                    errorLines.push(`Must validate at least one character before validating repeating traits: ${jStr(val)}.`)
+                                    errorLines.push(`Must validate at least one character before validating repeating traits: ${jStrL(val)}.`)
                                 }
                                 break
                             case "repname":
                                 if (!(_.isString(v) && v.match("^repeating_[^_]*?_(.*?)_")))
-                                    errorLines.push(`Invalid repeating attribute name: ${jStr(v)}`)
+                                    errorLines.push(`Invalid repeating attribute name: ${jStrL(v)}`)
                                 break
                             // no default
                         }
@@ -1165,224 +1166,7 @@ const D = (() => {
                 return THROW(`[From ${D.JSL(scriptName).toUpperCase()}:${D.JSL(funcName)}]<br>... ${errorLines.join("<br>... ")}`, "validate")
             }
             return true
-        },
-        /*
-        validate = (varList, funcName, scriptName, isArray = false) => {
-            const [errorLines, valArray, charArray] = [[], [], []]
-            _.each(varList, (val, cat) => {
-                valArray.length = 0
-                valArray.push(...isArray ? val : [val])
-                if (isArray && valArray.length === 0)
-                    errorLines.push("No values to check in array.")
-                else
-                    _.each(valArray, v => {
-                        let charRefs = [],
-                            errorCheck = null
-                        switch (cat.toLowerCase()) {
-                            case "object":
-                                if (!(v && v.get && v.id))
-                                    errorLines.push(`Invalid object: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
-                                break
-                            case "number":
-                                if (_.isNaN(parseInt(v)))
-                                    errorLines.push(`Invalid number: ${jStr(v)}`)
-                                break
-                            case "string":
-                                if (!_.isString(v) && !_.isNumber(v))
-                                    errorLines.push(`Invalid string: ${jStr(v)}`)
-                                break
-                            case "function":
-                                if (!_.isFunction(v))
-                                    errorLines.push("Invalid function.")
-                                break
-                            case "array":
-                                if (!_.isArray(v))
-                                    errorLines.push(`Invalid array: ${jStr(v)}`)
-                                break
-                            case "list":
-                                if (!_.isObject(v) || _.isFunction(v) || _.isArray(v) || v && v.get && v.get("_type"))
-                                    errorLines.push(`Invalid list object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
-                                break
-                            case "date":
-                                if (!(_.isDate(v) || _.isDate(parseInt(v)))) {
-                                    const splitDate = _.compact(v.split(/[\s,]+?/gu))
-                                    if (!_.isDate(new Date(`${splitDate[2]}-${["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(splitDate[0].slice(0, 3).toLowerCase()) + 1}-${splitDate[1]}`)))
-                                        errorLines.push(`Invalid date reference: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
-                                }
-                                break
-                            case "msg": case "selection": case "selected":
-                                if (!v || !v.selected || !v.selected[0])
-                                    errorLines.push("Invalid selection: Select objects first!")
-                                break
-                            case "char": case "charref":
-                            case "playerchar": case "playercharref": case "pcref": case "pc":
-                            case "npc": case "npcref": case "spc": case "spcref": {
-                                const charCounts = []
-                                let vRef
-                                try {
-                                    if (v && v.selected && v.selected[0] && v.selected[0]._type === "graphic")
-                                        vRef = getObj("graphic", v.selected[0]._id )
-                                    else
-                                        vRef = v
-                                    if (vRef)
-                                        if (vRef.get && vRef.get("_type") === "character")
-                                            charRefs.push(vRef)
-                                        else if (_.isString(vRef) && vRef.length)
-                                            if (
-                                                ["topleft", "botleft", "topright", "botright", "all", "registered", "sandbox"].includes(vRef.toLowerCase()) ||
-                                                vRef.length === 1 && _.find(Char.REGISTRY, data => data.initial.toLowerCase() === vRef.toLowerCase())
-                                            ) {
-                                                charRefs.push(vRef)
-                                            } else {
-                                                charRefs.push(..._.compact([getObj("character", vRef)]))
-                                                if (!charRefs.length) {
-                                                    const allChars = findObjs({_type: "character"})
-                                                    charRefs.push(...allChars.filter(x => x.get("name").toLowerCase() === vRef.toLowerCase()))                                                
-                                                }
-                                            }
-                                        else if (vRef.get && vRef.get("represents"))
-                                            charRefs.push(..._.compact([getObj("character", vRef.get("represents"))]))
-                                    charCounts[0] = charRefs.length
-                                } catch (errObj) {
-                                    errorLines.push(`(val({${cat.toLowerCase()}: ${jStr(v && v.get && v.get("name") && `OBJ:${v.get("name")}` || v && v.id || v, true)} [${charCounts.join(", ")}]) <b>${errObj.name}</b>: ${errObj.message}`)
-                                } finally {
-                                    if (charRefs.length)
-                                        switch(cat.toLowerCase()) {
-                                            case "playerchar": case "playercharref": case "pcref": case "pc": {
-                                                charRefs = _.uniq(charRefs.map(x => _.isString(x) && x.replace(/all/gu, "registered").replace(/sandbox/gu, "activepc") || x)).filter(x =>
-                                                    _.isString(x) && ["topleft", "botleft", "topright", "botright", "registered", "activepc"].includes(x.toLowerCase()) ||
-                                                    x.get && x.get("_type") === "character" && _.values(Char.REGISTRY).filter(xx => xx.id === x.id).length
-                                                )
-                                                charCounts[1] = charRefs.length
-                                                break
-                                            }
-                                            case "npc": case "npcref": case "spc": case "spcref": {
-                                                charRefs = _.uniq(charRefs.map(x => _.isString(x) && x.replace(/all/gu, "allnpc").replace(/sandbox/gu, "activenpc") || x)).filter(x => !(
-                                                    _.isString(x) && ["topleft", "botleft", "topright", "botright", "registered", "activepc"].includes(x.toLowerCase()) ||
-                                                    x.get && x.get("_type") === "character" && _.values(Char.REGISTRY).filter(xx => xx.id === x.id).length
-                                                ))
-                                                charCounts[1] = charRefs.length
-                                                break
-                                            }
-                                            // no default
-                                        }                                    
-                                    if (charRefs.length)
-                                        charArray.push(...charRefs)
-                                    else
-                                        errorLines.push(`Invalid ${cat.toLowerCase()} reference: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)} [${charCounts.join(", ")}]`)
-                                }                                
-                                break                                
-                            }
-                            case "charobj":
-                                if (!v || !v.get || v.get("_type") !== "character")
-                                    errorLines.push(`Invalid character object: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
-                                else
-                                    charArray.push(v)
-                                break
-                            case "player": case "playerref": {
-                                let playerRef 
-                                try {
-                                    if (v && v.get) {
-                                        switch(v.get("_type")) {
-                                            case "player": {
-                                                playerRef = v
-                                                break
-                                            }
-                                            case "character":
-                                            case "graphic": {
-                                                playerRef = v.get("controlledby").split(",").filter(x => !["all", "storyteller", D.GMID].includes(x.toLowerCase()))
-                                                if (!playerRef.length)
-                                                    playerRef = undefined
-                                                break
-                                            }
-                                            // no default
-                                        }
-                                    } else if (_.isString(v)) {
-                                        playerRef = getObj("player", playerRef)
-                                        if (!playerRef) 
-                                            playerRef = _.find(findObjs({_type: "player"}), x => 
-                                                x.get("_displayname") === v || 
-                                                x.get("speakingas") === v ||
-                                                x.get("_d20userid") === v
-                                            )
-                                    }
-                                } catch(errObj) {
-                                    errorLines.push(`(val({${cat.toLowerCase()}: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}) <b>${errObj.name}</b>: ${errObj.message}`)
-                                } finally {
-                                    if (!playerRef)
-                                        errorLines.push(`Invalid player reference: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
-                                }
-                                break
-                            }
-                            case "playerobj":
-                                if (!v || !v.get || v.get("_type") !== "player")
-                                    errorLines.push(`Invalid player object: ${jStr(v && v.get && v.get("name") || v && v.id || v, true)}`)
-                                break
-                            case "text": case "textref": 
-                            //    if (!Media.GetText(v))
-                             //       errorLines.push(`Invalid text reference: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
-                            //    break      
-                            // fall through
-                            case "textobj":
-                                if (!v || !v.get || v.get("_type") !== "text")
-                                    errorLines.push(`Invalid text object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
-                                break
-                            case "graphic": case "graphicref": case "image": case "imageref": 
-                              //  break       
-                            // fall through
-                            case "graphicobj": case "imageobj": case "imgobj":
-                                if (!v || !v.get || v.get("_type") !== "graphic")
-                                    errorLines.push(`Invalid graphic object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
-                                break
-                            case "attribute": case "attr": case "attributeobj": case "attrobj":
-                                if (!v || !v.get || v.get("_type") !== "attribute")
-                                    errorLines.push(`Invalid attribute object: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
-                                break
-                            case "token": case "tokenobj":
-                                if (!v || !v.get || v.get("_subtype") !== "token" || v.get("represents") === "")
-                                    errorLines.push(`Invalid token object (not a token, or doesn't represent a character): ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
-                                break
-                            case "trait":
-                                if (!_.find(ALLSTATS, x => x.toLowerCase() === v))
-                                    errorLines.push(`Invalid trait: ${jStr(v && v.get && v.get("name") || v && v.id || v)}`)
-                                break
-                            case "reptrait":
-                                if (charArray.length) {
-                                    errorCheck = []
-                                    let [section, rowID, statName] = []
-                                    if (_.isString(v) && v.match("^repeating_[^_]*?_[^_]*?_.+"))
-                                        [section, rowID, statName] = parseRepStat(v)
-                                    else
-                                        [section, statName] = _.isString(v) ? v.split(":") : []
-                                    if (statName) {
-                                        _.each(charArray, charObj => {
-                                            if (!getRepStat(charObj, section, rowID, statName, true))
-                                                errorCheck.push(charObj.get("name"))
-                                        })
-                                        if (errorCheck.length)
-                                            errorLines.push(`Invalid repeating trait: ${jStr(v && v.get && v.get("name") || v && v.id || v)} ON ${errorCheck.length}/${varList["char"].length} character references:<br>${jStr(errorCheck)}`)
-                                    } else {
-                                        errorLines.push(`Bad form for repeating trait name: ${jStr(v)}. Must supply full name, or string in the form "section:statname".`)
-                                    }
-                                } else {
-                                    errorLines.push(`Must validate at least one character before validating repeating traits: ${jStr(val)}.`)
-                                }
-                                break
-                            case "repname":
-                                if (!(_.isString(v) && v.match("^repeating_[^_]*?_(.*?)_")))
-                                    errorLines.push(`Invalid repeating attribute name: ${jStr(v)}`)
-                                break
-                            // no default
-                        }
-                    })
-            })
-            if (errorLines.length) {
-                if (!funcName || !scriptName)
-                    return false
-                return THROW(`[From ${jStr(scriptName).toUpperCase()}:${jStr(funcName)}]<br>... ${errorLines.join("<br>... ")}`, "validate")
-            }
-            return true
-        }, */
+        },        
     // #endregion
 
     // #region DEBUGGING & ERROR MANAGEMENT
@@ -1495,7 +1279,6 @@ const D = (() => {
                 types = _.flatten([typeFilter])
             if (VAL({selection: msg}))
                 _.each(_.compact(msg.selected), v => {
-                    // DB(`MSG Iteration:<br><br>Selected (${msg.selected.length}): ${jStr(msg.selected, true)}<br><br>Current V: ${jStr(v)}`, "getSelected")
                     if (types.length === 0 || types.includes(v._type))
                         selObjs.add(getObj(v._type, v._id))
                     else if (v._type === "graphic" && VAL({token: getObj("graphic", v._id)}))
@@ -1541,18 +1324,18 @@ const D = (() => {
             try {
                 if (charRef.who) {
                     _.each(getSelected(charRef, "character"), charObj => { charObjs.add(charObj) })
-                    dbstring += `REF: Msg.  RETURNING: ${jStr(...charObjs)}`
+                    dbstring += `REF: Msg.  RETURNING: ${jStrL(...charObjs)}`
                     if (charObjs.size > 0)
                         return [...charObjs || []]
                     return VAL({string: funcName}) && THROW("Must Select a Token!", `${D.JSL(funcName)} > getChars`) || []
                 } else if (VAL({array: charRef})) {
                     searchParams = charRef
-                    dbstring += `REF: [${jStr(...searchParams)}] `
+                    dbstring += `REF: [${jStrL(...searchParams)}] `
                 } else if (VAL({string: charRef}) || VAL({object: charRef}) || VAL({number: charRef})) {
                     searchParams.push(charRef)
-                    dbstring += `REF: ${capitalize(jStr(typeof charRef), true)} `
+                    dbstring += `REF: ${capitalize(jStrL(typeof charRef), true)} `
                 } else {
-                    return VAL({string: funcName}) && THROW(`Invalid character reference: ${jStr(charRef)}`, `${D.JSL(funcName)} > getChars`) || []
+                    return VAL({string: funcName}) && THROW(`Invalid character reference: ${jStrL(charRef)}`, `${D.JSL(funcName)} > getChars`) || []
                 }
             } catch (errObj) {
                 return VAL({string: funcName}) && THROW("", `${D.JSL(funcName)} > getChars`, errObj) || []
@@ -1588,25 +1371,25 @@ const D = (() => {
                         // If parameter is "all":
                     if (v.toLowerCase() === "all") {
                         _.each(findObjs({_type: "character"}), char => charObjs.add(char))
-                        dbstring += ` ... "${jStr(v)}": `
+                        dbstring += ` ... "${jStrL(v)}": `
                         // If parameter calls for REGISTERED CHARACTERS:
                     } else if (v.toLowerCase() === "registered") {
                         _.each(Char.REGISTRY, charData => { if (!charData.name.toLowerCase().includes("Good Lad")) charObjs.add(getObj("character", charData.id)) })
-                        dbstring += ` ... "${jStr(v)}": `
+                        dbstring += ` ... "${jStrL(v)}": `
                         // If parameter is "sandbox", calls for all characters with tokens in the sandbox (do player characters first)
                     } else if (v.toLowerCase() === "activepc") {
                         _.each(Char.REGISTRY, charData => { if (charData.isActive && !charData.name.toLowerCase().includes("Good Lad")) charObjs.add(getObj("character", charData.id)) })
-                        dbstring += ` ... "${jStr(v)}": `
+                        dbstring += ` ... "${jStrL(v)}": `
                         // If parameter is "sandbox", calls for all characters with tokens in the sandbox (do player characters first)
                     } else if (v.toLowerCase() === "sandbox") {
                         _.each(Media.GetContainedChars("Sandbox", {padding: 50}), vv => charObjs.add(vv))
-                        dbstring += ` ... "${jStr(v)}": `                    
+                        dbstring += ` ... "${jStrL(v)}": `                    
                         // If parameter is a SINGLE LETTER, assume it is an INITIAL and search the registry for it.
                     } else if (v.length === 1 && _.find(Char.REGISTRY, data => data.initial.toLowerCase() === v.toLowerCase())) {
                         const charData = _.find(Char.REGISTRY, data => data.initial.toLowerCase() === v.toLowerCase())
                         if (charData)
                             charObjs.add(getObj("character", charData.id))
-                        dbstring += ` ... "${jStr(v)}": `                    
+                        dbstring += ` ... "${jStrL(v)}": `                    
                         // If parameter is a STRING, assume it is a character name to fuzzy-match UNLESS isStrict is true.
                     } else {
                         const charName = isFuzzyMatching ? D.IsIn(v, STATE.REF.PCLIST, true) || D.IsIn(v, STATE.REF.NPCDICT, false) :
@@ -1622,7 +1405,7 @@ const D = (() => {
             if (!STATE.REF.BLACKLIST.includes("getChars"))
                 DB(dbstring, "getChars")
             if (charObjs.size === 0)
-                return VAL({string: funcName}) && THROW(`No Characters Found using Search Parameters:<br>${jStr(searchParams)} in Character Reference<br>${jStr(charRef)}`, `${D.JSL(funcName)} > getChars`) || []
+                return VAL({string: funcName}) && THROW(`No Characters Found using Search Parameters:<br>${jStrL(searchParams)} in Character Reference<br>${jStrL(charRef)}`, `${D.JSL(funcName)} > getChars`) || []
             return _.compact([...charObjs || []])
         }, getChar = (charRef, funcName = false) => Char.SelectedChar || (getChars(charRef, funcName) || [false])[0],
         getCharData = (charRef) => {
@@ -1671,17 +1454,17 @@ const D = (() => {
                         attrValue = parseInt(attrValue)
                 }
                 DB(`StatName: ${D.JSL(stat)}
-                AttrValueObj: ${D.JS(attrValueObj, true)}
+                AttrValueObj: ${D.JSL(attrValueObj, true)}
                 Boolean: ${Boolean(attrValueObj)}
-                Current: ${D.JS(attrValueObj && attrValueObj.get(isGettingMax ? "max" : "current"))}
-                So, returning: ${D.JS(attrValueObj ? [attrValueObj.get(isGettingMax ? "max" : "current"), attrValueObj] : null, true)}`, "getStat")
+                Current: ${D.JSL(attrValueObj && attrValueObj.get(isGettingMax ? "max" : "current"))}
+                So, returning: ${D.JSL(attrValueObj ? [attrValueObj.get(isGettingMax ? "max" : "current"), attrValueObj] : null, true)}`, "getStat")
             }
             return attrValueObj ? [attrValue, attrValueObj] : null
         },
         getStatVal = (charRef, statName, funcName = false) => (getStat(charRef, statName, funcName) || [false])[0],
         getRepIDs = (charRef, section, rowFilter, funcName = false) => {
             // rowRef: rowID (string), stat:value (list, with special "name" entry for shortname), array of either (array), or null (all)
-            DB(`GetRepIDs(${jStr(charRef, true)}, ${section}, ${jStr(rowFilter)})`, "getRepIDs")
+            DB(`GetRepIDs(${jStrL(charRef, true)}, ${section}, ${jStrL(rowFilter)})`, "getRepIDs")
             const charObj = getChar(charRef, funcName),
                 getUniqIDs = attrObjs => _.uniq(_.map(attrObjs, v => v.get("name").match("repeating_[^_]*?_(.*?)_")[1]))
             let validRowIDs = [],
@@ -1690,18 +1473,18 @@ const D = (() => {
                 const attrObjs = _.filter(findObjs({_type: "attribute", _characterid: charObj.id}), v => v.get("name").toLowerCase().startsWith(section === "*" ? "repeating_" : `repeating_${section.toLowerCase()}_`)),
                 // D.Alert(`attrObjs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
                     rowIDs = getUniqIDs(attrObjs)
-                DB(`attrObjsInSection: ${jStr(_.map(attrObjs, v => parseRepStat(v.get("name"))[2]))}<br><br>rowIDsInSection: ${jStr(rowIDs)}`, "getRepIDs")
+                DB(`attrObjsInSection: ${jStrL(_.map(attrObjs, v => parseRepStat(v.get("name"))[2]))}<br><br>rowIDsInSection: ${jStrL(rowIDs)}`, "getRepIDs")
                 if (VAL({string: rowFilter})) {
                     // RowRef is a string. Check to see if it's a flag ("top"); if not, assume it's a rowid.
                     if (rowFilter === "top")
                         return [_.find(rowIDs, v => v.toLowerCase() === (getStatVal(charObj, `_reporder_repeating_${section}`) || "").split(",")[0].toLowerCase())]
-                    DB(`RowRef: STRING (${rowFilter}).  Valid Row IDs: ${jStr(_.find(rowIDs, v => v.toLowerCase() === rowFilter.toLowerCase()))}`, "getRepIDs")
+                    DB(`RowRef: STRING (${rowFilter}).  Valid Row IDs: ${jStrL(_.find(rowIDs, v => v.toLowerCase() === rowFilter.toLowerCase()))}`, "getRepIDs")
                     return [_.find(rowIDs, v => v.toLowerCase() === rowFilter.toLowerCase())]
                 } else if (VAL({list: rowFilter})) {
                     // RowRef is a key/value list of stat name and value to filter by. Only row IDs referring to ALL matching key/value pairs will be returned.
                     // If value === "*", any value is accepted (only checks for presence of stat name)
                     validRowIDs = [...rowIDs]
-                    DB(`RowRef: LIST:<br><br>${jStr(rowFilter)}`, "getRepIDs")
+                    DB(`RowRef: LIST:<br><br>${jStrL(rowFilter)}`, "getRepIDs")
                     for (const rowData of _.pairs(rowFilter)) {
                         const [key, val] = rowData
                         DB(`RowData: ${key}, ${val}`, "getRepIDs")
@@ -1748,14 +1531,14 @@ const D = (() => {
                     // No rowRef means the IDs of all section rows are returned.
                     validRowIDs.push(...rowIDs)
                 }
-                DB(`Valid Row IDs: ${jStr(validRowIDs)}`, "getRepIDs")
+                DB(`Valid Row IDs: ${jStrL(validRowIDs)}`, "getRepIDs")
             }
             return _.uniq(validRowIDs)
         },
         getRepStats = (charRef, section, rowFilter = {}, statName, groupBy, pickProperty, funcName = false) => {
             const charObj = getChar(charRef)
             // D.Alert(`CharRef: ${D.JS(charRef)}, CharObj: ${D.JS(charObj)}`)
-            DB(`getRepStats(${jStr([charObj.get("name"), section, rowFilter, statName, groupBy, pickProperty])})`, "getRepStats")
+            DB(`getRepStats(${jStrL([charObj.get("name"), section, rowFilter, statName, groupBy, pickProperty])})`, "getRepStats")
             let finalRepData = []
             if (VAL({charObj, string: section}, "getRepStats")) {
                 // STEP ONE: USE THE ROW FILTER TO GET VALID ROW IDS TO SEARCH
@@ -1782,7 +1565,7 @@ const D = (() => {
                             if (data.obj) {
                                 data.val = data.obj.get("current");
                                 [,,data.attrName] = parseRepStat(data.obj.get("name"))
-                                DB(`NameData --> ValObject: NAME: ${data.name}, VAL: ${data.val}, OBJ: ${jStr(data.obj)}`, "getRepStats")
+                                DB(`NameData --> ValObject: NAME: ${data.name}, VAL: ${data.val}, OBJ: ${jStrL(data.obj)}`, "getRepStats")
                                 return data
                             } else {
                                 return false
@@ -1808,8 +1591,6 @@ const D = (() => {
                                 val: foundStat.get("current")
                             })
                             DB(`FinalRepData: ${D.JSL(finalRepData, true)}`, "getRepStats")
-                        } else {
-                            DB(`No matches to statName ${statName}`, "getRepStats")
                         }
                     // IF a STATEMENT has NOT been specified, return ALL the row attribute objects (after parsing them into data sets)
                     } else {
@@ -1905,9 +1686,9 @@ const D = (() => {
                     DB(`PlayerRef identified as Character Object: ${D.JSL(charObj.get("name"))}... "controlledby": ${D.JSL(playerID)}`, "getPlayerID")
                     return playerID || getGMID()
                 }
-                return VAL({string: funcName}) && THROW(`Unable to find player connected to reference '${jStr(playerRef)}'`, `${D.JSL(funcName)} > getPlayerID`)
+                return VAL({string: funcName}) && THROW(`Unable to find player connected to reference '${jStrL(playerRef)}'`, `${D.JSL(funcName)} > getPlayerID`)
             } catch (errObj) {
-                return VAL({string: funcName}) && THROW(`Unable to find player connected to reference '${jStr(playerRef)}'.<br><br>${jStr(errObj)}`, `${D.JSL(funcName)} > getPlayerID`)
+                return VAL({string: funcName}) && THROW(`Unable to find player connected to reference '${jStrL(playerRef)}'.<br><br>${jStrL(errObj)}`, `${D.JSL(funcName)} > getPlayerID`)
             }
         },
         getPlayer = (playerRef, funcName = false) => {
@@ -1916,11 +1697,11 @@ const D = (() => {
                 return getObj("player", playerID)
             else 
                 DB(`Searching for Player with Player Ref: ${playerRef}
-                ... playerID: ${jStr(playerID)}
+                ... playerID: ${jStrL(playerID)}
                 .. String? ${VAL({string: playerID})}
-                .. Player Object? ${jStr(getObj("player", playerID))}`, "getPlayer")
+                .. Player Object? ${jStrL(getObj("player", playerID))}`, "getPlayer")
             
-            return VAL({string: funcName}) && THROW(`Unable to find a player object for reference '${jStr(playerRef)}`, `${D.JSL(funcName)} > getPlayer`)
+            return VAL({string: funcName}) && THROW(`Unable to find a player object for reference '${jStrL(playerRef)}`, `${D.JSL(funcName)} > getPlayer`)
         },
     // #endregion
 
@@ -2006,7 +1787,7 @@ const D = (() => {
         deleteRepRow = (charRef, secName, rowID) => {
             if (VAL({char: [charRef], string: [secName, rowID]}, "deleteRepRow", true)) {
                 const attrObjs = getRepStats(charRef, secName, rowID, null, null, "obj")
-                DB(`AttrObjs to Delete: ${jStr(attrObjs, true)}`, "deleteRepRow")
+                DB(`AttrObjs to Delete: ${jStrL(attrObjs, true)}`, "deleteRepRow")
                 if (attrObjs.length === 0)
                     return THROW(`No row "repeating_${secName}_${rowID}" to delete for ${D.GetName(charRef)}.`, "deleteRepRow")
                 _.each(attrObjs, v => v.remove())
@@ -2100,6 +1881,11 @@ const D = (() => {
         get PCDICT() { return STATE.REF.PCDICT },
         get NPCDICT() { return STATE.REF.NPCDICT },
         get CHARWIDTH() { return STATE.REF.CHARWIDTH },
+        get MissingChars() { return STATE.REF.MissingChars },
+        set MissingChars(char) {
+            if (char)
+                STATE.REF.MissingChars = _.uniq([...STATE.REF.MissingChars, char])
+        },
 
         get PAGEID() { return VALS.PAGEID() },
         get CELLSIZE() { return VALS.CELLSIZE() },
@@ -2129,7 +1915,7 @@ const D = (() => {
         Prompt: promptGM,
         CommandMenu: commandMenu,
 
-        RemoveFirst: removeFirst,
+        RemoveFirst: removeFirst, DeleteElement: deleteElement,
         KeyMapObj: kvpMap,
         ParseToObj: parseToObj,
 

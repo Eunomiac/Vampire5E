@@ -1291,27 +1291,6 @@ const Media = (() => {
             get GRAPHIC() { return Object.assign({}, STATE.REF.animregistry, STATE.REF.imgregistry) },
             get ALL() { return Object.assign({}, STATE.REF.animregistry, STATE.REF.soundregistry, STATE.REF.textregistry, STATE.REF.imgregistry)}
         },
-        STYLES = {
-            Initialization: {
-                Block: {
-                    bgColor: C.COLORS.black,
-                    border: "none"
-                },
-                Header: {                     
-                    height: "auto",
-                    width: "auto",
-                    lineHeight: "25px",
-                    padding: "0px 5px",
-                    margin: "0px",
-                    fontVariant: "small-caps",
-                    fontWeight: "normal",
-                    bgColor: "transparent",
-                    color: C.COLORS.white,
-                    border: "none",
-                    textAlign: "left"
-                }
-            }
-        },
         BGIMGS = {
             top: C.SANDBOX.top,
             left: C.SANDBOX.left,
@@ -1396,8 +1375,11 @@ const Media = (() => {
                     HungerBotRight_1: 118
                 },
                 HorizonBGs: {
-                    Horizon_1: 1,
-                    Foreground_1: 111
+                    Horizon_1: 2,
+                    Foreground_1: 111,
+                    "FL-LoadingScreen-Concluding_1": 0,
+                    "FL-LoadingScreen-Loading_1": 0,
+                    "FL-LoadingScreen-Initializing_1": 0
                 },
                 Weather: {
                     RisingMoon_1: 100,
@@ -2754,6 +2736,30 @@ const Media = (() => {
             ["IMG", "Spotlight_1", "modes", "Downtime", {isForcedOn: "NEVER"}],
             ["IMG", "Spotlight_1", "modes", "Spotlight", {isForcedOn: true, isForcedState: "LAST", lastState: "@@curSrc@@"}],
             ["IMG", "Spotlight_1", "modes", "Complications", {isForcedOn: null}],
+            ["IMG", "FL-LoadingScreen-Concluding_1", "isActive", true],
+            ["IMG", "FL-LoadingScreen-Concluding_1", "curSrc", "@@curSrc@@"],
+            ["IMG", "FL-LoadingScreen-Concluding_1", "modes", "Active", {isForcedOn: true}],
+            ["IMG", "FL-LoadingScreen-Concluding_1", "modes", "Inactive", {isForcedOn: true, isForcedState: "LAST", lastState: "@@curSrc@@"}],
+            ["IMG", "FL-LoadingScreen-Concluding_1", "modes", "Daylighter", {isForcedOn: "NEVER"}],
+            ["IMG", "FL-LoadingScreen-Concluding_1", "modes", "Downtime", {isForcedOn: "NEVER"}],
+            ["IMG", "FL-LoadingScreen-Concluding_1", "modes", "Spotlight", {isForcedOn: "NEVER"}],
+            ["IMG", "FL-LoadingScreen-Concluding_1", "modes", "Complications", {isForcedOn: null}],
+            ["IMG", "FL-LoadingScreen-Loading_1", "isActive", true],
+            ["IMG", "FL-LoadingScreen-Loading_1", "curSrc", "@@curSrc@@"],
+            ["IMG", "FL-LoadingScreen-Loading_1", "modes", "Active", {isForcedOn: true}],
+            ["IMG", "FL-LoadingScreen-Loading_1", "modes", "Inactive", {isForcedOn: true, isForcedState: "LAST", lastState: "@@curSrc@@"}],
+            ["IMG", "FL-LoadingScreen-Loading_1", "modes", "Daylighter", {isForcedOn: "NEVER"}],
+            ["IMG", "FL-LoadingScreen-Loading_1", "modes", "Downtime", {isForcedOn: "NEVER"}],
+            ["IMG", "FL-LoadingScreen-Loading_1", "modes", "Spotlight", {isForcedOn: "NEVER"}],
+            ["IMG", "FL-LoadingScreen-Loading_1", "modes", "Complications", {isForcedOn: null}],
+            ["IMG", "FL-LoadingScreen-Initializing_1", "isActive", true],
+            ["IMG", "FL-LoadingScreen-Initializing_1", "curSrc", "@@curSrc@@"],
+            ["IMG", "FL-LoadingScreen-Initializing_1", "modes", "Active", {isForcedOn: true}],
+            ["IMG", "FL-LoadingScreen-Initializing_1", "modes", "Inactive", {isForcedOn: true, isForcedState: "LAST", lastState: "@@curSrc@@"}],
+            ["IMG", "FL-LoadingScreen-Initializing_1", "modes", "Daylighter", {isForcedOn: "NEVER"}],
+            ["IMG", "FL-LoadingScreen-Initializing_1", "modes", "Downtime", {isForcedOn: "NEVER"}],
+            ["IMG", "FL-LoadingScreen-Initializing_1", "modes", "Spotlight", {isForcedOn: "NEVER"}],
+            ["IMG", "FL-LoadingScreen-Initializing_1", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "HungerBotLeft_1", "isActive", true],
             ["IMG", "HungerBotLeft_1", "curSrc", "@@curSrc@@"],
             ["IMG", "HungerBotLeft_1", "modes", "Active", {isForcedOn: true}],
@@ -3897,7 +3903,7 @@ const Media = (() => {
         // #endregion
 
     // #region GENERAL MEDIA OBJECT SETTERS:
-        fixAll = (isKilling = false) => {
+        fixAll = (isKilling = true) => {
             const [isTesting, currentMode] = [Session.IsTesting, Session.Mode]
 
             // Session.ToggleTesting(true)
@@ -4161,10 +4167,12 @@ const Media = (() => {
                 D.Alert(returnStrings.join("<br>"), "Media: SetActiveLayers")
         },
         setZIndices = () => {
+            // D.Alert(D.JS(findObjs({_id: "-Lua29PqPseZeUuUN0cv"}), true), "Mystery Object")
             const allMediaDatas = [],
                 sortedMediaObjs = []
             for (const category of ["map", "objects"]) {
                 const mediaDatas = _.compact(getZLevels()[category].map(x => {
+                    // DB({zIndexEntry: D.JSL(x)}, "setZIndices")
                     if (REGISTRY.IMG[x[1]]) {
                         [,,REGISTRY.IMG[x[1]].zIndex] = x
                         return REGISTRY.IMG[x[1]]
@@ -4175,20 +4183,36 @@ const Media = (() => {
                     }
                     if (REGISTRY.TEXT[x[1]]) {
                         [,,REGISTRY.TEXT[x[1]].zIndex] = x
-                        if (REGISTRY.TEXT[x[1]].shadowID)
+                        if (REGISTRY.TEXT[x[1]].shadowID) {
+                            if (!getObj("text", REGISTRY.TEXT[x[1]].shadowID))
+                                makeTextShadow(x[1], {
+                                    text: REGISTRY.TEXT[x[1]].curText,
+                                    left: REGISTRY.TEXT[x[1]].left,
+                                    top: REGISTRY.TEXT[x[1]].top,
+                                    font_size: REGISTRY.TEXT[x[1]].font_size,
+                                    font_family: REGISTRY.TEXT[x[1]].font_family,
+                                    layer: REGISTRY.TEXT[x[1]].activeLayer
+                                })
                             return [REGISTRY.TEXT[x[1]], {id: REGISTRY.TEXT[x[1]].shadowID, zIndex: REGISTRY.TEXT[x[1]].zIndex - 1}]
+                        }
                         return REGISTRY.TEXT[x[1]]
                     }
                     return null
                 }))
-                allMediaDatas.push(..._.compact(_.flatten(mediaDatas)))
+                // DB({mediaDatas}, "setZIndices")
+                allMediaDatas.push(..._.compact(_.flatten(mediaDatas)))                
             }
+            // DB({FINISHEDMediaData: D.JSL(allMediaDatas)}, "setZIndices")
             // Now, search up all tokens on the board and assign to them a "dummy data object" with the default token zIndex, and add them to media data.
             allMediaDatas.push(...getTokenObjs().map(x => ({id: x.id, zIndex: ZLEVELS.token})))
+            // DB({tokens: "Done!"}, "setZIndices")
             sortedMediaObjs.push(..._.compact(_.flatten(allMediaDatas.filter(x => x.padID).sort((a,b) => b.zIndex - a.zIndex).map(x => [getObj("graphic", x.padID), getObj("graphic", x.partnerID)]))))
+            // DB({pads: "Done!"}, "setZIndices")
             sortedMediaObjs.push(..._.compact(allMediaDatas.sort((a,b) => b.zIndex - a.zIndex).map(x => getMediaObj(x.id) || null)))
+            // DB({theRest: "Done!"}, "setZIndices")
             for (let i = 0; i < sortedMediaObjs.length; i++)
-                toBack(sortedMediaObjs[i])
+                if (VAL({object: sortedMediaObjs[i]}))
+                    toBack(sortedMediaObjs[i])            
         },
         resetModeData = (isResettingAll = false) => {
             // ^([^.]+)\.([^.\n=]+)\.([^.\n=]+)\.([^.\n=]+)\.([^.\n=]+) = (.*)
@@ -5039,6 +5063,9 @@ const Media = (() => {
                 Media.ToggleAnim("LoadingMoon", false)
                 Media.ToggleText("LoadingMessage", false)
             }
+            toFront(Media.GetAnim("LoadingMoon"))
+            toFront(Media.GetImg("LoadingScreen"))
+            toFront(Media.GetText("LoadingMessage"))
         },
         setLoadingText = (textString = " ") => {
             Media.SetText("LoadingMessage", D.JSL(textString))
@@ -5491,11 +5518,8 @@ const Media = (() => {
                     charRef = fontRef && fontRef[size]
                 let width = 0
                 dbLines.push(chars.length === textString.length ? "TEXT OK!" : `TEXT LENGTH MISMATCH: ${chars.length} chars, ${textString.length} text length.<br>`)
-                if (!textString || textString === "" || textString.length === 0) {
-                    dbLines.push("Empty/Blank Text String: Returning '0'.")
-                    DB(dbLines.join("<br>"), "getTextWidth")
+                if (!textString || textString === "" || textString.length === 0)
                     return 0
-                }
                 if (!fontRef || !charRef) {
                     dbLines.push(`No font/character reference for '${font}' at size '${size}': Returning default`, "getTextWidth")
                     DB(dbLines.join("<br>"), "getTextWidth")
@@ -5523,9 +5547,9 @@ const Media = (() => {
                 for (const char of chars) {
                     charString += char
                     if (char !== "\n" && !charRef[char])
-                        DB(`... MISSING '${char}' in '${font}' at size '${size}'`, "getTextWidth")
+                        D.MissingChars = char
                     else
-                        width += charRef[char]                    
+                        width += charRef[char]             
                 }
                 dbLines.push(`Chars measured: ▐${charString}▌ ► Returning width (${D.Round(width, 2)}`)
                 if (!isSilent)
@@ -5729,20 +5753,15 @@ const Media = (() => {
                 REGISTRY.TEXT[name].modes = C.MODEDEFAULTS(textObj, options.modes)
                 DB(`Modes for ${name}: ${D.JSL(REGISTRY.TEXT[name].modes)}`, "regText")
                 REGISTRY.ID[textObj.id] = name
-                if (hasShadow) {
-                    const shadowObj = createObj("text", {
-                        _pageid: D.PAGEID,
+                if (hasShadow)                   
+                    makeTextShadow(name, {
                         text: REGISTRY.TEXT[name].curText,
                         left: REGISTRY.TEXT[name].left,
                         top: REGISTRY.TEXT[name].top,
                         font_size: REGISTRY.TEXT[name].font_size,
-                        color: "rgb(0,0,0)",
                         font_family: REGISTRY.TEXT[name].font_family,
-                        layer: REGISTRY.TEXT[name].activeLayer,
-                        controlledby: ""
+                        layer: REGISTRY.TEXT[name].activeLayer
                     })
-                    REGISTRY.TEXT[name].shadowID = shadowObj.id
-                }
                 setTextData(textObj, _.pick(REGISTRY.TEXT[name], C.TEXTPROPS))
                 setText(textObj, REGISTRY.TEXT[name].curText)
                 setLayer(name, REGISTRY.TEXT[name].activeLayer, true)
@@ -5750,7 +5769,7 @@ const Media = (() => {
                 if (options.isActive === false)
                     toggleText(name, false, true)    
                 D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(REGISTRY.TEXT[name])}`, "regText")
-                // initMedia()
+                setZIndices()
                 return getTextData(name)
             }
             return VAL({string: funcName}) && THROW(`Invalid text reference '${D.JSL(textRef)}'`, `${D.JSL(funcName)} > regText`)
@@ -5773,6 +5792,17 @@ const Media = (() => {
             textObj.set("left", getRealLeft(textObj, {left: textObj.get("left"), justification: justification || options.justification || "center", maxWidth: options.maxWidth || 0}))
             regText(textObj, hostName, actLayer, hasShadow, justification, options, funcName)
             return textObj
+        },
+        makeTextShadow = (textRef, params) => {
+            const textKey = getTextKey(textRef),
+                shadowObj = createObj("text", Object.assign({
+                    _pageid: D.PAGEID,
+                    color: "rgb(0,0,0)",
+                    controlledby: ""
+                }, params))
+            REGISTRY.TEXT[textKey].shadowID = shadowObj.id
+            updateTextShadow(textKey)
+            return shadowObj
         },
         updateTextShadow = (textRef) => {
             const textData = getTextData(textRef)
@@ -5924,7 +5954,6 @@ const Media = (() => {
         toggleText = (textRef, isActive, isForcing = false) => {
             // NON-PERMANENT.  If turning off, set activeSrc to curSrc.
             // Also, verify img status is changing before doing anything.
-            DB({textRef, isActive, isForcing}, "toggleText")
             if (isActive === null) return null
             const textData = getTextData(textRef),
                 modeData = getModeData(textRef, Session.Mode)
@@ -5934,13 +5963,11 @@ const Media = (() => {
                     activeCheck = true
                 else if (isActive === false || isActive !== true && textData.isActive || modeData.isForcedOn === "NEVER" && textData.isActive)                    
                     activeCheck = false
-                DB(`ToggleText(${D.JSL(textRef)}, ${D.JSL(isActive)}, ${D.JSL(isForcing)})<br>... Active Check: ${D.JSL(activeCheck)}, textData.isActive: ${D.JSL(textData.isActive)}`, "toggleText")
                 if (activeCheck === null || !isForcing && textData.isActive === activeCheck)
                     return null                
                 const textKey = textData.name,
                     textObj = getTextObj(textKey)             
                 if (activeCheck === false) {
-                    DB("Turning Off.", "toggleText")
                     // TURN OFF: Set layer to walls, toggle off associated drag pads, update activeState value
                     REGISTRY.TEXT[textKey].activeText = textData.curText
                     REGISTRY.TEXT[textKey].isActive = false
@@ -5950,7 +5977,6 @@ const Media = (() => {
                         (getObj("text", textData.shadowID) || {set: () => false}).set("layer", "walls")
                     return false                   
                 } else if (activeCheck === true) {
-                    DB("Turning On.", "toggleText")
                     // TURN ON: Set layer to active layer, toggle on associated drag pads, restore activeState value if it's different
                     REGISTRY.TEXT[textKey].isActive = true
                     setText(textKey, textData.activeText, null, isForcing)
@@ -6236,7 +6262,8 @@ const Media = (() => {
             }
         },
         updateSounds = (isDoubleChecking = true, isHardReset = false) => {
-            if (STATE.REF.isRunningSilent && STATE.REF.isRunningSilent !== "TOTALSILENCE")
+            if (STATE.REF.isRunningSilent && STATE.REF.isRunningSilent !== "TOTALSILENCE" ||
+                !isHardReset && Session.Mode === "Complications")
                 return
             if (isHardReset)
                 for (const soundObj of getPlayingSoundObjs()) {

@@ -158,6 +158,10 @@ const ConvertGlobalLineToLocal = (gline) => {
         if (gline >= prevRange.StartLine && gline <= curRange.StartLine) {
             if (prevRange.StartLine === prevRange.StopLine) {
                 log(`Airbag has detected a minified file for ${prevRange.Name}.  Line estimation may be inaccurate.`);
+                return {
+                    Name: JSON.stringify(prevRange),
+                    Line: JSON.stringify(prevRange.StartLine)
+                }
             }
             let localLine = gline - prevRange.StartLine + 1;
             // Check to see if there was an unmarked script in between
