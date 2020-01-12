@@ -1,4 +1,4 @@
-﻿void MarkStart("Roller")
+void MarkStart("Roller")
 const Roller = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Roller",
@@ -1222,7 +1222,7 @@ const Roller = (() => {
                     if (STATE.REF.rollEffects[effectString] && STATE.REF.rollEffects[effectString].includes(rollInput.charID))
                         continue
                 // Parse the effectString for all of the relevant parameters
-                    let [rollRestrictions, rollMod, rollLabel, removeWhen] = effectString.split(";"),
+                    let [rollRestrictions, rollMod, rollLabel, removeWhen, sheetMessage, gmNote] = effectString.split(";"),
                         [rollTarget, rollTraits, rollFlags] = ["", {}, {}];
                     [rollMod, rollTarget] = _.map(rollMod.split(":"), v => D.Int(v) || v.toLowerCase())
                     rollRestrictions = _.map(rollRestrictions.split("+"), v => v.toLowerCase())

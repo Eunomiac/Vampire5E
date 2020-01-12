@@ -1833,10 +1833,9 @@ const TimeTracker = (() => {
                 revActions = revActions.split(/\s*,\s*/gu)
             if (VAL({string: displayTo}))
                 displayTo = displayTo.split(/\s*,\s*/gu)
-            displayTo.push("Storyteller")
-            D.Alert(`Actions: ${D.JS(actions.map(x => typeof x))}`)
+            DB(`Actions: ${D.JSL(actions.map(x => typeof x))}`, "setAlarm")
             if (VAL({string: recurring})) {
-                DB(`Recurring: ${D.JSL(recurring)}<br>Reg Exp: ${D.JSL(recurring.match(/\S?\d+\s?\w+/gu))}`, "setAlarm")
+                DB(`Recurring: ${D.JSL(recurring)}, Reg Exp: ${D.JSL(recurring.match(/\S?\d+\s?\w+/gu))}`, "setAlarm")
                 const recurList = {}
                 for (const deltaUnit of recurring.match(/\S?\d+\s?\w+/gu).map(x => x.match(/\S?(\d+)\s?(\w+)/u).slice(1))) {
                     const [delta, unit] = deltaUnit

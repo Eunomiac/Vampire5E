@@ -1,4 +1,4 @@
-﻿void MarkStart("D")
+void MarkStart("D")
 /* DATA.js, "D".  Exposed as "D" in the API sandbox.
    >>> DATA is both a library of handy resources for other scripts to use, and a master configuration file for your
    game.  You can find a list of all of the available methods at the end of the script.  Configuration is a bit
@@ -491,9 +491,18 @@ const D = (() => {
         summarizeHTML = (htmlString = "") => ((htmlString.match(/.*?>([^<>]+)<.*?/g) || [""]).pop().match(/.*?>([^<>]+)<.*?/) || [""]).pop(),
         pInt = strRef => parseInt(strRef) || 0,
         pFloat = strRef => parseFloat(strRef) || 0,
-        roundSig = (num, digits) => {
-            if (VAL({number: digits}) && D.Int(digits) > 0)
-                return Math.round( num * 10**D.Int(digits) + Number.EPSILON ) / 10**D.Int(digits)
+        roundSig = (num, digits, isReturningPaddedString = false) => {
+            if (VAL({number: digits}) && D.Int(digits) > 0) {
+                const returnNum = Math.round( num * 10**D.Int(digits) + Number.EPSILON ) / 10**D.Int(digits)
+                if (isReturningPaddedString)
+                    if (!`${returnNum}`.includes(".")) {
+                        return `${returnNum}.${"0".repeat(digits)}`
+                    } else {
+                        const decSide = `${returnNum}`.split(".").pop()
+                        return `${Math.floor(returnNum)}.${decSide}${"0".repeat(digits - `${decSide}`.length)}`
+                    }
+                return returnNum
+            }
             return D.Int(num)            
         },
         pLowerCase = strRef => `${strRef || ""}`.toLowerCase(),
@@ -783,7 +792,10 @@ const D = (() => {
             return newObj
         },
         removeFirst = (array, element) => array.splice(array.findIndex(v => v === element)),
-        deleteElement = (array, checkFunc) => array.splice(array.findIndex(v => checkFunc(v)), 1),
+        pullElement = (array, checkFunc) => {
+            const index = array.findIndex((v, i, a) => checkFunc(v, i, a))
+            return index !== -1 && array.splice(index, 1).pop()
+        },
         parseToObj = val => {
             /* Converts an array or comma-delimited string of parameters ("key:val, key:val, key:val") into an object. */
             const [obj, args] = [{}, []]
@@ -1883,7 +1895,9 @@ const D = (() => {
         get CHARWIDTH() { return STATE.REF.CHARWIDTH },
         get MissingChars() { return STATE.REF.MissingChars },
         set MissingChars(char) {
-            if (char)
+            if (char.length > 1 && char.startsWith("!"))
+                STATE.REF.MissingChars = _.without([...STATE.REF.MissingChars], char.charAt(1))
+            else if (char.length === 1)
                 STATE.REF.MissingChars = _.uniq([...STATE.REF.MissingChars, char])
         },
 
@@ -1915,7 +1929,7 @@ const D = (() => {
         Prompt: promptGM,
         CommandMenu: commandMenu,
 
-        RemoveFirst: removeFirst, DeleteElement: deleteElement,
+        RemoveFirst: removeFirst, PullOut: pullElement,
         KeyMapObj: kvpMap,
         ParseToObj: parseToObj,
 

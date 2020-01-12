@@ -452,13 +452,13 @@ const Complications = (() => {
                  refreshDraws(false, true)
              },
              undoAction: (charRef, spot) => {
-                 D.DeleteElement(CARDQTYS.overrides, x => x.source.name === "ImpendingDoom" && !x.source.isEnhanceEffect)
+                 D.PullOut(CARDQTYS.overrides, x => x.source.name === "ImpendingDoom" && !x.source.isEnhanceEffect)
                  buildDeck()
                  cardAlert(spot, "The number of rares in the deck have been reduced.", null, " (Enhanced)")  
                  refreshDraws(false, true)
              },
              offEnhance: (charRef, spot) => {
-                 D.DeleteElement(CARDQTYS.overrides, x => x.source.name === "ImpendingDoom" && x.source.isEnhanceEffect)
+                 D.PullOut(CARDQTYS.overrides, x => x.source.name === "ImpendingDoom" && x.source.isEnhanceEffect)
                  buildDeck()
                  cardAlert(spot, "The number of rares in the deck have been reduced.", null, " (Enhanced)")    
                  refreshDraws(false, true)

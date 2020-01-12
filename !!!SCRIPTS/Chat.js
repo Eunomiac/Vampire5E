@@ -20,6 +20,12 @@ const Chat = (() => {
 
         checkInstall = () => {
             C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
+            initialize()
+        },
+
+        initialize = () => {
+            STATE.REF.FontTypes = STATE.REF.FontTypes || [...FONTDATA.types]
+            STATE.REF.FontSizes = STATE.REF.FontSizes || [...FONTDATA.sizes] 
         },
     // #endregion
 
@@ -189,16 +195,13 @@ const Chat = (() => {
                         case "text": {
                             switch (args.shift().toLowerCase()) {
                                 case "prep": {
-                                    const font = VAL({number: args[0]}) ? ["Candal", "Contrail One", "Arial", "Patrick Hand", "Shadows Into Light"][D.Int(args.shift())] : args.shift(),
-                                        sizes = _.map(args, v => D.Int(v)) || [12, 14, 16, 18, 20, 22, 26, 32, 40, 56, 72]                        
-                                    prepText(font, sizes)
+                                    STATE.REF.FontTypes = [...FONTDATA.types]
+                                    STATE.REF.FontSizes = [...FONTDATA.sizes]            
+                                    prepText(STATE.REF.FontTypes.shift())
                                     break
                                 }
                                 case "res": case "resolve": {
-                                    D.Alert("Setting ?")
-                                    if (!msg.selected || !msg.selected[0])
-                                        break
-                                    resolveText(D.GetSelected(msg, "text"))
+                                    resolveText()
                                     break
                                 } case "upper": {
                                     if (!msg.selected || !msg.selected[0])
@@ -264,138 +267,12 @@ const Chat = (() => {
         },
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
-    // #region HELP MESSAGE	
-        HELPMESSAGE = D.JSH(
-            `<div style="display: block; margin-bottom: 10px;">
-				Various commands to query information from the Roll20 tabletop and state variable. <b>If a command relies on a "selected token", make sure the token is associated with a character sheet (via the token's setting menu).</b>
-			</div>
-			<div style="display: block; margin-bottom: 10px;">
-				<h3 style="font-variant: small-caps;">Commands</h3>
-				<div style="padding-left:10px;">
-					<h4 style="font-variant: small-caps;">!GET:</h4>
-					<ul>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!get data
-							</span> - Gets a JSON stringified list of all the object's properties
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!get char
-							</span> - Gets the name, character ID, and player ID represented by the selected token.
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!get chars
-							</span> - Gets the names and IDs of all character objects
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!get gm
-							</span> - Gets the player ID of the GM.
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!get img
-							</span> - Gets the graphic ID and img source of the selected graphic.
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!get pos
-							</span> - Gets the position and dimensions of the selected object, in both grid and pixel units.
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!get attrs
-							</span> - Gets all attribute objects attached to the selected character token.<br>
-							<span style="font-weight: bolder; font-family: serif;">
-								!get attr attr1 [attr2] [attr3]...
-							</span> - Gets only the specified attributes attached to the selected character token.
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!get prop [&lt;id&gt;] &lt;property&gt;
-							</span> - Gets the contents of the specified property on the selected object, or the object ID.
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!get state [&lt;namespace&gt;]
-							</span> - Gets a stringified list of all items in the given state namespace.  You can omit the first parameter; if you do, it is assumed to be "${C.GAMENAME}".
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!get page
-							</span> - Gets the page ID the player tab is set to.
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!get debug
-							</span> - Gets the current debug settings.
-						</li>
-					</ul>
-					<h4 style="font-variant: small-caps;">!SET:</h4>
-					<ul>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!set dblvl
-							</span> - 
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!set dbfilter
-							</span> - 
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!set size height:#, width:#
-							</span> - Sets the size of all selected objects to the given dimensions.
-						</li>
-					</ul>
-					<h4 style="font-variant: small-caps;">!CLEAR:</h4>
-					<ul>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!clear dbfilter
-							</span> - 
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!clear obj &lt;type&gt; &lt;pattern&gt;
-							</span> - Removes all objects of the given type that contain &lt;pattern&gt; in the name.
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!clear state [&lt;namespace&gt;]
-							</span> - Clears the given state values.
-						</li>
-					</ul>
-					<h4 style="font-variant: small-caps;">!TEXT:</h4>
-					<ul>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!set text prep &lt;character&gt;
-							</span> - Sets all selected text strings to 20 copies of the given character.  (Use with !set text resolve to get the necessary information for measuring text widths.)
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!set text resolve
-							</span> - Measures the width of selected text strings (prepared with !set text prep).
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedblack};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!get text check
-							</span> - Checks recorded width data for text in the selected formats.
-						</li>
-						<li style="margin-bottom: 4px; background-color: ${C.COLORS.fadedgrey};">
-							<span style="font-weight: bolder; font-family: serif;">
-								!set text upper/lower
-							</span> - Changes the case of selected text object(s).
-						</li>
-					</ul>
-				</div>
-			</div>`
-        ),
-        sendHelpMsg = () => D.Alert(HELPMESSAGE, "HELP: Chat Functions"),
+    // #region DECLARATIONS	
+        FONTDATA = {
+            types: ["Candal", "Contrail One", "Arial", "Patrick Hand", "Shadows Into Light"],
+            sizes: [12, 14, 16, 18, 20, 22, 26, 32, 40, 56, 72, 100]
+        },
+        sendHelpMsg = () => { D.Alert("Syntax Failure.", "CHAT.API")},
     // #endregion
 
     // #region Get Data Functions
@@ -560,40 +437,45 @@ const Chat = (() => {
     // #endregion
 
     // #region Text Length Testing
-        prepText = (font, sizes) => {
-            const [textObjs, newTextObjs] = [
-                findObjs({_pageid: C.TEXTPAGEID, _type: "text"}),
-                {}
-            ]
-            let [left, top] = [300, 100]
-            for (const obj of textObjs)
-                obj.remove()
-            newTextObjs[font] = {}
-            for (const size of sizes) {
-                newTextObjs[font][size] = []
-                for (const char of C.TEXTCHARS.split("")) {
-                    newTextObjs[font][size].push(createObj("text", {
-                        _pageid: C.TEXTPAGEID,
-                        top,
-                        left,
-                        text: char.repeat(40),
-                        font_size: size,
-                        font_family: font,
-                        color: "rgb(255,255,255)",
-                        layer: "objects"
-                    }))
-                    top += 25
-                    if (top > 3400) {
-                        left += 100
-                        top = 100
+        prepText = (font) => {
+            if (STATE.REF.FontSizes.length) {
+                const sizes = STATE.REF.FontSizes.splice(0, 6),   
+                    [textObjs, newTextObjs] = [
+                        findObjs({_pageid: C.TEXTPAGEID, _type: "text", layer: "objects"}),
+                        {}
+                    ]
+                let [left, top] = [300, 100]
+                for (const obj of textObjs)
+                    obj.remove()
+                newTextObjs[font] = {}
+                for (const size of sizes) {
+                    newTextObjs[font][size] = []
+                    for (const char of C.TEXTCHARS.split("")) {
+                        newTextObjs[font][size].push(createObj("text", {
+                            _pageid: C.TEXTPAGEID,
+                            top,
+                            left,
+                            text: char.repeat(40),
+                            font_size: size,
+                            font_family: font,
+                            color: "rgb(255,255,255)",
+                            layer: "objects"
+                        }))
+                        top += 25
+                        if (top > 3400) {
+                            left += 100
+                            top = 100
+                        }
                     }
                 }
+                D.Alert(`Created ${C.TEXTCHARS.split("").length} x ${sizes.length} = ${C.TEXTCHARS.split("").length * sizes.length} text objects.<br><br>Move the text object(s) around, then type '!set text res' when you have.`)
             }
-            D.Alert(`Created ${C.TEXTCHARS.split("").length} x ${sizes.length} = ${C.TEXTCHARS.split("").length * sizes.length} text objects.<br><br>Move the text object(s) around, and type '!set text res' while all are selected when you have.`)
         },
-        resolveText = objs => {
+        resolveText = () => {
+            const textObjs = findObjs({_pageid: C.TEXTPAGEID, _type: "text", layer: "objects"}),
+                textSizes = []
             let font, trueFont
-            for (const obj of objs) {
+            for (const obj of textObjs) {
                 const width = obj.get("width"),
                     height = obj.get("height"),
                     char = obj.get("text").charAt(0),
@@ -603,23 +485,77 @@ const Chat = (() => {
                 D.CHARWIDTH[font] = D.CHARWIDTH[font] || {}
                 D.CHARWIDTH[font][size] = D.CHARWIDTH[font][size] || {}
                 D.CHARWIDTH[font][size][char] = D.Int(width * 100 / 40) / 100
-                D.CHARWIDTH[font][size].lineHeight = D.Int(height * 10) / 10
+                D.CHARWIDTH[font][size].lineHeight = D.Int(height * 10) / 10                
+                if (!textSizes.includes(size))
+                    textSizes.push(size)
             }
             if (trueFont !== font)
                 D.CHARWIDTH[trueFont] = D.CHARWIDTH[font]
-            const charCount = {}
+            const [charList, charCounts] = [[], []],
+                testChars = ["M", "t", " ", "0"],
+                testColors = ["red", "blue", "green", "purple"],
+                reportTableRows = []
             for (const fontName of _.keys(D.CHARWIDTH)) {
-                charCount[fontName] = {}
+                if (!FONTDATA.types.includes(D.Capitalize(fontName)))
+                    continue
+                reportTableRows.push(...[
+                    `<tr style="border: 2px solid black;"><th colspan = "${3 + testChars.length}"><h4 style="text-align: left; background-color: #555555; color: white; text-indent: 10px;">${D.Capitalize(fontName)}</h4></th></tr>`,
+                    `<tr style="height: 20px; font-size: 12px; background-color: #AAAAAA; border: 2px solid black; border-bottom: 1px solid black; line-height: 16px;"><th style="width: 30px; text-align: right;">S</th><th style="width: 30px; text-align: right;">#</th>${testChars.map(x => `<th style="width: 50px; text-align: right;">[${x.replace(/\s/gu, "&nbsp;")}]</th>`)}<th style="width: 50px; text-align: right; font-size: 8px; line-height: 8px;padding-right: 5px;">Line<br>Height</th><tr>`
+                ])
                 for (const fontSize of _.keys(D.CHARWIDTH[fontName])) {
-                    charCount[fontName][fontSize] = `${_.keys(D.CHARWIDTH[fontName][fontSize]).length}: `
-                    const colorList = ["red", "blue", "green", "purple"]
-                    for (const char of ["M", "t", " ", "0"])
-                        charCount[fontName][fontSize] += `<span style="color: ${C.COLORS[colorList.pop()]};"><b>${char}</b>: ${D.Int(D.CHARWIDTH[fontName][fontSize][char] * 100)/100}</span>, `
-                    charCount[fontName][fontSize] = `${charCount[fontName][fontSize].slice(0, -2) }<br><b>Line Height: ${D.CHARWIDTH[fontName][fontSize].lineHeight}</b>`
+                    charCounts.unshift(_.keys(D.CHARWIDTH[fontName][fontSize]).filter(x => x.length === 1).length)
+                    reportTableRows.push(`<tr style="border-left: 2px solid black; border-right: 2px solid black;"><td style="text-align: right;">${
+                        fontSize
+                    }</td><td style="text-align: right;">${
+                        charCounts[0]
+                    }</td>${
+                        _.zip(testColors, testChars).map(x => `<td style="color: ${x[0]}; text-align: right;">${D.Round(D.CHARWIDTH[fontName][fontSize][x[1]], 2, true)}</td>`)
+                    }<td style="padding-right: 5px; text-align: right;"">${
+                        D.Round(D.CHARWIDTH[fontName][fontSize].lineHeight, 2, true)
+                    }</td></tr>`)
+                    if (charList.length === 0)
+                        charList.push(..._.keys(D.CHARWIDTH[fontName][fontSize]).filter(x => x.length === 1))
                 }
+                if (_.uniq(charCounts).length !== 1)
+                    reportTableRows.push(...[
+                        `<tr style="border-left: 2px solid black; border-right: 2px solid black;><td colSpan = "${3 + testChars.length}" style = "background-color: red, color: white, font-weight: bold;">Character Count Mismatch!</td></tr>`,
+                        `<tr style="border-left: 2px solid black; border-right: 2px solid black;><td colSpan = "${3 + testChars.length}" style = "background-color: #FFBBBB;">${_.uniq(charCounts).join(", ")}</td></tr>`
+                    ])
+                reportTableRows.push(`<tr style="height: 10px;"><td colspan="${3 + testChars.length}" style="border-top: 2px solid black;"></td></tr>`)
             }
-            D.Alert(D.JS(charCount), "CHARACTER WIDTH TALLY")
-        },
+            if (STATE.REF.FontSizes.length) {
+                D.Alert(`Completed sizes ${D.JSL(textSizes)}.  Continuing with larger sizes.`, `Resolving '${D.JSL(trueFont)}`)
+                prepText(trueFont)
+            } else if (STATE.REF.FontTypes.length) {
+                STATE.REF.FontSizes = [...FONTDATA.sizes]
+                D.Alert(`Completed sizes ${D.JSL(textSizes)}.  ${D.Capitalize(trueFont)} <b>DONE!</b><br>Proceeding to ${D.Capitalize(STATE.REF.FontTypes[0])}`, `Resolving '${D.JSL(trueFont)}`)
+                prepText(STATE.REF.FontTypes.shift())
+            } else {
+                for (const textObj of textObjs)
+                    textObj.remove()
+                for (const missingChar of D.MissingChars)
+                    if (C.TEXTCHARS.split("").includes(missingChar))
+                        D.MissingChars = `!${missingChar}`
+                D.Chat("Storyteller", C.HTML.Block(C.HTML.Body([
+                    "<h4 style=\"text-align: center; background-color: black; color: white; border-bottom: 2px solid black;\">Text Width Calibration Complete!</h3>",
+                    `<h4 style="display: block; text-align: center; width: 90%; margin-left: 5%; margin-top: 10px;">${charList.length} Characters Analyzed:</h5>`,
+                    `<h5 style="display: block; text-align: center; width: 100%; font-size: 10px; background-color: #DFCCFF;">${_.escape([..._.compact(charList)].sort().join(" "))}</h5>`,
+                    `<table style="width: 98%; margin-left: 1%; font-size: 10px;">${reportTableRows.join("")}</table>`,
+                    `<h4 style="text-align: center; padding-bottom: 20px;">DATA.MissingChars revised to:<br>${D.JSL(D.MissingChars)}</h4>`
+                ].join(""), {
+                    color: C.COLORS.black,
+                    bgColor: C.COLORS.white,
+                    width: "100%",
+                    margin: "0px",
+                    fontFamily: "Verdana",
+                    fontSize: "0px",
+                    lineHeight: "16px",
+                    fontWeight: "normal",
+                    textAlign: "left",
+                    textShadow: "none"
+                }), {width: "100%", border: "2px solid black"}))
+            }
+        }, 
         caseText = (objs, textCase) => {
             objs.forEach(obj => {
                 obj.set("text", textCase === "upper" ? obj.get("text").toUpperCase() : obj.get("text").toLowerCase())

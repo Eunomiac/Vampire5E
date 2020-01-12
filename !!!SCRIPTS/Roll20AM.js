@@ -1316,7 +1316,7 @@ var Roll20AM = Roll20AM || (function() {
 	    //set playing to true in Track Details, get Jukebox Object and set to playing
 	    trackDetails.playing=false;        
         if (jbTrack)
-            jbTrack.set({playing:false,softstop:true,loop:false});
+            jbTrack.set({playing:false,softstop:false,loop:false});
 	},   
     //fade in starts at zero an incrementally increases volume to the fade in volume
 	fadeInTrack = function(trackID,target,seconds,who){

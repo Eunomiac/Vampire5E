@@ -62,8 +62,10 @@ const Tester = (() => {
                         playingSounds = soundReport.filter(x => x.includes("255, 0")),
                         reportLines = []
                     if (args.length) {
-                        const soundName = args.join(" "),
+                        const soundName = (args[0] === "stop" ? args.slice(1) : args).join(" "),
                             soundObj = soundObjs.find(x => x.get("title") === soundName)
+                        if (args[0] === "stop")
+                            soundObj.set({playing:false,softstop:false})
                         reportLines.push(...[
                             `<h4>${soundName}</h4>`,
                             D.JS(soundObj, true)
