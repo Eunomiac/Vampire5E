@@ -1,4 +1,4 @@
-void MarkStart("D")
+﻿void MarkStart("D")
 /* DATA.js, "D".  Exposed as "D" in the API sandbox.
    >>> DATA is both a library of handy resources for other scripts to use, and a master configuration file for your
    game.  You can find a list of all of the available methods at the end of the script.  Configuration is a bit
@@ -722,6 +722,14 @@ const D = (() => {
                 */
             const htmlRows = [],
                 customStyles = {
+                    Title: {
+                        fontSize: "24px",
+                        lineHeight: "38px",
+                        bgColor: C.COLORS.black,
+                        height: "32px",
+                        border: `none; border-bottom: 4px outset ${C.COLORS.crimson}`,
+                        margin: "0px 0px 10px 0px",
+                    },
                     Body: {
                         color: C.COLORS.brightbrightgrey,
                         lineHeight: "1.25em",
@@ -750,19 +758,20 @@ const D = (() => {
                             sectionHTML.push(C.HTML[rowData.type](rowData.contents, Object.assign({}, customStyles[rowData.type] || {}, rowData.styles || {})))
                         } else if (rowData.type === "ButtonLine") {
                             const buttonsCode = [],
-                                numberEntities = rowData.contents.filter(x => VAL({number: x})),
-                                strictSpacing = numberEntities.length && rowData.contents.filter(x => VAL({number: x})).reduce((tot, x) => tot + x) || 0,
-                                entityWidth = (100 - strictSpacing) / rowData.contents.filter(x => VAL({list: x}) || VAL({number: x}) && x === 0).length - 1
-                            rowData.contents = rowData.contents.map(x => VAL({list: x}) && Object.assign(x, {styles: Object.assign({}, {width: `${entityWidth}%`}, x.styles)}) ||
-                                                                         VAL({number: x}) && x === 0 && entityWidth ||
-                                                                         VAL({number: x}) && x)               
+                                strictSpacerTotWidth = rowData.contents.filter(x => VAL({number: x})).reduce((tot, x) => tot + x, 0) || 0,
+                                totFlexSpacing = 100 - strictSpacerTotWidth,
+                                flexEntityWidth = Math.floor(totFlexSpacing / rowData.contents.filter(x => VAL({list: x}) || VAL({number: x}) && x === 0).length) - 1
+                            rowData.contents = rowData.contents.map(x => VAL({list: x}) && Object.assign(x, {styles: Object.assign({}, {width: `${flexEntityWidth}%`}, x.styles)}) ||
+                                                                         VAL({number: x}) && x === 0 && flexEntityWidth ||
+                                                                         VAL({number: x}) && x)     
+                            dbLines.push(`strictTotWidth: ${D.JSL(strictSpacerTotWidth)}, totFlexSpace: ${totFlexSpacing}, flexEntityWidth: ${flexEntityWidth}<br>${D.JSL(rowData.contents)}`)
                             for (const entity of rowData.contents)
                                 if (VAL({number: entity})) {
                                     buttonsCode.push(C.HTML.ButtonSpacer(`${D.Int(entity)}%`))
                                 } else {
                                     if (entity.name.length > 12)
                                         entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
-                                    buttonsCode.push(C.HTML.Button(entity.name, entity.command, Object.assign({width: `${entityWidth}%`}, customStyles.Button, rowData.buttonStyles || {}, entity.styles || {})))
+                                    buttonsCode.push(C.HTML.Button(entity.name, entity.command, Object.assign({width: `${flexEntityWidth}%`}, customStyles.Button, rowData.buttonStyles || {}, entity.styles || {})))
                                     dbLines.push(`<b>${entity.name}</b>: ${entity.command}<br>`)
                                 }
                             sectionHTML.push(C.HTML.ButtonLine(buttonsCode, rowData.styles || {}))
@@ -779,7 +788,7 @@ const D = (() => {
 
             htmlRows.push(parseSection(menuData))
             if (menuData.title)
-                htmlRows.unshift(C.HTML.Title(menuData.title))
+                htmlRows.unshift(C.HTML.Title(menuData.title, Object.assign({}, customStyles.Title)))
             DB(dbLines, "commandMenu")
             promptGM(C.HTML.Block(htmlRows.join(""), menuData.blockParams || {}), replyFunc)
         },

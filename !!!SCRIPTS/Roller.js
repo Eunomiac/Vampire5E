@@ -2851,7 +2851,7 @@ const Roller = (() => {
                                         rollLines.outcome.color = getColor(rollData.type, "outcome", "worst")
                                         rollLines.subOutcome.color = getColor(rollData.type, "subOutcome", "tainted")
                                         deltaAttrs.stains = 1
-                                        Char.AdjustHunger(rollData.charID, -1)
+                                        Char.AdjustHunger(rollData.charID, 1)
                                     }
                                 } else if (rollResults.total > 0) {
                                     stLines.outcome = `${CHATSTYLES.outcomeWhite}RESTRAINED</span></div>`
@@ -2861,7 +2861,7 @@ const Roller = (() => {
                                     stLines.outcome = `${CHATSTYLES.outcomeRed}ROUSED!</span></div>`
                                     rollLines.outcome.text = "HUNGER ROUSED!"
                                     rollLines.outcome.color = getColor(rollData.type, "outcome", "worst")
-                                    Char.AdjustHunger(rollData.charID, -1)
+                                    Char.AdjustHunger(rollData.charID, 1)
                                 }
                                 break
                             }

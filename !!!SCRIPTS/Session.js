@@ -937,47 +937,18 @@ const Session = (() => {
     // #endregion
 
     // #region Automatic Remorse Rolls
-        remorseCheck = () => {
-            const charObjs = D.GetChars("registered"),
-                stainedCharObjs = []
-            for (const charObj of charObjs)
-                if (D.GetStatVal(charObj, "stains"))
-                    stainedCharObjs.push(charObj)
-            if (stainedCharObjs.length) {
-                promptRemorseCheck(stainedCharObjs)
-                return false
-            }
-            return true      
-        },
+        remorseCheck = () => promptRemorseCheck(D.GetChars("registered").filter(x => D.GetStatVal(x, "stains"))),
         promptRemorseCheck = (charObjs) => {
-            const charObjRows = [],
-                chatLines = []
-            while (charObjs.length)
-                charObjRows.push(_.compact([charObjs.shift(), charObjs.shift()]))
-            for (const charObjRow of charObjRows)
-                chatLines.push(`<span style="                    
-                    display: block;
-                    font-size: 10px;
-                    text-align: center;
-                    width: 100%;
-                ">[${D.GetName(charObjRow[0])}](!roll quick remorse @${D.GetName(charObjRow[0])})${charObjRow[1] ? ` [${D.GetName(charObjRow[1])}](!roll quick remorse @${D.GetName(charObjRow[1])})` : ""}</span>`)
-            D.Chat("Storyteller", `<div style='
-                display: block;
-                background: url(https://i.imgur.com/kBl8aTO.jpg);
-                text-align: center;
-                border: 4px ${C.COLORS.crimson} outset;
-                box-sizing: border-box;
-                margin-left: -42px;
-                width: 275px;
-            '><div style="display: inline-block; width: 49%; font-size: 0px;"><span style='
-            display: block;
-            font-size: 16px;
-            text-align: center;
-            width: 100%;
-            font-family: Voltaire;
-            color: ${C.COLORS.brightred};
-            font-weight: bold;
-        '><br>ROLL REMORSE FOR...</span><br>${chatLines.join("<br>")}<br></div>`, undefined, D.RandomString(3))  
+            if (!charObjs || !charObjs.length)
+                return true
+            const buttons = []
+            for (const charObj of charObjs)
+                buttons.push({name: D.GetName(charObj, true), command: `!roll quick remorse ${charObj.id}`})            
+            D.CommandMenu({
+                title: "Remorse Checks",
+                rows: Object.values(_.groupBy(buttons, (v, i) => i % 2)).map(x => ({type: "ButtonLine", contents: x}))
+            })
+            return false
         },
     // #endregion
 

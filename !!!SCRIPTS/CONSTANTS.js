@@ -24,7 +24,7 @@ const C = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     // #region CORE CONFIGURATION & BASIC REFERENCES
-        TEXTCHARS = "0123456789LMNQSOPRUWXTVZY-=●(+ABCFHDEGJIKalmnqsopruwxtvzyfhdegjikbc )?![]:;,.○~♠◌‡⅓°♦\"'`Ծ►", // eslint-disable-line quotes
+        TEXTCHARS = "0123456789LMNQSOPRUWXTVZY-=●(+ABCFHDEGJIKalmnqsopruwxtvzyfhdegjikbc )?![]:;,.○~♠◌‡⅓°♦\"'`Ծ►/&", // eslint-disable-line quotes
         TEXTPAGEID = "-LtEZInDvTCwXXSROD49",
         NUMBERWORDS = {
             low: ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen", "Twenty"],
@@ -144,11 +144,14 @@ const C = (() => {
             },
             Title: (content, options = {}) => {
                 const params = {
-                    fontSize: options.fontSize || "32px",
+                    height: options.height || "45px",
                     color: options.color || COLORS.brightred,
                     margin: options.margin || "0px",
                     fontFamily: options.fontFamily || "sexsmith", // "'Pathway Gothic One', sexsmith",
-                    lineHeight: options.lineHeight || "45px"
+                    fontSize: options.fontSize || "32px",
+                    lineHeight: options.lineHeight || "45px",
+                    bgColor: options.bgColor || "transparent",
+                    border: options.border || "none",
                 }  
                 if (D.WatchList.includes("HTML"))
                     sendChat("HTML", `/w Storyteller <pre>${[D.JS(options), D.JS(params)].join("<br>")}</pre>`)
@@ -157,12 +160,14 @@ const C = (() => {
                     margin: ${params.margin};
                     font-weight: bold;
                     color: ${params.color};
+                    background-color: ${params.bgColor};
                     text-align: center;
                     width: auto;
                     font-family: ${params.fontFamily};
                     font-size: ${params.fontSize};
-                    height: 45px;
+                    height: ${params.height};
                     line-height: ${params.lineHeight};
+                    border: ${params.border};
                 ">${_.flatten([content]).join("")}</span>`)
             },
             Header: (content, options = {}) => {
@@ -807,6 +812,10 @@ const C = (() => {
             WindWinterMax: [100],
             WolfHowl: [100, 100],
             SplashScreen: [60],
+            ScoreSplash: [60],
+            ScoreMain: [60],
+            ScoreIntense: [60],
+            ScoreCombat: [60],
             defaults: {
                 base: [50],
                 score: [60],
@@ -832,10 +841,6 @@ const C = (() => {
             },
             Thunder: {
                 mode: "randomSingle",
-                innerMode: "single"
-            },
-            MainScore: {
-                mode: "randomLoop",
                 innerMode: "single"
             },
             ScoreMain: {
@@ -864,12 +869,12 @@ const C = (() => {
             }
         },
         SOUNDSCORES = {
-            SplashScreen: ["Inactive"],
-            MainScore: ["Active", "Downtime", "Daylighter", "Spotlight", "Complication"],
-            ScoreMain: ["Active", "Downtime", "Daylighter", "Spotlight", "Complication"],
-            ScoreIntense: ["Active", "Downtime", "Daylighter", "Spotlight", "Complication"],
-            ScoreCombat: ["Active", "Downtime", "Daylighter", "Spotlight", "Complication"],
-            ScoreSplash: ["Inactive"]
+            Active: ["ScoreMain", "ScoreIntense", "ScoreCombat"],
+            Inactive: ["ScoreSplash"],
+            Downtime: ["ScoreMain"],
+            Daylighter: ["ScoreMain", "ScoreIntense", "ScoreCombat"],
+            Spotlight: ["ScoreMain", "ScoreIntense", "ScoreCombat"],
+            Complication: ["ScoreMain", "ScoreIntense", "ScoreCombat"]
         },
     // #endregion
 

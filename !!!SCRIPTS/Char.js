@@ -849,48 +849,65 @@ const Char = (() => {
                         {
                             type: "ButtonLine",
                             contents: [
-                                {name: 1, command: fullCommand.replace(/@@AMOUNT@@/gu, "1"), styles: {buttonWidth: "15%"}},
-                                {name: 2, command: fullCommand.replace(/@@AMOUNT@@/gu, "2"), styles: {buttonWidth: "15%"}},
-                                {name: 3, command: fullCommand.replace(/@@AMOUNT@@/gu, "3"), styles: {buttonWidth: "15%"}},
-                                {name: 4, command: fullCommand.replace(/@@AMOUNT@@/gu, "4"), styles: {buttonWidth: "15%"}},
-                                {name: 5, command: fullCommand.replace(/@@AMOUNT@@/gu, "5"), styles: {buttonWidth: "15%"}},
-                            ]
+                                5,
+                                {name: "+1", command: fullCommand.replace(/@@AMOUNT@@/gu, "1")},
+                                {name: "+2", command: fullCommand.replace(/@@AMOUNT@@/gu, "2")},
+                                {name: "+3", command: fullCommand.replace(/@@AMOUNT@@/gu, "3")},
+                                {name: "+4", command: fullCommand.replace(/@@AMOUNT@@/gu, "4")},
+                                {name: "+5", command: fullCommand.replace(/@@AMOUNT@@/gu, "5")},
+                                5,
+                            ],
+                            buttonStyles: {bgColor: C.COLORS.darkgreen, fontSize: "14px", fontWeight: "bold"}
                         },
                         {
                             type: "ButtonLine",
                             contents: [
-                                {name: 6, command: fullCommand.replace(/@@AMOUNT@@/gu, "6"), styles: {buttonWidth: "15%"}},
-                                {name: 7, command: fullCommand.replace(/@@AMOUNT@@/gu, "7"), styles: {buttonWidth: "15%"}},
-                                {name: 8, command: fullCommand.replace(/@@AMOUNT@@/gu, "8"), styles: {buttonWidth: "15%"}},
-                                {name: 9, command: fullCommand.replace(/@@AMOUNT@@/gu, "9"), styles: {buttonWidth: "15%"}},
-                                {name: 10, command: fullCommand.replace(/@@AMOUNT@@/gu, "10"), styles: {buttonWidth: "15%"}},
-                            ]
+                                5,
+                                {name: "+6", command: fullCommand.replace(/@@AMOUNT@@/gu, "6")},
+                                {name: "+7", command: fullCommand.replace(/@@AMOUNT@@/gu, "7")},
+                                {name: "+8", command: fullCommand.replace(/@@AMOUNT@@/gu, "8")},
+                                {name: "+9", command: fullCommand.replace(/@@AMOUNT@@/gu, "9")},
+                                {name: "+10", command: fullCommand.replace(/@@AMOUNT@@/gu, "10")},
+                                5,
+                            ],
+                            buttonStyles: {bgColor: C.COLORS.darkgreen, fontSize: "14px", fontWeight: "bold"}
                         },
                         {
                             type: "ButtonLine",
                             contents: [
-                                {name: 0, command: fullCommand.replace(/@@AMOUNT@@/gu, "0"), styles: {buttonWidth: "15%"}}
-                            ]
+                                5,
+                                0, 0,
+                                {name: 0, command: fullCommand.replace(/@@AMOUNT@@/gu, "0")},
+                                0, 0,
+                                5,
+                            ],
+                            buttonStyles: {bgColor: C.COLORS.brightgrey, fontSize: "14px", fontWeight: "bold"}
                         },
                         {
                             type: "ButtonLine",
                             contents: [
-                                {name: -1, command: fullCommand.replace(/@@AMOUNT@@/gu, "-1"), styles: {buttonWidth: "15%"}},
-                                {name: -2, command: fullCommand.replace(/@@AMOUNT@@/gu, "-2"), styles: {buttonWidth: "15%"}},
-                                {name: -3, command: fullCommand.replace(/@@AMOUNT@@/gu, "-3"), styles: {buttonWidth: "15%"}},
-                                {name: -4, command: fullCommand.replace(/@@AMOUNT@@/gu, "-4"), styles: {buttonWidth: "15%"}},
-                                {name: -5, command: fullCommand.replace(/@@AMOUNT@@/gu, "-5"), styles: {buttonWidth: "15%"}},
-                            ]
+                                5,
+                                {name: -1, command: fullCommand.replace(/@@AMOUNT@@/gu, "-1")},
+                                {name: -2, command: fullCommand.replace(/@@AMOUNT@@/gu, "-2")},
+                                {name: -3, command: fullCommand.replace(/@@AMOUNT@@/gu, "-3")},
+                                {name: -4, command: fullCommand.replace(/@@AMOUNT@@/gu, "-4")},
+                                {name: -5, command: fullCommand.replace(/@@AMOUNT@@/gu, "-5")},
+                                5,
+                            ],
+                            buttonStyles: {bgColor: C.COLORS.red, fontSize: "14px", fontWeight: "bold"}
                         },
                         {
                             type: "ButtonLine",
                             contents: [
-                                {name: -6, command: fullCommand.replace(/@@AMOUNT@@/gu, "-6"), styles: {buttonWidth: "15%"}},
-                                {name: -7, command: fullCommand.replace(/@@AMOUNT@@/gu, "-7"), styles: {buttonWidth: "15%"}},
-                                {name: -8, command: fullCommand.replace(/@@AMOUNT@@/gu, "-8"), styles: {buttonWidth: "15%"}},
-                                {name: -9, command: fullCommand.replace(/@@AMOUNT@@/gu, "-9"), styles: {buttonWidth: "15%"}},
-                                {name: -10, command: fullCommand.replace(/@@AMOUNT@@/gu, "-10"), styles: {buttonWidth: "15%"}},
-                            ]
+                                5,
+                                {name: -6, command: fullCommand.replace(/@@AMOUNT@@/gu, "-6")},
+                                {name: -7, command: fullCommand.replace(/@@AMOUNT@@/gu, "-7")},
+                                {name: -8, command: fullCommand.replace(/@@AMOUNT@@/gu, "-8")},
+                                {name: -9, command: fullCommand.replace(/@@AMOUNT@@/gu, "-9")},
+                                {name: -10, command: fullCommand.replace(/@@AMOUNT@@/gu, "-10")},
+                                5,
+                            ],
+                            buttonStyles: {bgColor: C.COLORS.red, fontSize: "14px", fontWeight: "bold"}
                         },
                     ]
                 })

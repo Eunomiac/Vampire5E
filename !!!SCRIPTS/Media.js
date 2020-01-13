@@ -35,6 +35,7 @@ const Media = (() => {
             STATE.REF.activeSounds = STATE.REF.activeSounds || []
             STATE.REF.curLocation = STATE.REF.curLocation || "DistrictCenter:blank SiteCenter:blank"
             STATE.REF.loopingSounds = STATE.REF.loopingSounds || []
+            STATE.REF.soundScore = STATE.REF.soundScore || "ScoreMain"
             STATE.REF.isRunningSilent = STATE.REF.isRunningSilent || false
 
             // Initialize IMGDICT Fuzzy Dictionary
@@ -51,190 +52,6 @@ const Media = (() => {
             STATE.REF.AREADICT = Fuzzy.Fix()
             for (const areaKey of _.keys(STATE.REF.areas))
                 STATE.REF.AREADICT.add(areaKey)
-
-           
-            /* STATE.REF.imgregistry.Horizon_1.srcs = {
-                night1clear: "https://s3.amazonaws.com/files.d20.io/images/98509811/jMluHoG6qt1m5rvbwML6xA/thumb.jpg?1575435633",
-                night1cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509810/1sLLY_NS7SF_cootY6JCZQ/thumb.jpg?1575435632",
-                night1stormy: "https://s3.amazonaws.com/files.d20.io/images/98509806/oo2w3_LmrwC02hhbtFZfdA/thumb.jpg?1575435632",
-                night2clear: "https://s3.amazonaws.com/files.d20.io/images/98509809/7Mubictt4CuEbtIkQej_NA/thumb.jpg?1575435630",
-                night2cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509812/nygGMQLIqtx4rQHgW0I_YA/thumb.jpg?1575435631",
-                night2stormy: "https://s3.amazonaws.com/files.d20.io/images/98509813/FAC-yIys7r3FaoOFugPnrA/thumb.jpg?1575435633",
-                night3clear: "https://s3.amazonaws.com/files.d20.io/images/98509808/hkd5rZAGvQXWu8FkSC8xRQ/thumb.jpg?1575435628",
-                night3cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509807/f95z0RIBbQvLr9wire9lTA/thumb.jpg?1575435628",
-                night3stormy: "https://s3.amazonaws.com/files.d20.io/images/98509805/_luh6PjsucSge5vQPQa7Wg/thumb.jpg?1575435632",
-                night4clear: "https://s3.amazonaws.com/files.d20.io/images/100785925/PEjDWxVUGu6dRElEU3NHOA/thumb.jpg?1578140296",
-                night4cloudy: "https://s3.amazonaws.com/files.d20.io/images/100785924/CwOspPiRSBK2wiLxkcEsvQ/thumb.jpg?1578140296",
-                night4stormy: "https://s3.amazonaws.com/files.d20.io/images/100785923/3DbKQKY5hJLSjVmRMNLtpA/thumb.jpg?1578140297",
-                night5clear: "https://s3.amazonaws.com/files.d20.io/images/98509827/4OJMf54JlaSAoUguGWFA7w/thumb.jpg?1575435661",
-                night5cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509828/H3WkUETxELNAmR5nb2mCUQ/thumb.jpg?1575435652",
-                night5stormy: "https://s3.amazonaws.com/files.d20.io/images/98509829/S0-rjuJFf3swtlsqixQcEg/thumb.jpg?1575435662",
-                predawn5clear: "https://s3.amazonaws.com/files.d20.io/images/98509843/GcoIwvrQ1IpsWPzHwI9Kwg/thumb.jpg?1575435663",
-                predawn5cloudy: "https://s3.amazonaws.com/files.d20.io/images/100786047/i35R3ajICbT2cggfb_24Iw/thumb.jpg?1578140496",
-                predawn5stormy: "https://s3.amazonaws.com/files.d20.io/images/98509830/c0a9XwL2sKt35g2N9Bkvkg/thumb.jpg?1575435655",
-                predawn4clear: "https://s3.amazonaws.com/files.d20.io/images/98509838/HTrpZchyeBrArTkWS-HdXQ/thumb.jpg?1575435661",
-                predawn4cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509834/U3j4v-QNVrSloeGDrBIqsg/thumb.jpg?1575435660",
-                predawn4stormy: "https://s3.amazonaws.com/files.d20.io/images/98509844/pFitw7gnWpZljtv0051xmA/thumb.jpg?1575435663",
-                predawn3clear: "https://s3.amazonaws.com/files.d20.io/images/98509835/9ZyuFbvfpKaUQld49lHwZw/thumb.jpg?1575435661",
-                predawn3cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509831/6psuh2KqppMjRNSBL1lxGg/thumb.jpg?1575435666",
-                predawn3stormy: "https://s3.amazonaws.com/files.d20.io/images/98509833/D-9xH2jpPMHmw5Qy-NLoag/thumb.jpg?1575435664",
-                predawn2clear: "https://s3.amazonaws.com/files.d20.io/images/98509836/txhvZ2Q1C0BvZqsTJOP9PA/thumb.jpg?1575435667",
-                predawn2cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509841/SutITafOVflOWI1g5sk3Dw/thumb.jpg?1575435666",
-                predawn2stormy: "https://s3.amazonaws.com/files.d20.io/images/98509842/XoOtLqud8SEmLpRZo11SlA/thumb.jpg?1575435665",
-                predawn1clear: "https://s3.amazonaws.com/files.d20.io/images/98509839/t_eW_DnhFzgPRbYgQ53pcQ/thumb.jpg?1575435667",
-                predawn1cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509840/uLEc81-_o7CiPYbJaZuSrw/thumb.jpg?1575435666",
-                predawn1stormy: "https://s3.amazonaws.com/files.d20.io/images/98509832/hg4QLMHetze-2rKMygC0Yg/thumb.jpg?1575435665",	
-                day: "https://s3.amazonaws.com/files.d20.io/images/96326425/CgaFz_GokWBhfOdevEpQCg/thumb.jpg?1573106179"
-            }
-            */ 
-            /* 
-            STATE.REF.textregistry.Projects_Col1.font_size = 12
-            STATE.REF.textregistry.Projects_Col2.font_size = 12
-            STATE.REF.textregistry.Projects_Col3.font_size = 12
-            STATE.REF.textregistry.Projects_Col3.left = 338
-            STATE.REF.textregistry.Weekly_Char_Col1.font_size = 12
-            STATE.REF.textregistry.Weekly_Char_Col2.font_size = 12
-            STATE.REF.textregistry.Weekly_Char_Col3.font_size = 12
-            STATE.REF.textregistry.Stakes_Coterie_Col1.font_size = 12
-            STATE.REF.textregistry.Stakes_Coterie_Col2.font_size = 12
-            STATE.REF.textregistry.Stakes_Coterie_Col3.font_size = 12
-            STATE.REF.textregistry.Stakes_Coterie_Col4.font_size = 12
-            STATE.REF.textregistry.Stakes_Coterie_Col4.justification = "right"
-            STATE.REF.textregistry.Stakes_Coterie_Col4.maxWidth = 70
-            STATE.REF.textregistry.Stakes_Coterie_Col4.left = 1583
-            STATE.REF.textregistry.Stakes_Char_Col1.font_size = 12
-            STATE.REF.textregistry.Stakes_Char_Col2.font_size = 12
-            STATE.REF.textregistry.Stakes_Char_Col3.font_size = 12
-            STATE.REF.textregistry.Stakes_Char_Col4.font_size = 12
-            STATE.REF.textregistry.Stakes_Char_Col4.justification = "right"
-            STATE.REF.textregistry.Stakes_Char_Col4.maxWidth = 70
-            STATE.REF.textregistry.Stakes_Char_Col4.left = 1583
-            STATE.REF.textregistry.Projects_Col1.lineHeight = 19.2
-            STATE.REF.textregistry.Projects_Col2.lineHeight = 19.2
-            STATE.REF.textregistry.Projects_Col3.lineHeight = 19.2
-            STATE.REF.textregistry.Projects_Col3.maxWidth = 70
-            STATE.REF.textregistry.Weekly_Char_Col1.lineHeight = 19.2
-            STATE.REF.textregistry.Weekly_Char_Col2.lineHeight = 19.2
-            STATE.REF.textregistry.Weekly_Char_Col3.lineHeight = 19.2
-            STATE.REF.textregistry.Stakes_Coterie_Col1.lineHeight = 19.2
-            STATE.REF.textregistry.Stakes_Coterie_Col2.lineHeight = 19.2
-            STATE.REF.textregistry.Stakes_Coterie_Col3.lineHeight = 19.2
-            STATE.REF.textregistry.Stakes_Coterie_Col4.lineHeight = 19.2
-            STATE.REF.textregistry.Stakes_Char_Col1.lineHeight = 19.2
-            STATE.REF.textregistry.Stakes_Char_Col2.lineHeight = 19.2
-            STATE.REF.textregistry.Stakes_Char_Col3.lineHeight = 19.2
-            STATE.REF.textregistry.Stakes_Char_Col4.lineHeight = 19.2
-            
-
-            const textObjNames = [
-                "Projects_Col1",     
-                "Projects_Col2",      
-                "Projects_Col3",     
-                "Projects_Col3",       
-                "Weekly_Char_Col1",    
-                "Weekly_Char_Col2",    
-                "Weekly_Char_Col3",    
-                "Stakes_Coterie_Col1", 
-                "Stakes_Coterie_Col2", 
-                "Stakes_Coterie_Col3", 
-                "Stakes_Coterie_Col4", 
-                "Stakes_Char_Col1",    
-                "Stakes_Char_Col2",    
-                "Stakes_Char_Col3",    
-                "Stakes_Char_Col4",    
-                "Projects_Col1",       
-                "Projects_Col2",       
-                "Projects_Col3",       
-                "Weekly_Char_Col1",    
-                "Weekly_Char_Col2",    
-                "Weekly_Char_Col3",    
-                "Stakes_Coterie_Col1", 
-                "Stakes_Coterie_Col2", 
-                "Stakes_Coterie_Col3", 
-                "Stakes_Coterie_Col4", 
-                "Stakes_Char_Col1",    
-                "Stakes_Char_Col2",    
-                "Stakes_Char_Col3",    
-                "Stakes_Char_Col4",
-            ]
-
-            for (const textName of textObjNames)
-                setText(textName, undefined, undefined, true)
-            
-
-            
-            STATE.REF.textregistry.Projects_Col1.font_size = 14
-            STATE.REF.textregistry.Projects_Col2.font_size = 14
-            STATE.REF.textregistry.Projects_Col3.font_size = 14
-            STATE.REF.textregistry.Weekly_Char_Col1.font_size = 14
-            STATE.REF.textregistry.Weekly_Char_Col2.font_size = 14
-            STATE.REF.textregistry.Weekly_Char_Col3.font_size = 14
-            STATE.REF.textregistry.Stakes_Coterie_Col1.font_size = 14
-            STATE.REF.textregistry.Stakes_Coterie_Col2.font_size = 14
-            STATE.REF.textregistry.Stakes_Coterie_Col3.font_size = 14
-            STATE.REF.textregistry.Stakes_Coterie_Col4.font_size = 14
-            STATE.REF.textregistry.Stakes_Char_Col1.font_size = 14
-            STATE.REF.textregistry.Stakes_Char_Col2.font_size = 14
-            STATE.REF.textregistry.Stakes_Char_Col3.font_size = 14
-            STATE.REF.textregistry.Stakes_Char_Col4.font_size = 14
-            STATE.REF.textregistry.Projects_Col1.lineHeight = 22.4
-            STATE.REF.textregistry.Projects_Col2.lineHeight = 22.4
-            STATE.REF.textregistry.Projects_Col3.lineHeight = 22.4
-            STATE.REF.textregistry.Weekly_Char_Col1.lineHeight = 22.4
-            STATE.REF.textregistry.Weekly_Char_Col2.lineHeight = 22.4
-            STATE.REF.textregistry.Weekly_Char_Col3.lineHeight = 22.4
-            STATE.REF.textregistry.Stakes_Coterie_Col1.lineHeight = 22.4
-            STATE.REF.textregistry.Stakes_Coterie_Col2.lineHeight = 22.4
-            STATE.REF.textregistry.Stakes_Coterie_Col3.lineHeight = 22.4
-            STATE.REF.textregistry.Stakes_Coterie_Col4.lineHeight = 22.4
-            STATE.REF.textregistry.Stakes_Char_Col1.lineHeight = 22.4
-            STATE.REF.textregistry.Stakes_Char_Col2.lineHeight = 22.4
-            STATE.REF.textregistry.Stakes_Char_Col3.lineHeight = 22.4
-            STATE.REF.textregistry.Stakes_Char_Col4.lineHeight = 22.4 */
-           
-                /* for (const [imgName, imgData] of Object.entries(STATE.REF.imgregistry))
-                if (_.keys(srcsToAdd).includes(imgName)) {
-                    const imgSrcs = Object.assign({}, imgData.srcs)
-                    for (const srcName of _.keys(imgSrcs))
-                        delete STATE.REF.imgregistry[imgName].srcs[srcName]
-                    for (const [srcName, srcString] of Object.entries(srcsToAdd[imgName]))
-                        STATE.REF.imgregistry[imgName].srcs[srcName] = srcString                    
-                    for (const [srcName, srcString] of Object.entries(imgSrcs))
-                        STATE.REF.imgregistry[imgName].srcs[srcName] = srcString
-                } */
-            // "SubSiteTopRight_1","SubSiteRight_1","SubSiteBotRight_1","SubSiteTopLeft_1","SubSiteLeft_1","SubSiteBotLeft_1"
-            // STATE.REF.imgregistry.SubLocTopRight_1 = D.Clone(STATE.REF.imgregistry.SubSiteTopRight_1)
-            // STATE.REF.imgregistry.SubLocRight_1 = D.Clone(STATE.REF.imgregistry.SubSiteRight_1)
-            // STATE.REF.imgregistry.SubLocBotRight_1 = D.Clone(STATE.REF.imgregistry.SubSiteBotRight_1)
-            // STATE.REF.imgregistry.SubLocTopLeft_1 = D.Clone(STATE.REF.imgregistry.SubSiteTopLeft_1)
-            // STATE.REF.imgregistry.SubLocLeft_1 = D.Clone(STATE.REF.imgregistry.SubSiteLeft_1)
-            // STATE.REF.imgregistry.SubLocBotLeft_1 = D.Clone(STATE.REF.imgregistry.SubSiteBotLeft_1)
-            // delete STATE.REF.imgregistry.SubSiteTopRight_1
-            // delete STATE.REF.imgregistry.SubSiteRight_1
-            // delete STATE.REF.imgregistry.SubSiteBotRight_1
-            // delete STATE.REF.imgregistry.SubSiteTopLeft_1
-            // delete STATE.REF.imgregistry.SubSiteLeft_1
-            // delete STATE.REF.imgregistry.SubSiteBotLeft_1
-
-            /* "MapButton_Autarkis_1"
-                "MapButton_Districts_1"
-                "MapButton_Domain_1"
-                "MapButton_Parks_1"
-                "MapButton_Rack_1"
-                "MapButton_Roads_1"
-                "MapButton_SitesCulture_1"
-                "MapButton_SitesEducation_1"
-                "MapButton_SitesHavens_1"
-                "MapButton_SitesHealth_1"
-                "MapButton_SitesLandmarks_1"
-                "MapButton_SitesNightlife_1"
-                "MapButton_SitesShopping_1"
-                "MapButton_SitesTransportation_1" */
-
-            // "MapLayer_<Name>"
-            
-            // DOMAIN:  "anarch" --> "camarilla" --> "blank" 
-            // DISTRICTS: "names" --> "fills" --> "both" --> "blank"
         },
             
         
@@ -544,7 +361,7 @@ const Media = (() => {
                                     // D.Alert([charObj, tokenSrcObj, srcName].map(x => JSON.stringify(x)).join("<br>"))
                                     DB({char: charObj.get("name"), tokenSrcObj}, "addTokenSrc")
                                     if (VAL({charObj, imgObj: tokenSrcObj}))
-                                        addTokenSrc(tokenSrcObj, charObj)
+                                        addTokenSrc(tokenSrcObj, charObj, args[0])
                                     break
                                 }
                                 default: {
@@ -1156,6 +973,16 @@ const Media = (() => {
                                     Roll20AM.SetPlaylistTrackModes(args.shift(), args.shift())
                                     break
                                 }
+                                case "score": {
+                                    const scoreRef = `Score${D.Capitalize(args[0])}`
+                                    if (C.SOUNDSCORES[Session.Mode].includes(scoreRef)) {
+                                        STATE.REF.soundScore = scoreRef
+                                        updateSounds()
+                                    } else {
+                                        D.Alert("Available score modes are:<br><br>'Main', 'Intense', and 'Combat", "!snd set score")
+                                    }
+                                    break
+                                }
                                 // no default
                             }
                             break
@@ -1174,12 +1001,21 @@ const Media = (() => {
                                     initSoundModes()
                                     break
                                 }
+                                case "tracks": {
+                                    Roll20AM.StopSound("all")
+                                    D.Queue(Roll20AM.StopSound, ["all"], "ResetTracks", 2)
+                                    D.Queue(() => findObjs({_type: "jukeboxtrack"}).map(x => x.set({playing: false, softstop: false, loop: false})), [], "ResetTracks", 3)
+                                    D.Queue(initSoundModes, [], "ResetTracks", 3)
+                                    D.Queue(updateSounds, [true], "ResetTracks", 0.1)
+                                    D.Run("ResetTracks")
+                                    break
+                                }
                                 // no default
                             }
                             break
                         }
                         case "fix": {
-                            updateSounds(true, true)
+                            updateSounds(true)
                             break
                         }
                         case "stopall": {
@@ -1199,7 +1035,7 @@ const Media = (() => {
                                     break
                                 }
                                 case "playlist": {
-                                    Roll20AM.GetPlaylist("MainScore")
+                                    Roll20AM.GetPlaylist("ScoreMain")
                                     break
                                 }
                                 // no default
@@ -1275,8 +1111,8 @@ const Media = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-    let [imgRecord, imgResize, imgSrcAutoReg, imgSrcAutoToken, imgSrcAddingProfilePic] = [false, false, false, false, false]
-    const [activeTimers, listTimers] = [{}, []],
+    let [imgRecord, imgResize, imgSrcAutoReg, imgSrcAutoToken, imgSrcAddingProfilePic, soundScapeTimer] = [false, false, false, false, false, null]
+    const activeTimers = {},
 
     // #region CONFIGURATION
         REGISTRY = {
@@ -1286,8 +1122,9 @@ const Media = (() => {
             get ID() { return STATE.REF.idregistry },
             get TOKEN() { return STATE.REF.tokenregistry },
             get AREA() { return STATE.REF.areas },
-            get SOUND() { return STATE.REF.soundregistry },
-            get PLAYLIST() { return STATE.REF.playlistregistry },
+            get SOUNDSCAPE() { return state.Roll20AM },
+            get TRACKS() { return state.Roll20AM.trackDetails },
+            get PLAYLISTS() { return state.Roll20AM.playLists },
             get GRAPHIC() { return Object.assign({}, STATE.REF.animregistry, STATE.REF.imgregistry) },
             get ALL() { return Object.assign({}, STATE.REF.animregistry, STATE.REF.soundregistry, STATE.REF.textregistry, STATE.REF.imgregistry)}
         },
@@ -4738,21 +4575,25 @@ const Media = (() => {
             }
             return THROW(`Invalid image reference '${D.JSL(imgRef)}'`, "regImg")
         },
-        regToken = (tokenRef) => {
+        regToken = (tokenRef, isClearingSrcs = false) => {
             const tokenObj = tokenRef && tokenRef.get && tokenRef || getImgObj(tokenRef)
             // D.Alert(`tokenRef: ${D.JS(tokenRef, true)}<br><br>tokenObj: ${D.JS(tokenObj, true)}`)
             if (VAL({tokenObj}, "regToken")) {
                 const tokenSrc = tokenObj.get("imgsrc").replace(/[^/]*\.png/gu, "thumb.png"),
-                    tokenName = tokenObj.get("name")
-                REGISTRY.TOKEN[tokenName] = {}
-                Object.assign(REGISTRY.TOKEN[tokenName], {
-                    name: tokenObj.get("name"),
-                    id: tokenObj.id,
-                    charID: tokenObj.get("represents"),
-                    srcs: {
-                        base: tokenSrc
+                    tokenName = tokenObj.get("name"),
+                    tokenData = REGISTRY.TOKEN[tokenName] || {},
+                    tokenParams = {
+                        name: tokenObj.get("name"),
+                        id: tokenObj.id,
+                        charID: tokenObj.get("represents")
                     }
-                })
+                if (isClearingSrcs || Object.values(tokenParams.srcs).length === 0) {
+                    tokenParams.srcs = {base: tokenSrc}
+                } else {
+                    tokenParams.srcs = tokenData.srcs || {}
+                    tokenParams.srcs.base = tokenSrc
+                }
+                REGISTRY.TOKEN[tokenName] = Object.assign(REGISTRY.TOKEN[tokenName] || {}, tokenParams)
                 D.Alert(`Token registered:<br><br>${D.JS(REGISTRY.TOKEN[tokenName])}`, "regToken")
                 return true
             }
@@ -6077,66 +5918,83 @@ const Media = (() => {
     // #endregion
 
     // #region SOUND OBJECT GETTERS: Track Object, Playlist Object, Data Retrieval
-        isRegSound = (soundRef) => Boolean(REGISTRY.SOUND[getSoundKey(soundRef) || ""]),
-        isRegPlaylist = (playlistRef) => Boolean(REGISTRY.PLAYLIST[getPlaylistKey(playlistRef) || ""]),
-        isSoundPlaying = (soundRef) => {
-            const soundObj = getSoundObj(soundRef)
-            return VAL({object: soundObj}) && soundObj.get("playing") && !soundObj.get("softstop")
-        },
-        isSoundLooping = (soundRef) => {
-            const soundObj = getSoundObj(soundRef)
-            return VAL({object: soundObj}) && soundObj.get("playing") && soundObj.get("loop")
-        },
-
         getSoundKey = (soundRef) => {
-            if (VAL({object: soundRef})) {
-                const soundKey = _.keys(REGISTRY.SOUND).findIndex(x => x.id === soundRef.id)
-                return soundKey || soundRef.get("name")
-            }
+            const [trackNames, playListNames] = [_.keys(REGISTRY.TRACKS), _.keys(REGISTRY.PLAYLISTS)],
+                soundNames = [...trackNames, ...playListNames]
             if (VAL({string: soundRef})) {
-                if (REGISTRY.SOUND[soundRef])
+                if (soundNames.includes(soundRef))
                     return soundRef
-                const soundObj = getObj("jukeboxtrack", soundRef)
-                return soundObj || false
+                const jukeObj = getObj("jukeboxtrack", soundRef)
+                if (VAL({object: jukeObj}))
+                    return jukeObj.get("title")
+            } else if (VAL({object: soundRef})) {
+                return soundRef.get("title")
             }
             return false
         },
-        getSoundObj = (soundRef) => {
+        getPlaylistKey = (soundRef) => {
+            if (isTrack(soundRef)) {
+                const trackID = getSoundData(soundRef).id,
+                    playlistKey = _.findKey(REGISTRY.PLAYLISTS, (v) => v.trackids.includes(trackID))
+                return isPlayList(playlistKey) && playlistKey
+            } else if (isPlayList(soundRef)) {
+                return getSoundKey(soundRef)
+            }
+            return false
+        },
+        getTrackKey = (soundRef, isGettingAllTracks = false) => {
+            if (isTrack(soundRef)) {
+                return getSoundKey(soundRef)
+            } else if (isPlayList(soundRef)) {
+                const playListData = getSoundData(soundRef)
+                if (isGettingAllTracks)
+                    return playListData.map(x => getSoundKey(x))
+                else
+                    return getSoundKey(playListData.currentTrack[0] || playListData.trackids[0])
+            }
+            return false
+        },
+        getSoundData = (soundRef, typeFilter) => {
+            const soundKey = D.LCase(typeFilter) === "track" && getTrackKey(soundRef) || D.LCase(typeFilter) === "playlist" && getPlaylistKey(soundRef) || getSoundKey(soundRef)
+            return REGISTRY.TRACKS[soundKey] || REGISTRY.PLAYLISTS[soundKey]
+        },
+        getTrackObj = (soundRef) => {
             if (VAL({object: soundRef}) && soundRef.get("_type") === "jukeboxtrack")
                 return soundRef
             const soundKey = getSoundKey(soundRef)
-            if (REGISTRY.SOUND[soundKey || ""])
-                return getObj("jukeboxtrack", REGISTRY.SOUND[soundKey].id)
-            if (VAL({string: soundRef})) {
-                const soundObj = getObj("jukeboxtrack", soundRef)
-                return soundObj || false
+            if (VAL({string: soundKey})) {
+                if (REGISTRY.TRACKS[soundKey || ""])
+                    return getObj("jukeboxtrack", REGISTRY.TRACKS[soundKey].id)
+                if (REGISTRY.PLAYLISTS[soundKey || ""])
+                    return getObj("jukeboxtrack", REGISTRY.PLAYLISTS[soundKey].currentTrack[0])                
             }
             return false
         },
-        getSoundData = (soundRef) => {
-            const soundKey = getSoundKey(soundRef)
-            return REGISTRY.SOUND[soundKey || ""] || false
+        isTrackPlaying = (soundRef) => {
+            const soundObj = getTrackObj(soundRef)
+            return VAL({object: soundObj}) && soundObj.get("playing") && !soundObj.get("softstop")
         },
-        getPlaylistKey = (playlistRef) => VAL({string: playlistRef}) && REGISTRY.PLAYLIST[playlistRef],
-        getPlaylistTracks = (playlistRef, isPlayingOnly = false) => {
-            const playlistData = getPlaylistData(playlistRef)
-            return VAL({list: playlistData}) && isPlayingOnly ? playlistData.tracks.filter(x => isSoundPlaying(x)) : playlistData.tracks
+        isTrackLooping = (soundRef) => {
+            const soundObj = getTrackObj(soundRef)
+            return VAL({object: soundObj}) && soundObj.get("playing") && soundObj.get("loop")
         },
-        getPlaylistData = (playlistRef) => VAL({string: playlistRef}) && getPlaylistKey(playlistRef),
-        getRandomSoundKey = (playlistRef, excludeSoundRef, isExcludingPlaying = true) => {
-            const playlistData = getPlaylistData(playlistRef)
-            if (VAL({list: playlistData})) {
-                const randTrackName = _.sample(_.compact(playlistData.tracks.filter(x => (!excludeSoundRef || !getSoundKey(excludeSoundRef) !== x) && (!isExcludingPlaying || !isSoundPlaying(x)))))
-                return VAL({string: randTrackName}) && randTrackName
-            }
-            return false
-        },
-        getPlayingSoundObjs = () => _.uniq(findObjs({_type: "jukeboxtrack"})).filter(x => x.get("playing") && !x.get("softstop")),
-        getLoopingSoundObjs = () => getPlayingSounds.filter(x => x.get("loop") || Roll20AM.GetPlaylist(x.get("name")).mode === "loop"),
-        getPlayingSounds = () => getPlayingSoundObjs.map(x => x.get("name")),
-        getLoopingSounds = () => getLoopingSoundObjs.map(x => x.get("name")),
-        getScore = (mode) => {
+        isPlaylistPlaying = (soundRef) => (getSoundData(soundRef, "playlist") || {playing: false}).playing,
+        isPlaylistLooping = (soundRef) => ["randomloop", "shuffle", "loop"].includes(D.LCase((getSoundData(soundRef, "playlist") || {mode: ""}).mode)),
+        isTrack = (soundRef) => Boolean(REGISTRY.TRACKS[getSoundKey(soundRef) || ""]),
+        isPlayList = (soundRef) => Boolean(REGISTRY.PLAYLISTS[getSoundKey(soundRef) || ""]),
+        getPlayingTrackObjs = () => _.uniq(findObjs({_type: "jukeboxtrack"})).filter(x => isTrackPlaying(x)),
+        getLoopingTrackObjs = (isLoopingPlaylistOk = true) => getPlayingTrackObjs().filter(x => isTrackLooping(x) || isLoopingPlaylistOk && isPlaylistPlaying(x) && isPlaylistLooping(x)),
+        getPlayingTrackKeys = () => getPlayingTrackObjs().map(x => getSoundKey(x)),
+        getLoopingTrackKeys = () => getLoopingTrackObjs().map(x => getSoundKey(x)),
+        getScore = (mode, scoreType) => {
             // D.Poke(`Score Ref: ${Object.keys(C.SOUNDSCORES).find(x => C.SOUNDSCORES[x].includes(mode))}`)
+            const scoreList = C.SOUNDSCORES[D.Capitalize(mode)]
+            if (scoreType && scoreList.includes(scoreType))
+                return {[scoreType]: C.SOUNDVOLUME[scoreType] || C.SOUNDVOLUME.defaults.score}
+            else
+                return {[scoreList[0]]: C.SOUNDVOLUME[scoreList[0]] || C.SOUNDVOLUME.defaults.score}
+
+
             const scoreRef = Object.keys(C.SOUNDSCORES).find(x => C.SOUNDSCORES[x].includes(mode)),
                 volume = C.SOUNDVOLUME[scoreRef] || C.SOUNDVOLUME.defaults.score
             return {[scoreRef]: volume}
@@ -6218,55 +6076,52 @@ const Media = (() => {
     // #region SOUND OBJECT SETTERS: Registering & Manipulating Music & Sound Effects 
         initSoundModes = () => {            
             const [listsRef, tracksRef] = [
-                state.Roll20AM.playLists,
-                state.Roll20AM.trackDetails
+                REGISTRY.PLAYLISTS,
+                REGISTRY.TRACKS
             ]
             for (const listName of Object.keys(listsRef))
                 Roll20AM.SetSoundMode(listName)
             for (const trackName of _.intersection(_.keys(C.SOUNDMODES), _.keys(tracksRef)))
                 Roll20AM.SetSoundMode(trackName)  
         },
-        regSound = (objRef, soundName, playlistRef = null, isLooping = true, volume = 100) => {
-            const soundObj = getSoundObj(objRef)
-            if (soundObj) {
-                REGISTRY.SOUND[soundName] = {
-                    id: soundObj.id,
-                    name: soundName,
-                    volume,
-                    isLooping
-                }
-                if (isRegPlaylist(playlistRef))
-                    addSoundToPlaylist(soundName, playlistRef)
-                D.Alert(`Registered Sound: ${D.JS(REGISTRY.SOUND[soundName])}`, "Register Sound")
+        checkSoundsPlaying = () => {
+            for (const loopingSoundKey of Media.LoopingSounds)
+                if (isPlayList(loopingSoundKey)) {
+                    const playListData = getSoundData(loopingSoundKey, "playlist"),
+                        playListTrackDatas = playListData.trackids.map(x => getSoundData(x)),
+                        playListTrackObjs = playListTrackDatas.map(x => getObj("jukeboxtrack", x.id)),
+                        [playingTrackObj] = playListTrackObjs.filter(x => isTrackPlaying(x)),
+                        nonPlayingTrackObjs = playListTrackObjs.filter(x => !playingTrackObj || x.id !== playingTrackObj.id),
+                        trackObj = playingTrackObj || nonPlayingTrackObjs.pop(),
+                        trackData = getSoundData(trackObj.id)
+                    if (!playingTrackObj)
+                        trackObj.set({playing: true, softstop: false})
+                    trackData.playing = true
+                    playListData.playing = true
+                    playListData.currentTrack = [trackData.id]
+                    stopTrackObjs(playListData.name, nonPlayingTrackObjs)
+                } else if (!isTrackPlaying(loopingSoundKey) || !isTrackLooping(loopingSoundKey)) {
+                    const trackObj = getTrackObj(loopingSoundKey),
+                        trackData = getSoundData(trackObj.id)
+                    trackObj.set({playing: true, softstop: false, loop: true})
+                    trackData.playing = true
+                }               
+        },
+        stopTrackObjs = (playlistRef, trackObjs) => {
+            for (const trackObj of trackObjs) {
+                trackObj.set({playing: false, softstop: false, loop: false})
+                const trackData = getSoundData(trackObj.id),
+                    playListData = getSoundData(playlistRef)
+                playListData.currentTrack = _.without(playListData.currentTrack, trackData.id)
+                trackData.playing = false            
             }
         },
-        regPlaylist = (playlistName, defaultVolume = 100, isPlaylistLooping = true, canPlaylistOverlap = false, isPlaylistRandom = true) => {
-            if (VAL({string: playlistName}))
-                REGISTRY.PLAYLIST[playlistName] = {
-                    name: playlistName,
-                    volume: defaultVolume,
-                    isLooping: isPlaylistLooping,
-                    canOverlap: canPlaylistOverlap,
-                    isRandom: isPlaylistRandom,
-                    tracks: [],
-                    currentTrack: null
-                }
-        },
-        addSoundToPlaylist = (soundRef, playlistRef) => {
-            const soundKey = getSoundKey(soundRef),
-                playlistKey = getPlaylistKey(playlistRef)
-            if (VAL({string: [soundKey, playlistKey]}, null, true)) {
-                REGISTRY.SOUND[soundKey].playlist = playlistKey
-                REGISTRY.PLAYLIST[playlistKey].tracks = _.uniq([...REGISTRY.PLAYLIST[playlistKey].tracks, soundKey])
-                D.Alert(`Added <b>${D.JS(soundKey)}</b> to playlist <b>${D.JS(playlistKey)}</b>`, "Add Track to Playlist")
-            }
-        },
-        updateSounds = (isDoubleChecking = true, isHardReset = false) => {
+        updateSounds = (isHardReset = false) => {
             if (STATE.REF.isRunningSilent && STATE.REF.isRunningSilent !== "TOTALSILENCE" ||
                 !isHardReset && Session.Mode === "Complications")
                 return
             if (isHardReset)
-                for (const soundObj of getPlayingSoundObjs()) {
+                for (const soundObj of getPlayingTrackObjs()) {
                     stopSound(soundObj)
                     soundObj.set({playing: false, softstop: false})
                 }
@@ -6307,7 +6162,7 @@ const Media = (() => {
                     }), "(NONE)"))
                     // falls through
                 default:
-                    Object.assign(soundsToPlay, _.omit(D.KeyMapObj(getScore(Session.Mode), null, (v, k) => {
+                    Object.assign(soundsToPlay, _.omit(D.KeyMapObj(getScore(Session.Mode, STATE.REF.soundScore || "ScoreMain"), null, (v, k) => {
                         let volume = v[0]
                         if (!Session.IsOutside)
                             volume = v[1] || v[0] * (C.SOUNDVOLUME.indoorMult[k] || C.SOUNDVOLUME.indoorMult.defaults.score || C.SOUNDVOLUME.indoorMult.defaults.base)
@@ -6355,9 +6210,8 @@ const Media = (() => {
                         playSound(onSound, volume)
                 }
                 debugLines.push(`${D.JS(initialLoop)} --> ${D.JS(Media.LoopingSounds)}`)
-                DB(`Update Sounds Test${isDoubleChecking ? " (1)" : " (2)"}<br>${debugLines.join("<br>")}`, "updateSounds")
-                if (isDoubleChecking)
-                    setTimeout(() => updateSounds(false), 5000)
+                clearInterval(soundScapeTimer)
+                soundScapeTimer = setInterval(() => checkSoundsPlaying(), 4000)
             }
         },
         playSound = (soundRef, volume, fadeIn = null, isOverlapping = false) => {
@@ -6366,53 +6220,11 @@ const Media = (() => {
             if (!Roll20AM.IsPlaying(soundRef) || isOverlapping)
                 Roll20AM.PlaySound(soundRef, undefined, fadeIn)
         },
-        oldPlaySound = (soundRef, volume, isForcing = false) => { // For playing sounds WITHOUT engaging their playlists.
-            const soundKey = getSoundKey(soundRef)
-            if (soundKey && (isForcing || !isSoundPlaying(soundKey))) {
-                const soundObj = getSoundObj(soundRef),
-                    soundData = getSoundData(soundRef),
-                    soundAttrs = {
-                        playing: true,
-                        softstop: false,
-                        volume,
-                        loop: soundData.isLooping
-                    }
-                if (soundData.playlist) {
-                    const playlistData = getPlaylistData(soundData.playlist)
-                    if (playlistData.currentTrack && !playlistData.canOverlap) {
-                        stopSound(playlistData.currentTrack)
-                        playlistData.currentTrack = soundKey
-                        playlistData.isPlaying = false // False, because not engaging the playlist at all.
-                        clearTimeout(listTimers[playlistData.name])
-                        listTimers[playlistData.name] = null 
-                    }
-                }
-            }
-        },
-        /* playTrack = (playlistRef, trackRef, volume, isForcing = false) => { // For playing sounds THROUGH their playlists.
-
-        },
-        playPlaylist = (playlistRef, volume) => {
-
-        }, */
         stopSound = (soundRef, fadeOut = null) => {
             Roll20AM.StopSound(soundRef, fadeOut)
             STATE.REF.loopingSounds = _.without(STATE.REF.loopingSounds, soundRef)
-        },
+        }
     // #endregion
-
-    // #region SOUND VALIDATION: Verifying that proper tracks are playing at all times.
-        valGetPlayingTrackObjs = () => _.uniq(findObjs({_type: "jukeboxtrack"})).filter(x => x.get("playing") && !x.get("softstop")),
-        valGetPlayingTrackData = () => _.sortBy(valGetPlayingTrackObjs().map(x => ({
-            title: x.get("title"),
-            id: x.id,
-            isLooping: x.get("loop")
-        })), "title"),
-        valGetPlayingTrackNames = () => valGetPlayingTrackData.map(x => x.title),
-        valGetActiveLoops = () => { }
-
-    // #endregion
-
 
     return {
         CheckInstall: checkInstall,
@@ -6475,8 +6287,8 @@ const Media = (() => {
         // SOUND FUNCTIONS
         ResetSoundModes: initSoundModes,
         UpdateSoundscape: updateSounds,
-        ResetSoundscape: () => updateSounds(true, true),
-        GetLoopingSounds: getLoopingSounds,
+        ResetSoundscape: () => updateSounds(true),
+        GetLoopingSounds: getLoopingTrackKeys,
         get LoopingSounds() { return STATE.REF.loopingSounds },
         set LoopingSounds(soundRef) {
             if (soundRef)

@@ -980,14 +980,6 @@ const Complications = (() => {
                 `DELAYQUEUE (Filtered Indices): ${D.JS(delayedCardIndices)}`
             ].join("<br>"), `setCard${["replace", "faceDown"].includes(mode) ? mode : ""}`)
             
-
-            /*
-                waitCalls = onNextVals.filter(x => VAL({string: x}) && x.includes("WAIT")),
-                funcCalls = onNextVals.filter(x => _.isFunction(x)),
-                delayedCards = DELAYQUEUE.filter(x => x[0].includes(onNextMode)) */
-
-                // ONNEXT.faceUp.push("WAIT:confirm,discard:activate")
-            
             if (mode === "discard")
                 card.isDiscarded = true
 
