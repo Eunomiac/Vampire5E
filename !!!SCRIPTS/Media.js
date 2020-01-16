@@ -4911,15 +4911,6 @@ const Media = (() => {
         setLoadingText = (textString = " ") => {
             Media.SetText("LoadingMessage", D.JSL(textString))
         },
-
-        /* 
-[ "-LuoUwMHyI6ZViqrma_Z", "MapIndicator" ],
-[ "-LuoOxRVO8zHo0P8KTUA", "Roller_WPReroller_1" ],
-[ "-LuoPFV7RE1S9FnuwReL", "Roller_WPReroller_2" ],
-[ "-LuRnZH1BWXIBnCjVtbB", "MapIndicator" ],
-[ "-LuSj1IYVo8KkDG9-a7z", "Roller_WPReroller_2" ],
-[ "-LuSkRA6ocG72823ydzY", "Roller_WPReroller_1" ] */
-
         fixImgObjs = () => {
             // D.Alert(`Starting FixImgObjects: ${D.JS(REGISTRY.ANIM.MapIndicator.isActive)}`)
             const imgKeys = [..._.keys(REGISTRY.IMG), ..._.keys(REGISTRY.ANIM)],

@@ -52,38 +52,46 @@ const C = (() => {
         },
         COLORS = {
             white: "rgba(255, 255, 255, 1)",
-            black: "rgba(0, 0, 0, 1)",
+            brightbrightgrey: "rgba(200, 200, 200, 1)",
             brightgrey: "rgba(175, 175, 175, 1)",
             grey: "rgba(130, 130, 130, 1)",
             darkgrey: "rgba(80, 80, 80, 1)",
+            black: "rgba(0, 0, 0, 1)",
+            
+            halfwhite: "rgba(255,255,255,0.5)",
+            fadedblack: "rgba(0, 0, 0, 0.2)",
+            fadedgrey: "rgba(0, 0, 0, 0.1)",
+            transparent: "rgba(0,0,0,0)",
+            
+            palered: "rgba(255, 175, 175, 1)",
             brightred: "rgba(255, 0, 0, 1)",
             brightredmid: "rgba(225, 0, 0, 1)",
             red: "rgba(200, 0, 0, 1)",
             darkredmid: "rgba(175, 0, 0, 1)",
             darkred: "rgba(150, 0, 0, 1)",
-            green: "rgba(0, 200, 0, 1)",
-            yellow: "rgba(200, 200, 0, 1)",
+            crimson: "rgba(220, 20, 60, 1)",
+            
             orange: "rgba(200, 100, 0, 1)",
-            brightpurple: "rgba(200, 100, 200, 1)",
-            purple: "rgba(150, 0, 150, 1)",
-            darkpurple: "rgba(100, 0, 100, 1)",
+            
+            yellow: "rgba(200, 200, 0, 1)",
+            gold: "#ffd700",
+            tan: "rgba(228, 192, 144, 1)",
+            
+            palegreen: "rgba(175, 255, 175, 1)",
+            brightgreen: "rgba(0, 255, 0, 1)",
+            green: "rgba(0, 200, 0, 1)",		
+            darkgreen: "rgba(0, 125, 0, 1)",
+            
+            paleblue: "rgba(175, 175, 255, 1)",
             brightblue: "rgba(150, 150, 255, 1)",
             blue: "rgba(100, 100, 255, 1)",
             darkblue: "rgba(50, 50, 150, 1)",
             cyan: "rgba(0, 255, 255, 1)",
-            gold: "#ffd700",
-            fadedblack: "rgba(0, 0, 0, 0.2)",
-            fadedgrey: "rgba(0, 0, 0, 0.1)",
-            crimson: "rgba(220, 20, 60, 1)",
-            transparent: "rgba(0,0,0,0)",
-            tan: "rgba(228, 192, 144, 1)",
-            halfwhite: "rgba(255,255,255,0.5)",
-            palegreen: "rgba(175, 255, 175, 1)",
-            paleblue: "rgba(175, 175, 255, 1)",
-            palered: "rgba(255, 175, 175, 1)",
+            
             palepurple: "rgba(255, 175, 255, 1)",
-            brightbrightgrey: "rgba(200, 200, 200, 1)",
-            darkgreen: "rgba(0, 125, 0, 1)"
+            brightpurple: "rgba(200, 100, 200, 1)",
+            purple: "rgba(150, 0, 150, 1)",
+            darkpurple: "rgba(100, 0, 100, 1)"
         },
     // #endregion
 
@@ -140,7 +148,7 @@ const C = (() => {
                     display: inline-block;
                     width: ${params.width};
                     font-size: 0px;
-                ">${content}</div>`)
+                ">${_.flatten([content]).join("")}</div>`)
             },
             Title: (content, options = {}) => {
                 const params = {
@@ -209,7 +217,7 @@ const C = (() => {
                     border: ${params.border};
                     text-shadow: ${params.textShadow};
                     box-shadow: ${params.boxShadow};
-            ">${_.flatten([content]).join("")}</span>`)
+            ">${_.flatten([content]).join("<br>")}</span>`)
             },
             Body: (content, options = {}) => {
                 const params = {
@@ -217,7 +225,7 @@ const C = (() => {
                     width: options.width || "auto",
                     height: options.height || "auto",
                     bgColor: options.bgColor || "none",
-                    margin: options.margin || "7px 0px 7px 0px",
+                    margin: options.margin || "4px 0px 4px 0px",
                     padding: options.padding || "0px",
                     fontFamily: options.fontFamily || "sexsmith", // "'Pathway Gothic One', sexsmith",
                     fontSize: options.fontSize || "18px",
@@ -246,8 +254,20 @@ const C = (() => {
                     text-shadow: ${params.textShadow};
                     box-shadow: ${params.boxShadow};
                     border: ${params.border};
-                ">${content}</span>`)
-            },            
+                ">${_.flatten([content]).join("<br>")}</span>`)
+            },
+            ClearBody: (content, options = {}) => {
+                const params = Object.assign({
+                    bgColor: C.COLORS.black,
+                    margin: "4px 0px 4px 2px",
+                    fontFamily: "Voltaire",
+                    fontSize: "16px",
+                    lineHeight: "18px",
+                    textAlign: "left",
+                    textShadow: "none"
+                }, options)
+                return C.HTML.Body(content, params)
+            },         
             Column: (content, options = {}) => {
                 const params = {
                     width: options.width || "49%",
@@ -260,12 +280,12 @@ const C = (() => {
                     width: ${params.width};
                     margin: ${params.margin};
                     font-size: 0px;
-                ">${content}</div>`)
+                ">${_.flatten([content]).join("")}</div>`)
             },
             ButtonLine: (content, options = {}) => {
                 const params = Object.assign({height: "18px",
                                               width: "100%",
-                                              margin: "0px 0px 2px 0px",
+                                              margin: "2px 0px 2px 0px",
                                               textAlign: "center"}, options)    
                 if (D.WatchList.includes("HTML"))
                     sendChat("HTML", `/w Storyteller <pre>${[D.JS(options), D.JS(params)].join("<br>")}</pre>`)
@@ -288,7 +308,7 @@ const C = (() => {
                                               textAlign: "left",
                                               textIndent: "3px",
                                               padding: "0px 0px 0px 0px",
-                                              lineHeight: "16px"}, options)
+                                              lineHeight: "20px"}, options)
                 return D.JSH(`<span style="
                     height: ${params.height};
                     width: ${params.width};                 
@@ -312,7 +332,7 @@ const C = (() => {
                     lineHeight: "10px",
                     width: "22%",
                     fontFamily: "Voltaire",
-                    margin: "0px 3% 0px 0px",
+                    margin: "0px 1% 0px 0px",
                     padding: "0px 0px 0px 0px",
                     fontSize: "10px",
                     bgColor: COLORS.brightred,

@@ -173,9 +173,9 @@ const D = (() => {
                 }
                 case "!reply": {
                     if (args.length) 
-                        receivePrompt(args.join(" "))
+                        receivePrompt(args.join(" "), objects)
                     else
-                        receivePrompt("")
+                        receivePrompt("", objects)
                     break
                 }
             // no default
@@ -446,7 +446,8 @@ const D = (() => {
                 replace(/(&amp;nbsp;)+/gu, " "). // Converts escaped &nbsp; to whitespace
                 replace(/&quot;/gu, "'"). // Converts escaped double-quotes to single-quotes
                 replace(/\\"\\"/gu, "'"). // Converts escaped double-quotes to single-quotes
-                replace(/(<b>|<\/b>)/gu, ""). // Removes bold tagging
+                // replace(/(<b>|<\/b>)/gu, ""). // Removes bold tagging
+                replace(/(<script(\s|\S)*?<\/script>)|(<style(\s|\S)*?<\/style>)|(<!--(\s|\S)*?-->)|(<\/?(\s|\S)*?>)/g, ""). // Strips all HTML tags.
                 replace(/&gt;/gu, ">").replace(/&lt;/gu, "<"). // Converts < and > back to symbols
                 replace(/"/gu, "") // Removes all remaining double-quotes
         },
@@ -603,6 +604,9 @@ const D = (() => {
             
             return msg
         },
+        sendAPICommand = (command) => {
+            sendChat(getName(getGMID()), command)
+        },
         sendChatMessage = (who, message = "", title) => {
             /* Whispers chat message to player given: display name OR player ID. 
                 If no Title, message is sent without formatting. */
@@ -669,7 +673,7 @@ const D = (() => {
                 STATE.REF.ALERTTHROTTLE.push(title)
                 setTimeout(() => { STATE.REF.ALERTTHROTTLE = _.without(STATE.REF.ALERTTHROTTLE, title) }, throttle)
             }
-            sendChatMessage("Storyteller", msg, title)
+            sendChatMessage(getGMID(), msg, title)
         },
         promptGM = (menuHTML, replyFunc) => {
             if (VAL({string: menuHTML}, "promptGM")) {
@@ -685,10 +689,11 @@ const D = (() => {
                 sendChatMessage(getGMID(), menuHTML)
             }
         },
-        receivePrompt = replyString => {
+        receivePrompt = (replyString, objects) => {
             if (VAL({string: replyString, function: PROMPTFUNC}, "receivePrompt")) {
-                PROMPTFUNC(replyString)
+                const func = PROMPTFUNC
                 PROMPTFUNC = null
+                func(replyString, objects)
                 if (STATE.REF.PROMPTCLOCK) {
                     TimeTracker.ToggleClock(true)
                     STATE.REF.PROMPTCLOCK = false
@@ -737,12 +742,6 @@ const D = (() => {
                         fontSize: "1em",
                         margin: "7px 0px 7px 0px"
                     },
-                    ButtonSubheader: {
-                        width: "100%",
-                        textAlign: "center",
-                        lineHeight: "25px",
-                        fontSize: "12px"
-                    },
                     Button: {
                         margin: "0px 1% 0px 0px",
                         lineHeight: "10px",
@@ -754,26 +753,29 @@ const D = (() => {
                 parseSection = (sectionData) => {
                     const sectionHTML = []
                     for (const rowData of sectionData.rows)
-                        if (["Title", "Header", "Body", "ButtonSubheader"].includes(rowData.type)) {
+                        if (["Title", "Header", "Body", "ClearBody"].includes(rowData.type)) {
                             sectionHTML.push(C.HTML[rowData.type](rowData.contents, Object.assign({}, customStyles[rowData.type] || {}, rowData.styles || {})))
                         } else if (rowData.type === "ButtonLine") {
                             const buttonsCode = [],
-                                strictSpacerTotWidth = rowData.contents.filter(x => VAL({number: x})).reduce((tot, x) => tot + x, 0) || 0,
+                                strictSpacerTotWidth = rowData.contents.map(x => VAL({list: x}) && "text" in x ? D.Int(Object.assign({width: "15%"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(/%/gu, "")) : x).filter(x => VAL({number: x})).reduce((tot, x) => tot + x, 0) || 0,
                                 totFlexSpacing = 100 - strictSpacerTotWidth,
                                 flexEntityWidth = Math.floor(totFlexSpacing / rowData.contents.filter(x => VAL({list: x}) || VAL({number: x}) && x === 0).length) - 1
-                            rowData.contents = rowData.contents.map(x => VAL({list: x}) && Object.assign(x, {styles: Object.assign({}, {width: `${flexEntityWidth}%`}, x.styles)}) ||
+                            rowData.contents = rowData.contents.map(x => VAL({list: x}) && x.name && Object.assign(x, {styles: Object.assign({}, {width: `${flexEntityWidth}%`}, x.styles)}) ||
                                                                          VAL({number: x}) && x === 0 && flexEntityWidth ||
-                                                                         VAL({number: x}) && x)     
+                                                                         x)
                             dbLines.push(`strictTotWidth: ${D.JSL(strictSpacerTotWidth)}, totFlexSpace: ${totFlexSpacing}, flexEntityWidth: ${flexEntityWidth}<br>${D.JSL(rowData.contents)}`)
                             for (const entity of rowData.contents)
-                                if (VAL({number: entity})) {
+                                if (VAL({number: entity}))
                                     buttonsCode.push(C.HTML.ButtonSpacer(`${D.Int(entity)}%`))
-                                } else {
-                                    if (entity.name.length > 12)
-                                        entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
-                                    buttonsCode.push(C.HTML.Button(entity.name, entity.command, Object.assign({width: `${flexEntityWidth}%`}, customStyles.Button, rowData.buttonStyles || {}, entity.styles || {})))
-                                    dbLines.push(`<b>${entity.name}</b>: ${entity.command}<br>`)
-                                }
+                                else if (VAL({list: entity}))
+                                    if ("text" in entity) {
+                                        buttonsCode.push(C.HTML.ButtonSubheader(entity.text, entity.styles))
+                                    } else {
+                                        if (entity.name.length > 12)
+                                            entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
+                                        buttonsCode.push(C.HTML.Button(entity.name, entity.command, Object.assign({}, {width: `${flexEntityWidth}%`}, customStyles.Button || {}, rowData.buttonStyles || {}, entity.styles || {})))
+                                        dbLines.push(`<b>${entity.name}</b>: ${entity.command}<br>`)
+                                    }
                             sectionHTML.push(C.HTML.ButtonLine(buttonsCode, rowData.styles || {}))
                         } else if (rowData.type === "Column") {
                             const numColumns = rowData.contents.length,
@@ -1929,6 +1931,7 @@ const D = (() => {
         Clone: clone,
         Gradient: colorGradient, RGBtoHEX: rbgToHex,
 
+        Call: sendAPICommand,
         Chat: sendChatMessage,
         Alert: sendToGM,
         Poke: (msg, title = "[ALERT]") => {

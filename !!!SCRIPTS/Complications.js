@@ -754,17 +754,26 @@ const Complications = (() => {
              }},
             {name: "TheRuleOfThree", displayName: "The Rule of Three", category: "complication", value: 1, rarity: "U",
              action: (charRef, spot) => {
-                 ONNEXT.faceUp.push("WAIT:discard:confirm")
-                 ONNEXT.faceUp.push("WAIT:discard:confirm")
-                 ONNEXT.faceUp.push("WAIT:discard:confirm")
-                 if (STATE.REF.MAT[spot].isEnhanced) 
-                     cardAlert(spot, "Draw three. Discard one at random, then enhance the remaining two.", null, " (Enhanced)")                   
-                    /* ONNEXT.activate.push((keepSpot) => {
-                        revalueCard(keepSpot, 0)
-                        setCard(spot, "discard")
-                    }) */
-                 else 
-                     cardAlert(spot, "Draw three, choose two to discard, then enhance the third.")                   
+                 if (STATE.REF.MAT[spot].isEnhanced) {
+                     ONNEXT.faceUp.push("WAIT:discard:confirm")
+                     ONNEXT.faceUp.push("WAIT:discard:confirm")
+                     ONNEXT.faceUp.push("WAIT:discard:confirm")
+                     cardAlert(spot, "Draw three. Discard one at random, then enhance the remaining two.", null, " (Enhanced)")      
+                     ONNEXT.confirm.push(...[
+                         (newSpot) => setCard(newSpot, "enhance"),
+                         (newSpot) => setCard(newSpot, "enhance")
+                     ])
+                 } else { 
+                     ONNEXT.faceUp.push("WAIT:discard:discard")
+                     ONNEXT.faceUp.push("WAIT:discard:discard")
+                     ONNEXT.faceUp.push("WAIT:discard:discard")
+                     ONNEXT.discard.push("WAIT:discard:confirm")
+                     cardAlert(spot, "Draw three, choose two to discard, then enhance the third.")  
+                     ONNEXT.discard.push(() => {
+
+                     })
+                 }
+
                     /* ONNEXT.activate.push((keepSpot) => {
                         setCard(spot, "discard")
                     }) */
@@ -979,7 +988,7 @@ const Complications = (() => {
                 `DELAYQUEUE (ALL): ${D.JS(DELAYQUEUE)}`,
                 `DELAYQUEUE (Filtered Indices): ${D.JS(delayedCardIndices)}`
             ].join("<br>"), `setCard${["replace", "faceDown"].includes(mode) ? mode : ""}`)
-            
+
             if (mode === "discard")
                 card.isDiscarded = true
 

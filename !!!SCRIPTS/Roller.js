@@ -1,4 +1,4 @@
-void MarkStart("Roller")
+﻿void MarkStart("Roller")
 const Roller = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Roller",
@@ -80,7 +80,7 @@ const Roller = (() => {
                             case "frenzy": { rollType = rollType || "frenzy"
                                 lockRoller(false)
                                 args = `${STATE.REF.frenzyRoll} ${args[0] || ""}`.split(" ")
-                                DB(`Parsing Frenzy Args: ${D.JSL(args)}`, "!roll dice frenzy")
+                                DB({"Parsing Frenzy Args": args}, "!roll dice frenzy")
                             }
                             /* falls through */
                             case "disc": case "trait": { rollType = rollType || "trait" }
@@ -100,7 +100,7 @@ const Roller = (() => {
                             case "project": { rollType = rollType || "project" /* all continue below */
                                 const params = args.join(" ").split("|").map(x => x.trim()),
                                     [rollCharObj] = getRollChars(D.GetChars(STATE.REF.rollNextAs || params[0]))
-                                DB(`Received Roll: ${D.JSL(call)} ${params.join("|")}<br>... PARAMS: [${D.JSL(params.join(", "))}]<br>... CHAROBJ: ${D.JSL(rollCharObj)}`, "onChatCall")
+                                DB({"Received Roll": `${D.JSL(call)} ${D.JSL(params.join("|"))}`, params, rollCharObj}, "onChatCall")
                                 params.shift()
                                 if (VAL({charobj: rollCharObj}, "onChatCall")) {
                                     const rollFlags = ["check", "rouse", "rouse2"].includes(rollType) ||
@@ -108,9 +108,10 @@ const Roller = (() => {
                                     rollFlags.isNPCRoll = STATE.REF.isNextRollNPC && playerIsGM(msg.playerid)
                                     rollFlags.isDiscRoll = call === "disc"
                                     rollFlags.isOblivionRoll = call.includes("obv") || STATE.REF.oblivionRouse && (rollFlags.isNPCRoll || playerIsGM(msg.playerid) || VAL({npc: rollCharObj})) 
-                                    DB(`Fixed Char: ${D.JSL(rollCharObj)}`, "handleInput")
-                                    if (isLocked && !rollFlags.isNPCRoll)
+                                    if (isLocked && !rollFlags.isNPCRoll) {
+                                        DB({"***": "BREAKING", isLocked, isNPCRoll: rollFlags.isNPCRoll}, "onChatCall")
                                         break
+                                    }
                                     makeNewRoll(rollCharObj, rollType, params, rollFlags)
                                     delete STATE.REF.rollNextAs  
                                     delete STATE.REF.frenzyRoll
@@ -157,7 +158,8 @@ const Roller = (() => {
                     break
                 }
                 case "set": {
-                    if (!playerIsGM(msg.playerid)) break
+                    DB({call, args, msg, isGM: playerIsGM(msg.playerid)}, "setRollFlags")
+                    if (!playerIsGM(msg.playerid) && msg.playerid !== "API") break
                     switch(D.LCase(call = args.shift())) {
                         case "resbonus": {
                             STATE.REF.resMarginBonus = D.Int(args.shift())
@@ -183,6 +185,68 @@ const Roller = (() => {
                         }  
                         case "secrecy": {
                             switch (D.LCase(call = args.shift())) {
+                                case "menu": {
+                                    const reportMessage = args.join(" "),
+                                        buttonLines = Object.values(_.groupBy(
+                                            Object.values(
+                                                D.KeyMapObj(STATE.REF.nextRollFlags, null,
+                                                            (v, k) => ({
+                                                                name: `${k.replace(/isHiding/gu, "").replace(/([a-z])([A-Z])/gu, "$1 $2")}`,
+                                                                command: `!reply ${v ? "" : "!"}${k}`,
+                                                                styles: {bgColor: v && C.COLORS.darkgrey || C.COLORS.green, color: v && C.COLORS.white || C.COLORS.black}
+                                                            }))
+                                            ), (x, i) => Math.floor((i+2)/3))).map(x => ({type: "ButtonLine", contents: x.length === 1 ? [0, x[0], 0] : x, buttonStyles: {width: "32%", fontFamily: "Voltaire"}, styles: {}})),
+                                        replyFunction = (replyString, objs) => {
+                                            const rollFlagKey = replyString.replace(/^!/gu, ""),
+                                                rollFlagName = rollFlagKey.replace(/isHiding/gu, "").replace(/([a-z])([A-Z])/gu, "$1 $2"),
+                                                toggle = replyString.startsWith("!")
+                                            DB({replyString, rollFlagKey, rollFlagName, toggle, STATEREF: D.JS(STATE.REF.nextRollFlags), inState: rollFlagKey in STATE.REF.nextRollFlags, isEqual: STATE.REF.nextRollFlags[rollFlagKey] !== toggle}, "setRollFlags")
+                                            if (D.LCase(rollFlagKey) === "all") {
+                                                for (const flagKey of Object.keys(STATE.REF.nextRollFlags))
+                                                    STATE.REF.nextRollFlags[flagKey] = toggle
+                                                D.Call(`!roll set secrecy menu <span style="color: ${toggle && C.COLORS.brightgrey || C.COLORS.brightgreen};">Now <b><u>${toggle && "HIDING" || "SHOWING"}</u> ALL VALUES</b>`)                                            
+                                            } else if (D.LCase(rollFlagKey) === "done") {
+                                                D.Alert(`Secrecy Set: ${D.JS(STATE.REF.nextRollFlags)}`, "Roller: Set Secrecy")
+                                            } else if (rollFlagKey in STATE.REF.nextRollFlags && STATE.REF.nextRollFlags[rollFlagKey] !== toggle) {
+                                                STATE.REF.nextRollFlags[rollFlagKey] = !STATE.REF.nextRollFlags[rollFlagKey]
+                                                D.Call(`!roll set secrecy menu <span style="font-family: 'color: ${toggle && C.COLORS.brightgrey || C.COLORS.bright};">Now <b><u>${toggle && "HIDING" || "SHOWING"}</u> &quot;${rollFlagName}&quot;</b>`)
+                                            }
+                                        }
+                                    buttonLines.unshift({
+                                        type: "ButtonLine",
+                                        contents: [
+                                            0,
+                                            {name: "Show All", command: "!reply all", styles: {bgColor: C.COLORS.brightgreen, color: C.COLORS.black /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
+                                            {name: "Hide All", command: "!reply !all", styles: {bgColor: C.COLORS.darkgrey /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
+                                            0
+                                        ],
+                                        buttonStyles: {fontFamily: "Voltaire"},
+                                        styles: { /* height, width, margin, textAlign */ }
+                                    })
+                                    buttonLines.push({
+                                        type: "ButtonLine",
+                                        contents: [
+                                            0,
+                                            {name: "Finished", command: "!reply done", styles: {bgColor: C.COLORS.brightblue, color: C.COLORS.black /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
+                                            0
+                                        ],
+                                        buttonStyles: {fontFamily: "Voltaire"},
+                                        styles: { /* height, width, margin, textAlign */ }
+                                    })
+                                    D.CommandMenu(
+                                        {
+                                            rows: [
+                                                {type: "Header", contents: "Roll Secrecy", styles: { /* height, width, color, bgColor, margin, padding, fontSize, fontFamily, fontVariant, fontWeight, border, textShadow, boxShadow, textAlign, lineHeight */ }},
+                                                {type: "ClearBody", contents: reportMessage, styles: {textAlign: "center"}},
+                                                ...buttonLines,
+                                                {type: "Header", contents: "Roller Locked Until Finished"}
+                                            ],
+                                            blockStyles: { /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */ }
+                                        },
+                                        replyFunction
+                                    )
+                                    break
+                                }
                                 case "name": case "identity":
                                     STATE.REF.nextRollFlags = {
                                         isHidingName: true,
@@ -262,7 +326,7 @@ const Roller = (() => {
                                     break
                                     // no default                        
                             }
-                            D.Alert(`Flag Status for Next Roll: ${D.JS(STATE.REF.nextRollFlags, true)}`, "NEXT ROLL FLAGS")
+                            // D.Alert(`Flag Status for Next Roll: ${D.JS(STATE.REF.nextRollFlags, true)}`, "NEXT ROLL FLAGS")
                             break
                         }
                         case "flags": {
@@ -349,7 +413,38 @@ const Roller = (() => {
                     break
                 }
                 case "effects": {
-                    switch (D.LCase(call = args.shift())) {                        
+                    switch (D.LCase(call = args.shift())) {    
+                        case "menu": {
+                            const charObjs = Listener.GetObjects(objects, "character"),
+                                charNameString = charObjs.length && charObjs.map(x => D.GetName(x, true)).join(", ") || "",
+                                charIDString = charObjs.length && charObjs.map(x => x.id).join(" ") || "",
+                                menuHTML = C.HTML.Block([
+                                    C.HTML.Header("Effects & Exclusions"),
+                                    C.HTML.ButtonLine([
+                                        C.HTML.ButtonSubheader("GET ALL:"),
+                                        C.HTML.Button("Effects", "!reply get effects"),
+                                        C.HTML.Button("Exclusions", "!reply get exclusions"),
+                                        C.HTML.ButtonSpacer("25%")
+                                    ]),
+                                    C.HTML.Header("Character Specific"),
+                                    C.HTML.ClearBody(charNameString),
+                                    C.HTML.ButtonLine([
+                                        C.HTML.Button("Get Active Effects", `!reply get effects ${charIDString}`, {width: "40%"}),
+                                        C.HTML.Button("Get Active Exclusions", `!reply get exclusions ${charIDString}`, {width: "40%"})
+                                    ]),                                    
+                                    C.HTML.ButtonLine([
+                                        C.HTML.Button("Add Global Effect", "!reply add effect global ?{Global Effect:}", {width: "40%"}),
+                                        C.HTML.Button("Add Char Effect", `!reply add effect char ${charIDString} ?{Character Effect: }`, {width: "40%"})
+                                    ])
+                                ]),
+                                func = (replyString, objs) => {
+                                    const chars = Listener.GetObjects(objs, "character"),
+                                        argsSplit = replyString.split(/\s+?/gu)
+                                    D.Alert(`ARGS: ${D.JS(argsSplit)}<br>CHARS: ${chars.map(x => D.GetName(x, true))}`, "Menu Reply Test")
+                                }
+                            D.Prompt(menuHTML, func)
+                            break
+                        }                    
                         case "get": {
                             switch (D.LCase(call = args.shift())) {
                                 case "char": {
@@ -523,6 +618,10 @@ const Roller = (() => {
                 difficulty: {
                     get top() { return SETTINGS.shifts.resultCount.top },
                     get left() { return SETTINGS.shifts.resultCount.left }
+                },
+                diffFrame: {
+                    get top() { return Media.GetImgData("RollerFrame_Diff").top + SETTINGS.shifts.resultCount.top },
+                    get left() { return Media.GetImgData("RollerFrame_Diff").left }
                 },
                 margin: {
                     get top() { return SETTINGS.shifts.resultCount.top },
@@ -1001,7 +1100,7 @@ const Roller = (() => {
             else
                 STATE.REF.selected[dieCat] = _.without(STATE.REF.selected[dieCat], dieNum)
             
-            DB([D.JSL(dieVal), D.JSL(rollType), D.JSL(dieVal && dieVal.includes("H")), D.JSL(dieVal && dieVal.includes("selected") || rollType === "trait")].join("<br>"), "setDie")
+            DB({dieVal, rollType, isHungerDie: dieVal && dieVal.includes("H"), isSelectedDie: dieVal && dieVal.includes("selected"), dragPadStatus: dieVal && !dieVal.includes("H") && (dieVal.includes("selected") || rollType === "trait")}, "setDie")
             if (dieVal && !dieVal.includes("H") && (dieVal.includes("selected") || rollType === "trait"))
                 DragPads.Toggle(dieKey, true)
             else
@@ -1053,49 +1152,45 @@ const Roller = (() => {
     // #region Getting Information & Setting State Roll Record
         getRollChars = (charObjs) => {
             charObjs = _.flatten([charObjs])
-            DB({charObjs}, "getRollChars")
-            const dbStrings = [`CharObjs: ${D.JS((charObjs || []).map(x => x.get("name")))}`],
-                playerCharObjs = charObjs.filter(x => VAL({pc: x})),
+            const playerCharObjs = charObjs.filter(x => VAL({pc: x})),
                 npcCharObjs = charObjs.filter(x => VAL({npc: x})),
+                dbStrings = {charObjs, playerCharObjs, npcCharObjs},
                 rollCharObjs = []
-            dbStrings.push(`PlayerCharObjs: ${D.JS((playerCharObjs || []).map(x => x.get("name")))}`)
-            dbStrings.push(`NPCCharObjs: ${D.JS((npcCharObjs || []).map(x => x.get("name")))}`)
             for (const charObj of playerCharObjs) {
                 const charData = D.GetCharData(charObj.id) || {}
-                dbStrings.push(`... CharData: ${D.JS(charData)}`)
+                dbStrings[`${D.GetName(charObj, true)} Data:`] = charData
                 if (charData.isNPC)
                     rollCharObjs.push(D.GetChar(charData.isNPC))
                 else
                     rollCharObjs.push(charObj)
             }
-            dbStrings.push(`New PlayerCharObjs: ${D.JS((rollCharObjs || []).map(x => x.get("name")))}`)
+            dbStrings.newRollCharObjs = [...rollCharObjs]
             rollCharObjs.push(...npcCharObjs)
-            dbStrings.push(`Final RollCharObjs: ${D.JS((rollCharObjs || []).map(x => x.get("name")))}`)
-            DB(dbStrings.join("<br>"), "getRollChars")
+            dbStrings.finalRollCharObjs = [...rollCharObjs]
+            DB(dbStrings, "getRollChars")
             return rollCharObjs
         },
         applyRollEffects = rollInput => {
             const rollEffectString = getAttrByName(rollInput.charID, "rolleffects") || ""
             let isReapplying = false
-            DB(`<h3>APPLYING ROLL EFFECTS.</h3>... ${rollEffectString}<br><br>${D.JSL(rollInput)}`, "applyRollEffects")
             if (VAL({string: rollEffectString, list: rollInput}, "applyRollEffects")) {
                 rollInput.appliedRollEffects = rollInput.appliedRollEffects || []
                 const rollEffects = _.compact(_.without(_.uniq([...rollEffectString.split("|"), ..._.keys(STATE.REF.rollEffects), ...rollInput.rollEffectsToReapply || []]), ...rollInput.appliedRollEffects)),
                     [rollData, rollResults] = rollInput.rolls ? [null, rollInput] : [rollInput, null],
                     checkInput = (input, rollMod, restriction) => {
-                        DB(`Checking Input. RollMod: ${rollMod}, Restriction: ${restriction}<br>... Boolean(input.rolls): ${Boolean(input.rolls)}<br>... D.IsIn: ${Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction, true) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod, true))}`, "checkInput")
+                        DB({rollMod, restriction, "Boolean(input.rolls)": Boolean(input.rolls), "D.IsIn(restriction/rollMod, RREFFECTS.restriction/rollMod)": Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction, true) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod, true))}, "checkInput")
                         return Boolean(input.rolls) === Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction, true) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod, true))
                     },
                     checkRestriction = (input, traits, flags, rollMod, restriction) => {
-                        DB(`Checking Restriction '${D.JSL(restriction)}'<br>...TRAITS: ${D.JSL(traits)}<br>...FLAGS: ${D.JSL(flags)}<br>...MOD: ${D.JSL(rollMod)}`, "checkRestriction")
+                        DB({"Checking Restriction": restriction, traits, flags, rollMod}, "checkRestriction")
                         // FIRST, check whether this restriction applies to the given input (either rollData or rollResults):
                         if (!checkInput(input, rollMod, restriction)) {
                             DB("... checkInput returns FALSE: returning 'INAPPLICABLE'.", "checkRestriction")
                             return "INAPPLICABLE"
                         }
-                        DB("... checkInput returns TRUE: continuing validation.", "checkRestriction")
+                        DB("CheckInput returns TRUE: continuing validation.", "checkRestriction")
                         if (restriction === "all") {
-                            DB("Restriction = ALL:  RETURNING TRUE", "checkRestriction")
+                            DB("... Restriction = ALL:  RETURNING TRUE", "checkRestriction")
                             return true
                         }
                         if (rollResults) {
@@ -1113,28 +1208,28 @@ const Roller = (() => {
                             const effectiveMargin = input.total - (input.diff || 1) // All rolls have a base difficulty of one if difficulty isn't specified.
                             switch (restriction) {
                                 case "success":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0}`, "checkRestriction")
+                                    DB({rollResultsRestriction: restriction, test: "effectiveMargin >= 0", effectiveMargin, "passesRestriction?": effectiveMargin >= 0}, "checkRestriction")
                                     return effectiveMargin >= 0
                                 case "failure":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0}`, "checkRestriction")
+                                    DB({rollResultsRestriction: restriction, test: "effectiveMargin < 0", effectiveMargin, "passesRestriction?": effectiveMargin < 0}, "checkRestriction")
                                     return effectiveMargin < 0
                                 case "basicfail":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0}`, "checkRestriction")
+                                    DB({rollResultsRestriction: restriction, test: "effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0", effectiveMargin, "input.H.botches": input.H.botches, "input.B.succs": input.B.succs, "input.H.succs": input.H.succs, "passesRestriction?": effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0}, "checkRestriction")
                                     return effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0 // fail AND not bestial fail AND not total fail
                                 case "critical":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0}`, "checkRestriction")
+                                    DB({rollResultsRestriction: restriction, test: "effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0", effectiveMargin, "passesRestriction?": effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0}, "checkRestriction")
                                     return effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0
                                 case "basiccrit":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0}`, "checkRestriction")
+                                    DB({rollResultsRestriction: restriction, test: "effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0", effectiveMargin, "passesRestriction?": effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0}, "checkRestriction")
                                     return effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0
                                 case "messycrit":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0}`, "checkRestriction")
+                                    DB({rollResultsRestriction: restriction, test: "effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0", effectiveMargin, "passesRestriction?": effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0}, "checkRestriction")
                                     return effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0
                                 case "bestialfail":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${effectiveMargin < 0 && input.H.botches > 0}`, "checkRestriction")
+                                    DB({rollResultsRestriction: restriction, test: "effectiveMargin < 0 && input.H.botches > 0", effectiveMargin, "passesRestriction?": effectiveMargin < 0 && input.H.botches > 0}, "checkRestriction")
                                     return effectiveMargin < 0 && input.H.botches > 0
                                 case "totalfail":
-                                    DB(`Restriction = ${restriction}.  EffectiveMargin = ${effectiveMargin} SO Returning ${input.B.succs + input.H.succs === 0}`, "checkRestriction")
+                                    DB({rollResultsRestriction: restriction, test: "input.B.succs + input.H.succs === 0", effectiveMargin, "passesRestriction?": input.B.succs + input.H.succs === 0}, "checkRestriction")
                                     return input.B.succs + input.H.succs === 0
                             // no default
                             }
@@ -1215,8 +1310,7 @@ const Roller = (() => {
                         DB("All Threshold Checks Passed!  Returning TRUE", "checkRestriction")
                         return true
                     }
-
-                DB(`Roll Effects: ${D.JSL(rollEffects)}`, "applyRollEffects")
+                DB({rollEffectString, "Parsed rollEffects": rollEffects, rollInput}, "applyRollEffects")
                 for (const effectString of rollEffects) {
                 // First, check if the global effect state variable holds an exclusion for this character ID AND effect isn't in rollEffectsToReapply.
                     if (STATE.REF.rollEffects[effectString] && STATE.REF.rollEffects[effectString].includes(rollInput.charID))
@@ -1622,16 +1716,17 @@ const Roller = (() => {
                             replace(/<#>/gu, v[0] === 0 ? "~" : v[0]).
                             replace(/<abs>/gu, v[0] === 0 ? "~" : Math.abs(v[0])).
                             replace(/<\+>/gu, v[0] < 0 ? "-" : "+"))
-                    DB(`ROLL DATA AFTER EFFECTS: ${D.JSL(rollData)}`, "applyRollEffects")
+                    DB({"ROLL DATA AFTER EFFECTS": rollData}, "applyRollEffects")
                     return rollData
                 } else {
-                    DB(`ROLL RESULTS AFTER EFFECTS: ${D.JSL(rollResults)}`, "applyRollEffects")
+                    DB({"ROLL RESULTS AFTER EFFECTS": rollResults}, "applyRollEffects")
                     return rollResults
                 }
             }
             return THROW(`Bad Roll Input!${D.JSL(rollInput)}`, "applyRollEffects")
         },
         parseFlags = (charObj, playerCharID, rollType, params = {}, rollFlags) => {
+            DB({charObj, playerCharID, rollType, params, rollFlags}, "parseFlags")
             params.args = params.args || []
             const flagData = {
                     negFlagLines: [],
@@ -1646,11 +1741,11 @@ const Roller = (() => {
                 bloodPot = D.Int(getAttrByName(charObj.id, "blood_potency"))
             if (["rouse", "rouse2", "remorse", "check", "project", "secret", "humanity"].includes(rollType))
                 return flagData
-            if (D.Int(getAttrByName(playerCharID, "applyspecialty")) > 0)
+            if (D.Int(getAttrByName(playerCharID || charObj.id, "applyspecialty")) > 0)
                 flagData.posFlagLines.push([1, "Specialty (<.>)"])
-            if (D.Int(getAttrByName(playerCharID, "applyresonance")) > 0)
+            if (D.Int(getAttrByName(playerCharID || charObj.id, "applyresonance")) > 0)
                 flagData.posFlagLines.push([1, "Resonance (<.>)"])
-            if (D.Int(getAttrByName(playerCharID, "applybloodsurge")) > 0)
+            if (D.Int(getAttrByName(playerCharID || charObj.id, "applybloodsurge")) > 0)
                 flagData.posFlagLines.push([C.BLOODPOTENCY[bloodPot].bp_surge, "Blood Surge (<.>)"])
             if (rollFlags.isDiscRoll)
                 flagData.posFlagLines.push([C.BLOODPOTENCY[bloodPot].bp_discbonus, "Discipline (<.>)"])
@@ -1781,7 +1876,7 @@ const Roller = (() => {
                 mod: 0,
                 diff: 3
               } */
-            DB(`rollFlags: ${D.JSL(rollFlags && rollFlags.isOblivionRoll)}`, "getRollData")
+            DB({rollFlags}, "getRollData")
             const playerObj = D.GetPlayer(charObj),
                 playerCharObj = playerObj && playerObj.id !== D.GMID() && D.GetChar(playerObj.id),
                 flagData = parseFlags(charObj, playerCharObj && playerCharObj.id, rollType, params, rollFlags),
@@ -1811,9 +1906,8 @@ const Roller = (() => {
                     isDiscRoll: rollFlags && rollFlags.isDiscRoll,
                     rollFlags
                 }
-            DB(`rollFlags: ${D.JSL(rollFlags && rollFlags.isOblivionRoll)}`, "getRollData")
             rollData.isOblivionRoll = rollFlags && rollFlags.isOblivionRoll
-            DB(`rollData: ${D.JSL(rollData)}`, "getRollData")
+            DB({rollData}, "getRollData")
             rollData.charName = D.GetName(charObj)
             switch (rollType) {
                 case "remorse":
@@ -1844,7 +1938,7 @@ const Roller = (() => {
             if (["remorse", "project", "humanity", "frenzy", "willpower", "check", "rouse", "rouse2"].includes(rollType))
                 rollData.hunger = 0
 
-            DB(`INITIAL ROLL DATA: ${D.JSL(rollData)}`, "getRollData")
+            DB({"INITIAL ROLL DATA": rollData}, "getRollData")
 
             return rollData
         },
@@ -1875,18 +1969,51 @@ const Roller = (() => {
                 rollResults: _.clone(rollResults)
             })
             recordRef.rollIndex = 0
-            DB(`FINAL ROLL DATA: ${D.JSL(recordRef.rollRecord[0].rollData)}<br><br>FINAL ROLL RESULTS: ${D.JSL(recordRef.rollRecord[0].rollResults)}`, "recordRoll")
+            DB({"FINAL ROLL DATA": recordRef.rollRecord[0].rollData, "FINAL ROLL RESULTS": recordRef.rollRecord[0].rollResults}, "recordRoll")
             if (recordRef.rollRecord.length > 10)
                 recordRef.rollRecord.pop()
         },
     // #endregion
 
     // #region Adding & Removing Roll Effects & Exclusions
-        addCharRollEffects = (charRef, effectStrings) => {
+        addCharRollEffects = (charRef, effectString) => {
             const charObj = D.GetChar(charRef)
-            if (VAL({charObj: [charObj], string: effectStrings}, "addCharRollEffects", true)) {
+            if (VAL({charObj, string: effectString}, "addCharRollEffects")) {
+                // Must extract three elements from the roll effect:
+                    // RemoveWhen (to see if we need to set an alarm or tie it to an existing one)
+                    // SheetMessage (to see if we need to show the player when it applies via a character sheet incapacitation note)
+                    // GMNote (to include whenever the effect is displayed to the GM, as a reminder of what put it there)
+                // Then, we have to create a simple label that can be used to remove it.
+                const [,,, removeWhen, sheetMessage, GMNote] = effectString.split(";")
+                switch (D.LCase(removeWhen.replace(/:.*/gu, ""))) {
+                    case "nextfullnight": {
+                        
+                        break
+                    }
+                    case "scene": {
+
+                        break
+                    }
+                    case "fullweek": {
+
+                        break
+                    }
+                    case "endofweek": {
+
+                        break
+                    }
+                    case "projectresolves": {
+
+                        break
+                    }
+                    default: {
+
+                        break
+                    }
+                }
+
                 const rollEffects = _.compact((getAttrByName(charObj.id, "rolleffects") || "").split("|"))
-                rollEffects.push(...effectStrings)
+                rollEffects.push(...effectString)
                 setAttrs(charObj.id, {rolleffects: _.uniq(rollEffects).join("|")})
                 D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "addCharRollEffects")
             }
@@ -2033,7 +2160,7 @@ const Roller = (() => {
             }
             rollData.hungerPool = Math.min(rollData.hunger, Math.max(1, rollData.dicePool))
             rollData.basePool = Math.max(1, rollData.dicePool) - rollData.hungerPool
-            DB(`ROLL DATA: ${D.JSL(rollData)}`, "buildDicePool")
+            DB({"ROLL DATA": rollData}, "buildDicePool")
 
             const rollDataEffects = applyRollEffects(rollData)
 
@@ -2055,9 +2182,9 @@ const Roller = (() => {
                 margin: 5,
                 commit: 0
               } */
-            DB(`ROLL DATA: ${D.JSL(rollData)}`, "rollDice")
+            DB({"ROLL DATA": rollData}, "rollDice")
             if (addVals)
-                DB(`ADDED VALS: ${D.JSL(addVals)}`, "rollDice")
+                DB({"ADDED VALS": addVals}, "rollDice")
             const forcedRolls = null, /* {
                 B: [10, 10, 10, 8, 8, 8, 4, 4, 4, 4, 4, 4, 4],
                 H: [1, 1, 1, 1]
@@ -2237,7 +2364,7 @@ const Roller = (() => {
                 const scope = rollData.diff - rollData.diffMod - 2
                 rollResults.commit = Math.max(1, scope + 1 - rollResults.margin)
             }
-            DB(`ROLL RESULTS: ${D.JSL(rollResults)}`, "rollDice")
+            DB({rollResults}, "rollDice")
 
             rollResults = applyRollEffects(Object.assign(rollResults, rollData))
             
@@ -2433,7 +2560,7 @@ const Roller = (() => {
                     subOutcome: ""                    
                 },
                 p = v => rollData.prefix + v
-            DB(`Retrieved ROLL DATA: ${D.JSL(rollData)}<br><br>ROLL RESULTS: ${D.JSL(rollResults)}`, "displayRoll")
+            DB({rollData, rollResults}, "displayRoll")
             switch (rollData.type) {
                 case "project": {
                     rollLines.subOutcome = {
@@ -2943,8 +3070,7 @@ const Roller = (() => {
                 }</div>`,
                 stString = `${stLines.fullBox}${stLines.rollerName}${stLines.mainRoll}${stLines.resultDice}${stLines.outcome}${stLines.subOutcome}</div>`,
                 playerNPCString = `${playerNPCLines.fullBox}${playerNPCLines.rollerName}${playerNPCLines.mainRoll}${playerNPCLines.resultDice}${playerNPCLines.outcome}${playerNPCLines.subOutcome}</div>`
-            DB(`Chat Frame (LogLine) HTML:<br>${D.JSC(logLines)}`, "displayRoll")
-
+            
             for (const line of SETTINGS.textKeys)
                 if (rollLines[line] && rollLines[line].text) {
                     Media.SetText(line, rollLines[line].text, true)
@@ -3007,6 +3133,8 @@ const Roller = (() => {
             for (const line of SETTINGS.textKeys)
                 if (rollLines[line] && rollLines[line].text)
                     Media.SetTextData(line, {shiftTop: SETTINGS.shifts[line].top, shiftLeft: SETTINGS.shifts[line].left})
+            if (Media.IsActive("RollerFrame_Diff"))
+                Media.SetImgTemp("RollerFrame_Diff", {top: SETTINGS.shifts.diffFrame.top })
             
             if (_.values(deltaAttrs).length && !rollData.notChangingStats) {
                 DB(`CHANGING ATTRIBUTES: ${D.JSL(deltaAttrs)}`, "displayRoll")
