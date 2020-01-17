@@ -1220,7 +1220,6 @@ const Media = (() => {
                 },
                 Weather: {
                     RisingMoon_1: 100,
-                    LoadingMoon: 1000,
                     WeatherFrost_1: 139,
                     WeatherFog_1: 125,
                     WeatherMain_1: 124, 
@@ -1487,7 +1486,10 @@ const Media = (() => {
             objects: {
                 LoadScreen: {
                     LoadingScreen_1: 1000,
-                    LoadingMessage: 1001
+                    LoadingMessage: 1001,
+                    LoadingMoon: 999,
+                    MarqueeTitle: 1001,
+                    MarqueeBody: 1001
                 }
             },
             dragpads: 900,
@@ -4904,9 +4906,6 @@ const Media = (() => {
                 Media.ToggleAnim("LoadingMoon", false)
                 Media.ToggleText("LoadingMessage", false)
             }
-            toFront(Media.GetAnim("LoadingMoon"))
-            toFront(Media.GetImg("LoadingScreen"))
-            toFront(Media.GetText("LoadingMessage"))
         },
         setLoadingText = (textString = " ") => {
             Media.SetText("LoadingMessage", D.JSL(textString))
