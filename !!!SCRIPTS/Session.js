@@ -816,26 +816,7 @@ const Session = (() => {
                 ])
             if (_.compact(menuSections).length)
                 D.CommandMenu({title: "Districts", rows: _.compact(menuSections)})
-            /* MENU DATA:
-                {
-                    title: <string>
-                    rows: [
-                        Each element represents a full-width horizontal <div> block, contained with "block".
-                        Elements should be of the form:
-                            {
-                                type: <string: "Title", "Header", "Body", "ButtonLine", "ButtonSubheader">
-                                contents: <
-                                    for TITLE, HEADLINE, TEXT: <string>
-                                    for BUTTONS: <array: each element represents a line of buttons, of form:
-                                                    for BUTTONS: <list: {name, command, [styles]}>
-                                                    for SPACERS: <number: percentage of width, or 0 for equal spacing > 
-                                [buttonStyles]: <list of styles to apply to ALL of the buttons in a ButtonLine
-                                [styles]: <list of styles for the div, to override the defaults, where keys are style tags and values are the settings>
-                            } 
-                    ]
-                    [blockStyles:] <override C.HTML.Block 'options' parameter.
-                }
-                */           
+                    
         },
         promptForSite = (locParams) => {
             locParams = _.omit(locParams, "SubLocs")
@@ -857,27 +838,7 @@ const Session = (() => {
                 ])
             }
             if (_.compact(menuSections).length)
-                D.CommandMenu({title: "Sites", rows: _.compact(menuSections)})
-            /* MENU DATA:
-                {
-                    title: <string>
-                    rows: [
-                        Each element represents a full-width horizontal <div> block, contained with "block".
-                        Elements should be of the form:
-                            {
-                                type: <string: "Title", "Header", "Body", "ButtonLine", "ButtonSubheader">
-                                contents: <
-                                    for TITLE, HEADLINE, TEXT: <string>
-                                    for BUTTONS: <array: each element represents a line of buttons, of form:
-                                                    for BUTTONS: <list: {name, command, [styles]}>
-                                                    for SPACERS: <number: percentage of width, or 0 for equal spacing > 
-                                [buttonStyles]: <list of styles to apply to ALL of the buttons in a ButtonLine
-                                [styles]: <list of styles for the div, to override the defaults, where keys are style tags and values are the settings>
-                            } 
-                    ]
-                    [blockStyles:] <override C.HTML.Block 'options' parameter.
-                }
-                */           
+                D.CommandMenu({title: "Sites", rows: _.compact(menuSections)})                     
         },
         setModeLocations = (mode, isForcing = false) => { setLocation(STATE.REF.locationRecord[mode], null, isForcing) },
         getCharsInLocation = (locPos) => {

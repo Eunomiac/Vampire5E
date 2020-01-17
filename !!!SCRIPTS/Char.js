@@ -1074,10 +1074,13 @@ const Char = (() => {
                     let desireVal = (D.GetRepStat(charData.id, "desire", "top", "desire") || {val: false}).val
                     DB({desireVal, for: charData.name, length: desireVal.length, addAttrData}, "displayDesires")
                     if (!desireVal || VAL({string: desireVal}) && desireVal.length < 3)
-                        if (addAttrData && VAL({string: addAttrData.val}) && addAttrData.charID === charData.id)
+                        if (addAttrData && VAL({string: addAttrData.val}) && addAttrData.charID === charData.id) {
                             desireVal = addAttrData.val
-                        else
+                            Media.SetTextData(desireObj, {color: C.COLORS.gold})
+                        } else {
                             desireVal = "(none)"
+                            Media.SetTextData(desireObj, {color: C.COLORS.grey})
+                        }
                     DB([
                         D.JSL(desireVal),
                         D.JSL(desireVal.length)
@@ -1227,12 +1230,12 @@ const Char = (() => {
                                 max: D.Int(advMax)
                             }
                         else
-                            stakeData.push([initial, stake.name, Math.min(D.Int(stake.val), advMax), D.Int(advMax), endDate])
+                            stakeData.push([initial, stake.name, Math.min(D.Int(stake.val), advMax), D.Int(advMax), endDate, []])
                 }
                 for (const stake of STATE.REF.customStakes.personal[initial]) {
                     const [name, val, max, dateStamp] = [stake[0], stake[1], stake[2], TimeTracker.GetDate(stake[3])]
                     if (max && val > 0 && TimeTracker.CurrentDate.getTime() < dateStamp.getTime())
-                        stakeData.push([initial, name, val, max, TimeTracker.FormatDate(dateStamp)])
+                        stakeData.push([initial, name, val, max, TimeTracker.FormatDate(dateStamp), []])
                 }       
             }
 
@@ -1248,12 +1251,10 @@ const Char = (() => {
             const filteredStakes = []
             for (const stake of stakeData) {
                 const filteredIndex = filteredStakes.findIndex(x => x[0] === stake[0] && x[1] === stake[1])
-                if (filteredIndex > -1) {
-                    filteredStakes[filteredIndex][5] = filteredStakes[filteredIndex][5] || 0
-                    filteredStakes[filteredIndex][5] += stake[2]
-                } else {
+                if (filteredIndex > -1)
+                    filteredStakes[filteredIndex][5].push(stake[2])
+                else
                     filteredStakes.push([...stake])
-                }
             }
             /* stakeData: [
                     [ "L", "Resources", 5, 5, "Feb 8, 2020" ],
@@ -1316,7 +1317,7 @@ const Char = (() => {
                 charColRefs.map(x => Media.ToggleText(x, true))
                 charCols[charColRefs[0]] = filteredStakes.map((x, i) => i > 0 && x[0] === filteredStakes[i-1][0] ? "" : `[${x[0]}]`)
                 charCols[charColRefs[1]] = filteredStakes.map(x => x[1])
-                charCols[charColRefs[2]] = filteredStakes.map(x => "●".repeat(x[3] - x[2] - (x[5] || 0)) + "○".repeat(x[2]) + "Ծ".repeat(x[5] || 0))
+                charCols[charColRefs[2]] = filteredStakes.map(x => "●".repeat(x[3] - x[2] - _.reduce(x[5], (e, tot = 0) => tot + e)) + "○".repeat(x[2]) + x[5].map(xx => `/${"○".repeat(xx)}`).join(""))
                 charCols[charColRefs[3]] = filteredStakes.map(x => x[4])
                 for (const [col, lines] of Object.entries(charCols))
                     Media.SetText(col, lines.join("\n"))

@@ -4059,7 +4059,8 @@ const Media = (() => {
 
             // isActive, curSrc, activeSrc, curText
             const [errorLines, returnMsg, updatedKeys] = [[], [], {IMG: [], TEXT: [], ANIM: []}]
-            for (const data of MODEDATA) {
+            for (const mData of MODEDATA) {
+                const data = [...mData]
                 let value = data.pop()
                 const key = data.pop(),
                     objFlag = data.shift(),
