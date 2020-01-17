@@ -137,41 +137,6 @@ const Media = (() => {
                 case "!img": {
                     const imgObjs = Listener.GetObjects(objects, "graphic")
                     switch (D.LCase(call = args.shift())) {
-                        case "makecomps": {
-                            const hostName = args.shift(),
-                                [imgObj] = imgObjs
-                            D.Alert("Removing Objects...")
-                            for (let i = 1; i <= 10; i++) {
-                                removeImg(`${hostName}_${i}`, false)
-                                removeImg(`CompCard_Enhanced_${i}`, false)
-                            }
-                            for (let i = 1; i <= 10; i++) {
-                                const spotData = getImgData(`CompSpot_${i}`)
-                                if (VAL({list: spotData})) {       
-                                    D.Alert(`Making ${hostName}_${i} from ${spotData.name}`)                             
-                                    const thisImg = makeImg(`${hostName}_${i}`, {
-                                        width: spotData.width,
-                                        height: spotData.height,
-                                        left: spotData.left,
-                                        top: spotData.top,
-                                        imgsrc: imgObj.get("imgsrc"),
-                                        layer: "map",
-                                        isdrawing: false,
-                                        controlledby: "",
-                                        showname: false
-                                    })
-                                    toFront(thisImg)
-                                }
-                            }
-                            const baseKey = `${hostName}_1`
-                            for (let i = 2; i <= 10; i++) {
-                                const imgKey = `${hostName}_${i}`
-                                REGISTRY.IMG[imgKey].srcs = baseKey
-                                REGISTRY.IMG[`CompSpot_${i}`].srcs = "CompSpot_1"
-                            }
-                            delete REGISTRY.IMG[baseKey].srcs.base
-                            break
-                        }
                         case "backup": {
                             STATE.REF.backup = {
                                 arearegistry: JSON.parse(JSON.stringify(REGISTRY.AREA)),
@@ -185,12 +150,12 @@ const Media = (() => {
                             const [imgObj] = imgObjs
                             if (isRegImg(imgObj)) {                         
                                 const imgData = getImgData(msg, true)
-                                args[0] = args[0] || imgData.name
-                                args[1] = args[1] || imgData.curSrc
-                                args[2] = args[2] || imgData.activeLayer
+                                args[0] = args[0] !== "x" && args[0] || imgData.name
+                                args[1] = args[1] !== "x" && args[1] || imgData.curSrc
+                                args[2] = args[2] !== "x" && args[2] || imgData.activeLayer
                                 imgParams = args.slice(2).join(" ")
                                 imgModes = JSON.parse(JSON.stringify(imgData.modes))
-                                removeImg(msg, true)
+                                removeImg(imgObj, true)
                             }
                         }
                         // falls through
@@ -222,15 +187,18 @@ const Media = (() => {
                                         if (call)
                                             args.unshift(call)
                                         const [hostName, srcName, objLayer, ...paramArgs] = args
-                                        if (hostName && srcName && objLayer)
+                                        if (hostName && srcName && objLayer) {
                                             regImg(imgObj, hostName, srcName, objLayer, D.ParseToObj(paramArgs.join(" ")))
-                                        else
-                                            D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;(ref:)currentSourceName&gt; &lt;activeLayer&gt; [params (\"key:value, key:value\")]", "MEDIA: !img reg")    
+                                            if (imgModes)
+                                                REGISTRY.IMG[getImgKey(imgObj)].modes = imgModes
+                                        } else {
+                                            D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;(ref:)currentSourceName&gt; &lt;activeLayer&gt; [params (\"key:value, key:value\")]<br><br>OR !img rereg &lt;replace any of the above parameters with 'x' to skip it &gt;", "MEDIA: !img reg")    
+                                        }
                                         break
                                     }
                                 }
                             else
-                                D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;(ref:)currentSourceName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; [params (\"key:value, key:value\")]<br>!img reg token &lt;tokenName&rt;", "MEDIA: !img reg")
+                                D.Alert("Syntax: !img reg &lt;hostName&gt; &lt;(ref:)currentSourceName&gt; &lt;activeLayer(objects/map/walls/gmlayer)&gt; &lt;isStartingActive&gt; [params (\"key:value, key:value\")]<br><br>OR !img rereg &lt;replace any of the above parameters with 'x' to skip it &gt;<br><br>!img reg token &lt;tokenName&rt;", "MEDIA: !img reg")
                             break
                         }
                         case "set": {
@@ -402,7 +370,7 @@ const Media = (() => {
                                     for (const imgRef of imgRefs) {
                                         const imgKeys = _.compact(_.flatten([getImgKey(imgRef) || VAL({string: imgRef}) && Object.keys(REGISTRY.IMG).map(x => x.match(new RegExp(`^${imgRef}_?\\d*$`, "gu"))) || null]))
                                         for (const imgKey of imgKeys) {
-                                            removeImg(imgKey)
+                                            removeImg(imgKey, true)
                                             if (REGISTRY.IMG[imgKey])
                                                 delete REGISTRY.IMG[imgKey]
                                         }
@@ -790,10 +758,10 @@ const Media = (() => {
                             const [textObj] = textObjs
                             if (isRegText(textObj)) {                         
                                 const textData = getTextData(msg)
-                                args[0] = args[0] || textData.name
-                                args[1] = args[1] || textData.activeLayer
-                                args[2] = args[2] || hasShadowObj(msg)
-                                args[3] = args[3] || textData.justification
+                                args[0] = args[0] !== "x" && args[0] || textData.name
+                                args[1] = args[1] !== "x" && args[1] || textData.activeLayer
+                                args[2] = args[2] !== "x" && args[2] || hasShadowObj(msg)
+                                args[3] = args[3] !== "x" && args[3] || textData.justification
                                 imgParams = args.slice(3).join(" ")
                                 imgParams = _.compact([
                                     imgParams.includes("vertAlign") ? "" : `vertAlign:${textData.vertAlign || "top"}`,
@@ -816,7 +784,7 @@ const Media = (() => {
                                         if (imgModes)
                                             REGISTRY.TEXT[getTextKey(textObj)].modes = imgModes
                                     } else {
-                                        D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]", "MEDIA: !text reg")
+                                        D.Alert("Syntax: !text reg &lt;hostName&gt; &lt;activeLayer&gt; &lt;isMakingShadow&gt; &lt;justification&gt; [params (\"key:value, key:value\")]<br><br>OR !text rereg &lt;replace any of the above parameters with 'x' to skip it &gt;", "MEDIA: !text reg")
                                     }
                                 } else {
                                     D.Alert("Select a text object first!", "MEDIA: !text reg")
@@ -831,23 +799,21 @@ const Media = (() => {
                                 case "alltext": {
                                     for (const hostName of _.keys(REGISTRY.TEXT))
                                         if (D.LCase(hostName).includes(D.LCase(args.join(" "))))
-                                            removeText(hostName, true)
+                                            removeText(hostName, true, true)
                                     break
                                 }
                                 default: {
-                                    for (const textObj of textObjs) {
-                                        const textData = getTextData(textObj)
-                                        if (textData.shadowID) {
-                                            const shadowObj = getObj("text", textData.shadowID)
-                                            if (shadowObj)
-                                                shadowObj.remove()
+                                    const textRefs = [...textObjs, ...args]
+                                    if (call)
+                                        textRefs.push(call)                             
+                                    for (const textRef of textRefs) {
+                                        const textKeys = _.compact(_.flatten([getTextKey(textRef) || VAL({string: textRef}) && Object.keys(REGISTRY.TEXT).map(x => x.match(new RegExp(`^${textRef}_?\\d*$`, "gu"))) || null]))
+                                        for (const textKey of textKeys) {
+                                            removeText(textKey, true, true)
+                                            if (REGISTRY.TEXT[textKey])
+                                                delete REGISTRY.TEXT[textKey]
                                         }
-                                        removeText(textObj, true)
                                     }
-                                    args = msg.content.split(/\s+/u).slice(2)
-                                    for (const arg of args)
-                                        if (REGISTRY.TEXT[arg])
-                                            delete REGISTRY.TEXT[arg]
                                     break
                                 }
                             }
@@ -3771,21 +3737,21 @@ const Media = (() => {
             D.Queue(clearUnregImgs, [isKilling], "Media")
             D.Queue(Media.SetLoadingMessage, ["[7/16] Checking for Orphaned Text Objects..."], "Media", 0.1)
             D.Queue(clearUnregText, [isKilling], "Media")
-            D.Queue(Media.SetLoadingMessage, ["[8/16] Initialization Animation Objects..."], "Media", 0.1)
+            D.Queue(Media.SetLoadingMessage, ["[8/16] Initializing Animation Objects..."], "Media", 1)
             D.Queue(Media.SetLoadingMessage, ["[9/16] Sorting Objects by Z-Index..."], "Media", 0.1)
             D.Queue(setZIndices, [], "Media")
             D.Queue(Media.SetLoadingMessage, ["[10/16] Correcting Background & Overlay Layout..."], "Media", 0.1)
             D.Queue(resetBGImgs, [], "Media")    
             D.Queue(Media.SetLoadingMessage, ["[11/16] Calibrating Time, Weather & Horizon..."], "Media", 0.1)        
             D.Queue(TimeTracker.Fix, [], "Media", 10)
-            D.Queue(Media.SetLoadingMessage, ["[12/16] Restoring District & Site Locations..."], "Media", 0.1)        
-            D.Queue(Session.ResetLocations, ["Active", true], "Media", 3)
-            D.Queue(Media.SetLoadingMessage, ["[13/16] Performing Final Image Object Pass..."], "Media", 0.1)
+            D.Queue(Media.SetLoadingMessage, ["[12/16] Performing Final Image Object Pass..."], "Media", 0.1)
             D.Queue(fixImgObjs, [], "Media", 10)
-            D.Queue(Media.SetLoadingMessage, ["[14/16] Performing Final Text Object Pass..."], "Media", 0.1)
+            D.Queue(Media.SetLoadingMessage, ["[13/16] Performing Final Text Object Pass..."], "Media", 0.1)
             D.Queue(fixTextObjs, [], "Media", 5)
-            D.Queue(Media.SetLoadingMessage, ["[15/16] Performing Final Dice Roller Pass..."], "Media", 0.1)
+            D.Queue(Media.SetLoadingMessage, ["[14/16] Performing Final Dice Roller Pass..."], "Media", 0.1)
             D.Queue(Roller.Clean, [], "Media")   
+            D.Queue(Media.SetLoadingMessage, ["[15/16] Restoring District & Site Locations..."], "Media", 0.1)        
+            D.Queue(Session.ResetLocations, ["Active", true], "Media", 3)
             D.Queue(Media.SetLoadingMessage, ["[16/16] Initializing Soundscape..."], "Media", 0.1)        
             D.Queue(initSoundModes, [], "Media", 3) 
 
@@ -5229,13 +5195,13 @@ const Media = (() => {
         toggleAnimation = (animName, isActive) => {
             const animData = getImgData(animName),
                 animObj = getImgObj(animName)
-            DB({animData, animObj}, "toggleAnimation")
+            // DB({animData, animObj}, "toggleAnimation")
             if (isActive) {
-                DB("Setting to MAP", "toggleAnimation")
-                animObj.set("layer", "map")
+                // DB("Setting to MAP", "toggleAnimation")
+                animObj.set("layer", animData.activeLayer)
                 REGISTRY.ANIM[animData.name].isActive = true
             } else {
-                DB("Setting to WALLS", "toggleAnimation")
+                // DB("Setting to WALLS", "toggleAnimation")
                 animObj.set("layer", "walls")
                 REGISTRY.ANIM[animData.name].isActive = false
             }

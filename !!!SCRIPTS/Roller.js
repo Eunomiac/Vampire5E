@@ -3134,7 +3134,7 @@ const Roller = (() => {
                 if (rollLines[line] && rollLines[line].text)
                     Media.SetTextData(line, {shiftTop: SETTINGS.shifts[line].top, shiftLeft: SETTINGS.shifts[line].left})
             if (Media.IsActive("RollerFrame_Diff"))
-                Media.SetImgTemp("RollerFrame_Diff", {top: SETTINGS.shifts.diffFrame.top })
+                Media.SetImgTemp("RollerFrame_Diff", {top: SETTINGS.shifts.diffFrame.top})
             
             if (_.values(deltaAttrs).length && !rollData.notChangingStats) {
                 DB(`CHANGING ATTRIBUTES: ${D.JSL(deltaAttrs)}`, "displayRoll")

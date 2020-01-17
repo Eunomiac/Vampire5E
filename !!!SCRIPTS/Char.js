@@ -1366,7 +1366,7 @@ const Char = (() => {
                 STATE.REF.projectDetails = projectsSorted
                 for (const projDetails of STATE.REF.projectDetails) {
                     projectStrings.Projects_Col1.push(`[${projDetails.init}]`)
-                    projectStrings.Projects_Col2.push(Media.GetTextWidth("Projects_Col2", projDetails.goal, false) > 230 ? `${projDetails.goal.slice(0, 45)}...` : projDetails.goal)
+                    projectStrings.Projects_Col2.push(Media.GetTextWidth("Projects_Col2", projDetails.goal, false) > 240 ? `${projDetails.goal.slice(0, 45)}...` : projDetails.goal)
                     projectStrings.Projects_Col3.push(TimeTracker.FormatDate(projDetails.endDate))
                 }
                 for (let i = projectStrings.Projects_Col1.length - 1; i > 0; i--)

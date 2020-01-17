@@ -743,12 +743,12 @@ const Session = (() => {
                     `New Loc Data: ${D.JS(newLocData)}`,
                     `Cur Loc Data: ${D.JS(curLocData)}`
                 ]
-            if (_.keys(locParams).find(x => x.includes("Center"))) {
+            if ("DistrictCenter" in locParams && !locParams.DistrictCenter.includes("blank")) {
                 newLocData.DistrictLeft = ["blank"]
                 newLocData.DistrictRight = ["blank"]
                 newLocData.SiteLeft = ["blank"]
                 newLocData.SiteRight = ["blank"]
-            } else if (_.keys(locParams).find(x => x.includes("Right") || x.includes("Left"))) {
+            } else if ("DistrictLeft" in locParams && !locParams.DistrictLeft.includes("blank") || "DistrictRight" in locParams && !locParams.DistrictRight.includes("blank")) {
                 newLocData.DistrictCenter = ["blank"]
                 newLocData.SiteCenter = ["blank"]                
             }
