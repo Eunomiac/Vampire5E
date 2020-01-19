@@ -491,7 +491,7 @@ const D = (() => {
         },
         summarizeHTML = (htmlString = "") => ((htmlString.match(/.*?>([^<>]+)<.*?/g) || [""]).pop().match(/.*?>([^<>]+)<.*?/) || [""]).pop(),
         pInt = strRef => parseInt(strRef) || 0,
-        pFloat = strRef => parseFloat(strRef) || 0,
+        pFloat = (strRef, sigDigits = false) => VAL({number: sigDigits}) && roundSig(parseFloat(strRef) || 0, sigDigits) || parseFloat(strRef) || 0,
         roundSig = (num, digits, isReturningPaddedString = false) => {
             if (VAL({number: digits}) && D.Int(digits) > 0) {
                 const returnNum = Math.round( num * 10**D.Int(digits) + Number.EPSILON ) / 10**D.Int(digits)
@@ -693,12 +693,17 @@ const D = (() => {
             if (VAL({string: replyString, function: PROMPTFUNC}, "receivePrompt")) {
                 const func = PROMPTFUNC
                 PROMPTFUNC = null
-                func(replyString, objects)
-                if (STATE.REF.PROMPTCLOCK) {
-                    TimeTracker.ToggleClock(true)
-                    STATE.REF.PROMPTCLOCK = false
+                if (func(replyString, objects)) {
+                    DB("Received 'TRUE' from reply function: RESTORING.", "receivePrompt")
+                    PROMPTFUNC = func
+                } else {
+                    DB("Did NOT receive 'TRUE' from reply function: CLEARING.", "receivePrompt")
+                    Roller.Lock(false)
+                    if (STATE.REF.PROMPTCLOCK) {
+                        TimeTracker.ToggleClock(true)
+                        STATE.REF.PROMPTCLOCK = false
+                    }
                 }
-                Roller.Lock(false)
             }
         },
         commandMenu = (menuData = {}, replyFunc = null) => {
@@ -728,12 +733,20 @@ const D = (() => {
             const htmlRows = [],
                 customStyles = {
                     Title: {
-                        fontSize: "24px",
-                        lineHeight: "38px",
-                        bgColor: C.COLORS.black,
-                        height: "32px",
+                        fontSize: "20px",
+                        lineHeight: "28px",
+                        height: "26px",
+                        bgColor: C.COLORS.brightred,
+                        color: C.COLORS.black,
+                        fontFamily: "Voltaire",
                         border: `none; border-bottom: 4px outset ${C.COLORS.crimson}`,
                         margin: "0px 0px 10px 0px",
+                    },
+                    Header: {
+                        color: C.COLORS.brightred,
+                        bgColor: C.COLORS.darkdarkred,
+                        border: "1px solid red",
+                        fontVariant: "small-caps"
                     },
                     Body: {
                         color: C.COLORS.brightbrightgrey,
@@ -748,35 +761,37 @@ const D = (() => {
                         buttonHeight: "9px",
                         fontFamily: "'Arial Narrow'"
                     }
-                },
-                dbLines = [],
+                }
+            DB({menuData}, "commandMenu")
+            const dbData = {rows: []},
                 parseSection = (sectionData) => {
                     const sectionHTML = []
                     for (const rowData of sectionData.rows)
                         if (["Title", "Header", "Body", "ClearBody"].includes(rowData.type)) {
                             sectionHTML.push(C.HTML[rowData.type](rowData.contents, Object.assign({}, customStyles[rowData.type] || {}, rowData.styles || {})))
                         } else if (rowData.type === "ButtonLine") {
-                            const buttonsCode = [],
-                                strictSpacerTotWidth = rowData.contents.map(x => VAL({list: x}) && "text" in x ? D.Int(Object.assign({width: "15%"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(/%/gu, "")) : x).filter(x => VAL({number: x})).reduce((tot, x) => tot + x, 0) || 0,
-                                totFlexSpacing = 100 - strictSpacerTotWidth,
-                                flexEntityWidth = Math.floor(totFlexSpacing / rowData.contents.filter(x => VAL({list: x}) || VAL({number: x}) && x === 0).length) - 1
-                            rowData.contents = rowData.contents.map(x => VAL({list: x}) && x.name && Object.assign(x, {styles: Object.assign({}, {width: `${flexEntityWidth}%`}, x.styles)}) ||
-                                                                         VAL({number: x}) && x === 0 && flexEntityWidth ||
-                                                                         x)
-                            dbLines.push(`strictTotWidth: ${D.JSL(strictSpacerTotWidth)}, totFlexSpace: ${totFlexSpacing}, flexEntityWidth: ${flexEntityWidth}<br>${D.JSL(rowData.contents)}`)
-                            for (const entity of rowData.contents)
-                                if (VAL({number: entity}))
-                                    buttonsCode.push(C.HTML.ButtonSpacer(`${D.Int(entity)}%`))
-                                else if (VAL({list: entity}))
-                                    if ("text" in entity) {
-                                        buttonsCode.push(C.HTML.ButtonSubheader(entity.text, entity.styles))
-                                    } else {
-                                        if (entity.name.length > 12)
-                                            entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
-                                        buttonsCode.push(C.HTML.Button(entity.name, entity.command, Object.assign({}, {width: `${flexEntityWidth}%`}, customStyles.Button || {}, rowData.buttonStyles || {}, entity.styles || {})))
-                                        dbLines.push(`<b>${entity.name}</b>: ${entity.command}<br>`)
-                                    }
-                            sectionHTML.push(C.HTML.ButtonLine(buttonsCode, rowData.styles || {}))
+                            try {
+                                const buttonsCode = [],
+                                    strictSpacerTotWidth = rowData.contents.map(x => VAL({list: x}) && "text" in x ? D.Int(Object.assign({width: "15%"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(/%/gu, "")) : x).filter(x => VAL({number: x})).reduce((tot, x) => tot + x, 0) || 0,
+                                    totFlexSpacing = 100 - strictSpacerTotWidth,
+                                    flexEntityWidth = Math.floor(totFlexSpacing / rowData.contents.filter(x => VAL({list: x}) || VAL({number: x}) && x === 0).length) - 1
+                                rowData.contents = rowData.contents.map(x => VAL({number: x}) && x === 0 && flexEntityWidth || x)
+                                dbData.rows.push({strictSpacerTotWidth, totFlexSpacing, flexEntityWidth, rowData, entities: []})
+                                for (const entity of rowData.contents)
+                                    if (VAL({number: entity}))
+                                        buttonsCode.push(C.HTML.ButtonSpacer(`${D.Int(entity)}%`))
+                                    else if (VAL({list: entity}))
+                                        if ("text" in entity) {
+                                            buttonsCode.push(C.HTML.ButtonSubheader(entity.text, entity.styles))
+                                        } else {
+                                            if (entity.name.length > 12)
+                                                entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
+                                            buttonsCode.push(C.HTML.Button(entity.name, entity.command, Object.assign({}, {width: `${flexEntityWidth}%`}, customStyles.Button || {}, rowData.buttonStyles || {}, entity.styles || {})))
+                                        }
+                                sectionHTML.push(C.HTML.ButtonLine(buttonsCode, rowData.styles || {}))
+                            } catch (errObj) {
+                                DB({["ERROR'ING ROWDATA"]: rowData}, "commandMenu")
+                            }
                         } else if (rowData.type === "Column") {
                             const numColumns = rowData.contents.length,
                                 colWidth = `${D.Int(100 / numColumns) - 1}%`,
@@ -791,7 +806,7 @@ const D = (() => {
             htmlRows.push(parseSection(menuData))
             if (menuData.title)
                 htmlRows.unshift(C.HTML.Title(menuData.title, Object.assign({}, customStyles.Title)))
-            DB(dbLines, "commandMenu")
+            // DB(dbData, "commandMenu")
             promptGM(C.HTML.Block(htmlRows.join(""), menuData.blockParams || {}), replyFunc)
         },
     // #endregion
@@ -803,21 +818,20 @@ const D = (() => {
             return newObj
         },
         removeFirst = (array, element) => array.splice(array.findIndex(v => v === element)),
-        pullElement = (array, checkFunc) => {
+        pullElement = (array, checkFunc = (_v = true, _i = 0,_a = []) => {checkFunc(_v, _i, _a)}) => {
             const index = array.findIndex((v, i, a) => checkFunc(v, i, a))
             return index !== -1 && array.splice(index, 1).pop()
         },
-        parseToObj = val => {
+        parseToObj = (val, delim = ",", keyValDelim = ":") => {
             /* Converts an array or comma-delimited string of parameters ("key:val, key:val, key:val") into an object. */
             const [obj, args] = [{}, []]
             if (VAL({string: val}))
-                args.push(...val.split(/,\s*?/ug))
+                args.push(...val.split(delim))
             else if (VAL({array: val}))
                 args.push(...val)
             else
                 return THROW(`Cannot parse value '${jStrC(val)}' to object.`, "parseToObj")
-
-            for (const kvp of _.map(args, v => v.split(/\s*:\s*(?!\/)/u)))
+            for (const kvp of _.map(args, v => v.split(new RegExp(`\\s*${keyValDelim}\\s*(?!\\/)`, "u"))))
                 obj[kvp[0].toString().trim()] = parseInt(kvp[1]) || kvp[1]
             return obj
         },
@@ -1395,17 +1409,23 @@ const D = (() => {
                     if (v.toLowerCase() === "all") {
                         _.each(findObjs({_type: "character"}), char => charObjs.add(char))
                         dbstring += ` ... "${jStrL(v)}": `
-                        // If parameter calls for REGISTERED CHARACTERS:
-                    } else if (v.toLowerCase() === "registered") {
+                        // If parameter calls for REGISTERED CHARACTERS or PC CHARACTERS:
+                    } else if (["registered", "pc", "pcs"].includes(v.toLowerCase())) {
                         _.each(Char.REGISTRY, charData => { if (!charData.name.toLowerCase().includes("Good Lad")) charObjs.add(getObj("character", charData.id)) })
                         dbstring += ` ... "${jStrL(v)}": `
-                        // If parameter is "sandbox", calls for all characters with tokens in the sandbox (do player characters first)
+                    } else if (["npc", "npcs"].includes(v.toLowerCase())) {
+                        _.each(findObjs({_type: "character"}).filter(x => !Object.values(Char.REGISTRY).map(xx => xx.id).includes(x.id)), charObj => charObjs.add(charObj))
+                        dbstring += ` ... "${jStrL(v)}": `
                     } else if (v.toLowerCase() === "activepc") {
                         _.each(Char.REGISTRY, charData => { if (charData.isActive && !charData.name.toLowerCase().includes("Good Lad")) charObjs.add(getObj("character", charData.id)) })
                         dbstring += ` ... "${jStrL(v)}": `
                         // If parameter is "sandbox", calls for all characters with tokens in the sandbox (do player characters first)
                     } else if (v.toLowerCase() === "sandbox") {
                         _.each(Media.GetContainedChars("Sandbox", {padding: 50}), vv => charObjs.add(vv))
+                        dbstring += ` ... "${jStrL(v)}": `                    
+                        // If parameter is a SINGLE LETTER, assume it is an INITIAL and search the registry for it.
+                    } else if (v.toLowerCase() === "scene") {
+                        _.each(Media.GetContainedChars("Sandbox", {padding: 50}).filter(x => Session.IsInScene(x)), vv => charObjs.add(vv)) 
                         dbstring += ` ... "${jStrL(v)}": `                    
                         // If parameter is a SINGLE LETTER, assume it is an INITIAL and search the registry for it.
                     } else if (v.length === 1 && _.find(Char.REGISTRY, data => data.initial.toLowerCase() === v.toLowerCase())) {

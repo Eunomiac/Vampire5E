@@ -19,6 +19,7 @@ const Char = (() => {
         get SelectedTraits() { return false }
     } */
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
+    let PENDINGCHARCOMMAND
     const SCRIPTNAME = "Char",
 
     // #region COMMON INITIALIZATION
@@ -36,6 +37,8 @@ const Char = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
+            
+            // PENDINGCHARCOMMAND = D.Clone(BLANKPENDINGCHARCOMMAND)
             STATE.REF.registry = STATE.REF.registry || {}
             STATE.REF.weeklyResources = STATE.REF.weeklyResources || {}
             STATE.REF.customStakes = STATE.REF.customStakes || {}
@@ -691,6 +694,51 @@ const Char = (() => {
                 }
             return charIDs.join(",")
         },
+        /* 
+        BLANKPENDINGCHARCOMMAND = {
+            workingIndex: 0
+        },
+        promptCharSelect = () => {
+            const allTokens = Media.GetTokens(),
+                allCharObjs = allTokens.map(x => D.GetChar(x)),
+                allTokenCharObjs = D.KeyMapObj(D.Clone(allTokens), (i) => allCharObjs[i] && allCharObjs[i].id, (tokenObj) => tokenObj),
+                pcCharObjs = allCharObjs.filter(x => VAL({pc: x})),
+                npcCharObjs = allCharObjs.filter(x => VAL({npc: x})),
+                commonButtonStyles = {
+                    color: C.COLORS.white,
+                    height: "16px",
+                    buttonHeight: "6px",
+                    fontWeight: "bold",
+                    fontSize: "12px",
+                    lineHeight: "8px",
+                    border: `1px solid ${C.COLORS.white}`
+                }
+            D.CommandMenu(
+                {
+                    title: "Character Selection",
+                    rows: [
+                        {type: "ButtonLine", contents: [
+                            {name: "ALL SCENE", command: "!reply select scene"},
+                            {name: "ALL PCS", command: "!reply select pc all"},
+                            {name: "SCENE PCS", command: "!reply select pc scene"},
+                            {name: "SCENE NPCS", command: "!reply select npc scene"},
+                        ], buttonStyles: Object.assign({}, commonButtonStyles, {bgColor: C.COLORS.blue, color: C.COLORS.black})},
+                        ..._.chain(pcCharObjs).
+                            filter(x => !x || !x.id).
+                            map(x => ({name: D.GetName(x, true), command: `!reply select ${x.id}`, styles: Session.IsInScene(allTokenCharObjs[x.id]) ? {bgColor: C.COLORS.crimson, border: `2px outset ${C.COLORS.brightgrey}`} : {bgColor: C.COLORS.black, border: `2px inset ${C.COLORS.darkgrey}`}})).
+                            groupBy((x, i) => Math.floor(i / 4)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: Object.assign({}, commonButtonStyles, {width: "24%"})})).
+                            value(),                            
+                        ..._.chain(npcCharObjs).
+                            filter(x => !x || !x.id).
+                            map(x => ({name: D.GetName(x, true), command: `!reply select ${x.id}`, styles: {bgColor: Session.IsInScene(allTokenCharObjs[x.id])}})).
+                            groupBy((x, i) => Math.floor(i / 4)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: Object.assign({}, commonButtonStyles, {width: "24%"})})).
+                            value()
+                    ]
+                })
+        },
+        */
         promptCharSelect = () => {
             const charObjs = Session.SceneChars,
                 pcCharObjs = D.GetChars("registered"),
@@ -1317,7 +1365,7 @@ const Char = (() => {
                 charColRefs.map(x => Media.ToggleText(x, true))
                 charCols[charColRefs[0]] = filteredStakes.map((x, i) => i > 0 && x[0] === filteredStakes[i-1][0] ? "" : `[${x[0]}]`)
                 charCols[charColRefs[1]] = filteredStakes.map(x => x[1])
-                charCols[charColRefs[2]] = filteredStakes.map(x => "●".repeat(x[3] - x[2] - _.reduce(x[5], (e, tot = 0) => tot + e)) + "○".repeat(x[2]) + x[5].map(xx => `/${"○".repeat(xx)}`).join(""))
+                charCols[charColRefs[2]] = filteredStakes.map(x => "●".repeat(x[3] - x[2] - _.reduce(x[5], (tot = 0, n) => tot + n)) + "○".repeat(x[2]) + x[5].map(xx => `/${"○".repeat(xx)}`).join(""))
                 charCols[charColRefs[3]] = filteredStakes.map(x => x[4])
                 for (const [col, lines] of Object.entries(charCols))
                     Media.SetText(col, lines.join("\n"))

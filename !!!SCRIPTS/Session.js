@@ -1,6 +1,7 @@
 void MarkStart("Session")
 const Session = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
+    let PENDINGLOCCOMMAND
     const SCRIPTNAME = "Session",
 
     // #region COMMON INITIALIZATION
@@ -21,9 +22,12 @@ const Session = (() => {
             // delete STATE.REF.curLocation
             // delete STATE.REF.locationRecord
             // delete STATE.REF.tokenRecord
+            
+            PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND)
             STATE.REF.isTestingActive = STATE.REF.isTestingActive || false
             STATE.REF.sceneChars = STATE.REF.sceneChars || []
             STATE.REF.tokenRecord = STATE.REF.tokenRecord || {Active: {}, Inactive: {}, Daylighter: {}, Downtime: {}, Complications: {}, Spotlight: {}}
+            STATE.REF.sceneTokenRecord = STATE.REF.sceneTokenRecord || {Active: {}, Inactive: {}, Daylighter: {}, Downtime: {}, Complications: {}, Spotlight: {}}
             STATE.REF.ActiveTokens = STATE.REF.ActiveTokens || []
             STATE.REF.SessionScribes = STATE.REF.SessionScribes || []
             STATE.REF.SessionModes = STATE.REF.SessionModes || ["Active", "Inactive", "Daylighter", "Downtime", "Complications", "Spotlight"]
@@ -37,7 +41,7 @@ const Session = (() => {
                 SiteCenter: ["blank"],
                 SiteLeft: ["blank"],
                 SiteRight: ["blank"],
-                SubLocs: {
+                subLocs: {
                     TopLeft: "blank",
                     Left: "blank",
                     BotLeft: "blank",
@@ -50,6 +54,7 @@ const Session = (() => {
             STATE.REF.locationDetails = STATE.REF.locationDetails || {}
             STATE.REF.locationPointer = STATE.REF.locationPointer || {}
             STATE.REF.FavoriteSites = STATE.REF.FavoriteSites || []
+            STATE.REF.FavoriteDistricts = STATE.REF.FavoriteDistricts || []
             
             // delete STATE.REF.locationRecord
             
@@ -103,6 +108,42 @@ const Session = (() => {
                             STATE.REF.FavoriteSites.push(args.shift())
                             break
                         }
+                        case "favdist": {
+                            STATE.REF.FavoriteDistricts.push(args.shift())
+                            break
+                        }
+                        case "sitepos": {
+                            Media.ToggleImg("MapIndicator_Base_1", true)
+                            const mapIndicator = Media.GetImg("MapIndicator_Base")
+                            mapIndicator.set({layer: "objects"})
+                            toFront(mapIndicator)
+                            D.Alert("Move the map indicator to the desired location, then type '!sess add pointer' for a <b>GENERIC</b> registration,<br>or '!sess add custom' if this is tied to a custom-named location.", "Site Position")
+                            break
+                        }
+                        case "pointer": {
+                            const mapIndicator = Media.GetImg("MapIndicator_Base"),
+                                position = {left: mapIndicator.get("left"), top: mapIndicator.get("top")},
+                                site = Session.Site
+                            STATE.REF.locationPointer[site] = {
+                                pointerPos: Object.assign({}, position)
+                            }
+                            mapIndicator.set({layer: "map"})
+                            Media.ToggleImg("MapIndicator_Base_1", false)
+                            Media.Fix()
+                            break
+                        }
+                        case "custom": {
+                            const mapIndicator = Media.GetImg("MapIndicator_Base"),
+                                position = {left: mapIndicator.get("left"), top: mapIndicator.get("top")},
+                                [sitePos] = getActiveScenePositions().filter(x => x.startsWith("Site")),
+                                [siteRef, siteName] = sitePos in STATE.REF.curLocation && STATE.REF.curLocation[sitePos]
+                            STATE.REF.locationDetails[siteRef] = STATE.REF.locationDetails[siteRef] || {siteName}
+                            STATE.REF.locationDetails[siteRef].pointerPos = Object.assign({}, position)
+                            mapIndicator.set({layer: "map"})
+                            Media.ToggleImg("MapIndicator_Base_1", false)
+                            Media.Fix()
+                            break
+                        }
                     // no default
                     }
                     break
@@ -114,11 +155,11 @@ const Session = (() => {
                             break
                         }
                         case "activelocs": {
-                            D.Alert(D.JS(getActiveLocations()), "All Active Locations")
+                            D.Alert(D.JS(getActivePositions()), "All Active Locations")
                             break
                         }
                         case "scenelocs": {
-                            D.Alert(D.JS(getActiveSceneLocations()), "Active Scene Locations")
+                            D.Alert(D.JS(getActiveScenePositions()), "Active Scene Locations")
                             break
                         }
                         case "pointer": {
@@ -137,8 +178,30 @@ const Session = (() => {
                     break
                 }
                 case "loc": {
-                    STATE.REF.pendingLocCommand = {}
-                    promptForDistrict(args)
+                    distCommandMenu()
+                    break
+                }
+                case "focus": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "c":
+                        case "l":
+                        case "r": {
+                            setSceneFocus(D.LCase(call))
+                            break
+                        }
+                        case "toggle": {
+                            switch (STATE.REF.sceneFocus) {
+                                case "l": setSceneFocus("r"); break
+                                case "r": setSceneFocus("l"); break
+                                default: sceneFocusCommandMenu(); break
+                            }
+                            break
+                        }
+                        default: {
+                            sceneFocusCommandMenu()
+                            break
+                        }
+                    }
                     break
                 }
                 case "set": {
@@ -146,32 +209,6 @@ const Session = (() => {
                         case "mode": {
                             STATE.REF.Mode = D.IsIn(args.shift(), STATE.REF.SessionModes) || STATE.REF.Mode
                             D.Alert(`Current Session Mode:<br><h3>${STATE.REF.Mode}</h3>`, "!sess set mode")
-                            break
-                        }
-                        case "loc": case "location": {
-                            DB({initPendingLocCommand: STATE.REF.pendingLocCommand, newPendingLocCommand: Object.assign({}, STATE.REF.pendingLocCommand, parseLocationString(args.join(" ")))}, "!set loc")
-                            STATE.REF.pendingLocCommand = Object.assign(STATE.REF.pendingLocCommand, parseLocationString(args.join(" ")))
-                            const curCommand = STATE.REF.pendingLocCommand,
-                                sceneFocus = curCommand.DistrictCenter && "c" || "l"
-                            DB({curCommand}, "!set loc")
-                            let isCommandComplete = true
-                            if (curCommand.DistrictLeft && !curCommand.DistrictRight || curCommand.DistrictRight && !curCommand.DistrictLeft)
-                                break
-                            // DistrictCenter, SiteCenter
-                            // DistrictLeft, SiteLeft, DistrictRight, SiteRight
-                            for (const pos of ["Center", "Left", "Right"])
-                                if (curCommand[`District${pos}`] && !curCommand[`Site${pos}`]) {
-                                    isCommandComplete = false
-                                    if (_.any(_.keys(curCommand), x => x.startsWith("Site")))
-                                        break
-                                    promptForSite(curCommand)
-                                    break
-                                }
-                            if (isCommandComplete) {
-                                setLocation(curCommand, sceneFocus)
-                                STATE.REF.pendingLocCommand = {}
-                                setTimeout(Media.UpdateSoundscape, 1000)
-                            }
                             break
                         }
                         case "pointer": {
@@ -265,11 +302,11 @@ const Session = (() => {
                         case "location": case "loc": {
                             switch (D.LCase(call = args.shift())) {
                                 case "activelocs": {
-                                    D.Alert(D.JS(getActiveLocations(args[0])), `Testing getActiveLocations(${args[0] || ""})`)
+                                    D.Alert(D.JS(getActivePositions(args[0])), `Testing getActiveLocations(${args[0] || ""})`)
                                     break
                                 }
                                 case "activescenelocs": {
-                                    D.Alert(D.JS(getActiveSceneLocations()), "Testing getActiveSceneLocations()")
+                                    D.Alert(D.JS(getActiveScenePositions()), "Testing getActiveSceneLocations()")
                                     break
                                 }
                                 case "activedistrict": {
@@ -324,7 +361,7 @@ const Session = (() => {
         },
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
-
+    
         MODEFUNCTIONS = {            
             outroMode: {
                 Active: () => {},
@@ -448,16 +485,32 @@ const Session = (() => {
             },
             Testing: {}
         },
+        BLANKLOCRECORD = {
+            DistrictCenter: ["blank"],
+            DistrictLeft: ["blank"],
+            DistrictRight: ["blank"],
+            SiteCenter: ["blank"],
+            SiteLeft: ["blank"],
+            SiteRight: ["blank"],
+            subLocs: {
+                TopLeft: "blank",
+                Left: "blank",
+                BotLeft: "blank",
+                TopRight: "blank",
+                Right: "blank",
+                BotRight: "blank"
+            }
+        },
         verifyStateIntegrity = () => { // A series of simple validations of registry data.
             // STATE.REF.locationDetails
             const [siteNames, distNames, posNames, subPosNames] = [
                 Object.keys(C.SITES),
                 Object.keys(C.DISTRICTS),
-                ["DistrictCenter", "DistrictRight", "DistrictLeft", "SiteCenter", "SiteRight", "SiteLeft", "SubLocs"],
+                ["DistrictCenter", "DistrictRight", "DistrictLeft", "SiteCenter", "SiteRight", "SiteLeft", "subLocs"],
                 ["TopLeft", "Left", "BotLeft", "TopRight", "Right", "BotRight"]
             ]
             STATE.REF.locationDetails = _.omit(STATE.REF.locationDetails, (v, k) => ![...siteNames, ...distNames].includes(k) || Object.keys(v).length === 0)
-            STATE.REF.FavouriteSites = _.reject(STATE.REF.FavouriteSites, x => !siteNames.includes(x))
+            STATE.REF.FavoriteSites = _.reject(STATE.REF.FavoriteSites, x => !siteNames.includes(x))
 
             for (const [modeName] of Object.entries(STATE.REF.locationRecord))
                 STATE.REF.locationRecord[modeName] = _.omit(STATE.REF.locationRecord[modeName], (v, k) => !posNames.includes(k))            
@@ -635,32 +688,22 @@ const Session = (() => {
     // #endregion
 
     // #region Location Handling
-        BLANKLOCRECORD = {
-            DistrictCenter: ["blank"],
-            DistrictLeft: ["blank"],
-            DistrictRight: ["blank"],
-            SiteCenter: ["blank"],
-            SiteLeft: ["blank"],
-            SiteRight: ["blank"],
-            SubLocs: {
-                TopLeft: "blank",
-                Left: "blank",
-                BotLeft: "blank",
-                TopRight: "blank",
-                Right: "blank",
-                BotRight: "blank"
-            }
+        
+        BLANKPENDINGLOCCOMMAND = {
+            workingIndex: 0,
+            Districts: [],
+            Sites: []
         },
         isLocCentered = () => {
-            const activeLocs = _.keys(STATE.REF.curLocation).filter(x => x !== "SubLocs" && STATE.REF.curLocation[x][0] !== "blank")
+            const activeLocs = _.keys(STATE.REF.curLocation).filter(x => x !== "subLocs" && STATE.REF.curLocation[x][0] !== "blank")
             if (activeLocs.includes("DistrictCenter") && !activeLocs.includes("SiteLeft") && !activeLocs.includes("SiteRight"))
                 return true
             if (activeLocs.includes("DistrictLeft") || activeLocs.includes("DistrictRight") || activeLocs.includes("SiteLeft") || activeLocs.includes("SiteRight"))
                 return false
             return null
         },
-        getActiveLocations = (sideFocus) => {
-            const activeLocs = _.keys(STATE.REF.curLocation).filter(x => x !== "SubLocs" && STATE.REF.curLocation[x][0] !== "blank")
+        getActivePositions = (sideFocus) => {
+            const activeLocs = _.keys(STATE.REF.curLocation).filter(x => x !== "subLocs" && STATE.REF.curLocation[x][0] !== "blank")
             switch({c: "Center", l: "Left", r: "Right", a: "All"}[(sideFocus || "a").toLowerCase().charAt(0)]) {
                 case "Center":
                     return activeLocs.filter(x => x.endsWith("Center"))
@@ -672,13 +715,13 @@ const Session = (() => {
             }
             return activeLocs // [ "DistrictCenter", "DistrictLeft", "DistrictRight", "SiteCenter", "SiteLeft", "SiteRight" ]
         },
-        getActiveSceneLocations = () => getActiveLocations(STATE.REF.sceneFocus), // [ "DistrictCenter", "SiteCenter" ]
+        getActiveScenePositions = () => getActivePositions(STATE.REF.sceneFocus), // [ "DistrictCenter", "SiteCenter" ]
         getActiveDistrict = () => {
-            const [activePos] = getActiveSceneLocations().filter(x => x.includes("District"))
+            const [activePos] = getActiveScenePositions().filter(x => x.includes("District"))
             return activePos && STATE.REF.curLocation[activePos] && STATE.REF.curLocation[activePos][0] || false
         },
         getActiveSite = () => {
-            const [activePos] = getActiveSceneLocations().filter(x => x.startsWith("Site"))
+            const [activePos] = getActiveScenePositions().filter(x => x.startsWith("Site"))
             return activePos && STATE.REF.curLocation[activePos] && STATE.REF.curLocation[activePos][0] || false
         },
         getSubLocs = () => {
@@ -686,41 +729,42 @@ const Session = (() => {
 
         },
         isOutside = () => {
-            const sceneLocs = _.compact(getActiveSceneLocations().map(x => STATE.REF.curLocation[x][0]))
+            const sceneLocs = _.compact(getActiveScenePositions().map(x => STATE.REF.curLocation[x][0]))
             // D.Poke(D.JS(sceneLocs))
             return sceneLocs.filter(x => !C.LOCATIONS[x].outside).length === 0
         },
-        parseLocationString = (locString) => {
-            locString = locString.replace(/@\|@/gu, ":").replace(/name:(.*?);/gu, x => x.replace(/\s/gu, "@_@").replace(/:/gu, "@C@").replace(/\|/gu, "@P@").replace(/name@C@/gu, "name:"))
-            const locCommands = locString.split(/\s/gu).map(x => x.replace(/@_@/gu, " ")),
-                locParams = {}
-            for (const locCommand of locCommands) {
-                const commands = locCommand.replace(/:name/gu, "").replace(/;$/gu, "").split(/[:|]/gu).map(x => x.replace(/@C@/gu, ":").replace(/@P@/gu, "|"))
-                locParams[commands.shift()] = commands
-            }
-            DB({locString, locParams}, "parseLocationString")
+        parseLocationString = (locInput) => {
+            const locParams = VAL({list: locInput}) ? Object.assign({}, locInput) : {}
+            if (VAL({string: locInput})) {
+                locInput = locInput.replace(/@\|@/gu, ":").replace(/name:(.*?);/gu, x => x.replace(/\s/gu, "@_@").replace(/:/gu, "@C@").replace(/\|/gu, "@P@").replace(/name@C@/gu, "name:"))
+                for (const locCommand of locInput.split(/\s/gu).map(x => x.replace(/@_@/gu, " "))) {
+                    const commands = locCommand.replace(/:name/gu, "").replace(/;$/gu, "").split(/[:|]/gu).map(x => x.replace(/@C@/gu, ":").replace(/@P@/gu, "|"))
+                    locParams[commands.shift()] = commands
+                }
+            }         
+            DB({locInput, locParams}, "parseLocationString")
             const siteCenterKey = locParams.SiteCenter && locParams.SiteCenter[0] // || STATE.REF.curLocation.SiteCenter[0] !== "blank" && STATE.REF.curLocation.SiteCenter[0]
-            if (siteCenterKey && (!locParams.SubLocs || _.any(locParams.SubLocs, v => v === false)) && STATE.REF.locationDetails[siteCenterKey] && STATE.REF.locationDetails[siteCenterKey].subLocs)
-                locParams.SubLocs = Object.assign({}, BLANKLOCRECORD.SubLocs, STATE.REF.locationDetails[siteCenterKey].subLocs, _.omit(locParams.SubLocs, v => v === false))
-            if (siteCenterKey && locParams.SubLocs) {                
+            if (siteCenterKey && (!locParams.subLocs || _.any(locParams.subLocs, v => v === false)) && STATE.REF.locationDetails[siteCenterKey] && STATE.REF.locationDetails[siteCenterKey].subLocs)
+                locParams.subLocs = Object.assign({}, BLANKLOCRECORD.subLocs, STATE.REF.locationDetails[siteCenterKey].subLocs, _.omit(locParams.subLocs, v => v === false))
+            if (siteCenterKey && locParams.subLocs) {                
                 STATE.REF.locationDetails[siteCenterKey] = STATE.REF.locationDetails[siteCenterKey] || {}
-                STATE.REF.locationDetails[siteCenterKey].subLocs = Object.assign({}, BLANKLOCRECORD.SubLocs, STATE.REF.locationDetails[siteCenterKey].subLocs || {}, _.omit(locParams.SubLocs, v => v === false))
+                STATE.REF.locationDetails[siteCenterKey].subLocs = Object.assign({}, BLANKLOCRECORD.subLocs, STATE.REF.locationDetails[siteCenterKey].subLocs || {}, _.omit(locParams.subLocs, v => v === false))
             }
             for (const [locPos, locDetails] of Object.entries(locParams).filter(x => x[0].includes("Site")))
                 if (locDetails[1] && locDetails[1] === " ") {
                     STATE.REF.locationDetails[locDetails[0]] = STATE.REF.locationDetails[locDetails[0]] || {}
                     delete STATE.REF.locationDetails[locDetails[0]].siteName
                     locParams[locPos] = locParams[locPos].slice(0, 1)
-                } else if (STATE.REF.locationDetails[locDetails[0]] && STATE.REF.locationDetails[locDetails[0]].siteName && !locDetails[1]) {
+                } else if (!locDetails[2] && STATE.REF.locationDetails[locDetails[0]] && STATE.REF.locationDetails[locDetails[0]].siteName && !locDetails[1]) {
                     locParams[locPos][1] = STATE.REF.locationDetails[locDetails[0]].siteName
-                } else {
+                } else if (!locDetails[2]) {
                     STATE.REF.locationDetails[locDetails[0]] = STATE.REF.locationDetails[locDetails[0]] || {};
                     [, STATE.REF.locationDetails[locDetails[0]].siteName] = locDetails
                 }
             return _.omit(locParams, (v, k) => k.replace(/[^A-Za-z]/gu, "") === "")
         },
         getParentLocData = locPos => {
-            const locData = _.omit(STATE.REF.curLocation, (v, k) => k !== "SubLocs" && v[0] === "blank"),
+            const locData = _.omit(STATE.REF.curLocation, (v, k) => k !== "subLocs" && v[0] === "blank"),
                 locType = locPos.replace(/(Right|Left|Center)/gu, "")
             switch (locPos.replace(/(District|Site)/gu, "") || [""]) {
                 case "Center":
@@ -729,16 +773,65 @@ const Session = (() => {
                     return locData[`${locType}Left`] || locData[`${locType}Center`] || locData[`${locType}Right`]
                 case "Right": 
                     return locData[`${locType}Right`] || locData[`${locType}Center`] || locData[`${locType}Left`]
-                case "SubLocs":
-                    return locData.SubLocs
+                case "subLocs":
+                    return locData.subLocs
                 // no default
             }
             return false
         },
+        setDistrictImg = (locRef, distRef) => {
+            const locKey = D.LCase(locRef).charAt(0),
+                locPos = {c: "DistrictCenter", l: "DistrictLeft", r: "DistrictRight"}[locKey]
+            DB({locRef, distRef, locKey, locPos}, "setDistrictImg")
+            if (!distRef || distRef === "blank") {
+                Media.ToggleImg(locPos, false)
+            } else {
+                Media.ToggleImg(locPos, true)
+                Media.SetImg(locPos, distRef)
+            }
+        },
+        setSiteImg = (locRef, siteRef, siteName) => {
+            const locKey = D.LCase(locRef).charAt(0),
+                locPos = {c: "SiteCenter", l: "SiteLeft", r: "SiteRight"}[locKey]
+            DB({locRef, siteRef, siteName, locKey, locPos}, "setSiteImg")
+            if (!siteRef || siteRef === "blank") {
+                Media.ToggleImg(locPos, false)
+                Media.ToggleImg(`SiteBar${locPos.replace(/Site/gu, "")}`, false)
+                Media.ToggleText(`SiteName${locPos.replace(/Site/gu, "")}`, false)
+            } else {
+                Media.ToggleImg(locPos, true)
+                Media.SetImg(locPos, siteRef)
+                setSiteName(locKey, siteRef, siteName)
+            }
+        },
+        setSiteName = (locRef, siteRef, siteName) => {
+            siteName = siteName === "same" && siteRef in STATE.REF.locationDetails ? STATE.REF.locationDetails[siteRef].siteName : siteName
+            const locKey = D.LCase(locRef).charAt(0),
+                locPos = {c: "Center", l: "Left", r: "Right"}[locKey]
+            DB({locRef, siteRef, siteName, locKey, locPos}, "setSiteName")
+            if (VAL({string: siteName})) {
+                Media.ToggleImg(`SiteBar${locPos}`, true)
+                Media.ToggleText(`SiteName${locPos}`, true)
+                Media.SetText(`SiteName${locPos}`, siteName)
+            } else {
+                Media.ToggleImg(`SiteBar${locPos}`, false)
+                Media.ToggleText(`SiteName${locPos}`, false)
+            }
+        },
+        setSubLocImg = (locRef, subLocRef) => {
+            if (locRef in BLANKLOCRECORD.subLocs)
+                if (!subLocRef || subLocRef === "blank") {
+                    Media.ToggleImg(`SubLoc${locRef}`, false)
+                } else {
+                    Media.ToggleImg(`SubLoc${locRef}`, true)
+                    Media.SetImg(`SubLoc${locRef}`, subLocRef)
+                }
+        },
         setLocation = (locParams, sceneFocus, isForcing = false) => {
-            const newLocData = Object.assign(_.clone(BLANKLOCRECORD), locParams, _.omit(STATE.REF.curLocation, (v,k) => k === "SubLocs" || _.keys(locParams).includes(k))),
+            const newLocData = Object.assign(_.clone(BLANKLOCRECORD), locParams, _.omit(STATE.REF.curLocation, (v,k) => k === "subLocs" || _.keys(locParams).includes(k))),
                 curLocData = JSON.parse(JSON.stringify(STATE.REF.curLocation)),
                 reportStrings = [
+                    `SceneFocus: ${D.JS(sceneFocus)}`,
                     `Loc Params: ${D.JS(locParams)}`,
                     `New Loc Data: ${D.JS(newLocData)}`,
                     `Cur Loc Data: ${D.JS(curLocData)}`
@@ -753,19 +846,19 @@ const Session = (() => {
                 newLocData.SiteCenter = ["blank"]                
             }
             for (const [locPos, locData] of Object.entries(newLocData))
-                if (locPos === "SubLocs") {
+                if (locPos === "subLocs") {
                     continue
                 } else if (locData[0] === "same") {
                     newLocData[locPos] = getParentLocData(locPos)
                     if (locData[1] && newLocData[locPos])
                         [,newLocData[locPos][1]] = locData
                     if (locPos === "SiteCenter") 
-                        newLocData.SubLocs = D.Clone(!_.keys(locParams).includes("SubLocs") && STATE.REF.locationDetails[newLocData.SiteCenter[0]] && STATE.REF.locationDetails[newLocData.SiteCenter[0]].subLocs || curLocData.SubLocs)
+                        newLocData.subLocs = D.Clone(!_.keys(locParams).includes("subLocs") && STATE.REF.locationDetails[newLocData.SiteCenter[0]] && STATE.REF.locationDetails[newLocData.SiteCenter[0]].subLocs || curLocData.subLocs)
                 } else if (locData[0] === "blank") {
                     newLocData[locPos] = ["blank"]
                 }
             if (newLocData.SiteCenter[0] === "blank")
-                newLocData.SubLocs = _.clone(BLANKLOCRECORD.SubLocs)
+                newLocData.subLocs = _.clone(BLANKLOCRECORD.subLocs)
             STATE.REF.curLocation = D.Clone(newLocData)
             STATE.REF.locationRecord[Session.Mode] = D.Clone(newLocData)        
             if (newLocData.DistrictLeft[0] !== "blank" && _.isEqual(newLocData.DistrictLeft, newLocData.DistrictRight)) {
@@ -773,79 +866,359 @@ const Session = (() => {
                 newLocData.DistrictLeft = ["blank"]
                 newLocData.DistrictRight = ["blank"]
             }
-            const locDataDelta = _.pick(newLocData, _.keys(newLocData).filter(x => x !== "SubLocs" && (isForcing || !_.isEqual(newLocData[x], curLocData[x]))))
-            for (const [subLocPos, subLocName] of Object.entries(newLocData.SubLocs || {}))
-                if (isForcing || curLocData.SubLocs[subLocPos] !== subLocName)
+            const locDataDelta = _.pick(newLocData, _.keys(newLocData).filter(x => x !== "subLocs" && (isForcing || !_.isEqual(newLocData[x], curLocData[x]))))
+            for (const [subLocPos, subLocName] of Object.entries(newLocData.subLocs || {}))
+                if (isForcing || !curLocData.subLocs || curLocData.subLocs[subLocPos] !== subLocName)
                     locDataDelta[`SubLoc${subLocPos}`] = subLocName
             reportStrings.push(`Loc Data Delta: ${D.JS(locDataDelta)}`)
             reportStrings.push(`New STATE.REF Record: ${D.JS(STATE.REF.locationRecord[Session.Mode])}`)
+            reportStrings.push(`SceneFocus: ${D.JS(sceneFocus)}, Test: ${D.JS(sceneFocus || STATE.REF.sceneFocus)}`)
             DB(`<h3>Set Location Processing:</h3>${D.JS(reportStrings.join("<br>"))}`, "setLocation")
             for (const [locPos, locData] of Object.entries(locDataDelta)) {
                 const locSrc = VAL({string: locData}) ? locData : locData[0]
-                if (locSrc === "blank") {
-                    Media.ToggleImg(locPos, false)
-                    if (locPos.includes("Site")) {
-                        Media.ToggleImg(`SiteBar${locPos.replace(/Site/gu, "")}`, false)
-                        Media.ToggleText(`SiteName${locPos.replace(/Site/gu, "")}`, false)
-                    }
-                } else {
-                    Media.SetImg(locPos, locSrc, true)
-                    if (locPos.includes("Site") && locData[1]) {
-                        Media.ToggleImg(`SiteBar${locPos.replace(/Site/gu, "")}`, true)
-                        Media.SetText(`SiteName${locPos.replace(/Site/gu, "")}`, locData[1], true) 
-                    } else if (locPos.includes("Site")) {
-                        Media.ToggleImg(`SiteBar${locPos.replace(/Site/gu, "")}`, false)
-                        Media.ToggleText(`SiteName${locPos.replace(/Site/gu, "")}`, false)
-                    }
-                }
+                if (locPos.includes("Site"))
+                    setSiteImg(locPos.replace(/Site/gu, ""), locSrc, locData[1] || false)
+                else if (locPos.includes("District"))
+                    setDistrictImg(locPos.replace(/District/gu, ""), locSrc)
+                else if (locPos.includes("SubLoc"))
+                    setSubLocImg(locPos.replace(/SubLoc/gu, ""), locSrc)
             }
+            cleanLocationRegistry()
             setSceneFocus(sceneFocus || STATE.REF.sceneFocus)
         },
-        promptForDistrict = (locPoss) => {
-            locPoss = VAL({string:locPoss}) ? locPoss.split(/\s/gu) : locPoss
-            const menuSections = [],
-                distNames = _.keys(C.DISTRICTS)
-            for (const locPos of locPoss)
-                menuSections.push(...[
-                    {type:"Header", contents: locPos},
-                    {type: "ButtonLine", contents: [
-                        {name: "blank", command: `!sess set loc District${locPos}@|@blank`, styles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.orange, buttonTransform: "none"}},
-                        {name: "same", command: `!sess set loc District${locPos}@|@same`, styles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.orange, buttonTransform: "none"}}
-                    ]},
-                    ...distNames.length ? _.values(_.groupBy(distNames.map(x => ({name: x, command: `!sess set loc District${locPos}@|@${x}`, styles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.purple, buttonTransform: "none"}})), (x, i) => Math.floor(i / 3))).map(x => ({type: "ButtonLine", contents: x})) : []
-                ])
-            if (_.compact(menuSections).length)
-                D.CommandMenu({title: "Districts", rows: _.compact(menuSections)})
-                    
-        },
-        promptForSite = (locParams) => {
-            locParams = _.omit(locParams, "SubLocs")
-            const locPoss = _.uniq(_.keys(locParams).filter(x => x.startsWith("District") && !locParams[x.replace(/District/gu, "Site")]).map(x => x.replace(/District/gu, ""))),
-                menuSections = []
-            DB({locParams, locPoss}, "promptForSite")
-            for (const locPos of locPoss) {
-                const [distName] = locParams[`District${locPos}`][0] === "same" ? getParentLocData(`District${locPos}`) : locParams[`District${locPos}`],
-                    genericSites = ["blank", "same"],
-                    favSites = STATE.REF.FavoriteSites.filter(x => C.SITES[x].district === null || C.SITES[x].district.includes(distName)),
-                    distSites = _.keys(C.SITES).filter(x => C.SITES[x].district && C.SITES[x].district.includes(distName)),
-                    anySites = _.keys(C.SITES).filter(x => C.SITES[x].district === null)
-                menuSections.push(...[
-                    {type:"Header", contents: C.DISTRICTS[distName] ? C.DISTRICTS[distName].fullName : distName},
-                    ...genericSites.length ? _.values(_.groupBy(genericSites.map(x => ({name: x, command: `!sess set loc Site${locPos}@|@${x}`, styles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.orange, buttonTransform: "none"}})), (x, i) => Math.floor(i / 3))).map(x => ({type: "ButtonLine", contents: x})) : [],
-                    ...favSites.length ? _.values(_.groupBy(favSites.map(x => ({name: x, command: `!sess set loc Site${locPos}@|@${x}`, styles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.purple, buttonTransform: "none"}})), (x, i) => Math.floor(i / 3))).map(x => ({type: "ButtonLine", contents: x})) : [],
-                    ...distSites.length ? _.values(_.groupBy(distSites.map(x => ({name: x, command: `!sess set loc Site${locPos}@|@${x}`, styles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.red, buttonTransform: "none"}})), (x, i) => Math.floor(i / 3))).map(x => ({type: "ButtonLine", contents: x})) : [],
-                    ...anySites.length ? _.values(_.groupBy(anySites.map(x => ({name: x, command: `!sess set loc Site${locPos}@|@${x}`, styles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.blue, buttonTransform: "none"}})), (x, i) => Math.floor(i / 3))).map(x => ({type: "ButtonLine", contents: x})) : []
-                ])
+        cleanLocationRegistry = () => {
+            for (const locName of Object.keys(STATE.REF.locationDetails)) {
+                if (STATE.REF.locationDetails[locName].subLocs && (!VAL({list: STATE.REF.locationDetails[locName].subLocs}) || _.all(_.values(STATE.REF.locationDetails[locName].subLocs), x => !VAL({string: x}) || x.length < 2 || x === "blank")))
+                    delete STATE.REF.locationDetails[locName].subLocs
+                if (STATE.REF.locationDetails[locName].siteName && !VAL({string: STATE.REF.locationDetails[locName].siteName}))
+                    delete STATE.REF.locationDetails[locName].siteName
+                if (!STATE.REF.locationDetails[locName].siteName && !STATE.REF.locationDetails[locName].subLocs)
+                    delete STATE.REF.locationDetails[locName]
             }
-            if (_.compact(menuSections).length)
-                D.CommandMenu({title: "Sites", rows: _.compact(menuSections)})                     
+            STATE.REF.curLocation = _.omit(STATE.REF.curLocation, (v, k) => !_.keys(BLANKLOCRECORD).includes(k))
+            for (const modeName of Object.keys(STATE.REF.locationRecord))
+                STATE.REF.locationRecord[modeName] = _.omit(STATE.REF.locationRecord[modeName], (v, k) => !_.keys(BLANKLOCRECORD).includes(k))
+        },
+        distCommandMenu = () => {
+            DB({["Into District PENDINGLOCCOMMAND:"]: PENDINGLOCCOMMAND}, "distCommandMenu")
+            PENDINGLOCCOMMAND.workingIndex = PENDINGLOCCOMMAND.Districts.length
+            const isSecondMenu = PENDINGLOCCOMMAND.Districts.length > 0,
+                genericButtons = ["blank", "same", "reset"],
+                favDistricts = STATE.REF.FavoriteDistricts,
+                distNames = _.keys(C.DISTRICTS).filter(x => !favDistricts.includes(x))
+            D.CommandMenu(
+                {  
+                    title: isSecondMenu && "District RIGHT" || "District",
+                    rows: [
+                        ..._.chain(genericButtons).
+                            map(x => ({name: x, command: `!reply district@${x}, call@site`})).
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.orange, buttonTransform: "none"}})).
+                            value(),
+                        ..._.chain(favDistricts).
+                            map(x => ({name: x, command: `!reply district@${x}, call@site`})).
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.purple, buttonTransform: "none"}})).
+                            value(),
+                        ..._.chain(distNames).
+                            map(x => ({name: x, command: `!reply district@${x}, call@site`})).
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.darkgreen, buttonTransform: "none"}})).
+                            value()
+                    ],
+                    blockStyles: {/* color, bgGradient, bgColor, bgImage, border, margin, width, padding */}
+
+                    
+                    /* <a style="height: 9px ; width: 83% ; display: inline-block ; border: 1px solid white ; color: rgba( 255 , 255 , 255 , 1 ) ; 
+                    background-color: rgba( 100 , 100 , 255 , 1 ) ; font-size: 12px ; line-height: 10px ; font-family: &quot;arial narrow&quot; ; 
+                    text-transform: none ; text-align: center ; padding: 3px ; font-weight: normal ; text-shadow: none" href="!sess set loc SiteCenter@|@ParkingLot">ParkingLot</a> */
+                },
+                (commandString) => {
+                    const params = D.ParseToObj(commandString, ",", "@"),
+                        cmdIndex = PENDINGLOCCOMMAND.workingIndex
+                    if (commandString.includes("reset")) {
+                        PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND)
+                        Media.Notify("PanelRight", "Resetting pending location data.", true, C.COLORS.brightred)
+                        distCommandMenu()
+                        return false
+                    }
+                    if ("district" in params) {
+                        PENDINGLOCCOMMAND.Districts[cmdIndex] = [params.district]
+                        Media.Notify("PanelRight", `District${cmdIndex === 1 ? " RIGHT" : ""} set to ${D.UCase(params.district)}`, false, C.COLORS.green)
+                    }
+                    DB({[`PENDINGLOCCOMMAND After "!reply ${D.JSL(commandString)}"`]: PENDINGLOCCOMMAND}, "distCommandMenu")
+                    if ("call" in params)
+                        switch (params.call) {
+                            case "district": distCommandMenu(); break
+                            case "site": siteCommandMenu(); break
+                            case "sublocs": subLocCommandMenu(); break
+                            case "focus": sceneFocusCommandMenu(); break
+                            // no default
+                        }
+                    return !("call" in params)
+                }
+            )
+        },
+        siteCommandMenu = () => {
+            DB({["Into Site PENDINGLOCCOMMAND"]: PENDINGLOCCOMMAND}, "siteCommandMenu")
+            const isSecondMenu = PENDINGLOCCOMMAND.workingIndex === 1,
+                [distName] = PENDINGLOCCOMMAND.Districts[PENDINGLOCCOMMAND.workingIndex],
+                genericSites = ["blank", "same"],
+                favSites = STATE.REF.FavoriteSites.filter(x => C.SITES[x].district === null || C.SITES[x].district.includes(distName)),
+                distSites = _.keys(C.SITES).filter(x => C.SITES[x].district && C.SITES[x].district.includes(distName)),
+                anySites = _.keys(C.SITES).filter(x => C.SITES[x].district === null),
+                namedSites = _.uniq([...favSites, ...distSites, ...anySites]).filter(x => x in STATE.REF.locationDetails && STATE.REF.locationDetails[x].siteName).map(x => [x, STATE.REF.locationDetails[x].siteName])
+
+            D.CommandMenu(
+                {
+                    title: isSecondMenu && `Site RIGHT (${distName})` || `Site (${distName})`,
+                    rows: _.compact([
+                        ..._.chain(genericSites).
+                            map(x => ({name: x, command: `!reply site@${x}`})).
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.orange, buttonTransform: "none"}})).
+                            value(),
+                        ..._.chain(favSites).
+                            map(x => ({name: x, command: `!reply site@${x}`})).
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.purple, buttonTransform: "none"}})).
+                            value(),
+                        ..._.chain(namedSites).
+                            map(x => ({name: x[1], command: `!reply namedsite@${x[0]}`})).
+                            groupBy((x, i) => Math.floor(i / 2)).
+                            map(x => ({type: "ButtonLine", contents: _.flatten(x), buttonStyles: {width: "45%", fontSize: "12px", color: C.COLORS.black, bgColor: C.COLORS.yellow, buttonTransform: "none"}})).
+                            value(),
+                        ..._.chain(distSites).
+                            map(x => ({name: x, command: `!reply site@${x}`})).
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", color: C.COLORS.black, bgColor: C.COLORS.brightblue, buttonTransform: "none"}})).
+                            value(),
+                        ..._.chain(anySites).
+                            map(x => ({name: x, command: `!reply site@${x}`})).
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.blue, buttonTransform: "none"}})).
+                            value(),
+                        ..._.chain(isSecondMenu ? {
+                            ["<<< Left"]: ["!reply focus@left", {width: "30%", bgColor: STATE.REF.sceneFocus === "l" && C.COLORS.gold || C.COLORS.grey}],
+                            [">> Both <<"]: ["!reply focus@center", {width: "30%", bgColor: STATE.REF.sceneFocus === "c" && C.COLORS.gold || C.COLORS.grey}],
+                            ["Right >>>"]: ["!reply focus@right", {width: "30%", bgColor: STATE.REF.sceneFocus === "r" && C.COLORS.gold || C.COLORS.grey}]
+                        } : {
+                            ["<<< subLocs"]: ["!reply call@sublocs", {}],
+                            ["Loc #2 >>>"]: ["!reply call@district", {}]
+                        }).
+                            mapObject((v, k) => v ? {name: k, command: v[0], styles: v[1]} : 0).
+                            values().
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "40%", fontSize: "12px", bgColor: C.COLORS.palepurple, color: C.COLORS.black, fontWeight: "bold"}})).
+                            value(),
+                        ..._.chain({
+                            ["RENAME"]: ["!reply name@?{Site Name}", {}],
+                        }).
+                            mapObject((v, k) => v ? {name: k, command: v[0], styles: v[1]} : 0).
+                            values().
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "60%", fontSize: "12px", bgColor: C.COLORS.brightbrightgrey, color: C.COLORS.black, fontWeight: "bold"}})).
+                            value(),
+                        ..._.chain({
+                            ["FINISHED!"]: ["!reply done", {}],
+                            ["RESET"]: ["!reply reset", {bgColor: C.COLORS.brightred, color: C.COLORS.white}]
+                        }).
+                            mapObject((v, k) => v ? {name: k, command: v[0], styles: v[1]} : 0).
+                            values().
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "47%", buttonHeight: "18px", fontSize: "14px", fontWeight: "bold", color: C.COLORS.black, bgColor: C.COLORS.brightgreen}})).
+                            value()
+                    ]),
+                    blockStyles: {/* color, bgGradient, bgColor, bgImage, border, margin, width, padding */}
+                },
+                (commandString) => {
+                    const params = D.ParseToObj(commandString, "|", "@"),
+                        cmdIndex = PENDINGLOCCOMMAND.workingIndex
+                    if (commandString.includes("reset")) {
+                        PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND)
+                        Media.Notify("PanelRight", "Resetting pending location data.", true, C.COLORS.brightred)
+                        distCommandMenu()
+                        return false
+                    }
+                    PENDINGLOCCOMMAND.Sites[cmdIndex] = PENDINGLOCCOMMAND.Sites[cmdIndex] || []
+                    if ("namedsite" in params) {
+                        PENDINGLOCCOMMAND.Sites[cmdIndex][0] = params.namedsite
+                        PENDINGLOCCOMMAND.Sites[cmdIndex][2] = false
+                        Media.Notify("PanelRight", `Site${cmdIndex === 1 ? " RIGHT" : " (First)"} set to ${D.UCase(params.namedsite)} (custom name)`, false, C.COLORS.cyan)
+                    } if ("site" in params) {
+                        PENDINGLOCCOMMAND.Sites[cmdIndex][0] = params.site
+                        PENDINGLOCCOMMAND.Sites[cmdIndex][2] = true
+                        Media.Notify("PanelRight", `Site${cmdIndex === 1 ? " RIGHT" : " (First)"} set to ${D.UCase(params.site)}`, false, C.COLORS.brightblue)
+                    }
+                    if ("name" in params) {
+                        PENDINGLOCCOMMAND.Sites[cmdIndex][1] = params.name
+                        Media.Notify("PanelRight", `Site${cmdIndex === 1 ? " RIGHT" : " (First)"} renamed to ${params.name}`, false, C.COLORS.brightgrey)
+                    }
+                    if ("focus" in params) {
+                        PENDINGLOCCOMMAND.SceneFocus = params.focus
+                        Media.Notify("PanelRight", `Scene Focus switched to ${D.Capitalize(params.focus)}`, false, C.COLORS.gold)
+                    }
+                    DB({[`PENDINGLOCCOMMAND After "!reply ${D.JSL(commandString)}":`]: PENDINGLOCCOMMAND}, "siteCommandMenu")
+                    if ("call" in params)
+                        switch (params.call) {
+                            case "district": distCommandMenu(); break
+                            case "site": siteCommandMenu(); break
+                            case "sublocs": subLocCommandMenu(); break
+                            // no default
+                        }
+                    if ("done" in params) {
+                        processPendingLocCommand()  
+                        Media.Notify("PanelRight", "FINISHED! Setting Location Cards...", true, C.COLORS.brightgreen)     
+                    }      
+                    
+                    return !("call" in params || "done" in params)
+                })
+        },
+        processPendingLocCommand = () => {
+            const locParams = {}
+            switch (PENDINGLOCCOMMAND.workingIndex) {
+                case 0: {
+                    [locParams.DistrictCenter] = PENDINGLOCCOMMAND.Districts;
+                    [locParams.SiteCenter] = PENDINGLOCCOMMAND.Sites
+                    if ("subLocs" in PENDINGLOCCOMMAND)
+                        locParams.subLocs = Object.assign({}, BLANKLOCRECORD.subLocs, PENDINGLOCCOMMAND.subLocs)
+                    break
+                }
+                case 1: {
+                    [locParams.DistrictLeft, locParams.DistrictRight] = PENDINGLOCCOMMAND.Districts;
+                    [locParams.SiteLeft, locParams.SiteRight] = PENDINGLOCCOMMAND.Sites
+                    break
+                }
+                // no default
+            }
+            setLocation(parseLocationString(locParams), PENDINGLOCCOMMAND.SceneFocus)   
+            PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND)    
+        },
+        subLocCommandMenu = () => {
+            const [siteName] = PENDINGLOCCOMMAND.Sites[PENDINGLOCCOMMAND.workingIndex],
+                genericSubLocs = ["blank"],
+                siteSubLocs = Object.keys(Media.IMAGES.SubLocTopLeft_1.srcs).filter(x => x.startsWith(siteName)).sort(),
+                anySubLocs = Object.keys(Media.IMAGES.SubLocTopLeft_1.srcs).filter(x => !x.includes("_")).sort(),
+                subLocPanels = {}
+            for (const subLocRef of Object.keys(BLANKLOCRECORD.subLocs)) 
+                subLocPanels[subLocRef] = {
+                    rows: [
+                        {type: "Header", contents: subLocRef},
+                        ..._.compact([
+                            ..._.chain(genericSubLocs).
+                                map(x => ({name: x, command: `!reply ${subLocRef}@${x}`})).
+                                groupBy((x, i) => Math.floor(i / 2)).
+                                map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "49%", fontSize: "10px", bgColor: C.COLORS.orange, buttonTransform: "none"}})).
+                                value(),
+                            ..._.chain(siteSubLocs).
+                                map(x => ({name: x.replace(/[^_]+_/gu, ""), command: `!reply ${subLocRef}@${x}`})).
+                                groupBy((x, i) => Math.floor(i / 2)).
+                                map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "49%", fontSize: "10px", bgColor: C.COLORS.purple, buttonTransform: "none"}})).
+                                value(),
+                            ..._.chain(anySubLocs).
+                                map(x => ({name: x, command: `!reply ${subLocRef}@${x}`})).
+                                groupBy((x, i) => Math.floor(i / 2)).
+                                map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "49%", fontSize: "10px", color: C.COLORS.black, bgColor: C.COLORS.brightblue, buttonTransform: "none"}})).
+                                value()
+                        ])
+                    ]}
+            
+            D.CommandMenu(
+                {
+                    title: `SubLocations for ${siteName || "?"}`,
+                    rows: [
+                        {type: "Column", contents: [
+                            subLocPanels.TopLeft,
+                            subLocPanels.TopRight
+                        ], style: {width: "47%", margin: "0px 1% 0% 1%"}},
+                        {type: "Column", contents: [
+                            subLocPanels.Left,
+                            subLocPanels.Right
+                        ], style: {width: "47%", margin: "0px 1% 0% 1%"}},
+                        {type: "Column", contents: [
+                            subLocPanels.BotLeft,
+                            subLocPanels.BotRight
+                        ], style: {width: "47%", margin: "0px 1% 0% 1%"}},
+                        ..._.chain({
+                            ["FINISHED!"]: ["!reply done", {}],
+                            ["RESET"]: ["!reply reset", {bgColor: C.COLORS.brightred, color: C.COLORS.white}]
+                        }).
+                            mapObject((v, k) => v ? {name: k, command: v[0], styles: v[1]} : 0).
+                            values().
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "47%", buttonHeight: "18px", fontSize: "14px", fontWeight: "bold", color: C.COLORS.black, bgColor: C.COLORS.brightgreen}})).
+                            value()
+                    ]
+                },
+                (commandString) => {
+                    const params = D.ParseToObj(commandString, "|", "@")  
+                    DB({params}, "subLocCommandMenu")              
+                    if (commandString.includes("reset")) {
+                        PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND)
+                        Media.Notify("PanelRight", "Resetting pending location data.", true, C.COLORS.brightred)
+                        distCommandMenu()
+                        return false
+                    }
+                    PENDINGLOCCOMMAND.subLocs = PENDINGLOCCOMMAND.subLocs || {}
+                    if ("done" in params) {
+                        processPendingLocCommand()
+                        Media.Notify("PanelRight", "FINISHED! Setting Location Cards...", true, C.COLORS.brightgreen)   
+                        return false
+                    } else {
+                        for (const [locRef, subLocRef] of Object.entries(params))
+                            if (locRef in BLANKLOCRECORD.subLocs) {
+                                PENDINGLOCCOMMAND.subLocs[locRef] = subLocRef                                
+                                Media.Notify("PanelRight", `Sub-Location ${locRef} at ${PENDINGLOCCOMMAND.Sites[PENDINGLOCCOMMAND.workingIndex][0]} set to ${subLocRef}`, false, C.COLORS.brightpurple)
+                            }
+                        return true
+                    }
+                })  
+        },
+        sceneFocusCommandMenu = () => {
+            D.CommandMenu(
+                {
+                    rows: _.compact([
+                        {type: "Header", contents: `Current Focus: ${{c: "Center", l: "Left", r: "Right"}[STATE.REF.sceneFocus]}`},                    
+                        ..._.chain({
+                            ["<<< Left"]: ["!reply focus@left", {bgColor: STATE.REF.sceneFocus === "l" && C.COLORS.gold || C.COLORS.grey}],
+                            [">> Both <<"]: ["!reply focus@center", {bgColor: STATE.REF.sceneFocus === "c" && C.COLORS.gold || C.COLORS.grey}],
+                            ["Right >>>"]: ["!reply focus@right", {bgColor: STATE.REF.sceneFocus === "r" && C.COLORS.gold || C.COLORS.grey}]
+                        }).
+                            mapObject((v, k) => v ? {name: k, command: v[0], styles: v[1]} : 0).
+                            values().
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.palepurple, color: C.COLORS.black, fontWeight: "bold"}})).
+                            value()
+                    ])
+                },
+                (commandString) => {
+                    const params = D.ParseToObj(commandString, "|", "@")
+                    if ("focus" in params)
+                        setSceneFocus(params.focus)
+                })
+
         },
         setModeLocations = (mode, isForcing = false) => { setLocation(STATE.REF.locationRecord[mode], null, isForcing) },
         getCharsInLocation = (locPos) => {
             const charObjs = []
-            for (const loc of getActiveLocations(locPos))
+            for (const loc of getActivePositions(locPos))
                 charObjs.push(...Media.GetContainedChars(loc, {padding: 50}))
             return _.uniq(charObjs)
+        },
+        isOnActiveSide = (charRef) => {
+            const tokenObj = Media.GetToken(charRef),
+                left = tokenObj && tokenObj.get && tokenObj.get("left"),
+                focus = STATE.REF.sceneFocus,
+                activeLocs = _.keys(STATE.REF.curLocation).filter(x => x !== "subLocs" && STATE.REF.curLocation[x][0] !== "blank")
+            if (activeLocs.includes("DistrictCenter"))
+                return true
+            else                    
+                switch (focus) {
+                    case "c": return true
+                    case "l": return VAL({number: left}) && D.Int(left) <= C.SANDBOX.width/2
+                    case "r": return VAL({number: left}) && D.Int(left) >= C.SANDBOX.width/2
+                    default: return false
+                }
         },
 
         // subLocList = ["blank", ..._.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).map(x => `${`(${(x.match(/^[^_]*?([A-Z])[^_]*?([A-Z])[^_]*?_/u) || ["", ""]).slice(1).join("")}) `.replace("() ", "")}${x.replace(/.*?_/gu, "")}`)],
@@ -885,7 +1258,7 @@ const Session = (() => {
         setSubLocMacro = () => {
             const subLocList = ["blank", ...[..._.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => x.startsWith(`${getActiveSite()}_`)).sort(), ..._.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => !x.includes("_")).sort()].map(x => `${`(${(x.match(/^[^_]*?([A-Z])[^_]*?([A-Z])[^_]*?_/u) || ["", ""]).slice(1).join("")}) `.replace("() ", "")}${x.replace(/.*?_/gu, "")},${x}`)],
                 macros = {
-                    "LOC-SubLocations": `!sess set loc SubLocs:?{Top Left|${subLocList.join("|")}}|?{Left|${subLocList.join("|")}}|?{Bottom Left|${subLocList.join("|")}}|?{Top Right|${subLocList.join("|")}}|?{Right|${subLocList.join("|")}}|?{Bottom Right|${subLocList.join("|")}} Center`
+                    "LOC-SubLocations": `!sess set loc subLocs:?{Top Left|${subLocList.join("|")}}|?{Left|${subLocList.join("|")}}|?{Bottom Left|${subLocList.join("|")}}|?{Top Right|${subLocList.join("|")}}|?{Right|${subLocList.join("|")}}|?{Bottom Right|${subLocList.join("|")}} Center`
                 }
             // D.Poke(`Registry: ${D.JSL(_.keys(Media.IMAGES.DistrictCenter_1.srcs))}<br><br>Keys: ${D.JS(_.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).join(", "))}<br><br>Filter: ${D.JS(_.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => !x.includes("_") || x.startsWith(`${getActiveSite()}_`)))}`, "Testing")          
             for (const [macroName, macroAction] of Object.entries(macros))
@@ -926,25 +1299,52 @@ const Session = (() => {
             }
         },
         setSceneFocus = (locPos) => {
-            locPos = locPos || isLocCentered() === true && "Center" || isLocCentered() === false && "Left" || STATE.REF.sceneFocus 
-            STATE.REF.sceneFocus = D.LCase(locPos).charAt(0)
-            const sceneLocs = getActiveSceneLocations()
-            for (const loc of getActiveLocations())
-                if (sceneLocs.includes(loc))
-                    Media.SetImgTemp(loc, {tint_color: "transparent"})
-                else
-                    Media.SetImgTemp(loc, {tint_color: "#000000"})            
-            if (STATE.REF.sceneFocus === "c")
-                setSubLocMacro()
-            if (STATE.REF.locationPointer[Session.Site] && STATE.REF.locationPointer[Session.Site].pointerPos) {
+            locPos = isLocCentered() === true && "c" ||
+                VAL({string: locPos}) && D.LCase(locPos).charAt(0) ||
+                isLocCentered() === false && ["r", "l", "c"].includes(STATE.REF.sceneFocus) && STATE.REF.sceneFocus ||
+                "c"
+            STATE.REF.sceneFocus = locPos
+            const sceneLocs = getActiveScenePositions()
+            DB({locPos, ["state Scene Focus"]: STATE.REF.sceneFocus, sceneLocs, activeLocs: getActivePositions()}, "setSceneFocus")
+            const activeLocs = _.keys(STATE.REF.curLocation).filter(x => x !== "subLocs" && STATE.REF.curLocation[x][0] !== "blank"),
+                tokenObjs = findObjs({
+                    _pageid: D.PAGEID,
+                    _type: "graphic",
+                    _subtype: "token"
+                }).filter(x => x.get("represents"))            
+            if (activeLocs.includes("DistrictCenter")) {
+                Media.ToggleImg("DisableLocLeft", false)
+                Media.ToggleImg("DisableLocRight", false)
+                for (const tokenObj of tokenObjs) {
+                    Media.ToggleToken(tokenObj, true)
+                    if (tokenObj.get("layer") !== "objects")
+                        tokenObj.set({layer: "objects"})
+                }
+            } else {                    
+                Media.ToggleImg("DisableLocLeft", locPos === "r")
+                Media.ToggleImg("DisableLocRight", locPos === "l")
+                for (const tokenObj of tokenObjs) {
+                    const isActive = isOnActiveSide(tokenObj)
+                    Media.ToggleToken(tokenObj, isActive)
+                    if (isActive === (tokenObj.get("layer") !== "objects"))
+                        tokenObj.set({layer: isActive ? "objects" : "walls"})
+                }
+            }
+            const [sitePos] = sceneLocs.filter(x => x.startsWith("Site")),
+                siteName = sitePos in STATE.REF.curLocation && STATE.REF.curLocation[sitePos][1],
+                pointerPos = siteName && (Session.Site in STATE.REF.locationDetails && VAL({list: STATE.REF.locationDetails[Session.Site].pointerPos}) && STATE.REF.locationDetails[Session.Site].pointerPos) ||
+                    STATE.REF.locationPointer[Session.Site] && VAL({list: STATE.REF.locationPointer[Session.Site].pointerPos}) && STATE.REF.locationPointer[Session.Site].pointerPos
+                               
+            if (VAL({list: pointerPos})) {
                 Media.ToggleImg("MapIndicator_Base_1", true)
                 Media.ToggleAnim("MapIndicator", true)
-                Media.SetImgData("MapIndicator_Base_1", {left: STATE.REF.locationPointer[Session.Site].pointerPos.left, top: STATE.REF.locationPointer[Session.Site].pointerPos.top}, true)
-                Media.GetImg("MapIndicator").set({left: STATE.REF.locationPointer[Session.Site].pointerPos.left, top: STATE.REF.locationPointer[Session.Site].pointerPos.top})
+                Media.SetImgData("MapIndicator_Base_1", {left: pointerPos.left, top: pointerPos.top}, true)
+                Media.GetImg("MapIndicator").set({left: pointerPos.left, top: pointerPos.top})
             } else {                
                 Media.ToggleImg("MapIndicator_Base_1", false)
                 Media.ToggleAnim("MapIndicator", false)
             }
+            Media.UpdateSoundscape()
         },
         endScene = () => {
             for (const charID of STATE.REF.sceneChars)
@@ -964,9 +1364,10 @@ const Session = (() => {
         ChangeMode: changeMode,
         CharsIn: getCharsInLocation,
         ResetLocations: setModeLocations,
+        IsInScene: (charRef) => isOnActiveSide(charRef),
         get SceneChars() { return getCharsInLocation(STATE.REF.sceneFocus) },
         get SceneFocus() { return STATE.REF.sceneFocus },
-        Locations: () => D.KeyMapObj(getActiveSceneLocations(), (k, v) => v, v => STATE.REF.curLocation[v][0] !== "blank" && STATE.REF.curLocation[v][0]),
+        Locations: () => D.KeyMapObj(getActiveScenePositions(), (k, v) => v, v => STATE.REF.curLocation[v][0] !== "blank" && STATE.REF.curLocation[v][0]),
         get Location() { return STATE.REF.locationRecord },
         get District() { return getActiveDistrict() },
         get Site() { return getActiveSite() },

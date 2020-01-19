@@ -37,6 +37,72 @@ const Media = (() => {
             STATE.REF.loopingSounds = STATE.REF.loopingSounds || []
             STATE.REF.soundScore = STATE.REF.soundScore || "ScoreMain"
             STATE.REF.isRunningSilent = STATE.REF.isRunningSilent || false
+            STATE.REF.panelLog = STATE.REF.panelLog || {}
+
+            for (const panelName of Object.keys(STATE.REF.panelLog))
+                killPanel(panelName)
+
+            /* STATE.REF.imgregistry.Horizon_1 = Object.assign({}, STATE.REF.imgregistry.Horizon_1, {
+                id: "-LytU9AFC3eSjdK9A98L",
+                type: "image",
+                name: "Horizon_1",
+                left: 795,
+                top: 520,
+                height: 1040,
+                width: 1590,
+                activeLayer: "map",
+                zIndex: 2,
+                srcs: {
+                    night1clear: "https://s3.amazonaws.com/files.d20.io/images/98509811/jMluHoG6qt1m5rvbwML6xA/thumb.jpg?1575435633",
+                    night1cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509810/1sLLY_NS7SF_cootY6JCZQ/thumb.jpg?1575435632",
+                    night1stormy: "https://s3.amazonaws.com/files.d20.io/images/98509806/oo2w3_LmrwC02hhbtFZfdA/thumb.jpg?1575435632",
+                    night2clear: "https://s3.amazonaws.com/files.d20.io/images/98509809/7Mubictt4CuEbtIkQej_NA/thumb.jpg?1575435630",
+                    night2cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509812/nygGMQLIqtx4rQHgW0I_YA/thumb.jpg?1575435631",
+                    night2stormy: "https://s3.amazonaws.com/files.d20.io/images/98509813/FAC-yIys7r3FaoOFugPnrA/thumb.jpg?1575435633",
+                    night3clear: "https://s3.amazonaws.com/files.d20.io/images/98509808/hkd5rZAGvQXWu8FkSC8xRQ/thumb.jpg?1575435628",
+                    night3cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509807/f95z0RIBbQvLr9wire9lTA/thumb.jpg?1575435628",
+                    night3stormy: "https://s3.amazonaws.com/files.d20.io/images/98509805/_luh6PjsucSge5vQPQa7Wg/thumb.jpg?1575435632",
+                    night4clear: "https://s3.amazonaws.com/files.d20.io/images/100785925/PEjDWxVUGu6dRElEU3NHOA/thumb.jpg?1578140296",
+                    night4cloudy: "https://s3.amazonaws.com/files.d20.io/images/100785924/CwOspPiRSBK2wiLxkcEsvQ/thumb.jpg?1578140296",
+                    night4stormy: "https://s3.amazonaws.com/files.d20.io/images/100785923/3DbKQKY5hJLSjVmRMNLtpA/thumb.jpg?1578140297",
+                    night5clear: "https://s3.amazonaws.com/files.d20.io/images/98509827/4OJMf54JlaSAoUguGWFA7w/thumb.jpg?1575435661",
+                    night5cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509828/H3WkUETxELNAmR5nb2mCUQ/thumb.jpg?1575435652",
+                    night5stormy: "https://s3.amazonaws.com/files.d20.io/images/98509829/S0-rjuJFf3swtlsqixQcEg/thumb.jpg?1575435662",
+                    predawn5clear: "https://s3.amazonaws.com/files.d20.io/images/98509843/GcoIwvrQ1IpsWPzHwI9Kwg/thumb.jpg?1575435663",
+                    predawn5cloudy: "https://s3.amazonaws.com/files.d20.io/images/100786047/i35R3ajICbT2cggfb_24Iw/thumb.jpg?1578140496",
+                    predawn5stormy: "https://s3.amazonaws.com/files.d20.io/images/98509830/c0a9XwL2sKt35g2N9Bkvkg/thumb.jpg?1575435655",
+                    predawn4clear: "https://s3.amazonaws.com/files.d20.io/images/98509838/HTrpZchyeBrArTkWS-HdXQ/thumb.jpg?1575435661",
+                    predawn4cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509834/U3j4v-QNVrSloeGDrBIqsg/thumb.jpg?1575435660",
+                    predawn4stormy: "https://s3.amazonaws.com/files.d20.io/images/98509844/pFitw7gnWpZljtv0051xmA/thumb.jpg?1575435663",
+                    predawn3clear: "https://s3.amazonaws.com/files.d20.io/images/98509835/9ZyuFbvfpKaUQld49lHwZw/thumb.jpg?1575435661",
+                    predawn3cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509831/6psuh2KqppMjRNSBL1lxGg/thumb.jpg?1575435666",
+                    predawn3stormy: "https://s3.amazonaws.com/files.d20.io/images/98509833/D-9xH2jpPMHmw5Qy-NLoag/thumb.jpg?1575435664",
+                    predawn2clear: "https://s3.amazonaws.com/files.d20.io/images/98509836/txhvZ2Q1C0BvZqsTJOP9PA/thumb.jpg?1575435667",
+                    predawn2cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509841/SutITafOVflOWI1g5sk3Dw/thumb.jpg?1575435666",
+                    predawn2stormy: "https://s3.amazonaws.com/files.d20.io/images/98509842/XoOtLqud8SEmLpRZo11SlA/thumb.jpg?1575435665",
+                    predawn1clear: "https://s3.amazonaws.com/files.d20.io/images/98509839/t_eW_DnhFzgPRbYgQ53pcQ/thumb.jpg?1575435667",
+                    predawn1cloudy: "https://s3.amazonaws.com/files.d20.io/images/98509840/uLEc81-_o7CiPYbJaZuSrw/thumb.jpg?1575435666",
+                    predawn1stormy: "https://s3.amazonaws.com/files.d20.io/images/98509832/hg4QLMHetze-2rKMygC0Yg/thumb.jpg?1575435665",
+                    day: "https://s3.amazonaws.com/files.d20.io/images/96326425/CgaFz_GokWBhfOdevEpQCg/thumb.jpg?1573106179"
+                },
+                modes: {
+                    Active: {isForcedOn: true},
+                    Inactive: {isForcedOn: true, isForcedState: "night5clear", lastState: "night5clear"},
+                    Daylighter: {isForcedOn: true, isForcedState: "daylighters", lastState: "daylighters"},
+                    Downtime: {isForcedOn: true, isForcedState: "night5clear", lastState: "night5clear"},
+                    Complications: {isForcedOn: null},
+                    Spotlight: {isForcedOn: true, isForcedState: "night5clear", lastState: "night5clear"}
+                },
+                leftEdge: 0,
+                rightEdge: 1590,
+                topEdge: 0,
+                bottomEdge: 1040,
+                curSrc: "night5cloudy",
+                curMode: "Active",
+                isActive: false,
+                activeSrc: "night5cloudy",
+                wasModeUpdated: true
+            }) */
 
             // Initialize IMGDICT Fuzzy Dictionary
             STATE.REF.IMGDICT = Fuzzy.Fix()
@@ -954,10 +1020,12 @@ const Media = (() => {
                             break
                         }
                         case "play": {
+                            Media.LoopSound(args[0])
                             playSound(args.shift(), undefined, undefined, true)
                             break
                         }
                         case "stop": {
+                            Media.StopLooping(args[0])
                             stopSound(args.shift())
                             break
                         }
@@ -1078,7 +1146,7 @@ const Media = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     let [imgRecord, imgResize, imgSrcAutoReg, imgSrcAutoToken, imgSrcAddingProfilePic, soundScapeTimer] = [false, false, false, false, false, null]
-    const activeTimers = {},
+    const animTimers = {},
 
     // #region CONFIGURATION
         REGISTRY = {
@@ -1092,7 +1160,8 @@ const Media = (() => {
             get TRACKS() { return state.Roll20AM.trackDetails },
             get PLAYLISTS() { return state.Roll20AM.playLists },
             get GRAPHIC() { return Object.assign({}, STATE.REF.animregistry, STATE.REF.imgregistry) },
-            get ALL() { return Object.assign({}, STATE.REF.animregistry, STATE.REF.soundregistry, STATE.REF.textregistry, STATE.REF.imgregistry)}
+            get ALL() { return Object.assign({}, STATE.REF.animregistry, STATE.REF.soundregistry, STATE.REF.textregistry, STATE.REF.imgregistry)},
+            get PANELS() { return STATE.REF.panelLog }
         },
         BGIMGS = {
             top: C.SANDBOX.top,
@@ -1150,12 +1219,14 @@ const Media = (() => {
                         SiteNameLeft: 151,
                         SiteNameRight: 151 
                     },
-                    SubSiteTopLeft: 152,
-                    SubSiteTopRight: 152,
-                    SubSiteLeft: 152,
-                    SubSiteRight: 152,
-                    SubSiteBotLeft: 152,
-                    SubSiteBotRight: 152
+                    SubLocTopLeft_1: 152,
+                    SubLocTopRight_1: 152,
+                    SubLocLeft_1: 152,
+                    SubLocRight_1: 152,
+                    SubLocBotLeft_1: 152,
+                    SubLocBotRight_1: 152,
+                    DisableLocLeft_1: 154,
+                    DisableLocRight_1: 154
                 },
                 SignalLights: {
                     SignalLightTopRight_1: 120,
@@ -1567,166 +1638,6 @@ const Media = (() => {
             ["IMG", "CompCard_Base_9", "modes", "Downtime", {isForcedOn: "NEVER"}],
             ["IMG", "CompCard_Base_9", "modes", "Spotlight", {isForcedOn: "NEVER"}],
             ["IMG", "CompCard_Base_9", "modes", "Complications", {isForcedOn: true, isForcedState: "cardBack", lastState: "cardBack"}],
-            ["IMG", "CompCard_DuplicatedLeft_1", "isActive", false],
-            ["IMG", "CompCard_DuplicatedLeft_1", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedLeft_1", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_1", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_1", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_1", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_1", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedLeft_10", "isActive", false],
-            ["IMG", "CompCard_DuplicatedLeft_10", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedLeft_10", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_10", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_10", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_10", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_10", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_10", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedLeft_2", "isActive", false],
-            ["IMG", "CompCard_DuplicatedLeft_2", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedLeft_2", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_2", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_2", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_2", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_2", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_2", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedLeft_3", "isActive", false],
-            ["IMG", "CompCard_DuplicatedLeft_3", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedLeft_3", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_3", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_3", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_3", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_3", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_3", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedLeft_4", "isActive", false],
-            ["IMG", "CompCard_DuplicatedLeft_4", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedLeft_4", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_4", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_4", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_4", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_4", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_4", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedLeft_5", "isActive", false],
-            ["IMG", "CompCard_DuplicatedLeft_5", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedLeft_5", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_5", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_5", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_5", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_5", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_5", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedLeft_6", "isActive", false],
-            ["IMG", "CompCard_DuplicatedLeft_6", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedLeft_6", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_6", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_6", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_6", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_6", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_6", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedLeft_7", "isActive", false],
-            ["IMG", "CompCard_DuplicatedLeft_7", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedLeft_7", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_7", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_7", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_7", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_7", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_7", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedLeft_8", "isActive", false],
-            ["IMG", "CompCard_DuplicatedLeft_8", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedLeft_8", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_8", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_8", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_8", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_8", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_8", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedLeft_9", "isActive", false],
-            ["IMG", "CompCard_DuplicatedLeft_9", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedLeft_9", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_9", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_9", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_9", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_9", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedLeft_9", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedRight_1", "isActive", false],
-            ["IMG", "CompCard_DuplicatedRight_1", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedRight_1", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_1", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_1", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_1", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_1", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedRight_10", "isActive", false],
-            ["IMG", "CompCard_DuplicatedRight_10", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedRight_10", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_10", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_10", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_10", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_10", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_10", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedRight_2", "isActive", false],
-            ["IMG", "CompCard_DuplicatedRight_2", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedRight_2", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_2", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_2", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_2", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_2", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_2", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedRight_3", "isActive", false],
-            ["IMG", "CompCard_DuplicatedRight_3", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedRight_3", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_3", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_3", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_3", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_3", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_3", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedRight_4", "isActive", false],
-            ["IMG", "CompCard_DuplicatedRight_4", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedRight_4", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_4", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_4", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_4", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_4", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_4", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedRight_5", "isActive", false],
-            ["IMG", "CompCard_DuplicatedRight_5", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedRight_5", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_5", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_5", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_5", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_5", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_5", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedRight_6", "isActive", false],
-            ["IMG", "CompCard_DuplicatedRight_6", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedRight_6", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_6", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_6", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_6", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_6", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_6", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedRight_7", "isActive", false],
-            ["IMG", "CompCard_DuplicatedRight_7", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedRight_7", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_7", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_7", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_7", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_7", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_7", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedRight_8", "isActive", false],
-            ["IMG", "CompCard_DuplicatedRight_8", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedRight_8", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_8", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_8", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_8", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_8", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_8", "modes", "Complications", {isForcedOn: false}],
-            ["IMG", "CompCard_DuplicatedRight_9", "isActive", false],
-            ["IMG", "CompCard_DuplicatedRight_9", "curSrc", "@@curSrc@@"],
-            ["IMG", "CompCard_DuplicatedRight_9", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_9", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_9", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_9", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_9", "modes", "Spotlight", {isForcedOn: "NEVER"}],
-            ["IMG", "CompCard_DuplicatedRight_9", "modes", "Complications", {isForcedOn: false}],
             ["IMG", "CompCard_Negated_1", "isActive", false],
             ["IMG", "CompCard_Negated_1", "curSrc", "base"],
             ["IMG", "CompCard_Negated_1", "activeSrc", "base"],
@@ -2245,6 +2156,24 @@ const Media = (() => {
             ["IMG", "SubLocTopRight_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
             ["IMG", "SubLocTopRight_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "LAST", lastActive: true, lastState: "@@curSrc@@"}],
             ["IMG", "SubLocTopRight_1", "modes", "Complications", {isForcedOn: null}],
+            ["IMG", "DisableLocLeft_1", "isActive", false],
+            ["IMG", "DisableLocLeft_1", "curSrc", "base"],
+            ["IMG", "DisableLocLeft_1", "activeSrc", "base"],
+            ["IMG", "DisableLocLeft_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "DisableLocLeft_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
+            ["IMG", "DisableLocLeft_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "DisableLocLeft_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "DisableLocLeft_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "DisableLocLeft_1", "modes", "Complications", {isForcedOn: null}],
+            ["IMG", "DisableLocRight_1", "isActive", false],
+            ["IMG", "DisableLocRight_1", "curSrc", "base"],
+            ["IMG", "DisableLocRight_1", "activeSrc", "base"],
+            ["IMG", "DisableLocRight_1", "modes", "Active", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "DisableLocRight_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
+            ["IMG", "DisableLocRight_1", "modes", "Daylighter", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "DisableLocRight_1", "modes", "Downtime", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "DisableLocRight_1", "modes", "Spotlight", {isForcedOn: "LAST", isForcedState: "base", lastActive: false, lastState: "base"}],
+            ["IMG", "DisableLocRight_1", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "MapButton_Districts_1", "isActive", false],
             ["IMG", "MapButton_Districts_1", "curSrc", "labels"],
             ["IMG", "MapButton_Districts_1", "activeSrc", "labels"],
@@ -2533,14 +2462,6 @@ const Media = (() => {
             ["IMG", "RisingMoon_1", "modes", "Downtime", {isForcedOn: "NEVER"}],
             ["IMG", "RisingMoon_1", "modes", "Spotlight", {isForcedOn: "NEVER"}],
             ["IMG", "RisingMoon_1", "modes", "Complications", {isForcedOn: null}],
-            ["IMG", "Spotlight_1", "isActive", false],
-            ["IMG", "Spotlight_1", "curSrc", "@@curSrc@@"],
-            ["IMG", "Spotlight_1", "modes", "Active", {isForcedOn: "NEVER"}],
-            ["IMG", "Spotlight_1", "modes", "Inactive", {isForcedOn: "NEVER"}],
-            ["IMG", "Spotlight_1", "modes", "Daylighter", {isForcedOn: "NEVER"}],
-            ["IMG", "Spotlight_1", "modes", "Downtime", {isForcedOn: "NEVER"}],
-            ["IMG", "Spotlight_1", "modes", "Spotlight", {isForcedOn: true, isForcedState: "LAST", lastState: "@@curSrc@@"}],
-            ["IMG", "Spotlight_1", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "FL-LoadingScreen-Concluding_1", "isActive", true],
             ["IMG", "FL-LoadingScreen-Concluding_1", "curSrc", "@@curSrc@@"],
             ["IMG", "FL-LoadingScreen-Concluding_1", "modes", "Active", {isForcedOn: true}],
@@ -3173,33 +3094,6 @@ const Media = (() => {
             ["IMG", "LoadingScreen_1", "modes", "Downtime", {isForcedOn: null}],
             ["IMG", "LoadingScreen_1", "modes", "Spotlight", {isForcedOn: null}],
             ["IMG", "LoadingScreen_1", "modes", "Complications", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_1", "isActive", false],
-            ["IMG", "WeatherLightning_1", "curSrc", "ANIM"],
-            ["IMG", "WeatherLightning_1", "activeSrc", "ANIM"],
-            ["IMG", "WeatherLightning_1", "modes", "Active", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_1", "modes", "Inactive", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_1", "modes", "Daylighter", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_1", "modes", "Downtime", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_1", "modes", "Spotlight", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_1", "modes", "Complications", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_2", "isActive", false],
-            ["IMG", "WeatherLightning_2", "curSrc", "ANIM"],
-            ["IMG", "WeatherLightning_2", "activeSrc", "ANIM"],
-            ["IMG", "WeatherLightning_2", "modes", "Active", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_2", "modes", "Inactive", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_2", "modes", "Daylighter", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_2", "modes", "Downtime", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_2", "modes", "Spotlight", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_2", "modes", "Complications", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_3", "isActive", false],
-            ["IMG", "WeatherLightning_3", "curSrc", "ANIM"],
-            ["IMG", "WeatherLightning_3", "activeSrc", "ANIM"],
-            ["IMG", "WeatherLightning_3", "modes", "Active", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_3", "modes", "Inactive", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_3", "modes", "Daylighter", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_3", "modes", "Downtime", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_3", "modes", "Spotlight", {isForcedOn: null}],
-            ["IMG", "WeatherLightning_3", "modes", "Complications", {isForcedOn: null}],
             ["IMG", "WeatherGround_1", "isActive", false],
             ["IMG", "WeatherGround_1", "curSrc", "@@curSrc@@"],
             ["IMG", "WeatherGround_1", "modes", "Active", {isForcedOn: "LAST", lastActive: true}],
@@ -3998,7 +3892,7 @@ const Media = (() => {
                                     font_family: REGISTRY.TEXT[x[1]].font_family,
                                     layer: REGISTRY.TEXT[x[1]].activeLayer
                                 })
-                            return [REGISTRY.TEXT[x[1]], {id: REGISTRY.TEXT[x[1]].shadowID, zIndex: REGISTRY.TEXT[x[1]].zIndex - 1}]
+                            return [REGISTRY.TEXT[x[1]], {id: REGISTRY.TEXT[x[1]].shadowID, zIndex: REGISTRY.TEXT[x[1]].zIndex - 0.5}]
                         }
                         return REGISTRY.TEXT[x[1]]
                     }
@@ -5160,9 +5054,9 @@ const Media = (() => {
         activateAnimation = (animName, minTime, maxTime) => {
             const animData = getImgData(animName);
             [minTime, maxTime] = [minTime || animData.minTimeBetween, maxTime || animData.maxTimeBetween]
-            if (activeTimers[animName]) {
-                clearTimeout(activeTimers[animName])
-                delete activeTimers[animName]
+            if (animTimers[animName]) {
+                clearTimeout(animTimers[animName])
+                delete animTimers[animName]
             }
             animData.isActive = true
             animData.minTimeBetween = D.Int(1000 * D.Float(minTime))
@@ -5173,22 +5067,22 @@ const Media = (() => {
         },
         pulseAnimation = (animName) => {
             const animData = getImgData(animName)
-            if (activeTimers[animName]) {
-                clearTimeout(activeTimers[animName])
-                delete activeTimers[animName]
+            if (animTimers[animName]) {
+                clearTimeout(animTimers[animName])
+                delete animTimers[animName]
             }
             if (animData.isActive) {
                 const timeBetween = randomInteger(animData.maxTimeBetween - animData.minTimeBetween) + animData.minTimeBetween
                 flashAnimation(animName)
-                activeTimers[animName] = setTimeout(() => { pulseAnimation(animName) }, timeBetween)                
+                animTimers[animName] = setTimeout(() => { pulseAnimation(animName) }, timeBetween)                
             }
             // D.Alert(JSON.stringify(activeTimers[animName]))
         },
         deactivateAnimation = (animName) => {
             const animData = getImgData(animName)
-            if (activeTimers[animName]) {
-                clearTimeout(activeTimers[animName])
-                delete activeTimers[animName]
+            if (animTimers[animName]) {
+                clearTimeout(animTimers[animName])
+                delete animTimers[animName]
             }
             animData.isActive = false
         },
@@ -5215,6 +5109,70 @@ const Media = (() => {
                 (getObj("graphic", animData.id) || {set: () => false}).set("layer", "walls")
         },
     // #endregion
+
+    // #region PANEL GETTERS:
+        PANELLEFT = 1350,
+        PANELTOP = 225,
+        PANELWIDTH = 425,
+        PANELSIZE = 18,
+        getNextPanelVert = (panelName = "PanelRight") => PANELTOP + (!REGISTRY.PANELS[panelName] || Object.values(REGISTRY.PANELS[panelName]).length === 0 ? 0 : _.chain(REGISTRY.PANELS[panelName]).
+            pairs().
+            map(x => getTextHeight(x[1].name)).
+            reduce((tot, x) => tot + x, 0). 
+            value()),
+        makePanel = (text, panelName = "PanelRight", panelData = {top: PANELTOP, left: PANELLEFT, width: PANELWIDTH}, textData = {bgColor: C.COLORS.black, color: C.COLORS.red, font: "Contrail One", size: PANELSIZE}) => {
+            const subPanelKey = `panel${D.RandomString(20)}`,
+                nextVerticalPos = getNextPanelVert(),
+                textObj = makeText(subPanelKey, "gmlayer", true, "left", {text: "", top: nextVerticalPos, left: PANELLEFT - 0.5 * PANELWIDTH, width: panelData.width, size: textData.size, color: textData.color, font: textData.font, maxWidth: panelData.width * 0.98}),
+                shadowObj = getObj("text", getTextData(subPanelKey).shadowID)
+            setText(subPanelKey, text)
+            DB({text, panelName, panelData, textData, subPanelKey, nextVerticalPos, textObj, shadowObj, textReg: getTextData(subPanelKey)}, "makePanel")
+            const textHeight = getTextHeight(subPanelKey),
+                bgPanelObj = createObj("path", {
+                    _pageid: D.PAGEID,
+                    fill: textData.bgColor,
+                    path: JSON.stringify([
+                        ["M", 0, 0],
+                        ["L", panelData.width + 5, 0],
+                        ["L", panelData.width + 5, textHeight + 5],
+                        ["L", 0, textHeight + 5],
+                        ["L", 0, 0]
+                    ]),
+                    stroke_width: 0,
+                    layer: "gmlayer",
+                    top: nextVerticalPos,
+                    left: panelData.left,
+                    height: textHeight + 5,
+                    width: panelData.width + 5
+                })
+            REGISTRY.PANELS[panelName] = REGISTRY.PANELS[panelName] || {}
+            REGISTRY.PANELS[panelName][subPanelKey] = {
+                name: subPanelKey,
+                textID: textObj.id,
+                bgPanelID: bgPanelObj.id
+            }
+            toFront(bgPanelObj)
+            toFront(shadowObj)
+            toFront(textObj)
+        },
+        killPanel = (panelName) => {
+            for (const [panelKey, panelData] of Object.entries(REGISTRY.PANELS[panelName])) {
+                removeText(panelKey, false, true)
+                const bgObj = getObj("path", panelData.bgPanelID)
+                if (bgObj)
+                    bgObj.remove()
+            }
+            delete REGISTRY.PANELS[panelName]
+        },
+        simpleNotify = (panelName, text, isKillingAfter, textColor) => {
+            makePanel(text, panelName, undefined, {bgColor: C.COLORS.black, color: textColor || C.COLORS.red, font: "Contrail One", size: PANELSIZE})
+            if (isKillingAfter) 
+                setTimeout(() => { killPanel(panelName) }, 15000)
+        },
+
+    // #endregion
+
+    // #region PANEL SETTERS: Creation & Registry, Toggling, Time-Keeping, Updating, Positioning
 
     // #region TEXT OBJECT GETTERS: Text Object, Width Measurements, Data Retrieval    
         isRegText = textRef => Boolean(getTextKey(textRef, true)) || VAL({object: textRef}) && _.findKey(REGISTRY.TEXT, v => v.shadowID === textRef.id), 
@@ -5297,6 +5255,12 @@ const Media = (() => {
             }
             return false
         },
+        getSimpleTextWidth = (text, fontFamily, fontSize) => {
+            const sizeRef = D.IsIn(fontFamily, D.CHARWIDTH) && D.IsIn(fontSize, D.CHARWIDTH[fontFamily]) && D.CHARWIDTH[fontFamily][fontSize],
+                sizeDefault = VAL({array: sizeRef}) && D.Float(_.reduce(sizeRef, (tot = 0, n) => tot + n)/sizeRef.length, 2),
+                sizeArray = VAL({string: text}) && text.split("").map(x => x in sizeRef && sizeRef[x] || sizeDefault)
+            return _.reduce(sizeArray, (tot = 0, n) => tot + n)
+        },
         getTextWidth = (textRef, text, maxWidth = 0, isSilent = true) => {
             const textObj = getTextObj(textRef),
                 dbLines = [
@@ -5366,13 +5330,14 @@ const Media = (() => {
                 max = Math.max(max, getTextWidth(textObj, line, false))
             return max
         },
-        getTextHeight = (textRef, text, maxWidth) => {
+        getTextLines = (textRef, text, maxWidth) => {
             const textObj = getTextObj(textRef),
                 textData = getTextData(textRef),
-                textValue = text || textObj.get("text"),
-                numLines = maxWidth ? splitTextLines(textObj, textValue, maxWidth, textData.justification).length : (textValue.match(/\n/gui) || []).length + 1
-            return numLines * textData.lineHeight
+                textValue = text || textObj.get("text")            
+            maxWidth = maxWidth || textData && textData.maxWidth
+            return maxWidth ? splitTextLines(textObj, textValue, maxWidth, textData.justification).length : (textValue.match(/\n/gui) || []).length + 1
         },
+        getTextHeight = (textRef, text, maxWidth) => (getTextData(textRef) || {lineHeight: "10"}).lineHeight * getTextLines(textRef, text, maxWidth),
         getBlankLeft = (textRef, justification, maxWidth = 0, useCurrent = false) => {
             const textObj = getTextObj(textRef),
                 justify = justification || getTextData(textRef).justification || "center"
@@ -5566,7 +5531,7 @@ const Media = (() => {
                 updateTextShadow(name, true)
                 if (options.isActive === false)
                     toggleText(name, false, true)    
-                D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(REGISTRY.TEXT[name])}`, "regText")
+                // D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(REGISTRY.TEXT[name])}`, "regText")
                 setZIndices()
                 return getTextData(name)
             }
@@ -5577,7 +5542,7 @@ const Media = (() => {
             const actLayer = activeLayer || options.activeLayer || options.layer || "objects",
                 objParams = Object.assign({_pageid: D.PAGEID,
                                            text: options.text || "",
-                                           left: 200,
+                                           left: options.left || 200,
                                            top: options.top || 200,
                                            font_size: options.size || options.fontSize || options.font_size || 24,
                                            color: options.color || C.COLORS.brightred,
@@ -5941,7 +5906,7 @@ const Media = (() => {
         isPlayList = (soundRef) => Boolean(REGISTRY.PLAYLISTS[getSoundKey(soundRef) || ""]),
         getPlayingTrackObjs = () => _.uniq(findObjs({_type: "jukeboxtrack"})).filter(x => isTrackPlaying(x)),
         getLoopingTrackObjs = (isLoopingPlaylistOk = true) => getPlayingTrackObjs().filter(x => isTrackLooping(x) || isLoopingPlaylistOk && isPlaylistPlaying(x) && isPlaylistLooping(x)),
-        getPlayingTrackKeys = () => getPlayingTrackObjs().map(x => getSoundKey(x)),
+        getSoundKeys = (soundObjs = []) => VAL({array: soundObjs}) && soundObjs.map(x => getSoundKey(x)),
         getLoopingTrackKeys = () => getLoopingTrackObjs().map(x => getSoundKey(x)),
         getScore = (mode, scoreType) => {
             // D.Poke(`Score Ref: ${Object.keys(C.SOUNDSCORES).find(x => C.SOUNDSCORES[x].includes(mode))}`)
@@ -6026,6 +5991,7 @@ const Media = (() => {
                         locSound = {[thisSound]: C.SOUNDVOLUME[thisSound] || C.SOUNDVOLUME.defaults.location || C.SOUNDVOLUME.defaults.base}                
                 // D.Alert(D.JS(locSound), `${locRef} Sound`)
             }
+            DB({locRefs, locSound}, "getLocationSounds")
             return locSound
         },
     // #endregion
@@ -6080,6 +6046,7 @@ const Media = (() => {
             if (isHardReset)
                 for (const soundObj of getPlayingTrackObjs()) {
                     stopSound(soundObj)
+                    Media.StopLooping(getSoundKey(soundObj))
                     soundObj.set({playing: false, softstop: false})
                 }
             const soundsToPlay = {}
@@ -6129,10 +6096,18 @@ const Media = (() => {
                     }), "(NONE)"))
                     break
             }
+            const dbData = {
+                ["LoopingSounds After Initial Retrieval"]: Media.LoopingSounds,
+                soundsToPlay,
+                offSounds: Media.LoopingSounds.filter(x => !_.keys(soundsToPlay).includes(x))
+            }
             if (_.keys(soundsToPlay).includes("TOTALSILENCE")) {
                 STATE.REF.isRunningSilent = "TOTALSILENCE"
+                dbData["... Running SILENT"] = "TOTALSILENCE"
                 Roll20AM.StopSound("all")
             } else if (STATE.REF.isRunningSilent === "TOTALSILENCE") {
+                dbData["... Running LOUD"] = "<b><u><i>RECURRING INTO ANOTHER UPDATESOUNDS()...</i></u></b>"
+                DB(dbData, "updateSounds")
                 STATE.REF.isRunningSilent = false
                 updateSounds()
             } else {
@@ -6153,23 +6128,35 @@ const Media = (() => {
                 for (const thunderSoundRef of Object.keys(thunderVolumeData))
                     Roll20AM.ChangeVolume(thunderSoundRef, thunderVolumeData[thunderSoundRef])
 
-                const debugLines = [Session.IsOutside ? "Outdoors" : "Indoors"],
-                    initialLoop = _.clone(Media.LoopingSounds)
-                for (const offSound of Media.LoopingSounds.filter(x => !_.keys(soundsToPlay).includes(x))) {
-                    debugLines.push(`... turning OFF ${D.JS(offSound)}`)
-                    stopSound(offSound)
-                }
-                for (const [onSound, volume] of Object.entries(soundsToPlay)) {
-                    debugLines.push(`... turning ON ${D.JS(onSound)} at ${D.JS(volume)}`)
-                    if (volume === 0)
+                Object.assign(dbData, {
+                    ["Inside/Outside"]: Session.IsOutside ? "Outdoors" : "Indoors",
+                    ["Initial LoopingSounds"]: Media.LoopingSounds,
+                    ["Turning ON"]: [],
+                    ["Turning OFF"]: []
+                })
+
+                for (const [onSound, volume] of Object.entries(soundsToPlay)) 
+                    if (volume === 0) {
                         stopSound(onSound)
-                    else
+                        dbData["Turning OFF"].push({onSound, volume})
+                        Media.StopLooping(onSound)
+                    } else {
                         playSound(onSound, volume)
+                        dbData["Turning ON"].push({onSound, volume})
+                        Media.LoopSound(onSound)
+                    }
+                
+                for (const offSound of Media.LoopingSounds.filter(x => !_.keys(soundsToPlay).includes(x))) {
+                    dbData["Turning OFF"].push({offSound})
+                    stopSound(offSound)
+                    Media.StopLooping(offSound)
                 }
-                debugLines.push(`${D.JS(initialLoop)} --> ${D.JS(Media.LoopingSounds)}`)
+                dbData["Final LoopingSounds"] = Media.LoopingSounds
+                
                 clearInterval(soundScapeTimer)
                 soundScapeTimer = setInterval(() => checkSoundsPlaying(), 4000)
             }
+            DB(dbData, "updateSounds")
         },
         playSound = (soundRef, volume, fadeIn = null, isOverlapping = false) => {
             if (VAL({number: volume}))
@@ -6179,7 +6166,6 @@ const Media = (() => {
         },
         stopSound = (soundRef, fadeOut = null) => {
             Roll20AM.StopSound(soundRef, fadeOut)
-            STATE.REF.loopingSounds = _.without(STATE.REF.loopingSounds, soundRef)
         }
     // #endregion
 
@@ -6210,7 +6196,7 @@ const Media = (() => {
         GetImgData: getImgData, GetTextData: getTextData,
         GetImgSrc: getImgSrc,
         GetToken: getTokenObj, GetTokens: getTokenObjs,
-        GetLineHeight: getLineHeight, GetTextWidth: getTextWidth, GetTextHeight: getTextHeight,
+        GetLineHeight: getLineHeight, GetSimpleTextWidth: getSimpleTextWidth, GetTextWidth: getTextWidth, GetTextHeight: getTextHeight, GetTextLines: getTextLines,
         Buffer: buffer,
 
         // CONSTRUCTORS, REGISTERS & DESTROYERS
@@ -6227,6 +6213,7 @@ const Media = (() => {
         SetImgTemp: setImgTemp, // SetTextTemp: setTextTemp,
         Spread: spreadImgs,        
         ToggleLoadingScreen: toggleLoadingScreen, SetLoadingMessage: setLoadingText,
+        Notify: simpleNotify,
 
         // AREA FUNCTIONS
         GetBounds: getBounds, GetContents: getContainedImgObjs,
@@ -6245,19 +6232,16 @@ const Media = (() => {
         ResetSoundModes: initSoundModes,
         UpdateSoundscape: updateSounds,
         ResetSoundscape: () => updateSounds(true),
-        GetLoopingSounds: getLoopingTrackKeys,
-        get LoopingSounds() { return STATE.REF.loopingSounds },
-        set LoopingSounds(soundRef) {
-            if (soundRef)
-                STATE.REF.loopingSounds = _.uniq([...STATE.REF.loopingSounds, soundRef])
-            DB(`<b>Media.LoopingSounds = ${D.JSL(soundRef)}</b><br><br>Adding ${D.JS(soundRef)} to Looping Sounds: ${D.JS(STATE.REF.loopingSounds)}`, "updateSounds")
-        },
-        StopLooping: (soundRef) => { STATE.REF.loopingSounds = _.without(STATE.REF.loopingSounds, soundRef) },
+        get LoopingTracks() { return getSoundKeys(getLoopingTrackObjs) },
+        get LoopingSounds() { return [...STATE.REF.loopingSounds] },
+        set LoopingSounds(soundRef) { if (VAL({array: soundRef})) STATE.REF.loopingSounds = [...soundRef] },
+        LoopSound: (soundRef) => { if (VAL({string: soundRef}) && !Media.LoopingSounds.includes(soundRef)) Media.LoopingSounds = [...Media.LoopingSounds, soundRef] },
+        StopLooping: (soundRef) => { D.PullOut(STATE.REF.loopingSounds, x => x === soundRef) },
         
         // REINITIALIZE MEDIA OBJECTS (i.e. on MODE CHANGE)
         Fix: () => {
-            resetModeData(false)
-            // setActiveLayers(false)
+            fixImgObjs()
+            fixTextObjs()
             setZIndices()
         }
     }

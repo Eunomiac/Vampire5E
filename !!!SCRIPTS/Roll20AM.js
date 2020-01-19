@@ -1138,7 +1138,7 @@ var Roll20AM = Roll20AM || (function() {
 	    }
 	    //Set list playing to true, used later to determine lists that are active
         list.playing = true;
-        Media.LoopingSounds = list.name
+        Media.LoopSound(list.name)
         playNextTrack(list,list.trackids,startVolume,who)
 	},  
 	//plays tracks randomly
@@ -1151,7 +1151,7 @@ var Roll20AM = Roll20AM || (function() {
 	    //Set list playing to true, used later to determine lists that are active.  Since random, we aren't tracking current played tracks
         list.playing = true;
         if (["loop", "shuffle", "randomLoop"].includes(list.mode)) {
-            Media.LoopingSounds = list.name
+            Media.LoopSound(list.name)
         }
         list.currentTrack = [];
         trackID = list.trackids[randomInteger(list.trackids.length)- 1]
@@ -1164,7 +1164,7 @@ var Roll20AM = Roll20AM || (function() {
 	    }
 	    //Set list playing to true, used later to determine lists that are active
         list.playing = true;
-        Media.LoopingSounds = list.name
+        Media.LoopSound(list.name)
         if (list.shuffleIds.length == 0){
     	    if (debug){
     	        log('Creating Shuffle')
@@ -1191,7 +1191,7 @@ var Roll20AM = Roll20AM || (function() {
 	    var volume, trackID
 	    //Set list playing to true, used later to determine lists that are active
         list.playing = true;
-        Media.LoopingSounds = list.name
+        Media.LoopSound(list.name)
         //Set start volume
 	    if (startVolume!=0){
 	        volume = list.volume
@@ -1213,8 +1213,8 @@ var Roll20AM = Roll20AM || (function() {
 	        log('Stopping:' + list.name)
 	    }
 	    //stop list and clear current tracks
-        list.playing = false;    
-        state.VAMPIRE.Media.loopingSounds = _.without(Media.LoopingSounds, list.name)              
+        list.playing = false;
+        Media.StopLooping(list.name)           
         // D.Alert(`Removing LIST ${D.JS(list.name)}: ${D.JS(Media.LoopingSounds)}`, `stopList(${D.JSL(list.name)})`, 1000)
         _.each(list.trackids,(trackID)=>{
             if (debug){
@@ -1285,7 +1285,7 @@ var Roll20AM = Roll20AM || (function() {
 	    })
         trackDetails.playing = true;
         if (trackDetails.mode === "loop" && isLoopingTrackOnly)
-            Media.LoopingSounds = trackDetails.title
+            Media.LoopSound(trackDetails.title)
         trackDetails.who = who;
         if (jbTrack)
             jbTrack.set({playing:true,softstop:false,volume:level,loop:loop === "loop"});
@@ -1302,14 +1302,14 @@ var Roll20AM = Roll20AM || (function() {
 	        if (list.playing){
 	            if (list.trackids.indexOf(trackID) >= 0){
                     list.playing = false
-                    state.VAMPIRE.Media.loopingSounds = _.without(Media.LoopingSounds, list.name)           
+                    Media.StopLooping(list.name)         
                     // D.Alert(`StopTRACK: Removing LIST ${D.JS(list.name)}: ${D.JS(Media.LoopingSounds)}`, `stopTrack(${D.JSL(trackDetails.title)}) (LIST)`, 1000)     
                     didRemovePlaylist = true
 	            }
 	        }     
         })
         if (!didRemovePlaylist) {
-            state.VAMPIRE.Media.loopingSounds = _.without(Media.LoopingSounds, trackDetails.title)                  
+            Media.StopLooping(trackDetails.title)                  
             // D.Alert(`StopTRACK: Removing TRACK ${D.JS(trackDetails.title)}: ${D.JS(Media.LoopingSounds)}`, `stopTrack(${D.JSL(trackDetails.title)}) (TRACK)`, 1000)
         }
 	    
@@ -2178,7 +2178,7 @@ var Roll20AM = Roll20AM || (function() {
                     
                 }
                 if (["randomLoop", "loop", "shuffle"].includes(listData.mode))
-                    Media.LoopingSounds = listRef
+                    Media.LoopSound(listRef)
             }
         },
     // #endregion

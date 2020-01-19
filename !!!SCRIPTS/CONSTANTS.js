@@ -69,6 +69,7 @@ const C = (() => {
             red: "rgba(200, 0, 0, 1)",
             darkredmid: "rgba(175, 0, 0, 1)",
             darkred: "rgba(150, 0, 0, 1)",
+            darkdarkred: "rgba(50, 0, 0, 1)",
             crimson: "rgba(220, 20, 60, 1)",
             
             orange: "rgba(200, 100, 0, 1)",
@@ -326,7 +327,28 @@ const C = (() => {
                     padding: ${params.padding};
                 ">${_.flatten([content]).join("")}</span>`)
             },
+            
             Button: (name, command, options = {}) => {
+            /*
+                const params = Object.assign({
+                    height: "18px",
+                    lineHeight: "16px",
+                    width: "22%",
+                    fontFamily: "Voltaire",
+                    margin: "0px 1% 0px 0px",
+                    padding: "0px 0px 0px 0px",
+                    fontSize: "12px",
+                    bgColor: COLORS.brightred,
+                    color: COLORS.white,
+                    border: `1px solid ${C.COLORS.white}`,
+                    fontWeight: "normal",
+                    textShadow: "none",
+                    buttonHeight: "16px",
+                    buttonWidth: "95%",
+                    buttonPadding: "0px",
+                    buttonTransform: "uppercase"
+                }, options)      
+            */
                 const params = Object.assign({
                     height: "100%",
                     lineHeight: "10px",
