@@ -860,25 +860,81 @@ const TimeTracker = (() => {
     // #endregion
 
     // #region Date Functions
-        getDate = dateRef => {
-            let returnDate = new Date(dateRef)
+        parseToDateObj = dateRef => { // Takes almost any date format and converts it into a Date object.
+            let returnDate
+            const curDateString = formatDateString(new Date(STATE.REF.dateObj))
+            if (VAL({string: dateRef})) {
+                if (!dateRef.match(/\D/gu)) // if everything is a number, assume it's a seconds-past-1970 thing
+                    return new Date(parseInt(dateRef))
+                if (dateRef !== "") {
+                    // first, see if it includes a time stamp and separate that out:
+                    const [dateString, timeString] = Object.assign([curDateString, ""], dateRef.match(/([^:\n\r]+\d{2}?(?!:))?\s?(\S*:{1}.*)?/u).slice(1).map((x,i) => i === 0 && !x ? curDateString : x)),
+                        parsedDateString = _.compact(dateString.match(/^(?:([\d]*)-?(\d*)-?(\d*)|(?:([\d]+)?(?:[^\w\d])*?([\d]+)?[^\w\d]*?(?:([\d]+)|(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))?\w*?[^\w\d]*?([\d]+){1,2}\w*?[^\w\d]*?(\d+)))$/imuy)).slice(1)
+                    let month, day, year
+                    while (parsedDateString.length)
+                        switch (parsedDateString.length) {
+                            case 3: {
+                                year = D.PullOut(parsedDateString, v => v > 31)
+                                month = D.PullOut(parsedDateString, v => VAL({string: v}) || v <= 12 && parsedDateString.filter(x => x <= 12).length === 1)
+                                if (parsedDateString.length === 3)
+                                    [month, day, year] = parsedDateString
+                                break
+                            }
+                            case 2: {
+                                year = year || D.PullOut(parsedDateString, v => v > 31)
+                                month = month || D.PullOut(parsedDateString, v => VAL({string: v}) || v <= 12 && parsedDateString.filter(x => x <= 12).length === 1)                                
+                                if (VAL({number: year}))
+                                    day = day || D.PullOut(parsedDateString, v => v > 12)
+                                if (parsedDateString.length === 2) {
+                                    month = month || parsedDateString.shift()
+                                    day = day || parsedDateString.shift()
+                                    year = year || parsedDateString.length && parsedDateString.shift()
+                                }
+                                break
+                            }
+                            case 1: {
+                                year = year || parsedDateString.pop()
+                                month = month || parsedDateString.pop()
+                                day = day || parsedDateString.pop()
+                                break
+                            }
+                            // no default
+                        }
+                    if (!["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].includes(month.toLowerCase()))
+                        month = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"][month - 1]
+                    if (`${year}`.length < 3)
+                        year = parseInt(year) + 2000
+                    day = parseInt(day)
+                    returnDate = new Date([year, ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(month.toLowerCase())+1, day])
+
+                    // Now, the time component (if any)
+                    if (VAL({date: returnDate, string: timeString})) {
+                        const [time, aMpM] = (timeString.match(/([^A-Z\s]+)(?:\s+)?(\S+)?/u) || [false, false, false]).slice(1),
+                            [hour, min, sec] = `${D.JSL(time)}`.split(":").map(v => D.Int(v)),
+                            totalSeconds = (hour + (D.LCase(aMpM).includes("p") && 12))*60*60 + min*60 + sec
+                        returnDate.setUTCSeconds(returnDate.getUTCSeconds() + totalSeconds)
+                    }
+                    return returnDate
+                }
+            } else {
+                if (!_.isDate(dateRef))                    
+                    returnDate = new Date(dateRef)
             if (!_.isDate(returnDate))
                 returnDate = new Date(D.Int(dateRef))
-            if (!_.isDate(returnDate)) {
-                const strArray = _.compact(dateRef.split(/[\s,]+?/gu))
-                returnDate = new Date(`${
-                    strArray[2]
-                }-${
-                    ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(strArray[0].slice(0, 3).toLowerCase()) + 1
-                }-${
-                    strArray[1]
-                }`)
+                if (!_.isDate(returnDate) && VAL({string: returnDate}))
+                    return parseToDateObj(returnDate)
             }
-            if (_.isDate(returnDate))
-                return returnDate
             return false
         },
-        getTime = (timeRef, deltaMins, isParsingString = false) => {
+        parseToDeltaTime = (...args) => { // Takes a number and a unit of time and converts it to the standard [delta (digit), unit (y/mo/w/d/h/m)] format for adding time. 
+            const matchPatterns = [
+                    new RegExp("-?\\d+(\\.?\\d+)?", "gu"),
+                    new RegExp("\\b[A-Za-z]{1,2}", "gu")
+                ],
+                [delta, unit] = matchPatterns.map(x => (args.join("").replace(/\s/gu, "").match(x) || [false]).pop())
+            return [D.Float(delta), D.LCase(unit)]
+        },
+        getTime = (timeRef, deltaMins, isParsingString = false) => { // Takes a time reference ad
             const timeNums = VAL({string: timeRef}) ? _.map(timeRef.split(":"), v => D.Int(v)) : timeRef
             let totMins = timeNums[0] * 60 + timeNums[1] + deltaMins
             if (totMins < 0)
@@ -896,7 +952,7 @@ const TimeTracker = (() => {
             else
                 return `${date.getUTCHours()}:${date.getUTCMinutes()} A.M.`
         },
-        formatDString = (date, isIncludingTime = false) => { return `${
+        formatDateString = (date, isIncludingTime = false) => { return `${
             ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]
         } ${
             date.getUTCDate()
@@ -908,22 +964,25 @@ const TimeTracker = (() => {
         isValidDString = str => _.isString(str) && Boolean(str.match(/\w\w\w\s\d\d?,\s\d\d\d\d/gu)),    
         addTime = (dateRef, delta, unit) => {
             if (VAL({date: dateRef}, "addTime")) {
-                const newDate = new Date(getDate(dateRef))
-                if (unit.toLowerCase().slice(0, 1) === "y")
-                    newDate.setUTCFullYear(newDate.getUTCFullYear() + delta)
-                else if (unit.toLowerCase().includes("mo"))
-                    newDate.setUTCMonth(newDate.getUTCMonth() + delta)
-                else if (unit.toLowerCase().slice(0, 1) === "w")
-                    newDate.setUTCDate(newDate.getUTCDate() + 7 * delta)
-                else if (unit.toLowerCase().slice(0, 1) === "d")
-                    newDate.setUTCDate(newDate.getUTCDate() + delta)
-                else if (unit.toLowerCase().slice(0, 1) === "h")
-                    newDate.setUTCHours(newDate.getUTCHours() + delta)
-                else if (unit.toLowerCase().includes("m"))
-                    newDate.setUTCMinutes(newDate.getUTCMinutes() + delta)
-                return newDate
-            }
+                const newDate = new Date(parseToDateObj(dateRef));
+                [delta, unit] = parseToDeltaTime(delta, unit)
+                switch (unit) {
+                    case "y":
+                        return newDate.setUTCFullYear(newDate.getUTCFullYear() + delta)
+                    case "mo":
+                        return newDate.setUTCMonth(newDate.getUTCMonth() + delta)
+                    case "w":
+                        return newDate.setUTCDate(newDate.getUTCDate() + 7 * delta)
+                    case "d":
+                        return newDate.setUTCDate(newDate.getUTCDate() + delta)
+                    case "h":
+                        return newDate.setUTCHours(newDate.getUTCHours() + delta)
+                    case "m":
+                        return newDate.setUTCMinutes(newDate.getUTCMinutes() + delta)
+                    default:
             return false            
+                }
+            }          
         },
         getHorizonTimeString = () => {
             const [dawn, dusk] = TWILIGHTMINS[STATE.REF.dateObj.getMonth()],
@@ -1763,7 +1822,7 @@ const TimeTracker = (() => {
         // isConditional: if true, will stop clock and confirm with GM before firing
         getDateFromDateString = (dateString, dateOverride) => {
             if (VAL({date: dateString}))
-                return getDate(dateString)
+                return parseToDateObj(dateString)
             if (VAL({string: dateString})) {
                 DB(`Checking ${dateString}: IS STRING`, "getDateFromDateString")
                 const curDate = VAL({date: dateOverride}) && new Date(dateOverride) || STATE.REF.dateObj,
@@ -1787,7 +1846,7 @@ const TimeTracker = (() => {
                             if (VAL({string: splitDStrings[0], number: splitDStrings[1]}))
                                 targetDate = addTime(startDate, parseFloat(splitDStrings[1]), splitDStrings[0])
                             else if(VAL({date: dString}))
-                                targetDate = getDate(dString)
+                                targetDate = parseToDateObj(dString)
                             targetMins = null
                             startDate = new Date(targetDate)
                             continue
@@ -1829,10 +1888,11 @@ const TimeTracker = (() => {
         setAlarm = (dateRef, name, message, actions = [], displayTo = [], revActions = [], recurring = false, isConditional = false) => {
             if (VAL({string: actions}))
                 actions = actions.split(/\s*,\s*/gu)
-            if (VAL({string: revActions}))
+            if (VAL({string: revActions})) // Reverse actions can be as above.
                 revActions = revActions.split(/\s*,\s*/gu)
-            if (VAL({string: displayTo}))
+            if (VAL({string: displayTo})) // List of players who receive the alarm is comma-delimited.
                 displayTo = displayTo.split(/\s*,\s*/gu)
+            displayTo.push("Storyteller") // Storyteller is added automatically.
             DB(`Actions: ${D.JSL(actions.map(x => typeof x))}`, "setAlarm")
             if (VAL({string: recurring})) {
                 DB(`Recurring: ${D.JSL(recurring)}, Reg Exp: ${D.JSL(recurring.match(/\S?\d+\s?\w+/gu))}`, "setAlarm")
@@ -1852,12 +1912,12 @@ const TimeTracker = (() => {
                 revActions, // Array as above, run when alarm "unfires" instead
                 recurring, // List of recurrence quantity - {years: #, months: #, weeks: #, days: #, hours: #, mins: #}
                 displayTo: _.uniq(_.flatten([displayTo])),
-                dateString: VAL({date: dateRef}) && formatDString(getDate(dateRef)) || dateRef,
+                dateString: VAL({date: dateRef}) && formatDateString(parseToDateObj(dateRef)) || dateRef,
                 isConditional: VAL({bool: isConditional}) && isConditional
             }
             if (VAL({date: dateRef})) {
-                thisAlarm.time = getDate(dateRef).getTime()
-                DB(`DateRef '${D.JSL(dateRef)}' is a DATE: ${D.JSL(getDate(dateRef))}<br>... Time Code: ${D.JSL(thisAlarm.time)}`, "setAlarm")
+                thisAlarm.time = parseToDateObj(dateRef).getTime()
+                DB(`DateRef '${D.JSL(dateRef)}' is a DATE: ${D.JSL(parseToDateObj(dateRef))}<br>... Time Code: ${D.JSL(thisAlarm.time)}`, "setAlarm")
             } else if (VAL({string: dateRef})) {
                 DB(`DateRef '${D.JSL(dateRef)}' is a STRING: ${dateRef}`, "setAlarm")
                 switch (dateRef.toLowerCase()) {
@@ -1900,9 +1960,9 @@ const TimeTracker = (() => {
             }
         },
         getNextAlarms = () => {
-            D.Alert(`<h3>Next Alarms</h3>${D.JS(_.map(STATE.REF.Alarms.Ahead, v => `${D.JS(v.name)}: ${formatDString(new Date(v.time), true)}<br>... to: ${D.JSL(v.displayTo)}`))}<h3>Next Full Alarm</h3>${STATE.REF.Alarms.Ahead.length && D.JS(Object.assign(D.Clone(STATE.REF.Alarms.Ahead[0]), {message: D.SumHTML(STATE.REF.Alarms.Ahead[0].message)})) || "none"}`, "Upcoming Alarms")
+            D.Alert(`<h3>Next Alarms</h3>${D.JS(_.map(STATE.REF.Alarms.Ahead, v => `${D.JS(v.name)}: ${formatDateString(new Date(v.time), true)}<br>... to: ${D.JSL(v.displayTo)}`))}<h3>Next Full Alarm</h3>${STATE.REF.Alarms.Ahead.length && D.JS(Object.assign(D.Clone(STATE.REF.Alarms.Ahead[0]), {message: D.SumHTML(STATE.REF.Alarms.Ahead[0].message)})) || "none"}`, "Upcoming Alarms")
         },
-        getPastAlarms = () => D.Alert(`<h3>Past Alarms</h3>${D.JS(_.map(STATE.REF.Alarms.Behind, v => `${D.JS(v.name)}: ${formatDString(new Date(v.time), true)}<br>... to: ${D.JSL(v.displayTo)}`))}<h3>Next Past Alarm</h3>${STATE.REF.Alarms.Behind.length && D.JS(Object.assign(D.Clone(STATE.REF.Alarms.Behind[0]), {message: D.SumHTML(STATE.REF.Alarms.Behind[0].message)})) || "NONE"}`, "Past Alarms"),
+        getPastAlarms = () => D.Alert(`<h3>Past Alarms</h3>${D.JS(_.map(STATE.REF.Alarms.Behind, v => `${D.JS(v.name)}: ${formatDateString(new Date(v.time), true)}<br>... to: ${D.JSL(v.displayTo)}`))}<h3>Next Past Alarm</h3>${STATE.REF.Alarms.Behind.length && D.JS(Object.assign(D.Clone(STATE.REF.Alarms.Behind[0]), {message: D.SumHTML(STATE.REF.Alarms.Behind[0].message)})) || "NONE"}`, "Past Alarms"),
         getDailyAlarms = () => {
             const returnStrings = ["<h3>Daily Alarms</h3>"]
             for (const unit of _.keys(STATE.REF.Alarms.Daily)) {
@@ -2063,13 +2123,13 @@ const TimeTracker = (() => {
         ToggleCountdown: toggleCountdown,
 
         get CurrentDate() { return new Date(STATE.REF.dateObj) },
-        GetDate: getDate,
+        GetDate: parseToDateObj,
         get TempC () { return getTemp(MONTHTEMP[STATE.REF.dateObj.getUTCMonth()]) + getTemp(getWeatherCode().charAt(2)) },
         set CurrentDate(dateRef) {
             if (dateRef)
-                STATE.REF.dateObj = getDate(dateRef)
+                STATE.REF.dateObj = parseToDateObj(dateRef)
         },
-        FormatDate: formatDString,
+        FormatDate: formatDateString,
         IsDay: isDay,
         IsValidDate: isValidDString,
         get IsClockRunning() { return isRunning || isRunningFast || isTimeRunning },
