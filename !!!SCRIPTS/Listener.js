@@ -47,8 +47,14 @@ const Listener = (() => {
                 return true
             })
             on("change:attribute:current", (attrObj, prevData) => {
+                DB({
+                    ["CHANGE:ATTR:CURRENT"]: Object.assign({}, attrObj),
+                    ["... from"]: prevData,
+                    ["Was Real Change?"]: attrObj.get("current") !== prevData.current,
+                    [">> Name"]: attrObj.get("name").toLowerCase().replace(/^(.*_){3}/gu, "")
+                }, "Listen")
                 if (attrObj.get("current") !== prevData.current) {
-                    const call = attrObj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")
+                    const call = attrObj.get("name").toLowerCase().replace(/^(.*_){3}/gu, "")
                     for (const [attrKeys, scriptData] of SCRIPTCALLS.ATTRCHANGE)
                         for (const attrKey of attrKeys)
                             if (call.includes(attrKey))
@@ -57,11 +63,21 @@ const Listener = (() => {
                 return false
             })
             on("add:attribute", attrObj => {
-                const call = attrObj.get("name").toLowerCase().replace(/^repeating_.*?_.*?_/gu, "")
+                DB({["ADD:ATTR"]: Object.assign({}, attrObj)}, "Listen")
+                const call = attrObj.get("name").toLowerCase().replace(/^(.*_){3}/gu, "")
                 for (const [attrKeys, scriptData] of SCRIPTCALLS.ATTRADD)
                     for (const attrKey of attrKeys)
                         if (call.includes(attrKey))
                             return scriptData.script.OnAttrAdd(call, attrObj)
+                return false
+            })
+            on("destroy:attribute", attrObj => {
+                DB({["DESTROY:ATTR"]: Object.assign({}, attrObj)}, "Listen")
+                const call = attrObj.get("name").toLowerCase().replace(/^(.*_){3}/gu, "")
+                for (const [attrKeys, scriptData] of SCRIPTCALLS.ATTRDESTROY)
+                    for (const attrKey of attrKeys)
+                        if (call.includes(attrKey))
+                            return scriptData.script.OnAttrDestroy(call, attrObj)
                 return false
             })
             on("add:graphic", imgObj => {
@@ -112,6 +128,9 @@ const Listener = (() => {
             ], v => v[1].script === {})
             SCRIPTCALLS.ATTRADD = _.reject([
                 [ ["desire", "projectstake", "triggertimelinesort"], {script: Char} ]
+            ], v => v[1].script === {})
+            SCRIPTCALLS.ATTRDESTROY = _.reject([
+                [ ["desire"], {script: Char} ]
             ], v => v[1].script === {})
             SCRIPTCALLS.IMGCHANGE = _.reject([
                 {script: DragPads}

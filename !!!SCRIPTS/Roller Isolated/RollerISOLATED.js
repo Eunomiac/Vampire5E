@@ -213,7 +213,7 @@ const Roller = (() => {
             }
         },
     // #endregion
-
+/*asdasdasd*/
     // #region Getting Information & Setting State Roll Record
         parseFlags = (charObj, rollType, params = {}, rollFlags) => {
             params.args = params.args || []

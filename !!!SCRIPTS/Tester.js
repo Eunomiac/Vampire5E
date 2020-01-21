@@ -89,7 +89,7 @@ const Tester = (() => {
                     break
                 }
                 case "days": {
-                    const singleCell = (dateNum) => {
+                    const singleCell = () => {
                             const tempColor = [150 + randomInteger(100), 100, 100, 1],
                                 tempColorString = `rgba(${tempColor.join(", ")})`,
                                 eventSymbol = _.sample(["<span style=\"color: #999999;\"><i>c</i></span>", "o", "<i>d</i>", "p", "<b>T</b>", "ѕ", "<b>S</b>", "f"], 1).join(""),

@@ -529,8 +529,10 @@ const Session = (() => {
     // #region Getting & Setting Session Data
         isSessionActive = () => STATE.REF.Mode !== "Inactive",
         setSessionNum = sNum => {
+            sNum = sNum || ++STATE.REF.SessionNum
             STATE.REF.SessionNum = sNum
-            D.Alert(`Session Number <b>${D.NumToText(STATE.REF.SessionNum)}</b> SET.`)
+            Media.SetText("NextSession", D.Romanize(STATE.REF.SessionNum, false).split("").join("   "))     
+            D.Flag(`Session Set to ${D.UCase(D.NumToText(STATE.REF.SessionNum))}`)
         },
     // #endregion
 
@@ -580,9 +582,9 @@ const Session = (() => {
                 ])
                 if (!STATE.REF.isTestingActive) {
                     STATE.REF.dateRecord = null
-                    STATE.REF.SessionNum++
                     for (const char of D.GetChars("registered"))
                         Char.AwardXP(char, 2, "Session XP award.")
+                    STATE.REF.SessionNum++
                 } else if (STATE.REF.dateRecord) {
                     TimeTracker.CurrentDate = STATE.REF.dateRecord
                 }

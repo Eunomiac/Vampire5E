@@ -329,7 +329,7 @@ const D = (() => {
                 return false
             } else if (runningQueues.length) {
                 WAITINGQUEUES.push([queueName, cback])
-                D.Alert(`Delaying ${queueName} for: ${D.JS(runningQueues)}`, "none")
+                D.Flag(`Delaying ${queueName} for: ${D.JS(runningQueues)}`)
                 return false
             } else {            
                 STATE.REF.FuncQueueName.push(queueName)
@@ -1996,6 +1996,7 @@ const D = (() => {
         Call: sendAPICommand,
         Chat: sendChatMessage,
         Alert: sendToGM,
+        Flag: (msg) => sendToGM(msg, "none"),
         Poke: (msg, title = "[ALERT]") => {
             if (Session.IsTesting)
                 sendToGM(msg, title)

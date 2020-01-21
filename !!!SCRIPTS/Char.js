@@ -569,6 +569,15 @@ const Char = (() => {
                 // no default
             }
         },
+        onAttrDestroy = (call, attrObj) => {
+            switch (call) {
+                case "desire": case "_reporder_repeating_desire": {
+                    displayDesires({charID: attrObj.get("_characterid")})
+                    break
+                }
+                // no default
+            }
+        },
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
         REGISTRY = STATE.REF.registry,
@@ -1121,18 +1130,15 @@ const Char = (() => {
                 if (VAL({textObj: desireObj})) {
                     let desireVal = (D.GetRepStat(charData.id, "desire", "top", "desire") || {val: false}).val
                     DB({desireVal, for: charData.name, length: desireVal.length, addAttrData}, "displayDesires")
-                    if (!desireVal || VAL({string: desireVal}) && desireVal.length < 3)
-                        if (addAttrData && VAL({string: addAttrData.val}) && addAttrData.charID === charData.id) {
-                            desireVal = addAttrData.val
-                            Media.SetTextData(desireObj, {color: C.COLORS.gold})
-                        } else {
-                            desireVal = "(none)"
-                            Media.SetTextData(desireObj, {color: C.COLORS.grey})
-                        }
-                    DB([
-                        D.JSL(desireVal),
-                        D.JSL(desireVal.length)
-                    ].join(", "), "displayDesires")                 
+                    if (D.LCase(desireVal).length < 3 && VAL({list: addAttrData}))
+                        desireVal = "charID" in addAttrData && addAttrData.charID === charData.id && VAL({string: addAttrData.val}) && addAttrData.val
+                    DB({desireVal, length: desireVal.length}, "displayDesires")
+                    if (D.LCase(desireVal).length < 3) {
+                        desireVal = "(none)"
+                        Media.SetTextData(desireObj, {color: C.COLORS.grey})                        
+                    } else {
+                        Media.SetTextData(desireObj, {color: C.COLORS.gold})
+                    }
                     Media.SetText(desireObj, desireVal)
                 }
             }
@@ -1913,6 +1919,7 @@ const Char = (() => {
         OnChatCall: onChatCall,
         OnAttrChange: onAttrChange,
         OnAttrAdd: onAttrAdd,        
+        OnAttrDestroy: onAttrDestroy,
 
         REGISTRY,
         TogglePC: togglePlayerChar,

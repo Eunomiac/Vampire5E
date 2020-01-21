@@ -31,7 +31,7 @@ const InitCommands = (() => {
                         if (Char && Char.RefreshDisplays)
                             Char.RefreshDisplays()
                         setTimeout(() => {
-                            D.Alert("Initialization Complete!", "none")
+                            D.Flag("Initialization Complete!")
                             Listener.Unlock()
                         }, 2000)
                     }, 2000)

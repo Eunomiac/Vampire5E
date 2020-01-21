@@ -255,3 +255,11 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 Reference/
+\!\!\!Character Sheet/*.json
+\!\!\!SCRIPTS/Roller Isolated/*.*
+\!\!\!SCRIPTS/Roll20AM Original.js
+\!\!\!SCRIPTS/Roll20AM State Reference.js
+Backups/*.*
+Weather/*.*
+\!\!\!SCRIPTS/Roller Isolated/RollerISOLATED.js
+*ISOLATED*
