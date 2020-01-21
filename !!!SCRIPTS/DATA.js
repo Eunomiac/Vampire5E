@@ -187,8 +187,21 @@ const D = (() => {
     let PROMPTFUNC
     // #region DECLARATIONS: Reference Variables, Temporary Storage Variables
     const VALS = {
-            PAGEID: () => Campaign().get("playerpageid"),
-            CELLSIZE: () => C.PIXELSPERSQUARE * getObj("page", Campaign().get("playerpageid")).get("snapping_increment")
+            PAGEID: (pageRef) => {
+                if (pageRef) {
+                    const object = getChar(pageRef) || Media.GetImg(pageRef) || Media.GetToken(pageRef) || Media.GetAnim(pageRef) || Media.GetText(pageRef)
+                    if (VAL({object}))
+                        return object.get("_pageid")
+                    if (_.isString(pageRef)) {
+                        const pageObj = getObj("page", pageRef)
+                        if (pageObj)
+                            return pageObj.id
+                        return (findObjs({_type: "page"}).find(x => x.get("name") === pageRef) || {id: false}).id
+                    }
+                }                
+                return Campaign().get("playerpageid")
+            },
+            CELLSIZE: (pageRef) => C.PIXELSPERSQUARE * (getObj("page", VALS.PAGEID(pageRef)) || {get: () => 70}).get("snapping_increment")
         },
         FunctionQueue = {},
         ISRUNNINGQUEUE = {},
@@ -201,43 +214,50 @@ const D = (() => {
             ..._.flatten(_.values(C.SKILLS)),
             ..._.keys(C.DISCIPLINES),
             ...C.TRACKERS
-        ],
+        ]
+    // #endregion
+
+    // #region CLASS DEFINITIONS
+    class Button {
+        constructor(name, command, styles = {}) {
+            this.name = name
+            this.command = command
+            this.styles = styles
+        }
+
+        get name() { return this._name}
+
+        set name(v) { 
+            if (VAL({string: v}))
+                this._name = v
+            else
+                this._name = this._name || _.escape("<BTN>")
+        }
+
+        get command() { return this._command}
+
+        set command(v) { 
+            if (VAL({string: v}))
+                this._command = v
+            else
+                this._command = this._command || _.escape(`[Button '${this.name}'] Invalid Command`)
+        }
+
+        get styles() { return this._styles}
+
+        set styles(v) {
+            if (VAL({list: v}))
+                this._styles = v
+            else
+                this._styles = this._styles || {}
+        }
+
+        get HTML() { return C.HTML.Button(this.name, this.command, this.styles) }
+    }
     // #endregion
 
     // #region ASYNC FUNCTION HANDLING: Function Queing, Running
-    /* const $binCheck = (tracker) => {        
-        switch (tracker.toLowerCase()) {
-            case "health": break
-            default:
-                return false
-        }
-        return cback => {
-            getAttrs(attrs, ATTRS => {
-                cback(null, attrList)
-            })
-        }
-    },
-    doTracker = (tracker, eInfo = {sourceAttribute: ""}, cback) => {
-        const attrList = {},
-            $funcs = []
-        switch (tracker.toLowerCase()) {
-            case "health":
-            case "willpower":
-                $funcs.push($binCheck(tracker))
-                break
-            case "blood potency":
-                $funcs.push(cbk => { getAttrs(["clan", "blood_potency"], ATTRS => { cbk(null, attrList) }) } )
-                break
-            case "humanity":
-                $funcs.push(cbk => { getAttrs(["stains", "humanity", "incap"], ATTRS => { cbk(null, attrList) }) } )
-                break
-            default: return
-        }
-        $funcs.push($set)
-        run$($funcs, cback ? () => cback(null) : undefined)
-    },
-    $doTracker = (tracker, eInfo) => cback => doTracker(tracker, eInfo, cback), */
-        isFuncQueueClear = (queueName) => {
+    const isFuncQueueClear = (queueName) => {
             if (!FunctionQueue[queueName])
                 FunctionQueue[queueName] = []
             return !ISRUNNINGQUEUE[queueName] && FunctionQueue[queueName].length === 0
@@ -326,7 +346,7 @@ const D = (() => {
             try {
                 const typeColor = type => {
                         switch (pLowerCase(type)) {
-                            case "character": return C.COLORS.yellow
+                            case "character": return C.COLORS.brightgold
                             case "graphic": return C.COLORS.palegreen
                             case "text": return C.COLORS.paleblue
                             case "player": return C.COLORS.palepurple
@@ -546,6 +566,24 @@ const D = (() => {
                 return Math.max(0, _.indexOf(_.map(C.NUMBERWORDS.tens, v => v.toLowerCase()), tenText.toLowerCase()) * 10, _.indexOf(_.map(C.NUMBERWORDS.low, v => v.toLowerCase()), tenText.toLowerCase())) +
                     VAL({string: oneText}) ? Math.max(0, _.indexOf(_.map(C.NUMBERWORDS.low, v => v.toLowerCase()), oneText.toLowerCase())) : 0
             return 0
+        },
+        numToRomanNum = (num, isGroupingSymbols = true) => {
+            if (isNaN(num))
+                return NaN
+            const digits = String(D.Int(num)).split(""),
+                key = isGroupingSymbols && [ // Ⅰ Ⅱ Ⅲ Ⅳ Ⅴ Ⅵ Ⅶ Ⅷ Ⅸ Ⅹ Ⅺ Ⅻ Ⅼ Ⅽ Ⅾ Ⅿ
+                    "","Ⅽ","ⅭⅭ","ⅭⅭⅭ","ⅭⅮ","Ⅾ","ⅮⅭ","ⅮⅭⅭ","ⅮⅭⅭⅭ","ⅭⅯ",
+                    "","Ⅹ","ⅩⅩ","ⅩⅩⅩ","ⅩⅬ","Ⅼ","ⅬⅩ","ⅬⅩⅩ","ⅬⅩⅩⅩ","ⅩⅭ",
+                    "","Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ", "Ⅴ", "Ⅵ", "Ⅶ", "Ⅷ", "Ⅸ"
+                ] || [ // Ⅰ Ⅴ Ⅹ Ⅼ Ⅽ Ⅾ Ⅿ
+                    "","Ⅽ","ⅭⅭ","ⅭⅭⅭ","ⅭⅮ","Ⅾ","ⅮⅭ","ⅮⅭⅭ","ⅮⅭⅭⅭ","ⅭⅯ",
+                    "","Ⅹ","ⅩⅩ","ⅩⅩⅩ","ⅩⅬ","Ⅼ","ⅬⅩ","ⅬⅩⅩ","ⅬⅩⅩⅩ","ⅩⅭ",
+                    "","Ⅰ", "ⅠⅠ", "ⅠⅠⅠ", "ⅠⅤ", "Ⅴ", "ⅤⅠ", "ⅤⅠⅠ", "ⅤⅠⅠⅠ", "ⅠⅩ"
+                ] 
+            let roman = "", i = 3
+            while (i--)
+                roman = (key[D.Int(digits.pop()) + i * 10] || "") + roman
+            return isGroupingSymbols ? (Array(D.Int(digits.join("")) + 1).join("M") + roman).replace(/ⅩⅠ/gu, "Ⅺ").replace(/ⅩⅡ/gu, "Ⅻ") : Array(D.Int(digits.join("")) + 1).join("M") + roman
         },
         ordinal = (num, isFullText = false) => {
             /* Converts any number by adding its appropriate ordinal ("2nd", "3rd", etc.) */
@@ -786,7 +824,8 @@ const D = (() => {
                                         } else {
                                             if (entity.name.length > 12)
                                                 entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
-                                            buttonsCode.push(C.HTML.Button(entity.name, entity.command, Object.assign({}, {width: `${flexEntityWidth}%`}, customStyles.Button || {}, rowData.buttonStyles || {}, entity.styles || {})))
+                                            const button = new Button(entity.name, entity.command, Object.assign({}, {width: `${flexEntityWidth}%`}, customStyles.Button || {}, rowData.buttonStyles || {}, entity.styles || {}))
+                                            buttonsCode.push(button.HTML)
                                         }
                                 sectionHTML.push(C.HTML.ButtonLine(buttonsCode, rowData.styles || {}))
                             } catch (errObj) {
@@ -1060,15 +1099,15 @@ const D = (() => {
                     _.each(valArray, v => {
                         let errorCheck = null
                         switch (cat.toLowerCase()) {
-                            case "object":
+                            case "object": // If v has a "get" and an "id" property.
                                 if (!(v && v.get && v.id))
                                     errorLines.push(`Invalid object: ${jStrL(v && v.get && v.get("name") || v && v.id || v, true)}`)
                                 break
-                            case "number":
+                            case "number": // If v starts with digits (returns true even if it's a string)
                                 if (_.isNaN(parseInt(v)))
                                     errorLines.push(`Invalid number: ${jStrL(v)}`)
                                 break
-                            case "string":
+                            case "string": // If 
                                 if (!_.isString(v) && !_.isNumber(v))
                                     errorLines.push(`Invalid string: ${jStrL(v)}`)
                                 break
@@ -1932,8 +1971,11 @@ const D = (() => {
                 STATE.REF.MissingChars = _.uniq([...STATE.REF.MissingChars, char])
         },
 
-        get PAGEID() { return VALS.PAGEID() },
+        get MAINPAGEID() { return VALS.PAGEID() },
+        GetPageID: (pageRef) => VALS.PAGEID(pageRef),
+        get THISPAGEID() { return getObj("page", D.GetPlayer(D.GMID()).get("_lastpage")).id },
         get CELLSIZE() { return VALS.CELLSIZE() },
+        GetCellSize: (pageRef) => VALS.CELLSIZE(pageRef),
 
         get IsReportingListener() { return STATE.REF.isReportingListener },
 
@@ -1946,7 +1988,7 @@ const D = (() => {
         Int: pInt, Float: pFloat, LCase: pLowerCase, UCase: pUpperCase,
         Round: roundSig,
         NumToText: numToText, TextToNum: textToNum,
-        Ordinal: ordinal,
+        Ordinal: ordinal, Romanize: numToRomanNum,
         Capitalize: capitalize,
         Clone: clone,
         Gradient: colorGradient, RGBtoHEX: rbgToHex,

@@ -204,7 +204,7 @@ const Roller = (() => {
                                             if (D.LCase(rollFlagKey) === "all") {
                                                 for (const flagKey of Object.keys(STATE.REF.nextRollFlags))
                                                     STATE.REF.nextRollFlags[flagKey] = toggle
-                                                D.Call(`!roll set secrecy menu <span style="color: ${toggle && C.COLORS.brightgrey || C.COLORS.brightgreen};">Now <b><u>${toggle && "HIDING" || "SHOWING"}</u> ALL VALUES</b>`)                                            
+                                                D.Call(`!roll set secrecy menu <span style="color: ${toggle && C.COLORS.brightgrey || C.COLORS.puregreen};">Now <b><u>${toggle && "HIDING" || "SHOWING"}</u> ALL VALUES</b>`)                                            
                                             } else if (D.LCase(rollFlagKey) === "done") {
                                                 D.Alert(`Secrecy Set: ${D.JS(STATE.REF.nextRollFlags)}`, "Roller: Set Secrecy")
                                             } else if (rollFlagKey in STATE.REF.nextRollFlags && STATE.REF.nextRollFlags[rollFlagKey] !== toggle) {
@@ -216,7 +216,7 @@ const Roller = (() => {
                                         type: "ButtonLine",
                                         contents: [
                                             0,
-                                            {name: "Show All", command: "!reply all", styles: {bgColor: C.COLORS.brightgreen, color: C.COLORS.black /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
+                                            {name: "Show All", command: "!reply all", styles: {bgColor: C.COLORS.puregreen, color: C.COLORS.black /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
                                             {name: "Hide All", command: "!reply !all", styles: {bgColor: C.COLORS.darkgrey /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
                                             0
                                         ],
@@ -699,13 +699,13 @@ const Roller = (() => {
                 outcome: {
                     best: C.COLORS.white,
                     good: C.COLORS.white,
-                    bad: C.COLORS.orange,
+                    bad: C.COLORS.midgold,
                     worst: C.COLORS.brightred
                 },
                 subOutcome: {
                     best: C.COLORS.white,
                     good: C.COLORS.white,
-                    bad: C.COLORS.orange,
+                    bad: C.COLORS.midgold,
                     worst: C.COLORS.brightred
                 }
             },
@@ -724,7 +724,7 @@ const Roller = (() => {
                 outcome: {
                     best: C.COLORS.white,
                     good: C.COLORS.white,
-                    bad: C.COLORS.orange,
+                    bad: C.COLORS.midgold,
                     worst: C.COLORS.brightred
                 }
             },
@@ -743,7 +743,7 @@ const Roller = (() => {
                 outcome: {
                     best: C.COLORS.white,
                     good: C.COLORS.white,
-                    bad: C.COLORS.orange,
+                    bad: C.COLORS.midgold,
                     worst: C.COLORS.brightred
                 }
             },
@@ -762,7 +762,7 @@ const Roller = (() => {
                 outcome: {
                     best: C.COLORS.white,
                     good: C.COLORS.white,
-                    bad: C.COLORS.orange,
+                    bad: C.COLORS.midgold,
                     worst: C.COLORS.brightred
                 }
             },
@@ -777,7 +777,7 @@ const Roller = (() => {
                 outcome: {
                     best: C.COLORS.white,
                     good: C.COLORS.white,
-                    bad: C.COLORS.orange,
+                    bad: C.COLORS.midgold,
                     worst: C.COLORS.brightred
                 }
             },
@@ -790,7 +790,7 @@ const Roller = (() => {
                 outcome: {
                     best: C.COLORS.white,
                     good: C.COLORS.white,
-                    bad: C.COLORS.orange,
+                    bad: C.COLORS.midgold,
                     worst: C.COLORS.brightred
                 }
             },
@@ -805,7 +805,7 @@ const Roller = (() => {
                     grey: C.COLORS.darkgrey
                 },
                 subOutcome: {
-                    bad: C.COLORS.orange,
+                    bad: C.COLORS.midgold,
                     tainted: C.COLORS.brightpurple
                 }
             },
@@ -820,7 +820,7 @@ const Roller = (() => {
                     grey: C.COLORS.darkgrey
                 },
                 subOutcome: {
-                    bad: C.COLORS.orange,
+                    bad: C.COLORS.midgold,
                     tainted: C.COLORS.brightpurple
                 }
             },
@@ -851,11 +851,11 @@ const Roller = (() => {
             outcomeRed: `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.brightred}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
             outcomeRedSmall: `<div style="display: block; width: 100%; margin-top: 5px; height: 14px; line-height: 14px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.brightred}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
             outcomePurple: `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.black}; display: block; width: 100%;  font-size: 22px; font-family: Voltaire; text-shadow: 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 2px rgb(255,255,255), 0px 0px 4px rgb(255,255,255), 0px 0px 4px rgb(255,255,255), 0px 0px 6px rgb(255,255,255), 0px 0px 6px rgb(200,100,200), 0px 0px 8px rgb(200,100,200), 0px 0px 10px rgb(200,100,200), 0px 0px 15px rgb(200,100,200);">`,
-            outcomeOrange: "<div style=\"display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;\"><span style=\"color: orange; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
+            outcomeOrange: "<div style=\"display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;\"><span style=\"color: midgold; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
             outcomeWhite: `<div style="display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.white}; display: block; width: 100%;  font-size: 22px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
             outcomeWhiteSmall: `<div style="display: block; margin-top: 5px; width: 100%; height: 14px; line-height: 14px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.white}; display: block; width: 100%;  font-size: 14px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
             subOutcomeRed: `<div style="display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.brightred}; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
-            subOutcomeOrange: "<div style=\"display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;\"><span style=\"color: orange; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
+            subOutcomeOrange: "<div style=\"display: block; width: 100%; height: 20px; line-height: 20px; text-align: center; font-weight: bold;\"><span style=\"color: midgold; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';\">",
             subOutcomeWhite: `<div style="display: block; width: 100%; height: 10px; line-height: 10px; text-align: center; font-weight: bold;"><span style="color: ${C.COLORS.white}; display: block; width: 100%;  font-size: 12px; font-family: 'Bodoni SvtyTwo ITC TT';">`,
             resultDice: { // ♦◊
                 colStart: "<div style=\"display: inline-block ; width: XXXpx ; height: auto; margin-bottom: 5px\">",

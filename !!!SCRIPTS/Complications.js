@@ -1429,7 +1429,7 @@ const Complications = (() => {
                             enhance: "brightpurple",
                             negate: "blue",
                             revalue: "darkgreen",
-                            duplicate: "orange"
+                            duplicate: "midgold"
                         }[action]]
                     const card = STATE.REF.MAT[spot]
                     switch (action) {
@@ -1455,7 +1455,7 @@ const Complications = (() => {
                             break
                         case "duplicate":
                             if (card.isFaceUp && !card.isDuplicated)
-                                return C.COLORS.orange
+                                return C.COLORS.midgold
                             else if (card.isDuplicated)
                                 return C.COLORS.brightgrey
                             break

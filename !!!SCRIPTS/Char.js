@@ -786,12 +786,12 @@ const Char = (() => {
                 "_LastButtons": [
                     ["Secret Roll", "!roll @@CHARIDS@@ secret", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.purple, color: C.COLORS.white}],
                     ["Get Trait", "!char @@CHARIDS@@ get stat", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.grey, color: C.COLORS.black}],
-                    ["@@SINGLEONLY@@Complic's", "!comp @@CHARIDS@@ start ?{Shortfall?}", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.orange, color: C.COLORS.black, fontWeight: "bold", textShadow: "1px 0px red"}],
+                    ["@@SINGLEONLY@@Complic's", "!comp @@CHARIDS@@ start ?{Shortfall?}", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.midgold, color: C.COLORS.black, fontWeight: "bold", textShadow: "1px 0px red"}],
                     ["@@SINGLEONLY@@Spotlight", "!sess @@CHARIDS@@ spotlight", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.brightred, color: C.COLORS.black}]
                 ],
                 "Health": [
                     [ "S", "!char @@CHARIDS@@ dmg health superficial", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred}],
-                    [ "S+", "!char @@CHARIDS@@ dmg health superficial+", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightredmid}],
+                    [ "S+", "!char @@CHARIDS@@ dmg health superficial+", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred}],
                     [ "A", "!char @@CHARIDS@@ dmg health aggravated", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.red}]
                 ],
                 "Willpower": [
@@ -804,17 +804,17 @@ const Char = (() => {
                     [ "A", "!char @@CHARIDS@@ dmg willpower social_aggravated", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkpurple}]
                 ],
                 "Hunger": [
-                    [ "+1", "!char @@CHARIDS@@ change hunger 1", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkredmid} ],
+                    [ "+1", "!char @@CHARIDS@@ change hunger 1", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkred} ],
                     [ "-1", "!char @@CHARIDS@@ change hunger -1", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkred} ],
                     [ "Δ", "!char @@CHARIDS@@ change hunger", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.red} ],
                     ["Kill Slake", "17%"],
-                    [ "-1", "!char @@CHARIDS@@ change hungerkill -1", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightredmid} ],
+                    [ "-1", "!char @@CHARIDS@@ change hungerkill -1", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred} ],
                     [ "Δ", "!char @@CHARIDS@@ change hungerkill", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred} ]
                 ],
                 "XP": [
-                    [ "1", "!char @@CHARIDS@@ set xp 1 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
-                    [ "2", "!char @@CHARIDS@@ set xp 2 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
-                    [ "Δ", "!char @@CHARIDS@@ set xp ?{How Much XP?|3|4|5|6|7|8|9|10} ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.orange} ],
+                    [ "1", "!char @@CHARIDS@@ set xp 1 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.midgold} ],
+                    [ "2", "!char @@CHARIDS@@ set xp 2 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.midgold} ],
+                    [ "Δ", "!char @@CHARIDS@@ set xp ?{How Much XP?|3|4|5|6|7|8|9|10} ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.midgold} ],
                     ["Humanity", "17%"],
                     [ "Stn", "!char @@CHARIDS@@ dmg stains", {width: "14%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0px 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.white}],
                     [ "Hum", "!char @@CHARIDS@@ dmg humanity", {width: "14%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.white}]
@@ -970,7 +970,7 @@ const Char = (() => {
                     TRAITLIST[`_AttrNames${i}`].push([
                         ATTRNAMES[j][i].replace(/_/gu, " "),
                         buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, ATTRNAMES[j][i].toLowerCase()) || `!char select trait ${ATTRNAMES[j][i].toLowerCase()}`,
-                        {width: "30%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.yellow, color: C.COLORS.black}
+                        {width: "30%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightgold, color: C.COLORS.black}
                     ].map(x => VAL({string: x}) && x.replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;") || x))                
             }
             TRAITLIST._SpacerRow1 = [["80%"]]

@@ -50,6 +50,7 @@ const Session = (() => {
                     BotRight: "blank"
                 }
             }
+            STATE.REF.curAct = STATE.REF.curAct || 1
             STATE.REF.locationRecord = STATE.REF.locationRecord || null
             STATE.REF.locationDetails = STATE.REF.locationDetails || {}
             STATE.REF.locationPointer = STATE.REF.locationPointer || {}
@@ -206,6 +207,10 @@ const Session = (() => {
                 }
                 case "set": {
                     switch(D.LCase(call = args.shift())) {
+                        case "act": {
+                            STATE.REF.curAct = D.Int(args[0]) || STATE.REF.curAct
+                            break
+                        }
                         case "mode": {
                             STATE.REF.Mode = D.IsIn(args.shift(), STATE.REF.SessionModes) || STATE.REF.Mode
                             D.Alert(`Current Session Mode:<br><h3>${STATE.REF.Mode}</h3>`, "!sess set mode")
@@ -278,7 +283,7 @@ const Session = (() => {
                     TimeTracker.Fix()
                     for (const charData of _.values(Char.REGISTRY).slice(0, 4)) {
                         const [token] = findObjs({
-                            _pageid: D.PAGEID,
+                            _pageid: D.MAINPAGEID,
                             _type: "graphic",
                             _subtype: "token",
                             represents: charData.id
@@ -449,8 +454,12 @@ const Session = (() => {
                 }
             },
             introMode: {
-                Active: () => {},
-                Inactive: () => {},
+                Active: () => {
+                    Campaign().set({playerpageid: D.GetPageID("GAME")})
+                },
+                Inactive: () => {
+                    Campaign().set({playerpageid: D.GetPageID("SplashPage")})
+                },
                 Downtime: () => {
                     if (STATE.REF.LastMode !== "Complications")
                         D.Chat("all", C.HTML.Block([
@@ -576,7 +585,8 @@ const Session = (() => {
                         Char.AwardXP(char, 2, "Session XP award.")
                 } else if (STATE.REF.dateRecord) {
                     TimeTracker.CurrentDate = STATE.REF.dateRecord
-                }                    
+                }
+                Media.SetText("NextSession", D.Romanize(STATE.REF.SessionNum, false).split("").join("   "))       
             }
         },
         sessionMonologue = () => {
@@ -594,7 +604,7 @@ const Session = (() => {
         },
         logTokens = (mode) => {
             const tokenObjs = findObjs({
-                _pageid: D.PAGEID,
+                _pageid: D.MAINPAGEID,
                 _type: "graphic",
                 _subtype: "token"
             }).filter(x => x.get("represents"))
@@ -913,7 +923,7 @@ const Session = (() => {
                         ..._.chain(genericButtons).
                             map(x => ({name: x, command: `!reply district@${x}, call@site`})).
                             groupBy((x, i) => Math.floor(i / 3)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.orange, buttonTransform: "none"}})).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.midgold, buttonTransform: "none"}})).
                             value(),
                         ..._.chain(favDistricts).
                             map(x => ({name: x, command: `!reply district@${x}, call@site`})).
@@ -976,7 +986,7 @@ const Session = (() => {
                         ..._.chain(genericSites).
                             map(x => ({name: x, command: `!reply site@${x}`})).
                             groupBy((x, i) => Math.floor(i / 3)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.orange, buttonTransform: "none"}})).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.midgold, buttonTransform: "none"}})).
                             value(),
                         ..._.chain(favSites).
                             map(x => ({name: x, command: `!reply site@${x}`})).
@@ -986,7 +996,7 @@ const Session = (() => {
                         ..._.chain(namedSites).
                             map(x => ({name: x[1], command: `!reply namedsite@${x[0]}`})).
                             groupBy((x, i) => Math.floor(i / 2)).
-                            map(x => ({type: "ButtonLine", contents: _.flatten(x), buttonStyles: {width: "45%", fontSize: "12px", color: C.COLORS.black, bgColor: C.COLORS.yellow, buttonTransform: "none"}})).
+                            map(x => ({type: "ButtonLine", contents: _.flatten(x), buttonStyles: {width: "45%", fontSize: "12px", color: C.COLORS.black, bgColor: C.COLORS.brightgold, buttonTransform: "none"}})).
                             value(),
                         ..._.chain(distSites).
                             map(x => ({name: x, command: `!reply site@${x}`})).
@@ -1026,7 +1036,7 @@ const Session = (() => {
                             mapObject((v, k) => v ? {name: k, command: v[0], styles: v[1]} : 0).
                             values().
                             groupBy((x, i) => Math.floor(i / 3)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "47%", buttonHeight: "18px", fontSize: "14px", fontWeight: "bold", color: C.COLORS.black, bgColor: C.COLORS.brightgreen}})).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "47%", buttonHeight: "18px", fontSize: "14px", fontWeight: "bold", color: C.COLORS.black, bgColor: C.COLORS.puregreen}})).
                             value()
                     ]),
                     blockStyles: {/* color, bgGradient, bgColor, bgImage, border, margin, width, padding */}
@@ -1068,7 +1078,7 @@ const Session = (() => {
                         }
                     if ("done" in params) {
                         processPendingLocCommand()  
-                        Media.Notify("PanelRight", "FINISHED! Setting Location Cards...", true, C.COLORS.brightgreen)     
+                        Media.Notify("PanelRight", "FINISHED! Setting Location Cards...", true, C.COLORS.puregreen)     
                     }      
                     
                     return !("call" in params || "done" in params)
@@ -1108,7 +1118,7 @@ const Session = (() => {
                             ..._.chain(genericSubLocs).
                                 map(x => ({name: x, command: `!reply ${subLocRef}@${x}`})).
                                 groupBy((x, i) => Math.floor(i / 2)).
-                                map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "49%", fontSize: "10px", bgColor: C.COLORS.orange, buttonTransform: "none"}})).
+                                map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "49%", fontSize: "10px", bgColor: C.COLORS.midgold, buttonTransform: "none"}})).
                                 value(),
                             ..._.chain(siteSubLocs).
                                 map(x => ({name: x.replace(/[^_]+_/gu, ""), command: `!reply ${subLocRef}@${x}`})).
@@ -1146,7 +1156,7 @@ const Session = (() => {
                             mapObject((v, k) => v ? {name: k, command: v[0], styles: v[1]} : 0).
                             values().
                             groupBy((x, i) => Math.floor(i / 3)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "47%", buttonHeight: "18px", fontSize: "14px", fontWeight: "bold", color: C.COLORS.black, bgColor: C.COLORS.brightgreen}})).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "47%", buttonHeight: "18px", fontSize: "14px", fontWeight: "bold", color: C.COLORS.black, bgColor: C.COLORS.puregreen}})).
                             value()
                     ]
                 },
@@ -1162,7 +1172,7 @@ const Session = (() => {
                     PENDINGLOCCOMMAND.subLocs = PENDINGLOCCOMMAND.subLocs || {}
                     if ("done" in params) {
                         processPendingLocCommand()
-                        Media.Notify("PanelRight", "FINISHED! Setting Location Cards...", true, C.COLORS.brightgreen)   
+                        Media.Notify("PanelRight", "FINISHED! Setting Location Cards...", true, C.COLORS.puregreen)   
                         return false
                     } else {
                         for (const [locRef, subLocRef] of Object.entries(params))
@@ -1308,7 +1318,7 @@ const Session = (() => {
             DB({locPos, ["state Scene Focus"]: STATE.REF.sceneFocus, sceneLocs, activeLocs: getActivePositions()}, "setSceneFocus")
             const activeLocs = _.keys(STATE.REF.curLocation).filter(x => x !== "subLocs" && STATE.REF.curLocation[x][0] !== "blank"),
                 tokenObjs = findObjs({
-                    _pageid: D.PAGEID,
+                    _pageid: D.MAINPAGEID,
                     _type: "graphic",
                     _subtype: "token"
                 }).filter(x => x.get("represents"))            

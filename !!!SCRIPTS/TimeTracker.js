@@ -864,7 +864,7 @@ const TimeTracker = (() => {
             let returnDate
             const curDateString = formatDateString(new Date(STATE.REF.dateObj))
             if (VAL({string: dateRef})) {
-                if (!dateRef.match(/\D/gu)) // if everything is a number, assume it's a seconds-past-1970 thing
+                if (!String(dateRef).match(/\D/gu)) // if everything is a number, assume it's a seconds-past-1970 thing
                     return new Date(parseInt(dateRef))
                 if (dateRef !== "") {
                     // first, see if it includes a time stamp and separate that out:
@@ -919,8 +919,8 @@ const TimeTracker = (() => {
             } else {
                 if (!_.isDate(dateRef))                    
                     returnDate = new Date(dateRef)
-            if (!_.isDate(returnDate))
-                returnDate = new Date(D.Int(dateRef))
+                if (!_.isDate(returnDate))
+                    returnDate = new Date(D.Int(dateRef))
                 if (!_.isDate(returnDate) && VAL({string: returnDate}))
                     return parseToDateObj(returnDate)
             }
@@ -951,7 +951,7 @@ const TimeTracker = (() => {
                 return `${date.getUTCHours() - 12}:${date.getUTCMinutes()} P.M.`
             else
                 return `${date.getUTCHours()}:${date.getUTCMinutes()} A.M.`
-        },
+        },       
         formatDateString = (date, isIncludingTime = false) => { return `${
             ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]
         } ${
@@ -979,10 +979,10 @@ const TimeTracker = (() => {
                         return newDate.setUTCHours(newDate.getUTCHours() + delta)
                     case "m":
                         return newDate.setUTCMinutes(newDate.getUTCMinutes() + delta)
-                    default:
-            return false            
+                    // no default
                 }
-            }          
+            }
+            return false          
         },
         getHorizonTimeString = () => {
             const [dawn, dusk] = TWILIGHTMINS[STATE.REF.dateObj.getMonth()],
@@ -1053,7 +1053,7 @@ const TimeTracker = (() => {
                 moonUpPercent = D.Float(Math.max(0, totalSecsIn - waitSecs) / (maxSecs - waitSecs)),
                 moonRisePercent = moonUpPercent,
                 moonTop = MOON.minTop + (MOON.maxTop - MOON.minTop)*moonRisePercent,
-                waterTintGradient = D.Gradient(C.COLORS.black, C.COLORS.darkred, D.Int(moonRisePercent * 100), 100).replace(/[^\d,]/gu, "").split(",").slice(0,3).map(x => D.Int(x)),
+                waterTintGradient = D.Gradient(C.COLORS.black, C.COLORS.darkdarkred, D.Int(moonRisePercent * 100), 100).replace(/[^\d,]/gu, "").split(",").slice(0,3).map(x => D.Int(x)),
                 waterTint = `#${`00${waterTintGradient[0].toString(16)}`.slice(-2)}${`00${waterTintGradient[1].toString(16)}`.slice(-2)}${`00${waterTintGradient[2].toString(16)}`.slice(-2)}`
 
 
@@ -1083,14 +1083,14 @@ const TimeTracker = (() => {
                     `<b>Water Tint Gradient:</b> ${D.JS(waterTintGradient)}`,
                     `<b>Water Tint:</b> ${D.JS(waterTint)}`
                 ].join("<br>"), "Rising Moon Test")
-                Media.SetImgData("RisingMoon_1", {top: moonTop}, true)
-                Media.SetImgTemp("WeatherFog_1", {tint_color: waterTint})
+                Media.SetImgData("SplashMoon_1", {top: moonTop}, true)
+                Media.SetImgTemp("SplashWaterOverlay_1", {tint_color: waterTint})
                 isCountdownRunning = false
             } else if (isCountdownRunning) {
                 countdownRecord = [daysLeft, hoursLeft, minsLeft, moonTop, waterTint]
 
-                Media.SetImgData("RisingMoon_1", {top: moonTop}, true)
-                Media.SetImgTemp("WeatherFog_1", {tint_color: waterTint})
+                Media.SetImgData("SplashMoon_1", {top: moonTop}, true)
+                Media.SetImgTemp("SplashWaterOverlay_1", {tint_color: waterTint})
                 updateCountdown()
 
                 startSecTimer(secsLeft)
@@ -1114,12 +1114,14 @@ const TimeTracker = (() => {
         },
         updateCountdown = () => {
             if (isCountdownFrozen || Media.HasForcedState("Countdown")) return false
-            if (countdownRecord[0] === 6 && countdownRecord[1] === 23 && countdownRecord[2] >= 45 ||
-                countdownRecord[0] === 0 && countdownRecord[1] === 0 && countdownRecord[2] === 0 && secondsLeft <= 5) {
+            if (countdownRecord[0] === 6 && countdownRecord[1] <= 19 ||
+                countdownRecord[0] === 0 && countdownRecord[1] === 0 && countdownRecord[2] <= 1) {
                 Media.SetText("Countdown", " ")
+                Media.SetImgData("SplashMoon_1", {top: MOON.minTop}, true)
+                Media.SetImgTemp("SplashWaterOverlay_1", {tint_color: "#000000"})
             } else {
-                Media.SetImgData("RisingMoon_1", {top: countdownRecord[3]}, true)
-                Media.SetImgTemp("WeatherFog_1", {tint_color: countdownRecord[4]})
+                Media.SetImgData("SplashMoon_1", {top: countdownRecord[3]}, true)
+                Media.SetImgTemp("SplashWaterOverlay_1", {tint_color: countdownRecord[4]})
                 Media.SetText("Countdown", [...countdownRecord.slice(0, 3), secondsLeft].map(x => `${x.toString().length === 1 && "0" || ""}${x}`).join(":"))
             }
             return true
@@ -1807,7 +1809,7 @@ const TimeTracker = (() => {
             } else {
                 clearInterval(secTimer)
                 secTimer = null                
-                Media.SetImgTemp("WeatherFog_1", {tint_color: "transparent"})
+                Media.SetImgTemp("SplashWaterOverlay_1", {tint_color: "transparent"})
             }
         },
     // #endregion
@@ -1886,7 +1888,37 @@ const TimeTracker = (() => {
             return false
         },
         setAlarm = (dateRef, name, message, actions = [], displayTo = [], revActions = [], recurring = false, isConditional = false) => {
-            if (VAL({string: actions}))
+            // STEP ONE: FIGURE OUT WHEN THE ALARM SHOULD FIRE.
+            if (dateRef.split(":").length > 2)
+                return D.Alert(`DateRef '${D.JS(dateRef)} has too many terms.<br>(A ':' should only appear between the timeRef and the modifying flag)`, "setAlarm")
+            const [timeRef, timeFlag] = dateRef.split(":")
+            switch (D.LCase(timeRef)) {
+                case "nextfullnight":
+                case "nextnight": {
+
+                    break
+                }
+                case "nextfullweek":
+                case "nextweek": {
+
+                    break
+                }
+                case "endofweek": {
+
+                    break
+                }
+                default: {
+
+                    break
+                }
+            }
+
+
+
+
+
+
+            if (VAL({string: actions})) // Actions can be a comma-delimited list of chat commands.
                 actions = actions.split(/\s*,\s*/gu)
             if (VAL({string: revActions})) // Reverse actions can be as above.
                 revActions = revActions.split(/\s*,\s*/gu)

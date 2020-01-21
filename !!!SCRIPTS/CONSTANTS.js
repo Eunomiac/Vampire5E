@@ -24,8 +24,7 @@ const C = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     // #region CORE CONFIGURATION & BASIC REFERENCES
-        TEXTCHARS = "0123456789LMNQSOPRUWXTVZY-=●(+ABCFHDEGJIKalmnqsopruwxtvzyfhdegjikbc )?![]:;,.○~♠◌‡⅓°♦\"'`Ծ►/&—", // eslint-disable-line quotes
-        TEXTPAGEID = "-LtEZInDvTCwXXSROD49",
+        TEXTCHARS = "0123456789LMNQSOPRUWXTVZY-=●(+ABCFHDEGJIKalmnqsopruwxtvzyfhdegjikbc )?![]:;,.○~♠◌‡⅓°♦\"'`Ծ►/&—ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫⅬⅭⅮⅯ", // eslint-disable-line quotes
         NUMBERWORDS = {
             low: ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen", "Twenty"],
             tens: ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"],
@@ -56,6 +55,7 @@ const C = (() => {
             brightgrey: "rgba(175, 175, 175, 1)",
             grey: "rgba(130, 130, 130, 1)",
             darkgrey: "rgba(80, 80, 80, 1)",
+            darkdarkgrey: "rgba(40, 40, 40, 1)",
             black: "rgba(0, 0, 0, 1)",
             
             halfwhite: "rgba(255,255,255,0.5)",
@@ -63,31 +63,53 @@ const C = (() => {
             fadedgrey: "rgba(0, 0, 0, 0.1)",
             transparent: "rgba(0,0,0,0)",
             
+            /*
             palered: "rgba(255, 175, 175, 1)",
             brightred: "rgba(255, 0, 0, 1)",
-            brightredmid: "rgba(225, 0, 0, 1)",
+            brightred: "rgba(225, 0, 0, 1)",
             red: "rgba(200, 0, 0, 1)",
-            darkredmid: "rgba(175, 0, 0, 1)",
+            darkred: "rgba(175, 0, 0, 1)",
             darkred: "rgba(150, 0, 0, 1)",
             darkdarkred: "rgba(50, 0, 0, 1)",
             crimson: "rgba(220, 20, 60, 1)",
             
-            orange: "rgba(200, 100, 0, 1)",
+            
+            midgold: "rgba(200, 100, 0, 1)",
             
             yellow: "rgba(200, 200, 0, 1)",
             gold: "#ffd700",
             tan: "rgba(228, 192, 144, 1)",
+            */
+            // palered: "rgba
+
+            purered: "rgba(255, 0, 0, 1)",
+            brightred: "rgba(255, 31, 34, 1)",
+            red: "rgba(209,0,3,1)",
+            darkred: "rgba(132, 0, 2,1)",
+            darkdarkred: "rgba(55, 0, 1, 1)",
+            brightcrimson: "rgba(234, 9, 67, 1)",
+            crimson: "rgba(160, 6, 46, 1)",
+            darkcrimson: "rgba(86, 3, 25, 1)",
+
+            brightgold: "rgb(255,223,0)",
+            gold: "rgb(255,190,0)",
+            midgold: "rgb(255,165,0)",
+            darkgold: "rgb(167,97,0)",
+
+            tan: "rgb(255,216,164)",
             
+            puregreen: "rgba(0, 255, 0, 1)",
             palegreen: "rgba(175, 255, 175, 1)",
-            brightgreen: "rgba(0, 255, 0, 1)",
             green: "rgba(0, 200, 0, 1)",		
             darkgreen: "rgba(0, 125, 0, 1)",
+
+            cyan: "rgba(0, 255, 255, 1)",
             
+            pureblue: "rgba(0,0,255,1)",
             paleblue: "rgba(175, 175, 255, 1)",
             brightblue: "rgba(150, 150, 255, 1)",
             blue: "rgba(100, 100, 255, 1)",
-            darkblue: "rgba(50, 50, 150, 1)",
-            cyan: "rgba(0, 255, 255, 1)",
+            darkblue: "rgba(50, 50, 150, 1)",            
             
             palepurple: "rgba(255, 175, 255, 1)",
             brightpurple: "rgba(200, 100, 200, 1)",
@@ -924,17 +946,17 @@ const C = (() => {
         PIXELSPERSQUARE = 10,
         SANDBOX = {
             height: 1040,
-            width: 1590
-        }
-    SANDBOX.top = SANDBOX.height/2
-    SANDBOX.left = SANDBOX.width/2
-    const MAP = {            
-        height: 2040,
-        width: SANDBOX.width
-    }
-    MAP.top = MAP.height/2 + SANDBOX.height
-    MAP.left = MAP.width/2
-    const QUADRANTS = {
+            width: 1590,
+            get top() { return this.height / 2 },
+            get left() { return this.width / 2 }
+        },
+        MAP = {            
+            height: 2040,
+            width: SANDBOX.width,
+            get top() { return this.height/2 + SANDBOX.height },
+            get left() { return this.width / 2}
+        },
+        QUADRANTS = {
             TopLeft: {},
             BotLeft: {},
             TopRight: {},
@@ -2066,112 +2088,6 @@ const C = (() => {
         },
     // #endregion
 
-        CHARACTERS = [
-            "Adrian Gerrard",
-            "Agnes Bellanger",
-            "Alexander",
-            "Alexandra",
-            "Alistair Etrata",
-            "Amos Jax",
-            "Anita Morris",
-            "Antoinne LaGritte",
-            "Aryana Mortazavi",
-            "Baroness Monika Eulenberg",
-            "Ben Blinker",
-            "Bertrice",
-            "Bob Johnston",
-            "Bookies Enforcer",
-            "Calvin Wallace",
-            "Cardinal Collins",
-            "Christianne",
-            "Cyrus Raza",
-            "Damien Abanda",
-            "David Greene",
-            "Drake",
-            "Emily, the Dusk Rose",
-            "Flamenco",
-            "Frederik Scheer, Seneschal",
-            "Husain",
-            "I.Q.",
-            "Ian Rammond",
-            "Inquisitor Delta",
-            "J",
-            "Jack-be-Nimble",
-            "Jane 'JD' Doe",
-            "Jason",
-            "Jesse, Good Lad That He Is",
-            "Jonathan Harker",
-            "Kai",
-            "Kingston 'King' Black",
-            "Kit Edwards",
-            "Laz, Sheriff",
-            "Leah Hawk",
-            "Mason Schmidt",
-            "Maxwell 'Max' Floyd",
-            "Mr. Easy",
-            "Old Quentin",
-            "Prince Osborne Lowell",
-            "Professor Ethan Keen",
-            "Raphael Bishop",
-            "Reaper",
-            "Ren",
-            "Rosie",
-            "Sage Sam",
-            "Sang-Froid",
-            "Sinclair Rodriguez",
-            "Soraya Mortazavi",
-            "Stalker Todd",
-            "Suyin",
-            "Terry",
-            "The Aristocrat",
-            "The Island Devil",
-            "The Piece-Taker",
-            "The Stranger",
-            "Tommy",
-            "Toni Gomez",
-            "Twist",
-            "Tyler",
-            "Victor Vex",
-            "Wallflower",
-            "Wesley Richardson",
-            "Xavier Whitchurch",
-            "Yusef Shamsin"
-        ],
-        ROLLERDICELIST = {
-            selected: "https://s3.amazonaws.com/files.d20.io/images/87031339/qYj5D-gURif-qN4xSMuzsA/thumb.png?1563696190",
-            selectedFree: "https://s3.amazonaws.com/files.d20.io/images/87031341/LcuQLLoPqrcsgBqYZfC5AQ/thumb.png?1563696193",
-            selectedDouble: "https://s3.amazonaws.com/files.d20.io/images/87031344/GLCqnybOBoY1a0gKN3KeBQ/thumb.png?1563696197",
-            Bf: "https://s3.amazonaws.com/files.d20.io/images/87031347/5KnJOyDS1EqlvPL-XSr_Zw/thumb.png?1563696202",
-            Bs: "https://s3.amazonaws.com/files.d20.io/images/87031351/dFCCFy_4TGY0oAKPx_97tA/thumb.png?1563696206",
-            Bc: "https://s3.amazonaws.com/files.d20.io/images/87031356/kk7JrIgxOxDjsB7-Tx1Hgg/thumb.png?1563696210",
-            BcL: "https://s3.amazonaws.com/files.d20.io/images/87032655/4aaFfq5J3JARalsoj-FojQ/thumb.png?1563697877",
-            BcR: "https://s3.amazonaws.com/files.d20.io/images/87032656/_5dWegpwW40iJnX1KZbrhg/thumb.png?1563697881",
-            Hb: "https://s3.amazonaws.com/files.d20.io/images/87031371/oJ0DAobJYHsJ-yqKp1JROg/thumb.png?1563696227",
-            Hf: "https://s3.amazonaws.com/files.d20.io/images/87031372/tuAwFgBv2InNa4f3dG0lYQ/thumb.png?1563696231",
-            Hs: "https://s3.amazonaws.com/files.d20.io/images/87031378/v5vwY2PkvetYTGN_EHMAqw/thumb.png?1563696235",
-            Hc: "https://s3.amazonaws.com/files.d20.io/images/87031383/gVLuEp2mP4jlPytjzeoFFw/thumb.png?1563696239",
-            HcL: "https://s3.amazonaws.com/files.d20.io/images/87032695/FrEXcG2S4W2wp42b1QxaVQ/thumb.png?1563697900",
-            HcR: "https://s3.amazonaws.com/files.d20.io/images/87032700/VudTzvmWVMynpxS-5focJw/thumb.png?1563697904",
-            HcRb: "https://s3.amazonaws.com/files.d20.io/images/87032703/65M52wU1gqyULUWinCabww/thumb.png?1563697907",
-            HcLb: "https://s3.amazonaws.com/files.d20.io/images/87032708/Ui_y4n4driMHJv0mdYAn7A/thumb.png?1563697910",
-            BXc: "https://s3.amazonaws.com/files.d20.io/images/91336100/ESSgeEN2h4llmYgujVpJjQ/thumb.png?1567943808",
-            BXs: "https://s3.amazonaws.com/files.d20.io/images/91336101/xsSpdIN3Lktcq0275avnmw/thumb.png?1567943808",
-            HXc: "https://s3.amazonaws.com/files.d20.io/images/87031427/FuGfrl1aiw9HTsVy46-m1A/thumb.png?1563696289",
-            HXs: "https://s3.amazonaws.com/files.d20.io/images/87031430/ucYeuAXpDbaIjkqbzoRqWQ/thumb.png?1563696294",
-            HXb: "https://s3.amazonaws.com/files.d20.io/images/87031432/JoFhDPGehZCF2wnpCU652w/thumb.png?1563696299",
-            HCb: "https://s3.amazonaws.com/files.d20.io/images/87031435/8qE4d1bTkLGhK01Tgg-OGQ/thumb.png?1563696304"
-        },        
-        ROLLERBIGDICE = {
-            selected: "https://s3.amazonaws.com/files.d20.io/images/87031660/sUuDsKDSc5EWReOhOyRfFw/thumb.png?1563696663",
-            selectedFree: "https://s3.amazonaws.com/files.d20.io/images/87031668/ZXnVqbO7nfQA5-BuTKJQXQ/thumb.png?1563696668",
-            selectedDouble: "https://s3.amazonaws.com/files.d20.io/images/87031670/BoAzpEDrxSvndz-imHV5-Q/thumb.png?1563696671",
-            Bf: "https://s3.amazonaws.com/files.d20.io/images/87031671/HYJelRirzViDAhJzBsZ51w/thumb.png?1563696674",
-            Hf: "https://s3.amazonaws.com/files.d20.io/images/87031674/bvrFCzyt8m7iOFLqzXTW-A/thumb.png?1563696679",
-            Bs: "https://s3.amazonaws.com/files.d20.io/images/87031676/xpWcXpa175_ushoG8Ozy7g/thumb.png?1563696683",
-            Of: "https://s3.amazonaws.com/files.d20.io/images/87031681/vTU_pKd-LzYrfHAzxhQNlg/thumb.png?1563696687",
-            Os: "https://s3.amazonaws.com/files.d20.io/images/87031687/lR5ndvbW1mm-lweHIoLQcA/thumb.png?1563696692",
-            Hb: "https://s3.amazonaws.com/files.d20.io/images/87031371/oJ0DAobJYHsJ-yqKp1JROg/thumb.png?1563696227"
-        },
     // #region CITY DETAILS
         DISTRICTS = {
             Annex: {
@@ -3212,7 +3128,7 @@ const C = (() => {
 
         GAMENAME,
         RO,
-        TEXTCHARS, TEXTPAGEID,        
+        TEXTCHARS,   
        
         NUMBERWORDS,
         ORDINALSUFFIX,
@@ -3248,7 +3164,6 @@ const C = (() => {
         BLOODPOTENCY,
         RESONANCEODDS,
 
-        CHARACTERS, ROLLERDICELIST, ROLLERBIGDICE,
         DISTRICTS, SITES,
         get LOCATIONS() { return Object.assign({}, DISTRICTS, SITES) },
 

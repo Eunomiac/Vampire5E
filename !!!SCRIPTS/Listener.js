@@ -211,9 +211,7 @@ const Listener = (() => {
             const objects = {},
                 ids = [],
                 objRefsFound = [],
-                allObjs = [...findObjs({
-                    _pageid: D.PAGEID
-                }), ...findObjs({
+                allObjs = [...findObjs({}), ...findObjs({
                     _type: "character"
                 })]
             if (VAL({array: args}, "getObjsFromArgs") && args.length) {
@@ -285,79 +283,6 @@ const Listener = (() => {
             }
             return [objects, _.compact(args)]
         },
-        /* getObjsFromArgsOld = (args) => { // returns [objects, args]
-            const objects = {},
-                ids = [],
-                objRefsFound = [],
-                returnArgs = [],
-                allObjs = findObjs({
-                    _pageid: D.PAGEID
-                })
-            if (VAL({array: args}, "getObjsFromArgs") && args.length) {
-                // First, grab characters from initial character string
-                const initialCharObjs = _.uniq(_.flatten(_.compact((args[0] || "").split(",").map(x => parseArg.character(x.trim(), false)))))
-                if (initialCharObjs.length) {
-                    objects.character = [...initialCharObjs]
-                    args.shift()
-                } // -LtIoGrnj8M4-Dt15glw
-                DB(`Objects: ${D.JSL(objects)}, Args: ${D.JSL(args)}, <br>LENGTHS: ${D.JSL(D.KeyMapObj(objects, null, v => v.length))}`, "getObjsFromArgs")
-                for (const arg of args) {
-                    const [theseObjs, theseReturnArgs] = [{}, []]
-                    // Split the arg as if comma-delimited:
-                    for (const thisArg of arg.split(",")) {
-                        const prevObjCount = _.flatten(_.values(theseObjs)).length
-                        // Check for non-fuzzy references:
-                        for (const type of ["character", "graphic", "text"]) {
-                            const objs = _.compact(parseArg[type](thisArg, false))
-                            if (objs.length) {
-                                theseObjs[type] = theseObjs[type] || []
-                                theseObjs[type].push(...objs)
-                                DB(`Strict Objs Found: ${D.JSL(theseObjs)}`, "getObjsFromArgs")
-                            }
-                        }
-                        // If no objs found, try again with fuzzy references:
-                        if (_.flatten(_.values(theseObjs)).length === prevObjCount)
-                            for (const type of ["character", "graphic", "text"]) {
-                                const objs = _.compact(parseArg[type](thisArg, true))
-                                if (objs.length) {
-                                    theseObjs[type] = theseObjs[type] || []
-                                    theseObjs[type].push(...objs)
-                                    DB(`Fuzzy Objs Found: ${D.JSL(theseObjs)}`, "getObjsFromArgs")
-                                }
-                            }
-                        // If no objs found, add arg to theseReturnArgs for further processing by HandleInput
-                        if (_.flatten(_.values(theseObjs)).length === prevObjCount)
-                            theseReturnArgs.push(thisArg)
-                    }
-                    // Add found objects and any return args to main variables:
-                    _.each(theseObjs, (objs, type) => { if (_.flatten(objs).length) {
-                        DB(`... OBJECTS: ${D.JSL(objects)}<br>LENGTHS: ${D.JSL(D.KeyMapObj(objects, null, v => v.length))}`, "getObjsFromArgs")
-                        objects[type] = objects[type] || []
-                        objects[type].push(objs) 
-                        DB(`... type (${type}), length (${objs.length}), adding: ${D.JSL(objs)}<br>OBJECTS: ${D.JSL(objects)}`, "getObjsFromArgs")
-                    }})
-                    returnArgs.push(theseReturnArgs.join(","))
-                    DB(`Objects: ${D.JSL(objects)}`, "getObjsFromArgs")
-                }
-                // Finally, do one last check for a character match with the last two, and then the last three arguments joined:
-                if (returnArgs.length > 1) {
-                    let charNameTest = [returnArgs.pop(), returnArgs.pop()].reverse().join(" "),
-                        charObjTest = D.GetChar(charNameTest)
-                    if (charObjTest) {
-                        objects.character.push([charObjTest])
-                    } else if (returnArgs.length) {
-                        charNameTest = `${returnArgs.pop()} ${charNameTest}`
-                        charObjTest = D.GetChar(charNameTest)
-                        if (charObjTest)
-                            objects.character.push([charObjTest])
-                    }
-                    if (!charObjTest)
-                        returnArgs.push(...charNameTest.split(" "))
-                }
-            }
-            DB(`Returning:<br>OBJECTS: ${D.JSL(objects)}`, "getObjsFromArgs")
-            return [objects, _.compact(returnArgs)]
-        }, */
         parseMessage = (args, msg, needsObjects) => {
             const [objects, returnArgs] = needsObjects ? getObjsFromArgs(args) : [{}, args]
             // For each type, if no objects found in args, check selection:

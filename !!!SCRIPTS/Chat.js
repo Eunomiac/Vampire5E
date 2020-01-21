@@ -441,7 +441,7 @@ const Chat = (() => {
             if (STATE.REF.FontSizes.length) {
                 const sizes = STATE.REF.FontSizes.splice(0, 6),   
                     [textObjs, newTextObjs] = [
-                        findObjs({_pageid: C.TEXTPAGEID, _type: "text", layer: "objects"}),
+                        findObjs({_pageid: D.THISPAGEID, _type: "text", layer: "objects"}),
                         {}
                     ]
                 let [left, top] = [300, 100]
@@ -452,7 +452,7 @@ const Chat = (() => {
                     newTextObjs[font][size] = []
                     for (const char of C.TEXTCHARS.split("")) {
                         newTextObjs[font][size].push(createObj("text", {
-                            _pageid: C.TEXTPAGEID,
+                            _pageid: D.THISPAGEID,
                             top,
                             left,
                             text: char.repeat(40),
@@ -472,7 +472,7 @@ const Chat = (() => {
             }
         },
         resolveText = () => {
-            const textObjs = findObjs({_pageid: C.TEXTPAGEID, _type: "text", layer: "objects"}),
+            const textObjs = findObjs({_pageid: D.THISPAGEID, _type: "text", layer: "objects"}),
                 textSizes = []
             let font, trueFont
             for (const obj of textObjs) {

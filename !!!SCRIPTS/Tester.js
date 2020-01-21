@@ -51,6 +51,16 @@ const Tester = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting
             switch (call) {
+                case "page": {
+                    D.Alert(getObj("page", D.GetPlayer(D.GMID()).get("_lastpage")).get("name"), "Testing Page")
+                    break
+                }
+                case "roman": {
+                    const spaces = args[2] ? " ".repeat(D.Int(args[2])) : ""
+                    Media.SetText("NextSession", D.Romanize(D.Int(args[0]), args[1] === "true").split("").join(spaces))
+                    D.Alert(D.Romanize(D.Int(args[0])), "Roman Numeral Test")
+                    break
+                }
                 case "sound": {
                     const soundObjs = _.uniq(findObjs({_type: "jukeboxtrack"})),
                         soundObjsData = _.sortBy(soundObjs.map(x => ({
@@ -130,7 +140,6 @@ const Tester = (() => {
                 }
                 case "allobjs": {
                     const allObjs = findObjs({
-                        _pageid: D.PAGEID,
                         _type: args[0]
                     })
                     D.Alert(D.JS(allObjs.map(x => `<b>${x.get("name")}</b>: ${x.get("layer") || ""}`)), "All Objects")
@@ -265,7 +274,7 @@ const Tester = (() => {
                 }
                 case "pos": {
                     const charDatas = D.GetChars("registered").map(x => D.GetCharData(x)),
-                        tokenObjs = _.compact(_.values(charDatas).map(x => (findObjs({_pageid: D.PAGEID, _type: "graphic", _subtype: "token", represents: x.id}) || [null])[0]))
+                        tokenObjs = _.compact(_.values(charDatas).map(x => (findObjs({_pageid: D.MAINPAGEID, _type: "graphic", _subtype: "token", represents: x.id}) || [null])[0]))
                     D.Alert(D.JS(tokenObjs, true))
                     break
                 }
@@ -364,7 +373,6 @@ const Tester = (() => {
                         [reportLines, missingTextData, unregTextObjs] = [ [], [], [] ],
                         allTextObjs = findObjs({
                             _type: "text",
-                            _pageid: D.PAGEID
                         })
                     reportLines.push(
                         `${allTextObjs.length} text objects found.`,
@@ -395,7 +403,7 @@ const Tester = (() => {
                         for (const textObj of unregTextObjs)
                             if (textObj.get("text").length < 5)
                                 textObj.set({
-                                    color: C.COLORS.yellow,
+                                    color: C.COLORS.brightgold,
                                     text: `XX ${textObj.id} XX`,
                                     font_family: "Candal",
                                     font_size: 25

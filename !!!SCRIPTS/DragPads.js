@@ -540,7 +540,6 @@ const DragPads = (() => {
         },
         clearAllPads = funcName => {
             const graphics = findObjs({
-                    _pageid: D.PAGEID,
                     _type: "graphic",
                     imgsrc: IMAGES.blank
                 }),
