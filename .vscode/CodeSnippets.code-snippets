@@ -1,0 +1,379 @@
+{
+	// Place your Vampire5E workspace snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and 
+	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope 
+	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
+	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
+	// Placeholders with the same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+
+	"Command Menu": {
+		"scope": "javascript,typescript",
+		"prefix": "menu",
+		"body": [
+			"D.CommandMenu(",
+			"    {",
+			"        title: \"\",",
+			"        rows: [",
+			"            {type: \"Title/Header\", contents: \"\", styles: {}}, /* [Header: height, width, color, bgColor, margin, padding, fontSize, fontFamily, fontVariant, fontWeight, border, textShadow, boxShadow, textAlign, lineHeight], [Title: height, color, margin, fontFamily, fontSize, lineHeight, bgColor, border] */",
+			"            {type: \"(Clear)Body\", contents: \"BodyText\", styles: { }}, /* color, width, height, bgColor, margin, padding, fontFamily, fontSize, fontWeight, textAlign, textShadow, boxShadow, border, lineHeight */",
+			"            {",
+			"                type: \"ButtonLine\",",
+			"                contents: [",
+						"                    {text: \"Push One:\", styles: { }}, /* height, width, fontFamily, fontSize, bgColor, color, margin, textAlign, textIndent, padding, lineHeight */",
+			"                    0,",
+			"                    {name: \"Button1\", command: \"!reply <args>\", styles: { }}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */",
+			"                    15",
+			"                ],",
+			"                buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */",
+			"                styles: { } /* height, width, margin, textAlign */",
+			"            },",
+			"            {",
+			"                type: \"Column\", // Each column is one row; the contents will be fit horizontally, so ensure width is <= (100 / length) percent.", 
+			"                contents: [",
+			"                    {",
+			"                        title: \"\",",
+			"                        rows: [",
+			"                 // elements of D.CommandMenu calls to be spaced horizontally",
+			"                        ]",
+			"                    },",
+			"                    {",
+			"                        title: \"\",",
+			"                        rows: [",
+			"                 // elements of D.CommandMenu calls to be spaced horizontally",
+			"                        ]",
+			"                    },",
+			"                    {title: \"\", rows: [ ]}",
+			"                ],",
+			"                styles: { /* width: (<= (100/panels) percent */ } /* (width, margin */",
+			"            }",
+			"        ],",
+			"        blockStyles: { } /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */",
+			"    },",
+			"    (commandString, objects) => { // IMPORTANT: return 'true' if you want to hold this function open for more commands",
+            "        const params = D.ParseToObj(commandString, \",\", \"@\") // key:value pairs must be in key@pairs for this to work. Multiple commands comma-delimited.",
+			"    }",
+			")"
+		],
+		"description": "Reminder of proper D.CommandMenu syntax."
+	},
+	"Detailed Command Menu": {
+		"scope": "javascript,typescript",
+		"prefix": "commandmenu",
+		"body": [			
+			"/* MENU DATA:",
+			"    {",
+			"        title: <string>",
+			"        rows: [",
+			"            Each element represents a full-width horizontal <div> block, contained with \"block\".",
+			"            Elements should be of the form:",
+			"                {",
+			"                    type:     <string: ",
+			"                                   \"Title\", \"Header\", \"Body\", \"ClearBody\"",
+			"                                   \"ButtonLine\"",
+			"                                   \"Column\"",
+			"                              >",
+			"                    contents: <",
+			"                        for TITLE, HEADER, BODY, CLEARBODY: <string>",
+			"                        for COLUMN: <array: each element represents a HORIZONTAL panel, each given in the form of nested MENU DATA objects:",
+			"                                        <list: {",
+			"                                                   title: <string>,",
+			"                                                   rows:  <array: (as MENU DATA)",
+			"                                               }>",
+			"                        for BUTTONLINE: <array: each element represents a LINE of buttons, which can contain any of three elements:",
+			"                                                BUTTONSUBHEADERS: <list: {text, [styles]}>",
+			"                                                BUTTONS:          <list: {name, command, [styles]}>",
+			"                                                SPACERS:          <number: percentage of width OR 0 for equal spacing>",
+			"                              >",
+			"                    [buttonStyles]: <list of styles to apply to ALL of the buttons in a ButtonLine> (ButtonLine ONLY)",
+			"                    [styles]: <list of style overrides>",
+			"                }",
+			"        ]",
+			"        [blockStyles:] <list of style overrides for BLOCK wrapper.",
+			"    }",
+			"    */",
+			"D.CommandMenu(",
+			"    {",
+			"        title: \"\",",
+			"        rows: [",
+			"            {type: \"Title/Header\", contents: \"\", styles: {}}, /* [Header: height, width, color, bgColor, margin, padding, fontSize, fontFamily, fontVariant, fontWeight, border, textShadow, boxShadow, textAlign, lineHeight], [Title: height, color, margin, fontFamily, fontSize, lineHeight, bgColor, border] */",
+			"            {type: \"(Clear)Body\", contents: \"BodyText\", styles: { }} /* color, width, height, bgColor, margin, padding, fontFamily, fontSize, fontWeight, textAlign, textShadow, boxShadow, border, lineHeight */",
+			"            {",
+			"                type: \"ButtonLine\",",
+			"                contents: [",
+						"                    {text: \"Push One:\", styles: { } /* height, width, fontFamily, fontSize, bgColor, color, margin, textAlign, textIndent, padding, lineHeight */",
+			"                    0,",
+			"                    {name: \"Button1\", command: \"!reply <args>\", styles: { }} /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */",
+			"                    15",
+			"                ],",
+			"                buttonStyles: { }  /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */",
+			"                styles: { } /* height, width, margin, textAlign */",
+			"            },",
+			"            {",
+			"                type: \"Column\", // Each column is one row; the contents will be fit horizontally, so ensure width is <= (100 / length) percent.", 
+			"                contents: [",
+			"                    {title: \"Column1\", rows: [\"...\"]},",
+			"                    {title: \"Column2\", rows: [\"...\"]}",
+			"                ],",
+			"                styles: { } /* width, margin */",
+			"            }",
+			"        ],",
+			"        blockStyles: { } /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */",
+			"    },",
+			"    (commandString, objects) => { // IMPORTANT: return 'true' if you want to hold this function open for more commands",
+            "        const params = D.ParseToObj(commandString, \",\", \"@\") // key:value pairs must be in key@pairs for this to work. Multiple commands comma-delimited.",
+			"    }",
+			")"
+		],
+		"description": "More verbose help for D.CommandMenu syntax."
+	},
+	"Function Default": {
+		"scope": "javascript,typescript",
+		"prefix": "fn",
+		"body": [
+			"",
+			"${1:funcName} = (${2:parameters}) => {",
+			"\tconst $0",
+			"\t\t",
+			"},"
+		],
+		"description": "Standard function declaration."
+	},
+	"Debug Variable List": {
+		"scope": "javascript,typescript",
+		"prefix": "db",
+		"body": "DB({${0:variableList}}, \"${1:funcName}\")",
+		"description": "Debug message for listing variable contents."
+	},
+	"Validate (Silent)": {
+		"scope": "javascript,typescript",
+		"prefix": "val",
+		"body": [
+			"if (VAL({${1:type}: ${2:var}})) {",
+			"\t$0",
+			"}"
+		],
+		"description": "Validate, No Function Name"
+	},	
+	"Validate (Full)": {
+		"scope": "javascript,typescript",
+		"prefix": "vl",
+		"body": [
+			"if (VAL({${1:type}: ${2:var}, \"${3:funcName}\"})) {",
+			"\t$0",
+			"}"
+		],
+		"description": "Validate, Full"
+	},
+	"NOT Validate (Silent)": {
+		"scope": "javascript,typescript",
+		"prefix": "!val",
+		"body": [
+			"if (!VAL({${1:type}: ${2:var}})) {",
+			"\t$0",
+			"}"
+		],
+		"description": "Validate NOT, No Function Name"
+	},	
+	"NOT Validate (Full)": {
+		"scope": "javascript,typescript",
+		"prefix": "!vl",
+		"body": [
+			"if (!VAL({${1:type}: ${2:var}, \"${3:funcName}\"})) {",
+			"\t$0",
+			"}"
+		],
+		"description": "Validate NOT, Full"
+	},
+	"Switch Statement": {
+		"scope": "javascript,typescript",
+		"prefix": "sw",
+		"body": [
+			"switch (D.LCase(${1:switcher})) {",
+			"\tcase \"${2:case1}\": {",
+			"\t\t${0}",
+			"\t\tbreak",
+			"\t}",
+			"\t// no default",
+			"}"
+		],
+		"description": "A simple switch statement."
+	},
+	"Switch Case": {
+		"scope": "javascript,typescript",
+		"prefix": "ca",
+		"body": [
+			"case \"${1:case}\": {",
+			"\t${0}",
+			"\tbreak",
+			"}"
+		],
+		"description": "A case statement within a switch block."
+	},
+	"Filter": {
+		"scope": "javascript,typescript",
+		"prefix": "fil",
+		"body": [
+			".filter(x => ${0})"
+		],
+		"description": "A filter call on an array."
+	},
+	"Map": {
+		"scope": "javascript,typescript",
+		"prefix": "map",
+		"body": [
+			".map(x => ${0})"
+		],
+		"description": "A map call on an array."
+	},
+	"For Loop: Numeric": {
+		"scope": "javascript,typescript",
+		"prefix": "for",
+		"body": [
+			"for (let i = 0; i < ${1:maxVal}; i++) {",
+			"\t${0}",
+			"}"
+		],
+		"description": "A for loop, numeric increment."
+	},
+	"For Loop: Enumerable": {
+		"scope": "javascript,typescript",
+		"prefix": "forof",
+		"body": [
+			"for (const ${1:enumVar} of ${2:array}) {",
+			"\t${0}",
+			"}"
+		],
+		"description": "A for loop, enumerating over an array."
+	},
+	"For Loop: Enumerable Pairs": {
+		"scope": "javascript,typescript",
+		"prefix": "forent",
+		"body": [
+			"for (const [${1:key}, ${2:value}] of Object.entries(${3:listOrObject}) {",
+			"\t${0}",
+			"}"
+		],
+		"description": "A for loop, enumerating over an object."
+	},
+	"Find Objects": {
+		"scope": "javascript,typescript",
+		"prefix": "findobjs",
+		"body": [
+			"findObjs({",
+			"\t_pageid: D.PAGEID,",
+			"\t_type: \"${1:type}\",",
+			"})"
+		],
+		"description": "A Roll20 findObjs command."
+	},
+	"Script Starter": {
+		"scope": "javascript,typescript",
+		"prefix": "SS",
+		"body": [
+			"void MarkStart(\"${1:Script Name}\")",
+			"const ${1} = (() => {",
+			"\t// #region Configuration",
+			"\tconst SCRIPTNAME = \"${1}\"", 
+			"\t\tSTATEREF = state[D.GAMENAME][SCRIPTNAME],",
+			"\t// #endregion",
+			"",
+			"\t// #region GETTERS: Retrieving ",
+			"\t// #endregion",
+			"",
+			"\t// #region SETTERS: Setting ",
+			"\t// #endregion",
+			"",
+			"\t// #region Event Handlers (handleInput)",
+			"\tconst handleInput = msg => {",
+			"\t\tif (msg.type !== \"api\" || !playerIsGM(msg.playerid))",
+			"\t\t\treturn",
+			"\t\t/* API chat command parameters can contain spaces, but multiple parameters must be comma-delimited.",
+			"\t\t\te.g. \"!test subcommand1 subcommand2 param1 with spaces, param2,param3\" */",
+			"\t\tconst [command, ...args] = msg.content.split(/\\s+/gu),",
+			"\t\t\tgetParams = argArray => _.map(argArray.join(\" \").replace(/\\\\,/gu, \"@@@\").split(\",\"), v => v.trim().replace(/@@@/gu, \",\"))",
+			"\t\tlet params = []",
+			"",
+			"\t\tswitch (command.toLowerCase()) {",
+			"\t\tcase \"!${2:Script Command}\":",
+			"\t\t\tswitch (args.shift().toLowerCase()) {",
+			"\t\t\tcase \"${3:Subcommand}\":",
+			"\t\t\t\t",
+			"\t\t\t\tbreak",
+			"\t\t\tdefault: break",
+			"\t\t\t}",
+			"\t\t\tbreak",
+			"\t\tdefault: break",
+			"\t\t}",
+			"\t}",
+			"\t// #endregion",
+			"",
+			"\t// #region Public Functions: regHandlers",
+			"\tconst regHandlers = () => {",
+			"\t\ton(\"chat:message\", handleInput)",
+			"\t},",
+			"\tcheckInstall = () => {",
+			"\t\tstate[D.GAMENAME] = state[D.GAMENAME] || {}",
+			"\t\tstate[D.GAMENAME][SCRIPTNAME] = state[D.GAMENAME][SCRIPTNAME] || {}",
+			"\t}",
+			"\t// #endregion",
+			"",
+			"\treturn {",
+			"\t\tRegisterEventHandlers: regHandlers,",
+			"\t\tCheckInstall: checkInstall",
+			"\t}",
+			"} )()",
+			"",
+			"on(\"ready\", () => {",
+			"\t${1}.RegisterEventHandlers()",
+			"\t${1}.CheckInstall()",
+			"\tD.Log(\"Ready!\", \"${1}\")",
+			"} )",
+			"void MarkStop(\"${1}\")"
+		],
+		"description": "Full template for a standard Roll20 API game script."
+	},
+	"Sheetworker Function": {
+		"scope": "javascript,typescript",
+		"prefix": "SWS",
+		"body": [
+			"const ${1} = callback => {",
+			"\tconst [attrList, attrArray] = [{\\}, []],",
+			"\t\tfuncName = \"${1}\"",
+			"\tlog(\"\", `████ \\${funcName.toUpperCase()\\} CALLED ████`)",
+			"\tgetSectionIDs(\"${2:section}\", idArray => {",
+			"\t\t_.each(idArray, repID => {",
+			"\t\t\t_.each([${3:array of stat names}], stat => {",
+			"\t\t\t\tattrArray.push(`repeating_${2}_\\${repID\\}_\\${stat\\}`)",
+			"\t\t\t\\} )",
+			"\t\t\\} )",
+			"\t\tgetAttrs( [...attrArray], ATTRS => {",
+			"\t\t\tconst ids = _.uniq(_.map(attrArray, v => parseRepAttr(v)[1]))",
+			"\t\t\t//log(`Retrieved Attributes: \\${JSON.stringify(simpleRepAttrs(ATTRS))\\}`, funcName)",
+			"\t\t\t//log(`Retrieved IDs: \\${JSON.stringify(simpleRepAttrs(ids))\\}`, funcName)",
+			"\t\t\t_.each(ids, rowID => {",
+			"\t\t\t\tconst [,p,pV,pI] = pFuncs(`repeating_${2}_\\${rowID\\}`, ATTRS)",
+			"\t\t\t\t",
+			"\t\t\t\\} )",
+			"\t\t\tsetAttrs(attrList, {\\}, () => {",
+			"\t\t\t\tlog(`Setting Attributes: \\${JSON.stringify(simpleRepAttrs(attrList))\\}`, funcName)",
+			"\t\t\t\tif (_.isFunction(callback))",
+			"\t\t\t\t\tcallback(null)",
+			"\t\t\t\\})",
+			"\t\t\\} )",
+			"\t\\} )",
+			"\\}"
+			],
+		"description": "A function template for sheetworker scripts calling and working through multiple repeating rows."
+	}
+
+}
