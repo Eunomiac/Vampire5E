@@ -510,7 +510,7 @@ const D = (() => {
             return _.sample(characters.split(""), D.Int(length)).join("")
         },
         summarizeHTML = (htmlString = "") => ((htmlString.match(/.*?>([^<>]+)<.*?/g) || [""]).pop().match(/.*?>([^<>]+)<.*?/) || [""]).pop(),
-        pInt = strRef => parseInt(strRef) || 0,
+        pInt = (strRef, isRounding = false) => parseInt(isRounding ? Math.round(parseFloat(strRef) || 0) : strRef) || 0,
         pFloat = (strRef, sigDigits = false) => VAL({number: sigDigits}) && roundSig(parseFloat(strRef) || 0, sigDigits) || parseFloat(strRef) || 0,
         roundSig = (num, digits, isReturningPaddedString = false) => {
             if (VAL({number: digits}) && D.Int(digits) > 0) {

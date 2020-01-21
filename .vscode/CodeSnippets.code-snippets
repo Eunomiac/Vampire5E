@@ -15,7 +15,22 @@
 	// 	],
 	// 	"description": "Log output to console"
 	// }
-
+	"Match (Capture Groups)": {
+		"scope": "javascript,typescript",
+		"prefix": "match",
+		"body": [
+			"match(/${0}/u).pop() // ... for just your capture groups: 'matchfull<TAB>' for multiple whole matches"
+		],
+		"description": "Basically just a reminder whether or not to use the 'g' flag."
+	},
+	"Match (Multiple Full Matches)": {
+		"scope": "javascript,typescript",
+		"prefix": "matchfull",
+		"body": [
+			"match(/${0}/gu) // ... for every matching substring: capture groups are ignored"
+		],
+		"description": "Basically just a reminder whether or not to use the 'g' flag."
+	},
 	"Command Menu": {
 		"scope": "javascript,typescript",
 		"prefix": "menu",
@@ -136,24 +151,6 @@
 		],
 		"description": "More verbose help for D.CommandMenu syntax."
 	},
-	"Function Default": {
-		"scope": "javascript,typescript",
-		"prefix": "fn",
-		"body": [
-			"",
-			"${1:funcName} = (${2:parameters}) => {",
-			"\tconst $0",
-			"\t\t",
-			"},"
-		],
-		"description": "Standard function declaration."
-	},
-	"Debug Variable List": {
-		"scope": "javascript,typescript",
-		"prefix": "db",
-		"body": "DB({${0:variableList}}, \"${1:funcName}\")",
-		"description": "Debug message for listing variable contents."
-	},
 	"Validate (Silent)": {
 		"scope": "javascript,typescript",
 		"prefix": "val",
@@ -219,22 +216,6 @@
 		],
 		"description": "A case statement within a switch block."
 	},
-	"Filter": {
-		"scope": "javascript,typescript",
-		"prefix": "fil",
-		"body": [
-			".filter(x => ${0})"
-		],
-		"description": "A filter call on an array."
-	},
-	"Map": {
-		"scope": "javascript,typescript",
-		"prefix": "map",
-		"body": [
-			".map(x => ${0})"
-		],
-		"description": "A map call on an array."
-	},
 	"For Loop: Numeric": {
 		"scope": "javascript,typescript",
 		"prefix": "for",
@@ -275,72 +256,6 @@
 			"})"
 		],
 		"description": "A Roll20 findObjs command."
-	},
-	"Script Starter": {
-		"scope": "javascript,typescript",
-		"prefix": "SS",
-		"body": [
-			"void MarkStart(\"${1:Script Name}\")",
-			"const ${1} = (() => {",
-			"\t// #region Configuration",
-			"\tconst SCRIPTNAME = \"${1}\"", 
-			"\t\tSTATEREF = state[D.GAMENAME][SCRIPTNAME],",
-			"\t// #endregion",
-			"",
-			"\t// #region GETTERS: Retrieving ",
-			"\t// #endregion",
-			"",
-			"\t// #region SETTERS: Setting ",
-			"\t// #endregion",
-			"",
-			"\t// #region Event Handlers (handleInput)",
-			"\tconst handleInput = msg => {",
-			"\t\tif (msg.type !== \"api\" || !playerIsGM(msg.playerid))",
-			"\t\t\treturn",
-			"\t\t/* API chat command parameters can contain spaces, but multiple parameters must be comma-delimited.",
-			"\t\t\te.g. \"!test subcommand1 subcommand2 param1 with spaces, param2,param3\" */",
-			"\t\tconst [command, ...args] = msg.content.split(/\\s+/gu),",
-			"\t\t\tgetParams = argArray => _.map(argArray.join(\" \").replace(/\\\\,/gu, \"@@@\").split(\",\"), v => v.trim().replace(/@@@/gu, \",\"))",
-			"\t\tlet params = []",
-			"",
-			"\t\tswitch (command.toLowerCase()) {",
-			"\t\tcase \"!${2:Script Command}\":",
-			"\t\t\tswitch (args.shift().toLowerCase()) {",
-			"\t\t\tcase \"${3:Subcommand}\":",
-			"\t\t\t\t",
-			"\t\t\t\tbreak",
-			"\t\t\tdefault: break",
-			"\t\t\t}",
-			"\t\t\tbreak",
-			"\t\tdefault: break",
-			"\t\t}",
-			"\t}",
-			"\t// #endregion",
-			"",
-			"\t// #region Public Functions: regHandlers",
-			"\tconst regHandlers = () => {",
-			"\t\ton(\"chat:message\", handleInput)",
-			"\t},",
-			"\tcheckInstall = () => {",
-			"\t\tstate[D.GAMENAME] = state[D.GAMENAME] || {}",
-			"\t\tstate[D.GAMENAME][SCRIPTNAME] = state[D.GAMENAME][SCRIPTNAME] || {}",
-			"\t}",
-			"\t// #endregion",
-			"",
-			"\treturn {",
-			"\t\tRegisterEventHandlers: regHandlers,",
-			"\t\tCheckInstall: checkInstall",
-			"\t}",
-			"} )()",
-			"",
-			"on(\"ready\", () => {",
-			"\t${1}.RegisterEventHandlers()",
-			"\t${1}.CheckInstall()",
-			"\tD.Log(\"Ready!\", \"${1}\")",
-			"} )",
-			"void MarkStop(\"${1}\")"
-		],
-		"description": "Full template for a standard Roll20 API game script."
 	},
 	"Sheetworker Function": {
 		"scope": "javascript,typescript",

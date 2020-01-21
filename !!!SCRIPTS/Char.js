@@ -19,7 +19,7 @@ const Char = (() => {
         get SelectedTraits() { return false }
     } */
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
-    let PENDINGCHARCOMMAND
+    // let PENDINGCHARCOMMAND
     const SCRIPTNAME = "Char",
 
     // #region COMMON INITIALIZATION

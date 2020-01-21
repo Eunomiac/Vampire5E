@@ -105,7 +105,9 @@ const TimeTracker = (() => {
                     break
                 }
                 case "moon": {
-                    if (args[0] === "stop") {
+                    if (!args.length) {
+                        tickCountdown(false, true)
+                    } else if (args[0] === "stop") {
                         isCountdownFrozen = false
                         tickCountdown()
                     } else {
@@ -117,9 +119,9 @@ const TimeTracker = (() => {
                             MOON.daysToWait = VAL({number: args[3]}) ? D.Int(args[3]) : MOON.daysToWait
                         isCountdownFrozen = false
                         if (VAL({number: args[0]}))
-                            tickCountdown({daysIn: D.Float(args[0])})
+                            tickCountdown({daysIn: D.Float(args[0])}, true)
                         else
-                            tickCountdown({})
+                            tickCountdown({}, true)
                         isCountdownFrozen = true
                     }
                     break                    
@@ -400,7 +402,8 @@ const TimeTracker = (() => {
         MOON = {
             minTop: 1300,
             maxTop: 630,
-            daysToWait: 1
+            daysToWait: 1,
+            daysToWaitWater: 1.75
         }
     let [timeTimer, secTimer] = [null, null],
         [isRunning, isRunningFast, isTimeRunning, isCountdownRunning, isCountdownFrozen] = [false, false, false, false, false, false],
@@ -1041,21 +1044,21 @@ const TimeTracker = (() => {
             STATE.REF.nextSessionDate = sessDateObj.getTime()
             return (sessDateObj - curRealDateObj)/1000 - 60
         },
-        tickCountdown = (isTesting = false) => {   
+        tickCountdown = (isTesting = false, isReportingData = false) => {   
             if (isCountdownFrozen)
                 return         
             const realDateObj = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"})),
                 sessDateObj = new Date(STATE.REF.nextSessionDate),
                 maxSecs = 7*24*60*60,
-                waitSecs = MOON.daysToWait * 24*60*60,
+                waitSecsMoon = MOON.daysToWait * 24*60*60,
+                waitSecsWater = MOON.daysToWaitWater * 24*60*60,
                 totalSecsLeft = VAL({list: isTesting, number: isTesting.daysIn}) ? (7 - isTesting.daysIn) * 24*60*60 : (sessDateObj - realDateObj)/1000 - 60,
                 totalSecsIn = maxSecs - totalSecsLeft,
-                moonUpPercent = D.Float(Math.max(0, totalSecsIn - waitSecs) / (maxSecs - waitSecs)),
-                moonRisePercent = moonUpPercent,
-                moonTop = MOON.minTop + (MOON.maxTop - MOON.minTop)*moonRisePercent,
-                waterTintGradient = D.Gradient(C.COLORS.black, C.COLORS.darkdarkred, D.Int(moonRisePercent * 100), 100).replace(/[^\d,]/gu, "").split(",").slice(0,3).map(x => D.Int(x)),
-                waterTint = `#${`00${waterTintGradient[0].toString(16)}`.slice(-2)}${`00${waterTintGradient[1].toString(16)}`.slice(-2)}${`00${waterTintGradient[2].toString(16)}`.slice(-2)}`
-
+                moonUpPercent = Math.min(1, D.Float(Math.max(0, totalSecsIn - waitSecsMoon) / (maxSecs - waitSecsMoon))),
+                waterRedPercent = Math.min(1, D.Float(Math.max(0, totalSecsIn - waitSecsWater) / (maxSecs - waitSecsWater))),
+                moonTop = MOON.minTop + (MOON.maxTop - MOON.minTop)*moonUpPercent,
+                waterSource = `red${D.Int(6*waterRedPercent, true)}`
+                
 
 
             let secsLeft = totalSecsLeft
@@ -1072,25 +1075,17 @@ const TimeTracker = (() => {
             const minsLeft = Math.floor(secsLeft / 60)
             secsLeft -= minsLeft * 60
 
-            if (VAL({list: isTesting})) {
-                D.Alert([
-                    `<b>Max Secs:</b> ${D.JS(7*24*60*60)} --> ${D.JS(7*24*60*60)}`,
-                    `<b>Total Secs (from now):</b> ${D.JS(totalSecsLeft)} -> ${D.JS(Math.max(0, totalSecsLeft - MOON.daysToWait*24*60*60))}`,
-                    `<b>Days to Wait:</b> ${D.JS(MOON.daysToWait)}`,
-                    `<b>Min Top</b> (${MOON.minTop}) - <b>Max Top</b> (${MOON.maxTop})`,
-                    `<b>Moon Rise Percent:</b> ${D.JS(moonRisePercent)}`,
-                    `<b>Moon Top:</b> ${D.JS(moonTop)}`,
-                    `<b>Water Tint Gradient:</b> ${D.JS(waterTintGradient)}`,
-                    `<b>Water Tint:</b> ${D.JS(waterTint)}`
-                ].join("<br>"), "Rising Moon Test")
+            if (isReportingData)
+                DB({maxSecs, totalSecsLeft, totalSecsIn, ["daysToWait MOON"]: MOON.daysToWait, waitSecsMoon, moonUpPercent, moonTop, ["daysToWait WATER"]: MOON.daysToWaitWater, waitSecsWater, waterRedPercent, waterSource}, "tickCountdown")
+            if (VAL({list: isTesting})) {               
                 Media.SetImgData("SplashMoon_1", {top: moonTop}, true)
-                Media.SetImgTemp("SplashWaterOverlay_1", {tint_color: waterTint})
+                Media.SetImg("SplashWater", waterSource)
                 isCountdownRunning = false
             } else if (isCountdownRunning) {
-                countdownRecord = [daysLeft, hoursLeft, minsLeft, moonTop, waterTint]
+                countdownRecord = [daysLeft, hoursLeft, minsLeft, moonTop, waterSource]
 
                 Media.SetImgData("SplashMoon_1", {top: moonTop}, true)
-                Media.SetImgTemp("SplashWaterOverlay_1", {tint_color: waterTint})
+                Media.SetImg("SplashWater", waterSource)
                 updateCountdown()
 
                 startSecTimer(secsLeft)
@@ -1118,10 +1113,10 @@ const TimeTracker = (() => {
                 countdownRecord[0] === 0 && countdownRecord[1] === 0 && countdownRecord[2] <= 1) {
                 Media.SetText("Countdown", " ")
                 Media.SetImgData("SplashMoon_1", {top: MOON.minTop}, true)
-                Media.SetImgTemp("SplashWaterOverlay_1", {tint_color: "#000000"})
+                Media.SetImg("SplashWater", "red0")
             } else {
-                Media.SetImgData("SplashMoon_1", {top: countdownRecord[3]}, true)
-                Media.SetImgTemp("SplashWaterOverlay_1", {tint_color: countdownRecord[4]})
+                Media.SetImgData("SplashMoon_1", {top: countdownRecord[3]}, true)                
+                Media.SetImg("SplashWater", countdownRecord[4])
                 Media.SetText("Countdown", [...countdownRecord.slice(0, 3), secondsLeft].map(x => `${x.toString().length === 1 && "0" || ""}${x}`).join(":"))
             }
             return true
@@ -1259,10 +1254,10 @@ const TimeTracker = (() => {
                 weatherData.humidity = humidity
             STATE.REF.weatherOverride = weatherData
             setWeather()
-        },
+        }, /*
         makeWeatherCode = (weatherData) => {
             // const 
-        },
+        }, */
         getWeatherCode = (dateRefs) => dateRefs ? WEATHERDATA[dateRefs[0]][dateRefs[1]][dateRefs[2]] : WEATHERDATA[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()],
         getNextWeatherEvent = (eventType, event) => {
             const startMonth = STATE.REF.dateObj.getMonth()
@@ -1373,7 +1368,7 @@ const TimeTracker = (() => {
             }
             D.Alert(D.JS(record))
         },
-        getGroundCoverAt = (month, day, hour) => getGroundCover(false, 0.3, 1, 0.5, [month, day, hour]),
+        /* getGroundCoverAt = (month, day, hour) => getGroundCover(false, 0.3, 1, 0.5, [month, day, hour]), */
         getGroundCover = (isTesting = false, downVal = 0.3, upb = 1, ups = 0.5, dateOverride) => {
             // D.Alert(`IsTesting = ${D.JS(isTesting)}`)
             let month, day, hour
@@ -1551,8 +1546,7 @@ const TimeTracker = (() => {
             return weatherData
         },
         singleDayRow = (monthNum, dateNum) => {
-            const eventsBehind = [],
-                eventsAhead = [],
+            const [eventsBehind, eventsAhead] = [[], []], /* eslint-disable-line no-unused-vars */
                 singleHourCell = (hourNum) => {
                     const weatherData = getWeatherDataAt(monthNum, dateNum, hourNum),
                         tempColor = weatherData.tempC <= 0 && [100, 100, Math.round(100 + Math.abs(weatherData.tempC)*(155/10))] || [D.Int(100 + Math.abs(weatherData.tempC)*(155/10)), 100, 100],
@@ -1663,8 +1657,10 @@ const TimeTracker = (() => {
                 !horizonSrc.includes("day") && horizonData.curSrc.includes("day") ||
                 horizonSrc.includes("day") && !horizonData.curSrc.includes("day")
             ) ||
-                !isRunningFast)
-                Media.SetImg("Horizon_1", horizonSrc)   
+                !isRunningFast) {
+                Media.SetImg("Horizon_1", horizonSrc)
+                Media.SetImg("Foreground", D.Int(horizonSrc.replace(/\D/gu, "")) > 3 ? "dark" : "bright")
+            }
             return true
         },
         refreshTimeAndWeather = () => {
@@ -1809,7 +1805,7 @@ const TimeTracker = (() => {
             } else {
                 clearInterval(secTimer)
                 secTimer = null                
-                Media.SetImgTemp("SplashWaterOverlay_1", {tint_color: "transparent"})
+                Media.SetImg("SplashWater", "red0")
             }
         },
     // #endregion
@@ -1891,7 +1887,7 @@ const TimeTracker = (() => {
             // STEP ONE: FIGURE OUT WHEN THE ALARM SHOULD FIRE.
             if (dateRef.split(":").length > 2)
                 return D.Alert(`DateRef '${D.JS(dateRef)} has too many terms.<br>(A ':' should only appear between the timeRef and the modifying flag)`, "setAlarm")
-            const [timeRef, timeFlag] = dateRef.split(":")
+            const [timeRef, timeFlag] = dateRef.split(":") /* eslint-disable-line no-unused-vars */
             switch (D.LCase(timeRef)) {
                 case "nextfullnight":
                 case "nextnight": {
