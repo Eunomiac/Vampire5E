@@ -17,7 +17,8 @@ const TimeTracker = (() => {
     // #endregion
 
     // #region LOCAL INITIALIZATION
-        initialize = () => {        
+        initialize = () => {
+            
             STATE.REF.dateObj = STATE.REF.currentDate ? new Date(STATE.REF.currentDate) : null
             STATE.REF.Alarms = STATE.REF.Alarms || {}
             STATE.REF.Alarms.Ahead = STATE.REF.Alarms.Ahead || []

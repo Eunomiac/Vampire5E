@@ -33,10 +33,10 @@ const InitCommands = (() => {
                         setTimeout(() => {
                             D.Flag("Initialization Complete!")
                             Listener.Unlock()
-                        }, 2000)
-                    }, 2000)
-                }, 2000)
-            }, 2000)
+                        }, Session.IsTesting ? 500 : 2000)
+                    }, Session.IsTesting ? 500 : 2000)
+                }, Session.IsTesting ? 500 : 2000)
+            }, Session.IsTesting ? 500 : 2000)
         },
     // #endregion	
 

@@ -193,7 +193,7 @@
 	},
 	"Switch Statement": {
 		"scope": "javascript,typescript",
-		"prefix": "sw",
+		"prefix": "switch",
 		"body": [
 			"switch (D.LCase(${1:switcher})) {",
 			"\tcase \"${2:case1}\": {",

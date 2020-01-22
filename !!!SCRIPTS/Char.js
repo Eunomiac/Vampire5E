@@ -419,7 +419,7 @@ const Char = (() => {
                                 if (args.length) 
                                     for (const charObj of charObjs)
                                         adjustHunger(charObj, D.Int(args[0]), isKilling)
-                                else 
+                                else
                                     promptNumber(`${fullCommand} @@AMOUNT@@`)                                
                                 break
                             }
@@ -446,6 +446,10 @@ const Char = (() => {
                 }
                 case "process": {
                     switch (D.LCase(call = args.shift())) {
+                        case "sheetattrs": {
+                            validateCharAttributes(charObjs)
+                            break
+                        }
                         case "defaults": {
                             populateDefaults(args.shift())
                             break
@@ -1747,7 +1751,7 @@ const Char = (() => {
         },
     // #endregion
 
-    // #region Populating Character Attributes
+    // #region Populating Character Attributes & Validating Abilities
     /* ATTRIBUTES = {
         physical: ["Strength", "Dexterity", "Stamina"],
         social: ["Charisma", "Manipulation", "Composure"],
@@ -1760,6 +1764,28 @@ const Char = (() => {
     },
     DISCIPLINES = ["Animalism", "Auspex", "Celerity", ...],
     TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"], */
+        validateCharAttributes = (charRefs) => {
+            const reportLines = []
+            for (const charObj of D.GetChars(charRefs))
+                if (VAL({charObj})) {
+                    const allAttrObjs = findObjs({
+                            _type: "attribute",
+                            _characterid: charObj.id
+                        }),
+                        repOrderAttrObjs = allAttrObjs.filter(x => x.get("name").startsWith("_reporder")),
+                        nonRepAttrObjs = allAttrObjs.filter(x => !x.get("name").startsWith("repeating_") && !x.get("name").startsWith("_reporder")),
+                        attrValPairs = nonRepAttrObjs.map(x => [x, x.get("name")]),
+                        obsoleteAttrValPairs = attrValPairs.filter(x => !C.SHEETATTRS.includes(x[1]))
+                    reportLines.push(...[
+                        `<h4>Attributes of ${D.GetName(charObj)}</h4>`,
+                        D.JS(obsoleteAttrValPairs.map(x => x[1])),
+                        "",
+                        "<b><u>RepOrder Attributes</u>:</b>",
+                        D.JS(repOrderAttrObjs.map(x => x.get("name").replace(/_reporder_(repeating_)?/gu, "")))
+                    ])
+                }
+            D.Alert(reportLines.join("<br>"), "Character Attribute Validation")
+        },
         populateDefaults = (charRef) => {
         // Initializes (or resets) a given character with default values for all stats.
         // Can provide a number for charRef, in which case it will reset values of 10 characters starting from that index position in the keys of NPCSTATS.

@@ -5510,13 +5510,15 @@ const Media = (() => {
             toFront(textObj)
         },
         killPanel = (panelName) => {
-            for (const [panelKey, panelData] of Object.entries(REGISTRY.PANELS[panelName])) {
-                removeText(panelKey, false, true)
-                const bgObj = getObj("path", panelData.bgPanelID)
-                if (bgObj)
-                    bgObj.remove()
+            if (panelName in REGISTRY.PANELS) {
+                for (const [panelKey, panelData] of Object.entries(REGISTRY.PANELS[panelName])) {
+                    removeText(panelKey, false, true)
+                    const bgObj = getObj("path", panelData.bgPanelID)
+                    if (bgObj)
+                        bgObj.remove()
+                }
+                delete REGISTRY.PANELS[panelName]
             }
-            delete REGISTRY.PANELS[panelName]
         },
         simpleNotify = (panelName, text, isKillingAfter, textColor) => {
             makePanel(text, panelName, undefined, {bgColor: C.COLORS.black, color: textColor || C.COLORS.red, font: "Contrail One", size: PANELSIZE})
