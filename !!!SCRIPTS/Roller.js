@@ -127,7 +127,7 @@ const Roller = (() => {
                 case "secret": {
                     const charObjs = Listener.GetObjects(objects, "character")
                     if (!args.length) {
-                        Char.PromptTraitSelect(charObjs.map(x => x.id).join(","), "!roll @@CHARIDS@@ secret selected")
+                        Char.PromptTraitSelect(charObjs.map(x => x.id), "!roll", "secret selected")
                     } else {
                         const params = args[0] === "selected" && Char.SelectedTraits || args.join(" ").split("|").map(x => x.trim())
                         makeSecretRoll(getRollChars(charObjs), params.join(","))
@@ -186,65 +186,7 @@ const Roller = (() => {
                         case "secrecy": {
                             switch (D.LCase(call = args.shift())) {
                                 case "menu": {
-                                    const reportMessage = args.join(" "),
-                                        buttonLines = Object.values(_.groupBy(
-                                            Object.values(
-                                                D.KeyMapObj(STATE.REF.nextRollFlags, null,
-                                                            (v, k) => ({
-                                                                name: `${k.replace(/isHiding/gu, "").replace(/([a-z])([A-Z])/gu, "$1 $2")}`,
-                                                                command: `!reply ${v ? "" : "!"}${k}`,
-                                                                styles: {bgColor: v && C.COLORS.darkgrey || C.COLORS.green, color: v && C.COLORS.white || C.COLORS.black}
-                                                            }))
-                                            ), (x, i) => Math.floor((i+2)/3))).map(x => ({type: "ButtonLine", contents: x.length === 1 ? [0, x[0], 0] : x, buttonStyles: {width: "32%", fontFamily: "Voltaire"}, styles: {}})),
-                                        replyFunction = (replyString, objs) => {
-                                            const rollFlagKey = replyString.replace(/^!/gu, ""),
-                                                rollFlagName = rollFlagKey.replace(/isHiding/gu, "").replace(/([a-z])([A-Z])/gu, "$1 $2"),
-                                                toggle = replyString.startsWith("!")
-                                            DB({replyString, rollFlagKey, rollFlagName, toggle, STATEREF: D.JS(STATE.REF.nextRollFlags), inState: rollFlagKey in STATE.REF.nextRollFlags, isEqual: STATE.REF.nextRollFlags[rollFlagKey] !== toggle}, "setRollFlags")
-                                            if (D.LCase(rollFlagKey) === "all") {
-                                                for (const flagKey of Object.keys(STATE.REF.nextRollFlags))
-                                                    STATE.REF.nextRollFlags[flagKey] = toggle
-                                                D.Call(`!roll set secrecy menu <span style="color: ${toggle && C.COLORS.brightgrey || C.COLORS.puregreen};">Now <b><u>${toggle && "HIDING" || "SHOWING"}</u> ALL VALUES</b>`)                                            
-                                            } else if (D.LCase(rollFlagKey) === "done") {
-                                                D.Alert(`Secrecy Set: ${D.JS(STATE.REF.nextRollFlags)}`, "Roller: Set Secrecy")
-                                            } else if (rollFlagKey in STATE.REF.nextRollFlags && STATE.REF.nextRollFlags[rollFlagKey] !== toggle) {
-                                                STATE.REF.nextRollFlags[rollFlagKey] = !STATE.REF.nextRollFlags[rollFlagKey]
-                                                D.Call(`!roll set secrecy menu <span style="font-family: 'color: ${toggle && C.COLORS.brightgrey || C.COLORS.bright};">Now <b><u>${toggle && "HIDING" || "SHOWING"}</u> &quot;${rollFlagName}&quot;</b>`)
-                                            }
-                                        }
-                                    buttonLines.unshift({
-                                        type: "ButtonLine",
-                                        contents: [
-                                            0,
-                                            {name: "Show All", command: "!reply all", styles: {bgColor: C.COLORS.puregreen, color: C.COLORS.black /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
-                                            {name: "Hide All", command: "!reply !all", styles: {bgColor: C.COLORS.darkgrey /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
-                                            0
-                                        ],
-                                        buttonStyles: {fontFamily: "Voltaire"},
-                                        styles: { /* height, width, margin, textAlign */ }
-                                    })
-                                    buttonLines.push({
-                                        type: "ButtonLine",
-                                        contents: [
-                                            0,
-                                            {name: "Finished", command: "!reply done", styles: {bgColor: C.COLORS.brightblue, color: C.COLORS.black /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
-                                            0
-                                        ],
-                                        buttonStyles: {fontFamily: "Voltaire"},
-                                        styles: { /* height, width, margin, textAlign */ }
-                                    })
-                                    D.CommandMenu(
-                                        {
-                                            rows: [
-                                                {type: "Header", contents: "Roll Secrecy", styles: { /* height, width, color, bgColor, margin, padding, fontSize, fontFamily, fontVariant, fontWeight, border, textShadow, boxShadow, textAlign, lineHeight */ }},
-                                                {type: "ClearBody", contents: reportMessage, styles: {textAlign: "center"}},
-                                                ...buttonLines,
-                                                {type: "Header", contents: "Roller Locked Until Finished"}
-                                            ],
-                                            blockStyles: { /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */ }
-                                        },
-                                        replyFunction
-                                    )
+                                    secrecyMenu(args.join(" "))
                                     break
                                 }
                                 case "name": case "identity":
@@ -408,7 +350,10 @@ const Roller = (() => {
                             loadNextRoll(true)
                             break
                         }
-                        // no default
+                        default: {
+                            rollCommandMenu()
+                            break
+                        }
                     }
                     break
                 }
@@ -668,6 +613,15 @@ const Roller = (() => {
                     }
                 }
             }
+        },
+        SECRECYDEFAULTS = {
+            isHidingName: false,
+            isHidingTraits: false,
+            isHidingTraitVals: true,
+            isHidingDicePool: true,
+            isHidingDifficulty: false,
+            isHidingResult: false,
+            isHidingOutcome: false
         },
         COLORSCHEMES = {
             base: {
@@ -1268,6 +1222,8 @@ const Roller = (() => {
                             DB("... Check PASSED. Moving on...", "checkRestriction")
                         } else if (restriction.startsWith("loc:")) {
                             DB("Restriction = LOCATION", "checkRestriction")
+
+
                             const loc = restriction.replace(/loc:/gu, ""),
                                 locations = {
                                     center: _.without([
@@ -3203,6 +3159,132 @@ const Roller = (() => {
             Media.ToggleAnim("Roller_WPReroller_2", false)
             Media.ToggleImg("Roller_WPReroller_Base_2", false)
         },
+        rollCommandMenu = () => {
+            D.CommandMenu(
+                {
+                    title: "Dice Roller Control",
+                    rows: [
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {name: "<< Prev", command: "!reply cycle@-1", styles: {bgColor: C.COLORS.darkpurple}}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                                9,
+                                {name: "Clear Roller", command: "!reply clear", styles: {width: "36%"}}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                                9,
+                                {name: "Next >>", command: "!reply cycle@1", styles: {bgColor: C.COLORS.darkpurple}}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                            ],
+                            buttonStyles: {width: "18%"}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                            styles: {margin: "0px 0px 5px 0px"} /* height, width, margin, textAlign */
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {text: "Add Dice:", styles: {width: "19%", textIndent: "0px", textAlign: "right"}}, /* height, width, fontFamily, fontSize, bgColor, color, margin, textAlign, textIndent, padding, lineHeight */
+                                {name: "+1", command: "!reply change@1", styles: { }}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                                {name: "+2", command: "!reply change@2", styles: { }}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                                {name: "+3", command: "!reply change@3", styles: { }}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                                {name: "+4", command: "!reply change@4", styles: { }}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                                {name: "+5", command: "!reply change@5", styles: { }}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                                15
+                            ],
+                            buttonStyles: {color: C.COLORS.black, bgColor: C.COLORS.green}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                            styles: {margin: "0px 0px 5px 0px"} /* height, width, margin, textAlign */
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {text: "Remove Dice:", styles: {width: "19%", textIndent: "0px", textAlign: "right"}}, /* height, width, fontFamily, fontSize, bgColor, color, margin, textAlign, textIndent, padding, lineHeight */
+                                {name: "-1", command: "!reply change@-1", styles: { }}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                                {name: "-2", command: "!reply change@-2", styles: { }}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                                {name: "-3", command: "!reply change@-3", styles: { }}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                                {name: "-4", command: "!reply change@-4", styles: { }}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                                {name: "-5", command: "!reply change@-5", styles: { }}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                                15
+                            ],
+                            buttonStyles: {color: C.COLORS.black, bgColor: C.COLORS.lightred}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                            styles: {margin: "0px 0px 5px 0px"} /* height, width, margin, textAlign */
+                        }
+                    ],
+                    blockStyles: { } /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */
+                },
+                (commandString) => { // IMPORTANT: return 'true' if you want to hold this function open for more commands
+                    const params = D.ParseToObj(commandString, ",", "@") // key:value pairs must be in key@pairs for this to work. Multiple commands comma-delimited.
+                    if ("clear" in params)
+                        clearRoller()
+                    if ("cycle" in params)
+                        if (params.cycle === -1)
+                            loadPrevRoll()
+                        else if (params.cycle === 1)
+                            loadNextRoll()
+                    if ("change" in params)
+                        changeRoll(params.change)
+                }
+            )
+        },
+        secrecyMenu = (reportMessage) => {
+            const buttonLines = Object.values(_.groupBy(
+                    Object.values(
+                        D.KeyMapObj(STATE.REF.nextRollFlags, null,
+                                    (v, k) => ({
+                                        name: `${k.replace(/isHiding/gu, "").replace(/([a-z])([A-Z])/gu, "$1 $2")}`,
+                                        command: `!reply ${v ? "" : "!"}${k}`,
+                                        styles: {bgColor: v && C.COLORS.darkgrey || C.COLORS.green, color: v && C.COLORS.white || C.COLORS.black}
+                                    }))
+                    ), (x, i) => Math.floor((i+2)/3))).map(x => ({type: "ButtonLine", contents: x.length === 1 ? [0, x[0], 0] : x, buttonStyles: {}, styles: {}})),
+                replyFunction = (replyString, objs) => {
+                    const rollFlagKey = replyString.replace(/^!/gu, ""),
+                        rollFlagName = rollFlagKey.replace(/isHiding/gu, "").replace(/([a-z])([A-Z])/gu, "$1 $2"),
+                        toggle = replyString.startsWith("!")
+                    DB({replyString, rollFlagKey, rollFlagName, toggle, STATEREF: D.JS(STATE.REF.nextRollFlags), inState: rollFlagKey in STATE.REF.nextRollFlags, isEqual: STATE.REF.nextRollFlags[rollFlagKey] !== toggle}, "setRollFlags")
+                    if (D.LCase(rollFlagKey) === "all") {
+                        for (const flagKey of Object.keys(STATE.REF.nextRollFlags))
+                            STATE.REF.nextRollFlags[flagKey] = toggle
+                        D.Call(`!roll set secrecy menu ${C.HTML.ClearBody(`Now <b><u>${toggle && "HIDING" || "SHOWING"}</u> ALL VALUES</b>`, {margin: "0px", textAlign: "center", color: toggle && C.COLORS.brightgrey || C.COLORS.puregreen})}`)                                             
+                    } else if (D.LCase(rollFlagKey) === "done") {
+                        D.Alert("Secrecy Set, Roller Unlocked!", "none")
+                    } else if (D.LCase(rollFlagKey) === "default") {
+                        STATE.REF.nextRollFlags = D.Clone(SECRECYDEFAULTS)
+                        D.Call(`!roll set secrecy menu ${C.HTML.ClearBody("Default Secrecy Values Set:", {margin: "0px", textAlign: "center", color: C.COLORS.brightgold})}`) 
+                    } else if (rollFlagKey in STATE.REF.nextRollFlags && STATE.REF.nextRollFlags[rollFlagKey] !== toggle) {
+                        STATE.REF.nextRollFlags[rollFlagKey] = !STATE.REF.nextRollFlags[rollFlagKey]                                                
+                        D.Call(`!roll set secrecy menu ${C.HTML.ClearBody(`Now <b><u>${toggle && "HIDING" || "SHOWING"}</u> &quot;${rollFlagName}&quot;</b>`, {margin: "0px", textAlign: "center", color: toggle && C.COLORS.brightgrey || C.COLORS.puregreen})}`) // <span style="font-family: 'color: ${toggle && C.COLORS.brightgrey || C.COLORS.bright};">Now <b><u>${toggle && "HIDING" || "SHOWING"}</u> &quot;${rollFlagName}&quot;</b>`)
+                    }
+                }
+            buttonLines.unshift({
+                type: "ButtonLine",
+                contents: [
+                    0,
+                    {name: "Show All", command: "!reply all", styles: {bgColor: C.COLORS.puregreen, color: C.COLORS.black /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
+                    {name: "Default", command: "!reply default", styles: {bgColor: C.COLORS.midgold, color: C.COLORS.black /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
+                    {name: "Hide All", command: "!reply !all", styles: {bgColor: C.COLORS.darkgrey /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
+                    0
+                ],
+                buttonStyles: {},
+                styles: { /* height, width, margin, textAlign */}
+            })
+            buttonLines.push({
+                type: "ButtonLine",
+                contents: [
+                    0,
+                    {name: "Finished", command: "!reply done", styles: {bgColor: C.COLORS.brightblue, color: C.COLORS.black /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
+                    0
+                ],
+                buttonStyles: {},
+                styles: {/* height, width, margin, textAlign */}
+            })
+            D.CommandMenu(
+                {
+                    title: "Roll Secrecy",
+                    rows: [
+                        {type: "ClearBody", contents: reportMessage, styles: {textAlign: "center"}},
+                        ...buttonLines,
+                        {type: "Header", contents: "Roller Locked Until Finished"}
+                    ],
+                    blockStyles: { /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */ }
+                },
+                replyFunction
+            )
+        },
         changeRoll = (deltaDice, isNPCRoll) => {
             const rollRecord = getCurrentRoll(isNPCRoll),
                 rollData = _.clone(rollRecord.rollData)
@@ -3494,7 +3576,7 @@ const Roller = (() => {
             const marginBonus = Number(STATE.REF.resMarginBonus)            
             STATE.REF.resMarginBonus = 0
             if (["l", "r", "c", "", undefined, null].includes(posRes)) {
-                const locations = Session.Locations(posRes);
+                const locations = Session.ActiveLocations(posRes);
                 [posRes, negRes] = ["", ""]
                 for (const location of _.keys(locations))
                     if (location.includes("District")) {

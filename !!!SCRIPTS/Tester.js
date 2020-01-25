@@ -51,14 +51,16 @@ const Tester = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting
             switch (call) {
-                case "page": {
-                    D.Alert(getObj("page", D.GetPlayer(D.GMID()).get("_lastpage")).get("name"), "Testing Page")
+                case "session": {
+                    D.Alert(D.JS(Session[args.shift()]), "Session Test")
                     break
                 }
-                case "roman": {
-                    const spaces = args[2] ? " ".repeat(D.Int(args[2])) : ""
-                    Media.SetText("NextSession", D.Romanize(D.Int(args[0]), args[1] === "true").split("").join(spaces))
-                    D.Alert(D.Romanize(D.Int(args[0])), "Roman Numeral Test")
+                case "getchars": {
+                    D.Alert(D.JS(D.GetChars(args.shift())), "D.GetChars Test")
+                    break
+                }
+                case "page": {
+                    D.Alert(getObj("page", D.GetPlayer(D.GMID()).get("_lastpage")).get("name"), "Testing Page")
                     break
                 }
                 case "sound": {

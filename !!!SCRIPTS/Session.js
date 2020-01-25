@@ -22,7 +22,6 @@ const Session = (() => {
             // delete STATE.REF.curLocation
             // delete STATE.REF.locationRecord
             // delete STATE.REF.tokenRecord
-            
             PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND)
             STATE.REF.isTestingActive = STATE.REF.isTestingActive || false
             STATE.REF.sceneChars = STATE.REF.sceneChars || []
@@ -136,7 +135,7 @@ const Session = (() => {
                         case "custom": {
                             const mapIndicator = Media.GetImg("MapIndicator_Base"),
                                 position = {left: mapIndicator.get("left"), top: mapIndicator.get("top")},
-                                [sitePos] = getActiveScenePositions().filter(x => x.startsWith("Site")),
+                                [sitePos] = getActivePositions().filter(x => x.startsWith("Site")),
                                 [siteRef, siteName] = sitePos in STATE.REF.curLocation && STATE.REF.curLocation[sitePos]
                             STATE.REF.locationDetails[siteRef] = STATE.REF.locationDetails[siteRef] || {siteName}
                             STATE.REF.locationDetails[siteRef].pointerPos = Object.assign({}, position)
@@ -152,7 +151,7 @@ const Session = (() => {
                 case "get": {
                     switch (D.LCase(call = args.shift())) {
                         case "locations": case "location": case "loc": {
-                            D.Alert(D.JS(Session.Locations()), "Current Location Data")
+                            D.Alert(D.JS(Session.ActiveLocations()), "Current Location Data")
                             break
                         }
                         case "activelocs": {
@@ -160,7 +159,7 @@ const Session = (() => {
                             break
                         }
                         case "scenelocs": {
-                            D.Alert(D.JS(getActiveScenePositions()), "Active Scene Locations")
+                            D.Alert(D.JS(getActivePositions()), "Active Scene Locations")
                             break
                         }
                         case "pointer": {
@@ -311,7 +310,7 @@ const Session = (() => {
                                     break
                                 }
                                 case "activescenelocs": {
-                                    D.Alert(D.JS(getActiveScenePositions()), "Testing getActiveSceneLocations()")
+                                    D.Alert(D.JS(getActivePositions()), "Testing getActiveSceneLocations()")
                                     break
                                 }
                                 case "activedistrict": {
@@ -358,6 +357,16 @@ const Session = (() => {
                             toggleTesting()
                             break
                         }
+                    }
+                    break
+                }
+                case "reset": {
+                    switch(D.LCase(call = args.shift())) {
+                        case "loc": case "location": {
+                            STATE.REF.curLocation = D.Clone(BLANKLOCRECORD)
+                            break
+                        }
+                        // no default
                     }
                     break
                 }
@@ -714,34 +723,39 @@ const Session = (() => {
                 return false
             return null
         },
-        getActivePositions = (sideFocus) => {
-            const activeLocs = _.keys(STATE.REF.curLocation).filter(x => x !== "subLocs" && STATE.REF.curLocation[x][0] !== "blank")
-            switch({c: "Center", l: "Left", r: "Right", a: "All"}[(sideFocus || "a").toLowerCase().charAt(0)]) {
-                case "Center":
-                    return activeLocs.filter(x => x.endsWith("Center"))
-                case "Left":
-                    return activeLocs.filter(x => !x.endsWith("Right"))                 
-                case "Right":
-                    return activeLocs.filter(x => !x.endsWith("Left"))   
-                // no default
-            }
-            return activeLocs // [ "DistrictCenter", "DistrictLeft", "DistrictRight", "SiteCenter", "SiteLeft", "SiteRight" ]
+        getAllLocations = (isIncludingSubLocs = true) => D.KeyMapObj(_.omit(D.Clone(STATE.REF.curLocation), (v, k) => k === "subLocs" && (!isIncludingSubLocs || _.all(_.values(v), x => x === "blank")) || v[0] === "blank"), undefined, (v, k) => k === "subLocs" && _.reject(v, "blank") || _.flatten([v]).shift()),
+        getActiveLocations = (focusOverride, isIncludingSubLocs = true) => {
+            const activeLocs = getAllLocations(isIncludingSubLocs)
+            focusOverride = focusOverride || STATE.REF.sceneFocus
+            if (VAL({string: focusOverride}))
+                switch({c: "Center", l: "Left", r: "Right", a: "All"}[focusOverride.toLowerCase().charAt(0)]) {
+                    case "Center":
+                        return _.omit(activeLocs, (v, k) => !k.endsWith("Center"))
+                    case "Left":
+                        return _.omit(activeLocs, (v, k) => k.endsWith("Right"))                 
+                    case "Right":
+                        return _.omit(activeLocs, (v, k) => k.endsWith("Left"))
+                    default:
+                        return activeLocs
+                }
+            return {}
         },
-        getActiveScenePositions = () => getActivePositions(STATE.REF.sceneFocus), // [ "DistrictCenter", "SiteCenter" ]
+        getActivePositions = (focusOverride) => Object.keys(getActiveLocations(focusOverride, false)),
         getActiveDistrict = () => {
-            const [activePos] = getActiveScenePositions().filter(x => x.includes("District"))
+            const [activePos] = getActivePositions().filter(x => x.includes("District"))
             return activePos && STATE.REF.curLocation[activePos] && STATE.REF.curLocation[activePos][0] || false
         },
         getActiveSite = () => {
-            const [activePos] = getActiveScenePositions().filter(x => x.startsWith("Site"))
+            const [activePos] = getActivePositions().filter(x => x.startsWith("Site"))
             return activePos && STATE.REF.curLocation[activePos] && STATE.REF.curLocation[activePos][0] || false
         },
+        getPosOfLocation = (locRef) => _.findKey(getAllLocations(false), v => v && locRef && D.LCase(v) === D.LCase(locRef)),
         getSubLocs = () => {
 
 
         },
         isOutside = () => {
-            const sceneLocs = _.compact(getActiveScenePositions().map(x => STATE.REF.curLocation[x][0]))
+            const sceneLocs = _.compact(getActivePositions().map(x => STATE.REF.curLocation[x][0]))
             // D.Poke(D.JS(sceneLocs))
             return sceneLocs.filter(x => !C.LOCATIONS[x].outside).length === 0
         },
@@ -841,13 +855,18 @@ const Session = (() => {
         },
         setLocation = (locParams, sceneFocus, isForcing = false) => {
             const newLocData = Object.assign(_.clone(BLANKLOCRECORD), locParams, _.omit(STATE.REF.curLocation, (v,k) => k === "subLocs" || _.keys(locParams).includes(k))),
-                curLocData = JSON.parse(JSON.stringify(STATE.REF.curLocation)),
+                curLocData = D.Clone(STATE.REF.curLocation),
                 reportStrings = [
                     `SceneFocus: ${D.JS(sceneFocus)}`,
                     `Loc Params: ${D.JS(locParams)}`,
                     `New Loc Data: ${D.JS(newLocData)}`,
                     `Cur Loc Data: ${D.JS(curLocData)}`
                 ]
+            if (curLocData.DistrictLeft[0] !== "blank" && curLocData.DistrictLeft[0] === curLocData.DistrictRight[0]) {
+                curLocData.DistrictCenter = [...curLocData.DistrictLeft]
+                curLocData.DistrictLeft = ["blank"]
+                curLocData.DistrictRight = ["blank"]
+            }
             if ("DistrictCenter" in locParams && !locParams.DistrictCenter.includes("blank")) {
                 newLocData.DistrictLeft = ["blank"]
                 newLocData.DistrictRight = ["blank"]
@@ -1217,20 +1236,32 @@ const Session = (() => {
                 charObjs.push(...Media.GetContainedChars(loc, {padding: 50}))
             return _.uniq(charObjs)
         },
-        isOnActiveSide = (charRef) => {
-            const tokenObj = Media.GetToken(charRef),
-                left = tokenObj && tokenObj.get && tokenObj.get("left"),
-                focus = STATE.REF.sceneFocus,
-                activeLocs = _.keys(STATE.REF.curLocation).filter(x => x !== "subLocs" && STATE.REF.curLocation[x][0] !== "blank")
-            if (activeLocs.includes("DistrictCenter"))
-                return true
-            else                    
-                switch (focus) {
-                    case "c": return true
-                    case "l": return VAL({number: left}) && D.Int(left) <= C.SANDBOX.width/2
-                    case "r": return VAL({number: left}) && D.Int(left) >= C.SANDBOX.width/2
-                    default: return false
+        isInScene = (charRef) => {
+            const activeLocs = getActivePositions(),
+                [charToken] = Media.GetTokens(charRef),
+                dbObj = {activeLocs, charToken, checks: {}}
+            for (const loc of activeLocs) {
+                dbObj.checks[loc] = Media.IsInside(loc, charToken, 0)
+                if (Media.IsInside(loc, charToken, 0)) {
+                    dbObj.returning = true
+                    DB(dbObj, "isInScene")
+                    return true
                 }
+            }
+            dbObj.returning = false
+            DB(dbObj, "isInScene")
+            return false
+        },
+        isInLocation = (charRef, locRef) => {
+            const posRef = getPosOfLocation(locRef),
+                [charToken] = Media.GetTokens(charRef)
+            if (VAL({string: posRef, token: charToken})) {
+                if (Media.IsInside(posRef, charToken, 0))
+                    return true
+                if (posRef.startsWith("Site"))
+                    return Media.IsInside(posRef.replace(/Site/gu, "District"), charToken, 0)
+            }
+            return false
         },
 
         // subLocList = ["blank", ..._.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).map(x => `${`(${(x.match(/^[^_]*?([A-Z])[^_]*?([A-Z])[^_]*?_/u) || ["", ""]).slice(1).join("")}) `.replace("() ", "")}${x.replace(/.*?_/gu, "")}`)],
@@ -1266,15 +1297,6 @@ const Session = (() => {
             // D.Alert(`Macro Text:<br><br>${D.JS(_.values(D.KeyMapObj(macros, null, (v,k) => `<b>${k}</b>: ${v}`)).join("<br>"))}`)
             for (const [macroName, macroAction] of Object.entries(macros))
                 setMacro(D.GMID(), macroName, macroAction)
-        },
-        setSubLocMacro = () => {
-            const subLocList = ["blank", ...[..._.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => x.startsWith(`${getActiveSite()}_`)).sort(), ..._.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => !x.includes("_")).sort()].map(x => `${`(${(x.match(/^[^_]*?([A-Z])[^_]*?([A-Z])[^_]*?_/u) || ["", ""]).slice(1).join("")}) `.replace("() ", "")}${x.replace(/.*?_/gu, "")},${x}`)],
-                macros = {
-                    "LOC-SubLocations": `!sess set loc subLocs:?{Top Left|${subLocList.join("|")}}|?{Left|${subLocList.join("|")}}|?{Bottom Left|${subLocList.join("|")}}|?{Top Right|${subLocList.join("|")}}|?{Right|${subLocList.join("|")}}|?{Bottom Right|${subLocList.join("|")}} Center`
-                }
-            // D.Poke(`Registry: ${D.JSL(_.keys(Media.IMAGES.DistrictCenter_1.srcs))}<br><br>Keys: ${D.JS(_.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).join(", "))}<br><br>Filter: ${D.JS(_.uniq(_.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).filter(x => !x.includes("_") || x.startsWith(`${getActiveSite()}_`)))}`, "Testing")          
-            for (const [macroName, macroAction] of Object.entries(macros))
-                setMacro(D.GMID(), macroName, macroAction)            
         },
     // #endregion
 
@@ -1316,15 +1338,21 @@ const Session = (() => {
                 isLocCentered() === false && ["r", "l", "c"].includes(STATE.REF.sceneFocus) && STATE.REF.sceneFocus ||
                 "c"
             STATE.REF.sceneFocus = locPos
-            const sceneLocs = getActiveScenePositions()
-            DB({locPos, ["state Scene Focus"]: STATE.REF.sceneFocus, sceneLocs, activeLocs: getActivePositions()}, "setSceneFocus")
-            const activeLocs = _.keys(STATE.REF.curLocation).filter(x => x !== "subLocs" && STATE.REF.curLocation[x][0] !== "blank"),
-                tokenObjs = findObjs({
-                    _pageid: D.MAINPAGEID,
-                    _type: "graphic",
-                    _subtype: "token"
-                }).filter(x => x.get("represents"))            
-            if (activeLocs.includes("DistrictCenter")) {
+            DB({locPos, ["state Scene Focus"]: STATE.REF.sceneFocus, activeLocs: getActivePositions()}, "setSceneFocus")
+            const allLocations = getAllLocations(), 
+                activePositions = getActivePositions(),
+                inactivePositions = Object.keys(getAllLocations(false)).filter(x => !activePositions.includes(x)),
+                tokenObjs = Media.GetTokens()
+                
+            if (activePositions.includes("DistrictCenter")) {
+                Media.ToggleImg("DisableLocLeft", false)
+                Media.ToggleImg("DisableLocRight", false)
+                for (const tokenObj of tokenObjs) {
+                    Media.ToggleToken(tokenObj, true)
+                    if (tokenObj.get("layer") !== "objects")
+                        tokenObj.set({layer: "objects"})
+                }
+            } else if (allLocations.DistrictLeft && allLocations.DistrictLeft === allLocations.DistrictRight) {
                 Media.ToggleImg("DisableLocLeft", false)
                 Media.ToggleImg("DisableLocRight", false)
                 for (const tokenObj of tokenObjs) {
@@ -1335,14 +1363,12 @@ const Session = (() => {
             } else {                    
                 Media.ToggleImg("DisableLocLeft", locPos === "r")
                 Media.ToggleImg("DisableLocRight", locPos === "l")
-                for (const tokenObj of tokenObjs) {
-                    const isActive = isOnActiveSide(tokenObj)
-                    Media.ToggleToken(tokenObj, isActive)
-                    if (isActive === (tokenObj.get("layer") !== "objects"))
-                        tokenObj.set({layer: isActive ? "objects" : "walls"})
-                }
+                for (const tokenObj of _.compact(_.flatten(activePositions.map(x => Media.GetContents(x, {padding: 25}, {layer: "walls", _subtype: "token"})))))
+                    Media.ToggleToken(tokenObj, true)
+                for (const tokenObj of _.compact(_.flatten(inactivePositions.map(x => Media.GetContents(x, {padding: 25}, {layer: "objects", _subtype: "token"})))))
+                    Media.ToggleToken(tokenObj, false)
             }
-            const [sitePos] = sceneLocs.filter(x => x.startsWith("Site")),
+            const [sitePos] = activePositions.filter(x => x.startsWith("Site")),
                 siteName = sitePos in STATE.REF.curLocation && STATE.REF.curLocation[sitePos][1],
                 pointerPos = siteName && (Session.Site in STATE.REF.locationDetails && VAL({list: STATE.REF.locationDetails[Session.Site].pointerPos}) && STATE.REF.locationDetails[Session.Site].pointerPos) ||
                     STATE.REF.locationPointer[Session.Site] && VAL({list: STATE.REF.locationPointer[Session.Site].pointerPos}) && STATE.REF.locationPointer[Session.Site].pointerPos
@@ -1376,11 +1402,16 @@ const Session = (() => {
         ChangeMode: changeMode,
         CharsIn: getCharsInLocation,
         ResetLocations: setModeLocations,
-        IsInScene: (charRef) => isOnActiveSide(charRef),
-        get SceneChars() { return getCharsInLocation(STATE.REF.sceneFocus) },
-        get SceneFocus() { return STATE.REF.sceneFocus },
-        Locations: () => D.KeyMapObj(getActiveScenePositions(), (k, v) => v, v => STATE.REF.curLocation[v][0] !== "blank" && STATE.REF.curLocation[v][0]),
-        get Location() { return STATE.REF.locationRecord },
+        IsInScene: (charRef) => isInScene(charRef),
+        IsInLocation: (charRef, locRef) => isInLocation(charRef, locRef),
+        get SceneChars() { return getCharsInLocation(STATE.REF.sceneFocus) }, // ARRAY: [charObj, charObj, ...]
+        get SceneFocus() { return STATE.REF.sceneFocus }, // STRING: "r", "l", "c"
+
+        get Locations() { return getAllLocations() }, // LIST: { DistrictCenter: "YongeStreet", SiteCenter: "SiteLotus", SubLocs: {TopRight: "Laboratory", TopLeft: "Security"} }
+        get ActiveLocations() { return getActiveLocations() },
+        get ActivePositions() { return getActivePositions() },
+        get InactiveLocations() { return _.omit(getAllLocations(false), (v, k) => getActivePositions().includes(k)) },
+
         get District() { return getActiveDistrict() },
         get Site() { return getActiveSite() },
         get IsOutside() { return isOutside() },

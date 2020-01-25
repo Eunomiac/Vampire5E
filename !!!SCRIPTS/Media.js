@@ -341,9 +341,10 @@ const Media = (() => {
                                     break
                                 }
                                 case "tokensrc": {
-                                    const [charObj] = Listener.GetObjects(objects, "characters")
-                                    if (VAL({charObj}))
-                                        combineTokenSrc(charObj, args.join(" "))
+                                    const charObjs = Listener.GetObjects(objects, "characters")
+                                    for (const charObj of charObjs)
+                                        if (VAL({charObj}))
+                                            combineTokenSrc(charObj, args.join(" "))
                                     break
                                 }
                                 case "activesource": case "activesrc": {
@@ -2486,7 +2487,7 @@ const Media = (() => {
             ["IMG", "MapIndicator", "activeSrc"],
             ["IMG", "MapIndicator", "pageID", "GAME"],
             ["IMG", "MapIndicator", "activeLayer", "map"],
-            ["IMG", "MapIndicator", "zIndex", 455],
+            ["IMG", "MapIndicator", "zIndex", 8],
             ["IMG", "MapIndicator", "modes", "Active", {isForcedOn: true}],
             ["IMG", "MapIndicator", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapIndicator", "modes", "Daylighter", {isForcedOn: true, isForcedState: "LAST", lastState: "@@curSrc@@"}],
@@ -2666,7 +2667,7 @@ const Media = (() => {
             ["IMG", "MapIndicator_Base_1", "activeSrc", "base"],
             ["IMG", "MapIndicator_Base_1", "pageID", "GAME"],
             ["IMG", "MapIndicator_Base_1", "activeLayer", "map"],
-            ["IMG", "MapIndicator_Base_1", "zIndex", 455],
+            ["IMG", "MapIndicator_Base_1", "zIndex", 8],
             ["IMG", "MapIndicator_Base_1", "modes", "Active", {isForcedOn: true, isForcedState: "base", lastState: "base"}],
             ["IMG", "MapIndicator_Base_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapIndicator_Base_1", "modes", "Daylighter", {isForcedOn: true, isForcedState: "base", lastState: "base"}],
@@ -2678,7 +2679,7 @@ const Media = (() => {
             ["IMG", "MapLayer_Base_1", "activeSrc", "base"],
             ["IMG", "MapLayer_Base_1", "pageID", "GAME"],
             ["IMG", "MapLayer_Base_1", "activeLayer", "map"],
-            ["IMG", "MapLayer_Base_1", "zIndex", 451],
+            ["IMG", "MapLayer_Base_1", "zIndex", 4],
             ["IMG", "MapLayer_Base_1", "modes", "Active", {isForcedOn: true, isForcedState: "base", lastState: "base"}],
             ["IMG", "MapLayer_Base_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapLayer_Base_1", "modes", "Daylighter", {isForcedOn: true, isForcedState: "base", lastState: "base"}],
@@ -2690,7 +2691,7 @@ const Media = (() => {
             ["IMG", "MapLayer_Districts_1", "activeSrc", "base"],
             ["IMG", "MapLayer_Districts_1", "pageID", "GAME"],
             ["IMG", "MapLayer_Districts_1", "activeLayer", "map"],
-            ["IMG", "MapLayer_Districts_1", "zIndex", 457],
+            ["IMG", "MapLayer_Districts_1", "zIndex", 10],
             ["IMG", "MapLayer_Districts_1", "modes", "Active", {isForcedOn: null}],
             ["IMG", "MapLayer_Districts_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapLayer_Districts_1", "modes", "Daylighter", {isForcedOn: null}],
@@ -2702,7 +2703,7 @@ const Media = (() => {
             ["IMG", "MapLayer_DistrictsFill_1", "activeSrc", "base"],
             ["IMG", "MapLayer_DistrictsFill_1", "pageID", "GAME"],
             ["IMG", "MapLayer_DistrictsFill_1", "activeLayer", "map"],
-            ["IMG", "MapLayer_DistrictsFill_1", "zIndex", 452],
+            ["IMG", "MapLayer_DistrictsFill_1", "zIndex", 5],
             ["IMG", "MapLayer_DistrictsFill_1", "modes", "Active", {isForcedOn: null}],
             ["IMG", "MapLayer_DistrictsFill_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapLayer_DistrictsFill_1", "modes", "Daylighter", {isForcedOn: null}],
@@ -2714,7 +2715,7 @@ const Media = (() => {
             ["IMG", "MapLayer_Domain_1", "activeSrc", "base"],
             ["IMG", "MapLayer_Domain_1", "pageID", "GAME"],
             ["IMG", "MapLayer_Domain_1", "activeLayer", "map"],
-            ["IMG", "MapLayer_Domain_1", "zIndex", 454],
+            ["IMG", "MapLayer_Domain_1", "zIndex", 7],
             ["IMG", "MapLayer_Domain_1", "modes", "Active", {isForcedOn: null}],
             ["IMG", "MapLayer_Domain_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapLayer_Domain_1", "modes", "Daylighter", {isForcedOn: null}],
@@ -2726,7 +2727,7 @@ const Media = (() => {
             ["IMG", "MapLayer_Parks_1", "activeSrc", "base"],
             ["IMG", "MapLayer_Parks_1", "pageID", "GAME"],
             ["IMG", "MapLayer_Parks_1", "activeLayer", "map"],
-            ["IMG", "MapLayer_Parks_1", "zIndex", 453],
+            ["IMG", "MapLayer_Parks_1", "zIndex", 6],
             ["IMG", "MapLayer_Parks_1", "modes", "Active", {isForcedOn: null}],
             ["IMG", "MapLayer_Parks_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapLayer_Parks_1", "modes", "Daylighter", {isForcedOn: null}],
@@ -2738,7 +2739,7 @@ const Media = (() => {
             ["IMG", "MapLayer_Rack_1", "activeSrc", "base"],
             ["IMG", "MapLayer_Rack_1", "pageID", "GAME"],
             ["IMG", "MapLayer_Rack_1", "activeLayer", "map"],
-            ["IMG", "MapLayer_Rack_1", "zIndex", 453],
+            ["IMG", "MapLayer_Rack_1", "zIndex", 6],
             ["IMG", "MapLayer_Rack_1", "modes", "Active", {isForcedOn: null}],
             ["IMG", "MapLayer_Rack_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapLayer_Rack_1", "modes", "Daylighter", {isForcedOn: null}],
@@ -2750,7 +2751,7 @@ const Media = (() => {
             ["IMG", "MapLayer_Roads_1", "activeSrc", "base"],
             ["IMG", "MapLayer_Roads_1", "pageID", "GAME"],
             ["IMG", "MapLayer_Roads_1", "activeLayer", "map"],
-            ["IMG", "MapLayer_Roads_1", "zIndex", 456],
+            ["IMG", "MapLayer_Roads_1", "zIndex", 9],
             ["IMG", "MapLayer_Roads_1", "modes", "Active", {isForcedOn: null}],
             ["IMG", "MapLayer_Roads_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapLayer_Roads_1", "modes", "Daylighter", {isForcedOn: null}],
@@ -2762,7 +2763,7 @@ const Media = (() => {
             ["IMG", "MapLayer_SitesCulture_1", "activeSrc", "base"],
             ["IMG", "MapLayer_SitesCulture_1", "pageID", "GAME"],
             ["IMG", "MapLayer_SitesCulture_1", "activeLayer", "map"],
-            ["IMG", "MapLayer_SitesCulture_1", "zIndex", 458],
+            ["IMG", "MapLayer_SitesCulture_1", "zIndex", 11],
             ["IMG", "MapLayer_SitesCulture_1", "modes", "Active", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesCulture_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesCulture_1", "modes", "Daylighter", {isForcedOn: null}],
@@ -2774,7 +2775,7 @@ const Media = (() => {
             ["IMG", "MapLayer_SitesEducation_1", "activeSrc", "base"],
             ["IMG", "MapLayer_SitesEducation_1", "pageID", "GAME"],
             ["IMG", "MapLayer_SitesEducation_1", "activeLayer", "map"],
-            ["IMG", "MapLayer_SitesEducation_1", "zIndex", 458],
+            ["IMG", "MapLayer_SitesEducation_1", "zIndex", 11],
             ["IMG", "MapLayer_SitesEducation_1", "modes", "Active", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesEducation_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesEducation_1", "modes", "Daylighter", {isForcedOn: null}],
@@ -2786,7 +2787,7 @@ const Media = (() => {
             ["IMG", "MapLayer_SitesHavens_1", "activeSrc", "base"],
             ["IMG", "MapLayer_SitesHavens_1", "pageID", "GAME"],
             ["IMG", "MapLayer_SitesHavens_1", "activeLayer", "map"],
-            ["IMG", "MapLayer_SitesHavens_1", "zIndex", 458],
+            ["IMG", "MapLayer_SitesHavens_1", "zIndex", 11],
             ["IMG", "MapLayer_SitesHavens_1", "modes", "Active", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesHavens_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesHavens_1", "modes", "Daylighter", {isForcedOn: null}],
@@ -2798,7 +2799,7 @@ const Media = (() => {
             ["IMG", "MapLayer_SitesHealth_1", "activeSrc", "base"],
             ["IMG", "MapLayer_SitesHealth_1", "pageID", "GAME"],
             ["IMG", "MapLayer_SitesHealth_1", "activeLayer", "map"],
-            ["IMG", "MapLayer_SitesHealth_1", "zIndex", 458],
+            ["IMG", "MapLayer_SitesHealth_1", "zIndex", 11],
             ["IMG", "MapLayer_SitesHealth_1", "modes", "Active", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesHealth_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesHealth_1", "modes", "Daylighter", {isForcedOn: null}],
@@ -2810,7 +2811,7 @@ const Media = (() => {
             ["IMG", "MapLayer_SitesLandmarks_1", "activeSrc", "base"],
             ["IMG", "MapLayer_SitesLandmarks_1", "pageID", "GAME"],
             ["IMG", "MapLayer_SitesLandmarks_1", "activeLayer", "map"],
-            ["IMG", "MapLayer_SitesLandmarks_1", "zIndex", 458],
+            ["IMG", "MapLayer_SitesLandmarks_1", "zIndex", 11],
             ["IMG", "MapLayer_SitesLandmarks_1", "modes", "Active", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesLandmarks_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesLandmarks_1", "modes", "Daylighter", {isForcedOn: null}],
@@ -2822,7 +2823,7 @@ const Media = (() => {
             ["IMG", "MapLayer_SitesNightlife_1", "activeSrc", "base"],
             ["IMG", "MapLayer_SitesNightlife_1", "pageID", "GAME"],
             ["IMG", "MapLayer_SitesNightlife_1", "activeLayer", "map"],
-            ["IMG", "MapLayer_SitesNightlife_1", "zIndex", 458],
+            ["IMG", "MapLayer_SitesNightlife_1", "zIndex", 11],
             ["IMG", "MapLayer_SitesNightlife_1", "modes", "Active", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesNightlife_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesNightlife_1", "modes", "Daylighter", {isForcedOn: null}],
@@ -2834,7 +2835,7 @@ const Media = (() => {
             ["IMG", "MapLayer_SitesShopping_1", "activeSrc", "base"],
             ["IMG", "MapLayer_SitesShopping_1", "pageID", "GAME"],
             ["IMG", "MapLayer_SitesShopping_1", "activeLayer", "map"],
-            ["IMG", "MapLayer_SitesShopping_1", "zIndex", 458],
+            ["IMG", "MapLayer_SitesShopping_1", "zIndex", 11],
             ["IMG", "MapLayer_SitesShopping_1", "modes", "Active", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesShopping_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesShopping_1", "modes", "Daylighter", {isForcedOn: null}],
@@ -2846,7 +2847,7 @@ const Media = (() => {
             ["IMG", "MapLayer_SitesTransportation_1", "activeSrc", "base"],
             ["IMG", "MapLayer_SitesTransportation_1", "pageID", "GAME"],
             ["IMG", "MapLayer_SitesTransportation_1", "activeLayer", "map"],
-            ["IMG", "MapLayer_SitesTransportation_1", "zIndex", 458],
+            ["IMG", "MapLayer_SitesTransportation_1", "zIndex", 11],
             ["IMG", "MapLayer_SitesTransportation_1", "modes", "Active", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesTransportation_1", "modes", "Inactive", {isForcedOn: null}],
             ["IMG", "MapLayer_SitesTransportation_1", "modes", "Daylighter", {isForcedOn: null}],
@@ -3950,8 +3951,9 @@ const Media = (() => {
             ["IMG", "LoadingScreen_1", "modes", "Daylighter", {isForcedOn: null}],
             ["IMG", "LoadingScreen_1", "modes", "Downtime", {isForcedOn: null}],
             ["IMG", "LoadingScreen_1", "modes", "Spotlight", {isForcedOn: null}],
-            ["IMG", "LoadingScreen_1", "modes", "Complications", {isForcedOn: null}],					
-        ],		
+            ["IMG", "LoadingScreen_1", "modes", "Complications", {isForcedOn: null}],
+        ],	
+        
     // #endregion
 
     // #region GENERAL MEDIA OBJECT GETTERS:
@@ -4059,12 +4061,12 @@ const Media = (() => {
             STATE.REF.fixAllCommands = []
             Media.ToggleLoadingScreen("initializing")
             D.Queue(Media.ToggleLoadingScreen, ["initializing", "Initializating Media Assets!"], "Media", 2)
-            D.Queue(Media.SetLoadingMessage, ["[1/16] Reconfiguring Mode Data..."], "Media", 0.1)
-            D.Queue(resetModeData, [true], "Media", 15)
-            D.Queue(Media.SetLoadingMessage, ["[2/16] Purging Dice Roller..."], "Media", 0.1)
+            D.Queue(Media.SetLoadingMessage, ["[1/16] Purging Dice Roller..."], "Media", 0.1)
             D.Queue(Roller.Kill, [], "Media", 5)
-            D.Queue(Media.SetLoadingMessage, ["[3/16] Rebuilding Dice Roller..."], "Media", 0.1)
+            D.Queue(Media.SetLoadingMessage, ["[2/16] Rebuilding Dice Roller..."], "Media", 0.1)
             D.Queue(Roller.Init, [false], "Media", 10)
+            D.Queue(Media.SetLoadingMessage, ["[3/16] Reconfiguring Mode Data..."], "Media", 0.1)
+            D.Queue(resetModeData, [true], "Media", 15)
             D.Queue(Media.SetLoadingMessage, ["[4/16] Checking for Missing Image Objects..."], "Media", 0.1)
             D.Queue(clearMissingRegImgs, [], "Media")
             D.Queue(Media.SetLoadingMessage, ["[5/16] Checking for Missing Text Objects..."], "Media", 0.1)
@@ -4080,16 +4082,14 @@ const Media = (() => {
             D.Queue(resetBGImgs, [], "Media")    
             D.Queue(Media.SetLoadingMessage, ["[11/16] Calibrating Time, Weather & Horizon..."], "Media", 0.1)        
             D.Queue(TimeTracker.Fix, [], "Media", 10)
-            D.Queue(Media.SetLoadingMessage, ["[15/16] Restoring District & Site Locations..."], "Media", 0.1)        
+            D.Queue(Media.SetLoadingMessage, ["[12/16] Restoring District & Site Locations..."], "Media", 0.1)        
             D.Queue(Session.ResetLocations, ["Active", true], "Media", 3)
-            D.Queue(Media.SetLoadingMessage, ["[12/16] Performing Final Image Object Pass..."], "Media", 0.1)
+            D.Queue(Media.SetLoadingMessage, ["[13/16] Performing Final Dice Roller Pass..."], "Media", 0.1)
+            D.Queue(Roller.Clean, [], "Media")
+            D.Queue(Media.SetLoadingMessage, ["[14/16] Performing Final Image Object Pass..."], "Media", 0.1)
             D.Queue(fixImgObjs, [], "Media", 10)
-            D.Queue(Media.SetLoadingMessage, ["[13/16] Performing Final Text Object Pass..."], "Media", 0.1)
+            D.Queue(Media.SetLoadingMessage, ["[15/16] Performing Final Text Object Pass..."], "Media", 0.1)
             D.Queue(fixTextObjs, [], "Media", 5)
-            D.Queue(Media.SetLoadingMessage, ["[14/16] Performing Final Dice Roller Pass..."], "Media", 0.1)
-            D.Queue(Roller.Clean, [], "Media")   
-            /* D.Queue(Media.SetLoadingMessage, ["[15/16] Restoring District & Site Locations..."], "Media", 0.1)        
-            D.Queue(Session.ResetLocations, ["Active", true], "Media", 3) */
             D.Queue(Media.SetLoadingMessage, ["[16/16] Initializing Soundscape..."], "Media", 0.1)        
             D.Queue(initSoundModes, [], "Media", 3) 
 
@@ -4549,16 +4549,10 @@ const Media = (() => {
                 return _.findKey(srcData, v => v.toLowerCase() === URLRef.toLowerCase()) || false
             return false
         },
-        getTokenObj = (charRef, funcName = false) => {
-            const charObj = D.GetChar(charRef, funcName)
-            if (charObj)
-                return (findObjs({_pageid: D.MAINPAGEID, _type: "graphic", _subtype: "token", represents: charObj.id}) || [false])[0]
-            return VAL({string: funcName}) && THROW(`No character found for reference ${charRef}`, `${D.JSL(funcName)} > getTokenObj`)
-        },
-        getTokenObjs = (charRef) => {
-            if (!charRef) 
-                return findObjs({_pageid: D.MAINPAGEID, _type: "graphic", _subtype: "token"}).filter(x => isCharToken(x))
-            return _.compact(D.GetChars(charRef)).map(x => x && getTokenObj(x))
+        getTokenObjs = (charRef, layerFilter = false) => {
+            const allTokenObjs = (findObjs(layerFilter && {_pageid: D.MAINPAGEID, _type: "graphic", _subtype: "token", layer: layerFilter} || {_pageid: D.MAINPAGEID, _type: "graphic", _subtype: "token"}) || []).filter(x => isCharToken(x)),
+                charIDs = charRef && D.GetChars(charRef).map(x => x.id) || []
+            return _.compact(charIDs.length && allTokenObjs.filter(x => charIDs.includes(x.get("represents"))) || allTokenObjs)
         },
         getAreaData = areaRef => REGISTRY.AREA[areaRef],
         /* getImgDatas = imgRefs => {
@@ -4569,22 +4563,15 @@ const Media = (() => {
 			}
 			return imgDatas
 		},	*/
-        getBounds = (locRef) => {
-            const boundaryData = {}
-            if (VAL({string: locRef}) && REGISTRY.AREA[locRef]) {
-                boundaryData.top = REGISTRY.AREA[locRef].top
-                boundaryData.left = REGISTRY.AREA[locRef].left
-                boundaryData.height = REGISTRY.AREA[locRef].height
-                boundaryData.width = REGISTRY.AREA[locRef].width
-                // D.Alert(`BoundaryData:<br>${D.JS(boundaryData, true)}`, "getBounds")
-            } else if (VAL({graphic: locRef})) {
-                const imgObj = getImgObj(locRef)
+        getBounds = (imgRef) => {
+            const imgObj = getImgObj(imgRef),
+                boundaryData = {}
+            DB({imgRef,imgObj,boundaryData}, "checkBounds")
+            if (VAL({imgObj})) {
                 boundaryData.top = imgObj.get("top")
                 boundaryData.left = imgObj.get("left")
                 boundaryData.height = imgObj.get("height")
                 boundaryData.width = imgObj.get("width")
-            }
-            if (VAL({list: boundaryData}, "getBounds"))
                 return {
                     top: boundaryData.top - 0.5 * boundaryData.height,
                     bottom: boundaryData.top + 0.5 * boundaryData.height,
@@ -4593,42 +4580,40 @@ const Media = (() => {
                     height: boundaryData.height,
                     width: boundaryData.width
                 }
+            }
             return false
         },
-        checkBounds = (locRef, imgRef, padding = 0) => {
-            const locBounds = getBounds(locRef),
+        isInside = (containerRef, imgRef, padding = 0) => {
+            const containerBounds = getBounds(containerRef),
                 imgBounds = getBounds(imgRef)
-            return locBounds.top <= imgBounds.top + padding &&
-                locBounds.bottom >= imgBounds.bottom - padding &&
-                locBounds.left <= imgBounds.left + padding &&
-                locBounds.right >= imgBounds.right - padding
+            DB({containerRef,imgRef,padding,containerBounds,imgBounds}, "checkBounds")
+            return containerBounds && imgBounds && 
+                containerBounds.top <= imgBounds.top + padding &&
+                containerBounds.bottom >= imgBounds.bottom - padding &&
+                containerBounds.left <= imgBounds.left + padding &&
+                containerBounds.right >= imgBounds.right - padding
         },
         getImgSrc = imgRef => (getImgData(imgRef) || {curSrc: false}).curSrc,
         /* getImgSrcs = imgRef => getImgData(imgRef) ? getImgData(imgRef).srcs : false, */
         isObjActive = mediaRef => (getData(mediaRef) || {isActive: null}).isActive,
         /* eslint-disable-next-line no-unused-vars */
-        getContainedImgObjs = (locRef, options = {}) => {
-            const allImgObjsFilter = {
-                _pageid: D.GetPageID(locRef),
-                _type: "graphic"
-            }
-            for (const key of _.intersection(_.keys(options), ["subtype", "_subtype", "layer", "name"]))
-                allImgObjsFilter[key.replace(/^sub/gu, "_sub")] = options[key]            
-            const contImgObjs = _.compact(findObjs(allImgObjsFilter).filter(v => {
-                for (const key of _.intersection(_.keys(options), ["imgsrc", "represents", "left", "top", "width", "height", "controlledby"])) {
-                    if (_.isEmpty(v.get(key)) || isRegImg(v) && !isObjActive(v))
+        getContainedImgObjs = (containerRef, options = {}, filter = {}) => {
+            const containerData = getImgData(containerRef),
+                containedImgObjs = findObjs({
+                    _pageid: D.GetPageID(containerRef),
+                    _type: "graphic"
+                }).filter(x => {
+                    if (containerData.id === x.id)
                         return false
-                    if (options[key] !== true && !v.get(key).toLowerCase().includes(options[key].toLowerCase()))
-                        return false                    
-                }
-                if (checkBounds(locRef, v, options.padding || 0))
-                    return true
-                return false
-            }))
-            // D.Alert(`Checking ${D.JS(locRef)}, Returning ${D.JS(_.compact(contImgObjs.map(v => D.GetChar(v))))} (${_.compact(contImgObjs.map(v => D.GetChar(v))).length} chars)`)
-            if (options.isCharsOnly)
-                return _.compact(contImgObjs.map(v => D.GetChar(v)))
-            return contImgObjs
+                    if (!isObjActive(x))
+                        return false
+                    for (const [prop, value] of Object.entries(filter))
+                        if (x.get(prop) !== value)
+                            return false
+                    return isInside(containerData.id, x.id, options.padding || 0)
+                })
+            DB({containerRef, options, filter, containerData,containedImgObjs}, "getContainedImgObjs")
+            return containedImgObjs
         },
     // #endregion
 
@@ -4658,7 +4643,7 @@ const Media = (() => {
             DB({charObj, tokenSrc}, "addTokenSrc")
             if (VAL({charObj, string: tokenSrc}) && tokenSrc.includes("png")) {
                 const tokenKey = charObj.get("name"),
-                    tokenObj = getTokenObj(tokenKey)
+                    [tokenObj] = getTokenObjs(tokenKey)
                 DB({tokenKey, tokenObj, isRandomizer: isRandomizerToken(tokenObj), isChar: isCharToken(tokenObj)}, "addTokenSrc")
                 // isCharToken(tokenObj) && isRegToken(tokenObj) && REGISTRY.TOKEN[tokenObj.get("name")].srcs.randomSrcs && REGISTRY.TOKEN[tokenObj.get("name")].srcs.randomSrcs.length
                 if (!srcName && isRandomizerToken(tokenObj)) {
@@ -4678,7 +4663,7 @@ const Media = (() => {
         },
         setTokenSrc = (charRef, srcName = "base") => {
             srcName = srcName === "" ? "base" : srcName
-            const tokenObj = getTokenObj(charRef)
+            const [tokenObj] = getTokenObjs(charRef)
             if (VAL({tokenObj}) && isRegToken(tokenObj)) {
                 const tokenName = tokenObj.get("name"),
                     tokenSrcs = REGISTRY.TOKEN[tokenName].srcs,
@@ -4689,47 +4674,16 @@ const Media = (() => {
                 }
             }
         },
-        toggleToken = (tokenRef, isActive) => {
-            // NON-PERMANENT.
-            if (isActive === null) return null
-            const tokenObj = getTokenObj(tokenRef)
-            if (VAL({token: tokenObj})) {
-                if (isActive === true && tokenObj.get("layer") !== "objects")
-                    tokenObj.set("layer", "objects")
-                else if (isActive === false && tokenObj.get("layer") !== "walls")
-                    tokenObj.set("layer", "walls")
-                else
-                    return false
-                return true
-            }
-            return false
-        },
-        toggleTokens = (charRef, isActive) => {
-            const charObj = charRef ? D.GetChar(charRef) : null,
-                tokenObjs = charRef ? findObjs({
-                    _pageid: D.MAINPAGEID,
-                    _type: "graphic",
-                    _subtype: "token",
-                    represents: charObj.id
-                }) : findObjs({
-                    _pageid: D.MAINPAGEID,
-                    _type: "graphic",
-                    _subtype: "token"
-                }).filter(x => x.get("represents"))
-            DB({tokenObjs}, "toggleTokens")
-            for (const tokenObj of tokenObjs) {
-                DB(`Setting ${tokenObj} to ${isActive}`, "toggleTokens")
-                if (VAL({token: tokenObj})) {
-                    DB(`${tokenObj} is valid!`, "toggleTokens")
+        toggleTokens = (tokenRef, isActive) => {
+            if (isActive !== null)
+                for (const tokenObj of getTokenObjs(tokenRef))
                     if (isActive === true && tokenObj.get("layer") !== "objects")
                         tokenObj.set("layer", "objects")
                     else if (isActive === false && tokenObj.get("layer") !== "walls")
                         tokenObj.set("layer", "walls")
-                }
-            }
         },
         combineTokenSrc = (charRef, srcName = "base") => {            
-            const tokenObj = getTokenObj(charRef)
+            const [tokenObj] = getTokenObjs(charRef)
             if (VAL({tokenObj, string: srcName}) && isRegToken(tokenObj)) {
                 const tokenName = tokenObj.get("name"),
                     tokenSrc = REGISTRY.TOKEN[tokenName].curSrc || "base",
@@ -5110,12 +5064,22 @@ const Media = (() => {
                 STATE.REF.fixAllCommands.push(...["<h3><u>Clearing Unregistered Image Objects</u></h3>", ...returnLines])
         },        
         toggleLoadingScreen = (imgSrc, customText = " ") => {
+            const [imgObj, animObj, textObj, shadowObj] = [
+                getImgObj("LoadingScreen"),
+                getImgObj("LoadingMoon"),
+                getTextObj("LoadingMessage"),
+                getTextShadowObj("LoadingMessage")
+            ]
             if (imgSrc) {
                 Media.ToggleImg("LoadingScreen", true)
                 Media.SetImg("LoadingScreen", imgSrc)
                 Media.ToggleAnim("LoadingMoon", true)
                 Media.ToggleText("LoadingMessage", true)
                 setLoadingText(customText)
+                toFront(animObj)
+                toFront(imgObj)
+                toFront(shadowObj)
+                toFront(textObj)
             } else {
                 Media.ToggleImg("LoadingScreen", false)
                 Media.ToggleAnim("LoadingMoon", false)
@@ -5581,6 +5545,7 @@ const Media = (() => {
             return _.compact(textObjs)
         },
         hasShadowObj = textRef => Boolean((getTextData(textRef) || {shadowID: false}).shadowID),
+        getTextShadowObj = textRef => getObj("text", (getTextData(textRef) || {shadowID: false}).shadowID),
         getShadowShift = textRef => C.SHADOWOFFSETS[(getTextObj(textRef) || {get: () => 20}).get("font_size")],
         getTextData = (textRef, funcName = false) => {
             try {
@@ -6561,7 +6526,7 @@ const Media = (() => {
         GetImgKey: getImgKey, GetTextKey: getTextKey,
         GetImgData: getImgData, GetTextData: getTextData,
         GetImgSrc: getImgSrc,
-        GetToken: getTokenObj, GetTokens: getTokenObjs,
+        GetTokens: getTokenObjs,
         GetLineHeight: getLineHeight, GetSimpleTextWidth: getSimpleTextWidth, GetTextWidth: getTextWidth, GetTextHeight: getTextHeight, GetTextLines: getTextLines,
         Buffer: buffer,
 
@@ -6573,7 +6538,7 @@ const Media = (() => {
 
         // SETTERS
         SetImg: setImg, SetText: setText, SetToken: setTokenSrc, CombineTokenSrc: combineTokenSrc,
-        ToggleImg: toggleImg, ToggleText: toggleText, ToggleToken: toggleToken, ToggleTokens: toggleTokens,
+        ToggleImg: toggleImg, ToggleText: toggleText, ToggleToken: toggleTokens, ToggleTokens: toggleTokens,
         CycleImg: cycleImg,
         SetImgData: setImgData, SetTextData: setTextData,
         SetImgTemp: setImgTemp, // SetTextTemp: setTextTemp,
@@ -6583,7 +6548,8 @@ const Media = (() => {
 
         // AREA FUNCTIONS
         GetBounds: getBounds, GetContents: getContainedImgObjs,
-        GetContainedChars: (locRef, options) => getContainedImgObjs(locRef, Object.assign(options, {isCharsOnly: true})),
+        IsInside: isInside,
+        GetContainedChars: (locRef, options, filter = {}) => getContainedImgObjs(locRef, options, Object.assign(filter, {_subtype: "token", _layer: "objects"})).map(x => D.GetChar(x)),
         SetArea: setImgArea,
         
         // ANIMATION FUNCTIONS

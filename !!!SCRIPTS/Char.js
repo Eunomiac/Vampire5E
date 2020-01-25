@@ -233,11 +233,13 @@ const Char = (() => {
                                             const thisCharObj = charObjs.shift();
                                             [name, traitVal] = ["", "", ""]
                                             if (VAL({thisCharObj})) {
-                                                const statData = D.GetStat(thisCharObj, traitName, true) || D.GetRepStat(thisCharObj, "*", null, traitName, true);
-                                                [name, traitVal] = [
-                                                    VAL({pc: thisCharObj}) ? `<b>${D.GetName(thisCharObj, true).toUpperCase()}</b>` : D.GetName(thisCharObj, true),
-                                                    D.Int(statData && (statData[0] || statData.val)) ? "●".repeat(D.Int(statData && (statData[0] || statData.val))) : "~"
-                                                ]
+                                                const statData = D.GetStat(thisCharObj, traitName, true) || D.GetRepStat(thisCharObj, "*", null, traitName, true),
+                                                    statValue = statData && (statData[0] || statData.val)
+                                                if (statValue)
+                                                    [name, traitVal] = [
+                                                        VAL({pc: thisCharObj}) ? `<b>${D.GetName(thisCharObj, true).toUpperCase()}</b>` : D.GetName(thisCharObj, true),
+                                                        VAL({number: statValue}) ? D.Int(statValue) === 0 && "~" || "●".repeat(D.Int(statValue)) : D.JSL(statValue)
+                                                    ]
                                             }
                                         } else {
                                             [name, traitVal] = ["", ""]
@@ -249,12 +251,12 @@ const Char = (() => {
                                             margin-right: 2%;
                                         "><span style="
                                             display: inline-block;
-                                            width: 60%;
+                                            width: 50%;
                                             margin-right: 3%;
                                             color: ${traitVal === "~" && C.COLORS.grey || C.COLORS.white};
                                         ">${name}</span><span style="
                                             display: inline-block;
-                                            width: 34%;
+                                            width: 44%;
                                             margin-right: 3%;
                                             color: ${traitVal === "~" && C.COLORS.grey || C.COLORS.white};
                                         ">${traitVal}</span></div>`)
@@ -266,7 +268,7 @@ const Char = (() => {
                                     C.HTML.Body(returnLines.join("<br>"), {color: C.COLORS.white, fontWeight: "normal", fontFamily: "Voltaire", fontSize: "12px", textAlign: "left"})
                                 ].join("")), null, D.RandomString(3))
                             } else {
-                                promptTraitSelect(charObjs.map(x => x.id).join(","), null, "!char @@CHARIDS@@ get stat @@TRAITNAME@@")
+                                traitSelectMenu(charObjs.map(x => x.id), "!char", "get stat")
                             }
                             break
                         }
@@ -358,6 +360,18 @@ const Char = (() => {
                         case "cols": {
                             const [colNum, shift] = args
                             adjustDisplayCols(D.Int(colNum), D.Float(shift))
+                            break
+                        }
+                        case "dys": case "dyscrasias": {
+                            const [charObj] = charObjs,
+                                [dTitle, dText] = args.join(" ").split("|")
+                            setDyscrasias(charObj, D.LCase(dTitle).length < 3 ? null : dTitle, dText)
+                            break
+                        }
+                        case "comp": case "compulsion": {
+                            const [charObj] = charObjs,
+                                [cTitle, cText] = args.join(" ").split("|")
+                            setCompulsion(charObj, D.LCase(cTitle).length < 3 ? null : cTitle, cText)
                             break
                         }
                         // no default
@@ -484,6 +498,13 @@ const Char = (() => {
                             sendCharsHome()
                             break
                         }
+                        case "toggle": {
+                            if (STATE.REF.tokenRecord.length)
+                                restoreCharsPos(charObjs.length ? charObjs : undefined)
+                            else
+                                sendCharsHome(charObjs.length ? charObjs : undefined)
+                            break
+                        }
                         case "district": {
                             const tokenObjs = D.GetSelected(msg, "token") || _.values(REGISTRY).map(x => Media.GetImg(x.tokenName))
                             for (const tokenObj of tokenObjs)
@@ -509,7 +530,7 @@ const Char = (() => {
                                     STATE.REF.traitSelection.push(thisTrait)
                                 Media.SetText("secretRollTraits", STATE.REF.traitSelection.length === 0 ? " " : STATE.REF.traitSelection.join("\n"), true)
                             } else {
-                                promptTraitSelect()
+                                traitSelectMenu()
                             }
                             break
                         }
@@ -517,15 +538,15 @@ const Char = (() => {
                         case "npcs":
                         case "pcs":
                         case "sandbox": {
-                            promptActionMenu(call)                            
+                            charActionMenu(call)                            
                             break
                         }
                         default: {
                             // D.Alert(`Args: ${D.JS(args.join(","))}`)
                             if (charObjs.length)
-                                promptActionMenu(charObjs)
+                                charActionMenu(charObjs.map(x => x.id), `Selected Characters (${charObjs.length})`)
                             else
-                                promptCharSelect()                                
+                                charSelectMenu()                                
                             break
                         }
                     }
@@ -592,8 +613,6 @@ const Char = (() => {
     // #region JSON Text Blocks
     /* eslint-disable-next-line quotes */
         NPCSTATS = "{\"Frederik Scheer, Seneschal\": { \"base\": {\"clan\": \"Tremere\", \"faction\": \"Camarilla\", \"blood_potency\": 6, \"humanity\": 3, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 2, \"stamina\": 3, \"charisma\": 3, \"manipulation\": 3, \"composure\": 4, \"intelligence\": 6, \"wits\": 4, \"resolve\": 4 }, \"skills\": { \"6\": \"OCC\", \"5\": \"AWA INT POL INS SUB\", \"4\": \"MEL ACA INV\", \"3\": \"BRA LED ETI\", \"2\": \"PER\", \"1\": \"SCI\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 4], \"disc2\": [\"Dominate\", 5], \"disc3\": [\"Blood Sorcery\", 5] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"PRE OBF\", \"2\": \"\", \"1\": \"\" } },\"Baroness Monika Eulenberg\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 3, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 1, \"dexterity\": 2, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 4, \"composure\": 2, \"intelligence\": 4, \"wits\": 5, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"INS AWA\", \"4\": \"SUB LED INV\", \"3\": \"LAR SUR POL\", \"2\": \"PER TEC ETI\", \"1\": \"ATH BRA MEL FIN\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 4], \"disc2\": [\"Dominate\", 3], \"disc3\": [\"Obfuscate\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"CEL\", \"1\": \"\" } },\"Ben Blinker\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 4, \"composure\": 3, \"intelligence\": 2, \"wits\": 2, \"resolve\": 1 }, \"skills\": { \"6\": \"\", \"5\": \"PER\", \"4\": \"SUB\", \"3\": \"INS ATH\", \"2\": \"INV AWA STR\", \"1\": \"BRA STL DRV\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 0], \"disc2\": [\"Dominate\", 4], \"disc3\": [\"Obfuscate\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Jane 'JD' Doe\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 3, \"composure\": 2, \"intelligence\": 2, \"wits\": 1, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"BRA\", \"4\": \"\", \"3\": \"SUB INS\", \"2\": \"PRF STR ATH ETI LAR ACA POL PER\", \"1\": \"AWA MEL TEC FIN SUR FIR DRV MED INV\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 1], \"disc2\": [\"Presence\", 3], \"disc3\": [\"Potence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Sage Sam\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 5, \"humanity\": 8, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 4, \"stamina\": 2, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 5, \"wits\": 4, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"OCC INS\", \"3\": \"STL ACA POL STR\", \"2\": \"ATH SUB FIN MED SCI\", \"1\": \"BRA LAR MEL INT LED PER SUR DRV TEC ETI\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 4], \"disc2\": [\"Dominate\", 1], \"disc3\": [\"Obfuscate\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"FOR\" } },\"Laz, Sheriff\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 3, \"humanity\": 8, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 4, \"charisma\": 1, \"manipulation\": 1, \"composure\": 3, \"intelligence\": 3, \"wits\": 3, \"resolve\": 5 }, \"skills\": { \"6\": \"\", \"5\": \"INV\", \"4\": \"AWA BRA INS\", \"3\": \"MEL STR\", \"2\": \"STE TEC ANK INT POL LED\", \"1\": \"ATH FIR SUR SUB\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 2], \"disc2\": [\"Obfuscate\", 4], \"disc3\": [\"Potence\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Rosie\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Anarch\", \"blood_potency\": 4, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 1, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 4, \"composure\": 5, \"intelligence\": 2, \"wits\": 4, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"INS PER POL\", \"4\": \"SUB ACA ETI\", \"3\": \"ANK LED\", \"2\": \"STL\", \"1\": \"ATH MEL\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 4], \"disc2\": [\"Obfuscate\", 3], \"disc3\": [\"Potence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"PRE\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Wesley Richardson\": { \"base\": {\"clan\": \"Thin-Blooded\", \"faction\": \"Anarch\", \"blood_potency\": 0, \"humanity\": 9, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 2, \"manipulation\": 2, \"composure\": 1, \"intelligence\": 4, \"wits\": 3, \"resolve\": 3 }, \"skills\": { \"6\": \"\", \"5\": \"OCC\", \"4\": \"SCI\", \"3\": \"TEC INS\", \"2\": \"AWA BRA STL\", \"1\": \"PER LED POL\" }, \"clandiscs\": { \"disc1\": [\"Alchemy\", 3], \"disc2\": [], \"disc3\": [] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Calvin Wallace\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 3, \"charisma\": 4, \"manipulation\": 3, \"composure\": 3, \"intelligence\": 2, \"wits\": 1, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"\", \"3\": \"PRF PER LED\", \"2\": \"INT AWA MEL POL SUB\", \"1\": \"ACA ETI INS STR BRA FIR INV\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 1], \"disc2\": [\"Presence\", 2], \"disc3\": [\"Potence\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Professor Ethan Keen\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 1, \"charisma\": 1, \"manipulation\": 4, \"composure\": 2, \"intelligence\": 4, \"wits\": 2, \"resolve\": 4 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"INS\", \"3\": \"ACA OCC POL\", \"2\": \"FIN MED INV\", \"1\": \"STR SUB SUR\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 1], \"disc2\": [\"Dominate\", 1], \"disc3\": [\"Obfuscate\", 0] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"SOR PTN\" } },\"Damien Abanda\": { \"base\": {\"clan\": \"Toreador\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 4, \"manipulation\": 4, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 1 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"ETI\", \"3\": \"PER SUB POL\", \"2\": \"INS LED INV FIN\", \"1\": \"ATH BRA MEL LAR INT AWA TEC\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 1], \"disc2\": [\"Celerity\", 2], \"disc3\": [\"Presence\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"J\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 3, \"wits\": 2, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"BRA\", \"3\": \"ATH STR LED\", \"2\": \"AWA INV MEL STL\", \"1\": \"DRV FIR LAR POL INS INT SUR\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 2], \"disc2\": [\"Presence\", 1], \"disc3\": [\"Potence\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Stalker Todd\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 4, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"ATH\", \"3\": \"MEL STR INV\", \"2\": \"BRA STL SUR\", \"1\": \"ANK INT AWA\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 1], \"disc2\": [\"Fortitude\", 0], \"disc3\": [\"Protean\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Reaper\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 3, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 5, \"stamina\": 2, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"skills\": { \"6\": \"\", \"5\": \"MEL\", \"4\": \"ATH\", \"3\": \"STR LAR\", \"2\": \"INS INT ANK\", \"1\": \"INV MED SUR\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 2], \"disc2\": [\"Fortitude\", 0], \"disc3\": [\"Protean\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Leah Hawk\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 2, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 4, \"composure\": 3, \"intelligence\": 2, \"wits\": 1, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"\", \"3\": \"PRF SUB INS\", \"2\": \"ATH MEL ANK INT INV\", \"1\": \"BRA LAR STL SUR PER AWA POL\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 2], \"disc2\": [\"Fortitude\", 1], \"disc3\": [\"Protean\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Old Quentin\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 4, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 4, \"manipulation\": 6, \"composure\": 5, \"intelligence\": 3, \"wits\": 3, \"resolve\": 5 }, \"skills\": { \"6\": \"SUB\", \"5\": \"INS STL\", \"4\": \"ETI STR ACA AWA OCC\", \"3\": \"BRA MEL ATH INV\", \"2\": \"FIN POL LAR SUR ANK TEC\", \"1\": \"CRA MED LED SCI FIR DRV\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 4], \"disc2\": [\"Dominate\", 5], \"disc3\": [\"Obfuscate\", 5] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"PTN\", \"3\": \"FOR\", \"2\": \"CEL\", \"1\": \"ANI\" } },\"Maxwell 'Max' Floyd\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 2, \"stamina\": 2, \"charisma\": 4, \"manipulation\": 2, \"composure\": 4, \"intelligence\": 2, \"wits\": 1, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Celerity\", 2], \"disc2\": [\"Presence\", 2], \"disc3\": [\"Potence\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Mr. Easy\": { \"base\": {\"clan\": \"Malkavian\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 4, \"wits\": 3, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Auspex\", 1], \"disc2\": [\"Dominate\", 0], \"disc3\": [\"Obfuscate\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"ANI\", \"1\": \"POT\" } },\"Twist\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 3, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 3, \"wits\": 2, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 1], \"disc2\": [\"Obfuscate\", 1], \"disc3\": [\"Potence\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"PTN\" } },\"Jason\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Fortitude\", 2], \"disc3\": [\"Protean\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"POT\", \"1\": \"\" } },\"Wallflower\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 4, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Fortitude\", 3], \"disc3\": [\"Protean\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Kit Edwards\": { \"base\": {\"clan\": \"Thin-Blooded\", \"faction\": \"Anarch\", \"blood_potency\": 0, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 3, \"composure\": 2, \"intelligence\": 1, \"wits\": 2, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Alchemy\", 1], \"disc2\": [], \"disc3\": [] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Toni Gomez\": { \"base\": {\"clan\": \"Thin-Blooded\", \"faction\": \"Anarch\", \"blood_potency\": 0, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 3, \"charisma\": 3, \"manipulation\": 3, \"composure\": 2, \"intelligence\": 2, \"wits\": 4, \"resolve\": 1 }, \"clandiscs\": { \"disc1\": [\"Alchemy\", 1], \"disc2\": [], \"disc3\": [] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Ren\": { \"base\": {\"clan\": \"Ministry\", \"faction\": \"Anarch\", \"blood_potency\": 5, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 1, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 5, \"manipulation\": 3, \"composure\": 4, \"intelligence\": 2, \"wits\": 4, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"INS PER SUB STR\", \"4\": \"STL ETI LED\", \"3\": \"OCC\", \"2\": \"SUR\", \"1\": \"POL MEL\" }, \"clandiscs\": { \"disc1\": [\"Obfuscate\", 2], \"disc2\": [\"Presence\", 4], \"disc3\": [\"Protean\", 3] }, \"otherdiscs\": { \"5\": \"AUS\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"CEL\" } },\"Tyler\": { \"base\": {\"clan\": \"Ministry\", \"faction\": \"Anarch\", \"blood_potency\": 3, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 1, \"charisma\": 4, \"manipulation\": 3, \"composure\": 3, \"intelligence\": 3, \"wits\": 2, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"INS\", \"4\": \"PER SUB\", \"3\": \"STL MEL\", \"2\": \"STR SUR\", \"1\": \"ATH BRA DRV\" }, \"clandiscs\": { \"disc1\": [\"Obfuscate\", 1], \"disc2\": [\"Presence\", 3], \"disc3\": [\"Protean\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Alexandra\": { \"base\": {\"clan\": \"Ministry\", \"faction\": \"Anarch\", \"blood_potency\": 3, \"humanity\": 4, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 1, \"charisma\": 4, \"manipulation\": 5, \"composure\": 3, \"intelligence\": 4, \"wits\": 2, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"SUB ETI PER\", \"4\": \"INS STL\", \"3\": \"INT LAR\", \"2\": \"ATH STR\", \"1\": \"POL SUR\" }, \"clandiscs\": { \"disc1\": [\"Obfuscate\", 1], \"disc2\": [\"Presence\", 4], \"disc3\": [\"Protean\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"AUS\", \"2\": \"\", \"1\": \"\" } },\"Kai\": { \"base\": {\"clan\": \"Ministry\", \"faction\": \"Anarch\", \"blood_potency\": 3, \"humanity\": 9, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 4, \"manipulation\": 3, \"composure\": 3, \"intelligence\": 2, \"wits\": 2, \"resolve\": 1 }, \"skills\": { \"6\": \"\", \"5\": \"PER\", \"4\": \"PRF \", \"3\": \"ETI INS\", \"2\": \"AWA SUB STL\", \"1\": \"BRA FIR DRV\" }, \"clandiscs\": { \"disc1\": [\"Obfuscate\", 0], \"disc2\": [\"Presence\", 4], \"disc3\": [\"Protean\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Kingston 'King' Black\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 1, \"humanity\": 9, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 4 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"MEL\", \"3\": \"INT ATH OCC\", \"2\": \"STR LED PER FIR\", \"1\": \"BRA ACA AWA ETI ANI TEC INV SUB\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 2], \"disc2\": [\"Presence\", 1], \"disc3\": [\"Potence\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Mason Schmidt\": { \"base\": {\"clan\": \"Brujah\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 4, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"clandiscs\": { \"disc1\": [\"Celerity\", 2], \"disc2\": [\"Presence\", 1], \"disc3\": [\"Potence\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Jack-be-Nimble\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 4, \"stamina\": 3, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 2, \"wits\": 3, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Obfuscate\", 3], \"disc3\": [\"Potence\", 0] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"CEL\" } },\"Amos Jax\": { \"base\": {\"clan\": \"Gangrel\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 3, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 4, \"charisma\": 2, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 3, \"wits\": 1, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 1], \"disc2\": [\"Fortitude\", 1], \"disc3\": [\"Protean\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Yusef Shamsin\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Anarch\", \"blood_potency\": 2, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 3, \"stamina\": 4, \"charisma\": 3, \"manipulation\": 2, \"composure\": 3, \"intelligence\": 6, \"wits\": 3, \"resolve\": 4 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 4], \"disc2\": [\"Obfuscate\", 2], \"disc3\": [\"Potence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Drake\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 5, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 4, \"stamina\": 3, \"charisma\": 3, \"manipulation\": 3, \"composure\": 4, \"intelligence\": 6, \"wits\": 2, \"resolve\": 4 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Obfuscate\", 5], \"disc3\": [\"Potence\", 3] }, \"otherdiscs\": { \"5\": \"CEL\", \"4\": \"SOR\", \"3\": \"FOR\", \"2\": \"\", \"1\": \"\" } },\"Alistair Etrata\": { \"base\": {\"clan\": \"Banu Haqim\", \"faction\": \"Camarilla\", \"blood_potency\": 6, \"humanity\": 4, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 5, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 4, \"wits\": 2, \"resolve\": 1 }, \"skills\": { \"6\": \"\", \"5\": \"MEL INS AWA POL\", \"4\": \"STL ACA OCC LED\", \"3\": \"ATH SUR INV SUB\", \"2\": \"ETI ANK\", \"1\": \"LAR\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 5], \"disc2\": [\"Obfuscate\", 3], \"disc3\": [\"Blood Sorcery\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"POT\", \"1\": \"FOR DOM\" } },\"Sinclair Rodriguez\": { \"base\": {\"clan\": \"Banu Haqim\", \"faction\": \"Camarilla\", \"blood_potency\": 4, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 2, \"charisma\": 5, \"manipulation\": 3, \"composure\": 4, \"intelligence\": 3, \"wits\": 1, \"resolve\": 4 }, \"skills\": { \"6\": \"\", \"5\": \"LED POL SUB INS\", \"4\": \"PER ETI FIR\", \"3\": \"AWA\", \"2\": \"INT\", \"1\": \"MEL ATH\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 1], \"disc2\": [\"Obfuscate\", 0], \"disc3\": [\"Blood Sorcery\", 0] }, \"otherdiscs\": { \"5\": \"PRE\", \"4\": \"DOM\", \"3\": \"FOR\", \"2\": \"AUS\", \"1\": \"\" } },\"Prince Osborne Lowell\": { \"base\": {\"clan\": \"Ventrue\", \"faction\": \"Camarilla\", \"blood_potency\": 4, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 5, \"dexterity\": 4, \"stamina\": 2, \"charisma\": 2, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 3, \"wits\": 1, \"resolve\": 4 }, \"skills\": { \"6\": \"\", \"5\": \"MEL\", \"4\": \"OCC INT STL\", \"3\": \"INS STR SUB INV\", \"2\": \"SUR ETI POL\", \"1\": \"ATH BRA LAR AWA\" }, \"clandiscs\": { \"disc1\": [\"Dominate\", 4], \"disc2\": [\"Fortitude\", 0], \"disc3\": [\"Presence\", 0] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"CEL\", \"2\": \"SOR\", \"1\": \"AUS POT\" } },\"Raphael Bishop\": { \"base\": {\"clan\": \"Tremere\", \"faction\": \"Camarilla\", \"blood_potency\": 4, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 5, \"stamina\": 3, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 4, \"wits\": 4, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"MEL ATH STL\", \"4\": \"INS SUB AWA\", \"3\": \"INV STR\", \"2\": \"LAR\", \"1\": \"SUR BRA\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 0], \"disc2\": [\"Dominate\", 0], \"disc3\": [\"Blood Sorcery\", 0] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"OBF\", \"3\": \"ANI POT\", \"2\": \"\", \"1\": \"CEL FOR PTN\" } },\"Emily, the Dusk Rose\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 3, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 1, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 5, \"manipulation\": 2, \"composure\": 3, \"intelligence\": 2, \"wits\": 4, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 2], \"disc2\": [\"Obfuscate\", 3], \"disc3\": [\"Potence\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"PRE\", \"1\": \"DOM\" } },\"The Aristocrat\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 2, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 1, \"charisma\": 4, \"manipulation\": 3, \"composure\": 2, \"intelligence\": 3, \"wits\": 3, \"resolve\": 2 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 1], \"disc2\": [\"Obfuscate\", 1], \"disc3\": [\"Potence\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"PRE\", \"2\": \"AUS\", \"1\": \"\" } },\"Christianne\": { \"base\": {\"clan\": \"Toreador\", \"faction\": \"Camarilla\", \"blood_potency\": 2, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 2, \"charisma\": 3, \"manipulation\": 4, \"composure\": 3, \"intelligence\": 3, \"wits\": 2, \"resolve\": 1 }, \"clandiscs\": { \"disc1\": [\"Auspex\", 0], \"disc2\": [\"Celerity\", 0], \"disc3\": [\"Presence\", 3] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"DOM\", \"3\": \"\", \"2\": \"\", \"1\": \"FOR\" } },\"Xavier Whitchurch\": { \"base\": {\"clan\": \"Ventrue\", \"faction\": \"Camarilla\", \"blood_potency\": 2 }, \"clandiscs\": { \"disc1\": [\"Dominate\", 3], \"disc2\": [\"Fortitude\", 0], \"disc3\": [\"Presence\", 1] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Ian Rammond\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 2 } },\"Terry\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 2 } },\"Tommy\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 1 } },\"I.Q.\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Camarilla\", \"blood_potency\": 3, \"humanity\": 5, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 3, \"stamina\": 2, \"charisma\": 2, \"manipulation\": 3, \"composure\": 1, \"intelligence\": 4, \"wits\": 3, \"resolve\": 2 }, \"skills\": { \"6\": \"\", \"5\": \"\", \"4\": \"OCC\", \"3\": \"MEL STL SUB\", \"2\": \"ATH LAR INT AWA\", \"1\": \"BRA SUR ETI INS STR INV POL\" }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Obfuscate\", 0], \"disc3\": [\"Potence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"OBV\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Alexander\": { \"base\": {\"clan\": \"Lasombra\", \"faction\": \"Sabbat\", \"blood_potency\": 4, \"humanity\": 3, \"stains\": 0 }, \"attributes\": { \"strength\": 3, \"dexterity\": 3, \"stamina\": 4, \"charisma\": 1, \"manipulation\": 2, \"composure\": 2, \"intelligence\": 2, \"wits\": 2, \"resolve\": 3 }, \"clandiscs\": { \"disc1\": [\"Dominate\", 0], \"disc2\": [\"Oblivion\", 0], \"disc3\": [\"Potence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"OBF\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Sang-Froid\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Sabbat\", \"blood_potency\": 3, \"humanity\": 6, \"stains\": 0 }, \"attributes\": { \"strength\": 4, \"dexterity\": 6, \"stamina\": 5, \"charisma\": 2, \"manipulation\": 3, \"composure\": 3, \"intelligence\": 5, \"wits\": 3, \"resolve\": 3 }, \"clandiscs\": { \"disc1\": [\"Animalism\", 0], \"disc2\": [\"Obfuscate\", 4], \"disc3\": [\"Potence\", 0] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"FOR\", \"2\": \"AUS\", \"1\": \"PTN\" } },\"The Piece-Taker\": { \"base\": {\"clan\": \"Banu Haqim\", \"faction\": \"Autarkis\", \"blood_potency\": 7, \"humanity\": 1, \"stains\": 0 }, \"attributes\": { \"strength\": 6, \"dexterity\": 5, \"stamina\": 5, \"charisma\": 3, \"manipulation\": 3, \"composure\": 3, \"intelligence\": 2, \"wits\": 3, \"resolve\": 4 }, \"skills\": { \"6\": \"MEL STL\", \"5\": \"ATH BRA SUB OCC INT STR\", \"4\": \"INV AWA\", \"3\": \"SUR ANK\", \"2\": \"LAR\", \"1\": \"INS\" }, \"clandiscs\": { \"disc1\": [\"Celerity\", 2], \"disc2\": [\"Obfuscate\", 5], \"disc3\": [\"Blood Sorcery\", 0] }, \"otherdiscs\": { \"5\": \"POT ANI\", \"4\": \"PTN\", \"3\": \"FOR\", \"2\": \"\", \"1\": \"\" } },\"The Island Devil\": { \"base\": {\"clan\": \"Nosferatu\", \"faction\": \"Autarkis\" } },\"Anita Morris\": { \"base\": {\"clan\": \"Tremere\", \"faction\": \"Camarilla\", \"blood_potency\": 1, \"humanity\": 7, \"stains\": 0 }, \"attributes\": { \"strength\": 2, \"dexterity\": 2, \"stamina\": 3, \"charisma\": 2, \"manipulation\": 1, \"composure\": 2, \"intelligence\": 4, \"wits\": 3, \"resolve\": 3 }, \"skills\": { \"6\": \"\", \"5\": \"SCI\", \"4\": \"OCC\", \"3\": \"ACA TEC\", \"2\": \"INV AWA MED\", \"1\": \"PER SUB STR\" }, \"clandiscs\": { \"disc1\": [\"Auspex\", 2], \"disc2\": [\"Dominate\", 0], \"disc3\": [\"Blood Sorcery\", 4] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"\", \"2\": \"\", \"1\": \"\" } },\"Agnes Bellanger\": { \"base\": {\"clan\": \"Toreador\", \"faction\": \"Camarilla\", \"blood_potency\": 5, \"humanity\": 5, \"stains\": 0 }, \"clandiscs\": { \"disc1\": [\"Auspex\", 5], \"disc2\": [\"Celerity\", 5], \"disc3\": [\"Presence\", 5] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"POT\", \"3\": \"FOR\", \"2\": \"DOM\", \"1\": \"\" } },\"Mylene 'the Puck' Hamelin\": { \"base\": {\"clan\": \"Ventrue\", \"faction\": \"Camarilla\", \"blood_potency\": 3, \"humanity\": 5, \"stains\": 0 }, \"clandiscs\": { \"disc1\": [\"Dominate\", 4], \"disc2\": [\"Fortitude\", 5], \"disc3\": [\"Presence\", 2] }, \"otherdiscs\": { \"5\": \"\", \"4\": \"\", \"3\": \"AUS\", \"2\": \"\", \"1\": \"ANI\" } }}",
-        /* eslint-disable-next-line quotes */
-        NPCDEFAULTS = "{\"tab_core\": 1, \"tab_type\": 1, \"bonus_health\": 0, \"bonus_willpower\": 0, \"bonus_bp\": 0, \"marquee_title\": \"\", \"marquee_lines_toggle\": 0, \"marquee\": \"\", \"marquee_tracker\": \"\", \"character_name\": \"\", \"char_dobdoe\": \"\", \"bane_title\": \"\", \"bane_text\": \"\", \"clan\": 0, \"faction\": 0, \"generation\": 0, \"predator\": 0, \"hunger\": 1, \"resonance\": 0, \"res_discs\": \" \", \"rollflagdisplay\": \"\", \"rollparams\": \"\", \"rollpooldisplay\": \"\", \"rollmod\": 0, \"rolldiff\": 0, \"applydisc\": 0, \"applybloodsurge\": 0, \"applyspecialty\": 0, \"applyresonance\": 0, \"incap\": \"\", \"rollarray\": \"\", \"dyscrasias_toggle\": 0, \"dyscrasias\": \"\", \"compulsion_toggle\": 0, \"compulsion\": \"\", \"groupdetails\": \"\", \"health\": 0, \"health_max\": 10, \"health_sdmg\": 0, \"health_admg\": 0, \"health_impair_toggle\": 0, \"health_1\": 0, \"health_2\": 0, \"health_3\": 0, \"health_4\": 0, \"health_5\": 0, \"health_6\": 0, \"health_7\": 0, \"health_8\": 0, \"health_9\": 0, \"health_10\": 0, \"health_11\": 0, \"health_12\": 0, \"health_13\": 0, \"health_14\": 0, \"health_15\": 0, \"willpower\": 0, \"willpower_max\": 10, \"willpower_sdmg\": 0, \"willpower_admg\": 0, \"willpower_impair_toggle\": 0, \"willpower_1\": 0, \"willpower_2\": 0, \"willpower_3\": 0, \"willpower_4\": 0, \"willpower_5\": 0, \"willpower_6\": 0, \"willpower_7\": 0, \"willpower_8\": 0, \"willpower_9\": 0, \"willpower_10\": 0, \"bp_surgetext\": \"\", \"bp_mendtext\": \"\", \"bp_discbonustext\": \"\", \"bp_baneseverity\": 0, \"bp_slaketext\": \"\", \"bp_mend\": \"\", \"bp_discbonus\": 0, \"bp_rousereroll\": \"\", \"bp_slakeanimal\": \"\", \"bp_slakebag\": \"\", \"bp_slakehuman\": \"\", \"bp_slakekill\": \"\", \"blood_potency\": 1, \"blood_potency_max\": 1, \"stains\": 0, \"humanity\": 7, \"humanity_max\": 10, \"humanity_impair_toggle\": 0, \"humanity_1\": 2, \"humanity_2\": 2, \"humanity_3\": 2, \"humanity_4\": 2, \"humanity_5\": 2, \"humanity_6\": 2, \"humanity_7\": 2, \"humanity_8\": 1, \"humanity_9\": 1, \"humanity_10\": 1, \"strength_flag\": 0, \"strength\": 1, \"dexterity_flag\": 0, \"dexterity\": 1, \"stamina_flag\": 0, \"stamina\": 1, \"charisma_flag\": 0, \"charisma\": 1, \"manipulation_flag\": 0, \"manipulation\": 1, \"composure_flag\": 0, \"composure\": 1, \"intelligence_flag\": 0, \"intelligence\": 1, \"wits_flag\": 0, \"wits\": 1, \"resolve_flag\": 0, \"resolve\": 1, \"athletics_flag\": 0, \"athletics_spec\": \"\", \"athletics\": 0, \"brawl_flag\": 0, \"brawl_spec\": \"\", \"brawl\": 0, \"craft_flag\": 0, \"craft_spec\": \"\", \"craft\": 0, \"drive_flag\": 0, \"drive_spec\": \"\", \"drive\": 0, \"firearms_flag\": 0, \"firearms_spec\": \"\", \"firearms\": 0, \"melee_flag\": 0, \"melee_spec\": \"\", \"melee\": 0, \"larceny_flag\": 0, \"larceny_spec\": \"\", \"larceny\": 0, \"stealth_flag\": 0, \"stealth_spec\": \"\", \"stealth\": 0, \"survival_flag\": 0, \"survival_spec\": \"\", \"survival\": 0, \"animal_ken_flag\": 0, \"animal_ken_spec\": \"\", \"animal_ken\": 0, \"etiquette_flag\": 0, \"etiquette_spec\": \"\", \"etiquette\": 0, \"insight_flag\": 0, \"insight_spec\": \"\", \"insight\": 0, \"intimidation_flag\": 0, \"intimidation_spec\": \"\", \"intimidation\": 0, \"leadership_flag\": 0, \"leadership_spec\": \"\", \"leadership\": 0, \"performance_flag\": 0, \"performance_spec\": \"\", \"performance\": 0, \"persuasion_flag\": 0, \"persuasion_spec\": \"\", \"persuasion\": 0, \"streetwise_flag\": 0, \"streetwise_spec\": \"\", \"streetwise\": 0, \"subterfuge_flag\": 0, \"subterfuge_spec\": \"\", \"subterfuge\": 0, \"academics_flag\": 0, \"academics_spec\": \"\", \"academics\": 0, \"awareness_flag\": 0, \"awareness_spec\": \"\", \"awareness\": 0, \"finance_flag\": 0, \"finance_spec\": \"\", \"finance\": 0, \"investigation_flag\": 0, \"investigation_spec\": \"\", \"investigation\": 0, \"medicine_flag\": 0, \"medicine_spec\": \"\", \"medicine\": 0, \"occult_flag\": 0, \"occult_spec\": \"\", \"occult\": 0, \"politics_flag\": 0, \"politics_spec\": \"\", \"politics\": 0, \"science_flag\": 0, \"science_spec\": \"\", \"science\": 0, \"technology_flag\": 0, \"technology_spec\": \"\", \"technology\": 0, \"disc1_toggle\": 0, \"disc1_flag\": 0, \"disc1_name\": \"\", \"disc1\": 0, \"disc1power_toggle\": 0, \"disc1_1\": \"\", \"disc1_2\": \"\", \"disc1_3\": \"\", \"disc1_4\": \"\", \"disc1_5\": \"\", \"repstats\": \"\", \"disc2_toggle\": 0, \"disc2_flag\": 0, \"disc2_name\": \"\", \"disc2\": 0, \"disc2power_toggle\": 0, \"disc2_1\": \"\", \"disc2_2\": \"\", \"disc2_3\": \"\", \"disc2_4\": \"\", \"disc2_5\": \"\", \"disc3_toggle\": 0, \"disc3_flag\": 0, \"disc3_name\": \"\", \"disc3\": 0, \"disc3power_toggle\": 0, \"disc3_1\": \"\", \"disc3_2\": \"\", \"disc3_3\": \"\", \"disc3_4\": \"\", \"disc3_5\": \"\", \"rituals_toggle\": 0, \"formulae_toggle\": 0, \"distillation\": 0, \"domain_personal\": \"\", \"domain_haven\": \"\", \"domain_coterie\": \"\", \"domain_hunt\": \"\", \"assets_carried\": \"\", \"assets_stashed\": \"\", \"assets_vehicles\": \"\", \"assets_other\": \"\", \"mask_name\": \"\", \"mask\": \"\", \"char_dob\": \"\", \"char_doe\": \"\", \"mortal_ambition\": \"\", \"mortal_history\": \"\", \"date_today\": 0, \"repeatingprojectslist\": \"\", \"ambition\": \"\", \"xp_summary\": \"\", \"xp_earnedtotal\": 0}",
     // #endregion
 
     // #region Register Characters & Token Image Alternates,
@@ -638,17 +657,16 @@ const Char = (() => {
     // #endregion
 
     // #region SETTERS: Moving Tokens, Toggling Characters
-        sendCharsHome = () => {
-            const charTokens = _.compact(Media.GetTokens("sandbox")),
-                pcTokens = _.compact(Media.GetTokens("registered")),
-                npcTokens = charTokens.filter(x => !pcTokens.map(xx => xx.id).includes(x.id))
+        sendCharsHome = (charRef = "sandbox") => {
+            const charTokens = _.groupBy(_.compact(Media.GetTokens(charRef)), v => VAL({pc: v}) && "pc" || "npc")
             
-            STATE.REF.tokenRecord = charTokens && charTokens.map(x => ({id: x.id, left: x.get("left"), top: x.get("top")}))
-            for (const token of pcTokens) {
+            STATE.REF.tokenRecord = charTokens && _.flatten(Object.values(charTokens)).map(x => ({id: x.id, left: x.get("left"), top: x.get("top")}))
+            for (const token of charTokens.pc || []) {
                 const quad = D.GetCharData(token).quadrant
+                Media.ToggleImg(token, true)
                 Media.SetArea(token, `${quad}Token`)
             }
-            for (const token of npcTokens)
+            for (const token of charTokens.npc || [])
                 token.set("layer", "walls")
         },
         restoreCharsPos = () => {
@@ -673,211 +691,173 @@ const Char = (() => {
 
     // #region GETTERS: Checking Character Status, Character Chat Prompt
         isCharActive = (charRef) => (D.GetCharData(charRef) || {isActive: null}).isActive,    
-        getCharIDString = (charsRef) => {
-            const charIDs = []
-            // D.Alert(`CharsRef: ${D.JS(charsRef)}<br><br>CharIDs: ${D.JS(charsRef.map(x => x.id || "Huh?"))}<br><br>CharID Final: ${D.JS(charIDs)}`)
-            if (!charsRef || !charsRef.length)
-                return ""
-            if (VAL({charObj: charsRef}, "getCharIDString", true))
-                charIDs.push(...charsRef.map(x => x.id))
-            else
-                switch(charsRef.toLowerCase()) {
-                    case "registered": {
-                        charIDs.push(...D.GetChars("registered").map(x => x.id))
-                        break
-                    }
-                    case "npcs": {
-                        charIDs.push(...D.GetChars("sandbox").filter(x => VAL({npc: x})).map(x => x.id))
-                        break
-                    }
-                    case "pcs": {
-                        charIDs.push(...D.GetChars("sandbox").filter(x => VAL({pc: x})).map(x => x.id))
-                        break
-                    }
-                    case "sandbox": {
-                        charIDs.push(...D.GetChars("sandbox").map(x => x.id))
-                        break
-                    }
-                    default: {
-                        for (const id of charsRef.split(",").map(x => x.trim()))
-                            if (getObj("character", id))
-                                charIDs.push(id)
-                        break
-                    }
-                }
-            return charIDs.join(",")
-        },
-        /* 
-        BLANKPENDINGCHARCOMMAND = {
-            workingIndex: 0
-        },
-        promptCharSelect = () => {
-            const allTokens = Media.GetTokens(),
-                allCharObjs = allTokens.map(x => D.GetChar(x)),
-                allTokenCharObjs = D.KeyMapObj(D.Clone(allTokens), (i) => allCharObjs[i] && allCharObjs[i].id, (tokenObj) => tokenObj),
-                pcCharObjs = allCharObjs.filter(x => VAL({pc: x})),
-                npcCharObjs = allCharObjs.filter(x => VAL({npc: x})),
-                commonButtonStyles = {
-                    color: C.COLORS.white,
-                    height: "16px",
-                    buttonHeight: "6px",
-                    fontWeight: "bold",
-                    fontSize: "12px",
-                    lineHeight: "8px",
-                    border: `1px solid ${C.COLORS.white}`
-                }
+        charSelectMenu = () => {             
             D.CommandMenu(
                 {
                     title: "Character Selection",
                     rows: [
-                        {type: "ButtonLine", contents: [
-                            {name: "ALL SCENE", command: "!reply select scene"},
-                            {name: "ALL PCS", command: "!reply select pc all"},
-                            {name: "SCENE PCS", command: "!reply select pc scene"},
-                            {name: "SCENE NPCS", command: "!reply select npc scene"},
-                        ], buttonStyles: Object.assign({}, commonButtonStyles, {bgColor: C.COLORS.blue, color: C.COLORS.black})},
-                        ..._.chain(pcCharObjs).
-                            filter(x => !x || !x.id).
-                            map(x => ({name: D.GetName(x, true), command: `!reply select ${x.id}`, styles: Session.IsInScene(allTokenCharObjs[x.id]) ? {bgColor: C.COLORS.crimson, border: `2px outset ${C.COLORS.brightgrey}`} : {bgColor: C.COLORS.black, border: `2px inset ${C.COLORS.darkgrey}`}})).
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {name: "All PCs", command: "!reply select@registered, title@All Player Characters", styles: { }}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                                {name: "Active PCs", command: "!reply select@scene|registered, title@Player Characters In Scene", styles: { }},
+                                {name: "Active NPCs", command: "!reply select@scene|npc, title@NPCs In Scene", styles: { }},
+                                {name: "All Active", command: "!reply select@scene, title@ALL In Scene", styles: { }},
+                            ],
+                            buttonStyles: {bgColor: C.COLORS.blue, color: C.COLORS.black}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                            styles: { } /* height, width, margin, textAlign */
+                        },                            
+                        ..._.chain(D.GetChars("registered")).
+                            map(x => ({name: D.GetName(x, true), command: `!reply selectchar@${x.id}, title@${D.GetName(x, true)}`, styles: {bgColor: Session.IsInScene(x) && C.COLORS.red || C.COLORS.black}})).
                             groupBy((x, i) => Math.floor(i / 4)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: Object.assign({}, commonButtonStyles, {width: "24%"})})).
-                            value(),                            
-                        ..._.chain(npcCharObjs).
-                            filter(x => !x || !x.id).
-                            map(x => ({name: D.GetName(x, true), command: `!reply select ${x.id}`, styles: {bgColor: Session.IsInScene(allTokenCharObjs[x.id])}})).
+                            map(x => ({type: "ButtonLine", contents: x.length < 3 ? [0, ...x, 0] : x, buttonStyles: { /* width: "23%", fontSize: "12px", bgColor: C.COLORS.midgold, buttonTransform: "none" */ }})).
+                            value(),                          
+                        ..._.chain(Session.SceneChars.filter(x => VAL({npc: x}))).
+                            map(x => ({name: D.GetName(x, true), command: `!reply selectchar@${x.id}, title@${D.GetName(x, true)}`, styles: {bgColor: C.COLORS.darkgrey, color: C.COLORS.white}})).
                             groupBy((x, i) => Math.floor(i / 4)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: Object.assign({}, commonButtonStyles, {width: "24%"})})).
+                            map(x => ({type: "ButtonLine", contents: x.length < 3 ? [0, ...x, 0] : x, buttonStyles: { /* width: "23%", fontSize: "12px", bgColor: C.COLORS.midgold, buttonTransform: "none" */ }})).
                             value()
-                    ]
-                })
+                    ],
+                    blockStyles: { } /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */
+                },
+                (commandString) => { // IMPORTANT: return 'true' if you want to hold this function open for more commands
+                    const params = D.ParseToObj(commandString, ",", "@"), // key:value pairs must be in key@pairs for this to work. Multiple commands comma-delimited.
+                        titleString = params.title
+                    let charIDs = []
+                    if ("select" in params) {
+                        const subParams = params.select.split("|"),
+                            dbObj = {commandString, params, subParams: {}, charIDs: [], titleString}
+                        while (subParams.length) {
+                            const thisParam = subParams.shift(), 
+                                theseCharIDs = D.GetChars(thisParam).map(x => x.id)
+                            dbObj.subParams[thisParam] = theseCharIDs
+                            if (!charIDs.length)
+                                charIDs.push(...theseCharIDs)
+                            else
+                                charIDs = _.intersection(charIDs, theseCharIDs)
+                            dbObj.charIDs.push([...charIDs])
+                            if (!charIDs.length) {
+                                dbObj.charIDs.push("<b>BREAKING</b>")
+                                break
+                            }
+                        }                                                 
+                        DB(dbObj, "charSelectMenu")
+                        if (charIDs.length)
+                            charActionMenu(charIDs, titleString)
+                        else
+                            D.Alert("No such characters!", "Character Selection Menu")
+                    }
+                    if ("selectchar" in params) {
+                        charIDs.push(params.selectchar)
+                        DB({commandString, params, charIDs, titleString}, "charSelectMenu")
+                        charActionMenu(charIDs, D.GetName(charIDs[0]))
+                    }
+                }
+            )
         },
-        */
-        promptCharSelect = () => {
-            const charObjs = Session.SceneChars,
-                pcCharObjs = D.GetChars("registered"),
-                npcCharObjs = charObjs.filter(x => VAL({npc: x})),
-                chatLines = [
-                    C.HTML.Header("Character Selection", {margin: "0px 0px 5px 0px"}),
-                    C.HTML.ButtonLine([
-                        ["All PCs", "!char select registered", {width: "24%", height: "16px", buttonHeight: "6px", lineHeight: "8px", fontSize: "12px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue, color: C.COLORS.black}],
-                        ["Active PCs", "!char select pcs", {width: "24%", height: "16px", buttonHeight: "6px", lineHeight: "8px", fontSize: "12px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue, color: C.COLORS.black}],
-                        ["Active NPCs", "!char select npcs", {width: "24%", height: "16px", buttonHeight: "6px", lineHeight: "8px", fontSize: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue, color: C.COLORS.black}],
-                        ["All Active", "!char select sandbox", {width: "24%", height: "16px", buttonHeight: "6px", lineHeight: "8px", fontSize: "12px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue, color: C.COLORS.black}]
-                    ].map(x => C.HTML.Button(...x)), {margin: "0px 0px 5px 0px"})
-                ]
-            while (pcCharObjs.length)
-                chatLines.push(C.HTML.ButtonLine(
-                    _.compact([pcCharObjs.shift(), pcCharObjs.shift(), pcCharObjs.shift(), pcCharObjs.shift()]).map(x => C.HTML.Button(
-                        D.GetName(x, true),
-                        `!char select ${x.id}`,
-                        {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: charObjs.map(xx => xx.id).includes(x.id) ? C.COLORS.brightred : C.COLORS.black}
-                    )).join(""),
-                    {margin: "0px 0px 10px 0px"}
-                ))        
-            while (npcCharObjs.length)
-                chatLines.push(C.HTML.ButtonLine(
-                    _.compact([npcCharObjs.shift(), npcCharObjs.shift(), npcCharObjs.shift(), npcCharObjs.shift()]).map(x => C.HTML.Button(
-                        D.GetName(x, true),
-                        `!char select ${x.id}`,
-                        {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.crimson}
-                    )).join("")
-                ))
-            D.Chat("Storyteller", C.HTML.Block(chatLines.join("")), null, D.RandomString(3))
-        },
-        promptActionMenu = (charsRef) => {
-            const chatLines = [],
-                charIDString = getCharIDString(charsRef),
-                charIDs = charIDString.split(",").map(x => x.trim())
-            let title = ""             
-            const CHARACTIONS = _.mapObject({
-                "_TopButtons": [
-                    ["Add to Scene", "!sess @@CHARIDS@@ add scene", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.palegreen, color: C.COLORS.black}],
-                    ["Pop Desire", "!char @@CHARIDS@@ set desire", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
-                    ["@@SINGLEONLY@@Resonance", "!roll @@CHARIDS@@ resonance", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.brightred, fontWeight: "bold", textShadow: "1px 0px red"}],
-                    ["@@SINGLEONLY@@Roll As", "!roll @@CHARIDS@@ set pc", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.purple, color: C.COLORS.white}]
-                ],
-                "_LastButtons": [
-                    ["Secret Roll", "!roll @@CHARIDS@@ secret", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.purple, color: C.COLORS.white}],
-                    ["Get Trait", "!char @@CHARIDS@@ get stat", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.grey, color: C.COLORS.black}],
-                    ["@@SINGLEONLY@@Complic's", "!comp @@CHARIDS@@ start ?{Shortfall?}", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.midgold, color: C.COLORS.black, fontWeight: "bold", textShadow: "1px 0px red"}],
-                    ["@@SINGLEONLY@@Spotlight", "!sess @@CHARIDS@@ spotlight", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 15px 0px", bgColor: C.COLORS.brightred, color: C.COLORS.black}]
-                ],
-                "Health": [
-                    [ "S", "!char @@CHARIDS@@ dmg health superficial", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred}],
-                    [ "S+", "!char @@CHARIDS@@ dmg health superficial+", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred}],
-                    [ "A", "!char @@CHARIDS@@ dmg health aggravated", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.red}]
-                ],
-                "Willpower": [
-                    [ "S", "!char @@CHARIDS@@ dmg willpower superficial", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightblue}],
-                    [ "S+", "!char @@CHARIDS@@ dmg willpower superficial+", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.blue}],
-                    [ "A", "!char @@CHARIDS@@ dmg willpower aggravated", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkblue}],
-                    ["3%"],
-                    [ "S", "!char @@CHARIDS@@ dmg willpower social_superficial", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightpurple}],
-                    [ "S+", "!char @@CHARIDS@@ dmg willpower social_superficial+", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.purple}],
-                    [ "A", "!char @@CHARIDS@@ dmg willpower social_aggravated", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkpurple}]
-                ],
-                "Hunger": [
-                    [ "+1", "!char @@CHARIDS@@ change hunger 1", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkred} ],
-                    [ "-1", "!char @@CHARIDS@@ change hunger -1", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.darkred} ],
-                    [ "Δ", "!char @@CHARIDS@@ change hunger", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.red} ],
-                    ["Kill Slake", "17%"],
-                    [ "-1", "!char @@CHARIDS@@ change hungerkill -1", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred} ],
-                    [ "Δ", "!char @@CHARIDS@@ change hungerkill", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred} ]
-                ],
-                "XP": [
-                    [ "1", "!char @@CHARIDS@@ set xp 1 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.midgold} ],
-                    [ "2", "!char @@CHARIDS@@ set xp 2 ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.midgold} ],
-                    [ "Δ", "!char @@CHARIDS@@ set xp ?{How Much XP?|3|4|5|6|7|8|9|10} ?{Reason for Award?}", {width: "11%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.midgold} ],
-                    ["Humanity", "17%"],
-                    [ "Stn", "!char @@CHARIDS@@ dmg stains", {width: "14%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0px 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.white}],
-                    [ "Hum", "!char @@CHARIDS@@ dmg humanity", {width: "14%", fontFamily: "Verdana", buttonWidth: "70%", lineHeight: "8px", fontWeight: "bold", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.black, color: C.COLORS.white}]
-                ]
-            }, v => v.map(x => x.map(xx => VAL({string: xx}) && xx.replace(/@@CHARIDS@@/gu, charIDString).replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;") || xx)))                
-            for (const subHeader of _.keys(CHARACTIONS)) {
-                const theseCols = [C.HTML.ButtonSubheader(
-                    subHeader.startsWith("_") ? "" : subHeader,
-                    subHeader.startsWith("_") ? {margin: "1px 0px 0px 3px", height: "18px", width: "0%"} : {margin: "1px 0.5px 0px 3px", height: "18px", width: "17%"}
-                )]
-                for(const button of CHARACTIONS[subHeader])
-                    if (button.length === 1)
-                        theseCols.push(C.HTML.ButtonSpacer(button[0]))
-                    else if (button.length === 2)
-                        theseCols.push(C.HTML.ButtonSubheader(button[0], {margin: "1px 0.5px 0px 0px", height: "18px", width: button[1], textAlign: "right", padding: "0px 3px 0px 0px"}))
-                    else if (button[0].includes("@@SINGLEONLY@@") && charIDs.length !== 1)
-                        continue
-                    else
-                        theseCols.push(C.HTML.Button(...button.map(x => VAL({string: x}) && x.replace(/@@SINGLEONLY@@/gu, "") || x)))                
-                chatLines.push(C.HTML.ButtonLine(theseCols.join(""), {textAlign: "left"}))
-            }
-            switch (charsRef) {
-                case "registered": {
-                    title = "Actions: All PCs"
-                    break
+        charActionMenu = (charIDs, titleString) => {
+            const isSingleChar = charIDs.length === 1,
+                charIDString = charIDs.join(",")
+            DB({charIDs, titleString}, "charActionMenu")
+            D.CommandMenu(
+                {
+                    title: titleString || "Action Menu (?)",
+                    rows: [
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {name: "Add to Scene", command: `!sess ${charIDString} add scene`, styles: {bgColor: C.COLORS.palegreen, color: C.COLORS.black}},
+                                {name: "Pop Desire", command: `!char ${charIDString} set desire`, styles: {bgColor: C.COLORS.gold, color: C.COLORS.black}},
+                                {name: "Home/Back", command: `!char ${charIDString} send toggle`, styles: {bgColor: C.COLORS.black, color: C.COLORS.gold}},
+                                {name: "Reset Token", command: `!img ${charIDString} set tokensrc base`, styles: {bgColor: C.COLORS.darkgrey, color: C.COLORS.white}}
+                            ],
+                            buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                            styles: { } /* height, width, margin, textAlign */
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                isSingleChar && {name: "Dyscrasias", command: `!char ${charIDString} set dyscrasias ?{Dyscrasias Title (blank to toggle off):}|?{Dyscrasias Text:}`, styles: {bgColor: C.COLORS.darkdarkred, color: C.COLORS.gold}} || 0,
+                                {name: "Secret Roll", command: `!roll ${charIDString} secret`, styles: {bgColor: C.COLORS.purple, color: C.COLORS.white}},
+                                {name: "Get Trait", command: `!char ${charIDString} get stat`, styles: {bgColor: C.COLORS.grey, color: C.COLORS.black}},
+                                isSingleChar && {name: "Compulsion", command: `!char ${charIDString} set compulsion ?{Compulsion Title (blank to toggle off):}|?{Compulsion Text:}`, styles: {bgColor: C.COLORS.darkdarkred, color: C.COLORS.brightred}} || 0,
+                            ],
+                            buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                            styles: { } /* height, width, margin, textAlign */
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                isSingleChar && {name: "Resonance", command: `!roll ${charIDString} resonance`, styles: {bgColor: C.COLORS.black, color: C.COLORS.brightred}} || 0,
+                                isSingleChar && {name: "Roll As", command: `!roll ${charIDString} set pc`, styles: {bgColor: C.COLORS.purple, color: C.COLORS.white}} || 0,
+                                isSingleChar && {name: "Complic's", command: `!comp ${charIDString} start ?{Shortfall?}`, styles: {bgColor: C.COLORS.midgold, color: C.COLORS.black}} || 0,
+                                isSingleChar && {name: "Spotlight", command: `!sess ${charIDString} spotlight`, styles: {bgColor: C.COLORS.brightred, color: C.COLORS.black}} || 0
+                            ],
+                            buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                            styles: { } /* height, width, margin, textAlign */
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {text: "Health:", styles: {width: "16%"}},
+                                {name: "S", command: `!char ${charIDString} dmg health superficial`, styles: {bgColor: C.COLORS.brightred}},
+                                {name: "S+", command: `!char ${charIDString} dmg health superficial+`, styles: {bgColor: C.COLORS.brightred}},
+                                {name: "A", command: `!char ${charIDString} dmg health aggravated`, styles: {bgColor: C.COLORS.red}},
+                                16,
+                                0,
+                                0,
+                                0
+                            ],
+                            buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                            styles: {textAlign: "left"} /* height, width, margin, textAlign */
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {text: "Willpower:", styles: {width: "16%"}},
+                                {name: "S", command: `!char ${charIDString} dmg willpower superficial`, styles: {bgColor: C.COLORS.brightblue}},
+                                {name: "S+", command: `!char ${charIDString} dmg willpower superficial+`, styles: {bgColor: C.COLORS.blue}},
+                                {name: "A", command: `!char ${charIDString} dmg willpower aggravated`, styles: {bgColor: C.COLORS.darkblue}},
+                                17,
+                                {name: "S", command: `!char ${charIDString} dmg willpower social_superficial`, styles: {bgColor: C.COLORS.brightpurple}},
+                                {name: "S+", command: `!char ${charIDString} dmg willpower social_superficial+`, styles: {bgColor: C.COLORS.purple}},
+                                {name: "A", command: `!char ${charIDString} dmg willpower social_aggravated`, styles: {bgColor: C.COLORS.darkpurple}}
+                            ],
+                            buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                            styles: {textAlign: "left"} /* height, width, margin, textAlign */
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {text: "Hunger:", styles: {width: "16%"}},
+                                {name: "+1", command: `!char ${charIDString} change hunger 1`, styles: {bgColor: C.COLORS.darkred}},
+                                {name: "-1", command: `!char ${charIDString} change hunger -1`, styles: {bgColor: C.COLORS.darkred}},
+                                {name: "Δ", command: `!char ${charIDString} change hunger`, styles: {bgColor: C.COLORS.red}},
+                                {text: "Kill Slake:", styles: {width: "16%"}},
+                                {name: "-1", command: `!char ${charIDString} change hungerkill -1`, styles: {bgColor: C.COLORS.brightred}},
+                                {name: "Δ", command: `!char ${charIDString} change hungerkill`, styles: {bgColor: C.COLORS.brightred}}
+                            ],
+                            buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                            styles: {textAlign: "left"} /* height, width, margin, textAlign */
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {text: "XP:", styles: {width: "16%"}},
+                                {name: "1", command: `!char ${charIDString} set xp 1 ?{Reason for Award?}`, styles: {bgColor: C.COLORS.midgold}},
+                                {name: "2", command: `!char ${charIDString} set xp 2 ?{Reason for Award?}`, styles: {bgColor: C.COLORS.midgold}},
+                                {name: "Δ", command: `!char ${charIDString} set xp ?{How Much XP?|3|4|5|6|7|8|9|10} ?{Reason for Award?}`, styles: {bgColor: C.COLORS.midgold}},
+                                {text: "Humanity:", styles: {width: "16%"}},
+                                {name: "Stn", command: `!char ${charIDString} dmg stains`, styles: {bgColor: C.COLORS.black, color: C.COLORS.white}},
+                                {name: "Hum", command: `!char ${charIDString} dmg humanity`, styles: {bgColor: C.COLORS.black, color: C.COLORS.white}}
+                            ],
+                            buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                            styles: {textAlign: "left"} /* height, width, margin, textAlign */
+                        },
+                    ],
+                    blockStyles: { } /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */
                 }
-                case "pcs": {
-                    title = "Actions: Active PCs"
-                    break
-                }
-                case "npcs": {
-                    title = "Actions: Active NPCs"
-                    break
-                }
-                case "sandbox": {
-                    title = "Actions: ALL Active"
-                    break
-                }
-                default: {
-                    if (charIDs.length === 1)
-                        title = `Actions: ${D.GetName(charIDs[0])}`
-                    else
-                        title = `Actions: ${charIDs.length} Characters`
-                    break
-                }
-            }
-            D.Chat("Storyteller", C.HTML.Block([
-                C.HTML.Header(title),
-                ...chatLines
-            ]), undefined, D.RandomString(3))
+            )
         },
         promptNumber = (fullCommand) => {
             if (VAL({string: fullCommand}, "promptNumber") && fullCommand.includes("@@AMOUNT@@"))
@@ -973,79 +953,60 @@ const Char = (() => {
                     ]
                 })
         },
-        promptTraitSelect = (charIDString, fullCommand, buttonOverride) => {
-            const TRAITLIST = {},
-                chatLines = []
-            let rowCount = 0
-            for (let i = 0; i < ATTRNAMES[0].length; i++) {
-                TRAITLIST[`_AttrNames${i}`] = []
-                for (let j = 0; j < ATTRNAMES.length; j++)
-                    TRAITLIST[`_AttrNames${i}`].push([
-                        ATTRNAMES[j][i].replace(/_/gu, " "),
-                        buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, ATTRNAMES[j][i].toLowerCase()) || `!char select trait ${ATTRNAMES[j][i].toLowerCase()}`,
-                        {width: "30%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightgold, color: C.COLORS.black}
-                    ].map(x => VAL({string: x}) && x.replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;") || x))                
-            }
-            TRAITLIST._SpacerRow1 = [["80%"]]
-            for (let i = 0; i < SKILLNAMES[0].length; i++) {
-                TRAITLIST[`_SkillNames${i}`] = []
-                for (let j = 0; j < SKILLNAMES.length; j++)
-                    TRAITLIST[`_SkillNames${i}`].push([
-                        SKILLNAMES[j][i].replace(/_/gu, " "),
-                        buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, SKILLNAMES[j][i].toLowerCase()) || `!char select trait ${SKILLNAMES[j][i].toLowerCase()}`,
-                        {width: "30%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}
-                    ].map(x => VAL({string: x}) && x.replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;") || x))
-            }
-            TRAITLIST._SpacerRow2 = [["80%"]]
-            const DISCS = [...DISCNAMES]
-            while (DISCS.length) {
-                rowCount++
-                TRAITLIST[`_DiscRow${rowCount}`] = _.compact([DISCS.shift(), DISCS.shift(), DISCS.shift()]).map(
-                    x => [
-                        x.replace(/_/gu, " "),
-                        buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, x.toLowerCase()) || `!char select trait ${x.toLowerCase()}`,
-                        {width: "30%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.brightred, color: C.COLORS.black}
-                    ]
-                )
-            }
-            TRAITLIST._SpacerRow3 = [["80%"]]
-            TRAITLIST._BottomButtons1 = [
-                ["Disciplines", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
-                ["Blood Pot.", buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, "blood_potency") || "!char select trait blood_potency", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
-                ["Health", buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, "health") || "!char select trait health", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
-                ["Willpower", buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, "willpower") || "!char select trait willpower", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}]
-            ]  
-            TRAITLIST._BottomButtons2 = [
-                ["Humanity", buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, "humanity") || "!char select trait humanity", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
-                ["Hunger", buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, "hunger") || "!char select trait hunger", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
-                ["Blood", "!char select trait disciplines", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
-                ["Resonance", buttonOverride && buttonOverride.replace(/@@CHARIDS@@/gu, charIDString).replace(/@@TRAITNAME@@/gu, "resonance") || "!char select trait resonance", {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}]
-            ]   
-            TRAITLIST._SpacerRow4 = [["80%"]]     
-            if (fullCommand)      
-                TRAITLIST._BottomButtons3 = [
-                    ["3%"],
-                    ["Finished", fullCommand.replace(/@@CHARIDS@@/gu, charIDString), {width: "24%", height: "16px", lineHeight: "10px", margin: "0px 0.5% 0px 0px", bgColor: C.COLORS.gold, color: C.COLORS.black}],
-                    ["3%"]
-                ]  
-            for (const subHeader of _.keys(TRAITLIST)) {
-                const theseCols = [C.HTML.ButtonSubheader(
-                    subHeader.startsWith("_") ? "" : subHeader,
-                    subHeader.startsWith("_") ? {margin: "1px 0px 0px 3px", height: "18px", width: "0%"} : {margin: "1px 0.5px 0px 3px", height: "18px", width: "17%"}
-                )]
-                for(const button of TRAITLIST[subHeader])
-                    if (button.length === 1)
-                        theseCols.push(C.HTML.ButtonSpacer(button[0]))
-                    else if (button.length === 2)
-                        theseCols.push(C.HTML.ButtonSubheader(button[0], {margin: "1px 0.5px 0px 0px", height: "18px", width: button[1], textAlign: "right", padding: "0px 3px 0px 0px"}))
-                    else
-                        theseCols.push(C.HTML.Button(...button))                
-                chatLines.push(C.HTML.ButtonLine(theseCols.join("")))
-            }
-            D.Chat("Storyteller", C.HTML.Block([
-                C.HTML.Header("Trait Select"),
-                ...chatLines
-            ].join("")), undefined, D.RandomString(3))
+        traitSelectMenu = (charIDs, call, argString) => {
+            const charIDString = charIDs.join(","),
+                attributeTraits = _.object(
+                    _.flatten(Object.values(C.ATTRIBUTES)).map(x => D.LCase(x).replace(/ /gu, "_")),
+                    _.flatten(Object.values(C.ATTRIBUTES)).map(x => D.UCase(x))
+                ), // attr:display name
+                skillTraits = _.object(
+                    _.flatten(_.zip(Object.values(C.SKILLS))).map(x => D.LCase(x).replace(/ /gu, "_")),
+                    _.flatten(_.zip(Object.values(C.SKILLS))).map(x => D.UCase(x))
+                ),
+                discTraits = _.object(
+                    _.flatten(Object.keys(C.DISCIPLINES)).map(x => D.LCase(x).replace(/ /gu, "_")),
+                    _.flatten(Object.keys(C.DISCIPLINES)).map(x => D.UCase(x))
+                ),
+                otherTraits = {
+                    disciplines: "DISCIPLINES",
+                    ["blood_potency"]: "BLOOD POT.",
+                    health: "HEALTH",
+                    willpower: "WILLPOWER",
+                    humanity: "HUMANITY",
+                    hunger: "HUNGER",
+                    resonance: "RESONANCE"
+                }        
+            D.CommandMenu(
+                {  
+                    title: "Trait Select",
+                    rows: [
+                        ..._.chain(attributeTraits).
+                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}`})).
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {bgColor: C.COLORS.brightgold, color: C.COLORS.black}})).
+                            value(),
+                        {type: "ButtonLine", contents: [0]},
+                        ..._.chain(skillTraits).
+                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}`})).
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {bgColor: C.COLORS.gold, color: C.COLORS.black}})).
+                            value(),
+                        {type: "ButtonLine", contents: [0]},
+                        ..._.chain(discTraits).
+                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}`})).
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {bgColor: C.COLORS.brightred, color: C.COLORS.black}})).
+                            value(),
+                        {type: "ButtonLine", contents: [0]},
+                        ..._.chain(otherTraits).
+                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}`})).
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {bgColor: C.COLORS.gold, color: C.COLORS.black}})).
+                            value()
+                    ],
+                    blockStyles: {padding: "0px 10px 0px 10p" /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */}
+                }
+            )
         },
     // #endregion
 
@@ -1725,6 +1686,18 @@ const Char = (() => {
             D.Queue(displayProjects, [], "LaunchProject", 0.1)
             D.Run("LaunchProject")
         },
+        setCompulsion = (charRef, compulsionTitle, compulsionText) => {
+            D.SetStats(charRef, {
+                compulsion_toggle: compulsionTitle && 1 || 0,
+                compulsion: compulsionTitle && `${D.UCase(compulsionTitle)} — ${D.Capitalize(compulsionText)}` || ""
+            })
+        },
+        setDyscrasias = (charRef, dyscrasiasTitle, dyscrasiasText) => {
+            D.SetStats(charRef, {
+                dyscrasias_toggle: dyscrasiasTitle && 1 || 0,
+                dyscrasias: dyscrasiasTitle && `${D.UCase(dyscrasiasTitle)} — ${D.Capitalize(dyscrasiasText)}` || ""
+            })
+        },
     // #endregion
 
     // #region Daysleep & Waking Up,
@@ -1775,7 +1748,7 @@ const Char = (() => {
                         repOrderAttrObjs = allAttrObjs.filter(x => x.get("name").startsWith("_reporder")),
                         nonRepAttrObjs = allAttrObjs.filter(x => !x.get("name").startsWith("repeating_") && !x.get("name").startsWith("_reporder")),
                         attrValPairs = nonRepAttrObjs.map(x => [x, x.get("name")]),
-                        obsoleteAttrValPairs = attrValPairs.filter(x => !C.SHEETATTRS.includes(x[1]))
+                        obsoleteAttrValPairs = attrValPairs.filter(x => x[1] in C.SHEETATTRS)
                     reportLines.push(...[
                         `<h4>Attributes of ${D.GetName(charObj)}</h4>`,
                         D.JS(obsoleteAttrValPairs.map(x => x[1])),
@@ -1792,7 +1765,7 @@ const Char = (() => {
             const attrList = {},
                 charIDs = [],
                 npcStats = JSON.parse(NPCSTATS),
-                npcDefaults = JSON.parse(NPCDEFAULTS)
+                npcDefaults = D.Clone(C.SHEETATTRS)
             _.each(npcDefaults, (v, k) => { attrList[k] = v })
             if (_.isNaN(D.Int(charRef))) {
                 charIDs.push(D.GetChar(charRef).id)
@@ -1959,7 +1932,7 @@ const Char = (() => {
         LaunchProject: launchProject,
         SendHome: sendCharsHome,
         SendBack: restoreCharsPos,
-        PromptTraitSelect: promptTraitSelect,
+        PromptTraitSelect: traitSelectMenu,
         RefreshDisplays: () => { displayDesires(); displayResources(); displayStakes(); displayProjects(); updateHunger() },
         get SelectedChar() { 
             if (STATE.REF.charSelection) {

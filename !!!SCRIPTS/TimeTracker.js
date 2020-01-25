@@ -401,8 +401,8 @@ const TimeTracker = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
         MOON = {
-            minTop: 1300,
-            maxTop: 630,
+            minTop: 932, // 1300,
+            maxTop: 262, // 630, 
             daysToWait: 1,
             daysToWaitWater: 1.75
         }

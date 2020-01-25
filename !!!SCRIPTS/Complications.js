@@ -1421,102 +1421,109 @@ const Complications = (() => {
             }
         },
         sendGMPanel = () => {
-            const subPanels = [],
-                getColor = (action, spot) => {
-                    if (["LAST", "RANDOM"].includes(spot))
-                        return C.COLORS[{
-                            discard: "brightred",
-                            enhance: "brightpurple",
-                            negate: "blue",
-                            revalue: "darkgreen",
-                            duplicate: "midgold"
-                        }[action]]
-                    const card = STATE.REF.MAT[spot]
-                    switch (action) {
-                        case "discard":
-                            if (card.isFaceUp)
-                                return C.COLORS.brightred
-                            break
-                        case "enhance":
-                            if (card.isFaceUp && !card.isEnhanced)
-                                return C.COLORS.brightpurple
-                            else if (card.isEnhanced)
-                                return C.COLORS.grey
-                            break
-                        case "negate":
-                            if (card.isFaceUp && !card.isNegated)
-                                return C.COLORS.blue
-                            else if (card.isNegated)
-                                return C.COLORS.brightgrey
-                            break
-                        case "revalue":
-                            if (card.isFaceUp)
-                                return C.COLORS.darkgreen
-                            break
-                        case "duplicate":
-                            if (card.isFaceUp && !card.isDuplicated)
-                                return C.COLORS.midgold
-                            else if (card.isDuplicated)
-                                return C.COLORS.brightgrey
-                            break
-                        // no default
-                    }
-                    return C.COLORS.darkgrey
-                }
-            for (const actionType of ["discard", "enhance", "negate", "revalue", "duplicate", "confirm"])
-                subPanels.push({
-                    title: actionType,
-                    rows: [
-                        {
-                            type: "Header",
-                            contents: D.Capitalize(actionType)
-                        },
-                        {
-                            type: "ButtonLine",
-                            contents: [1, 2, 3, 4, 5].map(x => ({name: x, command: `!comp ${actionType} ${x}`, styles: {width: "19%", buttonWidth: "60%", bgColor: getColor(actionType, x-1)}})) // , fontSize: "10px", bgColor: C.COLORS.purple, buttonTransform: "none"}}))
-                        },
-                        {
-                            type: "ButtonLine",
-                            contents: [6, 7, 8, 9, 10].map(x => ({name: x, command: `!comp ${actionType} ${x}`, styles: {width: "19%", buttonWidth: "60%", bgColor: getColor(actionType, x-1)}})) // , fontSize: "10px", bgColor: C.COLORS.purple, buttonTransform: "none"}}))
-                        },
-                        {
-                            type: "ButtonLine",
-                            contents: ["LAST", "RANDOM"].map(x => ({name: x, command: `!comp ${actionType} ${D.LCase(x)}`, styles: {width: "45%"}})) // , fontSize: "10px", bgColor: C.COLORS.purple, buttonTransform: "none"}}))
+            if (D.IsMenuStored("ComplicationsControl")) {
+                D.CommandMenu({}, null, "ComplicationsControl")
+            } else {
+                const subPanels = [],
+                    getColor = (action, spot) => {
+                        if (["LAST", "RANDOM"].includes(spot))
+                            return C.COLORS[{
+                                discard: "brightred",
+                                enhance: "brightpurple",
+                                negate: "blue",
+                                revalue: "darkgreen",
+                                duplicate: "midgold"
+                            }[action]]
+                        const card = STATE.REF.MAT[spot]
+                        switch (action) {
+                            case "discard":
+                                if (card.isFaceUp)
+                                    return C.COLORS.brightred
+                                break
+                            case "enhance":
+                                if (card.isFaceUp && !card.isEnhanced)
+                                    return C.COLORS.brightpurple
+                                else if (card.isEnhanced)
+                                    return C.COLORS.grey
+                                break
+                            case "negate":
+                                if (card.isFaceUp && !card.isNegated)
+                                    return C.COLORS.blue
+                                else if (card.isNegated)
+                                    return C.COLORS.brightgrey
+                                break
+                            case "revalue":
+                                if (card.isFaceUp)
+                                    return C.COLORS.darkgreen
+                                break
+                            case "duplicate":
+                                if (card.isFaceUp && !card.isDuplicated)
+                                    return C.COLORS.midgold
+                                else if (card.isDuplicated)
+                                    return C.COLORS.brightgrey
+                                break
+                            // no default
                         }
-                    ]
-                })            
-            D.CommandMenu({title: "Complications Control", rows: [
-                {type: "ButtonLine", contents: [{name: "Unlock", command: "!comp unlock"}]},
-                ..._.values(_.groupBy(subPanels, (x, i) => Math.floor(i / 2))).map(x => ({type: "Column", contents: x, style: {width: "47%", margin: "0px 1% 0% 1%"}})),
-                {type: "ButtonLine", contents: [{name: "Finish", command: "!comp end false true"}, {name: "Launch!", command: "!comp end true true"}]}
-            ]})
+                        return C.COLORS.darkgrey
+                    }
+                for (const actionType of ["discard", "enhance", "negate", "revalue", "duplicate", "confirm"])
+                    subPanels.push({
+                        title: actionType,
+                        rows: [
+                            {
+                                type: "Header",
+                                contents: D.Capitalize(actionType)
+                            },
+                            {
+                                type: "ButtonLine",
+                                contents: [1, 2, 3, 4, 5].map(x => ({name: x, command: `!comp ${actionType} ${x}`, styles: {width: "16%", bgColor: getColor(actionType, x-1)}})) // , fontSize: "10px", bgColor: C.COLORS.purple, buttonTransform: "none"}}))
+                            },
+                            {
+                                type: "ButtonLine",
+                                contents: [6, 7, 8, 9, 10].map(x => ({name: x, command: `!comp ${actionType} ${x}`, styles: {width: "16%", bgColor: getColor(actionType, x-1)}})) // , fontSize: "10px", bgColor: C.COLORS.purple, buttonTransform: "none"}}))
+                            },
+                            {
+                                type: "ButtonLine",
+                                contents: ["LAST", "RANDOM"].map(x => ({name: x, command: `!comp ${actionType} ${D.LCase(x)}`})) // , fontSize: "10px", bgColor: C.COLORS.purple, buttonTransform: "none"}}))
+                            }
+                        ]
+                    })            
+                D.CommandMenu({title: "Complications Control", rows: [
+                    {type: "ButtonLine", contents: [{name: "Unlock", command: "!comp unlock"}]},
+                    ..._.values(_.groupBy(subPanels, (x, i) => Math.floor(i / 2))).map(x => ({type: "Column", contents: x, style: {width: "47%", margin: "0px 1% 0% 1%"}})),
+                    {type: "ButtonLine", contents: [{name: "Finish", command: "!comp end false true"}, {name: "Launch!", command: "!comp end true true"}]}
+                ]}, null, "ComplicationsControl")
+            }
         },
         promptCardVal = (cardSpot) => {
-            if (VAL({number: cardSpot}))
-                D.CommandMenu({title: "Set Card Value", rows: [
-                    {type: "ButtonLine", contents: [                        
-                        {name: 0, command: `!comp setvalue ${cardSpot+1} 0`},
-                        {name: 1, command: `!comp setvalue ${cardSpot+1} 1`},
-                        {name: 2, command: `!comp setvalue ${cardSpot+1} 2`},
-                        {name: 3, command: `!comp setvalue ${cardSpot+1} 3`},
-                        {name: 4, command: `!comp setvalue ${cardSpot+1} 4`}
-                    ]},                    
-                    {type: "ButtonLine", contents: [                        
-                        {name: 5, command: `!comp setvalue ${cardSpot+1} 5`},
-                        {name: 6, command: `!comp setvalue ${cardSpot+1} 6`},
-                        {name: 7, command: `!comp setvalue ${cardSpot+1} 7`},
-                        {name: 8, command: `!comp setvalue ${cardSpot+1} 8`},
-                        {name: 9, command: `!comp setvalue ${cardSpot+1} 9`},
-                        {name: 10, command: `!comp setvalue ${cardSpot+1} 10`}
-                    ]},                 
-                    {type: "ButtonLine", contents: [                        
-                        {name: -1, command: `!comp setvalue ${cardSpot+1} -1`},
-                        {name: -2, command: `!comp setvalue ${cardSpot+1} -2`},
-                        {name: -3, command: `!comp setvalue ${cardSpot+1} -3`},
-                        {name: -4, command: `!comp setvalue ${cardSpot+1} -4`},
-                        {name: -5, command: `!comp setvalue ${cardSpot+1} -5`}
-                    ]}
-                ]})
+            if (VAL({number: cardSpot})) 
+                if (D.IsMenuStored("PromptCardValue"))
+                    D.CommandMenu({}, null, "PromptCardValue")
+                else
+                    D.CommandMenu({title: "Set Card Value", rows: [
+                        {type: "ButtonLine", contents: [                        
+                            {name: 0, command: `!comp setvalue ${cardSpot+1} 0`},
+                            {name: 1, command: `!comp setvalue ${cardSpot+1} 1`},
+                            {name: 2, command: `!comp setvalue ${cardSpot+1} 2`},
+                            {name: 3, command: `!comp setvalue ${cardSpot+1} 3`},
+                            {name: 4, command: `!comp setvalue ${cardSpot+1} 4`}
+                        ], buttonStyles: {width: "16%"}},                    
+                        {type: "ButtonLine", contents: [                        
+                            {name: 5, command: `!comp setvalue ${cardSpot+1} 5`},
+                            {name: 6, command: `!comp setvalue ${cardSpot+1} 6`},
+                            {name: 7, command: `!comp setvalue ${cardSpot+1} 7`},
+                            {name: 8, command: `!comp setvalue ${cardSpot+1} 8`},
+                            {name: 9, command: `!comp setvalue ${cardSpot+1} 9`},
+                            {name: 10, command: `!comp setvalue ${cardSpot+1} 10`}
+                        ], buttonStyles: {width: "16%"}},                 
+                        {type: "ButtonLine", contents: [                        
+                            {name: -1, command: `!comp setvalue ${cardSpot+1} -1`},
+                            {name: -2, command: `!comp setvalue ${cardSpot+1} -2`},
+                            {name: -3, command: `!comp setvalue ${cardSpot+1} -3`},
+                            {name: -4, command: `!comp setvalue ${cardSpot+1} -4`},
+                            {name: -5, command: `!comp setvalue ${cardSpot+1} -5`}
+                        ], buttonStyles: {width: "16%"}}
+                    ]}, null, "PromptCardValue")            
         }
     // #endregion
 

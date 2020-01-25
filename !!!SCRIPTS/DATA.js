@@ -31,6 +31,8 @@ const D = (() => {
             STATE.REF.CHARWIDTH = STATE.REF.CHARWIDTH || {}
             STATE.REF.DEBUGLOG = STATE.REF.DEBUGLOG || []
             STATE.REF.ALERTTHROTTLE = []
+            STATE.REF.COMMANDMENUS = STATE.REF.COMMANDMENUS || {}
+            STATE.REF.flexSpace = STATE.REF.flexSpace || 10.00
             STATE.REF.isReportingListener = STATE.REF.isReportingListener || false
             STATE.REF.FuncQueueName = STATE.REF.FuncQueueName || []
             STATE.REF.MissingChars = STATE.REF.MissingChars || []
@@ -84,6 +86,9 @@ const D = (() => {
                                     break
                                 case "watch": case "dbwatch": case "watchlist":
                                     setWatchList(args)
+                                    break
+                                case "flex": 
+                                    STATE.REF.flexSpace = D.Float(args.shift(), 2)
                                     break
                         // no default
                             }
@@ -189,7 +194,7 @@ const D = (() => {
     const VALS = {
             PAGEID: (pageRef) => {
                 if (pageRef) {
-                    const object = getChar(pageRef) || Media.GetImg(pageRef) || Media.GetToken(pageRef) || Media.GetAnim(pageRef) || Media.GetText(pageRef)
+                    const object = getChar(pageRef) || Media.GetImg(pageRef) || Media.GetTokens(pageRef).pop() || Media.GetAnim(pageRef) || Media.GetText(pageRef)
                     if (VAL({object}))
                         return object.get("_pageid")
                     if (_.isString(pageRef)) {
@@ -744,109 +749,115 @@ const D = (() => {
                 }
             }
         },
-        commandMenu = (menuData = {}, replyFunc = null) => {
-            /* MENU DATA:
-                {
-                    title: <string>
-                    rows: [
-                        Each element represents a full-width horizontal <div> block, contained with "block".
-                        Elements should be of the form:
-                            {
-                                type: <string: "Column", "Title", "Header", "Body", "ButtonLine", "ButtonSubheader">
-                                contents: <
-                                    for TITLE, HEADLINE, TEXT: <string>
-                                    for COLUMN: <array: each element represents a HORIZONTAL panel, each given in the form of nested MENU DATA objects:
-                                        <list: {title: <string>, rows: <as MENU DATA>}>
-                                            - when columns have been exhausted, will proceed with a new block.
-                                    for BUTTONS: <array: each element represents a line of buttons, of form:
-                                                    for BUTTONS: <list: {name, command, [styles]}>
-                                                    for SPACERS: <number: percentage of width, or 0 for equal spacing > 
-                                [buttonStyles]: <list of styles to apply to ALL of the buttons in a ButtonLine
-                                [styles]: <list of styles for the div, to override the defaults, where keys are style tags and values are the settings>
-                            } 
-                    ]
-                    [blockStyles:] <override C.HTML.Block 'options' parameter.
-                }
-                */
-            const htmlRows = [],
-                customStyles = {
-                    Title: {
-                        fontSize: "20px",
-                        lineHeight: "28px",
-                        height: "26px",
-                        bgColor: C.COLORS.brightred,
-                        color: C.COLORS.black,
-                        fontFamily: "Voltaire",
-                        border: `none; border-bottom: 4px outset ${C.COLORS.crimson}`,
-                        margin: "0px 0px 10px 0px",
-                    },
-                    Header: {
-                        color: C.COLORS.brightred,
-                        bgColor: C.COLORS.darkdarkred,
-                        border: "1px solid red",
-                        fontVariant: "small-caps"
-                    },
-                    Body: {
-                        color: C.COLORS.brightbrightgrey,
-                        lineHeight: "1.25em",
-                        fontFamily: "goodfish",
-                        fontSize: "1em",
-                        margin: "7px 0px 7px 0px"
-                    },
-                    Button: {
-                        margin: "0px 1% 0px 0px",
-                        lineHeight: "10px",
-                        buttonHeight: "9px",
-                        fontFamily: "'Arial Narrow'"
+        isMenuMemoed = memoID => Boolean(memoID && memoID in STATE.REF.COMMANDMENUS),
+        commandMenu = (menuData = {}, replyFunc = null, memoID, isRebuilding = false) => {
+            if (memoID && memoID in STATE.REF.COMMANDMENUS && !isRebuilding) {
+                promptGM(STATE.REF.COMMANDMENUS[memoID])
+            } else {
+                
+                /* MENU DATA:
+                    {
+                        title: <string>
+                        rows: [
+                            Each element represents a full-width horizontal <div> block, contained with "block".
+                            Elements should be of the form:
+                                {
+                                    type: <string: "Column", "Title", "Header", "Body", "ButtonLine", "ButtonSubheader">
+                                    contents: <
+                                        for TITLE, HEADLINE, TEXT: <string>
+                                        for COLUMN: <array: each element represents a HORIZONTAL panel, each given in the form of nested MENU DATA objects:
+                                            <list: {title: <string>, rows: <as MENU DATA>}>
+                                                - when columns have been exhausted, will proceed with a new block.
+                                        for BUTTONS: <array: each element represents a line of buttons, of form:
+                                                        for BUTTONS: <list: {name, command, [styles]}>
+                                                        for SPACERS: <number: percentage of width, or 0 for equal spacing > 
+                                    [buttonStyles]: <list of styles to apply to ALL of the buttons in a ButtonLine
+                                    [styles]: <list of styles for the div, to override the defaults, where keys are style tags and values are the settings>
+                                } 
+                        ]
+                        [blockStyles:] <override C.HTML.Block 'options' parameter.
                     }
-                }
-            DB({menuData}, "commandMenu")
-            const dbData = {rows: []},
-                parseSection = (sectionData) => {
-                    const sectionHTML = []
-                    for (const rowData of sectionData.rows)
-                        if (["Title", "Header", "Body", "ClearBody"].includes(rowData.type)) {
-                            sectionHTML.push(C.HTML[rowData.type](rowData.contents, Object.assign({}, customStyles[rowData.type] || {}, rowData.styles || {})))
-                        } else if (rowData.type === "ButtonLine") {
-                            try {
-                                const buttonsCode = [],
-                                    strictSpacerTotWidth = rowData.contents.map(x => VAL({list: x}) && "text" in x ? D.Int(Object.assign({width: "15%"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(/%/gu, "")) : x).filter(x => VAL({number: x})).reduce((tot, x) => tot + x, 0) || 0,
-                                    totFlexSpacing = 100 - strictSpacerTotWidth,
-                                    flexEntityWidth = Math.floor(totFlexSpacing / rowData.contents.filter(x => VAL({list: x}) || VAL({number: x}) && x === 0).length) - 1
-                                rowData.contents = rowData.contents.map(x => VAL({number: x}) && x === 0 && flexEntityWidth || x)
-                                dbData.rows.push({strictSpacerTotWidth, totFlexSpacing, flexEntityWidth, rowData, entities: []})
-                                for (const entity of rowData.contents)
-                                    if (VAL({number: entity}))
-                                        buttonsCode.push(C.HTML.ButtonSpacer(`${D.Int(entity)}%`))
-                                    else if (VAL({list: entity}))
-                                        if ("text" in entity) {
-                                            buttonsCode.push(C.HTML.ButtonSubheader(entity.text, entity.styles))
-                                        } else {
-                                            if (entity.name.length > 12)
-                                                entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
-                                            const button = new Button(entity.name, entity.command, Object.assign({}, {width: `${flexEntityWidth}%`}, customStyles.Button || {}, rowData.buttonStyles || {}, entity.styles || {}))
-                                            buttonsCode.push(button.HTML)
-                                        }
-                                sectionHTML.push(C.HTML.ButtonLine(buttonsCode, rowData.styles || {}))
-                            } catch (errObj) {
-                                DB({["ERROR'ING ROWDATA"]: rowData}, "commandMenu")
-                            }
-                        } else if (rowData.type === "Column") {
-                            const numColumns = rowData.contents.length,
-                                colWidth = `${D.Int(100 / numColumns) - 1}%`,
-                                colHTML = []
-                            for (const colData of rowData.contents)
-                                colHTML.push(C.HTML.Column(parseSection(colData), Object.assign({width: colWidth}, rowData.style)))
-                            sectionHTML.push(C.HTML.SubBlock(colHTML.join("")))
+                    */
+                const htmlRows = [],
+                    customStyles = {
+                        Title: {
+                            fontSize: "20px",
+                            lineHeight: "28px",
+                            height: "26px",
+                            bgColor: C.COLORS.brightred,
+                            color: C.COLORS.black,
+                            fontFamily: "Voltaire",
+                            border: `none; border-bottom: 4px outset ${C.COLORS.crimson}`,
+                            margin: "0px 0px 0px 0px",
+                        },
+                        Header: {
+                            color: C.COLORS.brightgold,
+                            bgColor: C.COLORS.darkred,
+                            border: `1px outset ${C.COLORS.crimson}`,
+                            fontFamily: "Carrois Gothic SC",
+                            lineHeight: "22px"
+                        },
+                        Body: {
+                            color: C.COLORS.brightbrightgrey,
+                            lineHeight: "1.25em",
+                            fontFamily: "goodfish",
+                            fontSize: "1em",
+                            margin: "7px 0px 7px 0px"
                         }
-                    return sectionHTML.join("")
-                }
+                    }
+                DB({menuData}, "commandMenu")
+                const dbData = {rows: []},
+                    parseSection = (sectionData) => {
+                        const sectionHTML = []
+                        for (const rowData of sectionData.rows)
+                            if (["Title", "Header", "Body", "ClearBody"].includes(rowData.type)) {
+                                sectionHTML.push(C.HTML[rowData.type](rowData.contents, Object.assign({}, customStyles[rowData.type] || {}, rowData.styles || {})))
+                            } else if (rowData.type === "ButtonLine") {
+                                try {
+                                    const buttonsCode = [],
+                                        totalFlexEntities = rowData.contents.filter(x => VAL({list: x}) || VAL({number: x}) && x === 0).length,
+                                        entityWidthTax = STATE.REF.flexSpace/totalFlexEntities,
+                                        strictSpacerTotWidth = rowData.contents.map(x => VAL({list: x}) && "text" in x ? D.Int(Object.assign({width: "15%"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(/%/gu, "")) : x).filter(x => VAL({number: x})).reduce((tot, x) => tot + x, 0) || 0,
+                                        totFlexSpacing = 100 - strictSpacerTotWidth,
+                                        flexEntityWidth = D.Float(totFlexSpacing / totalFlexEntities - entityWidthTax, 2)
+                                    rowData.contents = rowData.contents.map(x => VAL({number: x}) && x === 0 && flexEntityWidth || x)
+                                    dbData.rows.push({strictSpacerTotWidth, totFlexSpacing, flexEntityWidth, rowData, entities: []})
+                                    for (const entity of rowData.contents)
+                                        if (VAL({number: entity}))
+                                            buttonsCode.push(C.HTML.ButtonSpacer(`${D.Int(entity)}%`))
+                                        else if (VAL({list: entity}))
+                                            if ("text" in entity) {
+                                                buttonsCode.push(C.HTML.ButtonSubheader(entity.text, entity.styles))
+                                            } else {
+                                                if (entity.name.length > 12)
+                                                    entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
+                                                const button = new Button(entity.name, entity.command, Object.assign({}, {width: `${flexEntityWidth}%`}, customStyles.Button || {}, rowData.buttonStyles || {}, entity.styles || {}))
+                                                buttonsCode.push(button.HTML)
+                                            }
+                                    sectionHTML.push(C.HTML.ButtonLine(buttonsCode, rowData.styles || {}))
+                                } catch (errObj) {
+                                    DB({["ERROR'ING ROWDATA"]: rowData, errObj}, "commandMenu")
+                                }
+                            } else if (rowData.type === "Column") {
+                                const numColumns = rowData.contents.length,
+                                    colWidth = `${D.Int(100 / numColumns) - 1}%`,
+                                    colHTML = []
+                                for (const colData of rowData.contents)
+                                    colHTML.push(C.HTML.Column(parseSection(colData), Object.assign({width: colWidth}, rowData.style)))
+                                sectionHTML.push(C.HTML.SubBlock(colHTML.join("")))
+                            }
+                        return sectionHTML.join("")
+                    }
 
-            htmlRows.push(parseSection(menuData))
-            if (menuData.title)
-                htmlRows.unshift(C.HTML.Title(menuData.title, Object.assign({}, customStyles.Title)))
-            // DB(dbData, "commandMenu")
-            promptGM(C.HTML.Block(htmlRows.join(""), menuData.blockParams || {}), replyFunc)
+                htmlRows.push(parseSection(menuData))
+                if (menuData.title)
+                    htmlRows.unshift(C.HTML.Title(menuData.title, Object.assign({}, customStyles.Title)))
+                // DB(dbData, "commandMenu")
+                const fullHTML = C.HTML.Block(htmlRows.join(""), menuData.blockParams || {})
+                if (memoID)
+                    STATE.REF.COMMANDMENUS[memoID] = fullHTML
+                promptGM(fullHTML, replyFunc)
+            }
         },
     // #endregion
 
@@ -1460,11 +1471,11 @@ const D = (() => {
                         dbstring += ` ... "${jStrL(v)}": `
                         // If parameter is "sandbox", calls for all characters with tokens in the sandbox (do player characters first)
                     } else if (v.toLowerCase() === "sandbox") {
-                        _.each(Media.GetContainedChars("Sandbox", {padding: 50}), vv => charObjs.add(vv))
+                        _.each(Media.GetContainedChars("Horizon", {padding: 50}), vv => charObjs.add(vv))
                         dbstring += ` ... "${jStrL(v)}": `                    
                         // If parameter is a SINGLE LETTER, assume it is an INITIAL and search the registry for it.
                     } else if (v.toLowerCase() === "scene") {
-                        _.each(Media.GetContainedChars("Sandbox", {padding: 50}).filter(x => Session.IsInScene(x)), vv => charObjs.add(vv)) 
+                        _.each(Session.SceneChars, vv => charObjs.add(vv)) 
                         dbstring += ` ... "${jStrL(v)}": `                    
                         // If parameter is a SINGLE LETTER, assume it is an INITIAL and search the registry for it.
                     } else if (v.length === 1 && _.find(Char.REGISTRY, data => data.initial.toLowerCase() === v.toLowerCase())) {
@@ -2002,6 +2013,7 @@ const D = (() => {
                 sendToGM(msg, title)
         },
         Prompt: promptGM,
+        IsMenuStored: isMenuMemoed,
         CommandMenu: commandMenu,
 
         RemoveFirst: removeFirst, PullOut: pullElement,
