@@ -272,6 +272,9 @@ const Chat = (() => {
             types: ["Candal", "Contrail One", "Arial", "Patrick Hand", "Shadows Into Light"],
             sizes: [12, 14, 16, 18, 20, 22, 26, 32, 40, 56, 72, 100]
         },
+        ALERTBLACKLIST = [
+            "weatherData"
+        ],
         sendHelpMsg = () => { D.Alert("Syntax Failure.", "CHAT.API")},
     // #endregion
 
@@ -408,14 +411,21 @@ const Chat = (() => {
             if (returnVals) {
                 const returnInfo = {}
                 _.each(stateInfo, (data, key) => {
-                    const returnData = {}
-                    _.each(_.isString(returnVals) ? returnVals.split(",") : returnVals, val => {
-                        returnData[val] = data[val]
-                    })
-                    returnInfo[key] = _.clone(returnData)
+                    if (ALERTBLACKLIST.includes(key)) {
+                        returnInfo[key] = "<b><u>(HIDDEN)</u></b>"
+                    } else {
+                        const returnData = {}
+                        _.each(_.isString(returnVals) ? returnVals.split(",") : returnVals, val => {
+                            returnData[val] = data[val]
+                        })
+                        returnInfo[key] = _.clone(returnData)
+                    }
                 })
                 D.Alert(D.JS(returnInfo, isVerbose), title)
-            } else { D.Alert(D.JS(stateInfo, isVerbose), title) }
+            } else {
+                stateInfo = D.KeyMapObj(stateInfo, undefined, (v, k) => ALERTBLACKLIST.includes(k) && "<b><u>(HIDDEN)</u></b>" || v)
+                D.Alert(D.JS(stateInfo, isVerbose), title) 
+            }
 
             return true
         },

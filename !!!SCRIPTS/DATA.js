@@ -355,12 +355,15 @@ const D = (() => {
                             case "graphic": return C.COLORS.palegreen
                             case "text": return C.COLORS.paleblue
                             case "player": return C.COLORS.palepurple
+                            case "date": return C.COLORS.palered
                             default: return C.COLORS.palegrey
                         }
                     }, 
                     replacer = (k, v) => {
                         let returnVal = v
-                        if (!isVerbose && (
+                        if (v instanceof Date) {
+                            returnVal = `@@NAMESTART${typeColor("date")}@@${TimeTracker.FormatDate(new Date(v), true)}@@NAMEEND@@`
+                        } else if (!isVerbose && (
                             k.slice(0, 3).toLowerCase() === "obj" ||
                             v && (v.get || v._type)
                         )) {
@@ -408,7 +411,7 @@ const D = (() => {
                                 returnVal = listDelver(v)
                             }
                         } else if (_.isNumber(v)) {
-                            returnVal = v.toString()
+                            returnVal = v.toString()                           
                         } else if (_.isString(v)) {
                             returnVal = `ϙQϙ${v}ϙQϙ`
                         }
@@ -1140,6 +1143,10 @@ const D = (() => {
                                 break
                             case "date":
                                 if (_.isNaN((TimeTracker.GetDate(v) || {getTime: () => false}).getTime()))
+                                    errorLines.push(`Invalid date reference: ${jStrL(v && v.get && v.get("name") || v && v.id || v)}`)
+                                break
+                            case "dateobj":
+                                if (!(v instanceof Date))
                                     errorLines.push(`Invalid date object: ${jStrL(v && v.get && v.get("name") || v && v.id || v)}`)
                                 break
                             case "msg": case "selection": case "selected":

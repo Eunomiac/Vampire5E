@@ -150,43 +150,51 @@ const TimeTracker = (() => {
                 case "set": {
                     switch (D.LCase(call = args.shift())) {
                         case "alarm": {
-                            const [dateString, name, message, actions, displayTo, revActions, recurring, isConditional] = args.join(" ").replace(/"/gu, "").split("|"),
-                                messageHTML = C.HTML.Block([
-                                    C.HTML.Header(`Alarm Fired: ${name}`),
-                                    C.HTML.Body(message)
-                                ].join("<br>"))
-                            // dateString: "dawn"/"dusk"/"nextfullnight"/"noon"/"[#] [unit]"   can include multiple with "+"  (use "|" delimiting for chat arg, then set helper macro)
-                            // name: Name of the alarm
-                            // message: fully HTML coded message sent when alarm fires (and unfires)
-                            // actions: ARRAY of functions OR chat strings (can be api commands) to be run when alarm fires
-                            // revActions: ARRAY as above, run when alarm "unfires" instead
-                            // recurring: if LIST {years: #, months: #, weeks: #, days: #, hours: #, mins: #}, will repeat alarm at that interval
-                            // isConditional: if true, will stop clock and confirm with GM before firing
-                            D.Prompt(
-                                C.HTML.Block([
-                                    C.HTML.Header("Confirm Alarm"),
-                                    C.HTML.Body([
-                                        `<b>DateString:</b> ${D.JS(dateString)}`,
-                                        `<b>name:</b> ${D.JS(name)}`,
-                                        `<b>message:</b> ${D.JS(message)}`,
-                                        `<b>actions:</b> ${D.JS(actions)}`,
-                                        `<b>displayTo:</b> ${D.JS(displayTo)}`,
-                                        `<b>revActions:</b> ${D.JS(revActions)}`,
-                                        `<b>recurring:</b> ${D.JS(recurring)}`,
-                                        `<b>isConditional:</b> ${D.JS(isConditional)}`
-                                    ].join("<br>").replace(/"/gu, ""), {bgColor: C.COLORS.white, border: `3px inset ${C.COLORS.darkgrey}`, width: "95%", margin: "7px 0px 0px 2.5%", fontFamily: "Verdana", fontSize: "10px", lineHeight: "14px", textShadow: "none", color: C.COLORS.black, fontWeight: "normal", textAlign: "left"}),
-                                    C.HTML.ButtonLine([
-                                        C.HTML.Button("Yes", "!reply confirm true"),
-                                        C.HTML.Button("No", "!reply confirm false")
-                                    ].join(" "))
-                                ].join("<br>")),
-                                reply => { 
-                                    if (reply.includes("true")) {
-                                        D.Alert(`Setting Alarm(${D.JS(dateString)}, ${D.JS(name)}, ${D.JS(message)}, ${D.JS(actions)}, ${D.JS(displayTo)}, ${D.JS(revActions)}, ${D.JS(recurring)}, ${D.JS(isConditional)}`, "!time set alarm")
-                                        setAlarm(dateString, name, messageHTML, actions, displayTo, revActions, recurring === "" ? null : recurring, isConditional)
+                            args = args.join(" ").replace(/"/gu, "").split("|")
+                            if (args.length !== 8) {
+                                D.Alert([
+                                    "<h3>Alarm Syntax</h3>",
+                                    "<b>!time set alarm</b> dateRef<b>|</b>name<b>|</b>message<b>|</b>actions<b>|</b>displayTo<b>|</b>revActions<b>|</b>recurring<b>|</b>isConditional",
+                                    "  - dateString: 'dawn'/'dusk'/'nextfullnight'/'noon'/'[#] [unit]'",
+                                    "  - name: Name of the alarm",
+                                    "  - message: fully HTML coded message sent when alarm fires (and unfires)",
+                                    "  - actions: ARRAY of functions OR chat strings (can be api commands) to be run when alarm fires",
+                                    "  - revActions: ARRAY as above, run when alarm 'unfires' instead",
+                                    "  - recurring: if LIST {years: #, months: #, weeks: #, days: #, hours: #, mins: #}, will repeat alarm at that interval",
+                                    "  - isConditional: if true, will stop clock and confirm with GM before firing"
+                                ].join("<br>"), "!time set alarm")
+                            } else {
+                                const [dateString, name, message, actions, displayTo, revActions, recurring, isConditional] = args.join(" ").replace(/"/gu, "").split("|"),
+                                    messageHTML = C.HTML.Block([
+                                        C.HTML.Header(`Alarm Fired: ${name}`),
+                                        C.HTML.Body(message)
+                                    ].join("<br>"))
+                                D.Prompt(
+                                    C.HTML.Block([
+                                        C.HTML.Header("Confirm Alarm"),
+                                        C.HTML.Body([
+                                            `<b>DateString:</b> ${D.JS(dateString)}`,
+                                            `<b>name:</b> ${D.JS(name)}`,
+                                            `<b>message:</b> ${D.JS(message)}`,
+                                            `<b>actions:</b> ${D.JS(actions)}`,
+                                            `<b>displayTo:</b> ${D.JS(displayTo)}`,
+                                            `<b>revActions:</b> ${D.JS(revActions)}`,
+                                            `<b>recurring:</b> ${D.JS(recurring)}`,
+                                            `<b>isConditional:</b> ${D.JS(isConditional)}`
+                                        ].join("<br>").replace(/"/gu, ""), {bgColor: C.COLORS.white, border: `3px inset ${C.COLORS.darkgrey}`, width: "95%", margin: "7px 0px 0px 2.5%", fontFamily: "Verdana", fontSize: "10px", lineHeight: "14px", textShadow: "none", color: C.COLORS.black, fontWeight: "normal", textAlign: "left"}),
+                                        C.HTML.ButtonLine([
+                                            C.HTML.Button("Yes", "!reply confirm true"),
+                                            C.HTML.Button("No", "!reply confirm false")
+                                        ].join(" "))
+                                    ].join("<br>")),
+                                    reply => { 
+                                        if (reply.includes("true")) {
+                                            D.Alert(`Setting Alarm(${D.JS(dateString)}, ${D.JS(name)}, ${D.JS(message)}, ${D.JS(actions)}, ${D.JS(displayTo)}, ${D.JS(revActions)}, ${D.JS(recurring)}, ${D.JS(isConditional)}`, "!time set alarm")
+                                            setAlarm(dateString, name, messageHTML, actions, displayTo, revActions, recurring === "" ? null : recurring, isConditional)
+                                        }
                                     }
-                                }
-                            )
+                                )
+                            }
                             break
                         }
                         case "weath": case "weather": {
@@ -225,10 +233,7 @@ const TimeTracker = (() => {
                         // falls through
                         default: {
                             const thisArg = D.LCase([call, ...args].join(" ")),
-                                [delta, unit] = [
-                                    thisArg.replace(/[^\-0-9]/gu, ""),
-                                    thisArg.replace(/[^a-z]/gu, "")
-                                ]
+                                [delta, unit] = parseToDeltaTime(call, ...args)
                             tweenClock(addTime(STATE.REF.dateObj, D.Float(delta), D.LCase(unit)))
                             if (isForcing)
                                 state[C.GAMENAME].Session.dateRecord = null
@@ -409,7 +414,8 @@ const TimeTracker = (() => {
     let [timeTimer, secTimer] = [null, null],
         [isRunning, isRunningFast, isTimeRunning, isCountdownRunning, isCountdownFrozen] = [false, false, false, false, false, false],
         secondsLeft = 0,
-        countdownRecord = []
+        countdownRecord = [],
+        weatherDataMemo = false
 
     // #region Configuration
     const RAWWEATHERDATA = [
@@ -867,10 +873,17 @@ const TimeTracker = (() => {
         parseToDateObj = dateRef => { // Takes almost any date format and converts it into a Date object.
             let returnDate
             const curDateString = formatDateString(new Date(STATE.REF.dateObj))
-            if (VAL({string: dateRef})) {
-                if (!String(dateRef).match(/\D/gu)) // if everything is a number, assume it's a seconds-past-1970 thing
+            DB({dateRef, stateCurDate: STATE.REF.dateObj, curDate: new Date(STATE.REF.dateObj), curDateString: formatDateString(new Date(STATE.REF.dateObj))}, "parseToDateObj")
+            if (VAL({dateObj: dateRef})) {
+                DB({["DATE OBJECT!"]: dateRef, isItReally: dateRef instanceof Date}, "parseToDateObj")
+                return dateRef
+            } else if (VAL({string: dateRef})) {
+                if (!String(dateRef).match(/\D/gu)) {// if everything is a number, assume it's a seconds-past-1970 thing                
+                    DB({["SECS-PAST-1970 STRING!"]: dateRef}, "parseToDateObj")
                     return new Date(parseInt(dateRef))
+                }
                 if (dateRef !== "") {
+                    DB({["OTHER STRING!"]: dateRef}, "parseToDateObj")
                     // first, see if it includes a time stamp and separate that out:
                     const [dateString, timeString] = Object.assign([curDateString, ""], dateRef.match(/([^:\n\r]+\d{2}?(?!:))?\s?(\S*:{1}.*)?/u).slice(1).map((x,i) => i === 0 && !x ? curDateString : x)),
                         parsedDateString = _.compact(dateString.match(/^(?:([\d]*)-?(\d*)-?(\d*)|(?:([\d]+)?(?:[^\w\d])*?([\d]+)?[^\w\d]*?(?:([\d]+)|(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))?\w*?[^\w\d]*?([\d]+){1,2}\w*?[^\w\d]*?(\d+)))$/imuy)).slice(1)
@@ -908,7 +921,7 @@ const TimeTracker = (() => {
                         month = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"][month - 1]
                     if (`${year}`.length < 3)
                         year = parseInt(year) + 2000
-                    day = parseInt(day)
+                    day = parseInt(day)                  
                     returnDate = new Date([year, ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(month.toLowerCase())+1, day])
 
                     // Now, the time component (if any)
@@ -917,6 +930,9 @@ const TimeTracker = (() => {
                             [hour, min, sec] = `${D.JSL(time)}`.split(":").map(v => D.Int(v)),
                             totalSeconds = (hour + (D.LCase(aMpM).includes("p") && 12))*60*60 + min*60 + sec
                         returnDate.setUTCSeconds(returnDate.getUTCSeconds() + totalSeconds)
+                        DB({["OTHER STRING!"]: dateRef, dateString, timeString, parsedDateString, day, month, year, time, aMpM, hour, min, sec, totalSeconds, returnDate}, "parseToDateObj")  
+                    } else {
+                        DB({["OTHER STRING!"]: dateRef, dateString, timeString, parsedDateString, day, month, year, returnDate}, "parseToDateObj")  
                     }
                     return returnDate
                 }
@@ -933,12 +949,14 @@ const TimeTracker = (() => {
         parseToDeltaTime = (...args) => { // Takes a number and a unit of time and converts it to the standard [delta (digit), unit (y/mo/w/d/h/m)] format for adding time. 
             const matchPatterns = [
                     new RegExp("-?\\d+(\\.?\\d+)?", "gu"),
-                    new RegExp("\\b[A-Za-z]{1,2}", "gu")
+                    new RegExp("[A-Za-z]{1,2}", "u")
                 ],
-                [delta, unit] = matchPatterns.map(x => (args.join("").replace(/\s/gu, "").match(x) || [false]).pop())
+                [delta, unit] = matchPatterns.map(x => (_.flatten([args]).join("").replace(/\s/gu, "").match(x) || [false]).pop())
+            DB({args, delta, unit}, "parseToDeltaTime")
             return [D.Float(delta), D.LCase(unit)]
         },
         getTime = (timeRef, deltaMins, isParsingString = false) => { // Takes a time reference ad
+            deltaMins = deltaMins || 0
             const timeNums = VAL({string: timeRef}) ? _.map(timeRef.split(":"), v => D.Int(v)) : timeRef
             let totMins = timeNums[0] * 60 + timeNums[1] + deltaMins
             if (totMins < 0)
@@ -966,30 +984,63 @@ const TimeTracker = (() => {
             isIncludingTime ? `, ${formatTimeString(date).replace(/:(\d\s)/gu, ":0$1")}` : ""
         }` },
         isValidDString = str => _.isString(str) && Boolean(str.match(/\w\w\w\s\d\d?,\s\d\d\d\d/gu)),    
-        addTime = (dateRef, delta, unit) => {
+        addTime = (dateRef, delta, unit, isChangingOriginal = false) => {
+            const dateObj = parseToDateObj(dateRef)
+            DB({dateRef, dateRefType: typeof dateRef, isDate: _.isDate(dateRef), dateObj, delta, unit}, "addTime")
             if (VAL({date: dateRef}, "addTime")) {
-                const newDate = new Date(parseToDateObj(dateRef));
+                const newDate = new Date(parseToDateObj(dateObj));
                 [delta, unit] = parseToDeltaTime(delta, unit)
                 switch (unit) {
-                    case "y":
-                        return newDate.setUTCFullYear(newDate.getUTCFullYear() + delta)
-                    case "mo":
-                        return newDate.setUTCMonth(newDate.getUTCMonth() + delta)
-                    case "w":
-                        return newDate.setUTCDate(newDate.getUTCDate() + 7 * delta)
-                    case "d":
-                        return newDate.setUTCDate(newDate.getUTCDate() + delta)
-                    case "h":
-                        return newDate.setUTCHours(newDate.getUTCHours() + delta)
-                    case "m":
-                        return newDate.setUTCMinutes(newDate.getUTCMinutes() + delta)
+                    case "y": newDate.setUTCFullYear(newDate.getUTCFullYear() + delta); break
+                    case "mo": newDate.setUTCMonth(newDate.getUTCMonth() + delta); break
+                    case "w": newDate.setUTCDate(newDate.getUTCDate() + 7 * delta); break
+                    case "d": newDate.setUTCDate(newDate.getUTCDate() + delta); break
+                    case "h": newDate.setUTCHours(newDate.getUTCHours() + delta); break
+                    case "m": newDate.setUTCMinutes(newDate.getUTCMinutes() + delta); break
                     // no default
                 }
+                if (isChangingOriginal && dateRef instanceof Date)
+                    dateRef.setTime(newDate.getTime())
+                return newDate
             }
             return false          
         },
-        getHorizonTimeString = () => {
-            const [dawn, dusk] = TWILIGHTMINS[STATE.REF.dateObj.getMonth()],
+        setToFutureTime = (dateRef, hours, mins) => {
+            const dateObj = parseToDateObj(dateRef || STATE.REF.dateObj),
+                targetDateObj = new Date(dateObj)
+            targetDateObj.setUTCHours(hours)
+            targetDateObj.setUTCMinutes(mins)   
+            targetDateObj.setUTCSeconds(0)
+            targetDateObj.setUTCMilliseconds(0)      
+            while (targetDateObj.getTime() <= dateObj.getTime())
+                addTime(targetDateObj, 1, "d", true)
+            if (dateRef instanceof Date) {
+                dateRef.setTime(targetDateObj.getTime())
+                return dateRef
+            } else {
+                return targetDateObj
+            }
+        },
+        setToFutureWeekday = (dateRef, weekday, hours = 0, mins = 1) => {
+            const curDateObj = parseToDateObj(dateRef || STATE.REF.dateObj),
+                targetDateObj = new Date(curDateObj)
+            targetDateObj.setUTCHours(hours)
+            targetDateObj.setUTCMinutes(mins)
+            targetDateObj.setUTCSeconds(0)
+            targetDateObj.setUTCMilliseconds(0)
+            addTime(targetDateObj, weekday - curDateObj.getUTCDay(), "d", true)
+            while (targetDateObj.getTime() <= curDateObj.getTime())
+                addTime(targetDateObj, 1, "w", true)
+            if (dateRef instanceof Date) {
+                dateRef.setTime(targetDateObj.getTime())
+                return dateRef
+            } else {
+                return targetDateObj
+            }
+        },
+        getHorizonTimeString = (dateRef) => {
+            dateRef = parseToDateObj(dateRef || STATE.REF.dateObj)
+            const [dawn, dusk] = TWILIGHTMINS[dateRef.getMonth()],
                 imgTimes = _.object(_.map(_.keys(IMAGETIMES), k => {
                     if (k.includes(":"))
                         return 60 * D.Int(k.split(":")[0]) + D.Int(k.split(":")[1])
@@ -999,7 +1050,7 @@ const TimeTracker = (() => {
                         return dusk
                     return dawn + D.Int(k)
                 }), _.values(IMAGETIMES)),
-                curTime = 60 * STATE.REF.dateObj.getUTCHours() + STATE.REF.dateObj.getUTCMinutes(),
+                curTime = 60 * dateRef.getUTCHours() + dateRef.getUTCMinutes(),
                 curHoriz = imgTimes[_.find(_.keys(imgTimes), v => curTime <= v)]
             // DB(`WeatherData: ${D.JS(weatherData)}`, "getHorizon")
             // D.Alert(`Daylighter Check: ${C.RO.OT.Chars.isDaylighterSession} vs. ${C.RO.OT.Chars.isDaylighterSession}, imgSrc: ${curHoriz}`)
@@ -1007,7 +1058,7 @@ const TimeTracker = (() => {
                 return "daylighters"
             return curHoriz
         },
-        isDay = () => getHorizonTimeString().includes("day"),
+        isDay = (dateRef) => getHorizonTimeString(dateRef).includes("day"),
         setCurrentDate = () => {
             // dateObj = dateObj || new Date(D.Int(STATE.REF.currentDate))
             // DB(`Setting Current Date; Checking Alarms.<br>LastDateStep: ${D.JSL(STATE.REF.lastDateStep)}`, "setCurrentDate")
@@ -1040,6 +1091,7 @@ const TimeTracker = (() => {
             sessDateObj.setHours(19)
             sessDateObj.setMinutes(30)
             sessDateObj.setSeconds(0)
+            sessDateObj.setMilliseconds(0)
             if (sessDateObj.getTime() <= curRealDateObj.getTime())
                 sessDateObj.setDate(sessDateObj.getDate() + 7)
             STATE.REF.nextSessionDate = sessDateObj.getTime()
@@ -1181,7 +1233,8 @@ const TimeTracker = (() => {
         },
         easeInOutSine = (curTime, startVal, deltaVal, duration) => -deltaVal / 2 * (Math.cos(Math.PI * curTime / duration) - 1) + startVal,
         tweenClock = (finalDate) => {
-            // D.Alert(`${D.JS(finalDate)} = ${typeof finalDate}`)            
+            finalDate = parseToDateObj(finalDate)
+            DB({finalDate}, "tweenClock")        
             if (!(STATE.REF.TweenStart && STATE.REF.TweenTarget)) {
                 STATE.REF.TweenStart = STATE.REF.dateObj.getTime()
                 STATE.REF.TweenTarget = finalDate.getTime()
@@ -1228,12 +1281,11 @@ const TimeTracker = (() => {
         tickClock = () => {
             if (isTimeRunning) {
                 const lastHour = STATE.REF.dateObj.getUTCHours()
-                let weatherData = {event: "x"}
                 STATE.REF.dateObj.setUTCMinutes(STATE.REF.dateObj.getUTCMinutes() + 1)
-                if (STATE.REF.dateObj.getUTCHours() !== lastHour)
-                    weatherData = setWeather()
+                if (STATE.REF.dateObj.getUTCHours() !== lastHour || !weatherDataMemo)
+                    weatherDataMemo = setWeather()
                 setCurrentDate()
-                setHorizon(weatherData)
+                setHorizon(weatherDataMemo)
             }
         },
     // #endregion
@@ -1636,7 +1688,7 @@ const TimeTracker = (() => {
         setHorizon = (weatherData) => {
             DB({weatherData, hasForcedState: Media.HasForcedState("Horizon")}, "setHorizon")
             if (Media.HasForcedState("Horizon")) return false
-            weatherData = weatherData || {event: "x"}
+            weatherData = weatherData || weatherDataMemo || {event: "x"}
             let horizWeather = ""
             switch (weatherData.event.charAt(0)) {
                 case "x":
@@ -1812,23 +1864,25 @@ const TimeTracker = (() => {
     // #endregion
 
     // #region Alarms
-        // dateString: "dawn"/"dusk"/"nextfullnight"/"noon"/"[#] [unit]"   can include multiple with "+"  (use "|" delimiting for chat arg, then set helper macro)
+        // dateRef: "dawn"/"dusk"/"nextfullnight"/"noon"/"[#] [unit]"   can include multiple with "+"  (use "|" delimiting for chat arg, then set helper macro)
         // name: Name of the alarm
         // message: fully HTML coded message sent when alarm fires (and unfires)
         // actions: ARRAY of functions OR chat strings (can be api commands) to be run when alarm fires
         // revActions: ARRAY as above, run when alarm "unfires" instead
         // recurring: if LIST {years: #, months: #, weeks: #, days: #, hours: #, mins: #}, will repeat alarm at that interval
         // isConditional: if true, will stop clock and confirm with GM before firing
+        
         getDateFromDateString = (dateString, dateOverride) => {
-            if (VAL({date: dateString}))
+            if (VAL({date: dateString})) {
+                DB({dateString, parseToDateObj: parseToDateObj(dateString)}, "getDateFromDateString")
                 return parseToDateObj(dateString)
+            }
             if (VAL({string: dateString})) {
-                DB(`Checking ${dateString}: IS STRING`, "getDateFromDateString")
                 const curDate = VAL({date: dateOverride}) && new Date(dateOverride) || STATE.REF.dateObj,
                     curMins = 60 * curDate.getUTCHours() + curDate.getUTCMinutes()
                 let [startDate, targetDate, targetMins] = [new Date(curDate), new Date(curDate), curMins]
+                DB({dateStrings: dateString.split(/\s*\+\s*/gu), dateOverride: dateOverride && formatDateString(dateOverride, true), curDate: formatDateString(curDate, true), curMins}, "getDateFromDateString")
                 for (const dString of dateString.split(/\s*\+\s*/gu)) {
-                    DB(`Checking ${dString}`, "getDateFromDateString")
                     switch (dString.trim().toLowerCase()) {
                         case "nextfullnight":
                         case "dawn":
@@ -1860,6 +1914,7 @@ const TimeTracker = (() => {
                     }
                     startDate = new Date(targetDate)
                 }
+                DB({startDate: formatDateString(startDate, true), targetDate: formatDateString(targetDate, true), targetMins}, "getDateFromDateString")
                 return targetDate
             } 
             return false        
@@ -1871,7 +1926,6 @@ const TimeTracker = (() => {
                 targetDate = new Date(curDate)
             targetDate.setUTCHours(0)
             targetDate.setUTCMinutes(0)
-            // DB(`targetDate: ${D.JSL(targetDate)}`, "getDailyAlarmTrigger")
             if (VAL({date: targetDate}, "getDailyAlarmTrigger") && targetDate.getTime) {
                 const dayTriggers = {
                     midnight: targetDate.getTime(),
@@ -1879,35 +1933,35 @@ const TimeTracker = (() => {
                     noon: (new Date((new Date(targetDate)).setUTCHours(12))).getTime(),
                     dusk: (new Date((new Date(targetDate)).setUTCMinutes(TWILIGHTMINS[targetDate.getUTCMonth()][1]))).getTime()
                 }
-                // DB(`dayTriggers: ${D.JSL(dayTriggers)}`, "getDailyAlarmTrigger")
+                DB({targetDate, dayTriggers}, "getDailyAlarmTrigger")
                 return _.findKey(dayTriggers, v => v >= lastDateStep && v <= thisDateStep) || false
             }
+            DB({["targetDate (FALSE)"]: targetDate}, "getDailyAlarmTrigger")
             return false
         },
         setAlarm = (dateRef, name, message, actions = [], displayTo = [], revActions = [], recurring = false, isConditional = false) => {
             // STEP ONE: FIGURE OUT WHEN THE ALARM SHOULD FIRE.
             if (dateRef.split(":").length > 2)
                 return D.Alert(`DateRef '${D.JS(dateRef)} has too many terms.<br>(A ':' should only appear between the timeRef and the modifying flag)`, "setAlarm")
-            const [timeRef, timeFlag] = dateRef.split(":") /* eslint-disable-line no-unused-vars */
+            const [timeRef, timeFlag] = dateRef.split(":"), /* eslint-disable-line no-unused-vars */
+                workingDate = new Date(STATE.REF.dateObj)
             switch (D.LCase(timeRef)) {
-                case "nextfullnight":
-                case "nextnight": {
-
-                    break
+                case "nextfullweek": {
+                    addTime(workingDate, 7, "d", true)
                 }
-                case "nextfullweek":
-                case "nextweek": {
-
-                    break
+                // falls through
+                case "nextfullnight": {
+                    if (!isDay(workingDate))
+                        addTime(workingDate, 1, "d", true)
                 }
-                case "endofweek": {
-
-                    break
-                }
-                default: {
-
-                    break
-                }
+                // falls through
+                case "dawn": setToFutureTime(workingDate, ...getTime(TWILIGHT[workingDate.getMonth()][0])); break
+                case "dusk": setToFutureTime(workingDate, ...getTime(TWILIGHT[workingDate.getMonth()][1])); break
+                case "midnight": setToFutureTime(workingDate, 0, 0); break
+                case "noon": setToFutureTime(workingDate, 12, 0); break
+                case "nextweek": addTime(workingDate, 7, "d", true); break
+                case "endofweek": setToFutureWeekday(workingDate, 0); break
+                // no default
             }
 
 
@@ -1981,7 +2035,7 @@ const TimeTracker = (() => {
                     unfireLastAlarm()
                 const dayTrigger = getDailyAlarmTrigger(lastDateStep, thisDateStep)
                 if (dayTrigger) {
-                    DB(`DayTrigger Hit: ${D.JSL(dayTrigger)}<br>This Step: ${D.JSL(D.Int(thisDateStep/1000/60))} vs. lastAlarmCheck: ${D.JSL(STATE.REF.lastAlarmCheck)}`, "checkAlarm")
+                    DB({["DayTrigger Hit!"]: dayTrigger, thisStep: D.Int(thisDateStep/1000/60), lastAlarmCheck: STATE.REF.lastAlarmCheck}, "checkAlarm")
                     const dayAlarms = STATE.REF.Alarms.Daily[dayTrigger]
                     for (let i = 0; i < dayAlarms.length; i++)
                         fireAlarm(dayAlarms[i])
@@ -2059,7 +2113,7 @@ const TimeTracker = (() => {
                 const recurredAlarm = D.Clone(alarm)
                 for (const unit of _.keys(recurTime))
                     recurredAlarm.time = addTime(alarm.time, recurTime[unit], unit).getTime()
-                DB(`Recurrence Alarm Created: ${D.JSL(recurredAlarm)}`, "recurAlarm")
+                DB({["Recurring Alarm Created!"]: recurredAlarm}, "recurAlarm")
                 return D.Clone(recurredAlarm)
             }
             return false
@@ -2129,13 +2183,13 @@ const TimeTracker = (() => {
         },
         fireNextAlarm = (isAborting = false, isDeferring = false) => {
             const thisAlarm = STATE.REF.Alarms.Ahead.shift()
-            DB(`Firing Alarm: ${D.JSL(thisAlarm)}<br>AutoAbort: ${D.JSL(STATE.REF.Alarms.AutoAbort)} (${STATE.REF.Alarms.AutoAbort.includes(thisAlarm.name)})`, "fireNextAlarm")
+            DB({FiringAlarm: thisAlarm, AutoAbort: STATE.REF.Alarms.AutoAbort, AutoAbortThisAlarm: STATE.REF.Alarms.AutoAbort.includes(thisAlarm.name)}, "fireNextAlarm")
             if (Session.IsTesting || Session.IsSessionActive)
                 fireAlarm(thisAlarm, isAborting, isDeferring)            
         },
         unfireLastAlarm = () => {
             const thisAlarm = STATE.REF.Alarms.Behind.shift()
-            DB(`Unfiring Alarm: ${D.JSL(Object.assign(D.Clone(thisAlarm), {message: D.SumHTML(thisAlarm.message)}))}`, "unfireLastAlarm")   
+            DB({UnfiringAlarm: thisAlarm, message: D.SumHTML(thisAlarm.message)}, "unfireLastAlarm")   
             if (Session.IsTesting || Session.IsSessionActive)           
                 unfireAlarm(thisAlarm)
         }

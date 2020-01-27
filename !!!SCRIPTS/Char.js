@@ -606,9 +606,6 @@ const Char = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
         REGISTRY = STATE.REF.registry,
-        ATTRNAMES = _.values(C.ATTRIBUTES).map(x => x.map(xx => xx.replace(/\s/gu, "_"))),
-        SKILLNAMES = _.values(C.SKILLS).map(x => x.map(xx => xx.replace(/\s/gu, "_"))),
-        DISCNAMES = _.keys(C.DISCIPLINES).map(x => x.replace(/\s/gu, "_")),
 
     // #region JSON Text Blocks
     /* eslint-disable-next-line quotes */
