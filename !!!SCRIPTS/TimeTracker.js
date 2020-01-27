@@ -232,8 +232,7 @@ const TimeTracker = (() => {
                         }
                         // falls through
                         default: {
-                            const thisArg = D.LCase([call, ...args].join(" ")),
-                                [delta, unit] = parseToDeltaTime(call, ...args)
+                            const [delta, unit] = parseToDeltaTime(call, ...args)
                             tweenClock(addTime(STATE.REF.dateObj, D.Float(delta), D.LCase(unit)))
                             if (isForcing)
                                 state[C.GAMENAME].Session.dateRecord = null

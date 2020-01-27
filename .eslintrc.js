@@ -112,6 +112,7 @@ module.exports = {
     },
     "globals": {
         "START": true,
+        "SCRIPTS": true,
         "C": true,
         "D": true,
         "Listener": true,

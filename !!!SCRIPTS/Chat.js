@@ -404,6 +404,12 @@ const Chat = (() => {
                 isVerbose = true
                 namespace.shift()
             }
+            if (namespace[0] !== C.GAMENAME) 
+                if (SCRIPTS.includes(namespace[0]))
+                    namespace.unshift(C.GAMENAME)
+                else
+                    D.Alert("Syntax:<br><br><b>!get state {SCRIPTNAME} {key} {key}...<br><b>!get statekeys {SCRIPTNAME} {key} {key}...<br><b>!get statevals {val},{val}|{SCRIPTNAME} {key} {key}...</b>", "!get state")
+            
             const title = `state.${namespace.join(".")}`
             // eslint-disable-next-line no-unmodified-loop-condition
             while (namespace && namespace.length)

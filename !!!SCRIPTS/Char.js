@@ -1743,15 +1743,41 @@ const Char = (() => {
                             _characterid: charObj.id
                         }),
                         repOrderAttrObjs = allAttrObjs.filter(x => x.get("name").startsWith("_reporder")),
+                        repAttrObjs = allAttrObjs.filter(x => x.get("name").startsWith("repeating_")),
                         nonRepAttrObjs = allAttrObjs.filter(x => !x.get("name").startsWith("repeating_") && !x.get("name").startsWith("_reporder")),
-                        attrValPairs = nonRepAttrObjs.map(x => [x, x.get("name")]),
-                        obsoleteAttrValPairs = attrValPairs.filter(x => x[1] in C.SHEETATTRS)
+                        nonRepAttrValPairs = nonRepAttrObjs.map(x => [x, x.get("name")]), // .map(x => [x, x.get("name").replace(/repeating_(.{1,3}).*?_(-.*?)_(.*?)$/gu, "$1_$3")])
+                        repAttrValTrips = repAttrObjs.map(x => [x, x.get("name").split("_").slice(1)]).map(x => {x[1].splice(1,1); return [x[0], x[1][0], x[1].slice(1).join("_")]}), // [object, section, attrName]
+                        repAttrGroupedTrips = _.groupBy(repAttrValTrips, x => x[1]),
+                        repAttrGroupString = Object.values(D.KeyMapObj(repAttrGroupedTrips, null, (v, k) => `    <b>${k}</b>: ${_.uniq(v.map(x => x[2])).join(", ")}`)).join("<br>"),
+                        obsoleteAttrValPairs = nonRepAttrValPairs.filter(x => !(x[1] in C.SHEETATTRS)),
+                        obsoleteRepAttrValTrips = repAttrValTrips.filter(x => !(x[1] in D.KeyMapObj(D.Clone(C.REPATTRS), k => D.LCase(k))))
+                    for (const [attrObj] of obsoleteAttrValPairs)
+                        if (VAL({object: attrObj}))
+                            attrObj.remove()
+                    for (const [attrObj] of obsoleteRepAttrValTrips)
+                        if (VAL({object: attrObj}))
+                            attrObj.remove()
                     reportLines.push(...[
                         `<h4>Attributes of ${D.GetName(charObj)}</h4>`,
+                        `${allAttrObjs.length} Attributes Found:`,
+                        `... ${repOrderAttrObjs.length} '_reporder' Attributes,`,
+                        `... ${repAttrValTrips.length} Repeating Attributes,`,
+                        `... ${nonRepAttrObjs.length} Non-Repeating, Non-RepOrder Attributes`,
+                        `... ... ${nonRepAttrValPairs.length} Attribute Name/Value Pairs Compiled.`,
+                        "",
+                        "<b><u>OBSOLETE SHEET ATTRIBUTES REMOVED</u>:</b>",
+                        `${obsoleteAttrValPairs.length} OBSOLETE Attributes found and removed:`,
                         D.JS(obsoleteAttrValPairs.map(x => x[1])),
                         "",
-                        "<b><u>RepOrder Attributes</u>:</b>",
-                        D.JS(repOrderAttrObjs.map(x => x.get("name").replace(/_reporder_(repeating_)?/gu, "")))
+                        "<b><u>OBSOLETE REPEATING ATTRIBUTES REMOVED</u>:</b>",
+                        `${obsoleteRepAttrValTrips.length} OBSOLETE Attributes found and removed:`,
+                        D.JS(obsoleteRepAttrValTrips.map(x => `<b>${x[1]}</b>: ${x[2]}`)),
+                        "",
+                        "<b><u>_RepOrder Attributes</u>:</b>",
+                        D.JS(repOrderAttrObjs.map(x => x.get("name").replace(/_reporder_(repeating_)?/gu, ""))),
+                        "",
+                        "<b><u>Repeating Attributes</u>:</b>",
+                        D.JS(repAttrGroupString)
                     ])
                 }
             D.Alert(reportLines.join("<br>"), "Character Attribute Validation")
