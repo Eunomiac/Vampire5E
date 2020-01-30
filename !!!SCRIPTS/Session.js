@@ -399,7 +399,9 @@ const Session = (() => {
             },            
             leaveMode: {
                 Active: () => {},
-                Inactive: () => {                    
+                Inactive: () => {
+                    if (!STATE.REF.isTestingActive)      
+                        Campaign().set({playerpageid: D.GetPageID("GAME")})            
                     TimeTracker.ToggleClock(true)
                     TimeTracker.ToggleCountdown(false)
                 },
@@ -416,6 +418,7 @@ const Session = (() => {
                 Testing: () => {
                     STATE.REF.isTestingActive = false
                     Media.ToggleText("testSessionNotice", false)
+                    Media.ToggleText("testSessionNoticeSplash", false)
                 }
             },
             enterMode: {
@@ -425,6 +428,7 @@ const Session = (() => {
                         TimeTracker.ToggleClock(true)
                 },
                 Inactive: () => {
+                    Campaign().set({playerpageid: D.GetPageID("SplashPage")})
                     Media.ToggleTokens(null, false)
                     TimeTracker.ToggleClock(false)
                     TimeTracker.ToggleCountdown(true)
@@ -460,14 +464,13 @@ const Session = (() => {
                 Testing: () => {
                     STATE.REF.isTestingActive = true
                     Media.ToggleText("testSessionNotice", true)
+                    Media.ToggleText("testSessionNoticeSplash", true)
                 }
             },
             introMode: {
                 Active: () => {
-                    Campaign().set({playerpageid: D.GetPageID("GAME")})
                 },
                 Inactive: () => {
-                    Campaign().set({playerpageid: D.GetPageID("SplashPage")})
                 },
                 Downtime: () => {
                     if (STATE.REF.LastMode !== "Complications")
@@ -660,7 +663,7 @@ const Session = (() => {
                     D.Capitalize(mode.toLowerCase())
                 ]                
                 D.Queue(MODEFUNCTIONS.outroMode[curMode], [args], "ModeSwitch", 0.1)
-                D.Queue(Media.ToggleLoadingScreen, [curMode === "Inactive" && "concluding" || "loading", `Changing Modes: ${D.UCase(lastMode)} ► ${D.UCase(curMode)}`], "ModeSwitch", 3)
+                D.Queue(Media.ToggleLoadingScreen, [curMode === "Inactive" && "concluding" || "loading", `Changing Modes: ${D.UCase(lastMode)} ► ${D.UCase(curMode)}`, {duration: 15, numTicks: 30, callback: () => { MODEFUNCTIONS.introMode[curMode](args)}}], "ModeSwitch", 3)
                 D.Queue(Media.SetLoadingMessage, [`[Leaving ${D.UCase(lastMode)}] Logging Status...`], "ModeSwitch", 0.1)
                 D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.leaveMode[lastMode], [args], "ModeSwitch", 1)
@@ -675,8 +678,8 @@ const Session = (() => {
                 D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.enterMode[curMode], [args], "ModeSwitch", 1)
                 D.Queue(TimeTracker.Fix, [], "ModeSwitch", 0.1)
-                D.Queue(Media.SetLoadingMessage, [`${D.UCase(curMode)} Mode Set!`], "ModeSwitch", 1)
-                D.Queue(Media.ToggleLoadingScreen, [false], "ModeSwitch", 0.1)
+                D.Queue(Media.SetLoadingMessage, [`[Entering ${D.UCase(curMode)}] Cleaning Up ...`], "ModeSwitch", 1)
+                // D.Queue(Media.ToggleLoadingScreen, [false], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.introMode[curMode], [args], "ModeSwitch", 0.1)
                 for (const endFunc of endFuncs)
                     D.Queue(endFunc[0], endFunc[1], "ModeSwitch", endFunc[2] || 0.1)
@@ -1398,6 +1401,8 @@ const Session = (() => {
         OnChatCall: onChatCall,
 
         ToggleTesting: toggleTesting,
+        Start: startSession, End: endSession,
+
         AddSceneChar: addCharToScene,
         ChangeMode: changeMode,
         CharsIn: getCharsInLocation,

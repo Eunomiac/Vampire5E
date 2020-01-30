@@ -868,7 +868,7 @@ const TimeTracker = (() => {
         TWILIGHTMINS = _.map(TWILIGHT, v => _.map(v, v2 => 60 * D.Int(v2.split(":")[0]) + D.Int(v2.split(":")[1]))),
     // #endregion
 
-    // #region Date Functions
+    // #region Date & Time Functions
         parseToDateObj = dateRef => { // Takes almost any date format and converts it into a Date object.
             let returnDate
             const curDateString = formatDateString(new Date(STATE.REF.dateObj))
@@ -1286,6 +1286,19 @@ const TimeTracker = (() => {
                 setCurrentDate()
                 setHorizon(weatherDataMemo)
             }
+        },
+        getRandomEventTriggers = (fullDuration, numTriggers, tickSpeed = 100) => {
+            fullDuration *= fullDuration < 1000 && 1000 || 1
+            fullDuration -= tickSpeed
+            const numTicks = D.Int(fullDuration / tickSpeed),
+                timeLine = (new Array(numTicks)).fill(0),
+                sampler = timeLine.map((x, i) => i)
+            numTriggers--
+            while (numTriggers) {
+                timeLine[D.PullIndex(sampler, randomInteger(sampler.length))] = 1
+                numTriggers--
+            }
+            return timeLine.join("").split("1").map(x => (x.length + 1) * tickSpeed)
         },
     // #endregion
 
@@ -1851,6 +1864,9 @@ const TimeTracker = (() => {
             }
         },
         toggleCountdown = (activeState) => {
+            // *** NEXT LINE DISABLES THIS FUNCTION: COMMENT OUT TO REACTIVATE ***
+            activeState = true
+            // *******************************************************************
             isCountdownRunning = Boolean(activeState)
             if (activeState) {
                 tickCountdown()
@@ -2216,6 +2232,8 @@ const TimeTracker = (() => {
         IsValidDate: isValidDString,
         get IsClockRunning() { return isRunning || isRunningFast || isTimeRunning },
         get WeatherCode () { return getWeatherCode() },
+
+        GetRandomTimeline: getRandomEventTriggers,
 
         SetAlarm: setAlarm
     }

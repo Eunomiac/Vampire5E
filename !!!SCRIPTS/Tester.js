@@ -51,6 +51,18 @@ const Tester = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting
             switch (call) {
+                case "handout": {
+                    Handouts.Make("Test Run", "Test", "<img src=\"http://imgur.com/wrYwpgR.jpg\">", true)
+                    break
+                }
+                case "randtimeline": {
+                    const [fullDuration, numTriggers, tickSpeed] = args,
+                        timeLine = TimeTracker.GetRandomTimeline(D.Float(fullDuration), D.Int(numTriggers), D.Int(tickSpeed) || 100),
+                        triggerCount = timeLine.length,
+                        totalTime = timeLine.reduce((tot = 0, x) => tot + x)
+                    D.Alert(D.JS({timeLine, triggerCount, totalTime}), "Random Timeline Test")
+                    break
+                }
                 case "session": {
                     D.Alert(D.JS(Session[args.shift()]), "Session Test")
                     break
@@ -60,7 +72,7 @@ const Tester = (() => {
                     break
                 }
                 case "page": {
-                    D.Alert(getObj("page", D.GetPlayer(D.GMID()).get("_lastpage")).get("name"), "Testing Page")
+                    D.Alert(D.GetPageID(args.join(" ")), `Page ID of '${args.join(" ")}'`)
                     break
                 }
                 case "sound": {

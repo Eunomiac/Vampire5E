@@ -194,10 +194,18 @@ const Chat = (() => {
                             break
                         case "text": {
                             switch (args.shift().toLowerCase()) {
-                                case "prep": {
+                                case "prepall": {
                                     STATE.REF.FontTypes = [...FONTDATA.types]
-                                    STATE.REF.FontSizes = [...FONTDATA.sizes]            
+                                    STATE.REF.FontSizes = [...FONTDATA.sizes]
+                                    STATE.REF.Chars = C.TEXTCHARS       
                                     prepText(STATE.REF.FontTypes.shift())
+                                    break
+                                }
+                                case "prep": {                                    
+                                    STATE.REF.FontTypes = [...FONTDATA.types]
+                                    STATE.REF.FontSizes = [...FONTDATA.sizes]
+                                    STATE.REF.Chars = Object.values(D.MissingChars).join("")
+                                    prepText()
                                     break
                                 }
                                 case "res": case "resolve": {
@@ -453,9 +461,11 @@ const Chat = (() => {
     // #endregion
 
     // #region Text Length Testing
-        prepText = (font) => {
+        prepText = (fonts) => {
+            const isDoingAll = STATE.REF.Chars.length < 10
+            fonts = fonts && _.flatten([fonts]) || STATE.REF.FontTypes
             if (STATE.REF.FontSizes.length) {
-                const sizes = STATE.REF.FontSizes.splice(0, 6),   
+                const sizes = isDoingAll && STATE.REF.FontSizes.splice(0, STATE.REF.FontSizes.length) || STATE.REF.FontSizes.splice(0, 6),   
                     [textObjs, newTextObjs] = [
                         findObjs({_pageid: D.THISPAGEID, _type: "text", layer: "objects"}),
                         {}
@@ -463,28 +473,30 @@ const Chat = (() => {
                 let [left, top] = [300, 100]
                 for (const obj of textObjs)
                     obj.remove()
-                newTextObjs[font] = {}
-                for (const size of sizes) {
-                    newTextObjs[font][size] = []
-                    for (const char of C.TEXTCHARS.split("")) {
-                        newTextObjs[font][size].push(createObj("text", {
-                            _pageid: D.THISPAGEID,
-                            top,
-                            left,
-                            text: char.repeat(40),
-                            font_size: size,
-                            font_family: font,
-                            color: "rgb(255,255,255)",
-                            layer: "objects"
-                        }))
-                        top += 25
-                        if (top > 3400) {
-                            left += 100
-                            top = 100
+                for (const font of fonts) {
+                    newTextObjs[font] = {}
+                    for (const size of sizes) {
+                        newTextObjs[font][size] = []
+                        for (const char of STATE.REF.Chars.split("")) {
+                            newTextObjs[font][size].push(createObj("text", {
+                                _pageid: D.THISPAGEID,
+                                top,
+                                left,
+                                text: char.repeat(40),
+                                font_size: size,
+                                font_family: font,
+                                color: "rgb(255,255,255)",
+                                layer: "objects"
+                            }))
+                            top += 25
+                            if (top > 3400) {
+                                left += 100
+                                top = 100
+                            }
                         }
                     }
                 }
-                D.Alert(`Created ${C.TEXTCHARS.split("").length} x ${sizes.length} = ${C.TEXTCHARS.split("").length * sizes.length} text objects.<br><br>Move the text object(s) around, then type '!set text res' when you have.`)
+                D.Alert(`Created ${fonts.length} x ${STATE.REF.Chars.split("").length} x ${sizes.length} = ${fonts.length * STATE.REF.Chars.split("").length * sizes.length} text objects.<br><br>Move the text object(s) around, then type '!set text res' when you have.`)
             }
         },
         resolveText = () => {
@@ -550,7 +562,7 @@ const Chat = (() => {
                 for (const textObj of textObjs)
                     textObj.remove()
                 for (const missingChar of D.MissingChars)
-                    if (C.TEXTCHARS.split("").includes(missingChar))
+                    if (STATE.REF.Chars.split("").includes(missingChar))
                         D.MissingChars = `!${missingChar}`
                 D.Chat("Storyteller", C.HTML.Block(C.HTML.Body([
                     "<h4 style=\"text-align: center; background-color: black; color: white; border-bottom: 2px solid black;\">Text Width Calibration Complete!</h3>",

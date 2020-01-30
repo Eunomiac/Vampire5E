@@ -110,12 +110,12 @@ const Handouts = (() => {
     // #endregion
 
     // #region SETTERS: Setting Notes, Deleting Handouts, Appending to Handouts
-        makeHandoutObj = (title, category, contents) => {
+        makeHandoutObj = (title, category, contents, isRawCode = false) => {
             if (category)
                 STATE.REF.noteCounts[category] = getCount(category) + 1
             const noteObj = createObj("handout", {name: `${title} ${category && getCount(category) > 1 ? getCount(category) - 1 : ""}`})
             if (contents)
-                noteObj.set("notes", C.HANDOUTHTML.main(D.JS(contents)))
+                noteObj.set("notes", C.HANDOUTHTML.main(isRawCode && contents || D.JS(contents)))
             return noteObj
         },
         delHandoutObjs = (titleRef, category) => {

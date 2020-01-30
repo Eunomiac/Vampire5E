@@ -25,6 +25,20 @@ const Player = (() => {
     // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             switch (call) {
+                case "!pcom": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "startsession": {
+                            Session.Start()
+                            break
+                        }
+                        case "endsession": {
+                            Session.End()
+                            break
+                        }
+                        // no default
+                    }
+                    break
+                }
                 case "!mvc": {
                     MVC({name: msg.who})
                     break

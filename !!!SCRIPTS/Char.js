@@ -656,6 +656,7 @@ const Char = (() => {
     // #region SETTERS: Moving Tokens, Toggling Characters
         sendCharsHome = (charRef = "sandbox") => {
             const charTokens = _.groupBy(_.compact(Media.GetTokens(charRef)), v => VAL({pc: v}) && "pc" || "npc")
+            DB({charRef, charTokens, mediaGet: Media.GetTokens(charRef)}, "sendCharsHome")
             
             STATE.REF.tokenRecord = charTokens && _.flatten(Object.values(charTokens)).map(x => ({id: x.id, left: x.get("left"), top: x.get("top")}))
             for (const token of charTokens.pc || []) {

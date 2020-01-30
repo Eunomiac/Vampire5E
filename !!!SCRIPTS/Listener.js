@@ -115,6 +115,7 @@ const Listener = (() => {
                 "!anim": {script: Media, gmOnly: true, singleCall: false},
                 "!snd": {script: Media, gmOnly: true, singleCall: false},
                 // "!sound": {script: SoundScape, gmOnly: true, singleCall: true, needsObjects: false},
+                "!pcom": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!mvc": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!token": {script: Player, gmOnly: false, singleCall: false},
                 "!links": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},

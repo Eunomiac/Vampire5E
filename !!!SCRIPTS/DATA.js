@@ -193,16 +193,19 @@ const D = (() => {
     // #region DECLARATIONS: Reference Variables, Temporary Storage Variables
     const VALS = {
             PAGEID: (pageRef) => {
+                // DB({pageRef}, "VALS")
                 if (pageRef) {
-                    const object = getChar(pageRef) || Media.GetImg(pageRef) || Media.GetTokens(pageRef).pop() || Media.GetAnim(pageRef) || Media.GetText(pageRef)
-                    if (VAL({object}))
-                        return object.get("_pageid")
-                    if (_.isString(pageRef)) {
-                        const pageObj = getObj("page", pageRef)
-                        if (pageObj)
+                    if (isID(pageRef)) 
+                        return (getObj("page", pageRef) || {id: false}).id
+                    if (_.isString(pageRef)) {  
+                        const pageObj = (findObjs({_type: "page"}).find(x => x.get("name") === pageRef) || {id: false}).id                      
+                        // DB({page: findObjs({_type: "page"}).find(x => x.get("name") === pageRef)}, "VALS")
+                        if (pageObj && pageObj.id)
                             return pageObj.id
-                        return (findObjs({_type: "page"}).find(x => x.get("name") === pageRef) || {id: false}).id
                     }
+                    // const object = getChar(pageRef) || Media.GetImg(pageRef) || Media.GetTokens(pageRef).pop() || Media.GetAnim(pageRef) || Media.GetText(pageRef)
+                    if (VAL({object: pageRef}))
+                        return pageRef.get("_pageid")
                 }                
                 return Campaign().get("playerpageid")
             },
@@ -875,6 +878,7 @@ const D = (() => {
             const index = array.findIndex((v, i, a) => checkFunc(v, i, a))
             return index !== -1 && array.splice(index, 1).pop()
         },
+        pullIndex = (array, index) => pullElement(array, (v, i) => i === index),
         parseToObj = (val, delim = ",", keyValDelim = ":") => {
             /* Converts an array or comma-delimited string of parameters ("key:val, key:val, key:val") into an object. */
             const [obj, args] = [{}, []]
@@ -993,6 +997,7 @@ const D = (() => {
             const result = dict.get(needle)
             return result && result[0][1]
         },
+        isID = (testStr) => typeof testStr === "string" && testStr.length === 20 && testStr.charAt(0) === "-",
         /* eslint-disable-next-line no-unused-vars */
         /* isntIn = (needle, haystack = ALLSTATS, isFuzzyMatching = true) => {
             // Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. 
@@ -1989,7 +1994,7 @@ const D = (() => {
                 STATE.REF.MissingChars = _.uniq([...STATE.REF.MissingChars, char])
         },
 
-        get MAINPAGEID() { return VALS.PAGEID() },
+        get MAINPAGEID() { return VALS.PAGEID("GAME") },
         GetPageID: (pageRef) => VALS.PAGEID(pageRef),
         get THISPAGEID() { return getObj("page", D.GetPlayer(D.GMID()).get("_lastpage")).id },
         get CELLSIZE() { return VALS.CELLSIZE() },
@@ -2023,7 +2028,7 @@ const D = (() => {
         IsMenuStored: isMenuMemoed,
         CommandMenu: commandMenu,
 
-        RemoveFirst: removeFirst, PullOut: pullElement,
+        RemoveFirst: removeFirst, PullIndex: pullIndex, PullOut: pullElement,
         KeyMapObj: kvpMap,
         ParseToObj: parseToObj,
 
@@ -2031,6 +2036,7 @@ const D = (() => {
         FuzzyMatch: fuzzyMatch,
         IsIn: isIn,
         Validate: validate,
+        IsID: isID,
 
         SetDebugWatchList: setWatchList,
         GetDebugWatchList: getWatchList,
