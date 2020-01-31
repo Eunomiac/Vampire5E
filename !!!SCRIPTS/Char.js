@@ -43,55 +43,12 @@ const Char = (() => {
             STATE.REF.weeklyResources = STATE.REF.weeklyResources || {}
             STATE.REF.customStakes = STATE.REF.customStakes || {}
             STATE.REF.customStakes.coterie = STATE.REF.customStakes.coterie || []
-            STATE.REF.customStakes.personal = STATE.REF.customStakes.personal || {A: [], L: [], N: [], R: []}
+            STATE.REF.customStakes.personal = STATE.REF.customStakes.personal || {A: [], B: [], L: [], N: [], R: []}
             STATE.REF.projectDetails = STATE.REF.projectDetails || []
             STATE.REF.tokenRecord = STATE.REF.tokenRecord || []
             STATE.REF.traitSelection = STATE.REF.traitSelection || []
-        /* STATE.REF.registry = {
-            TopLeft: {
-                id: "-LluFXX9vtlTeb_D7t4y",
-                name: "Locke Ulrich",
-                playerID: "LMGDQqIvyL87oIfrVDX",
-                playerName: "PixelPuzzler",
-                tokenName: "LockeUlrichToken",
-                shortName: "Locke",
-                initial: "L",
-                quadrant: "TopLeft"
-            },
-            BotLeft: {
-                id: "-LU7pYIreUSrtqZ3UL46",
-                name: "Dr. Arthur Roy",
-                playerID: "-LN6n-fR8cSNR2E_N_3q",
-                playerName: "banzai",
-                tokenName: "Dr.ArthurRoyToken",
-                shortName: "Roy",
-                initial: "R",
-                quadrant: "BotLeft"
-            },
-            TopRight: {
-                id: "-LU7packiBP3Zg5H4Ao_",
-                name: "Johannes Napier",
-                playerID: "-LN7lNnjuWmFuvVPW76H",
-                playerName: "Thaumaterge",
-                tokenName: "JohannesNapierToken",
-                shortName: "Napier",
-                initial: "N",
-                quadrant: "TopRight"
-            },
-            BotRight: {
-                id: "-LU7p_BZ3yaOqjWCoOUh",
-                name: "Ava Wong",
-                playerID: "-LMGDbZCKw4bZk8ztfNf",
-                playerName: "Ava Wong",
-                tokenName: "AvaWongToken",
-                shortName: "Ava",
-                initial: "A",
-                quadrant: "BotRight"
-            }
-        } */
-
-        // Storyteller Override:
-        // STATE.REF.registry.TopLeft.playerID = "-LLIBpH_GL5I-9lAOiw9"
+            // Storyteller Override:
+        // STATE.REF.registry.TopLeft.playerID = D.GetPlayerID("Storyteller")
 
         // Return Player Control:
         // STATE.REF.registry.TopLeft.playerID = "-LMGDQqIvyL87oIfrVDX"
@@ -167,7 +124,10 @@ const Char = (() => {
                             Char.RefreshDisplays()
                             break
                         }
-                        // no default
+                        default: {
+                            D.Alert("Syntax:<br><br>!char reg <players/char/weekly/stake><br><br>!char reg char <shortName> <initial> <quadrant>", "!char reg")
+                            break
+                        }
                     }
                     break
                 }
@@ -465,7 +425,7 @@ const Char = (() => {
                             break
                         }
                         case "defaults": {
-                            populateDefaults(args.shift())
+                            populateDefaults(charObjs)
                             break
                         }
                         case "npcstats": {
@@ -627,7 +587,7 @@ const Char = (() => {
             if (!tokenObj)
                 return THROW("Please select a character token.", "registerChar")
             if (!D.IsIn(quadrant, _.keys(C.QUADRANTS), true))
-                return THROW("Quadrant must be one of: TopLeft, BotLeft, TopRight, BotRight.", "registerChar")
+                return THROW(`Quadrant must be one of: ${_.keys(C.QUADRANTS).join(", ")}.`, "registerChar")
             if (!Media.RegToken(tokenObj))
                 return THROW("Token registration failed.", "registerChar")
             REGISTRY[quadrant] = {
@@ -1289,6 +1249,7 @@ const Char = (() => {
 
 
 
+
             DB({coterieStakes, stakeData, filteredStakes}, "displayStakes")
             // Check for combining already-entered coterie stakes.
             for (const stake of STATE.REF.customStakes.coterie) {
@@ -1470,9 +1431,9 @@ const Char = (() => {
                     case "hunger":
                         chatStyles.header = {margin: "0px"}
                         if (amount > 0) 
-                            bannerString = `Your hunger increases by ${D.NumToText(amount).toLowerCase()}`
+                            bannerString = `Your hunger increases from ${D.NumToText(initTraitVal).toLowerCase()} to ${D.NumToText(finalTraitVal).toLowerCase()}.`
                         else if (amount < 0)
-                            bannerString = `You sate your hunger by ${D.NumToText(Math.abs(amount)).toLowerCase()}`
+                            bannerString = `You slake your hunger by ${D.NumToText(Math.abs(amount)).toLowerCase()}.`
                         Media.SetImg(`Hunger${getAttrByName(charObj.id, "sandboxquadrant")}_1`, D.Int(finalTraitVal) === "0" ? "blank" : `${finalTraitVal}`)
                         break
                     case "hum": case "humanity":
@@ -1751,7 +1712,12 @@ const Char = (() => {
                         repAttrGroupedTrips = _.groupBy(repAttrValTrips, x => x[1]),
                         repAttrGroupString = Object.values(D.KeyMapObj(repAttrGroupedTrips, null, (v, k) => `    <b>${k}</b>: ${_.uniq(v.map(x => x[2])).join(", ")}`)).join("<br>"),
                         obsoleteAttrValPairs = nonRepAttrValPairs.filter(x => !(x[1] in C.SHEETATTRS)),
-                        obsoleteRepAttrValTrips = repAttrValTrips.filter(x => !(x[1] in D.KeyMapObj(D.Clone(C.REPATTRS), k => D.LCase(k))))
+                        obsoleteRepAttrValTrips = repAttrValTrips.filter(x => !(x[1] in D.KeyMapObj(D.Clone(C.REPATTRS), k => D.LCase(k)))),
+                        nonRepAttrNames = nonRepAttrValPairs.map(x => x[1]),
+                        missingDefaultAttrTrips = _.omit(D.Clone(C.SHEETATTRS), (v, k) => nonRepAttrNames.includes(k.replace(/_max/gu, "")))
+
+                    setAttrs(charObj.id, missingDefaultAttrTrips)
+
                     for (const [attrObj] of obsoleteAttrValPairs)
                         if (VAL({object: attrObj}))
                             attrObj.remove()
@@ -1778,7 +1744,9 @@ const Char = (() => {
                         D.JS(repOrderAttrObjs.map(x => x.get("name").replace(/_reporder_(repeating_)?/gu, ""))),
                         "",
                         "<b><u>Repeating Attributes</u>:</b>",
-                        D.JS(repAttrGroupString)
+                        D.JS(repAttrGroupString),
+                        "<b><u>Default Attributes Applied</u></b>",
+                        D.JS(missingDefaultAttrTrips)
                     ])
                 }
             D.Alert(reportLines.join("<br>"), "Character Attribute Validation")

@@ -22,6 +22,10 @@ const Session = (() => {
             // delete STATE.REF.curLocation
             // delete STATE.REF.locationRecord
             // delete STATE.REF.tokenRecord
+            
+            // STATE.REF.SessionScribes = ["TeatimeRationale", "PixelPuzzler"]
+
+
             PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND)
             STATE.REF.isTestingActive = STATE.REF.isTestingActive || false
             STATE.REF.sceneChars = STATE.REF.sceneChars || []

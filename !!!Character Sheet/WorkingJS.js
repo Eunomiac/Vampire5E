@@ -66,7 +66,14 @@
             "Lasombra": "Your Lasombra Blood is tainted by the same Abyss that gives you power over darkness.  Your reflection, recorded image and recorded voice are distorted, but not enough to hide your identity: avoiding vampire detection systems suffers a penalty equal to your Bane Severity.  Moreover, you must succeed on a Technology roll against a Difficulty of 2 plus your Bane Severity to use modern communications devices.",
             "Tzimisce": "Your storied Tzimisce Blood is inexhorably tied to the Old World.  You must sleep each day submerged in soil taken from Eastern Europe, or you suffer a penalty equal to your Bane Severity to all dice pools the following night.",
             "Banu Haqim": "Your Assamite Blood drives you to feed from those deserving of punishment: especially the Kindred.  Upon slaking Hunger with Cainite Blood, you must roll to resist Hunger Frenzy against a Difficulty of 2 plus your Bane Severity.",
-            "Hecata": "Your Hecata Blood is tainted with death.  When feeding, you do not cause ecstasy in your prey, but rather excruciating pain.  Moreover, mortals subconsciously sense your blighted nature:  You suffer a penalty equal to your Bane Severity to all attempts to feed from mortals that do not rely on force.",
+            "Hecata": {
+                Giovanni: "Steeped in death, the fangs of the Giovanni bring not bliss, but agony.  You cause additional Superficial Health damage equal to your Bane Severity for each level of Hunger slaked.  Unwilling mortals not restrained will try to escape, and even the willing or coerced must succeed at a test of Stamina + Resolve vs. 3 to submit voluntarily.  Vampires bitten by Giovanni fangs face a Frenzy test vs. 3 to avoid a terror frenzy.",
+                Samedi: "",
+                Nagaraja: "",
+                Lamiae: "Steeped in death, the fangs of the Lamiae bring not bliss, but agony.  You cause additional Superficial Health damage equal to your Bane Severity for each level of Hunger slaked.  Unwilling mortals not restrained will try to escape, and even the willing or coerced must succeed at a test of Stamina + Resolve vs. 3 to submit voluntarily.  Vampires bitten by Gorgon fangs face a Frenzy test vs. 3 to avoid a terror frenzy.",
+                Harbinger: "",
+                base: "Steeped in death, the fangs of the Hecata bring not bliss, but agony.  You cause additional Superficial Health damage equal to your Bane Severity for each level of Hunger slaked.  Unwilling mortals not restrained will try to escape, and even the willing or coerced must succeed at a test of Stamina + Resolve vs. 3 to submit voluntarily.  Vampires bitten by Hecata fangs face a Frenzy test vs. 3 to avoid a terror frenzy."
+            },
             "Ministry": "Yours is the Blood of Set, and it shares His longing for darkness.  You suffer your Bane Severity in additional aggravated damage from sunlight, and an equivalent penalty to all dice pools when bright light is directed straight at you.",
             "Ravnos": "Your Ravnos Blood instills in you a weakness for a specific vice or crime: theft, deceit, con-artistry, etc.  When commiting your chosen vice would benefit you in some way, failure to act accordingly penalizes your Social and Mental dice pools by an amount equal to your Bane Severity for the remainder of the night.",
             "Mortal": ""
@@ -85,7 +92,14 @@
             "Lasombra": ["Dominate", "Oblivion", "Potence"],
             "Tzimisce": ["Animalism", "Auspex", "Vicissitude"],
             "Banu Haqim": ["Celerity", "Obfuscate", "Blood Sorcery"],
-            "Hecata": ["Auspex", "Fortitude", "Oblivion"],
+            "Hecata": {
+                Giovanni: ["Dominate", "Fortitude", "Oblivion"],
+                Samedi: ["Fortitude", "Oblivion", "Obfuscate"],
+                Nagaraja: ["Auspex", "Dominate", "Oblivion"],
+                Lamiae: ["Auspex", "Oblivion", "Potence"],
+                Harbinger: ["Auspex", "Fortitude", "Oblivion"],
+                base: ["Auspex", "Fortitude", "Oblivion"],
+            },
             "Ministry": ["Obfuscate", "Presence", "Protean"],
             "Ravnos": ["Animalism", "Fortitude", "Chimerstry"],
             "Mortal": ["True Faith"]
@@ -557,6 +571,10 @@
                 colToggles: ["xp_trait_toggle", "xp_initial_toggle", "xp_new_toggle"],
                 cost: 6
             },
+            "Ceremony": {
+                colToggles: ["xp_trait_toggle", "xp_new_toggle"],
+                cost: 3
+            },
             "Ritual": {
                 colToggles: ["xp_trait_toggle", "xp_new_toggle"],
                 cost: 3
@@ -818,7 +836,8 @@
                     }),
                     (attrArray, cBack) => {
                         getAttrs([...["disc1_name", "disc2_name", "disc3_name"], ...attrArray], ATTRS => {
-                            attrList.rituals_toggle = _.values(ATTRS).includes("Blood Sorcery") || _.values(ATTRS).includes("Oblivion") ? 1 : 0
+                            attrList.ceremonies_toggle = _.values(ATTRS).includes("Oblivion") ? 1 : 0
+                            attrList.rituals_toggle = _.values(ATTRS).includes("Blood Sorcery") ? 1 : 0
                             attrList.formulae_toggle = _.values(ATTRS).includes("Alchemy") ? 1 : 0
                             cBack(null, attrList)
                         })
@@ -831,20 +850,28 @@
             const attrList = {},
                 $funcs = [
                     cBack => {
-                        getAttrs(["clan", "blood_potency"], ATTRS => {
-                            attrList.bane_title = `${ATTRS.clan} Clan Bane`
-                            attrList.bane_text = baneText[ATTRS.clan].replace("Bane Severity", `Bane Severity (${
-                                bpDependants[ATTRS.blood_potency].bp_baneseverity
-                            })`)
-                            const cDiscs = clanDiscs[ATTRS.clan]
-                            for (let i = 1; i <= 3; i++)
-                                if (cDiscs[i - 1] === "") {
-                                    attrList[`disc${i}_toggle`] = 0
-                                    attrList[`disc${i}_name`] = ""
-                                } else {
-                                    attrList[`disc${i}_toggle`] = 1
-                                    attrList[`disc${i}_name`] = cDiscs[i - 1]
-                                }
+                        getAttrs(["clan", "bloodline", "blood_potency", "bloodline_toggle"], ATTRS => {
+                            const bloodlineActive = typeof baneText[ATTRS.clan] !== "string"
+                            attrList.bloodline_toggle = bloodlineActive ? 1 : 0
+                            const bText = bloodlineActive && baneText[ATTRS.clan] && (baneText[ATTRS.clan][ATTRS.bloodline] || baneText[ATTRS.clan].base) || baneText[ATTRS.clan]
+                            if (bText) {
+                                attrList.bane_title = bloodlineActive && `${ATTRS.bloodline} (of the ${ATTRS.clan}) Bloodline Bane` || `${ATTRS.clan} Clan Bane`
+                                attrList.bane_text = bText.replace("Bane Severity", `Bane Severity (${
+                                    bpDependants[ATTRS.blood_potency].bp_baneseverity
+                                })`)
+
+                            }
+                            const cDiscs = bloodlineActive && clanDiscs[ATTRS.clan] && (clanDiscs[ATTRS.clan][ATTRS.bloodline] || clanDiscs[ATTRS.clan].base) || clanDiscs[ATTRS.clan]
+                            if (cDiscs)
+                                for (let i = 1; i <= 3; i++)
+                                    if (cDiscs[i - 1] === "") {
+                                        attrList[`disc${i}_toggle`] = 0
+                                        attrList[`disc${i}_name`] = ""
+                                    } else {
+                                        attrList[`disc${i}_toggle`] = 1
+                                        attrList[`disc${i}_name`] = cDiscs[i - 1]
+                                    }
+                                
 
                             cBack(null, attrList)
                         })
@@ -935,7 +962,7 @@
             run$($funcs)
         }
 
-    on("change:clan", doClans)
+    on("change:clan change:bloodline", doClans)
     on(getTriggers(DISCENUMS, "", _.keys(DISCREPREFS)), eInfo => {
         if (!isBlacklisted(eInfo.sourceAttribute))
             doDiscPowers(eInfo.sourceAttribute)

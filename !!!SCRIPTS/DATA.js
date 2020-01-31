@@ -1994,7 +1994,7 @@ const D = (() => {
                 STATE.REF.MissingChars = _.uniq([...STATE.REF.MissingChars, char])
         },
 
-        get MAINPAGEID() { return VALS.PAGEID("GAME") },
+        get MAINPAGEID() { return C.MAINPAGEID },
         GetPageID: (pageRef) => VALS.PAGEID(pageRef),
         get THISPAGEID() { return getObj("page", D.GetPlayer(D.GMID()).get("_lastpage")).id },
         get CELLSIZE() { return VALS.CELLSIZE() },
