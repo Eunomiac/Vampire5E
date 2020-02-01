@@ -51,8 +51,71 @@ const Tester = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting
             switch (call) {
-                case "handout": {
-                    Handouts.Make("Test Run", "Test", "<img src=\"http://imgur.com/wrYwpgR.jpg\">", true)
+                case "handout": {       
+                    Handouts.Make("Test Run", "Test", C.HANDOUTHTML.EyesOnlyDoc.Block(
+                        C.HANDOUTHTML.EyesOnlyDoc.Line([
+                            C.HANDOUTHTML.EyesOnlyDoc.LineHeader("B. Giovanni"),
+                            C.HANDOUTHTML.EyesOnlyDoc.LineBody(`This is the goal of my project! This is the goal of my project! This is the goal of my project! This is the goal of my project! This is the goal of my project! ${C.HANDOUTHTML.EyesOnlyDoc.LineBodyRight("<b><u>COMPLETED ON</u>:</b> Dec. 27, 2020)")}`)
+                        ].join(""), {bgColor: "rgba(0,0,0,0.1)"})
+                    ))
+                    
+                    /*
+                    `<div style="
+                    display: block;
+                    width: 540px;
+                    height: 800px;
+                    margin-left: -30px;
+                    background: url('https://i.imgur.com/LsrLDoN.jpg') no-repeat top;
+                    background-size: 100%;
+                    ">
+                        <div style="
+                        display: inline-block;
+                        height: 100%;
+                        width: 449px;
+                        margin-left: 63px;
+                        margin-right: 30px;
+                        margin-top: 185px;
+                        ">
+                            <div style="
+                            display: inline-block;
+                            height: auto;
+                            width: 100%;
+                            background-color: rgba(0,0,0,0.1);
+                            padding-left: 6px;
+                            margin-bottom: 5px;
+                            ">
+                                <div style="
+                                display: inline-block;
+                                width: 75px;
+                                height: auto;
+                                font-family: TypewriterScribbled;
+                                font-size: 10px;
+                                text-align: left;
+                                vertical-align: top;
+                                line-height: 11px;
+                                text-align-last: left;
+                                ">B. Giovanni</div>
+                                <div style="
+                                display: inline-block;
+                                width: 370px;
+                                height: auto;
+                                font-family: TypewriterScribbled;
+                                font-size: 10px;
+                                line-height: 11px;
+                                text-align: left;
+                                text-align-last: left;
+                                ">This is the goal of my project! This is the goal of my project! This is the goal of my project! This is the goal of my project! This is the goal of my project!
+                                    <div style="
+                                    display: inline-block;
+                                    text-align: right;
+                                    text-align-last: right;
+                                    width: 100%;
+                                    "><b><u>COMPLETED ON</u>:</b> Dec. 27, 2020</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`
+                    */
                     break
                 }
                 case "randtimeline": {

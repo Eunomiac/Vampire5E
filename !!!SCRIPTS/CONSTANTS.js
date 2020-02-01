@@ -605,6 +605,95 @@ const C = (() => {
             
         },
         HANDOUTHTML = {
+            EyesOnlyDoc: { 
+                Block: (content, options = {}) => {
+                    const params = {
+                        bgURL: options.bgURL || "https://i.imgur.com/LsrLDoN.jpg"
+                    }
+                    return D.JSH(`<div style="
+                        display: block;
+                        width: 540px;
+                        height: 800px;
+                        margin-left: -30px;
+                        background: url('${params.bgURL}') no-repeat top;
+                        background-size: 100%;
+                        position: relative;
+                        top: -515px;
+                        margin-bottom: -515px;
+                        "><div style="
+                            display: inline-block;
+                            height: 100%;
+                            width: 449px;
+                            margin-left: 63px;
+                            margin-right: 30px;
+                            margin-top: 185px;
+                        ">${content}</div></div>`)
+                },
+                Line: (content, options = {}) => {
+                    const params = {
+                        bgColor: options.bgColor || null,
+                        border: options.border || "border: none;"
+                    }
+                    return D.JSH(`<div style="
+                        display: inline-block;
+                        height: auto;
+                        width: 100%;
+                        background-color: ${params.bgColor};
+                        padding-left: 6px;
+                        padding-top: 2px;
+                        padding-bottom: 2px;
+                        ${params.border}
+                    ">${content}</div>`)
+                },
+                LineHeader: (content, options = {}) => {
+                    const params = {
+                        vertAlign: options.vertAlign || "top"
+                    }
+                    return D.JSH(`<div style="
+                        display: inline-block;
+                        width: 75px;
+                        height: auto;
+                        font-family: QWERTYpe;
+                        font-size: 11px;
+                        text-align: left;
+                        vertical-align: ${params.vertAlign};
+                        line-height: 12px;
+                        text-align-last: left;
+                    ">${content}</div>`)
+                },
+                LineBody: (content, options = {}) => {
+                    const params = {
+                        width: options.width || "370px",
+                        fontFamily: options.fontFamily || "QWERTYpe",
+                        fontSize: options.fontSize || "11px",
+                        lineHeight: options.lineHeight || "12px",
+                        textAlign: options.textAlign || "left",
+                        vertAlign: options.vertAlign || "top",
+                        margin: options.margin || "0px -5px 0px 5px"
+                    }
+                    return D.JSH(`<div style="
+                        display: inline-block;
+                        width: ${params.width};
+                        height: auto;
+                        margin: ${params.margin};
+                        font-family: ${params.fontFamily};
+                        font-size: ${params.fontSize};
+                        line-height: ${params.lineHeight};
+                        text-align: ${params.textAlign};
+                        text-align-last: ${params.textAlign};
+                        vertical-align: ${params.vertAlign};
+                        ">${content}</div>`)
+                },
+                LineBodyRight: (content) => {
+                    return D.JSH(`<div style="
+                        display: inline-block;
+                        text-align: right;
+                        text-align-last: right;
+                        width: 100%;
+                        margin: 0px 5px 5px -5px;
+                    ">${content}</div>`)
+                }
+            },
             main: content => { return D.JSH(`<div style="
                 display: block;
                 width: 600px;
@@ -2464,6 +2553,14 @@ const C = (() => {
                 soundScape: ["Waterside"],
                 outside: false
             },
+            CabbagetownPenthouse: {
+                fullName: "a Cabbagetown Penthouse",
+                district: ["Cabbagetown"],
+                resonance: ["p", null],
+                rollEffects: [],
+                soundScape: ["(NONE)"],
+                outside: false
+            },
             CasaLoma: {
                 fullName: "Casa Loma",
                 district: ["DupontByTheCastle"],
@@ -2584,6 +2681,22 @@ const C = (() => {
                 soundScape: ["Nightclub"],
                 outside: false
             },
+            GiovanniEstate: {
+                fullName: "the Giovanni Estate",
+                district: ["Wychwood"],
+                resonance: ["i", null],
+                rollEffects: [],
+                soundScape: ["CityPark"],
+                outside: true
+            },
+            HauntedMansion: {
+                fullName: "a haunted mansion",
+                district: ["Wychwood"],
+                resonance: ["i", null],
+                rollEffects: [],
+                soundScape: ["SoftIndoor"],
+                outside: false
+            },
             Distillery: {
                 fullName: "the Historic Distillery",
                 district: ["DistilleryDist"],
@@ -2688,6 +2801,14 @@ const C = (() => {
                 soundScape: ["SoftIndoor"],
                 outside: false
             },
+            RegentParkApt: {
+                fullName: "a Regent Park Apartment",
+                district: ["RegentPark"],
+                resonance: ["i", null],
+                rollEffects: [],
+                soundScape: ["(TOTALSILENCE)"],
+                outside: false
+            },
             RogersCentre: {
                 fullName: "the Rogers Centre",
                 district: ["Waterfront"],
@@ -2710,14 +2831,6 @@ const C = (() => {
                 resonance: ["m", null],
                 rollEffects: [],
                 soundScape: ["SoftIndoor"],
-                outside: false
-            },
-            SheerExcess: {
-                fullName: "sheer eXcess DVD Rental",
-                district: ["GayVillage"],
-                resonance: ["m", null],
-                rollEffects: [],
-                soundScape: ["Nightclub"],
                 outside: false
             },
             Sidewalk1: {

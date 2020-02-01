@@ -50,7 +50,7 @@ const Handouts = (() => {
                 _type: "handout",
                 name: title
             })
-            notes[0].get("notes", (note) => { log(note) })
+            // notes[0].get("notes", (note) => { log(note) })
 
             if (charRef)
                 return _.filter(notes, v => v.get("inplayerjournals").includes(D.GetPlayerID(charRef)))[0]
@@ -117,6 +117,11 @@ const Handouts = (() => {
             if (contents)
                 noteObj.set("notes", C.HANDOUTHTML.main(isRawCode && contents || D.JS(contents)))
             return noteObj
+        },
+        updateHandout = (title, category, contents, isRawCode = false) => {
+            const handoutObj = getHandoutObj(title)
+            if (VAL({object: handoutObj}))
+                handoutObj.set("notes", isRawCode && contents || D.JS(contents))
         },
         delHandoutObjs = (titleRef, category) => {
             for (const handout of _.filter(findObjs({_type: "handout", inplayerjournals: "", archived: false}), v => D.FuzzyMatch(v.get("name"), titleRef)))
@@ -292,6 +297,7 @@ const Handouts = (() => {
         OnChatCall: onChatCall,
 
         Make: makeHandoutObj,
+        Set: updateHandout,
         Remove: delHandoutObj,
         RemoveAll: delHandoutObjs,
         Get: getHandoutObj,

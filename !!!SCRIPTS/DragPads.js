@@ -487,8 +487,12 @@ const DragPads = (() => {
                 delete options.deltaHeight
                 const pad = createObj("graphic", options),
                     partnerPad = createObj("graphic", Object.assign(options, {name: `${imgData.name}_${funcName}_PartnerPad`, layer: "walls"}))
-                Media.IMAGES[imgData.name].padID = pad.id
-                Media.IMAGES[imgData.name].partnerID = partnerPad.id
+                if (!Media.IMAGES[imgData.name]) {
+                    DB(`No registry entry found for ${D.JS(imgData)}`, "makePad")
+                } else {
+                    Media.IMAGES[imgData.name].padID = pad.id
+                    Media.IMAGES[imgData.name].partnerID = partnerPad.id
+                }
                 PADREGISTRY[pad.id] = {
                     funcName,
                     id: imgObj.id,

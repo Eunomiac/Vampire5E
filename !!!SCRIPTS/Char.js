@@ -47,6 +47,12 @@ const Char = (() => {
             STATE.REF.projectDetails = STATE.REF.projectDetails || []
             STATE.REF.tokenRecord = STATE.REF.tokenRecord || []
             STATE.REF.traitSelection = STATE.REF.traitSelection || []
+
+            STATE.REF.registry.TopLeft.docName = "L. Ulrich"
+            STATE.REF.registry.BotLeft.docName = "Dr. Roy"
+            STATE.REF.registry.TopRight.docName = "B. Giovanni"
+            STATE.REF.registry.MidRight.docName = "Dr. Napier"
+            STATE.REF.registry.BotRight.docName = "A. Wong"
             // Storyteller Override:
         // STATE.REF.registry.TopLeft.playerID = D.GetPlayerID("Storyteller")
 
@@ -233,7 +239,7 @@ const Char = (() => {
                             break
                         }
                         case "projects": {
-                            displayProjects()
+                            updateProjectsDoc()
                             break
                         }
                         // no default
@@ -375,7 +381,7 @@ const Char = (() => {
                     break
                 }
                 case "refresh": {
-                    displayStakes()
+                    updateAssetsDoc()
                     displayDesires()
                     displayResources()
                     break
@@ -518,8 +524,7 @@ const Char = (() => {
         onAttrChange = (call, attrObj) => {
             switch (call) {
                 case "hunger": {
-                    const hungerLevel = attrObj.get("current")
-                    Media.SetImg(`Hunger${getAttrByName(attrObj.get("_characterid"), "sandboxquadrant")}_1`, hungerLevel === "0" ? "blank" : hungerLevel)
+                    updateHunger(attrObj.get("_characterid"))
                     break
                 }
                 case "desire": case "_reporder_repeating_desire": {
@@ -527,7 +532,7 @@ const Char = (() => {
                     break
                 }
                 case "projectstake1": case "projectstake2": case "projectstake3": case "projectstake1_name": case "projectstake2_name": case "projectstake3_name": {
-                    displayStakes()
+                    updateAssetsDoc()
                     break
                 }
                 case "triggertimelinesort": {
@@ -544,7 +549,7 @@ const Char = (() => {
                     break
                 }
                 case "projectstake1": case "projectstake2": case "projectstake3": case "projectstake1_name": case "projectstake2_name": case "projectstake3_name": {
-                    displayStakes()
+                    updateAssetsDoc()
                     break
                 }
                 case "triggertimelinesort": {
@@ -1173,13 +1178,13 @@ const Char = (() => {
             DB(`<b>CHARACTER STAKES</b>: ${D.JSL(charAdvData,true)}<br><br><b>COTERIE STAKES:</b> ${D.JSL(coterieAdvData, true)}`, "sortCoterieStakes")
             return [charAdvData, coterieAdvData]
         },
-        displayStakes = () => {
+        updateAssetsDoc = () => {
             const [stakeData, coterieStakes] = [[],{}],
-                sortedCharData = _.sortBy(_.values(D.KeyMapObj(_.values(REGISTRY), null, v => ({initial: v.initial, charObj: D.GetChar(v.id)}))), "initial"),
-                coterieColRefs = [1, 2, 3, 4].map(x => `Stakes_Coterie_Col${x}`),
-                charColRefs = [1, 2, 3, 4].map(x => `Stakes_Char_Col${x}`),
-                coterieCols = D.KeyMapObj(coterieColRefs, (k,v) => v, () => []),
-                charCols = D.KeyMapObj(charColRefs, (k,v) => v, () => [])
+                nameLookup = {},
+                sortedCharData = _.sortBy(_.values(D.KeyMapObj(_.values(REGISTRY), null, v => {
+                    nameLookup[v.initial] = v.docName
+                    return {initial: v.initial, charObj: D.GetChar(v.id)}
+                })), "initial")
             // D.Alert(`Initials Sort: ${D.JS(initials)}`)
             for (const charData of sortedCharData) {
                 const {initial, charObj} = charData,
@@ -1204,6 +1209,7 @@ const Char = (() => {
                                 inits: _.uniq([...(coterieStakes[stake.name] || {inits: []}).inits, initial]),
                                 dates: _.uniq([...(coterieStakes[stake.name] || {dates: []}).dates, endDate]),
                                 dateStamp: [...(coterieStakes[stake.name] || {dateStamp: []}).dateStamp, TimeTracker.GetDate(endDate).getTime()],
+                                endDate,
                                 max: D.Int(advMax)
                             }
                         else
@@ -1272,92 +1278,55 @@ const Char = (() => {
             
             // DB(`Coterie Stakes: ${D.JSL(_.keys(coterieStakes), true)}`, "displayStakes")
             // COTERIE STAKES
-            if (_.keys(coterieStakes).length === 0) {
-                coterieColRefs.map(x => Media.ToggleText(x, false))
-                charColRefs.map(x => Media.SetTextData(x, {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height, shiftTop: 0}))
-            } else {
-                coterieColRefs.map(x => { Media.ToggleText(x, true); return Media.SetTextData(x, {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height}) })
-                charColRefs.map(x => Media.SetTextData(x, {top: Media.GetTextData("Stakes_Coterie_Col1").top, shiftTop: _.keys(coterieStakes).length * Media.GetLineHeight("Stakes_Coterie_Col1") - 5}))
-                coterieCols[coterieColRefs[0]] = new Array(_.keys(coterieStakes).length).fill("")
-                coterieCols[coterieColRefs[1]] = _.values(coterieStakes).map(x => x.name.toUpperCase())
-                coterieCols[coterieColRefs[2]] = _.values(coterieStakes).map(x => "●".repeat(x.max - x.total) + "○".repeat(x.total))
-                coterieCols[coterieColRefs[3]] = _.values(coterieStakes).map(x => TimeTracker.FormatDate(new Date(_.sortBy(x.dateStamp, v => v)[0])))
-                for (const [col, lines] of Object.entries(coterieCols))
-                    Media.SetText(col, lines.join("\n"))
+            const stakeLines = []
+            for (const cotData of Object.values(coterieStakes))
+                stakeLines.push(C.HANDOUTHTML.EyesOnlyDoc.Line([
+                    C.HANDOUTHTML.EyesOnlyDoc.LineHeader(stakeLines.length && " " || "<b><u>COTERIE</u></b>", {vertAlign: "middle"}),
+                    C.HANDOUTHTML.EyesOnlyDoc.LineBody(cotData.name, {width: "190px", vertAlign: "middle"}),
+                    C.HANDOUTHTML.EyesOnlyDoc.LineBody("●".repeat(cotData.max - cotData.total) + "○".repeat(cotData.total), {width: "60px", fontFamily: "Courier New", fontSize: "12px", vertAlign: "middle"}),
+                    C.HANDOUTHTML.EyesOnlyDoc.LineBody(cotData.endDate, {width: "124px", textAlign: "right", vertAlign: "middle", margin: "0px 5px 0px -5px"})
+                ].join(""), {bgColor: "rgba(100,0,0,0.1)"}))
+            let lastInitial = false
+            for (const persData of filteredStakes) {
+                stakeLines.push(C.HANDOUTHTML.EyesOnlyDoc.Line([
+                    C.HANDOUTHTML.EyesOnlyDoc.LineHeader(lastInitial === persData[0] && " " || D.GetCharData(persData[0]).docName, {vertAlign: "middle"}),
+                    C.HANDOUTHTML.EyesOnlyDoc.LineBody(persData[1], {width: "190px", vertAlign: "middle"}),
+                    C.HANDOUTHTML.EyesOnlyDoc.LineBody("●".repeat(persData[3] - persData[2] - _.reduce(persData[5], (tot = 0, n) => tot + n)) + "○".repeat(persData[2]) + persData[5].map(x => `/${"○".repeat(x)}`).join(""), {width: "60px", fontFamily: "Courier New", fontSize: "12px", vertAlign: "middle"}),
+                    C.HANDOUTHTML.EyesOnlyDoc.LineBody(persData[4], {width: "124px", textAlign: "right", vertAlign: "middle", margin: "0px 5px 0px -5px"})
+                ].join(""), {bgColor: stakeLines.length % 2 === 1 ? "rgba(0,0,0,0.1)" : "transparent", border: lastInitial === persData[0] ? null : "border-top: 2px solid #550000;"}));
+                [lastInitial] = persData
             }
-
-            // PERSONAL STAKES
-            if (_.keys(filteredStakes).length === 0) {
-                charColRefs.map(x => Media.ToggleText(x, false))
-                if (_.keys(coterieStakes).length === 0)
-                    Media.ToggleImg("stakedAdvantagesHeader", false)
-            } else {
-                charColRefs.map(x => Media.ToggleText(x, true))
-                charCols[charColRefs[0]] = filteredStakes.map((x, i) => i > 0 && x[0] === filteredStakes[i-1][0] ? "" : `[${x[0]}]`)
-                charCols[charColRefs[1]] = filteredStakes.map(x => x[1])
-                charCols[charColRefs[2]] = filteredStakes.map(x => "●".repeat(x[3] - x[2] - _.reduce(x[5], (tot = 0, n) => tot + n)) + "○".repeat(x[2]) + x[5].map(xx => `/${"○".repeat(xx)}`).join(""))
-                charCols[charColRefs[3]] = filteredStakes.map(x => x[4])
-                for (const [col, lines] of Object.entries(charCols))
-                    Media.SetText(col, lines.join("\n"))
-            }
-            Media.Adjust("stakedAdvantagesHeader", 0, -3)
+// [initial, name, val, max, TimeTracker.FormatDate(dateStamp), []]
+            // https://i.imgur.com/qAHrpPv.jpg (Assets)     https://i.imgur.com/LsrLDoN.jpg (Projects)
+            Handouts.Set("MEMO: Fielded Assets", undefined, C.HANDOUTHTML.EyesOnlyDoc.Block(stakeLines.join(""), {bgURL: "https://i.imgur.com/qAHrpPv.jpg"}), true)
         },
-        displayProjects = () => {
+        updateProjectsDoc = () => {
             const projectData = [],
-                projectDetails = [],
-                projectsSorted = [],
-                projectStrings = {
-                    "Projects_Col1": [], // Initial
-                    "Projects_Col2": [], // Goal
-                    "Projects_Col3": [] // End Date
-                }
+                projectDetails = []
             for (const charObj of D.GetChars("registered"))
                 projectData.push(...D.GetRepStats(charObj, "project", {projectlaunchroll_toggle: "2"}))
             for (const [rowID, projectAttrs] of Object.entries(_.groupBy(projectData, "rowID")))
                 projectDetails.push({
                     rowID,
-                    init: D.GetCharData(projectAttrs[0].charID).initial,
+                    name: D.GetCharData(projectAttrs[0].charID).docName,
                     goal: projectAttrs.find(x => x.attrName === "projectscope_name").val,
                     endDate: TimeTracker.GetDate(projectAttrs.find(x => x.attrName === "projectenddate").val)
                 })
-            DB(`Project Data: ${D.JS(projectDetails.sort((a,b) => a.endDate - b.endDate))}`, "displayProjects")
-            if (projectDetails.length === 0) {
-                Media.ToggleImg("projectsHeader", false)
-                Media.ToggleText("Projects_Col1", false)
-                Media.ToggleText("Projects_Col2", false)
-                Media.ToggleText("Projects_Col3", false)
-                STATE.REF.projectDetails = []
-            } else {
-                Media.ToggleImg("projectsHeader", true)
-                Media.ToggleText("Projects_Col1", true)
-                Media.ToggleText("Projects_Col2", true)
-                Media.ToggleText("Projects_Col3", true)
-                /* if (Media.IsActive("stakedAdvantagesHeader"))
-                    Media.SetImgData("projectsHeader", {top: Media.GetImgData("stakedAdvantagesHeader").top + 0.5 * Media.GetImgData("projectsHeader").height + [..._.flatten(_.values(STATE.REF.customStakes.personal), true), ..._.values(STATE.REF.customStakes.coterie)].length * Media.GetLineHeight("Stakes_Char_Col1") + 40}, true)
-                else
-                    Media.SetImgData("projectsHeader", {top: Media.GetImgData("stakedAdvantagesHeader").top}, true) */
-                for (const projDetails of projectDetails.sort((a,b) => a.endDate - b.endDate)) {
-                    if (STATE.REF.projectDetails.map(x => x.rowID).includes(projDetails.rowID))
-                        projDetails.goal = STATE.REF.projectDetails.find(x => x.rowID === projDetails.rowID).goal
-                    projectsSorted.push(projDetails)   
-                }
-                STATE.REF.projectDetails = projectsSorted
-                for (const projDetails of STATE.REF.projectDetails) {
-                    projectStrings.Projects_Col1.push(`[${projDetails.init}]`)
-                    projectStrings.Projects_Col2.push(Media.GetTextWidth("Projects_Col2", projDetails.goal, false) > 240 ? `${projDetails.goal.slice(0, 45)}...` : projDetails.goal)
-                    projectStrings.Projects_Col3.push(TimeTracker.FormatDate(projDetails.endDate))
-                }
-                for (let i = projectStrings.Projects_Col1.length - 1; i > 0; i--)
-                    if (projectStrings.Projects_Col1[i-1] === projectStrings.Projects_Col1[i])
-                        projectStrings.Projects_Col1[i] = " "
-                for (const [textKey, text] of Object.entries(projectStrings)) {
-                    Media.SetText(textKey, text.join("\n"))
-                    Media.SetTextData(textKey, {top: Media.GetImgData("projectsHeader").top + 0.5 * Media.GetImgData("projectsHeader").height, shiftTop: 3})
-                }
-            }
+            projectDetails.sort((a,b) => a.endDate - b.endDate)
+            const projectLines = []
+            for (const projDetails of projectDetails)
+                projectLines.push(C.HANDOUTHTML.EyesOnlyDoc.Line([
+                    C.HANDOUTHTML.EyesOnlyDoc.LineHeader(projDetails.name),
+                    C.HANDOUTHTML.EyesOnlyDoc.LineBody(`${projDetails.goal}${C.HANDOUTHTML.EyesOnlyDoc.LineBodyRight(`<b><u>COMPLETED ON</u>:</b> ${TimeTracker.FormatDate(projDetails.endDate)}`)}`)
+                ].join(""), {bgColor: projectLines.length % 2 === 1 ? "rgba(0,0,0,0.1)" : "transparent"}))
+            Handouts.Set("MEMO: Active Projects", undefined, C.HANDOUTHTML.EyesOnlyDoc.Block(projectLines.join(""), {bgURL: "https://i.imgur.com/LsrLDoN.jpg"}), true)            
         },
-        updateHunger = () => {
-            for(const char of D.GetChars("registered")) {
+        updateHunger = (charRef) => {
+
+            return
+
+            charRef = charRef || "registered"
+            for(const char of D.GetChars(charRef)) {
                 const charData = D.GetCharData(char),
                     quad = charData.quadrant,
                     hunger = `${D.GetStatVal(char, "hunger")}`
@@ -1434,7 +1403,8 @@ const Char = (() => {
                             bannerString = `Your hunger increases from ${D.NumToText(initTraitVal).toLowerCase()} to ${D.NumToText(finalTraitVal).toLowerCase()}.`
                         else if (amount < 0)
                             bannerString = `You slake your hunger by ${D.NumToText(Math.abs(amount)).toLowerCase()}.`
-                        Media.SetImg(`Hunger${getAttrByName(charObj.id, "sandboxquadrant")}_1`, D.Int(finalTraitVal) === "0" ? "blank" : `${finalTraitVal}`)
+                        // updateHunger()
+                        // Media.SetImg(`Hunger${getAttrByName(charObj.id, "sandboxquadrant")}_1`, D.Int(finalTraitVal) === "0" ? "blank" : `${finalTraitVal}`)
                         break
                     case "hum": case "humanity":
                         if (amount > 0)
@@ -1642,7 +1612,7 @@ const Char = (() => {
             attrList[p("projecttotalstake")] = D.Int(scope) + 1 - margin
             attrList[p("projectlaunchresultsmargin")] = `${D.Int(scope) + 1 - margin} Stake Required, (${D.Int(scope) + 1 - margin} to Go)`
             D.Queue(setAttrs, [charObj.id, attrList], "LaunchProject")
-            D.Queue(displayProjects, [], "LaunchProject", 0.1)
+            D.Queue(updateProjectsDoc, [], "LaunchProject", 0.1)
             D.Run("LaunchProject")
         },
         setCompulsion = (charRef, compulsionTitle, compulsionText) => {
@@ -1925,7 +1895,7 @@ const Char = (() => {
         SendHome: sendCharsHome,
         SendBack: restoreCharsPos,
         PromptTraitSelect: traitSelectMenu,
-        RefreshDisplays: () => { displayDesires(); displayResources(); displayStakes(); displayProjects(); updateHunger() },
+        RefreshDisplays: () => { displayDesires(); displayResources(); updateAssetsDoc(); updateProjectsDoc(); updateHunger() },
         get SelectedChar() { 
             if (STATE.REF.charSelection) {
                 const charObj = getObj("character", STATE.REF.charSelection)
