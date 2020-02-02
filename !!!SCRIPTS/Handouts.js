@@ -72,15 +72,15 @@ const Handouts = (() => {
         },
         getPrestationData = (charRef) => {
             const prestationAttrs = {
-                    boonsOwed: D.GetRepStats(charRef, "boonsowed", null, null, "rowID"),
-                    boonsOwing: D.GetRepStats(charRef, "boonsowing", null, null, "rowID")
+                    boonsowed: D.GetRepStats(charRef, "boonsowed", null, null, "rowID"),
+                    boonsowing: D.GetRepStats(charRef, "boonsowing", null, null, "rowID")
                 },
                 prestationData = {
-                    boonsOwed: [],
-                    boonsOwing: []
+                    boonsowed: [],
+                    boonsowing: []
                 }
             // D.Alert(`Project Attributes: ${D.JS(projAttrs)}`)
-            _.each(["boonsOwed", "boonsOwing"], cat => {
+            _.each(["boonsowed", "boonsowing"], cat => {
                 _.each(prestationAttrs[cat], (attrDatas, rowID) => {
                     const rowData = {rowID}
                     _.each(attrDatas, attrData => {
@@ -91,16 +91,16 @@ const Handouts = (() => {
             })
 
             /* const groupedData = {
-                boonsOwed: D.KeyMapObj(_.groupBy(prestationData.boonsOwed.map(x => ({to: x.boonowed_to, type: x.boonowed_type, details: x.boonowed_details})), x => x.to), null, x => x.map(xx => ({type: xx.type, details: xx.details}))),
-                boonsOwing: D.KeyMapObj(_.groupBy(prestationData.boonsOwing.map(x => ({from: x.boonowing_from, type: x.boonowing_type, details: x.boonowing_details})), x => x.from), null, x => x.map(xx => ({type: xx.type, details: xx.details})))
+                boonsowed: D.KeyMapObj(_.groupBy(prestationData.boonsowed.map(x => ({to: x.boonowed_to, type: x.boonowed_type, details: x.boonowed_details})), x => x.to), null, x => x.map(xx => ({type: xx.type, details: xx.details}))),
+                boonsowing: D.KeyMapObj(_.groupBy(prestationData.boonsowing.map(x => ({from: x.boonowing_from, type: x.boonowing_type, details: x.boonowing_details})), x => x.from), null, x => x.map(xx => ({type: xx.type, details: xx.details})))
             } */
-            const groupedData = `<h2>OWED:</h2>${_.map(D.KeyMapObj(_.groupBy(prestationData.boonsOwed.map(x => ({to: x.boonowed_to, type: x.boonowed_type, details: x.boonowed_details})), x => x.to), null, x => x.map(xx => `<b>${xx.type.toUpperCase()}</b>: ${xx.details}`)), (v, k) => `<h3>${k}</h3><ul><li>${v.join("<li>")}</ul>`).join("")
-            }<h2>OWING:</h2>${_.map(D.KeyMapObj(_.groupBy(prestationData.boonsOwing.map(x => ({from: x.boonowing_from, type: x.boonowing_type, details: x.boonowing_details})), x => x.from), null, x => x.map(xx => `<b>${xx.type.toUpperCase()}</b>: ${xx.details}`)), (v, k) => `<h3>${k}</h3><ul><li>${v.join("<li>")}</ul>`).join("")}`
+            const groupedData = `<h2>OWED:</h2>${_.map(D.KeyMapObj(_.groupBy(prestationData.boonsowed.map(x => ({to: x.boonowed_to, type: x.boonowed_type, details: x.boonowed_details})), x => x.to), null, x => x.map(xx => `<b>${xx.type.toUpperCase()}</b>: ${xx.details}`)), (v, k) => `<h3>${k}</h3><ul><li>${v.join("<li>")}</ul>`).join("")
+            }<h2>OWING:</h2>${_.map(D.KeyMapObj(_.groupBy(prestationData.boonsowing.map(x => ({from: x.boonowing_from, type: x.boonowing_type, details: x.boonowing_details})), x => x.from), null, x => x.map(xx => `<b>${xx.type.toUpperCase()}</b>: ${xx.details}`)), (v, k) => `<h3>${k}</h3><ul><li>${v.join("<li>")}</ul>`).join("")}`
             
             
           /*  _.values(D.KeyMapObj({
-                boonsOwed: ,
-                boonsOwing: 
+                boonsowed: ,
+                boonsowing: 
             }, null, v => D.KeyMapObj(v, null, (vv, kk) => `<h3>${kk}</h3><ul>${vv.map(x => `<li>${x}</li>`).join("")}</ul>`))) */
 
             D.Alert(`Prestation Data for ${D.GetChar(charRef).get("name")}:<br>${D.JS(groupedData)}`, "Prestation Data")
@@ -219,13 +219,13 @@ const Handouts = (() => {
                 noteSections = []
             for (const charObj of charObjs) {
                 const charLines = {
-                        boonsOwed: [],
-                        boonsOwing: []
+                        boonsowed: [],
+                        boonsowing: []
                     },
                     prestationData = getPrestationData(charObj)                    
-                // D.Alert(`Prestation Data for ${charObj.get("name")}:<br><b>OWED:</b><br>${D.JS(prestationData.boonsOwed)}<br><br><b>OWING:</b><br>${D.JS(prestationData.boonsOwing)}`, "Prestation Data")
+                // D.Alert(`Prestation Data for ${charObj.get("name")}:<br><b>OWED:</b><br>${D.JS(prestationData.boonsowed)}<br><br><b>OWING:</b><br>${D.JS(prestationData.boonsowing)}`, "Prestation Data")
                 continue
-                for (const cat of ["boonsOwed", "boonsOwing"]) 
+                for (const cat of ["boonsowed", "boonsowing"]) 
                     for (const boonData of prestationData[cat]) {
                         /* for (const item of ["projectdetails", "projectgoal", "projectstartdate", "projectincnum", "projectincunit", "projectenddate", "projectinccounter", "projectscope_name", "projectscope", ]) {
                             projectData[item] = projectData[item] || ""

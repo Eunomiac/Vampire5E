@@ -1114,7 +1114,7 @@
 	}
 
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-noclick {
-		margin-left: -100% !important;
+		pointer-events: none !important;
 	}
 
 	.charsheet div.sheet-dotline div.sheet-multidot input.sheet-noclick.sheet-whitedot:checked~span.sheet-whitedot,
@@ -1425,9 +1425,10 @@
 }*/
 
 	.charsheet div.sheet-marquee {
-		width: 100%;
+		width: calc(100% - 25px - 25px);
 		padding: 0px 0px;
 		margin-top: 15px;
+		margin-left: 25px;
 	}
 
 	.charsheet div.sheet-marquee div.sheet-marquee_title {
@@ -1982,17 +1983,15 @@
 	}
 
 	.charsheet div.sheet-toptitleblock div.sheet-titlesubheader.sheet-contingentcontainer {
-		margin: 15px -50px -15px -292px;
-
-
+		margin: 18px -50px -18px -292px;
 	}
 
 	.charsheet div.sheet-toptitleblock div.sheet-titlesubheader span.sheet-titlesubheader {
-		width: calc((100% - 80px)/2.6 - 15px);
 		font-size: 14px;
-		line-height: 32px;
+		line-height: 31px;
 		text-indent: 20px;
-		width: 60%;
+		width: 50%;
+		margin-right: 2%;
 	}
 
 	.charsheet div.sheet-toptitleblock div.sheet-titlesubheader select.sheet-titlesubheader {

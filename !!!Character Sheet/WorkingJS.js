@@ -25,8 +25,8 @@
         // HUMSEQUENCES = ["BSH", "HBHXS", "SBS", "XHB"],
         ATTRBLACKLIST = ["toggle", "inccounter"],
         ROLLFLAGS = {
-            all: ["rolldiff", "rollmod", "hunger", "applydisc", "applybloodsurge", "applyspecialty", "applyresonance", "incap", "Stains", "resonance", "rollarray", "topdisplay", "bottomdisplay", "effectchecks"],
-            num: ["rolldiff", "rollmod", "applydisc", "applybloodsurge", "applyspecialty", "applyresonance"],
+            all: ["rolldiff", "rollmod", "hunger", "applybloodsurge", "applyspecialty", "applyresonance", "incap", "Stains", "resonance", "rollarray", "topdisplay", "bottomdisplay", "effectchecks"],
+            num: ["rolldiff", "rollmod", "applybloodsurge", "applyspecialty", "applyresonance"],
             str: ["rollarray", "rollflagdisplay", "rollparams", "topdisplay", "bottomdisplay", "effectchecks"]
         },
         THREEROLLTRAITS = ["Auspex", "Fortitude", "Celerity", "Potence", "Presence"],
@@ -361,25 +361,25 @@
              "Aristocrats and rulers, Clan Ventrue represents the establishment.  They see themselves as the leaders of the Camarilla, and",
              "hold more positions of influence and power (among both mortals and Kindred) than any other clan."],
             ["Clan Lasombra: The Night Clan",
-             "Clan Lasombra of the Sabbat descends from Lasombra of the Third Generation, childe of Irad the Strong, childe of Caine the First.",
-             "Predatory, elegant and inhuman manipulators of darkness and shadow, the leaders of the Sabbat",
-             "are ruthless social Darwinists who believe in the worthy ruling, and the unworthy serving."],
+             "Clan Lasombra of the Camarilla descends from Lasombra of the Third Generation, childe of Irad the Strong, childe of Caine the First.",
+             "Predatory, elegant and inhuman manipulators of darkness and shadow, these once-leaders of the Sabbat are ruthless social Darwinists who",
+             "believe in the worthy ruling and the unworthy serving. Now affiliated with the Camarilla, they compete directly with their Ventrue rivals."],
             ["Clan Tzimisce: The Clan of Shapers",
              "Clan Tzimisce (\"zih-ME-see\") of the Sabbat descends from an Antediluvian known only as \"the Eldest\", childe of Enoch the Wise, childe",
              "of Caine the First.  Scholars, sorcerers and flesh-shapers, the Tzimisce are alien and inscrutable, proudly renouncing",
              "their humanity to focus on transcending the limitations of the vampiric state, by following their \"Path of Metamorphosis\"."],
-            ["Clan Assamite: The Clan of the Hunt",
-             "Clan Assamite of the mountain fortress Alamut in the Middle East, known as the Banu Haqim, descends from Haqim of the Third",
-             "generation, childe of Zillah the Beautiful, childe of Caine the First.  Traditionally seen as dangerous assassins and diablerists, in",
-             "truth they are guardians, scholars and warriors who seek to distance themselves from the Jyhad."],
+            ["The Banu Haqim: The Clan of the Hunt",
+             "The Banu Haqim of the Camarilla, once known as Clan Assamite, descends from Haqim of the Third Generation, childe of Zillah the Beautiful,",
+             "childe of Caine the First.  Once seen as dangerous assassins and diablerists, the clan now operates under new leadership. Freed from",
+             "devotion to the blood god Ur-Shulgi, they are now a clan of scholars and guardians who seek to distance themselves from the Jyhad."],
             ["Clan Hecata: The Clan of Death",
-             "Clan Hecata of Venice descends from Augustus Giovanni, who diablerized and usurped Ashur, childe of Irad the Strong, childe",
-             "of Caine the First.  Thus Clan Hecata replaced Clan Cappadocian as one of the thirteen Great Clans, and hunted them to",
-             "extinction. Incestuous necromancers with a penchant for organized crime, the Hecata rarely Embrace outside of their own mortal family."],
-            ["Clan Setite: The Snake Clan",
-             "Clan Setite of the Anarchs, known tonight as the Ministry, descends from Setekh of the Third Generation, childe of Zillah the Beautiful,",
-             "childe of Caine the First.  Serpentine tempters, corruptors and purveyors of every vice, they are seen by many to embody the snake in the",
-             "Garden of Eden.  The Ministry only recently joined the Anarch Movement, after being shunned by the Camarilla."],
+             "Clan Hecata grew from the ashes of Clan Giovanni, descended from Augustus Giovanni, who diablerized and usurped Ashur, childe of Irad",
+             "the Strong, childe of Caine the First. A grand Family Reunion brought many bloodlines into the Hecata fold, each bringing their unique",
+             "affinities with death magic: This consolidation of power has enabled Clan Hecata to exist as the only remaining independent Great Clan."],
+            ["The Ministry: The Snake Clan",
+             "The Ministry of the Anarchs, once known as Clan Setite, descends from Setekh of the Third Generation, childe of Zillah the Beautiful,",
+             "childe of Caine the First.  They have cast off their identity as serpentine tempters, corruptors and purveyors of every vice, claiming now",
+             "to serve a higher purpose for its own sake. The Ministry only recently joined the Anarch Movement, after being shunned by the Camarilla."],
             ["Gehenna",
              "Foretold in the Book of Nod, a sacred text to many Kindred, Gehenna is the vampire Armageddon:",
              "It is prophesied to be the time when the Antediluvians will rise from their slumbers and devour their descendants."],
@@ -1088,11 +1088,13 @@
                     attrList[p("sdmg")] = 0
                     attrList[p("admg")] = 0
 
-                    // Add/subtract social damage to totals, and set socials to zero:
-                    attrList[p("sdmg_socialtotal")] = pI("sdmg_socialtotal") + pI("sdmg_social")
-                    attrList[p("admg_socialtotal")] = pI("admg_socialtotal") + pI("admg_social")
-                    attrList[p("sdmg_social")] = 0
-                    attrList[p("admg_social")] = 0
+                    // IF Willpower, add/subtract social damage to totals, and set socials to zero:
+                    if (tracker.toLowerCase() === "willpower") {
+                        attrList[p("sdmg_socialtotal")] = pI("sdmg_socialtotal") + pI("sdmg_social")
+                        attrList[p("admg_socialtotal")] = pI("admg_socialtotal") + pI("admg_social")
+                        attrList[p("sdmg_social")] = 0
+                        attrList[p("admg_social")] = 0
+                    }
                     
                     log(JSON.stringify(attrList))
 
@@ -1264,7 +1266,6 @@
                                     _.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num)) + 3
                                 )
                             )
-                            attrList.health_maximum = attrList.health_max
                             cback(null, attrList)
                         })
                     })
@@ -1280,7 +1281,6 @@
                                         _.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num))
                                     )
                                 )
-                            attrList.willpower_maximum = attrList.willpower_max
                             cback(null, attrList)
                         })
                     })
@@ -1288,11 +1288,12 @@
                 case "blood potency full":
                 case "blood potency":
                     $funcs.push(cback => {
-                        getAttrs(["generation", "bonus_bp"], ATTRS => {
+                        getAttrs(["generation", "bonus_bp", "blood_potency"], ATTRS => {
                             attrList.blood_potency_max = Math.min(10, Math.max(0, genDepts[parseInt(ATTRS.generation)].blood_potency_max + parseInt(ATTRS.bonus_bp)))
-                            attrList.blood_potency_maximum = attrList.blood_potency_max
-                            if (tracker === "Blood Potency Full")
-                                attrList.blood_potency = genDepts[parseInt(ATTRS.generation)].blood_potency
+                            const defaultVals = genDepts[parseInt(ATTRS.generation)],
+                                bp = parseInt(ATTRS.blood_potency)
+                            if (tracker === "Blood Potency Full" && (bp < defaultVals.blood_potency || bp > defaultVals.blood_potency_max))
+                                attrList.blood_potency = bp < defaultVals.blood_potency && defaultVals.blood_potency || defaultVals.blood_potency_max
                             cback(null, attrList)
                         })
                     })
@@ -1983,14 +1984,14 @@
                 getRepAttrs = (repSec) => {
                     if (repSec) 
                         getSectionIDs(repSec, rowIDs => {
-                            repAttrs.push(...rowIDs.map(rowID => repStatData[repSec].filter(repStat => !repStat.endsWith("_details")).map(repStat => `repeating_${repSec}_${rowID}_${repStat}`).flat()))
+                            repAttrs.push(...rowIDs.map(rowID => _.flatten(repStatData[repSec].filter(repStat => !repStat.endsWith("_details")).map(repStat => `repeating_${repSec}_${rowID}_${repStat}`))))
                             log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
                             
                             ... mapped to: ${JSON.stringify(repAttrs)}`)
                             getRepAttrs(repSecs.shift())
                         })
                     else 
-                        getAttrs([...ALLATTRS, ...repAttrs.flat()], ATTRS => {
+                        getAttrs([...ALLATTRS, ..._.flatten(repAttrs)], ATTRS => {
                             log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true)
                             const [rArray, prevRArray, clearAttrs] = [
                                     [],
@@ -2083,7 +2084,7 @@
                                 checkEffects = rollArray => {
                                     const topDisplayStrings = [],
                                         lastTopDisplayStrings = [],
-                                        effectChecks = _.compact(ATTRS.effectchecks.split("|"))
+                                        effectChecks = _.compact((ATTRS.effectchecks || "").split("|"))
                                     if (parseInt(ATTRS.applybloodsurge) > 0 && "blood_potency" in ATTRS) {
                                         topDisplayStrings.push(`Blood Surge (+${bpDependants[parseInt(ATTRS.blood_potency)].bp_surge})`)
                                         lastTopDisplayStrings.push("Rouse Check Is Automatic")

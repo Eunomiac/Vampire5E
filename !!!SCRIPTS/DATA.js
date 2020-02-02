@@ -198,6 +198,8 @@ const D = (() => {
                     if (isID(pageRef)) 
                         return (getObj("page", pageRef) || {id: false}).id
                     if (_.isString(pageRef)) {  
+                        if (pageRef in C.PAGES)
+                            return C.PAGES[pageRef]
                         const pageObj = (findObjs({_type: "page"}).find(x => x.get("name") === pageRef) || {id: false}).id                      
                         // DB({page: findObjs({_type: "page"}).find(x => x.get("name") === pageRef)}, "VALS")
                         if (pageObj && pageObj.id)
@@ -1994,7 +1996,7 @@ const D = (() => {
                 STATE.REF.MissingChars = _.uniq([...STATE.REF.MissingChars, char])
         },
 
-        get MAINPAGEID() { return C.MAINPAGEID },
+        get MAINPAGEID() { return C.PAGES.GAME },
         GetPageID: (pageRef) => VALS.PAGEID(pageRef),
         get THISPAGEID() { return getObj("page", D.GetPlayer(D.GMID()).get("_lastpage")).id },
         get CELLSIZE() { return VALS.CELLSIZE() },

@@ -185,6 +185,24 @@ const Char = (() => {
                 }
                 case "get": {
                     switch (D.LCase(call = args.shift())) {
+                        case "attr": {
+                            const [charObj] = charObjs
+                            let attrObjs = findObjs({
+                                _type: "attribute",
+                                _characterid: charObj.id
+                            })
+                            switch (D.LCase(call = args.shift())) {
+                                default: {
+                                    attrObjs = attrObjs.filter(x => D.LCase(x.get("name")) === D.LCase(call))                                    
+                                }
+                                // falls through
+                                case "all": {
+                                    D.Alert(D.JS(attrObjs.map(x => [x.get("name"), x.get("current"), x.get("max"), x.id, x])), `Attribute Object(s) for ${D.GetName(charObj)}`)
+                                    break
+                                }
+                            }
+                            break
+                        }
                         case "stat": {
                             if (args.length) {
                                 const traitName = args[0].toLowerCase() === "selected" && STATE.REF.traitSelection.shift() || args.shift(),
@@ -427,7 +445,7 @@ const Char = (() => {
                 case "process": {
                     switch (D.LCase(call = args.shift())) {
                         case "sheetattrs": {
-                            validateCharAttributes(charObjs)
+                            validateCharAttributes(charObjs, args[0] === "true")
                             break
                         }
                         case "defaults": {
@@ -1137,13 +1155,11 @@ const Char = (() => {
                 Media.ToggleText("Weekly_Char_Col1", false)
                 Media.ToggleText("Weekly_Char_Col2", false)
                 Media.ToggleText("Weekly_Char_Col3", false)
-                Media.SetImgData("stakedAdvantagesHeader", {top: Media.GetImgData("weeklyResourcesHeader").top}, true)
             } else {
                 Media.ToggleImg("weeklyResourcesHeader", true)
                 Media.ToggleText("Weekly_Char_Col1", true)
                 Media.ToggleText("Weekly_Char_Col2", true)
                 Media.ToggleText("Weekly_Char_Col3", true)
-                Media.SetImgData("stakedAdvantagesHeader", {top: Media.GetImgData("weeklyResourcesHeader").top + 0.5 * Media.GetImgData("stakedAdvantagesHeader").height + _.flatten(_.values(STATE.REF.weeklyResources), true).length * Media.GetLineHeight("Weekly_Char_Col1") + 15}, true)
                 /* STATE.REF.weeklyResources = { 
                     N: [
                         ["Herd (Bookies)", 0, 6],
@@ -1666,8 +1682,8 @@ const Char = (() => {
     },
     DISCIPLINES = ["Animalism", "Auspex", "Celerity", ...],
     TRACKERS = ["Willpower", "Health", "Humanity", "Blood Potency"], */
-        validateCharAttributes = (charRefs) => {
-            const reportLines = []
+        validateCharAttributes = (charRefs, isChangingSheet = false) => {
+            const [reportLines, nameChanges] = [[], []]
             for (const charObj of D.GetChars(charRefs))
                 if (VAL({charObj})) {
                     const allAttrObjs = findObjs({
@@ -1680,43 +1696,79 @@ const Char = (() => {
                         nonRepAttrValPairs = nonRepAttrObjs.map(x => [x, x.get("name")]), // .map(x => [x, x.get("name").replace(/repeating_(.{1,3}).*?_(-.*?)_(.*?)$/gu, "$1_$3")])
                         repAttrValTrips = repAttrObjs.map(x => [x, x.get("name").split("_").slice(1)]).map(x => {x[1].splice(1,1); return [x[0], x[1][0], x[1].slice(1).join("_")]}), // [object, section, attrName]
                         repAttrGroupedTrips = _.groupBy(repAttrValTrips, x => x[1]),
-                        repAttrGroupString = Object.values(D.KeyMapObj(repAttrGroupedTrips, null, (v, k) => `    <b>${k}</b>: ${_.uniq(v.map(x => x[2])).join(", ")}`)).join("<br>"),
-                        obsoleteAttrValPairs = nonRepAttrValPairs.filter(x => !(x[1] in C.SHEETATTRS)),
-                        obsoleteRepAttrValTrips = repAttrValTrips.filter(x => !(x[1] in D.KeyMapObj(D.Clone(C.REPATTRS), k => D.LCase(k)))),
-                        nonRepAttrNames = nonRepAttrValPairs.map(x => x[1]),
-                        missingDefaultAttrTrips = _.omit(D.Clone(C.SHEETATTRS), (v, k) => nonRepAttrNames.includes(k.replace(/_max/gu, "")))
+                        repAttrGroupString = Object.values(D.KeyMapObj(repAttrGroupedTrips, null, (v, k) => `    <b>${k}</b>: ${_.uniq(v.map(x => x[2])).join(", ")}`)).join("<br>")
+                    for (const attrPair of nonRepAttrValPairs)
+                        if (attrPair[1].length > 1 && attrPair[1] !== D.LCase(attrPair[1])) {
+                            nameChanges.push(`${attrPair[1]} !== ${D.LCase(attrPair[1])}, setting name to <b>${D.LCase(attrPair[1])}</b>.`)
+                            attrPair[1] = D.LCase(attrPair[1])
+                            if (isChangingSheet)
+                                attrPair[0].set("name", D.LCase(attrPair[1]))
+                        }
+                    for (const repAttrTrip of repAttrValTrips) {
+                        const [, section, id, ...splitName] = repAttrTrip[0].get("name").split("_"),
+                            name = splitName.join("_"),
+                            deltaRepAttr = {section: false, name: false}
+                        if (section.length > 1 && section !== D.LCase(section)) {
+                            deltaRepAttr.section = D.LCase(section)
+                            repAttrTrip[1] = D.LCase(section)
+                        }
+                        if (name.length > 1 && name !== D.LCase(name)) {
+                            deltaRepAttr.name = D.LCase(name)
+                            repAttrTrip[2] = D.LCase(name)
+                        }
+                        if (deltaRepAttr.section || deltaRepAttr.name) {
+                            const newName = `repeating_${deltaRepAttr.section || section}_${id}_${deltaRepAttr.name || name}`
+                            nameChanges.push(`${repAttrTrip[0].get("name")} !== <b>${newName}</b>, setting repAttr.'`)
+                            if (isChangingSheet)
+                                repAttrTrip[0].set("name", newName)
+                        }
+                    }
 
-                    setAttrs(charObj.id, missingDefaultAttrTrips)
+                    const obsoleteAttrValPairs = nonRepAttrValPairs.filter(x => !Object.keys(C.SHEETATTRS).map(xx => D.LCase(xx)).includes(D.LCase(x[1]))),
+                        obsoleteRepAttrValTrips = repAttrValTrips.filter(x => !Object.keys(C.REPATTRS).map(xx => D.LCase(xx)).includes(D.LCase(x[1]))),
+                        nonRepAttrNames = nonRepAttrValPairs.map(x => D.LCase(x[1])),
+                        missingDefaultAttrTrips = _.omit(D.Clone(C.SHEETATTRS), (v, k) => nonRepAttrNames.includes(D.LCase(k).replace(/_max/gu, "")))
 
-                    for (const [attrObj] of obsoleteAttrValPairs)
-                        if (VAL({object: attrObj}))
-                            attrObj.remove()
-                    for (const [attrObj] of obsoleteRepAttrValTrips)
-                        if (VAL({object: attrObj}))
-                            attrObj.remove()
+                    missingDefaultAttrTrips.marquee_toggle = 1
+
+                    if (isChangingSheet) {
+                        setAttrs(charObj.id, missingDefaultAttrTrips)
+                        for (const [attrObj] of obsoleteAttrValPairs)
+                            if (VAL({object: attrObj}))
+                                attrObj.remove()
+                        for (const [attrObj] of obsoleteRepAttrValTrips)
+                            if (VAL({object: attrObj}))
+                                attrObj.remove()
+                    }
                     reportLines.push(...[
-                        `<h4>Attributes of ${D.GetName(charObj)}</h4>`,
+                        `<h4>${D.GetName(charObj)}:</h4>`,
                         `${allAttrObjs.length} Attributes Found:`,
                         `... ${repOrderAttrObjs.length} '_reporder' Attributes,`,
                         `... ${repAttrValTrips.length} Repeating Attributes,`,
                         `... ${nonRepAttrObjs.length} Non-Repeating, Non-RepOrder Attributes`,
                         `... ... ${nonRepAttrValPairs.length} Attribute Name/Value Pairs Compiled.`,
                         "",
-                        "<b><u>OBSOLETE SHEET ATTRIBUTES REMOVED</u>:</b>",
+                        "<b><u>NAMES CHANGED</u>:</b>",
+                        `${nameChanges.length} Attributes With Uppercase Names:`,
+                        D.JS(nameChanges),
+                        "",
+                        "<b><u>OBSOLETE ATTRIBUTES REMOVED</u>:</b>",
                         `${obsoleteAttrValPairs.length} OBSOLETE Attributes found and removed:`,
                         D.JS(obsoleteAttrValPairs.map(x => x[1])),
                         "",
-                        "<b><u>OBSOLETE REPEATING ATTRIBUTES REMOVED</u>:</b>",
+                        "<b><u>OBSOLETE REP-ATTRIBUTES REMOVED</u>:</b>",
                         `${obsoleteRepAttrValTrips.length} OBSOLETE Attributes found and removed:`,
                         D.JS(obsoleteRepAttrValTrips.map(x => `<b>${x[1]}</b>: ${x[2]}`)),
                         "",
-                        "<b><u>_RepOrder Attributes</u>:</b>",
-                        D.JS(repOrderAttrObjs.map(x => x.get("name").replace(/_reporder_(repeating_)?/gu, ""))),
+                        "<b><u>DEFAULT ATTRIBUTES APPLIED</u>:</b>",
+                        D.JS(missingDefaultAttrTrips),
                         "",
+                       /* "<b><u>_RepOrder Attributes</u>:</b>",
+                        D.JS(repOrderAttrObjs.map(x => x.get("name").replace(/_reporder_(repeating_)?/gu, ""))),
                         "<b><u>Repeating Attributes</u>:</b>",
                         D.JS(repAttrGroupString),
-                        "<b><u>Default Attributes Applied</u></b>",
-                        D.JS(missingDefaultAttrTrips)
+                        "", */
+                        isChangingSheet && "<h4 style=\"color: red;\">SHEET HAS BEEN CHANGED!</h4>" || "<i>(No Changes to Sheet)</i>"
                     ])
                 }
             D.Alert(reportLines.join("<br>"), "Character Attribute Validation")
