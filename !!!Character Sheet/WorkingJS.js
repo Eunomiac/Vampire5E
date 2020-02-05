@@ -2132,10 +2132,12 @@
                                 //     ... then add it back if the flag was toggled ON:
                                 if (checkFlag(stat) === 1)
                                     rArray.push(stat)
-                                // Next, reset the various roll parameters to default:
-                                for (const val of ROLLFLAGS.num)
-                                    if (parseInt(ATTRS[val]) !== 0)
-                                        [ATTRS[val], attrList[val]] = [0, 0]
+                                // Next, reset the various roll parameters to default, which is zero EXCEPT for difficulty, which is 3:
+                                for (const val of ROLLFLAGS.num) {
+                                    const defaultVal = val === "rolldiff" ? 3 : 0
+                                    if (parseInt(ATTRS[val]) !== defaultVal)
+                                        [ATTRS[val], attrList[val]] = [defaultVal, defaultVal]
+                                }
 
                             } else {
                                 // Otherwise, just copy the previously selected traits over to the new rArray
@@ -2177,7 +2179,7 @@
                             log(`>>> SORTED RARRAY: ${JSON.stringify(rArray)}`)
 
                             if (rArray.length === 0) {
-                                attrList.rollpooldisplay = `Simple Roll${parseInt(ATTRS.rollmod) === 0 && parseInt(ATTRS.rolldiff) === 0 ? " or Check" : ` of ${Math.abs(parseInt(ATTRS.rollmod))} Dice`}`
+                                attrList.rollpooldisplay = `Simple Roll${parseInt(ATTRS.rollmod) === 0 && parseInt(ATTRS.rolldiff) === 0 && " or Check" || parseInt(ATTRS.rollmod) > 0 && ` of ${Math.abs(parseInt(ATTRS.rollmod))} Dice` || ""}`
                             } else {
                                 attrList.rollpooldisplay = rArray.map(v => realName(v, ATTRS)).join(" + ")
                                 if (parseInt(ATTRS.rollmod) !== 0)
