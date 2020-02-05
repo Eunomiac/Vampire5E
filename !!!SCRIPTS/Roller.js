@@ -863,7 +863,7 @@ const Roller = (() => {
         },
     // #endregion
 
-    // #region Object Creation & Registration
+    // #region GRAPHICS: Creation, Removal, Registration, Setting Sources
         makeDie = (diceCat, dieNum) => {
             const rootData = Media.GetImgData(`RollerDie_${diceCat}_1`),
                 dieKey = `RollerDie_${diceCat}_${dieNum}`,
@@ -909,9 +909,6 @@ const Roller = (() => {
             returnLines[0] = `<b>Creating <u>${diceCat}</u> Dice:</b> [1] <span style='color: green;'><b>OK!</b></span>, ${returnLines[0]}`
             return returnLines            
         },
-    // #endregion
-
-    // #region Graphic & Text Control
         getColor = (rollType, rollLine, colorRef) => {
             if (colorRef)
                 return VAL({string: COLORSCHEMES[rollType][rollLine][colorRef]}) && COLORSCHEMES[rollType][rollLine][colorRef] || COLORSCHEMES.base[rollLine]
@@ -961,9 +958,6 @@ const Roller = (() => {
             for (const diceCat of Object.keys(SETTINGS.dice))
                 returnLines[2].entries.push(clearDice(diceCat).join(", "))
         },
-    // #endregion
-
-    // #region Dice Frame
         initFrame = (isQueuing = true) => {
             const imgDataTop = Media.GetImgData("RollerFrame_TopMid_1"),
                 imgDataBottom = Media.GetImgData("RollerFrame_BottomMid_1"),
@@ -1003,8 +997,6 @@ const Roller = (() => {
                             `... Creating <b>${imgKeyBottom}</b>: <span style='color: green;'><b>OK!</b></span>`
                         )
                     }
-                    const resultCountData = Media.GetTextData("resultCount"),
-                        resultCountPos = {top: resultCountData.top, left: resultCountData.left, height: Media.GetLineHeight("resultCount"), width: Media.GetTextWidth(resultCountData.id, "XX", false)}
                     returnLines[1].entries.push("... Creating <b>Main Dice</b> Drag Pads (x30): <span style='color:green;'><b>OK!</b></span> (x30)", "... Creating <b>Big Dice</b> Drag Pads (x2): <span style='color:green;'><b>OK!</b></span> (x2)")
                     returnLines[1].entries.push("... Creating <b>Willpower Reroll</b> Drag Pad: <span style='color:green;'><b>OK!</b></span>")
                     for (const diceCat of Object.keys(SETTINGS.dice))
@@ -1032,9 +1024,6 @@ const Roller = (() => {
             else
                 initFunc()           
         },
-    // #endregion
-
-    // #region Dice Graphic Control
         setDie = (dieCat, dieNum, dieVal, rollType) => {
             const dieKey = `RollerDie_${dieCat}_${dieNum}`
             if (dieVal) {
@@ -1103,27 +1092,7 @@ const Roller = (() => {
         },
     // #endregion
 
-    // #region Getting Information & Setting State Roll Record
-        getRollChars = (charObjs) => {
-            charObjs = _.flatten([charObjs])
-            const playerCharObjs = charObjs.filter(x => VAL({pc: x})),
-                npcCharObjs = charObjs.filter(x => VAL({npc: x})),
-                dbStrings = {charObjs, playerCharObjs, npcCharObjs},
-                rollCharObjs = []
-            for (const charObj of playerCharObjs) {
-                const charData = D.GetCharData(charObj.id) || {}
-                dbStrings[`${D.GetName(charObj, true)} Data:`] = charData
-                if (charData.isNPC)
-                    rollCharObjs.push(D.GetChar(charData.isNPC))
-                else
-                    rollCharObjs.push(charObj)
-            }
-            dbStrings.newRollCharObjs = [...rollCharObjs]
-            rollCharObjs.push(...npcCharObjs)
-            dbStrings.finalRollCharObjs = [...rollCharObjs]
-            DB(dbStrings, "getRollChars")
-            return rollCharObjs
-        },
+    // #region ROLL EFFECTS: Applying, Creating, Removing
         applyRollEffects = rollInput => {
             const rollEffectString = getAttrByName(rollInput.charID, "rolleffects") || ""
             let isReapplying = false
@@ -1272,7 +1241,7 @@ const Roller = (() => {
                     if (STATE.REF.rollEffects[effectString] && STATE.REF.rollEffects[effectString].includes(rollInput.charID))
                         continue
                 // Parse the effectString for all of the relevant parameters
-                    let [rollRestrictions, rollMod, rollLabel, removeWhen, sheetMessage, gmNote] = effectString.split(";"),
+                    let [rollRestrictions, rollMod, rollLabel, removeWhen, /* sheetMessage, gmNote */] = effectString.split(";"),
                         [rollTarget, rollTraits, rollFlags] = ["", {}, {}];
                     [rollMod, rollTarget] = _.map(rollMod.split(":"), v => D.Int(v) || v.toLowerCase())
                     rollRestrictions = _.map(rollRestrictions.split("+"), v => v.toLowerCase())
@@ -1681,6 +1650,146 @@ const Roller = (() => {
             }
             return THROW(`Bad Roll Input!${D.JSL(rollInput)}`, "applyRollEffects")
         },
+        addCharRollEffects = (charRef, effectString) => {
+            const charObj = D.GetChar(charRef)
+            if (VAL({charObj, string: effectString}, "addCharRollEffects")) {
+                // Must extract three elements from the roll effect:
+                    // RemoveWhen (to see if we need to set an alarm or tie it to an existing one)
+                    // SheetMessage (to see if we need to show the player when it applies via a character sheet incapacitation note)
+                    // GMNote (to include whenever the effect is displayed to the GM, as a reminder of what put it there)
+                // Then, we have to create a simple label that can be used to remove it.
+                const [,,, removeWhen, /* sheetMessage, GMNote */] = effectString.split(";")
+                switch (D.LCase(removeWhen.replace(/:.*/gu, ""))) {
+                    case "nextfullnight": {
+                        
+                        break
+                    }
+                    case "scene": {
+
+                        break
+                    }
+                    case "fullweek": {
+
+                        break
+                    }
+                    case "endofweek": {
+
+                        break
+                    }
+                    case "projectresolves": {
+
+                        break
+                    }
+                    default: {
+
+                        break
+                    }
+                }
+
+                const rollEffects = _.compact((getAttrByName(charObj.id, "rolleffects") || "").split("|"))
+                rollEffects.push(...effectString)
+                setAttrs(charObj.id, {rolleffects: _.uniq(rollEffects).join("|")})
+                D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "addCharRollEffects")
+            }
+        },
+        delCharRollEffects = (charRef, effectStrings) => {
+            const charObj = D.GetChar(charRef)
+            let rollEffects = _.compact((getAttrByName(charObj.id, "rolleffects") || "").split("|"))                                            
+            if (VAL({charObj: [charObj], string: effectStrings}, "delCharRollEffects", true)) {
+                for (const effect of effectStrings)
+                    if (VAL({number: effect}))
+                        rollEffects.splice(Math.max(0, D.Int(effect) - 1), 1)
+                    else
+                        rollEffects = _.without(rollEffects, effect)
+                setAttrs(charObj.id, {rolleffects: rollEffects.join("|")})
+                D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "delCharRollEffects")
+            }
+        },
+        addGlobalRollEffects = effectStrings => {
+            if (VAL({string: effectStrings}, "addGlobalRollEffects", true)) {
+                for (const effect of effectStrings)
+                    STATE.REF.rollEffects[effect] = []
+                const rollStrings = []
+                for (let i = 0; i < _.keys(STATE.REF.rollEffects).length; i++)
+                    rollStrings.push(`${i + 1}: ${_.keys(STATE.REF.rollEffects)[i]}`)
+                D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "addGlobalRollEffects")
+            }
+        },
+        delGlobalRollEffects = effectStrings => {
+            for (const effectString of effectStrings)
+                if (VAL({number: effectString}))
+                    delete STATE.REF.rollEffects[_.keys(STATE.REF.rollEffects)[Math.max(0, D.Int(effectString) - 1)]]
+                else
+                    STATE.REF.rollEffects = _.without(STATE.REF.rollEffects, effectString)
+            D.Alert(`Global Roll Effects revised to:<br><br>${_.keys(STATE.REF.rollEffects).join("<br>")}`, "delGlobalRollEffects")
+        },
+        addGlobalExclusion = (charRef, effectStrings) => {
+            const charObj = D.GetChar(charRef)
+            if (VAL({charObj: [charObj], string: effectStrings}, "addGlobalExclusion", true))
+                for (const effect of effectStrings) {
+                    let effectString = effect
+                    if (VAL({number: effectString}))
+                        effectString = _.keys(STATE.REF.rollEffects)[D.Int(effectString - 1)]
+                    else
+                        effectString = _.find(_.keys(STATE.REF.rollEffects, v => D.FuzzyMatch(effectString, v)))        
+                    if (STATE.REF.rollEffects[effectString]) {
+                        STATE.REF.rollEffects[effectString].push(charObj.id)
+                        D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATE.REF.rollEffects[effectString])}`, "addGlobalExclusion")
+                    } else {
+                        D.Alert(`No exclusion found for reference '${effectString}'`, "addGlobalExclusion")
+                    }
+                }
+        },
+        delGlobalExclusion = (charRef, effectStrings) => {
+            const charObj = D.GetChar(charRef)
+            if (VAL({charObj: [charObj], string: effectStrings}, "delGlobalExclusion", true)) 
+                for (const effect of effectStrings) {
+                    let effectString = effect
+                    if (VAL({number: effectString}))
+                        effectString = _.keys(STATE.REF.rollEffects)[D.Int(effectString - 1)]
+                    else
+                        effectString = _.find(_.keys(STATE.REF.rollEffects, v => D.FuzzyMatch(effectString, v)))
+                    if (!STATE.REF.rollEffects[effectString]) {
+                        const checkEffects = _.filter(STATE.REF.rollEffects, v => v.includes(charObj.id))
+                        if (checkEffects.length === 1)
+                            [effectString] = _.keys(checkEffects)
+                        else if (checkEffects.length === 0)
+                            D.Alert(`Character ${D.JS(charObj.get("name"))} is not listed in any roll effect exclusions.`, "delGlobalExclusion")
+                        else if (checkEffects.length > 1)
+                            D.Alert(`Character ${D.JS(charObj.get("name"))} is present in multiple exclusions, please be more specific: ${D.JS(checkEffects, true)}`, "delGlobalExclusion")
+                    }
+                    if (STATE.REF.rollEffects[effectString]) {
+                        STATE.REF.rollEffects[effectString] = _.without(STATE.REF.rollEffects[effectString], charObj.id)
+                        D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATE.REF.rollEffects[effectString])}`, "delGlobalExclusion")
+                    } else {
+                        D.Alert(`No exclusion found for reference '${effectString}'`, "delGlobalExclusion")
+                    }
+                }
+        
+        },     
+    // #endregion
+
+    // #region ROLL DATA: Getting, Parsing, Managing State Roll Record
+        getRollChars = (charObjs) => {
+            charObjs = _.flatten([charObjs])
+            const playerCharObjs = charObjs.filter(x => VAL({pc: x})),
+                npcCharObjs = charObjs.filter(x => VAL({npc: x})),
+                dbStrings = {charObjs, playerCharObjs, npcCharObjs},
+                rollCharObjs = []
+            for (const charObj of playerCharObjs) {
+                const charData = D.GetCharData(charObj.id) || {}
+                dbStrings[`${D.GetName(charObj, true)} Data:`] = charData
+                if (charData.isNPC)
+                    rollCharObjs.push(D.GetChar(charData.isNPC))
+                else
+                    rollCharObjs.push(charObj)
+            }
+            dbStrings.newRollCharObjs = [...rollCharObjs]
+            rollCharObjs.push(...npcCharObjs)
+            dbStrings.finalRollCharObjs = [...rollCharObjs]
+            DB(dbStrings, "getRollChars")
+            return rollCharObjs
+        },
         parseFlags = (charObj, playerCharID, rollType, params = {}, rollFlags) => {
             DB({charObj, playerCharID, rollType, params, rollFlags}, "parseFlags")
             params.args = params.args || []
@@ -1931,127 +2040,7 @@ const Roller = (() => {
         },
     // #endregion
 
-    // #region Adding & Removing Roll Effects & Exclusions
-        addCharRollEffects = (charRef, effectString) => {
-            const charObj = D.GetChar(charRef)
-            if (VAL({charObj, string: effectString}, "addCharRollEffects")) {
-                // Must extract three elements from the roll effect:
-                    // RemoveWhen (to see if we need to set an alarm or tie it to an existing one)
-                    // SheetMessage (to see if we need to show the player when it applies via a character sheet incapacitation note)
-                    // GMNote (to include whenever the effect is displayed to the GM, as a reminder of what put it there)
-                // Then, we have to create a simple label that can be used to remove it.
-                const [,,, removeWhen, sheetMessage, GMNote] = effectString.split(";")
-                switch (D.LCase(removeWhen.replace(/:.*/gu, ""))) {
-                    case "nextfullnight": {
-                        
-                        break
-                    }
-                    case "scene": {
-
-                        break
-                    }
-                    case "fullweek": {
-
-                        break
-                    }
-                    case "endofweek": {
-
-                        break
-                    }
-                    case "projectresolves": {
-
-                        break
-                    }
-                    default: {
-
-                        break
-                    }
-                }
-
-                const rollEffects = _.compact((getAttrByName(charObj.id, "rolleffects") || "").split("|"))
-                rollEffects.push(...effectString)
-                setAttrs(charObj.id, {rolleffects: _.uniq(rollEffects).join("|")})
-                D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "addCharRollEffects")
-            }
-        },
-        delCharRollEffects = (charRef, effectStrings) => {
-            const charObj = D.GetChar(charRef)
-            let rollEffects = _.compact((getAttrByName(charObj.id, "rolleffects") || "").split("|"))                                            
-            if (VAL({charObj: [charObj], string: effectStrings}, "delCharRollEffects", true)) {
-                for (const effect of effectStrings)
-                    if (VAL({number: effect}))
-                        rollEffects.splice(Math.max(0, D.Int(effect) - 1), 1)
-                    else
-                        rollEffects = _.without(rollEffects, effect)
-                setAttrs(charObj.id, {rolleffects: rollEffects.join("|")})
-                D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "delCharRollEffects")
-            }
-        },
-        addGlobalRollEffects = effectStrings => {
-            if (VAL({string: effectStrings}, "addGlobalRollEffects", true)) {
-                for (const effect of effectStrings)
-                    STATE.REF.rollEffects[effect] = []
-                const rollStrings = []
-                for (let i = 0; i < _.keys(STATE.REF.rollEffects).length; i++)
-                    rollStrings.push(`${i + 1}: ${_.keys(STATE.REF.rollEffects)[i]}`)
-                D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "addGlobalRollEffects")
-            }
-        },
-        delGlobalRollEffects = effectStrings => {
-            for (const effectString of effectStrings)
-                if (VAL({number: effectString}))
-                    delete STATE.REF.rollEffects[_.keys(STATE.REF.rollEffects)[Math.max(0, D.Int(effectString) - 1)]]
-                else
-                    STATE.REF.rollEffects = _.without(STATE.REF.rollEffects, effectString)
-            D.Alert(`Global Roll Effects revised to:<br><br>${_.keys(STATE.REF.rollEffects).join("<br>")}`, "delGlobalRollEffects")
-        },
-        addGlobalExclusion = (charRef, effectStrings) => {
-            const charObj = D.GetChar(charRef)
-            if (VAL({charObj: [charObj], string: effectStrings}, "addGlobalExclusion", true))
-                for (const effect of effectStrings) {
-                    let effectString = effect
-                    if (VAL({number: effectString}))
-                        effectString = _.keys(STATE.REF.rollEffects)[D.Int(effectString - 1)]
-                    else
-                        effectString = _.find(_.keys(STATE.REF.rollEffects, v => D.FuzzyMatch(effectString, v)))        
-                    if (STATE.REF.rollEffects[effectString]) {
-                        STATE.REF.rollEffects[effectString].push(charObj.id)
-                        D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATE.REF.rollEffects[effectString])}`, "addGlobalExclusion")
-                    } else {
-                        D.Alert(`No exclusion found for reference '${effectString}'`, "addGlobalExclusion")
-                    }
-                }
-        },
-        delGlobalExclusion = (charRef, effectStrings) => {
-            const charObj = D.GetChar(charRef)
-            if (VAL({charObj: [charObj], string: effectStrings}, "delGlobalExclusion", true)) 
-                for (const effect of effectStrings) {
-                    let effectString = effect
-                    if (VAL({number: effectString}))
-                        effectString = _.keys(STATE.REF.rollEffects)[D.Int(effectString - 1)]
-                    else
-                        effectString = _.find(_.keys(STATE.REF.rollEffects, v => D.FuzzyMatch(effectString, v)))
-                    if (!STATE.REF.rollEffects[effectString]) {
-                        const checkEffects = _.filter(STATE.REF.rollEffects, v => v.includes(charObj.id))
-                        if (checkEffects.length === 1)
-                            [effectString] = _.keys(checkEffects)
-                        else if (checkEffects.length === 0)
-                            D.Alert(`Character ${D.JS(charObj.get("name"))} is not listed in any roll effect exclusions.`, "delGlobalExclusion")
-                        else if (checkEffects.length > 1)
-                            D.Alert(`Character ${D.JS(charObj.get("name"))} is present in multiple exclusions, please be more specific: ${D.JS(checkEffects, true)}`, "delGlobalExclusion")
-                    }
-                    if (STATE.REF.rollEffects[effectString]) {
-                        STATE.REF.rollEffects[effectString] = _.without(STATE.REF.rollEffects[effectString], charObj.id)
-                        D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATE.REF.rollEffects[effectString])}`, "delGlobalExclusion")
-                    } else {
-                        D.Alert(`No exclusion found for reference '${effectString}'`, "delGlobalExclusion")
-                    }
-                }
-        
-        },     
-    // #endregion
-
-    // #region Rolling Dice & Formatting Result
+    // #region ROLL CONTROL: Rolling Dice & Formatting Result
         buildDicePool = rollData => {
         /* MUST SUPPLY:
 				  For Rouse & Checks:    rollData = { type }
@@ -3231,7 +3220,7 @@ const Roller = (() => {
                                         styles: {bgColor: v && C.COLORS.darkgrey || C.COLORS.green, color: v && C.COLORS.white || C.COLORS.black}
                                     }))
                     ), (x, i) => Math.floor((i+2)/3))).map(x => ({type: "ButtonLine", contents: x.length === 1 ? [0, x[0], 0] : x, buttonStyles: {}, styles: {}})),
-                replyFunction = (replyString, objs) => {
+                replyFunction = (replyString) => {
                     const rollFlagKey = replyString.replace(/^!/gu, ""),
                         rollFlagName = rollFlagKey.replace(/isHiding/gu, "").replace(/([a-z])([A-Z])/gu, "$1 $2"),
                         toggle = replyString.startsWith("!")
@@ -3363,7 +3352,7 @@ const Roller = (() => {
         },
     // #endregion
 
-    // #region Secret Rolls
+    // #region SECRET ROLLS
         makeSecretRoll = (chars, params, isSilent, isHidingTraits) => {
         // D.Alert(`Received Parameters: ${params}`)
             chars = _.flatten([chars])
@@ -3428,7 +3417,8 @@ const Roller = (() => {
         },
     // #endregion
 
-    // #region Discipline Power Handling
+    // #region DISCIPLINE ROLLS
+    /*
         checkPrerequisites = (charObj) => {
             // Scans character sheet for discipline powers missing prerequisites.
         },
@@ -3438,11 +3428,12 @@ const Roller = (() => {
         parseDiscResult = (charObj, discName, discPower, rollResults, options = {}) => {
             // Outputs to CHAT the specific effects of a power. RollResults only needed if power requires a roll. If no result configured, calls displayDiscPanel instead.
         },
+    */
 
     // #endregion
 
-    // #region Getting Random Resonance Based On District/Site Parameters
-        getResonance = (charRef, posRes = "", negRes = "", marginBonus = 0, isDoubleAcute, testCycles = 0) => {
+    // #region RESONANCE: Getting Random Resonance Based On District/Site Parameters
+        getResonance = (charRef, posRes = "", negRes = "", /* marginBonus = 0, */ isDoubleAcute, testCycles = 0) => {
             DB(`Resonance Args: ${D.JSL(charRef)}, ${D.JSL(posRes)}, ${D.JSL(negRes)}`, "getResonance")
             const charObj = D.GetChar(charRef),
                 resonances = {

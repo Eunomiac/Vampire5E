@@ -416,7 +416,7 @@ const Session = (() => {
                         Char.SetNPC(charData.id, "base")
                         Char.TogglePC(charData.quadrant, true)
                     }
-                    // Media.SetImg("Spotlight", "blank")
+                    Media.ToggleImg("Spotlight", false)
                 },
                 Complications: () => {},
                 Testing: () => {
@@ -528,7 +528,7 @@ const Session = (() => {
         },
         verifyStateIntegrity = () => { // A series of simple validations of registry data.
             // STATE.REF.locationDetails
-            const [siteNames, distNames, posNames, subPosNames] = [
+            const [siteNames, distNames, posNames, /* subPosNames */] = [
                 Object.keys(C.SITES),
                 Object.keys(C.DISTRICTS),
                 ["DistrictCenter", "DistrictRight", "DistrictLeft", "SiteCenter", "SiteRight", "SiteLeft", "subLocs"],

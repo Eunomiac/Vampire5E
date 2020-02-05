@@ -97,12 +97,19 @@ const C = (() => {
             crimson: "rgba(160, 6, 46, 1)",
             darkcrimson: "rgba(86, 3, 25, 1)",
 
-            brightgold: "rgb(255,223,0)",
-            gold: "rgb(255,190,0)",
-            midgold: "rgb(255,165,0)",
-            darkgold: "rgb(167,97,0)",
+            palegold: "rgba( 255 , 220 , 180 , 1 )",
+            brightgold: "rgba(255,223,0,1)",
+            gold: "rgba(255,190,0,1)",
+            midgold: "rgba(255,165,0,1)",
+            darkgold: "rgba(167,97,0,1)",
 
-            tan: "rgb(255,216,164)",
+            orange: "rgba(255,140,0,1)",
+            orangered: "rgba(255,69,0,1)",
+            lightorange: "rgba(255,165,0,1)",
+
+            yellow: "rgba(255,255,0,1)",
+            khaki: "rgba(240,230,140,1)",
+            tan: "rgba(255,216,164,1)",
             
             puregreen: "rgba(0, 255, 0, 1)",
             palegreen: "rgba(175, 255, 175, 1)",
@@ -110,6 +117,7 @@ const C = (() => {
             darkgreen: "rgba(0, 125, 0, 1)",
 
             cyan: "rgba(0, 255, 255, 1)",
+            darkcyan: "rgba(0,150,150,1)",
             
             pureblue: "rgba(0,0,255,1)",
             paleblue: "rgba(175, 175, 255, 1)",
@@ -530,11 +538,14 @@ const C = (() => {
             CodeBlock: (content, options = {}) => {
                 /* if (VAL({list: content})) 
                     content = D.KeyMapObj(content, undefined, v => D.JS(v).replace(/<br\s*\/?>/gu, "@@BR@@").replace(/</gu, "&lt;").replace(/>/gu, "&gt;").replace(/@@BR@@/gu, "<br>")) */
+                const params = {
+                    fontSize: options.fontSize || "9px"
+                }
                 return C.HTML.Block([
                     "header" in content ? C.HTML.Header(content.header, {isSilent: true}) : null,
                     D.JSH(`<pre style="
                             display: block;
-                            font-size: 9px;
+                            font-size: ${params.fontSize};
                             line-height: 1.2em;
                             padding: 0px;
                         ">${D.JS(content)}</pre>`)
@@ -980,7 +991,9 @@ const C = (() => {
             CityPark: [80],
             CityTraffic: [30],
             Church: [60],
-            Rain: [80],
+            RainLight: [80],
+            RainHeavy: [80],
+            SoftHum: [100],
             SoftIndoor: [30],
             Thunder: [100],
             WindLow: [60],

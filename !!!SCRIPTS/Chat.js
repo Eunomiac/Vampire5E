@@ -204,7 +204,7 @@ const Chat = (() => {
                                 case "prep": {                                    
                                     STATE.REF.FontTypes = [...FONTDATA.types]
                                     STATE.REF.FontSizes = [...FONTDATA.sizes]
-                                    STATE.REF.Chars = Object.values(D.MissingChars).join("")
+                                    STATE.REF.Chars = Object.values(D.MissingTextChars).join("")
                                     prepText()
                                     break
                                 }
@@ -561,15 +561,15 @@ const Chat = (() => {
             } else {
                 for (const textObj of textObjs)
                     textObj.remove()
-                for (const missingChar of D.MissingChars)
+                for (const missingChar of D.MissingTextChars)
                     if (STATE.REF.Chars.split("").includes(missingChar))
-                        D.MissingChars = `!${missingChar}`
+                        D.MissingTextChars = `!${missingChar}`
                 D.Chat("Storyteller", C.HTML.Block(C.HTML.Body([
                     "<h4 style=\"text-align: center; background-color: black; color: white; border-bottom: 2px solid black;\">Text Width Calibration Complete!</h3>",
                     `<h4 style="display: block; text-align: center; width: 90%; margin-left: 5%; margin-top: 10px;">${charList.length} Characters Analyzed:</h5>`,
                     `<h5 style="display: block; text-align: center; width: 100%; font-size: 10px; background-color: #DFCCFF;">${_.escape([..._.compact(charList)].sort().join(" "))}</h5>`,
                     `<table style="width: 98%; margin-left: 1%; font-size: 10px;">${reportTableRows.join("")}</table>`,
-                    `<h4 style="text-align: center; padding-bottom: 20px;">DATA.MissingChars revised to:<br>${D.JSL(D.MissingChars)}</h4>`
+                    `<h4 style="text-align: center; padding-bottom: 20px;">DATA.MissingTextChars revised to:<br>${D.JSL(D.MissingTextChars)}</h4>`
                 ].join(""), {
                     color: C.COLORS.black,
                     bgColor: C.COLORS.white,

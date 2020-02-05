@@ -307,7 +307,7 @@ const DragPads = (() => {
             toggleMapLayer(padData) {
                 const buttonKey = Media.GetImgKey(padData.id),
                     mapLayerKey = buttonKey.replace(/Button/gu, "Layer")
-                Media.SetImg(buttonKey, Media.ToggleImg(mapLayerKey) && "on" || "blank")
+                Media.SetImg(buttonKey, Media.ToggleImg(mapLayerKey) && "on" || "off")
                 if (MAPPANELTIMER) {
                     clearTimeout(MAPPANELTIMER)
                     MAPPANELTIMER = setTimeout(FUNCTIONS.toggleMapPanel, 10000)

@@ -20,7 +20,7 @@ const SoundScape = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
-            STATE.REF.trackDetails = STATE.REF.trackDetails || {} /* object index by track id containing These properties:
+            REGISTRY.Tracks = REGISTRY.Tracks || {} /* object index by track id containing These properties:
                                                         volume: the tracks individual volume; is multiplied by the masterVolume to set the jukebox volume
                                                         delays: number of unresolved delays involving this track */
             STATE.REF.playLists = STATE.REF.playLists || {} /* Object of objects with the following properties indexed by playList name
@@ -103,118 +103,39 @@ const SoundScape = (() => {
             // must be roll20AM to start all this
             if (origMsg.content.indexOf("!roll20AM") !== 0)
                 return
-            const listHandler = (cmdDetails, list, restrict) => {
-                    DB([
-                        `List Handler Action:${cmdDetails.action}`,
-                        `List Handler List:${list.name}`,
-                        `List Handler Mode:${list.mode}`
-                    ], "inputHandler")
-
-                    if (restrict && list.access == "gm") {
-                        D.Alert("Invalid SoundScape Command. Restricted action not allowed by a player.", "listHandler")
-                        return
-                    }
-
-                    if (list.trackids.length == 0) {
+            const listHandler = (cmdDetails, listDetails) => {
+                    DB({SUBFUNC: "listHandler", cmdDetails, listDetails}, "inputHandler")
+                    if (listDetails.trackids.length == 0) {
                         D.Alert("Cannot launch PlayLists.  No Tracks assigned.", "listHandler")
                         return
                     }
+                    if (cmdDetails.details.play)
+                        playPlayList(listDetails, null)
+                    else if (cmdDetails.details.stop)
+                        stopPlayList(listDetails) 
 
-                // play depending on mode 
-                    if (cmdDetails.details.play) {
-                        playPlayList(list, null)
-                    } else if (cmdDetails.details.stop) {
-                        stopPlayList(list)
-                    } else if (cmdDetails.details.fade) {
-                        if (cmdDetails.details["in"])
-                            fadeListIn(list)
-
-                        if (cmdDetails.details.out)
-                            fadeListOut(list)
-
-                    } else if (cmdDetails.details.increase) {
-                        increaseListVolume(list)
-                    } else if (cmdDetails.details.decrease) {
-                        decreaseListVolume(list)
-                    } 
+                    if (cmdDetails.details.increase)
+                        increaseListVolume(listDetails)
+                    else if (cmdDetails.details.decrease)
+                        decreaseListVolume(listDetails)                    
                 },
-                // handles playList actions, start/stop/fadein/fadeout
-                trackHandler = (cmdDetails, trackDetails, restrict) => {
-                    DB([
-                        `Track Handler Action:${cmdDetails.action}`,
-                        `Track Handler Track:${trackDetails.title}`,
-                        `Track Handler Mode:${trackDetails.mode}`
-                    ], "trackHandler")
-
-                    if (restrict && trackDetails.access == "gm") {
-                        D.Alert("Invalid SoundScape Command. Restricted action not allowed by a player.", "trackHandler")
-                        return
-                    }
-                    // play depending on mode 
+                trackHandler = (cmdDetails, trackDetails) => {
+                    DB({SUBFUNC: "trackHandler", cmdDetails, trackDetails}, "inputHandler")
                     if (cmdDetails.details.play) {
                         if (trackDetails.mode == "loop")
                             playTrack(trackDetails.id, trackDetails.volume, "loop")
-
                         if (trackDetails.mode == "single")
                             playTrack(trackDetails.id, trackDetails.volume, null)
-
-                    }
-                    if (cmdDetails.details.stop)
+                    } else if (cmdDetails.details.stop) {
                         if (!cmdDetails.details.ignore)
                             stopTrack(trackDetails.id)
-
-                    if (cmdDetails.details.fade)
-                        if (cmdDetails.details["in"]) {
-                            fadeInTrack(trackDetails.id, trackDetails.volume, trackDetails.fadetime)
-                        } else if (cmdDetails.details.out) {
-                            fadeOutTrack(trackDetails.id, trackDetails.volume, 0, trackDetails.fadetime)
-                        }
-
+                    }
                     if (cmdDetails.details.increase)
                         increaseTrackVolume(trackDetails.id)
-
-                    if (cmdDetails.details.decrease)
+                    else if (cmdDetails.details.decrease)
                         decreaseTrackVolume(trackDetails.id)
+                }, args = origMsg.content.split(/\s+--/)
 
-                },
-                configHandler = (cmdDetails) => {
-                    DB(`Config Handler Action:${cmdDetails.action}`, "configHandler")
-
-                    if (cmdDetails.details["import"]) {
-                        importJukebox()
-                    } else if (cmdDetails.details.remove) {
-                        removeJukebox()
-                    } else if (cmdDetails.details.viewBy) {
-                        setAccess(cmdDetails.details.viewBy, null)
-                    } else if (cmdDetails.details.access) {
-                        setAccess(null, cmdDetails.details.access)
-                    } else if (!cmdDetails.details.display) {
-                        STATE.REF.menu = cmdDetails.details.menu
-                        outputConfig(cmdDetails.details.menu)
-                    }
-                }                
-            let restrict
-            const msg = _.clone(origMsg)
-
-            if (STATE.REF.restrict === "off" || playerIsGM(msg.playerid) || msg.playerid === "API" && STATE.REF.API === "gm")// If the gm has turned off player restrictions, or this is a gm, or it's an API generated message and the API is treated like a gm
-                restrict = false// set this run through of the script to not restrict access to tracks
-            else
-                restrict = true// set this run through of the script to restrict access to tracks
-
-
-            if (_.has(msg, "inlinerolls"))// calculates inline rolls
-                msg.content = _.chain(msg.inlinerolls).
-                    reduce((m, v, k) => {
-                        m[`$[[${k}]]`] = v.results.total || 0
-                        return m
-                    }, {}).
-                    reduce((m, v, k) => {
-                        return m.replace(k, v)
-                    }, msg.content).
-                    value()
-
-            // splits the message contents into discrete arguments
-            const args = msg.content.split(/\s+--/)
             if (args[0] === "!roll20AM")
                 if (args[1]) {
                     _.each(_.rest(args, 1), (cmd) => {
@@ -265,58 +186,48 @@ const SoundScape = (() => {
                         })
                         // if track, pushing into array
                         _.each(cmdDets.tracks, (trackTitle) => {
-                            if (STATE.REF.trackDetails[trackTitle])
+                            if (REGISTRY.Tracks[trackTitle])
                                 tracklists.push(trackTitle)
 
                         })
                         DB({action: cmdDets.action, playLists, tracklists}, "editHandler")
 
                         // prevent players from doing things they shouldn't.  PlayList level actions and edit commands
-                        if (restrict) {
-                            if (cmdDets.action == "edit") {
-                                D.Alert("Invalid SoundScape Command. Restricted action not allowed by a player.", "editHandler")
-                                return
-                            }
-                            DB("Command Handler", "editHandler")
-                            setTimeout(() => {
-                                if (cmdDets.action == "audio") {
-                                    if (playLists.length > 0)
-                                        _.each(playLists, (listName) => {
-                                            listHandler(cmdDets, getPlayListData(listName), restrict)
-                                        })
+                        DB("Command Handler", "editHandler")
+                        if (cmdDets.action == "audio") {
+                            if (playLists.length > 0)
+                                _.each(playLists, (listName) => {
+                                    listHandler(cmdDets, getPlayListData(listName))
+                                })
 
-                                    if (tracklists.length > 0)
-                                        _.each(tracklists, (trackTitle) => {
-                                            trackHandler(cmdDets, getTrackData(getTrackID(trackTitle)), restrict)
-                                        })
+                            if (tracklists.length > 0)
+                                _.each(tracklists, (trackTitle) => {
+                                    trackHandler(cmdDets, getTrackData(getTrackID(trackTitle)))
+                                })
 
-                                    if (cmdDets.details.stop)
-                                        if (playLists.length == 0 && tracklists.length == 0) {
-                                            stopAll()
-                                        }
-
-                                    // edit commands    
-                                } else if (cmdDets.action == "edit") {
-                                    if (playLists.length > 0)
-                                        _.each(playLists, (listName) => {
-                                            editSound(cmdDets, getPlayListData(listName), null, restrict)
-                                        })
-
-                                    if (tracklists.length > 0)
-                                        _.each(tracklists, (trackTitle) => {
-                                            editSound(cmdDets, null, getTrackData(getTrackID(trackTitle)), restrict)
-                                        })
-
-                                    if (tracklists.length == 0 && playLists.length == 0)
-                                        editSound(cmdDets, null, null, restrict)
-
-                                    // config commands    
-                                } else if (cmdDets.action == "config") {
-                                    configHandler(cmdDets, restrict)
-                                } else {
-                                    D.Alert("Invalid SoundScape Command.  Valid commands are --audio, --edit, --config", "inputHandler")
+                            if (cmdDets.details.stop)
+                                if (playLists.length == 0 && tracklists.length == 0) {
+                                    stopAll()
                                 }
-                            }, cmdDets.details.delay)
+
+                            // edit commands    
+                        } else if (cmdDets.action == "edit") {
+                            if (playLists.length > 0)
+                                _.each(playLists, (listName) => {
+                                    editSound(cmdDets, getPlayListData(listName), null)
+                                })
+
+                            if (tracklists.length > 0)
+                                _.each(tracklists, (trackTitle) => {
+                                    editSound(cmdDets, null, getTrackData(getTrackID(trackTitle)))
+                                })
+
+                            if (tracklists.length == 0 && playLists.length == 0)
+                                editSound(cmdDets, null, null)
+
+                            // config commands    
+                        } else {
+                            D.Alert("Invalid SoundScape Command.  Valid commands are --audio, --edit", "inputHandler")
                         }
                     })
                 }
@@ -339,24 +250,20 @@ const SoundScape = (() => {
                                 listFound = true
                                 trackDetails.playing = false
                                 DB({trackTitle: trackDetails.title, inList: list.name, listMode: list.mode}, "changeHandler")
-                                if (["loop", "randomLoop", "shuffle"].includes(list.mode)) {
+                                if (["loop", "randomLoop", "shuffle"].includes(list.mode))
                                     playPlayList(list, null)
-                                } else {
-                                    list.playing = false
-                                    outputConfig("playLists")
-                                }
+                                else
+                                    list.playing = false                                
                             }
                         }
-
                 })
 
 
                 // if track wasn't found in active playList, set ROLL20AM state to not playing and output menu so icon changes from play to stop
                 if (!listFound) {
-                    _.each(STATE.REF.trackDetails, track => {
+                    _.each(REGISTRY.Tracks, track => {
                         if (track.playing)
                             trackFound = true
-
                     })
                     if (!listFound && !trackFound)
                         return
@@ -366,7 +273,6 @@ const SoundScape = (() => {
                     _.each(STATE.REF.playLists, list => {
                         if (list.trackids.indexOf(trackDetails.id) > -1)
                             list.playing = false
-
                     })
                     if (trackDetails.mode == "loop")
                         playTrack(trackDetails.id, trackDetails.volume, null)
@@ -374,437 +280,33 @@ const SoundScape = (() => {
             }
         },
         destroyHandler = (obj) => { // INVOKED when a jukeboxtrack is manually destroyed, removing it from SoundScape
-            delete STATE.REF.trackDetails[obj.id]
+            delete REGISTRY.Tracks[obj.id]
             _.each(STATE.REF.playLists, (L) => {
                 L.trackids.splice(L.trackids.indexOf(obj.id), 1)
             })
-        }
+        },
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     //* **** CONFIGURATION ***************************************************
     // #region Variable Declarations
-    let helpLink
-    const version = "2.12",
+    
+        REGISTRY = {
+            get Tracks() { return STATE.REF.trackregistry },
+            get Playlists() { return STATE.REF.playlistregistry }        
+        },
         displayTrack = false,
-        defaults = {
-            css: {
-                button: {
-                    // 'border-radius': '1em',
-                    "background-color": "#006dcc",
-                    "margin": "0px",
-                    "font-weight": "bold",
-                    "padding": "-5px",
-                    "color": "white",
-                    "border-style": "none"
-                }
-            }
-        },
-        templates = {
-            cssProperty: _.template("<%=name %>: <%=value %>;"),
-            style: _.template(
-                "style=\"<%=" +
-                        "_.map(css, (v,k) => {" +
-                        "return templates.cssProperty({" +
-                        "defaults: defaults," +
-                        "templates: templates," +
-                        "name:k," +
-                        "value:v" +
-                        "});" +
-                        "}).join(\"\")" +
-                        " %>\""
-            ),
-            button: _.template(
-                "<a <%= templates.style({" +
-                        "defaults: defaults," +
-                        "templates: templates," +
-                        "css: _.defaults(css,defaults.css.button)" +
-                        "}) %> href=\"<%= command %>\"><%= label %></a>"
-            )
-        },
-        playImage = "4",
-        stopImage = "6",
-        tagImage = "3",
-        noTagImage = "d",
-        deleteImage = "D",
-        shuffleImage = ";",
-        randomSingleImage = "`",
-        randomLoopImage = "?",
-        togetherImage = "J",
-        loopImage = "r",
-        singleImage = "1",
-        lockImage = ")",
-        unlockImage = "(",
-        backImage = "y",
-        fadeInImage = "7",
-        fadeOutImage = "8",
-        decreaseImage = "<",
-        increaseImage = ">",  
     // #endregion
-    // #region Chat Menu Creation
-        makeImageButton = (command, image, toolTip, backgroundColor, size) => {
-            return `<a href="${command}" title= "${toolTip}" style="margin:0;padding:1px;background-color:${backgroundColor}"><span style="color:black;padding:0px;font-size:${size}px;font-family: 'Pictos'">${image}</span></a>`
-        },
-        makeTextButton = (command, label, backgroundColor, color) => {
-            return `<a href="${command}" style="margin:0;border: 0;background-color:${backgroundColor}"><span style="font-style:bold;color:${color}">${label}</span></a>`
-        },
-        makeButton = (command, label, backgroundColor, color) => {
-            return templates.button({
-                command,
-                label,
-                templates,
-                defaults,
-                css: {
-                    color,
-                    "background-color": backgroundColor
-                }
-            })
-        },
-        outputConfig = (menu) => {
-            let mvTextButton, backButton, output
-
-            output = " <div style=\"border: 1px solid black; background-color: white; padding: 3px 3px;margin-top:20px\">"
-            + "<div style=\"font-weight: bold; border-bottom: 1px solid black;font-size: 100%;style=\"float:left;\">"
-            DB(`Output Config:${menu}`, "outputConfig")
-
-            if (menu) {
-                if (menu == "tracks") {
-                    output += ` Roll20 AM(${version})<b> Tracks</b></div>`
-                    _.each(STATE.REF.trackDetails, (track) => {
-                        output += outputTrack(track, menu)
-                    })
-                    backButton = makeImageButton("!roll20AM --config", backImage, "Return to Config", "transparent")
-                    output += `<div style="float:right;display:inline-block;margin-top:5px">${backButton}</div>`
-                    output += "</div>"
-                } else if (menu == "tags") {
-                    output += ` Roll20 AM(${version})<b> Tags</b></div>`
-                    _.each(STATE.REF.playLists, (list) => {
-                        if (list.name == "Tag1" || list.name == "Tag2" || list.name == "Tag3" || list.name == "Tag4")
-                            output += outputList(list, list.name, "tags")
-
-                    })
-                    backButton = makeImageButton("!roll20AM --config", backImage, "Return to Config", "transparent")
-                    output += `<div style="float:right;display:inline-block;margin-top:5px">${backButton}</div>`
-                    output += "</div>"
-                } else if (menu == "playLists") {
-                    output += ` Roll20 AM(${version})<b> PlayLists</b></div>`
-                    _.each(STATE.REF.playLists, (list) => {
-                        if (list.name != "Tag1" && list.name != "Tag2" && list.name != "Tag3" && list.name != "Tag4")
-                            output += outputList(list, list.name, "playLists")
-
-                    })
-                    backButton = makeImageButton("!roll20AM --config", backImage, "Return to Setup", "transparent")
-                    output += `<div style="float:right;display:inline-block;margin-top:5px">${backButton}</div>`
-                    output += "</div>"
-                } else if (STATE.REF.playLists[menu]) {
-                    output += ` Roll20 AM(${version})<b>${menu} PlayList</b></div>`
-                    _.each(STATE.REF.playLists[menu].trackids, (t) => {
-                        const track = getTrackData(t)
-                        output += outputTrack(track, menu, menu)
-                    })
-                    if (menu == "Tag1" || menu == "Tag2" || menu == "Tag3" || menu == "Tag4")
-                        backButton = makeImageButton("!roll20AM --config,menu=tags", backImage, "Return to Tags", "transparent")
-                    else
-                        backButton = makeImageButton("!roll20AM --config,menu=playLists", backImage, "Return to PlayLists", "transparent")
-
-                    output += `<div style="float:right;display:inline-block;margin-top:5px">${backButton}</div>`
-                    output += "</div>"
-                }
-            } else {
-                output += ` Roll20 AM (${version}) - <b> Setup</b></div><div style="padding-left:10px;margin-bottom:3px;">`
-            // Master Volume Control
-                mvTextButton = makeButton(`!roll20AM --edit,volume,level=?{Volume Level (0-100)|${STATE.REF.masterVolume}} --config`, `${STATE.REF.masterVolume}%`, "white", "black")
-                output += `<b>Master Volume: </b><div style="display:inline-block">${mvTextButton}</div><br>`
-            // Fade Time
-                mvTextButton = makeButton(`!roll20AM --edit,fade,time,level=?{Fade Time (Seconds) (0-200)|${STATE.REF.fadeTime}} --config`, `${STATE.REF.fadeTime} (Seconds)`, "white", "black")
-                output += `<b>Fade Time: </b><div style="display:inline-block">${mvTextButton}</div><br>`
-            // Delay Time
-                mvTextButton = makeButton(`!roll20AM --edit,delayed,level=?{Delayed (Seconds) (0-200)|${STATE.REF.delay}} --config`, `${STATE.REF.delay} (Seconds)`, "white", "black")
-                output += `<b>Delayed: </b><div style="display:inline-block">${mvTextButton}</div><br>`
-            // PlayLists
-                mvTextButton = makeButton("!roll20AM --config,menu=playLists", "PlayLists", "white", "black")
-                output += `<div>${mvTextButton}</div>`
-            // Tracks
-                mvTextButton = makeButton("!roll20AM --config,menu=tracks", "Tracks", "white", "black")
-                output += `<div>${mvTextButton}</div>`
-            // Tags
-                mvTextButton = makeButton("!roll20AM --config,menu=tags", "Tags", "white", "black")
-                output += `<div>${mvTextButton}</div>`
-            // Tracks
-                mvTextButton = makeButton("!roll20AM --audio,stop|", "Stop All Tracks", "white", "black")
-                output += `<div>${mvTextButton}</div>`
-            // Import Jukebox
-                mvTextButton = makeButton("!roll20AM --config,import", "Import Jukebox", "white", "black")
-                output += `<div>${mvTextButton}</div>`
-            // Import Jukebox
-                mvTextButton = makeButton("!roll20AM --config,remove", "Remove All", "white", "black")
-                output += `<div>${mvTextButton}</div>`
-            // ends the padding div begun before listenButton
-                output += "</div>"
-            }
-        // ends the first div
-            output += "<div style=\"margin-bottom:30px;\">"
-            output += "</div>"
-            D.Alert(output, "SoundScape Config")            
-        },
-    // output each individual track.  Called from menus above
-        outputTrack = (track, menu) => {
-            let output, accessButton, playButton, modeButton, fadeButton, playListButton, tagButton, mvTextButton
-            const title = track.title.split("by")
-            if (track.playing)
-                output = `<div style="background-color:#33cc33;width:100%;padding:2px;font-style:bold;color:white">${title[0]}</div>`
-            else
-                output = `<div style="background-color:#ff5050;width:100%;padding:2px;font-style:bold;color:white">${title[0]}</div>`
-
-        // Access Toggle
-            if (track.access === "gm")
-                accessButton = makeImageButton(`!roll20AM --edit,access,player|${encodeURIComponent(track.title)} --config,menu=${menu}`, unlockImage, "Set List Access to player", "transparent", 15)
-            else
-                accessButton = makeImageButton(`!roll20AM --edit,access,gm|${encodeURIComponent(track.title)} --config,menu=${menu}`, lockImage, "Set List Access to gm only", "transparent", 15)
-
-        // Play Toggle
-            if (track.playing)
-                playButton = makeImageButton(`!roll20AM --audio,stop|${encodeURIComponent(track.title)} --config,menu=${menu}`, stopImage, "Stop Track", "transparent", 15)
-            else
-                playButton = makeImageButton(`!roll20AM --audio,play|${encodeURIComponent(track.title)} --config,menu=${menu}`, playImage, "Play Track", "transparent", 15)
-
-        // Shuffle Toggle
-            if (track.mode == "single")
-                modeButton = makeImageButton(`!roll20AM --edit,mode,loop|${encodeURIComponent(track.title)} --config,menu=${menu}`, singleImage, "Set the playList playmode; currently single", "transparent", 15)
-            else if (track.mode == "loop")
-                modeButton = makeImageButton(`!roll20AM --edit,mode,single|${encodeURIComponent(track.title)} --config,menu=${menu}`, loopImage, "Set the playList playmode; currently loop", "transparent", 15)
-
-        // Track Increase Button
-            const increaseButton = makeImageButton(`!roll20AM --audio,increase|${encodeURIComponent(track.title)} --config,menu=${menu}`, increaseImage, "Increase Volume", "transparent", 15),
-        // Track Decrease Button
-                decreaseButton = makeImageButton(`!roll20AM --audio,decrease|${encodeURIComponent(track.title)} --config,menu=${menu}`, decreaseImage, "Decrease Volume", "transparent", 15),
-        // Track Decrease Button
-                deleteButton = makeImageButton(`!roll20AM --edit,remove|${encodeURIComponent(track.title)} --config,menu=${menu}`, deleteImage, "Delete Track", "transparent", 15)
-        // Fade Out Button
-            if (track.playing)
-                fadeButton = makeImageButton(`!roll20AM --audio,fade,out|${encodeURIComponent(track.title)}`, fadeOutImage, "Fade Out", "transparent", 15)
-            else
-                fadeButton = makeImageButton(`!roll20AM --audio,fade,in|${encodeURIComponent(track.title)} --config,menu=${menu}`, fadeInImage, "Fade In", "transparent,15")
-
-        // Track Volume Control
-            mvTextButton = makeButton(`!roll20AM --edit,volume,level=?{Volume Level (0-100)|${track.volume}}|${encodeURIComponent(track.title)} --config,menu=${menu}`, `${track.volume}%`, "white", "black")
-            playListButton = `<div style="display:inline-block;font-size:10px;margin-right:3px"><b>Vol:</b>${mvTextButton}</div>`
-        // Track Fade Time
-            mvTextButton = makeButton(`!roll20AM --edit,fade,time,level=?{Fade Time in Seconds (0-200)|${track.fadetime}}|${encodeURIComponent(track.title)} --config,menu=${menu}`, track.fadetime, "white", "black")
-            playListButton += `<div style="display:inline-block;font-size:10px;margin-right:3px"><b>Fade Time:</b>${mvTextButton}</div>`
-        // Track Delay Time
-            mvTextButton = makeButton(`!roll20AM --edit,delayed,level=?{Delay Time in Seconds (0-200)|${track.delay}}|${encodeURIComponent(track.title)} --config,menu=${menu}`, track.delay, "white", "black")
-            playListButton += `<div style="display:inline-block;font-size:10px"><b>Delayed:</b>${mvTextButton}</div>`
-
-        // Tags
-            if (track.tags[0] == "On")
-                tagButton = `<div style="font-size:80%;line-height:1em;display:inline-block;">1</div>${makeImageButton(`!roll20AM --edit,unset,tag1|${encodeURIComponent(track.title)} --config,menu=${menu}`, tagImage, "Assigned to Tag1", "transparent", 10)}`
-            else
-                tagButton = `<div style="font-size:80%;line-height:1em;display:inline-block;">1</div>${makeImageButton(`!roll20AM --edit,set,tag1|${encodeURIComponent(track.title)} --config,menu=${menu}`, noTagImage, "Not Assigned to Tag1", "transparent", 10)}`
-
-            if (track.tags[1] == "On")
-                tagButton += `<div style="font-size:80%;line-height:1em;display:inline-block;">2</div>${makeImageButton(`!roll20AM --edit,unset,tag2|${encodeURIComponent(track.title)} --config,menu=${menu}`, tagImage, "Assigned to Tag2", "transparent", 10)}`
-            else
-                tagButton += `<div style="font-size:80%;line-height:1em;display:inline-block;">2</div>${makeImageButton(`!roll20AM --edit,set,tag2|${encodeURIComponent(track.title)} --config,menu=${menu}`, noTagImage, "Not Assigned to Tag2", "transparent", 10)}`
-
-            if (track.tags[2] == "On")
-                tagButton += `<div style="font-size:80%;line-height:1em;display:inline-block;">3</div>${makeImageButton(`!roll20AM --edit,unset,tag3|${encodeURIComponent(track.title)} --config,menu=${menu}`, tagImage, "Assigned to Tag2", "transparent", 10)}`
-            else
-                tagButton += `<div style="font-size:80%;line-height:1em;display:inline-block;">3</div>${makeImageButton(`!roll20AM --edit,set,tag3|${encodeURIComponent(track.title)} --config,menu=${menu}`, noTagImage, "Not Assigned to Tag2", "transparent", 10)}`
-
-            if (track.tags[3] == "On")
-                tagButton += `<div style="font-size:80%;line-height:1em;display:inline-block;">4</div>${makeImageButton(`!roll20AM --edit,unset,tag4|${encodeURIComponent(track.title)} --config,menu=${menu}`, tagImage, "Assigned to Tag2", "transparent", 10)}`
-            else
-                tagButton += `<div style="font-size:80%;line-height:1em;display:inline-block;">4</div>${makeImageButton(`!roll20AM --edit,set,tag4|${encodeURIComponent(track.title)} --config,menu=${menu}`, noTagImage, "Not Assigned to Tag2", "transparent", 10)}`
-
-
-        // Put it all together
-            output += `${playListButton}<div>${playButton} ${fadeButton} ${decreaseButton} ${increaseButton} ${modeButton} ${accessButton} ${deleteButton}<div style="display:inline-block;float:right;font-size:80%;">${tagButton}</div></div>`
-            output += "<div style=\"margin-top:5px\"></div>"
-            return output
-        },
-        outputList = (list, menu, mainMenu) => {
-            let output, accessButton, playButton, modeButton, fadeButton, playListButton, mvTextButton
-            if (list.playing)
-                playListButton = `<div style="background-color:#33cc33;width:99%">${makeTextButton(`!roll20AM --config,menu=${menu}`, list.name, "transparent", "white")}</div>`
-            else
-                playListButton = `<div style="background-color:#ff5050;width:99%">${makeTextButton(`!roll20AM --config,menu=${menu}`, list.name, "transparent", "white")}</div>`
-
-        // Access Toggle
-            if (list.access === "gm")
-                accessButton = makeImageButton(`!roll20AM --edit,access,player|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, unlockImage, "Set List Access to player", "white", 15)
-            else
-                accessButton = makeImageButton(`!roll20AM --edit,access,gm|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, lockImage, "Set List Access to gm only", "white", 15)
-
-        // Play Toggle
-            if (list.playing)
-                playButton = makeImageButton(`!roll20AM --audio,stop|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, stopImage, "Stop PlayList", "white", 15)
-            else
-                playButton = makeImageButton(`!roll20AM --audio,play|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, playImage, "Play PlayList", "white", 15)
-
-        // Shuffle Toggle
-            if (list.mode == "randomSingle")
-                modeButton = makeImageButton(`!roll20AM --edit,mode,random,loop|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, randomSingleImage, "Set the playList playmode; currently random single", "white", 15)
-            else if (list.mode == "randomLoop")
-                modeButton = makeImageButton(`!roll20AM --edit,mode,shuffle|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, randomLoopImage, "Set the playList playmode; currently random loop", "white", 15)
-            else if (list.mode == "shuffle")
-                modeButton = makeImageButton(`!roll20AM --edit,mode,single|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, shuffleImage, "Set the playList playmode; currently shuffled", "white", 15)
-            else if (list.mode == "single")
-                modeButton = makeImageButton(`!roll20AM --edit,mode,loop|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, singleImage, "Set the playList playmode; currently single", "white", 15)
-            else if (list.mode == "loop")
-                modeButton = makeImageButton(`!roll20AM --edit,mode,together|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, loopImage, "Set the playList playmode; currently loop", "white", 15)
-            else
-                modeButton = makeImageButton(`!roll20AM --edit,mode,random,single|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, togetherImage, "Set the playList playmode; currently together", "white")
-
-        // Increase Button
-            const increaseButton = makeImageButton(`!roll20AM --audio,increase|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, increaseImage, "Increase Volume", "white", 15),
-        // Decrease Button
-                decreaseButton = makeImageButton(`!roll20AM --audio,decrease|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, decreaseImage, "Decrease Volume", "white", 15),
-        // Decrease Button
-                deleteButton = makeImageButton(`!roll20AM --edit,remove|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, deleteImage, "Delete PlayList", "white")
-        // Fade Button
-            if (list.playing)
-                fadeButton = makeImageButton(`!roll20AM --audio,fade,out|${encodeURIComponent(list.name)}`, fadeOutImage, "Fade Out", "white", 15)
-            else
-                fadeButton = makeImageButton(`!roll20AM --audio,fade,in|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, fadeInImage, "Fade In", "white", 15)
-
-        // PlayList Volume Control
-            mvTextButton = makeButton(`!roll20AM --edit,volume,level=?{Volume Level (0-100)|${list.volume}}|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, `${list.volume}%`, "white", "black")
-            playListButton += `<div style="display:inline-block;font-size:10px;margin-right:3px"><b>Vol:</b>${mvTextButton}</div>`
-        // PlayList Fade Time
-            mvTextButton = makeButton(`!roll20AM --edit,fade,time,level=?{Fade Time in Seconds (0-200)|${list.fadetime}}|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, list.fadetime, "white", "black")
-            playListButton += `<div style="display:inline-block;font-size:10px;margin-right:3px"><b>Fade Time:</b>${mvTextButton}</div>`
-        // PlayList Fade Time
-            mvTextButton = makeButton(`!roll20AM --edit,delayed,level=?{Delay Time in Seconds (0-200)|${list.delay}}|${encodeURIComponent(list.name)} --config,menu=${mainMenu}`, list.delay, "white", "black")
-            playListButton += `<div style="display:inline-block;font-size:10px;"><b>Delayed:</b>${mvTextButton}</div>`
-        // Output of all of the above
-            output = `${playListButton}<div style="float:center;">${playButton}  ${fadeButton} ${decreaseButton} ${increaseButton} ${modeButton} ${accessButton} ${deleteButton}</div>`
-            output += "<div style=\"font-weight: bold; border-bottom: 1px solid black;font-size: 90%;style=\"float:left;\"></div>"
-            return output
-        },
-        setAccess = (viewBy, access) => {
-            if (viewBy)
-                STATE.REF.API = viewBy
-
-            if (access) {
-                STATE.REF.access = access
-                if (access == "None")
-                    _.each(STATE.REF.playLists, list => {
-                        edit(list, null, null, null, "gm", null, null, null, null)
-                        _.each(list.trackids, track => {
-                            edit(null, track, null, null, "gm", null, null, null, null)
-                        })
-                    })
-
-                if (access == "Full")
-                    _.each(STATE.REF.playLists, list => {
-                        edit(list, null, null, null, "player", null, null, null, null)
-                        _.each(list.trackids, track => {
-                            edit(null, track, null, null, "player", null, null, null, null)
-                        })
-                    })
-
-            }
-        },
-    // Edit the PlayList
-        edit = (list, trackID, action, mode, access, tag1, tag2, tag3, tag4) => {
-            const trackDetails = getTrackData(trackID)
-            let trackAccess
-
-            if (!list && !trackDetails)
-                STATE.REF.API = access
-
-            if (list) {
-                list.mode = mode || list.mode
-                list.access = access || list.access
-                if (access)
-                    _.each(list.trackids, trackAccessID => {
-                        trackAccess = getTrackData(trackAccessID)
-                        trackAccess.access = access
-                    })
-
-                if (action == "remove")
-                    delete STATE.REF.playLists[list.name]
-
-            }
-            if (trackDetails) {
-                trackDetails.mode = mode || trackDetails.mode
-                trackDetails.access = access || trackDetails.access
-                if (action == "set" || action == "unset") {
-                    if (tag1) {
-                        trackDetails.tags[0] = tag1
-                        if (tag1 == "On") {
-                            list = getPlayListData("Tag1")
-                            if (!list.trackids[trackDetails.id])
-                                list.trackids.push(trackDetails.id)
-
-                        } else {
-                            list = getPlayListData("Tag1")
-                            list.trackids.splice(list.trackids.indexOf(trackDetails.id), 1)
-                        }
-                    }
-                    if (tag2) {
-                        trackDetails.tags[1] = tag2
-                        if (tag2 == "On") {
-                            list = getPlayListData("Tag2")
-                            if (!list.trackids[trackDetails.id])
-                                list.trackids.push(trackDetails.id)
-
-                        } else {
-                            list = getPlayListData("Tag2")
-                            list.trackids.splice(list.trackids.indexOf(trackDetails.id), 1)
-                        }
-                    }
-                    if (tag3) {
-                        trackDetails.tags[2] = tag3
-                        if (tag3 == "On") {
-                            list = getPlayListData("Tag3")
-                            if (!list.trackids[trackDetails.id])
-                                list.trackids.push(trackDetails.id)
-
-                        } else {
-                            list = getPlayListData("Tag3")
-                            list.trackids.splice(list.trackids.indexOf(trackDetails.id), 1)
-                        }
-                    }
-                    if (tag4) {
-                        trackDetails.tags[3] = tag4
-                        if (tag4 == "On") {
-                            list = getPlayListData("Tag4")
-                            if (!list.trackids[trackDetails.id])
-                                list.trackids.push(trackDetails.id)
-
-                        } else {
-                            list = getPlayListData("Tag4")
-                            list.trackids.splice(list.trackids.indexOf(trackDetails.id), 1)
-                        }
-                    }
-                }
-
-                if (action == "remove") {
-                    delete STATE.REF.trackDetails[trackDetails.id]
-                    _.each(STATE.REF.playLists, (L) => {
-                        L.trackids.splice(L.trackids.indexOf(trackDetails.id), 1)
-                    })
-                }
-            }
-        },
-    // #endregion
-    // #region Control & Registration Functions
-        editSound = (cmdDetails, list, trackDetails) => {
-            let mode, access, tag1, tag2, tag3, tag4
-            DB([
-                `Edit Handler Action:${cmdDetails.action}`,
-                `Edit Handler ${list ? `List:${list.name}` : `Track: ${trackDetails.title}`}`
-            ], "editHandler")
-
+    // #region Control & Registration Functions    
+        editSound = (cmdDetails, listDetails, trackDetails) => {
+            let mode
+            DB({cmdDetails, listDetails, trackDetails}, "editSound")
             if (cmdDetails.details.mode)
                 if (cmdDetails.details.random) {
                     if (cmdDetails.details.single)
                         mode = "randomSingle"
                     else if (cmdDetails.details.loop)
                         mode = "randomLoop"
-
                 } else if (cmdDetails.details.single) {
                     mode = cmdDetails.details.single
                 } else if (cmdDetails.details.loop) {
@@ -814,168 +316,55 @@ const SoundScape = (() => {
                 } else {
                     mode = cmdDetails.details.together
                 }
-
-            if (cmdDetails.details.set) {
-                if (cmdDetails.details.tag1)
-                    tag1 = "On"
-
-                if (cmdDetails.details.tag2)
-                    tag2 = "On"
-
-                if (cmdDetails.details.tag3)
-                    tag3 = "On"
-
-                if (cmdDetails.details.tag4)
-                    tag4 = "On"
-
-            }
-
-            if (cmdDetails.details.unset) {
-                if (cmdDetails.details.tag1)
-                    tag1 = "Off"
-
-                if (cmdDetails.details.tag2)
-                    tag2 = "Off"
-
-                if (cmdDetails.details.tag3)
-                    tag3 = "Off"
-
-                if (cmdDetails.details.tag4)
-                    tag4 = "Off"
-
-            }
-
-            if (cmdDetails.details.access)
-                if (cmdDetails.details.player) {
-                    access = cmdDetails.details.player
-                } else {
-                    access = cmdDetails.details.gm
-                }
-
-
-            if (!list && !trackDetails) {
+            if (!listDetails && !trackDetails) {
                 if (cmdDetails.details.volume)
                     changeVolumeMaster(cmdDetails.details.level)
-
-                if (cmdDetails.details.delayed)
-                    changeDelayMaster(cmdDetails.details.level)
-
-                if (cmdDetails.details.fade) {
-                    if (cmdDetails.details["in"])
-                        changeFadeInMaster(cmdDetails.details.level)
-
-                    if (cmdDetails.details.out)
-                        changeFadeOutMaster(cmdDetails.details.level)
-
-                    if (cmdDetails.details.time)
-                        changeFadeTimeMaster(cmdDetails.details.level)
-
-                    if (cmdDetails.details.access)
-                        edit(null, null, null, mode, access)
-
-                }
-            } else if (list) {
+            } else if (listDetails) {
                 if (cmdDetails.details.volume)
-                    changeVolumeList(list, cmdDetails.details.level)
-
-                if (cmdDetails.details.delayed)
-                    changeDelayList(list, cmdDetails.details.level)
-
+                    changeVolumeList(listDetails, cmdDetails.details.level)
                 if (cmdDetails.details.mode)
-                    edit(list, null, null, mode, access)
-
-                if (cmdDetails.details.access)
-                    edit(list, null, null, mode, access)
-
+                    listDetails.mode = mode || listDetails.mode
                 if (cmdDetails.details.remove)
-                    edit(list, null, cmdDetails.details.remove, null, null)
-
-                if (cmdDetails.details.set)
-                    edit(list, null, cmdDetails.details.set, null, null, tag1, tag2, tag3, tag4)
-
-                if (cmdDetails.details.unset)
-                    edit(list, null, cmdDetails.details.unset, null, null, tag1, tag2, tag3, tag4)
-
-                if (cmdDetails.details.fade) {
-                    if (cmdDetails.details["in"])
-                        changeFadeInList(list, cmdDetails.details.level)
-
-                    if (cmdDetails.details.out)
-                        changeFadeOutList(list, cmdDetails.details.level)
-
-                    if (cmdDetails.details.time)
-                        changeFadeTimeList(list, cmdDetails.details.level)
-
-                }
+                    delete REGISTRY.Playlists[listDetails.name]
             } else if (trackDetails) {
                 if (cmdDetails.details.volume)
                     changeVolumeTrack(trackDetails.id, cmdDetails.details.level)
-
-                if (cmdDetails.details.delayed)
-                    changeDelayTrack(trackDetails.id, cmdDetails.details.level)
-
                 if (cmdDetails.details.mode)
-                    edit(null, trackDetails.id, null, mode, access)
-
-                if (cmdDetails.details.access)
-                    edit(null, trackDetails.id, null, mode, access)
-
-                if (cmdDetails.details.remove)
-                    edit(null, trackDetails.id, cmdDetails.details.remove, mode, access)
-
-                if (cmdDetails.details.unset)
-                    edit(null, trackDetails.id, cmdDetails.details.unset, null, null, tag1, tag2, tag3, tag4)
-
-                if (cmdDetails.details.set)
-                    edit(null, trackDetails.id, cmdDetails.details.set, null, null, tag1, tag2, tag3, tag4)
-
-                if (cmdDetails.details.fade) {
-                    if (cmdDetails.details["in"])
-                        changeFadeInTrack(trackDetails.id, cmdDetails.details.level)
-
-                    if (cmdDetails.details.out)
-                        changeFadeOutTrack(trackDetails.id, cmdDetails.details.level)
-
-                    if (cmdDetails.details.time)
-                        changeFadeTimeTrack(trackDetails.id, cmdDetails.details.level)
-
+                    trackDetails.mode = mode || trackDetails.mode
+                if (cmdDetails.details.remove) {
+                    delete REGISTRY.Tracks[trackDetails.id]
+                    _.each(REGISTRY.Playlists, (listData) => {
+                        listData.trackids.splice(listData.trackids.indexOf(trackDetails.id), 1)
+                    })
                 }
             }
         },
-
     // #endregion
     // #region Importing Data from Jukebox & Configuring Default Modes
         importJukebox = (isSettingModes = true, isSilent = false) => {
-            const lists = JSON.parse(Campaign().get("jukeboxfolder"))
-            let track, title, trackID
-            DB("Importing Tracks", "importJukebox")
-            _.each(findObjs({type: "jukeboxtrack"}), (thisTrack) => {
-                title = thisTrack.get("title")
-                trackID = thisTrack.get("_id")
-                if (STATE.REF.trackDetails[title] == undefined)
-                    STATE.REF.trackDetails[title] = {
+            const playlistImport = JSON.parse(Campaign().get("jukeboxfolder"))
+            let trackObj, trackTitle, trackID
+            _.each(findObjs({type: "jukeboxtrack"}), (track) => {
+                trackTitle = track.get("title")
+                trackID = track.get("_id")
+                if (!(trackTitle in REGISTRY.Tracks))
+                    REGISTRY.Tracks[trackTitle] = {
                         id: trackID,
-                        title,
+                        title: trackTitle,
                         playing: false,
-                        access: "gm",
                         mode: "single",
-                        delay: 0,
-                        tags: ["Off", "Off", "Off", "Off", "Off"],
-                        volume: STATE.REF.masterVolume,
-                        fadeup: STATE.REF.fadeVolumeUp,
-                        fadedown: STATE.REF.fadeVolumeDown,
-                        fadetime: STATE.REF.fadeTime
+                        volume: STATE.REF.masterVolume
                     }
             })
-            _.each(lists, list => {
-                if (list.n != undefined) {
+            _.each(playlistImport, list => {
+                if (list.n) {
                     importList(list.n)
                     _.each(list.i, (t) => {
-                        track = getTrackObj(t)
-                        if (track != undefined) {
-                            title = track.get("title")
-                            trackID = getTrackID(title)
-                            if (STATE.REF.playLists[list.n].trackids.indexOf(trackID) == -1)
+                        trackObj = getTrackObj(t)
+                        if (trackObj) {
+                            trackTitle = trackObj.get("title")
+                            trackID = getTrackID(trackTitle)
+                            if ("trackids" in REGISTRY.Playlists[list.n] && REGISTRY.Playlists[list.n].trackids.indexOf(trackID) == -1)
                                 STATE.REF.playLists[list.n].trackids.push(trackID)
                         }
                     })
@@ -1011,7 +400,7 @@ const SoundScape = (() => {
         },
         removeJukebox = (isSilent = false) => {
             STATE.REF.playLists = {}
-            STATE.REF.trackDetails = {}
+            REGISTRY.Tracks = {}
             if (!isSilent)
                 D.Alert("All PlayLists and Tracks have been removed from SoundScape", "SoundScape")
         },
@@ -1105,9 +494,9 @@ const SoundScape = (() => {
     // #region GETTERS: Tracks (According to SoundScape's Data)
         getTrackName = (trackRef) => {
             if (VAL({string: trackRef})) {
-                if (STATE.REF.trackDetails[trackRef])
+                if (REGISTRY.Tracks[trackRef])
                     return trackRef
-                return (_.findWhere(STATE.REF.trackDetails, {id: trackRef}) || {title: false}).title
+                return (_.findWhere(REGISTRY.Tracks, {id: trackRef}) || {title: false}).title
             } else if (VAL({object: trackRef})) {
                 return getTrackName(trackRef.id)
             }
@@ -1116,7 +505,7 @@ const SoundScape = (() => {
         isTrack = (trackRef) => Boolean(getTrackName(trackRef)),   
         getTrackData = (trackRef) => {
             const trackKey = getTrackName(trackRef)
-            return VAL({string: trackKey}) && STATE.REF.trackDetails[trackKey]
+            return VAL({string: trackKey}) && REGISTRY.Tracks[trackKey]
         },
         getTrackID = (trackRef) => {
             if (VAL({object: trackRef}) && trackRef.get("_type") === "jukeboxtrack")
@@ -1204,7 +593,7 @@ const SoundScape = (() => {
                     list.currentTrack = []
                 }
             })
-            _.each(STATE.REF.trackDetails, (track) => {
+            _.each(REGISTRY.Tracks, (track) => {
                 if (track.playing) {
                     DB(`Stopping Track:${track.id}`, "stopAll")
 
@@ -1386,7 +775,7 @@ const SoundScape = (() => {
         // Edit Track Functions 	
         // - Modify the volume in the trackDetails and in some cases, the Jukebox Track
         //    - Volume, Fade In, Fade Out, Fade Time, Increase, Decrease
-        //    - Pull the details from STATE.REF.trackDetails and sometimes Jukebox
+        //    - Pull the details from REGISTRY.Tracks and sometimes Jukebox
         //    - Update the approprate element
         //* *****************************************************************************
         changeVolumeTrack = (trackID, level) => {

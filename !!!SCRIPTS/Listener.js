@@ -24,7 +24,7 @@ const Listener = (() => {
         },
         regHandlers = () => {
             on("chat:message", msg => {
-                if (STATE.REF.isLocked && !Session.IsTesting)
+                if (STATE.REF.isLocked)
                     return false
                 const args = msg.content.split(/\s+/u)
                 if (msg.type === "api") {
@@ -96,6 +96,7 @@ const Listener = (() => {
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
             STATE.REF.isLocked = STATE.REF.isLocked || false
+            STATE.REF.objectLog = STATE.REF.objectLog || []
             SCRIPTCALLS.MESSAGE = _.omit({
                 "!char": {script: Char, gmOnly: true, singleCall: true},
                 "!data": {script: D, gmOnly: true, singleCall: false},
@@ -144,14 +145,32 @@ const Listener = (() => {
 
         getAllObjs = (objects, type) => {
             type = D.IsIn(type, ["character", "graphic", "text"])
-            return _.uniq(_.flatten(_.compact([...objects[type] || [], ...objects.selected && objects.selected[type] || []])))
+            const returnObjs = _.uniq(_.flatten(_.compact([...objects[type] || [], ...objects.selected && objects.selected[type] || []])))
+            DB({objects, type, returnObjs}, "getAllObjs")
+            if (returnObjs.length) {
+                STATE.REF.objectLog[type] = returnObjs.map(x => x.id).join(",")
+                DB({objectLog: returnObjs.map(x => x.id).join(","), stateRef: STATE.REF.objectLog}, "getAllObjs")
+                return returnObjs
+            }
+            return STATE.REF.objectLog[type] && STATE.REF.objectLog[type].split(",").map(x => getObj(type, x)) || []            
         },
         parseParams = (args, delim = " ") => {
+            const params = {}
+            if (VAL({array: args}))
+                args.join(" ")
+            if (VAL({string: args})) 
+                Object.apply(params, args.
+                    split(new RegExp(`,?${delim.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}+`, "gu")).
+                    filter(x => x.includes(":")).
+                    map(x => x.trim().split(":").
+                        map(xx => VAL({number: xx}) ? D.Float(xx,2) : xx))
+                )
+            
             return _.object(
                 (VAL({array: args}) ? args.join(" ") : args).
                     split(new RegExp(`,?${delim.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}+`, "gu")).
                     filter(x => x.includes(":")).
-                    map(x => x.trim().split(":").map(xx => VAL({number: xx}) ? D.Int(xx) : xx))
+                    map(x => x.trim().split(":").map(xx => VAL({number: xx}) ? D.Float(xx,2) : xx))
             )
         },
         parseArg = {

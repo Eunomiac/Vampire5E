@@ -1007,13 +1007,14 @@ const Char = (() => {
                     Media.SetArea(tokenObj, `${quad}Token`)
                     if (Media.IsActive(`Tombstone${closestQuad}`))
                         if (["base", "blank"].includes(Media.GetImgSrc(`Tombstone${closestQuad}`))) {
-                            Media.SetImg(`Tombstone${closestQuad}`, "blank")
-                            Media.SetImg(`Tombstone${quad}`, "blank")
+                            Media.ToggleImg(`Tombstone${closestQuad}`, false)
+                            Media.ToggleImg(`Tombstone${quad}`, false)
                         } else {
-                            Media.SetImg(`Tombstone${quad}`, "base", true)
+                            Media.ToggleImg(`Tombstone${quad}`, true)
+                            Media.SetImg(`Tombstone${quad}`, "base")
                         }
                     else
-                        Media.SetImg(`Tombstone${quad}`, "blank")
+                        Media.ToggleImg(`Tombstone${quad}`, false)
                     if (!isCharActive(tokenObj))
                         Media.ToggleImg(tokenObj, false)
                     Media.SetImg(tokenObj, "base")
@@ -1694,9 +1695,7 @@ const Char = (() => {
                         repAttrObjs = allAttrObjs.filter(x => x.get("name").startsWith("repeating_")),
                         nonRepAttrObjs = allAttrObjs.filter(x => !x.get("name").startsWith("repeating_") && !x.get("name").startsWith("_reporder")),
                         nonRepAttrValPairs = nonRepAttrObjs.map(x => [x, x.get("name")]), // .map(x => [x, x.get("name").replace(/repeating_(.{1,3}).*?_(-.*?)_(.*?)$/gu, "$1_$3")])
-                        repAttrValTrips = repAttrObjs.map(x => [x, x.get("name").split("_").slice(1)]).map(x => {x[1].splice(1,1); return [x[0], x[1][0], x[1].slice(1).join("_")]}), // [object, section, attrName]
-                        repAttrGroupedTrips = _.groupBy(repAttrValTrips, x => x[1]),
-                        repAttrGroupString = Object.values(D.KeyMapObj(repAttrGroupedTrips, null, (v, k) => `    <b>${k}</b>: ${_.uniq(v.map(x => x[2])).join(", ")}`)).join("<br>")
+                        repAttrValTrips = repAttrObjs.map(x => [x, x.get("name").split("_").slice(1)]).map(x => {x[1].splice(1,1); return [x[0], x[1][0], x[1].slice(1).join("_")]}) // [object, section, attrName]
                     for (const attrPair of nonRepAttrValPairs)
                         if (attrPair[1].length > 1 && attrPair[1] !== D.LCase(attrPair[1])) {
                             nameChanges.push(`${attrPair[1]} !== ${D.LCase(attrPair[1])}, setting name to <b>${D.LCase(attrPair[1])}</b>.`)

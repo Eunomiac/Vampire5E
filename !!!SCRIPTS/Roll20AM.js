@@ -218,17 +218,13 @@ var Roll20AM = Roll20AM || (function() {
         });
     },
     outputConfig = function(menu,who,filter){
+        if (who !== D.GetName(D.GMID()))
+            return
         var mvTextButton,tracksButton,playlistButton,restrictButton,volumeButton,muteButton,playButton,addButton,increaseButton,decreaseButton,fadeInButton,tagButton,
         deleteButton,APIButton,tagButton,templateButton,commandButton,rollButton,textButton,accessButton,modeButton,importButton,backButton,fadeOutButton,tagDeleteButton,
         output,outputWho;
         // D.Alert(`menu: ${D.JS(menu)}<br>who: ${D.JS(who)}<br>${D.JS(filter)}`, "outputConfig Call")
-        if (state.Roll20AM.API == 'gm'){
-            outputWho = '/w gm';
-        }else if (state.Roll20AM.API == "All"){
-            outputWho = ' ';
-        }else{
-            outputWho = '/w '+state.Roll20AM.API; 
-        }
+        outputWho = '/w gm';
         output = ' <div style="border: 1px solid black; background-color: white; padding: 3px 3px;margin-top:20px">'
         +'<div style="font-weight: bold; border-bottom: 1px solid black;font-size: 100%;style="float:left;">';
         if (debug){
@@ -321,22 +317,7 @@ var Roll20AM = Roll20AM || (function() {
         //ends the first div
         output += '<div style="margin-bottom:30px;">'  
         output += '</div>';
-        if (who !== "gm")
-            if (menu){
-                if (state.Roll20AM.menu != 'nomenu' && state.Roll20AM.nomenu == 'On'){
-                sendChat(who,outputWho + output,null,{noarchive:true});
-                        //if Roll20AM is configured to send menus to a player, then send again to GM
-                    if (state.Roll20AM.API != 'All' && state.Roll20AM.API != 'gm'){
-                            sendChat(who,'/w gm' + output,null,{noarchive:true});
-                    }
-                }               
-            } else {
-                sendChat(who,outputWho + output,null,{noarchive:true});
-                    //if Roll20AM is configured to send menus to a player, then send again to GM
-                if (state.Roll20AM.API != 'All' && state.Roll20AM.API != 'GM'){
-                        sendChat(who,'/w gm' + output,null,{noarchive:true});
-                }
-            }    
+        sendChat(who,`/w ${D.GetName(D.GMID())} <div style="display: block;height: 20px; width: 100%;">${who}</div>${output}`,null,{noarchive:true});
     },
     //output each individual track.  Called from menus above
     outputTrack = function(track,menu){

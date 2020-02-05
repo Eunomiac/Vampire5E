@@ -24,8 +24,9 @@ const D = (() => {
     // #region LOCAL INITIALIZATION
         initialize = () => {
 
-            // delete STATE.REF.MissingChars
-
+            // delete STATE.REF.MissingTextChars
+            STATE.REF.isFullDebug = false
+            STATE.REF.isThrottlingStackLog = false
             STATE.REF.WATCHLIST = STATE.REF.WATCHLIST || []
             STATE.REF.BLACKLIST = STATE.REF.BLACKLIST || []
             STATE.REF.CHARWIDTH = STATE.REF.CHARWIDTH || {}
@@ -35,7 +36,7 @@ const D = (() => {
             STATE.REF.flexSpace = STATE.REF.flexSpace || 10.00
             STATE.REF.isReportingListener = STATE.REF.isReportingListener || false
             STATE.REF.FuncQueueName = STATE.REF.FuncQueueName || []
-            STATE.REF.MissingChars = STATE.REF.MissingChars || []
+            STATE.REF.MissingTextChars = STATE.REF.MissingTextChars || []
 
         // Initialize STATSDICT Fuzzy Dictionary
             try {
@@ -68,8 +69,8 @@ const D = (() => {
                 THROW("Initialization Error", "Initialize", errObj)
             }
 
-            if (STATE.REF.MissingChars.length)
-                D.Alert(`Missing Character Widths for: '<b>${D.JSL(STATE.REF.MissingChars.join(""))}</b>'`, "DATA: Text Widths")
+            if (STATE.REF.MissingTextChars.length)
+                D.Alert(`Missing Character Widths for: '<b>${D.JSL(STATE.REF.MissingTextChars.join(""))}</b>'`, "DATA: Text Widths")
 
         },
     // #endregion	
@@ -90,12 +91,27 @@ const D = (() => {
                                 case "flex": 
                                     STATE.REF.flexSpace = D.Float(args.shift(), 2)
                                     break
-                        // no default
+                                case "fulldebug":
+                                    if (args[0] === "true") {        
+                                        STATE.REF.isThrottlingStackLog = false                           
+                                        Handouts.RemoveAll("Stack Log", "stack")
+                                        Handouts.RemoveAll("... Stack", "stack")
+                                        STACKLOG.length = 0
+                                    } else {
+                                        getStackRecord("... Stack")
+                                    }
+                                    STATE.REF.isFullDebug = args[0] === "true"
+                                    break
+                            // no default
                             }
                             break
                         }
                         case "get": {
                             switch(D.LCase(call = args.shift())) {
+                                case "stacklog": {
+                                    sendToGM(jStrH(STACKLOG.join("")), "STACKLOG")
+                                    break
+                                }
                                 case "blacklist":
                                     sendToGM(getBlackList(), "DEBUG BLACKLIST")
                                     break
@@ -122,6 +138,11 @@ const D = (() => {
                                     Handouts.RemoveAll("... DBLog", "debug")
                                     STATE.REF.DEBUGLOG = STATE.REF.DEBUGLOG || []
                                     break
+                                case "stack": case "stacklog": {
+                                    Handouts.RemoveAll("Stack Log", "stack")
+                                    Handouts.RemoveAll("... Stack", "stack")
+                                    STACKLOG.length = 0
+                                }
                         // no default
                             }
                             break
@@ -190,8 +211,10 @@ const D = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     let PROMPTFUNC
+    const STACKLOG = [],
+        FUNCSONSTACK = [],
     // #region DECLARATIONS: Reference Variables, Temporary Storage Variables
-    const VALS = {
+        VALS = {
             PAGEID: (pageRef) => {
                 // DB({pageRef}, "VALS")
                 if (pageRef) {
@@ -209,7 +232,7 @@ const D = (() => {
                     if (VAL({object: pageRef}))
                         return pageRef.get("_pageid")
                 }                
-                return Campaign().get("playerpageid")
+                return getObj("page", D.GetPlayer(D.GMID()).get("_lastpage")).id
             },
             CELLSIZE: (pageRef) => C.PIXELSPERSQUARE * (getObj("page", VALS.PAGEID(pageRef)) || {get: () => 70}).get("snapping_increment")
         },
@@ -537,7 +560,15 @@ const D = (() => {
                     }
                 return returnNum
             }
-            return D.Int(num)            
+            return D.Int(num, true)            
+        },
+        boundNum = (num, minVal, maxVal) => Math.max(Math.min(num, maxVal), minVal),
+        cycleNum = (num, minVal, maxVal) => {
+            while (num > maxVal)
+                num -= maxVal - minVal
+            while (num < minVal)
+                num += maxVal - minVal
+            return num
         },
         pLowerCase = strRef => `${strRef || ""}`.toLowerCase(),
         pUpperCase = strRef => `${strRef || ""}`.toUpperCase(),
@@ -629,6 +660,60 @@ const D = (() => {
         },
         rbgToHex = (rgb = [0, 0, 0]) => `#${rgb.slice(0, 3).map(x => x.toString(16)).join("")}`,
         colorGradient = (startColor, endColor, step, totalSteps) => `rgba(${startColor.replace(/[^\d\s,]*/gu, "").split(",").map((x, i) => D[i === 3 ? "Round" : "Int"](x, 2)).map((x, i) => D[i === 3 ? "Round" : "Int"](x + (endColor.replace(/[^\d\s,]*/gu, "").split(",").map((xx, ii) => D[ii === 3 ? "Round" : "Int"](xx, 2))[i] - x) * step / totalSteps, 2)).join(", ")})`,
+        parseStack = (stackObj) => {
+            const stackData = processStack(stackObj),
+                reportLines = stackData.filteredStackLines.map(x => x.replace(/ *\[ *as[^\]]*\] */gu, " ").replace(/^.*?at /gu, "").replace(/\(([^:]*:[^:]*):\d+\)/gu, "($1)")) // .join("◄")
+            reportLines[0] = `<b>${reportLines[0].split(" ")[0]}</b> ${reportLines[0].split(" ")[1]}`
+            return reportLines
+        },
+        /*
+            REGEXP FOR WRAPPING FUNCTIONS:
+            [^(( +)(const )? *[^ \r\n\=]* *=.*?=> *\{)] >> [$1\r\n$2    const funcID = ONSTACK\(\)] (RegExp Replace)
+            [ return ] >> [ return OFFSTACK(funcID) && ] (Normal Replace)
+        */
+        dampenStackVal = (code) => {
+            return code.
+                replace(/<\/?b>/gu, "").
+                replace(/\(([A-Z])[a-z]*?([A-Z])?[a-z]*?([A-Z])?[a-z]*?([A-Z])?[a-z]*:(\d+)\)/gu, "<span style=\"font-size: 10px;\"> ($1$2$3$4:$5)</span>").
+                replace(/^ *([a-z_]) *[ a-z._]*?([A-Z._])? *([a-z._]{0,3})[ a-z._]*([A-Z])?[ a-z._]*([A-Z])?[ a-z._]*([A-Z])?[ a-z._]*/gu, "<span style=\"background-color: rgba(0,0,0,0.3);\">$1$2$3$4$5$6</span>")
+        },
+        putOnStack = (excludeFunc, isThrottlingStackLog = false) => {
+            if (!STATE.REF.isFullDebug || STATE.REF.isThrottlingStackLog)
+                return true
+            const obj = {}
+            let funcID = D.RandomString(20)
+            const filterFunc = (fID) => (x) => x[0] === fID
+            while (FUNCSONSTACK.filter(filterFunc(funcID)).length) 
+                funcID = D.RandomString(20)
+            Error.captureStackTrace(obj, excludeFunc)
+            if (FUNCSONSTACK.length) {
+                if (STACKLOG.length > 450)
+                    getStackRecord("... Stack")
+                logStackAlert(`<span style="background-color: rgba(0,0,0,0.${STACKLOG.length % 2}); width: 1550px; display: block; font-family: 'Carrois Gothic SC'; font-size: 12px;"> ${"> ".repeat(FUNCSONSTACK.length - 1)}${FUNCSONSTACK.slice(1).map(x => dampenStackVal(x[1])).join(" > ")} ► ${D.ParseStack(obj).shift()}</span>`)
+            } else {
+                logStackAlert(`<span style="background-color: rgba(0,0,0,0.8); color: ${C.COLORS.white}; border-top: 1px solid black; margin-top: 5px; width: 1550px; display: block; line-height: 10px; padding: 3px 0px; font-variant: small-caps;">&nbsp;&nbsp;&nbsp;${D.ParseStack(obj).shift()}</span>`)
+            }
+            FUNCSONSTACK.push([funcID, D.ParseStack(obj).shift()])
+            if (isThrottlingStackLog)
+                STATE.REF.isThrottlingStackLog = funcID
+            return funcID
+        },
+        pullOffStack = (funcID) => {
+            if (STATE.REF.isTHrottlingStackLog === funcID)
+                STATE.REF.isThrottlingStackLog = false
+            if (!STATE.REF.isFullDebug || STATE.REF.isThrottlingStackLog)
+                return true
+            const remFunc = D.PullOut(FUNCSONSTACK, v => v[0] === funcID)
+            if (remFunc)
+                if (FUNCSONSTACK.length > 1)
+                    if (STACKLOG[STACKLOG.length - 1].endsWith(`${remFunc[1]}</span>`))
+                        STACKLOG[STACKLOG.length - 1] = `${STACKLOG[STACKLOG.length - 1].replace(/<\/span>$/gu, " ◄</span>")}`
+                    else
+                        logStackAlert(`<span style="background-color: rgba(0,0,0,0.${STACKLOG.length % 2}); width: 1550px; display: block; font-family: 'Carrois Gothic SC'; font-size: 12px;"> ${" <".repeat(FUNCSONSTACK.length)}${D.Clone(FUNCSONSTACK).slice(1).map((x) => dampenStackVal(x[1])).join(" > ")} > ${remFunc[1]} ◄</span>`)
+                else if (FUNCSONSTACK.length === 1)
+                    STACKLOG[STACKLOG.length - 1] = `${STACKLOG[STACKLOG.length - 1].replace(/<\/span>$/gu, " ◄</span>")}`
+            return true
+        },
     // #endregion
 
     // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
@@ -1319,14 +1404,25 @@ const D = (() => {
                 log(formatLogLine(msg, funcName, scriptName, prefix))
             }
         },
+        logStackAlert = (rawCode) => {
+            if (_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive) {
+                if (STACKLOG.length > 500)
+                    if (Handouts.Count("stack") > 20) {
+                        D.Alert("Out of space to log more stack trace!", "logStackAlert")
+                        return
+                    } else {
+                        getStackRecord("... Stack")
+                    }     
+                STACKLOG.push(rawCode.replace(/ *\[as/gu, "").replace(/Object\./gu, ""))
+            }
+        },
         throwError = (msg, funcName, scriptName, errObj) => sendDebugAlert(`${formatMsgContents(msg, false)}${errObj ? `${errObj.name}<br>${errObj.message}<br><br>${errObj.stack}` : ""}`, funcName, scriptName, "ERROR"),
         sendDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
-            if (!Session.IsSessionActive || Session.IsTesting)
-                if (!STATE.REF.BLACKLIST.includes(funcName) && !STATE.REF.BLACKLIST.includes(scriptName)) {
-                    logDebugAlert(msg, funcName, scriptName, prefix)
-                    if (funcName && STATE.REF.WATCHLIST.includes(funcName) || scriptName && STATE.REF.WATCHLIST.includes(scriptName) || !funcName && !scriptName)
-                        sendToGM(formatMsgContents(msg), formatTitle(funcName, scriptName, prefix))
-                }
+            if ((_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive) && !STATE.REF.BLACKLIST.includes(funcName) && !STATE.REF.BLACKLIST.includes(scriptName)) {
+                logDebugAlert(msg, funcName, scriptName, prefix)
+                if (funcName && STATE.REF.WATCHLIST.includes(funcName) || scriptName && STATE.REF.WATCHLIST.includes(scriptName) || !funcName && !scriptName)
+                    sendToGM(formatMsgContents(msg), formatTitle(funcName, scriptName, prefix))
+            }
         },
         getDebugRecord = (title = "Debug Log", isClearing = false) => {
             const logLines = []
@@ -1362,6 +1458,10 @@ const D = (() => {
             logLines.push("</div>")
             Handouts.Make(title, "debug", logLines.join(""))
             STATE.REF.DEBUGLOG.length = 0
+        },
+        getStackRecord = (title = "Stack Log") => {
+            Handouts.Make(title, "stack", STACKLOG.join(""))
+            STACKLOG.length = 0
         },
     // #endregion
 
@@ -1984,21 +2084,25 @@ const D = (() => {
         CheckInstall: checkInstall,
         OnChatCall: onChatCall,
 
+        FUNCSONSTACK,
+
+        get STACKLOG() { return STATE.REF.stackLog },          
+
         get STATSDICT() { return STATE.REF.STATSDICT },
         get PCDICT() { return STATE.REF.PCDICT },
         get NPCDICT() { return STATE.REF.NPCDICT },
         get CHARWIDTH() { return STATE.REF.CHARWIDTH },
-        get MissingChars() { return STATE.REF.MissingChars },
-        set MissingChars(char) {
+        get MissingTextChars() { return STATE.REF.MissingTextChars },
+        set MissingTextChars(char) {
             if (char.length > 1 && char.startsWith("!"))
-                STATE.REF.MissingChars = _.without([...STATE.REF.MissingChars], char.charAt(1))
+                STATE.REF.MissingTextChars = _.without([...STATE.REF.MissingTextChars], char.charAt(1))
             else if (char.length === 1)
-                STATE.REF.MissingChars = _.uniq([...STATE.REF.MissingChars, char])
+                STATE.REF.MissingTextChars = _.uniq([...STATE.REF.MissingTextChars, char])
         },
 
-        get MAINPAGEID() { return C.PAGES.GAME },
         GetPageID: (pageRef) => VALS.PAGEID(pageRef),
-        get THISPAGEID() { return getObj("page", D.GetPlayer(D.GMID()).get("_lastpage")).id },
+        get MAINPAGEID() { return VALS.PAGEID("GAME") },
+        get THISPAGEID() { return VALS.PAGEID() },
         get CELLSIZE() { return VALS.CELLSIZE() },
         GetCellSize: (pageRef) => VALS.CELLSIZE(pageRef),
 
@@ -2011,21 +2115,19 @@ const D = (() => {
         RandomString: randomString,
         SumHTML: summarizeHTML,
         Int: pInt, Float: pFloat, LCase: pLowerCase, UCase: pUpperCase,
-        Round: roundSig,
+        Round: roundSig, Bound: boundNum, Cycle: cycleNum,
         NumToText: numToText, TextToNum: textToNum,
         Ordinal: ordinal, Romanize: numToRomanNum,
         Capitalize: capitalize,
         Clone: clone,
         Gradient: colorGradient, RGBtoHEX: rbgToHex,
+        ParseStack: parseStack, ONSTACK: putOnStack, OFFSTACK: pullOffStack,
 
         Call: sendAPICommand,
         Chat: sendChatMessage,
         Alert: sendToGM,
         Flag: (msg) => sendToGM(msg, "none"),
-        Poke: (msg, title = "[ALERT]") => {
-            if (Session.IsTesting)
-                sendToGM(msg, title)
-        },
+        Poke: (msg, title = "[ALERT]") => { if (Session.IsTesting) sendToGM(msg, title) },
         Prompt: promptGM,
         IsMenuStored: isMenuMemoed,
         CommandMenu: commandMenu,

@@ -3,8 +3,7 @@
 /* eslint-disable no-console */
 (() => {
     // #region Variable Declarations
-    let LASTEVENT = {},
-        APIROWID = null,
+    let APIROWID = null,
         ISOFFLINE = false
     const isDebug = true,
         LOGOPTIONS = {
@@ -1954,9 +1953,6 @@
     // #endregion
 
     // #region UPDATE: Dice Roller
-    const _doRollRepRefs = () => {
-
-    }
     const doRollRepRefs = () => {
             const attrList = {},
                 $funcs = [
@@ -2205,236 +2201,6 @@
                         })
                 }
             getRepAttrs(repSecs.shift())
-        },
-        _doRolls = (targetAttr, opts = {}, cback) => {
-            const attrList = {},
-                $funcs = [
-                    // $getRollAttrs(),
-                    (attrs, cBack) => {
-                        getAttrs(attrs, ATTRS => {
-                            log(`FULL ATTRS:
-							
-							${JSON.stringify(ATTRS)}`, true)
-                            const [rArray, prevRArray, clearAttrs] = [
-                                    [],
-                                    [],
-                                    {}
-                                ],
-                                stat = isIn(targetAttr, ROLLFLAGS.all) || trimAttr(isIn(targetAttr, ATTRS)),
-                                checkType = attr => {
-                                    // Returns type of stat sent in as parameter.
-                                    const name = realName(attr, ATTRS)
-                                    if (isIn(name, _.values(ATTRIBUTES)))
-                                        return "attribute"
-                                    else if (isIn(name, _.values(SKILLS)))
-                                        return "skill"
-                                    else if (isIn("advantage", attr))
-                                        return "advantage"
-                                    else if (isIn(name, DISCIPLINES))
-                                        return "discipline"
-                                    else if (isIn(name, TRACKERS))
-                                        return "tracker"
-
-                                    log(`CkType(${JSON.stringify(attr)}): Can't Determine Type`)
-
-                                    return false
-                                },
-                                checkFlag = attr => {
-                                    const flagName = isIn(`${trimAttr(attr)}_flag`, ATTRS)
-                                    if (flagName && parseInt(ATTRS[flagName]) === 1)
-                                        return parseInt(ATTRS[flagName])
-
-                                    return false
-                                },
-                                validateFlags = flagArray => {
-                                    // Flags must be submitted in an ordered stack, with the oldest flag at the top.
-                                    const checkAction = (oldFlag, newFlag) => {
-                                        if (checkType(newFlag) && checkType(oldFlag))
-                                            return FLAGACTIONS[checkType(newFlag)][checkType(oldFlag)]
-
-                                        return false
-                                    }
-
-                                    /* First, check for the specific case where...
-                                        1) There are THREE traits in the flagArray
-                                            AND
-                                        2) The NEWEST trait is listed in THREEROLLTRAITS
-                                    In this case, three traits are permitted. */
-                                    switch (flagArray.length) {
-                                        case 2:
-                                            switch (checkAction(...flagArray)) {
-                                                case "replace":
-                                                case "pass":
-                                                    flagArray.shift()
-                                                    break
-                                                default:
-                                                    break
-                                            }
-                                            break
-                                        case 4:
-                                            flagArray.shift()
-                                        /* falls through */
-                                        case 3:
-                                            if (_.map(THREEROLLTRAITS, v => v.toLowerCase()).includes(realName(flagArray[2], ATTRS).toLowerCase()))
-                                                break
-                                            switch (checkAction(...flagArray.slice(1))) {
-                                                case "append":
-                                                    flagArray.shift()
-                                                    break
-                                                case "replace":
-                                                    flagArray.splice(1, 1)
-                                                    break
-                                                case "pass":
-                                                    flagArray.splice(1, 1)
-                                                    switch (checkAction(...flagArray)) {
-                                                        case "replace":
-                                                        case "pass":
-                                                            flagArray.shift()
-                                                            break
-                                                        default:
-                                                            break
-                                                    }
-                                                    break
-                                                default:
-                                                    break
-                                            }
-                                            break
-                                        default:
-                                            break
-                                    }
-                                },
-                                checkEffects = rollArray => {
-                                    const topDisplayStrings = [],
-                                        lastTopDisplayStrings = [],
-                                        effectChecks = _.compact(ATTRS.effectchecks.split("|"))
-                                    if (parseInt(ATTRS.applybloodsurge) > 0 && "blood_potency" in ATTRS) {
-                                        topDisplayStrings.push(`Blood Surge (+${bpDependants[parseInt(ATTRS.blood_potency)].bp_surge})`)
-                                        lastTopDisplayStrings.push("Rouse Check Is Automatic")
-                                    }
-                                    if (parseInt(ATTRS.applyspecialty) === 1)
-                                        topDisplayStrings.push("Specialty (+1)")
-                                    if (parseInt(ATTRS.applyresonance) === 1)
-                                        topDisplayStrings.push("Resonant (+1)")
-                                    if (parseInt(ATTRS.humanity) + parseInt(ATTRS.stains) > 10)
-                                        topDisplayStrings.push("Inhuman (-2)")
-                                    if (parseInt(ATTRS.health) === 0 && _.any(rollArray, v => isIn(v, [...ATTRIBUTES.physical, ...SKILLS.physical])))
-                                        topDisplayStrings.push("Injured (-2)")
-                                    if (parseInt(ATTRS.willpower) === 0 && _.any(rollArray, v => isIn(v, [...ATTRIBUTES.social, ...SKILLS.social, ...ATTRIBUTES.mental, ...SKILLS.mental])))
-                                        topDisplayStrings.push("Exhausted (-2)")
-                                    for (const effectCheck of effectChecks) {
-                                        const [traitString, displayString] = effectCheck.split(":")
-                                        let isDisplaying = true
-                                        if (!_.isEmpty(traitString))
-                                            for (const andTrait of _.compact(traitString.split("+")))
-                                                if (!isIn(andTrait, rollArray.map(v => realName(v, ATTRS)))) {
-                                                    isDisplaying = false
-                                                    break
-                                                }
-                                        if (isDisplaying)
-                                            topDisplayStrings.push(displayString)
-                                    }
-                                    if (lastTopDisplayStrings.length)
-                                        topDisplayStrings.push(...lastTopDisplayStrings)
-                                    return `${_.uniq(topDisplayStrings).join(", ")}.`
-                                }                                        
-                            prevRArray.push(..._.compact((ATTRS.rollarray || "").split(",")))
-                            log(`>>> PREVRARRAY INITIAL: ${JSON.stringify(prevRArray)}`)
-
-                            // IF RESETTING, clear all selected flags and other related parameters:
-                            if (opts.reset) {
-								/* If this function was triggered when a flag was turned on, add it to
-										prevRArray so it can be turned off, too: */
-                                if (targetAttr.includes("_flag") && checkFlag(stat) === 1)
-                                    prevRArray.push(stat)
-                                _.each(ROLLFLAGS.str, v => { [attrList[v], ATTRS[v]] = ["", ""] })
-                                _.each([...ROLLFLAGS.num, ..._.map(prevRArray, v => `${v}_flag`)], v => { [attrList[v], ATTRS[v]] = [0, 0] })
-                                attrList.rollpooldisplay = "Simple Roll or Check"
-                                attrList.rollparams = "@{character_name}|"
-                            } else if (targetAttr.includes("_flag")) {
-								/* If this function was triggered when a flagged trait changed, create a new rArray
-										by incorporating this change.
-										First, remove the selected stat from prevRArray to avoid duplicates: */
-                                rArray.push(..._.without(prevRArray, stat))
-                                //     ... then add it back if the flag was toggled ON:
-                                if (checkFlag(stat) === 1)
-                                    rArray.push(stat)
-                                // Next, reset the various roll parameters to default:
-                                for (const val of ROLLFLAGS.num)
-                                    if (parseInt(ATTRS[val]) !== 0)
-                                        [ATTRS[val], attrList[val]] = [0, 0]
-
-                            } else {
-                                // Otherwise, just copy the previously selected traits over to the new rArray
-                                rArray.push(...prevRArray)
-                            }
-                            log(`>>> RARRAY INITIAL: ${JSON.stringify(rArray)} (${stat} Flag Toggled)`)
-
-                            // Remove duplicates from rArray, starting with the oldest:
-                            for (const [, val] of [...rArray].entries())
-                                if (rArray.filter(v => val === v).length > 1)
-                                    rArray.splice(rArray.indexOf(val), 1)
-
-                            // Now, validate the rArray, determining what traits to deselect (if any) based on player selection
-                            validateFlags(rArray)
-                            log(`>>> VALIDATED RARRAY: ${JSON.stringify(rArray)}`)
-
-                            // Now, store this rArray so it can be prevRArray for the next roll:
-                            attrList.rollarray = rArray.join(",")
-                            // Now unflag any traits that WERE flagged, but aren't anymore.
-                            log(`>>> PRUNING UNFLAGGED STATS: (PREVARRAY: ${JSON.stringify(prevRArray)} vs. RARRAY: ${JSON.stringify(rArray)})`)
-                            _.each(_.without(prevRArray, ...rArray), v => {
-                                if (checkFlag(v) === 1)
-                                    clearAttrs[`${v}_flag`] = 0
-                            })
-                            log(`... CLEARING: ${_.keys(clearAttrs)}`)
-                            setAttrs(clearAttrs, {
-                                silent: true
-                            })
-
-                            // Order the rArray as ATTRIBUTES, SKILLS, then OTHERS.
-                            rArray.sort(
-                                (...args) => {
-                                    const [v1, v2] = _.map(args, v => ["attribute", "skill", "discipline", "advantage", "tracker"].
-                                        indexOf(checkType(v)))
-
-                                    return v1 - v2
-                                }
-                            )
-                            log(`>>> SORTED RARRAY: ${JSON.stringify(rArray)}`)
-
-                            if (rArray.length === 0) {
-                                attrList.rollpooldisplay = `Simple Roll${parseInt(ATTRS.rollmod) === 0 && parseInt(ATTRS.rolldiff) === 0 ? " or Check" : ` of ${Math.abs(parseInt(ATTRS.rollmod))} Dice`}`
-                            } else {
-                                attrList.rollpooldisplay = rArray.map(v => realName(v, ATTRS)).join(" + ")
-                                if (parseInt(ATTRS.rollmod) !== 0)
-                                    attrList.rollpooldisplay += ` ${parseInt(ATTRS.rollmod) < 0 ? "-" : "+"} ${Math.abs(parseInt(ATTRS.rollmod))}`
-                            }
-                            if (parseInt(ATTRS.rolldiff) !== 0)
-                                attrList.rollpooldisplay += ` vs. ${parseInt(ATTRS.rolldiff)}`
-                            log(`>>> ROLL DISPLAY: ${JSON.stringify(attrList.rollpooldisplay)}`)
-                            
-                            // Clear any result messages from the bottom display:
-                            attrList.bottomdisplay = ""
-
-                            // Create the top display string based on existing roll flags:
-                            attrList.topdisplay = checkEffects(rArray)
-
-                            // Set roll parameter string:
-                            attrList.rollparams = `@{character_name}|${rArray.join(",")}`
-                            log(`>>> ROLL PARAMETER: ${JSON.stringify(attrList.rollparams)}`)
-
-                            cBack(null, attrList)
-                        })
-                    },
-                    $set
-                ]
-            
-            run$($funcs, cback ? () => {
-                LASTEVENT = {}
-                cback(null)
-            } : () => {
-                LASTEVENT = {}
-            })
         }
 
     on(`sheet:opened ${getTriggers(null, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)])}`, eInfo => {
@@ -2445,7 +2211,7 @@
     on(getTriggers(ALLATTRS, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)]), eInfo => {
         if (!ISOFFLINE) {
             log(`[${eInfo.sourceAttribute}, ${eInfo.sourceType}] @@@ STAT ROLLER TRIGGERED @@@`)
-            if (!_.isEqual(eInfo, LASTEVENT) && eInfo.sourceType !== "sheetworker" && !isBlacklisted(eInfo.sourceAttribute))
+            if (eInfo.sourceType !== "sheetworker" && !isBlacklisted(eInfo.sourceAttribute))
                 doRolls(eInfo.sourceAttribute, {
                     silent: true
                 })

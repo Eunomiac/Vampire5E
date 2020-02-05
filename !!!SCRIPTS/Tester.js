@@ -51,6 +51,33 @@ const Tester = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting
             switch (call) {
+                case "boundnums": {
+                    const REPLY = [],
+                        boundNum = (num, minVal, maxVal) => Math.max(Math.min(num, maxVal), minVal),
+                        modNum = (num, mod) => num % mod,
+                        wrapNum = (num, leftVal, rightVal) => num - boundNum(num, leftVal, rightVal),
+                        cycleNum = (num, minVal, maxVal) => {
+                            while (num > maxVal)
+                                num += maxVal - minVal
+                            while (num < minVal)
+                                num += maxVal - minVal
+                            return num
+                        }
+                    for (const test of [-5, -2, 0, 2, 5, 8, 20, 200])
+                        REPLY.push(`
+                            bNum(${test}) = ${boundNum(test, 5, 15)}, ${cycleNum(test, 5, 15)}, ${wrapNum(test, 5, 15)};
+                            numModBound: ${modNum(test, boundNum(test, 5, 15))} / ${modNum(boundNum(test, 5, 15), test)}
+                            numModRange: ${modNum(test, 10)} / ${modNum(10, test)}
+                            numModMin: ${modNum(test, 5)} / ${modNum(5, test)}
+                            numModMin: ${modNum(test, 15)} / ${modNum(15, test)}
+                            wrapNumModBound: ${modNum(wrapNum(test, 5, 15), boundNum(test, 5, 15))} / ${modNum(boundNum(test, 5, 15), wrapNum(test, 5, 15))}
+                            wrapNumModRange: ${modNum(wrapNum(test, 5, 15), 10)} / ${modNum(10, wrapNum(test, 5, 15))}
+                            wrapNumModMin: ${modNum(wrapNum(test, 5, 15), 5)} / ${modNum(5, wrapNum(test, 5, 15))}
+                            wrapNumModMin: ${modNum(wrapNum(test, 5, 15), 15)} / ${modNum(15, wrapNum(test, 5, 15))}
+                        `)
+                    D.Alert(D.JS(REPLY))
+                    break
+                }
                 case "handout": {       
                     Handouts.Make("Test Run", "Test", C.HANDOUTHTML.EyesOnlyDoc.Block(
                         C.HANDOUTHTML.EyesOnlyDoc.Line([

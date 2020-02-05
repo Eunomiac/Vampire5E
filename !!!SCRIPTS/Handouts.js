@@ -24,6 +24,16 @@ const Handouts = (() => {
     // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             switch (call) {
+                case "kill": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "all": {
+                            delHandoutObjs(args.join(" "))
+                            break
+                        }
+                        // no default
+                    }
+                    break
+                }
                 case "get":
                     switch (D.LCase(call = args.shift())) {
                         case "projects": {
@@ -45,11 +55,8 @@ const Handouts = (() => {
 
     // #region GETTERS: Retrieving Notes, Data
         getCount = category => STATE.REF.noteCounts && STATE.REF.noteCounts[category] || 0,
-        getHandoutObj = (title, charRef) => {
-            const notes = findObjs({
-                _type: "handout",
-                name: title
-            })
+        getHandoutObj = (titleRef, charRef) => {
+            const notes = _.filter(findObjs({_type: "handout", archived: false}), v => D.LCase(titleRef) && D.LCase(v.get("name")) && D.LCase(v.get("name")).includes(D.LCase(titleRef)))
             // notes[0].get("notes", (note) => { log(note) })
 
             if (charRef)
@@ -122,15 +129,17 @@ const Handouts = (() => {
             const handoutObj = getHandoutObj(title)
             if (VAL({object: handoutObj}))
                 handoutObj.set("notes", isRawCode && contents || D.JS(contents))
+            else
+                makeHandoutObj(title, category, contents, isRawCode)
         },
         delHandoutObjs = (titleRef, category) => {
-            for (const handout of _.filter(findObjs({_type: "handout", inplayerjournals: "", archived: false}), v => D.FuzzyMatch(v.get("name"), titleRef)))
+            for (const handout of _.filter(findObjs({_type: "handout", archived: false}), v => D.LCase(titleRef) && D.LCase(v.get("name")) && D.LCase(v.get("name")).includes(D.LCase(titleRef))))
                 handout.remove()
             if (category)
                 STATE.REF.noteCounts[category] = 0
         },
-        delHandoutObj = (title, category) => {
-            const handoutObj = _.find(findObjs({_type: "handout", inplayerjournals: "", archived: false}), v => v.get("name").toLowerCase().startsWith(title.toLowerCase()))
+        delHandoutObj = (titleRef, category) => {
+            const handoutObj = _.find(findObjs({_type: "handout", inplayerjournals: "", archived: false}), v => D.LCase(titleRef) && D.LCase(v.get("name")) && D.LCase(v.get("name")).includes(D.LCase(titleRef)))
             if (VAL({object: handoutObj})) {
                 if (category && STATE.REF.noteCounts[category]) {
                     const matcher = handoutObj.get("name").match(/\d+$/u)
