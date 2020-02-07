@@ -45,8 +45,10 @@ const Player = (() => {
                 }
                 case "!token": {
                     const charObj = D.GetChar(msg.playerid)
-                    if (VAL({pc: charObj}))
+                    if (VAL({pc: charObj})) {
                         Media.CombineTokenSrc(charObj.id, D.Capitalize(args.shift()))
+                        Char.ProcessTokenPowers(charObj.id)
+                    }
                     break
                 }
                 case "link": case "!links": {

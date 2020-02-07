@@ -2,7 +2,7 @@
 const Roller = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Roller",
-
+    
     // #region COMMON INITIALIZATION
         STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
@@ -18,7 +18,6 @@ const Roller = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
-
             STATE.REF.rollRecord = STATE.REF.rollRecord || []
             STATE.REF.rollIndex = STATE.REF.rollIndex || 0
             STATE.REF.NPC = STATE.REF.NPC || {}
@@ -126,11 +125,11 @@ const Roller = (() => {
                 }
                 case "secret": {
                     const charObjs = Listener.GetObjects(objects, "character")
-                    if (!args.length) {
-                        Char.PromptTraitSelect(charObjs.map(x => x.id), "!roll", "secret selected")
-                    } else {
-                        const params = args[0] === "selected" && Char.SelectedTraits || args.join(" ").split("|").map(x => x.trim())
+                    if (args.length) {
+                        const params = Char.SelectedTraits
                         makeSecretRoll(getRollChars(charObjs), params.join(","))
+                    } else {
+                        Char.PromptTraitSelect(charObjs.map(x => x.id), "!roll", "secret selected")
                     }
                     break
                 }
@@ -395,7 +394,7 @@ const Roller = (() => {
                                 case "char": {
                                     const [charObj] = getRollChars(Listener.GetObjects(objects, "character")[0])
                                     if (VAL({charObj}, "!roll effects get char")) {
-                                        const rollEffects = _.compact((getAttrByName(charObj.id, "rolleffects") || "").split("|")),
+                                        const rollEffects = _.compact((D.GetStatVal(charObj.id, "rolleffects") || "").split("|")),
                                             rollStrings = []
                                         for (let i = 0; i < rollEffects.length; i++)
                                             rollStrings.push(`${i + 1}: ${rollEffects[i]}`)
@@ -423,7 +422,7 @@ const Roller = (() => {
                                     returnStrings.push("")              
                                     returnStrings.push("<h3>CHARACTER EFFECTS:</h3><!br>")
                                     for (const char of charObjs) {
-                                        const rollEffects = _.compact((getAttrByName(char.id, "rolleffects") || "").split("|"))
+                                        const rollEffects = _.compact((D.GetStatVal(char.id, "rolleffects") || "").split("|"))
                                         if (rollEffects.length) {
                                             returnStrings.push(`<b>${char.get("name").toUpperCase()}</b>`)
                                             for (let i = 0; i < rollEffects.length; i++)
@@ -443,17 +442,17 @@ const Roller = (() => {
                                     const charObjs = getRollChars(Listener.GetObjects(objects, "character")[0])
                                     if (VAL({charObj: charObjs}, "!roll effects add char", true)) 
                                         for (const char of charObjs)
-                                            addCharRollEffects(char, _.compact(args.join(" ").split("|")))                      
+                                            addCharRollEffects(char, args.join(" "))                      
                                     break
                                 }
                                 case "global": {
-                                    addGlobalRollEffects(_.compact(args.join(" ").split("|")))
+                                    addGlobalRollEffects(args.join(" "))
                                     break
                                 }
                                 case "exclude": {
                                     const [charObj] = getRollChars(Listener.GetObjects(objects, "character")[0])
                                     if (VAL({charObj}, "!roll effects add exclude"))
-                                        addGlobalExclusion(charObj, _.compact(args.join(" ").split("|")))
+                                        addGlobalExclusion(charObj, args.join(" "))
                                     break
                                 }
                                 // no default
@@ -465,17 +464,17 @@ const Roller = (() => {
                                 case "char": {
                                     const [charObj] = getRollChars(Listener.GetObjects(objects, "character")[0])
                                     if (VAL({charObj}, "!roll effects del char"))
-                                        delCharRollEffects(charObj, _.compact(args.join(" ").split("|")))
+                                        delCharRollEffects(charObj, args.join(" "))
                                     break
                                 }
                                 case "global": {
-                                    delGlobalRollEffects(_.compact(args.join(" ").split("|")))
+                                    delGlobalRollEffects(args.join(" "))
                                     break
                                 }
                                 case "exclude": {
                                     const [charObj] = getRollChars(Listener.GetObjects(objects, "character")[0])
                                     if (VAL({charObj}, "!roll effects del exclude"))
-                                        delGlobalExclusion(charObj, _.compact(args.join(" ").split("|")))
+                                        delGlobalExclusion(charObj, args.join(" "))
                                     break
                                 }
                                 // no default
@@ -1094,7 +1093,7 @@ const Roller = (() => {
 
     // #region ROLL EFFECTS: Applying, Creating, Removing
         applyRollEffects = rollInput => {
-            const rollEffectString = getAttrByName(rollInput.charID, "rolleffects") || ""
+            const rollEffectString = D.GetStatVal(rollInput.charID, "rolleffects") || ""
             let isReapplying = false
             if (VAL({string: rollEffectString, list: rollInput}, "applyRollEffects")) {
                 rollInput.appliedRollEffects = rollInput.appliedRollEffects || []
@@ -1160,15 +1159,15 @@ const Roller = (() => {
                         // After assessing rollData/rollResults-specific restrictions, check restrictions that apply to either:
                         DB("Initial Thresholds PASSED.  Moving on to general restrictions.", "checkRestriction")
                         if (D.IsIn(restriction, C.CLANS, true)) {
-                            DB(`Restriction = CLAN.  Character Clan: ${getAttrByName(input.charID, "clan")}`, "checkRestriction")
-                            if (!D.IsIn(getAttrByName(input.charID, "clan"), restriction, true)) {
+                            DB(`Restriction = CLAN.  Character Clan: ${D.GetStatVal(input.charID, "clan")}`, "checkRestriction")
+                            if (!D.IsIn(D.GetStatVal(input.charID, "clan"), restriction, true)) {
                                 DB("... Check FAILED.  Returning FALSE", "checkRestriction")
                                 return false
                             }
                             DB("... Check PASSED. Moving on...", "checkRestriction")
                         } else if (D.IsIn(restriction, C.SECTS, true)) {
-                            DB(`Restriction = SECT.  Character Sect: ${getAttrByName(input.charID, "sect")}`, "checkRestriction")
-                            if (!D.IsIn(getAttrByName(input.charID, "sect"), restriction, true)) {
+                            DB(`Restriction = SECT.  Character Sect: ${D.GetStatVal(input.charID, "sect")}`, "checkRestriction")
+                            if (!D.IsIn(D.GetStatVal(input.charID, "sect"), restriction, true)) {
                                 DB("... Check FAILED.  Returning FALSE", "checkRestriction")
                                 return false
                             }
@@ -1244,11 +1243,12 @@ const Roller = (() => {
                     let [rollRestrictions, rollMod, rollLabel, removeWhen, /* sheetMessage, gmNote */] = effectString.split(";"),
                         [rollTarget, rollTraits, rollFlags] = ["", {}, {}];
                     [rollMod, rollTarget] = _.map(rollMod.split(":"), v => D.Int(v) || v.toLowerCase())
-                    rollRestrictions = _.map(rollRestrictions.split("+"), v => v.toLowerCase())
+                    rollRestrictions = _.map(rollRestrictions.split("/"), v => v.toLowerCase())
                     rollTraits = _.object(
                         _.map(_.keys(rollInput.traitData), v => v.toLowerCase()),
                         _.map(_.values(rollInput.traitData), v => D.Int(v.value))
                     )
+                    DB({effectString, rollRestrictions, rollMod, rollLabel, removeWhen, rollTarget, rollTraits, rollFlags}, "applyRollEffects")
                 // Before parsing rollFlags, filter out the ones that have already been converted into strings:
                     DB(`Checking Filtered Flag Error: ${D.JSL([...rollInput.posFlagLines, ...rollInput.negFlagLines, ...rollInput.redFlagLines, ...rollInput.goldFlagLines])}`, "applyRollEffects")
                     const filteredFlags = _.reject([...rollInput.posFlagLines, ...rollInput.negFlagLines, ...rollInput.redFlagLines, ...rollInput.goldFlagLines], v => _.isString(v))
@@ -1264,32 +1264,32 @@ const Roller = (() => {
                         continue
                     }
 
-                // THRESHOLD TESTS OF RESTRICTION: Parse each "AND" roll restriction into "OR" restrictions (/), and finally the "NOT" restriction (!)
-                    let isEffectOK = true
-                    DB(`BEGINNING TESTS OF RESTRICTION: "<b><u>${D.JSL(effectString)}</u></b><br>... --- ${rollRestrictions.length} AND-RESTRICTIONS: ${D.JSL(rollRestrictions)}`, "applyRollEffects")
-                    for (const andRestriction of rollRestrictions) {
-                        const orRestrictions = andRestriction.split("/")
-                        DB(`... Checking AND-RESTRICTION <b>'${D.JSL(andRestriction)}'</b>.  ${orRestrictions.length} OR-RESTRICTIONS: ${D.JSL(orRestrictions)}`, "applyRollEffects")
-                        let isEffectValid = false
-                        for (const restriction of orRestrictions) {
+                // THRESHOLD TESTS OF RESTRICTION: Parse each "OR" roll restriction (/) into "AND" restrictions (+), and finally the "NOT" restriction (!)
+                    let isORSatisfied = false
+                    DB(`BEGINNING TESTS OF RESTRICTION: "<b><u>${D.JSL(effectString)}</u></b><br>... --- ${rollRestrictions.length} OR-RESTRICTIONS: ${D.JSL(rollRestrictions)}`, "applyRollEffects")
+                    for (const orRestrict of rollRestrictions) {
+                        const andRestrict = orRestrict.split("+")
+                        DB(`... Checking OR-RESTRICTION <b>'${D.JSL(orRestrict)}'</b>.  ${andRestrict.length} AND-RESTRICTIONS: ${D.JSL(andRestrict)}`, "applyRollEffects")
+                        let isANDSatisfied = true
+                        for (const restriction of andRestrict) {
                             if (restriction.charAt(0) === "!") {
-                                DB(`... ... Checking <u>NEGATED</u> OR-RESTRICTION <b>'${D.JSL(restriction)}'</b>...`, "applyRollEffects")
-                                isEffectValid = checkRestriction(rollInput, rollTraits, rollFlags, rollMod, restriction.slice(1)) === false
+                                DB(`... ... Checking <u>NEGATED</u> AND-RESTRICTION <b>'${D.JSL(restriction)}'</b>...`, "applyRollEffects")
+                                isANDSatisfied = checkRestriction(rollInput, rollTraits, rollFlags, rollMod, restriction.slice(1)) === false
                             } else {
-                                DB(`... ... Checking OR-RESTRICTION <b>'${D.JSL(restriction)}'</b>...`, "applyRollEffects")
-                                isEffectValid = checkRestriction(rollInput, rollTraits, rollFlags, rollMod, restriction) === true
+                                DB(`... ... Checking AND-RESTRICTION <b>'${D.JSL(restriction)}'</b>...`, "applyRollEffects")
+                                isANDSatisfied = checkRestriction(rollInput, rollTraits, rollFlags, rollMod, restriction) === true
                             }
-                            if (isEffectValid)
+                            if (!isANDSatisfied)
                                 break
                         }
-                        DB(`IsEffectValid = ${D.JSL(isEffectValid)}`, "applyRollEffects")
-                        if (!isEffectValid) {
-                            isEffectOK = false
+                        DB(`IsEffectValid = ${D.JSL(isANDSatisfied)}`, "applyRollEffects")
+                        if (isANDSatisfied) {
+                            isORSatisfied = true
                             break
                         }
                     }
-                    DB(`IsEffectOKAY = ${D.JSL(isEffectOK)}`, "applyRollEffects")
-                    if (!isEffectOK)
+                    DB(`IsEffectOKAY = ${D.JSL(isORSatisfied)}`, "applyRollEffects")
+                    if (!isORSatisfied)
                         continue
 
                     DB("Threshold Tests Passed!", "applyRollEffects")
@@ -1302,7 +1302,7 @@ const Roller = (() => {
                             if (STATE.REF.rollEffects[effectString])
                                 STATE.REF.rollEffects[effectString] = _.union(STATE.REF.rollEffects[effectString], [rollInput.charID])
                             else
-                                setAttrs(rollInput.charID, {rolleffects: _.compact(getAttrByName(rollInput.charID, "rolleffects").replace(effectString, "").replace(/\|\|/gu, "|").split("|")).join("|")})
+                                setAttrs(rollInput.charID, {rolleffects: _.compact(D.GetStatVal(rollInput.charID, "rolleffects").replace(effectString, "").replace(/\|\|/gu, "|").split("|")).join("|")})
                             break
                         default:
 
@@ -1329,9 +1329,9 @@ const Roller = (() => {
                         } else {
                         // If rollMod isn't a number, is it adding or subtracting a trait value?
                             if (rollMod.includes("postrait"))
-                                rollMod = D.Int(getAttrByName(rollData.charID, rollMod.replace(/postrait/gu, "")))
+                                rollMod = D.Int(D.GetStatVal(rollData.charID, rollMod.replace(/postrait/gu, "")))
                             else if (rollMod.includes("negtrait"))
-                                rollMod = -1 * D.Int(getAttrByName(rollData.charID, rollMod.replace(/negtrait/gu, "")))
+                                rollMod = -1 * D.Int(D.GetStatVal(rollData.charID, rollMod.replace(/negtrait/gu, "")))
                         // If not postrait/negtrait, is it a multiplier?
                             else if (rollMod.startsWith("x") && VAL({number: rollMod.replace(/x/gu, "")}))
                             // If so, is there a rollTarget?
@@ -1653,56 +1653,57 @@ const Roller = (() => {
         addCharRollEffects = (charRef, effectString) => {
             const charObj = D.GetChar(charRef)
             if (VAL({charObj, string: effectString}, "addCharRollEffects")) {
+
                 // Must extract three elements from the roll effect:
                     // RemoveWhen (to see if we need to set an alarm or tie it to an existing one)
                     // SheetMessage (to see if we need to show the player when it applies via a character sheet incapacitation note)
                     // GMNote (to include whenever the effect is displayed to the GM, as a reminder of what put it there)
                 // Then, we have to create a simple label that can be used to remove it.
-                const [,,, removeWhen, /* sheetMessage, GMNote */] = effectString.split(";")
-                switch (D.LCase(removeWhen.replace(/:.*/gu, ""))) {
-                    case "nextfullnight": {
-                        
-                        break
-                    }
-                    case "scene": {
-
-                        break
-                    }
-                    case "fullweek": {
-
-                        break
-                    }
-                    case "endofweek": {
-
-                        break
-                    }
-                    case "projectresolves": {
-
-                        break
-                    }
-                    default: {
-
-                        break
-                    }
-                }
-
-                const rollEffects = _.compact((getAttrByName(charObj.id, "rolleffects") || "").split("|"))
-                rollEffects.push(...effectString)
+            //      const [,,, removeWhen, /* sheetMessage, GMNote */] = effectString.split(";")
+            //      switch (D.LCase(removeWhen.replace(/:.*/gu, ""))) {
+            //          case "nextfullnight": {
+            //              
+            //              break
+            //          }
+            //          case "scene": {
+            //  
+            //              break
+            //          }
+            //          case "fullweek": {
+            //  
+            //              break
+            //          }
+            //          case "endofweek": {
+            //  
+            //              break
+            //          }
+            //          case "projectresolves": {
+            //  
+            //              break
+            //          }
+            //          default: {
+            //  
+            //              break
+            //          }
+            //    }
+                const rollEffects = _.compact((D.GetStatVal(charObj.id, "rolleffects") || "").split("|"))
+                rollEffects.push(effectString)
+                DB({charRef, effectString, rollEffects}, "addCharRollEffects")
                 setAttrs(charObj.id, {rolleffects: _.uniq(rollEffects).join("|")})
-                D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "addCharRollEffects")
+                // D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "addCharRollEffects")
             }
         },
-        delCharRollEffects = (charRef, effectStrings) => {
+        delCharRollEffects = (charRef, effectString) => {
             const charObj = D.GetChar(charRef)
-            let rollEffects = _.compact((getAttrByName(charObj.id, "rolleffects") || "").split("|"))                                            
-            if (VAL({charObj: [charObj], string: effectStrings}, "delCharRollEffects", true)) {
-                for (const effect of effectStrings)
-                    if (VAL({number: effect}))
-                        rollEffects.splice(Math.max(0, D.Int(effect) - 1), 1)
-                    else
-                        rollEffects = _.without(rollEffects, effect)
+            let rollEffects = _.compact((D.GetStatVal(charObj.id, "rolleffects") || "").split("|"))    
+            DB({charRef, effectString, rollEffects}, "delCharRollEffects")                                        
+            if (VAL({charObj, string: effectString}, "delCharRollEffects")) {
+                if (VAL({number: effectString}))
+                    rollEffects.splice(Math.max(0, D.Int(effectString) - 1), 1)
+                else
+                    rollEffects = _.without(rollEffects, effectString)
                 setAttrs(charObj.id, {rolleffects: rollEffects.join("|")})
-                D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "delCharRollEffects")
+                // D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "delCharRollEffects")
             }
         },
         addGlobalRollEffects = effectStrings => {
@@ -1803,14 +1804,14 @@ const Roller = (() => {
                 traitList = _.compact(
                     _.map((params && params.args && params.args[1] || _.isArray(params) && params[0] || _.isString(params) && params || "").split(","), v => v.replace(/:\d+/gu, "").replace(/_/gu, " "))
                 ),
-                bloodPot = D.Int(getAttrByName(charObj.id, "blood_potency"))
+                bloodPot = D.Int(D.GetStatVal(charObj.id, "blood_potency"))
             if (["rouse", "rouse2", "remorse", "check", "project", "secret", "humanity"].includes(rollType))
                 return flagData
-            if (D.Int(getAttrByName(playerCharID || charObj.id, "applyspecialty")) > 0)
+            if (D.Int(D.GetStatVal(playerCharID || charObj.id, "applyspecialty")) > 0)
                 flagData.posFlagLines.push([1, "Specialty (<.>)"])
-            if (D.Int(getAttrByName(playerCharID || charObj.id, "applyresonance")) > 0)
+            if (D.Int(D.GetStatVal(playerCharID || charObj.id, "applyresonance")) > 0)
                 flagData.posFlagLines.push([1, "Resonance (<.>)"])
-            if (D.Int(getAttrByName(playerCharID || charObj.id, "applybloodsurge")) > 0)
+            if (D.Int(D.GetStatVal(playerCharID || charObj.id, "applybloodsurge")) > 0)
                 flagData.posFlagLines.push([C.BLOODPOTENCY[bloodPot].bp_surge, "Blood Surge (<.>)"])
             if (rollFlags.isDiscRoll)
                 flagData.posFlagLines.push([C.BLOODPOTENCY[bloodPot].bp_discbonus, "Discipline (<.>)"])
@@ -1821,7 +1822,7 @@ const Roller = (() => {
                     flagData[flagDefs[type]].push(...data)
 
             _.each(_.compact(_.flatten([
-                getAttrByName(charObj.id, "incap") ? getAttrByName(charObj.id, "incap").split(",") : [],
+                D.GetStatVal(charObj.id, "incap") ? D.GetStatVal(charObj.id, "incap").split(",") : [],
                 params.args.length > 3 ? params.args[4].split(",") : "",
                 params.args.length > 4 ? params.args[5].split(",") : ""
             ])), flag => {
@@ -1893,8 +1894,8 @@ const Roller = (() => {
                     tFull.traitList = _.without(tFull.traitList, trt)
                 } else {
                     tFull.traitData[trt] = {
-                        display: D.IsIn(trt, undefined, true) || D.IsIn(trt.replace(/_/gu, " "), undefined, true) || getAttrByName(charObj.id, `${trt}_name`) || getAttrByName(charObj.id, `${trt.replace(/_/gu, " ")}_name`),
-                        value: D.Int(getAttrByName(charObj.id, trt) || getAttrByName(charObj.id, trt.replace(/_/gu, " ")))
+                        display: D.IsIn(trt, undefined, true) || D.IsIn(trt.replace(/_/gu, " "), undefined, true) || D.GetStatVal(charObj.id, `${trt}_name`) || D.GetStatVal(charObj.id, `${trt.replace(/_/gu, " ")}_name`),
+                        value: D.Int(D.GetStatVal(charObj.id, trt) || D.GetStatVal(charObj.id, trt.replace(/_/gu, " ")))
                     }
                     if (rollType === "frenzy" && trt === "humanity") {
                         tFull.traitData.humanity.display = "⅓ Humanity"
@@ -1903,7 +1904,7 @@ const Roller = (() => {
                         tFull.traitData.humanity.display = "Human Potential"
                         tFull.traitData.humanity.value = Math.max(0, 10 -
                             tFull.traitData.humanity.value -
-                            D.Int(getAttrByName(charObj.id, "stains")))
+                            D.Int(D.GetStatVal(charObj.id, "stains")))
                     } else if (!tFull.traitData[trt].display) {
                         D.Chat(charObj, `Error determining NAME of trait '${D.JS(trt)}'.`, "ERROR: Dice Roller")
                     }
@@ -1951,7 +1952,7 @@ const Roller = (() => {
                     playerID: playerObj && playerObj.id || D.GMID(),
                     playerCharID: playerCharObj && playerCharObj.id,
                     type: rollType,
-                    hunger: D.Int(getAttrByName(charObj.id, "hunger")),
+                    hunger: D.Int(D.GetStatVal(charObj.id, "hunger")),
                     posFlagLines: flagData.posFlagLines,
                     negFlagLines: flagData.negFlagLines,
                     redFlagLines: flagData.redFlagLines,
@@ -1994,8 +1995,8 @@ const Roller = (() => {
                     [rollData.diff, rollData.mod] = params.slice(0,2).map(x => D.Int(x))
                     break
                 default: {
-                    rollData.diff = rollData.diff === null ? D.Int(getAttrByName(rollData.playerCharID || rollData.charID, "rolldiff")) : rollData.diff
-                    rollData.mod = rollData.mod === null ? D.Int(getAttrByName(rollData.playerCharID || rollData.charID, "rollmod")) : rollData.mod
+                    rollData.diff = rollData.diff === null ? D.Int(D.GetStatVal(rollData.playerCharID || rollData.charID, "rolldiff")) : rollData.diff
+                    rollData.mod = rollData.mod === null ? D.Int(D.GetStatVal(rollData.playerCharID || rollData.charID, "rollmod")) : rollData.mod
                     break
                 }
             }
@@ -2637,7 +2638,7 @@ const Roller = (() => {
                                         }
                                         /* falls through */
                                         case "humanity": {
-                                            let stains = Math.max(D.Int(getAttrByName(rollData.charID, "stains")), 0),
+                                            let stains = Math.max(D.Int(D.GetStatVal(rollData.charID, "stains")), 0),
                                                 maxHumanity = 10
                                             if (rollData.type === "frenzy") {
                                                 stains = Math.max(stains === 0 ? 0 : 1, Math.floor(stains / 3))
@@ -2650,7 +2651,7 @@ const Roller = (() => {
                                             break
                                         }
                                         case "willpower": {
-                                            dotline += "◌".repeat(Math.max(0, D.Int(getAttrByName(rollData.charID, "willpower_max")) - D.Int(rollData.traitData[trait].value)))
+                                            dotline += "◌".repeat(Math.max(0, D.Int(D.GetStatVal(rollData.charID, "willpower_max")) - D.Int(rollData.traitData[trait].value)))
                                             break
                                         }
                                         default: {
@@ -2887,7 +2888,7 @@ const Roller = (() => {
                                 break
                             }
                             case "remorse": {
-                                deltaAttrs.stains = -1 * D.Int(getAttrByName(rollData.charID, "stains"))
+                                deltaAttrs.stains = -1 * D.Int(D.GetStatVal(rollData.charID, "stains"))
                                 if (rollResults.total === 0) {
                                     stLines.outcome = `${CHATSTYLES.outcomeRed}DEGENERATION</span></div>`
                                     rollLines.outcome.text = "YOUR HUMANITY FADES..."
@@ -3111,7 +3112,7 @@ const Roller = (() => {
                 ... NPC ROLL? ${D.JS(rollFlags.isNPCRoll)}
                 ... OBLIV ROLL? ${D.JS(rollFlags.isOblivionRoll)}
                 PARAMS: [${D.JS(params.join(", "))}] (length: ${params.length})`, "makeNewRoll")
-            if (D.Int(getAttrByName(charObj.id, "applybloodsurge")) > 0)                
+            if (D.Int(D.GetStatVal(charObj.id, "applybloodsurge")) > 0)                
                 quickRouseCheck(charObj, false, false, true)
             const rollData = buildDicePool(getRollData(charObj, rollType, params, rollFlags))
             recordRoll(rollData, rollDice(rollData, null, rollFlags))
@@ -3663,8 +3664,8 @@ const Roller = (() => {
         get Commit() { return getCurrentRoll().rollResults.commit },
         get Char() { return D.GetChar(getCurrentRoll().rollData.charID) },
 
-        AddCharEffect: (charRef, effect) => { addCharRollEffects(charRef, [effect]) },
-        DelCharEffect: (charRef, effect) => { delCharRollEffects(charRef, [effect]) },
+        AddCharEffect: (charRef, effect) => { addCharRollEffects(charRef, effect) },
+        DelCharEffect: (charRef, effect) => { delCharRollEffects(charRef, effect) },
         AddGlobalEffect: (effect) => { addGlobalRollEffects([effect]) },
         DelGlobalEffect: (effect) => { delGlobalRollEffects([effect]) },
         AddGlobalExclude: (charRef, effect) => { addGlobalExclusion(charRef, [effect]) },

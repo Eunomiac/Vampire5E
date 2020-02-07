@@ -47,12 +47,11 @@ const Char = (() => {
             STATE.REF.projectDetails = STATE.REF.projectDetails || []
             STATE.REF.tokenRecord = STATE.REF.tokenRecord || []
             STATE.REF.traitSelection = STATE.REF.traitSelection || []
+            STATE.REF.tokenPowerData = STATE.REF.tokenPowerData || {all: {}}
+// awareness/intelligence+investigation/wits+investigation;postrait:Auspex;+ Heightened Senses (<.>)
+// 
 
-            STATE.REF.registry.TopLeft.docName = "L. Ulrich"
-            STATE.REF.registry.BotLeft.docName = "Dr. Roy"
-            STATE.REF.registry.TopRight.docName = "B. Giovanni"
-            STATE.REF.registry.MidRight.docName = "Dr. Napier"
-            STATE.REF.registry.BotRight.docName = "A. Wong"
+
             // Storyteller Override:
         // STATE.REF.registry.TopLeft.playerID = D.GetPlayerID("Storyteller")
 
@@ -66,10 +65,26 @@ const Char = (() => {
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
-            let charObjs = Listener.GetObjects(objects, "character")
+            const charObjs = Listener.GetObjects(objects, "character")
             switch (call) {
                 case "reg": {
                     switch(D.LCase(call = args.shift())) {                        
+                        case "tokenpower": {
+                            const [charObj] = charObjs
+                            let charID = VAL({charObj}) && charObj.id || "all"
+                            if (args[0] === "all") {
+                                args.shift()
+                                charID = "all"
+                            }
+                            const tokenSrc = args.shift(),
+                                rollEffect = args.join(" ")
+                            if (VAL({string: [tokenSrc, rollEffect]}, null, true)) {
+                                STATE.REF.tokenPowerData[charID] = STATE.REF.tokenPowerData[charID] || {}
+                                STATE.REF.tokenPowerData[charID][D.LCase(tokenSrc)] = rollEffect
+                                D.Alert(`Token Powers for ${charID === "all" ? "ALL" : D.GetName(charObj)}:<br><br>${D.JS(STATE.REF.tokenPowerData[charID])}`, "!char reg tokenpower")
+                            }
+                            break
+                        }
                         case "players": {
                             const allChars = _.compact(findObjs({_type: "character"})),
                                 allPlayers = _.compact(findObjs({_type: "player"}))// .filter(x => x.id !== D.GMID())
@@ -204,56 +219,10 @@ const Char = (() => {
                             break
                         }
                         case "stat": {
-                            if (args.length) {
-                                const traitName = args[0].toLowerCase() === "selected" && STATE.REF.traitSelection.shift() || args.shift(),
-                                    returnLines = []                                
-                                if (!charObjs.length)
-                                    charObjs = D.GetChars("registered")
-                                while (charObjs.length) {
-                                    const charLines = []
-                                    let name, traitVal
-                                    for (let i = 0; i < 2; i++) {
-                                        if (charObjs.length) {
-                                            const thisCharObj = charObjs.shift();
-                                            [name, traitVal] = ["", "", ""]
-                                            if (VAL({thisCharObj})) {
-                                                const statData = D.GetStat(thisCharObj, traitName, true) || D.GetRepStat(thisCharObj, "*", null, traitName, true),
-                                                    statValue = statData && (statData[0] || statData.val)
-                                                if (statValue)
-                                                    [name, traitVal] = [
-                                                        VAL({pc: thisCharObj}) ? `<b>${D.GetName(thisCharObj, true).toUpperCase()}</b>` : D.GetName(thisCharObj, true),
-                                                        VAL({number: statValue}) ? D.Int(statValue) === 0 && "~" || "●".repeat(D.Int(statValue)) : D.JSL(statValue)
-                                                    ]
-                                            }
-                                        } else {
-                                            [name, traitVal] = ["", ""]
-                                        }
-                                        charLines.push(`<div style="
-                                            display: inline-block;
-                                            width: 48%;
-                                            overflow: hidden;
-                                            margin-right: 2%;
-                                        "><span style="
-                                            display: inline-block;
-                                            width: 50%;
-                                            margin-right: 3%;
-                                            color: ${traitVal === "~" && C.COLORS.grey || C.COLORS.white};
-                                        ">${name}</span><span style="
-                                            display: inline-block;
-                                            width: 44%;
-                                            margin-right: 3%;
-                                            color: ${traitVal === "~" && C.COLORS.grey || C.COLORS.white};
-                                        ">${traitVal}</span></div>`)
-                                    }
-                                    returnLines.push(charLines.join(""))
-                                }
-                                D.Chat("Storyteller", C.HTML.Block([
-                                    C.HTML.Header(D.Capitalize(traitName, true)),
-                                    C.HTML.Body(returnLines.join("<br>"), {color: C.COLORS.white, fontWeight: "normal", fontFamily: "Voltaire", fontSize: "12px", textAlign: "left"})
-                                ].join("")), null, D.RandomString(3))
-                            } else {
+                            if (args.length)
+                                getTraitData(charObjs, args.shift(), args)
+                            else
                                 traitSelectMenu(charObjs.map(x => x.id), "!char", "get stat")
-                            }
                             break
                         }
                         case "projects": {
@@ -286,6 +255,14 @@ const Char = (() => {
                 }
                 case "set": {
                     switch (D.LCase(call = args.shift())) {
+                        case "token": {
+                            const tokenSrc = args.shift()
+                            for (const charObj of charObjs) {
+                                Media.SetToken(charObj.id, tokenSrc)
+                                processTokenPowers(charObj.id)                                
+                            }
+                            break
+                        }
                         case "daysleep": {
                             setDaysleepAlarm()
                             break
@@ -364,6 +341,11 @@ const Char = (() => {
                 }
                 case "clear": {
                     switch (D.LCase(call = args.shift())) {
+                        case "tokenpowers": {
+                            D.Alert(`Clearing Token Power Data:<br><br>${D.JS(STATE.REF.tokenPowerData)}`, "!char clear tokenpowers")
+                            STATE.REF.tokenPowerData = {all: {}}
+                            break
+                        }
                         case "npc": {
                             for (const charObj of charObjs)
                                 setCharNPC(charObj, "base")                                  
@@ -505,6 +487,14 @@ const Char = (() => {
                 }
                 case "select": {
                     switch(D.LCase(call = args.shift())) {
+                        case "char": {
+                            charSelectMenu()
+                            break
+                        }
+                        case "player": {
+                            playerSelectMenu()
+                            break
+                        }
                         case "trait": {
                             if (args.length) {
                                 const thisTrait = args.shift().toLowerCase()
@@ -514,7 +504,7 @@ const Char = (() => {
                                     STATE.REF.traitSelection.push(thisTrait)
                                 Media.SetText("secretRollTraits", STATE.REF.traitSelection.length === 0 ? " " : STATE.REF.traitSelection.join("\n"), true)
                             } else {
-                                traitSelectMenu()
+                                traitSelectMenu(charObjs.map(x => x.id), "!char", "select trait")
                             }
                             break
                         }
@@ -535,6 +525,16 @@ const Char = (() => {
                         }
                     }
                     break
+                }
+                case "toggle": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "player": {
+                            const [charObj] = charObjs
+                            togglePlayerChar(charObj, args[0] === "true" || args[0] !== "false" && !isPlayerCharActive(charObj.id))                            
+                            break
+                        }
+                        // no default
+                    }
                 }
             // no default
             }
@@ -658,20 +658,79 @@ const Char = (() => {
         togglePlayerChar = (charRef, isActive) => {
             if (isActive === true || isActive === false) {
                 const charData = D.GetCharData(charRef),
-                    [tokenObj] = findObjs({_type: "graphic", _subtype: "token", name: `${charData.tokenName}_1`})
-                DB(`Ref: ${D.JSL(charRef)}, Data: ${D.JSL(charData)}, Token: ${D.JSL(tokenObj)}`, "togglePlayerChar")
+                    [tokenObj] = Media.GetTokens(charData.id)
+                DB({charRef, charData, tokenObj}, "togglePlayerChar")
                 REGISTRY[charData.quadrant].isActive = isActive
                 Media.ToggleImg(tokenObj, isActive, true)
                 Media.SetImg(tokenObj, "base")
                 Media.ToggleImg(`SignalLight${charData.quadrant}`, isActive)
                 Media.ToggleImg(`Hunger${charData.quadrant}`, isActive)
-                // Media.ToggleImg(`TombstoneShroud${charData.quad}`, !isActive)
+                Media.ToggleImg(`TombstoneShroud${charData.quad}`, !isActive)
             }
+        },
+        processTokenPowers = (charRef) => {
+            const charID = (D.GetChar(charRef) || {id: false}).id
+            if (charID) {
+                const tokenPowerData = Object.assign({}, STATE.REF.tokenPowerData.all || {}, STATE.REF.tokenPowerData[charID] || {}),
+                    tokenData = Media.GetTokenData(charID),
+                    tokenSrc = tokenData && tokenData.curSrc
+                DB({charID, tokenPowerData, tokenData, tokenSrc}, "processTokenPowers")
+                if (VAL({string: tokenSrc})) 
+                    for (const [srcName, rollEffect] of Object.entries(tokenPowerData))
+                        if (VAL({string: rollEffect}))
+                            if (D.LCase(tokenSrc).includes(D.LCase(srcName)))
+                                Roller.AddCharEffect(charID, rollEffect)
+                            else
+                                Roller.DelCharEffect(charID, rollEffect)                
+            }                
         },
     // #endregion
 
     // #region GETTERS: Checking Character Status, Character Chat Prompt
-        isCharActive = (charRef) => (D.GetCharData(charRef) || {isActive: null}).isActive,    
+        isPlayerCharActive = (charRef) => (D.GetCharData(charRef) || {isActive: null}).isActive,    
+        playerSelectMenu = () => {
+            D.CommandMenu(
+                {
+                    title: "Player Select Menu",
+                    rows: [
+                        ..._.chain(D.GetChars("allregistered").map(x => D.GetCharData(x))).
+                            map(x => ({name: x.playerName, command: `!reply selectplayer@${x.id}, title@${x.playerName}`, styles: {bgColor: x.isActive && C.COLORS.red || C.COLORS.black}})).
+                            groupBy((x, i) => Math.floor(i / 4)).
+                            map(x => ({type: "ButtonLine", contents: x.length < 3 ? [0, ...x, 0] : x, buttonStyles: { /* width: "23%", fontSize: "12px", bgColor: C.COLORS.midgold, buttonTransform: "none" */ }})).
+                            value()
+                    ],
+                    blockStyles: { } /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */
+                },
+                (commandString) => { // IMPORTANT: return 'true' if you want to hold this function open for more commands
+                    const params = D.ParseToObj(commandString, ",", "@"), // key:value pairs must be in key@pairs for this to work. Multiple commands comma-delimited.
+                        titleString = params.title
+                    if ("selectplayer" in params)
+                        playerActionMenu(params.selectplayer, titleString)
+                    return false
+                }
+            )
+        },
+        playerActionMenu = (playerCharID, title) => {
+            D.CommandMenu(
+                {
+                    title: title || "Player Action (?)",
+                    rows: [
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                0,
+                                {name: "Enable", command: `!char ${playerCharID} toggle true`, styles: {bgColor: isPlayerCharActive(playerCharID) && C.COLORS.darkgrey || C.COLORS.darkgreen}},
+                                {name: "Disable", command: `!char ${playerCharID} toggle false`, styles: {bgColor: isPlayerCharActive(playerCharID) && C.COLORS.darkred || C.COLORS.darkgrey}},
+                                0
+                            ],
+                            buttonStyles: {color: C.COLORS.black}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                            styles: { } /* height, width, margin, textAlign */
+                        }
+                    ],
+                    blockStyles: { } /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */
+                }
+            )
+        },
         charSelectMenu = () => {             
             D.CommandMenu(
                 {
@@ -750,7 +809,7 @@ const Char = (() => {
                                 {name: "Add to Scene", command: `!sess ${charIDString} add scene`, styles: {bgColor: C.COLORS.palegreen, color: C.COLORS.black}},
                                 {name: "Pop Desire", command: `!char ${charIDString} set desire`, styles: {bgColor: C.COLORS.gold, color: C.COLORS.black}},
                                 {name: "Home/Back", command: `!char ${charIDString} send toggle`, styles: {bgColor: C.COLORS.black, color: C.COLORS.gold}},
-                                {name: "Reset Token", command: `!img ${charIDString} set tokensrc base`, styles: {bgColor: C.COLORS.darkgrey, color: C.COLORS.white}}
+                                {name: "Reset Token", command: `!char ${charIDString} set token base`, styles: {bgColor: C.COLORS.darkgrey, color: C.COLORS.white}}
                             ],
                             buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
                             styles: { } /* height, width, margin, textAlign */
@@ -759,7 +818,7 @@ const Char = (() => {
                             type: "ButtonLine",
                             contents: [
                                 isSingleChar && {name: "Dyscrasias", command: `!char ${charIDString} set dyscrasias ?{Dyscrasias Title (blank to toggle off):}|?{Dyscrasias Text:}`, styles: {bgColor: C.COLORS.darkdarkred, color: C.COLORS.gold}} || 0,
-                                {name: "Secret Roll", command: `!roll ${charIDString} secret`, styles: {bgColor: C.COLORS.purple, color: C.COLORS.white}},
+                                {name: "Secret Roll", command: `!char ${charIDString} select trait`, styles: {bgColor: C.COLORS.purple, color: C.COLORS.white}},
                                 {name: "Get Trait", command: `!char ${charIDString} get stat`, styles: {bgColor: C.COLORS.grey, color: C.COLORS.black}},
                                 isSingleChar && {name: "Compulsion", command: `!char ${charIDString} set compulsion ?{Compulsion Title (blank to toggle off):}|?{Compulsion Text:}`, styles: {bgColor: C.COLORS.darkdarkred, color: C.COLORS.brightred}} || 0,
                             ],
@@ -937,12 +996,12 @@ const Char = (() => {
         traitSelectMenu = (charIDs, call, argString) => {
             const charIDString = charIDs.join(","),
                 attributeTraits = _.object(
-                    _.flatten(Object.values(C.ATTRIBUTES)).map(x => D.LCase(x).replace(/ /gu, "_")),
-                    _.flatten(Object.values(C.ATTRIBUTES)).map(x => D.UCase(x))
+                    _.flatten(_.zip(...Object.values(C.ATTRIBUTES))).map(x => D.LCase(x).replace(/ /gu, "_")),
+                    _.flatten(_.zip(...Object.values(C.ATTRIBUTES))).map(x => D.UCase(x))
                 ), // attr:display name
                 skillTraits = _.object(
-                    _.flatten(_.zip(Object.values(C.SKILLS))).map(x => D.LCase(x).replace(/ /gu, "_")),
-                    _.flatten(_.zip(Object.values(C.SKILLS))).map(x => D.UCase(x))
+                    _.flatten(_.zip(...Object.values(C.SKILLS))).map(x => D.LCase(x).replace(/ /gu, "_")),
+                    _.flatten(_.zip(...Object.values(C.SKILLS))).map(x => D.UCase(x))
                 ),
                 discTraits = _.object(
                     _.flatten(Object.keys(C.DISCIPLINES)).map(x => D.LCase(x).replace(/ /gu, "_")),
@@ -955,50 +1014,99 @@ const Char = (() => {
                     willpower: "WILLPOWER",
                     humanity: "HUMANITY",
                     hunger: "HUNGER",
-                    resonance: "RESONANCE"
-                }        
+                    resonance: "RESONANCE",
+                    xp_earnedtotal: "XP"
+                },
+                trailingParams = argString === "get stat" ? " advantage negadvantage discleft discmid discright" : ""      
             D.CommandMenu(
                 {  
                     title: "Trait Select",
                     rows: [
                         ..._.chain(attributeTraits).
-                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}`})).
+                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}${trailingParams}`})).
                             groupBy((x, i) => Math.floor(i / 3)).
                             map(x => ({type: "ButtonLine", contents: x, buttonStyles: {bgColor: C.COLORS.brightgold, color: C.COLORS.black}})).
                             value(),
                         {type: "ButtonLine", contents: [0]},
                         ..._.chain(skillTraits).
-                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}`})).
+                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}${trailingParams}`})).
                             groupBy((x, i) => Math.floor(i / 3)).
                             map(x => ({type: "ButtonLine", contents: x, buttonStyles: {bgColor: C.COLORS.gold, color: C.COLORS.black}})).
                             value(),
                         {type: "ButtonLine", contents: [0]},
                         ..._.chain(discTraits).
-                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}`})).
+                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}${trailingParams}`})).
                             groupBy((x, i) => Math.floor(i / 3)).
                             map(x => ({type: "ButtonLine", contents: x, buttonStyles: {bgColor: C.COLORS.brightred, color: C.COLORS.black}})).
                             value(),
                         {type: "ButtonLine", contents: [0]},
                         ..._.chain(otherTraits).
-                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}`})).
+                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}${trailingParams}`})).
                             groupBy((x, i) => Math.floor(i / 3)).
                             map(x => ({type: "ButtonLine", contents: x, buttonStyles: {bgColor: C.COLORS.gold, color: C.COLORS.black}})).
-                            value()
+                            value(),
+                        argString === "select trait" ? {type: "ButtonLine", contents: [
+                            0,
+                            0,
+                            {name: "ROLL!", command: `!roll ${charIDString} secret selected`, styles: {bgColor: C.COLORS.darkred, color: C.COLORS.gold}},
+                            0,
+                            0
+                        ]} : {type: "ButtonLine", contents: [0]}
                     ],
                     blockStyles: {padding: "0px 10px 0px 10p" /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */}
                 }
             )
         },
+        getTraitData = (charRefs, traitName) => {
+            const charOs = D.GetChars(charRefs),
+                returnLines = []
+            for (const charObj of charOs) {
+                const traitVal = D.GetStatVal(charObj.id, traitName)
+                if (traitVal || traitVal === 0) {
+                    const [name, value] = [
+                        VAL({pc: charObj}) ? `<b>${D.GetName(charObj, true).toUpperCase()}</b>` : D.GetName(charObj, true),
+                        VAL({number: traitVal}) ? D.Int(traitVal) === 0 && "~" || D.Int(traitVal) > 10 && D.Int(traitVal) || `${D.Int(traitVal) >= 5 && "●●●●● " || ""}${"●".repeat(D.Int(traitVal) % 5)}` : D.JSL(traitVal)
+                    ]
+                    returnLines.push(`<div style="
+                        display: inline-block;
+                        width: 48%;
+                        overflow: hidden;
+                        margin-right: 2%;
+                    "><span style="
+                        display: inline-block;
+                        width: 39%;
+                        margin-right: 3%;
+                        color: ${value === "~" && C.COLORS.grey || C.COLORS.white};
+                    ">${name}</span><span style="
+                        display: inline-block;
+                        width: 58%;
+                        margin-right: 0%;
+                        color: ${value === "~" && C.COLORS.grey || C.COLORS.white};
+                    ">${value}</span></div>`)
+                }
+            }
+            D.Chat("Storyteller", C.HTML.Block([
+                C.HTML.Header(D.Capitalize(traitName, true)),
+                C.HTML.Body(Object.values(_.groupBy(returnLines, (x, i) => Math.floor(i / 2))).map(x => x.join("")).join("<br>"), {color: C.COLORS.white, fontWeight: "normal", fontFamily: "Voltaire", fontSize: "12px", textAlign: "left"})
+            ].join("")))
+        },
     // #endregion
 
     // #region Character-As-NPC Control
         setCharNPC = (charRef, npcRef) => {
-            const charObj = D.GetChar(charRef),
+         /* const charObj = D.GetChar(charRef),
                 npcObj = npcRef === "base" && "base" || D.GetChar(npcRef),
                 npcName = npcRef === "base" && "base" || D.GetName(npcObj, true)
             if (VAL({string: npcName, pc: charObj}, "setCharNPC")) {
                 const [quad] = _.values(D.GetCharVals(charObj, "quadrant")),
-                    closestQuad = _.find(["TopLeft", "TopRight", "BotLeft", "BotRight"], x => x !== quad && x.slice(-4) === quad.slice(-4)),
+                    quadImgKey = `Tombstone${quad}`,
+                    closeQuadImgKeys = {
+                        TopLeft: null,
+                        BotLeft: null,
+                        TopRight: ["MidRight"].map(x => `Tombstone${x}`),
+                        MidRight: ["TopRight", "BotRight"].map(x => `Tombstone${x}`),
+                        BotRight: ["MidRight"].map(x => `Tombstone${x}`)
+                    }[quad],
                     [tokenObj] = findObjs({_type: "graphic", _subtype: "token", name: `${_.values(D.GetCharVals(charObj, "tokenName"))[0]}_1`})                   
                 if (npcName === "base") {
                     delete Char.REGISTRY[quad].isNPC
@@ -1007,8 +1115,6 @@ const Char = (() => {
                     Media.SetArea(tokenObj, `${quad}Token`)
                     if (Media.IsActive(`Tombstone${closestQuad}`))
                         if (["base", "blank"].includes(Media.GetImgSrc(`Tombstone${closestQuad}`))) {
-                            Media.ToggleImg(`Tombstone${closestQuad}`, false)
-                            Media.ToggleImg(`Tombstone${quad}`, false)
                         } else {
                             Media.ToggleImg(`Tombstone${quad}`, true)
                             Media.SetImg(`Tombstone${quad}`, "base")
@@ -1032,7 +1138,7 @@ const Char = (() => {
                     if (!Media.IsActive(`Tombstone${closestQuad}`) || Media.GetImgSrc(`Tombstone${closestQuad}`) === "blank")
                         Media.SetImg(`Tombstone${closestQuad}`, "base", true)
                 }
-            }
+            } */
         },
     // #endregion
     
@@ -1339,15 +1445,18 @@ const Char = (() => {
             Handouts.Set("MEMO: Active Projects", undefined, C.HANDOUTHTML.EyesOnlyDoc.Block(projectLines.join(""), {bgURL: "https://i.imgur.com/LsrLDoN.jpg"}), true)            
         },
         updateHunger = (charRef) => {
-
-            return
-
+            DB({charRef}, "updateHunger")
             charRef = charRef || "registered"
             for(const char of D.GetChars(charRef)) {
                 const charData = D.GetCharData(char),
                     quad = charData.quadrant,
                     hunger = `${D.GetStatVal(char, "hunger")}`
-                Media.SetImg(`Hunger${quad}`, hunger === "0" ? "blank" : hunger)
+                if (hunger === "0") {
+                    Media.ToggleImg(`Hunger${quad}`, false)
+                } else {
+                    Media.SetImg(`Hunger${quad}`, hunger)
+                    Media.ToggleImg(`Hunger${quad}`, true)
+                }
             }
         },
     // #endregion
@@ -1420,8 +1529,6 @@ const Char = (() => {
                             bannerString = `Your hunger increases from ${D.NumToText(initTraitVal).toLowerCase()} to ${D.NumToText(finalTraitVal).toLowerCase()}.`
                         else if (amount < 0)
                             bannerString = `You slake your hunger by ${D.NumToText(Math.abs(amount)).toLowerCase()}.`
-                        // updateHunger()
-                        // Media.SetImg(`Hunger${getAttrByName(charObj.id, "sandboxquadrant")}_1`, D.Int(finalTraitVal) === "0" ? "blank" : `${finalTraitVal}`)
                         break
                     case "hum": case "humanity":
                         if (amount > 0)
@@ -1551,6 +1658,8 @@ const Char = (() => {
                         alertString ? C.HTML.Header(alertString, Object.assign(chatStyles.alert, alertString.includes("<br>") ? {height: "40px"} : {})) : null
                     ]), chatStyles.block))
                 setAttrs(D.GetChar(charObj).id, {[trait.toLowerCase()]: finalTraitVal})
+                if (trait.toLowerCase() === "hunger")
+                    updateHunger()
                 return true
             }
             return false
@@ -1936,6 +2045,7 @@ const Char = (() => {
         REGISTRY,
         TogglePC: togglePlayerChar,
         SetNPC: setCharNPC,
+        ProcessTokenPowers: processTokenPowers,
         Damage: adjustDamage,
         AdjustTrait: adjustTrait,
         AdjustHunger: adjustHunger,

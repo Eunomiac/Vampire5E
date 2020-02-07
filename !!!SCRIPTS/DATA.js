@@ -1575,13 +1575,16 @@ const D = (() => {
                         dbstring += ` ... "${jStrL(v)}": `
                         // If parameter calls for REGISTERED CHARACTERS or PC CHARACTERS:
                     } else if (["registered", "pc", "pcs"].includes(v.toLowerCase())) {
-                        _.each(Char.REGISTRY, charData => { if (!charData.name.toLowerCase().includes("Good Lad")) charObjs.add(getObj("character", charData.id)) })
+                        for (const [, charData] of Object.entries(Char.REGISTRY))
+                            if (charData.isActive)
+                                charObjs.add(getObj("character", charData.id))
                         dbstring += ` ... "${jStrL(v)}": `
+                    } else if (["allregistered", "allreg", "allpcs"].includes(v.toLowerCase())) {
+                        for (const [, charData] of Object.entries(Char.REGISTRY))
+                            charObjs.add(getObj("character", charData.id))
+                        dbstring += ` ... "${jStrL(v)}": `                        
                     } else if (["npc", "npcs"].includes(v.toLowerCase())) {
                         _.each(findObjs({_type: "character"}).filter(x => !Object.values(Char.REGISTRY).map(xx => xx.id).includes(x.id)), charObj => charObjs.add(charObj))
-                        dbstring += ` ... "${jStrL(v)}": `
-                    } else if (v.toLowerCase() === "activepc") {
-                        _.each(Char.REGISTRY, charData => { if (charData.isActive && !charData.name.toLowerCase().includes("Good Lad")) charObjs.add(getObj("character", charData.id)) })
                         dbstring += ` ... "${jStrL(v)}": `
                         // If parameter is "sandbox", calls for all characters with tokens in the sandbox (do player characters first)
                     } else if (v.toLowerCase() === "sandbox") {
@@ -1646,20 +1649,32 @@ const D = (() => {
             let attrValueObj = null,
                 attrValue = null
             if (VAL({charObj, string: stat}, VAL({string: funcName}) && `${D.JSL(funcName)} > getStat` || null)) {
-                const attrObjs = _.filter(findObjs({_type: "attribute", _characterid: charObj.id}), v => stat.includes("repeating") || !fuzzyMatch("repeating", v.get("name"))) // UNLESS "statName" includes "repeating_", don't return repeating fieldset attributes.
+                // STEP ONE: LOOK THROUGH NON-REPEATING ATTRIBUTES:
+                const attrObjs = _.filter(findObjs({_type: "attribute", _characterid: charObj.id}), v => !v.get("name").includes("repeating") || stat.includes("repeating")) // UNLESS "statName" includes "repeating_", don't return repeating fieldset attributes.
                 // D.Alert(`All Attr Objs: ${D.JS(_.map(allAttrObjs, v => v.get("name")))}<br><br>Filtered Attr Objs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
-                // First try for a direct match, then a fuzzy match:
-                attrValueObj = _.find(attrObjs, v => v.get("name").toLowerCase() === stat.toLowerCase()) || _.find(attrObjs, v => looseMatch(v.get("name"), stat))
+                attrValueObj = _.find(attrObjs, v => v.get("name").toLowerCase() === stat.toLowerCase())
+                
+                // STEP TWO: LOOK THROUGH NON-REPEATING ATTRIBUTES FOR NAME/VAL PAIRS (e.g. "disc1_name, disc1")
                 if (!attrValueObj) {
                     const attrNameObj = _.find(attrObjs, v => v.get("name").toLowerCase().endsWith("_name") && v.get("current").toLowerCase() === stat.toLowerCase())
                     if (attrNameObj)
                         attrValueObj = _.find(attrObjs, v => v.get("name") === attrNameObj.get("name").slice(0, -5))
                 }
+
+                // STEP THREE: LOOK THROUGH REPEATING ATTRIBUTES IN C.TRAITREPSECS = ["advantage", "negadvantage", "discleft", "discmid", "discright"]
+                if (!attrValueObj)
+                    for (const repSec of C.TRAITREPSECS) {
+                        const repValData = getRepStats(charObj, repSec, null, stat)
+                        attrValueObj = repValData && repValData[0] && repValData[0].obj
+                        if (attrValueObj)
+                            break
+                    }
                 if (attrValueObj) {
                     attrValue = attrValueObj.get(isGettingMax ? "max" : "current")
                     if (!_.isNaN(parseInt(attrValue)))
                         attrValue = parseInt(attrValue)
                 }
+
                 DB(`StatName: ${D.JSL(stat)}
                 AttrValueObj: ${D.JSL(attrValueObj, true)}
                 Boolean: ${Boolean(attrValueObj)}

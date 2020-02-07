@@ -389,14 +389,15 @@ const Session = (() => {
                         C.HTML.Title("Leaving Session Downtime"),
                         C.HTML.Header("Loading Status: Regular Time"),
                         C.HTML.Body("Starting Clock.")
-                    ]), null, D.RandomString(3))
+                    ]))
                 },
                 Daylighter: () => {},
                 Spotlight: () => {
                     D.Chat("all", C.HTML.Block([
                         C.HTML.Title("Spotlight"),
                         C.HTML.Header("Closing Spotlight Session.")
-                    ]), null, D.RandomString(3))
+                    ]))
+                    STATE.REF.spotlightChar = null
                 },
                 Complications: () => { },
                 Testing: () => {}
@@ -407,16 +408,15 @@ const Session = (() => {
                     if (!STATE.REF.isTestingActive)      
                         Campaign().set({playerpageid: D.GetPageID("GAME")})            
                     TimeTracker.ToggleClock(true)
-                    TimeTracker.ToggleCountdown(false)
+                    // TimeTracker.ToggleCountdown(false)
                 },
                 Downtime: () => {},
                 Daylighter: () => {},
                 Spotlight: () => {
-                    for (const charData of D.GetChars("registered").map(x => D.GetCharData(x))) {
-                        Char.SetNPC(charData.id, "base")
-                        Char.TogglePC(charData.quadrant, true)
-                    }
-                    Media.ToggleImg("Spotlight", false)
+                    for (const charData of D.GetChars("registered").map(x => D.GetCharData(x))) 
+                        // Char.SetNPC(charData.id, "base")
+                        Media.ToggleToken(charData.id, true) // Char.TogglePC(charData.quadrant, true)
+                    
                 },
                 Complications: () => {},
                 Testing: () => {
@@ -443,22 +443,9 @@ const Session = (() => {
                     Char.SendHome()
                 },
                 Daylighter: () => {},
-                Spotlight: (charRef) => {
-                    const charObj = D.GetChar(charRef)
-                    Char.SendHome()
-                    if (VAL({pc: charObj})) {
-                        const charData = D.GetCharData(charObj),
-                            quad = charData.quadrant,
-                            otherCharData = D.GetChars("registered").filter(x => x.id !== charData.id).map(x => D.GetCharData(x))                
-                        for (const otherData of otherCharData) {
-                            Char.TogglePC(otherData.quadrant, false)
-                            Char.SetNPC(otherData.id, "base")
-                        }
-                        Char.TogglePC(quad, true)
-                        Char.SetNPC(charData.id, "base")
-                        Media.SetImg("Spotlight", quad, true)
-                    }
+                Spotlight: () => {
                     setLocation(BLANKLOCRECORD)
+                    TimeTracker.ToggleClock(false)                       
                     Char.RefreshDisplays()
                 },
                 Complications: () => {
@@ -486,14 +473,7 @@ const Session = (() => {
                 },
                 Daylighter: () => {},
                 Spotlight: (charRef) => {
-                    const charObj = D.GetChar(charRef)
-                    if (VAL({pc: charObj})) {
-                        const charData = D.GetCharData(charObj)
-                        D.Chat("all", C.HTML.Block([
-                            C.HTML.Title("Spotlight:"),
-                            C.HTML.Header(charData.name)
-                        ]), null, D.RandomString(3))
-                    }
+                    setSpotlightChar(charRef)
                 },
                 Complications: () => {},
                 Testing: () => {}
@@ -608,14 +588,18 @@ const Session = (() => {
             }
         },
         sessionMonologue = () => {
-            if (STATE.REF.SessionMonologues.length) {
+            if (STATE.REF.Mode === "Spotlight" && STATE.REF.spotlightChar && D.GetStatVal(STATE.REF.spotlightChar, "stains")) {
+                D.Call(`!roll quick remorse ${STATE.REF.spotlightChar}`)
+                return false
+            } else if (STATE.REF.SessionMonologues.length) {
                 const thisCharName = STATE.REF.SessionMonologues.pop()
+                setSpotlightChar(thisCharName)
                 D.Chat("all", C.HTML.Block([
                     C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
                     C.HTML.Title("Session Monologues", {fontSize: "28px", margin: "-10px 0px 0px 0px"}),
                     C.HTML.Header(thisCharName),
                     C.HTML.Body("The spotlight is yours!")
-                ]), null, D.RandomString(3))
+                ]))
                 return false
             }
             return true
@@ -665,8 +649,8 @@ const Session = (() => {
                 const [lastMode, curMode] = [
                     `${STATE.REF.Mode}`,
                     D.Capitalize(mode.toLowerCase())
-                ]                
-                D.Queue(MODEFUNCTIONS.outroMode[curMode], [args], "ModeSwitch", 0.1)
+                ]             
+                D.Queue(MODEFUNCTIONS.outroMode[lastMode], [args], "ModeSwitch", 0.1)
                 D.Queue(Media.ToggleLoadingScreen, [curMode === "Inactive" && "concluding" || "loading", `Changing Modes: ${D.UCase(lastMode)} ► ${D.UCase(curMode)}`, {duration: 15, numTicks: 30, callback: () => { MODEFUNCTIONS.introMode[curMode](args)}}], "ModeSwitch", 3)
                 D.Queue(Media.SetLoadingMessage, [`[Leaving ${D.UCase(lastMode)}] Logging Status...`], "ModeSwitch", 0.1)
                 D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1)
@@ -708,10 +692,39 @@ const Session = (() => {
                 changeMode("Downtime")
         },
         toggleSpotlight = (charRef) => {
-            if (STATE.REF.Mode === "Spotlight")
-                changeMode(STATE.REF.LastMode)
+            if (STATE.REF.Mode === "Spotlight") 
+                if (!charRef)
+                    changeMode(STATE.REF.LastMode)
+                else
+                    setSpotlightChar(charRef)
             else             
                 changeMode("Spotlight", charRef)
+            
+        },
+        setSpotlightChar = (charRef) => {
+            if (STATE.REF.Mode !== "Spotlight") {
+                changeMode("Spotlight", charRef)
+            } else {
+                const charObj = D.GetChar(charRef)
+                if (VAL({pc: charObj}) && STATE.REF.spotlightChar !== charObj.id) {
+                    Char.SendHome()
+                    STATE.REF.spotlightChar = charObj.id
+                    const charData = D.GetCharData(charObj),
+                        quad = charData.quadrant,
+                        otherCharData = D.GetChars("registered").filter(x => x.id !== charData.id).map(x => D.GetCharData(x))                
+                    for (const otherData of otherCharData) 
+                        Media.ToggleToken(otherData.id, false) // Char.TogglePC(otherData.quadrant, false)
+                        // Char.SetNPC(otherData.id, "base")
+                    
+                    Media.ToggleToken(charData.id, true) // Char.TogglePC(quad, true)
+                    // Char.SetNPC(charData.id, "base")
+                    Media.SetImg("Foreground", `spotlight${quad}`)
+                    D.Chat("all", C.HTML.Block([
+                        C.HTML.Title("Spotlight:"),
+                        C.HTML.Header(charData.name)
+                    ]))
+                }  
+            }          
         },
     // #endregion
 
