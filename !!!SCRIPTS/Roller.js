@@ -556,7 +556,7 @@ const Roller = (() => {
                 },
                 dicePool: {top: 0, left: 0},
                 resultCount: {
-                    get top() { return Media.GetImgData("RollerFrame_Left").curSrc === "top" && -1 * Media.GetImgData("RollerFrame_BottomEnd").height || 0 },
+                    get top() { return Media.IsActive("RollerFrame_BottomEnd") ? 0 : -1 * Media.GetImgData("RollerFrame_BottomEnd").height },
                     get left() { return 0 }
                 },
                 difficulty: {
@@ -564,19 +564,21 @@ const Roller = (() => {
                     get left() { return SETTINGS.shifts.resultCount.left }
                 },
                 diffFrame: {
-                    get top() { return Media.GetImgData("RollerFrame_Diff").top + SETTINGS.shifts.resultCount.top },
+                    get top() { return Media.GetImgData("RollerFrame_Diff").top + SETTINGS.shifts.difficulty.top },
                     get left() { return Media.GetImgData("RollerFrame_Diff").left }
                 },
                 margin: {
-                    get top() { return SETTINGS.shifts.resultCount.top },
-                    get left() { return SETTINGS.shifts.resultCount.left }
+                    get top() { return Session.Mode === "Spotlight" && -1 * Media.GetImgData("RollerFrame_BottomEnd").height - 40 || SETTINGS.shifts.resultCount.top },
+                    get left() { return Session.Mode === "Spotlight" && C.SANDBOX.width - Media.GetTextWidth("outcome") - SETTINGS.frame.flagBuffer - Media.GetTextData("margin").left - Media.GetTextWidth("margin") - 40 || SETTINGS.shifts.resultCount.left /*
+                                Media.GetImgData(Media.IsActive("RollerFrame_BottomEnd") ? "RollerFrame_BottomEnd" : "RollerFrame_TopEnd").rightEdge ||
+                SETTINGS.shifts.resultCount.left */ }
                 },
                 outcome: {
-                    get top() { return SETTINGS.shifts.resultCount.top },
-                    get left() { return SETTINGS.shifts.resultCount.left }
+                    get top() { return SETTINGS.shifts.margin.top },
+                    get left() { return SETTINGS.shifts.margin.left + (Session.Mode === "Spotlight" && SETTINGS.frame.flagBuffer || 0) }
                 },
                 subOutcome: {
-                    get top() { return SETTINGS.shifts.resultCount.top },
+                    get top() { return SETTINGS.shifts.margin.top },
                     get left() { return SETTINGS.shifts.resultCount.left }
                 },
                 posMods: {
@@ -2764,7 +2766,7 @@ const Roller = (() => {
                         break
                     }
                     case "margin": {
-                        if (rollResults.margin) {
+                        if (rollResults.margin || rollResults.margin === 0) {
                             stLines.margin = ` (${
                                 rollResults.margin > 0 && "+" ||
                                     rollResults.margin === 0 && "" ||
@@ -2777,8 +2779,7 @@ const Roller = (() => {
                             } else {
                                 rollLines.margin = {
                                     text: `${
-                                        rollResults.margin > 0 && "+" ||
-                                        rollResults.margin === 0 && "" ||
+                                        rollResults.margin >= 0 && "+" ||
                                         "-"
                                     }${Math.abs(rollResults.margin)}`,
                                     color: getColor(rollData.type, "margin", rollResults.margin >= 0 ? "good" : "bad")

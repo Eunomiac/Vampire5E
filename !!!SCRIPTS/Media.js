@@ -23,7 +23,7 @@ const Media = (() => {
     // #region LOCAL INITIALIZATION
         initialize = () => {
             const funcID = ONSTACK()
-            
+
             STATE.REF.imgregistry = STATE.REF.imgregistry || {}
             STATE.REF.textregistry = STATE.REF.textregistry || {}
             STATE.REF.animregistry = STATE.REF.animregistry || {}
@@ -243,6 +243,13 @@ const Media = (() => {
                                 }
                                 case "names": {
                                     D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(REGISTRY.IMG))}`)
+                                    break
+                                }
+                                case "charsin": {
+                                    const containedCharObjs = []
+                                    for (const imgObj of imgObjs)
+                                        containedCharObjs.push(...Media.GetContainedChars(getImgKey(imgObj), {padding: 50}))
+                                    D.Alert(D.JS(containedCharObjs), "Contained Characters")
                                     break
                                 }
                                 // no default
@@ -522,6 +529,21 @@ const Media = (() => {
                                 case "off": {
                                     for (const imgObj of imgObjs)
                                         toggleImg(imgObj, false)
+                                    break
+                                }
+                                case "token": {
+                                    const charObjs = Listener.GetObjects(objects, "character")
+                                    switch (D.LCase(call = args.shift())) {                                        
+                                        case "on": {
+                                            toggleTokens(charObjs, true)
+                                            break
+                                        }
+                                        case "off": {
+                                            toggleTokens(charObjs, false)
+                                            break
+                                        }
+                                        // no default
+                                    }
                                     break
                                 }
                                 case "log": {
@@ -1809,7 +1831,7 @@ const Media = (() => {
         getImgObjs = (imgRefs, funcName = false) => {
             const funcID = ONSTACK()
             // D.Alert(`GetSelected ImgRefs: ${D.JS(D.GetSelected(imgRefs))}`)
-            imgRefs = VAL({selection: imgRefs}) ? D.GetSelected(imgRefs) : imgRefs || _.keys(REGISTRY.GRAPHIC)
+            imgRefs = VAL({selection: imgRefs}) ? D.GetSelected(imgRefs) : _.flatten([imgRefs]) || _.keys(REGISTRY.GRAPHIC)
             const imgObjs = []
             if (VAL({array: imgRefs}))
                 for (const imgRef of imgRefs)
@@ -1918,9 +1940,9 @@ const Media = (() => {
             const funcID = ONSTACK(),
                 mainPageID = D.MAINPAGEID,
                 allTokenObjs = (findObjs(layerFilter && {_pageid: mainPageID, _type: "graphic", _subtype: "token", layer: layerFilter} || {_pageid: mainPageID, _type: "graphic", _subtype: "token"}) || []).filter(x => isCharToken(x)),
-                charIDs = charRef && D.GetChars(charRef).map(x => x.id) || []
-            DB({mainPageID, pageData: D.JS(getObj("page", mainPageID), true), allTokenObjs, charIDs}, "getTokenObjs")
-            return OFFSTACK(funcID) && _.compact(charIDs.length && allTokenObjs.filter(x => charIDs.includes(x.get("represents"))) || allTokenObjs)
+                charIDs = charRef && D.GetChars(charRef).map(x => x.id) || "ALL"
+            DB({mainPageID, allTokenObjs, charIDs}, "getTokenObjs")
+            return OFFSTACK(funcID) && _.compact(charIDs === "ALL" && allTokenObjs || charIDs.length && allTokenObjs.filter(x => charIDs.includes(x.get("represents"))) || [])
         },
         getTokenData = (charRef) => {
             const charID = (D.GetChar(charRef) || {id: false}).id
@@ -1977,22 +1999,36 @@ const Media = (() => {
             const funcID = ONSTACK(),
                 containerObj = getImgObj(containerRef),
                 containerData = getImgData(containerObj.id),
+            /*  allImgObjs = findObjs({
+                    _pageid: D.GetPageID(containerObj),
+                    _type: "graphic"
+                }),
+                allContainedImgObjs = allImgObjs.filter(x => isInside(containerData.id, x.id, options.padding || 0)),
+                minusContainer = allContainedImgObjs.filter(x => containerData.id !== x.id),
+                minusInactive = minusContainer.filter(x => isObjActive(x)),
+                filteredImgObjs = minusInactive.filter(x => {
+                    for (const [prop, value] of Object.entries(filter))
+                        if (x.get(prop) !== value)
+                            return false
+                    return true
+                }), */
                 containedImgObjs = findObjs({
-                    _pageid: D.GetPageID(containerObj.id),
+                    _pageid: D.GetPageID(containerObj),
                     _type: "graphic"
                 }).filter(x => {
                     if (containerData.id === x.id)
-                        return OFFSTACK(funcID) && false
+                        return false
                     if (!isObjActive(x))
-                        return OFFSTACK(funcID) && false
+                        return false
                     for (const [prop, value] of Object.entries(filter))
                         if (x.get(prop) !== value)
-                            return OFFSTACK(funcID) && false
-                    return OFFSTACK(funcID) && isInside(containerData.id, x.id, options.padding || 0)
+                            return false
+                    return isInside(containerData.id, x.id, options.padding || 0)
                 })
-            DB({containerRef, options, filter, containerData,containedImgObjs}, "getContainedImgObjs")
+            DB({containerRef, options, filter, containerName: containerData.name, /* imgCount: allImgObjs.length, allContainedImgObjs, minusContainer, minusInactive, filteredImgObjs, */ containedImgObjs}, "getContainedImgObjs")
             return OFFSTACK(funcID) && containedImgObjs
         },
+        getContainedChars = (containerRef, options, filter = {}) => getContainedImgObjs(containerRef, options, Object.assign(filter, {_subtype: "token", _layer: "objects"})).map(x => D.GetChar(x)),
     // #endregion
 
     // #region IMG OBJECT & AREA SETTERS: Registering & Manipulating Img Objects
@@ -2059,6 +2095,7 @@ const Media = (() => {
         },
         toggleTokens = (tokenRef, isActive) => {
             const funcID = ONSTACK()
+            DB({tokenRef, isActive}, "toggleTokens")
             if (isActive !== null)
                 for (const tokenObj of getTokenObjs(tokenRef))
                     if (isActive === true && tokenObj.get("layer") !== "objects")
@@ -3078,7 +3115,7 @@ const Media = (() => {
         },
         getTextObjs = (textRefs, funcName = false) => {
             const funcID = ONSTACK()
-            textRefs = VAL({selection: textRefs}) ? D.GetSelected(textRefs) : textRefs || _.keys(REGISTRY.TEXT)
+            textRefs = VAL({selection: textRefs}) ? D.GetSelected(textRefs) : _.flatten([textRefs]) || _.keys(REGISTRY.TEXT)
             const textObjs = []
             if (VAL({array: textRefs}))
                 for (const textRef of textRefs)
@@ -4131,7 +4168,7 @@ const Media = (() => {
         // AREA FUNCTIONS
         GetBounds: getBounds, GetContents: getContainedImgObjs,
         IsInside: isInside,
-        GetContainedChars: (locRef, options, filter = {}) => getContainedImgObjs(locRef, options, Object.assign(filter, {_subtype: "token", _layer: "objects"})).map(x => D.GetChar(x)),
+        GetContainedChars: getContainedChars,
         SetArea: setImgArea,
         
         // ANIMATION FUNCTIONS

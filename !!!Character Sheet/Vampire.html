@@ -358,22 +358,24 @@
                             <option value="Ministry">Ministry</option>
                             <option value="Ravnos">Ravnos</option>
                             <option value="0">---------------------</option>
-                            <option value="Ghoul">Ghoul</option>
                             <option value="Mortal">Mortal</option>
+                            <option value="Ghoul">Ghoul</option>
                             <option value="Werewolf">Werewolf</option>
+                            <option value="Wraith">Wraith</option>
+                            <option value="Spectre">Spectre</option>
+                            <option value="Other">Other</option>
                         </select>
                     </div> 
                     <input class="sheet-containertoggle" type="radio" name="attr_bloodline_toggle" value="0" />
                     <input class="sheet-containertoggle" type="radio" name="attr_bloodline_toggle" value="1" />
                     <div class="sheet-right sheet-coltight1 sheet-leftcol sheet-titlesubheader sheet-contingentcontainer">
-                        <span class="sheet-right sheet-titleheader sheet-titlesubheader">BLOODLINE:</span>
                         <select class="sheet-titlesubheader" name="attr_bloodline" value="">
                             <option value="" selected></option>
-                            <option value="Giovanni">Giovanni</option>
-                            <option value="Samedi">Samedi</option>
-                            <option value="Nagaraja">Nagaraja</option>
-                            <option value="Lamiae">Lamiae</option>
-                            <option value="Harbinger">Harbinger</option>
+                            <option value="Giovanni">of the Giovanni</option>
+                            <option value="Samedi">of the Samedi</option>
+                            <option value="Nagaraja">of the Nagaraja</option>
+                            <option value="Lamiae">of the Lamiae</option>
+                            <option value="Harbinger">of the Harbingers</option>
                         </select>
                     </div>
                     <div class="sheet-coltight1 sheet-leftcol">
@@ -722,7 +724,7 @@
                 <input type="hidden" name="attr_willpower" />
             </div>
         </div>
-        <div class="sheet-coltight4 sheet-titleblock sheet-centered" style="z-index: 19;">
+        <div class="sheet-coltight4 sheet-titleblock sheet-centered"> <!-- style="z-index: 19;" -->
             <div class="sheet-coltight1 sheet-centered">
                 <input class="sheet-hoverpopup" type="checkbox" value="1" style="margin-left: -20px;" /><span></span>
                 <div class="sheet-coltight1 sheet-bppopup">
@@ -756,7 +758,7 @@
                 <div class="sheet-coltight1 sheet-header2" style="width: 135px; height: 24px;">Blood Potency</div>
             </div>
             <br />
-            <div class="sheet-dotline sheet-variabledotline sheet-centered" style="z-index: -10;">
+            <div class="sheet-dotline sheet-variabledotline sheet-centered"> <!-- style="z-index: -10;" -->
                 <input class="sheet-dottoggle" type="radio" name="attr_blood_potency_max" value="0" />
                 <input class="sheet-dot" type="radio" name="attr_blood_potency" value="0" checked
                     style="display: none;" /><span style="display: none;"></span>
@@ -3395,10 +3397,13 @@
                 },
                 "Ministry": "Yours is the Blood of Set, and it shares His longing for darkness.  You suffer your Bane Severity in additional aggravated damage from sunlight, and an equivalent penalty to all dice pools when bright light is directed straight at you.",
                 "Ravnos": "Your Ravnos Blood instills in you a weakness for a specific vice or crime: theft, deceit, con-artistry, etc.  When commiting your chosen vice would benefit you in some way, failure to act accordingly penalizes your Social and Mental dice pools by an amount equal to your Bane Severity for the remainder of the night.",
-                "Mortal": ""
+                "Mortal": "",
+                "Werewolf": "",
+                "Wraith": "",
+                "Spectre": "",
+                "Other": ""
             },
             clanDiscs = {
-                "Ghoul": ["", "", ""],
                 "Brujah": ["Celerity", "Potence", "Presence"],
                 "Gangrel": ["Animalism", "Fortitude", "Protean"],
                 "Malkavian": ["Auspex", "Dominate", "Obfuscate"],
@@ -3421,7 +3426,13 @@
                 },
                 "Ministry": ["Obfuscate", "Presence", "Protean"],
                 "Ravnos": ["Animalism", "Fortitude", "Chimerstry"],
-                "Mortal": ["True Faith"]
+                "Mortal": ["True Faith", "", ""],
+                "Ghoul": ["Celerity", "Fortitude", "Potence"],
+                "Werewolf": ["Celerity", "Fortitude", "Potence"],
+                "Wraith": ["Auspex", "Dominate", "Obfuscate"],
+                "Spectre": ["Auspex", "Dominate", "Obfuscate"],
+                "Other": ["", "", ""]
+    
             },
             genDepts = [
                 null,
@@ -4174,7 +4185,7 @@
                                 attrList.bloodline_toggle = bloodlineActive ? 1 : 0
                                 const bText = bloodlineActive && baneText[ATTRS.clan] && (baneText[ATTRS.clan][ATTRS.bloodline] || baneText[ATTRS.clan].base) || baneText[ATTRS.clan]
                                 if (bText) {
-                                    attrList.bane_title = bloodlineActive && `${ATTRS.bloodline} (of the ${ATTRS.clan}) Bloodline Bane` || `${ATTRS.clan} Clan Bane`
+                                    attrList.bane_title = bloodlineActive && `${ATTRS.bloodline} Bloodline Bane` || `${ATTRS.clan} Clan Bane`
                                     attrList.bane_text = bText.replace("Bane Severity", `Bane Severity (${
                                         bpDependants[ATTRS.blood_potency].bp_baneseverity
                                     })`)

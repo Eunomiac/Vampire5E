@@ -75,10 +75,13 @@
             },
             "Ministry": "Yours is the Blood of Set, and it shares His longing for darkness.  You suffer your Bane Severity in additional aggravated damage from sunlight, and an equivalent penalty to all dice pools when bright light is directed straight at you.",
             "Ravnos": "Your Ravnos Blood instills in you a weakness for a specific vice or crime: theft, deceit, con-artistry, etc.  When commiting your chosen vice would benefit you in some way, failure to act accordingly penalizes your Social and Mental dice pools by an amount equal to your Bane Severity for the remainder of the night.",
-            "Mortal": ""
+            "Mortal": "",
+            "Werewolf": "",
+            "Wraith": "",
+            "Spectre": "",
+            "Other": ""
         },
         clanDiscs = {
-            "Ghoul": ["", "", ""],
             "Brujah": ["Celerity", "Potence", "Presence"],
             "Gangrel": ["Animalism", "Fortitude", "Protean"],
             "Malkavian": ["Auspex", "Dominate", "Obfuscate"],
@@ -101,7 +104,13 @@
             },
             "Ministry": ["Obfuscate", "Presence", "Protean"],
             "Ravnos": ["Animalism", "Fortitude", "Chimerstry"],
-            "Mortal": ["True Faith"]
+            "Mortal": ["True Faith", "", ""],
+            "Ghoul": ["Celerity", "Fortitude", "Potence"],
+            "Werewolf": ["Celerity", "Fortitude", "Potence"],
+            "Wraith": ["Auspex", "Dominate", "Obfuscate"],
+            "Spectre": ["Auspex", "Dominate", "Obfuscate"],
+            "Other": ["", "", ""]
+
         },
         genDepts = [
             null,
@@ -854,7 +863,7 @@
                             attrList.bloodline_toggle = bloodlineActive ? 1 : 0
                             const bText = bloodlineActive && baneText[ATTRS.clan] && (baneText[ATTRS.clan][ATTRS.bloodline] || baneText[ATTRS.clan].base) || baneText[ATTRS.clan]
                             if (bText) {
-                                attrList.bane_title = bloodlineActive && `${ATTRS.bloodline} (of the ${ATTRS.clan}) Bloodline Bane` || `${ATTRS.clan} Clan Bane`
+                                attrList.bane_title = bloodlineActive && `${ATTRS.bloodline} Bloodline Bane` || `${ATTRS.clan} Clan Bane`
                                 attrList.bane_text = bText.replace("Bane Severity", `Bane Severity (${
                                     bpDependants[ATTRS.blood_potency].bp_baneseverity
                                 })`)

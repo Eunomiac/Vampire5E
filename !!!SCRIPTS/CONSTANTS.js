@@ -1130,6 +1130,11 @@ const C = (() => {
         IMAGEPROPS = ["imgsrc", "bar1_link", "bar2_link", "bar3_link", "represents", "left", "top", "width", "height", "rotation", "layer", "isdrawing", "flipv", "fliph", "name", "gmnotes", "controlledby", "bar1_value", "bar2_value", "bar3_value", "bar1_max", "bar2_max", "bar3_max", "aura1_radius", "aura2_radius", "tint_color", "statusmarkers", "showname", "showplayers_name", "showplayers_bar1", "showplayers_bar2", "showplayers_bar3", "showplayers_aura1", "showplayers_aura2", "playersedit_name", "playersedit_bar1", "playersedit_bar2", "playersedit_bar3", "playersedit_aura1", "playersedit_aura2", "light_radius", "light_dimradius", "light_otherplayers", "light_hassight", "light_angle", "light_losangle", "lastmove", "light_multiplier", "adv_fow_view_distance"],
         TEXTPROPS = ["top", "left", "width", "height", "text", "font_size", "rotation", "color", "font_family", "layer", "controlledby"],
         ATTRPROPS = ["name", "current", "max"],
+        ATTRDISPLAYNAMES = {
+            "animal_ken": "Animal Ken",
+            "xp_earnedtotal": "Earned XP",
+            "blood_potency": "Blood Potency",
+        },
         HANDOUTPROPS = ["avatar", "name", "notes", "gmnotes", "inplayerjournals", "archived", "controlledby"],
 
         MODEDEFAULTS = (obj, modeStatuses = {Active: true, Inactive: false, Daylighter: true, Downtime: null, Complications: null}) => {
@@ -3308,7 +3313,7 @@ const C = (() => {
         SHEETATTRS, REPATTRS, TRAITREPSECS,
         IMAGEPROPS,
         TEXTPROPS,
-        ATTRPROPS, 
+        ATTRPROPS, ATTRDISPLAYNAMES,
         HANDOUTPROPS,
 
         MODEDEFAULTS,

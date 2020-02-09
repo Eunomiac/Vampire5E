@@ -27,6 +27,7 @@ const D = (() => {
             // delete STATE.REF.MissingTextChars
             STATE.REF.isFullDebug = false
             STATE.REF.isThrottlingStackLog = false
+            STATE.REF.RULESREFERENCE = STATE.REF.RULESREFERENCE || {}
             STATE.REF.WATCHLIST = STATE.REF.WATCHLIST || []
             STATE.REF.BLACKLIST = STATE.REF.BLACKLIST || []
             STATE.REF.CHARWIDTH = STATE.REF.CHARWIDTH || {}
@@ -954,6 +955,10 @@ const D = (() => {
         },
     // #endregion
 
+    // #region CHAT DISPLAYS: Displaying reference images in chat.
+
+    // #endregion
+
     // #region OBJECT MANIPULATION: Manipulating arrays, mapping objects
         kvpMap = (obj, kFunc, vFunc) => {
             const newObj = {}
@@ -1579,6 +1584,11 @@ const D = (() => {
                             if (charData.isActive)
                                 charObjs.add(getObj("character", charData.id))
                         dbstring += ` ... "${jStrL(v)}": `
+                    } else if (v.toLowerCase() === "disabled") {
+                        for (const [, charData] of Object.entries(Char.REGISTRY))
+                            if (!charData.isActive)
+                                charObjs.add(getObj("character", charData.id))
+                        dbstring += ` ... "${jStrL(v)}": `
                     } else if (["allregistered", "allreg", "allpcs"].includes(v.toLowerCase())) {
                         for (const [, charData] of Object.entries(Char.REGISTRY))
                             charObjs.add(getObj("character", charData.id))
@@ -1590,7 +1600,7 @@ const D = (() => {
                     } else if (v.toLowerCase() === "sandbox") {
                         _.each(Media.GetContainedChars("Horizon", {padding: 50}), vv => charObjs.add(vv))
                         dbstring += ` ... "${jStrL(v)}": `                    
-                        // If parameter is a SINGLE LETTER, assume it is an INITIAL and search the registry for it.
+                        // If parameter is "scene", it calls for all characters with tokens on or in the focused location card(s).
                     } else if (v.toLowerCase() === "scene") {
                         _.each(Session.SceneChars, vv => charObjs.add(vv)) 
                         dbstring += ` ... "${jStrL(v)}": `                    

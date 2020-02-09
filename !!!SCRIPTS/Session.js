@@ -23,7 +23,7 @@ const Session = (() => {
             // delete STATE.REF.locationRecord
             // delete STATE.REF.tokenRecord
             
-            // STATE.REF.SessionScribes = ["TeatimeRationale", "PixelPuzzler"]
+            // STATE.REF.SessionScribes = ["PixelPuzzler"]
 
 
             PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND)
@@ -86,6 +86,19 @@ const Session = (() => {
                 }
                 case "next": {
                     sessionMonologue()
+                    break
+                }
+                case "backup": {
+                    delete STATE.REF.backupData
+                    const backupData = JSON.stringify(STATE.REF)
+                    STATE.REF.backupData = backupData
+                    D.Alert(D.JS(JSON.parse(backupData)))
+                    break
+                }
+                case "restore": {
+                    const {backupData} = STATE.REF
+                    D.Alert(D.JS(JSON.parse(backupData)))
+                    state[C.GAMENAME][SCRIPTNAME] = JSON.parse(backupData)
                     break
                 }
                 case "add": {
@@ -154,8 +167,12 @@ const Session = (() => {
                 }
                 case "get": {
                     switch (D.LCase(call = args.shift())) {
+                        case "scenechars": {
+                            D.Alert(`Scene Focus: ${Session.SceneFocus}<br>Scene Chars: ${D.JS(Session.SceneChars)}`, "Scene Chars")
+                            break
+                        }
                         case "locations": case "location": case "loc": {
-                            D.Alert(D.JS(Session.ActiveLocations()), "Current Location Data")
+                            D.Alert(D.JS(Session.ActiveLocations), "Current Location Data")
                             break
                         }
                         case "activelocs": {
@@ -460,6 +477,8 @@ const Session = (() => {
             },
             introMode: {
                 Active: () => {
+                    Media.ToggleTokens("registered", true)
+                    Media.ToggleTokens("disabled", false)
                 },
                 Inactive: () => {
                 },
@@ -472,8 +491,8 @@ const Session = (() => {
                         ]), null, D.RandomString(3))
                 },
                 Daylighter: () => {},
-                Spotlight: (charRef) => {
-                    setSpotlightChar(charRef)
+                Spotlight: (charRef, messageText) => {
+                    setSpotlightChar(charRef, messageText)
                 },
                 Complications: () => {},
                 Testing: () => {}
@@ -593,8 +612,7 @@ const Session = (() => {
                 return false
             } else if (STATE.REF.SessionMonologues.length) {
                 const thisCharName = STATE.REF.SessionMonologues.pop()
-                setSpotlightChar(thisCharName)
-                D.Chat("all", C.HTML.Block([
+                setSpotlightChar(thisCharName, C.HTML.Block([
                     C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
                     C.HTML.Title("Session Monologues", {fontSize: "28px", margin: "-10px 0px 0px 0px"}),
                     C.HTML.Header(thisCharName),
@@ -663,8 +681,8 @@ const Session = (() => {
                 if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds))
                     D.Queue(Media.UpdateSoundscape, [], "ModeSwitch", 1)
                 D.Queue(Media.SetLoadingMessage, [`[Entering ${D.UCase(curMode)}] Restoring Assets ...`], "ModeSwitch", 0.1)
-                D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.enterMode[curMode], [args], "ModeSwitch", 1)
+                D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1)
                 D.Queue(TimeTracker.Fix, [], "ModeSwitch", 0.1)
                 D.Queue(Media.SetLoadingMessage, [`[Entering ${D.UCase(curMode)}] Cleaning Up ...`], "ModeSwitch", 1)
                 // D.Queue(Media.ToggleLoadingScreen, [false], "ModeSwitch", 0.1)
@@ -691,19 +709,19 @@ const Session = (() => {
             else
                 changeMode("Downtime")
         },
-        toggleSpotlight = (charRef) => {
+        toggleSpotlight = (charRef, messageText) => {
             if (STATE.REF.Mode === "Spotlight") 
                 if (!charRef)
                     changeMode(STATE.REF.LastMode)
                 else
-                    setSpotlightChar(charRef)
+                    setSpotlightChar(charRef, messageText)
             else             
-                changeMode("Spotlight", charRef)
+                changeMode("Spotlight", [charRef, messageText])
             
         },
-        setSpotlightChar = (charRef) => {
+        setSpotlightChar = (charRef, messageText) => {
             if (STATE.REF.Mode !== "Spotlight") {
-                changeMode("Spotlight", charRef)
+                changeMode("Spotlight", [charRef, messageText])
             } else {
                 const charObj = D.GetChar(charRef)
                 if (VAL({pc: charObj}) && STATE.REF.spotlightChar !== charObj.id) {
@@ -719,7 +737,7 @@ const Session = (() => {
                     Media.ToggleToken(charData.id, true) // Char.TogglePC(quad, true)
                     // Char.SetNPC(charData.id, "base")
                     Media.SetImg("Foreground", `spotlight${quad}`)
-                    D.Chat("all", C.HTML.Block([
+                    D.Chat("all", messageText || C.HTML.Block([
                         C.HTML.Title("Spotlight:"),
                         C.HTML.Header(charData.name)
                     ]))

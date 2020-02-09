@@ -1996,11 +1996,10 @@
 
 	.charsheet div.sheet-toptitleblock div.sheet-titlesubheader select.sheet-titlesubheader {
 		font-size: 14px;
-		width: calc(0.666*(100% - 80px) + 15px) !important;
-		width: 40% !important;
-		width: calc(100% - 60% - 15px) !important;
-		text-align: left;
-		text-align-last: left;
+		width: calc(100% - 40% - 15px) !important;
+		text-align: right;
+		text-align-last: right;
+		padding-right: 17px;
 	}
 	
 	.charsheet div.sheet-titleblock div.sheet-rightcol select {

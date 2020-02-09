@@ -65,6 +65,7 @@ const Char = (() => {
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
+            DB({call, args, objects, msg}, "onChatCall")
             const charObjs = Listener.GetObjects(objects, "character")
             switch (call) {
                 case "reg": {
@@ -219,6 +220,7 @@ const Char = (() => {
                             break
                         }
                         case "stat": {
+                            DB({charObjs, args}, "traitSelectMenu")
                             if (args.length)
                                 getTraitData(charObjs, args.shift(), args)
                             else
@@ -255,6 +257,12 @@ const Char = (() => {
                 }
                 case "set": {
                     switch (D.LCase(call = args.shift())) {
+                        case "disabled": case "disable": {
+                            for (const charObj of charObjs.filter(x => VAL({pc: x})))
+                                REGISTRY[D.GetCharData(charObj).quadrant].isActive = args[0] === "on"
+                            D.Alert(D.JS(D.KeyMapObj(D.Clone(REGISTRY), (k, v) => v.shortName, v => v.isActive)), "Character Activity Set")
+                            break
+                        }
                         case "token": {
                             const tokenSrc = args.shift()
                             for (const charObj of charObjs) {
@@ -765,8 +773,8 @@ const Char = (() => {
                         titleString = params.title
                     let charIDs = []
                     if ("select" in params) {
-                        const subParams = params.select.split("|"),
-                            dbObj = {commandString, params, subParams: {}, charIDs: [], titleString}
+                        const subParams = params.select.split(/%7C|\|/gu),
+                            dbObj = {commandString, params, subParams: D.Clone(subParams), charIDs: [], titleString}
                         while (subParams.length) {
                             const thisParam = subParams.shift(), 
                                 theseCharIDs = D.GetChars(thisParam).map(x => x.id)
@@ -798,7 +806,7 @@ const Char = (() => {
         charActionMenu = (charIDs, titleString) => {
             const isSingleChar = charIDs.length === 1,
                 charIDString = charIDs.join(",")
-            DB({charIDs, titleString}, "charActionMenu")
+            DB({charIDs, titleString, charIDString}, "charActionMenu")
             D.CommandMenu(
                 {
                     title: titleString || "Action Menu (?)",
@@ -994,6 +1002,7 @@ const Char = (() => {
                 })
         },
         traitSelectMenu = (charIDs, call, argString) => {
+            DB({charIDs, call, argString}, "traitSelectMenu")
             const charIDString = charIDs.join(","),
                 attributeTraits = _.object(
                     _.flatten(_.zip(...Object.values(C.ATTRIBUTES))).map(x => D.LCase(x).replace(/ /gu, "_")),
@@ -1004,7 +1013,7 @@ const Char = (() => {
                     _.flatten(_.zip(...Object.values(C.SKILLS))).map(x => D.UCase(x))
                 ),
                 discTraits = _.object(
-                    _.flatten(Object.keys(C.DISCIPLINES)).map(x => D.LCase(x).replace(/ /gu, "_")),
+                    _.flatten(Object.keys(C.DISCIPLINES)).map(x => `&quot;${D.LCase(x)}&quot;`),
                     _.flatten(Object.keys(C.DISCIPLINES)).map(x => D.UCase(x))
                 ),
                 otherTraits = {
@@ -1016,32 +1025,31 @@ const Char = (() => {
                     hunger: "HUNGER",
                     resonance: "RESONANCE",
                     xp_earnedtotal: "XP"
-                },
-                trailingParams = argString === "get stat" ? " advantage negadvantage discleft discmid discright" : ""      
+                }     
             D.CommandMenu(
                 {  
                     title: "Trait Select",
                     rows: [
                         ..._.chain(attributeTraits).
-                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}${trailingParams}`})).
+                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}`})).
                             groupBy((x, i) => Math.floor(i / 3)).
                             map(x => ({type: "ButtonLine", contents: x, buttonStyles: {bgColor: C.COLORS.brightgold, color: C.COLORS.black}})).
                             value(),
                         {type: "ButtonLine", contents: [0]},
                         ..._.chain(skillTraits).
-                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}${trailingParams}`})).
+                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}`})).
                             groupBy((x, i) => Math.floor(i / 3)).
                             map(x => ({type: "ButtonLine", contents: x, buttonStyles: {bgColor: C.COLORS.gold, color: C.COLORS.black}})).
                             value(),
                         {type: "ButtonLine", contents: [0]},
                         ..._.chain(discTraits).
-                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}${trailingParams}`})).
+                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}`})).
                             groupBy((x, i) => Math.floor(i / 3)).
                             map(x => ({type: "ButtonLine", contents: x, buttonStyles: {bgColor: C.COLORS.brightred, color: C.COLORS.black}})).
                             value(),
                         {type: "ButtonLine", contents: [0]},
                         ..._.chain(otherTraits).
-                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}${trailingParams}`})).
+                            map((v, k) => ({name: v, command: `${call} ${charIDString} ${argString} ${k}`})).
                             groupBy((x, i) => Math.floor(i / 3)).
                             map(x => ({type: "ButtonLine", contents: x, buttonStyles: {bgColor: C.COLORS.gold, color: C.COLORS.black}})).
                             value(),
@@ -1086,7 +1094,7 @@ const Char = (() => {
                 }
             }
             D.Chat("Storyteller", C.HTML.Block([
-                C.HTML.Header(D.Capitalize(traitName, true)),
+                C.HTML.Header(D.Capitalize(C.ATTRDISPLAYNAMES[D.LCase(traitName)] || traitName, true)),
                 C.HTML.Body(Object.values(_.groupBy(returnLines, (x, i) => Math.floor(i / 2))).map(x => x.join("")).join("<br>"), {color: C.COLORS.white, fontWeight: "normal", fontFamily: "Voltaire", fontSize: "12px", textAlign: "left"})
             ].join("")))
         },

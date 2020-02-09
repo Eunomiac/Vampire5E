@@ -3,13 +3,7 @@ const Listener = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Listener",
         SCRIPTCALLS = {},
-        CHARCALLS = [
-            "registered",
-            "active",
-            "all",
-            "npcs",
-            "sandbox"
-        ],
+        OBJECTS = {graphic: [], text: [], character: []},
 
     // #region COMMON INITIALIZATION
         STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
@@ -26,13 +20,13 @@ const Listener = (() => {
             on("chat:message", msg => {
                 if (STATE.REF.isLocked)
                     return false
-                const args = msg.content.split(/\s+/u)
+                let [call, args] = parseArgString(msg.content) //  msg.content.split(/\s+/u)
                 if (msg.type === "api") {
-                    let call = args.shift().toLowerCase()
                     const scriptData = SCRIPTCALLS.MESSAGE[call]
                     msg.who = msg.who || "API"
                     if (scriptData && scriptData.script && VAL({function: scriptData.script.OnChatCall}) && (!scriptData.gmOnly || playerIsGM(msg.playerid) || msg.playerid === "API") ) {
                         const [objects, returnArgs] = parseMessage(args, msg, SCRIPTCALLS.MESSAGE[call].needsObjects !== false)
+                        DB({call, args, objects, returnArgs}, "regHandlers")
                         call = scriptData.singleCall && returnArgs.shift() || call
                         if (D.WatchList.includes("Listen"))
                             D.Poke([
@@ -47,12 +41,12 @@ const Listener = (() => {
                 return true
             })
             on("change:attribute:current", (attrObj, prevData) => {
-                DB({
+                /* DB({
                     ["CHANGE:ATTR:CURRENT"]: Object.assign({}, attrObj),
                     ["... from"]: prevData,
                     ["Was Real Change?"]: attrObj.get("current") !== prevData.current,
                     [">> Name"]: attrObj.get("name").toLowerCase().replace(/^(.*_){3}/gu, "")
-                }, "Listen")
+                }, "Listen") */
                 if (attrObj.get("current") !== prevData.current) {
                     const call = attrObj.get("name").toLowerCase().replace(/^(.*_){3}/gu, "")
                     for (const [attrKeys, scriptData] of SCRIPTCALLS.ATTRCHANGE)
@@ -63,7 +57,7 @@ const Listener = (() => {
                 return false
             })
             on("add:attribute", attrObj => {
-                DB({["ADD:ATTR"]: Object.assign({}, attrObj)}, "Listen")
+                // DB({["ADD:ATTR"]: Object.assign({}, attrObj)}, "Listen")
                 const call = attrObj.get("name").toLowerCase().replace(/^(.*_){3}/gu, "")
                 for (const [attrKeys, scriptData] of SCRIPTCALLS.ATTRADD)
                     for (const attrKey of attrKeys)
@@ -72,7 +66,7 @@ const Listener = (() => {
                 return false
             })
             on("destroy:attribute", attrObj => {
-                DB({["DESTROY:ATTR"]: Object.assign({}, attrObj)}, "Listen")
+                // DB({["DESTROY:ATTR"]: Object.assign({}, attrObj)}, "Listen")
                 const call = attrObj.get("name").toLowerCase().replace(/^(.*_){3}/gu, "")
                 for (const [attrKeys, scriptData] of SCRIPTCALLS.ATTRDESTROY)
                     for (const attrKey of attrKeys)
@@ -96,7 +90,7 @@ const Listener = (() => {
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
             STATE.REF.isLocked = STATE.REF.isLocked || false
-            STATE.REF.objectLog = STATE.REF.objectLog || []
+            STATE.REF.objectLog = STATE.REF.objectLog || []            
             SCRIPTCALLS.MESSAGE = _.omit({
                 "!char": {script: Char, gmOnly: true, singleCall: true},
                 "!data": {script: D, gmOnly: true, singleCall: false},
@@ -140,9 +134,105 @@ const Listener = (() => {
             SCRIPTCALLS.IMGADD = _.reject([
                 {script: Media}
             ], v => v.script === {})
+            refreshObjects(true)
         },
     // #endregion
 
+        parseArgString = (argString) => {
+            const [call, ...args] = _.compact((argString.match(/!\S*|\s@"[^"]*"|\s@[^\s]*|\s"[^"]*"|\s[^\s]*/gu) || []).map(x => x.trim().replace(/^"|"$/gu, "").replace(/^@"/gu, "@")))
+            return [call, args]
+        },    
+        parseMessage = (args, msg, needsObjects) => {
+            const isReturningSelected = args.every(x => !x.startsWith("@")),
+                [objects, returnArgs] = needsObjects ? getObjsFromArgs(args) : [{}, args]
+            // For each type, if no objects found in args AND no objects called for with '@', check selection:
+            if (needsObjects && isReturningSelected && VAL({selection: msg}))
+                for (const type of ["character", "graphic", "text"]) {
+                    const selObjs = D.GetSelected(msg, type)
+                    if (selObjs.length) {
+                        if (!objects[type] || !objects[type].length) {
+                            objects[type] = objects[type] || []
+                            objects[type].push(...selObjs)
+                        }
+                        objects.selected = objects.selected || {}
+                        objects.selected[type] = objects.selected[type] || []
+                        objects.selected[type].push(...selObjs)
+                    }
+                }
+            DB({args, needsObjects, objects, returnArgs}, "parseMessage")
+            return [objects, returnArgs]
+        },        
+        getObjsFromArgs = (args = []) => {
+            const objects = {},
+                argParser = (argString) => {
+                    if (argString.startsWith("@") || argString.split(",").map(x => x.trim()).some(D.IsID)) {
+                        const objsFound = parseArgument(argString.replace(/^@/gu, ""))
+                        DB({argString, args, objsFound}, "getObjsFromArgs")
+                        for (const objType of Object.keys(objsFound))
+                            objects[objType] = _.compact(_.uniq([...objects[objType] || [], ...objsFound[objType]]))
+                        if (Object.values(objsFound).some(x => x.length))
+                            D.PullOut(args, v => v === argString)
+                    }
+                }
+            for (const arg of D.Clone(args))
+                argParser(arg)
+            DB({args, objects}, "getObjsFromArgs")
+            return [objects, _.compact(args)]
+        },
+        parseArgument = (argString, typeLock = null, isFuzzy = false) => {
+            const returnObjs = {},
+                dbLines = {initialArgString: argString, typeLock, isFuzzy},
+                argCommaSplit = _.compact(argString.split(/,/gu).map(x => x.trim())),
+                returnIDs = []
+
+            // 1) Check if this could be an ID string OR a comma-delimited list of ID strings:
+            for (const arg of D.Clone(argCommaSplit))
+                if (D.IsID(arg.trim())) {
+                    returnIDs.push(arg.trim())
+                    D.PullOut(argCommaSplit, v => v === arg)
+                }
+            argString = argCommaSplit.join(",")
+            dbLines.postIDArgString = argString
+            dbLines.returnIDs = returnIDs
+
+            // 2) Send through to type-specific functions.
+            const objTypes = typeLock && [typeLock] || ["character", "graphic", "text"]
+            for (const objType of objTypes)
+                returnObjs[objType] = _.compact(parseArgByType[objType](argString, returnIDs, isFuzzy))
+            dbLines.returnObjs = D.Clone(returnObjs)
+            DB(dbLines, "parseArgument")
+            return returnObjs
+        },
+        parseArgByType = {
+            character: (argString, ids = [], isFuzzy = false) => {
+                const charObjs = []
+                for (const charID of ids)
+                    charObjs.push(getObj("character", charID) || null)
+                return _.compact([...charObjs, ...argString && D.GetChars(argString, null, isFuzzy) || []])
+            },
+            graphic: (argString, ids = []) => {
+                DB({type: "graphic", argString, ids}, "parseArgByType")
+                const graphicObjs = []
+                for (const graphicID of ids)
+                    graphicObjs.push(getObj("graphic", graphicID) || null)
+                DB({type: "graphic", argString, ids, idObjs: graphicObjs, argObjs: Media.GetImgs(argString)}, "parseArgByType")
+                return _.compact([...graphicObjs, ...argString && Media.GetImgs(argString) || []])
+            },
+            text: (argString, ids = []) => {
+                const textObjs = []
+                for (const textID of ids)
+                    textObjs.push(getObj("text", textID) || null)
+                return _.compact([...textObjs, ...argString && Media.GetTexts(argString) || []])
+            }
+        },        
+        refreshObjects = (isReporting = false) => {
+            const allObjects = findObjs({})
+            OBJECTS.graphic = allObjects.filter(x => x.get("_type") === "graphic")
+            OBJECTS.text = allObjects.filter(x => x.get("_type") === "text")
+            OBJECTS.character = allObjects.filter(x => x.get("_type") === "character")
+            if (isReporting)
+                D.Alert(`<b>GRAPHICS:</b> ${OBJECTS.graphic.length}<br><b>TEXT:</b> ${OBJECTS.text.length}<br><b>CHARS:</b> ${OBJECTS.character.length}`, "Listener Object Log Refreshed")
+        },
         getAllObjs = (objects, type) => {
             type = D.IsIn(type, ["character", "graphic", "text"])
             const returnObjs = _.uniq(_.flatten(_.compact([...objects[type] || [], ...objects.selected && objects.selected[type] || []])))
@@ -173,173 +263,6 @@ const Listener = (() => {
                     map(x => x.trim().split(":").map(xx => VAL({number: xx}) ? D.Float(xx,2) : xx))
             )
         },
-        parseArg = {
-            character: (arg, isFuzzy = false) => {
-                DB(`Seeking CHARACTER for arg ${D.JSL(arg)}`, "parseArg")
-                const charObjs = []
-                // 1) Check if this could be an ID string:
-                if (arg.length === 20) {
-                    const obj = getObj("character", arg)
-                    if (obj)
-                        charObjs.push(obj)
-                // 2) Check if this is a valid character selection string ("registered", "active", etc.)
-                } else if (CHARCALLS.includes(arg)) {
-                    charObjs.push(...D.GetChars(arg))
-                } else {
-                    // 3) Check if it is a character registry key:
-                    const regKey = _.keys(Char.REGISTRY).find(x => x.toLowerCase() === arg.toLowerCase())
-                    if (regKey)
-                        charObjs.push(getObj("character", Char.REGISTRY[regKey].id))
-                }
-                // *** FUZZY BREAK: Only Continue if Fuzzy-Matching (and no chars found yet) ***
-                if (!charObjs.length && isFuzzy) {
-                    // 4) Check if D.GetChars returns a value:
-                    const objs = D.GetChars(arg, true)
-                    if (objs.length)
-                        charObjs.push(...objs)
-                }
-                DB(`Returning CHARACTERS: ${D.JSL(charObjs)}`, "parseArg")
-                return charObjs
-            },
-            graphic: (arg, isFuzzy = false) => {
-                const graphicObjs = []
-                // 1) Check if this could be an ID string:
-                if (arg.length === 20) {
-                    const obj = getObj("graphic", arg)
-                    if (obj)
-                        graphicObjs.push(obj)
-                } else {
-                    // 2) Check if it is a registered graphic object:
-                    const regKey = _.keys(Media.IMAGES).find(x => x.toLowerCase() === arg.toLowerCase() || x.toLowerCase() === arg.toLowerCase().replace(/_\d+$/gu, ""))
-                    if (regKey)
-                        graphicObjs.push(Media.GetImg(regKey))
-                }
-                // *** FUZZY BREAK: Only Continue if Fuzzy-Matching (and no graphics found yet) ***
-                if (!graphicObjs.length && isFuzzy) {
-                    // 4) Check if Media.GetImg returns a value:
-                    const obj = Media.GetImg(arg, true)
-                    if (obj)
-                        graphicObjs.push(obj)
-                }
-                return graphicObjs
-            },
-            text: (arg, isFuzzy = false) => {
-                const textObjs = []
-                // 1) Check if this could be an ID string:
-                if (arg.length === 20) {
-                    const obj = getObj("text", arg)
-                    if (obj)
-                        textObjs.push(obj)
-                } else {
-                    // 2) Check if it is a registered text object:
-                    const regKey = _.keys(Media.TEXT).find(x => x.toLowerCase() === arg.toLowerCase())
-                    if (regKey)
-                        textObjs.push(Media.GetText(regKey))
-                }
-                // *** FUZZY BREAK: Only Continue if Fuzzy-Matching (and no text objects found yet) ***
-                if (!textObjs.length && isFuzzy) {
-                    // 4) Check if Media.GetText returns a value:
-                    const obj = Media.GetText(arg, true)
-                    if (obj)
-                        textObjs.push(obj)
-                }
-                return textObjs
-            }
-        },
-        getObjsFromArgs = (args) => {
-            const objects = {},
-                ids = [],
-                objRefsFound = [],
-                allObjs = [...findObjs({}), ...findObjs({
-                    _type: "character"
-                })]
-            if (VAL({array: args}, "getObjsFromArgs") && args.length) {
-                // STEP 1: For each argument, check if it is a string of object IDs.  If so, add those objects and strip out that argument.
-                for (let i = 0; i < args.length; i++)
-                    if (args[i] && _.all(args[i].split(/,\s*/gu), x => x.match(/^-[-_a-zA-Z0-9]{19}$/gu))) {
-                        ids.push(...args[i].split(/,\s*/gu))
-                        args[i] = "#OMIT#"
-                    }
-                args = args.filter(x => x !== "#OMIT#")
-                if (ids.length)
-                    for (const obj of allObjs.filter(x => ids.includes(x.id))) {
-                        objects[obj.get("type")] = objects[obj.get("type")] || []
-                        objects[obj.get("type")].push(obj)                        
-                    }
-                // STEP 2: Extract all arguments with the object prefix '@', and grab their objects.
-                // - for each argument, if nothing is found, ALSO try appending the next one then two args in sequence
-                for (const objRef of args.filter(x => x.startsWith("@")).map(x => x.slice(1))) {
-                    const argsIndex = args.findIndex(x => x === `@${objRef}`),
-                        combinedArgs = _.uniq([`${objRef} ${args[argsIndex+1] || ""}`, `${objRef} ${args[argsIndex+1] || ""} ${args[argsIndex+2] || ""}`].map(y => y.trim().replace(/^@/gu, "")).filter(x => x !== objRef))
-                    for (const objType of ["character", "graphic", "text"]) {
-                        const objs = parseArg[objType](objRef)
-                        if (objs.length) {
-                            objects[objType] = objects[objType] || []
-                            objects[objType].push(...objs)
-                            objRefsFound.push(objRef)
-                        }
-                    }
-                    if (objRefsFound.includes(objRef))
-                        continue
-
-                    // STEP 2B: Now check the combined arguments (i.e. the argument, plus the next one or two arguments, separated by spaces)
-                    for (const combinedArg of combinedArgs)
-                        for (const objType of ["character", "graphic", "text"]) {
-                            const objs = parseArg[objType](combinedArg)
-                            if (objs.length) {
-                                objects[objType] = objects[objType] || []
-                                objects[objType].push(...objs)
-                                objRefsFound.push(...combinedArg.split(/\s/gu))
-                            }
-                        }
-                    if (objRefsFound.includes(objRef))
-                        continue
-                    
-                    // STEP 2C: Repeat above for each argument for which nothing was found, except with fuzzy matching.
-                   
-                    for (const objType of ["character", "graphic", "text"]) {
-                        const objs = parseArg[objType](objRef, true)
-                        if (objs.length) {
-                            objects[objType] = objects[objType] || []
-                            objects[objType].push(...objs)
-                            objRefsFound.push(objRef)
-                        }
-                    } 
-                    if (objRefsFound.includes(objRef))
-                        continue
-
-                    for (const combinedArg of combinedArgs)
-                        for (const objType of ["character", "graphic", "text"]) {
-                            const objs = parseArg[objType](combinedArg, true)
-                            if (objs.length) {
-                                objects[objType] = objects[objType] || []
-                                objects[objType].push(...objs)
-                                objRefsFound.push(...combinedArg.split(/\s/gu))
-                            }
-                        }
-                }         
-                args = args.filter(x => !x.startsWith("@") && !objRefsFound.includes(x))
-            }
-            return [objects, _.compact(args)]
-        },
-        parseMessage = (args, msg, needsObjects) => {
-            const [objects, returnArgs] = needsObjects ? getObjsFromArgs(args) : [{}, args]
-            // For each type, if no objects found in args, check selection:
-            if (needsObjects && VAL({selection: msg}))
-                for (const type of ["character", "graphic", "text"]) {
-                    const selObjs = D.GetSelected(msg, type)
-                    if (selObjs.length) {
-                        if (!objects[type] || !objects[type].length) {
-                            objects[type] = objects[type] || []
-                            objects[type].push(selObjs)
-                        }
-                        objects.selected = objects.selected || {}
-                        objects.selected[type] = objects.selected[type] || []
-                        objects.selected[type].push(selObjs)
-                    }
-                }
-            return [objects, returnArgs]
-        },
         lockListener = () => { STATE.REF.isLocked = true },
         unlockListener = () => { STATE.REF.isLocked = false }
 
@@ -350,7 +273,8 @@ const Listener = (() => {
         ParseParams: parseParams,
         GetObjects: getAllObjs,
         Lock: lockListener,
-        Unlock: unlockListener
+        Unlock: unlockListener,
+        Refresh: refreshObjects
     }
 } )()
 
