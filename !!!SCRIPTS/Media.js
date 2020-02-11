@@ -3861,24 +3861,21 @@ const Media = (() => {
             if (VAL({string: soundRef})) {
                 if (soundNames.includes(soundRef))
                     return OFFSTACK(funcID) && soundRef
-                const jukeObj = getObj("jukeboxtrack", soundRef)
-                if (VAL({object: jukeObj}))
-                    return OFFSTACK(funcID) && jukeObj.get("title")
+                if (D.IsID(soundRef)) {
+                    const jukeObj = getObj("jukeboxtrack", soundRef)
+                    if (VAL({object: jukeObj}))
+                        return OFFSTACK(funcID) && jukeObj.get("title")
+                }
             } else if (VAL({object: soundRef})) {
                 return OFFSTACK(funcID) && soundRef.get("title")
             }
             return OFFSTACK(funcID) && false
         },
-        getPlaylistKey = (soundRef) => {
-            const funcID = ONSTACK()
-            if (isTrack(soundRef)) {
-                const trackID = getSoundData(soundRef).id,
-                    playlistKey = _.findKey(REGISTRY.PLAYLISTS, (v) => v.trackids.includes(trackID))
-                return OFFSTACK(funcID) && isPlayList(playlistKey) && playlistKey
-            } else if (isPlayList(soundRef)) {
-                return OFFSTACK(funcID) && getSoundKey(soundRef)
-            }
-            return OFFSTACK(funcID) && false
+        getSoundKeys = (soundRefs = []) => VAL({array: soundRefs}) && soundRefs.map(x => getSoundKey(x)),
+        getSoundData = (soundRef, typeFilter) => {
+            const funcID = ONSTACK(),
+                soundKey = D.LCase(typeFilter) === "track" && getTrackKey(soundRef) || D.LCase(typeFilter) === "playlist" && getPlaylistKey(soundRef) || getSoundKey(soundRef)
+            return OFFSTACK(funcID) && REGISTRY.TRACKS[soundKey] || REGISTRY.PLAYLISTS[soundKey]
         },
         getTrackKey = (soundRef, isGettingAllTracks = false) => {
             const funcID = ONSTACK()
@@ -3893,12 +3890,20 @@ const Media = (() => {
             }
             return OFFSTACK(funcID) && false
         },
-        getSoundData = (soundRef, typeFilter) => {
-            const funcID = ONSTACK(),
-                soundKey = D.LCase(typeFilter) === "track" && getTrackKey(soundRef) || D.LCase(typeFilter) === "playlist" && getPlaylistKey(soundRef) || getSoundKey(soundRef)
-            return OFFSTACK(funcID) && REGISTRY.TRACKS[soundKey] || REGISTRY.PLAYLISTS[soundKey]
+        getPlaylistKey = (soundRef) => {
+            const funcID = ONSTACK()
+            if (isTrack(soundRef)) {
+                const trackID = getSoundData(soundRef).id,
+                    playlistKey = _.findKey(REGISTRY.PLAYLISTS, (v) => v.trackids.includes(trackID))
+                return OFFSTACK(funcID) && isPlayList(playlistKey) && playlistKey
+            } else if (isPlayList(soundRef)) {
+                return OFFSTACK(funcID) && getSoundKey(soundRef)
+            }
+            return OFFSTACK(funcID) && false
         },
-        getTrackObj = (soundRef) => {
+        getPlaylistData = (soundRef) => getSoundData(soundRef, "playlist"),
+        getTrackData = (soundRef) => getSoundData(soundRef, "track"),
+        getJBoxObj = (soundRef) => {
             const funcID = ONSTACK()
             if (VAL({object: soundRef}) && soundRef.get("_type") === "jukeboxtrack")
                 return OFFSTACK(funcID) && soundRef
@@ -3911,23 +3916,14 @@ const Media = (() => {
             }
             return OFFSTACK(funcID) && false
         },
-        isTrackPlaying = (soundRef) => {
-            const funcID = ONSTACK(),
-                trackObj = getTrackObj(soundRef)
-            return OFFSTACK(funcID) && VAL({object: trackObj}) && trackObj.get("playing") && !trackObj.get("softstop")
-        },
-        isTrackLooping = (soundRef) => {
-            const funcID = ONSTACK(),
-                trackObj = getTrackObj(soundRef)
-            return OFFSTACK(funcID) && VAL({object: trackObj}) && trackObj.get("playing") && trackObj.get("loop")
-        },
-        isPlaylistPlaying = (soundRef) => (getSoundData(soundRef, "playlist") || {playing: false}).playing,
-        isPlaylistLooping = (soundRef) => ["randomloop", "shuffle", "loop"].includes(D.LCase((getSoundData(soundRef, "playlist") || {mode: ""}).mode)),
         isTrack = (soundRef) => getSoundKey(soundRef) in REGISTRY.TRACKS,
         isPlayList = (soundRef) => getSoundKey(soundRef) in REGISTRY.PLAYLISTS,
-        getPlayingTrackObjs = () => _.uniq(findObjs({_type: "jukeboxtrack"})).filter(x => isTrackPlaying(x)),
-        getLoopingTrackObjs = (isLoopingPlaylistOk = true) => getPlayingTrackObjs().filter(x => isTrackLooping(x) || isLoopingPlaylistOk && isPlaylistPlaying(x) && isPlaylistLooping(x)),
-        getSoundKeys = (soundObjs = []) => VAL({array: soundObjs}) && soundObjs.map(x => getSoundKey(x)),
+        isTrackPlaying = (soundRef) => (getTrackData(soundRef) || {isPlaying: false}).isPlaying,
+        isPlaylistPlaying = (soundRef) => (getPlaylistData(soundRef) || {isPlaying: false}).isPlaying,
+        getPlayingJBObjs = () => _.uniq(findObjs({_type: "jukeboxtrack"})).filter(x => x.get("playing") && !x.get("softstop")),
+    // #endregion
+
+    // #region SOUNDSCAPE CONTROL: Determining Sounds to Play, Validation of Sounds Playing
         getScore = (mode, scoreType) => {
             const funcID = ONSTACK(),
                 scoreList = C.SOUNDSCORES[D.Capitalize(mode)]
@@ -3990,6 +3986,9 @@ const Media = (() => {
     // #endregion
 
     // #region SOUND OBJECT SETTERS: Registering & Manipulating Music & Sound Effects 
+        importSounds = () => {
+
+        },   
         initSoundModes = () => {
             const funcID = ONSTACK(),            
                 [listsRef, tracksRef] = [
@@ -4009,7 +4008,7 @@ const Media = (() => {
                     const playlistData = getSoundData(loopingSoundKey, "playlist"),
                         playlistTrackDatas = playlistData.trackids.map(x => getSoundData(x)),
                         playlistTrackObjs = playlistTrackDatas.map(x => getObj("jukeboxtrack", x.id)),
-                        [playingTrackObj] = playlistTrackObjs.filter(x => isTrackPlaying(x)),
+                        [playingTrackObj] = playlistTrackObjs.filter(x => isJBoxObjPlaying(x)),
                         nonPlayingTrackObjs = playlistTrackObjs.filter(x => !playingTrackObj || x.id !== playingTrackObj.id),
                         trackObj = playingTrackObj || nonPlayingTrackObjs.pop(),
                         trackData = getSoundData(trackObj.id)
@@ -4019,8 +4018,8 @@ const Media = (() => {
                     playlistData.playing = true
                     playlistData.currentTrack = [trackData.id]
                     stopTrackObjs(playlistData.name, nonPlayingTrackObjs)
-                } else if (!isTrackPlaying(loopingSoundKey) || !isTrackLooping(loopingSoundKey)) {
-                    const trackObj = getTrackObj(loopingSoundKey),
+                } else if (!isJBoxObjPlaying(loopingSoundKey) || !isTrackObjLooping(loopingSoundKey)) {
+                    const trackObj = getJBoxObj(loopingSoundKey),
                         trackData = getSoundData(trackObj.id)
                     trackObj.set({playing: true, softstop: false, loop: true})
                     trackData.playing = true
@@ -4044,7 +4043,7 @@ const Media = (() => {
                 !isHardReset && Session.Mode === "Complications")
                 return
             if (isHardReset)
-                for (const soundObj of getPlayingTrackObjs()) {
+                for (const soundObj of getPlayingJBObjs()) {
                     stopSound(soundObj)
                     Media.StopLooping(getSoundKey(soundObj))
                     soundObj.set({playing: false, softstop: false})
@@ -4162,7 +4161,7 @@ const Media = (() => {
             DB(dbData, "updateSounds")
             OFFSTACK(funcID)
         },
-        playSound = (soundRef, volume, fadeIn = null, isOverlapping = false) => {
+        playSound = (soundRef, volume, isOverlapping = false) => {
             const funcID = ONSTACK()
             if (VAL({number: volume}))
                 Roll20AM.ChangeVolume(soundRef, volume)
@@ -4170,7 +4169,7 @@ const Media = (() => {
                 Roll20AM.PlaySound(soundRef, undefined, fadeIn)
             OFFSTACK(funcID)
         },
-        stopSound = (soundRef, fadeOut = null) => {
+        stopSound = (soundRef) => {
             const funcID = ONSTACK()
             Roll20AM.StopSound(soundRef, fadeOut)
             OFFSTACK(funcID)
