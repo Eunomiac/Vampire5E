@@ -276,9 +276,9 @@ const Char = (() => {
                             break
                         }
                         case "npc": {
-                            const [charObj] = charObjs.shift(),
+                            const [charObj] = charObjs.filter(x => VAL({pc: x})),
                                 [npcObj] = charObjs.filter(x => VAL({npc: x}))
-                            setCharNPC(charObj, npcObj)                      
+                            setCharNPC(charObj, npcObj || "base")                      
                             break
                         }
                         case "stat": case "stats": case "attr": case "attrs": {
@@ -1103,51 +1103,31 @@ const Char = (() => {
 
     // #region Character-As-NPC Control
         setCharNPC = (charRef, npcRef) => {
-         /* const charObj = D.GetChar(charRef),
+            const charObj = D.GetChar(charRef),
                 npcObj = npcRef === "base" && "base" || D.GetChar(npcRef),
                 npcName = npcRef === "base" && "base" || D.GetName(npcObj, true)
             if (VAL({string: npcName, pc: charObj}, "setCharNPC")) {
                 const [quad] = _.values(D.GetCharVals(charObj, "quadrant")),
-                    quadImgKey = `Tombstone${quad}`,
-                    closeQuadImgKeys = {
-                        TopLeft: null,
-                        BotLeft: null,
-                        TopRight: ["MidRight"].map(x => `Tombstone${x}`),
-                        MidRight: ["TopRight", "BotRight"].map(x => `Tombstone${x}`),
-                        BotRight: ["MidRight"].map(x => `Tombstone${x}`)
-                    }[quad],
-                    [tokenObj] = findObjs({_type: "graphic", _subtype: "token", name: `${_.values(D.GetCharVals(charObj, "tokenName"))[0]}_1`})                   
+                    [pcTokenObj] = Media.GetTokens(charObj.id)
                 if (npcName === "base") {
                     delete Char.REGISTRY[quad].isNPC
-                    Media.ToggleImg(`TombstonePic${quad}`, false)
+                    Media.ToggleImg(`Tombstone${quad}`, false)
+                    Media.ToggleImg(`TombstoneToken${quad}`, false)
                     Media.ToggleText(`TombstoneName${quad}`, false)
-                    Media.SetArea(tokenObj, `${quad}Token`)
-                    if (Media.IsActive(`Tombstone${closestQuad}`))
-                        if (["base", "blank"].includes(Media.GetImgSrc(`Tombstone${closestQuad}`))) {
-                        } else {
-                            Media.ToggleImg(`Tombstone${quad}`, true)
-                            Media.SetImg(`Tombstone${quad}`, "base")
-                        }
-                    else
-                        Media.ToggleImg(`Tombstone${quad}`, false)
-                    if (!isCharActive(tokenObj))
-                        Media.ToggleImg(tokenObj, false)
-                    Media.SetImg(tokenObj, "base")
+                    Media.SetArea(pcTokenObj, `${quad}Token`)
                 } else if (VAL({npc: npcObj}, "!char set npc")) {
                     let nameString = D.GetName(npcObj)
-                    Char.REGISTRY[quad].isNPC = npcObj.id
                     if (Media.GetTextWidth(`TombstoneName${quad}`, nameString) > 240)
                         nameString = npcName
+                    Char.REGISTRY[quad].isNPC = npcObj.id
+                    Media.SetImg(`TombstoneToken${quad}`, npcObj)
+                    DB({charRef, npcRef, quad, npcName, nameString}, "setCharNPC")
                     Media.SetText(`TombstoneName${quad}`, nameString, true)
-                    Media.SetImg(`Tombstone${quad}`, "npc", true)
-                    Media.SetImg(`TombstonePic${quad}`, D.GetName(npcObj, true), true)
-                    Media.ToggleImg(tokenObj, true)
-                    Media.SetImg(tokenObj, npcName, true)
-                    Media.SetArea(tokenObj, `npcToken${quad}`)
-                    if (!Media.IsActive(`Tombstone${closestQuad}`) || Media.GetImgSrc(`Tombstone${closestQuad}`) === "blank")
-                        Media.SetImg(`Tombstone${closestQuad}`, "base", true)
+                    Media.ToggleImg(`Tombstone${quad}`, true)
+                    Media.ToggleImg(`TombstoneToken${quad}`, true)
+                    Media.ToggleText(`TombstoneName${quad}`, true)
                 }
-            } */
+            }
         },
     // #endregion
     
@@ -1634,7 +1614,8 @@ const Char = (() => {
                             } else if (newBashing + newAggravated === maxHealth) {
                                 bodyString = "Further harm will cause AGGRAVATED damage!"
                                 alertString = "WOUNDED: -2 to Physical rolls."
-                                // applyCripplingInjury(charObj.id, newAggravated)
+                                if (curBashing + curAggravated + amount > maxHealth)
+                                    applyCripplingInjury(charObj.id, newAggravated)
                             }
                             trackerString = C.HTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
                         } else if (Math.min(D.Int(D.GetStat(charObj, "health_bashing")[0]), Math.abs(amount))) {
@@ -1657,7 +1638,8 @@ const Char = (() => {
                             } else if (newBashing + newAggravated === maxHealth) {
                                 bodyString = "Further harm will cause AGGRAVATED damage!"
                                 alertString = "WOUNDED: -2 to Physical rolls."
-                                // applyCripplingInjury(charObj.id, newAggravated)
+                                if (curBashing + curAggravated + amount > maxHealth)
+                                    applyCripplingInjury(charObj.id, newAggravated)
                             }                       
                             trackerString = C.HTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
                         } else if (Math.min(D.Int(D.GetStat(charObj, "health_aggravated")[0]), Math.abs(amount))) {
@@ -1688,14 +1670,70 @@ const Char = (() => {
                     C.HTML.Body(`Result: ${injuryRoll} (${aggDmg} Agg. + d10: ${injuryRoll - aggDmg})`),
                 ],
                 injuryFuncs = {
-                    13: () => {                    
+                    100: () => {                    
                         injuryChatLines.push(...[
                             C.HTML.Header("Catastrophic Injury!"),
                             C.HTML.Body(`${D.GetName(charObj, true)} falls into torpor!`)
                         ])
-                        D.Chat("all", injuryChatLines.join(""))
+                        D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
                     },    
-                    12: () => {},   
+                    12:  () => {                        
+                        D.CommandMenu(
+                            {
+                                title: "Limb Lost/Mangled",
+                                rows: [
+                                    {
+                                        type: "ButtonLine",
+                                        contents: [
+                                            {name: "Mangled Arm", command: "!reply mangledarm"},                                            
+                                            {name: "Mangled Leg", command: "!reply mangledleg"}
+                                        ]
+                                    },
+                                    {
+                                        type: "ButtonLine",
+                                        contents: [
+                                            {name: "Lost Arm", command: "!reply lostarm"},                                            
+                                            {name: "Lost Leg", command: "!reply lostleg"}
+                                        ]
+                                    }
+                                ]
+                            },
+                            (commandString) => { // IMPORTANT: return 'true' if you want to hold this function open for more commands
+                                switch (commandString) {
+                                    case "mangledarm": {
+                                        injuryChatLines.push(...[
+                                            C.HTML.Header("Mangled Arm!"),
+                                            C.HTML.Body("Actions Requiring Affected Arm are Impossible.")
+                                        ])
+                                        break
+                                    }
+                                    case "mangledleg": {
+                                        injuryChatLines.push(...[
+                                            C.HTML.Header("Mangled Leg!"),
+                                            C.HTML.Body("Actions Requiring Affected Leg are Impossible.")
+                                        ])
+                                        break
+                                    }
+                                    case "lostarm": {
+                                        injuryChatLines.push(...[
+                                            C.HTML.Header("Severed Arm!"),
+                                            C.HTML.Body("Actions Requiring Affected Arm are Impossible.")
+                                        ])
+                                        break
+                                    }
+                                    case "lostleg": {
+                                        injuryChatLines.push(...[
+                                            C.HTML.Header("Severed Leg!"),
+                                            C.HTML.Body("Actions Requiring Affected Leg are Impossible.")
+                                        ])
+                                        break
+                                    }
+                                    // no default
+                                }
+                                D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
+                            }
+                        )
+                    },   
                     11: () => {                        
                         injuryChatLines.push(...[
                             C.HTML.Header("Massive Wound!"),
@@ -1703,27 +1741,73 @@ const Char = (() => {
                         ])
                         Roller.AddCharEffect(charObj, "all;-2;- Massive Wound (<.>);unimpaired:health")
                         // Some Char function for temporary effects, increases damage by one.
-                        D.Chat("all", injuryChatLines.join(""))
+                        D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
                     },  
-                    9: () => {}, 
-                    7: () => {
+                    10: () => {
+                        D.CommandMenu(
+                            {
+                                title: "Broken or Blinded?",
+                                rows: [
+                                    {
+                                        type: "ButtonLine",
+                                        contents: [
+                                            {name: "Broken Arm", command: "!reply arm"},                                            
+                                            {name: "Broken Leg", command: "!reply leg"},
+                                            {name: "Blinded", command: "!reply blind"}
+                                        ]
+                                    }
+                                ]
+                            },
+                            (commandString) => { // IMPORTANT: return 'true' if you want to hold this function open for more commands
+                                switch (commandString) {
+                                    case "arm": {
+                                        injuryChatLines.push(...[
+                                            C.HTML.Header("Broken Arm!"),
+                                            C.HTML.Body("-3 to Rolls Using Affected Arm.")
+                                        ])
+                                        Roller.AddCharEffect(charObj, "brawl/firearms/melee;-3;- Broken Arm (<.>);unimpaired:health")
+                                        break
+                                    }
+                                    case "leg": {
+                                        injuryChatLines.push(...[
+                                            C.HTML.Header("Broken Leg!"),
+                                            C.HTML.Body("-3 to Rolls Using Affected Leg.")
+                                        ])
+                                        Roller.AddCharEffect(charObj, "athletics/stealth;-3;- Broken Leg (<.>);unimpaired:health")
+                                        break
+                                    }
+                                    case "blind": {
+                                        injuryChatLines.push(...[
+                                            C.HTML.Header("Blinded!"),
+                                            C.HTML.Body("-3 to Rolls Requiring Vision.")
+                                        ])
+                                        Roller.AddCharEffect(charObj, "awareness/brawl/firearms/melee/drive/investigation;-3;- Blind (<.>);scene")
+                                        break
+                                    }
+                                    // no default
+                                }
+                                D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
+                            }
+                        )
+                    }, 
+                    8: () => {
                         injuryChatLines.push(...[
                             C.HTML.Header("Severe Head Trauma!"),
                             C.HTML.Body("-1 to Physical Rolls.<br>-2 to Mental Rolls.")
                         ])
                         Roller.AddCharEffect(charObj, "physical;-1;- Head Trauma (<.>);unimpaired:health")
                         Roller.AddCharEffect(charObj, "mental;-2;- Head Trauma (<.>);unimpaired:health")
-                        D.Chat("all", injuryChatLines.join(""))
+                        D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
                     },      
-                    1: () => {
+                    6: () => {
                         injuryChatLines.push(...[
                             C.HTML.Header("Stunned!"),
                             C.HTML.Body("Spend one Willpower or lose a turn.")
                         ])
-                        D.Chat("all", injuryChatLines.join(""))
+                        D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
                     }
                 }
-            injuryFuncs[Object.keys(injuryFuncs).find(x => injuryRoll >= x)]()
+            injuryFuncs[Object.keys(injuryFuncs).find(x => injuryRoll <= x)]()
         },
         adjustDamage = (charRef, trait, dType, delta, isChatting = true) => {
             const amount = D.Int(delta),

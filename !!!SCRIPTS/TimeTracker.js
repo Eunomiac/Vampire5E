@@ -1699,7 +1699,7 @@ const TimeTracker = (() => {
         },
         setIsRunningFast = runStatus => {
             const funcID = ONSTACK()            
-            if (runStatus && !isRunningFast) {
+            if (runStatus && !isRunningFast) 
                 isRunningFast = runStatus
                 // if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", "blank")}
                 // if (!Media.HasForcedState("WeatherFog")) {Media.ToggleImg("WeatherFog", true); Media.SetImg("WeatherFog", "blank")}
@@ -1707,9 +1707,9 @@ const TimeTracker = (() => {
                 // if (!Media.HasForcedState("Horizon_1")) {Media.ToggleImg("Horizon_1", true); Media.SetImg("Horizon_1", "night3clear")}
                 // Media.OrderImages(["Horizon_2", "Horizon_1"], true)
                 // STATE.REF.lastHorizon = "day"
-            } else if (!runStatus && isRunningFast) {
+            else if (!runStatus && isRunningFast) 
                 isRunningFast = runStatus
-            }            
+                        
             OFFSTACK(funcID)
         },
         easeInOutSine = (curTime, startVal, deltaVal, duration) => -deltaVal / 2 * (Math.cos(Math.PI * curTime / duration) - 1) + startVal,

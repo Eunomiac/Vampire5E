@@ -51,6 +51,13 @@ const Tester = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting
             switch (call) {
+                case "tokendata": {
+                    const [charObj] = Listener.GetObjects(objects, "character")
+                    charObj.get("_defaulttoken", (tokenData) => {
+                        D.Alert(D.JS(JSON.parse(tokenData)), "Token Data")
+                    } )
+                    break
+                }
                 case "boundnums": {
                     const REPLY = [],
                         boundNum = (num, minVal, maxVal) => Math.max(Math.min(num, maxVal), minVal),

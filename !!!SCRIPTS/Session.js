@@ -430,10 +430,13 @@ const Session = (() => {
                 Downtime: () => {},
                 Daylighter: () => {},
                 Spotlight: () => {
-                    for (const charData of D.GetChars("registered").map(x => D.GetCharData(x))) 
+                    for (const charData of D.GetChars("registered").map(x => D.GetCharData(x))) {
                         // Char.SetNPC(charData.id, "base")
                         Media.ToggleToken(charData.id, true) // Char.TogglePC(charData.quadrant, true)
-                    
+                        Media.ToggleText(`${charData.name}Desire`, true)
+                        Char.SetNPC(charData.id, "base")
+                    }
+                    Media.ToggleImg("Spotlight", false)                    
                 },
                 Complications: () => {},
                 Testing: () => {
@@ -670,21 +673,21 @@ const Session = (() => {
                 ]             
                 D.Queue(MODEFUNCTIONS.outroMode[lastMode], [args], "ModeSwitch", 0.1)
                 D.Queue(Media.ToggleLoadingScreen, [curMode === "Inactive" && "concluding" || "loading", `Changing Modes: ${D.UCase(lastMode)} ► ${D.UCase(curMode)}`, {duration: 15, numTicks: 30, callback: () => { MODEFUNCTIONS.introMode[curMode](args)}}], "ModeSwitch", 3)
-                D.Queue(Media.SetLoadingMessage, [`[Leaving ${D.UCase(lastMode)}] Logging Status...`], "ModeSwitch", 0.1)
+                D.Queue(Media.SetLoadingMessage, ["Logging Game State..."], "ModeSwitch", 0.1)
                 D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.leaveMode[lastMode], [args], "ModeSwitch", 1)
                 D.Queue(() => { STATE.REF.Mode = curMode; STATE.REF.LastMode = lastMode }, [], "ModeSwitch", 0.1)
-                D.Queue(Media.SetLoadingMessage, [`[Leaving ${D.UCase(lastMode)}] Retiring Assets...`], "ModeSwitch", 0.1)
+                D.Queue(Media.SetLoadingMessage, [`Clearing ${D.UCase(lastMode)} Assets...`], "ModeSwitch", 0.1)
                 D.Queue(Roller.Clean, [], "ModeSwitch", 1)
                 D.Queue(Media.ModeUpdate, [], "ModeSwitch", 2)
                 D.Queue(setModeLocations, [curMode], "ModeSwitch", 1)
                 if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds))
                     D.Queue(Media.UpdateSoundscape, [], "ModeSwitch", 1)
-                D.Queue(Media.SetLoadingMessage, [`[Entering ${D.UCase(curMode)}] Restoring Assets ...`], "ModeSwitch", 0.1)
+                D.Queue(Media.SetLoadingMessage, [`Deploying ${D.UCase(curMode)}] Assets ...`], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.enterMode[curMode], [args], "ModeSwitch", 1)
                 D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1)
                 D.Queue(TimeTracker.Fix, [], "ModeSwitch", 0.1)
-                D.Queue(Media.SetLoadingMessage, [`[Entering ${D.UCase(curMode)}] Cleaning Up ...`], "ModeSwitch", 1)
+                D.Queue(Media.SetLoadingMessage, ["Cleaning Up ..."], "ModeSwitch", 1)
                 // D.Queue(Media.ToggleLoadingScreen, [false], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.introMode[curMode], [args], "ModeSwitch", 0.1)
                 for (const endFunc of endFuncs)
@@ -730,13 +733,17 @@ const Session = (() => {
                     const charData = D.GetCharData(charObj),
                         quad = charData.quadrant,
                         otherCharData = D.GetChars("registered").filter(x => x.id !== charData.id).map(x => D.GetCharData(x))                
-                    for (const otherData of otherCharData) 
+                    for (const otherData of otherCharData) {
                         Media.ToggleToken(otherData.id, false) // Char.TogglePC(otherData.quadrant, false)
-                        // Char.SetNPC(otherData.id, "base")
+                        Char.SetNPC(otherData.id, "base")
+                        Media.ToggleText(`${otherData.shortName}Desire`, false)
+                    }
                     
                     Media.ToggleToken(charData.id, true) // Char.TogglePC(quad, true)
-                    // Char.SetNPC(charData.id, "base")
-                    Media.SetImg("Foreground", `spotlight${quad}`)
+                    Media.ToggleText(`${charData.shortName}Desire`, true)
+                    Char.SetNPC(charData.id, "base")
+                    Media.SetImg("Spotlight", quad)
+                    Media.ToggleImg("Spotlight", true)
                     D.Chat("all", messageText || C.HTML.Block([
                         C.HTML.Title("Spotlight:"),
                         C.HTML.Header(charData.name)

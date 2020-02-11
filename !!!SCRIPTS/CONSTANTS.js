@@ -917,7 +917,7 @@ const C = (() => {
                     textShadow: "-1px -1px 0px #000, -1px -1px 0px #333, -1px -1px 0px #666, 1px 1px 0px #ddd, 1px 1px 0px #ddd, 1px 1px 0px #ccc",
                     border: "none",
                     fontSize: "16px",
-                    fontFamily: "'Bodoni SvtyTwo ITC TT'",
+                    fontFamily: "Voltaire",
                     fontWeight: "normal"
                 }
             },            
@@ -938,7 +938,7 @@ const C = (() => {
                     textShadow: "none",
                     border: "none",
                     fontSize: "16px",
-                    fontFamily: "'Bodoni SvtyTwo ITC TT'",
+                    fontFamily: "Voltaire",
                     fontWeight: "normal"
                 }
             },
@@ -959,7 +959,7 @@ const C = (() => {
                     textShadow: "0px 0px 3px #F00, 0px 0px 3px #F00, 0px 0px 3px #F00, 0px 0px 3px #F00, 0px 0px 3px #F00, 0px 0px 3px #F00",
                     border: "none",
                     fontSize: "16px",
-                    fontFamily: "'Bodoni SvtyTwo ITC TT'",
+                    fontFamily: "Voltaire",
                     fontWeight: "normal"
                 }
             }
