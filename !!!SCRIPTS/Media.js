@@ -55,10 +55,10 @@ const Media = (() => {
                         modeData.lastState = realText
             }
 
-            for (const panelName of Object.keys(STATE.REF.panelLog))
+            /* for (const panelName of Object.keys(STATE.REF.panelLog))
                 killPanel(panelName)
             for (const panelName of Object.keys(STATE.REF.textregistry).filter(x => x.startsWith("panel")))
-                removeText(panelName, false, true)
+                removeText(panelName, false, true) */
 
             // Initialize IMGDICT Fuzzy Dictionary
             STATE.REF.IMGDICT = Fuzzy.Fix()
@@ -3000,8 +3000,67 @@ const Media = (() => {
     // #region PANEL GETTERS:
         PANELLEFT = 1350,
         PANELTOP = 225,
-        PANELWIDTH = 425,
-        PANELSIZE = 18,
+        killPanelBG = (panelKey) => {
+            const panelBGObj = getObj("path", (REGISTRY.PANELS[panelKey] || {bgID: false}).bgID)
+            if (panelBGObj)
+                panelBGObj.remove()
+            delete REGISTRY.PANEL[panelKey].bgID
+        },
+        resetPanelBG = (panelKey) => {
+            killPanelBG(panelKey)
+            const panelTextHeight = getTextHeight(panelKey),
+                panelTextWidth = getTextWidth(panelKey),
+                panelBGPath = [
+                    ["M", 0, 0],
+                    ["L", panelTextWidth + 5, 0],
+                    ["L", panelTextWidth + 5, panelTextHeight + 5],
+                    ["L", 0, panelTextHeight + 5],
+                    ["L", 0, 0]
+                ],
+                panelObj = createObj("path", {
+                    _pageid: D.THISPAGEID,
+                    fill: C.COLORS.black,
+                    path: JSON.stringify(panelBGPath),
+                    stroke_width: 0,
+                    layer: "map",
+                    top: PANELTOP - 3,
+                    left: PANELLEFT - 3,
+                    height: panelTextHeight + 5,
+                    width: panelTextWidth + 5
+                })
+            toFront(panelObj)
+            REGISTRY.PANELS[panelKey] = {
+                bgID: panelObj.id
+            }
+        },
+        togglePanel = (panelKey, isActive) => {
+            if (isActive) {
+                toggleText(panelKey, true)
+                resetPanelBG(panelKey)
+            } else {
+                killPanelBG(panelKey)
+                toggleText(panelKey, false)
+            }   
+        },
+        addPanelText = (text, panelKey = "panel") => {
+            const newText = `${getTextData(panelKey).curText}\n${D.JS(text)}`.replace(/^\s*\n/gu, "")
+            setText(panelKey, newText)
+            togglePanel(panelKey, true)
+            setTimeout(() => {
+                removePanelText(panelKey, D.JS(text))
+            }, 3000)
+        },
+        removePanelText = (panelKey = "panel", delText = "") => {
+            const newText = getTextData(panelKey).curText.replace(new RegExp(`\n?${delText}`, "gu"), "")
+            if (newText.length < 5) {
+                setText(panelKey, " ")
+                togglePanel(panelKey, false)
+            } else {
+                setText(panelKey, newText)
+                resetPanelBG(panelKey)
+            }
+        },
+        /*
         getNextPanelVert = (panelName = "PanelRight") => PANELTOP + (!REGISTRY.PANELS[panelName] || Object.values(REGISTRY.PANELS[panelName]).length === 0 ? 0 : _.chain(REGISTRY.PANELS[panelName]).
             pairs().
             map(x => getTextHeight(x[1].name)).
@@ -3057,13 +3116,13 @@ const Media = (() => {
             }
             OFFSTACK(funcID)
         },
-        simpleNotify = (panelName, text, isKillingAfter, textColor) => {
+        OLDsimpleNotify = (panelName, text, isKillingAfter, textColor) => {
             const funcID = ONSTACK()
             makePanel(text, panelName, undefined, {bgColor: C.COLORS.black, color: textColor || C.COLORS.red, font: "Contrail One", size: PANELSIZE})
             if (isKillingAfter) 
                 setTimeout(() => { killPanel(panelName) }, 15000)
             OFFSTACK(funcID)
-        },
+        }, */
 
     // #endregion
 
@@ -4163,7 +4222,7 @@ const Media = (() => {
         SetImgTemp: setImgTemp, // SetTextTemp: setTextTemp,
         Spread: spreadImgs,        
         ToggleLoadingScreen: toggleLoadingScreen, SetLoadingMessage: setLoadingText, StartProgressBar: startProgressBar, StopProgressBar: stopProgressBar,
-        Notify: simpleNotify,
+        Notify: addPanelText,
 
         // AREA FUNCTIONS
         GetBounds: getBounds, GetContents: getContainedImgObjs,

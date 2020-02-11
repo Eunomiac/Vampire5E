@@ -1,10 +1,12 @@
 void MarkStart("SoundScape")
 
 /* eslint-disable eqeqeq */
+/* eslint-disable camelcase */
+/* eslint-disable prefer-const */
 const SoundScape = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
-    const SCRIPTNAME = "SoundScape",
-
+    let SCRIPTNAME = "SoundScape",
+          
     // #region COMMON INITIALIZATION
         STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
@@ -20,30 +22,9 @@ const SoundScape = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
-            REGISTRY.Tracks = REGISTRY.Tracks || {} /* object index by track id containing These properties:
-                                                        volume: the tracks individual volume; is multiplied by the masterVolume to set the jukebox volume
-                                                        delays: number of unresolved delays involving this track */
-            STATE.REF.playLists = STATE.REF.playLists || {} /* Object of objects with the following properties indexed by playList name
-                                                        name: the name of the playList
-                                                        trackids: array of the trackids of tracks in this playList
-                                                        playing:true/false
-                                                        mode: one of 'shuffle', 'trueRandom', 'together', single, or through (default is single). Null indicates the playList should play in the default behavior of straight through
-                                                        currentTrack:Array of the tracks this playList is currently playing
-                                                        shuffleids:Array of tracks ordered randomly
-                                                        lastTrack:String containing the id of the last track to be played
-                                                        delays:The number of times this playList has been delayed. Incremented in handleInput, decremented in delayHandler. Actions are not completed if there are no delays to support them.
-                                                        access:String defining whether the playList is player accessible or not. 'gm' or 'player' */
+            STATE.REF.trackregistry = STATE.REF.trackregistry || {}
+            STATE.REF.playlistregistry = STATE.REF.playlistregistry || {}
             STATE.REF.masterVolume = STATE.REF.masterVolume || 50 // The mastervolume, all volumes are multiplied by this before being applied to the actual track. Maximum/Minimum volume levels applicable to tracks are 0-100, the multiplied final volume is set to the boundary if it is outside the range.
-            STATE.REF.fadeVolumeUp = STATE.REF.fadeVolumeUp || 50 // The fadevolume while increasing volume.  Default desired volume level. 
-            STATE.REF.fadeVolumeDown = STATE.REF.fadeVolumeDown || 0 // The fadevolume while decreasing volume.  Default desired volume level.
-            STATE.REF.fadeTime = STATE.REF.fadeTime || 10 // The default time to reach desired level in seconds
-            STATE.REF.delay = STATE.REF.delay || 0 // The default delay time in seconds.
-            STATE.REF.restrict = STATE.REF.restrict || "on" // Whether player restrictions are on or not, string that will be either 'on' or 'off'
-            STATE.REF.API = STATE.REF.API || "gm" // String denoting how API messages are treated. Either 'gm' or 'player'
-            STATE.REF.access = STATE.REF.access || "None" // Limited or Full access to SoundScape for Players
-            STATE.REF.tag = STATE.REF.tag || "-players-" // the player access tag that should be appended to tracks that are player accessible
-            STATE.REF.menu = STATE.REF.menu || "tracks"
-            
             STATE.REF.activeLoops = STATE.REF.activeLoops || []
         },
         registerEventHandlers = () => {
@@ -51,13 +32,12 @@ const SoundScape = (() => {
                 if (msg.content.startsWith("!roll20AM"))
                     inputHandler(msg)
             })
-            on("change:jukeboxtrack", changeHandler)
-            on("destroy:jukeboxtrack", destroyHandler)
+            on("change:jukeboxtrack", OLD_changeHandler)
         },
     // #endregion
  
     // #region EVENT HANDLERS: (HANDLEINPUT, HANDLECHANGE, HANDLEDESTROY)
-        onChatCall = (call, args, objects, msg) => {
+        onChatCall = (call, args, objects, msg) => { /* eslint-disable-line no-unused-vars */
             switch (call) {
                 case "get": {
                     switch (D.LCase(call = args.shift())) {
@@ -82,6 +62,26 @@ const SoundScape = (() => {
                     }
                 }
                 // no default
+            }
+        },
+        OnJukeboxChange = (jukeBoxObj, prevData) => { /* eslint-disable-line no-unused-vars */ // INVOKED when a track finishes in Jukebox.
+            if (jukeBoxObj.get("softstop") === true && prevData.softstop === false) { // IF track just finished, softstop will change from false to true
+                const trackData = getTrackData(jukeBoxObj.id),
+                    listData = trackData && Object.values(REGISTRY.Playlists).find(x => x.isPlaying && x.currentTracks.includes(trackData.name))
+                if (listData && listData.isPlaying && trackData.isPlaying) {
+                    trackData.isPlaying = false                    
+                    DB({trackFinished: trackData.name, inList: listData.name, listMode: listData.mode}, "OnJukeboxChange")
+                    if (["loop", "randomLoop", "shuffle"].includes(listData.mode))
+                        playPlaylist(listData.name)
+                    else
+                        stopPlaylist(listData.name)
+                } else {
+                    trackData.isPlaying = false
+                    if (trackData.mode === "loop")
+                        playTrack(trackData.name)
+                    else
+                        stopTrack(trackData.name)
+                }
             }
         },
 
@@ -110,9 +110,9 @@ const SoundScape = (() => {
                         return
                     }
                     if (cmdDetails.details.play)
-                        playPlayList(listDetails, null)
+                        playPlaylist(listDetails, null)
                     else if (cmdDetails.details.stop)
-                        stopPlayList(listDetails) 
+                        stopPlaylist(listDetails) 
 
                     if (cmdDetails.details.increase)
                         increaseListVolume(listDetails)
@@ -173,14 +173,13 @@ const SoundScape = (() => {
 
                         })
 
-                        cmdDets.details.delay = cmdDets.details.delay * 1000 || 0
                         DB(cmdDets, "editHandler")
 
                         const tracklists = [], playLists = []
 
                         // cmdDetails.tracks holds tracks/playLists, everything after the |.  If playList push into array
                         _.each(cmdDets.tracks, (listName) => {
-                            if (STATE.REF.playLists[listName])
+                            if (REGISTRY.Playlists[listName])
                                 playLists.push(listName)
 
                         })
@@ -232,7 +231,7 @@ const SoundScape = (() => {
                     })
                 }
         },
-        changeHandler = (obj, prev) => { // INVOKED when a track finishes in Jukebox.  
+        OLD_changeHandler = (obj, prev) => { // INVOKED when a track finishes in Jukebox.  
             let listFound = false, trackDetails, trackFound = false
             // we receive the track object from jukebox.  softstop is set to true upon finish
             if (obj.get("softstop") === true && prev.softstop === false) {
@@ -240,20 +239,20 @@ const SoundScape = (() => {
                 // [R] Setting the jukeboxtrackObj to baseline non-playing status ({playing: false, softstop: false})
                 obj.set({playing: false, softstop: false})
 
-                DB({trackFinished: trackDetails.title, trackID: trackDetails.id}, "changeHandler")
+                DB({trackFinished: trackDetails.name, trackID: trackDetails.id}, "changeHandler")
                 // find out of a playList is currently playing
-                _.each(STATE.REF.playLists, (list) => {
-                    if (list.playing)
+                _.each(REGISTRY.Playlists, (list) => {
+                    if (list.isPlaying)
                         // check if this track in this playList, if so, continue with playList based on mode
-                        if (list.currentTrack.indexOf(trackDetails.id) > -1) {
-                            if (trackDetails.playing) {
+                        if (list.currentTracks.indexOf(trackDetails.id) > -1) {
+                            if (trackDetails.isPlaying) {
                                 listFound = true
-                                trackDetails.playing = false
-                                DB({trackTitle: trackDetails.title, inList: list.name, listMode: list.mode}, "changeHandler")
+                                trackDetails.isPlaying = false
+                                DB({trackTitle: trackDetails.name, inList: list.name, listMode: list.mode}, "changeHandler")
                                 if (["loop", "randomLoop", "shuffle"].includes(list.mode))
-                                    playPlayList(list, null)
+                                    playPlaylist(list, null)
                                 else
-                                    list.playing = false                                
+                                    list.isPlaying = false                                
                             }
                         }
                 })
@@ -262,40 +261,46 @@ const SoundScape = (() => {
                 // if track wasn't found in active playList, set ROLL20AM state to not playing and output menu so icon changes from play to stop
                 if (!listFound) {
                     _.each(REGISTRY.Tracks, track => {
-                        if (track.playing)
+                        if (track.isPlaying)
                             trackFound = true
                     })
                     if (!listFound && !trackFound)
                         return
 
-                    trackDetails.playing = false
+                    trackDetails.isPlaying = false
                     // if a track is launched within a playList, set playList to off
-                    _.each(STATE.REF.playLists, list => {
+                    _.each(REGISTRY.Playlists, list => {
                         if (list.trackids.indexOf(trackDetails.id) > -1)
-                            list.playing = false
+                            list.isPlaying = false
                     })
                     if (trackDetails.mode == "loop")
                         playTrack(trackDetails.id, trackDetails.volume, null)
                 }
             }
         },
-        destroyHandler = (obj) => { // INVOKED when a jukeboxtrack is manually destroyed, removing it from SoundScape
-            delete REGISTRY.Tracks[obj.id]
-            _.each(STATE.REF.playLists, (L) => {
-                L.trackids.splice(L.trackids.indexOf(obj.id), 1)
-            })
-        },
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     //* **** CONFIGURATION ***************************************************
-    // #region Variable Declarations
-    
+    // #region Variable Declarations    
         REGISTRY = {
-            get Tracks() { return STATE.REF.trackregistry },
-            get Playlists() { return STATE.REF.playlistregistry }        
+            get Tracks() { return REGISTRY.Tracks }, /*      Registry by trackName containing these properties:
+                                                                        - name: trackName; same as the key
+                                                                        - id: the id of the jukebox object
+                                                                        - volume: the tracks individual volume; is multiplied by the masterVolume to set the jukebox volume
+                                                                        - mode: either "single" or "loop"
+                                                                        - delays: number of unresolved delays involving this track */
+            get Playlists() { return REGISTRY.Playlists } /* Registry by playlistName containing these properties:
+                                                                        - name: playlistName; same as the key
+                                                                        - tracks: array of contained trackNames
+                                                                        - playingTracks = array of currently-playing trackNames
+                                                                        - orderedTracks = array of tracks to play next
+                                                                        - isPlaying: true/false
+                                                                        - mode: 
+                                                                        - delays: The number of times this playList has been delayed. 
+                                                                            - Incremented in handleInput, decremented in delayHandler
+                                                                            - Actions are not completed if there are no delays to support them. */          
         },
-        displayTrack = false,
     // #endregion
     // #region Control & Registration Functions    
         editSound = (cmdDetails, listDetails, trackDetails) => {
@@ -350,7 +355,7 @@ const SoundScape = (() => {
                 if (!(trackTitle in REGISTRY.Tracks))
                     REGISTRY.Tracks[trackTitle] = {
                         id: trackID,
-                        title: trackTitle,
+                        name: trackTitle,
                         playing: false,
                         mode: "single",
                         volume: STATE.REF.masterVolume
@@ -365,7 +370,7 @@ const SoundScape = (() => {
                             trackTitle = trackObj.get("title")
                             trackID = getTrackID(trackTitle)
                             if ("trackids" in REGISTRY.Playlists[list.n] && REGISTRY.Playlists[list.n].trackids.indexOf(trackID) == -1)
-                                STATE.REF.playLists[list.n].trackids.push(trackID)
+                                REGISTRY.Playlists[list.n].trackids.push(trackID)
                         }
                     })
                 }
@@ -381,25 +386,21 @@ const SoundScape = (() => {
         },
         importList = (listName) => {
             DB(`Importing List:${listName}`, "importList")
-            if (!STATE.REF.playLists[listName])
-                STATE.REF.playLists[listName] = {
+            if (!REGISTRY.Playlists[listName])
+                REGISTRY.Playlists[listName] = {
                     name: listName,
                     trackids: [],
                     shuffleIds: [],
                     playing: false,
-                    currentTrack: [],
+                    currentTracks: [],
                     lastTrack: null,
-                    access: "gm",
                     mode: "loop",
                     delay: 0,
                     volume: STATE.REF.masterVolume,
-                    fadeup: STATE.REF.fadeVolumeUp,
-                    fadedown: STATE.REF.fadeVolumeDown,
-                    fadetime: STATE.REF.fadeTime
                 }
         },
         removeJukebox = (isSilent = false) => {
-            STATE.REF.playLists = {}
+            REGISTRY.Playlists = {}
             REGISTRY.Tracks = {}
             if (!isSilent)
                 D.Alert("All PlayLists and Tracks have been removed from SoundScape", "SoundScape")
@@ -450,9 +451,9 @@ const SoundScape = (() => {
                         for (const trackName of getPlayListTracks(soundRef))
                             setSoundMode(trackName, (C.SOUNDMODES[soundRef] || C.SOUNDMODES.defaults).innerMode || C.SOUNDMODES.defaults.innerMode)
                 } else {
-                    for (const listName of Object.keys(STATE.REF.playLists))
+                    for (const listName of Object.keys(REGISTRY.Playlists))
                         setSoundMode(listName)
-                    for (const trackName of _.intersection(Object.keys(C.SOUNDMODES), Object.keys(STATE.REF.playLists)))
+                    for (const trackName of _.intersection(Object.keys(C.SOUNDMODES), Object.keys(REGISTRY.Playlists)))
                         setSoundMode(trackName)
                 }
             }
@@ -467,23 +468,23 @@ const SoundScape = (() => {
             loop: Plays each track in order in a continuous loop.
             randomLoop: Plays tracks in a random order in a continuous loop.
             shuffle: Plays each track once, in a random order, then stops.
-            together: Plays all tracks simultaneously.
+            together: Plays all tracks simultaneously. (THIS IS WHERE TRACK DELAYS CAN MATTER)
         } */    
         getPlayListName = (playListRef) => {
-            if (VAL({string: playListRef}) && STATE.REF.playLists[playListRef])
+            if (VAL({string: playListRef}) && REGISTRY.Playlists[playListRef])
                 return playListRef
-            if (VAL({list: playListRef}) && playListRef.name && STATE.REF.playLists[playListRef.name]) 
+            if (VAL({list: playListRef}) && playListRef.name && REGISTRY.Playlists[playListRef.name]) 
                 return playListRef.name
             if (isTrack(playListRef)) {
                 const trackID = getTrackID(playListRef)
-                return _.findKey(STATE.REF.playLists, v => v.trackids.includes(trackID))
+                return _.findKey(REGISTRY.Playlists, v => v.trackids.includes(trackID))
             }
             return false
         },
         isPlayList = (playListRef) => Boolean(getPlayListName(playListRef)),
         getPlayListData = (playListRef) => {
             const playListKey = getPlayListName(playListRef)
-            return VAL({string: playListKey}) && STATE.REF.playLists[playListKey]
+            return VAL({string: playListKey}) && REGISTRY.Playlists[playListKey]
         },
         getPlayListTracks = (playListRef, isReturningIDs = false) => isPlayList(playListRef) && getPlayListData(playListRef).trackids.map(x => isReturningIDs && x || getTrackName(x)),
         isTrackInPlayList = (trackRef, playListRef) => isPlayList(playListRef) && getPlayListTracks(playListRef).includes(getTrackName(trackRef)),
@@ -496,7 +497,7 @@ const SoundScape = (() => {
             if (VAL({string: trackRef})) {
                 if (REGISTRY.Tracks[trackRef])
                     return trackRef
-                return (_.findWhere(REGISTRY.Tracks, {id: trackRef}) || {title: false}).title
+                return (_.findWhere(REGISTRY.Tracks, {id: trackRef}) || {name: false}).name
             } else if (VAL({object: trackRef})) {
                 return getTrackName(trackRef.id)
             }
@@ -559,7 +560,7 @@ const SoundScape = (() => {
             } else {
                 STATE.REF.activeLoops.push(soundName)
                 if (isPlayList(soundName))
-                    playPlayList(soundRef, volume)
+                    playPlaylist(soundRef, volume)
                 else
                     playTrack(soundRef, volume)
                 return STATE.REF.activeLoops
@@ -570,7 +571,7 @@ const SoundScape = (() => {
             if (STATE.REF.activeLoops.includes(soundName)) {
                 STATE.REF.activeLoops = _.without(STATE.REF.activeLoops, soundName)
                 if (isPlayList(soundName))
-                    stopPlayList(soundRef)
+                    stopPlaylist(soundRef)
                 else
                     stopTrack(soundRef)
                 return STATE.REF.activeLoops
@@ -585,16 +586,16 @@ const SoundScape = (() => {
     // #region Stopping ALL Music
         stopAll = () => {
             DB("Stopping All Tracks", "stopAll")
-            _.each(STATE.REF.playLists, (list) => {
-                if (list.playing) {
+            _.each(REGISTRY.Playlists, (list) => {
+                if (list.isPlaying) {
                     DB(`Stopping List:${list}`, "stopAll")
 
-                    list.playing = false
-                    list.currentTrack = []
+                    list.isPlaying = false
+                    list.currentTracks = []
                 }
             })
             _.each(REGISTRY.Tracks, (track) => {
-                if (track.playing) {
+                if (track.isPlaying) {
                     DB(`Stopping Track:${track.id}`, "stopAll")
 
                     stopTrack(track.id)
@@ -613,39 +614,15 @@ const SoundScape = (() => {
             DB(`Change Master Volume:${level}`, "changeVolumeMaster")
 
             STATE.REF.masterVolume = parseInt(level)
-            _.each(STATE.REF.playLists, (list) => {
+            _.each(REGISTRY.Playlists, (list) => {
                 changeVolumeList(list, parseInt(level))
-            })
-        },
-        changeFadeInMaster = (level) => {
-            DB(`Change Fade In Master Volume:${level}`, "changeFadeInMaster")
-
-            STATE.REF.fadeVolumeUp = level
-            _.each(STATE.REF.playLists, (list) => {
-                changeFadeInList(list, level)
-            })
-        },
-        changeFadeOutMaster = (level) => {
-            DB(`Change Fade Out Volume:${level}`, "changeFadeOutMaster")
-
-            STATE.REF.fadeVolumeDown = level
-            _.each(STATE.REF.playLists, (list) => {
-                changeFadeOutList(list, level)
-            })
-        },
-        changeFadeTimeMaster = (level) => {
-            DB(`Change Fade Time Seconds:${level}`, "changeFadeTimeMaster")
-
-            STATE.REF.fadeTime = level
-            _.each(STATE.REF.playLists, (list) => {
-                changeFadeTimeList(list, level)
             })
         },
         changeDelayMaster = (level) => {
             DB(`Change Delay Seconds:${level}`, "changeDelayMaster")
 
-            STATE.REF.delay = level
-            _.each(STATE.REF.playLists, (list) => {
+            STATE.REF.masterDelay = level
+            _.each(REGISTRY.Playlists, (list) => {
                 changeDelayList(list, level)
             })
         },
@@ -661,38 +638,36 @@ const SoundScape = (() => {
                 
                 // set playing to true in Track Details, get Jukebox Object and set to playing
             DB({track: getTrackName(trackObj.id), volume: level}, "playTrack")
-            _.each(STATE.REF.playLists, list => {
+            _.each(REGISTRY.Playlists, list => {
                 if (list.trackids.indexOf(trackObj.id) >= 0)
-                    list.playing = true
+                    list.isPlaying = true
 
             })
-            trackData.playing = true
+            trackData.isPlaying = true
             trackObj.set({playing: true, softstop: false, volume: level})
-            if (displayTrack)
-                D.Alert(`Now Playing:${trackData.title}`, "playTrack")
         },
-        // stops the track.  Either Track ID or Track Title will come into this func
+        // stops the track.  Either Track ID or Track name will come into this func
         stopTrack = (trackRef) => {
             const trackData = getTrackData(trackRef),
                 trackID = trackData.id,
                 trackObj = getTrackObj(trackID)
 
-            _.each(STATE.REF.playLists, list => {
-                if (list.playing)
+            _.each(REGISTRY.Playlists, list => {
+                if (list.isPlaying)
                     if (list.trackids.indexOf(trackID) >= 0) {
-                        list.playing = false
+                        list.isPlaying = false
                     }
 
             })
                 // set playing to true in Track Details, get Jukebox Object and set to playing
-            trackData.playing = false
+            trackData.isPlaying = false
             trackObj.set({playing: false, softstop: false, loop: false})
         },
     // #endregion
     // #region Volume Control
         increaseTrackVolume = (trackID) => {
             const trackDetails = getTrackData(trackID), level = Number(trackDetails.volume) + 5, jbTrack = getTrackObj(trackID)
-            DB(`Increase Track:${trackDetails.title}`, "increaseTrackVolume")
+            DB(`Increase Track:${trackDetails.name}`, "increaseTrackVolume")
 
             
             trackDetails.volume = level
@@ -701,7 +676,7 @@ const SoundScape = (() => {
         decreaseTrackVolume = (trackID) => {
             const trackDetails = getTrackData(trackID), level = Number(trackDetails.volume) - 5, jbTrack = getTrackObj(trackID)
 
-            DB(`Increase Track:${trackDetails.title}`, "decreaseTrackVolume")
+            DB(`Increase Track:${trackDetails.name}`, "decreaseTrackVolume")
 
             trackDetails.volume = level
             jbTrack.set({volume: level})
@@ -711,63 +686,6 @@ const SoundScape = (() => {
                 trackObj = getTrackObj(trackData.id)
             trackData.volume = volume
             trackObj.set({volume})
-        },
-    // #endregion
-    // #region Fade Control
-        // fade in starts at zero an incrementally increases volume to the fade in volume
-        fadeInTrack = (trackID, target, seconds) => {
-            const jbTrack = getTrackObj(trackID), trackDetails = getTrackData(trackID), levelChange = Number(target) / Number(seconds)
-
-                // calc the volume change per second
-            let level = 0
-            DB({target, time: seconds, volume: levelChange}, "fadeInTrack")
-
-                // If track is being played outside of a list, start the track
-            if (!trackDetails.playing) {
-                trackDetails.playing = true
-                playTrack(trackID, 0, null)
-            }
-
-                // increment volume every 1 1/2 seconds until volume is at fade up volume.  ClearTimerout stops the setinterval func
-            const timer = setInterval(() => {
-                DB(`New Volume:${level}`, "fadeInTrack")
-                level += Number(levelChange)
-                if (Number(level) <= Number(target)) {
-                    jbTrack.set({volume: level})
-                } else {
-                    DB("Clearing Timeout", "fadeInTrack")
-                    clearTimeout(timer)
-                }
-            }, 1500)
-        },
-        // fade out starts at fade in volunme an incrementally decreases volume to the fade out volume
-        fadeOutTrack = (trackID, level, target, seconds) => {
-            const jbTrack = getTrackObj(trackID), trackDetails = getTrackData(trackID)
-
-                // verify that the list is actualy playing
-            if (!trackDetails.playing) {
-                D.Alert("In order to fade a track, it must be playing.", "fadeOutTrack")
-                return
-            }
-            DB({track: getTrackName(trackID), target, time: seconds}, "fadeOutTrack")
-                // calc the volume change per second
-            const levelChange = (Number(level) - Number(target)) / seconds
-            DB(`Volume Change:${levelChange}`, "fadeOutTrack")
-
-
-            const timer = setInterval(() => {
-                DB(`New Volume:${level}`, "fadeOutTrack")
-
-                level = Number(level) - levelChange
-                    // Decrement volume every 1 1/2 seconds until volume is at fade down volume.  ClearTimerout stops the setinterval func. Output config refreshes the play button
-                if (Number(level) > target) {
-                    jbTrack.set({volume: level})
-                } else {
-                    DB("Clearing Timer", "fadeOutTrack")
-                    stopTrack(trackID, null)
-                    clearTimeout(timer)
-                }
-            }, 1500)
         },
     // #endregion
     // #region Configure Default Volume, Fade, Delay
@@ -783,31 +701,11 @@ const SoundScape = (() => {
             DB({track: getTrackName(trackID), volume: level}, "changeVolumeTrack")
             trackDetails.volume = level
         },
-        changeFadeInTrack = (trackID, level) => {
-            const trackDetails = getTrackData(trackID)
-            DB({track: getTrackName(trackID), fadeup: level}, "changeFadeInTrack")
-            trackDetails.fadeup = level
-        },
-        changeFadeOutTrack = (trackID, level) => {
-            const trackDetails = getTrackData(trackID)
-            DB({track: getTrackName(trackID), fadedown: level}, "changeFadeOutTrack")
-            trackDetails.fadedown = level
-        },
-        changeFadeTimeTrack = (trackID, level) => {
-            const trackDetails = getTrackData(trackID)
-            DB({track: getTrackName(trackID), fadetime: level}, "changeFadeTimeTrack")
-            trackDetails.fadetime = level
-        },
-        changeDelayTrack = (trackID, level) => {
-            const trackDetails = getTrackData(trackID)
-            DB({track: getTrackName(trackID), delay: level}, "changeDelayTrack")
-            trackDetails.delay = level
-        },
     // #endregion
 
     //* **** PLAYLIST CONTROL *******************************************************
     // #region Playing & Stopping PlayLists
-        playPlayList = (playListRef, startVolume = null) => {
+        playPlaylist = (playListRef, startVolume = null) => {
             const {name, mode} = getPlayListData(playListRef)
             switch (D.LCase(mode)) {
                 case "single":
@@ -837,7 +735,7 @@ const SoundScape = (() => {
             DB(`Playing List (In Order):${list.name}`, "playListInOrder")
 
             // Set list playing to true, used later to determine lists that are active
-            list.playing = true
+            list.isPlaying = true
             if (isPlayListLooping(list))
                 Media.LoopingSounds = list.name
             playNextTrack(list, list.trackids, startVolume)
@@ -846,10 +744,10 @@ const SoundScape = (() => {
         playListRandom = (list, startVolume) => {
             DB(`Playing Random List:${list.name}`, "playListRandom")
                 // Set list playing to true, used later to determine lists that are active.  Since random, we aren't tracking current played tracks
-            list.playing = true
+            list.isPlaying = true
             if (isPlayListLooping(list))
                 Media.LoopingSounds = list.name
-            list.currentTrack = []
+            list.currentTracks = []
             const trackID = list.trackids[randomInteger(list.trackids.length) - 1]
             playNextTrack(list, [trackID], startVolume)
         },
@@ -858,7 +756,7 @@ const SoundScape = (() => {
             DB(`Playing Shuffle List:${list.name}`, "playListShuffle")
 
                 // Set list playing to true, used later to determine lists that are active
-            list.playing = true
+            list.isPlaying = true
             if (isPlayListLooping(list))
                 Media.LoopingSounds = list.name
             if (list.shuffleIds.length == 0) {
@@ -884,7 +782,7 @@ const SoundScape = (() => {
 
             let volume
                 // Set list playing to true, used later to determine lists that are active
-            list.playing = true
+            list.isPlaying = true
                 // Set start volume
             if (startVolume != 0)
                 volume = list.volume
@@ -893,9 +791,9 @@ const SoundScape = (() => {
 
             DB(`Start Volume:${volume}`, "playListTogether")
 
-                // Play all songs at once.  Push all songs into currentTrack 
+                // Play all songs at once.  Push all songs into currentTracks 
             _.each(list.trackids, (id) => {
-                list.currentTrack.push(id)
+                list.currentTracks.push(id)
                 playTrack(id, volume, null)
             })
         },
@@ -906,11 +804,11 @@ const SoundScape = (() => {
                 // initialize
             let found = false, nexttrackID, volume
                 // find next track to play    
-            if (list.currentTrack.length > 0)
+            if (list.currentTracks.length > 0)
                     // get each track from the playList tracks
                 _.each(listTracks, (id) => {
                         // if the track isn't in the current playListm play it, Found switch makes next track is used
-                    if (list.currentTrack.indexOf(id) == -1)
+                    if (list.currentTracks.indexOf(id) == -1)
                         if (!found) {
                             nexttrackID = id
                             DB(`Next Track:${nexttrackID}`, "playNextTrack")
@@ -921,13 +819,13 @@ const SoundScape = (() => {
 
                 // if entire play tracks are in current tracks, all have played, wipe out current tracks and get first one                
             if (!found) {
-                list.currentTrack = [];
+                list.currentTracks = [];
                 [nexttrackID] = listTracks
                 DB(`First Track:${nexttrackID}`, "playNextTrack")
 
             }
                 // push this track into the current track list
-            list.currentTrack.push(nexttrackID)
+            list.currentTracks.push(nexttrackID)
                 // volume may have been set to 0 by fading, reset to playList or master volume.  For fade in, we want start volume at 0
             if (startVolume != 0)
                 volume = list.volume
@@ -937,18 +835,18 @@ const SoundScape = (() => {
             playTrack(nexttrackID, volume, null)
         },
         // stops the playList
-        stopPlayList = (playListRef) => {
+        stopPlaylist = (playListRef) => {
             const playListData = getPlayListData(playListRef)
             DB(`Stopping:${playListData.name}`, "stopList")
 
                 // stop list and clear current tracks
-            playListData.playing = false
+            playListData.isPlaying = false
             Media.StopLooping(playListRef.name)
-            _.each(playListData.currentTrack, (trackID) => {
+            _.each(playListData.currentTracks, (trackID) => {
                 DB(`Stopping:${trackID}`, "stopList")
                 stopTrack(trackID)
             })
-            playListData.currentTrack = []
+            playListData.currentTracks = []
         },        
     // #endregion
     // #region Volume Control
@@ -977,35 +875,6 @@ const SoundScape = (() => {
                 setTrackVolume(trackID, volume)
         },
     // #endregion   
-    // #region Fade Control
-        fadeListIn = (list) => {
-            DB(`Fade List Name:${list.name}`, "fadeListIn")
-            playPlayList(list, 0)
-                // refresh the list variable to get current playing track
-            list = getPlayListData(list.name)
-                // fade in the track
-            _.each(list.currentTrack, (trackID) => {
-                fadeInTrack(trackID, list.volume, list.fadetime)
-            })
-        },
-        fadeListOut = (list) => {
-            let trackDetails
-                // verify that the list is actualy playing
-            if (!list.playing) {
-                D.Alert("In order to fade a list, it must be playing.", "fadeListOut")
-                return
-            }
-            DB(`Fade List Name:${list.name}`, "fadeListOut")
-
-            list.playing = false
-                // get current playing song(s) and fade out
-            _.each(list.currentTrack, (trackID) => {
-                trackDetails = getTrackData(trackID)
-                if (trackDetails.playing)
-                    fadeOutTrack(trackID, trackDetails.volume, 0, trackDetails.fadetime)
-            })
-        },
-    // #endregion
     // #region Configure Default Volume, Fade, Delay
         //* *************************************************************************
         // Edit List Functions 	
@@ -1018,38 +887,6 @@ const SoundScape = (() => {
             list.volume = level
             _.each(list.trackids, (trackID) => {
                 changeVolumeTrack(trackID, level)
-            })
-        },
-        changeFadeInList = (list, level) => {
-            DB(`Change Fade In List Volume:${level}`, "changeFadeInList")
-
-            list.fadeup = level
-            _.each(list.trackids, (trackID) => {
-                changeFadeInTrack(trackID, level)
-            })
-        },
-        changeFadeOutList = (list, level) => {
-            DB(`Change Fade Out List Volume:${level}`, "changeFadeOutList")
-
-            list.fadedown = level
-            _.each(list.trackids, (trackID) => {
-                changeFadeOutTrack(trackID, level)
-            })
-        },
-        changeFadeTimeList = (list, level) => {
-            DB(`Change Fade Time List Seconds:${level}`, "changeFadeTimeList")
-
-            list.fadetime = level
-            _.each(list.trackids, (trackID) => {
-                changeFadeTimeTrack(trackID, level)
-            })
-        },
-        changeDelayList = (list, level) => {
-            DB(`Change Delay List Seconds:${level}`, "changeDelayList")
-
-            list.delay = level
-            _.each(list.trackids, (trackID) => {
-                changeDelayTrack(trackID, level)
             })
         },
     // #endregion

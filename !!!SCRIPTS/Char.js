@@ -389,6 +389,7 @@ const Char = (() => {
                     break
                 }
                 case "refresh": {
+                    updateProjectsDoc()
                     updateAssetsDoc()
                     displayDesires()
                     displayResources()
@@ -1531,26 +1532,29 @@ const Char = (() => {
                 DB(`Adjusting Trait: (${D.JSL(trait)}, ${D.JSL(amount)}, ${D.JSL(min)}, ${D.JSL(max)}, ${D.JSL(defaultTraitVal)}, ${D.JSL(deltaType)})
                     ... Initial (${D.JS(initTraitVal)}) + Amount (${D.JS(amount)}) = Final (${D.JS(finalTraitVal)}))`, "adjustTrait")
                 switch (trait.toLowerCase()) {
-                    case "hunger":
+                    case "hunger": {
                         chatStyles.header = {margin: "0px"}
                         if (amount > 0) 
                             bannerString = `Your hunger increases from ${D.NumToText(initTraitVal).toLowerCase()} to ${D.NumToText(finalTraitVal).toLowerCase()}.`
                         else if (amount < 0)
                             bannerString = `You slake your hunger by ${D.NumToText(Math.abs(amount)).toLowerCase()}.`
                         break
-                    case "hum": case "humanity":
+                    }
+                    case "hum": case "humanity": {
                         if (amount > 0)
                             bannerString = `Your Humanity increases by ${D.NumToText(amount).toLowerCase()} to ${D.NumToText(finalTraitVal).toLowerCase()}.`
                         else if (amount < 0)
                             bannerString = `Your Humanity falls by ${D.NumToText(Math.abs(amount)).toLowerCase()} to ${D.NumToText(finalTraitVal).toLowerCase()}.`
                         break
-                    case "stain": case "stains":
+                    }
+                    case "stain": case "stains": {
                         if (amount > 0)
                             bannerString = `You suffer ${D.NumToText(amount).toLowerCase()} stain${amount > 1 ? "s" : ""} to your Humanity.`
                         else if (amount < 0)
                             bannerString = `${D.NumToText(Math.abs(finalTraitVal - initTraitVal))} stain${Math.abs(amount) > 1 ? "s" : ""} cleared from your Humanity.`
                         break
-                    case "willpower_sdmg": case "willpower_sdmg_social":
+                    }
+                    case "willpower_sdmg": case "willpower_sdmg_social": {
                         if (amount > 0) {
                             const [maxWP, curBashing, curAggravated] = [
                                     D.Int(D.GetStat(charObj, "willpower_max")[0]),
@@ -1583,7 +1587,8 @@ const Char = (() => {
                             bannerString = `You regain ${D.NumToText(Math.min(D.Int(D.GetStat(charObj, "willpower_bashing")[0]), Math.abs(amount))).toLowerCase()} Willpower.`                            
                         }                        
                         break
-                    case "willpower_admg": case "willpower_admg_social":
+                    }
+                    case "willpower_admg": case "willpower_admg_social": {
                         if (amount > 0) {
                             const [maxWP, curBashing, curAggravated] = [
                                     D.Int(D.GetStat(charObj, "willpower_max")[0]),
@@ -1603,10 +1608,10 @@ const Char = (() => {
                             trackerString = C.HTML.TrackerLine(maxWP - newBashing - newAggravated, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"}) 
                         } else if (Math.min(D.Int(D.GetStat(charObj, "willpower_aggravated")[0]), Math.abs(amount))) {
                             bannerString = `${D.NumToText(Math.min(D.Int(D.GetStat(charObj, "willpower_aggravated")[0]), Math.abs(amount)))} aggravated Willpower damage downgraded.`                            
-                        }
-                        
+                        }                        
                         break
-                    case "health_sdmg":
+                    }
+                    case "health_sdmg": {
                         if (amount > 0) {
                             const [maxHealth, curBashing, curAggravated] = [
                                     D.Int(D.GetStat(charObj, "health_max")[0]),
@@ -1629,13 +1634,15 @@ const Char = (() => {
                             } else if (newBashing + newAggravated === maxHealth) {
                                 bodyString = "Further harm will cause AGGRAVATED damage!"
                                 alertString = "WOUNDED: -2 to Physical rolls."
+                                // applyCripplingInjury(charObj.id, newAggravated)
                             }
-                            trackerString = C.HTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})                 
+                            trackerString = C.HTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
                         } else if (Math.min(D.Int(D.GetStat(charObj, "health_bashing")[0]), Math.abs(amount))) {
                             bannerString = `You heal ${D.NumToText(Math.min(D.Int(D.GetStat(charObj, "health_bashing")[0]), Math.abs(amount))).toLowerCase()} superficial Health damage.` 
                         }
                         break
-                    case "health_admg":
+                    }
+                    case "health_admg": {
                         if (amount > 0) {
                             const [maxHealth, curBashing, curAggravated] = [
                                     D.Int(D.GetStat(charObj, "health_max")[0]),
@@ -1650,12 +1657,14 @@ const Char = (() => {
                             } else if (newBashing + newAggravated === maxHealth) {
                                 bodyString = "Further harm will cause AGGRAVATED damage!"
                                 alertString = "WOUNDED: -2 to Physical rolls."
+                                // applyCripplingInjury(charObj.id, newAggravated)
                             }                       
                             trackerString = C.HTML.TrackerLine(maxHealth - newAggravated - newBashing, newBashing, newAggravated, {margin: alertString ? undefined : "-8px 0px 0px 0px"})
                         } else if (Math.min(D.Int(D.GetStat(charObj, "health_aggravated")[0]), Math.abs(amount))) {
                             bannerString = `${D.NumToText(Math.min(D.Int(D.GetStat(charObj, "health_aggravated")[0]), Math.abs(amount)))} aggravated Health damage downgraded.`                  
                         }
                         break
+                    }
                     // no default
                 }
                 if (bannerString && isChatting)
@@ -1671,6 +1680,50 @@ const Char = (() => {
                 return true
             }
             return false
+        },
+        applyCripplingInjury = (charObj, aggDmg) => {
+            const injuryRoll = randomInteger(10) + aggDmg,
+                injuryChatLines = [
+                    C.HTML.Header(`${D.GetName(charObj, true)} Suffers a Crippling Injury!`),
+                    C.HTML.Body(`Result: ${injuryRoll} (${aggDmg} Agg. + d10: ${injuryRoll - aggDmg})`),
+                ],
+                injuryFuncs = {
+                    13: () => {                    
+                        injuryChatLines.push(...[
+                            C.HTML.Header("Catastrophic Injury!"),
+                            C.HTML.Body(`${D.GetName(charObj, true)} falls into torpor!`)
+                        ])
+                        D.Chat("all", injuryChatLines.join(""))
+                    },    
+                    12: () => {},   
+                    11: () => {                        
+                        injuryChatLines.push(...[
+                            C.HTML.Header("Massive Wound!"),
+                            C.HTML.Body("-2 to All Rolls.<br>+1 Damage Taken.")
+                        ])
+                        Roller.AddCharEffect(charObj, "all;-2;- Massive Wound (<.>);unimpaired:health")
+                        // Some Char function for temporary effects, increases damage by one.
+                        D.Chat("all", injuryChatLines.join(""))
+                    },  
+                    9: () => {}, 
+                    7: () => {
+                        injuryChatLines.push(...[
+                            C.HTML.Header("Severe Head Trauma!"),
+                            C.HTML.Body("-1 to Physical Rolls.<br>-2 to Mental Rolls.")
+                        ])
+                        Roller.AddCharEffect(charObj, "physical;-1;- Head Trauma (<.>);unimpaired:health")
+                        Roller.AddCharEffect(charObj, "mental;-2;- Head Trauma (<.>);unimpaired:health")
+                        D.Chat("all", injuryChatLines.join(""))
+                    },      
+                    1: () => {
+                        injuryChatLines.push(...[
+                            C.HTML.Header("Stunned!"),
+                            C.HTML.Body("Spend one Willpower or lose a turn.")
+                        ])
+                        D.Chat("all", injuryChatLines.join(""))
+                    }
+                }
+            injuryFuncs[Object.keys(injuryFuncs).find(x => injuryRoll >= x)]()
         },
         adjustDamage = (charRef, trait, dType, delta, isChatting = true) => {
             const amount = D.Int(delta),

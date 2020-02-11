@@ -67,6 +67,12 @@ const TimeTracker = (() => {
         
             if (_.keys(STATE.REF.weatherOverride).length)
                 D.Alert(`Weather Override in effect: ${D.JS(STATE.REF.weatherOverride)}<br><b>!time set weather</b> to clear.`, "Alert: Weather Override")
+
+            // STATE.REF.weatherData[0][20] = ["cxHxg5", "cxHxg5", "wxGxg5", "pxGxw5", "txGxg5", "txGxg5", "txHxg4", "pxHxw4", "wxHxb4", "cxHxb4", "cxIxb4", "cxJxs4", "cxJxb4", "cxKxs4", "cxKxb4", "cxKxs3", "wxKxw3", "pxJxw3", "txJxg3", "pxIxg3", "pxHxg3", "pxGxg2", "wxGxw2", "cxGxb2"]
+            // STATE.REF.weatherData[0][21] = ["xxFxs2", "cxFxx2", "cxExx2", "cxExx2", "cxExx2", "cxExx2", "cxExx2", "sxDxb2", "bxDxb2", "bxExw3", "wxGxb2", "cxIxb2", "xxJxs2", "cxJxs2", "cxIxs2", "cxJxs2", "cxJxs2", "cxHxs2", "xfGxs2", "xfGxx2", "xfGxs2", "xfGxx2", "pfGxs1", "pfGxb1"]
+            // STATE.REF.weatherData[0][20] = ["cxHxg5", "cxHxg5", "wxGxg5", "pxGxw5", "txGxg5", "txGxg5", "txHxg4", "pxHxw4", "wxHxb4", "cxHxb4", "cxIxb4", "cxJxs4", "cxJxb4", "cxKxs4", "cxKxb4", "cxKxs3", "wxKxw3", "pxJxw3", "txJxg3", "txIxg2", "txHxg1", "txGxgw", "txGxww", "txGxbw"]
+            // STATE.REF.weatherData[0][21] = ["txFxsw", "txFxxw", "txExxw", "txExxw", "xxExxf", "xxExxf", "xxExxf", "sxDxb1", "bxDxb2", "bxExw3", "wxGxb2", "cxIxb2", "xxJxs2", "cxJxs2", "cxIxs2", "cxJxs2", "cxJxs2", "cxHxs2", "xfGxs2", "xfGxx2", "xfGxs2", "xfGxx2", "pfGxs1", "pfGxb1"]
+
             OFFSTACK(funcID)
         },
     // #endregion	
