@@ -487,7 +487,7 @@ const Tester = (() => {
                         })
                     reportLines.push(
                         `${allTextObjs.length} text objects found.`,
-                        `${_.keys(state[C.GAMENAME].Media.textregistry).length} registered text objects.`,
+                        `${Object.keys(state[C.GAMENAME].Media.textregistry).length} registered text objects.`,
                         ""
                     )
                 // First, verify that all registered objects are present.

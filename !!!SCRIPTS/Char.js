@@ -618,8 +618,8 @@ const Char = (() => {
                 return THROW("No character found!", "registerChar")
             if (!tokenObj)
                 return THROW("Please select a character token.", "registerChar")
-            if (!D.IsIn(quadrant, _.keys(C.QUADRANTS), true))
-                return THROW(`Quadrant must be one of: ${_.keys(C.QUADRANTS).join(", ")}.`, "registerChar")
+            if (!D.IsIn(quadrant, Object.keys(C.QUADRANTS), true))
+                return THROW(`Quadrant must be one of: ${Object.keys(C.QUADRANTS).join(", ")}.`, "registerChar")
             if (!Media.RegToken(tokenObj))
                 return THROW("Token registration failed.", "registerChar")
             REGISTRY[quadrant] = {
@@ -710,12 +710,11 @@ const Char = (() => {
                     ],
                     blockStyles: { } /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */
                 },
-                (commandString) => { // IMPORTANT: return 'true' if you want to hold this function open for more commands
+                (commandString) => { // IMPORTANT: return 'C.REPLY.KEEPOPEN' if you want to hold this function open for more commands
                     const params = D.ParseToObj(commandString, ",", "@"), // key:value pairs must be in key@pairs for this to work. Multiple commands comma-delimited.
                         titleString = params.title
                     if ("selectplayer" in params)
                         playerActionMenu(params.selectplayer, titleString)
-                    return false
                 }
             )
         },
@@ -910,29 +909,6 @@ const Char = (() => {
         },
         promptNumber = (fullCommand) => {
             if (VAL({string: fullCommand}, "promptNumber") && fullCommand.includes("@@AMOUNT@@"))
-            /* MENU DATA:
-                {
-                    title: <string>
-                    rows: [
-                        Each element represents a full-width horizontal <div> block, contained with "block".
-                        Elements should be of the form:
-                            {
-                                type: <string: "Column", "Title", "Header", "Body", "ButtonLine", "ButtonSubheader">
-                                contents: <
-                                    for TITLE, HEADLINE, TEXT: <string>
-                                    for COLUMN: <array: each element represents a HORIZONTAL panel, each given in the form of nested MENU DATA objects:
-                                        <list: {title: <string>, rows: <as MENU DATA>}>
-                                            - when columns have been exhausted, will proceed with a new block.
-                                    for BUTTONS: <array: each element represents a line of buttons, of form:
-                                                    for BUTTONS: <list: {name, command, [styles]}>
-                                                    for SPACERS: <number: percentage of width, or 0 for equal spacing > 
-                                [buttonStyles]: <list of styles to apply to ALL of the buttons in a ButtonLine
-                                [styles]: <list of styles for the div, to override the defaults, where keys are style tags and values are the settings>
-                            } 
-                    ]
-                    [blockStyles:] <override C.HTML.Block 'options' parameter.
-                }
-                */
                 D.CommandMenu({
                     title: "Choose Amount",
                     rows: [
@@ -1117,7 +1093,7 @@ const Char = (() => {
                     Media.SetArea(pcTokenObj, `${quad}Token`)
                 } else if (VAL({npc: npcObj}, "!char set npc")) {
                     let nameString = D.GetName(npcObj)
-                    if (Media.GetTextWidth(`TombstoneName${quad}`, nameString) > 240)
+                    if (Media.GetTextWidth(`TombstoneName${quad}`, nameString) > 200)
                         nameString = npcName
                     Char.REGISTRY[quad].isNPC = npcObj.id
                     Media.SetImg(`TombstoneToken${quad}`, npcObj)
@@ -1267,7 +1243,7 @@ const Char = (() => {
                     Col2: [],
                     Col3: []
                 }
-                for (const init of _.sortBy(_.keys(STATE.REF.weeklyResources))) {
+                for (const init of _.sortBy(Object.keys(STATE.REF.weeklyResources))) {
                     const data = _.sortBy(STATE.REF.weeklyResources[init], x => x[0])
                     columns.Col1.push(`[${init}]`, ...new Array(data.length - 1).fill(""))
                     columns.Col2.push(...data.map(x => x[0]))
@@ -1283,7 +1259,7 @@ const Char = (() => {
         },  
         sortCoterieStakes = (charRef) => {
             const charObj = D.GetChar(charRef),
-                coterieRows = _.keys(_.omit(D.GetRepStats(charObj, "advantage", null, "advantage_type", "rowID", "val"), v => v[0] !== "Coterie")),
+                coterieRows = Object.keys(_.omit(D.GetRepStats(charObj, "advantage", null, "advantage_type", "rowID", "val"), v => v[0] !== "Coterie")),
                 advData = D.GetRepStats(charObj, "advantage", null, null, "rowID"),
                 charAdvData = _.object(_.map(_.flatten(_.map(_.values(_.omit(advData, ...coterieRows)), v => _.filter(v, vv => vv.attrName === "advantage" && vv.name !== "advantage"))), v => [v.name, v.val])),
                 coterieAdvData = _.object(_.map(_.flatten(_.map(_.values(_.pick(advData, ...coterieRows)), v => _.filter(v, vv => vv.attrName === "advantage" && vv.name !== "advantage"))), v => [v.name, v.val]))
@@ -1308,13 +1284,13 @@ const Char = (() => {
                 for (const stake of projectStakes) {
                     const advMax = (D.GetRepStat(charObj, "advantage", null, stake.name) || {val: null}).val,
                         endDate = (D.GetRepStat(charObj, "project", stake.rowID, "projectenddate") || {val: null}).val
-                    DB({advMax, endDate, cotRepStats: _.keys(coterieAdvs)}, "displayStakes")
+                    DB({advMax, endDate, cotRepStats: Object.keys(coterieAdvs)}, "displayStakes")
                     /* DB(`... AdvMax: ${advMax}, EndDate: ${endDate
-                    }<br>... RepStats (Coterie): ${D.JS(_.keys(coterieAdvs), true)
+                    }<br>... RepStats (Coterie): ${D.JS(Object.keys(coterieAdvs), true)
                     }<br>... Parsed End Date (${D.JS(TimeTracker.GetDate(endDate).getTime())}) vs. Current Date (${TimeTracker.CurrentDate.getTime()
                     }<br>... Comparing: ${TimeTracker.CurrentDate.getTime() < TimeTracker.GetDate(endDate).getTime()}`, "displayStakes") */
                     if (advMax && D.Int(stake.val) > 0 && TimeTracker.CurrentDate.getTime() < TimeTracker.GetDate(endDate).getTime())
-                        if (_.keys(coterieAdvs).includes(stake.name))
+                        if (Object.keys(coterieAdvs).includes(stake.name))
                             coterieStakes[stake.name] = {
                                 name: stake.name,
                                 total: (coterieStakes[stake.name] && coterieStakes[stake.name].total || 0) + D.Int(stake.val),
@@ -1388,7 +1364,7 @@ const Char = (() => {
             }   
             // Now, check for repeat personal stakes
             
-            // DB(`Coterie Stakes: ${D.JSL(_.keys(coterieStakes), true)}`, "displayStakes")
+            // DB(`Coterie Stakes: ${D.JSL(Object.keys(coterieStakes), true)}`, "displayStakes")
             // COTERIE STAKES
             const stakeLines = []
             for (const cotData of Object.values(coterieStakes))
@@ -2037,8 +2013,8 @@ const Char = (() => {
             if (_.isNaN(D.Int(charRef))) {
                 charIDs.push(D.GetChar(charRef).id)
             } else {
-                charIDs.push(..._.keys(npcStats).slice(D.Int(charRef), D.Int(charRef) + 10))
-                D.Alert(`Setting Defaults on characters ${D.Int(charRef)} - ${D.Int(charRef) + 10} of ${_.keys(npcStats).length} ...`)
+                charIDs.push(...Object.keys(npcStats).slice(D.Int(charRef), D.Int(charRef) + 10))
+                D.Alert(`Setting Defaults on characters ${D.Int(charRef)} - ${D.Int(charRef) + 10} of ${Object.keys(npcStats).length} ...`)
             }
             const reportLine = []
             for (const charID of charIDs) {
@@ -2087,7 +2063,7 @@ const Char = (() => {
             if (charRef)
                 charNames.push(D.GetChar(charRef).get("name"))
             else
-                charNames.push(..._.keys(npcStats))
+                charNames.push(...Object.keys(npcStats))
 
             for (const charName of charNames) {
                 const charObj = D.GetChar(charName),
@@ -2095,7 +2071,7 @@ const Char = (() => {
                     attrList = {},
                     charData = npcStats[charName]
                 if (charData.base)
-                    for (const attr of _.keys(charData.base)) {
+                    for (const attr of Object.keys(charData.base)) {
                         if (attr === "blood_potency")
                             attrList.hunger = C.BLOODPOTENCY[charData.base[attr]].bp_minhunger
                         attrList[attr] = charData.base[attr]
@@ -2103,7 +2079,7 @@ const Char = (() => {
                 if (charData.attributes) {
                     for (const attribute of _.flatten(_.values(C.ATTRIBUTES)))
                         attrList[attribute.toLowerCase()] = 1
-                    for (const attribute of _.keys(charData.attributes))
+                    for (const attribute of Object.keys(charData.attributes))
                         attrList[attribute] = charData.attributes[attribute]
                 }
                 if (charData.skills) {
@@ -2111,7 +2087,7 @@ const Char = (() => {
                     if (_.uniq(skillDupeCheck).length !== skillDupeCheck.length)
                         errorLog += `<br>Duplicate Skill(s) on ${D.GetName(charID)}: ${_.sortBy(skillDupeCheck, v => v).join(" ")}`
                     else
-                        for (const skillAbv of _.keys(C.SKILLABBVS))
+                        for (const skillAbv of Object.keys(C.SKILLABBVS))
                             attrList[C.SKILLABBVS[skillAbv]] = D.Int(_.findKey(charData.skills, v => v.includes(skillAbv)))
                 }
                 if (charData.clandiscs)
@@ -2124,9 +2100,9 @@ const Char = (() => {
                 const [repDiscs, rowCount] = [{}, {}]
                 _.each(["discleft", "discmid", "discright"], section => {
                     const sectionData = D.GetRepStats(charID, section, null, null, "rowID")
-                    rowCount[section] = _.keys(sectionData).length
+                    rowCount[section] = Object.keys(sectionData).length
                     _.each(sectionData, (rowData, rowID) => {
-                        const discData = _.find(rowData, stat => _.keys(C.DISCIPLINES).includes(stat.name))
+                        const discData = _.find(rowData, stat => Object.keys(C.DISCIPLINES).includes(stat.name))
                         if (discData)
                             repDiscs[discData.name] = {
                                 sec: section,
@@ -2146,9 +2122,9 @@ const Char = (() => {
                     if (_.uniq(discDupeCheck).length !== discDupeCheck.length) {
                         errorLog += `<br>Duplicate Discipline(s) on ${D.GetName(charID)}: ${_.sortBy(discDupeCheck, v => v).join(" ")}`
                     } else {
-                        for (const discAbv of _.keys(C.DISCABBVS)) {
+                        for (const discAbv of Object.keys(C.DISCABBVS)) {
                             const discName = C.DISCABBVS[discAbv]
-                            if (_.keys(repDiscs).includes(discName))
+                            if (Object.keys(repDiscs).includes(discName))
                                 if (_.findKey(charData.otherdiscs, v => v.includes(discAbv)))
                                     attrList[`repeating_${repDiscs[discName].sec}_${repDiscs[discName].rowID}_disc`] = D.Int(_.findKey(charData.otherdiscs, v => v.includes(discAbv)))
                                 else {

@@ -523,15 +523,15 @@ const Chat = (() => {
                 testChars = ["M", "t", " ", "0"],
                 testColors = ["red", "blue", "green", "purple"],
                 reportTableRows = []
-            for (const fontName of _.keys(D.CHARWIDTH)) {
+            for (const fontName of Object.keys(D.CHARWIDTH)) {
                 if (!FONTDATA.types.includes(D.Capitalize(fontName)))
                     continue
                 reportTableRows.push(...[
                     `<tr style="border: 2px solid black;"><th colspan = "${3 + testChars.length}"><h4 style="text-align: left; background-color: #555555; color: white; text-indent: 10px;">${D.Capitalize(fontName)}</h4></th></tr>`,
                     `<tr style="height: 20px; font-size: 12px; background-color: #AAAAAA; border: 2px solid black; border-bottom: 1px solid black; line-height: 16px;"><th style="width: 30px; text-align: right;">S</th><th style="width: 30px; text-align: right;">#</th>${testChars.map(x => `<th style="width: 50px; text-align: right;">[${x.replace(/\s/gu, "&nbsp;")}]</th>`)}<th style="width: 50px; text-align: right; font-size: 8px; line-height: 8px;padding-right: 5px;">Line<br>Height</th><tr>`
                 ])
-                for (const fontSize of _.keys(D.CHARWIDTH[fontName])) {
-                    charCounts.unshift(_.keys(D.CHARWIDTH[fontName][fontSize]).filter(x => x.length === 1).length)
+                for (const fontSize of Object.keys(D.CHARWIDTH[fontName])) {
+                    charCounts.unshift(Object.keys(D.CHARWIDTH[fontName][fontSize]).filter(x => x.length === 1).length)
                     reportTableRows.push(`<tr style="border-left: 2px solid black; border-right: 2px solid black;"><td style="text-align: right;">${
                         fontSize
                     }</td><td style="text-align: right;">${
@@ -542,7 +542,7 @@ const Chat = (() => {
                         D.Round(D.CHARWIDTH[fontName][fontSize].lineHeight, 2, true)
                     }</td></tr>`)
                     if (charList.length === 0)
-                        charList.push(..._.keys(D.CHARWIDTH[fontName][fontSize]).filter(x => x.length === 1))
+                        charList.push(...Object.keys(D.CHARWIDTH[fontName][fontSize]).filter(x => x.length === 1))
                 }
                 if (_.uniq(charCounts).length !== 1)
                     reportTableRows.push(...[

@@ -45,7 +45,7 @@ const D = (() => {
                 for (const str of [
                     ..._.flatten(_.values(C.ATTRIBUTES)),
                     ..._.flatten(_.values(C.SKILLS)),
-                    ..._.keys(C.DISCIPLINES),
+                    ...Object.keys(C.DISCIPLINES),
                     ...C.TRACKERS,
                     ...C.MISCATTRS
                 ])
@@ -167,7 +167,7 @@ const D = (() => {
                                     }
                                     setTimeout(() => {
                                         state[C.GAMENAME].Media.TokenSrcs = {}
-                                        for (const srcRef of _.keys(srcData))
+                                        for (const srcRef of Object.keys(srcData))
                                             state[C.GAMENAME].Media.TokenSrcs[srcRef] = srcData[srcRef]
                                         D.Alert(`Finished! Media Token Sources updated to:<br><br>${D.JS(state[C.GAMENAME].Media.TokenSrcs)}`, "!data refresh tokensrcs")
                                     }, 2000)
@@ -246,7 +246,7 @@ const D = (() => {
         ALLSTATS = [
             ..._.flatten(_.values(C.ATTRIBUTES)),
             ..._.flatten(_.values(C.SKILLS)),
-            ..._.keys(C.DISCIPLINES),
+            ...Object.keys(C.DISCIPLINES),
             ...C.TRACKERS
         ]
     // #endregion
@@ -433,7 +433,7 @@ const D = (() => {
                             } else {
                                 const listDelver = (list) => {
                                     const returns = []
-                                    for (const key of _.keys(list))
+                                    for (const key of Object.keys(list))
                                         returns.push(`<div style="display: block; margin-left: 7px;">${key}: ${replacer(key, list[key])},</div>`)
                                     return `<b>{</b><div style="display: block; margin-left: 7px;">${returns.join("").slice(0, -7)}</div></div><b>}</b>`
                                 }
@@ -652,7 +652,7 @@ const D = (() => {
             return str
         },
         clone = (obj) => {
-            if (_.isObject(obj) && _.keys(obj).length) {
+            if (_.isObject(obj) && Object.keys(obj).length) {
                 const objToString = JSON.stringify(obj)
                 if (_.isString(objToString))
                     return JSON.parse(objToString)
@@ -812,6 +812,9 @@ const D = (() => {
             }
             sendChatMessage(getGMID(), msg, title)
         },
+    // #endregion
+
+    // #region COMMAND MENU: Prompting GM, Sending Command Menu
         promptGM = (menuHTML, replyFunc) => {
             if (VAL({string: menuHTML}, "promptGM")) {
                 if (VAL({func: replyFunc})) {
@@ -828,13 +831,14 @@ const D = (() => {
         },
         receivePrompt = (replyString, objects) => {
             if (VAL({string: replyString, function: PROMPTFUNC}, "receivePrompt")) {
+                replyString = replyString.replace(/_colon_/gu, ":")
                 const func = PROMPTFUNC
                 PROMPTFUNC = null
-                if (func(replyString, objects)) {
-                    DB("Received 'TRUE' from reply function: RESTORING.", "receivePrompt")
+                if (func(replyString, objects) === C.REPLY.KEEPOPEN) {
+                    // DB("Received 'TRUE' from reply function: RESTORING.", "receivePrompt")
                     PROMPTFUNC = func
                 } else {
-                    DB("Did NOT receive 'TRUE' from reply function: CLEARING.", "receivePrompt")
+                    // DB("Did NOT receive 'TRUE' from reply function: CLEARING.", "receivePrompt")
                     Roller.Lock(false)
                     if (STATE.REF.PROMPTCLOCK) {
                         TimeTracker.ToggleClock(true)
@@ -844,34 +848,10 @@ const D = (() => {
             }
         },
         isMenuMemoed = memoID => Boolean(memoID && memoID in STATE.REF.COMMANDMENUS),
-        commandMenu = (menuData = {}, replyFunc = null, memoID, isRebuilding = false) => {
+        commandMenu = (menuData = {}, replyFunc = null, memoID, isRebuilding = false) => { // "menu" snippet for detailed instructions
             if (memoID && memoID in STATE.REF.COMMANDMENUS && !isRebuilding) {
                 promptGM(STATE.REF.COMMANDMENUS[memoID])
             } else {
-                
-                /* MENU DATA:
-                    {
-                        title: <string>
-                        rows: [
-                            Each element represents a full-width horizontal <div> block, contained with "block".
-                            Elements should be of the form:
-                                {
-                                    type: <string: "Column", "Title", "Header", "Body", "ButtonLine", "ButtonSubheader">
-                                    contents: <
-                                        for TITLE, HEADLINE, TEXT: <string>
-                                        for COLUMN: <array: each element represents a HORIZONTAL panel, each given in the form of nested MENU DATA objects:
-                                            <list: {title: <string>, rows: <as MENU DATA>}>
-                                                - when columns have been exhausted, will proceed with a new block.
-                                        for BUTTONS: <array: each element represents a line of buttons, of form:
-                                                        for BUTTONS: <list: {name, command, [styles]}>
-                                                        for SPACERS: <number: percentage of width, or 0 for equal spacing > 
-                                    [buttonStyles]: <list of styles to apply to ALL of the buttons in a ButtonLine
-                                    [styles]: <list of styles for the div, to override the defaults, where keys are style tags and values are the settings>
-                                } 
-                        ]
-                        [blockStyles:] <override C.HTML.Block 'options' parameter.
-                    }
-                    */
                 const htmlRows = [],
                     customStyles = {
                         Title: {
@@ -925,6 +905,7 @@ const D = (() => {
                                             } else {
                                                 if (entity.name.length > 12)
                                                     entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
+                                                entity.command = entity.command.replace(/:/gu, "_colon_")
                                                 const button = new Button(entity.name, entity.command, Object.assign({}, {width: `${flexEntityWidth}%`}, customStyles.Button || {}, rowData.buttonStyles || {}, entity.styles || {}))
                                                 buttonsCode.push(button.HTML)
                                             }
@@ -942,7 +923,6 @@ const D = (() => {
                             }
                         return sectionHTML.join("")
                     }
-
                 htmlRows.push(parseSection(menuData))
                 if (menuData.title)
                     htmlRows.unshift(C.HTML.Title(menuData.title, Object.assign({}, customStyles.Title)))
@@ -1008,7 +988,7 @@ const D = (() => {
                 if (VAL({string: needle}) || VAL({number: needle})) {
                     // STEP ONE: BUILD HAYSTACK.
                         // HAYSTACK = ARRAY? --> HAY = ARRAY
-                        // HAYSTACK = LIST? ---> HAY = ARRAY (_.keys(H))
+                        // HAYSTACK = LIST? ---> HAY = ARRAY (Object.keys(H))
                         // HAYSTACK = STRING? -> HAY = H
                     
                     if (haystack && haystack.gramSizeLower)
@@ -1023,7 +1003,7 @@ const D = (() => {
                             hay = [...haystack]
                             break
                         case "list":
-                            hay = _.keys(haystack)
+                            hay = Object.keys(haystack)
                             break
                         case "string":
                             hay = haystack
@@ -1053,7 +1033,7 @@ const D = (() => {
                             ndl = ndl.replace(/\W+/gu, "")
                             hay = _.map(hay, v => VAL({string: v}) || VAL({number: v}) ? v.toString().replace(/\W+/gu, "") : v)
                         }
-                        return match && hayType === "array" ? haystack[match - 1] : haystack[_.keys(haystack)[match - 1]]
+                        return match && hayType === "array" ? haystack[match - 1] : haystack[Object.keys(haystack)[match - 1]]
                     } else {
                         for (let i = 0; i <= 1; i++) {
                             match = hay === ndl && ["", hay]
@@ -1100,7 +1080,7 @@ const D = (() => {
                 if (VAL({string: needle}) || VAL({number: needle})) {
                     // STEP ONE: BUILD HAYSTACK.
                         // HAYSTACK = ARRAY? --> HAY = ARRAY
-                        // HAYSTACK = LIST? ---> HAY = ARRAY (_.keys(H))
+                        // HAYSTACK = LIST? ---> HAY = ARRAY (Object.keys(H))
                         // HAYSTACK = STRING? -> HAY = H
                     const hayType = VAL({array: haystack}) && "array" ||
                                     VAL({list: haystack}) && "list" ||
@@ -1112,7 +1092,7 @@ const D = (() => {
                             hay = [...haystack]
                             break
                         case "list":
-                            hay = _.keys(haystack)
+                            hay = Object.keys(haystack)
                             break
                         case "string":
                             hay = haystack
@@ -1154,7 +1134,7 @@ const D = (() => {
                             ndl = ndl.replace(/\W+/gu, "")
                             hay = _.map(hay, v => VAL({string: v}) || VAL({number: v}) ? v.toString().replace(/\W+/gu, "") : v)
                         }
-                        return match && hayType === "array" ? haystack[match - 1] : haystack[_.keys(haystack)[match - 1]]
+                        return match && hayType === "array" ? haystack[match - 1] : haystack[Object.keys(haystack)[match - 1]]
                     } else {
                         for (let i = 0; i <= 1; i++) {
                             match = hay === ndl && ["", hay]

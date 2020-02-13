@@ -404,8 +404,8 @@ const Roller = (() => {
                                 }
                                 case "global": {
                                     const rollStrings = []
-                                    for (let i = 0; i < _.keys(STATE.REF.rollEffects).length; i++)
-                                        rollStrings.push(`${i + 1}: ${_.keys(STATE.REF.rollEffects)[i]}`)
+                                    for (let i = 0; i < Object.keys(STATE.REF.rollEffects).length; i++)
+                                        rollStrings.push(`${i + 1}: ${Object.keys(STATE.REF.rollEffects)[i]}`)
                                     D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "!roll effects get global")
                                     break
                                 }
@@ -417,8 +417,8 @@ const Roller = (() => {
                                 default: {
                                     const charObjs = D.GetChars("all"),
                                         returnStrings = ["<h3>GLOBAL EFFECTS:</h3><!br>"]
-                                    for (let i = 0; i < _.keys(STATE.REF.rollEffects).length; i++)
-                                        returnStrings.push(`${i + 1}: ${_.keys(STATE.REF.rollEffects)[i]}`)
+                                    for (let i = 0; i < Object.keys(STATE.REF.rollEffects).length; i++)
+                                        returnStrings.push(`${i + 1}: ${Object.keys(STATE.REF.rollEffects)[i]}`)
                                     returnStrings.push("")              
                                     returnStrings.push("<h3>CHARACTER EFFECTS:</h3><!br>")
                                     for (const char of charObjs) {
@@ -1099,7 +1099,7 @@ const Roller = (() => {
             let isReapplying = false
             if (VAL({string: rollEffectString, list: rollInput}, "applyRollEffects")) {
                 rollInput.appliedRollEffects = rollInput.appliedRollEffects || []
-                const rollEffects = _.compact(_.without(_.uniq([...rollEffectString.split("|"), ..._.keys(STATE.REF.rollEffects), ...rollInput.rollEffectsToReapply || []]), ...rollInput.appliedRollEffects)),
+                const rollEffects = _.compact(_.without(_.uniq([...rollEffectString.split("|"), ...Object.keys(STATE.REF.rollEffects), ...rollInput.rollEffectsToReapply || []]), ...rollInput.appliedRollEffects)),
                     [rollData, rollResults] = rollInput.rolls ? [null, rollInput] : [rollInput, null],
                     checkInput = (input, rollMod, restriction) => {
                         DB({rollMod, restriction, "Boolean(input.rolls)": Boolean(input.rolls), "D.IsIn(restriction/rollMod, RREFFECTS.restriction/rollMod)": Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction, true) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod, true))}, "checkInput")
@@ -1176,8 +1176,8 @@ const Roller = (() => {
                             DB("... Check PASSED. Moving on...", "checkRestriction")
                         // TEST: If restriction is "physical", "social" or "mental", does an appropriate trait match?
                         } else if (D.IsIn(restriction, ["physical", "mental", "social"], true)) {
-                            DB(`Restriction = ARENA.  Trait Keys: ${D.JSL(_.keys(traits))}`, "checkRestriction")
-                            if (!_.intersection(_.map([...C.ATTRIBUTES[restriction], ...C.SKILLS[restriction]], v => v.toLowerCase()), _.keys(traits)).length) {
+                            DB(`Restriction = ARENA.  Trait Keys: ${D.JSL(Object.keys(traits))}`, "checkRestriction")
+                            if (!_.intersection(_.map([...C.ATTRIBUTES[restriction], ...C.SKILLS[restriction]], v => v.toLowerCase()), Object.keys(traits)).length) {
                                 DB("... Check FAILED.  Returning FALSE", "checkRestriction")
                                 return false
                             }
@@ -1228,8 +1228,8 @@ const Roller = (() => {
                             }
                             DB("... Check PASSED. Moving on...", "checkRestriction")
                         // TEST: If none of the above, does restriction match a trait or a flag?
-                        } else if (!D.IsIn(restriction, [..._.keys(traits), ..._.keys(flags)], true)) {
-                            DB(`TRAIT/FLAG check FAILED for: ${D.JSL(_.keys(traits))} and ${D.JSL(_.keys(flags))}, returning FALSE`, "checkRestriction")
+                        } else if (!D.IsIn(restriction, [...Object.keys(traits), ...Object.keys(flags)], true)) {
+                            DB(`TRAIT/FLAG check FAILED for: ${D.JSL(Object.keys(traits))} and ${D.JSL(Object.keys(flags))}, returning FALSE`, "checkRestriction")
                             return false
                         }
                     // If effect passes all of the threshold tests, return true.
@@ -1247,7 +1247,7 @@ const Roller = (() => {
                     [rollMod, rollTarget] = _.map(rollMod.split(":"), v => D.Int(v) || v.toLowerCase())
                     rollRestrictions = _.map(rollRestrictions.split("/"), v => v.toLowerCase())
                     rollTraits = _.object(
-                        _.map(_.keys(rollInput.traitData), v => v.toLowerCase()),
+                        _.map(Object.keys(rollInput.traitData), v => v.toLowerCase()),
                         _.map(_.values(rollInput.traitData), v => D.Int(v.value))
                     )
                     DB({effectString, rollRestrictions, rollMod, rollLabel, removeWhen, rollTarget, rollTraits, rollFlags}, "applyRollEffects")
@@ -1261,7 +1261,7 @@ const Roller = (() => {
                     DB(`Roll Traits: ${D.JSL(rollTraits)}<br>Roll Flags: ${D.JSH(rollFlags)}`, "applyRollEffects")
 
                 // THRESHOLD TEST OF ROLLTARGET: IF TARGET SPECIFIED BUT DOES NOT EXIST, SKIP PROCESSING THIS ROLL EFFECT.
-                    if (VAL({string: rollTarget}) && !D.IsIn(rollTarget, _.keys(rollTraits), true) && !D.IsIn(rollTarget, _.keys(rollFlags), true)) {
+                    if (VAL({string: rollTarget}) && !D.IsIn(rollTarget, Object.keys(rollTraits), true) && !D.IsIn(rollTarget, Object.keys(rollFlags), true)) {
                         DB(`Roll Target ${rollTarget} NOT present, SKIPPING EFFECT.`, "applyRollEffects")
                         continue
                     }
@@ -1320,7 +1320,7 @@ const Roller = (() => {
                         // If rollMod is a number, Is there a rollTarget?
                             if (VAL({string: rollTarget}))
                             // If so, is the rollTarget present in traits?
-                                if (D.IsIn(rollTarget, _.keys(rollTraits), true))
+                                if (D.IsIn(rollTarget, Object.keys(rollTraits), true))
                                 // If so, cap any negative modifier to the value of the target trait (i.e. no negative traits)
                                     rollMod = rollMod < 0 ? Math.max(-1 * rollTraits[rollTarget], rollMod) : rollMod
                             // If not in traits, rollTarget must be in flags (validation happened above)
@@ -1339,7 +1339,7 @@ const Roller = (() => {
                             // If so, is there a rollTarget?
                                 if (VAL({string: rollTarget})) {
                                 // If so, is the rollTarget present in traits?
-                                    if (D.IsIn(rollTarget, _.keys(rollTraits), true))
+                                    if (D.IsIn(rollTarget, Object.keys(rollTraits), true))
                                     // If so, multiply trait accordingly (rounding DOWN to a minimum of one) and set rollMod to the difference.
                                         rollMod = Math.max(1, Math.floor(rollTraits[rollTarget] * parseFloat(rollMod.replace(/x/gu, "")))) - rollTraits[rollTarget]
                                 // If not in traits, rollTarget must be in flags (validation happened above)
@@ -1384,7 +1384,7 @@ const Roller = (() => {
                                     let isContinuing = true
                                 // Identify the target: either a trait or a flag. Start with traits (since flags will sometimes reference them,
                                 // and if they do, you want to apply the effect to the trait).
-                                    for (const trait of _.keys(rollData.traitData))
+                                    for (const trait of Object.keys(rollData.traitData))
                                         if (D.FuzzyMatch(rollData.traitData[trait].display, regexData.traitString)) {
                                             DB(`... Trait Found: ${D.JSL(rollData.traitData[trait])}`, "applyRollEffects")
                                             rollData.traitData[trait].display = rollData.traitData[trait].display.replace(new RegExp(regexData.regexString, "gu"), regexData.replaceString)
@@ -1713,18 +1713,18 @@ const Roller = (() => {
                 for (const effect of effectStrings)
                     STATE.REF.rollEffects[effect] = []
                 const rollStrings = []
-                for (let i = 0; i < _.keys(STATE.REF.rollEffects).length; i++)
-                    rollStrings.push(`${i + 1}: ${_.keys(STATE.REF.rollEffects)[i]}`)
+                for (let i = 0; i < Object.keys(STATE.REF.rollEffects).length; i++)
+                    rollStrings.push(`${i + 1}: ${Object.keys(STATE.REF.rollEffects)[i]}`)
                 D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "addGlobalRollEffects")
             }
         },
         delGlobalRollEffects = effectStrings => {
             for (const effectString of effectStrings)
                 if (VAL({number: effectString}))
-                    delete STATE.REF.rollEffects[_.keys(STATE.REF.rollEffects)[Math.max(0, D.Int(effectString) - 1)]]
+                    delete STATE.REF.rollEffects[Object.keys(STATE.REF.rollEffects)[Math.max(0, D.Int(effectString) - 1)]]
                 else
                     STATE.REF.rollEffects = _.without(STATE.REF.rollEffects, effectString)
-            D.Alert(`Global Roll Effects revised to:<br><br>${_.keys(STATE.REF.rollEffects).join("<br>")}`, "delGlobalRollEffects")
+            D.Alert(`Global Roll Effects revised to:<br><br>${Object.keys(STATE.REF.rollEffects).join("<br>")}`, "delGlobalRollEffects")
         },
         addGlobalExclusion = (charRef, effectStrings) => {
             const charObj = D.GetChar(charRef)
@@ -1732,9 +1732,9 @@ const Roller = (() => {
                 for (const effect of effectStrings) {
                     let effectString = effect
                     if (VAL({number: effectString}))
-                        effectString = _.keys(STATE.REF.rollEffects)[D.Int(effectString - 1)]
+                        effectString = Object.keys(STATE.REF.rollEffects)[D.Int(effectString - 1)]
                     else
-                        effectString = _.find(_.keys(STATE.REF.rollEffects, v => D.FuzzyMatch(effectString, v)))        
+                        effectString = _.find(Object.keys(STATE.REF.rollEffects, v => D.FuzzyMatch(effectString, v)))        
                     if (STATE.REF.rollEffects[effectString]) {
                         STATE.REF.rollEffects[effectString].push(charObj.id)
                         D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATE.REF.rollEffects[effectString])}`, "addGlobalExclusion")
@@ -1749,13 +1749,13 @@ const Roller = (() => {
                 for (const effect of effectStrings) {
                     let effectString = effect
                     if (VAL({number: effectString}))
-                        effectString = _.keys(STATE.REF.rollEffects)[D.Int(effectString - 1)]
+                        effectString = Object.keys(STATE.REF.rollEffects)[D.Int(effectString - 1)]
                     else
-                        effectString = _.find(_.keys(STATE.REF.rollEffects, v => D.FuzzyMatch(effectString, v)))
+                        effectString = _.find(Object.keys(STATE.REF.rollEffects, v => D.FuzzyMatch(effectString, v)))
                     if (!STATE.REF.rollEffects[effectString]) {
                         const checkEffects = _.filter(STATE.REF.rollEffects, v => v.includes(charObj.id))
                         if (checkEffects.length === 1)
-                            [effectString] = _.keys(checkEffects)
+                            [effectString] = Object.keys(checkEffects)
                         else if (checkEffects.length === 0)
                             D.Alert(`Character ${D.JS(charObj.get("name"))} is not listed in any roll effect exclusions.`, "delGlobalExclusion")
                         else if (checkEffects.length > 1)
@@ -2973,18 +2973,18 @@ const Roller = (() => {
             if (!rollLines.difficulty || !rollData.diff && !rollData.diffMod)
                 Media.ToggleImg("RollerFrame_Diff", false)
             if ((logLines.mainRoll + logLines.difficulty).replace(/<div.*?span.*?>/gu, "").length > 40)
-                for (const abbv of _.keys(C.ATTRABBVS))
+                for (const abbv of Object.keys(C.ATTRABBVS))
                     logLines.mainRoll = logLines.mainRoll.replace(new RegExp(C.ATTRABBVS[abbv], "gui"), abbv)
             if ((logLines.mainRoll + logLines.difficulty).replace(/<div.*?span.*?>/gu, "").length > 40)
-                for (const abbv of _.keys(C.SKILLABBVS))
+                for (const abbv of Object.keys(C.SKILLABBVS))
                     logLines.mainRoll = logLines.mainRoll.replace(new RegExp(C.SKILLABBVS[abbv], "gui"), abbv)
             if ((stLines.mainRoll + stLines.difficulty).replace(/<div.*?span.*?>/gu, "").length > 40)
-                for (const abbv of _.keys(C.ATTRABBVS)) {
+                for (const abbv of Object.keys(C.ATTRABBVS)) {
                     stLines.mainRoll = stLines.mainRoll.replace(new RegExp(C.ATTRABBVS[abbv], "gui"), abbv)
                     playerNPCLines.mainRoll = playerNPCLines.mainRoll.replace(new RegExp(C.ATTRABBVS[abbv], "gui"), abbv)
                 }
             if ((stLines.mainRoll + stLines.difficulty).replace(/<div.*?span.*?>/gu, "").length > 40)
-                for (const abbv of _.keys(C.SKILLABBVS)) {
+                for (const abbv of Object.keys(C.SKILLABBVS)) {
                     stLines.mainRoll = stLines.mainRoll.replace(new RegExp(C.SKILLABBVS[abbv], "gui"), abbv)
                     playerNPCLines.mainRoll = playerNPCLines.mainRoll.replace(new RegExp(C.SKILLABBVS[abbv], "gui"), abbv)
                 }
@@ -3085,7 +3085,7 @@ const Roller = (() => {
             
             if (_.values(deltaAttrs).length && !rollData.notChangingStats) {
                 DB(`CHANGING ATTRIBUTES: ${D.JSL(deltaAttrs)}`, "displayRoll")
-                for (const attrName of _.keys(deltaAttrs))
+                for (const attrName of Object.keys(deltaAttrs))
                     if (attrName === "humanity" || attrName === "stains") {
                         Char.AdjustTrait(rollData.charID, attrName, deltaAttrs[attrName], 0, 10)
                         delete deltaAttrs[attrName]
@@ -3214,15 +3214,42 @@ const Roller = (() => {
         },
         secrecyMenu = (reportMessage) => {
             const buttonLines = Object.values(_.groupBy(
-                    Object.values(
-                        D.KeyMapObj(STATE.REF.nextRollFlags, null,
-                                    (v, k) => ({
-                                        name: `${k.replace(/isHiding/gu, "").replace(/([a-z])([A-Z])/gu, "$1 $2")}`,
-                                        command: `!reply ${v ? "" : "!"}${k}`,
-                                        styles: {bgColor: v && C.COLORS.darkgrey || C.COLORS.green, color: v && C.COLORS.white || C.COLORS.black}
-                                    }))
-                    ), (x, i) => Math.floor((i+2)/3))).map(x => ({type: "ButtonLine", contents: x.length === 1 ? [0, x[0], 0] : x, buttonStyles: {}, styles: {}})),
-                replyFunction = (replyString) => {
+                Object.values(
+                    D.KeyMapObj(STATE.REF.nextRollFlags, null,
+                                (v, k) => ({
+                                    name: `${k.replace(/isHiding/gu, "").replace(/([a-z])([A-Z])/gu, "$1 $2")}`,
+                                    command: `!reply ${v ? "" : "!"}${k}`,
+                                    styles: {bgColor: v && C.COLORS.darkgrey || C.COLORS.green, color: v && C.COLORS.white || C.COLORS.black}
+                                }))
+                ), (x, i) => Math.floor((i+2)/3))).map(x => ({type: "ButtonLine", contents: x.length === 1 ? [0, x[0], 0] : x, buttonStyles: {}, styles: {}}))
+            buttonLines.unshift({
+                type: "ButtonLine",
+                contents: [
+                    0,
+                    {name: "Show All", command: "!reply all", styles: {bgColor: C.COLORS.puregreen, color: C.COLORS.black /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
+                    {name: "Default", command: "!reply default", styles: {bgColor: C.COLORS.midgold, color: C.COLORS.black /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
+                    {name: "Hide All", command: "!reply !all", styles: {bgColor: C.COLORS.darkgrey /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
+                    0
+                ]
+            })
+            buttonLines.push({
+                type: "ButtonLine",
+                contents: [
+                    0,
+                    {name: "Finished", command: "!reply done", styles: {bgColor: C.COLORS.brightblue, color: C.COLORS.black /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
+                    0
+                ]
+            })
+            D.CommandMenu(
+                {
+                    title: "Roll Secrecy",
+                    rows: [
+                        {type: "ClearBody", contents: reportMessage, styles: {textAlign: "center"}},
+                        ...buttonLines,
+                        {type: "Header", contents: "Roller Locked Until Finished"}
+                    ]
+                },
+                (replyString) => {
                     const rollFlagKey = replyString.replace(/^!/gu, ""),
                         rollFlagName = rollFlagKey.replace(/isHiding/gu, "").replace(/([a-z])([A-Z])/gu, "$1 $2"),
                         toggle = replyString.startsWith("!")
@@ -3241,39 +3268,6 @@ const Roller = (() => {
                         D.Call(`!roll set secrecy menu ${C.HTML.ClearBody(`Now <b><u>${toggle && "HIDING" || "SHOWING"}</u> &quot;${rollFlagName}&quot;</b>`, {margin: "0px", textAlign: "center", color: toggle && C.COLORS.brightgrey || C.COLORS.puregreen})}`) // <span style="font-family: 'color: ${toggle && C.COLORS.brightgrey || C.COLORS.bright};">Now <b><u>${toggle && "HIDING" || "SHOWING"}</u> &quot;${rollFlagName}&quot;</b>`)
                     }
                 }
-            buttonLines.unshift({
-                type: "ButtonLine",
-                contents: [
-                    0,
-                    {name: "Show All", command: "!reply all", styles: {bgColor: C.COLORS.puregreen, color: C.COLORS.black /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
-                    {name: "Default", command: "!reply default", styles: {bgColor: C.COLORS.midgold, color: C.COLORS.black /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
-                    {name: "Hide All", command: "!reply !all", styles: {bgColor: C.COLORS.darkgrey /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
-                    0
-                ],
-                buttonStyles: {},
-                styles: { /* height, width, margin, textAlign */}
-            })
-            buttonLines.push({
-                type: "ButtonLine",
-                contents: [
-                    0,
-                    {name: "Finished", command: "!reply done", styles: {bgColor: C.COLORS.brightblue, color: C.COLORS.black /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */}},
-                    0
-                ],
-                buttonStyles: {},
-                styles: {/* height, width, margin, textAlign */}
-            })
-            D.CommandMenu(
-                {
-                    title: "Roll Secrecy",
-                    rows: [
-                        {type: "ClearBody", contents: reportMessage, styles: {textAlign: "center"}},
-                        ...buttonLines,
-                        {type: "Header", contents: "Roller Locked Until Finished"}
-                    ],
-                    blockStyles: { /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */ }
-                },
-                replyFunction
             )
         },
         changeRoll = (deltaDice, isNPCRoll) => {
@@ -3470,10 +3464,10 @@ const Roller = (() => {
             let oddsKey = ""
             // D.Alert(`charRef: ${D.JS(charRef)}, charObj: ${D.JS(charObj)}`)
                 
-            for(const resRef of _.keys(resonances))
-                if (_.keys(resonances).findIndex(x => x === resRef) <= 3 ||
+            for(const resRef of Object.keys(resonances))
+                if (Object.keys(resonances).findIndex(x => x === resRef) <= 3 ||
                         countRes(resRef, posResRefs) - countRes(resRef, negResRefs) > 0)
-                    resBins[_.keys(resBins)[countRes(resRef, posResRefs) - countRes(resRef, negResRefs) + 3]].push(resRef)
+                    resBins[Object.keys(resBins)[countRes(resRef, posResRefs) - countRes(resRef, negResRefs) + 3]].push(resRef)
                 else
                     resBins.zero.push(resRef)
             for (const bin of ["2neg", "neg", "pos", "2pos"])
@@ -3527,32 +3521,32 @@ const Roller = (() => {
                     record[results[0]][results[1]]++
                 }
                 let [flaTot, intTot] = [0,0]
-                for (const intensity of _.keys(record).slice(0,4)) {
-                    dbString += `Keys: ${_.keys(record).slice(0,4)}, Vals: [${_.values(record[intensity]).slice(0,7).join(",")}], Adding: ${_.values(record[intensity]).slice(0,7).reduce((tot, x) => tot + x, 0)}. `
+                for (const intensity of Object.keys(record).slice(0,4)) {
+                    dbString += `Keys: ${Object.keys(record).slice(0,4)}, Vals: [${_.values(record[intensity]).slice(0,7).join(",")}], Adding: ${_.values(record[intensity]).slice(0,7).reduce((tot, x) => tot + x, 0)}. `
                     record[intensity].TOT += _.values(record[intensity]).slice(0,7).reduce((tot, x) => tot + x, 0)
                     intTot += record[intensity].TOT
                 }
-                for (const flavor of _.keys(record).slice(4)) {
+                for (const flavor of Object.keys(record).slice(4)) {
                     record[flavor].TOT += _.values(record[flavor]).slice(0,4).reduce((tot, x) => tot + x, 0)
                     flaTot += record[flavor].TOT
                 }
-                for (const intensity of _.keys(record).slice(0,4))
+                for (const intensity of Object.keys(record).slice(0,4))
                     record[intensity].PER = `${Math.round(10000*record[intensity].TOT/intTot)/100}%`
-                for (const flavor of _.keys(record).slice(4))
+                for (const flavor of Object.keys(record).slice(4))
                     record[flavor].PER = `${Math.round(10000*record[flavor].TOT/flaTot)/100}%`
                     
                 const returnRows = []
-                for (const k of _.keys(record)) {
+                for (const k of Object.keys(record)) {
                     const thisRowLines = []
-                    for (const kk of _.keys(record[k]))
+                    for (const kk of Object.keys(record[k]))
                         thisRowLines.push(`${kk}: ${record[k][kk]}`)
                     returnRows.push(`<b>${k}</b>: { ${thisRowLines.join(", ")} }`)
                 }     
                 
                 const intResults = _.values(record).slice(0,4).map(x => x.PER).join(", "),
-                    flaResults = _.keys(record).slice(4).map(k => [k.slice(0,1), parseFloat(record[k].PER.slice(0,-1))]).sort((a,b) => b[1] - a[1]).map(x => `${x[0]}: ${x[1]}%`).join(", ")
+                    flaResults = Object.keys(record).slice(4).map(k => [k.slice(0,1), parseFloat(record[k].PER.slice(0,-1))]).sort((a,b) => b[1] - a[1]).map(x => `${x[0]}: ${x[1]}%`).join(", ")
                 
-                D.Alert(`${D.JS(_.keys(resBins).map(x => `      <b>${x}</b>: [${resBins[x].join(",")}]`).join(", "))}<br><br><pre>${D.JS(returnRows.join("<br>"))}</pre><br><pre>Flavor..: ${D.JS(resOdds.flavor.map(x => `_: ${D.Int(x*10000)/100}.${"0".repeat(4 - `${D.Int(x*10000)/100}`.length)}%`).join(", "))}]<br>Compared: ${flaResults}</pre><br><br>Int Odds: [${D.JS(resOdds.intensity.map(x => `${x*100}%`).join(", "))}]<br>Compared: ${intResults}`)
+                D.Alert(`${D.JS(Object.keys(resBins).map(x => `      <b>${x}</b>: [${resBins[x].join(",")}]`).join(", "))}<br><br><pre>${D.JS(returnRows.join("<br>"))}</pre><br><pre>Flavor..: ${D.JS(resOdds.flavor.map(x => `_: ${D.Int(x*10000)/100}.${"0".repeat(4 - `${D.Int(x*10000)/100}`.length)}%`).join(", "))}]<br>Compared: ${flaResults}</pre><br><br>Int Odds: [${D.JS(resOdds.intensity.map(x => `${x*100}%`).join(", "))}]<br>Compared: ${intResults}`)
             }
             if (VAL({charObj}) && ["Intense", "Acute"].includes(intChoice))
                 setAttrs(charObj.id, {resonance: resChoice})
@@ -3571,7 +3565,7 @@ const Roller = (() => {
             if (["l", "r", "c", "", undefined, null].includes(posRes)) {
                 const locations = Session.ActiveLocations(posRes);
                 [posRes, negRes] = ["", ""]
-                for (const location of _.keys(locations))
+                for (const location of Object.keys(locations))
                     if (location.includes("District")) {
                         posRes += C.DISTRICTS[locations[location]].resonance[0] || ""
                         negRes += C.DISTRICTS[locations[location]].resonance[1] || ""

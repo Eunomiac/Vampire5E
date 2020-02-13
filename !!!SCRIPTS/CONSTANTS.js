@@ -132,6 +132,13 @@ const C = (() => {
         },
     // #endregion
 
+    // #region ENUMERATORS
+        REPLY = { // For D.CommandMenu "!reply" Function
+            KEEPOPEN: "keepOpen",
+
+        },
+    // #endregion
+
     // #region IMAGE DEFAULTS BACKGROUND IMAGES    
         IMAGES = {
             blank: "https://s3.amazonaws.com/files.d20.io/images/96594791/NKN-0QyHbcOXS2_o5X6Y2A/thumb.png?1573368252"
@@ -3285,6 +3292,8 @@ const C = (() => {
         }
     // #endregion
 
+    Object.freeze(REPLY)
+
     return {
         CheckInstall: checkInstall,
 
@@ -3296,6 +3305,8 @@ const C = (() => {
         NUMBERWORDS,
         ORDINALSUFFIX,
         COLORS,
+
+        REPLY,
 
         IMAGES, BGIMAGES,
         HANDOUTHTML,

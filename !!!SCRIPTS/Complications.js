@@ -95,7 +95,7 @@ const Complications = (() => {
                 case "get": {
                     if (args.length)
                         D.Alert([
-                            _.keys(STATE.REF.MAT[D.Int(args[0]-1)]).join(", "),
+                            Object.keys(STATE.REF.MAT[D.Int(args[0]-1)]).join(", "),
                             D.JS(STATE.REF.MAT[D.Int(args[0]-1)])
                         ].join("<br>"))
                     else

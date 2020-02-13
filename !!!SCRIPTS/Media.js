@@ -24,7 +24,13 @@ const Media = (() => {
         initialize = () => {
             const funcID = ONSTACK()
 
-            delete STATE.REF.imgregistry["@TombstoneTokenTopLeft_1"]
+            setImgData("SiteLeft", {top: 876}, true)
+            setImgData("SiteRight", {top: 876}, true)
+            setImgData("SiteBarLeft", {top: 744}, true)
+            setImgData("SiteBarRight", {top: 744}, true)
+            setTextData("SiteNameLeft", {top: 747})
+            setTextData("SiteNameRight", {top: 747})
+
             /* 
             STATE.REF.imgregistry.TombstoneTokenTopLeft_1 = D.Clone(STATE.REF.imgregistry["@TombstoneTokenTopLeft_1"])
             STATE.REF.imgregistry.TombstoneTokenTopLeft_1.name = "TombstoneTokenTopLeft_1"
@@ -61,24 +67,22 @@ const Media = (() => {
                         modeData.lastState = realText
             }
 
-            /* for (const panelName of Object.keys(STATE.REF.panelLog))
+            for (const panelName of Object.keys(STATE.REF.panelLog))
                 killPanel(panelName)
-            for (const panelName of Object.keys(STATE.REF.textregistry).filter(x => x.startsWith("panel")))
-                removeText(panelName, false, true) */
 
             // Initialize IMGDICT Fuzzy Dictionary
             STATE.REF.IMGDICT = Fuzzy.Fix()
-            for (const imgKey of _.keys(STATE.REF.imgregistry))
+            for (const imgKey of Object.keys(STATE.REF.imgregistry))
                 STATE.REF.IMGDICT.add(imgKey)
 
             // Initialize TEXTDICT Fuzzy Dictionary
             STATE.REF.TEXTDICT = Fuzzy.Fix()
-            for (const textKey of _.keys(STATE.REF.textregistry))
+            for (const textKey of Object.keys(STATE.REF.textregistry))
                 STATE.REF.TEXTDICT.add(textKey)
         
             // Initialize AREADICT Fuzzy Dictionary
             STATE.REF.AREADICT = Fuzzy.Fix()
-            for (const areaKey of _.keys(STATE.REF.areas))
+            for (const areaKey of Object.keys(STATE.REF.areas))
                 STATE.REF.AREADICT.add(areaKey)
             OFFSTACK(funcID)
         },
@@ -223,7 +227,7 @@ const Media = (() => {
                         case "get": {
                             switch (D.LCase(call = args.shift())) {
                                 case "names": {
-                                    D.Alert(`Registered Areas:<br>${D.JS(_.keys(REGISTRY.AREA))}`)
+                                    D.Alert(`Registered Areas:<br>${D.JS(Object.keys(REGISTRY.AREA))}`)
                                     break
                                 }
                                 // no default
@@ -248,7 +252,7 @@ const Media = (() => {
                                     break
                                 }
                                 case "names": {
-                                    D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(_.keys(REGISTRY.IMG))}`)
+                                    D.Alert(`<b>IMAGE NAMES:</b><br><br>${D.JS(Object.keys(REGISTRY.IMG))}`)
                                     break
                                 }
                                 case "charsin": {
@@ -335,7 +339,7 @@ const Media = (() => {
                                     else {
                                         REGISTRY.IMG[imgKey].modes = REGISTRY.IMG[imgKey].modes || {}
                                         REGISTRY.IMG[imgKey].modes[mode] = REGISTRY.IMG[imgKey].modes[mode] || {}
-                                        for (const key of _.keys(params)) {
+                                        for (const key of Object.keys(params)) {
                                             if (["true", "false", "null"].includes(D.LCase(params[key])))
                                                 params[key] = {true: true, false: false, null: null}[D.LCase(params[key])]
                                             REGISTRY.IMG[imgKey].modes[mode][key] = params[key]
@@ -422,7 +426,7 @@ const Media = (() => {
                                         REGISTRY.IMG[hostName].cycleSrcs = REGISTRY.IMG[hostName].cycleSrcs || []
                                         REGISTRY.IMG[hostName].cycleSrcs.push(srcName)
                                     }                                    
-                                    if (srcName === "blank" || _.keys(REGISTRY.IMG[hostName].srcs).includes(srcName)) {
+                                    if (srcName === "blank" || Object.keys(REGISTRY.IMG[hostName].srcs).includes(srcName)) {
                                         D.Alert(`Existing image source '${srcName}' added to cycling queue.<br><br>Current Cycling Queue: ${REGISTRY.IMG[hostName].cycleSrcs}`, "!img add cyclesrc")
                                         break
                                     }
@@ -463,7 +467,7 @@ const Media = (() => {
                         case "del": case "delete": {
                             switch (D.LCase(call = args.shift())) {
                                 case "all": {
-                                    for (const hostName of _.keys(REGISTRY.IMG))
+                                    for (const hostName of Object.keys(REGISTRY.IMG))
                                         if (D.LCase(hostName).includes(D.LCase(args.join(" "))))
                                             removeImg(hostName)
                                     break
@@ -479,7 +483,7 @@ const Media = (() => {
                         case "unreg": case "unregister": {
                             switch (D.LCase(call = args.shift())) {
                                 case "allimg": case "allimages": {
-                                    for (const hostName of _.keys(REGISTRY.IMG))
+                                    for (const hostName of Object.keys(REGISTRY.IMG))
                                         if (D.LCase(hostName).includes(D.LCase(args.join(" "))))
                                             removeImg(hostName, true)
                                     break
@@ -577,7 +581,7 @@ const Media = (() => {
                                     const mapIndObj = getImgObj("MapIndicator_Base_1")
                                     toFront(mapIndObj)
                                     if (!["confirm", "skip"].includes(args[0])) {
-                                        STATE.REF.siteNamesOnDeck = _.keys(_.omit(C.SITES, (v) => v.district === null))
+                                        STATE.REF.siteNamesOnDeck = Object.keys(_.omit(C.SITES, (v) => v.district === null))
                                         D.Alert("Site Names loaded, prepare to identify map locations on my mark!", "Auto Site Movement")
                                     } else if (args[0] === "confirm") {
                                         state.VAMPIRE.Session.locationPointer[STATE.REF.siteNamesOnDeck[0]] = {pointerPos: {left: D.Int(mapIndObj.get("left")), top: D.Int(mapIndObj.get("top"))}}
@@ -598,7 +602,7 @@ const Media = (() => {
                                         const hostName = getImgKey(imgObj),
                                             keysSrc = args.shift()
                                         if (isRegImg(hostName) /* && C[(keysSrc || "").toUpperCase()] */) {
-                                            STATE.REF.autoRegSrcNames = _.keys(REGISTRY.IMG[hostName].srcs) // Complications.Cards.map(x => x.name) // _.keys(C[keysSrc.toUpperCase()])
+                                            STATE.REF.autoRegSrcNames = Object.keys(REGISTRY.IMG[hostName].srcs) // Complications.Cards.map(x => x.name) // Object.keys(C[keysSrc.toUpperCase()])
                                             imgSrcAutoReg = hostName
                                             D.Alert(`Automatic registration of image sources toggled ON for ${D.JS(hostName)}.<br><br>Upload image for <b>${STATE.REF.autoRegSrcNames[0]}</b>`, "Image Auto Registration")
                                         } else {
@@ -687,7 +691,7 @@ const Media = (() => {
                                     break
                                 }
                                 case "names": {
-                                    D.Alert(D.JS(_.keys(REGISTRY.TEXT)), "!text get names")
+                                    D.Alert(D.JS(Object.keys(REGISTRY.TEXT)), "!text get names")
                                     break
                                 }
                                 case "widths": {
@@ -834,7 +838,7 @@ const Media = (() => {
                         case "del": case "delete": {
                             switch (D.LCase(call = args.shift())) {
                                 case "all": {
-                                    for (const hostName of _.keys(REGISTRY.TEXT))
+                                    for (const hostName of Object.keys(REGISTRY.TEXT))
                                         if (D.LCase(hostName).includes(D.LCase(args.join(" "))))
                                             removeText(hostName)
                                     break
@@ -890,7 +894,7 @@ const Media = (() => {
                         case "unreg": case "unregister": {
                             switch (D.LCase(call = args.shift())) {
                                 case "alltext": {
-                                    for (const hostName of _.keys(REGISTRY.TEXT))
+                                    for (const hostName of Object.keys(REGISTRY.TEXT))
                                         if (D.LCase(hostName).includes(D.LCase(args.join(" "))))
                                             removeText(hostName, true, true)
                                     break
@@ -1547,7 +1551,7 @@ const Media = (() => {
         },
         modeUpdate = (mediaRefs = "all") => {
             const funcID = ONSTACK()
-            mediaRefs = mediaRefs === "all" ? [..._.keys(REGISTRY.IMG), ..._.keys(REGISTRY.TEXT), ..._.keys(REGISTRY.ANIM)] : _.flatten([mediaRefs], true)
+            mediaRefs = mediaRefs === "all" ? [...Object.keys(REGISTRY.IMG), ...Object.keys(REGISTRY.TEXT), ...Object.keys(REGISTRY.ANIM)] : _.flatten([mediaRefs], true)
             for (const mediaRef of mediaRefs)
                 if (isRegText(mediaRef)) {
                     const textData = getTextData(mediaRef),
@@ -1837,7 +1841,7 @@ const Media = (() => {
         getImgObjs = (imgRefs, funcName = false) => {
             const funcID = ONSTACK()
             // D.Alert(`GetSelected ImgRefs: ${D.JS(D.GetSelected(imgRefs))}`)
-            imgRefs = VAL({selection: imgRefs}) ? D.GetSelected(imgRefs) : _.flatten([imgRefs]) || _.keys(REGISTRY.GRAPHIC)
+            imgRefs = VAL({selection: imgRefs}) ? D.GetSelected(imgRefs) : _.flatten([imgRefs]) || Object.keys(REGISTRY.GRAPHIC)
             const imgObjs = []
             if (VAL({array: imgRefs}))
                 for (const imgRef of imgRefs)
@@ -2137,7 +2141,7 @@ const Media = (() => {
             const imgObj = getImgObj(imgRef)
             if (VAL({graphicObj: imgObj}, "regImg")) {                
                 const baseName = imgName.replace(/(_|\d|#)+$/gu, ""),
-                    name = `${baseName}_${_.filter(_.keys(REGISTRY.IMG), k => k.includes(baseName)).length + 1}`,
+                    name = `${baseName}_${_.filter(Object.keys(REGISTRY.IMG), k => k.includes(baseName)).length + 1}`,
                     params = {
                         left: options.left || imgObj.get("left") || REGISTRY.IMG[name].left || C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].left,
                         top: options.top || imgObj.get("top") || REGISTRY.IMG[name].top || C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].top,
@@ -2423,7 +2427,7 @@ const Media = (() => {
         },
         removeImgs = (imgString, isUnregOnly) => {
             const funcID = ONSTACK(),
-                imgNames = _.filter([..._.keys(REGISTRY.IMG), ..._.keys(REGISTRY.ANIM)], v => v.includes(imgString))
+                imgNames = _.filter([...Object.keys(REGISTRY.IMG), ...Object.keys(REGISTRY.ANIM)], v => v.includes(imgString))
             for (const imgName of imgNames)
                 removeImg(imgName, isUnregOnly)
             OFFSTACK(funcID)
@@ -2481,7 +2485,7 @@ const Media = (() => {
         clearMissingRegImgs = () => {
             const funcID = ONSTACK(),
                 returnLines = []
-            for (const imgName of _.keys(REGISTRY.IMG))
+            for (const imgName of Object.keys(REGISTRY.IMG))
                 if (!getImgObj(imgName))
                     returnLines.push(`... ${imgName} Missing Object, Removing: ${removeImg(imgName) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`)
             
@@ -2614,7 +2618,7 @@ const Media = (() => {
         fixImgObjs = (isQueueing = false) => {
             const funcID = ONSTACK(),
             // D.Alert(`Starting FixImgObjects: ${D.JS(REGISTRY.ANIM.MapIndicator.isActive)}`)
-                imgKeys = [..._.keys(REGISTRY.IMG), ..._.keys(REGISTRY.ANIM)],
+                imgKeys = [...Object.keys(REGISTRY.IMG), ...Object.keys(REGISTRY.ANIM)],
                 imgPairs = _.zip(imgKeys.map(x => REGISTRY.IMG[x] || REGISTRY.ANIM[x]), imgKeys.map(x => getObj("graphic", (REGISTRY.IMG[x] || REGISTRY.ANIM[x]).id))),
                 reportLines = []
             // D.Alert(`Beginning Checks: ${D.JS(REGISTRY.ANIM.MapIndicator.isActive)}`)
@@ -3014,40 +3018,59 @@ const Media = (() => {
     // #region PANEL GETTERS:
         PANELLEFT = 1350,
         PANELTOP = 225,
-        killPanelBG = (panelKey) => {
-            const panelBGObj = getObj("path", (REGISTRY.PANELS[panelKey] || {bgID: false}).bgID)
-            if (panelBGObj)
-                panelBGObj.remove()
-            delete REGISTRY.PANEL[panelKey].bgID
+        PANELPOS = {
+            top: (textHeight = 0) => PANELTOP + 0.5 * textHeight,
+            left: (textWidth = 0) => PANELLEFT + 0.5 * textWidth
         },
-        resetPanelBG = (panelKey) => {
-            killPanelBG(panelKey)
-            const panelTextHeight = getTextHeight(panelKey),
-                panelTextWidth = getTextWidth(panelKey),
-                panelBGPath = [
-                    ["M", 0, 0],
-                    ["L", panelTextWidth + 5, 0],
-                    ["L", panelTextWidth + 5, panelTextHeight + 5],
-                    ["L", 0, panelTextHeight + 5],
-                    ["L", 0, 0]
-                ],
-                panelObj = createObj("path", {
-                    _pageid: D.THISPAGEID,
-                    fill: C.COLORS.black,
-                    path: JSON.stringify(panelBGPath),
-                    stroke_width: 0,
-                    layer: "map",
-                    top: PANELTOP - 3,
-                    left: PANELLEFT - 3,
-                    height: panelTextHeight + 5,
-                    width: panelTextWidth + 5
-                })
-            toFront(panelObj)
-            REGISTRY.PANELS[panelKey] = {
-                bgID: panelObj.id
+        killPanel = (panelKey) => {
+            if (panelKey in REGISTRY.PANELS) {
+                setText(panelKey, " ")
+                toggleText(panelKey, false)
+                REGISTRY.PANELS[panelKey].textLines = []
+                killPanelBG(panelKey)
             }
         },
+        killPanelBG = (panelKey) => {
+            const panelBGObj = getObj("path", (REGISTRY.PANELS[panelKey] || {bgID: false}).bgID)
+            if (panelBGObj) {
+                panelBGObj.remove()
+                delete REGISTRY.PANELS[panelKey].bgID
+            }
+        },
+        resetPanelBG = (panelKey) => {
+            const panelBGObj = getObj("path", (REGISTRY.PANELS[panelKey] || {bgID: false}).bgID),
+                panelTextHeight = getTextHeight(panelKey, (REGISTRY.PANELS[panelKey].textLines || [" "]).join("\n")),
+                panelTextWidth = C.SANDBOX.width - PANELLEFT, // getTextWidth(panelKey, (REGISTRY.PANELS[panelKey].textLines || [" "]).join("\n")) + 10,
+                panelBGPath = [
+                    ["M", 0, 0],
+                    ["L", panelTextWidth + 10, 0],
+                    ["L", panelTextWidth + 10, panelTextHeight + 20],
+                    ["L", 0, panelTextHeight + 20],
+                    ["L", 0, 0]
+                ],
+                panelTop = PANELPOS.top(panelTextHeight) - 10,
+                panelLeft = PANELPOS.left(panelTextWidth) - 10
+            if (panelBGObj && panelBGObj.get("top") === panelTop && panelBGObj.get("left") === panelLeft)
+                return
+            killPanelBG(panelKey)
+            const panelObj = createObj("path", {
+                _pageid: D.THISPAGEID,
+                fill: C.COLORS.black,
+                path: JSON.stringify(panelBGPath),
+                stroke: C.COLORS.darkred,
+                stroke_width: 2,
+                layer: "map",
+                top: panelTop,
+                left: panelLeft,
+                height: panelTextHeight + 20,
+                width: panelTextWidth + 10
+            })
+            toFront(panelObj)
+            REGISTRY.PANELS[panelKey] = REGISTRY.PANELS[panelKey] || {}
+            REGISTRY.PANELS[panelKey].bgID = panelObj.id
+        },
         togglePanel = (panelKey, isActive) => {
+            setTextData("panel", {maxWidth: 240})
             if (isActive) {
                 toggleText(panelKey, true)
                 resetPanelBG(panelKey)
@@ -3056,23 +3079,30 @@ const Media = (() => {
                 toggleText(panelKey, false)
             }   
         },
-        addPanelText = (text, panelKey = "panel") => {
-            const newText = `${getTextData(panelKey).curText}\n${D.JS(text)}`.replace(/^\s*\n/gu, "")
-            setText(panelKey, newText)
+        addPanelText = (panelKey = "panel", text) => {
+            text = VAL({string: text}) ? text : D.JSL(text)
+            REGISTRY.PANELS[panelKey].textLines = REGISTRY.PANELS[panelKey].textLines || []
+            REGISTRY.PANELS[panelKey].textLines.push(text)
             togglePanel(panelKey, true)
+            setText(panelKey, REGISTRY.PANELS[panelKey].textLines.join("\n"))
             setTimeout(() => {
-                removePanelText(panelKey, D.JS(text))
-            }, 3000)
+                removePanelText(panelKey, text)
+            }, 10000)
         },
-        removePanelText = (panelKey = "panel", delText = "") => {
-            const newText = getTextData(panelKey).curText.replace(new RegExp(`\n?${delText}`, "gu"), "")
-            if (newText.length < 5) {
+        removePanelText = (panelKey = "panel", delText = "", numRepeats = 2) => {
+            if (numRepeats === 0)
+                return
+            D.PullOut(REGISTRY.PANELS[panelKey].textLines, v => v === delText)
+            if (REGISTRY.PANELS[panelKey].textLines.length) {
+                setText(panelKey, (REGISTRY.PANELS[panelKey].textLines || [" "]).join("\n"))
+                resetPanelBG(panelKey)
+            } else {
                 setText(panelKey, " ")
                 togglePanel(panelKey, false)
-            } else {
-                setText(panelKey, newText)
-                resetPanelBG(panelKey)
             }
+            setTimeout(() => {
+                removePanelText(panelKey, delText, numRepeats - 1)
+            }, 1000)
         },
         /*
         getNextPanelVert = (panelName = "PanelRight") => PANELTOP + (!REGISTRY.PANELS[panelName] || Object.values(REGISTRY.PANELS[panelName]).length === 0 ? 0 : _.chain(REGISTRY.PANELS[panelName]).
@@ -3188,7 +3218,7 @@ const Media = (() => {
         },
         getTextObjs = (textRefs, funcName = false) => {
             const funcID = ONSTACK()
-            textRefs = VAL({selection: textRefs}) ? D.GetSelected(textRefs) : _.flatten([textRefs]) || _.keys(REGISTRY.TEXT)
+            textRefs = VAL({selection: textRefs}) ? D.GetSelected(textRefs) : _.flatten([textRefs]) || Object.keys(REGISTRY.TEXT)
             const textObjs = []
             if (VAL({array: textRefs}))
                 for (const textRef of textRefs)
@@ -3359,100 +3389,112 @@ const Media = (() => {
         buffer = (textRef, width) => " ".repeat(Math.max(0, Math.round(width/getTextWidth(textRef, " ", false)))),
         splitTextLines = (textRef, text, maxWidth, justification = "left") => {
             const funcID = ONSTACK(),
-                textObj = getTextObj(textRef)
+                textObj = getTextObj(textRef),
+                textLines = (text || " ").split(/\n/gu),
+                splitLines = [],
+                mapperFuncs = {
+                    center: (hWidth) => {
+                        return v => `${buffer(textObj, 0.5 * (hWidth - getTextWidth(textObj, v, false)))}${v}${buffer(textObj, 0.5 * (hWidth - getTextWidth(textObj, v, false)))}`
+                    },
+                    right: (hWidth) => {
+                        return v => `${buffer(textObj, hWidth - getTextWidth(textObj, v, false))}${v}`
+                    },
+                    left: () => {
+                        return v => `${v}`
+                    }
+                }
+            let highWidth = 0
             if (VAL({textObj}, "splitTextLines")) {
-                let textStrings = text.split(/(\s|-)/gu).filter(x => x.match(/\S/gu)),
-                    splitStrings = [],
-                    highWidth = 0
-                for (let i = 0; i < textStrings.length; i++)
-                    if (textStrings[i] === "-") {
-                        textStrings[i-1] = `${textStrings[i-1] }-`
-                        textStrings = [...[...textStrings].splice(0,i), ...[...textStrings].splice(i+1)]
-                    }
-                for (let i = 0; true; i++) { // eslint-disable-line no-constant-condition
-                    if (getTextWidth(textObj, textStrings[i], false) > maxWidth) {
-                        let [prevLine, curLine, nextLine] = [
-                            i > 0 ? textStrings[i-1] : false,
-                            textStrings[i],
-                            i < textStrings.length - 1 ? textStrings[i+1] : false
-                        ]
-                        if (prevLine !== false && prevLine.charAt(prevLine.length - 1) === " ")
-                            prevLine = prevLine.slice(0, -1)
-                        if (nextLine !== false && nextLine.charAt(0) === " ")
-                            nextLine = nextLine.slice(1)
-                        if (curLine.charAt(curLine.length - 1) === " ")
-                            curLine = curLine.slice(0, -1)
-                        if (curLine.charAt(0) === " ")
-                            curLine = curLine.slice(1)
-                        const [prevLineSpace, nextLineSpace] = [
-                                prevLine === false ? maxWidth : maxWidth - getTextWidth(textObj, prevLine, false),
-                                nextLine === false ? maxWidth : maxWidth - getTextWidth(textObj, nextLine, false)
-                            ], // Set PERCENTAGE of maxWidth that free space must take up in previous line to prefer it.
-                            PREVLINEPERCENT = 0.75
-                        if (prevLineSpace >= maxWidth * PREVLINEPERCENT || prevLineSpace >= nextLineSpace) {
-                            let shiftString = curLine.charAt(0)
-                            curLine = curLine.slice(1)
-                            for (let j = 0; j < curLine.length; j++) {
-                                if (getTextWidth(textObj, ` ${shiftString}${curLine.charAt(0)}-`, false) > prevLineSpace)
-                                    break
-                                shiftString += curLine.charAt(0)
-                                curLine = curLine.slice(1)
-                            }
-                            prevLine = `${(prevLine && `${prevLine} ` || "").replace(/-$/gu, "")}${shiftString}-`
+                for (const textLine of textLines) {
+                    let wordsInLine = textLine.split(/(\s|-)/gu).filter(x => x.match(/\S/gu))
+                    const splitLine = []
+                    for (let i = 0; i < wordsInLine.length; i++)
+                        if (wordsInLine[i] === "-") {
+                            wordsInLine[i-1] = `${wordsInLine[i-1] }-`
+                            wordsInLine = [...[...wordsInLine].splice(0,i), ...[...wordsInLine].splice(i+1)]
                         }
-                        if (getTextWidth(textObj, `${curLine}-`, false) > maxWidth) {
-                            let shiftString = curLine.charAt(curLine.length - 1)
-                            curLine = curLine.slice(0, -1)
-                            for (let j = 0; j < curLine.length; j++) {
-                                if (getTextWidth(textObj, `${curLine}-`, false) <= maxWidth)
-                                    break                            
-                                shiftString = curLine.charAt(curLine.length - 1)
+                    for (let i = 0; true; i++) { // eslint-disable-line no-constant-condition
+                        if (getTextWidth(textObj, wordsInLine[i] || "", false) > maxWidth) {
+                            let [prevLine, curLine, nextLine] = [
+                                i > 0 ? wordsInLine[i-1] : false,
+                                wordsInLine[i],
+                                i < wordsInLine.length - 1 ? wordsInLine[i+1] : false
+                            ]
+                            if (prevLine !== false && prevLine.charAt(prevLine.length - 1) === " ")
+                                prevLine = prevLine.slice(0, -1)
+                            if (nextLine !== false && nextLine.charAt(0) === " ")
+                                nextLine = nextLine.slice(1)
+                            if (curLine.charAt(curLine.length - 1) === " ")
                                 curLine = curLine.slice(0, -1)
-                            }     
-                            curLine = `${curLine}-`                   
-                            nextLine = `${shiftString}${(nextLine && ` ${nextLine}` || "").replace(/^-/gu, "")}`
+                            if (curLine.charAt(0) === " ")
+                                curLine = curLine.slice(1)
+                            const [prevLineSpace, nextLineSpace] = [
+                                    prevLine === false ? maxWidth : maxWidth - getTextWidth(textObj, prevLine, false),
+                                    nextLine === false ? maxWidth : maxWidth - getTextWidth(textObj, nextLine, false)
+                                ], // Set PERCENTAGE of maxWidth that free space must take up in previous line to prefer it.
+                                PREVLINEPERCENT = 0.75
+                            if (prevLineSpace >= maxWidth * PREVLINEPERCENT || prevLineSpace >= nextLineSpace) {
+                                let shiftString = curLine.charAt(0)
+                                curLine = curLine.slice(1)
+                                for (let j = 0; j < curLine.length; j++) {
+                                    if (getTextWidth(textObj, ` ${shiftString}${curLine.charAt(0)}-`, false) > prevLineSpace)
+                                        break
+                                    shiftString += curLine.charAt(0)
+                                    curLine = curLine.slice(1)
+                                }
+                                prevLine = `${(prevLine && `${prevLine} ` || "").replace(/-$/gu, "")}${shiftString}-`
+                            }
+                            if (getTextWidth(textObj, `${curLine}-`, false) > maxWidth) {
+                                let shiftString = curLine.charAt(curLine.length - 1)
+                                curLine = curLine.slice(0, -1)
+                                for (let j = 0; j < curLine.length; j++) {
+                                    if (getTextWidth(textObj, `${curLine}-`, false) <= maxWidth)
+                                        break                            
+                                    shiftString = curLine.charAt(curLine.length - 1)
+                                    curLine = curLine.slice(0, -1)
+                                }     
+                                curLine = `${curLine}-`                   
+                                nextLine = `${shiftString}${(nextLine && ` ${nextLine}` || "").replace(/^-/gu, "")}`
+                            }
+                            if (i === 0 && prevLine) {
+                                if (nextLine)
+                                    wordsInLine = [prevLine, curLine, nextLine, ...wordsInLine.slice(2)]
+                                else
+                                    wordsInLine = [prevLine, curLine]
+                                i++
+                            } else {
+                                wordsInLine[i-1] = prevLine || wordsInLine[i-1]
+                                wordsInLine[i] = curLine
+                                if (nextLine)
+                                    wordsInLine[i+1] = nextLine
+                            }
                         }
-                        if (i === 0 && prevLine) {
-                            if (nextLine)
-                                textStrings = [prevLine, curLine, nextLine, ...textStrings.slice(2)]
-                            else
-                                textStrings = [prevLine, curLine]
-                            i++
-                        } else {
-                            textStrings[i-1] = prevLine || textStrings[i-1]
-                            textStrings[i] = curLine
-                            if (nextLine)
-                                textStrings[i+1] = nextLine
+                        if (i >= wordsInLine.length - 1)
+                            break
+                    }
+                    // let [stringCount, lineCount] = [0, 0]
+                        
+                    while (wordsInLine.length) {
+                        let thisString = "",
+                            nextWidth = getTextWidth(textObj, wordsInLine[0] + (wordsInLine[0].endsWith("-") ? "" : " "), false)
+                        // lineCount++
+                        // stringCount = 0
+                        // DB(`LINE ${lineCount}.  NextWidth: ${nextWidth}`, "splitTextLines")
+                        while (nextWidth < maxWidth && wordsInLine.length) {
+                            thisString += wordsInLine[0].endsWith("-") ? `${wordsInLine.shift()}` : `${wordsInLine.shift()} `
+                            nextWidth = wordsInLine.length ? getTextWidth(textObj, thisString + wordsInLine[0] + (wordsInLine[0].endsWith("-") ? "" : " "), false) : 0
+                            // stringCount++
+                            // DB(`... STRING ${stringCount}: ${thisString}  NextWidth: ${nextWidth}`, "splitTextLines")
                         }
+                        // DB(`ADDING LINE: ${thisString} with width ${getTextWidth(textObj, thisString, false)}`, "splitTextLines")
+                        splitLine.push(thisString)
+                        highWidth = Math.max(getTextWidth(textObj, thisString, false), highWidth)
                     }
-                    if (i >= textStrings.length - 1)
-                        break
+                    // D.Alert(`spaceWidth: ${spaceWidth}, repeating ${D.JS(Math.round((highWidth - getTextWidth(textObj, splitStrings[0], false))/spaceWidth))} Times.`)
+                    splitLines.push(...splitLine)
                 }
-                // let [stringCount, lineCount] = [0, 0]
-                    
-                while (textStrings.length) {
-                    let thisString = "",
-                        nextWidth = getTextWidth(textObj, textStrings[0] + (textStrings[0].endsWith("-") ? "" : " "), false)
-                    // lineCount++
-                    // stringCount = 0
-                    // DB(`LINE ${lineCount}.  NextWidth: ${nextWidth}`, "splitTextLines")
-                    while (nextWidth < maxWidth && textStrings.length) {
-                        thisString += textStrings[0].endsWith("-") ? `${textStrings.shift()}` : `${textStrings.shift()} `
-                        nextWidth = textStrings.length ? getTextWidth(textObj, thisString + textStrings[0] + (textStrings[0].endsWith("-") ? "" : " "), false) : 0
-                        // stringCount++
-                        // DB(`... STRING ${stringCount}: ${thisString}  NextWidth: ${nextWidth}`, "splitTextLines")
-                    }
-                    // DB(`ADDING LINE: ${thisString} with width ${getTextWidth(textObj, thisString, false)}`, "splitTextLines")
-                    splitStrings.push(thisString)
-                    highWidth = Math.max(getTextWidth(textObj, thisString, false), highWidth)
-                }
-                if (justification === "center")
-                    splitStrings = _.map(splitStrings, v => `${buffer(textObj, 0.5 * (highWidth - getTextWidth(textObj, v, false)))}${v}${buffer(textObj, 0.5 * (highWidth - getTextWidth(textObj, v, false)))}`)
-                else if (justification === "right")
-                // D.Alert(`spaceWidth: ${spaceWidth}, repeating ${D.JS(Math.round((highWidth - getTextWidth(textObj, splitStrings[0], false))/spaceWidth))} Times.`)
-                    splitStrings = _.map(splitStrings, v => `${buffer(textObj, highWidth - getTextWidth(textObj, v, false))}${v}`)
         // D.Alert(`SplitTextLines Called.  Returning: ${D.JS(splitStrings)}`)
-                return OFFSTACK(funcID) && splitStrings
+                return OFFSTACK(funcID) && splitLines.map((mapperFuncs[justification] || mapperFuncs.left)(highWidth))
             }
             return OFFSTACK(funcID) && [text]
         },
@@ -3484,7 +3526,7 @@ const Media = (() => {
                 else if (!REGISTRY.TEXT[hostName])
                     name = hostName
                 else
-                    name = `${hostName.replace(/(_|\d|#)+$/gu, "")}_${_.filter(_.keys(REGISTRY.TEXT), k => k.includes(hostName.replace(/(_|\d|#)+$/gu, ""))).length + 1}`
+                    name = `${hostName.replace(/(_|\d|#)+$/gu, "")}_${_.filter(Object.keys(REGISTRY.TEXT), k => k.includes(hostName.replace(/(_|\d|#)+$/gu, ""))).length + 1}`
                 const [font_family, font_size, curText, height] = [ /* eslint-disable-line camelcase */
                         textObj.get("font_family").toLowerCase().includes("contrail") ? "Contrail One" : textObj.get("font_family"),
                         textObj.get("font_size"),
@@ -3594,7 +3636,7 @@ const Media = (() => {
                 masterKey = getTextKey(masterObj)
             D.Alert(`Slave Data: ${D.JS(slaveData)}`)
             REGISTRY.TEXT[masterKey].linkedText = REGISTRY.TEXT[masterKey].linkedText || {}
-            for (const edgeDir of _.keys(slaveData)) {
+            for (const edgeDir of Object.keys(slaveData)) {
                 REGISTRY.TEXT[masterKey].linkedText[edgeDir] = REGISTRY.TEXT[masterKey].linkedText[edgeDir] || []
                 for (const slaveRef of slaveData[edgeDir]) {
                     const slaveKey = getTextKey(slaveRef)
@@ -3611,7 +3653,7 @@ const Media = (() => {
                 masterObj = getTextObj(masterRef),
                 masterKey = getTextKey(masterObj),
                 edgeDirs = REGISTRY.TEXT[masterKey].linkedText || {}
-            for (const edgeDir of _.keys(edgeDirs))
+            for (const edgeDir of Object.keys(edgeDirs))
                 for (const slaveKey of edgeDirs[edgeDir]) {
                     const slaveData = getTextData(slaveKey)
                     if (slaveData) {
@@ -3714,7 +3756,7 @@ const Media = (() => {
                             REGISTRY.TEXT[textKey][k] = v
                     })
                     textObj.set(objParams)
-                    if (_.intersection(_.keys(textParams), ["shiftTop", "top", "shiftLeft", "left", "pushtop", "pushleft"]).length)
+                    if (_.intersection(Object.keys(textParams), ["shiftTop", "top", "shiftLeft", "left", "pushtop", "pushleft"]).length)
                         setText(textKey, null, undefined, true)
                     return OFFSTACK(funcID) && getTextData(textKey)
                 }
@@ -3782,7 +3824,7 @@ const Media = (() => {
         },
         removeTexts = (textString, isUnregOnly) => {
             const funcID = ONSTACK(),
-                textNames = _.filter(_.keys(REGISTRY.TEXT), v => v.includes(textString))
+                textNames = _.filter(Object.keys(REGISTRY.TEXT), v => v.includes(textString))
             for (const textName of textNames)
                 removeText(textName, isUnregOnly)
             OFFSTACK(funcID)
@@ -3790,7 +3832,7 @@ const Media = (() => {
         clearMissingRegText = () => {
             const funcID = ONSTACK(),
                 returnLines = []
-            for (const textName of _.keys(REGISTRY.TEXT))
+            for (const textName of Object.keys(REGISTRY.TEXT))
                 if (!getTextObj(textName))
                     returnLines.push(`... ${textName} Missing Object, Removing: ${removeText(textName) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`)
             if (returnLines.length)
@@ -3821,7 +3863,7 @@ const Media = (() => {
         },
         fixTextObjs = (isQueueing = false) => {
             const funcID = ONSTACK(),
-                textKeys = _.keys(REGISTRY.TEXT),
+                textKeys = Object.keys(REGISTRY.TEXT),
                 textPairs = _.zip(textKeys.map(x => REGISTRY.TEXT[x]), textKeys.map(x => getObj("text", REGISTRY.TEXT[x].id))),
                 reportLines = []
             for (const [textData, textObj] of textPairs) {
@@ -3870,7 +3912,7 @@ const Media = (() => {
     // #region SOUND OBJECT GETTERS: Track Object, Playlist Object, Data Retrieval
         getSoundKey = (soundRef) => {
             const funcID = ONSTACK(),
-                [trackNames, playlistNames] = [_.keys(REGISTRY.TRACKS), _.keys(REGISTRY.PLAYLISTS)],
+                [trackNames, playlistNames] = [Object.keys(REGISTRY.TRACKS), Object.keys(REGISTRY.PLAYLISTS)],
                 soundNames = [...trackNames, ...playlistNames]
             if (VAL({string: soundRef})) {
                 if (soundNames.includes(soundRef))
@@ -4012,7 +4054,7 @@ const Media = (() => {
                 ]
             for (const listName of Object.keys(listsRef))
                 Roll20AM.SetSoundMode(listName)
-            for (const trackName of _.intersection(_.keys(C.SOUNDMODES), _.keys(tracksRef)))
+            for (const trackName of _.intersection(Object.keys(C.SOUNDMODES), Object.keys(tracksRef)))
                 Roll20AM.SetSoundMode(trackName)  
             OFFSTACK(funcID)
         },
@@ -4026,18 +4068,23 @@ const Media = (() => {
                         [playingTrackObj] = playlistTrackObjs.filter(x => isTrackPlaying(x)),
                         nonPlayingTrackObjs = playlistTrackObjs.filter(x => !playingTrackObj || x.id !== playingTrackObj.id),
                         trackObj = playingTrackObj || nonPlayingTrackObjs.pop(),
-                        trackData = getSoundData(trackObj.id)
-                    if (!playingTrackObj)
+                        trackData = VAL({object: trackObj}) && getSoundData(trackObj.id)
+                    if (!playingTrackObj && VAL({object: trackObj}))
                         trackObj.set({playing: true, softstop: false})
-                    trackData.playing = true
-                    playlistData.playing = true
-                    playlistData.currentTrack = [trackData.id]
+                    if (trackData)
+                        trackData.playing = true
+                    if (playlistData) {
+                        playlistData.playing = true
+                        playlistData.currentTrack = trackData && [trackData.id] || []
+                    }
                     stopTrackObjs(playlistData.name, nonPlayingTrackObjs)
                 } else if (!isTrackPlaying(loopingSoundKey) || !isTrackLooping(loopingSoundKey)) {
                     const trackObj = getTrackObj(loopingSoundKey),
-                        trackData = getSoundData(trackObj.id)
-                    trackObj.set({playing: true, softstop: false, loop: true})
-                    trackData.playing = true
+                        trackData = VAL({object: trackObj}) && getSoundData(trackObj.id)
+                    if (VAL({object: trackObj}))
+                        trackObj.set({playing: true, softstop: false, loop: true})
+                    if (trackData)
+                        trackData.playing = true
                 }
             OFFSTACK(funcID)               
         },
@@ -4115,9 +4162,9 @@ const Media = (() => {
             const dbData = {
                 ["LoopingSounds After Initial Retrieval"]: Media.LoopingSounds,
                 soundsToPlay,
-                offSounds: Media.LoopingSounds.filter(x => !_.keys(soundsToPlay).includes(x))
+                offSounds: Media.LoopingSounds.filter(x => !Object.keys(soundsToPlay).includes(x))
             }
-            if (_.keys(soundsToPlay).includes("TOTALSILENCE")) {
+            if (Object.keys(soundsToPlay).includes("TOTALSILENCE")) {
                 STATE.REF.isRunningSilent = "TOTALSILENCE"
                 dbData["... Running SILENT"] = "TOTALSILENCE"
                 Roll20AM.StopSound("all")
@@ -4163,7 +4210,7 @@ const Media = (() => {
                             Media.LoopSound(onSound)
                         }
                 
-                for (const offSound of Media.LoopingSounds.filter(x => !_.keys(soundsToPlay).includes(x))) {
+                for (const offSound of Media.LoopingSounds.filter(x => !Object.keys(soundsToPlay).includes(x))) {
                     dbData["Turning OFF"].push({offSound})
                     stopSound(offSound)
                     Media.StopLooping(offSound)
@@ -4263,9 +4310,11 @@ const Media = (() => {
         StopLooping: (soundRef) => { D.PullOut(STATE.REF.loopingSounds, x => x === soundRef) },
         
         // REINITIALIZE MEDIA OBJECTS (i.e. on MODE CHANGE)
-        Fix: () => {
-            fixImgObjs()
-            fixTextObjs()
+        Fix: (isZIndicesOnly = false) => {
+            if (!isZIndicesOnly) {
+                fixImgObjs()
+                fixTextObjs()
+            }
             setZIndices()
         }
     }

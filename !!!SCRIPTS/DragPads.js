@@ -21,7 +21,7 @@ const DragPads = (() => {
             STATE.REF.byPad = STATE.REF.byPad || {}
             STATE.REF.byGraphic = STATE.REF.byGraphic || {}
 
-            for (const imgID of _.keys(STATE.REF.byGraphic)) {
+            for (const imgID of Object.keys(STATE.REF.byGraphic)) {
                 const imgObj = getObj("graphic", imgID),
                     imgKey = Media.GetImgKey(imgObj)
                 if (VAL({string: imgKey}, "DP INIT")) {
@@ -100,7 +100,7 @@ const DragPads = (() => {
                 case "kill": {
                     const funcName = args.shift(),
                         imgKeys = []
-                    for (const padID of _.keys(PADREGISTRY))
+                    for (const padID of Object.keys(PADREGISTRY))
                         if (funcName === "allpads" || PADREGISTRY[padID].funcName === funcName) {
                             const padObj = getObj("graphic", padID)
                             imgKeys.push(PADREGISTRY[padID].name)
@@ -133,7 +133,7 @@ const DragPads = (() => {
                             })
                             D.Alert([
                                 "<h3>Current Image Registry</h3>",
-                                ..._.keys(Media.IMAGES)
+                                ...Object.keys(Media.IMAGES)
                             ].join("<br>"), "!dpad reset confirm")
                             break
                         }
@@ -162,7 +162,7 @@ const DragPads = (() => {
                                 reportStrings.unshift("<h3>Missing Graphic Objects</h3>")
                             reportStrings.unshift(...[
                                 "<h3>Initial Image Registry</h3>",
-                                ..._.keys(GRAPHICREGISTRY).map(x => Media.GetImgKey(x) || Media.GetTextKey(x) || `MISSING: ${GRAPHICREGISTRY[x].pad.name}`)
+                                ...Object.keys(GRAPHICREGISTRY).map(x => Media.GetImgKey(x) || Media.GetTextKey(x) || `MISSING: ${GRAPHICREGISTRY[x].pad.name}`)
                             ])
                             reportStrings.push(`<h3>${padObjs.length} Pad Objects Found</h3>`)
                             reportStrings.push(...padObjs.map(x => `${
@@ -396,7 +396,7 @@ const DragPads = (() => {
                 if (FUNCTIONS[padRef])
                     pads.push(
                         ..._.map(
-                            _.keys(
+                            Object.keys(
                                 _.omit(PADREGISTRY, pData => {
                                     DB(`... pData: ${D.JSL(pData)}`, "getPad")
 
@@ -558,7 +558,7 @@ const DragPads = (() => {
             if (VAL({graphicObj: imgObj}) && GRAPHICREGISTRY[imgObj.id])
                 padIDs.push(GRAPHICREGISTRY[imgObj.id].id)
             else if (FUNCTIONS[padRef])
-                padIDs.push(..._.filter(_.keys(PADREGISTRY), v => PADREGISTRY[v].funcName === padRef))
+                padIDs.push(..._.filter(Object.keys(PADREGISTRY), v => PADREGISTRY[v].funcName === padRef))
             dbStrings.push(`... Found: ${D.JSL(_.map(padIDs, v => PADREGISTRY[v].name))}`)
             if (padIDs.length === 0)
                 return VAL({string: funcName}) && THROW(`No pad found with ID: '${D.JSL(padRef)}'`, `${D.JSL(funcName)} > togglePad`)

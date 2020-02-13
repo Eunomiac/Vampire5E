@@ -65,7 +65,7 @@ const TimeTracker = (() => {
                 STATE.REF.currentDate = STATE.REF.dateObj.getTime()
             }
         
-            if (_.keys(STATE.REF.weatherOverride).length)
+            if (Object.keys(STATE.REF.weatherOverride).length)
                 D.Alert(`Weather Override in effect: ${D.JS(STATE.REF.weatherOverride)}<br><b>!time set weather</b> to clear.`, "Alert: Weather Override")
 
             // STATE.REF.weatherData[0][20] = ["cxHxg5", "cxHxg5", "wxGxg5", "pxGxw5", "txGxg5", "txGxg5", "txHxg4", "pxHxw4", "wxHxb4", "cxHxb4", "cxIxb4", "cxJxs4", "cxJxb4", "cxKxs4", "cxKxb4", "cxKxs3", "wxKxw3", "pxJxw3", "txJxg3", "pxIxg3", "pxHxg3", "pxGxg2", "wxGxw2", "cxGxb2"]
@@ -1454,7 +1454,7 @@ const TimeTracker = (() => {
             const funcID = ONSTACK()
             dateRef = parseToDateObj(dateRef || STATE.REF.dateObj)
             const [dawn, dusk] = TWILIGHTMINS[dateRef.getMonth()],
-                imgTimes = _.object(_.map(_.keys(IMAGETIMES), k => {
+                imgTimes = _.object(_.map(Object.keys(IMAGETIMES), k => {
                     const fID = ONSTACK()
                     if (k.includes(":"))
                         return OFFSTACK(fID) && 60 * D.Int(k.split(":")[0]) + D.Int(k.split(":")[1])
@@ -1465,7 +1465,7 @@ const TimeTracker = (() => {
                     return OFFSTACK(fID) && dawn + D.Int(k)
                 }), _.values(IMAGETIMES)),
                 curTime = 60 * dateRef.getUTCHours() + dateRef.getUTCMinutes(),
-                curHoriz = imgTimes[_.find(_.keys(imgTimes), v => curTime <= v)]
+                curHoriz = imgTimes[_.find(Object.keys(imgTimes), v => curTime <= v)]
             // DB(`WeatherData: ${D.JS(weatherData)}`, "getHorizon")
             // D.Alert(`Daylighter Check: ${C.RO.OT.Chars.isDaylighterSession} vs. ${C.RO.OT.Chars.isDaylighterSession}, imgSrc: ${curHoriz}`)
             if (Session.Mode === "Daylighter" && curHoriz === "day")
@@ -2867,7 +2867,7 @@ const TimeTracker = (() => {
         getDailyAlarms = () => {
             const funcID = ONSTACK(),
                 returnStrings = ["<h3>Daily Alarms</h3>"]
-            for (const unit of _.keys(STATE.REF.Alarms.Daily)) {
+            for (const unit of Object.keys(STATE.REF.Alarms.Daily)) {
                 returnStrings.push(`<h4>${unit}</h4>`)
                 for (const alarm of STATE.REF.Alarms.Daily[unit])
                     returnStrings.push(`${D.JS(alarm.name)}: ${D.JS(Object.assign(D.Clone(alarm), {message: D.SumHTML(alarm.message)}))}`)
@@ -2937,7 +2937,7 @@ const TimeTracker = (() => {
             const funcID = ONSTACK()
             if (!alarm.isDailyAlarm) {
                 const recurredAlarm = D.Clone(alarm)
-                for (const unit of _.keys(recurTime))
+                for (const unit of Object.keys(recurTime))
                     recurredAlarm.time = addTime(alarm.time, recurTime[unit], unit).getTime()
                 DB({["Recurring Alarm Created!"]: recurredAlarm}, "recurAlarm")
                 return OFFSTACK(funcID) && D.Clone(recurredAlarm)
