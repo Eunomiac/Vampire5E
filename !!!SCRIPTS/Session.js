@@ -1407,9 +1407,11 @@ const Session = (() => {
                 inactivePositions = Object.keys(getAllLocations(false)).filter(x => !activePositions.includes(x)),
                 tokenObjs = Media.GetTokens()
                 
-            if (activePositions.includes("DistrictCenter")) {
+            if (activePositions.includes("DistrictCenter") || locPos === "c") {
                 Media.ToggleImg("DisableLocLeft", false)
                 Media.ToggleImg("DisableLocRight", false)
+                Media.ToggleImg("DisableSiteLeft", false)
+                Media.ToggleImg("DisableSiteRight", false)
                 for (const tokenObj of tokenObjs) {
                     Media.ToggleToken(tokenObj, true)
                     if (tokenObj.get("layer") !== "objects")
@@ -1418,12 +1420,16 @@ const Session = (() => {
             } else if (allLocations.DistrictLeft && allLocations.DistrictLeft === allLocations.DistrictRight) {
                 Media.ToggleImg("DisableLocLeft", false)
                 Media.ToggleImg("DisableLocRight", false)
+                Media.ToggleImg("DisableSiteLeft", locPos === "r")
+                Media.ToggleImg("DisableSiteRight", locPos === "l")
                 for (const tokenObj of tokenObjs) {
                     Media.ToggleToken(tokenObj, true)
                     if (tokenObj.get("layer") !== "objects")
                         tokenObj.set({layer: "objects"})
                 }
-            } else {                    
+            } else {      
+                Media.ToggleImg("DisableSiteLeft", false)
+                Media.ToggleImg("DisableSiteRight", false)              
                 Media.ToggleImg("DisableLocLeft", locPos === "r")
                 Media.ToggleImg("DisableLocRight", locPos === "l")
                 for (const tokenObj of _.compact(_.flatten(activePositions.map(x => Media.GetContents(x, {padding: 25}, {layer: "walls", _subtype: "token"})))))
