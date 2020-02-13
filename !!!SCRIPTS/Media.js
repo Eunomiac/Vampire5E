@@ -48,7 +48,6 @@ const Media = (() => {
             STATE.REF.imgResizeDims = STATE.REF.imgResizeDims || {height: 100, width: 100}
             STATE.REF.activeAnimations = STATE.REF.activeAnimations || {}
             STATE.REF.activeSounds = STATE.REF.activeSounds || []
-            STATE.REF.curLocation = STATE.REF.curLocation || "DistrictCenter:blank SiteCenter:blank"
             STATE.REF.loopingSounds = STATE.REF.loopingSounds || []
             STATE.REF.soundScore = STATE.REF.soundScore || "ScoreMain"
             STATE.REF.isRunningSilent = STATE.REF.isRunningSilent || false
@@ -4026,22 +4025,19 @@ const Media = (() => {
         },
         getLocationSounds = () => {
             const funcID = ONSTACK(),
-                locRefs = {
-                    District: Session.District,
-                    Site: Session.Site
+                locSounds = {
+                    District: Session.District && C.LOCATIONS[Session.District].soundScape[0],
+                    Site: Session.Site && C.LOCATIONS[Session.Site].soundScape[0]
                 }
-            let locSound = {}
-            for (const [loc, locName] of Object.entries(locRefs)) {
-                if (!locName) continue
-                const [thisSound] = C.LOCATIONS[locName].soundScape
-                if (thisSound === "(TOTALSILENCE)")
-                    return OFFSTACK(funcID) && {TOTALSILENCE: [0]}
-                if (thisSound)
-                    if (loc === "District" || !Session.IsOutside)
-                        locSound = {[thisSound]: C.SOUNDVOLUME[thisSound] || C.SOUNDVOLUME.defaults.location || C.SOUNDVOLUME.defaults.base}    
-            }
-            DB({locRefs, locSound}, "getLocationSounds")
-            return OFFSTACK(funcID) && locSound
+            let finalLocSound = {}                
+            if (Object.values(locSounds).includes("(TOTALSILENCE)"))
+                finalLocSound = {TOTALSILENCE: 0}
+            else if (locSounds.Site && locSounds.Site !== "(NONE)")
+                finalLocSound = {[locSounds.Site]: C.SOUNDVOLUME[locSounds.Site] || C.SOUNDVOLUME.defaults.location || C.SOUNDVOLUME.defaults.base}
+            else if (locSounds.District && locSounds.District !== "(NONE)" && Session.IsOutside)
+                finalLocSound = {[locSounds.District]: C.SOUNDVOLUME[locSounds.District] || C.SOUNDVOLUME.defaults.location || C.SOUNDVOLUME.defaults.base}
+            DB({locSounds, finalLocSound}, "getLocationSounds")
+            return OFFSTACK(funcID) && finalLocSound
         },
     // #endregion
 

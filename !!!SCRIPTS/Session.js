@@ -151,68 +151,22 @@ const Session = (() => {
                 }
                 case "add": {
                     switch (D.LCase(call = args.shift())) {
-                        case "scene": {
-                            addCharToScene(charObjs)
+                        case "favsite": {
+                            STATE.REF.FavoriteSites.push(args.join(" "))
                             break
                         }
-                        case "mode": {
-                            const [mode, modeSrc] = [args.shift(), args.shift()]
-                            if (VAL({string: [mode, modeSrc]}, "!sess add mode", true) && D.IsIn(modeSrc, STATE.REF.SessionModes)) {
-                                addMode(mode, modeSrc)
-                                D.Alert(`Session Mode '${mode}' Added.<br>Current Modes: ${D.JS(STATE.REF.SessionModes)}`, "!sess add mode")
-                            }
+                        case "favdist": {
+                            STATE.REF.FavoriteDistricts.push(args.join(" "))
+                            break
+                        }
+                        case "scene": {
+                            addCharToScene(charObjs)
                             break
                         }
                         case "macro": {
                             const [charObj] = charObjs,
                                 [macroName, macroAction] = args.join(" ").split("!").map(x => x.trim())
                             setMacro(charObj, macroName, `!${macroAction}`)
-                            break
-                        }
-                        case "favsite": {
-                            STATE.REF.FavoriteSites.push(args.shift())
-                            break
-                        }
-                        case "favdist": {
-                            STATE.REF.FavoriteDistricts.push(args.shift())
-                            break
-                        }
-                        case "sitepos": {
-                            Media.ToggleImg("MapIndicator_Base_1", true)
-                            const mapIndicator = Media.GetImg("MapIndicator_Base")
-                            mapIndicator.set({layer: "objects"})
-                            toFront(mapIndicator)
-                            D.Alert("Move the map indicator to the desired location, then type '!sess add pointer' for a <b>GENERIC</b> registration,<br>or '!sess add custom' if this is tied to a custom-named location.", "Site Position")
-                            break
-                        }
-                        case "pointer": {
-                            const mapIndicator = Media.GetImg("MapIndicator_Base"),
-                                position = {left: mapIndicator.get("left"), top: mapIndicator.get("top")},
-                                site = Session.Site
-                            STATE.REF.locationPointer[site] = {
-                                pointerPos: Object.assign({}, position)
-                            }
-                            mapIndicator.set({layer: "map"})
-                            Media.ToggleImg("MapIndicator_Base_1", false)
-                            Media.Fix()
-                            break
-                        }
-                        case "custom": {
-                            const mapIndicator = Media.GetImg("MapIndicator_Base"),
-                                [sitePos] = getActivePositions().filter(x => x.startsWith("Site")),
-                                distPos = sitePos.replace(/Site/gu, "District"),
-                                [siteRef, siteName] = sitePos in STATE.REF.curLocation && STATE.REF.curLocation[sitePos],
-                                [distRef] = distPos in STATE.REF.curLocation && STATE.REF.curLocation[distPos]
-                            STATE.REF.customLocs[siteName] = {
-                                district: distRef,
-                                site: siteRef,
-                                pointerPos: {left: mapIndicator.get("left"), top: mapIndicator.get("top")}
-                            }
-                            if (Object.values(STATE.REF.curLocations.subLocs).some(x => x !== "blank"))
-                                STATE.REF.customLocs[siteName].subLocs = D.Clone(STATE.REF.curLocation.subLocs)
-                            mapIndicator.set({layer: "map"})
-                            Media.ToggleImg("MapIndicator_Base_1", false)
-                            Media.Fix()
                             break
                         }
                     // no default
@@ -324,6 +278,24 @@ const Session = (() => {
                             resetLocationMacros()
                             break
                         }
+                        case "customsitedist": {
+                            const [siteRef, siteName] = getActiveSite(true),
+                                customLocRef = siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName] ||
+                                               siteRef in STATE.REF.customLocs && STATE.REF.customLocs[siteRef] ||
+                                               false
+                            if (customLocRef) 
+                                if (args.length) {
+                                    if (args.join(" ") in C.DISTRICTS)
+                                        customLocRef.district = args.join(" ")
+                                    else
+                                        D.Alert(`No such district: ${D.JS(args.join(" "))}`, "!sess set customsitedist")
+                                } else {
+                                    delete customLocRef.district
+                                }
+                            else 
+                                D.Alert(`No custom site registered for ${siteName || siteRef}`, "!sess set customsitedist")                            
+                            break
+                        }
                         default: {
                             setSessionNum(D.Int(call) || STATE.REF.SessionNum)
                             break
@@ -333,16 +305,16 @@ const Session = (() => {
                 }
                 case "delete": case "del": {
                     switch (D.LCase(call = args.shift())) {
-                        case "mode": {
-                            const mode = args.shift()
-                            if (VAL({string: mode}, "!sess add mode") && D.IsIn(mode, STATE.REF.SessionModes)) {
-                                STATE.REF.SessionModes = _.without(STATE.REF.SessionModes, D.IsIn(mode, STATE.REF.SessionModes))
-                                D.Alert(`Session Mode '${mode}' Removed.<br>Current Modes: ${D.JS(STATE.REF.SessionModes)}`, "!sess del mode")
-                            }
+                        case "favsite": {
+                            STATE.REF.FavoriteSites = _.without(STATE.REF.FavoriteSites, args.join(" "))
                             break
                         }
-                        case "favsite": {
-                            STATE.REF.FavoriteSites = _.without(STATE.REF.FavoriteSites, args.shift())
+                        case "favdist": {
+                            STATE.REF.FavoriteDistricts = _.without(STATE.REF.FavoriteDistricts, args.join(" "))
+                            break
+                        }
+                        case "customsite": {
+                            delete STATE.REF.customLocs[args.join(" ")]
                             break
                         }
                     // no default
@@ -591,11 +563,11 @@ const Session = (() => {
             }
         },
         verifyStateIntegrity = () => { // A series of simple validations of registry data.
-            const [siteNames, distNames, posNames, /* subPosNames */] = [
+            const [siteNames, /* distNames, */ posNames, /* subPosNames */] = [
                 Object.keys(C.SITES),
-                Object.keys(C.DISTRICTS),
+                /* Object.keys(C.DISTRICTS), */
                 ["DistrictCenter", "DistrictRight", "DistrictLeft", "SiteCenter", "SiteRight", "SiteLeft", "subLocs"],
-                ["TopLeft", "Left", "BotLeft", "TopRight", "Right", "BotRight"]
+                /* ["TopLeft", "Left", "BotLeft", "TopRight", "Right", "BotRight"] */
             ]
             STATE.REF.FavoriteSites = _.reject(STATE.REF.FavoriteSites, x => !siteNames.includes(x))
 
@@ -713,18 +685,6 @@ const Session = (() => {
     // #endregion
 
     // #region Toggling Session Modes
-        addMode = (mode, modeSrc) => {
-            if (VAL({string: [mode, modeSrc]}, "addMode", true)) {
-                if (!Session.Modes.includes(mode)) {
-                    Session.Modes.push(mode)
-                    STATE.REF.locationRecord[mode] = D.Clone(BLANKLOCRECORD)
-                }
-                for (const imgKey of Object.keys(Media.IMAGES))
-                    Media.IMAGES[imgKey].modes[mode] = D.Clone(Media.IMAGES[imgKey].modes[modeSrc])
-                for (const textKey of Object.keys(Media.TEXT))
-                    Media.TEXT[textKey].modes[mode] = D.Clone(Media.TEXT[textKey].modes[modeSrc])            
-            }
-        },
         changeMode = (mode, args, endFuncs = []) => {
             if (D.Capitalize(D.LCase(mode)) === Session.Mode)
                 return null
@@ -918,7 +878,7 @@ const Session = (() => {
         },
         setLocation = (locParams, sceneFocus, isForcing = false) => {
             const newLocData = Object.assign({}, _.omit(BLANKLOCRECORD, "subLocs"), locParams, _.omit(STATE.REF.curLocation, (v,k) => ["subLocs", "pointerPos", ...Object.keys(locParams)].includes(k))),
-                curLocData = D.Clone(STATE.REF.curLocation),
+                curLocData = Object.assign({}, BLANKLOCRECORD, STATE.REF.curLocation),
                 reportStrings = [
                     `Loc Params: ${D.JS(locParams)}`,
                     `New Loc Data: ${D.JS(newLocData)}`,
@@ -1066,7 +1026,7 @@ const Session = (() => {
             DB({["Into Site PENDINGLOCCOMMAND"]: PENDINGLOCCOMMAND}, "siteCommandMenu")
             const [distName] = PENDINGLOCCOMMAND.Districts[PENDINGLOCCOMMAND.workingIndex],
                 genericSites = ["blank", "same"],
-                favSites = STATE.REF.FavoriteSites.filter(x => C.SITES[x].district === null || C.SITES[x].district.includes(distName)),
+                favSites = STATE.REF.FavoriteSites.filter(x => (C.SITES[x] || STATE.REF.customLocs[x]).district === null || (C.SITES[x] || STATE.REF.customLocs[x]).district.includes(distName)),
                 distSites = Object.keys(C.SITES).filter(x => C.SITES[x].district && C.SITES[x].district.includes(distName)),
                 anySites = Object.keys(C.SITES).filter(x => C.SITES[x].district === null),
                 namedSites = Object.keys(STATE.REF.customLocs).filter(x => !STATE.REF.customLocs[x].district || STATE.REF.customLocs[x].district === distName)

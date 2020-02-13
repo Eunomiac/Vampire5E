@@ -2560,7 +2560,7 @@ const C = (() => {
                 outside: false
             },
             BackAlley: {
-                fullName: "an back alley",
+                fullName: "a back alley",
                 district: null,
                 resonance: [null, "s"],
                 rollEffects: [],

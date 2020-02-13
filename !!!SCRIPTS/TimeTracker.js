@@ -442,7 +442,7 @@ const TimeTracker = (() => {
         weatherDataMemo = false
 
     // #region Configuration
-    const OLDRAWWEATHERDATA = [
+    const OLDRAWWEATHERDATA = [ /* eslint-disable-line no-unused-vars */
             ["f",
              ["xxoxs", "xxoxs", "xxnxx", "xxoxx", "xxoxx", "xxoxx", "xxnxs", "cxoxs", "sxoxs", "sxnxx", "cxhxb", "cxexb", "cxdxb", "cxdxw", "sxcxs", "bxdxw", "xxfxb", "xxfxb", "xxgxw", "xxgxw", "xxhxb", "xxjxs", "xxlxs", "xxlxs"],
              ["sxkxx", "sxkxx", "sxjxs", "sxjxx", "cxjxx", "sxexs", "sxdxs", "cxcxw", "bxdxw", "bxexw", "bxexw", "bxcxw", "bxcxw", "cxbxw", "bxbxg", "bxbxw", "cxbxg", "cxbxb", "sxcxb", "bxexw", "sxexb", "sxfxs", "cxfxs", "cxfxs"],
