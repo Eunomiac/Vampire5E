@@ -705,7 +705,7 @@ const Session = (() => {
                 D.Queue(setModeLocations, [curMode], "ModeSwitch", 1)
                 if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds))
                     D.Queue(Media.UpdateSoundscape, [], "ModeSwitch", 1)
-                D.Queue(Media.SetLoadingMessage, [`Deploying ${D.UCase(curMode)}] Assets ...`], "ModeSwitch", 0.1)
+                D.Queue(Media.SetLoadingMessage, [`Deploying ${D.UCase(curMode)} Assets ...`], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.enterMode[curMode], [args], "ModeSwitch", 1)
                 D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1)
                 D.Queue(TimeTracker.Fix, [], "ModeSwitch", 0.1)

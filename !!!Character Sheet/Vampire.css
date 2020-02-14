@@ -1679,33 +1679,55 @@
 	}
 
 	.charsheet div.sheet-dicebuttonblock {
+		height: 123px;
 		width: 618px;
+		margin-top: -21px;
 		margin-right: 5px;
-
-		background: url("https://i.imgur.com/jCyIufO.png") no-repeat top;
+		padding-top: 21px;
+		background: url("https://i.imgur.com/PtNPzMC.png") no-repeat top;
 	}
 
 	.charsheet div.sheet-rouserollblock {
-		height: 102px;
+		height: 123px;
 		width: 110px;
+		margin-top: -21px;
+	}
+
+	.charsheet div.sheet-rouserollblock div.sheet-obvrouse1block {
+		height: 32px;
+		width: 74px;
+	}
+
+	.charsheet div.sheet-rouserollblock div.sheet-obvrouse2block {
+		height: 32px;
+		width: 36px;
+	}
+
+	.charsheet div.sheet-rouserollblock div.sheet-obvrouse1block:hover {
+		background: url('https://i.imgur.com/qSPNwfl.png');
+
+	}
+	
+	.charsheet div.sheet-rouserollblock div.sheet-obvrouse2block:hover {
+		background: url('https://i.imgur.com/euEWBix.png');		
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rouse1block {
-		height: 36px;
+		height: 25px;
 		width: 74px;
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rouse1block:hover {
-		background: url('https://i.imgur.com/1JxQltX.png');
+		background: url('https://i.imgur.com/IM1PoBQ.png');
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rouse2block {
-		height: 36px;
+		height: 25px;
 		width: 36px;
 	}
 
 	.charsheet div.sheet-rouserollblock div.sheet-rouse2block:hover {
-		background: url('https://i.imgur.com/laHSYVM.png');
+		background: url('https://i.imgur.com/PwHQhJs.png');
 	}
 	
 	.charsheet div.sheet-rouserollblock div.sheet-discblock {
