@@ -1406,7 +1406,7 @@ const D = (() => {
             if ((_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive) && !STATE.REF.BLACKLIST.includes(funcName) && !STATE.REF.BLACKLIST.includes(scriptName)) {
                 logDebugAlert(msg, funcName, scriptName, prefix)
                 if (funcName && STATE.REF.WATCHLIST.includes(funcName) || scriptName && STATE.REF.WATCHLIST.includes(scriptName) || !funcName && !scriptName)
-                    sendToGM(formatMsgContents(msg), formatTitle(funcName, scriptName, prefix))
+                    sendToGM(formatMsgContents(msg, false), formatTitle(funcName, scriptName, prefix))
             }
         },
         getDebugRecord = (title = "Debug Log", isClearing = false) => {

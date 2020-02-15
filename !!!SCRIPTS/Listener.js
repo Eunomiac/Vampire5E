@@ -233,13 +233,12 @@ const Listener = (() => {
                 return _.compact([...textObjs, ...argString && Media.GetTexts(argString) || []])
             }
         },        
-        refreshObjects = (isReporting = false) => {
+        refreshObjects = () => {
             const allObjects = findObjs({})
             OBJECTS.graphic = allObjects.filter(x => x.get("_type") === "graphic")
             OBJECTS.text = allObjects.filter(x => x.get("_type") === "text")
             OBJECTS.character = allObjects.filter(x => x.get("_type") === "character")
-            if (isReporting)
-                D.Alert(`<b>GRAPHICS:</b> ${OBJECTS.graphic.length}<br><b>TEXT:</b> ${OBJECTS.text.length}<br><b>CHARS:</b> ${OBJECTS.character.length}`, "Listener Object Log Refreshed")
+            DB({graphics: OBJECTS.graphic.length, text: OBJECTS.text.length, chars: OBJECTS.character.length}, "refreshObjects")
         },
         getAllObjs = (objects, type) => {
             type = D.IsIn(type, ["character", "graphic", "text"])

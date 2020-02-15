@@ -40,7 +40,7 @@ const TimeTracker = (() => {
             // delete STATE.REF.nextSessionDate
             STATE.REF.TweenStart = 0
             STATE.REF.TweenTarget = 0
-            
+
             STATE.REF.dateObj = STATE.REF.currentDate ? new Date(STATE.REF.currentDate) : null
             STATE.REF.nextSessionDate = STATE.REF.nextSessionDate || (new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"}))).getTime()
             STATE.REF.Alarms = STATE.REF.Alarms || {}
@@ -69,6 +69,7 @@ const TimeTracker = (() => {
         
             if (Object.keys(STATE.REF.weatherOverride).length)
                 D.Alert(`Weather Override in effect: ${D.JS(STATE.REF.weatherOverride)}<br><b>!time set weather</b> to clear.`, "Alert: Weather Override")
+
 
             // STATE.REF.weatherData[0][20] = ["cxHxg5", "cxHxg5", "wxGxg5", "pxGxw5", "txGxg5", "txGxg5", "txHxg4", "pxHxw4", "wxHxb4", "cxHxb4", "cxIxb4", "cxJxs4", "cxJxb4", "cxKxs4", "cxKxb4", "cxKxs3", "wxKxw3", "pxJxw3", "txJxg3", "pxIxg3", "pxHxg3", "pxGxg2", "wxGxw2", "cxGxb2"]
             // STATE.REF.weatherData[0][21] = ["xxFxs2", "cxFxx2", "cxExx2", "cxExx2", "cxExx2", "cxExx2", "cxExx2", "sxDxb2", "bxDxb2", "bxExw3", "wxGxb2", "cxIxb2", "xxJxs2", "cxJxs2", "cxIxs2", "cxJxs2", "cxJxs2", "cxHxs2", "xfGxs2", "xfGxx2", "xfGxs2", "xfGxx2", "pfGxs1", "pfGxb1"]
@@ -224,7 +225,7 @@ const TimeTracker = (() => {
                         default: {
                             // D.Alert("Default Running!")
                             args.unshift(call)
-                            D.Alert(`Args: ${D.JS(args)}<br>Date: ${new Date(Date.UTC(..._.map(args, v => D.Int(v))))}<br>Date: ${new Date(Date.UTC(..._.map(args, v => D.Int(v))))}`)
+                            // D.Alert(`Args: ${D.JS(args)}<br>Date: ${new Date(Date.UTC(..._.map(args, v => D.Int(v))))}<br>Date: ${new Date(Date.UTC(..._.map(args, v => D.Int(v))))}`)
                             const delta = Math.ceil(((new Date(Date.UTC(..._.map(args, v => D.Int(v))))).getTime() - STATE.REF.dateObj.getTime()) / (1000 * 60))
                             tweenClock(addTime(STATE.REF.dateObj, delta, "m"))
                             if (isForcing)
@@ -289,10 +290,7 @@ const TimeTracker = (() => {
                     toggleClock(false)
                     break
                 }
-                case "fix": {
-                    fixTimeStatus()
-                    break
-                }
+                case "fix": fixTimeStatus(); break
                 case "reset": {
                     switch (D.LCase(call = args.shift())) {
                         case "alarms": {
@@ -433,10 +431,10 @@ const TimeTracker = (() => {
             daysToWaitTillWater: 4.25
         }
     let [timeTimer, secTimer] = [null, null],
-        [isTweeningClock, isFastTweeningClock, isTickingClock, isCountdownRunning, isCountdownFrozen] = [false, false, false, false, false, false],
+        [isTweeningClock, isFastTweeningClock, isTickingClock, isCountdownFrozen, weatherDataMemo] = [false, false, false, false, false],
+        isCountdownRunning = true,
         [secondsLeft, numReturns] = [0, 0],
-        countdownRecord = [],
-        weatherDataMemo = false
+        countdownRecord = []
 
     // #region Configuration
     const OLDRAWWEATHERDATA = [ /* eslint-disable-line no-unused-vars */
@@ -1672,7 +1670,9 @@ const TimeTracker = (() => {
             timeTimer = null
             STATE.REF.currentDate = STATE.REF.dateObj.getTime()            
             DB({currentDate: formatDateString(STATE.REF.currentDate, true), isUpdatingWeather: isUpdatingWeather()}, "pauseClockTween")
-            setHorizon(isUpdatingWeather() && setWeather())
+            if (isUpdatingWeather())
+                setWeather()
+            setHorizon()
         },
         stopClockTween = () => {
             const funcID = ONSTACK()
@@ -1719,17 +1719,17 @@ const TimeTracker = (() => {
             if (isTickingClock) {
                 const lastHour = STATE.REF.dateObj.getUTCHours()
                 STATE.REF.dateObj.setUTCMinutes(STATE.REF.dateObj.getUTCMinutes() + 1)
-                if (STATE.REF.dateObj.getUTCHours() !== lastHour || !weatherDataMemo)
-                    weatherDataMemo = setWeather()
+                if (STATE.REF.dateObj.getUTCHours() !== lastHour)
+                    setWeather()
                 updateClockObj()
-                setHorizon(weatherDataMemo)
+                setHorizon()
             }
             OFFSTACK(funcID)
         },
     // #endregion
 
     // #region COUNTDOWN: Toggling, Ticking, Setting Coundown Text        
-        syncCountdown = (isTesting = false, isReportingData = false) => {
+        syncCountdown = (isTesting = false) => {
             const funcID = ONSTACK(),
             // if (isCountdownFrozen)
             //   return OFFSTACK(funcID) &&         
@@ -1745,8 +1745,7 @@ const TimeTracker = (() => {
                 waterRedPercent = Math.min(1, D.Float(Math.max(0, totalSecsIn - waitSecsWater) / (maxSecs - waitSecsWater))),
                 moonTop = MOON.minTop + (MOON.maxTop - MOON.minTop)*moonUpPercent,
                 waterSource = `red${D.Int(6*waterRedPercent, true)}`
-            DB({isCountdownFrozen, maxSecs, waitSecsMoon, waitSecsWater, totalSecsLeft, totalSecsIn}, "syncCountdown")
-
+            
             let secsLeft = totalSecsLeft
             
             if (secsLeft < 0) {
@@ -1763,8 +1762,7 @@ const TimeTracker = (() => {
             const minsLeft = Math.floor(secsLeft / 60)
             secsLeft -= minsLeft * 60
 
-            if (isReportingData)
-                DB({maxSecs, totalSecsLeft, totalSecsIn, ["daysToWait MOON"]: MOON.daysToWait, waitSecsMoon, moonUpPercent, moonTop, ["daysToWait WATER"]: MOON.daysToWaitWater, waitSecsWater, waterRedPercent, waterSource}, "syncCountdown")
+            // D.Alert(D.JS({isCountdownFrozen, maxSecs, totalSecsLeft, totalSecsIn, ["daysToWait MOON"]: MOON.daysToWaitTill, waitSecsMoon, moonUpPercent, moonTop, ["daysToWait WATER"]: MOON.daysToWaitTillWater, waitSecsWater, waterRedPercent, waterSource}), "syncCountdown")
             if (VAL({list: isTesting})) {               
                 Media.SetImgData("SplashMoon_1", {top: moonTop}, true)
                 Media.SetImg("SplashWater", waterSource)
@@ -1998,8 +1996,7 @@ const TimeTracker = (() => {
             DB({weatherData}, "setWeather")
             if (isReturningDataOnly)
                 return OFFSTACK(funcID) && weatherData
-            
-            // DB({line: 1570, weatherData}, "setWeather")
+            weatherDataMemo = D.Clone(weatherData)
 
             if (!Media.HasForcedState("tempC")) {
                 Media.ToggleText("tempC", true)
@@ -2773,7 +2770,7 @@ const TimeTracker = (() => {
             updateClockObj()
             setHorizon(setWeather())
             syncCountdown()
-            toggleClock(Session.IsSessionActive && !Session.IsTesting)
+            toggleClock(Session.IsSessionActive && (!Session.IsTesting || Session.IsFullTest))
             Char.RefreshDisplays()
             OFFSTACK(funcID)
         }

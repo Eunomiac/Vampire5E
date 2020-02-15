@@ -43,7 +43,7 @@ const Char = (() => {
             STATE.REF.weeklyResources = STATE.REF.weeklyResources || {}
             STATE.REF.customStakes = STATE.REF.customStakes || {}
             STATE.REF.customStakes.coterie = STATE.REF.customStakes.coterie || []
-            STATE.REF.customStakes.personal = STATE.REF.customStakes.personal || {A: [], B: [], L: [], N: [], R: []}
+            STATE.REF.customStakes.personal = STATE.REF.customStakes.personal || D.KeyMapObj(STATE.REF.registry, (k, v) => v.initial, () => [])
             STATE.REF.projectDetails = STATE.REF.projectDetails || []
             STATE.REF.tokenRecord = STATE.REF.tokenRecord || []
             STATE.REF.traitSelection = STATE.REF.traitSelection || []

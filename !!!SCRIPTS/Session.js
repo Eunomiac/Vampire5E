@@ -75,6 +75,7 @@ const Session = (() => {
             
             PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND)
             STATE.REF.isTestingActive = STATE.REF.isTestingActive || false
+            STATE.REF.isFullTest = STATE.REF.isFullTest || false
             STATE.REF.sceneChars = STATE.REF.sceneChars || []
             STATE.REF.tokenRecord = STATE.REF.tokenRecord || {Active: {}, Inactive: {}, Daylighter: {}, Downtime: {}, Complications: {}, Spotlight: {}}
             STATE.REF.sceneTokenRecord = STATE.REF.sceneTokenRecord || {Active: {}, Inactive: {}, Daylighter: {}, Downtime: {}, Complications: {}, Spotlight: {}}
@@ -114,7 +115,7 @@ const Session = (() => {
                 for (const mode of Session.Modes)
                     STATE.REF.locationRecord[mode] = D.Clone(STATE.REF.curLocation)
             }
-
+            setPlayerPage()
             verifyStateIntegrity() 
 
         },
@@ -131,10 +132,7 @@ const Session = (() => {
                         startSession()
                     break
                 }
-                case "next": {
-                    sessionMonologue()
-                    break
-                }
+                case "next": sessionMonologue(); break
                 case "backup": {
                     delete STATE.REF.backupData
                     const backupData = JSON.stringify(STATE.REF)
@@ -150,14 +148,8 @@ const Session = (() => {
                 }
                 case "add": {
                     switch (D.LCase(call = args.shift())) {
-                        case "favsite": {
-                            STATE.REF.FavoriteSites.push(args.join(" "))
-                            break
-                        }
-                        case "favdist": {
-                            STATE.REF.FavoriteDistricts.push(args.join(" "))
-                            break
-                        }
+                        case "favsite": STATE.REF.FavoriteSites.push(args.join(" ")); break
+                        case "favdist": STATE.REF.FavoriteDistricts.push(args.join(" ")); break
                         case "macro": {
                             const [charObj] = charObjs,
                                 [macroName, macroAction] = args.join(" ").split("!").map(x => x.trim())
@@ -170,22 +162,10 @@ const Session = (() => {
                 }
                 case "get": {
                     switch (D.LCase(call = args.shift())) {
-                        case "scenechars": {
-                            D.Alert(`Scene Focus: ${Session.SceneFocus}<br>Scene Chars: ${D.JS(Session.SceneChars)}`, "Scene Chars")
-                            break
-                        }
-                        case "locations": case "location": case "loc": {
-                            D.Alert(D.JS(getAllLocations()), "Current Location Data")
-                            break
-                        }
-                        case "activelocs": {
-                            D.Alert(D.JS(getActivePositions()), "All Active Locations")
-                            break
-                        }
-                        case "scenelocs": {
-                            D.Alert(D.JS(getActivePositions()), "Active Scene Locations")
-                            break
-                        }
+                        case "scenechars": D.Alert(`Scene Focus: ${Session.SceneFocus}<br>Scene Chars: ${D.JS(Session.SceneChars)}`, "Scene Chars"); break
+                        case "locations": case "location": case "loc": D.Alert(D.JS(getAllLocations()), "Current Location Data"); break
+                        case "activelocs": D.Alert(D.JS(getActivePositions()), "All Active Locations"); break
+                        case "scenelocs": D.Alert(D.JS(getActivePositions()), "Active Scene Locations"); break
                         case "pointer": {
                             const pointerObj = Media.GetImg("MapIndicator")
                             if (pointerObj.get("layer") === "objects") {
@@ -201,18 +181,10 @@ const Session = (() => {
                     }
                     break
                 }
-                case "loc": {
-                    distCommandMenu()
-                    break
-                }
+                case "loc": distCommandMenu(); break
                 case "focus": {
                     switch (D.LCase(call = args.shift())) {
-                        case "c":
-                        case "l":
-                        case "r": {
-                            setSceneFocus(D.LCase(call))
-                            break
-                        }
+                        case "c": case "l": case "r": setSceneFocus(D.LCase(call)); break
                         case "toggle": {
                             switch (STATE.REF.sceneFocus) {
                                 case "l": setSceneFocus("r"); break
@@ -221,24 +193,13 @@ const Session = (() => {
                             }
                             break
                         }
-                        default: {
-                            sceneFocusCommandMenu()
-                            break
-                        }
+                        default: sceneFocusCommandMenu(); break
                     }
                     break
                 }
                 case "set": {
                     switch(D.LCase(call = args.shift())) {
-                        case "act": {
-                            STATE.REF.curAct = D.Int(args[0]) || STATE.REF.curAct
-                            break
-                        }
-                        case "mode": {
-                            STATE.REF.Mode = D.IsIn(args.shift(), STATE.REF.SessionModes) || STATE.REF.Mode
-                            D.Alert(`Current Session Mode:<br><h3>${STATE.REF.Mode}</h3>`, "!sess set mode")
-                            break
-                        }
+                        case "act": STATE.REF.curAct = D.Int(args[0]) || STATE.REF.curAct; break
                         case "pointer": {
                             const pointerObj = Media.GetImg("MapIndicator"),
                                 [siteRef, siteName] = getActiveSite(true)
@@ -261,18 +222,8 @@ const Session = (() => {
                             }
                             break
                         }
-                        case "scene": {
-                            setSceneFocus(args.shift())
-                            break
-                        }
-                        case "date": {
-                            STATE.REF.dateRecord = null
-                            break
-                        }
-                        case "macros": {
-                            resetLocationMacros()
-                            break
-                        }
+                        case "scene": setSceneFocus(args.shift()); break
+                        case "date": STATE.REF.dateRecord = null; break
                         case "customsitedist": {
                             const [siteRef, siteName] = getActiveSite(true),
                                 customLocRef = siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName] ||
@@ -316,14 +267,8 @@ const Session = (() => {
                     }
                     break
                 }
-                case "scene": {
-                    endScene()
-                    break
-                }
-                case "downtime": {
-                    toggleDowntime()
-                    break
-                }
+                case "scene": endScene(); break
+                case "downtime": toggleDowntime(); break
                 case "spotlight": {
                     if (args.shift() === "end" || !charObjs || !charObjs.length) 
                         toggleSpotlight()
@@ -361,59 +306,27 @@ const Session = (() => {
                     switch (D.LCase(call = args.shift())) {
                         case "location": case "loc": {
                             switch (D.LCase(call = args.shift())) {
-                                case "activelocs": {
-                                    D.Alert(D.JS(getActivePositions(args[0])), `Testing getActiveLocations(${args[0] || ""})`)
-                                    break
-                                }
-                                case "activescenelocs": {
-                                    D.Alert(D.JS(getActivePositions()), "Testing getActiveSceneLocations()")
-                                    break
-                                }
-                                case "activedistrict": {
-                                    D.Alert(D.JS(getActiveDistrict()), "Testing getActiveDistrict()")
-                                    break
-                                }
-                                case "activesite": {
-                                    D.Alert(D.JS(getActiveSite()), "Testing getActiveSite()")
-                                    break
-                                }
-                                case "sublocs": {
-                                    D.Alert(D.JS(getSubLocs()), "Testing getSubLocs()")
-                                    break
-                                }
-                                case "isoutside": {
-                                    D.Alert(D.JS(isOutside()), "Testing isOutside()")
-                                    break
-                                }
-                                case "curloc": {
-                                    D.Alert(D.JS(STATE.REF.curLocation), "Testing STATE.curLocation")
-                                    break
-                                }
-                                case "locrecord": {
-                                    D.Alert(D.JS(STATE.REF.locationRecord), "Testing STATE.locationRecord")
-                                    break
-                                }
-                                case "locchars": {
-                                    D.Alert(D.JS(getCharsInLocation(args[0])), `Testing getCharsInLocation(${args[0] || ""})`)
-                                    break
-                                }
+                                case "activelocs": D.Alert(D.JS(getActivePositions(args[0])), `Testing getActiveLocations(${args[0] || ""})`); break
+                                case "activescenelocs": D.Alert(D.JS(getActivePositions()), "Testing getActiveSceneLocations()"); break
+                                case "activedistrict": D.Alert(D.JS(getActiveDistrict()), "Testing getActiveDistrict()"); break
+                                case "activesite": D.Alert(D.JS(getActiveSite()), "Testing getActiveSite()"); break
+                                case "sublocs": D.Alert(D.JS(getSubLocs()), "Testing getSubLocs()"); break
+                                case "isoutside": D.Alert(D.JS(isOutside()), "Testing isOutside()"); break
+                                case "curloc": D.Alert(D.JS(STATE.REF.curLocation), "Testing STATE.curLocation"); break
+                                case "locrecord": D.Alert(D.JS(STATE.REF.locationRecord), "Testing STATE.locationRecord"); break
+                                case "locchars": D.Alert(D.JS(getCharsInLocation(args[0])), `Testing getCharsInLocation(${args[0] || ""})`); break
                                 // no default
                             }
                             break
                         }
-                        default: {
-                            toggleTesting()
-                            break
-                        }
+                        case "full": toggleFullTest(); break
+                        default: toggleTesting(); break
                     }
                     break
                 }
                 case "reset": {
                     switch(D.LCase(call = args.shift())) {
-                        case "loc": case "location": {
-                            STATE.REF.curLocation = D.Clone(BLANKLOCRECORD)
-                            break
-                        }
+                        case "loc": case "location": STATE.REF.curLocation = D.Clone(BLANKLOCRECORD); break
                         // no default
                     }
                     break
@@ -422,7 +335,7 @@ const Session = (() => {
             }
         },
         onPageChange = () => {
-            if (Campaign().get("_playerpageid") === C.PAGES.GAME && Session.IsTesting)
+            if (Campaign().get("playerpageid") === C.PAGES.GAME && Session.IsTesting)
                 Media.ToggleText("playerPageAlertMessage", true)
             else
                 Media.ToggleText("playerPageAlertMessage", false)
@@ -457,8 +370,8 @@ const Session = (() => {
             leaveMode: {
                 Active: () => {},
                 Inactive: () => {
-                    if (!STATE.REF.isTestingActive)      
-                        Campaign().set({playerpageid: D.GetPageID("GAME")})            
+                    if (!STATE.REF.isTestingActive || STATE.REF.isFullTest)
+                        setPlayerPage("GAME")         
                     TimeTracker.ToggleClock(true)
                 },
                 Downtime: () => {},
@@ -475,18 +388,20 @@ const Session = (() => {
                 Complications: () => {},
                 Testing: () => {
                     STATE.REF.isTestingActive = false
+                    toggleFullTest(false)
                     Media.ToggleText("testSessionNotice", false)
                     Media.ToggleText("testSessionNoticeSplash", false)
+                    Media.ToggleText("playerPageAlertMessage", false)
                 }
             },
             enterMode: {
                 Active: () => {                            
                     Char.RefreshDisplays()
-                    if (!STATE.REF.isTestingActive)
+                    if (!STATE.REF.isTestingActive || STATE.REF.isFullTest)
                         TimeTracker.ToggleClock(true)
                 },
                 Inactive: () => {
-                    Campaign().set({playerpageid: D.GetPageID("SplashPage")})
+                    setPlayerPage("SplashPage")
                     Media.ToggleTokens(null, false)
                     TimeTracker.ToggleClock(false)
                 },
@@ -509,6 +424,7 @@ const Session = (() => {
                     STATE.REF.isTestingActive = true
                     Media.ToggleText("testSessionNotice", true)
                     Media.ToggleText("testSessionNoticeSplash", true)
+                    setPlayerPage()
                 }
             },
             introMode: {
@@ -528,6 +444,7 @@ const Session = (() => {
                 },
                 Daylighter: () => {},
                 Spotlight: (charRef, messageText) => {
+                    DB({charRef, messageText}, "introMode")
                     setSpotlightChar(charRef, messageText)
                 },
                 Complications: () => {},
@@ -589,8 +506,8 @@ const Session = (() => {
 
     // #region Starting/Ending Sessions
         startSession = () => {
-            const sessionScribe = STATE.REF.isTestingActive ? STATE.REF.SessionScribes[0] : STATE.REF.SessionScribes.shift()
-            if (STATE.REF.isTestingActive)
+            const sessionScribe = STATE.REF.isTestingActive && !STATE.REF.isFullTest ? STATE.REF.SessionScribes[0] : STATE.REF.SessionScribes.shift()
+            if (STATE.REF.isTestingActive && !STATE.REF.isFullTest)
                 STATE.REF.dateRecord = TimeTracker.CurrentDate.getTime()
             else
                 STATE.REF.dateRecord = null
@@ -603,7 +520,6 @@ const Session = (() => {
                 STATE.REF.SessionScribes.push(otherScribes.pop(), ..._.shuffle([...otherScribes, sessionScribe]))
             }
             STATE.REF.SessionMonologues = _.shuffle(D.GetChars("registered").map(x => D.GetCharData(x).name))
-            D.Chat()
             changeMode("Active", true, [
                 [D.Chat, ["all", C.HTML.Block([
                     C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
@@ -615,14 +531,9 @@ const Session = (() => {
                     C.HTML.Body("Thank you for your service!")
                 ])]]
             ])
-            // Media.ToggleImg("MapIndicator_Base_1", true)
-            // Media.ToggleAnim("MapIndicator", true)
-
-
         },
         endSession = () => {
-            if (STATE.REF.isTestingActive || sessionMonologue() && remorseCheck()) {
-                // Char.SendHome()
+            if (STATE.REF.isTestingActive && !STATE.REF.isFullTest || sessionMonologue() && remorseCheck()) {
                 changeMode("Inactive", true, [
                     [D.Chat, ["all", C.HTML.Block([
                         C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
@@ -631,10 +542,13 @@ const Session = (() => {
                         C.HTML.Title("See you next week!", {fontSize: "32px"}),
                     ])]]
                 ])
-                if (!STATE.REF.isTestingActive) {
+                if (!STATE.REF.isTestingActive || STATE.REF.isFullTest) {
                     STATE.REF.dateRecord = null
                     for (const char of D.GetChars("registered"))
-                        Char.AwardXP(char, 2, "Session XP award.")
+                        if (STATE.REF.isTestingActive)
+                            D.Alert(`Would award 2 XP to ${D.JS(char)} if session active.`, "Full Test: Session.endSession()")
+                        else
+                            Char.AwardXP(char, 2, "Session XP award.")
                     STATE.REF.SessionNum++
                 } else if (STATE.REF.dateRecord) {
                     TimeTracker.CurrentDate = STATE.REF.dateRecord
@@ -685,18 +599,20 @@ const Session = (() => {
 
     // #region Toggling Session Modes
         changeMode = (mode, args, endFuncs = []) => {
+            args = _.flatten([args])
+            DB({mode, args}, "changeMode")
             if (D.Capitalize(D.LCase(mode)) === Session.Mode)
                 return null
             if (VAL({string: mode}, "changeMode") && STATE.REF.SessionModes.map(x => x.toLowerCase()).includes(mode.toLowerCase())) {
                 const [lastMode, curMode] = [
                     `${STATE.REF.Mode}`,
                     D.Capitalize(mode.toLowerCase())
-                ]             
-                D.Queue(MODEFUNCTIONS.outroMode[lastMode], [args], "ModeSwitch", 0.1)
+                ]
+                D.Queue(MODEFUNCTIONS.outroMode[lastMode], args, "ModeSwitch", 0.1)
                 D.Queue(Media.ToggleLoadingScreen, [curMode === "Inactive" && "concluding" || "loading", `Changing Modes: ${D.UCase(lastMode)} ► ${D.UCase(curMode)}`, {duration: 15, numTicks: 30, callback: () => { MODEFUNCTIONS.introMode[curMode](args)}}], "ModeSwitch", 3)
                 D.Queue(Media.SetLoadingMessage, ["Logging Game State..."], "ModeSwitch", 0.1)
                 D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1)
-                D.Queue(MODEFUNCTIONS.leaveMode[lastMode], [args], "ModeSwitch", 1)
+                D.Queue(MODEFUNCTIONS.leaveMode[lastMode], args, "ModeSwitch", 1)
                 D.Queue(() => { STATE.REF.Mode = curMode; STATE.REF.LastMode = lastMode }, [], "ModeSwitch", 0.1)
                 D.Queue(Media.SetLoadingMessage, [`Clearing ${D.UCase(lastMode)} Assets...`], "ModeSwitch", 0.1)
                 D.Queue(Roller.Clean, [], "ModeSwitch", 1)
@@ -705,27 +621,50 @@ const Session = (() => {
                 if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds))
                     D.Queue(Media.UpdateSoundscape, [], "ModeSwitch", 1)
                 D.Queue(Media.SetLoadingMessage, [`Deploying ${D.UCase(curMode)} Assets ...`], "ModeSwitch", 0.1)
-                D.Queue(MODEFUNCTIONS.enterMode[curMode], [args], "ModeSwitch", 1)
+                D.Queue(MODEFUNCTIONS.enterMode[curMode], args, "ModeSwitch", 1)
                 D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1)
                 D.Queue(TimeTracker.Fix, [], "ModeSwitch", 0.1)
                 D.Queue(Media.SetLoadingMessage, ["Cleaning Up ..."], "ModeSwitch", 1)
                 // D.Queue(Media.ToggleLoadingScreen, [false], "ModeSwitch", 0.1)
-                D.Queue(MODEFUNCTIONS.introMode[curMode], [args], "ModeSwitch", 0.1)
+                D.Queue(MODEFUNCTIONS.introMode[curMode], args, "ModeSwitch", 0.1)
                 for (const endFunc of endFuncs)
                     D.Queue(endFunc[0], endFunc[1], "ModeSwitch", endFunc[2] || 0.1)
                 D.Run("ModeSwitch")
             }
             return true
         },
+        toggleFullTest = (isFullTesting) => {
+            isFullTesting = VAL({bool: isFullTesting}) ? isFullTesting : !STATE.REF.isFullTest
+            STATE.REF.isFullTest = isFullTesting               
+            Media.SetTextData("testSessionNotice", {color: isFullTesting && C.COLORS.brightred || C.COLORS.puregreen})            
+            Media.SetTextData("testSessionNoticeSplash", {color: isFullTesting && C.COLORS.brightred || C.COLORS.puregreen})
+            if (isFullTesting) {
+                STATE.REF.fullTestRecord = STATE.REF.fullTestRecord || {}
+                STATE.REF.fullTestRecord.SessionScribes = D.Clone(STATE.REF.SessionScribes)
+                STATE.REF.fullTestRecord.dateRecord = STATE.REF.dateRecord
+                STATE.REF.fullTestRecord.SessionNum = STATE.REF.SessionNum
+            } else {
+                setPlayerPage("SplashPage")
+                if ("SessionScribes" in STATE.REF.fullTestRecord) {
+                    STATE.REF.SessionScribes = D.Clone(STATE.REF.fullTestRecord.SessionScribes)
+                    STATE.REF.dateRecord = STATE.REF.fullTestRecord.dateRecord
+                    STATE.REF.SessionNum = STATE.REF.fullTestRecord.SessionNum
+                }
+                STATE.REF.fullTestRecord = {}
+            }
+        },
         toggleTesting = (isTesting) => {
-            if (isTesting === true)
-                MODEFUNCTIONS.enterMode.Testing()
-            else if (isTesting === false)
+            if (VAL({bool: isTesting})) {
+                if (isTesting !== STATE.REF.isTestingActive)
+                    if (isTesting === true)
+                        MODEFUNCTIONS.enterMode.Testing()
+                    else if (isTesting === false)
+                        MODEFUNCTIONS.leaveMode.Testing()
+            } else if (STATE.REF.isTestingActive) {
                 MODEFUNCTIONS.leaveMode.Testing()
-            else if (STATE.REF.isTestingActive)
-                MODEFUNCTIONS.leaveMode.Testing()
-            else
+            } else {
                 MODEFUNCTIONS.enterMode.Testing()
+            }
         },
         toggleDowntime = () => {
             if (STATE.REF.Mode === "Downtime")
@@ -734,6 +673,7 @@ const Session = (() => {
                 changeMode("Downtime")
         },
         toggleSpotlight = (charRef, messageText) => {
+            DB({charRef, messageText}, "toggleSpotlight")
             if (STATE.REF.Mode === "Spotlight") 
                 if (!charRef)
                     changeMode(STATE.REF.LastMode)
@@ -744,6 +684,7 @@ const Session = (() => {
             
         },
         setSpotlightChar = (charRef, messageText) => {
+            DB({charRef, messageText}, "setSpotlightChar")
             if (STATE.REF.Mode !== "Spotlight") {
                 changeMode("Spotlight", [charRef, messageText])
             } else {
@@ -758,8 +699,7 @@ const Session = (() => {
                         Media.ToggleToken(otherData.id, false) // Char.TogglePC(otherData.quadrant, false)
                         Char.SetNPC(otherData.id, "base")
                         Media.ToggleText(`${otherData.shortName}Desire`, false)
-                    }
-                    
+                    }                    
                     Media.ToggleToken(charData.id, true) // Char.TogglePC(quad, true)
                     Media.ToggleText(`${charData.shortName}Desire`, true)
                     Char.SetNPC(charData.id, "base")
@@ -771,6 +711,14 @@ const Session = (() => {
                     ]))
                 }  
             }          
+        },
+        setPlayerPage = (pageRef) => {
+            pageRef = pageRef || getObj("page", Campaign().get("playerpageid")).get("name")
+            if (pageRef === "GAME" && STATE.REF.isTestingActive)
+                Media.ToggleText("playerPageAlertMessage", true)
+            else
+                Media.ToggleText("playerPageAlertMessage", false)            
+            Campaign().set({playerpageid: D.GetPageID(pageRef)})
         },
     // #endregion
 
@@ -1347,19 +1295,6 @@ const Session = (() => {
                 D.Alert(`Invalid played ID (${D.JS(playerID)}) from playerRef '${D.JS(playerRef)}'`)
             }
         },
-        resetLocationMacros = () => {
-            const distList = ["same", "blank", ..._.uniq(Object.keys(Media.IMAGES.DistrictCenter_1.srcs)).sort()],
-                siteList = ["same", "blank", ..._.uniq(Object.keys(Media.IMAGES.SiteCenter_1.srcs)).sort()],
-                macros = {
-                    "LOC-Center": `!sess set loc DistrictCenter:?{Select District|${distList.join("|")}}`,
-                    "LOC-Center-Rename": `!sess set loc DistrictCenter:?{Select District|${distList.join("|")}} SiteCenter:?{Select Site|${siteList.join("|")}}:name:?{Custom Name?}; Center`,
-                    "LOC-Sides": `!sess set loc DistrictLeft:?{Select District (Left)|${distList.join("|")}} SiteLeft:?{Select Site (Left)|${siteList.join("|")}} DistrictRight:?{Select District (Right)|${distList.join("|")}} SiteRight:?{Select Site (Right)|${siteList.join("|")}} ?{Initial Focus?|Left|Right}`,
-                    "LOC-Sides-Rename": `!sess set loc DistrictLeft:?{Select District (Left)|${distList.join("|")}} SiteLeft:?{Select Site (Left)|${siteList.join("|")}}:name:?{Custom Name?}; DistrictRight:?{Select District (Right)|${distList.join("|")}} SiteRight:?{Select Site (Right)|${siteList.join("|")}}:name:?{Custom Name?}; ?{Initial Focus?|Left|Right}`
-                }
-            // D.Alert(`Macro Text:<br><br>${D.JS(_.values(D.KeyMapObj(macros, null, (v,k) => `<b>${k}</b>: ${v}`)).join("<br>"))}`)
-            for (const [macroName, macroAction] of Object.entries(macros))
-                setMacro(D.GMID(), macroName, macroAction)
-        },
     // #endregion
 
     // #region Waking Up 
@@ -1483,6 +1418,7 @@ const Session = (() => {
         get SessionNum() { return STATE.REF.SessionNum },
         get IsSessionActive() { return isSessionActive() },
         get IsTesting() { return STATE.REF.isTestingActive },
+        get IsFullTest() { return STATE.REF.isFullTest },
 
         get Mode() { return STATE.REF.Mode },
         get Modes() { return STATE.REF.SessionModes },

@@ -23,6 +23,7 @@ const Media = (() => {
     // #region LOCAL INITIALIZATION
         initialize = () => {
             const funcID = ONSTACK()
+
             STATE.REF.imgregistry = STATE.REF.imgregistry || {}
             STATE.REF.textregistry = STATE.REF.textregistry || {}
             STATE.REF.animregistry = STATE.REF.animregistry || {}
@@ -40,6 +41,8 @@ const Media = (() => {
             STATE.REF.isRunningSilent = STATE.REF.isRunningSilent || false
             STATE.REF.panelLog = STATE.REF.panelLog || {}
             STATE.REF.VOLUME = STATE.REF.VOLUME || D.Clone(C.SOUNDVOLUME)
+
+            // STATE.REF.textregistry.panel.maxWidth = 330
 
             for (const [, textData] of Object.entries(STATE.REF.textregistry)) {
                 const realText = VAL({string: textData.curText}) && textData.curText !== "LAST" && textData.curText ||
@@ -397,10 +400,7 @@ const Media = (() => {
                             clearMissingRegImgs(args[0] && args[0].includes("kill"))
                             break
                         }
-                        case "clearunreg": {
-                            clearUnregImgs(args[0] && args[0].includes("kill"))
-                            break
-                        }
+                        case "clearunreg": clearUnregImgs(args[0] && args[0].includes("kill"), false); break
                         case "add": {
                             const hostName = getImgKey(imgObjs.shift())                                
                             let srcName
@@ -796,10 +796,7 @@ const Media = (() => {
                             }
                             break
                         }
-                        case "clearunreg": case "killunreg": {
-                            clearUnregText(call === "killunreg")
-                            break
-                        }
+                        case "clearunreg": case "killunreg": clearUnregText(call === "killunreg"); break
                         case "reset": case "resetreg": case "resetregistry": {
                             switch (D.LCase(call = args.shift())) {
                                 case "pos": case "position": {
@@ -1020,7 +1017,7 @@ const Media = (() => {
                                         delveFunc = (ref) => {
                                             for (const soundRef of Object.keys(ref))
                                                 if (VAL({array: ref[soundRef]}))
-                                                    ref[soundRef] = ref[soundRef].map(x => x * masterVolumeMult)
+                                                    ref[soundRef] = ref[soundRef].map(x => D.Float(x * masterVolumeMult, 2))
                                                 else if (VAL({list: ref[soundRef]}))
                                                     delveFunc(ref[soundRef])
                                         }
@@ -1035,6 +1032,30 @@ const Media = (() => {
                                 }
                                 case "volume": {
                                     switch (D.LCase(call = args.shift())) {
+                                        case "indoormult": {
+                                            const soundRef = args[0] === "default" && STATE.REF.VOLUME.indoorMult.defaults || STATE.REF.VOLUME.indoorMult,
+                                                soundName = args[0] === "default" && args[1] || args[0],
+                                                volumeMult = D.Float(args.pop(), 2)
+                                            if (VAL({number: soundRef[soundName]})) {
+                                                soundRef[soundName] = volumeMult
+                                                D.Alert(`<h3>New INDOOR Multipliers:</h3>${D.JS(STATE.REF.VOLUME.indoorMult)}`, "!sound set volume indoormult")
+                                            } else {
+                                                D.Alert("Invalid indoor multiplier.", "!sound set volume indoormult [\"default\"] [defaultName/soundName] [volumeMult]")
+                                            }
+                                            break
+                                        }
+                                        case "rainmult": {
+                                            const soundRef = args[0] === "default" && STATE.REF.VOLUME.rainMult.defaults || STATE.REF.VOLUME.rainMult,
+                                                soundName = args[0] === "default" && args[1] || args[0],
+                                                volumeMult = D.Float(args.pop(), 2)
+                                            if (VAL({number: soundRef[soundName]})) {
+                                                soundRef[soundName] = volumeMult
+                                                D.Alert(`<h3>New RAIN Multipliers:</h3>${D.JS(STATE.REF.VOLUME.rainMult)}`, "!sound set volume rainmult")
+                                            } else {
+                                                D.Alert("Invalid rain multiplier.", "!sound set volume rainmult [\"default\"] [defaultName/soundName] [volumeMult]")
+                                            }
+                                            break
+                                        }
                                         case "default": {
                                             const soundRef = D.LCase(args.shift())
                                             if (VAL({number: args[0]}) && soundRef in STATE.REF.VOLUME.defaults) {
@@ -2547,7 +2568,7 @@ const Media = (() => {
                 }, true)
             OFFSTACK(funcID)
         },
-        clearUnregImgs = (isKilling = false) => {
+        clearUnregImgs = (isKilling = false, isQueueing = true) => {
             const funcID = ONSTACK(),
                 returnLines = [],
                 allImgObjs = findObjs({
@@ -2560,12 +2581,19 @@ const Media = (() => {
             
             // D.Alert(`RegPadIDs: ${D.JSL(regPadIDs)}<br><br>PartnerIDs: ${D.JSL(regPartnerIDs)}`)
             for (const imgObj of unregImgObjs) {
-                returnLines.push(`<b>${imgObj.get("name") || "(UNNAMED)"}</b> <span style='color: red;'><b>REMOVED</b></span>`)
+                const imgSrc = imgObj.get("imgsrc")
+                if (imgSrc.includes("webm"))
+                    returnLines.push(`<div style="display: block; height: 60px; width: auto;"><b>${imgObj.get("name") || "(UNNAMED)"}</b> <span style='color: red;'><b>REMOVED</b></span><br>${imgSrc}</div>`)
+                else
+                    returnLines.push(`<div style="display: block; height: 60px; width: auto; background: url('${imgSrc}') no-repeat; background-size: contain;"><b>${imgObj.get("name") || "(UNNAMED)"}</b> <span style='color: red;'><b>REMOVED</b></span></div>`)
                 if (isKilling)
                     imgObj.remove()
             }
             if (returnLines.length)
-                STATE.REF.fixAllCommands.push(...["<h3><u>Clearing Unregistered Image Objects</u></h3>", ...returnLines])
+                if (isQueueing)
+                    STATE.REF.fixAllCommands.push(...["<h4><u>Clearing Unregistered Image Objects</u></h4>", ...returnLines])
+                else
+                    D.Alert(D.JS(["<h4><u>Clearing Orphan Images</u></h4>", ...returnLines].join("")), "clearUnregImgs")
             OFFSTACK(funcID)
         },        
         toggleLoadingScreen = (imgSrc, customText = " ", progressBarData = false) => {
@@ -3066,9 +3094,9 @@ const Media = (() => {
         },
     // #endregion
 
-    // #region PANEL GETTERS:
-        PANELLEFT = 1350,
-        PANELTOP = 225,
+    // #region PANEL CONTROL: Displaying temporary text messages
+        PANELLEFT = 1250,
+        PANELTOP = 170,
         PANELPOS = {
             top: (textHeight = 0) => PANELTOP + 0.5 * textHeight,
             left: (textWidth = 0) => PANELLEFT + 0.5 * textWidth
@@ -3108,7 +3136,7 @@ const Media = (() => {
                 _pageid: D.THISPAGEID,
                 fill: C.COLORS.black,
                 path: JSON.stringify(panelBGPath),
-                stroke: C.COLORS.darkred,
+                stroke: C.COLORS.brightred,
                 stroke_width: 2,
                 layer: "map",
                 top: panelTop,
@@ -3121,7 +3149,6 @@ const Media = (() => {
             REGISTRY.PANELS[panelKey].bgID = panelObj.id
         },
         togglePanel = (panelKey, isActive) => {
-            setTextData("panel", {maxWidth: 240})
             if (isActive) {
                 toggleText(panelKey, true)
                 resetPanelBG(panelKey)
@@ -3155,73 +3182,7 @@ const Media = (() => {
                 removePanelText(panelKey, delText, numRepeats - 1)
             }, 1000)
         },
-        /*
-        getNextPanelVert = (panelName = "PanelRight") => PANELTOP + (!REGISTRY.PANELS[panelName] || Object.values(REGISTRY.PANELS[panelName]).length === 0 ? 0 : _.chain(REGISTRY.PANELS[panelName]).
-            pairs().
-            map(x => getTextHeight(x[1].name)).
-            reduce((tot, x) => tot + x, 0). 
-            value()),
-        makePanel = (text, panelName = "PanelRight", panelData = {top: PANELTOP, left: PANELLEFT, width: PANELWIDTH}, textData = {bgColor: C.COLORS.black, color: C.COLORS.red, font: "Contrail One", size: PANELSIZE}) => {
-            const funcID = ONSTACK(),
-                subPanelKey = `panel${D.RandomString(20)}`,
-                nextVerticalPos = getNextPanelVert(),
-                textObj = makeText(subPanelKey, "gmlayer", true, "left", {text: "", top: nextVerticalPos, left: PANELLEFT - 0.5 * PANELWIDTH, width: panelData.width, size: textData.size, color: textData.color, font: textData.font, maxWidth: panelData.width * 0.98}),
-                shadowObj = getObj("text", getTextData(subPanelKey).shadowID)
-            setText(subPanelKey, text)
-            DB({text, panelName, panelData, textData, subPanelKey, nextVerticalPos, textObj, shadowObj, textReg: getTextData(subPanelKey)}, "makePanel")
-            const textHeight = getTextHeight(subPanelKey),
-                bgPanelObj = createObj("path", {
-                    _pageid: D.THISPAGEID,
-                    fill: textData.bgColor,
-                    path: JSON.stringify([
-                        ["M", 0, 0],
-                        ["L", panelData.width + 5, 0],
-                        ["L", panelData.width + 5, textHeight + 5],
-                        ["L", 0, textHeight + 5],
-                        ["L", 0, 0]
-                    ]),
-                    stroke_width: 0,
-                    layer: "gmlayer",
-                    top: nextVerticalPos,
-                    left: panelData.left,
-                    height: textHeight + 5,
-                    width: panelData.width + 5
-                })
-            REGISTRY.PANELS[panelName] = REGISTRY.PANELS[panelName] || {}
-            REGISTRY.PANELS[panelName][subPanelKey] = {
-                name: subPanelKey,
-                textID: textObj.id,
-                bgPanelID: bgPanelObj.id
-            }
-            toFront(bgPanelObj)
-            toFront(shadowObj)
-            toFront(textObj)
-            OFFSTACK(funcID)
-        },
-        killPanel = (panelName) => {
-            const funcID = ONSTACK()
-            if (panelName in REGISTRY.PANELS) {
-                for (const [panelKey, panelData] of Object.entries(REGISTRY.PANELS[panelName])) {
-                    removeText(panelKey, false, true)
-                    const bgObj = getObj("path", panelData.bgPanelID)
-                    if (bgObj)
-                        bgObj.remove()
-                }
-                delete REGISTRY.PANELS[panelName]
-            }
-            OFFSTACK(funcID)
-        },
-        OLDsimpleNotify = (panelName, text, isKillingAfter, textColor) => {
-            const funcID = ONSTACK()
-            makePanel(text, panelName, undefined, {bgColor: C.COLORS.black, color: textColor || C.COLORS.red, font: "Contrail One", size: PANELSIZE})
-            if (isKillingAfter) 
-                setTimeout(() => { killPanel(panelName) }, 15000)
-            OFFSTACK(funcID)
-        }, */
-
     // #endregion
-
-    // #region PANEL SETTERS: Creation & Registry, Toggling, Time-Keeping, Updating, Positioning
 
     // #region TEXT OBJECT GETTERS: Text Object, Width Measurements, Data Retrieval    
         isRegText = textRef => Boolean(getTextKey(textRef, true)) || VAL({object: textRef}) && _.findKey(REGISTRY.TEXT, v => v.shadowID === textRef.id), 
@@ -3903,7 +3864,7 @@ const Media = (() => {
                     textObj.remove()
             }
             if (returnLines.length)
-                STATE.REF.fixAllCommands.push(...["<h3><u>Clearing Unregistered Text Objects</u></h3>", ...returnLines])
+                STATE.REF.fixAllCommands.push(...["<h4><u>Clearing Orphan Texts</u></h4>", ...returnLines])
             OFFSTACK(funcID)
         },
         resetTextRegistry = () => {
