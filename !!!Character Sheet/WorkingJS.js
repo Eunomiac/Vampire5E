@@ -327,7 +327,7 @@
             ["Resonance & Dyscrasias",
              "Strong emotions can give a mortal's blood \"resonance\". Drinking strongly-resonant blood empowers the use of associated disciplines; the",
              "strongest resonances (called \"dyscrasias\") confer even greater rewards. It is possible to influence resonances in mortals, cultivating",
-             "their blood to your tastes.  With a Project, you can change a resonance entirely, and even confer a dyscrasias upon the blood."],
+             "their blood to your tastes.  With a Project, you can change a resonance entirely, and even confer a dyscrasia upon the blood."],
             ["The Blood Hunt",
              "If the prince calls a Blood Hunt (or the more-formal \"Lexitalionis\") against a",
              "vampire, all Kindred in the city are given permission to kill and even diablerize the convicted.",

@@ -869,7 +869,7 @@ const Char = (() => {
                         {
                             type: "ButtonLine",
                             contents: [
-                                isSingleChar && {name: "Dyscrasias", command: `!char ${charIDString} set dyscrasias ?{Dyscrasias Title (blank to toggle off):}|?{Dyscrasias Text:}`, styles: {bgColor: C.COLORS.darkdarkred, color: C.COLORS.gold}} || 0,
+                                isSingleChar && {name: "Dyscrasia", command: `!char ${charIDString} set dyscrasias ?{Dyscrasia Title (blank to toggle off):}|?{Dyscrasia Text:}`, styles: {bgColor: C.COLORS.darkdarkred, color: C.COLORS.gold}} || 0,
                                 {name: "Secret Roll", command: `!char ${charIDString} select trait`, styles: {bgColor: C.COLORS.purple, color: C.COLORS.white}},
                                 {name: "Get Trait", command: `!char ${charIDString} get stat`, styles: {bgColor: C.COLORS.grey, color: C.COLORS.black}},
                                 isSingleChar && {name: "Compulsion", command: `!char ${charIDString} set compulsion ?{Compulsion Title (blank to toggle off):}|?{Compulsion Text:}`, styles: {bgColor: C.COLORS.darkdarkred, color: C.COLORS.brightred}} || 0,
@@ -1974,8 +1974,8 @@ const Char = (() => {
                 })
                 if (dyscrasiasTitle)
                     addCharAlarm(charRef, "hunger", ["onMax", "slake"], {
-                        name: "RemDyscrasias",
-                        message: C.HTML.Block(C.HTML.Header("Your dyscrasias fades.")),
+                        name: "RemDyscrasia",
+                        message: C.HTML.Block(C.HTML.Header("Your dyscrasia fades.")),
                         actions: [`!char ${charObj.id} set stat dyscrasias_toggle:0`],
                         revActions: [`!char ${charObj.id} set stat dyscrasias_toggle:1`],
                         displayTo: [D.GetPlayerID(charObj), "Storyteller"],
