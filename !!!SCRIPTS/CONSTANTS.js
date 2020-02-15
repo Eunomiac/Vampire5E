@@ -989,8 +989,8 @@ const C = (() => {
             rainMult: {
                 defaults: {
                     base: 1,
-                    location: 1.75,
-                    score: 2,
+                    location: 1.25,
+                    score: 1.5,
                 }
             },
             CityChatter: [10],
@@ -998,8 +998,8 @@ const C = (() => {
             CityPark: [80],
             CityTraffic: [30],
             Church: [60],
-            RainLight: [80],
-            RainHeavy: [80],
+            RainLight: [50],
+            RainHeavy: [50],
             SoftHum: [100],
             SoftIndoor: [30],
             Thunder: [100],
@@ -1012,12 +1012,9 @@ const C = (() => {
             WolfHowl: [100, 100],
             SplashScreen: [60],
             ScoreSplash: [60],
-            ScoreMain: [60],
-            ScoreIntense: [60],
-            ScoreCombat: [60],
             defaults: {
                 base: [50],
-                score: [60],
+                score: [50],
                 location: [45],
                 weather: [45],
                 effect: [60]

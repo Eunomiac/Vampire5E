@@ -356,7 +356,7 @@ const Roller = (() => {
                     }
                     break
                 }
-                case "effects": {
+                case "effects": case "effect": {
                     switch (D.LCase(call = args.shift())) {    
                         case "menu": {
                             const charObjs = Listener.GetObjects(objects, "character"),
@@ -442,11 +442,11 @@ const Roller = (() => {
                                     const charObjs = getRollChars(Listener.GetObjects(objects, "character")[0])
                                     if (VAL({charObj: charObjs}, "!roll effects add char", true)) 
                                         for (const char of charObjs)
-                                            addCharRollEffects(char, args.join(" "))                      
+                                            addCharRollEffect(char, args.join(" "))                      
                                     break
                                 }
                                 case "global": {
-                                    addGlobalRollEffects(args.join(" "))
+                                    addGlobalRollEffect(args.join(" "))
                                     break
                                 }
                                 case "exclude": {
@@ -464,11 +464,11 @@ const Roller = (() => {
                                 case "char": {
                                     const [charObj] = getRollChars(Listener.GetObjects(objects, "character")[0])
                                     if (VAL({charObj}, "!roll effects del char"))
-                                        delCharRollEffects(charObj, args.join(" "))
+                                        delCharRollEffect(charObj, args.join(" "))
                                     break
                                 }
                                 case "global": {
-                                    delGlobalRollEffects(args.join(" "))
+                                    delGlobalRollEffect(args.join(" "))
                                     break
                                 }
                                 case "exclude": {
@@ -1307,7 +1307,19 @@ const Roller = (() => {
                                 setAttrs(rollInput.charID, {rolleffects: _.compact(D.GetStatVal(rollInput.charID, "rolleffects").replace(effectString, "").replace(/\|\|/gu, "|").split("|")).join("|")})
                             break
                         default:
-
+                            TimeTracker.SetAlarm(
+                                removeWhen,
+                                `RemEffect${effectString}`,
+                                C.HTML.Block([
+                                    C.HTML.Header(`Removed Roll Effect from ${D.GetName(rollInput.charID)}:`),
+                                    C.HTML.Body(effectString)
+                                ].join("")),
+                                `!roll effect del char ${rollInput.charID} ${effectString}`,
+                                [],
+                                `!roll effect add char ${rollInput.charID} ${effectString}`,
+                                false,
+                                false
+                            )
                             break
                     }
                 // FIRST ROLLMOD PASS: CONVERT TO NUMBER.
@@ -1652,7 +1664,7 @@ const Roller = (() => {
             }
             return THROW(`Bad Roll Input!${D.JSL(rollInput)}`, "applyRollEffects")
         },
-        addCharRollEffects = (charRef, effectString) => {
+        addCharRollEffect = (charRef, effectString) => {
             const charObj = D.GetChar(charRef)
             if (VAL({charObj, string: effectString}, "addCharRollEffects")) {
 
@@ -1695,80 +1707,69 @@ const Roller = (() => {
                 // D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "addCharRollEffects")
             }
         },
-        delCharRollEffects = (charRef, effectString) => {
+        delCharRollEffect = (charRef, effectString) => {
             const charObj = D.GetChar(charRef)
             let rollEffects = _.compact((D.GetStatVal(charObj.id, "rolleffects") || "").split("|"))    
             DB({charRef, effectString, rollEffects}, "delCharRollEffects")                                        
             if (VAL({charObj, string: effectString}, "delCharRollEffects")) {
                 if (VAL({number: effectString}))
                     rollEffects.splice(Math.max(0, D.Int(effectString) - 1), 1)
-                else
+                else if (rollEffects.includes(effectString))
                     rollEffects = _.without(rollEffects, effectString)
+                else
+                    return false
                 setAttrs(charObj.id, {rolleffects: rollEffects.join("|")})
+                return true
                 // D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "delCharRollEffects")
             }
+            return false
         },
-        addGlobalRollEffects = effectStrings => {
-            if (VAL({string: effectStrings}, "addGlobalRollEffects", true)) {
-                for (const effect of effectStrings)
-                    STATE.REF.rollEffects[effect] = []
+        addGlobalRollEffect = effectString => {
+            if (VAL({string: effectString}, "addGlobalRollEffects")) {
+                STATE.REF.rollEffects[effectString] = []
                 const rollStrings = []
                 for (let i = 0; i < Object.keys(STATE.REF.rollEffects).length; i++)
                     rollStrings.push(`${i + 1}: ${Object.keys(STATE.REF.rollEffects)[i]}`)
                 D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "addGlobalRollEffects")
             }
         },
-        delGlobalRollEffects = effectStrings => {
-            for (const effectString of effectStrings)
-                if (VAL({number: effectString}))
-                    delete STATE.REF.rollEffects[Object.keys(STATE.REF.rollEffects)[Math.max(0, D.Int(effectString) - 1)]]
-                else
-                    STATE.REF.rollEffects = _.without(STATE.REF.rollEffects, effectString)
+        delGlobalRollEffect = effectString => {
+            if (VAL({number: effectString}))
+                delete STATE.REF.rollEffects[Object.keys(STATE.REF.rollEffects)[Math.max(0, D.Int(effectString) - 1)]]
+            else if (effectString in STATE.REF.rollEffects)
+                STATE.REF.rollEffects = _.omit(STATE.REF.rollEffects, effectString)
+            else
+                return false
             D.Alert(`Global Roll Effects revised to:<br><br>${Object.keys(STATE.REF.rollEffects).join("<br>")}`, "delGlobalRollEffects")
+            return true
         },
-        addGlobalExclusion = (charRef, effectStrings) => {
+        addGlobalExclusion = (charRef, effectString) => {
             const charObj = D.GetChar(charRef)
-            if (VAL({charObj: [charObj], string: effectStrings}, "addGlobalExclusion", true))
-                for (const effect of effectStrings) {
-                    let effectString = effect
-                    if (VAL({number: effectString}))
-                        effectString = Object.keys(STATE.REF.rollEffects)[D.Int(effectString - 1)]
-                    else
-                        effectString = _.find(Object.keys(STATE.REF.rollEffects, v => D.FuzzyMatch(effectString, v)))        
-                    if (STATE.REF.rollEffects[effectString]) {
-                        STATE.REF.rollEffects[effectString].push(charObj.id)
-                        D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATE.REF.rollEffects[effectString])}`, "addGlobalExclusion")
-                    } else {
-                        D.Alert(`No exclusion found for reference '${effectString}'`, "addGlobalExclusion")
-                    }
+            if (VAL({charObj}, "addGlobalExclusion")) {
+                if (VAL({number: effectString}))
+                    effectString = Object.keys(STATE.REF.rollEffects)[D.Int(effectString - 1)]      
+                if (VAL({string: effectString}) && effectString in STATE.REF.rollEffects) {
+                    STATE.REF.rollEffects[effectString].push(charObj.id)
+                    D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATE.REF.rollEffects[effectString])}`, "addGlobalExclusion")
+                } else {
+                    D.Alert(`No exclusion found for reference '${effectString}'`, "addGlobalExclusion")
                 }
+            }
         },
-        delGlobalExclusion = (charRef, effectStrings) => {
+        delGlobalExclusion = (charRef, effectString) => {
             const charObj = D.GetChar(charRef)
-            if (VAL({charObj: [charObj], string: effectStrings}, "delGlobalExclusion", true)) 
-                for (const effect of effectStrings) {
-                    let effectString = effect
-                    if (VAL({number: effectString}))
-                        effectString = Object.keys(STATE.REF.rollEffects)[D.Int(effectString - 1)]
-                    else
-                        effectString = _.find(Object.keys(STATE.REF.rollEffects, v => D.FuzzyMatch(effectString, v)))
-                    if (!STATE.REF.rollEffects[effectString]) {
-                        const checkEffects = _.filter(STATE.REF.rollEffects, v => v.includes(charObj.id))
-                        if (checkEffects.length === 1)
-                            [effectString] = Object.keys(checkEffects)
-                        else if (checkEffects.length === 0)
-                            D.Alert(`Character ${D.JS(charObj.get("name"))} is not listed in any roll effect exclusions.`, "delGlobalExclusion")
-                        else if (checkEffects.length > 1)
-                            D.Alert(`Character ${D.JS(charObj.get("name"))} is present in multiple exclusions, please be more specific: ${D.JS(checkEffects, true)}`, "delGlobalExclusion")
-                    }
-                    if (STATE.REF.rollEffects[effectString]) {
-                        STATE.REF.rollEffects[effectString] = _.without(STATE.REF.rollEffects[effectString], charObj.id)
-                        D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATE.REF.rollEffects[effectString])}`, "delGlobalExclusion")
-                    } else {
-                        D.Alert(`No exclusion found for reference '${effectString}'`, "delGlobalExclusion")
-                    }
+            if (VAL({charObj}, "delGlobalExclusion")) {
+                if (VAL({number: effectString}))
+                    effectString = Object.keys(STATE.REF.rollEffects)[D.Int(effectString - 1)]    
+                if (VAL({string: effectString}) && effectString in STATE.REF.rollEffects) {
+                    STATE.REF.rollEffects[effectString] = _.without(STATE.REF.rollEffects[effectString], charObj.id)
+                    D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATE.REF.rollEffects[effectString])}`, "delGlobalExclusion")
+                    return true
+                } else {
+                    D.Alert(`No exclusion found for reference '${effectString}'`, "delGlobalExclusion")
                 }
-        
+            }        
+            return false
         },     
     // #endregion
 
@@ -3659,12 +3660,12 @@ const Roller = (() => {
         get Commit() { return getCurrentRoll().rollResults.commit },
         get Char() { return D.GetChar(getCurrentRoll().rollData.charID) },
 
-        AddCharEffect: (charRef, effect) => { addCharRollEffects(charRef, effect) },
-        DelCharEffect: (charRef, effect) => { delCharRollEffects(charRef, effect) },
-        AddGlobalEffect: (effect) => { addGlobalRollEffects([effect]) },
-        DelGlobalEffect: (effect) => { delGlobalRollEffects([effect]) },
-        AddGlobalExclude: (charRef, effect) => { addGlobalExclusion(charRef, [effect]) },
-        DelGlobalExclude: (charRef, effect) => { delGlobalExclusion(charRef, [effect]) }
+        AddCharEffect: addCharRollEffect,
+        DelCharEffect: delCharRollEffect,
+        AddGlobalEffect: addGlobalRollEffect,
+        DelGlobalEffect: delGlobalRollEffect,
+        AddGlobalExclude: addGlobalExclusion,
+        DelGlobalExclude: delGlobalExclusion
     }
 })()
 

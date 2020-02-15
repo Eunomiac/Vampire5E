@@ -48,6 +48,7 @@ const Char = (() => {
             STATE.REF.tokenRecord = STATE.REF.tokenRecord || []
             STATE.REF.traitSelection = STATE.REF.traitSelection || []
             STATE.REF.tokenPowerData = STATE.REF.tokenPowerData || {all: {}}
+            STATE.REF.charAlarms = STATE.REF.charAlarms || {}
 // awareness/intelligence+investigation/wits+investigation;postrait:Auspex;+ Heightened Senses (<.>)
 // 
 
@@ -255,7 +256,7 @@ const Char = (() => {
                     }
                     break
                 }
-                case "set": {
+                case "set": case "add": {
                     switch (D.LCase(call = args.shift())) {
                         case "disabled": case "disable": {
                             for (const charObj of charObjs.filter(x => VAL({pc: x})))
@@ -284,7 +285,7 @@ const Char = (() => {
                         case "stat": case "stats": case "attr": case "attrs": {
                             const [charObj] = charObjs
                             if (VAL({charObj}, "!char set stat")) {
-                                D.Alert(D.JS(Listener.ParseParams(args, "|")))
+                                DB({params: Listener.ParseParams(args, "|")}, "onChatCall")
                                 D.SetStats(charObj.id, Listener.ParseParams(args, "|"))
                             } else {
                                 D.Alert("Select a character or provide a character reference first!", "!char set stat")
@@ -343,6 +344,11 @@ const Char = (() => {
                             setCompulsion(charObj, D.LCase(cTitle).length < 3 ? null : cTitle, cText)
                             break
                         }
+                        case "flag": {
+                            const [charObj] = charObjs                         
+                            addCharFlag(charObj, args.join(" "))
+                            break
+                        }
                         // no default
                     }
                     break
@@ -357,6 +363,11 @@ const Char = (() => {
                         case "npc": {
                             for (const charObj of charObjs)
                                 setCharNPC(charObj, "base")                                  
+                            break
+                        }
+                        case "flag": {
+                            const [charObj] = charObjs
+                            delCharFlag(charObj, args.join(" "))
                             break
                         }
                         // no default
@@ -548,10 +559,18 @@ const Char = (() => {
             // no default
             }
         },
-        onAttrChange = (call, attrObj) => {
+        onAttrChange = (call, attrObj, prevVal) => {
             switch (call) {
                 case "hunger": {
-                    updateHunger(attrObj.get("_characterid"))
+                    const charID = attrObj.get("_characterid")
+                    updateHunger(charID)
+                    checkCharAlarms(charID, "hunger", prevVal)
+                    break
+                }
+                case "health_impair_toggle": case "willpower_impair_toggle": case "humanity_impair_toggle": {
+                    const charID = attrObj.get("_characterid")
+                    DB({charID, call, attrObj, prevVal}, "onAttrChange")
+                    checkCharAlarms(charID, call, prevVal)
                     break
                 }
                 case "desire": case "_reporder_repeating_desire": {
@@ -693,6 +712,31 @@ const Char = (() => {
                                 Roller.DelCharEffect(charID, rollEffect)                
             }                
         },
+        addCharFlag = (charRef, flagName, removeWhen, flagDisplayName, isGoodFlag = false) => {
+            const charObj = D.GetChar(charRef),
+                charFlags = charObj && (D.GetStatVal(charRef, "charflags") || "").split("|")
+            if (VAL({charObj, string: flagName})) {
+                flagDisplayName = flagDisplayName || flagName
+                D.SetStat(charRef, _.uniq([...charFlags, flagName]).join("|"))
+                if (VAL({string: removeWhen}))
+                    TimeTracker.SetAlarm(
+                        removeWhen,
+                        `removeFlag${flagName}`,
+                        C.HTML.Block([
+                            C.HTML.Header(`${flagDisplayName} cleared from your character.`, C.STYLES[isGoodFlag ? "whiteMarble" : "blackMarble"].header)
+                        ].join(""), C.STYLES[isGoodFlag ? "whiteMarble" : "blackMarble"].block),
+                        `!char ${charObj.id} clear flag ${flagName}`,
+                        [D.GetPlayerID(charObj)],
+                        null,
+                        false,
+                        false
+                    )
+            }
+        },
+        delCharFlag = (charRef, flagName) => {
+            const charFlags = (D.GetStatVal(charRef, "charflags") || "").split("|")
+            D.SetStat(charRef, _.without(charFlags, flagName).join("|"))
+        },
     // #endregion
 
     // #region GETTERS: Checking Character Status, Character Chat Prompt
@@ -814,7 +858,7 @@ const Char = (() => {
                         {
                             type: "ButtonLine",
                             contents: [
-                                {name: "Add to Scene", command: `!sess ${charIDString} add scene`, styles: {bgColor: C.COLORS.palegreen, color: C.COLORS.black}},
+                                {name: "End Scene", command: "!sess scene", styles: {bgColor: C.COLORS.palegreen, color: C.COLORS.black}},
                                 {name: "Pop Desire", command: `!char ${charIDString} set desire`, styles: {bgColor: C.COLORS.gold, color: C.COLORS.black}},
                                 {name: "Home/Back", command: `!char ${charIDString} send toggle`, styles: {bgColor: C.COLORS.black, color: C.COLORS.gold}},
                                 {name: "Reset Token", command: `!char ${charIDString} set token base`, styles: {bgColor: C.COLORS.darkgrey, color: C.COLORS.white}}
@@ -1074,6 +1118,10 @@ const Char = (() => {
                 C.HTML.Header(D.Capitalize(C.ATTRDISPLAYNAMES[D.LCase(traitName)] || traitName, true)),
                 C.HTML.Body(Object.values(_.groupBy(returnLines, (x, i) => Math.floor(i / 2))).map(x => x.join("")).join("<br>"), {color: C.COLORS.white, fontWeight: "normal", fontFamily: "Voltaire", fontSize: "12px", textAlign: "left"})
             ].join("")))
+        },
+        charHasFlag = (charRef, flagName) => {
+            const allCharFlags = (D.GetStatVal(charRef, "charflags") || "").split("|")
+            return allCharFlags.includes(flagName)
         },
     // #endregion
 
@@ -1426,7 +1474,7 @@ const Char = (() => {
         },
     // #endregion
     
-    // #region Manipulating Stats on Sheet,
+    // #region Manipulating Stats on Sheet, Alarms
         parseDmgTypes = (max, bashing = 0, aggravated = 0, deltaBash = 0, deltaAgg = 0) => {
             if (VAL({number: [max, bashing, aggravated, deltaBash, deltaAgg]}, "parseDmgTypes", true)) {
                 let [newBash, newAgg, deltaBashToGo, deltaAggToGo] = [bashing, aggravated, deltaBash, deltaAgg]
@@ -1463,7 +1511,7 @@ const Char = (() => {
             }
             return false
         },
-        adjustTrait = (charRef, trait, amount, min = 0, max = Infinity, defaultTraitVal, deltaType, isChatting = true) => {
+        adjustTrait = (charRef, trait, amount, min = 0, max = Infinity, defaultTraitVal, deltaType, isChatting = true, messageOverride) => {
             // D.Alert(`Adjusting Trait: ${[charRef, trait, amount, min, max, defaultTraitVal, deltaType, isChatting].map(x => D.JS(x)).join(", ")}`)
             const charObj = D.GetChar(charRef)
             if (VAL({charObj: [charObj], trait: [trait], number: [amount]}, "adjustTrait", true)) {
@@ -1632,6 +1680,11 @@ const Char = (() => {
                         trackerString || null,
                         alertString ? C.HTML.Header(alertString, Object.assign(chatStyles.alert, alertString.includes("<br>") ? {height: "40px"} : {})) : null
                     ]), chatStyles.block))
+                else if (messageOverride)
+                    D.Chat(charObj, C.HTML.Block(_.compact([
+                        C.HTML.Header(messageOverride, Object.assign({}, chatStyles.banner, {height: "25px", lineHeight: "25px"})),
+                        trackerString || null
+                    ]), chatStyles.block))
                 setAttrs(D.GetChar(charObj).id, {[trait.toLowerCase()]: finalTraitVal})
                 if (trait.toLowerCase() === "hunger")
                     updateHunger()
@@ -1639,154 +1692,200 @@ const Char = (() => {
             }
             return false
         },
-        applyCripplingInjury = (charObj, aggDmg) => {
-            const injuryRoll = randomInteger(10) + aggDmg,
-                injuryChatLines = [
-                    C.HTML.Header(`${D.GetName(charObj, true)} Suffers a Crippling Injury!`),
-                    C.HTML.Body(`Result: ${injuryRoll} (${aggDmg} Agg. + d10: ${injuryRoll - aggDmg})`),
-                ],
-                injuryFuncs = {
-                    100: () => {                    
-                        injuryChatLines.push(...[
-                            C.HTML.Header("Catastrophic Injury!"),
-                            C.HTML.Body(`${D.GetName(charObj, true)} falls into torpor!`)
-                        ])
-                        D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
-                    },    
-                    12:  () => {                        
-                        D.CommandMenu(
-                            {
-                                title: "Limb Lost/Mangled",
-                                rows: [
-                                    {
-                                        type: "ButtonLine",
-                                        contents: [
-                                            {name: "Mangled Arm", command: "!reply mangledarm"},                                            
-                                            {name: "Mangled Leg", command: "!reply mangledleg"}
-                                        ]
-                                    },
-                                    {
-                                        type: "ButtonLine",
-                                        contents: [
-                                            {name: "Lost Arm", command: "!reply lostarm"},                                            
-                                            {name: "Lost Leg", command: "!reply lostleg"}
-                                        ]
+        applyCripplingInjury = (charRef, aggDmg) => {
+            const charObj = D.GetChar(charRef)
+            if (VAL({charObj})) {
+                const injuryRoll = randomInteger(10) + aggDmg,
+                    injuryChatLines = [
+                        C.HTML.Header(`${D.GetName(charObj, true)} Suffers a Crippling Injury!`),
+                        C.HTML.Body(`Result: ${injuryRoll} (${aggDmg} Agg. + d10: ${injuryRoll - aggDmg})`),
+                    ],
+                    injuryFuncs = {
+                        100: () => {                    
+                            injuryChatLines.push(...[
+                                C.HTML.Header("Catastrophic Injury!"),
+                                C.HTML.Body(`${D.GetName(charObj, true)} falls into torpor!`)
+                            ])
+                            D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
+                            return {}
+                        },    
+                        12:  () => {                        
+                            D.CommandMenu(
+                                {
+                                    title: "Limb Lost/Mangled",
+                                    rows: [
+                                        {
+                                            type: "ButtonLine",
+                                            contents: [
+                                                {name: "Mangled Arm", command: "!reply mangledarm"},                                            
+                                                {name: "Mangled Leg", command: "!reply mangledleg"}
+                                            ]
+                                        },
+                                        {
+                                            type: "ButtonLine",
+                                            contents: [
+                                                {name: "Lost Arm", command: "!reply lostarm"},                                            
+                                                {name: "Lost Leg", command: "!reply lostleg"}
+                                            ]
+                                        }
+                                    ]
+                                },
+                                (commandString) => { // IMPORTANT: return 'true' if you want to hold this function open for more commands
+                                    switch (commandString) {
+                                        case "mangledarm": {
+                                            injuryChatLines.push(...[
+                                                C.HTML.Header("Mangled Arm!"),
+                                                C.HTML.Body("Actions Requiring Affected Arm are Impossible.")
+                                            ])
+                                            break
+                                        }
+                                        case "mangledleg": {
+                                            injuryChatLines.push(...[
+                                                C.HTML.Header("Mangled Leg!"),
+                                                C.HTML.Body("Actions Requiring Affected Leg are Impossible.")
+                                            ])
+                                            break
+                                        }
+                                        case "lostarm": {
+                                            injuryChatLines.push(...[
+                                                C.HTML.Header("Severed Arm!"),
+                                                C.HTML.Body("Actions Requiring Affected Arm are Impossible.")
+                                            ])
+                                            break
+                                        }
+                                        case "lostleg": {
+                                            injuryChatLines.push(...[
+                                                C.HTML.Header("Severed Leg!"),
+                                                C.HTML.Body("Actions Requiring Affected Leg are Impossible.")
+                                            ])
+                                            break
+                                        }
+                                        // no default
                                     }
-                                ]
-                            },
-                            (commandString) => { // IMPORTANT: return 'true' if you want to hold this function open for more commands
-                                switch (commandString) {
-                                    case "mangledarm": {
-                                        injuryChatLines.push(...[
-                                            C.HTML.Header("Mangled Arm!"),
-                                            C.HTML.Body("Actions Requiring Affected Arm are Impossible.")
-                                        ])
-                                        break
-                                    }
-                                    case "mangledleg": {
-                                        injuryChatLines.push(...[
-                                            C.HTML.Header("Mangled Leg!"),
-                                            C.HTML.Body("Actions Requiring Affected Leg are Impossible.")
-                                        ])
-                                        break
-                                    }
-                                    case "lostarm": {
-                                        injuryChatLines.push(...[
-                                            C.HTML.Header("Severed Arm!"),
-                                            C.HTML.Body("Actions Requiring Affected Arm are Impossible.")
-                                        ])
-                                        break
-                                    }
-                                    case "lostleg": {
-                                        injuryChatLines.push(...[
-                                            C.HTML.Header("Severed Leg!"),
-                                            C.HTML.Body("Actions Requiring Affected Leg are Impossible.")
-                                        ])
-                                        break
-                                    }
-                                    // no default
+                                    D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
                                 }
-                                D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
-                            }
-                        )
-                    },   
-                    11: () => {                        
-                        injuryChatLines.push(...[
-                            C.HTML.Header("Massive Wound!"),
-                            C.HTML.Body("-2 to All Rolls.<br>+1 Damage Taken.")
-                        ])
-                        Roller.AddCharEffect(charObj, "all;-2;- Massive Wound (<.>);unimpaired:health")
-                        // Some Char function for temporary effects, increases damage by one.
-                        D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
-                    },  
-                    10: () => {
-                        D.CommandMenu(
-                            {
-                                title: "Broken or Blinded?",
-                                rows: [
-                                    {
-                                        type: "ButtonLine",
-                                        contents: [
-                                            {name: "Broken Arm", command: "!reply arm"},                                            
-                                            {name: "Broken Leg", command: "!reply leg"},
-                                            {name: "Blinded", command: "!reply blind"}
-                                        ]
+                            )
+                            return {}
+                        },   
+                        11: () => {                        
+                            injuryChatLines.push(...[
+                                C.HTML.Header("Massive Wound!"),
+                                C.HTML.Body("-2 to All Rolls.<br>+1 Damage Taken.")
+                            ])
+                            // Some Char function for temporary effects, increases damage by one.
+                            Roller.AddCharEffect(charObj, "all;-2;- Massive Wound (<.>)")
+                            addCharFlag(charObj.id, "incDmgTaken", false, false)
+                            addCharAlarm(charObj.id, "health", ["offImpair"], {
+                                name: "RemInjury",
+                                message: C.HTML.Block(C.HTML.Header("Your massive wound heals.", C.STYLES.whiteMarble.header), C.STYLES.whiteMarble.block),
+                                actions: [`!roll effect del char ${charObj.id} all;-2;- Massive Wound (<.>)`, `!char clear flag ${charObj.id} incHealthDmgTaken`],
+                                revActions: [`!roll effect add char ${charObj.id} all;-2;- Massive Wound (<.>)`, `!char add flag ${charObj.id} incHealthDmgTaken`],
+                                displayTo: [D.GetPlayerID(charObj), "Storyteller"],
+                                isConditional: false
+                            })
+                            D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
+                        },  
+                        10: () => {
+                            D.CommandMenu(
+                                {
+                                    title: "Broken or Blinded?",
+                                    rows: [
+                                        {
+                                            type: "ButtonLine",
+                                            contents: [
+                                                {name: "Broken Arm", command: "!reply arm"},                                            
+                                                {name: "Broken Leg", command: "!reply leg"},
+                                                {name: "Blinded", command: "!reply blind"}
+                                            ]
+                                        }
+                                    ]
+                                },
+                                (commandString) => { // IMPORTANT: return 'true' if you want to hold this function open for more commands
+                                    switch (commandString) {
+                                        case "arm": {
+                                            injuryChatLines.push(...[
+                                                C.HTML.Header("Broken Arm!"),
+                                                C.HTML.Body("-3 to Rolls Using Affected Arm.")
+                                            ])
+                                            Roller.AddCharEffect(charObj, "brawl/firearms/melee;-3;- Broken Arm (<.>)")
+                                            addCharAlarm(charObj.id, "health", ["offImpair"], {
+                                                name: "RemInjury",
+                                                message: C.HTML.Block(C.HTML.Header("Your broken arm knits itself back together.", C.STYLES.whiteMarble.header), C.STYLES.whiteMarble.block),
+                                                actions: [`!roll effect del char ${charObj.id} brawl/firearms/melee;-3;- Broken Arm (<.>)`],
+                                                revActions: [`!roll effect add char ${charObj.id} brawl/firearms/melee;-3;- Broken Arm (<.>)`],
+                                                displayTo: [D.GetPlayerID(charObj), "Storyteller"],
+                                                isConditional: false
+                                            })
+                                            break
+                                        }
+                                        case "leg": {
+                                            injuryChatLines.push(...[
+                                                C.HTML.Header("Broken Leg!"),
+                                                C.HTML.Body("-3 to Rolls Using Affected Leg.")
+                                            ])
+                                            Roller.AddCharEffect(charObj, "athletics/stealth;-3;- Broken Leg (<.>)")
+                                            addCharAlarm(charObj.id, "health", ["offImpair"], {
+                                                name: "RemInjury",
+                                                message: C.HTML.Block(C.HTML.Header("Your broken leg knits itself back together.", C.STYLES.whiteMarble.header), C.STYLES.whiteMarble.block),
+                                                actions: [`!roll effect del char ${charObj.id} athletics/stealth;-3;- Broken Leg (<.>)`],
+                                                revActions: [`!roll effect add char ${charObj.id} athletics/stealth;-3;- Broken Leg (<.>)`],
+                                                displayTo: [D.GetPlayerID(charObj), "Storyteller"],
+                                                isConditional: false
+                                            })
+                                            break
+                                        }
+                                        case "blind": {
+                                            injuryChatLines.push(...[
+                                                C.HTML.Header("Blinded!"),
+                                                C.HTML.Body("-3 to Rolls Requiring Vision.")
+                                            ])
+                                            Roller.AddCharEffect(charObj, "awareness/brawl/firearms/melee/drive/investigation;-3;- Blind (<.>)")
+                                            Session.AddSceneAlarm({
+                                                name: "HealBlindness",
+                                                message: C.HTML.Block(C.HTML.Header("You are no longer blinded.", C.STYLES.whiteMarble.header), C.STYLES.whiteMarble.block),
+                                                actions: [`!roll effect del char ${charObj.id} awareness/brawl/firearms/melee/drive/investigation;-3;- Blind (<.>)`],
+                                                revActions: [`!roll effect add char ${charObj.id} awareness/brawl/firearms/melee/drive/investigation;-3;- Blind (<.>)`],
+                                                displayTo: [D.GetPlayerID(charObj), "Storyteller"],
+                                                isConditional: false
+                                            })
+                                            break
+                                        }
+                                        // no default
                                     }
-                                ]
-                            },
-                            (commandString) => { // IMPORTANT: return 'true' if you want to hold this function open for more commands
-                                switch (commandString) {
-                                    case "arm": {
-                                        injuryChatLines.push(...[
-                                            C.HTML.Header("Broken Arm!"),
-                                            C.HTML.Body("-3 to Rolls Using Affected Arm.")
-                                        ])
-                                        Roller.AddCharEffect(charObj, "brawl/firearms/melee;-3;- Broken Arm (<.>);unimpaired:health")
-                                        break
-                                    }
-                                    case "leg": {
-                                        injuryChatLines.push(...[
-                                            C.HTML.Header("Broken Leg!"),
-                                            C.HTML.Body("-3 to Rolls Using Affected Leg.")
-                                        ])
-                                        Roller.AddCharEffect(charObj, "athletics/stealth;-3;- Broken Leg (<.>);unimpaired:health")
-                                        break
-                                    }
-                                    case "blind": {
-                                        injuryChatLines.push(...[
-                                            C.HTML.Header("Blinded!"),
-                                            C.HTML.Body("-3 to Rolls Requiring Vision.")
-                                        ])
-                                        Roller.AddCharEffect(charObj, "awareness/brawl/firearms/melee/drive/investigation;-3;- Blind (<.>);scene")
-                                        break
-                                    }
-                                    // no default
+                                    D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
                                 }
-                                D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
-                            }
-                        )
-                    }, 
-                    8: () => {
-                        injuryChatLines.push(...[
-                            C.HTML.Header("Severe Head Trauma!"),
-                            C.HTML.Body("-1 to Physical Rolls.<br>-2 to Mental Rolls.")
-                        ])
-                        Roller.AddCharEffect(charObj, "physical;-1;- Head Trauma (<.>);unimpaired:health")
-                        Roller.AddCharEffect(charObj, "mental;-2;- Head Trauma (<.>);unimpaired:health")
-                        D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
-                    },      
-                    6: () => {
-                        injuryChatLines.push(...[
-                            C.HTML.Header("Stunned!"),
-                            C.HTML.Body("Spend one Willpower or lose a turn.")
-                        ])
-                        D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
+                            )
+                        }, 
+                        8: () => {
+                            injuryChatLines.push(...[
+                                C.HTML.Header("Severe Head Trauma!"),
+                                C.HTML.Body("-1 to Physical Rolls.<br>-2 to Mental Rolls.")
+                            ])
+                            Roller.AddCharEffect(charObj, "physical;-1;- Head Trauma (<.>)")
+                            Roller.AddCharEffect(charObj, "mental;-2;- Head Trauma (<.>)")
+                            addCharAlarm(charObj.id, "health", ["offImpair"], {
+                                name: "RemInjury",
+                                message: C.HTML.Block(C.HTML.Header("Your head trauma heals.", C.STYLES.whiteMarble.header), C.STYLES.whiteMarble.block),
+                                actions: [`!roll effect del char ${charObj.id} physical;-1;- Head Trauma (<.>)`, `!roll effect del char ${charObj.id} mental;-2;- Head Trauma (<.>)`],
+                                revActions: [`!roll effect add char ${charObj.id} physical;-1;- Head Trauma (<.>)`, `!roll effect add char ${charObj.id} mental;-2;- Head Trauma (<.>)`],
+                                displayTo: [D.GetPlayerID(charObj), "Storyteller"],
+                                isConditional: false
+                            })
+                            D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
+                        },      
+                        6: () => {
+                            injuryChatLines.push(...[
+                                C.HTML.Header("Stunned!"),
+                                C.HTML.Body("Spend one Willpower or lose a turn.")
+                            ])
+                            D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
+                        }
                     }
-                }
-            injuryFuncs[Object.keys(injuryFuncs).find(x => injuryRoll <= x)]()
+                injuryFuncs[Object.keys(injuryFuncs).find(x => injuryRoll <= x)]()
+            }
         },
-        adjustDamage = (charRef, trait, dType, delta, isChatting = true) => {
-            const amount = D.Int(delta),
+        adjustDamage = (charRef, trait, dType, delta, isChatting = true, messageOverride) => {
+            const amount = D.Int(delta) + (D.Int(delta) > 0 && charHasFlag(`inc${D.Capitalize(D.LCase(trait).replace(/wp/gu, "willpower"))}DmgTaken`) ? 1 : 0),
                 charObj = D.GetChar(charRef),
                 dmgType = dType
             let [minVal, maxVal, targetVal, defaultVal, traitName, deltaType] = [0, 5, D.Int(amount), 0, "", ""]
@@ -1807,14 +1906,12 @@ const Char = (() => {
                             trait.toLowerCase() + (["superficial", "superficial+", "spent"].includes(dmgType.replace(/social_/gu, "")) ? "_sdmg" : "_admg") + (dmgType.includes("social") ? "_social" : ""),
                             dmgType.replace(/social_/gu, "")
                         ]
-                        if (dmgType.includes("social"))
-                            Session.AddSceneChar(charRef)
                         break
                     }
                     // no default
                 }
                 // D.Alert(`Adjusting Damage: (${D.JS(trait)}, ${D.JS(dmgType)}, ${D.JS(amount)})`, "adjustDamage")
-                const returnVal = adjustTrait(charRef, traitName, targetVal, minVal, maxVal, defaultVal, deltaType, isChatting)
+                const returnVal = adjustTrait(charRef, traitName, targetVal, minVal, maxVal, defaultVal, deltaType, isChatting, messageOverride)
                 // if (amount < 0 && deltaType === "aggravated")
                     // adjustTrait(charRef, traitName.replace(/_admg/gu, "_sdmg"), -1 * targetVal, minVal, maxVal, defaultVal, "superficial", false)
                 return returnVal
@@ -1869,10 +1966,80 @@ const Char = (() => {
             })
         },
         setDyscrasias = (charRef, dyscrasiasTitle, dyscrasiasText) => {
-            D.SetStats(charRef, {
-                dyscrasias_toggle: dyscrasiasTitle && 1 || 0,
-                dyscrasias: dyscrasiasTitle && `${D.UCase(dyscrasiasTitle)} — ${D.Capitalize(dyscrasiasText)}` || ""
-            })
+            const charObj = D.GetChar(charRef)
+            if (VAL({charObj})) {
+                D.SetStats(charRef, {
+                    dyscrasias_toggle: dyscrasiasTitle && 1 || 0,
+                    dyscrasias: dyscrasiasTitle && `${D.UCase(dyscrasiasTitle)} — ${D.Capitalize(dyscrasiasText)}` || ""
+                })
+                if (dyscrasiasTitle)
+                    addCharAlarm(charRef, "hunger", ["onMax", "slake"], {
+                        name: "RemDyscrasias",
+                        message: C.HTML.Block(C.HTML.Header("Your dyscrasias fades.")),
+                        actions: [`!char ${charObj.id} set stat dyscrasias_toggle:0`],
+                        revActions: [`!char ${charObj.id} set stat dyscrasias_toggle:1`],
+                        displayTo: [D.GetPlayerID(charObj), "Storyteller"],
+                        isConditional: false
+                    })
+            }
+        },
+        addCharAlarm = (charRef, traitName, triggerFlags, alarm) => {
+            const charObj = D.GetChar(charRef)
+            DB({charObj, traitName, triggerFlags, alarm}, "addCharAlarm")
+            if (VAL({charObj})) {
+                STATE.REF.charAlarms[charObj.id] = STATE.REF.charAlarms[charObj.id] || []
+                STATE.REF.charAlarms[charObj.id].push({
+                    traitName,
+                    triggerFlags,
+                    alarm
+                })
+            }
+        },        
+        checkCharAlarms = (charRef, traitName, prevVal) => {
+            const charObj = D.GetChar(charRef),
+                traitVal = D.GetStatVal(charObj.id, traitName)
+            DB({charObj, traitName, traitVal, prevVal}, "checkCharAlarms")
+            if (VAL({charObj}))
+                if (charObj.id in STATE.REF.charAlarms) {
+                    const traitCharAlarms = STATE.REF.charAlarms[charObj.id].map((x, i) => [i, x]).filter(x => x[1].traitName.startsWith(traitName.replace(/_.*$/gu, ""))),
+                        firingCharAlarms = []
+                    if (traitCharAlarms.length) {
+                        DB({traitName}, "checkCharAlarms")
+                        switch (D.LCase(traitName)) {
+                            case "hunger": {
+                                const curVal = D.Int(traitVal)
+                                prevVal = D.Int(prevVal)
+                                if (curVal < 5 && prevVal === 5)
+                                    firingCharAlarms.push(...traitCharAlarms.filter(x => x[1].triggerFlags.includes("offMax")))
+                                else if (curVal === 5 && prevVal < 5)
+                                    firingCharAlarms.push(...traitCharAlarms.filter(x => x[1].triggerFlags.includes("onMax")))
+                                if (prevVal > curVal)
+                                    firingCharAlarms.push(...traitCharAlarms.filter(x => x[1].triggerFlags.includes("slake")))
+                                else if (prevVal < curVal)
+                                    firingCharAlarms.push(...traitCharAlarms.filter(x => x[1].triggerFlags.includes("rouse")))
+                                break
+                            }
+                            case "health_impair_toggle":
+                            case "willpower_impair_toggle":
+                            case "humanity_impair_toggle": {
+                                DB("Pushing Alarm...", "checkCharAlarms")
+                                firingCharAlarms.push(...traitCharAlarms.filter(x => x[1].triggerFlags.includes(D.Int(traitVal) === 1 ? "onImpair" : "offImpair")))
+                                break
+                            }
+                            default: {
+                                DB("No Match!", "checkCharAlarms")
+                                break
+                            }
+                            // no default
+                        }       
+                        DB({traitCharAlarms, firingCharAlarms}, "checkCharAlarms")                 
+                        for (const [index, alarm] of firingCharAlarms) {
+                            TimeTracker.Fire(alarm.alarm)
+                            STATE.REF.charAlarms[charObj.id][index] = null
+                        }
+                        STATE.REF.charAlarms[charObj.id] = _.compact(STATE.REF.charAlarms[charObj.id])
+                    }
+                }
         },
     // #endregion
 
@@ -1888,9 +2055,18 @@ const Char = (() => {
             ].join("")), ["daysleep"], ["all"], [], false, true)
         },
         refreshWillpower = (charRef) => {
-            // Need to alter refreshAmount based on card effects that change willpower refresh.
-            const refreshAmount = Math.max(D.GetStatVal(charRef, "composure"), D.GetStatVal(charRef, "resolve"))
-            adjustDamage(charRef, "willpower", "superficial", -refreshAmount)
+            const adjustParams = {}
+            if (charHasFlag(charRef, "oneWillpowerRefresh")) {
+                adjustParams.amount = -1
+                adjustParams.message = "You refresh <b><u>ONE</u></b> point of Willpower:"
+            } else if (charHasFlag(charRef, "minWillpowerRefresh")) {
+                adjustParams.amount = -Math.min(D.GetStatVal(charRef, "composure"), D.GetStatVal(charRef, "resolve"))
+                adjustParams.message = "You refresh <b><u>MINIMAL</u></b> Willpower:"
+            } else {
+                adjustParams.amount = -Math.max(D.GetStatVal(charRef, "composure"), D.GetStatVal(charRef, "resolve"))
+                adjustParams.message = "You refresh your Willpower during daysleep:"
+            }                     
+            adjustDamage(charRef, "willpower", "superficial", adjustParams.amount, true, adjustParams.message)
         },
         daysleep = () => {
             for (const char of D.GetChars("registered")) {
@@ -2167,6 +2343,7 @@ const Char = (() => {
         TogglePC: togglePlayerChar,
         SetNPC: setCharNPC,
         ProcessTokenPowers: processTokenPowers,
+        AddCharFlag: addCharFlag, DelCharFlag: delCharFlag,
         Damage: adjustDamage,
         AdjustTrait: adjustTrait,
         AdjustHunger: adjustHunger,

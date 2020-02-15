@@ -38,6 +38,8 @@ const TimeTracker = (() => {
         initialize = () => {
             const funcID = ONSTACK()
             // delete STATE.REF.nextSessionDate
+            STATE.REF.TweenStart = 0
+            STATE.REF.TweenTarget = 0
             
             STATE.REF.dateObj = STATE.REF.currentDate ? new Date(STATE.REF.currentDate) : null
             STATE.REF.nextSessionDate = STATE.REF.nextSessionDate || (new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"}))).getTime()
@@ -89,7 +91,7 @@ const TimeTracker = (() => {
                 }
                 case "codecheck": {
                     const [month, day, hour] = args.map(x => D.Int(x))
-                    convertWeatherDataToCode(getWeatherDataAt(month, day, hour))
+                    convertWeatherDataToCode(getWeatherData(month, day, hour))
                     break
                 }
                 case "moon": {
@@ -117,9 +119,8 @@ const TimeTracker = (() => {
                 case "get": {
                     switch (D.LCase(call = args.shift())) {
                         case "alarms": {
-                            getNextAlarms()
-                            getPastAlarms()
-                            getDailyAlarms()
+                            displayNextAlarms()
+                            displayPastAlarms()
                             break
                         }
                         case "code": {
@@ -152,7 +153,7 @@ const TimeTracker = (() => {
                                     "  - message: fully HTML coded message sent when alarm fires (and unfires)",
                                     "  - actions: ARRAY of functions OR chat strings (can be api commands) to be run when alarm fires",
                                     "  - revActions: ARRAY as above, run when alarm 'unfires' instead",
-                                    "  - recurring: if LIST {years: #, months: #, weeks: #, days: #, hours: #, mins: #}, will repeat alarm at that interval",
+                                    "  - recurring: date string for recurrance interval",
                                     "  - isConditional: if true, will stop clock and confirm with GM before firing"
                                 ].join("<br>"), "!time set alarm")
                             } else {
@@ -281,22 +282,10 @@ const TimeTracker = (() => {
                     break
                 }
                 case "start": {
-                    switch (D.LCase(call = args.shift())) {
-                        case "countdown": {
-                            toggleCountdown(true)
-                            toggleClock(false)
-                            break
-                        }
-                        default: {
-                            toggleCountdown(false)
-                            toggleClock(true)
-                            break
-                        }
-                    }
+                    toggleClock(true)
                     break
                 }
                 case "stop": {
-                    toggleCountdown(false)
                     toggleClock(false)
                     break
                 }
@@ -310,12 +299,6 @@ const TimeTracker = (() => {
                             STATE.REF.Alarms = {
                                 Ahead: [],
                                 Behind: [],
-                                Daily: {
-                                    midnight: [],
-                                    dawn: [],
-                                    noon: [],
-                                    dusk: []
-                                },
                                 AutoAbort: [],
                                 AutoDefer: []
                             }
@@ -331,8 +314,22 @@ const TimeTracker = (() => {
                 }
                 case "test": {
                     switch (D.LCase(call = args.shift())) {
+                        case "datestring": {
+                            const [dateStart, dateStrings] = args.join(" ").split("|"),
+                                dateObj = parseToDateObj(dateStart === "now" ? STATE.REF.dateObj : dateStart) || addTime(STATE.REF.dateObj, ...parseToDeltaTime(dateStart), false)
+                            if (VAL({dateObj})) {
+                                const testCases = dateStrings === "all" ? ["nextfullweek", "nextfullnight", "dawn", "dusk", "midnight", "noon", "nextweek", "endofweek"] : dateStrings.split("@"),
+                                    reportLines = []
+                                for (const testCase of testCases)
+                                    reportLines.push(`<b>${D.JS(testCase)}:</b> ${formatDateString(getDateFromDateString(dateObj, testCase, false), true)}`)
+                                D.Alert(`<h3>Test Cases:</h3>${reportLines.join("<br>")}`, "!time test datestring")
+                            } else {
+                                D.Alert(`Invalid dateStart (${D.JS(dateStart)}) OR dateStrings (${D.JS(dateStrings)})<br><br><b>Syntax:</b> !time test datestring &lt;dateRef&gt;|&lt;dateStrings (@-delim)&gt;`, "!time test datestrings")
+                            }
+                            break
+                        }
                         case "alarm": {
-                            setAlarm(args.shift())
+                            setAlarm(...args.join(" ").split("|"))
                             break
                         }
                         case "firealarm": {
@@ -394,7 +391,7 @@ const TimeTracker = (() => {
                     ]
                     // const transitionStrings = ["Testing"]
                     D.Alert(D.JSH([
-                        `<h3>WEATHER REPORT</h3>${getWeatherReport()}`,
+                        `<h3>WEATHER REPORT</h3>${displayWeatherReport()}`,
                         `<h3>HORIZON TRANSITIONS</h3><table>${transitionStrings.join("")}</table>`,
                         "<b>!time</b> commands are 'add', 'set', 'run' and 'stop'.",
                         "",
@@ -436,7 +433,7 @@ const TimeTracker = (() => {
             daysToWaitTillWater: 4.25
         }
     let [timeTimer, secTimer] = [null, null],
-        [isRunning, isRunningFast, isTimeRunning, isCountdownRunning, isCountdownFrozen] = [false, false, false, false, false, false],
+        [isTweeningClock, isFastTweeningClock, isTickingClock, isCountdownRunning, isCountdownFrozen] = [false, false, false, false, false, false],
         [secondsLeft, numReturns] = [0, 0],
         countdownRecord = [],
         weatherDataMemo = false
@@ -1222,7 +1219,10 @@ const TimeTracker = (() => {
                 }
             },
             cancelRollEffect: (charRef, effectString) => { // eslint-disable-line no-unused-vars
-
+                const charObj = D.GetChar(charRef)
+                if (VAL({charObj, string: effectString}))
+                    if (!Roller.DelCharEffect(charObj.id, effectString))
+                        Roller.DelGlobalEffect(effectString)
             }
         },
         CLOCKSPEED = 50,
@@ -1329,7 +1329,7 @@ const TimeTracker = (() => {
                     returnDate = new Date([year, ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(month.toLowerCase())+1, day])
 
                     // Now, the time component (if any)
-                    if (VAL({date: returnDate, string: timeString})) {
+                    if (VAL({dateObj: returnDate, string: timeString})) {
                         const [time, aMpM] = (timeString.match(/([^A-Z\s]+)(?:\s+)?(\S+)?/u) || [false, false, false]).slice(1),
                             [hour, min, sec] = `${D.JSL(time)}`.split(":").map(v => D.Int(v)),
                             totalSeconds = (hour + (D.LCase(aMpM).includes("p") && 12))*60*60 + min*60 + sec
@@ -1372,6 +1372,48 @@ const TimeTracker = (() => {
                 return OFFSTACK(funcID) && `${totHours % 12 || 12}:${totMins - 60 * totHours < 10 ? "0" : ""}${totMins - 60 * totHours} ${totHours % 24 >= 12 ? "P.M." : "A.M."}`
             return OFFSTACK(funcID) && [totHours % 24, totMins - 60 * totHours]
         },
+        getDateFromDateString = (dateObj = new Date(STATE.REF.dateObj), dateString, isChangingDateObj = false) => {
+            const funcID = ONSTACK()
+            if (VAL({dateObj, string: dateString})) {
+                DB({dateObj, dateString}, "getDateFromDateString")
+                const [dateVal, dateFlag] = dateString.split(":"),
+                    workingDate = isChangingDateObj && dateObj || new Date(dateObj)
+                switch (dateVal) {
+                    case "nextfullweek": {
+                        addTime(workingDate, 7, "d", true)
+                    }
+                    // falls through
+                    case "nextfullnight": {
+                        if (!isDateInDay(workingDate))
+                            addTime(workingDate, 1, "d", true)
+                    }
+                    // falls through
+                    case "dawn": setToFutureTime(workingDate, ...getTime(TWILIGHT[workingDate.getMonth()][0])); break
+                    case "dusk": setToFutureTime(workingDate, ...getTime(TWILIGHT[workingDate.getMonth()][1])); break
+                    case "midnight": setToFutureTime(workingDate, 0, 0); break
+                    case "noon": setToFutureTime(workingDate, 12, 0); break
+                    case "nextweek": addTime(workingDate, 7, "d", true); break
+                    case "endofweek": setToFutureWeekday(workingDate, 0); break
+                    default: {
+                        const parsedDate = parseToDateObj(dateVal)
+                        if (VAL({dateObj: parsedDate})) {
+                            workingDate.setTime(parsedDate.getTime())
+                        } else {
+                            const [delta, unit] = parseToDeltaTime(dateVal)
+                            if (VAL({number: [delta, unit]}, undefined, true))
+                                addTime(workingDate, delta, unit, true)
+                        }
+                        break
+                    }
+                }
+                if (VAL({string: dateFlag}))
+                    getDateFromDateString(workingDate, dateFlag, true)
+                return OFFSTACK(funcID) && workingDate
+            } else {
+                D.Alert(`Invalid date object (${D.JS(dateObj)}) OR dateString (${D.JS(dateString)})`, "getDateFromDateString()")
+            }
+            return OFFSTACK(funcID) && dateObj    
+        },
         formatTimeString = date => {
             const funcID = ONSTACK()
             if (date.getUTCHours() === 0 || date.getUTCHours() === 12)
@@ -1382,7 +1424,8 @@ const TimeTracker = (() => {
                 return OFFSTACK(funcID) && `${date.getUTCHours()}:${date.getUTCMinutes()} A.M.`
         },       
         formatDateString = (date, isIncludingTime = false) => {
-            const funcID = ONSTACK() 
+            const funcID = ONSTACK()
+            date = VAL({dateObj: date}) && date || parseToDateObj(date)
             return OFFSTACK(funcID) && `${
                 ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]
             } ${
@@ -1392,7 +1435,6 @@ const TimeTracker = (() => {
             }${
                 isIncludingTime ? `, ${formatTimeString(date).replace(/:(\d\s)/gu, ":0$1")}` : ""
             }` },
-        isValidDString = str => _.isString(str) && Boolean(str.match(/\w\w\w\s\d\d?,\s\d\d\d\d/gu)),    
         addTime = (dateRef, delta, unit, isChangingOriginal = false) => {
             const funcID = ONSTACK(),
                 dateObj = parseToDateObj(dateRef)
@@ -1481,31 +1523,6 @@ const TimeTracker = (() => {
             return OFFSTACK(funcID) && totalMins >= dawnMins && totalMins < duskMins            
         },
         getDaysInMonth = (monthNum) => STATE.REF.weatherData[monthNum].length - 1,
-        setCurrentDate = () => {
-            const funcID = ONSTACK()
-            // dateObj = dateObj || new Date(D.Int(STATE.REF.currentDate))
-            // DB(`Setting Current Date; Checking Alarms.<br>LastDateStep: ${D.JSL(STATE.REF.lastDateStep)}`, "setCurrentDate")
-            checkAlarm(STATE.REF.lastDateStep, STATE.REF.dateObj.getTime())
-            if (Media.HasForcedState("TimeTracker")) return OFFSTACK(funcID) && false
-            if (Session.Mode === "Downtime")
-                Media.SetText("TimeTracker", `${
-                    DAYSOFWEEK[STATE.REF.dateObj.getUTCDay()]}, ${
-                    MONTHS[STATE.REF.dateObj.getUTCMonth()]} ${
-                    D.Ordinal(STATE.REF.dateObj.getUTCDate())}, ${
-                    STATE.REF.dateObj.getUTCFullYear()}`)
-            else            
-                Media.SetText("TimeTracker", `${
-                    DAYSOFWEEK[STATE.REF.dateObj.getUTCDay()]}, ${
-                    MONTHS[STATE.REF.dateObj.getUTCMonth()]} ${
-                    D.Ordinal(STATE.REF.dateObj.getUTCDate())} ${
-                    STATE.REF.dateObj.getFullYear()}, ${
-                    (STATE.REF.dateObj.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
-                    STATE.REF.dateObj.getUTCMinutes() < 10 ? "0" : ""}${STATE.REF.dateObj.getUTCMinutes().toString()} ${
-                    Math.floor(STATE.REF.dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`)
-            STATE.REF.lastDateStep = STATE.REF.dateObj.getTime()
-            STATE.REF.currentDate = STATE.REF.dateObj.getTime()
-            return OFFSTACK(funcID) && true
-        },
         setNextSessionDate = (dateOverride = { }) => {
             const funcID = ONSTACK()
             DB({dateOverride}, "setNextSessionDate")
@@ -1548,10 +1565,170 @@ const TimeTracker = (() => {
             // updateCountdownText()
             OFFSTACK(funcID)
             return OFFSTACK(funcID) && (sessDateObj - curRealDateObj)/1000 - 60
+        },        
+        getRandomEventTriggers = (fullDuration, numTriggers, tickSpeed = 100) => {
+            const funcID = ONSTACK()
+            fullDuration *= fullDuration < 1000 && 1000 || 1
+            fullDuration -= tickSpeed
+            const numTicks = D.Int(fullDuration / tickSpeed),
+                timeLine = (new Array(numTicks)).fill(0),
+                sampler = timeLine.map((x, i) => i)
+            numTriggers--
+            while (numTriggers) {
+                timeLine[D.PullIndex(sampler, randomInteger(sampler.length))] = 1
+                numTriggers--
+            }
+            return OFFSTACK(funcID) && timeLine.join("").split("1").map(x => (x.length + 1) * tickSpeed)
         },
     // #endregion
     
-    // #region Clock & Countdown Tick Control
+    // #region CLOCK: Toggling, Ticking, Setting Clock Text    
+        toggleClock = (activeState, secsPerMin = 60) => {
+            const funcID = ONSTACK()
+            isTickingClock = Boolean(activeState)
+
+            if (activeState) {
+                if (STATE.REF.TweenTarget) {
+                    tweenClock(STATE.REF.TweenTarget)
+                } else {
+                    clearInterval(timeTimer)
+                    timeTimer = setInterval(tickClock, D.Int(secsPerMin) * 1000)
+                }
+            } else {
+                isTickingClock = false
+                isFastTweeningClock = false
+            }
+            OFFSTACK(funcID)
+        },
+        updateClockObj = () => {
+            const funcID = ONSTACK()
+            // dateObj = dateObj || new Date(D.Int(STATE.REF.currentDate))
+            // DB(`Setting Current Date; Checking Alarms.<br>LastDateStep: ${D.JSL(STATE.REF.lastDateStep)}`, "setCurrentDate")
+            checkAlarm(STATE.REF.lastDateStep, STATE.REF.dateObj.getTime())
+            if (Media.HasForcedState("TimeTracker")) return OFFSTACK(funcID) && false
+            if (Session.Mode === "Downtime")
+                Media.SetText("TimeTracker", `${
+                    DAYSOFWEEK[STATE.REF.dateObj.getUTCDay()]}, ${
+                    MONTHS[STATE.REF.dateObj.getUTCMonth()]} ${
+                    D.Ordinal(STATE.REF.dateObj.getUTCDate())}, ${
+                    STATE.REF.dateObj.getUTCFullYear()}`)
+            else            
+                Media.SetText("TimeTracker", `${
+                    DAYSOFWEEK[STATE.REF.dateObj.getUTCDay()]}, ${
+                    MONTHS[STATE.REF.dateObj.getUTCMonth()]} ${
+                    D.Ordinal(STATE.REF.dateObj.getUTCDate())} ${
+                    STATE.REF.dateObj.getFullYear()}, ${
+                    (STATE.REF.dateObj.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
+                    STATE.REF.dateObj.getUTCMinutes() < 10 ? "0" : ""}${STATE.REF.dateObj.getUTCMinutes().toString()} ${
+                    Math.floor(STATE.REF.dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`)
+            STATE.REF.lastDateStep = STATE.REF.dateObj.getTime()
+            STATE.REF.currentDate = STATE.REF.dateObj.getTime()
+            return OFFSTACK(funcID) && true
+        },
+        isUpdatingChars = () => {
+            const lastDate = new Date(STATE.REF.lastDate)
+            return STATE.REF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
+                   STATE.REF.dateObj.getMonth() !== lastDate.getMonth() ||
+                   STATE.REF.dateObj.getUTCDate() !== lastDate.getUTCDate()
+        },
+        isUpdatingWeather = () => {
+            const lastDate = new Date(STATE.REF.lastDate)            
+            return STATE.REF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
+                   STATE.REF.dateObj.getMonth() !== lastDate.getMonth() ||
+                   STATE.REF.dateObj.getUTCDate() !== lastDate.getUTCDate() ||
+                   STATE.REF.dateObj.getUTCHours() !== lastDate.getUTCHours()
+        },
+        continueClockTween = (easeFunction) => {
+            const funcID = ONSTACK()
+            isTweeningClock = true
+            clearInterval(timeTimer)
+            timeTimer = setInterval(easeFunction, CLOCKSPEED)
+            DB({
+                TweenStart: formatDateString(STATE.REF.TweenStart, true),
+                TweenTarget: formatDateString(STATE.REF.TweenTarget, true),
+                TweenDelta: `~ ${D.Round((STATE.REF.TweenDelta || 0)/3600/1000, 2)} h`,
+                TweenDuration: STATE.REF.TweenDuration,
+                TweenCurTime: STATE.REF.TweenCurTime,
+                TweenLastTime: `~ ${D.Round((STATE.REF.TweenLastTime || 0)/3600/1000, 2)} h`,
+                currentDate: formatDateString(STATE.REF.dateObj, true),
+                lastDate: formatDateString(STATE.REF.lastDate, true)
+            }, "continueClockTween")
+            OFFSTACK(funcID)
+        },
+        startClockTween = (easeFunction, targetDateObj) => {
+            const funcID = ONSTACK()
+            STATE.REF.TweenStart = STATE.REF.dateObj.getTime()
+            STATE.REF.TweenTarget = targetDateObj.getTime()
+            STATE.REF.TweenDelta = STATE.REF.TweenTarget - STATE.REF.TweenStart
+            STATE.REF.TweenDuration = (_.findIndex(TWEENDURS, v => STATE.REF.TweenDelta / 60000 <= v) + 1) * 1000
+            STATE.REF.TweenCurTime = 0
+            STATE.REF.TweenLastTime = 0
+            continueClockTween(easeFunction)
+            OFFSTACK(funcID)
+        },
+        pauseClockTween = () => {
+            isTweeningClock = false
+            clearInterval(timeTimer)
+            timeTimer = null
+            STATE.REF.currentDate = STATE.REF.dateObj.getTime()            
+            DB({currentDate: formatDateString(STATE.REF.currentDate, true), isUpdatingWeather: isUpdatingWeather()}, "pauseClockTween")
+            setHorizon(isUpdatingWeather() && setWeather())
+        },
+        stopClockTween = () => {
+            const funcID = ONSTACK()
+            pauseClockTween()
+            STATE.REF.dateObj.setTime(STATE.REF.TweenTarget)
+            isFastTweeningClock = false
+            if (isUpdatingChars()) {
+                D.GetChars("allregistered").map(x => setAttrs(x.id, {date_today: STATE.REF.currentDate.toString()}))
+                Char.RefreshDisplays()
+            }
+            DB({dateObj: formatDateString(STATE.REF.dateObj, true), lastDateBeforeSetting: formatDateString(STATE.REF.lastDate, true), isUpdatingChars: isUpdatingChars()}, "stopClockTween")
+            STATE.REF.lastDate = STATE.REF.dateObj.getTime()
+            setTimeout(fixTimeStatus, 1000)
+            delete STATE.REF.TweenTarget
+            delete STATE.REF.TweenStart
+            STATE.REF.TweenCurTime = 0
+            OFFSTACK(funcID)
+        },
+        easeInOutSine = (curTime, startVal, deltaVal, duration) => -deltaVal / 2 * (Math.cos(Math.PI * curTime / duration) - 1) + startVal,
+        tweenClock = (finalDate) => {
+            const funcID = ONSTACK(),
+                easeSet = () => {
+                    const fID = ONSTACK()
+                    if (!isTweeningClock)
+                        return OFFSTACK(fID) && pauseClockTween() && false
+                    if (Math.abs(STATE.REF.TweenCurTime) >= Math.abs(STATE.REF.TweenDuration))
+                        return OFFSTACK(fID) && stopClockTween() && true
+                    const newDelta = easeInOutSine(STATE.REF.TweenCurTime, 0, STATE.REF.TweenDelta, STATE.REF.TweenDuration)
+                    isFastTweeningClock = Math.abs(newDelta - STATE.REF.TweenLastTime) > RUNNINGFASTAT
+                    STATE.REF.TweenLastTime = newDelta
+                    STATE.REF.dateObj.setTime(STATE.REF.TweenStart + newDelta)
+                    updateClockObj()
+                    STATE.REF.TweenCurTime += CLOCKSPEED
+                    return OFFSTACK(fID) && undefined
+                }
+            if (STATE.REF.TweenStart && STATE.REF.TweenTarget)
+                continueClockTween(easeSet)
+            else
+                startClockTween(easeSet, parseToDateObj(finalDate))
+            OFFSTACK(funcID)
+        },
+        tickClock = () => {
+            const funcID = ONSTACK()
+            if (isTickingClock) {
+                const lastHour = STATE.REF.dateObj.getUTCHours()
+                STATE.REF.dateObj.setUTCMinutes(STATE.REF.dateObj.getUTCMinutes() + 1)
+                if (STATE.REF.dateObj.getUTCHours() !== lastHour || !weatherDataMemo)
+                    weatherDataMemo = setWeather()
+                updateClockObj()
+                setHorizon(weatherDataMemo)
+            }
+            OFFSTACK(funcID)
+        },
+    // #endregion
+
+    // #region COUNTDOWN: Toggling, Ticking, Setting Coundown Text        
         syncCountdown = (isTesting = false, isReportingData = false) => {
             const funcID = ONSTACK(),
             // if (isCountdownFrozen)
@@ -1651,170 +1828,55 @@ const TimeTracker = (() => {
             }
             return OFFSTACK(funcID)
         },
-        setIsRunning = runStatus => {
-            const funcID = ONSTACK()
-            DB("*** CALLED ***", "setIsRunning")
-            isRunning = runStatus
-            let weatherData = {event: "x"}
-            // Media.OrderImages("map", true)
-            if (isRunning) {
-                // Media.LayerImages(_.reject(Media.IMAGELAYERS.map, v => v.includes("Horizon")), "objects")
-            } else {
-                // Media.LayerImages(_.reject(Media.IMAGELAYERS.map, v => v.includes("Horizon")), "map")
-                const lastDate = new Date(D.Int(STATE.REF.lastDate)),
-                    groundCover = getGroundCover()
-                STATE.REF.currentDate = STATE.REF.dateObj.getTime()
-                DB(`Characters: ${D.JSL(_.map(D.GetChars("registered")), v => v.get("name"))}`, "setIsRunning")
-                DB(`DateObj.year = ${D.JSL(STATE.REF.dateObj.getUTCFullYear())} vs. lastDate.year = ${D.JSL(lastDate.getUTCFullYear())
-                }<br>DateObj.month = ${D.JS(STATE.REF.dateObj.getMonth())} vs. lastDate.month = ${D.JS(lastDate.getMonth())
-                }<br>DateObj.date = ${D.JS(STATE.REF.dateObj.getUTCDate())} vs. lastDate.date = ${D.JS(lastDate.getUTCDate())}`, "setIsRunning")
-                if (
-                    STATE.REF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
-                    STATE.REF.dateObj.getMonth() !== lastDate.getMonth() ||
-                    STATE.REF.dateObj.getUTCDate() !== lastDate.getUTCDate()
-                ) {
-                    DB(`Setting date_today Attributes on Registered Characters to ${D.JSL(STATE.REF.dateObj.getTime().toString())}`)
-                    _.each(D.GetChars("registered"), char => setAttrs(char.id, {
-                        date_today: STATE.REF.currentDate.toString()
-                    }))
-                    Char.RefreshDisplays()
-                }
-                if (                    
-                    STATE.REF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
-                    STATE.REF.dateObj.getMonth() !== lastDate.getMonth() ||
-                    STATE.REF.dateObj.getUTCDate() !== lastDate.getUTCDate() ||
-                    STATE.REF.dateObj.getUTCHours() !== lastDate.getUTCHours()
-                ) {
-                    // D.Alert("Setting Weather")
-                    weatherData = setWeather()
-                    // D.Alert(`Setting Ground Cover to ${groundCover}`)
-                    if (!Media.HasForcedState("WeatherGround") && !getWeatherCode().slice(0,2).includes("p"))
-                        Media.SetImg("WeatherGround", groundCover)
-                }
-                DB(`Setting lastDate (${D.JSL(STATE.REF.lastDate)}) to currentDate (${D.JSL(STATE.REF.currentDate)}).`, "setIsRunning")
-                STATE.REF.lastDate = STATE.REF.dateObj.getTime()
-                setHorizon(weatherData)
-            }
-            OFFSTACK(funcID)
-        },
-        setIsRunningFast = runStatus => {
-            const funcID = ONSTACK()            
-            if (runStatus && !isRunningFast) 
-                isRunningFast = runStatus
-                // if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", "blank")}
-                // if (!Media.HasForcedState("WeatherFog")) {Media.ToggleImg("WeatherFog", true); Media.SetImg("WeatherFog", "blank")}
-                // if (!Media.HasForcedState("ComplicationMat")) {Media.ToggleImg("ComplicationMat", true); Media.SetImg("ComplicationMat", "blank")}
-                // if (!Media.HasForcedState("Horizon_1")) {Media.ToggleImg("Horizon_1", true); Media.SetImg("Horizon_1", "night3clear")}
-                // Media.OrderImages(["Horizon_2", "Horizon_1"], true)
-                // STATE.REF.lastHorizon = "day"
-            else if (!runStatus && isRunningFast) 
-                isRunningFast = runStatus
-                        
-            OFFSTACK(funcID)
-        },
-        easeInOutSine = (curTime, startVal, deltaVal, duration) => -deltaVal / 2 * (Math.cos(Math.PI * curTime / duration) - 1) + startVal,
-        tweenClock = (finalDate) => {
-            const funcID = ONSTACK()
-            finalDate = parseToDateObj(finalDate)
-            DB({finalDate}, "tweenClock")        
-            if (!(STATE.REF.TweenStart && STATE.REF.TweenTarget)) {
-                STATE.REF.TweenStart = STATE.REF.dateObj.getTime()
-                STATE.REF.TweenTarget = finalDate.getTime()
-                STATE.REF.TweenDelta = STATE.REF.TweenTarget - STATE.REF.TweenStart
-                STATE.REF.TweenDuration = (_.findIndex(TWEENDURS, v => STATE.REF.TweenDelta / 60000 <= v) + 1) * 1000
-                STATE.REF.TweenCurTime = 0
-                STATE.REF.TweenLastTime = 0
-            }   
-            // DB(`<h4>Tweening Clock:</h4><b>START</b> (${D.JSL(formatDString(getDate(STATE.REF.TweenStart), true))})<br><b>TARGET</b> (${D.JSL(formatDString(getDate(STATE.REF.TweenTarget), true))})<br><b>ACTUAL</b> (${D.JSL(formatDString(getDate(STATE.REF.dateObj), true))})<br><b>curTime</b>: ${D.JSL(STATE.REF.TweenCurTime)}, <b>lastTime</b>: ${D.JSL(STATE.REF.TweenLastTime)}<br><b>startDate</b>: ${D.JSL(formatDString(getDate(STATE.REF.TweenStart), true))}<br><b>deltaTime:</b> ${D.JSL(STATE.REF.TweenDelta/1000/60/60)}<br><b>duration:</b> ${D.JSL(STATE.REF.TweenDuration)}`, "tweenClock")
-            const easeSet = () => {
-                const fID = ONSTACK()
-                if (!isRunning) {
-                    clearInterval(timeTimer)
-                    timeTimer = null
-                    refreshTimeAndWeather()
-                    // DB(`<h4>Freezing Clock:</h4><b>START</b> (${D.JSL(formatDString(getDate(STATE.REF.TweenStart), true))})<br><b>TARGET</b> (${D.JSL(formatDString(getDate(STATE.REF.TweenTarget), true))})<br><b>ACTUAL</b> (${D.JSL(formatDString(getDate(STATE.REF.dateObj), true))})<br><b>curTime</b>: ${D.JSL(STATE.REF.TweenCurTime)}, <b>lastTime</b>: ${D.JSL(STATE.REF.TweenLastTime)}<br><b>startDate</b>: ${D.JSL(formatDString(getDate(STATE.REF.TweenStart), true))}<br><b>deltaTime:</b> ${D.JSL(STATE.REF.TweenDelta/1000/60/60)}<br><b>duration:</b> ${D.JSL(STATE.REF.TweenDuration)}`, "tweenClock")
-                    return OFFSTACK(fID) && false
-                }
-                if (Math.abs(STATE.REF.TweenCurTime) >= Math.abs(STATE.REF.TweenDuration)) {
-                    STATE.REF.dateObj.setTime(STATE.REF.TweenTarget)
-                    clearInterval(timeTimer)
-                    timeTimer = null
-                    setIsRunning(false)
-                    setIsRunningFast(false)
-                    // D.Alert("Is Running: FALSE")
-                    setTimeout(fixTimeStatus, 1000)
-                    // DB(`<h4>Stopping Clock (Destination Reached)</h4><b>START</b> (${D.JSL(formatDString(getDate(STATE.REF.TweenStart), true))})<br><b>TARGET</b> (${D.JSL(formatDString(getDate(STATE.REF.TweenTarget), true))})<br><b>ACTUAL</b> (${D.JSL(formatDString(getDate(STATE.REF.dateObj), true))})<br><b>curTime</b>: ${D.JSL(STATE.REF.TweenCurTime)}, <b>lastTime</b>: ${D.JSL(STATE.REF.TweenLastTime)}<br><b>startDate</b>: ${D.JSL(formatDString(getDate(STATE.REF.TweenStart), true))}<br><b>deltaTime:</b> ${D.JSL(STATE.REF.TweenDelta/1000/60/60)}<br><b>duration:</b> ${D.JSL(STATE.REF.TweenDuration)}`, "tweenClock")
-                    delete STATE.REF.TweenTarget
-                    delete STATE.REF.TweenStart
-                    STATE.REF.TweenCurTime = 0
-                    return OFFSTACK(fID) && true
-                }
-                const newDelta = easeInOutSine(STATE.REF.TweenCurTime, 0, STATE.REF.TweenDelta, STATE.REF.TweenDuration)
-                setIsRunningFast(Math.abs(newDelta - STATE.REF.TweenLastTime) > RUNNINGFASTAT)
-                STATE.REF.TweenLastTime = newDelta
-                STATE.REF.dateObj.setTime(STATE.REF.TweenStart + newDelta)
-                setCurrentDate()
-                STATE.REF.TweenCurTime += CLOCKSPEED
-                return OFFSTACK(fID) && undefined
-            }
-            setIsRunning(true)
-            clearInterval(timeTimer)
-            timeTimer = setInterval(easeSet, CLOCKSPEED)
-            OFFSTACK(funcID)
-        },
-        tickClock = () => {
-            const funcID = ONSTACK()
-            if (isTimeRunning) {
-                const lastHour = STATE.REF.dateObj.getUTCHours()
-                STATE.REF.dateObj.setUTCMinutes(STATE.REF.dateObj.getUTCMinutes() + 1)
-                if (STATE.REF.dateObj.getUTCHours() !== lastHour || !weatherDataMemo)
-                    weatherDataMemo = setWeather()
-                setCurrentDate()
-                setHorizon(weatherDataMemo)
-            }
-            OFFSTACK(funcID)
-        },
-        getRandomEventTriggers = (fullDuration, numTriggers, tickSpeed = 100) => {
-            const funcID = ONSTACK()
-            fullDuration *= fullDuration < 1000 && 1000 || 1
-            fullDuration -= tickSpeed
-            const numTicks = D.Int(fullDuration / tickSpeed),
-                timeLine = (new Array(numTicks)).fill(0),
-                sampler = timeLine.map((x, i) => i)
-            numTriggers--
-            while (numTriggers) {
-                timeLine[D.PullIndex(sampler, randomInteger(sampler.length))] = 1
-                numTriggers--
-            }
-            return OFFSTACK(funcID) && timeLine.join("").split("1").map(x => (x.length + 1) * tickSpeed)
-        },
     // #endregion
 
-    // #region Weather Functions 
-        getTemp = code => WEATHERTEMP.indexOf(code) - 26,
-        setManualWeather = (event, tempC, wind, humidity) => {
+    // #region HORIZON & WEATHER: Getting Weather Events & Horizon Image, Setting Img Objects 
+        getTempFromCode = code => WEATHERTEMP.indexOf(code) - 26,
+        convertTempToCode = (tempC, monthNum) => WEATHERTEMP[tempC - getTempFromCode(MONTHTEMP[monthNum]) + 26],
+        convertWeatherDataToCode = (weatherData) => {
             const funcID = ONSTACK(),
-                weatherData = {}
-            if (tempC || tempC === 0)
-                weatherData.tempC = tempC
-            if (event) {
-                weatherData.event = event
-                if (weatherData.event.length === 1)
-                    weatherData.event += "x"
-            }
-            if (wind)
-                weatherData.wind = wind
-            if (humidity)
-                weatherData.humidity = humidity
-            STATE.REF.weatherOverride = weatherData
-            setWeather()
+                weatherCodes = Object.values({
+                    event: weatherData.event,
+                    foggy: weatherData.isFoggy && weatherData.event !== "f" || "x",
+                    temp: convertTempToCode(weatherData.tempC, weatherData.month), // getTemp(weatherCode[2]) = tempC - monthTemp
+                    wind: weatherData.wind,
+                    humid: weatherData.humidity,
+                    ground: weatherData.groundCover
+                }).join("")
+            D.Alert(`Converted data to '${weatherCodes}' = '${weatherData.weatherCode}'?<br><br>${D.JS(weatherData)}`, "BIG TEST")
             OFFSTACK(funcID)
-        }, /*
-        makeWeatherCode = (weatherData) => {
-            const funcID = ONSTACK()
-            // const 
-        }, */
-        getWeatherCode = (dateRefs) => dateRefs ? STATE.REF.weatherData[dateRefs[0]][dateRefs[1]][dateRefs[2]] : STATE.REF.weatherData[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()],
+        },
+        getWeatherCode = (dateRefs) => {
+            return dateRefs ?
+                STATE.REF.weatherData[dateRefs[0]][dateRefs[1]][dateRefs[2]] : 
+                STATE.REF.weatherData[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()]
+        },
+        getWeatherData = (monthNum, dateNum, hourNum, numUpgrades = 0, isGettingRawData = false) => {
+            const funcID = ONSTACK(),
+                dateObj = new Date(STATE.REF.dateObj)
+            monthNum = VAL({number: monthNum}) ? monthNum : dateObj.getUTCMonth()
+            dateNum = VAL({number: dateNum}) ? dateNum : dateObj.getUTCDate()
+            hourNum = VAL({number: hourNum}) ? hourNum : dateObj.getUTCHours()
+            try {
+                const weatherCode = (isGettingRawData && RAWWEATHERDATA || STATE.REF.weatherData)[monthNum][dateNum][hourNum],
+                    weatherData = upgradeWeatherSeverity({
+                        month: monthNum,
+                        date: dateNum,
+                        hour: hourNum,
+                        weatherCode,
+                        event: weatherCode.charAt(0),
+                        isFoggy: weatherCode.charAt(1) === "f",
+                        tempC: getTempFromCode(MONTHTEMP[monthNum]) + getTempFromCode(weatherCode.charAt(2)),
+                        humidity: weatherCode.charAt(3),
+                        wind: weatherCode.charAt(4),
+                        groundCover: weatherCode.charAt(5),
+                        isDay: isTimeInDay(monthNum, hourNum, 30)
+                    }, numUpgrades)               
+                return OFFSTACK(funcID) && weatherData
+            } catch(errObj) {
+                return OFFSTACK(funcID) && false
+            }
+        },  
         getNextWeatherEvent = (eventType, event) => {
             const funcID = ONSTACK(),
                 startMonth = STATE.REF.dateObj.getMonth()
@@ -1855,91 +1917,6 @@ const TimeTracker = (() => {
             }
             return OFFSTACK(funcID) && false
         },
-        /* getGroundCoverAt = (month, day, hour) => getGroundCover(false, 0.3, 1, 0.5, [month, day, hour]),
-        getGroundCover = (isTesting = false, downVal = 0.3, upb = 1, ups = 0.5, dateOverride) => {
-            const funcID = ONSTACK()
-            // D.Alert(`IsTesting = ${D.JS(isTesting)}`)
-            let month, day, hour
-            if (VAL({array: dateOverride}))
-                [month, day, hour] = dateOverride
-            else
-                [month, day, hour] = [
-                    STATE.REF.dateObj.getUTCMonth(),
-                    STATE.REF.dateObj.getUTCDate(),
-                    STATE.REF.dateObj.getUTCHours()
-                ]
-            if (month >= 3 && month <= 9)
-                return OFFSTACK(funcID) && "blank"
-            const weatherCode = STATE.REF.weatherData[month][day][hour]
-            if (isDateInDay() && Session.Mode === "Daylighter")
-                if (getTemp(MONTHTEMP[month]) + getTemp(weatherCode.charAt(2)) < 1)
-                    return OFFSTACK(funcID) && "frost"
-                else
-                    return OFFSTACK(funcID) && "blank"
-
-            const checkDate = new Date(STATE.REF.dateObj.getUTCFullYear(), month, day, hour)
-            let groundCover = 0,
-                testString = ""
-            checkDate.setUTCDate(checkDate.getUTCDate() - 60)
-
-            // START DEBUG TESTING CODE
-            for (let i = -60; i <= 0; i++) {
-                checkDate.setUTCDate(checkDate.getUTCDate() + 1)
-                if (checkDate.getMonth() === 0 && checkDate.getDate() === 1)
-                    groundCover = 30
-                const dayCodes = STATE.REF.weatherData[checkDate.getUTCMonth()][checkDate.getUTCDate()]
-                // DB({wDataMonth: STATE.REF.weatherData[checkDate.getUTCMonth()], dayCodes, checkDate, Month: checkDate.getUTCMonth(), Day: checkDate.getUTCDate()}, "getGroundCover")
-                testString += `${MONTHS[checkDate.getUTCMonth()].slice(0, 3)} ${checkDate.getUTCDate()}: `
-                for (let j = 0; j < (i === 0 ? checkDate.getUTCHours() : 24); j++) {
-                    const [eventCode, , tempCode] = dayCodes[j].split(""),
-                        tempC = getTemp(tempCode)
-                    if (eventCode === "b")
-                        groundCover += parseFloat(upb)
-                    else if (eventCode === "s")
-                        groundCover += parseFloat(ups)
-                    else if (tempC > -5)
-                        groundCover -= Math.sqrt(Math.max(0, tempC * downVal))
-                    groundCover = Math.round(Math.max(0, groundCover))
-                    let testStyles = "box-sizing: border-box; display: inline-block; text-align: center; width: 30px;"
-                    if (groundCover === 0)
-                        testStyles += " color: #999999; font-weight: normal; font-style: italic;"
-                    else if (groundCover > 50)
-                        testStyles += " background-color: #F88;"
-                    else if (groundCover > 40)
-                        testStyles += " background-color: #FC8;"
-                    else if (groundCover > 30)
-                        testStyles += " background-color: #FF8;"
-                    else if (groundCover > 20)
-                        testStyles += " background-color: #AEF;"
-                    else if (groundCover > 10)
-                        testStyles += " background-color: #ACF;"
-                    else
-                        testStyles += " background-color: #AAF;"
-                    testString += `<span style="${testStyles}">${D.JS(groundCover)}</span>`
-                }
-                testString += "<br>"
-            }
-            if (isTesting)
-                D.Alert(`${testString}<br><br>!testground down10, down0, downneg5, upb, ups`, "GROUND COVER")
-            // END DEBUG TESTING CODE
-
-            if (groundCover > 50)
-                return OFFSTACK(funcID) && "snow5"
-            else if (groundCover > 40)
-                return OFFSTACK(funcID) && "snow4"
-            else if (groundCover > 30)
-                return OFFSTACK(funcID) && "snow3"
-            else if (groundCover > 20)
-                return OFFSTACK(funcID) && "snow2"
-            else if (groundCover > 10)
-                return OFFSTACK(funcID) && "snow1"
-            else if ("wtp".includes(weatherCode.charAt(0)))
-                return OFFSTACK(funcID) && "wet"
-            else if (getTemp(MONTHTEMP[month]) + getTemp(weatherCode.charAt(2)) < 1)
-                return OFFSTACK(funcID) && "frost"
-            else
-                return OFFSTACK(funcID) && "blank"
-        }, */
         getGroundCover = (code) => {
             code = code || getWeatherCode()
             if (VAL({string: code}) && code.length === 6) {
@@ -1956,8 +1933,175 @@ const TimeTracker = (() => {
                 }
             }
             return "blank"
+        },      
+        setHorizon = (weatherData) => {
+            const funcID = ONSTACK()
+            DB({weatherData, hasForcedState: Media.HasForcedState("Horizon")}, "setHorizon")
+            if (Media.HasForcedState("Horizon")) return OFFSTACK(funcID) && false
+            weatherData = weatherData || weatherDataMemo || {event: "x"}
+            let horizWeather = ""
+            switch (weatherData.event.charAt(0)) {
+                case "x":
+                    horizWeather = "clear"
+                    break
+                case "b":
+                case "t":
+                case "p":
+                    horizWeather = "stormy"
+                    break
+                default:
+                    horizWeather = "cloudy"
+                    break
+            }
+            const horizonSrc = `${getHorizonTimeString()}${horizWeather}`,
+                horizonData = Media.GetImgData("Horizon_1")
+            DB({horizonSrc}, "setHorizon")
+            if (isFastTweeningClock && (
+                !horizonSrc.includes("day") && horizonData.curSrc.includes("day") ||
+                horizonSrc.includes("day") && !horizonData.curSrc.includes("day")
+            ) ||
+                !isFastTweeningClock) {
+                Media.SetImg("Horizon_1", horizonSrc)
+                Media.SetImg("Foreground", D.Int(horizonSrc.replace(/\D/gu, "")) > 3 ? "dark" : "bright")
+            }
+            return OFFSTACK(funcID) && true
         },
-        getWeatherReport = () => {
+        setWeather = (isReturningDataOnly = false) => {
+            const funcID = ONSTACK(),
+                weatherData = Object.assign({}, getWeatherData(), STATE.REF.weatherOverride),
+                getFogSrc = () => {
+                    const fID = ONSTACK()
+                    switch (getHorizonTimeString()) {
+                        case "night1":
+                        case "night2":
+                        case "night3":
+                            return OFFSTACK(fID) && "brightfog"
+                        case "day":
+                            return OFFSTACK(fID) && "blank"
+                        default:
+                            return OFFSTACK(fID) && "darkfog"
+                    }
+                },
+                getSnowSrc = (degree) => {
+                    const fID = ONSTACK()
+                    switch (getHorizonTimeString()) {
+                        case "night1":
+                        case "night2":
+                        case "night3":
+                            return OFFSTACK(fID) && `bright${degree.toLowerCase()}snow`
+                        default:
+                            return OFFSTACK(fID) && `dark${degree.toLowerCase()}snow`
+                    }
+                },
+                forecastLines = []
+                // D.Alert(`Weather Code: ${D.JS(weatherCode)}<br>Month Temp: ${D.JS(getTemp(MONTHTEMP[dateObj.getUTCMonth()]))}<br><br>Delta Temp: ${D.JS(getTemp(weatherCode.charAt(2)))} (Code: ${weatherCode.charAt(2)})`)
+            DB({weatherData}, "setWeather")
+            if (isReturningDataOnly)
+                return OFFSTACK(funcID) && weatherData
+            
+            // DB({line: 1570, weatherData}, "setWeather")
+
+            if (!Media.HasForcedState("tempC")) {
+                Media.ToggleText("tempC", true)
+                Media.ToggleText("tempF", true)
+                Media.SetText("tempC", `${weatherData.tempC}°C`)
+                Media.SetText("tempF", `(${Math.round(Math.round(9 / 5 * weatherData.tempC + 32))}°F)`)
+            }
+            for (const lightningAnim of ["WeatherLightning_1", "WeatherLightning_2"])
+                Media.Kill(lightningAnim)
+            
+            // WEATHER MAIN
+            switch (weatherData.event.charAt(0)) {
+                    // x: "Clear", b: "Blizzard", c: "Overcast", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
+                case "b": {
+                    if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", getSnowSrc("heavy"))}
+                    break
+                }
+                case "c": {
+                    if (!Media.HasForcedState("WeatherMain")) Media.ToggleImg("WeatherMain", false)
+                    break
+                }
+                case "p": {
+                    if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", "heavyrain")}
+                    break
+                }
+                case "s": {
+                    if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", getSnowSrc("light"))}
+                    break
+                }
+                case "t": {
+                    if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", "heavyrain")}
+                    Media.Pulse(["WeatherLightning_1", "WeatherLightning_2"], 45, 75, 15)
+                    break
+                } 
+                case "w": {
+                    if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", "lightrain")}
+                    break
+                } 
+                case "x": {
+                    if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", "blank")}
+                    break
+                }
+                    // no default
+            }
+
+            // WEATHER GROUND
+            if (!Media.HasForcedState("WeatherGround"))
+                if (getGroundCover(weatherData.weatherCode) === "blank") {
+                    Media.ToggleImg("WeatherGround", false)
+                } else {
+                    Media.ToggleImg("WeatherGround", true)
+                    Media.SetImg("WeatherGround", getGroundCover(weatherData.weatherCode))
+                }
+
+            // WEATHER FOG
+            if (!Media.HasForcedState("WeatherFog"))
+                if (weatherData.isFoggy) {
+                    Media.ToggleImg("WeatherFog", true)
+                    Media.SetImg("WeatherFog", getFogSrc())
+                } else {
+                    Media.ToggleImg("WeatherFog", false)
+                }
+            forecastLines.push((weatherData.event === "x" || weatherData.event === "c") && weatherData.isFoggy ? WEATHERCODES[0].f : WEATHERCODES[0][weatherData.event])
+            if (weatherData.humidity !== "x")
+                forecastLines.push(WEATHERCODES[1][weatherData.humidity])
+            forecastLines.push(weatherData.tempC < WINTERTEMP ? WEATHERCODES[2][weatherData.wind][1] : WEATHERCODES[2][weatherData.wind][0])
+            if (!Media.HasForcedState("weather")) {
+                Media.ToggleText("weather", true)
+                Media.SetText("weather", `${forecastLines.join(" ♦ ")}`)
+            }
+            if (!Media.HasForcedState("WeatherFrost"))
+                if (weatherData.tempC <= 0) {
+                    Media.ToggleImg("WeatherFrost", true)
+                    Media.SetImg("WeatherFrost", `frost${weatherData.tempC < -12 && "3" || weatherData.tempC < -6 && "2" || "1"}`) 
+                } else {
+                    Media.ToggleImg("WeatherFrost", false)
+                }
+            Media.UpdateSoundscape()
+            return OFFSTACK(funcID) && weatherData
+        },
+        setManualWeather = (event, tempC, wind, humidity) => {
+            const funcID = ONSTACK(),
+                weatherData = {}
+            if (tempC || tempC === 0)
+                weatherData.tempC = tempC
+            if (event) {
+                weatherData.event = event
+                if (weatherData.event.length === 1)
+                    weatherData.event += "x"
+            }
+            if (wind)
+                weatherData.wind = wind
+            if (humidity)
+                weatherData.humidity = humidity
+            STATE.REF.weatherOverride = weatherData
+            setWeather()
+            OFFSTACK(funcID)
+        },
+    // #endregion
+
+    // #region DATA ANALYSIS, PROCESSING & DISPLAY: Various Functions to Manipulate or Display Weather, Time & Alarm Data
+        displayWeatherReport = () => {
             const funcID = ONSTACK(),
             // const weatherCode = STATE.REF.weatherData[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()],switch(weatherCode.charAt(0)) {
             // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
@@ -1988,67 +2132,6 @@ const TimeTracker = (() => {
             }
             return OFFSTACK(funcID) && _.values(weatherStrings).map(x => `<div style="display: inline-block; width: 45%; margin: 2px 3% 0px 0px; height: auto;">${x.command} ${x.date}</div>`).join("")
         },
-    // #endregion
-
-    // #region Weather Data Analysis & Display
-        convertTempToCode = (tempC, monthNum) => WEATHERTEMP[tempC - getTemp(MONTHTEMP[monthNum]) + 26],
-        convertWeatherDataToCode = (weatherData) => {
-            const funcID = ONSTACK(),
-                weatherCodes = Object.values({
-                    event: weatherData.event,
-                    foggy: weatherData.isFoggy && weatherData.event !== "f" || "x",
-                    temp: convertTempToCode(weatherData.tempC, weatherData.month), // getTemp(weatherCode[2]) = tempC - monthTemp
-                    wind: weatherData.wind,
-                    humid: weatherData.humidity,
-                    ground: weatherData.groundCover
-                }).join("")
-            D.Alert(`Converted data to '${weatherCodes}' = '${weatherData.weatherCode}'?<br><br>${D.JS(weatherData)}`, "BIG TEST")
-            OFFSTACK(funcID)
-        },
-        getRawWeatherDataAt = (monthNum, dateNum, hourNum, numUpgrades = 0) => {
-            const funcID = ONSTACK(),
-                weatherCode = RAWWEATHERDATA[monthNum][dateNum][hourNum],
-                weatherData = upgradeWeatherSeverity({
-                    month: monthNum,
-                    date: dateNum,
-                    hour: hourNum,
-                    weatherCode,
-                    event: weatherCode.charAt(0),
-                    isFoggy: weatherCode.charAt(1) === "f",
-                    tempC: getTemp(MONTHTEMP[monthNum]) + getTemp(weatherCode.charAt(2)),
-                    humidity: weatherCode.charAt(3),
-                    wind: weatherCode.charAt(4),
-                    groundCover: weatherCode.charAt(5),
-                    isDay: isTimeInDay(monthNum, hourNum, 30)
-                }, numUpgrades)
-            return OFFSTACK(funcID) && weatherData
-        },
-        getWeatherDataAt = (monthNum, dateNum, hourNum, numUpgrades = 0) => {
-            const funcID = ONSTACK()
-            try {
-                const weatherCode = STATE.REF.weatherData[monthNum][dateNum][hourNum],
-                    weatherData = upgradeWeatherSeverity({
-                        month: monthNum,
-                        date: dateNum,
-                        hour: hourNum,
-                        weatherCode,
-                        event: weatherCode.charAt(0),
-                        isFoggy: weatherCode.charAt(1) === "f",
-                        tempC: getTemp(MONTHTEMP[monthNum]) + getTemp(weatherCode.charAt(2)),
-                        humidity: weatherCode.charAt(3),
-                        wind: weatherCode.charAt(4),
-                        groundCover: weatherCode.charAt(5),
-                        isDay: isTimeInDay(monthNum, hourNum, 30)
-                    }, numUpgrades)               
-                return OFFSTACK(funcID) && weatherData
-            } catch(errObj) {
-                return OFFSTACK(funcID) && false
-            }
-        },
-        getWeatherData = () => {
-            const dateObj = new Date(STATE.REF.dateObj)
-            return getWeatherDataAt(dateObj.getUTCMonth(), dateObj.getUTCDate(), dateObj.getUTCHours())
-        },
         getDayScore = (monthNum, dateNum, hourNum) => STATE.REF.stormScores[monthNum][Math.max(dateNum || 0, 1)][hourNum],
         singleHourCell = (monthNum, dateNum, hourNum, isUpgrading = false, isRaw = false) => {
             const funcID = ONSTACK()
@@ -2067,7 +2150,7 @@ const TimeTracker = (() => {
                         [-20]: "darkblue"
                     }, null, v => [C.COLORS[v], C.COLORS[v].replace(/1\)/gu, "0.1)")]),
                     dayScore = getDayScore(monthNum, dateNum, hourNum)
-                weatherData = isRaw ? getRawWeatherDataAt(monthNum, dateNum, hourNum, isUpgrading ? Math.floor(dayScore/100) : 0) : getWeatherDataAt(monthNum, dateNum, hourNum, isUpgrading ? Math.floor(dayScore/100) : 0)
+                weatherData = getWeatherData(monthNum, dateNum, hourNum, isUpgrading ? Math.floor(dayScore/100) : 0, isRaw)
                 if (!weatherData)
                     return OFFSTACK(funcID) && ""    
                 const tempKeys = Object.keys(TEMPCOLORS).sort(),
@@ -2093,7 +2176,7 @@ const TimeTracker = (() => {
                     s: "❄", 
                     t: "<span style=\"display: block; background-color: #000055; margin-top: 2px; margin-bottom: -16px;\">⚡</span>", // ❂❍❄❆
                     w: "☂"
-                }[weatherData.event] // ꜛꜜ
+                }[weatherData.event] // ꜛ��
                 groundCover = {
                     snow5: 50,
                     snow4: 40,
@@ -2280,7 +2363,7 @@ const TimeTracker = (() => {
             for (let month = 0; month <= 11; month++)
                 for (let day = 1; day <= getDaysInMonth(month); day++)
                     for (let hour = 0; hour <= 23; hour++) {
-                        const weatherData = getWeatherDataAt(month, day, hour),
+                        const weatherData = getWeatherData(month, day, hour),
                             dayScore = getDayScore(month, day, hour),
                             numUpgrades = Math.floor(dayScore/100),
                             newWeatherData = upgradeWeatherSeverity(weatherData, numUpgrades)
@@ -2305,7 +2388,7 @@ const TimeTracker = (() => {
                 for (let month = monthRange[0]; month <= monthRange[1]; month++) 
                     for (let day = 1; day <= getDaysInMonth(month); day++) 
                         for (let hour = 0; hour <= 23; hour++) {
-                            const weatherData = getWeatherDataAt(month, day, hour)
+                            const weatherData = getWeatherData(month, day, hour)
                             let {weatherCode} = weatherData
                             weatherCode = weatherCode.slice(0, 5)
                             runningGroundCover += upRates[weatherData.event] - Math.sqrt(Math.max(0, weatherData.tempC) * meltRate)
@@ -2353,7 +2436,7 @@ const TimeTracker = (() => {
                                 seekMonth = seekMonth === 11 ? 0 : seekMonth + 1
                                 seekDay = 1
                             }
-                            const weatherData = getWeatherDataAt(seekMonth, seekDay, seekHour)
+                            const weatherData = getWeatherData(seekMonth, seekDay, seekHour)
                             thisHourScore += eventPoints[weatherData.event] || 0
                         }
                         stormScoreData[month][day].push(thisHourScore)
@@ -2455,8 +2538,8 @@ const TimeTracker = (() => {
             for (let month = 0; month <= 11; month++)
                 for (let day = 1; day <= getDaysInMonth(month); day++)
                     for (let hour = 0; hour <= 23; hour++) {
-                        const rawWeatherData = getRawWeatherDataAt(month, day, hour),
-                            weatherData = getWeatherDataAt(month, day, hour)
+                        const rawWeatherData = getWeatherData(month, day, hour, 0, true),
+                            weatherData = getWeatherData(month, day, hour)
                         if (weatherData.isDay)
                             continue
                         rawTally.event[rawWeatherData.event][rawWeatherData.isFoggy ? 1 : 0]++
@@ -2476,200 +2559,24 @@ const TimeTracker = (() => {
                 "</table>"
             ].join(""), "ScanWeatherData")
         },
-    // #endregion
-
-    // #region MASTER CONTROL FUNCTIONS
-        fixTimeStatus = () => {
+        displayNextAlarms = () => {
             const funcID = ONSTACK()
-            setCurrentDate()
-            setHorizon()
-            const weatherData = setWeather()
-            setHorizon(weatherData)
-            toggleCountdown(!Session.IsSessionActive)
-            toggleClock(Session.IsSessionActive && !Session.IsTesting)
+            D.Alert([
+                "<h3>Next Alarms</h3>",
+                D.JS(_.map(STATE.REF.Alarms.Ahead, v => `${D.JS(v.name)}: ${formatDateString(new Date(v.time), true)}<br>... to: ${D.JSL(v.displayTo)}`)),
+                "<h3>Next Full Alarm</h3>",
+                STATE.REF.Alarms.Ahead.length && D.JS(Object.assign(D.Clone(STATE.REF.Alarms.Ahead[0]), {message: D.SumHTML(STATE.REF.Alarms.Ahead[0].message)})) || "NONE"
+            ].join(""), "Upcoming Alarms")
             OFFSTACK(funcID)
         },
-        setHorizon = (weatherData) => {
+        displayPastAlarms = () => {
             const funcID = ONSTACK()
-            DB({weatherData, hasForcedState: Media.HasForcedState("Horizon")}, "setHorizon")
-            if (Media.HasForcedState("Horizon")) return OFFSTACK(funcID) && false
-            weatherData = weatherData || weatherDataMemo || {event: "x"}
-            let horizWeather = ""
-            switch (weatherData.event.charAt(0)) {
-                case "x":
-                    horizWeather = "clear"
-                    break
-                case "b":
-                case "t":
-                case "p":
-                    horizWeather = "stormy"
-                    break
-                default:
-                    horizWeather = "cloudy"
-                    break
-            }
-            const horizonSrc = `${getHorizonTimeString()}${horizWeather}`,
-                horizonData = Media.GetImgData("Horizon_1")
-            DB({horizonSrc}, "setHorizon")
-            if (isRunningFast && (
-                !horizonSrc.includes("day") && horizonData.curSrc.includes("day") ||
-                horizonSrc.includes("day") && !horizonData.curSrc.includes("day")
-            ) ||
-                !isRunningFast) {
-                Media.SetImg("Horizon_1", horizonSrc)
-                Media.SetImg("Foreground", D.Int(horizonSrc.replace(/\D/gu, "")) > 3 ? "dark" : "bright")
-            }
-            return OFFSTACK(funcID) && true
-        },
-        refreshTimeAndWeather = () => {
-            const funcID = ONSTACK()
-            OFFSTACK(funcID)
-        },
-        setWeather = (isReturningDataOnly = false) => {
-            const funcID = ONSTACK(),
-                weatherData = Object.assign({}, getWeatherData(), STATE.REF.weatherOverride),
-                getFogSrc = () => {
-                    const fID = ONSTACK()
-                    switch (getHorizonTimeString()) {
-                        case "night1":
-                        case "night2":
-                        case "night3":
-                            return OFFSTACK(fID) && "brightfog"
-                        case "day":
-                            return OFFSTACK(fID) && "blank"
-                        default:
-                            return OFFSTACK(fID) && "darkfog"
-                    }
-                },
-                getSnowSrc = (degree) => {
-                    const fID = ONSTACK()
-                    switch (getHorizonTimeString()) {
-                        case "night1":
-                        case "night2":
-                        case "night3":
-                            return OFFSTACK(fID) && `bright${degree.toLowerCase()}snow`
-                        default:
-                            return OFFSTACK(fID) && `dark${degree.toLowerCase()}snow`
-                    }
-                },
-                forecastLines = []
-                // D.Alert(`Weather Code: ${D.JS(weatherCode)}<br>Month Temp: ${D.JS(getTemp(MONTHTEMP[dateObj.getUTCMonth()]))}<br><br>Delta Temp: ${D.JS(getTemp(weatherCode.charAt(2)))} (Code: ${weatherCode.charAt(2)})`)
-
-            if (isReturningDataOnly)
-                return OFFSTACK(funcID) && weatherData
-            
-            // DB({line: 1570, weatherData}, "setWeather")
-
-            if (!Media.HasForcedState("tempC")) {
-                Media.ToggleText("tempC", true)
-                Media.ToggleText("tempF", true)
-                Media.SetText("tempC", `${weatherData.tempC}°C`)
-                Media.SetText("tempF", `(${Math.round(Math.round(9 / 5 * weatherData.tempC + 32))}°F)`)
-            }
-            for (const lightningAnim of ["WeatherLightning_1", "WeatherLightning_2"])
-                Media.Kill(lightningAnim)
-            
-            // WEATHER MAIN
-            switch (weatherData.event.charAt(0)) {
-                    // x: "Clear", b: "Blizzard", c: "Overcast", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
-                case "b": {
-                    if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", getSnowSrc("heavy"))}
-                    break
-                }
-                case "c": {
-                    if (!Media.HasForcedState("WeatherMain")) Media.ToggleImg("WeatherMain", false)
-                    break
-                }
-                case "p": {
-                    if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", "heavyrain")}
-                    break
-                }
-                case "s": {
-                    if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", getSnowSrc("light"))}
-                    break
-                }
-                case "t": {
-                    if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", "heavyrain")}
-                    Media.Pulse("WeatherLightning_1", 45, 75)
-                    Media.Pulse("WeatherLightning_2", 45, 75)
-                    break
-                } 
-                case "w": {
-                    if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", "lightrain")}
-                    break
-                } 
-                case "x": {
-                    if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", "blank")}
-                    break
-                }
-                    // no default
-            }
-
-            // WEATHER GROUND
-            if (!Media.HasForcedState("WeatherGround"))
-                if (getGroundCover(weatherData.weatherCode) === "blank") {
-                    Media.ToggleImg("WeatherGround", false)
-                } else {
-                    Media.ToggleImg("WeatherGround", true)
-                    Media.SetImg("WeatherGround", getGroundCover(weatherData.weatherCode))
-                }
-
-            // WEATHER FOG
-            if (!Media.HasForcedState("WeatherFog"))
-                if (weatherData.isFoggy) {
-                    Media.ToggleImg("WeatherFog", true)
-                    Media.SetImg("WeatherFog", getFogSrc())
-                } else {
-                    Media.ToggleImg("WeatherFog", false)
-                }
-            forecastLines.push((weatherData.event === "x" || weatherData.event === "c") && weatherData.isFoggy ? WEATHERCODES[0].f : WEATHERCODES[0][weatherData.event])
-            if (weatherData.humidity !== "x")
-                forecastLines.push(WEATHERCODES[1][weatherData.humidity])
-            forecastLines.push(weatherData.tempC < WINTERTEMP ? WEATHERCODES[2][weatherData.wind][1] : WEATHERCODES[2][weatherData.wind][0])
-            if (!Media.HasForcedState("weather")) {
-                Media.ToggleText("weather", true)
-                Media.SetText("weather", `${forecastLines.join(" ♦ ")}`)
-            }
-            if (!Media.HasForcedState("WeatherFrost"))
-                if (weatherData.tempC <= 0) {
-                    Media.ToggleImg("WeatherFrost", true)
-                    Media.SetImg("WeatherFrost", `frost${weatherData.tempC < -12 && "3" || weatherData.tempC < -6 && "2" || "1"}`) 
-                } else {
-                    Media.ToggleImg("WeatherFrost", false)
-                }
-            Media.UpdateSoundscape()
-            return OFFSTACK(funcID) && weatherData
-        },
-        toggleClock = (activeState, secsPerMin = 60) => {
-            const funcID = ONSTACK()
-            isTimeRunning = Boolean(activeState)
-
-            if (activeState) {
-                if (STATE.REF.TweenTarget) {
-                    tweenClock(STATE.REF.TweenTarget)
-                } else {
-                    clearInterval(timeTimer)
-                    timeTimer = setInterval(tickClock, D.Int(secsPerMin) * 1000)
-                }
-            } else {
-                isTimeRunning = false
-                isRunningFast = false
-            }
-            OFFSTACK(funcID)
-        },
-        toggleCountdown = (activeState) => {
-            const funcID = ONSTACK()
-            // *** NEXT LINE DISABLES THIS FUNCTION: COMMENT OUT TO REACTIVATE ***
-            activeState = true
-            // *******************************************************************
-            isCountdownRunning = Boolean(activeState)
-            if (activeState) {
-                syncCountdown()
-            } else {
-                clearInterval(secTimer)
-                secTimer = null                
-                Media.SetImg("SplashWater", "red0")
-            }
+            D.Alert([
+                "<h3>Past Alarms</h3>",
+                D.JS(_.map(STATE.REF.Alarms.Behind, v => `${D.JS(v.name)}: ${formatDateString(new Date(v.time), true)}<br>... to: ${D.JSL(v.displayTo)}`)),
+                "<h3>Next Past Alarm</h3>",
+                STATE.REF.Alarms.Behind.length && D.JS(Object.assign(D.Clone(STATE.REF.Alarms.Behind[0]), {message: D.SumHTML(STATE.REF.Alarms.Behind[0].message)})) || "NONE"
+            ].join(""), "Past Alarms")
             OFFSTACK(funcID)
         },
     // #endregion
@@ -2682,107 +2589,14 @@ const TimeTracker = (() => {
         // revActions: ARRAY as above, run when alarm "unfires" instead
         // recurring: if LIST {years: #, months: #, weeks: #, days: #, hours: #, mins: #}, will repeat alarm at that interval
         // isConditional: if true, will stop clock and confirm with GM before firing
-        
-        getDateFromDateString = (dateString, dateOverride) => {
-            const funcID = ONSTACK()
-            if (VAL({date: dateString})) {
-                DB({dateString, parseToDateObj: parseToDateObj(dateString)}, "getDateFromDateString")
-                return OFFSTACK(funcID) && parseToDateObj(dateString)
-            }
-            if (VAL({string: dateString})) {
-                const curDate = VAL({date: dateOverride}) && new Date(dateOverride) || STATE.REF.dateObj,
-                    curMins = 60 * curDate.getUTCHours() + curDate.getUTCMinutes()
-                let [startDate, targetDate, targetMins] = [new Date(curDate), new Date(curDate), curMins]
-                DB({dateStrings: dateString.split(/\s*\+\s*/gu), dateOverride: dateOverride && formatDateString(dateOverride, true), curDate: formatDateString(curDate, true), curMins}, "getDateFromDateString")
-                for (const dString of dateString.split(/\s*\+\s*/gu)) {
-                    switch (dString.trim().toLowerCase()) {
-                        case "nextfullnight":
-                        case "dawn":
-                            [targetMins] = TWILIGHTMINS[startDate.getUTCMonth()]             
-                            break
-                        case "dusk":
-                            [,targetMins] = TWILIGHTMINS[startDate.getUTCMonth()]   
-                            break
-                        case "noon":
-                            targetMins = 12 * 60
-                            break
-                        default: {
-                            const splitDStrings = dString.split(/\s+/gu)
-                            if (VAL({string: splitDStrings[0], number: splitDStrings[1]}))
-                                targetDate = addTime(startDate, parseFloat(splitDStrings[1]), splitDStrings[0])
-                            else if(VAL({date: dString}))
-                                targetDate = parseToDateObj(dString)
-                            targetMins = null
-                            startDate = new Date(targetDate)
-                            continue
-                        }
-                        // no default
-                    }
-                    if (targetMins !== null) {
-                        targetDate.setUTCHours(0)
-                        if (curMins >= targetMins || dateString.toLowerCase() === "nextfullnight")
-                            targetDate.setUTCDate(targetDate.getUTCDate() + 1)                    
-                        targetDate.setUTCMinutes(targetMins)
-                    }
-                    startDate = new Date(targetDate)
-                }
-                DB({startDate: formatDateString(startDate, true), targetDate: formatDateString(targetDate, true), targetMins}, "getDateFromDateString")
-                return OFFSTACK(funcID) && targetDate
-            } 
-            return OFFSTACK(funcID) && false        
-        },
-        getDailyAlarmTrigger = (lastDateStep, thisDateStep, dateOverride) => {
-            const funcID = ONSTACK()
-            if (lastDateStep > thisDateStep)
-                return OFFSTACK(funcID) && false
-            const curDate = VAL({date: dateOverride}) && new Date(dateOverride) || STATE.REF.dateObj,
-                targetDate = new Date(curDate)
-            targetDate.setUTCHours(0)
-            targetDate.setUTCMinutes(0)
-            if (VAL({date: targetDate}, "getDailyAlarmTrigger") && targetDate.getTime) {
-                const dayTriggers = {
-                    midnight: targetDate.getTime(),
-                    dawn: (new Date((new Date(targetDate)).setUTCMinutes(TWILIGHTMINS[targetDate.getUTCMonth()][0]))).getTime(),
-                    noon: (new Date((new Date(targetDate)).setUTCHours(12))).getTime(),
-                    dusk: (new Date((new Date(targetDate)).setUTCMinutes(TWILIGHTMINS[targetDate.getUTCMonth()][1]))).getTime()
-                }
-                DB({targetDate, dayTriggers}, "getDailyAlarmTrigger")
-                return OFFSTACK(funcID) && _.findKey(dayTriggers, v => v >= lastDateStep && v <= thisDateStep) || false
-            }
-            DB({["targetDate (FALSE)"]: targetDate}, "getDailyAlarmTrigger")
-            return OFFSTACK(funcID) && false
-        },
         setAlarm = (dateRef, name, message, actions = [], displayTo = [], revActions = [], recurring = false, isConditional = false) => {
             const funcID = ONSTACK()
             // STEP ONE: FIGURE OUT WHEN THE ALARM SHOULD FIRE.
             if (dateRef.split(":").length > 2)
                 return OFFSTACK(funcID) && D.Alert(`DateRef '${D.JS(dateRef)} has too many terms.<br>(A ':' should only appear between the timeRef and the modifying flag)`, "setAlarm")
-            const [timeRef, timeFlag] = dateRef.split(":"), /* eslint-disable-line no-unused-vars */
-                workingDate = new Date(STATE.REF.dateObj)
-            switch (D.LCase(timeRef)) {
-                case "nextfullweek": {
-                    addTime(workingDate, 7, "d", true)
-                }
-                // falls through
-                case "nextfullnight": {
-                    if (!isDateInDay(workingDate))
-                        addTime(workingDate, 1, "d", true)
-                }
-                // falls through
-                case "dawn": setToFutureTime(workingDate, ...getTime(TWILIGHT[workingDate.getMonth()][0])); break
-                case "dusk": setToFutureTime(workingDate, ...getTime(TWILIGHT[workingDate.getMonth()][1])); break
-                case "midnight": setToFutureTime(workingDate, 0, 0); break
-                case "noon": setToFutureTime(workingDate, 12, 0); break
-                case "nextweek": addTime(workingDate, 7, "d", true); break
-                case "endofweek": setToFutureWeekday(workingDate, 0); break
-                // no default
-            }
-
-
-
-
-
-
+            const workingDate = new Date(STATE.REF.dateObj)
+            if (VAL({string: dateRef}) && dateRef !== "scene")
+                getDateFromDateString(workingDate, dateRef, true)
             if (VAL({string: actions})) // Actions can be a comma-delimited list of chat commands.
                 actions = actions.split(/\s*,\s*/gu)
             if (VAL({string: revActions})) // Reverse actions can be as above.
@@ -2791,15 +2605,6 @@ const TimeTracker = (() => {
                 displayTo = displayTo.split(/\s*,\s*/gu)
             displayTo.push("Storyteller") // Storyteller is added automatically.
             DB(`Actions: ${D.JSL(actions.map(x => typeof x))}`, "setAlarm")
-            if (VAL({string: recurring})) {
-                DB(`Recurring: ${D.JSL(recurring)}, Reg Exp: ${D.JSL(recurring.match(/\S?\d+\s?\w+/gu))}`, "setAlarm")
-                const recurList = {}
-                for (const deltaUnit of recurring.match(/\S?\d+\s?\w+/gu).map(x => x.match(/\S?(\d+)\s?(\w+)/u).slice(1))) {
-                    const [delta, unit] = deltaUnit
-                    recurList[unit] = parseFloat(delta)
-                }
-                recurring = D.Clone(recurList)
-            }
             if (VAL({string: isConditional}))
                 isConditional = isConditional.toLowerCase().includes("true")            
             const thisAlarm = {
@@ -2807,33 +2612,16 @@ const TimeTracker = (() => {
                 message, // Message sent to [displayTo] = "all" or display names
                 actions, // Array of functions (no parameters) and/or chat strings run when alarm fired
                 revActions, // Array as above, run when alarm "unfires" instead
-                recurring, // List of recurrence quantity - {years: #, months: #, weeks: #, days: #, hours: #, mins: #}
+                recurring: VAL({string: recurring}) && recurring || null, // Date string to recur on (i.e. "dawn", "endofweek", etc.)
                 displayTo: _.uniq(_.flatten([displayTo])),
-                dateString: VAL({date: dateRef}) && formatDateString(parseToDateObj(dateRef)) || dateRef,
+                time: workingDate.getTime(),
+                dateString: formatDateString(workingDate),
                 isConditional: VAL({bool: isConditional}) && isConditional
             }
-            if (VAL({date: dateRef})) {
-                thisAlarm.time = parseToDateObj(dateRef).getTime()
-                DB(`DateRef '${D.JSL(dateRef)}' is a DATE: ${D.JSL(parseToDateObj(dateRef))}<br>... Time Code: ${D.JSL(thisAlarm.time)}`, "setAlarm")
-            } else if (VAL({string: dateRef})) {
-                DB(`DateRef '${D.JSL(dateRef)}' is a STRING: ${dateRef}`, "setAlarm")
-                switch (dateRef.toLowerCase()) {
-                    case "nextfullnight":
-                        thisAlarm.isNextFullNight = true
-                        // falls through
-                    case "midnight":
-                    case "dawn":
-                    case "noon":
-                    case "dusk": {
-                        thisAlarm.isDailyAlarm = true
-                        STATE.REF.Alarms.Daily[dateRef.toLowerCase().replace(/nextfullnight/gu, "dawn")].push(D.Clone(thisAlarm))
-                        return OFFSTACK(funcID) && true
-                    }
-                    // no default
-                }
-                thisAlarm.time = getDateFromDateString(dateRef).getTime()
-            }
-            if (VAL({date: thisAlarm.time}, "setAlarm")) {
+            if (dateRef === "scene") {
+                Session.AddSceneAlarm(thisAlarm)
+                return OFFSTACK(funcID) && true
+            } else if (VAL({number: thisAlarm.time}, "setAlarm")) {
                 STATE.REF.Alarms.Ahead.push(D.Clone(thisAlarm))
                 STATE.REF.Alarms.Ahead = _.sortBy(STATE.REF.Alarms.Ahead, "time")
                 return OFFSTACK(funcID) && true
@@ -2848,45 +2636,21 @@ const TimeTracker = (() => {
                     fireNextAlarm()
                 while (lastDateStep > thisDateStep && STATE.REF.Alarms.Behind[0] && STATE.REF.Alarms.Behind[0].time <= lastDateStep && STATE.REF.Alarms.Behind[0].time >= thisDateStep)
                     unfireLastAlarm()
-                const dayTrigger = getDailyAlarmTrigger(lastDateStep, thisDateStep)
-                if (dayTrigger) {
-                    DB({["DayTrigger Hit!"]: dayTrigger, thisStep: D.Int(thisDateStep/1000/60), lastAlarmCheck: STATE.REF.lastAlarmCheck}, "checkAlarm")
-                    const dayAlarms = STATE.REF.Alarms.Daily[dayTrigger]
-                    for (let i = 0; i < dayAlarms.length; i++)
-                        fireAlarm(dayAlarms[i])
-                }
             }
             OFFSTACK(funcID)
         },
-        getNextAlarms = () => {
-            const funcID = ONSTACK()
-            D.Alert(`<h3>Next Alarms</h3>${D.JS(_.map(STATE.REF.Alarms.Ahead, v => `${D.JS(v.name)}: ${formatDateString(new Date(v.time), true)}<br>... to: ${D.JSL(v.displayTo)}`))}<h3>Next Full Alarm</h3>${STATE.REF.Alarms.Ahead.length && D.JS(Object.assign(D.Clone(STATE.REF.Alarms.Ahead[0]), {message: D.SumHTML(STATE.REF.Alarms.Ahead[0].message)})) || "none"}`, "Upcoming Alarms")
-            OFFSTACK(funcID)
-        },
-        getPastAlarms = () => D.Alert(`<h3>Past Alarms</h3>${D.JS(_.map(STATE.REF.Alarms.Behind, v => `${D.JS(v.name)}: ${formatDateString(new Date(v.time), true)}<br>... to: ${D.JSL(v.displayTo)}`))}<h3>Next Past Alarm</h3>${STATE.REF.Alarms.Behind.length && D.JS(Object.assign(D.Clone(STATE.REF.Alarms.Behind[0]), {message: D.SumHTML(STATE.REF.Alarms.Behind[0].message)})) || "NONE"}`, "Past Alarms"),
-        getDailyAlarms = () => {
-            const funcID = ONSTACK(),
-                returnStrings = ["<h3>Daily Alarms</h3>"]
-            for (const unit of Object.keys(STATE.REF.Alarms.Daily)) {
-                returnStrings.push(`<h4>${unit}</h4>`)
-                for (const alarm of STATE.REF.Alarms.Daily[unit])
-                    returnStrings.push(`${D.JS(alarm.name)}: ${D.JS(Object.assign(D.Clone(alarm), {message: D.SumHTML(alarm.message)}))}`)
-            }
-            D.Alert(returnStrings.join("<br>"))
-            OFFSTACK(funcID)
-        },
-        // !time set alarm dawn|Testing Dawn Alarm|Dawn Alarm FIRED|Dawn Alarm FIRED|Storyteller|Dawn Alarm UNFIRED||true
         checkCondition = alarm => {
             const funcID = ONSTACK()
+            pauseClockTween()
             alarm = D.Clone(alarm)
             alarm.conditionOK = true
             const alarmEscrow = D.Clone(alarm)
             alarm.wasAborted = true
-            if (!alarm.isDailyAlarm)
+            if ((alarm.revActions || []).length && alarm.time)
                 STATE.REF.Alarms.Behind.unshift(D.Clone(alarm))
             const replyFunc = reply => {
                 const fID = ONSTACK()
-                if (!alarm.isDailyAlarm) 
+                if ((alarm.revActions || []).length && alarm.time)
                     STATE.REF.Alarms.Behind.shift()
                 if (reply.includes("stop"))
                     setTimeout(() => {
@@ -2904,6 +2668,7 @@ const TimeTracker = (() => {
                 } else {
                     fireAlarm(alarmEscrow)
                 }
+                continueClockTween()
                 OFFSTACK(fID)
             }
             D.Prompt( // Locks Dice Roller, Stops & Starts Clock
@@ -2922,63 +2687,38 @@ const TimeTracker = (() => {
             )
             OFFSTACK(funcID)
         },
-        deferAlarm = (alarm) => {
+        fireAlarm = (alarm, isAborting = false, isDeferring = false, isCheckingCondition = true) => {
             const funcID = ONSTACK()
-            if (!alarm.isDailyAlarm) {
-                const deferredAlarm = D.Clone(alarm)
-                delete deferredAlarm.conditionOK
-                delete deferredAlarm.wasAborted
-                deferredAlarm.time = getDateFromDateString(alarm.dateString, new Date(alarm.time + 60 * 60 * 1000)).getTime()
-                return OFFSTACK(funcID) && D.Clone(deferredAlarm)
-            }
-            return OFFSTACK(funcID) && false
-        },
-        recurAlarm = (alarm, recurTime) => {
-            const funcID = ONSTACK()
-            if (!alarm.isDailyAlarm) {
-                const recurredAlarm = D.Clone(alarm)
-                for (const unit of Object.keys(recurTime))
-                    recurredAlarm.time = addTime(alarm.time, recurTime[unit], unit).getTime()
-                DB({["Recurring Alarm Created!"]: recurredAlarm}, "recurAlarm")
-                return OFFSTACK(funcID) && D.Clone(recurredAlarm)
-            }
-            return OFFSTACK(funcID) && false
-        },
-        abortAlarm = (alarm) => {
-            const funcID = ONSTACK()
-            if (!alarm.isDailyAlarm) {
-                alarm.wasAborted = true
-                return OFFSTACK(funcID) && D.Clone(alarm)
-            }
-            return OFFSTACK(funcID) && false
-        },
-        fireAlarm = (alarm, isAborting = false, isDeferring = false) => {
-            const funcID = ONSTACK()
+            alarm = D.Clone(alarm)
             isAborting = alarm.wasAborted || STATE.REF.Alarms.AutoAbort.includes(alarm.name) || isAborting
             isDeferring = !isAborting && (STATE.REF.Alarms.AutoDefer.includes(alarm.name) || isDeferring)
             if (isAborting) {
-                const abortedAlarm = abortAlarm(alarm)
-                if (abortedAlarm)
-                    STATE.REF.Alarms.Behind.unshift(abortAlarm(alarm))
+                alarm.wasAborted = true                
+                if ((alarm.revActions || []).length && alarm.time)
+                    STATE.REF.Alarms.Behind.unshift(alarm)
             } else if (isDeferring) {
-                const deferredAlarm = deferAlarm(alarm)
-                if (deferredAlarm)
-                    STATE.REF.Alarms.Ahead.unshift(deferredAlarm)
+                delete alarm.conditionOK
+                delete alarm.wasAborted
+                alarm.time += 60 * 60 * 1000
+                STATE.REF.Alarms.Ahead.unshift(alarm)
             } else {
-                if (!alarm.wasRecurred && VAL({list: alarm.recurring})) {
-                    const recurredAlarm = recurAlarm(alarm, alarm.recurring)
-                    if (recurredAlarm)                        
+                if (!alarm.wasRecurred && VAL({string: alarm.recurring})) {
+                    const recurredAlarm = D.Clone(alarm)
+                    recurredAlarm.time = (getDateFromDateString(new Date(alarm.time), alarm.recurring) || {getTime: () => false}).getTime()
+                    if (recurredAlarm.time) {
+                        recurredAlarm.dateString = formatDateString(new Date(recurredAlarm.time))                    
                         STATE.REF.Alarms.Ahead.unshift(recurredAlarm)
+                    }
                     alarm.wasRecurred = true
                     fireAlarm(alarm, false, false)
-                } else if (alarm.isConditional && !alarm.conditionOK) {
+                } else if (isCheckingCondition && !alarm.conditionOK) {
                     checkCondition(alarm)
                 } else {    
                     if (alarm.displayTo.includes("all"))
-                        D.Chat("all", alarm.message, null, D.RandomString(3))
+                        D.Chat("all", alarm.message)
                     else
                         for (const player of alarm.displayTo)
-                            D.Chat(D.GetName(player), alarm.message, null, D.RandomString(3))      
+                            D.Chat(D.GetName(player), alarm.message)      
                     for (const action of alarm.actions)
                         if (VAL({array: action})) {
                             if (ALARMFUNCS[action[0]])
@@ -2987,11 +2727,10 @@ const TimeTracker = (() => {
                             if (ALARMFUNCS[action])
                                 ALARMFUNCS[action]()
                             else
-                                sendChat("", action)
+                                D.Call(action)
                         }
-                    if (alarm.isDailyAlarm)
-                        alarm.time = STATE.REF.dateObj.getTime()
-                    STATE.REF.Alarms.Behind.unshift(D.Clone(alarm))
+                    if (alarm.revActions.length && alarm.time)
+                        STATE.REF.Alarms.Behind.unshift(D.Clone(alarm))
                 }
             }
             STATE.REF.Alarms.Ahead = _.sortBy(STATE.REF.Alarms.Ahead, "time")
@@ -3007,8 +2746,7 @@ const TimeTracker = (() => {
                     else if (VAL({string: revAction}))
                         sendChat("", revAction)
             delete alarm.wasAborted
-            if (!alarm.isDailyAlarm)
-                STATE.REF.Alarms.Ahead.unshift(D.Clone(alarm))
+            STATE.REF.Alarms.Ahead.unshift(D.Clone(alarm))
             STATE.REF.Alarms.Ahead = _.sortBy(STATE.REF.Alarms.Ahead, "time")
             OFFSTACK(funcID)
         },
@@ -3027,8 +2765,18 @@ const TimeTracker = (() => {
             if (Session.IsTesting || Session.IsSessionActive)           
                 unfireAlarm(thisAlarm)
             OFFSTACK(funcID)
-        }
+        },
     // #endregion
+
+        fixTimeStatus = () => {
+            const funcID = ONSTACK()
+            updateClockObj()
+            setHorizon(setWeather())
+            syncCountdown()
+            toggleClock(Session.IsSessionActive && !Session.IsTesting)
+            Char.RefreshDisplays()
+            OFFSTACK(funcID)
+        }
 
     return {
         CheckInstall: checkInstall,
@@ -3038,19 +2786,18 @@ const TimeTracker = (() => {
         
         ALARMFUNCS,
         ToggleClock: toggleClock,
-        ToggleCountdown: toggleCountdown,
+        Fire: (alarm) => fireAlarm(alarm, false, false, false),
 
         get CurrentDate() { return new Date(STATE.REF.dateObj) },
         GetDate: parseToDateObj,
-        get TempC () { return getTemp(MONTHTEMP[STATE.REF.dateObj.getUTCMonth()]) + getTemp(getWeatherCode().charAt(2)) },
+        get TempC () { return getTempFromCode(MONTHTEMP[STATE.REF.dateObj.getUTCMonth()]) + getTempFromCode(getWeatherCode().charAt(2)) },
         set CurrentDate(dateRef) {
             if (dateRef)
                 STATE.REF.dateObj = parseToDateObj(dateRef)
         },
         FormatDate: formatDateString,
         IsDay: isDateInDay,
-        IsValidDate: isValidDString,
-        get IsClockRunning() { return isRunning || isRunningFast || isTimeRunning },
+        get IsClockRunning() { return isTweeningClock || isFastTweeningClock || isTickingClock },
         get WeatherCode () { return getWeatherCode() },
 
         GetRandomTimeline: getRandomEventTriggers,

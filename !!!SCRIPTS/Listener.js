@@ -52,7 +52,7 @@ const Listener = (() => {
                     for (const [attrKeys, scriptData] of SCRIPTCALLS.ATTRCHANGE)
                         for (const attrKey of attrKeys)
                             if (call.includes(attrKey))
-                                return scriptData.script.OnAttrChange(call, attrObj)
+                                return scriptData.script.OnAttrChange(call, attrObj, prevData.current)
                 }
                 return false
             })
@@ -84,6 +84,11 @@ const Listener = (() => {
                     return scriptData.script.OnGraphicChange(imgObj, prevData)
                 return false
             })
+            on("change:campaign:playerpageid", () => {
+                for (const scriptData of SCRIPTCALLS.PAGECHANGE)
+                    return scriptData.script.OnPageChange()
+                return false
+            })
         },
     // #endregion
 
@@ -109,7 +114,7 @@ const Listener = (() => {
                 "!text": {script: Media, gmOnly: true, singleCall: false},
                 "!anim": {script: Media, gmOnly: true, singleCall: false},
                 "!snd": {script: Media, gmOnly: true, singleCall: false},
-                // "!sound": {script: SoundScape, gmOnly: true, singleCall: true, needsObjects: false},
+                "!sound": {script: Media, gmOnly: true, singleCall: false},
                 "!pcom": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!mvc": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!token": {script: Player, gmOnly: false, singleCall: false},
@@ -120,7 +125,7 @@ const Listener = (() => {
                 "!time": {script: TimeTracker, gmOnly: true, singleCall: true}
             }, v => v.script === {})
             SCRIPTCALLS.ATTRCHANGE = _.reject([
-                [ ["hunger", "desire", "projectstake", "triggertimelinesort"], {script: Char} ]
+                [ ["hunger", "desire", "projectstake", "triggertimelinesort", "health_impair_toggle", "willpower_impair_toggle", "humanity_impair_toggle", "stains"], {script: Char} ]
             ], v => v[1].script === {})
             SCRIPTCALLS.ATTRADD = _.reject([
                 [ ["desire", "projectstake", "triggertimelinesort"], {script: Char} ]
@@ -133,7 +138,10 @@ const Listener = (() => {
             ], v => v.script === {})
             SCRIPTCALLS.IMGADD = _.reject([
                 {script: Media}
-            ], v => v.script === {})
+            ], v => v.script === {})            
+            SCRIPTCALLS.PAGECHANGE = _.reject([
+                {script: Session}
+            ], v => v.script === {})            
             refreshObjects(true)
         },
     // #endregion
@@ -245,23 +253,15 @@ const Listener = (() => {
             return STATE.REF.objectLog[type] && STATE.REF.objectLog[type].split(",").map(x => getObj(type, x)) || []            
         },
         parseParams = (args, delim = " ") => {
-            const params = {}
-            if (VAL({array: args}))
-                args.join(" ")
-            if (VAL({string: args})) 
-                Object.apply(params, args.
+            args = VAL({array: args}) ? args.join(" ") : args
+            if (VAL({string: args}))
+                return _.object(args.
                     split(new RegExp(`,?${delim.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}+`, "gu")).
                     filter(x => x.includes(":")).
                     map(x => x.trim().split(":").
                         map(xx => VAL({number: xx}) ? D.Float(xx,2) : xx))
                 )
-            
-            return _.object(
-                (VAL({array: args}) ? args.join(" ") : args).
-                    split(new RegExp(`,?${delim.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}+`, "gu")).
-                    filter(x => x.includes(":")).
-                    map(x => x.trim().split(":").map(xx => VAL({number: xx}) ? D.Float(xx,2) : xx))
-            )
+            return {}
         },
         lockListener = () => { STATE.REF.isLocked = true },
         unlockListener = () => { STATE.REF.isLocked = false }

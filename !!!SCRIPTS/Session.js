@@ -72,8 +72,7 @@ const Session = (() => {
                     pointerPos: {left: 1001, top: 1995} 
                 }
             } */
-            delete STATE.REF.locationPointer.Vehicle5
-
+            
             PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND)
             STATE.REF.isTestingActive = STATE.REF.isTestingActive || false
             STATE.REF.sceneChars = STATE.REF.sceneChars || []
@@ -157,10 +156,6 @@ const Session = (() => {
                         }
                         case "favdist": {
                             STATE.REF.FavoriteDistricts.push(args.join(" "))
-                            break
-                        }
-                        case "scene": {
-                            addCharToScene(charObjs)
                             break
                         }
                         case "macro": {
@@ -425,6 +420,12 @@ const Session = (() => {
                 }
             // no default
             }
+        },
+        onPageChange = () => {
+            if (Campaign().get("_playerpageid") === C.PAGES.GAME && Session.IsTesting)
+                Media.ToggleText("playerPageAlertMessage", true)
+            else
+                Media.ToggleText("playerPageAlertMessage", false)
         }
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
@@ -459,7 +460,6 @@ const Session = (() => {
                     if (!STATE.REF.isTestingActive)      
                         Campaign().set({playerpageid: D.GetPageID("GAME")})            
                     TimeTracker.ToggleClock(true)
-                    // TimeTracker.ToggleCountdown(false)
                 },
                 Downtime: () => {},
                 Daylighter: () => {},
@@ -489,7 +489,6 @@ const Session = (() => {
                     Campaign().set({playerpageid: D.GetPageID("SplashPage")})
                     Media.ToggleTokens(null, false)
                     TimeTracker.ToggleClock(false)
-                    TimeTracker.ToggleCountdown(true)
                 },
                 Downtime: () => {                    
                     setLocation(BLANKLOCRECORD)
@@ -1384,17 +1383,6 @@ const Session = (() => {
     // #endregion
 
     // #region Starting & Ending Scenes, Logging Characters to Scene
-        addCharToScene = (charRef) => {
-            const charObjs = D.GetChars(charRef)
-            if (VAL({charObj: charObjs}, "addCharToScene", true)) {
-                for (const charObj of charObjs) {
-                    if (STATE.REF.sceneChars.includes(charObj.id))
-                        continue
-                    STATE.REF.sceneChars.push(charObj.id)
-                }
-                D.Alert(`Scene Now Includes:<br><ul>${D.JS(STATE.REF.sceneChars.map(x => `<li><b>${D.GetName(x)}</b>`).join(""))}</ul>`, "Scene Characters")
-            }
-        },
         setSceneFocus = (locPos) => {
             locPos = isLocCentered() === true && "c" ||
                 VAL({string: locPos}) && D.LCase(locPos).charAt(0) ||
@@ -1454,23 +1442,27 @@ const Session = (() => {
             }
             Media.UpdateSoundscape()
         },
+        addSceneAlarm = (alarm) => {
+            STATE.REF.SceneAlarms.push(alarm)
+        },
         endScene = () => {
-            for (const charID of STATE.REF.sceneChars)
-                D.SetStat(charID, "willpower_social_toggle", "go")
-            STATE.REF.sceneChars = []
-            setSceneFocus(null)
+            for (const charObj of Session.SceneChars)
+                D.SetStat(charObj.id, "willpower_social_toggle", "go")
+            for (const sceneAlarm of STATE.REF.SceneAlarms)
+                TimeTracker.Fire(sceneAlarm, false, false, true)
+            STATE.REF.SceneAlarms = []
             D.Alert("Social Willpower Damage partially refunded.", "Scene Ended")
         }
     // #endregion
 
     return {
         CheckInstall: checkInstall,
-        OnChatCall: onChatCall,
+        OnChatCall: onChatCall, OnPageChange: onPageChange,
 
         ToggleTesting: toggleTesting,
         Start: startSession, End: endSession,
 
-        AddSceneChar: addCharToScene,
+        AddSceneAlarm: addSceneAlarm,
         ChangeMode: changeMode,
         CharsIn: getCharsInLocation,
         ResetLocations: setModeLocations,
