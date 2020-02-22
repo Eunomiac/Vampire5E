@@ -1,7 +1,7 @@
 void MarkStart("C")
 const GAMENAME = "VAMPIRE",
     SCRIPTNAME = "C",
-    SCRIPTS = ["C", "D", "Listener", "Fuzzy", "Char", "Media", "Player", "Session", "TimeTracker", "DragPads", "Roller", "SoundScape", "Complications", "Handouts", "Chat", "Tester", "InitCommands", "GamePrep"]
+    SCRIPTS = ["C", "D", "Listener", "Fuzzy", "Char", "Media", "Player", "Session", "TimeTracker", "DragPads", "Roller", "Soundscape", "Complications", "Handouts", "Chat", "Tester", "InitCommands", "GamePrep"]
 state = state || {}
 state[GAMENAME] = state[GAMENAME] || {}
 for (const scriptName of SCRIPTS)
@@ -975,94 +975,47 @@ const C = (() => {
 
     // #region SOUND EFFECT CONSTANTS
         SOUNDVOLUME = {
-            indoorMult: {
-                Thunder: 0.07,
-                WolfHowl: 1,
-                defaults: {
+            base: 50,
+            MasterVolumeMult: 0.5,
+            MULTS: {
+                Inside: {
                     base: 1,
-                    score: 0.5,
-                    location: 1,
-                    weather: 0,
-                    effect: 0.4
+                    Thunder: 0.07,
+                    ScoreMain: 0.5,
+                    ScoreIntense: 0.5,
+                    ScoreCombat: 0.5,
+                    ScoreSplash: 1
+                },
+                Raining: {
+                    base: 1,
+                    Locations: 1.25,
+                    ScoreMain: 1.5,
+                    ScoreIntense: 1.5,
+                    ScoreCombat: 1.5
                 }
             },
-            rainMult: {
-                defaults: {
-                    base: 1,
-                    location: 1.25,
-                    score: 1.5,
-                }
-            },
-            CityChatter: [10],
-            CityWalking: [40],
-            CityPark: [80],
-            CityTraffic: [30],
-            Church: [60],
-            RainLight: [50],
-            RainHeavy: [50],
-            SoftHum: [100],
-            SoftIndoor: [30],
-            Thunder: [100],
-            WindLow: [60],
-            WindWinterLow: [28],
-            WindMed: [80],
-            WindWinterMed: [90],
-            WindMax: [100],
-            WindWinterMax: [100],
-            WolfHowl: [100, 100],
-            SplashScreen: [60],
-            ScoreSplash: [60],
-            defaults: {
-                base: [50],
-                score: [50],
-                location: [45],
-                weather: [45],
-                effect: [60]
-            }
+            CityChatter: 10,
+            CityWalking: 40,
+            CityPark: 80,
+            CityTraffic: 30,
+            Church: 60,
+            RainLight: 50,
+            RainHeavy: 50,
+            SoftHum: 100,
+            SoftIndoor: 30,
+            Thunder: 100,
+            WindLow: 60,
+            WindWinterLow: 28,
+            WindMed: 80,
+            WindWinterMed: 90,
+            WindMax: 100,
+            WindWinterMax: 100,
+            WolfHowl: 100,
+            SplashScreen: 60,
+            ScoreSplash: 60
         },
         SOUNDMODES = {
-            /* Regarding Playlists:
-
-                PLAYLIST MODE       PLAYLIST MODE               TRACK MODE          EXPLANATION
-                  In JUKEBOX          In ROLL20AM                 (Inner Mode)    
-
-                (DEF) Shuffle             Shuffle                     Loop            The playlist is merely storage for the TRACKS, which are CHOSEN by name and LOOP until another is chosen.
-                      Loop                RandomLoop                  Single          The PLAYLIST loops RANDOMLY, playing each track once before moving onto another.
-                      Play Once           Single                      Single          The playlist is merely storage for the TRACKS, which are CHOSEN by name and PLAY ONCE.
-                      SimulPlay           RandomSingle                Single          The playlist selects a track at random and plays it once.
-            */
-            Effects: {
-                mode: "single",
-                innerMode: "single"
-            },
-            Thunder: {
-                mode: "randomSingle",
-                innerMode: "single"
-            },
-            ScoreMain: {
-                mode: "randomLoop",
-                innerMode: "single"
-            },
-            ScoreIntense: {
-                mode: "randomLoop",
-                innerMode: "single"
-            },
-            ScoreCombat: {
-                mode: "randomLoop",
-                innerMode: "single"
-            },
-            ScoreSplash: {
-                mode: "randomLoop",
-                innerMode: "single"
-            },
-            SplashScreen: {
-                mode: "randomLoop",
-                innerMode: "single"
-            },
-            defaults: {
-                mode: "randomLoop",
-                innerMode: "loop"
-            }
+            PlaylistDefault: {isRandom: false, isLooping: false, isPlayingAll: false, isTogether: false}
         },
         SOUNDSCORES = {
             Active: ["ScoreMain", "ScoreIntense", "ScoreCombat"],

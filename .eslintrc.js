@@ -129,7 +129,7 @@ module.exports = {
         "Tester": "writable",
         "TimeTracker": "writable",
         "Roll20AM": "writable",
-        "SoundScape": "writable",
+        "Soundscape": "writable",
         "InitCommands": "writable",
         "_": "readonly",
         "state": "writable",

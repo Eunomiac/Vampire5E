@@ -720,18 +720,26 @@ const D = (() => {
     // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
         formatTitle = (funcName, scriptName, prefix = "") => `[${prefix}${VAL({string: funcName}) || VAL({string: scriptName}) ? " " : ""}${VAL({string: scriptName}) ? `${scriptName.toUpperCase()}` : ""}${VAL({string: [scriptName, funcName]}, null, true) ? ": " : ""}${funcName || ""}]`,
         formatLogLine = (msg, funcName, scriptName, prefix = "") => `${formatTitle(funcName, scriptName, prefix)} ${formatMsgContents(msg, false)}`,
-        formatMsgContents = (msg, isHTMLOk = true) => {
+        formatMsgContents = (msg, isHTMLOk = true, isStrippingHTML = false) => {
             if (typeof msg === "object" && !Array.isArray(msg))
-                if (isHTMLOk)
-                    msg = Object.values(kvpMap(msg, null, (v, k) => `<b>${jStr(k)}:</b> ${jStr(v)}`)).join("<br>")
-                else
+                if (isHTMLOk) {
+                    if (isStrippingHTML)
+                        msg = Object.values(kvpMap(msg, null, (v, k) => `<b>${jStrL(k)}:</b> ${jStrL(v)}`)).join("<br>")
+                    else
+                        msg = Object.values(kvpMap(msg, null, (v, k) => `<b>${jStr(k)}:</b> ${jStr(v)}`)).join("<br>")
+                } else {
                     msg = Object.values(kvpMap(msg, null, (v, k) => `${jStrL(k)}: ${jStrL(v)}`)).join(" ")
+                }
             else if (Array.isArray(msg) || typeof msg === "string")
-                if (isHTMLOk)
-                    msg = _.flatten([msg], true).map(x => jStr(x)).join("")
-                else
+                if (isHTMLOk) {
+                    if (isStrippingHTML)
+                        msg = _.flatten([msg], true).map(x => jStr(x)).join("")
+                    else
+                        msg = _.flatten([msg], true).map(x => jStrL(x)).join("")
+                } else {
                     msg = _.flatten([msg], true).map(x => jStrL(x)).join(" ")
-            else if (isHTMLOk)
+                }
+            else if (isHTMLOk && !isStrippingHTML)
                 msg = jStr(msg)
             else
                 msg = jStrL(msg)
@@ -1190,7 +1198,7 @@ const D = (() => {
                     _.each(valArray, v => {
                         let errorCheck = null
                         switch (cat.toLowerCase()) {
-                            case "object": // If v has a "get" and an "id" property.
+                            case "object": case "obj": // If v has a "get" and an "id" property.
                                 if (!(v && v.get && v.id))
                                     errorLines.push(`Invalid object: ${jStrL(v && v.get && v.get("name") || v && v.id || v, true)}`)
                                 break
@@ -1406,7 +1414,7 @@ const D = (() => {
             if ((_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive) && !STATE.REF.BLACKLIST.includes(funcName) && !STATE.REF.BLACKLIST.includes(scriptName)) {
                 logDebugAlert(msg, funcName, scriptName, prefix)
                 if (funcName && STATE.REF.WATCHLIST.includes(funcName) || scriptName && STATE.REF.WATCHLIST.includes(scriptName) || !funcName && !scriptName)
-                    sendToGM(formatMsgContents(msg, false), formatTitle(funcName, scriptName, prefix))
+                    sendToGM(formatMsgContents(msg, true, true), formatTitle(funcName, scriptName, prefix))
             }
         },
         getDebugRecord = (title = "Debug Log", isClearing = false) => {

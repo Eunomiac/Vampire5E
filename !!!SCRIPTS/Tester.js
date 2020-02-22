@@ -51,6 +51,52 @@ const Tester = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting
             switch (call) {
+                case "stoptracks": {
+                    findObjs({_type: "jukeboxtrack"}).map(x => x.set({playing: false, softstop: false}))
+                    break
+                }
+                case "softstop": {
+                    findObjs({_type: "jukeboxtrack"}).map(x => x.set({softstop: true}))
+                    break
+                }
+                case "soundattrs": {
+                    const thunderTrackObjs = _.uniq(findObjs({_type: "jukeboxtrack"}).filter(x => x.get("title").includes("Thunder")))
+                    thunderTrackObjs.map(x => x.set({playing: false, loop: false, softstop: true}))
+                    thunderTrackObjs[0].set({playing: true, loop: true})
+                    thunderTrackObjs[1].set({playing: true, loop: false})
+                    thunderTrackObjs[2].set({playing: true, loop: true, softstop: false})
+                    thunderTrackObjs[3].set({playing: true, loop: false, softstop: false})
+                    D.Alert(D.JS(thunderTrackObjs.map(x => ({[x.get("title")]: {playing: x.get("playing"), looping: x.get("loop"), softstop: x.get("softstop")}}))), "Thunder Sound Report")
+                    break
+                }
+                case "jukebox": {                    
+                    const parseTrackKeyFromTitle = (trackRef) => {
+                            trackRef = D.IsID(trackRef) && getObj("jukeboxtrack", trackRef).get("title") ||
+                                    VAL({obj: trackRef}) && trackRef.get("title") ||
+                                    trackRef
+                            return trackRef.replace(/\s*[([{].*[)\]}]\s*/gu, "").replace(/[^A-Za-z0-9]*/gu, "")
+                        },
+                        jukeboxData = JSON.parse(Campaign().get("_jukeboxfolder")).map(x => D.KeyMapObj(x, k => {
+                            switch (k) {
+                                case "i": return "trackNames"
+                                case "n": return "name"
+                                case "s": return "playModes"
+                                default: return k
+                            }
+                        }, (v, k) => {
+                            switch (k) {
+                                case "i": return v.map(xx => parseTrackKeyFromTitle(xx))
+                                case "s": return {
+                                    isLooping: ["s", "b"].includes(v),
+                                    isRandom: ["s", "o"].includes(v),
+                                    isTogether: v === "a"
+                                }
+                                default: return v
+                            }
+                        }))
+                    D.Alert(D.JS(jukeboxData), "Jukebox Data")            
+                    break
+                }
                 case "tokendata": {
                     const [charObj] = Listener.GetObjects(objects, "character")
                     charObj.get("_defaulttoken", (tokenData) => {

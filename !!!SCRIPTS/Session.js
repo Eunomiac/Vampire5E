@@ -619,7 +619,7 @@ const Session = (() => {
                 D.Queue(Media.ModeUpdate, [], "ModeSwitch", 2)
                 D.Queue(setModeLocations, [curMode], "ModeSwitch", 1)
                 if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds))
-                    D.Queue(Media.UpdateSoundscape, [], "ModeSwitch", 1)
+                    D.Queue(Soundscape.Sync, [true], "ModeSwitch", 1)
                 D.Queue(Media.SetLoadingMessage, [`Deploying ${D.UCase(curMode)} Assets ...`], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.enterMode[curMode], args, "ModeSwitch", 1)
                 D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1)
@@ -656,32 +656,21 @@ const Session = (() => {
         toggleTesting = (isTesting) => {
             if (VAL({bool: isTesting})) {
                 if (isTesting !== STATE.REF.isTestingActive)
-                    if (isTesting === true)
-                        MODEFUNCTIONS.enterMode.Testing()
-                    else if (isTesting === false)
-                        MODEFUNCTIONS.leaveMode.Testing()
-            } else if (STATE.REF.isTestingActive) {
-                MODEFUNCTIONS.leaveMode.Testing()
+                    MODEFUNCTIONS[isTesting ? "enterMode" : "leaveMode"].Testing()
             } else {
-                MODEFUNCTIONS.enterMode.Testing()
+                MODEFUNCTIONS[STATE.REF.isTestingActive ? "leaveMode" : "enterMode"].Testing()
             }
         },
-        toggleDowntime = () => {
-            if (STATE.REF.Mode === "Downtime")
-                changeMode(STATE.REF.LastMode)
-            else
-                changeMode("Downtime")
-        },
+        toggleDowntime = () => changeMode(STATE.REF.Mode === "Downtime" ? STATE.REF.LastMode : "Downtime"),
         toggleSpotlight = (charRef, messageText) => {
             DB({charRef, messageText}, "toggleSpotlight")
             if (STATE.REF.Mode === "Spotlight") 
-                if (!charRef)
-                    changeMode(STATE.REF.LastMode)
-                else
+                if (charRef)
                     setSpotlightChar(charRef, messageText)
+                else
+                    changeMode(STATE.REF.LastMode)
             else             
-                changeMode("Spotlight", [charRef, messageText])
-            
+                changeMode("Spotlight", [charRef, messageText])            
         },
         setSpotlightChar = (charRef, messageText) => {
             DB({charRef, messageText}, "setSpotlightChar")
@@ -1328,8 +1317,7 @@ const Session = (() => {
             const allLocations = getAllLocations(), 
                 activePositions = getActivePositions(),
                 inactivePositions = Object.keys(getAllLocations(false)).filter(x => !activePositions.includes(x)),
-                tokenObjs = Media.GetTokens()
-                
+                tokenObjs = Media.GetTokens()                
             if (activePositions.includes("DistrictCenter") || locPos === "c") {
                 Media.ToggleImg("DisableLocLeft", false)
                 Media.ToggleImg("DisableLocRight", false)
@@ -1375,7 +1363,7 @@ const Session = (() => {
                 Media.ToggleImg("MapIndicator_Base_1", false)
                 Media.ToggleAnim("MapIndicator", false)
             }
-            Media.UpdateSoundscape()
+            Soundscape.Sync()
         },
         addSceneAlarm = (alarm) => {
             STATE.REF.SceneAlarms.push(alarm)
@@ -1407,8 +1395,8 @@ const Session = (() => {
         get SceneFocus() { return STATE.REF.sceneFocus }, // STRING: "r", "l", "c"
 
         get Locations() { return getAllLocations() }, // LIST: { DistrictCenter: "YongeStreet", SiteCenter: "SiteLotus", SubLocs: {TopRight: "Laboratory", TopLeft: "Security"} }
-        get ActiveLocations() { return getActiveLocations() },
-        get ActivePositions() { return getActivePositions() },
+        get ActiveLocations() { return getActiveLocations() }, // LIST: { DistrictLeft: "YongeStreet", SiteLeft: "SiteLotus" }
+        get ActivePositions() { return getActivePositions() }, // ARRAY: ["DistrictCenter", "SiteCenter"]
         get InactiveLocations() { return _.omit(getAllLocations(false), (v, k) => getActivePositions().includes(k)) },
 
         get District() { return getActiveDistrict() },
@@ -1421,7 +1409,6 @@ const Session = (() => {
         get IsFullTest() { return STATE.REF.isFullTest },
 
         get Mode() { return STATE.REF.Mode },
-        get Modes() { return STATE.REF.SessionModes },
         get LastMode() { return STATE.REF.LastMode },
         
         SetMacro: setMacro

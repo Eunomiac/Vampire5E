@@ -1868,7 +1868,8 @@ const TimeTracker = (() => {
                         humidity: weatherCode.charAt(3),
                         wind: weatherCode.charAt(4),
                         groundCover: weatherCode.charAt(5),
-                        isDay: isTimeInDay(monthNum, hourNum, 30)
+                        isDay: isTimeInDay(monthNum, hourNum, 30),
+                        isRaining: ["w", "p", "t"].includes(weatherCode.charAt(0))
                     }, numUpgrades)               
                 return OFFSTACK(funcID) && weatherData
             } catch(errObj) {
@@ -2074,7 +2075,7 @@ const TimeTracker = (() => {
                 } else {
                     Media.ToggleImg("WeatherFrost", false)
                 }
-            Media.UpdateSoundscape()
+            Soundscape.Sync()
             return OFFSTACK(funcID) && weatherData
         },
         setManualWeather = (event, tempC, wind, humidity) => {
@@ -2796,6 +2797,7 @@ const TimeTracker = (() => {
         IsDay: isDateInDay,
         get IsClockRunning() { return isTweeningClock || isFastTweeningClock || isTickingClock },
         get WeatherCode () { return getWeatherCode() },
+        get IsRaining() { return getWeatherData().isRaining },
 
         GetRandomTimeline: getRandomEventTriggers,
 

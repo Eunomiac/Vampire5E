@@ -1,19 +1,17 @@
-void MarkStart("SoundScape")
-
-/* eslint-disable eqeqeq */
-/* eslint-disable camelcase */
-/* eslint-disable prefer-const */
-const SoundScape = (() => {
+void MarkStart("Soundscape")
+const Soundscape = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
-    let SCRIPTNAME = "SoundScape",
-          
+    const SCRIPTNAME = "Soundscape",
+
     // #region COMMON INITIALIZATION
         STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-        LOG = (msg, funcName) => D.DB(msg, funcName, SCRIPTNAME, funcName), // eslint-disable-line no-unused-vars
+        LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
-    
+        ONSTACK = () => D.ONSTACK(ONSTACK),
+        OFFSTACK = (funcID) => D.OFFSTACK(funcID),
+
         checkInstall = () => {
             C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
             initialize()
@@ -24,889 +22,487 @@ const SoundScape = (() => {
         initialize = () => {
             STATE.REF.trackregistry = STATE.REF.trackregistry || {}
             STATE.REF.playlistregistry = STATE.REF.playlistregistry || {}
-            STATE.REF.masterVolume = STATE.REF.masterVolume || 50 // The mastervolume, all volumes are multiplied by this before being applied to the actual track. Maximum/Minimum volume levels applicable to tracks are 0-100, the multiplied final volume is set to the boundary if it is outside the range.
-            STATE.REF.activeLoops = STATE.REF.activeLoops || []
+            STATE.REF.isSoundscapeActive = VAL({bool: STATE.REF.isSoundscapeActive}) ? STATE.REF.isSoundscapeActive : true
+            STATE.REF.activeSounds = STATE.REF.activeSounds || []
+            STATE.REF.VOLUME = STATE.REF.VOLUME || D.Clone(C.SOUNDVOLUME)
+
+            syncSoundscape(true)
         },
-        registerEventHandlers = () => {
-            on("chat:message", (msg) => {
-                if (msg.content.startsWith("!roll20AM"))
-                    inputHandler(msg)
-            })
-            on("change:jukeboxtrack", OLD_changeHandler)
-        },
-    // #endregion
- 
-    // #region EVENT HANDLERS: (HANDLEINPUT, HANDLECHANGE, HANDLEDESTROY)
-        onChatCall = (call, args, objects, msg) => { /* eslint-disable-line no-unused-vars */
+    // #endregion	
+
+    // #region EVENT HANDLERS: (HANDLEINPUT)
+        onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
             switch (call) {
+                case "initialize": importFromJukebox(); break
+                case "sync": syncSoundscape(); break
+                case "start": startSoundscape(args[0] === "reset"); break
+                case "play": playSound(args[0]); break
+                case "stop": if (args[0]) stopSound(args[0]); else stopSoundscape(); break
                 case "get": {
                     switch (D.LCase(call = args.shift())) {
-                        case "playing": {
-
-                            break
-                        }
-                        case "looping": {
-
-                            break
-                        }
+                        case "volume": D.Alert(D.JS(STATE.REF.VOLUME, true), "!sound get volume"); break
                         // no default
                     }
                     break
                 }
-                case "reset": {
-                    if (args[0] === "ALL") {
-                        removeJukebox(true)
-                        importJukebox(true, true)
-                        D.Alert("SoundScape has been reinitialized with tracks contained in the jukebox.", "SoundScape Reset")                
-                        break
-                    }
-                }
-                // no default
-            }
-        },
-        OnJukeboxChange = (jukeBoxObj, prevData) => { /* eslint-disable-line no-unused-vars */ // INVOKED when a track finishes in Jukebox.
-            if (jukeBoxObj.get("softstop") === true && prevData.softstop === false) { // IF track just finished, softstop will change from false to true
-                const trackData = getTrackData(jukeBoxObj.id),
-                    listData = trackData && Object.values(REGISTRY.Playlists).find(x => x.isPlaying && x.currentTracks.includes(trackData.name))
-                if (listData && listData.isPlaying && trackData.isPlaying) {
-                    trackData.isPlaying = false                    
-                    DB({trackFinished: trackData.name, inList: listData.name, listMode: listData.mode}, "OnJukeboxChange")
-                    if (["loop", "randomLoop", "shuffle"].includes(listData.mode))
-                        playPlaylist(listData.name)
-                    else
-                        stopPlaylist(listData.name)
-                } else {
-                    trackData.isPlaying = false
-                    if (trackData.mode === "loop")
-                        playTrack(trackData.name)
-                    else
-                        stopTrack(trackData.name)
-                }
-            }
-        },
-
-        //* *****************************************************************************************************************************
-        // Handler Functions	
-        // - RegisterEventHandlers drives this entire process.  These are events detected by roll20 outside of this script.  
-        //    - chat message invokes inputHandler
-        //    - Jukebox track finishes invokes changeHandler
-        //    - Adding a new track to Jukebox updates STATE.REF 
-        //    - Deleting a jukebox track updates STATE.REF
-        // - inputHandler receives the SoundScape command,parses it and processes it
-        // - commandHandler processed input commands using setTimeout and Delay Time (if any)
-        // - listHandler processes list related funcs
-        // - trackHandler processes track related funcs
-        // - editHandler processes list and track related edit funcs
-        // - configHandler processes configuration related funcs, some send output to chat window
-        //* *****************************************************************************************************************************   
-        inputHandler = (origMsg) => { // INVOKED on !roll20AM chat commands
-            // must be roll20AM to start all this
-            if (origMsg.content.indexOf("!roll20AM") !== 0)
-                return
-            const listHandler = (cmdDetails, listDetails) => {
-                    DB({SUBFUNC: "listHandler", cmdDetails, listDetails}, "inputHandler")
-                    if (listDetails.trackids.length == 0) {
-                        D.Alert("Cannot launch PlayLists.  No Tracks assigned.", "listHandler")
-                        return
-                    }
-                    if (cmdDetails.details.play)
-                        playPlaylist(listDetails, null)
-                    else if (cmdDetails.details.stop)
-                        stopPlaylist(listDetails) 
-
-                    if (cmdDetails.details.increase)
-                        increaseListVolume(listDetails)
-                    else if (cmdDetails.details.decrease)
-                        decreaseListVolume(listDetails)                    
-                },
-                trackHandler = (cmdDetails, trackDetails) => {
-                    DB({SUBFUNC: "trackHandler", cmdDetails, trackDetails}, "inputHandler")
-                    if (cmdDetails.details.play) {
-                        if (trackDetails.mode == "loop")
-                            playTrack(trackDetails.id, trackDetails.volume, "loop")
-                        if (trackDetails.mode == "single")
-                            playTrack(trackDetails.id, trackDetails.volume, null)
-                    } else if (cmdDetails.details.stop) {
-                        if (!cmdDetails.details.ignore)
-                            stopTrack(trackDetails.id)
-                    }
-                    if (cmdDetails.details.increase)
-                        increaseTrackVolume(trackDetails.id)
-                    else if (cmdDetails.details.decrease)
-                        decreaseTrackVolume(trackDetails.id)
-                }, args = origMsg.content.split(/\s+--/)
-
-            if (args[0] === "!roll20AM")
-                if (args[1]) {
-                    _.each(_.rest(args, 1), (cmd) => {
-                        // Extract Commands
-                        let vars, tracks
-                        const cmdDets = {details: {}}
-                        DB(`Extracted Command String:${cmd}`, "editHandler")
-
-                        // split the commands from the tracks or playLists
-                        const raw = cmd.split("|"),
-                            command = raw[0]
-                        tracks = decodeURIComponent(raw[1])
-
-                        // split multiple tracks into array
-                        if (tracks)
-                            tracks = tracks.split(",")
-
-                        DB(`Extracted Command Tracks:${tracks}`, "editHandler")
-
-                        cmdDets.tracks = _.map(tracks, (t) => {
-                            return t.trim()
-                        })
-
-                        // find the action and set the cmdSep Action
-                        cmdDets.action = command.match(/audio|config|edit/)
-                        // the ./ is an escape within the URL so the hyperlink works.  Remove it
-                        command.replace("./", "")
-                        // split additional command actions
-                        _.each(command.replace(`${cmdDets.action},`, "").split(","), (d) => {
-                            vars = d.match(/(volTick|time|volume|delay|level|menu|mode|restrict|tag|API|access|tag|tag1|tag2|tag3|tag4|tag5|set|unset|filter|delayed|viewBy|display|)(?::|=)([^,]+)/) || null
-                            if (vars)
-                                [ , , cmdDets.details[vars[1]]] = vars
-                            else
-                                cmdDets.details[d] = d
-
-                        })
-
-                        DB(cmdDets, "editHandler")
-
-                        const tracklists = [], playLists = []
-
-                        // cmdDetails.tracks holds tracks/playLists, everything after the |.  If playList push into array
-                        _.each(cmdDets.tracks, (listName) => {
-                            if (REGISTRY.Playlists[listName])
-                                playLists.push(listName)
-
-                        })
-                        // if track, pushing into array
-                        _.each(cmdDets.tracks, (trackTitle) => {
-                            if (REGISTRY.Tracks[trackTitle])
-                                tracklists.push(trackTitle)
-
-                        })
-                        DB({action: cmdDets.action, playLists, tracklists}, "editHandler")
-
-                        // prevent players from doing things they shouldn't.  PlayList level actions and edit commands
-                        DB("Command Handler", "editHandler")
-                        if (cmdDets.action == "audio") {
-                            if (playLists.length > 0)
-                                _.each(playLists, (listName) => {
-                                    listHandler(cmdDets, getPlayListData(listName))
-                                })
-
-                            if (tracklists.length > 0)
-                                _.each(tracklists, (trackTitle) => {
-                                    trackHandler(cmdDets, getTrackData(getTrackID(trackTitle)))
-                                })
-
-                            if (cmdDets.details.stop)
-                                if (playLists.length == 0 && tracklists.length == 0) {
-                                    stopAll()
-                                }
-
-                            // edit commands    
-                        } else if (cmdDets.action == "edit") {
-                            if (playLists.length > 0)
-                                _.each(playLists, (listName) => {
-                                    editSound(cmdDets, getPlayListData(listName), null)
-                                })
-
-                            if (tracklists.length > 0)
-                                _.each(tracklists, (trackTitle) => {
-                                    editSound(cmdDets, null, getTrackData(getTrackID(trackTitle)))
-                                })
-
-                            if (tracklists.length == 0 && playLists.length == 0)
-                                editSound(cmdDets, null, null)
-
-                            // config commands    
-                        } else {
-                            D.Alert("Invalid SoundScape Command.  Valid commands are --audio, --edit", "inputHandler")
-                        }
-                    })
-                }
-        },
-        OLD_changeHandler = (obj, prev) => { // INVOKED when a track finishes in Jukebox.  
-            let listFound = false, trackDetails, trackFound = false
-            // we receive the track object from jukebox.  softstop is set to true upon finish
-            if (obj.get("softstop") === true && prev.softstop === false) {
-                trackDetails = getTrackData(obj.get("_id"))
-                // [R] Setting the jukeboxtrackObj to baseline non-playing status ({playing: false, softstop: false})
-                obj.set({playing: false, softstop: false})
-
-                DB({trackFinished: trackDetails.name, trackID: trackDetails.id}, "changeHandler")
-                // find out of a playList is currently playing
-                _.each(REGISTRY.Playlists, (list) => {
-                    if (list.isPlaying)
-                        // check if this track in this playList, if so, continue with playList based on mode
-                        if (list.currentTracks.indexOf(trackDetails.id) > -1) {
-                            if (trackDetails.isPlaying) {
-                                listFound = true
-                                trackDetails.isPlaying = false
-                                DB({trackTitle: trackDetails.name, inList: list.name, listMode: list.mode}, "changeHandler")
-                                if (["loop", "randomLoop", "shuffle"].includes(list.mode))
-                                    playPlaylist(list, null)
-                                else
-                                    list.isPlaying = false                                
+                case "set": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "volume": setVolume(...args); break
+                        case "mult": {
+                            switch (D.LCase(call = args.shift())) {
+                                case "master": setMasterVolumeMult(args.shift()); break
+                                case "rain": setRainMult(...args); break
+                                case "indoor": case "inside": setInsideMult(...args); break
+                                // no default
                             }
                         }
-                })
-
-
-                // if track wasn't found in active playList, set ROLL20AM state to not playing and output menu so icon changes from play to stop
-                if (!listFound) {
-                    _.each(REGISTRY.Tracks, track => {
-                        if (track.isPlaying)
-                            trackFound = true
-                    })
-                    if (!listFound && !trackFound)
-                        return
-
-                    trackDetails.isPlaying = false
-                    // if a track is launched within a playList, set playList to off
-                    _.each(REGISTRY.Playlists, list => {
-                        if (list.trackids.indexOf(trackDetails.id) > -1)
-                            list.isPlaying = false
-                    })
-                    if (trackDetails.mode == "loop")
-                        playTrack(trackDetails.id, trackDetails.volume, null)
+                        // no default
+                    }
+                    D.Alert(D.JS(STATE.REF.VOLUME, true), "!sound set")
+                    break
                 }
+            // no default
             }
+        },
+        onTrackChange = (trackObj, prevData) => {
+            DB({
+                trackName: `${trackObj.get("title")}<br>`,
+                playing: `${prevData.playing} >> ${trackObj.get("playing")}<br>`,
+                looping: `${prevData.loop} >> ${trackObj.get("loop")}<br>`,
+                softstop: `${prevData.softstop} >> ${trackObj.get("softstop")}<br>`
+            }, "onTrackChange")
+            playNextSound(trackObj)            
         },
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-    //* **** CONFIGURATION ***************************************************
-    // #region Variable Declarations    
+    // #region CONFIGURATION 
         REGISTRY = {
-            get Tracks() { return REGISTRY.Tracks }, /*      Registry by trackName containing these properties:
-                                                                        - name: trackName; same as the key
-                                                                        - id: the id of the jukebox object
-                                                                        - volume: the tracks individual volume; is multiplied by the masterVolume to set the jukebox volume
-                                                                        - mode: either "single" or "loop"
-                                                                        - delays: number of unresolved delays involving this track */
-            get Playlists() { return REGISTRY.Playlists } /* Registry by playlistName containing these properties:
-                                                                        - name: playlistName; same as the key
-                                                                        - tracks: array of contained trackNames
-                                                                        - playingTracks = array of currently-playing trackNames
-                                                                        - orderedTracks = array of tracks to play next
-                                                                        - isPlaying: true/false
-                                                                        - mode: 
-                                                                        - delays: The number of times this playList has been delayed. 
-                                                                            - Incremented in handleInput, decremented in delayHandler
-                                                                            - Actions are not completed if there are no delays to support them. */          
-        },
-    // #endregion
-    // #region Control & Registration Functions    
-        editSound = (cmdDetails, listDetails, trackDetails) => {
-            let mode
-            DB({cmdDetails, listDetails, trackDetails}, "editSound")
-            if (cmdDetails.details.mode)
-                if (cmdDetails.details.random) {
-                    if (cmdDetails.details.single)
-                        mode = "randomSingle"
-                    else if (cmdDetails.details.loop)
-                        mode = "randomLoop"
-                } else if (cmdDetails.details.single) {
-                    mode = cmdDetails.details.single
-                } else if (cmdDetails.details.loop) {
-                    mode = cmdDetails.details.loop
-                } else if (cmdDetails.details.shuffle) {
-                    mode = cmdDetails.details.shuffle
-                } else {
-                    mode = cmdDetails.details.together
-                }
-            if (!listDetails && !trackDetails) {
-                if (cmdDetails.details.volume)
-                    changeVolumeMaster(cmdDetails.details.level)
-            } else if (listDetails) {
-                if (cmdDetails.details.volume)
-                    changeVolumeList(listDetails, cmdDetails.details.level)
-                if (cmdDetails.details.mode)
-                    listDetails.mode = mode || listDetails.mode
-                if (cmdDetails.details.remove)
-                    delete REGISTRY.Playlists[listDetails.name]
-            } else if (trackDetails) {
-                if (cmdDetails.details.volume)
-                    changeVolumeTrack(trackDetails.id, cmdDetails.details.level)
-                if (cmdDetails.details.mode)
-                    trackDetails.mode = mode || trackDetails.mode
-                if (cmdDetails.details.remove) {
-                    delete REGISTRY.Tracks[trackDetails.id]
-                    _.each(REGISTRY.Playlists, (listData) => {
-                        listData.trackids.splice(listData.trackids.indexOf(trackDetails.id), 1)
-                    })
-                }
-            }
-        },
-    // #endregion
-    // #region Importing Data from Jukebox & Configuring Default Modes
-        importJukebox = (isSettingModes = true, isSilent = false) => {
-            const playlistImport = JSON.parse(Campaign().get("jukeboxfolder"))
-            let trackObj, trackTitle, trackID
-            _.each(findObjs({type: "jukeboxtrack"}), (track) => {
-                trackTitle = track.get("title")
-                trackID = track.get("_id")
-                if (!(trackTitle in REGISTRY.Tracks))
-                    REGISTRY.Tracks[trackTitle] = {
-                        id: trackID,
-                        name: trackTitle,
-                        playing: false,
-                        mode: "single",
-                        volume: STATE.REF.masterVolume
-                    }
-            })
-            _.each(playlistImport, list => {
-                if (list.n) {
-                    importList(list.n)
-                    _.each(list.i, (t) => {
-                        trackObj = getTrackObj(t)
-                        if (trackObj) {
-                            trackTitle = trackObj.get("title")
-                            trackID = getTrackID(trackTitle)
-                            if ("trackids" in REGISTRY.Playlists[list.n] && REGISTRY.Playlists[list.n].trackids.indexOf(trackID) == -1)
-                                REGISTRY.Playlists[list.n].trackids.push(trackID)
-                        }
-                    })
-                }
-            })
-            importList("Tag1")
-            importList("Tag2")
-            importList("Tag3")
-            importList("Tag4")
-            if (isSettingModes)
-                setSoundMode()
-            if (!isSilent)
-                D.Alert("All PlayLists and Tracks have been imported", "importJukebox")
-        },
-        importList = (listName) => {
-            DB(`Importing List:${listName}`, "importList")
-            if (!REGISTRY.Playlists[listName])
-                REGISTRY.Playlists[listName] = {
-                    name: listName,
-                    trackids: [],
-                    shuffleIds: [],
-                    playing: false,
-                    currentTracks: [],
-                    lastTrack: null,
-                    mode: "loop",
-                    delay: 0,
-                    volume: STATE.REF.masterVolume,
-                }
-        },
-        removeJukebox = (isSilent = false) => {
-            REGISTRY.Playlists = {}
-            REGISTRY.Tracks = {}
-            if (!isSilent)
-                D.Alert("All PlayLists and Tracks have been removed from SoundScape", "SoundScape")
-        },
-        setSoundMode = (soundRef, mode) => {
-            if (soundRef) {                
-                const [isPlayList, isTrack] = [isPlayList(soundRef), isTrack(soundRef)],
-                    modeDetails = {details: {mode: true}}
-                if (isPlayList || isTrack) {
-                    mode = mode || (C.SOUNDMODES[isPlayList && getPlayListName(soundRef) || getTrackName(soundRef)] || C.SOUNDMODES.defaults).mode
-                    switch (D.LCase(mode)) {
-                        case "randomsingle": {
-                            modeDetails.details.random = isPlayList
-                            modeDetails.details.single = "single"
-                            break
-                        }
-                        case "randomloop": {
-                            modeDetails.details.random = isPlayList
-                            modeDetails.details.loop = "loop"
-                            break
-                        }
-                        case "single": {
-                            modeDetails.details.single = "single"
-                            break
-                        }
-                        case "loop": {
-                            modeDetails.details.loop = "loop"
-                            break
-                        }
-                        case "shuffle": {
-                            if (isPlayList)
-                                modeDetails.details.shuffle = "shuffle"
-                            else
-                                D.Alert(`Can't set TRACK '${soundRef}' to PLAYLIST MODE 'shuffle'`, "SoundScape: SetSoundMode")
-                            break
-                        }
-                        case "together": {
-                            if (isPlayList)
-                                modeDetails.details.together = "together"
-                            else
-                                D.Alert(`Can't set TRACK '${soundRef}' to PLAYLIST MODE 'together'`, "SoundScape: SetSoundMode")
-                            break
-                        }
-                        // no default
-                    }
-                    editSound(modeDetails, getPlayListName(soundRef), getTrackData(getTrackID(soundRef)))
-                    if (isPlayList)
-                        for (const trackName of getPlayListTracks(soundRef))
-                            setSoundMode(trackName, (C.SOUNDMODES[soundRef] || C.SOUNDMODES.defaults).innerMode || C.SOUNDMODES.defaults.innerMode)
-                } else {
-                    for (const listName of Object.keys(REGISTRY.Playlists))
-                        setSoundMode(listName)
-                    for (const trackName of _.intersection(Object.keys(C.SOUNDMODES), Object.keys(REGISTRY.Playlists)))
-                        setSoundMode(trackName)
-                }
-            }
+            get Tracks() { return STATE.REF.trackregistry },
+            set Tracks(v) { STATE.REF.trackregistry = D.Clone(v) },
+            get Playlists() { return STATE.REF.playlistregistry },
+            set Playlists(v) { STATE.REF.playlistregistry = D.Clone(v) }
         },
     // #endregion
 
-    //* **** DATA RETRIEVAL & CONVERSION ********************************************
-    // #region GETTERS: PlayLists (According to SoundScape's Data)
-        /* PLAYLIST MODES: {
-            single: Plays the first track in the playlist and stops.
-            randomSingle: Plays a random track in the playlist and stops.
-            loop: Plays each track in order in a continuous loop.
-            randomLoop: Plays tracks in a random order in a continuous loop.
-            shuffle: Plays each track once, in a random order, then stops.
-            together: Plays all tracks simultaneously. (THIS IS WHERE TRACK DELAYS CAN MATTER)
-        } */    
-        getPlayListName = (playListRef) => {
-            if (VAL({string: playListRef}) && REGISTRY.Playlists[playListRef])
-                return playListRef
-            if (VAL({list: playListRef}) && playListRef.name && REGISTRY.Playlists[playListRef.name]) 
-                return playListRef.name
-            if (isTrack(playListRef)) {
-                const trackID = getTrackID(playListRef)
-                return _.findKey(REGISTRY.Playlists, v => v.trackids.includes(trackID))
-            }
-            return false
+    // #region INITIALIZATION: Importing Sounds
+        importFromJukebox = () => {
+            REGISTRY.Tracks = []
+            REGISTRY.Playlists = []
+            const trackObjs = _.uniq(findObjs({_type: "jukeboxtrack"}))
+            for (const trackObj of trackObjs)
+                regTrack(trackObj)
+            const jukeboxData = JSON.parse(Campaign().get("_jukeboxfolder")).map(x => {
+                const xData = D.KeyMapObj(x, k => {
+                    switch (k) {
+                        case "i": return "trackKeys"
+                        case "n": return "name"
+                        case "s": return "playModes"
+                        default: return k
+                    }
+                }, (v, k) => {
+                    switch (k) {
+                        case "i": return v.map(xx => parseKeyFromTitle(xx))
+                        case "s": return {
+                            isLooping: ["s", "b"].includes(v),
+                            isRandom: ["s", "o"].includes(v),
+                            isTogether: v === "a",
+                            isPlayingAll: ["s", "b"].includes(v)
+                        }
+                        default: return v
+                    }
+                })
+                switch ((xData.name.match(/\[([^\]]*)\]$/u) || []).pop()) {
+                    case "LoopEach": {
+                        xData.playModes = {
+                            isLooping: true,
+                            isRandom: false,
+                            isTogether: false,
+                            isPlayingAll: false
+                        }
+                        break
+                    }
+                    case "Sequence": {
+                        xData.playModes = {
+                            isLooping: false,
+                            isRandom: false,
+                            isTogether: false,
+                            isPlayingAll: true
+                        }
+                        break
+                    }
+                    case "RandomOnce": {
+                        xData.playModes = {
+                            isLooping: true,
+                            isRandom: true,
+                            isTogether: false,
+                            isPlayingAll: false
+                        }
+                        break
+                    }
+                    case "ShuffleOnce": {
+                        xData.playModes = {
+                            isLooping: false,
+                            isRandom: true,
+                            isTogether: false,
+                            isPlayingAll: true
+                        }
+                    }
+                    // no default
+                }
+                return xData
+            })
+            for (const playlistData of jukeboxData)
+                regPlaylist(parseKeyFromTitle(playlistData.name), playlistData.trackKeys, playlistData.playModes)
         },
-        isPlayList = (playListRef) => Boolean(getPlayListName(playListRef)),
-        getPlayListData = (playListRef) => {
-            const playListKey = getPlayListName(playListRef)
-            return VAL({string: playListKey}) && REGISTRY.Playlists[playListKey]
-        },
-        getPlayListTracks = (playListRef, isReturningIDs = false) => isPlayList(playListRef) && getPlayListData(playListRef).trackids.map(x => isReturningIDs && x || getTrackName(x)),
-        isTrackInPlayList = (trackRef, playListRef) => isPlayList(playListRef) && getPlayListTracks(playListRef).includes(getTrackName(trackRef)),
-        getPlayListMode = (playListRef) => isPlayList(playListRef) && getPlayListData(playListRef).mode,
-        isPlayListPlaying = (playListRef) => STATE.REF.activeLoops.includes(getPlayListName(playListRef)),
-        isPlayListLooping = (playListRef) => isPlayListPlaying(playListRef) && ["loop", "randomLoop", "shuffle"].includes(getPlayListMode(playListRef)),
     // #endregion
-    // #region GETTERS: Tracks (According to SoundScape's Data)
-        getTrackName = (trackRef) => {
-            if (VAL({string: trackRef})) {
-                if (REGISTRY.Tracks[trackRef])
-                    return trackRef
-                return (_.findWhere(REGISTRY.Tracks, {id: trackRef}) || {name: false}).name
-            } else if (VAL({object: trackRef})) {
-                return getTrackName(trackRef.id)
+
+    // #region GETTERS: Track & Playlist Data
+        parseKeyFromTitle = (trackRef) => {
+            trackRef = D.IsID(trackRef) && (getObj("jukeboxtrack", trackRef) || {get: () => false}).get("title") ||
+                       VAL({obj: trackRef}) && trackRef.get("title") ||
+                       VAL({string: trackRef}) && trackRef ||
+                       false
+            return VAL({string: trackRef}) && trackRef.replace(/\s*[([{].*[)\]}]\s*/gu, "").replace(/[^A-Za-z0-9]*/gu, "")
+        },
+        getSoundKey = (soundRef) => {
+            const funcID = ONSTACK()
+            if (VAL({string: soundRef})) {
+                if (soundRef in REGISTRY.Tracks || soundRef in REGISTRY.Playlists)
+                    return OFFSTACK(funcID) && soundRef
+                if (D.IsID(soundRef)) {
+                    const jukeObj = getObj("jukeboxtrack", soundRef)
+                    if (VAL({object: jukeObj}))
+                        return OFFSTACK(funcID) && parseKeyFromTitle(jukeObj.get("title"))
+                }
+            } else if (VAL({object: soundRef})) {
+                return OFFSTACK(funcID) && parseKeyFromTitle(soundRef.get("title"))
             }
-            return false
+            return OFFSTACK(funcID) && false
         },     
-        isTrack = (trackRef) => Boolean(getTrackName(trackRef)),   
-        getTrackData = (trackRef) => {
-            const trackKey = getTrackName(trackRef)
-            return VAL({string: trackKey}) && REGISTRY.Tracks[trackKey]
+        getSoundKeys = (soundRefs) => _.flatten([soundRefs || []]).map(x => getSoundKey(x)),   
+        getSoundData = (soundRef) => {
+            const funcID = ONSTACK(),
+                soundKey = getSoundKey(soundRef)
+            return OFFSTACK(funcID) && REGISTRY.Tracks[soundKey] || REGISTRY.Playlists[soundKey]
         },
-        getTrackID = (trackRef) => {
-            if (VAL({object: trackRef}) && trackRef.get("_type") === "jukeboxtrack")
-                return trackRef.id
-            const trackData = getTrackData(trackRef)
-            if (VAL({list: trackData}))
-                return trackData.id            
-            if (VAL({string: trackRef}))
-                return getObj("jukeboxtrack", trackRef) || false
-            return false
-        },
-        getTrackObj = (trackRef) => {
-            if (VAL({object: trackRef}) && trackRef.get("_type") === "jukeboxtrack")
-                return trackRef
-            return getObj("jukeboxtrack", getTrackID(trackRef))
-        },
-    // #endregion
-    // #region GETTERS: Jukebox Objects ("Real" Object Status)        
-        getJukeboxObjs = () => _.uniq(findObjs({_type: "jukeboxtrack"})),
-        isJukeboxObjPlaying = (jukeboxObj, playListRef) => VAL({object: jukeboxObj}) && jukeboxObj.get("playing") && !jukeboxObj.get("softstop") && (!playListRef || isTrackInPlayList(jukeboxObj.id, playListRef)),
-        isJukeboxObjLooping = (jukeboxObj, isCheckingPlaylist = true, playListRef) => VAL({object: jukeboxObj}) && 
-                                                                            isJukeboxObjPlaying(jukeboxObj.id, playListRef) &&
-                                                                            (jukeboxObj.get("loop") || isCheckingPlaylist && isPlayListLooping(jukeboxObj.id)),
-        getPlayingJukeboxObjs = (playListRef) => getJukeboxObjs().filter(x => isJukeboxObjPlaying(x, playListRef)),
-        getLoopingJukeboxObjs = (isCheckingPlaylist = true, playListRef) => getJukeboxObjs().filter(x => isJukeboxObjLooping(x, isCheckingPlaylist, playListRef)),
-    // #endregion
-
-    //* **** SOUNDSCAPE CONTROL ***************************************************
-    // #region Determining SoundScape
-        setScore = (scoreMode, volume) => {
-            const scoreName = scoreMode && `Score${D.Capitalize(scoreMode)}` || STATE.REF.currentScore,
-                scoreVolume = VAL({number: volume}) ? volume : VAL({string: scoreName}) && getPlayListData(scoreName).volume
-            if (STATE.REF.currentScore !== scoreName) {
-                stopLooping(STATE.REF.currentScore)
-                STATE.REF.currentScore = scoreName
-                startLooping(scoreName, scoreVolume)
-            } else if (VAL({number: volume}) && getPlayListData(scoreName).volume !== volume) {
-                setPlayListVolume(scoreName, volume)
-            }
-        },
-        getLocationSounds = () => { },
-        getWeatherSounds = () => { },
-        getScoreSounds = () => { },
-    // #endregion
-    // #region Setting SoundScape
-        updateSoundScape = () => { },        
-        startLooping = (soundRef, volume) => {
-            const soundName = getTrackName(soundRef) || getPlayListName(soundRef)
-            if (STATE.REF.activeLoops.includes(soundName)) {
-                return false
-            } else {
-                STATE.REF.activeLoops.push(soundName)
-                if (isPlayList(soundName))
-                    playPlaylist(soundRef, volume)
+        isTrack = (soundRef) => getSoundKey(soundRef) in REGISTRY.Tracks,
+        isPlaylist = (soundRef) => getSoundKey(soundRef) in REGISTRY.Playlists,
+        getTrackKey = (soundRef, isGettingAllTracks = false) => {
+            const funcID = ONSTACK()
+            if (isTrack(soundRef))
+                return OFFSTACK(funcID) && getSoundKey(soundRef)
+            else if (isPlaylist(soundRef))
+                if (isGettingAllTracks)
+                    return OFFSTACK(funcID) && getSoundData(soundRef).trackKeys
                 else
-                    playTrack(soundRef, volume)
-                return STATE.REF.activeLoops
+                    return OFFSTACK(funcID) && getSoundData(soundRef).currentTrack
+            return OFFSTACK(funcID) && false
+        },
+        getPlaylistKey = (soundRef) => {
+            const funcID = ONSTACK()
+            if (isTrack(soundRef)) {
+                const trackKey = getTrackKey(soundRef)
+                return OFFSTACK(funcID) && (
+                    (Object.values(REGISTRY.Playlists).find(x => x.currentTrack === trackKey) || {name: false}).name ||
+                    getTrackData(trackKey).playlists[0] ||
+                    false
+                )
+            } else if (isPlaylist(soundRef)) {
+                return OFFSTACK(funcID) && getSoundKey(soundRef)
             }
+            return OFFSTACK(funcID) && false
         },
-        stopLooping = (soundRef) => {
-            const soundName = getTrackName(soundRef) || getPlayListName(soundRef)
-            if (STATE.REF.activeLoops.includes(soundName)) {
-                STATE.REF.activeLoops = _.without(STATE.REF.activeLoops, soundName)
-                if (isPlayList(soundName))
-                    stopPlaylist(soundRef)
-                else
-                    stopTrack(soundRef)
-                return STATE.REF.activeLoops
-            } else {
-                return false
-            }
+        getTrackData = (soundRef) => getSoundData(getTrackKey(soundRef)),
+        getPlaylistData = (soundRef) => getSoundData(getPlaylistKey(soundRef)),
+        getTrackObj = (soundRef) => getObj("jukeboxtrack", (getTrackData(soundRef) || {id: false}).id),
+        getVolume = (soundRef) => {
+            const trackKey = getTrackKey(soundRef),
+                playlistKey = getPlaylistKey(soundRef),
+                volumeMults = [STATE.REF.VOLUME.MasterVolumeMult],
+                baseVolume = STATE.REF.VOLUME[trackKey] || STATE.REF.VOLUME[playlistKey] || STATE.REF.VOLUME.base
+            if (Session.Mode === "Inactive")
+                return D.Int(volumeMults.filter(x => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume))
+            if (!Session.IsOutside)
+                volumeMults.push(STATE.REF.VOLUME.MULTS.Inside[trackKey] || STATE.REF.VOLUME.MULTS.Inside[playlistKey] || STATE.REF.VOLUME.MULTS.Inside.base)
+            else if (TimeTracker.IsRaining)
+                volumeMults.push(STATE.REF.VOLUME.MULTS.Raining[trackKey] || STATE.REF.VOLUME.MULTS.Raining[playlistKey] || STATE.REF.VOLUME.MULTS.Raining.base)
+            // DB({trackKey, playlistKey, volumeMults, baseVolume, reduction: D.Int(volumeMults.reduce((tot, x) => tot * x, baseVolume))}, "getVolume")
+            return D.Int(volumeMults.filter(x => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume))
         },
-    // #endregion
-    // #region Verifying & Fixing SoundScape
-        
-    // #endregion
-    // #region Stopping ALL Music
-        stopAll = () => {
-            DB("Stopping All Tracks", "stopAll")
-            _.each(REGISTRY.Playlists, (list) => {
-                if (list.isPlaying) {
-                    DB(`Stopping List:${list}`, "stopAll")
-
-                    list.isPlaying = false
-                    list.currentTracks = []
-                }
-            })
-            _.each(REGISTRY.Tracks, (track) => {
-                if (track.isPlaying) {
-                    DB(`Stopping Track:${track.id}`, "stopAll")
-
-                    stopTrack(track.id)
-                }
-            })
-        },
-    // #endregion
-    // #region Configure Default Volume, Fade, Delay
-        //* *****************************************************************************
-        // Edit Master Functions 	
-        // - Modify the master volume, playLists and tracks assigned to playList
-        //    - Volume, Fade In, Fade Out, Fade Time
-        //    - Update the approprate element
-        //* *****************************************************************************	
-        changeVolumeMaster = (level) => {
-            DB(`Change Master Volume:${level}`, "changeVolumeMaster")
-
-            STATE.REF.masterVolume = parseInt(level)
-            _.each(REGISTRY.Playlists, (list) => {
-                changeVolumeList(list, parseInt(level))
-            })
-        },
-        changeDelayMaster = (level) => {
-            DB(`Change Delay Seconds:${level}`, "changeDelayMaster")
-
-            STATE.REF.masterDelay = level
-            _.each(REGISTRY.Playlists, (list) => {
-                changeDelayList(list, level)
-            })
-        },
-    // #endregion
-
-    //* **** TRACK CONTROL **********************************************************
-    // #region Playing & Stopping Tracks
-        playTrack = (trackRef, level) => {
-            const trackData = getTrackData(trackRef),
-                trackID = trackData.id,
-                trackObj = getTrackObj(trackID)
-            level = level || trackData.volume
-                
-                // set playing to true in Track Details, get Jukebox Object and set to playing
-            DB({track: getTrackName(trackObj.id), volume: level}, "playTrack")
-            _.each(REGISTRY.Playlists, list => {
-                if (list.trackids.indexOf(trackObj.id) >= 0)
-                    list.isPlaying = true
-
-            })
-            trackData.isPlaying = true
-            trackObj.set({playing: true, softstop: false, volume: level})
-        },
-        // stops the track.  Either Track ID or Track name will come into this func
-        stopTrack = (trackRef) => {
-            const trackData = getTrackData(trackRef),
-                trackID = trackData.id,
-                trackObj = getTrackObj(trackID)
-
-            _.each(REGISTRY.Playlists, list => {
-                if (list.isPlaying)
-                    if (list.trackids.indexOf(trackID) >= 0) {
-                        list.isPlaying = false
-                    }
-
-            })
-                // set playing to true in Track Details, get Jukebox Object and set to playing
-            trackData.isPlaying = false
-            trackObj.set({playing: false, softstop: false, loop: false})
-        },
-    // #endregion
-    // #region Volume Control
-        increaseTrackVolume = (trackID) => {
-            const trackDetails = getTrackData(trackID), level = Number(trackDetails.volume) + 5, jbTrack = getTrackObj(trackID)
-            DB(`Increase Track:${trackDetails.name}`, "increaseTrackVolume")
-
+        isTrackObjPlaying = (trackObj) => VAL({obj: trackObj}) && trackObj.get("playing") && !trackObj.get("softstop"),
+        isTrackObjLooping = (trackObj) => isTrackObjPlaying(trackObj) && trackObj.get("looping"),
+        getPlayingTrackObjs = (isLoopingOnly = false) => _.uniq(findObjs({_type: "jukeboxtrack"})).filter(x => isLoopingOnly ? isTrackObjLooping(x) : isTrackObjPlaying(x)),
+        getPlayingPlaylists = () => Object.keys(REGISTRY.Playlists).filter(x => REGISTRY.Playlists[x].currentTrack),
+        getPlayingTracks = (isExcludingPlaylists = false) => Object.values(REGISTRY.Tracks).filter(x => x.isPlaying && (!isExcludingPlaylists || !x.masterPlaylist)).map(x => x.name),
+        getScore = () => STATE.REF.scoreOverride || C.SOUNDSCORES[Session.Mode][0],
+        getWeatherSounds = () => {
+            const funcID = ONSTACK(),
+                weatherCode = TimeTracker.WeatherCode,
+                weatherSounds = []
             
-            trackDetails.volume = level
-            jbTrack.set({volume: level})
-        },
-        decreaseTrackVolume = (trackID) => {
-            const trackDetails = getTrackData(trackID), level = Number(trackDetails.volume) - 5, jbTrack = getTrackObj(trackID)
+            if (Session.Mode === "Inactive")
+                return OFFSTACK(funcID) && []
 
-            DB(`Increase Track:${trackDetails.name}`, "decreaseTrackVolume")
-
-            trackDetails.volume = level
-            jbTrack.set({volume: level})
-        },
-        setTrackVolume = (trackRef, volume) => {
-            const trackData = getTrackData(trackRef),
-                trackObj = getTrackObj(trackData.id)
-            trackData.volume = volume
-            trackObj.set({volume})
-        },
-    // #endregion
-    // #region Configure Default Volume, Fade, Delay
-        //* *****************************************************************************
-        // Edit Track Functions 	
-        // - Modify the volume in the trackDetails and in some cases, the Jukebox Track
-        //    - Volume, Fade In, Fade Out, Fade Time, Increase, Decrease
-        //    - Pull the details from REGISTRY.Tracks and sometimes Jukebox
-        //    - Update the approprate element
-        //* *****************************************************************************
-        changeVolumeTrack = (trackID, level) => {
-            const trackDetails = getTrackData(trackID)
-            DB({track: getTrackName(trackID), volume: level}, "changeVolumeTrack")
-            trackDetails.volume = level
-        },
-    // #endregion
-
-    //* **** PLAYLIST CONTROL *******************************************************
-    // #region Playing & Stopping PlayLists
-        playPlaylist = (playListRef, startVolume = null) => {
-            const {name, mode} = getPlayListData(playListRef)
-            switch (D.LCase(mode)) {
-                case "single":
-                case "loop": {
-                    playListInOrder(name, startVolume)
-                    break
-                }
-                case "randomsingle":
-                case "randomloop": {
-                    playListRandom(name, startVolume)
-                    break
-                }
-                case "shuffle": {
-                    playListShuffle(name, startVolume)
-                    break
-                }
-                case "together": {
-                    playListTogether(name, startVolume)
-                    break
-                }
+            // RAIN:
+            switch (weatherCode.charAt(0)) {
+                case "w": weatherSounds.push("RainLight"); break
+                case "d": case "t": weatherSounds.push("RainHeavy"); break
                 // no default
             }
-        },
-        // One func for each playList mode:
-        // plays tracks in sequential order
-        playListInOrder = (list, startVolume) => {
-            DB(`Playing List (In Order):${list.name}`, "playListInOrder")
 
-            // Set list playing to true, used later to determine lists that are active
-            list.isPlaying = true
-            if (isPlayListLooping(list))
-                Media.LoopingSounds = list.name
-            playNextTrack(list, list.trackids, startVolume)
+            // WIND:
+            const windPrefix = `Wind${TimeTracker.TempC <= 0 ? "Winter" : ""}`
+            switch (weatherCode.charAt(4)) {            
+                case "b": weatherSounds.push(`${windPrefix}Low`); break // Breezy / Biting Wind
+                case "w": case "g": weatherSounds.push(`${windPrefix}Med`); break // Blustery / High Winds, High Winds / Driving Winds
+                case "h": case "v": weatherSounds.push(`${windPrefix}Max`); break // Howling Winds, Roaring Winds
+                // no default
+            }
+            return OFFSTACK(funcID) && weatherSounds
         },
-        // plays tracks randomly
-        playListRandom = (list, startVolume) => {
-            DB(`Playing Random List:${list.name}`, "playListRandom")
-                // Set list playing to true, used later to determine lists that are active.  Since random, we aren't tracking current played tracks
-            list.isPlaying = true
-            if (isPlayListLooping(list))
-                Media.LoopingSounds = list.name
-            list.currentTracks = []
-            const trackID = list.trackids[randomInteger(list.trackids.length) - 1]
-            playNextTrack(list, [trackID], startVolume)
+        getLocationSounds = () => {
+            const funcID = ONSTACK(),
+                locSounds = {
+                    District: Session.District && C.LOCATIONS[Session.District].soundScape[0],
+                    Site: Session.Site && C.LOCATIONS[Session.Site].soundScape[0]
+                }
+            if (Session.Mode === "Inactive")
+                return OFFSTACK(funcID) && false
+            if (Object.values(locSounds).includes("(TOTALSILENCE)"))
+                return OFFSTACK(funcID) && "TOTALSILENCE"
+            if (locSounds.Site && locSounds.Site !== "(NONE)")
+                return OFFSTACK(funcID) && locSounds.Site
+            if (locSounds.District && locSounds.District !== "(NONE)" && Session.IsOutside)
+                return OFFSTACK(funcID) && locSounds.District
+            return OFFSTACK(funcID) && false
         },
-        // plays tracks randomly
-        playListShuffle = (list, startVolume) => {
-            DB(`Playing Shuffle List:${list.name}`, "playListShuffle")
+    // #endregion
 
-                // Set list playing to true, used later to determine lists that are active
-            list.isPlaying = true
-            if (isPlayListLooping(list))
-                Media.LoopingSounds = list.name
-            if (list.shuffleIds.length == 0) {
-                DB("Creating Shuffle", "playListShuffle")
-
-                    // Copy trackids into shuffe tracks
-                _.each(list.trackids, (t) => {
-                    list.shuffleIds.push(t)
-                })
-                    // Use Durstenfeld method of shuffling list
-                for (let i = list.shuffleIds.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1)),
-                        temp = list.shuffleIds[i]
-                    list.shuffleIds[i] = list.shuffleIds[j]
-                    list.shuffleIds[j] = temp
+    // #region SETTERS: Registration & Setting Parameters
+        regTrack = (trackObj) => {
+            if (VAL({obj: trackObj})) {
+                const trackKey = parseKeyFromTitle(trackObj)
+                if (trackKey in REGISTRY.Tracks) {
+                    D.Alert(`Attempt to overwrite already-registered track: ${D.JS(trackKey)}<br><br>Track names must be unique in jukebox!`, "regTrack")
+                } else {
+                    REGISTRY.Tracks[trackKey] = {
+                        id: trackObj.id,
+                        name: trackKey,
+                        playlists: [],
+                        playModes: {},
+                        isPlaying: false,
+                        masterPlaylist: false
+                    }
+                    setPlayModes(trackObj)
                 }
             }
-            playNextTrack(list, list.shuffleIds, startVolume)
         },
-        // plays tracks together
-        playListTogether = (list, startVolume) => {
-            DB(`Playing Together List:${list.name}`, "playListTogether")
-
-            let volume
-                // Set list playing to true, used later to determine lists that are active
-            list.isPlaying = true
-                // Set start volume
-            if (startVolume != 0)
-                volume = list.volume
-            else
-                volume = startVolume
-
-            DB(`Start Volume:${volume}`, "playListTogether")
-
-                // Play all songs at once.  Push all songs into currentTracks 
-            _.each(list.trackids, (id) => {
-                list.currentTracks.push(id)
-                playTrack(id, volume, null)
-            })
-        },
-        // ... plus the func that actually plays the track triggered by the above four funcs
-        playNextTrack = (list, listTracks, startVolume) => {
-            DB(`Playing Next Track List:${list.name}`, "playNextTrack")
-
-                // initialize
-            let found = false, nexttrackID, volume
-                // find next track to play    
-            if (list.currentTracks.length > 0)
-                    // get each track from the playList tracks
-                _.each(listTracks, (id) => {
-                        // if the track isn't in the current playListm play it, Found switch makes next track is used
-                    if (list.currentTracks.indexOf(id) == -1)
-                        if (!found) {
-                            nexttrackID = id
-                            DB(`Next Track:${nexttrackID}`, "playNextTrack")
-                            found = true
-                        }
-
-                })
-
-                // if entire play tracks are in current tracks, all have played, wipe out current tracks and get first one                
-            if (!found) {
-                list.currentTracks = [];
-                [nexttrackID] = listTracks
-                DB(`First Track:${nexttrackID}`, "playNextTrack")
-
+        regPlaylist = (playlistKey, trackRefs = [], playModes = {}) => {
+            REGISTRY.Playlists[playlistKey] = {
+                name: playlistKey,
+                trackKeys: trackRefs.map(x => getTrackKey(x)),
+                playModes,
+                currentTrack: false,
+                isPlaying: false
             }
-                // push this track into the current track list
-            list.currentTracks.push(nexttrackID)
-                // volume may have been set to 0 by fading, reset to playList or master volume.  For fade in, we want start volume at 0
-            if (startVolume != 0)
-                volume = list.volume
-            else
-                volume = startVolume
-
-            playTrack(nexttrackID, volume, null)
+            for (const trackKey of REGISTRY.Playlists[playlistKey].trackKeys)
+                REGISTRY.Tracks[trackKey].playlists.push(playlistKey)
+            setPlayModes(playlistKey)
         },
-        // stops the playList
-        stopPlaylist = (playListRef) => {
-            const playListData = getPlayListData(playListRef)
-            DB(`Stopping:${playListData.name}`, "stopList")
-
-                // stop list and clear current tracks
-            playListData.isPlaying = false
-            Media.StopLooping(playListRef.name)
-            _.each(playListData.currentTracks, (trackID) => {
-                DB(`Stopping:${trackID}`, "stopList")
-                stopTrack(trackID)
-            })
-            playListData.currentTracks = []
-        },        
-    // #endregion
-    // #region Volume Control
-        increaseListVolume = (list) => {
-            DB(`Increase List:${list.name}`, "increaseListVolume")
-            const level = Number(list.volume) + 5
-            list.volume = level
-
-            _.each(list.trackids, (trackID) => {
-                increaseTrackVolume(trackID)
-            })
+        setPlayModes = (soundRef, playModes = {}) => {
+            // for TRACKS: {isLooping}
+            // for PLAYLISTS: {isRandom, isTogether, isLooping, isPlayingAll}
+                        // isRandom:                             Plays one track randomly, then stops. (= "Play Once" in jukeboxData)
+                        // isRandom + isLooping:                 Plays one track chosen at random repeatedly. (= Playlist Name ends with "[RandomOnce]")
+                        // isRandom + isPlayingAll:              Plays each track once in a random order, then stops. (= Playlist Name ends with "[ShuffleOnce]")
+                        // isRandom + isLooping + isPlayingAll:  Plays each track once in a random order, then repeats. (= "Shuffle" in jukeboxData)
+                        // isLooping:                            Sets all contained tracks to loop when manually selected. (= Playlist Name ends with "[LoopEach]")
+                        // isLooping + isPlayingAll:             Plays each track in sequence, then repeats. (= "Loop" in jukeboxData)
+                        // isPlayingAll:                         Plays each track in sequence, then stops. (= Playlist Name ends with "[SequenceOnce]")
+                        // isTogether:                           Plays all tracks simultaneously once. (= "Simulplay" in jukeboxData)
+            const soundKey = getSoundKey(soundRef)
+            if (isTrack(soundKey)) {
+                const trackData = getTrackData(soundKey),
+                    trackObj = getTrackObj(soundKey)
+                Object.assign(trackData.playModes, C.SOUNDMODES[soundKey] || C.SOUNDMODES.TrackDefault, trackData.playModes, playModes)
+                trackObj.set({loop: Boolean(trackData.playModes.isLooping), volume: getVolume(trackData.name)})
+            } else if (isPlaylist(soundKey)) {
+                const playlistData = getPlaylistData(soundKey)
+                playlistData.playModes = Object.assign({}, C.SOUNDMODES[soundKey] || C.SOUNDMODES.PlaylistDefault, playlistData.playModes, playModes)
+                if (playlistData.playModes.isLooping && !playlistData.playModes.isPlayingAll)
+                    playlistData.trackKeys.map(x => setPlayModes(x, {isLooping: true}))
+            }
         },
-        decreaseListVolume = (list) => {
-            const newVolume = Number(list.volume) - 5
-            list.volume = newVolume
-            DB({list: list.name, volume: newVolume}, "decreaseListVolume")
-
-            _.each(list.trackids, (trackID) => {
-                decreaseTrackVolume(trackID)
-            })
+        setVolume = (soundRef, volume) => {
+            if (soundRef === "base") {
+                STATE.REF.VOLUME.base = D.Int(volume)
+            } else {
+                const soundKey = getSoundKey(soundRef)
+                if (soundKey)
+                    STATE.REF.VOLUME[soundKey] = D.Int(volume)
+            }
+            syncSoundscape()
         },
-        setPlayListVolume = (playListRef, volume) => {
-            const playListData = getPlayListData(playListRef)
-            playListData.volume = volume
-            for (const trackID of playListData.trackids)
-                setTrackVolume(trackID, volume)
+        setMasterVolumeMult = (volumeMult) => { 
+            STATE.REF.VOLUME.MasterVolumeMult = D.Float(volumeMult, 2)
+            syncSoundscape()
         },
-    // #endregion   
-    // #region Configure Default Volume, Fade, Delay
-        //* *************************************************************************
-        // Edit List Functions 	
-        // - Modify the volume in the playLists and tracks assigned to playList
-        //    - Volume, Fade In, Fade Out, Fade Time
-        //    - Update the approprate element
-        //* *************************************************************************	
-        changeVolumeList = (list, level) => {
-            DB({list: list.name, volume: level}, "changeVolumeList")
-            list.volume = level
-            _.each(list.trackids, (trackID) => {
-                changeVolumeTrack(trackID, level)
-            })
+        setInsideMult = (soundRef, volumeMult) => {
+            if (soundRef === "base") {
+                STATE.REF.VOLUME.MULTS.Inside.base = D.Float(volumeMult, 2)
+            } else {
+                const soundKey = getSoundKey(soundRef)
+                if (soundKey)
+                    STATE.REF.VOLUME.MULTS.Inside[soundKey] = D.Float(volumeMult, 2)
+            }
+            syncSoundscape()
+        },
+        setRainMult = (soundRef, volumeMult) => {
+            if (soundRef === "base") {
+                STATE.REF.VOLUME.MULTS.Raining.base = D.Float(volumeMult, 2)
+            } else {
+                const soundKey = getSoundKey(soundRef)
+                if (soundKey)
+                    STATE.REF.VOLUME.MULTS.Raining[soundKey] = D.Float(volumeMult, 2)
+            }
+            syncSoundscape()
         },
     // #endregion
 
-
-    //* **** SOUNDSCAPE VERIFICATION & CHECKING ***************************************
-    // #region Loop Tracking// #endregion
-    // #region Confirmation & Validation of Soundscape
-        validatePlayList = (playListRef) => { /* Checks to make sure one (and only one) track from the playlist is ACTUALLY playing in the jukebox. "true" if okay, "false" if nothing playing, "array of playing tracks" if more than one playing. */ },
-        verifySoundScape = () => { /* Use the above functions to compare what SHOULD be playing with what IS playing. */ }
+    // #region CONTROLLERS: Playing & Stopping Sounds, Playing Next Sound
+        playSound = (soundRef, masterSound) => { // Initializes any playlist as if playing it for the first time. To preserve sequences, use playNextSound()
+            if (STATE.REF.isSoundscapeActive) {
+                const soundKey = getSoundKey(soundRef)
+                // masterSound = masterSound || soundKey
+                DB({soundRef, masterSound, volume: getVolume(soundKey), realVolume: (getTrackObj(soundKey) || {get: () => false}).get("volume")}, "playSound")
+                if (isPlaylist(soundKey)) {
+                    const playlistData = getPlaylistData(soundKey),
+                        {trackKeys} = playlistData
+                    if (playlistData.playModes.isRandom)
+                        playlistData.trackSequence = _.shuffle(trackKeys)
+                    else
+                        playlistData.trackSequence = D.Clone(trackKeys)
+                    if (playlistData.playModes.isTogether)
+                        playlistData.trackSequence.map(x => playSound(x, playlistData.name))
+                    else
+                        playlistData.currentTrack = playSound(playlistData.trackSequence.shift(), playlistData.name)
+                    playlistData.isPlaying = true
+                    return true
+                } else if (isTrack(soundKey)) {
+                    // RE: PLAYING, LOOP, SOFTSTOP:
+                    //      'softstop' MUST be false for track to play at all.
+                    //      'softstop' will be set to TRUE when track finishes playing UNLESS 'loop' is set true.
+                    //      a track that is manually stopped will NOT have softstop set TRUE (only 'playing' set false)
+                    //  So....
+                    //    a playing, looping track will be {playing: true, loop: true, softstop: false} ALWAYS.
+                    //    a playing, NON-looping track will be {playing: true, loop: false, softstop: false} THEN {playing: false, softstop: true} when it finishes.
+                    //  IF...
+                    //    a playing track's softstop is set TRUE, it will stop immediately.
+                    //    a playing track's playing is set FALSE, it will stop immediately.
+                    const trackData = getTrackData(soundKey)
+                    trackData.isPlaying = true
+                    trackData.masterPlaylist = masterSound || false
+                    getTrackObj(soundKey).set({playing: true, softstop: false, volume: getVolume(soundKey)})
+                    STATE.REF.activeSounds = _.uniq([...STATE.REF.activeSounds, masterSound || soundKey])
+                    return soundKey
+                }
+            }
+            return false
+        },
+        stopSound = (soundRef) => {
+            DB({soundRef}, "stopSound")
+            const soundKey = getSoundKey(soundRef)
+            STATE.REF.activeSounds = _.without(STATE.REF.activeSounds, soundKey)
+            if (isPlaylist(soundKey)) {
+                const playlistData = getPlaylistData(soundKey),
+                    curTrack = playlistData.currentTrack
+                playlistData.currentTrack = false
+                playlistData.trackSequence = []
+                playlistData.isPlaying = false
+                if (curTrack)
+                    stopSound(curTrack)
+            } else if (isTrack(soundKey)) {
+                const trackData = getTrackData(soundKey)
+                if (trackData.masterPlaylist && REGISTRY.Playlists[trackData.masterPlaylist].isPlaying) {
+                    stopSound(trackData.masterPlaylist)
+                } else {
+                    trackData.isPlaying = false
+                    trackData.masterPlaylist = false
+                    getTrackObj(soundKey).set({playing: false, softstop: false})
+                }
+            }
+        },
+        syncSoundscape = (isResetting = false) => {
+            if (isResetting) {
+                [...Object.keys(REGISTRY.Playlists), ...Object.keys(REGISTRY.Tracks)].map(stopSound)
+                STATE.REF.activeSounds = []
+            }
+            const activeSounds = _.compact([
+                    getScore(),
+                    getLocationSounds(),
+                    ...getWeatherSounds()
+                ]),
+                soundsToStop = STATE.REF.activeSounds.filter(x => !activeSounds.includes(x)),
+                soundsToPlay = activeSounds.filter(x => !STATE.REF.activeSounds.includes(x)),
+                soundsToCheck = activeSounds.filter(x => STATE.REF.activeSounds.includes(x))
+            DB({activeSounds, soundsToStop, soundsToPlay, soundsToCheck}, "syncSoundscape")
+            soundsToStop.map(x => stopSound(x))
+            soundsToPlay.map(x => playSound(x))
+            for (const soundKey of soundsToCheck) {
+                const trackObj = getTrackObj(soundKey),
+                    trackVolume = getVolume(soundKey)
+                if (trackObj && D.Int(trackObj.get("volume")) !== trackVolume)
+                    trackObj.set({volume: trackVolume})
+            }
+        },
+        startSoundscape = (isResetting = false) => {
+            STATE.REF.isSoundscapeActive = true
+            syncSoundscape(isResetting)
+        },
+        stopSoundscape = () => {
+            STATE.REF.isSoundscapeActive = false
+            for (const soundKey of STATE.REF.activeSounds)
+                stopSound(soundKey)
+        },
+        playNextSound = (trackRef) => { // Playlist must have been initialized for sequencing: First play should be with playSound()
+            if (STATE.REF.isSoundscapeActive) {
+                const trackData = getSoundData(trackRef)
+                if (trackData.playModes.isLooping && STATE.REF.activeSounds.includes(trackData.name)) {
+                    playSound(trackData.name)
+                } else {
+                    const playlistData = getPlaylistData(trackData.name)
+                    if (playlistData && STATE.REF.activeSounds.includes(playlistData.name)) 
+                        if (playlistData.playModes.isPlayingAll) {
+                            if (playlistData.trackSequence.length) 
+                                playlistData.currentTrack = playSound(playlistData.trackSequence.shift(), playlistData.name)
+                            else if (playlistData.playModes.isLooping) 
+                                playSound(playlistData.name)
+                            else 
+                                stopSound(playlistData.name)                            
+                        } else if (playlistData.playModes.isLooping) {
+                            playSound(playlistData.currentTrack, playlistData.name)
+                        } else {
+                            stopSound(playlistData.name)
+                        }
+                    else 
+                        stopSound(trackData.name)                    
+                }
+            }          
+        }
     // #endregion
 
     return {
         CheckInstall: checkInstall,
-        RegisterEventHandlers: registerEventHandlers
-    }
-})()
+        OnChatCall: onChatCall, OnTrackChange: onTrackChange,
 
+        Sync: syncSoundscape,
+        Play: playSound, Stop: stopSound
+    }
+} )()
 
 on("ready", () => {
-    SoundScape.CheckInstall()
-    SoundScape.RegisterEventHandlers()
-})
+    Soundscape.CheckInstall()
+    D.Log("Soundscape Ready!")
+} )
+void MarkStop("Soundscape")

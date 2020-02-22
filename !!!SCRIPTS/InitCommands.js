@@ -19,14 +19,12 @@ const InitCommands = (() => {
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
             Listener.Lock()
-            if (Roll20AM && Roll20AM.StopSound)
-                Roll20AM.StopSound("all")
             setTimeout(() => {
                 if (TimeTracker && TimeTracker.Fix)
                     TimeTracker.Fix()
                 setTimeout(() => {
-                    if (Media && Media.UpdateSoundScape)
-                        Media.ResetSoundscape()
+                    if (Soundscape && Soundscape.Sync)
+                        Soundscape.Sync(true)
                     setTimeout(() => {
                         if (Char && Char.RefreshDisplays)
                             Char.RefreshDisplays()

@@ -89,6 +89,12 @@ const Listener = (() => {
                     return scriptData.script.OnPageChange()
                 return false
             })
+            on("change:jukeboxtrack", (trackObj, prevData) => {
+                DB({trackObj, prevData}, "OnTrackChange")
+                for (const scriptData of SCRIPTCALLS.TRACKCHANGE)
+                    return scriptData.script.OnTrackChange(trackObj, prevData)
+                return false
+            })
         },
     // #endregion
 
@@ -114,7 +120,7 @@ const Listener = (() => {
                 "!text": {script: Media, gmOnly: true, singleCall: false},
                 "!anim": {script: Media, gmOnly: true, singleCall: false},
                 "!snd": {script: Media, gmOnly: true, singleCall: false},
-                "!sound": {script: Media, gmOnly: true, singleCall: false},
+                "!sound": {script: Soundscape, gmOnly: true, singleCall: true, needsObjects: false},
                 "!pcom": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!mvc": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!token": {script: Player, gmOnly: false, singleCall: false},
@@ -141,7 +147,10 @@ const Listener = (() => {
             ], v => v.script === {})            
             SCRIPTCALLS.PAGECHANGE = _.reject([
                 {script: Session}
-            ], v => v.script === {})            
+            ], v => v.script === {})             
+            SCRIPTCALLS.TRACKCHANGE = _.reject([
+                {script: Soundscape}
+            ], v => v.script === {})             
             refreshObjects(true)
         },
     // #endregion
