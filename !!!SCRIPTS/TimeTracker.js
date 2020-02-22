@@ -70,7 +70,11 @@ const TimeTracker = (() => {
             if (Object.keys(STATE.REF.weatherOverride).length)
                 D.Alert(`Weather Override in effect: ${D.JS(STATE.REF.weatherOverride)}<br><b>!time set weather</b> to clear.`, "Alert: Weather Override")
 
-
+            // STATE.REF.weatherData[1][29] = ['xfCxxx', 'xfCxxx', 'xfCxsx', 'xfDxxx', 'xfExsx', 'cfExbx', 'tfFxww', 'tfFxgw', 'tfGxgw', 'tfGxww', 'pfGxww', 'wxFxbw', 'wxFxsw', 'wxFxbw', 'wxFxww', 'wxExbw', 'wxExbw', 'wxExbw', 'wxExww', 'wxDxww', 'wxDxbw', 'wxDxbw', 'wxDxgw', 'cxDxwx']
+            // STATE.REF.weatherData[2][30] = ['wxDxww', 'wxDxbw', 'wxDxbw', 'wxDxgw', 'cxDxwx', 'cxBxhx', 'cxBxwx', 'cxBxwx', 'cxBxbx', 'cxCxwx', 'cxDxhx', 'cxDxwx', 'cxDxwx', 'cxExwx', 'wxExgw', 'pxDxhw', 'txDxvw', 'txDxhw', 'txCxhw', 'pxBxww', 'wxBxbw', 'cxAxsx', 'cx0xxf', 'cx0xsf']
+            
+            // STATE.REF.weatherData[0][24] = ['bxAxwf', 'bx0xhf', 'bxaxgf', 'bxbxg1', 'sxbxh1', 'bxcxh1', 'bxexw1', 'xxfxw1', 'xxgxw1', 'xxgxb1', 'xxexb1', 'cxdxw1', 'sxbxg1', 'sxaxg1', 'cxaxw1', 'xxaxb1', 'cxaxb1', 'cfaxx1', 'cfbxx1', 'cfbxx1', 'cfcxx1', 'cfcxx1', 'xfdxx1', 'xxexb1']
+            // STATE.REF.weatherData[0][25] = ['xxexw1', 'xffxx1', 'cfexx1', 'sfexx1', 'bxexh1', 'bxexw1', 'sxexb1', 'cxexs1', 'cxexx1', 'cxdxx1', 'sxbxb1', 'bxaxw1', 'bxAxg1', 'bxAxg2', 'bxAxg2', 'bxAxg2', 'bxAxg2', 'bxAxg2', 'bxAxg2', 'bxAxw2', 'bxBxb2', 'sxBxs2', 'sxBxs2', 'sxBxx3']
             // STATE.REF.weatherData[0][20] = ["cxHxg5", "cxHxg5", "wxGxg5", "pxGxw5", "txGxg5", "txGxg5", "txHxg4", "pxHxw4", "wxHxb4", "cxHxb4", "cxIxb4", "cxJxs4", "cxJxb4", "cxKxs4", "cxKxb4", "cxKxs3", "wxKxw3", "pxJxw3", "txJxg3", "pxIxg3", "pxHxg3", "pxGxg2", "wxGxw2", "cxGxb2"]
             // STATE.REF.weatherData[0][21] = ["xxFxs2", "cxFxx2", "cxExx2", "cxExx2", "cxExx2", "cxExx2", "cxExx2", "sxDxb2", "bxDxb2", "bxExw3", "wxGxb2", "cxIxb2", "xxJxs2", "cxJxs2", "cxIxs2", "cxJxs2", "cxJxs2", "cxHxs2", "xfGxs2", "xfGxx2", "xfGxs2", "xfGxx2", "pfGxs1", "pfGxb1"]
             // STATE.REF.weatherData[0][20] = ["cxHxg5", "cxHxg5", "wxGxg5", "pxGxw5", "txGxg5", "txGxg5", "txHxg4", "pxHxw4", "wxHxb4", "cxHxb4", "cxIxb4", "cxJxs4", "cxJxb4", "cxKxs4", "cxKxb4", "cxKxs3", "wxKxw3", "pxJxw3", "txJxg3", "txIxg2", "txHxg1", "txGxgw", "txGxww", "txGxbw"]
@@ -125,7 +129,15 @@ const TimeTracker = (() => {
                             break
                         }
                         case "code": {
-                            D.Alert(`${STATE.REF.weatherData[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()]}`, "Weather Code")
+                            switch (D.LCase(call = args.shift())) {
+                                case "day": {
+                                    const [month, date] = args.map(x => D.Int(x))
+                                    if (date)
+                                        D.Alert(`STATE.REF.weatherData[${month}][${date}] = ['${STATE.REF.weatherData[month][date].join("', '")}']`, "Day's Weather Codes")
+                                    break
+                                }
+                                default: D.Alert(`${STATE.REF.weatherData[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()]}`, "Weather Code"); break
+                            }
                             break
                         }
                         case "weather": {
@@ -1974,7 +1986,7 @@ const TimeTracker = (() => {
                         case "night1":
                         case "night2":
                         case "night3":
-                            return OFFSTACK(fID) && "brightfog"
+                            return OFFSTACK(fID) && "darkfog" // "brightfog"
                         case "day":
                             return OFFSTACK(fID) && "blank"
                         default:

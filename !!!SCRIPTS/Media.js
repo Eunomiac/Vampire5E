@@ -57,6 +57,9 @@ const Media = (() => {
                         modeData.lastState = realText
             }
 
+            for (const animData of Object.values(STATE.REF.animregistry).filter(x => x.timeOut))
+                toggleAnimation(animData.name, false)
+
             for (const panelName of Object.keys(STATE.REF.panelLog))
                 killPanel(panelName)
 
