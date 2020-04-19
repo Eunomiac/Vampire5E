@@ -51,6 +51,8 @@ const Tester = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting
             switch (call) {
+                case "pause": TimeTracker.Pause(); break
+                case "resume": TimeTracker.Resume(); break
                 case "stoptracks": {
                     findObjs({_type: "jukeboxtrack"}).map(x => x.set({playing: false, softstop: false}))
                     break

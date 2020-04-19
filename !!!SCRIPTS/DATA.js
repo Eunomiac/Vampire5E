@@ -826,11 +826,7 @@ const D = (() => {
         promptGM = (menuHTML, replyFunc) => {
             if (VAL({string: menuHTML}, "promptGM")) {
                 if (VAL({func: replyFunc})) {
-                    if (TimeTracker.IsClockRunning) {
-                        DB(`Time Running: Stopping Clock at ${D.JSL(TimeTracker.CurrentDate)}`, "promptGM")
-                        STATE.REF.PROMPTCLOCK = true
-                        TimeTracker.ToggleClock(false)
-                    }
+                    TimeTracker.Pause()
                     Roller.Lock(true)
                     PROMPTFUNC = replyFunc
                 }
@@ -856,90 +852,89 @@ const D = (() => {
             }
         },
         isMenuMemoed = memoID => Boolean(memoID && memoID in STATE.REF.COMMANDMENUS),
-        commandMenu = (menuData = {}, replyFunc = null, memoID, isRebuilding = false) => { // "menu" snippet for detailed instructions
-            if (memoID && memoID in STATE.REF.COMMANDMENUS && !isRebuilding) {
-                promptGM(STATE.REF.COMMANDMENUS[memoID])
-            } else {
-                const htmlRows = [],
-                    customStyles = {
-                        Title: {
-                            fontSize: "20px",
-                            lineHeight: "28px",
-                            height: "26px",
-                            bgColor: C.COLORS.brightred,
-                            color: C.COLORS.black,
-                            fontFamily: "Voltaire",
-                            border: `none; border-bottom: 4px outset ${C.COLORS.crimson}`,
-                            margin: "0px 0px 0px 0px",
-                        },
-                        Header: {
-                            color: C.COLORS.brightgold,
-                            bgColor: C.COLORS.darkred,
-                            border: `1px outset ${C.COLORS.crimson}`,
-                            fontFamily: "Carrois Gothic SC",
-                            lineHeight: "22px"
-                        },
-                        Body: {
-                            color: C.COLORS.brightbrightgrey,
-                            lineHeight: "1.25em",
-                            fontFamily: "goodfish",
-                            fontSize: "1em",
-                            margin: "7px 0px 7px 0px"
-                        }
+        getCommandMenuHTML = (menuData = {}) => {
+            const htmlRows = [],
+                customStyles = {
+                    Title: {
+                        fontSize: "20px",
+                        lineHeight: "28px",
+                        height: "26px",
+                        bgColor: C.COLORS.brightred,
+                        color: C.COLORS.black,
+                        fontFamily: "Voltaire",
+                        border: `none; border-bottom: 4px outset ${C.COLORS.crimson}`,
+                        margin: "0px 0px 0px 0px",
+                    },
+                    Header: {
+                        color: C.COLORS.brightgold,
+                        bgColor: C.COLORS.darkred,
+                        border: `1px outset ${C.COLORS.crimson}`,
+                        fontFamily: "Carrois Gothic SC",
+                        lineHeight: "22px"
+                    },
+                    Body: {
+                        color: C.COLORS.brightbrightgrey,
+                        lineHeight: "1.25em",
+                        fontFamily: "goodfish",
+                        fontSize: "1em",
+                        margin: "7px 0px 7px 0px"
                     }
-                DB({menuData}, "commandMenu")
-                const dbData = {rows: []},
-                    parseSection = (sectionData) => {
-                        const sectionHTML = []
-                        for (const rowData of sectionData.rows)
-                            if (["Title", "Header", "Body", "ClearBody"].includes(rowData.type)) {
-                                sectionHTML.push(C.HTML[rowData.type](rowData.contents, Object.assign({}, customStyles[rowData.type] || {}, rowData.styles || {})))
-                            } else if (rowData.type === "ButtonLine") {
-                                try {
-                                    const buttonsCode = [],
-                                        totalFlexEntities = rowData.contents.filter(x => VAL({list: x}) || VAL({number: x}) && x === 0).length,
-                                        entityWidthTax = STATE.REF.flexSpace/totalFlexEntities,
-                                        strictSpacerTotWidth = rowData.contents.map(x => VAL({list: x}) && "text" in x ? D.Int(Object.assign({width: "15%"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(/%/gu, "")) : x).filter(x => VAL({number: x})).reduce((tot, x) => tot + x, 0) || 0,
-                                        totFlexSpacing = 100 - strictSpacerTotWidth,
-                                        flexEntityWidth = D.Float(totFlexSpacing / totalFlexEntities - entityWidthTax, 2)
-                                    rowData.contents = rowData.contents.map(x => VAL({number: x}) && x === 0 && flexEntityWidth || x)
-                                    dbData.rows.push({strictSpacerTotWidth, totFlexSpacing, flexEntityWidth, rowData, entities: []})
-                                    for (const entity of rowData.contents)
-                                        if (VAL({number: entity}))
-                                            buttonsCode.push(C.HTML.ButtonSpacer(`${D.Int(entity)}%`))
-                                        else if (VAL({list: entity}))
-                                            if ("text" in entity) {
-                                                buttonsCode.push(C.HTML.ButtonSubheader(entity.text, entity.styles))
-                                            } else {
-                                                if (entity.name.length > 12)
-                                                    entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
-                                                entity.command = entity.command.replace(/:/gu, "_colon_")
-                                                const button = new Button(entity.name, entity.command, Object.assign({}, {width: `${flexEntityWidth}%`}, customStyles.Button || {}, rowData.buttonStyles || {}, entity.styles || {}))
-                                                buttonsCode.push(button.HTML)
-                                            }
-                                    sectionHTML.push(C.HTML.ButtonLine(buttonsCode, rowData.styles || {}))
-                                } catch (errObj) {
-                                    DB({["ERROR'ING ROWDATA"]: rowData, errObj}, "commandMenu")
-                                }
-                            } else if (rowData.type === "Column") {
-                                const numColumns = rowData.contents.length,
-                                    colWidth = `${D.Int(100 / numColumns) - 1}%`,
-                                    colHTML = []
-                                for (const colData of rowData.contents)
-                                    colHTML.push(C.HTML.Column(parseSection(colData), Object.assign({width: colWidth}, rowData.style)))
-                                sectionHTML.push(C.HTML.SubBlock(colHTML.join("")))
+                }
+            DB({menuData}, "getCommandMenuHTML")
+            const dbData = {rows: []},
+                parseSection = (sectionData) => {
+                    const sectionHTML = []
+                    for (const rowData of sectionData.rows)
+                        if (["Title", "Header", "Body", "ClearBody"].includes(rowData.type)) {
+                            sectionHTML.push(C.HTML[rowData.type](rowData.contents, Object.assign({}, customStyles[rowData.type] || {}, rowData.styles || {})))
+                        } else if (rowData.type === "ButtonLine") {
+                            try {
+                                const buttonsCode = [],
+                                    totalFlexEntities = rowData.contents.filter(x => VAL({list: x}) || VAL({number: x}) && x === 0).length,
+                                    entityWidthTax = STATE.REF.flexSpace/totalFlexEntities,
+                                    strictSpacerTotWidth = rowData.contents.map(x => VAL({list: x}) && "text" in x ? D.Int(Object.assign({width: "15%"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(/%/gu, "")) : x).filter(x => VAL({number: x})).reduce((tot, x) => tot + x, 0) || 0,
+                                    totFlexSpacing = 100 - strictSpacerTotWidth,
+                                    flexEntityWidth = D.Float(totFlexSpacing / totalFlexEntities - entityWidthTax, 2)
+                                rowData.contents = rowData.contents.map(x => VAL({number: x}) && x === 0 && flexEntityWidth || x)
+                                dbData.rows.push({strictSpacerTotWidth, totFlexSpacing, flexEntityWidth, rowData, entities: []})
+                                for (const entity of rowData.contents)
+                                    if (VAL({number: entity}))
+                                        buttonsCode.push(C.HTML.ButtonSpacer(`${D.Int(entity)}%`))
+                                    else if (VAL({list: entity}))
+                                        if ("text" in entity) {
+                                            buttonsCode.push(C.HTML.ButtonSubheader(entity.text, entity.styles))
+                                        } else {
+                                            if (entity.name.length > 12)
+                                                entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
+                                            entity.command = entity.command.replace(/:/gu, "_colon_")
+                                            const button = new Button(entity.name, entity.command, Object.assign({}, {width: `${flexEntityWidth}%`}, customStyles.Button || {}, rowData.buttonStyles || {}, entity.styles || {}))
+                                            buttonsCode.push(button.HTML)
+                                        }
+                                sectionHTML.push(C.HTML.ButtonLine(buttonsCode, rowData.styles || {}))
+                            } catch (errObj) {
+                                DB({["ERROR'ING ROWDATA"]: rowData, errObj}, "commandMenu")
                             }
-                        return sectionHTML.join("")
-                    }
-                htmlRows.push(parseSection(menuData))
-                if (menuData.title)
-                    htmlRows.unshift(C.HTML.Title(menuData.title, Object.assign({}, customStyles.Title)))
+                        } else if (rowData.type === "Column") {
+                            const numColumns = rowData.contents.length,
+                                colWidth = `${D.Int(100 / numColumns) - 1}%`,
+                                colHTML = []
+                            for (const colData of rowData.contents)
+                                colHTML.push(C.HTML.Column(parseSection(colData), Object.assign({width: colWidth}, rowData.style)))
+                            sectionHTML.push(C.HTML.SubBlock(colHTML.join("")))
+                        }
+                    return sectionHTML.join("")
+                }
+            htmlRows.push(parseSection(menuData))
+            if (menuData.title)
+                htmlRows.unshift(C.HTML.Title(menuData.title, Object.assign({}, customStyles.Title)))
                 // DB(dbData, "commandMenu")
-                const fullHTML = C.HTML.Block(htmlRows.join(""), menuData.blockParams || {})
-                if (memoID)
-                    STATE.REF.COMMANDMENUS[memoID] = fullHTML
-                promptGM(fullHTML, replyFunc)
-            }
+            return C.HTML.Block(htmlRows.join(""), menuData.blockParams || {})
+        },
+        commandMenu = (menuData = {}, replyFunc = null, memoID, isRebuilding = false) => { // "menu" snippet for detailed instructions
+            if (memoID && memoID in STATE.REF.COMMANDMENUS && !isRebuilding) 
+                promptGM(STATE.REF.COMMANDMENUS[memoID])
+            else                
+                promptGM(getCommandMenuHTML(menuData), replyFunc)            
         },
     // #endregion
 
@@ -2143,7 +2138,7 @@ const D = (() => {
         Poke: (msg, title = "[ALERT]") => { if (Session.IsTesting) sendToGM(msg, title) },
         Prompt: promptGM,
         IsMenuStored: isMenuMemoed,
-        CommandMenu: commandMenu,
+        CommandMenu: commandMenu, CommandMenuHTML: getCommandMenuHTML,
 
         RemoveFirst: removeFirst, PullIndex: pullIndex, PullOut: pullElement,
         KeyMapObj: kvpMap,

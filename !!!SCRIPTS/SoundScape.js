@@ -475,6 +475,8 @@ const Soundscape = (() => {
             }
         },
         syncSoundscape = (isResetting = false) => {
+            if (Session.Mode === "Complications")
+                return
             if (isResetting) {
                 [...Object.keys(REGISTRY.Playlists), ...Object.keys(REGISTRY.Tracks)].map(x => stopSound(x))
                 STATE.REF.activeSounds = []

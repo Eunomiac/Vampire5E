@@ -38,28 +38,27 @@ const TimeTracker = (() => {
         initialize = () => {
             const funcID = ONSTACK()
             // delete STATE.REF.nextSessionDate
+            // delete STATE.REF.Alarms
+
+            // STATE.REF.Alarms = STATE.REF.Alarms || {}
+            // STATE.REF.Alarms.Ahead = STATE.REF.Alarms.Ahead || []
+            // STATE.REF.Alarms.Behind = STATE.REF.Alarms.Behind || []
             STATE.REF.TweenStart = 0
             STATE.REF.TweenTarget = 0
+            STATE.REF.TweenAutoIgnoreAlarms = STATE.REF.TweenAutoIgnoreAlarms || []
+            STATE.REF.TweenAutoDeferAlarms = STATE.REF.TweenAutoDeferAlarms || []
+            STATE.REF.TweenDeferredAlarms = STATE.REF.TweenDeferredAlarms || []
 
             STATE.REF.dateObj = STATE.REF.currentDate ? new Date(STATE.REF.currentDate) : null
             STATE.REF.nextSessionDate = STATE.REF.nextSessionDate || (new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"}))).getTime()
-            STATE.REF.Alarms = STATE.REF.Alarms || {}
-            STATE.REF.Alarms.Ahead = STATE.REF.Alarms.Ahead || []
-            STATE.REF.Alarms.Behind = STATE.REF.Alarms.Behind || []
-            STATE.REF.Alarms.Daily = STATE.REF.Alarms.Daily || {
-                midnight: [],
-                dawn: [],
-                noon: [],
-                dusk: []
-            }
-            STATE.REF.Alarms.AutoAbort = STATE.REF.Alarms.AutoAbort || []
-            STATE.REF.Alarms.AutoDefer = STATE.REF.Alarms.AutoDefer || []
             STATE.REF.lastDate = STATE.REF.lastDate || 0
             STATE.REF.weatherOverride = STATE.REF.weatherOverride || {}
             STATE.REF.timeZoneOffset = D.Int((new Date()).toLocaleString("en-US", {hour: "2-digit", hour12: false, timeZone: "America/New_York"}))
-            STATE.REF.weatherData = STATE.REF.weatherData || RAWWEATHERDATA
-            
+            STATE.REF.weatherData = STATE.REF.weatherData || RAWWEATHERDATA            
             // STATE.REF.weatherData = RAWWEATHERDATA
+
+            STATE.REF.Alarms = STATE.REF.Alarms || []
+
         
             if (!STATE.REF.dateObj) {
                 D.Alert("Date Object Missing! Setting to default date.<br><br>Use !time set [year] [month] [day] [hour] [minute] to correct.", "TimeTracker")
@@ -85,10 +84,16 @@ const TimeTracker = (() => {
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-        onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
+        onChatCall = (call, args) => { // eslint-disable-line no-unused-vars
             const funcID = ONSTACK() 
             let isForcing = false
             switch (call) {
+                case "alarmfunc": {
+                    const funcName = args.shift(),
+                        funcParamString = args.join(" ")
+                    confirmAlarm(funcName, funcParamString)
+                    break
+                }
                 case "weatherfind": {
                     const [eventType, eventCode] = args.map(x => D.Int(x) || x)
                     D.Alert(D.JS(getNextWeatherEvent(eventType, eventCode)))
@@ -156,51 +161,20 @@ const TimeTracker = (() => {
                 case "set": {
                     switch (D.LCase(call = args.shift())) {
                         case "alarm": {
-                            args = args.join(" ").replace(/"/gu, "").split("|")
-                            if (args.length !== 8) {
+                            const [dateRef, alarmName, alarmLabel, alarmFuncName, alarmFuncParams, alarmRecur] = args.join(" ").replace(/"/gu, "").split("|")
+                            if (!(dateRef && alarmName && alarmLabel && alarmFuncName))
                                 D.Alert([
                                     "<h3>Alarm Syntax</h3>",
-                                    "<b>!time set alarm</b> dateRef<b>|</b>name<b>|</b>message<b>|</b>actions<b>|</b>displayTo<b>|</b>revActions<b>|</b>recurring<b>|</b>isConditional",
+                                    "<b>!time set alarm</b> dateRef<b>|</b>name<b>|</b>label<b>|</b>funcName<b>|</b>funcParams<b>|</b>recurring",
                                     "  - dateString: 'dawn'/'dusk'/'nextfullnight'/'noon'/'[#] [unit]'",
                                     "  - name: Name of the alarm",
-                                    "  - message: fully HTML coded message sent when alarm fires (and unfires)",
-                                    "  - actions: ARRAY of functions OR chat strings (can be api commands) to be run when alarm fires",
-                                    "  - revActions: ARRAY as above, run when alarm 'unfires' instead",
-                                    "  - recurring: date string for recurrance interval",
-                                    "  - isConditional: if true, will stop clock and confirm with GM before firing"
+                                    "  - label: Descriptor to appear in the GM chat confirmation box",
+                                    "  - funcName: The name of the function as defined in ALARMFUNCS",
+                                    "  - funcParams: An '@'-delim'd list of args to pass to funcName",
+                                    "  - recurring: date string for recurrance interval"
                                 ].join("<br>"), "!time set alarm")
-                            } else {
-                                const [dateString, name, message, actions, displayTo, revActions, recurring, isConditional] = args.join(" ").replace(/"/gu, "").split("|"),
-                                    messageHTML = C.HTML.Block([
-                                        C.HTML.Header(`Alarm Fired: ${name}`),
-                                        C.HTML.Body(message)
-                                    ].join("<br>"))
-                                D.Prompt(
-                                    C.HTML.Block([
-                                        C.HTML.Header("Confirm Alarm"),
-                                        C.HTML.Body([
-                                            `<b>DateString:</b> ${D.JS(dateString)}`,
-                                            `<b>name:</b> ${D.JS(name)}`,
-                                            `<b>message:</b> ${D.JS(message)}`,
-                                            `<b>actions:</b> ${D.JS(actions)}`,
-                                            `<b>displayTo:</b> ${D.JS(displayTo)}`,
-                                            `<b>revActions:</b> ${D.JS(revActions)}`,
-                                            `<b>recurring:</b> ${D.JS(recurring)}`,
-                                            `<b>isConditional:</b> ${D.JS(isConditional)}`
-                                        ].join("<br>").replace(/"/gu, ""), {bgColor: C.COLORS.white, border: `3px inset ${C.COLORS.darkgrey}`, width: "95%", margin: "7px 0px 0px 2.5%", fontFamily: "Verdana", fontSize: "10px", lineHeight: "14px", textShadow: "none", color: C.COLORS.black, fontWeight: "normal", textAlign: "left"}),
-                                        C.HTML.ButtonLine([
-                                            C.HTML.Button("Yes", "!reply confirm true"),
-                                            C.HTML.Button("No", "!reply confirm false")
-                                        ].join(" "))
-                                    ].join("<br>")),
-                                    reply => { 
-                                        if (reply.includes("true")) {
-                                            D.Alert(`Setting Alarm(${D.JS(dateString)}, ${D.JS(name)}, ${D.JS(message)}, ${D.JS(actions)}, ${D.JS(displayTo)}, ${D.JS(revActions)}, ${D.JS(recurring)}, ${D.JS(isConditional)}`, "!time set alarm")
-                                            setAlarm(dateString, name, messageHTML, actions, displayTo, revActions, recurring === "" ? null : recurring, isConditional)
-                                        }
-                                    }
-                                )
-                            }
+                            else
+                                D.Alert(`Alarm Set:<br><br>${D.JS(setAlarm(dateRef, alarmName, alarmLabel, alarmFuncName, alarmFuncParams.split("@").map(x => typeof x === "string" ? x.replace(/:\*:AT:\*:/gu, "@") : x), alarmRecur))}`, "!time set alarm")
                             break
                         }
                         case "weath": case "weather": {
@@ -308,9 +282,7 @@ const TimeTracker = (() => {
                         case "alarms": {
                             STATE.REF.Alarms = {
                                 Ahead: [],
-                                Behind: [],
-                                AutoAbort: [],
-                                AutoDefer: []
+                                Behind: []
                             }
                             break
                         }
@@ -326,7 +298,7 @@ const TimeTracker = (() => {
                     switch (D.LCase(call = args.shift())) {
                         case "datestring": {
                             const [dateStart, dateStrings] = args.join(" ").split("|"),
-                                dateObj = parseToDateObj(dateStart === "now" ? STATE.REF.dateObj : dateStart) || addTime(STATE.REF.dateObj, ...parseToDeltaTime(dateStart), false)
+                                dateObj = getDateObj(dateStart === "now" ? STATE.REF.dateObj : dateStart) || addTime(STATE.REF.dateObj, ...parseToDeltaTime(dateStart), false)
                             if (VAL({dateObj})) {
                                 const testCases = dateStrings === "all" ? ["nextfullweek", "nextfullnight", "dawn", "dusk", "midnight", "noon", "nextweek", "endofweek"] : dateStrings.split("@"),
                                     reportLines = []
@@ -336,10 +308,6 @@ const TimeTracker = (() => {
                             } else {
                                 D.Alert(`Invalid dateStart (${D.JS(dateStart)}) OR dateStrings (${D.JS(dateStrings)})<br><br><b>Syntax:</b> !time test datestring &lt;dateRef&gt;|&lt;dateStrings (@-delim)&gt;`, "!time test datestrings")
                             }
-                            break
-                        }
-                        case "alarm": {
-                            setAlarm(...args.join(" ").split("|"))
                             break
                         }
                         case "firealarm": {
@@ -436,17 +404,92 @@ const TimeTracker = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-        MOON = {
-            minTop: 932, // 1300,
-            maxTop: 262, // 630, 
-            daysToWaitTill: 5,
-            daysToWaitTillWater: 4.25
+        ALARMFUNCS = {
+            daysleep: () => {
+                D.Chat(C.HTML.Block([
+                    C.HTML.Header("You Awaken at Dusk:"),
+                    C.HTML.Body([
+                        "You rouse your Hunger to wake,",
+                        "and to heal aggravated Health damage.",
+                        "You refresh your Willpower."
+                    ].join("<br>"))
+                ].join("")))
+                for (const charObj of D.GetChars("registered")) {
+                    Roller.QuickRouse(charObj, false, false)
+                    Char.RefreshWillpower(charObj)
+                }
+            },
+            delrolleffect: (charRef, effectString) => { // eslint-disable-line no-unused-vars
+                const charObj = D.GetChar(charRef)
+                if (VAL({charObj, string: effectString}))
+                    if (!Roller.DelCharEffect(charObj.id, effectString))
+                        Roller.DelGlobalEffect(effectString)
+            },
+            delcharflag: (charRef, flagName, flagDisplayName, chatStyle) => {
+                const charObj = D.GetChar(charRef)
+                if (VAL({charObj})) {
+                    D.Chat(charObj.id, C.HTML.Block([
+                        C.HTML.Header(`${flagDisplayName} cleared from your character.`, C.STYLES[chatStyle].header)
+                    ].join(""), C.STYLES[chatStyle].block))
+                    D.Call(`!char ${charObj.id} clear flag ${flagName}`)
+                } else {
+                    THROW(`No Character Found for ${D.JS(charRef)}`, "delcharflag")
+                }
+            },
+            reminjury: (charRef, effectString, chatMsg) => {
+                const charObj = D.GetChar(charRef)
+                if (VAL({charObj})) {
+                    if (chatMsg)
+                        D.Chat(charObj.id, C.HTML.Block(C.HTML.Header(chatMsg, C.STYLES.whiteMarble.header), C.STYLES.whiteMarble.block))
+                    D.Call(`!roll effect del char ${charObj.id} ${effectString}`)
+                } else {
+                    THROW(`No Character Found for ${D.JS(charRef)}`, "reminjury")
+                }
+            },
+            remdyscrasia: (charRef) => {
+                const charObj = D.GetChar(charRef)
+                if (VAL({charObj})) {
+                    D.Chat(charObj.id, C.HTML.Block(C.HTML.Header("Your dyscrasia fades.")))
+                    D.Call(`!char ${charObj.id} set stat dyscrasias_toggle:0`)
+                } else {
+                    THROW(`No Character Found for ${D.JS(charRef)}`, "remdyscrasia")
+                }
+            }
         }
     let [timeTimer, secTimer] = [null, null],
         [isTweeningClock, isFastTweeningClock, isTickingClock, isCountdownFrozen, weatherDataMemo] = [false, false, false, false, false],
         isCountdownRunning = true,
         [secondsLeft, numReturns] = [0, 0],
         countdownRecord = []
+
+    // #region CLASSES
+    /* class Alarm {
+        constructor (name, triggerRef, actions, displayOnFire, displayTo) {
+            displayTo = D.LCase(displayTo) === "all" ? ["all"] : _.compact([..._.flatten([displayTo]), "Storyteller"])
+            actions = _.compact([..._.flatten([actions])])
+            if (VAL({string: [name, triggerRef, displayOnFire]}, "Alarm Constructor", true) &&
+                VAL({string: [actions, displayTo]}, "Alarm Constructor", false)) {
+                    this._name = name
+                    this._actions = [...actions]
+                    this._displayOnFire = displayOnFire
+                    this._displayTo = [...displayTo]
+                    const [triggerType, ...triggerParams] = triggerRef.split(":")
+
+
+
+                    switch (D.LCase(triggerRef)) {
+                        case "scene": {
+
+                            break
+                        }
+                        case "a"
+                    }
+                }
+
+
+        }
+    } */
+    // #endregion
 
     // #region Configuration
     const OLDRAWWEATHERDATA = [ /* eslint-disable-line no-unused-vars */
@@ -1221,20 +1264,6 @@ const TimeTracker = (() => {
              ["cxfxsf", "cxexsf", "sxfxsf", "sxfxxf", "sxexxf", "sxfxsf", "sxexsf", "cxexsf", "sxexsf", "sxdxxf", "sxcxxf", "sxaxsf", "sx0xsf", "cx0xsf", "cx0xsf", "cxBxsx", "cxAxsx", "cxAxsx", "cx0xsf", "cx0xsf", "cx0xsf", "cx0xsf", "cx0xsf", "cx0xsf"],
              ["cxbxsf", "xxaxsf", "xxcxxf", "cxdxxf", "cxexsf", "cxexsf", "sxexxf", "bxexwf", "bxexwf", "bxexgf", "xxexwf", "xxfxwf", "xxgxwf", "xxgxbf", "xxhxbf", "xxhxbf", "xxixsf", "xxhxsf", "sxhxb1", "sxhxb1", "bxlxw1", "bxmxw1", "xxnxw1", "xxoxw1"]]
         ],
-        ALARMFUNCS = {
-            daysleep: () => {
-                for (const charObj of D.GetChars("registered")) {
-                    Roller.QuickRouse(charObj, false, false)
-                    Char.RefreshWillpower(charObj)
-                }
-            },
-            cancelRollEffect: (charRef, effectString) => { // eslint-disable-line no-unused-vars
-                const charObj = D.GetChar(charRef)
-                if (VAL({charObj, string: effectString}))
-                    if (!Roller.DelCharEffect(charObj.id, effectString))
-                        Roller.DelGlobalEffect(effectString)
-            }
-        },
         CLOCKSPEED = 50,
         TWEENDURS = [15, 40, 60, 600, 1440, 3000, 5000, 7000, 8000, 9000, 10000, Infinity],
         RUNNINGFASTAT = 1500000,
@@ -1276,6 +1305,12 @@ const TimeTracker = (() => {
         WINTERTEMP = 25,
         WEATHERTEMP = ["z", "y", "x", "w", "v", "u", "t", "s", "r", "q", "p", "o", "n", "m", "l", "k", "j", "i", "h", "g", "f", "e", "d", "c", "b", "a", "0", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"],
         MONTHTEMP = ["f", "b", "a", "C", "Q", "S", "W", "V", "R", "H", "A", "a"],
+        MOON = {
+            minTop: 932, // 1300,
+            maxTop: 262, // 630, 
+            daysToWaitTill: 5,
+            daysToWaitTillWater: 4.25
+        },
     // #endregion
 
     // #region Derivative Stats
@@ -1283,7 +1318,7 @@ const TimeTracker = (() => {
     // #endregion
 
     // #region Date & Time Functions
-        parseToDateObj = dateRef => {
+        getDateObj = dateRef => {
             const funcID = ONSTACK() // Takes almost any date format and converts it into a Date object.
             let returnDate
             const curDateString = formatDateString(new Date(STATE.REF.dateObj))
@@ -1356,7 +1391,7 @@ const TimeTracker = (() => {
                 if (!_.isDate(returnDate))
                     returnDate = new Date(D.Int(dateRef))
                 if (!_.isDate(returnDate) && VAL({string: returnDate}))
-                    return OFFSTACK(funcID) && parseToDateObj(returnDate)
+                    return OFFSTACK(funcID) && getDateObj(returnDate)
             }
             return OFFSTACK(funcID) && false
         },
@@ -1382,6 +1417,7 @@ const TimeTracker = (() => {
                 return OFFSTACK(funcID) && `${totHours % 12 || 12}:${totMins - 60 * totHours < 10 ? "0" : ""}${totMins - 60 * totHours} ${totHours % 24 >= 12 ? "P.M." : "A.M."}`
             return OFFSTACK(funcID) && [totHours % 24, totMins - 60 * totHours]
         },
+        getTimeInMin = dateRef => Math.floor(getDateObj(dateRef).getTime() / (1000 * 60)),
         getDateFromDateString = (dateObj = new Date(STATE.REF.dateObj), dateString, isChangingDateObj = false) => {
             const funcID = ONSTACK()
             if (VAL({dateObj, string: dateString})) {
@@ -1405,7 +1441,7 @@ const TimeTracker = (() => {
                     case "nextweek": addTime(workingDate, 7, "d", true); break
                     case "endofweek": setToFutureWeekday(workingDate, 0); break
                     default: {
-                        const parsedDate = parseToDateObj(dateVal)
+                        const parsedDate = getDateObj(dateVal)
                         if (VAL({dateObj: parsedDate})) {
                             workingDate.setTime(parsedDate.getTime())
                         } else {
@@ -1435,7 +1471,7 @@ const TimeTracker = (() => {
         },       
         formatDateString = (date, isIncludingTime = false) => {
             const funcID = ONSTACK()
-            date = VAL({dateObj: date}) && date || parseToDateObj(date)
+            date = VAL({dateObj: date}) && date || getDateObj(date)
             return OFFSTACK(funcID) && `${
                 ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]
             } ${
@@ -1447,10 +1483,10 @@ const TimeTracker = (() => {
             }` },
         addTime = (dateRef, delta, unit, isChangingOriginal = false) => {
             const funcID = ONSTACK(),
-                dateObj = parseToDateObj(dateRef)
+                dateObj = getDateObj(dateRef)
             DB({dateRef, dateRefType: typeof dateRef, isDate: _.isDate(dateRef), dateObj, delta, unit}, "addTime")
             if (VAL({date: dateRef}, "addTime")) {
-                const newDate = new Date(parseToDateObj(dateObj));
+                const newDate = new Date(getDateObj(dateObj));
                 [delta, unit] = parseToDeltaTime(delta, unit)
                 switch (unit) {
                     case "y": newDate.setUTCFullYear(newDate.getUTCFullYear() + delta); break
@@ -1469,7 +1505,7 @@ const TimeTracker = (() => {
         },
         setToFutureTime = (dateRef, hours, mins) => {
             const funcID = ONSTACK(),
-                dateObj = parseToDateObj(dateRef || STATE.REF.dateObj),
+                dateObj = getDateObj(dateRef || STATE.REF.dateObj),
                 targetDateObj = new Date(dateObj)
             targetDateObj.setUTCHours(hours)
             targetDateObj.setUTCMinutes(mins)   
@@ -1486,7 +1522,7 @@ const TimeTracker = (() => {
         },
         setToFutureWeekday = (dateRef, weekday, hours = 0, mins = 1) => {
             const funcID = ONSTACK(),
-                curDateObj = parseToDateObj(dateRef || STATE.REF.dateObj),
+                curDateObj = getDateObj(dateRef || STATE.REF.dateObj),
                 targetDateObj = new Date(curDateObj)
             targetDateObj.setUTCHours(hours)
             targetDateObj.setUTCMinutes(mins)
@@ -1504,7 +1540,7 @@ const TimeTracker = (() => {
         },
         getHorizonTimeString = (dateRef) => {
             const funcID = ONSTACK()
-            dateRef = parseToDateObj(dateRef || STATE.REF.dateObj)
+            dateRef = getDateObj(dateRef || STATE.REF.dateObj)
             const [dawn, dusk] = TWILIGHTMINS[dateRef.getMonth()],
                 imgTimes = _.object(_.map(Object.keys(IMAGETIMES), k => {
                     const fID = ONSTACK()
@@ -1592,6 +1628,72 @@ const TimeTracker = (() => {
         },
     // #endregion
     
+    
+        
+        getAlarmsBetween = (dateRef, deltaTimeInMin=0) => {
+            const dateObj = getDateObj(dateRef),
+                timeInMin = getTimeInMin(dateObj),
+                [startTime, endTime] = [timeInMin, timeInMin + deltaTimeInMin].sort((a, b) => a - b)
+            return STATE.REF.Alarms.filter(x => x.time <= endTime && (startTime === endTime || x.time > startTime))
+        },
+        isMatchingAlarm = (alarmA, alarmB) => D.JS(Object.values(_.omit(alarmA, "id"))) === D.JS(Object.values(_.omit(alarmB, "id"))),
+        setAlarm = (dateRef, alarmName, alarmDesc, alarmFuncName, alarmFuncParams = [], recur = false) => {
+            const thisAlarm = {
+                name: alarmName,
+                desc: alarmDesc,
+                funcName: alarmFuncName,
+                funcParams: alarmFuncParams,
+                recur
+            }
+            if (D.LCase(dateRef) === "scene")
+                return Session.AddSceneAlarm(thisAlarm)
+            const thisDateObj = VAL({string: dateRef}) ? getDateFromDateString(undefined, dateRef) : getDateObj(dateRef)  
+            if (VAL({date: thisDateObj}, "setAlarm")) {
+                thisAlarm.time = getTimeInMin(thisDateObj)
+                const curAlarms = getAlarmsBetween(dateRef),
+                    curAlarmIDs = Object.values(STATE.REF.Alarms).map(x => x.id)
+                if (curAlarms.filter(x => isMatchingAlarm(x, thisAlarm)).length)
+                    return false
+                do
+                    thisAlarm.id = D.RandomString()
+                while (curAlarmIDs.includes(thisAlarm.id))
+                STATE.REF.Alarms = [...STATE.REF.Alarms, thisAlarm].sort((a,b) => a.time - b.time)
+                return thisAlarm
+            }   
+            return false      
+        },
+        fireAlarm = (alarm) => {
+            if ("name" in alarm && "desc" in alarm) 
+                D.Chat("Storyteller", D.CommandMenuHTML({
+                    rows: [
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {text: `${D.UCase(alarm.name)}: ${D.JS(alarm.desc)} - `, styles: { }}, /* height, width, fontFamily, fontSize, bgColor, color, margin, textAlign, textIndent, padding, lineHeight */
+                                0,
+                                {name: "Confirm", command: `!time alarmfunc ${D.LCase(alarm.funcName)} ${alarm.funcParams.join("|@firealarm@|")}`, styles: { }} /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                            ],
+                            buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                            styles: { } /* height, width, margin, textAlign */
+                        }
+                    ]
+                }))
+            else 
+                confirmAlarm(alarm.funcName, alarm.funcParams)
+            
+            if (alarm.recur)
+                recurAlarm(alarm)
+        },
+        confirmAlarm = (funcName, funcParams) => {
+            if (funcName in ALARMFUNCS) {
+                funcParams = VAL({string: funcParams}) ? funcParams.split(/\|@firealarm@\|/gui) : funcParams
+                ALARMFUNCS[funcName](...funcParams)
+            } else {
+                D.Alert(`'${D.LCase(funcName)}' Alarm Function Not Found.`, "TIMETRACKER: Confirm Alarm")
+            }
+        },
+        recurAlarm = (alarm) => {},
+
     // #region CLOCK: Toggling, Ticking, Setting Clock Text    
         toggleClock = (activeState, secsPerMin = 60) => {
             const funcID = ONSTACK()
@@ -1648,32 +1750,51 @@ const TimeTracker = (() => {
                    STATE.REF.dateObj.getUTCDate() !== lastDate.getUTCDate() ||
                    STATE.REF.dateObj.getUTCHours() !== lastDate.getUTCHours()
         },
-        continueClockTween = (easeFunction) => {
-            const funcID = ONSTACK()
-            isTweeningClock = true
-            clearInterval(timeTimer)
-            timeTimer = setInterval(easeFunction, CLOCKSPEED)
-            DB({
-                TweenStart: formatDateString(STATE.REF.TweenStart, true),
-                TweenTarget: formatDateString(STATE.REF.TweenTarget, true),
-                TweenDelta: `~ ${D.Round((STATE.REF.TweenDelta || 0)/3600/1000, 2)} h`,
-                TweenDuration: STATE.REF.TweenDuration,
-                TweenCurTime: STATE.REF.TweenCurTime,
-                TweenLastTime: `~ ${D.Round((STATE.REF.TweenLastTime || 0)/3600/1000, 2)} h`,
-                currentDate: formatDateString(STATE.REF.dateObj, true),
-                lastDate: formatDateString(STATE.REF.lastDate, true)
-            }, "continueClockTween")
+        continueClockTween = () => {
+            const funcID = ONSTACK(),
+                easeFunction = () => {
+                    const fID = ONSTACK()
+                    if (STATE.REF.Alarms.Fired.length)
+                        return OFFSTACK(fID) && pauseClockTween() && fireNextAlarm()
+                    if (!isTweeningClock)
+                        return OFFSTACK(fID) && pauseClockTween() && false
+                    if (Math.abs(STATE.REF.TweenCurTime) >= Math.abs(STATE.REF.TweenDuration))
+                        return OFFSTACK(fID) && stopClockTween() && true
+                    const newDelta = -1 * STATE.REF.TweenDelta / 2 * (Math.cos(Math.PI * STATE.REF.TweenCurTime / STATE.REF.TweenDuration) - 1)
+                    isFastTweeningClock = Math.abs(newDelta - STATE.REF.TweenLastTime) > RUNNINGFASTAT
+                    STATE.REF.TweenLastTime = newDelta
+                    STATE.REF.dateObj.setTime(STATE.REF.TweenStart + newDelta)
+                    updateClockObj()
+                    STATE.REF.TweenCurTime += CLOCKSPEED
+                    return OFFSTACK(fID) && undefined
+                }
+            if (STATE.REF.TweenStart && STATE.REF.TweenTarget) {
+                isTweeningClock = true
+                clearInterval(timeTimer)
+                timeTimer = setInterval(easeFunction, CLOCKSPEED)
+                DB({
+                    TweenStart: formatDateString(STATE.REF.TweenStart, true),
+                    TweenTarget: formatDateString(STATE.REF.TweenTarget, true),
+                    TweenDelta: `~ ${D.Round((STATE.REF.TweenDelta || 0)/3600/1000, 2)} h`,
+                    TweenDuration: STATE.REF.TweenDuration,
+                    TweenCurTime: STATE.REF.TweenCurTime,
+                    TweenLastTime: `~ ${D.Round((STATE.REF.TweenLastTime || 0)/3600/1000, 2)} h`,
+                    currentDate: formatDateString(STATE.REF.dateObj, true),
+                    lastDate: formatDateString(STATE.REF.lastDate, true)
+                }, "continueClockTween")
+            }
             OFFSTACK(funcID)
         },
-        startClockTween = (easeFunction, targetDateObj) => {
+        startClockTween = (targetDateObj) => {
             const funcID = ONSTACK()
+            isTickingClock = false
             STATE.REF.TweenStart = STATE.REF.dateObj.getTime()
             STATE.REF.TweenTarget = targetDateObj.getTime()
             STATE.REF.TweenDelta = STATE.REF.TweenTarget - STATE.REF.TweenStart
             STATE.REF.TweenDuration = (_.findIndex(TWEENDURS, v => STATE.REF.TweenDelta / 60000 <= v) + 1) * 1000
             STATE.REF.TweenCurTime = 0
             STATE.REF.TweenLastTime = 0
-            continueClockTween(easeFunction)
+            continueClockTween()
             OFFSTACK(funcID)
         },
         pauseClockTween = () => {
@@ -1703,27 +1824,12 @@ const TimeTracker = (() => {
             STATE.REF.TweenCurTime = 0
             OFFSTACK(funcID)
         },
-        easeInOutSine = (curTime, startVal, deltaVal, duration) => -deltaVal / 2 * (Math.cos(Math.PI * curTime / duration) - 1) + startVal,
         tweenClock = (finalDate) => {
-            const funcID = ONSTACK(),
-                easeSet = () => {
-                    const fID = ONSTACK()
-                    if (!isTweeningClock)
-                        return OFFSTACK(fID) && pauseClockTween() && false
-                    if (Math.abs(STATE.REF.TweenCurTime) >= Math.abs(STATE.REF.TweenDuration))
-                        return OFFSTACK(fID) && stopClockTween() && true
-                    const newDelta = easeInOutSine(STATE.REF.TweenCurTime, 0, STATE.REF.TweenDelta, STATE.REF.TweenDuration)
-                    isFastTweeningClock = Math.abs(newDelta - STATE.REF.TweenLastTime) > RUNNINGFASTAT
-                    STATE.REF.TweenLastTime = newDelta
-                    STATE.REF.dateObj.setTime(STATE.REF.TweenStart + newDelta)
-                    updateClockObj()
-                    STATE.REF.TweenCurTime += CLOCKSPEED
-                    return OFFSTACK(fID) && undefined
-                }
+            const funcID = ONSTACK()
             if (STATE.REF.TweenStart && STATE.REF.TweenTarget)
-                continueClockTween(easeSet)
+                continueClockTween()
             else
-                startClockTween(easeSet, parseToDateObj(finalDate))
+                startClockTween(getDateObj(finalDate))
             OFFSTACK(funcID)
         },
         tickClock = () => {
@@ -1731,9 +1837,9 @@ const TimeTracker = (() => {
             if (isTickingClock) {
                 const lastHour = STATE.REF.dateObj.getUTCHours()
                 STATE.REF.dateObj.setUTCMinutes(STATE.REF.dateObj.getUTCMinutes() + 1)
+                updateClockObj()
                 if (STATE.REF.dateObj.getUTCHours() !== lastHour)
                     setWeather()
-                updateClockObj()
                 setHorizon()
             }
             OFFSTACK(funcID)
@@ -2599,14 +2705,23 @@ const TimeTracker = (() => {
         // revActions: ARRAY as above, run when alarm "unfires" instead
         // recurring: if LIST {years: #, months: #, weeks: #, days: #, hours: #, mins: #}, will repeat alarm at that interval
         // isConditional: if true, will stop clock and confirm with GM before firing
-        setAlarm = (dateRef, name, message, actions = [], displayTo = [], revActions = [], recurring = false, isConditional = false) => {
+        regAlarm = () => {
+
+        },
+        setAttrAlarm = (charRef, attrName, triggerFunc, name, message, actions = [], displayTo = []) => {
+
+        },
+        setSceneAlarm = (charRef, name, message, actions = [], displayTo = []) => {
+
+        },
+        setTimeAlarm = (triggerRef, name, message, actions = [], displayTo = [], revActions = [], recurring = false, isConditional = false) => {
             const funcID = ONSTACK()
             // STEP ONE: FIGURE OUT WHEN THE ALARM SHOULD FIRE.
-            if (dateRef.split(":").length > 2)
-                return OFFSTACK(funcID) && D.Alert(`DateRef '${D.JS(dateRef)} has too many terms.<br>(A ':' should only appear between the timeRef and the modifying flag)`, "setAlarm")
+            if (triggerRef.split(":").length > 2)
+                return OFFSTACK(funcID) && D.Alert(`DateRef '${D.JS(triggerRef)} has too many terms.<br>(A ':' should only appear between the timeRef and the modifying flag)`, "setAlarm")
             const workingDate = new Date(STATE.REF.dateObj)
-            if (VAL({string: dateRef}) && dateRef !== "scene")
-                getDateFromDateString(workingDate, dateRef, true)
+            if (VAL({string: triggerRef}) && triggerRef !== "scene")
+                getDateFromDateString(workingDate, triggerRef, true)
             if (VAL({string: actions})) // Actions can be a comma-delimited list of chat commands.
                 actions = actions.split(/\s*,\s*/gu)
             if (VAL({string: revActions})) // Reverse actions can be as above.
@@ -2628,7 +2743,7 @@ const TimeTracker = (() => {
                 dateString: formatDateString(workingDate),
                 isConditional: VAL({bool: isConditional}) && isConditional
             }
-            if (dateRef === "scene") {
+            if (triggerRef === "scene") {
                 Session.AddSceneAlarm(thisAlarm)
                 return OFFSTACK(funcID) && true
             } else if (VAL({number: thisAlarm.time}, "setAlarm")) {
@@ -2655,7 +2770,7 @@ const TimeTracker = (() => {
             alarm = D.Clone(alarm)
             alarm.conditionOK = true
             const alarmEscrow = D.Clone(alarm)
-            alarm.wasAborted = true
+            alarm.wasIgnored = true
             if ((alarm.revActions || []).length && alarm.time)
                 STATE.REF.Alarms.Behind.unshift(D.Clone(alarm))
             const replyFunc = reply => {
@@ -2697,65 +2812,16 @@ const TimeTracker = (() => {
             )
             OFFSTACK(funcID)
         },
-        fireAlarm = (alarm, isAborting = false, isDeferring = false, isCheckingCondition = true) => {
-            const funcID = ONSTACK()
-            alarm = D.Clone(alarm)
-            isAborting = alarm.wasAborted || STATE.REF.Alarms.AutoAbort.includes(alarm.name) || isAborting
-            isDeferring = !isAborting && (STATE.REF.Alarms.AutoDefer.includes(alarm.name) || isDeferring)
-            if (isAborting) {
-                alarm.wasAborted = true                
-                if ((alarm.revActions || []).length && alarm.time)
-                    STATE.REF.Alarms.Behind.unshift(alarm)
-            } else if (isDeferring) {
-                delete alarm.conditionOK
-                delete alarm.wasAborted
-                alarm.time += 60 * 60 * 1000
-                STATE.REF.Alarms.Ahead.unshift(alarm)
-            } else {
-                if (!alarm.wasRecurred && VAL({string: alarm.recurring})) {
-                    const recurredAlarm = D.Clone(alarm)
-                    recurredAlarm.time = (getDateFromDateString(new Date(alarm.time), alarm.recurring) || {getTime: () => false}).getTime()
-                    if (recurredAlarm.time) {
-                        recurredAlarm.dateString = formatDateString(new Date(recurredAlarm.time))                    
-                        STATE.REF.Alarms.Ahead.unshift(recurredAlarm)
-                    }
-                    alarm.wasRecurred = true
-                    fireAlarm(alarm, false, false)
-                } else if (isCheckingCondition && !alarm.conditionOK) {
-                    checkCondition(alarm)
-                } else {    
-                    if (alarm.displayTo.includes("all"))
-                        D.Chat("all", alarm.message)
-                    else
-                        for (const player of alarm.displayTo)
-                            D.Chat(D.GetName(player), alarm.message)      
-                    for (const action of alarm.actions)
-                        if (VAL({array: action})) {
-                            if (ALARMFUNCS[action[0]])
-                                ALARMFUNCS[action.shift()](...action)                        
-                        } else if (VAL({string: action}, "fireAlarm")) {
-                            if (ALARMFUNCS[action])
-                                ALARMFUNCS[action]()
-                            else
-                                D.Call(action)
-                        }
-                    if (alarm.revActions.length && alarm.time)
-                        STATE.REF.Alarms.Behind.unshift(D.Clone(alarm))
-                }
-            }
-            STATE.REF.Alarms.Ahead = _.sortBy(STATE.REF.Alarms.Ahead, "time")
-            OFFSTACK(funcID)
-        },
         unfireAlarm = (alarm) => {
             const funcID = ONSTACK()
             delete alarm.conditionOK
-            if (!alarm.wasAborted)
+            if (!alarm.wasIgnored)
                 for (const revAction of alarm.revActions)
                     if (VAL({function: revAction}))
                         revAction()
                     else if (VAL({string: revAction}))
                         sendChat("", revAction)
-            delete alarm.wasAborted
+            delete alarm.wasIgnored
             STATE.REF.Alarms.Ahead.unshift(D.Clone(alarm))
             STATE.REF.Alarms.Ahead = _.sortBy(STATE.REF.Alarms.Ahead, "time")
             OFFSTACK(funcID)
@@ -2796,14 +2862,15 @@ const TimeTracker = (() => {
         
         ALARMFUNCS,
         ToggleClock: toggleClock,
+        Pause: pauseClockTween, Resume: continueClockTween,
         Fire: (alarm) => fireAlarm(alarm, false, false, false),
 
         get CurrentDate() { return new Date(STATE.REF.dateObj) },
-        GetDate: parseToDateObj,
+        GetDate: getDateObj,
         get TempC () { return getTempFromCode(MONTHTEMP[STATE.REF.dateObj.getUTCMonth()]) + getTempFromCode(getWeatherCode().charAt(2)) },
         set CurrentDate(dateRef) {
             if (dateRef)
-                STATE.REF.dateObj = parseToDateObj(dateRef)
+                STATE.REF.dateObj = getDateObj(dateRef)
         },
         FormatDate: formatDateString,
         IsDay: isDateInDay,
@@ -2813,7 +2880,7 @@ const TimeTracker = (() => {
 
         GetRandomTimeline: getRandomEventTriggers,
 
-        SetAlarm: setAlarm
+        SetAlarm: setTimeAlarm
     }
 })()
 

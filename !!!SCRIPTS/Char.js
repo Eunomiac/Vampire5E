@@ -721,16 +721,11 @@ const Char = (() => {
                 if (VAL({string: removeWhen}))
                     TimeTracker.SetAlarm(
                         removeWhen,
-                        `removeFlag${flagName}`,
-                        C.HTML.Block([
-                            C.HTML.Header(`${flagDisplayName} cleared from your character.`, C.STYLES[isGoodFlag ? "whiteMarble" : "blackMarble"].header)
-                        ].join(""), C.STYLES[isGoodFlag ? "whiteMarble" : "blackMarble"].block),
-                        `!char ${charObj.id} clear flag ${flagName}`,
-                        [D.GetPlayerID(charObj)],
-                        null,
-                        false,
-                        false
-                    )
+                        "delcharflag",
+                        `Remove Flag from ${D.GetName(charObj)}:`,
+                        "delcharflag",
+                        [charObj.id, flagName, flagDisplayName, isGoodFlag ? "whiteMarble" : "blackMarble"],
+                        false)
             }
         },
         delCharFlag = (charRef, flagName) => {
@@ -1776,12 +1771,8 @@ const Char = (() => {
                             Roller.AddCharEffect(charObj, "all;-2;- Massive Wound (<.>)")
                             addCharFlag(charObj.id, "incDmgTaken", false, false)
                             addCharAlarm(charObj.id, "health", ["offImpair"], {
-                                name: "RemInjury",
-                                message: C.HTML.Block(C.HTML.Header("Your massive wound heals.", C.STYLES.whiteMarble.header), C.STYLES.whiteMarble.block),
-                                actions: [`!roll effect del char ${charObj.id} all;-2;- Massive Wound (<.>)`, `!char clear flag ${charObj.id} incHealthDmgTaken`],
-                                revActions: [`!roll effect add char ${charObj.id} all;-2;- Massive Wound (<.>)`, `!char add flag ${charObj.id} incHealthDmgTaken`],
-                                displayTo: [D.GetPlayerID(charObj), "Storyteller"],
-                                isConditional: false
+                                funcName: "reminjury",
+                                funcParams: [charObj.id, "all;-2;- Massive Wound (<.>)", "Your massive wound heals."]
                             })
                             D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
                         },  
@@ -1809,12 +1800,8 @@ const Char = (() => {
                                             ])
                                             Roller.AddCharEffect(charObj, "brawl/firearms/melee;-3;- Broken Arm (<.>)")
                                             addCharAlarm(charObj.id, "health", ["offImpair"], {
-                                                name: "RemInjury",
-                                                message: C.HTML.Block(C.HTML.Header("Your broken arm knits itself back together.", C.STYLES.whiteMarble.header), C.STYLES.whiteMarble.block),
-                                                actions: [`!roll effect del char ${charObj.id} brawl/firearms/melee;-3;- Broken Arm (<.>)`],
-                                                revActions: [`!roll effect add char ${charObj.id} brawl/firearms/melee;-3;- Broken Arm (<.>)`],
-                                                displayTo: [D.GetPlayerID(charObj), "Storyteller"],
-                                                isConditional: false
+                                                funcName: "reminjury",
+                                                funcParams: [charObj.id, "brawl/firearms/melee;-3;- Broken Arm (<.>)", "Your broken arm knits itself back together."]
                                             })
                                             break
                                         }
@@ -1825,12 +1812,8 @@ const Char = (() => {
                                             ])
                                             Roller.AddCharEffect(charObj, "athletics/stealth;-3;- Broken Leg (<.>)")
                                             addCharAlarm(charObj.id, "health", ["offImpair"], {
-                                                name: "RemInjury",
-                                                message: C.HTML.Block(C.HTML.Header("Your broken leg knits itself back together.", C.STYLES.whiteMarble.header), C.STYLES.whiteMarble.block),
-                                                actions: [`!roll effect del char ${charObj.id} athletics/stealth;-3;- Broken Leg (<.>)`],
-                                                revActions: [`!roll effect add char ${charObj.id} athletics/stealth;-3;- Broken Leg (<.>)`],
-                                                displayTo: [D.GetPlayerID(charObj), "Storyteller"],
-                                                isConditional: false
+                                                funcName: "reminjury",
+                                                funcParams: [charObj.id, "athletics/stealth;-3;- Broken Leg (<.>)", "Your broken leg knits itself back together."]
                                             })
                                             break
                                         }
@@ -1841,12 +1824,8 @@ const Char = (() => {
                                             ])
                                             Roller.AddCharEffect(charObj, "awareness/brawl/firearms/melee/drive/investigation;-3;- Blind (<.>)")
                                             Session.AddSceneAlarm({
-                                                name: "HealBlindness",
-                                                message: C.HTML.Block(C.HTML.Header("You are no longer blinded.", C.STYLES.whiteMarble.header), C.STYLES.whiteMarble.block),
-                                                actions: [`!roll effect del char ${charObj.id} awareness/brawl/firearms/melee/drive/investigation;-3;- Blind (<.>)`],
-                                                revActions: [`!roll effect add char ${charObj.id} awareness/brawl/firearms/melee/drive/investigation;-3;- Blind (<.>)`],
-                                                displayTo: [D.GetPlayerID(charObj), "Storyteller"],
-                                                isConditional: false
+                                                funcName: "reminjury",
+                                                funcParams: [charObj.id, "awareness/brawl/firearms/melee/drive/investigation;-3;- Blind (<.>)", "You are no longer blinded."]
                                             })
                                             break
                                         }
@@ -1864,12 +1843,12 @@ const Char = (() => {
                             Roller.AddCharEffect(charObj, "physical;-1;- Head Trauma (<.>)")
                             Roller.AddCharEffect(charObj, "mental;-2;- Head Trauma (<.>)")
                             addCharAlarm(charObj.id, "health", ["offImpair"], {
-                                name: "RemInjury",
-                                message: C.HTML.Block(C.HTML.Header("Your head trauma heals.", C.STYLES.whiteMarble.header), C.STYLES.whiteMarble.block),
-                                actions: [`!roll effect del char ${charObj.id} physical;-1;- Head Trauma (<.>)`, `!roll effect del char ${charObj.id} mental;-2;- Head Trauma (<.>)`],
-                                revActions: [`!roll effect add char ${charObj.id} physical;-1;- Head Trauma (<.>)`, `!roll effect add char ${charObj.id} mental;-2;- Head Trauma (<.>)`],
-                                displayTo: [D.GetPlayerID(charObj), "Storyteller"],
-                                isConditional: false
+                                funcName: "reminjury",
+                                funcParams: [charObj.id, "physical;-1;- Head Trauma (<.>)"]
+                            })                            
+                            addCharAlarm(charObj.id, "health", ["offImpair"], {
+                                funcName: "reminjury",
+                                funcParams: [charObj.id, "mental;-2;- Head Trauma (<.>)", "Your head trauma heals."]
                             })
                             D.Chat("all", C.HTML.Block(injuryChatLines.join("")))
                         },      
@@ -1973,13 +1952,9 @@ const Char = (() => {
                     dyscrasias: dyscrasiasTitle && `${D.UCase(dyscrasiasTitle)} — ${D.Capitalize(dyscrasiasText)}` || ""
                 })
                 if (dyscrasiasTitle)
-                    addCharAlarm(charRef, "hunger", ["onMax", "slake"], {
-                        name: "RemDyscrasia",
-                        message: C.HTML.Block(C.HTML.Header("Your dyscrasia fades.")),
-                        actions: [`!char ${charObj.id} set stat dyscrasias_toggle:0`],
-                        revActions: [`!char ${charObj.id} set stat dyscrasias_toggle:1`],
-                        displayTo: [D.GetPlayerID(charObj), "Storyteller"],
-                        isConditional: false
+                    addCharAlarm(charObj.id, "hunger", ["onMax", "slake"], {
+                        funcName: "remdyscrasia",
+                        funcParams: [charObj.id]
                     })
             }
         },
@@ -2045,14 +2020,14 @@ const Char = (() => {
 
     // #region Daysleep & Waking Up,
         setDaysleepAlarm = () => {
-            TimeTracker.SetAlarm("dusk", "Dusk Wake-Up", C.HTML.Block([
-                C.HTML.Header("You Awaken at Dusk:"),
-                C.HTML.Body([
-                    "You rouse your Hunger to wake,",
-                    "and to heal aggravated Health damage.",
-                    "You refresh your Willpower."
-                ].join("<br>"))
-            ].join("")), ["daysleep"], ["all"], [], false, true)
+            TimeTracker.SetAlarm(
+                "dusk",
+                "daysleep",
+                "Daysleep:",
+                "daysleep",
+                [],
+                "dusk"
+            )
         },
         refreshWillpower = (charRef) => {
             const adjustParams = {}

@@ -22,8 +22,10 @@ const Session = (() => {
             // delete STATE.REF.curLocation
             // delete STATE.REF.locationRecord
             // delete STATE.REF.tokenRecord
-            
-            // STATE.REF.SessionScribes = ["PixelPuzzler"]
+            // delete STATE.REF.SceneAlarms
+            // STATE.REF.SceneAlarms = []
+
+            delete STATE.REF.SessionScribes
 
             /*
             STATE.REF.customLocs = {
@@ -107,6 +109,8 @@ const Session = (() => {
             STATE.REF.locationPointer = STATE.REF.locationPointer || {}
             STATE.REF.FavoriteSites = STATE.REF.FavoriteSites || []
             STATE.REF.FavoriteDistricts = STATE.REF.FavoriteDistricts || []
+            
+            STATE.REF.SceneAlarms = STATE.REF.SceneAlarms || []
             
             // delete STATE.REF.locationRecord
             
@@ -424,6 +428,8 @@ const Session = (() => {
                     STATE.REF.isTestingActive = true
                     Media.ToggleText("testSessionNotice", true)
                     Media.ToggleText("testSessionNoticeSplash", true)
+                    Media.SetText("testSessionNotice", `TESTING (${Session.Mode})`)
+                    Media.SetText("testSessionNoticeSplash", `TESTING (${Session.Mode})`)
                     setPlayerPage()
                 }
             },
@@ -630,6 +636,8 @@ const Session = (() => {
                 for (const endFunc of endFuncs)
                     D.Queue(endFunc[0], endFunc[1], "ModeSwitch", endFunc[2] || 0.1)
                 D.Run("ModeSwitch")
+                Media.SetText("testSessionNotice", `TESTING (${curMode})`)
+                Media.SetText("testSessionNoticeSplash", `TESTING (${curMode})`)
             }
             return true
         },
@@ -1372,7 +1380,7 @@ const Session = (() => {
             for (const charObj of Session.SceneChars)
                 D.SetStat(charObj.id, "willpower_social_toggle", "go")
             for (const sceneAlarm of STATE.REF.SceneAlarms)
-                TimeTracker.Fire(sceneAlarm, false, false, true)
+                TimeTracker.Fire(sceneAlarm)
             STATE.REF.SceneAlarms = []
             D.Alert("Social Willpower Damage partially refunded.", "Scene Ended")
         }
