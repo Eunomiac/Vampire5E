@@ -1,3 +1,4 @@
+/* eslint-disable one-var */
 void MarkStart("Media")
 const Media = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
@@ -9,20 +10,20 @@ const Media = (() => {
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
-        ONSTACK = () => D.ONSTACK(ONSTACK),
-        OFFSTACK = (funcID) => D.OFFSTACK(funcID),
+        TRACEON = (funcName, funcParams = [], msg = "") => D.TraceStart(funcName, funcParams, SCRIPTNAME, msg), // eslint-disable-line no-unused-vars  
+        TRACEOFF = (funcID, returnVal) => D.TraceStop(funcID, returnVal), // eslint-disable-line no-unused-vars
 
         checkInstall = () => {
-            const funcID = ONSTACK()
+            // const traceID = TRACEON("checkInstall", [])
             C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
             initialize()
-            OFFSTACK(funcID)
+            // TRACEOFF(traceID)
         },
     // #endregion
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
-            const funcID = ONSTACK()
+            // const traceID = TRACEON("initialize", [])
 
             STATE.REF.imgregistry = STATE.REF.imgregistry || {}
             STATE.REF.textregistry = STATE.REF.textregistry || {}
@@ -77,13 +78,14 @@ const Media = (() => {
             STATE.REF.AREADICT = Fuzzy.Fix()
             for (const areaKey of Object.keys(STATE.REF.areas))
                 STATE.REF.AREADICT.add(areaKey)
-            OFFSTACK(funcID)
+            
+            // TRACEOFF(traceID)
         },
     // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-        onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
-            const funcID = ONSTACK() 
+        onChatCall = (call, args, objects, msg) => {
+            const traceID = TRACEON("onChatCall", [call, args, objects, msg]) // eslint-disable-line no-unused-vars
             switch (call) {
                 case "!media": {
                     const mediaObjs = [...Listener.GetObjects(objects, "graphic"), ...Listener.GetObjects(objects, "text")]
@@ -986,10 +988,10 @@ const Media = (() => {
                 }
                 // no default
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         onGraphicAdd = imgObj => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("onGraphicAdd", [imgObj])
             if (imgRecord)
                 LOG(imgObj.get("imgsrc"))
             if (imgResize)
@@ -1005,7 +1007,7 @@ const Media = (() => {
                     imgSrcAutoReg = false
                     D.Alert("Image auto registration complete!", "Image Auto Registration")
                 }
-                return OFFSTACK(funcID) && true
+                return TRACEOFF(traceID, true)
             }
             if (imgSrcAutoToken) {
                 if (imgSrcAddingProfilePic) {
@@ -1042,11 +1044,11 @@ const Media = (() => {
                         D.Alert("Error uploading token image.", "Token Auto Registration")
                     }
                 }
-                return OFFSTACK(funcID) && true
+                return TRACEOFF(traceID, true)
             }
             if (isRandomizerToken(imgObj))
                 setRandomizerToken(imgObj)
-            return OFFSTACK(funcID) && true
+            return TRACEOFF(traceID, true)
         }
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
@@ -1143,65 +1145,65 @@ const Media = (() => {
     // #region GENERAL MEDIA OBJECT GETTERS:
         isRegistered = mediaRef => isRegText(mediaRef) || isRegImg(mediaRef) || isRegAnim(mediaRef),
         getMediaObj = mediaRef => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("getMediaObj", [mediaRef])
             if (VAL({object: mediaRef}))
-                return OFFSTACK(funcID) && mediaRef
+                return TRACEOFF(traceID, mediaRef)
             if (isRegText(mediaRef)) {
-                return OFFSTACK(funcID) && getTextObj(mediaRef)
+                return TRACEOFF(traceID, getTextObj(mediaRef))
             } else if (isRegImg(mediaRef)) {
-                return OFFSTACK(funcID) && getImgObj(mediaRef)
+                return TRACEOFF(traceID, getImgObj(mediaRef))
             } else if (VAL({string: mediaRef})) {
                 const imgObj = getObj("graphic", mediaRef)
                 if (VAL({imgObj}))
-                    return OFFSTACK(funcID) && imgObj
+                    return TRACEOFF(traceID, imgObj)
                 const textObj = getObj("text", mediaRef)
                 if (VAL({textObj}))
-                    return OFFSTACK(funcID) && textObj                
+                    return TRACEOFF(traceID, textObj)           
             }
-            return OFFSTACK(funcID) && mediaRef
+            return TRACEOFF(traceID, mediaRef)
         },
         getMediaKey = (mediaRef, funcName = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("getMediaKey", [mediaRef, funcName])
             if (isRegText(mediaRef))
-                return OFFSTACK(funcID) && getTextKey(mediaRef, funcName)
-            return OFFSTACK(funcID) && getImgKey(mediaRef, funcName)
+                return TRACEOFF(traceID, getTextKey(mediaRef, funcName))
+            return TRACEOFF(traceID, getImgKey(mediaRef, funcName))
         },
         getMediaData = mediaRef => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("getMediaData", [mediaRef])
             if (isRegText(mediaRef))
-                return OFFSTACK(funcID) && getTextData(mediaRef)
-            return OFFSTACK(funcID) && getImgData(mediaRef)
+                return TRACEOFF(traceID, getTextData(mediaRef))
+            return TRACEOFF(traceID, getImgData(mediaRef))
         },
         getRegistryRef = mediaRef => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("getRegistryRef", [mediaRef])
             if (isRegText(mediaRef))
-                return OFFSTACK(funcID) && REGISTRY.TEXT
+                return TRACEOFF(traceID, REGISTRY.TEXT)
             if (isRegAnim(mediaRef))
-                return OFFSTACK(funcID) && REGISTRY.ANIM
+                return TRACEOFF(traceID, REGISTRY.ANIM)
             if (isRegToken(mediaRef))
-                return OFFSTACK(funcID) && REGISTRY.TOKEN
+                return TRACEOFF(traceID, REGISTRY.TOKEN)
             if (isRegImg(mediaRef))
-                return OFFSTACK(funcID) && REGISTRY.IMG
+                return TRACEOFF(traceID, REGISTRY.IMG)
             DB(`Unable to find registry reference for ${D.JSL(mediaRef)}!`, "getRegistryRef")
-            return OFFSTACK(funcID) && {}
+            return TRACEOFF(traceID, {})
         },
         getModeData = (mediaRef, mode) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("getModeData", [mediaRef, mode])
             mode = mode || Session.Mode
             const mediaData = getMediaData(mediaRef)
             if (VAL({list: [mediaData, mediaData.modes]}, "getModeData", true))
-                return OFFSTACK(funcID) && mediaData.modes[mode]
-            return OFFSTACK(funcID) && THROW(`Invalid Media Reference: ${D.JSL(mediaRef)}`, "getModeData")         
+                return TRACEOFF(traceID, mediaData.modes[mode])
+            return TRACEOFF(traceID, THROW(`Invalid Media Reference: ${D.JSL(mediaRef)}`, "getModeData") )
         },
         hasForcedState = (mediaRef) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("hasForcedState", [mediaRef]),
                 mediaData = getModeData(mediaRef, Session.Mode)
             if (VAL({list: mediaData}, "hasForcedState"))
-                return OFFSTACK(funcID) && VAL({string: mediaData.isForcedState}) && mediaData.isForcedState !== "LAST"
-            return OFFSTACK(funcID) && THROW(`Invalid Media Reference: ${D.JSL(mediaRef)}`, "hasForcedState")                  
+                return TRACEOFF(traceID, VAL({string: mediaData.isForcedState}) && mediaData.isForcedState !== "LAST")
+            return TRACEOFF(traceID, THROW(`Invalid Media Reference: ${D.JSL(mediaRef)}`, "hasForcedState") )
         },
         getModeStatus = mediaRef => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("getModeStatus", [mediaRef]),
                 modeStatus = {}
             if (isRegistered(mediaRef)) {
                 const mediaData = getMediaData(mediaRef)
@@ -1222,24 +1224,24 @@ const Media = (() => {
                             modeStatus.state = undefined
                         else
                             modeStatus.state = mediaModes.isForcedState
-                        return OFFSTACK(funcID) && modeStatus
+                        return TRACEOFF(traceID, modeStatus)
                     }
                 }
             }
-            return OFFSTACK(funcID) && THROW(`Invalid Media Reference: ${D.JSL(mediaRef)}`, "getModeStatus")      
+            return TRACEOFF(traceID, THROW(`Invalid Media Reference: ${D.JSL(mediaRef)}`, "getModeStatus") )
         },
         getActiveLayer = mediaRef => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("getActiveLayer", [mediaRef]),
                 mediaData = getMediaData(mediaRef)
             if (VAL({list: mediaData}, "getActiveLayer"))
-                return OFFSTACK(funcID) && mediaData.activeLayer
-            return OFFSTACK(funcID) && THROW(`Invalid Media Reference: ${D.JSL(mediaRef)}`, "getActiveLayer")
+                return TRACEOFF(traceID, mediaData.activeLayer)
+            return TRACEOFF(traceID, THROW(`Invalid Media Reference: ${D.JSL(mediaRef)}`, "getActiveLayer"))
         },
         // #endregion
 
     // #region GENERAL MEDIA OBJECT SETTERS:
         fixAll = (isKilling = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("fixAll", [isKilling]),
                 [isTesting, currentMode] = [Session.IsTesting, Session.Mode]
 
             // Session.ToggleTesting(true)
@@ -1299,38 +1301,38 @@ const Media = (() => {
             } else {
                 D.Alert("Must be in ACTIVE Mode!", "Media: Fix All")
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         setLayer = (mediaRef, layer, isForcing = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("setLayer", [mediaRef, layer, isForcing]),
                 mediaData = getMediaData(mediaRef)
             if (VAL({list: mediaData}, "setLayer")) {
                 const mediaObj = getMediaObj(mediaRef)
                 layer = layer || getActiveLayer(mediaData.name)
                 if (!isForcing && mediaData.layer === layer)
-                    return OFFSTACK(funcID) && null
+                    return TRACEOFF(traceID, null)
                 mediaObj.set("layer", layer)
-                return OFFSTACK(funcID) && true
+                return TRACEOFF(traceID, true)
             }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         setMediaTemp = (mediaRef, params = {}) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("setMediaTemp", [mediaRef, params]),
                 mediaObj = getMediaObj(mediaRef)
             if (VAL({object: mediaObj}))
                 mediaObj.set(params)
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         toggle = (mediaRef, isActive, isForcing = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("toggle", [mediaRef, isActive, isForcing])
             if (isActive !== true && isActive !== false)
-                return OFFSTACK(funcID) && null
+                return TRACEOFF(traceID, null)
             if (isRegText(mediaRef))
-                return OFFSTACK(funcID) && toggleText(mediaRef, isActive, isForcing)
-            return OFFSTACK(funcID) && toggleImg(mediaRef, isActive, isForcing)
+                return TRACEOFF(traceID, toggleText(mediaRef, isActive, isForcing))
+            return TRACEOFF(traceID, toggleImg(mediaRef, isActive, isForcing))
         },
         setAnchor = mediaRef => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("setAnchor", [mediaRef]),
                 mediaObj = getMediaObj(mediaRef)
             if (VAL({object: mediaObj})) {
                 STATE.REF.anchorObj = {
@@ -1345,17 +1347,17 @@ const Media = (() => {
                 }
                 D.Alert(`Anchor Set to: ${D.JS(STATE.REF.anchorObj)}`, "Setting Media Anchor")
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         distObjs = (mediaRefs, distDir) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("distObjs", [mediaRefs, distDir]),
                 posRef = D.LCase(distDir).startsWith("h") ? "left" : "top",
                 mediaObjs = mediaRefs.map(x => getMediaObj(x)).sort((a, b) => a.get(posRef) - b.get(posRef))
             spreadImgs(mediaObjs.shift(), mediaObjs.pop(), mediaObjs)
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         alignObjs = (mediaRefs, objAlignFrom = "center", anchorAlignTo) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("alignObjs", [mediaRefs, objAlignFrom, anchorAlignTo]),
                 mediaObjs = _.compact(mediaRefs.map(x => getMediaObj(x) || VAL({object: x}) && x || false)),
                 alignGuides = {left: STATE.REF.anchorObj.left, top: STATE.REF.anchorObj.top}
             anchorAlignTo = anchorAlignTo || objAlignFrom
@@ -1381,7 +1383,7 @@ const Media = (() => {
                     break
                 }
                 default: {
-                    return OFFSTACK(funcID) && THROW(`Unrecognized value for anchorAlignTo (${D.JSL(anchorAlignTo)})`, "alignObjs")
+                    return TRACEOFF(traceID, THROW(`Unrecognized value for anchorAlignTo (${D.JSL(anchorAlignTo)})`, "alignObjs"))
                 }
             }
             for (const mediaObj of mediaObjs)
@@ -1423,23 +1425,23 @@ const Media = (() => {
                         break
                     }
                     default: {
-                        return OFFSTACK(funcID) && THROW(`Unrecognized value for objAlignFrom (${D.JSL(objAlignFrom)})`, "alignObjs")
+                        return TRACEOFF(traceID, THROW(`Unrecognized value for objAlignFrom (${D.JSL(objAlignFrom)})`, "alignObjs"))
                     }
                 }
-            return OFFSTACK(funcID) && true
+            return TRACEOFF(traceID, true)
         },        
         adjustObj = (mediaRefs, deltaX, deltaY) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("adjustObj", [mediaRefs, deltaX, deltaY])
             for (const mediaObj of _.flatten([mediaRefs]).map(x => getMediaObj(x)))
                 if (VAL({object: mediaObj}))
                     setMediaTemp({
                         left: D.Float(mediaObj.get("left")) + D.Float(deltaX),
                         top: D.Float(mediaObj.get("top")) + D.Float(deltaY)
                     })
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         modeUpdate = (mediaRefs = "all") => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("modeUpdate", [mediaRefs])
             mediaRefs = mediaRefs === "all" ? [...Object.keys(REGISTRY.IMG), ...Object.keys(REGISTRY.TEXT), ...Object.keys(REGISTRY.ANIM)] : _.flatten([mediaRefs], true)
             for (const mediaRef of mediaRefs)
                 if (isRegText(mediaRef)) {
@@ -1487,10 +1489,10 @@ const Media = (() => {
                         }                    
                     }
                 }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         setActiveLayers = () => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("setActiveLayers", []),
                 mediaObjData = [
                     ...Object.values(REGISTRY.GRAPHIC).map(x => [getObj("graphic", x.id), x]),
                     ...Object.values(REGISTRY.TEXT).map(x => [getObj("text", x.id), x])
@@ -1498,10 +1500,10 @@ const Media = (() => {
             DB({mediaObjData}, "setActiveLayers")
             for (const objData of mediaObjData)
                 objData[0].set({layer: objData[1].isActive && objData[1].activeLayer || "walls"})
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         setZIndices = () => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("setZIndices", []),
             // D.Alert(D.JS(findObjs({_id: "-Lua29PqPseZeUuUN0cv"}), true), "Mystery Object")
                 [allImgDatas, allAnimDatas, allTextDatas] = [Object.values(REGISTRY.IMG), Object.values(REGISTRY.ANIM), Object.values(REGISTRY.TEXT)],
                 allMediaRefs = _.compact([
@@ -1531,7 +1533,7 @@ const Media = (() => {
                                 returnData.push([shadowObj, x.zIndex - 0.5])
                             }
                         }
-                        return OFFSTACK(funcID) && _.compact(returnData)
+                        return TRACEOFF(traceID, _.compact(returnData))
                     }), true)
                 ]).filter(x => VAL({object: x[0], number: x[1]})),
                 sortedMediaRefs = allMediaRefs.sort((a,b) => a[1] - b[1]).reverse()
@@ -1540,7 +1542,7 @@ const Media = (() => {
                 toBack(mediaObj)         
         },
         resetModeData = (isResettingAll = false, isQueueing = false, isVerbose = false, isChangingData = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("resetModeData", [isResettingAll, isQueueing, isVerbose, isChangingData])
             // ^([^.]+)\.([^.\n=]+)\.([^.\n=]+)\.([^.\n=]+)\.([^.\n=]+) = (.*)
             // ["$1", "$2", "$3", "$4", "$5", $6],
 
@@ -1549,28 +1551,28 @@ const Media = (() => {
             const [errorLines, updatedKeys] = [[], {IMG: [], TEXT: [], ANIM: []}],
                 MODEDATA = JSON.parse(MODEDATAJSON),
                 parseValue = (objKey, k, v) => {
-                    const fID = ONSTACK()
+                    const innerTraceID = TRACEON("parseValue", [objKey, k, v])
                     if (v === null)
-                        return OFFSTACK(fID) && v
+                        return TRACEOFF(innerTraceID, v)
                     if (VAL({list: v}) || VAL({array: v}))
-                        return OFFSTACK(fID) && D.KeyMapObj(D.Clone(v), null, (vv, kk) => parseValue(objKey, kk, vv))                    
+                        return TRACEOFF(innerTraceID, D.KeyMapObj(D.Clone(v), null, (vv, kk) => parseValue(objKey, kk, vv)) )
                     if (k === "pageID")
-                        return OFFSTACK(fID) && D.GetPageID(v)
+                        return TRACEOFF(innerTraceID, D.GetPageID(v))
                     if (VAL({string: v}) && `${v}`.startsWith("@@")) {
                         const mediaObj = getMediaObj(objKey),
                             mediaData = getMediaData(objKey)
                         if (VAL({object: mediaObj, list: mediaData})) {
                             switch (v) {
                                 case "@@curState@@": {
-                                    return OFFSTACK(fID) && mediaObj.get("layer") !== "walls"
+                                    return TRACEOFF(innerTraceID, mediaObj.get("layer") !== "walls")
                                 }
                                 case "@@curText@@": {
-                                    return OFFSTACK(fID) && mediaObj.get("text")
+                                    return TRACEOFF(innerTraceID, mediaObj.get("text"))
                                 }
                                 case "@@curSrc@@": {
                                     if (mediaData.isAnimation) {
                                         errorLines.push(`<span style="color: darkred; background-color: rgba(100,0,0,0.2);"><b>${objKey}</b>: Animation object has a '@@curSrc@@' parameter!</span>`)
-                                        return OFFSTACK(fID) && null
+                                        return TRACEOFF(innerTraceID, null)
                                     }
                                     if (!`${mediaObj.get("imgsrc")}`.includes("http")) {
                                         const topSrc = Object.keys(getImgSrcs(mediaObj)).filter(x => !(x in C.IMAGES))
@@ -1579,12 +1581,12 @@ const Media = (() => {
                                     }
                                     const srcRef = getSrcFromURL(mediaObj.get("imgsrc"), getImgSrcs(mediaObj))
                                     if (srcRef) {
-                                        return OFFSTACK(fID) && srcRef
+                                        return TRACEOFF(innerTraceID, srcRef)
                                     } else {
                                         const topSrc = Object.keys(getImgSrcs(mediaObj)).filter(x => !(x in C.IMAGES))
                                         setImg(mediaObj, topSrc, undefined, true)       
                                         errorLines.push(`<span style="color: darkred; background-color: rgba(100,0,0,0.2);"><b>${objKey}</b>: Failure finding curSrc from URL '${D.JSL(mediaObj.get("imgsrc"))}'<br>SRCS: ${Object.keys(getImgSrcs(mediaObj)).join(", ")} --> Setting to topSrc (${topSrc})<br>... srcRef: ${D.JS(srcRef)}<br>... getSrcfromURL: ${D.JS(getSrcFromURL(mediaObj.get("imgsrc"), mediaData.srcs))}</span><br><span style="color: red; background-color: darkred;">... <b>MANUAL FIX REQUIRED!!</b></span>`)
-                                        return OFFSTACK(fID) && null
+                                        return TRACEOFF(innerTraceID, null)
                                     }     
                                     break
                                 }
@@ -1592,10 +1594,10 @@ const Media = (() => {
                             }
                         } else {
                             errorLines.push(`<span style="color: darkred; background-color: rgba(100,0,0,0.2);"><b>${objKey}</b>: Failure finding media obj!</span> (obj: ${D.JS(mediaObj)}, data: ${D.JS(mediaData)})`)
-                            return OFFSTACK(fID) && null
+                            return TRACEOFF(innerTraceID, null)
                         }
                     }
-                    return OFFSTACK(fID) && v
+                    return TRACEOFF(innerTraceID, v)
                 }
             for (const mData of MODEDATA) {
                 const data = [...mData]
@@ -1646,7 +1648,7 @@ const Media = (() => {
                         isVerbose ? null : "<b><u>NOT</u></b> Verbose: (add argument 'verb' to toggle ON)",
                         isChangingData ? null : "<b><u>NOT</u></b> Changing Data: (add argument 'confirm' to toggle ON)"
                     ]).join("<br>"), "resetModeData")
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
     // #endregion
     
@@ -1656,23 +1658,23 @@ const Media = (() => {
         isRegToken = imgObj => VAL({imgObj}) && Boolean(REGISTRY.TOKEN[D.GetName(imgObj.get("represents"))]),
         isRandomizerToken = tokenObj => isCharToken(tokenObj) && isRegToken(tokenObj) && (REGISTRY.TOKEN[D.GetName(tokenObj.get("represents"))].srcs.randomSrcs || []).length,
         isCyclingImg = imgObj => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("isCyclingImg", [imgObj]),
                 imgData = getImgData(imgObj)
             if (VAL({list: imgData}))
-                return OFFSTACK(funcID) && imgData.cycleSrcs && imgData.cycleSrcs.length
-            return OFFSTACK(funcID) && false 
+                return TRACEOFF(traceID, imgData.cycleSrcs && imgData.cycleSrcs.length)
+            return TRACEOFF(traceID, false )
         },
         getImgKey = (imgRef, funcName = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("getImgKey", [imgRef, funcName])
             try {
                 let imgKey, imgObj
                 if (VAL({char: imgRef}))
-                    return OFFSTACK(funcID) && imgRef
+                    return TRACEOFF(traceID, imgRef)
                 if (VAL({string: imgRef})) {
                     if (REGISTRY.GRAPHIC[imgRef])
-                        return OFFSTACK(funcID) && imgRef
+                        return TRACEOFF(traceID, imgRef)
                     if (REGISTRY.GRAPHIC[`${imgRef}_1`])
-                        return OFFSTACK(funcID) && `${imgRef}_1`
+                        return TRACEOFF(traceID, `${imgRef}_1`)
                     imgObj = getObj("graphic", imgRef)                    
                 } else if (VAL({imgObj: imgRef})) {
                     imgObj = imgRef
@@ -1682,76 +1684,76 @@ const Media = (() => {
                 if (VAL({imgObj})) {
                     imgKey = getImgKey(imgObj.get("name"), true)
                     if (REGISTRY.GRAPHIC[imgKey])
-                        return OFFSTACK(funcID) && imgKey
+                        return TRACEOFF(traceID, imgKey)
                     imgKey = getImgKey(imgObj.get("name"), true)
                     if (REGISTRY.GRAPHIC[imgKey])
-                        return OFFSTACK(funcID) && imgKey
+                        return TRACEOFF(traceID, imgKey)
                     imgKey = getImgKey((_.find(_.values(Char.REGISTRY), x => x.id === imgObj.get("represents")) || {tokenName: false}).tokenName, true)
                     if (REGISTRY.GRAPHIC[imgKey])
-                        return OFFSTACK(funcID) && imgKey
+                        return TRACEOFF(traceID, imgKey)
                     imgKey = getImgKey(`${getObj("character", imgObj.get("represents")).get("name").replace(/\s+/gu, "")}Token`, true)
                     if (REGISTRY.GRAPHIC[imgKey])
-                        return OFFSTACK(funcID) && imgKey
+                        return TRACEOFF(traceID, imgKey)
                 }
-                return OFFSTACK(funcID) && VAL({string: funcName}) && THROW(`Cannot find name of image from reference '${D.JSL(imgRef)}'`, `${D.JSL(funcName)} > GetImgKey`)
+                return TRACEOFF(traceID, VAL({string: funcName}) && THROW(`Cannot find name of image from reference '${D.JSL(imgRef)}'`, `${D.JSL(funcName)} > GetImgKey`))
             } catch (errObj) {
-                return OFFSTACK(funcID) && VAL({string: funcName}) && THROW(`Cannot locate image with search value '${D.JSL(imgRef)}'`, `${D.JSL(funcName)} > GetImgKey`, errObj)
+                return TRACEOFF(traceID, VAL({string: funcName}) && THROW(`Cannot locate image with search value '${D.JSL(imgRef)}'`, `${D.JSL(funcName)} > GetImgKey`, errObj))
             }
         },
         getImgObj = (imgRef, funcName = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("getImgObj", [imgRef, funcName])
             // D.Alert("GETTING IMG OBJECT")
             try {
                 let imgObj
                 if (VAL({imgObj: imgRef}))
-                    return OFFSTACK(funcID) && imgRef
+                    return TRACEOFF(traceID, imgRef)
                 if (VAL({char: imgRef}))
-                    return OFFSTACK(funcID) && (findObjs({_pageid: D.MAINPAGEID, _type: "graphic", _subtype: "token", represents: D.GetChar(imgRef).id}) || [false])[0]
+                    return TRACEOFF(traceID, (findObjs({_pageid: D.MAINPAGEID, _type: "graphic", _subtype: "token", represents: D.GetChar(imgRef).id}) || [false])[0])
                 if (VAL({string: imgRef})) {
                     imgObj = getObj("graphic", imgRef)
                     if (VAL({imgObj}))
-                        return OFFSTACK(funcID) && imgObj
+                        return TRACEOFF(traceID, imgObj)
                 }
                 if (VAL({selection: imgRef})) {
                     [imgObj] = D.GetSelected(imgRef)
                     if (VAL({imgObj}))
-                        return OFFSTACK(funcID) && imgObj
+                        return TRACEOFF(traceID, imgObj)
                 }
                 const imgKey = getImgKey(imgRef)
                 if (VAL({string: imgKey}))
                     imgObj = getObj("graphic", REGISTRY.GRAPHIC[imgKey].id)
                 if (VAL({imgObj}))
-                    return OFFSTACK(funcID) && imgObj
-                return OFFSTACK(funcID) && false
+                    return TRACEOFF(traceID, imgObj)
+                return TRACEOFF(traceID, false)
             } catch (errObj) {
-                return OFFSTACK(funcID) && VAL({string: funcName}) && THROW(`IMGREF: ${D.JSL(imgRef)}`, `${D.JSL(funcName)} > getImgObj`, errObj)
+                return TRACEOFF(traceID, VAL({string: funcName}) && THROW(`IMGREF: ${D.JSL(imgRef)}`, `${D.JSL(funcName)} > getImgObj`, errObj))
             }
         },
         getImgObjs = (imgRefs, funcName = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("getImgObjs", [imgRefs, funcName])
             // D.Alert(`GetSelected ImgRefs: ${D.JS(D.GetSelected(imgRefs))}`)
             imgRefs = VAL({selection: imgRefs}) ? D.GetSelected(imgRefs) : _.flatten([imgRefs]) || Object.keys(REGISTRY.GRAPHIC)
             const imgObjs = []
             if (VAL({array: imgRefs}))
                 for (const imgRef of imgRefs)
                     imgObjs.push(getImgObj(imgRef, funcName))
-            return OFFSTACK(funcID) && _.compact(imgObjs)
+            return TRACEOFF(traceID, _.compact(imgObjs))
         },
         getImgData = (imgRef, funcName = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("getImgData", [imgRef, funcName]),
                 imgData = (() => {
-                    const fID = ONSTACK()
+                    const innerTraceID = TRACEON("imgData", [])
                     let imgKey, imgObj
                     try {
                         imgKey = getImgKey(imgRef, funcName)
                         if (VAL({string: imgKey}) || VAL({imgObj: imgKey}) && REGISTRY.GRAPHIC[imgKey.get("name")])
-                            return OFFSTACK(fID) && REGISTRY.GRAPHIC[imgKey] || REGISTRY.GRAPHIC[imgKey.get("name")]
+                            return TRACEOFF(innerTraceID, REGISTRY.GRAPHIC[imgKey] || REGISTRY.GRAPHIC[imgKey.get("name")])
                         imgObj = getImgObj(imgRef, funcName)
                         if (VAL({imgObj}, "getImgData")) {
                             if (REGISTRY.GRAPHIC[imgObj.get("name")])
-                                return OFFSTACK(fID) && REGISTRY.GRAPHIC[imgObj.get("name")]
+                                return TRACEOFF(innerTraceID, REGISTRY.GRAPHIC[imgObj.get("name")])
                             if (VAL({char: imgKey}) && !REGISTRY.GRAPHIC[imgObj.get("name")])
-                                return OFFSTACK(fID) && Object.assign({}, DEFAULTTOKENDATA, {
+                                return TRACEOFF(innerTraceID, Object.assign({}, DEFAULTTOKENDATA, {
                                     id: imgObj.id,
                                     name: imgObj.get("name"),
                                     left: imgObj.get("left"),
@@ -1766,8 +1768,8 @@ const Media = (() => {
                                     topEdge: imgObj.get("top") - 0.5 * imgObj.get("height"),
                                     bottomEdge: imgObj.get("top") + 0.5 * imgObj.get("height"),
                                     curMode: Session.Mode
-                                }, getTokenData(imgKey))
-                            return OFFSTACK(fID) && {
+                                }, getTokenData(imgKey)))
+                            return TRACEOFF(innerTraceID, {
                                 isUnregistered: true,
                                 id: imgObj.id,
                                 name: imgObj.get("name"),
@@ -1784,11 +1786,11 @@ const Media = (() => {
                                 topEdge: imgObj.get("top") - 0.5 * imgObj.get("height"),
                                 bottomEdge: imgObj.get("top") + 0.5 * imgObj.get("height"),
                                 curMode: Session.Mode
-                            }
+                            })
                         }
-                        return OFFSTACK(fID) && false
+                        return TRACEOFF(innerTraceID, false)
                     } catch (errObj) {
-                        return OFFSTACK(fID) && VAL({string: funcName}) && THROW(`Cannot locate image with search value '${D.JSL(imgRef)}'`, `${D.JSL(funcName)} > getImgData`, errObj)
+                        return TRACEOFF(innerTraceID, VAL({string: funcName}) && THROW(`Cannot locate image with search value '${D.JSL(imgRef)}'`, `${D.JSL(funcName)} > getImgData`, errObj))
                     }
                 })()
             if (VAL({list: imgData}, VAL({string: funcName}) ? `${D.JSL(funcName)} > getImgData` : null)) {
@@ -1797,57 +1799,58 @@ const Media = (() => {
                 imgData.topEdge = imgData.top - 0.5*imgData.height
                 imgData.bottomEdge = imgData.top + 0.5*imgData.height
             }
-            return OFFSTACK(funcID) && imgData
+            return TRACEOFF(traceID, imgData)
         },
         getImgSrcs = (imgRef) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("getImgSrcs", [imgRef])
             let imgData = getImgData(imgRef)
             if (VAL({list: imgData})) {
                 while (isRegImg(imgData.srcs))
                     imgData = getImgData(imgData.srcs)
-                return OFFSTACK(funcID) && Object.assign({}, D.Clone(C.IMAGES), imgData.srcs)
+                return TRACEOFF(traceID, Object.assign({}, D.Clone(C.IMAGES), imgData.srcs))
             }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         getURLFromSrc = (srcRef, srcData) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("getURLFromSrc", [srcRef, srcData])
             if (VAL({string: srcRef})) {
                 if (`${srcRef}`.includes("http"))
-                    return OFFSTACK(funcID) && srcRef
+                    return TRACEOFF(traceID, srcRef)
                 if (VAL({string: srcData}))
                     srcData = getImgSrcs(srcData)
                 if (VAL({list: srcData}, "getURLFromSrc"))
-                    return OFFSTACK(funcID) && srcData[srcRef] || false
+                    return TRACEOFF(traceID, srcData[srcRef] || false)
             }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         getSrcFromURL = (URLRef, srcData) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("getSrcFromURL", [URLRef, srcData])
             if (VAL({string: srcData}))
                 srcData = getImgSrcs(srcData)
             if (VAL({string: URLRef, list: srcData}, "getSrcFromURL")) {
                 let matchingKeys = Object.keys(srcData).filter(x => D.LCase(srcData[x]) === D.LCase(URLRef))
                 if (matchingKeys.length === 1)
-                    return OFFSTACK(funcID) && matchingKeys.pop()
+                    return TRACEOFF(traceID, matchingKeys.pop())
                 matchingKeys = matchingKeys.filter(x => x !== "blank")
                 if (matchingKeys.length === 1)
-                    return OFFSTACK(funcID) && matchingKeys.pop()
+                    return TRACEOFF(traceID, matchingKeys.pop())
             }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         getTokenObjs = (charRef, layerFilter = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("getTokenObjs", [charRef, layerFilter]),
                 mainPageID = D.MAINPAGEID,
                 allTokenObjs = (findObjs(layerFilter && {_pageid: mainPageID, _type: "graphic", _subtype: "token", layer: layerFilter} || {_pageid: mainPageID, _type: "graphic", _subtype: "token"}) || []).filter(x => isCharToken(x)),
                 charIDs = charRef && D.GetChars(charRef).map(x => x.id) || "ALL"
             DB({mainPageID, allTokenObjs, charIDs}, "getTokenObjs")
-            return OFFSTACK(funcID) && _.compact(charIDs === "ALL" && allTokenObjs || charIDs.length && allTokenObjs.filter(x => charIDs.includes(x.get("represents"))) || [])
+            return TRACEOFF(traceID, _.compact(charIDs === "ALL" && allTokenObjs || charIDs.length && allTokenObjs.filter(x => charIDs.includes(x.get("represents"))) || []))
         },
         getTokenData = (charRef) => {
+            const traceID = TRACEON("getTokenData", [charRef])
             const charID = (D.GetChar(charRef) || {id: false}).id
             if (charID)
-                return _.findWhere(REGISTRY.TOKEN, {charID})
-            return {}
+                return TRACEOFF(traceID, _.findWhere(REGISTRY.TOKEN, {charID}))
+            return TRACEOFF(traceID, {})
         },
         getAreaData = areaRef => REGISTRY.AREA[areaRef],
         /* getImgDatas = imgRefs => {
@@ -1859,7 +1862,7 @@ const Media = (() => {
 			return imgDatas
 		},	*/
         getBounds = (imgRef) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("getBounds", [imgRef]),
                 imgObj = getImgObj(imgRef),
                 boundaryData = {}
             DB({imgRef,imgObj,boundaryData}, "checkBounds")
@@ -1868,34 +1871,34 @@ const Media = (() => {
                 boundaryData.left = imgObj.get("left")
                 boundaryData.height = imgObj.get("height")
                 boundaryData.width = imgObj.get("width")
-                return OFFSTACK(funcID) && {
+                return TRACEOFF(traceID, {
                     top: boundaryData.top - 0.5 * boundaryData.height,
                     bottom: boundaryData.top + 0.5 * boundaryData.height,
                     left: boundaryData.left - 0.5 * boundaryData.width,
                     right: boundaryData.left + 0.5 * boundaryData.width,
                     height: boundaryData.height,
                     width: boundaryData.width
-                }
+                })
             }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         isInside = (containerRef, imgRef, padding = 0) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("isInside", [containerRef, imgRef, padding]),
                 containerBounds = getBounds(containerRef),
                 imgBounds = getBounds(imgRef)
             DB({containerRef,imgRef,padding,containerBounds,imgBounds}, "checkBounds")
-            return OFFSTACK(funcID) && containerBounds && imgBounds && 
+            return TRACEOFF(traceID, containerBounds && imgBounds && 
                 containerBounds.top <= imgBounds.top + padding &&
                 containerBounds.bottom >= imgBounds.bottom - padding &&
                 containerBounds.left <= imgBounds.left + padding &&
-                containerBounds.right >= imgBounds.right - padding
+                containerBounds.right >= imgBounds.right - padding)
         },
         getImgSrc = imgRef => (getImgData(imgRef) || {curSrc: false}).curSrc,
         /* getImgSrcs = imgRef => getImgData(imgRef) ? getImgData(imgRef).srcs : false, */
         isObjActive = mediaRef => (getMediaData(mediaRef) || {isActive: null}).isActive,
         /* eslint-disable-next-line no-unused-vars */
         getContainedImgObjs = (containerRef, options = {}, filter = {}) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("getContainedImgObjs", [containerRef, options, filter = {}]),
                 containerObj = getImgObj(containerRef),
                 containerData = getImgData(containerObj.id),
             /*  allImgObjs = findObjs({
@@ -1906,6 +1909,7 @@ const Media = (() => {
                 minusContainer = allContainedImgObjs.filter(x => containerData.id !== x.id),
                 minusInactive = minusContainer.filter(x => isObjActive(x)),
                 filteredImgObjs = minusInactive.filter(x => {
+                    const traceID = TRACEON("filteredImgObjs", [minusInactive.filter(x])
                     for (const [prop, value] of Object.entries(filter))
                         if (x.get(prop) !== value)
                             return false
@@ -1925,14 +1929,14 @@ const Media = (() => {
                     return isInside(containerData.id, x.id, options.padding || 0)
                 })
             DB({containerRef, options, filter, containerName: containerData.name, /* imgCount: allImgObjs.length, allContainedImgObjs, minusContainer, minusInactive, filteredImgObjs, */ containedImgObjs}, "getContainedImgObjs")
-            return OFFSTACK(funcID) && containedImgObjs
+            return TRACEOFF(traceID, containedImgObjs)
         },
         getContainedChars = (containerRef, options, filter = {}) => getContainedImgObjs(containerRef, options, Object.assign(filter, {_subtype: "token", _layer: "objects"})).map(x => D.GetChar(x)),
     // #endregion
 
     // #region IMG OBJECT & AREA SETTERS: Registering & Manipulating Img Objects
         addImgSrc = (imgSrcRef, imgName, srcName, isSilent = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("addImgSrc", [imgSrcRef, imgName, srcName, isSilent])
             try {
                 const imgSrc = !srcName.startsWith("ref:") && (
                     _.isString(imgSrcRef) && imgSrcRef.includes("http") ?
@@ -1950,10 +1954,10 @@ const Media = (() => {
             } catch (errObj) {
                 THROW("", "addImgSrc", errObj)
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         addTokenSrc = (tokenSrcRef, charRef, srcName = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("addTokenSrc", [tokenSrcRef, charRef, srcName]),
                 charObj = D.GetChar(charRef),
                 tokenSrc = (VAL({string: tokenSrcRef}) && tokenSrcRef.includes(".png") ? tokenSrcRef || "" : (getImgObj(tokenSrcRef) || {get: () => ""}).get("imgsrc")).replace(/[^/]*\.png/gu, "thumb.png")
             DB({charObj, tokenSrc}, "addTokenSrc")
@@ -1965,20 +1969,20 @@ const Media = (() => {
                 if (!srcName && isRandomizerToken(tokenObj)) {
                     REGISTRY.TOKEN[tokenKey].srcs.randomSrcs.push(tokenSrc)
                     D.Alert(`Random token image added:<br><br>${D.JS(REGISTRY.TOKEN[tokenKey])}`, "addTokenSrc")
-                    return OFFSTACK(funcID) && true
+                    return TRACEOFF(traceID, true)
                 } else if (VAL({string: srcName})) {
                     REGISTRY.TOKEN[tokenKey].srcs[srcName] = tokenSrc
                     D.Alert(`Token image source '${D.JS(srcName)}' added:<br><br>${D.JS(REGISTRY.TOKEN[tokenKey])}`, "addTokenSrc")
-                    return OFFSTACK(funcID) && true
+                    return TRACEOFF(traceID, true)
                 }
                 D.Alert("Not a randomizer token!  Must include a valid source name.", "addTokenSrc")
-                return OFFSTACK(funcID) && false
+                return TRACEOFF(traceID, false)
             }
             D.Alert("Invalid character or token image source.", "addTokenSrc")
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         setTokenSrc = (charRef, srcName = "base") => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("setTokenSrc", [charRef, srcName])
             srcName = srcName === "" ? "base" : srcName
             const [tokenObj] = getTokenObjs(charRef)
             if (VAL({tokenObj}) && isRegToken(tokenObj)) {
@@ -1990,10 +1994,10 @@ const Media = (() => {
                     tokenObj.set("imgsrc", tokenSrcURL)
                 }
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         toggleTokens = (tokenRef, isActive) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("toggleTokens", [tokenRef, isActive])
             DB({tokenRef, isActive}, "toggleTokens")
             if (isActive !== null)
                 for (const tokenObj of getTokenObjs(tokenRef))
@@ -2001,10 +2005,10 @@ const Media = (() => {
                         tokenObj.set("layer", "objects")
                     else if (isActive === false && tokenObj.get("layer") !== "walls")
                         tokenObj.set("layer", "walls")
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         combineTokenSrc = (charRef, srcName = "base") => {
-            const funcID = ONSTACK(),            
+            const traceID = TRACEON("combineTokenSrc", [charRef, srcName]),            
                 [tokenObj] = getTokenObjs(charRef)
             if (VAL({tokenObj, string: srcName}) && isRegToken(tokenObj)) {
                 const tokenName = tokenObj.get("name"),
@@ -2020,13 +2024,13 @@ const Media = (() => {
                 newTokenSrcs.sort()
                 setTokenSrc(charRef, newTokenSrcs.join(""))
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         regImg = (imgRef, imgName, srcName, activeLayer, options = {}, funcName = false, isSilent = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("regImg", [imgRef, imgName, srcName, activeLayer, options, funcName = false, isSilent = false])
             // D.Alert(`Options for '${D.JS(imgName)}': ${D.JS(options)}`, "MEDIA: regImg")
             if (!(imgRef && imgName && srcName && activeLayer))
-                return OFFSTACK(funcID) && THROW("Must supply all parameters for regImg.", "RegImg")
+                return TRACEOFF(traceID, THROW("Must supply all parameters for regImg.", "RegImg"))
             const imgObj = getImgObj(imgRef)
             if (VAL({graphicObj: imgObj}, "regImg")) {                
                 const baseName = imgName.replace(/(_|\d|#)+$/gu, ""),
@@ -2038,7 +2042,7 @@ const Media = (() => {
                         width: options.width || imgObj.get("width") || REGISTRY.IMG[name].width || C.IMAGES[baseName.toLowerCase()] && C.IMAGES[baseName.toLowerCase()].width
                     }
                 if (!params.left || !params.top || !params.height || !params.width)
-                    return OFFSTACK(funcID) && THROW("Must supply position & dimension to register image.", "RegImg")
+                    return TRACEOFF(traceID, THROW("Must supply position & dimension to register image.", "RegImg"))
                 imgObj.set({name, showname: false, isdrawing: options.isDrawing !== false})
                 REGISTRY.IMG[name] = {
                     id: imgObj.id,
@@ -2067,12 +2071,12 @@ const Media = (() => {
                     toggleImg(name, false, true)
                 if (VAL({string: funcName}) && !isSilent)
                     D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(REGISTRY.IMG[name])}`, "MEDIA: regImg")
-                return OFFSTACK(funcID) && getImgData(name)
+                return TRACEOFF(traceID, getImgData(name))
             }
-            return OFFSTACK(funcID) && THROW(`Invalid image reference '${D.JSL(imgRef)}'`, "regImg")
+            return TRACEOFF(traceID, THROW(`Invalid image reference '${D.JSL(imgRef)}'`, "regImg"))
         },
         regToken = (tokenRef, isClearingSrcs = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("regToken", [tokenRef, isClearingSrcs]),
                 tokenObj = tokenRef && tokenRef.get && tokenRef || getImgObj(tokenRef)
             // D.Alert(`tokenRef: ${D.JS(tokenRef, true)}<br><br>tokenObj: ${D.JS(tokenObj, true)}`)
             if (VAL({tokenObj}, "regToken")) {
@@ -2092,13 +2096,13 @@ const Media = (() => {
                 }
                 REGISTRY.TOKEN[tokenName] = Object.assign(REGISTRY.TOKEN[tokenName] || {}, tokenParams)
                 D.Alert(`Token registered:<br><br>${D.JS(REGISTRY.TOKEN[tokenName])}`, "regToken")
-                return OFFSTACK(funcID) && true
+                return TRACEOFF(traceID, true)
             }
             D.Alert("Token registration failed.", "regToken")
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         regRandomizerToken = (imgRef, tokenName) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("regRandomizerToken", [imgRef, tokenName])
             if (isRegToken(imgRef) || regToken(imgRef)) {
                 const tokenObj = getImgObj(imgRef),
                     tokenKey = tokenObj.get("name"),
@@ -2110,14 +2114,14 @@ const Media = (() => {
                     }
                     REGISTRY.TOKEN[tokenKey].randomSrcCount = 0
                     D.Alert(`Randomizer Token Registered:<br><br>${D.JS(REGISTRY.TOKEN[tokenKey])}`, "regRandomizerToken")
-                    return OFFSTACK(funcID) && true
+                    return TRACEOFF(traceID, true)
                 }
             }
             D.Alert(`No 'base' source found for ${tokenName}`, "regRandomizerToken")
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         regArea = (imgRef, areaName) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("regArea", [imgRef, areaName]),
                 imgObj = getImgObj(imgRef) || getTokenObjs(imgRef).pop()
             DB({imgRef, imgObj, areaName}, "regArea")
             if (VAL({graphicObj: imgObj}, "regArea")) {
@@ -2129,10 +2133,10 @@ const Media = (() => {
                 }
                 D.Alert(`Area Registered: ${areaName}<br><br><pre>${D.JS(REGISTRY.AREA[areaName])}</pre>`, "Media: Register Area")
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         makeImg = (imgName = "", params = {}, funcName = false, isSilent = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("makeImg", [imgName, params = {}, funcName = false, isSilent = false]),
                 dataRef = C.IMAGES.defaults,
                 imgObj = createObj("graphic", {
                     _pageid: params.pageID && D.GetPageID(params.pageID) || D.THISPAGEID,
@@ -2149,21 +2153,21 @@ const Media = (() => {
                 options = _.omit(params, "activeLayer") 
             DB({imgObj, options}, "makeImg")
             regImg(imgObj, imgName, params.imgsrc && params.imgsrc !== C.IMAGES.blank ? "base" : "blank", params.activeLayer || params.layer || "gmlayer", options, funcName, isSilent)
-            return OFFSTACK(funcID) && imgObj
+            return TRACEOFF(traceID, imgObj)
         },
         setImg = (imgRef, srcRef, isToggling, isForcing = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("setImg", [imgRef, srcRef, isToggling, isForcing])
             // D.Alert(`Getting ${D.JS(srcRef)} for ${D.JS(imgRef)} --> ${D.JS(REGISTRY[getImgData(imgRef).name].srcs[srcRef])}`, "MEDIA:SetImg")
             if (isToggling === true || isToggling === false)
                 toggleImg(imgRef, isToggling, isForcing)
             if (srcRef === null || REGISTRY.ANIM[getImgKey(imgRef)])
-                return OFFSTACK(funcID) && null            
+                return TRACEOFF(traceID, null )
             const imgData = getImgData(imgRef),
                 imgObj = imgData && getImgObj(imgData.id)
             if (VAL({list: imgData}))
                 if (VAL({string: srcRef})) {
                     if(!isForcing && imgData.curSrc === srcRef)
-                        return OFFSTACK(funcID) && null                
+                        return TRACEOFF(traceID, null )
                     const srcData = getImgSrcs(imgData.name),
                         srcURL = getURLFromSrc(srcRef, srcData)
                     if (VAL({string: srcURL}, "setImg")) {
@@ -2173,7 +2177,7 @@ const Media = (() => {
                             REGISTRY.IMG[imgData.name].curSrc = srcRef
                             imgObj.set("imgsrc", srcURL)                
                         }
-                        return OFFSTACK(funcID) && imgObj
+                        return TRACEOFF(traceID, imgObj)
                     }
                 } else if (VAL({charObj: srcRef})) {
                     srcRef.get("_defaulttoken", (tokenDataJSON) => {
@@ -2183,10 +2187,10 @@ const Media = (() => {
                         imgObj.set("imgsrc", srcURL)
                     } )
                 }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         setRandomizerToken = tokenObj => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("setRandomizerToken", [tokenObj])
             if (isRandomizerToken(tokenObj)) {
                 const tokenKey = D.GetName(tokenObj.get("represents")),
                     tokenSrcs = REGISTRY.TOKEN[tokenKey].srcs.randomSrcs
@@ -2198,10 +2202,10 @@ const Media = (() => {
                 tokenObj.set("imgsrc", tokenSrc)
                 REGISTRY.TOKEN[tokenKey].randomSrcCount = tokenNum
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         cycleImg = (imgRef, isLooping = true, isReversing = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("cycleImg", [imgRef, isLooping, isReversing = false]),
                 imgData = getImgData(imgRef)
             if (imgData && isCyclingImg(imgData.id)) {
                 const srcIndex = Math.max(_.findIndex(imgData.cycleSrcs, x => x === imgData.curSrc), 0)
@@ -2210,29 +2214,29 @@ const Media = (() => {
                     if (isLooping)
                         newIndex = imgData.cycleSrcs.length - 1
                     else
-                        return OFFSTACK(funcID) && false
+                        return TRACEOFF(traceID, false)
                 else if (newIndex >= imgData.cycleSrcs.length)
                     if (isLooping)
                         newIndex = 0
                     else
-                        return OFFSTACK(funcID) && false
+                        return TRACEOFF(traceID, false)
                 toggleImg(imgData.name, true)
                 setImg(imgData.name, imgData.cycleSrcs[newIndex])
-                return OFFSTACK(funcID) && newIndex
+                return TRACEOFF(traceID, newIndex)
             }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         setImgTemp = (imgRef, params) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("setImgTemp", [imgRef, params]),
                 imgObj = getImgObj(imgRef)
             if (VAL({imgObj}, "setImgTemp")) {
                 imgObj.set(params)
-                return OFFSTACK(funcID) && imgObj
+                return TRACEOFF(traceID, imgObj)
             }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         setImgData = (imgRef, params, isSettingObject = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("setImgData", [imgRef, params, isSettingObject]),
                 imgKey = getImgKey(imgRef)
             if (VAL({string: imgKey}, "setImgData")) {
                 _.each(params, (v, k) => {
@@ -2243,12 +2247,12 @@ const Media = (() => {
                 })
                 if (isSettingObject)
                     setImgTemp(imgKey, params)
-                return OFFSTACK(funcID) && REGISTRY.IMG[imgKey]
+                return TRACEOFF(traceID, REGISTRY.IMG[imgKey])
             }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         resizeImgs = (imgRefs, axes = []) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("resizeImgs", [imgRefs, axes]),
                 imgObjs = imgRefs.map(x => getImgObj(x))
             for (const imgObj of imgObjs) {
                 const dims = {height: STATE.REF.anchorObj.height, width: STATE.REF.anchorObj.width}
@@ -2259,13 +2263,13 @@ const Media = (() => {
                         dims.width = imgObj.get("width") * (dims.height / imgObj.get("height"))
                 imgObj.set(dims)
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         toggleImg = (imgRef, isActive, isForcing = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("toggleImg", [imgRef, isActive, isForcing])
             // NON-PERMANENT.  If turning off, set activeSrc to curSrc.
             // Also, verify img status is changing before doing anything.
-            if (isActive === null) return OFFSTACK(funcID) && null
+            if (isActive === null) return TRACEOFF(traceID, null)
             const regRef = getRegistryRef(imgRef),
                 imgData = getImgData(imgRef) || VAL({object: imgRef}) && {isActive: imgRef.get("layer") === "walls"},
                 modeData = getModeData(imgRef, Session.Mode)
@@ -2276,7 +2280,7 @@ const Media = (() => {
                 else if (isActive === false || isActive !== true && imgData.isActive || modeData.isForcedOn === "NEVER" && imgData.isActive)
                     activeCheck = false
                 if (activeCheck === null || !isForcing && imgData.isActive === activeCheck)
-                    return OFFSTACK(funcID) && null
+                    return TRACEOFF(traceID, null)
                 const imgObj = getImgObj(imgData.name) || VAL({graphicObj: imgRef}) && imgRef
                 DragPads.Toggle(imgData.name, activeCheck, true)
                 if (activeCheck === false) {
@@ -2285,18 +2289,18 @@ const Media = (() => {
                         regRef[imgData.name].activeSrc = imgData.curSrc === "blank" && imgData.activeSrc || imgData.curSrc
                     regRef[imgData.name].isActive = false
                     setLayer(imgObj, "walls", isForcing)
-                    return OFFSTACK(funcID) && false                   
+                    return TRACEOFF(traceID, false )
                 } else if (activeCheck === true) {
                     // TURN ON: Set layer to active layer, toggle on associated drag pads, restore activeState value if it's different
                     regRef[imgData.name].isActive = true
                     setLayer(imgObj, imgData.activeLayer, isForcing)
-                    return OFFSTACK(funcID) && true                   
+                    return TRACEOFF(traceID, true )
                 }
             }
-            return OFFSTACK(funcID) && null
+            return TRACEOFF(traceID, null)
         },
         removeImg = (imgRef, isUnregOnly) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("removeImg", [imgRef, isUnregOnly]),
                 imgObj = getImgObj(imgRef),
                 imgData = getImgData(imgRef),
                 ref = isRegAnim(imgObj) && REGISTRY.ANIM || REGISTRY.IMG
@@ -2304,25 +2308,25 @@ const Media = (() => {
             if (imgObj && !isUnregOnly) {
                 imgObj.remove()
                 delete ref[imgData.name]
-                return OFFSTACK(funcID) && true
+                return TRACEOFF(traceID, true)
             } else if (imgData && ref[imgData.name]) {
                 delete ref[imgData.name]
-                return OFFSTACK(funcID) && true
+                return TRACEOFF(traceID, true)
             } else if (_.isString(imgRef) && ref[imgRef]) {
                 delete ref[imgRef]
-                return OFFSTACK(funcID) && true
+                return TRACEOFF(traceID, true)
             }
-            return OFFSTACK(funcID) && THROW(`Invalid image reference ${D.JSL(imgRef)}`, "removeImg")
+            return TRACEOFF(traceID, THROW(`Invalid image reference ${D.JSL(imgRef)}`, "removeImg"))
         },
         removeImgs = (imgString, isUnregOnly) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("removeImgs", [imgString, isUnregOnly]),
                 imgNames = _.filter([...Object.keys(REGISTRY.IMG), ...Object.keys(REGISTRY.ANIM)], v => v.includes(imgString))
             for (const imgName of imgNames)
                 removeImg(imgName, isUnregOnly)
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         checkDragPads = () => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("checkDragPads", []),
                 reportLines = [],
                 allImgObjs = findObjs({
                     _type: "graphic",
@@ -2340,7 +2344,7 @@ const Media = (() => {
                 reportLines.push(...missingDragPadIDs.map(x => `<b>${DragPads.PadsByID[x].name}</b> (${x})`))
                 D.Alert(`Pad List DOES NOT Equal.<br><br><b>Found ${allPadIDs.length} Pads.<br>${_.uniq(_.flatten(_.values(mediaDragPadIDs))).length} Pads in REGISTRY.<br>${dpadDragPadIDs.length} Pads in DRAGPADS.<br><br>${reportLines.join("<br>")}`, "Drag Pad Check")
             }
-            return OFFSTACK(funcID) && reportLines
+            return TRACEOFF(traceID, reportLines)
             /* for (const [imgName, padIDs] of Object.entries(mediaDragPadIDs)) {
                 if (padIDs.length === 2) {
                     const imgID = getImgData(imgName).id
@@ -2372,7 +2376,7 @@ const Media = (() => {
                 } */
         },
         clearMissingRegImgs = () => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("clearMissingRegImgs", []),
                 returnLines = []
             for (const imgName of Object.keys(REGISTRY.IMG))
                 if (!getImgObj(imgName))
@@ -2380,10 +2384,10 @@ const Media = (() => {
             
             if (returnLines.length)
                 STATE.REF.fixAllCommands.push(...["<h3><u>Removing Unlinked Image Registry Entries</u></h3>", ...returnLines])
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         resetBGImgs = () => {
-            const funcID = ONSTACK()                                        
+            const traceID = TRACEON("resetBGImgs", [])                                        
             for (const imgObj of getImgObjs(BGIMGS.keys))
                 setImgData(imgObj, {
                     top: BGIMGS.top,
@@ -2398,10 +2402,10 @@ const Media = (() => {
                     height: MAPIMGS.height,
                     width: MAPIMGS.width
                 }, true)
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         clearUnregImgs = (isKilling = false, isQueueing = true) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("clearUnregImgs", [isKilling, isQueueing = true]),
                 returnLines = [],
                 allImgObjs = findObjs({
                     _type: "graphic",
@@ -2426,10 +2430,10 @@ const Media = (() => {
                     STATE.REF.fixAllCommands.push(...["<h4><u>Clearing Unregistered Image Objects</u></h4>", ...returnLines])
                 else
                     D.Alert(D.JS(["<h4><u>Clearing Orphan Images</u></h4>", ...returnLines].join("")), "clearUnregImgs")
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },        
         toggleLoadingScreen = (imgSrc, customText = " ", progressBarData = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("toggleLoadingScreen", [imgSrc, customText, progressBarData = false]),
                 [imgObj, animObj, textObj, shadowObj, progressBarObj, progressMatteObj] = [
                     getImgObj("LoadingScreen"),
                     getImgObj("LoadingMoon"),
@@ -2470,49 +2474,49 @@ const Media = (() => {
                 Media.ToggleImg("LoadingProgressMatte", false, true)
                 stopProgressBar()
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         setLoadingText = (textString = " ") => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("setLoadingText", [textString])
             Media.SetText("LoadingMessage", D.JSL(textString))
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         startProgressBar = (duration, numTicks, callback) => {
             numTicks = 22
-            const funcID = ONSTACK(),
-                timeline = TimeTracker.GetRandomTimeline(duration || 20, numTicks),
+            const traceID = TRACEON("startProgressBar", [duration, numTicks, callback])
+            const timeline = TimeTracker.GetRandomTimeline(duration || 20, numTicks),
                 tickTimeline = () => {
-                    const fID = ONSTACK()
+                    const innerTraceID = TRACEON("tickTimeline", [])
                     if (timeline.length) {
                         const stepTime = timeline.pop()
                         Media.SetText("LoadingProgressBar", "█".repeat(numTicks - timeline.length))
                         progressBarTimer = setTimeout(tickTimeline, stepTime)
-                        return OFFSTACK(fID) && progressBarTimer
+                        return TRACEOFF(innerTraceID, progressBarTimer)
                     } else {
                         Media.ToggleText("LoadingProgressBar", false, true)
                         clearTimeout(progressBarTimer)
                         progressBarTimer = null
                         if (VAL({function: callback}))
-                            return OFFSTACK(fID) && callback()
-                        return OFFSTACK(fID) && true
+                            return TRACEOFF(innerTraceID, callback())
+                        return TRACEOFF(innerTraceID, true)
                     }
                 }
             Media.SetText("LoadingProgressBar", " ")
             Media.ToggleText("LoadingProgressBar", true, true)
             Media.ToggleImg("LoadingProgressMatte", true, true)
             tickTimeline()
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         stopProgressBar = () => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("stopProgressBar", [])
             Media.ToggleText("LoadingProgressBar", false, true)
             Media.ToggleImg("LoadingProgressMatte", false, true)
             clearTimeout(progressBarTimer)
             progressBarTimer = null
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         fixImgObjs = (isQueueing = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("fixImgObjs", [isQueueing]),
             // D.Alert(`Starting FixImgObjects: ${D.JS(REGISTRY.ANIM.MapIndicator.isActive)}`)
                 imgKeys = [...Object.keys(REGISTRY.IMG), ...Object.keys(REGISTRY.ANIM)],
                 imgPairs = _.zip(imgKeys.map(x => REGISTRY.IMG[x] || REGISTRY.ANIM[x]), imgKeys.map(x => getObj("graphic", (REGISTRY.IMG[x] || REGISTRY.ANIM[x]).id))),
@@ -2591,10 +2595,10 @@ const Media = (() => {
                     STATE.REF.fixAllCommands.push(...["<h3><u>Final Image Object Pass</u></h3>", ...reportLines])
                 else                
                     D.Alert(["<h3><u>Fixing Image Objects</u></h3>", ...reportLines].join("<br>"), "fixImgObjs")
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         layerImgs = (imgRefs, layer, isSilent = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("layerImgs", [imgRefs, layer, isSilent]),
                 imgObjs = getImgObjs(imgRefs)
             // orderImgs(IMGLAYERS.objects)
             for (const imgObj of imgObjs)
@@ -2605,17 +2609,17 @@ const Media = (() => {
                 } else if (!isSilent) {
                     D.Alert(`No image found for reference ${D.JS(imgObj)}`, "MEDIA: layerImgs")
                 }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         setImgArea = (imgRef, areaRef, isResizing = false) => {
-            const funcID = ONSTACK()
-            if (!imgRef) return OFFSTACK(funcID) && false
+            const traceID = TRACEON("setImgArea", [imgRef, areaRef, isResizing])
+            if (!imgRef) return TRACEOFF(traceID, false)
             const imgObj = getImgObj(imgRef),
                 areaData = getAreaData(areaRef)
             if (!imgObj)
-                return OFFSTACK(funcID) && D.Alert(`Invalid image reference: ${D.JS(imgRef)}`, "MEDIA: setImgArea")
+                return TRACEOFF(traceID, D.Alert(`Invalid image reference: ${D.JS(imgRef)}`, "MEDIA: setImgArea"))
             else if (!areaData)
-                return OFFSTACK(funcID) && D.Alert(`No area registered as '${D.JS(areaRef)}'`, "MEDIA: setImgArea")
+                return TRACEOFF(traceID, D.Alert(`No area registered as '${D.JS(areaRef)}'`, "MEDIA: setImgArea"))
             const imgParams = {
                 top: areaData.top,
                 left: areaData.left
@@ -2625,11 +2629,11 @@ const Media = (() => {
                 imgParams.width = areaData.width
             }
             imgObj.set(imgParams)
-            return OFFSTACK(funcID) && true
+            return TRACEOFF(traceID, true)
         },        
         // eslint-disable-next-line no-unused-vars
         spreadImgs = (leftImgRef, rightImgRef, midImgRefOrRefs, width, minOverlap = 20, maxOverlap = 40) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("spreadImgs", [leftImgRef, rightImgRef, midImgRefOrRefs, width, minOverlap, maxOverlap = 40])
             DB({leftImgRef, rightImgRef, midImgRefOrRefs, width, minOverlap, maxOverlap}, "spreadImgs")
             midImgRefOrRefs = _.flatten([midImgRefOrRefs])
             const [leftObj, rightObj, ...midObjs] = [getImgObj(leftImgRef), getImgObj(rightImgRef), ...midImgRefOrRefs.map(x => getImgObj(x))],
@@ -2639,7 +2643,7 @@ const Media = (() => {
                     buffer = (endPos - startPos) / (midObjs.length + 1)
                 for (let i = 0; i < midObjs.length; i++)
                     setImgTemp(midObjs[i], {left: startPos + (i+1)*buffer})
-                return OFFSTACK(funcID) && true
+                return TRACEOFF(traceID, true)
             }
             const spread = parseFloat(VAL({number: width}) ? width : rightData.left - leftData.left)
             let dbString = `Width: ${spread}, MinOverlap: ${parseFloat(minOverlap)}, MaxOverlap: ${parseFloat(maxOverlap)}<br><br>`
@@ -2655,9 +2659,9 @@ const Media = (() => {
                     for (const imgData of midData)
                         toggleImg(imgData.id, false)
                     DB(`${dbString }Setting Right to {left: ${D.Int(leftData.rightEdge)} + 0.5x${D.Int(rightData.width)} - ${D.Int(maxOverlap)} = ${D.Int(leftData.rightEdge + 0.5*rightData.width) - D.Int(maxOverlap)}`, "spreadImgs")
-                    return OFFSTACK(funcID) && setImgTemp(rightData.id, {
+                    return TRACEOFF(traceID, setImgTemp(rightData.id, {
                         left: leftData.rightEdge + 0.5*rightData.width - maxOverlap
-                    })
+                    }))
                 }
                 // Otherwise, determine how much space will be in the middle.  Does NOT count overlap of left and right sides.
                 let totalMidWidth = spread - leftData.width - rightData.width + 2*minOverlap
@@ -2691,7 +2695,7 @@ const Media = (() => {
                         left: leftData.rightEdge - 2*stretchOverlap + stretchWidth + 0.5*rightData.width
                     })
                     DB(dbString, "spreadImg")
-                    return OFFSTACK(funcID) && true
+                    return TRACEOFF(traceID, true)
                 } else { */
 
                 // If multiple middle imgs were specified, first determine the minimum and maximum amount each can cover based on overlap.
@@ -2759,21 +2763,21 @@ const Media = (() => {
                 DB(dbString, "spreadImgs")
                 // for (const imgData of midData)
                 //    setImg(imgData.id, "blank")
-                return OFFSTACK(funcID) && true
+                return TRACEOFF(traceID, true)
                 // }
             }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
     // #endregion
 
     // #region ANIMATIONS: Creating, Timeouts, Controlling WEBM Animations
         isRegAnim = animRef => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("isRegAnim", [animRef]),
                 imgObj = getImgObj(animRef)
-            return OFFSTACK(funcID) && imgObj && imgObj.get("name") in REGISTRY.ANIM
+            return TRACEOFF(traceID, imgObj && imgObj.get("name") in REGISTRY.ANIM)
         },
         regAnimation = (imgObj, animName, timeOut = 0, activeLayer = "map") => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("regAnimation", [imgObj, animName, timeOut, activeLayer = "map"])
             if (VAL({imgObj}, "regAnimation")) {
                 imgObj.set("name", animName)
                 imgObj.set("layer", activeLayer)
@@ -2798,31 +2802,31 @@ const Media = (() => {
                 REGISTRY.ANIM[animName].topEdge = REGISTRY.ANIM[animName].top - 0.5 * REGISTRY.ANIM[animName].height
                 REGISTRY.ANIM[animName].bottomEdge = REGISTRY.ANIM[animName].top + 0.5 * REGISTRY.ANIM[animName].height
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         setAnimData = (animRef, params) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("setAnimData", [animRef, params]),
                 imgKey = getImgKey(animRef)
             if (VAL({string: imgKey}, "setAnimData")) {
                 _.each(params, (v, k) => {
                     REGISTRY.ANIM[imgKey][k] = v
                 })
                 getImgObj(imgKey).set(params)
-                return OFFSTACK(funcID) && REGISTRY.ANIM[imgKey]
+                return TRACEOFF(traceID, REGISTRY.ANIM[imgKey])
             }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         setAnimTimerData = (animName, minTimeBetween = 0, maxTimeBetween = 100, soundEffect = null, validModes = "Active") => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("setAnimTimerData", [animName, minTimeBetween, maxTimeBetween = 100, soundEffect = null, validModes = "Active"]),
                 animData = getImgData(animName)
             animData.minTimeBetween = D.Int(1000 * D.Float(minTimeBetween))
             animData.maxTimeBetween = D.Int(1000 * D.Float(maxTimeBetween))
             animData.soundEffect = soundEffect
             animData.validModes = validModes.split("|")
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         flashAnimation = (animName) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("flashAnimation", [animName]),
                 animData = getImgData(animName)
             if (!animData.validModes.includes(Session.Mode)) {
                 deactivateAnimation(animName)
@@ -2834,10 +2838,10 @@ const Media = (() => {
                 if (animData.timeOut)
                     setTimeout(() => killAnimation(animObj), animData.timeOut)
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         activateAnimation = (animNames, minTime, maxTime, minBuffer = 0) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("activateAnimation", [animNames, minTime, maxTime, minBuffer]),
                 animTimes = []
             minTime = D.Int(1000 * D.Float(minTime))
             maxTime = D.Int(1000 * D.Float(maxTime))
@@ -2865,10 +2869,10 @@ const Media = (() => {
                 setTimeout(() => { 
                     pulseAnimation(animName)
                 }, animTimes.pop())                
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         pulseAnimation = (animName) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("pulseAnimation", [animName]),
                 animData = getImgData(animName)
             if (animTimers[animName]) {
                 clearTimeout(animTimers[animName])
@@ -2878,26 +2882,26 @@ const Media = (() => {
                 const timeBetween = randomInteger(animData.maxTimeBetween - animData.minTimeBetween) + animData.minTimeBetween
                 flashAnimation(animName)
                 animTimers[animName] = setTimeout(function animTimer() {
-                    const fID = ONSTACK()
+                    const innerTraceID = TRACEON("animTimer")
                     pulseAnimation(animName)
-                    return OFFSTACK(fID)
+                    return TRACEOFF(innerTraceID)
                 }, timeBetween)             
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
             // D.Alert(JSON.stringify(activeTimers[animName]))
         },
         deactivateAnimation = (animName) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("deactivateAnimation", [animName]),
                 animData = getImgData(animName)
             if (animTimers[animName]) {
                 clearTimeout(animTimers[animName])
                 delete animTimers[animName]
             }
             animData.isActive = false
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         toggleAnimation = (animName, isActive) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("toggleAnimation", [animName, isActive]),
                 animData = getImgData(animName),
                 animObj = getImgObj(animName)
             // DB({animData, animObj}, "toggleAnimation")
@@ -2910,19 +2914,19 @@ const Media = (() => {
                 animObj.set("layer", "walls")
                 REGISTRY.ANIM[animData.name].isActive = false
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         killAnimation = animObj => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("killAnimation", [animObj])
             if (VAL({imgObj: animObj}, "killAnimation"))
                 animObj.set("layer", "walls")
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         killAllAnims = () => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("killAllAnims", [])
             for (const animData of _.values(REGISTRY.ANIM))
                 (getObj("graphic", animData.id) || {set: () => false}).set("layer", "walls")
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
     // #endregion
 
@@ -2934,21 +2938,26 @@ const Media = (() => {
             left: (textWidth = 0) => PANELLEFT + 0.5 * textWidth
         },
         killPanel = (panelKey) => {
+            const traceID = TRACEON("killPanel", [panelKey])
             if (panelKey in REGISTRY.PANELS) {
                 setText(panelKey, " ")
                 toggleText(panelKey, false)
                 REGISTRY.PANELS[panelKey].textLines = []
                 killPanelBG(panelKey)
             }
+            TRACEOFF(traceID)
         },
         killPanelBG = (panelKey) => {
+            const traceID = TRACEON("killPanelBG", [panelKey])
             const panelBGObj = getObj("path", (REGISTRY.PANELS[panelKey] || {bgID: false}).bgID)
             if (panelBGObj) {
                 panelBGObj.remove()
                 delete REGISTRY.PANELS[panelKey].bgID
             }
+            TRACEOFF(traceID)
         },
         resetPanelBG = (panelKey) => {
+            const traceID = TRACEON("resetPanelBG", [panelKey])
             const panelBGObj = getObj("path", (REGISTRY.PANELS[panelKey] || {bgID: false}).bgID),
                 panelTextHeight = getTextHeight(panelKey, (REGISTRY.PANELS[panelKey].textLines || [" "]).join("\n")),
                 panelTextWidth = C.SANDBOX.width - PANELLEFT, // getTextWidth(panelKey, (REGISTRY.PANELS[panelKey].textLines || [" "]).join("\n")) + 10,
@@ -2962,7 +2971,7 @@ const Media = (() => {
                 panelTop = PANELPOS.top(panelTextHeight) - 10,
                 panelLeft = PANELPOS.left(panelTextWidth) - 10
             if (panelBGObj && panelBGObj.get("top") === panelTop && panelBGObj.get("left") === panelLeft)
-                return
+                return TRACEOFF(traceID)
             killPanelBG(panelKey)
             const panelObj = createObj("path", {
                 _pageid: D.THISPAGEID,
@@ -2979,8 +2988,10 @@ const Media = (() => {
             toFront(panelObj)
             REGISTRY.PANELS[panelKey] = REGISTRY.PANELS[panelKey] || {}
             REGISTRY.PANELS[panelKey].bgID = panelObj.id
+            return TRACEOFF(traceID)
         },
         togglePanel = (panelKey, isActive) => {
+            const traceID = TRACEON("togglePanel", [panelKey, isActive])
             if (isActive) {
                 toggleText(panelKey, true)
                 resetPanelBG(panelKey)
@@ -2988,8 +2999,10 @@ const Media = (() => {
                 killPanelBG(panelKey)
                 toggleText(panelKey, false)
             }   
+            TRACEOFF(traceID)
         },
         addPanelText = (panelKey = "panel", text) => {
+            const traceID = TRACEON("addPanelText", [panelKey, text])
             text = VAL({string: text}) ? text : D.JSL(text)
             REGISTRY.PANELS[panelKey].textLines = REGISTRY.PANELS[panelKey].textLines || []
             REGISTRY.PANELS[panelKey].textLines.push(text)
@@ -2998,10 +3011,12 @@ const Media = (() => {
             setTimeout(() => {
                 removePanelText(panelKey, text)
             }, 10000)
+            TRACEOFF(traceID)
         },
         removePanelText = (panelKey = "panel", delText = "", numRepeats = 2) => {
+            const traceID = TRACEON("removePanelText", [panelKey, delText = "", numRepeats = 2])
             if (numRepeats === 0)
-                return
+                return TRACEOFF(traceID)
             D.PullOut(REGISTRY.PANELS[panelKey].textLines, v => v === delText)
             if (REGISTRY.PANELS[panelKey].textLines.length) {
                 setText(panelKey, (REGISTRY.PANELS[panelKey].textLines || [" "]).join("\n"))
@@ -3013,22 +3028,21 @@ const Media = (() => {
             setTimeout(() => {
                 removePanelText(panelKey, delText, numRepeats - 1)
             }, 1000)
+            return TRACEOFF(traceID)
         },
     // #endregion
 
     // #region TEXT OBJECT GETTERS: Text Object, Width Measurements, Data Retrieval    
         isRegText = textRef => Boolean(getTextKey(textRef, true)) || VAL({object: textRef}) && _.findKey(REGISTRY.TEXT, v => v.shadowID === textRef.id), 
         getTextKey = (textRef, funcName = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("getTextKey", [textRef, funcName])
             try {
                 let textObj
                 if (VAL({string: textRef})) {
                     if (REGISTRY.TEXT[textRef])
-                        return OFFSTACK(funcID) && textRef
-                    /* if (REGISTRY.TEXT[`${textRef}_1`])
-                        return OFFSTACK(funcID) && `${textRef}_1` */
+                        return TRACEOFF(traceID, textRef)
                     if (REGISTRY.ID[textRef])
-                        return OFFSTACK(funcID) && REGISTRY.ID[textRef]
+                        return TRACEOFF(traceID, REGISTRY.ID[textRef])
                 }
                 if (VAL({selected: textRef}))
                     [textObj] = D.GetSelected(textRef)
@@ -3036,14 +3050,14 @@ const Media = (() => {
                     textObj = textRef
                 if (VAL({textObj}))
                     if (REGISTRY.ID[textObj.id])
-                        return OFFSTACK(funcID) && REGISTRY.ID[textObj.id]
-                return OFFSTACK(funcID) && VAL({string: funcName}) && THROW(`Cannot locate text key with search value '${D.JSL(textRef)}'`, `${D.JSL(funcName)} > getTextKey`)
+                        return TRACEOFF(traceID, REGISTRY.ID[textObj.id])
+                return TRACEOFF(traceID, VAL({string: funcName}) && THROW(`Cannot locate text key with search value '${D.JSL(textRef)}'`, `${D.JSL(funcName)} > getTextKey`))
             } catch (errObj) {
-                return OFFSTACK(funcID) && VAL({string: funcName}) && THROW(`Cannot locate text key with search value '${D.JSL(textRef)}'`, `${D.JSL(funcName)} > getTextKey`, errObj)
+                return TRACEOFF(traceID, VAL({string: funcName}) && THROW(`Cannot locate text key with search value '${D.JSL(textRef)}'`, `${D.JSL(funcName)} > getTextKey`, errObj))
             }
         },
         getTextObj = (textRef, funcName = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("getTextObj", [textRef, funcName])
             try {
                 let textObj
                 if (VAL({textObj: textRef}))
@@ -3055,32 +3069,32 @@ const Media = (() => {
                         textObj = getObj("text", textRef) || null
                 else if (VAL({selected: textRef}))
                     [textObj] = D.GetSelected(textRef)
-                return OFFSTACK(funcID) && textObj || VAL({string: funcName}) && THROW(`Bad text reference: ${D.JSL(textRef)}`, `${D.JSL(funcName)} > getTextObj`)
+                return TRACEOFF(traceID, textObj || VAL({string: funcName}) && THROW(`Bad text reference: ${D.JSL(textRef)}`, `${D.JSL(funcName)} > getTextObj`))
             } catch (errObj) {
-                return OFFSTACK(funcID) && VAL({string: funcName}) && THROW(`Bad text reference: ${D.JSL(textRef)}`, `${D.JSL(funcName)} > getTextObj`, errObj)
+                return TRACEOFF(traceID, VAL({string: funcName}) && THROW(`Bad text reference: ${D.JSL(textRef)}`, `${D.JSL(funcName)} > getTextObj`, errObj))
             }
         },
         getTextObjs = (textRefs, funcName = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("getTextObjs", [textRefs, funcName])
             textRefs = VAL({selection: textRefs}) ? D.GetSelected(textRefs) : _.flatten([textRefs]) || Object.keys(REGISTRY.TEXT)
             const textObjs = []
             if (VAL({array: textRefs}))
                 for (const textRef of textRefs)
                     textObjs.push(getTextObj(textRef, funcName))
-            return OFFSTACK(funcID) && _.compact(textObjs)
+            return TRACEOFF(traceID, _.compact(textObjs))
         },
         hasShadowObj = textRef => Boolean((getTextData(textRef) || {shadowID: false}).shadowID),
         getTextShadowObj = textRef => getObj("text", (getTextData(textRef) || {shadowID: false}).shadowID),
         getShadowShift = textRef => C.SHADOWOFFSETS[(getTextObj(textRef) || {get: () => 20}).get("font_size")],
         getTextData = (textRef, funcName = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("getTextData", [textRef, funcName])
             try {
                 if (getTextKey(textRef, funcName)) {
-                    return OFFSTACK(funcID) && REGISTRY.TEXT[getTextKey(textRef, funcName)]
+                    return TRACEOFF(traceID, REGISTRY.TEXT[getTextKey(textRef, funcName)])
                 } else if (getTextObj(textRef, funcName)) {
                     const textObj = getTextObj(textRef, funcName)
                     DB(`Retrieving data for UNREGISTERED Text Object ${D.JSL(textRef)}`, "getTextData")
-                    return OFFSTACK(funcID) && {
+                    return TRACEOFF(traceID, {
                         id: textObj.id,
                         left: D.Int(textObj.get("left")),
                         top: D.Int(textObj.get("top")),
@@ -3090,15 +3104,15 @@ const Media = (() => {
                         fontSize: textObj.get("font_size"),
                         color: textObj.get("color"),
                         text: textObj.get("text")
-                    }
+                    })
                 }
-                return OFFSTACK(funcID) && VAL({string: funcName}) && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, `${D.JSL(funcName)} > getTextData`)
+                return TRACEOFF(traceID, VAL({string: funcName}) && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, `${D.JSL(funcName)} > getTextData`))
             } catch (errObj) {
-                return OFFSTACK(funcID) && VAL({string: funcName}) && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, `${D.JSL(funcName)} > getTextData`, errObj)
+                return TRACEOFF(traceID, VAL({string: funcName}) && THROW(`Text reference '${textRef}' does not refer to a registered text object.`, `${D.JSL(funcName)} > getTextData`, errObj))
             }
         },
         getLineHeight = textRef => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("getLineHeight", [textRef]),
                 textObj = getTextObj(textRef)
             if (VAL({textObj})) {
                 const [fontFamily, fontSize, height] = [
@@ -3107,19 +3121,19 @@ const Media = (() => {
                     textObj.get("height")
                 ]
                 // D.Alert([font_family, font_size, height, D.CHARWIDTH[font_family][font_size].lineHeight].join("<br>"))
-                return OFFSTACK(funcID) && D.CHARWIDTH[fontFamily] && D.CHARWIDTH[fontFamily][fontSize] && D.CHARWIDTH[fontFamily][fontSize].lineHeight || height
+                return TRACEOFF(traceID, D.CHARWIDTH[fontFamily] && D.CHARWIDTH[fontFamily][fontSize] && D.CHARWIDTH[fontFamily][fontSize].lineHeight || height)
             }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         getSimpleTextWidth = (text, fontFamily, fontSize) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("getSimpleTextWidth", [text, fontFamily, fontSize]),
                 sizeRef = D.IsIn(fontFamily, D.CHARWIDTH) && D.IsIn(fontSize, D.CHARWIDTH[fontFamily]) && D.CHARWIDTH[fontFamily][fontSize],
                 sizeDefault = VAL({array: sizeRef}) && D.Float(_.reduce(sizeRef, (tot = 0, n) => tot + n)/sizeRef.length, 2),
                 sizeArray = VAL({string: text}) && text.split("").map(x => x in sizeRef && sizeRef[x] || sizeDefault)
-            return OFFSTACK(funcID) && _.reduce(sizeArray, (tot = 0, n) => tot + n)
+            return TRACEOFF(traceID, _.reduce(sizeArray, (tot = 0, n) => tot + n))
         },
         getTextWidth = (textRef, text, maxWidth = 0, isSilent = true) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("getTextWidth", [textRef, text, maxWidth, isSilent]),
                 textObj = getTextObj(textRef),
                 dbLines = [
                     `<b>TEXTREF:</b> ${D.JSL(textRef)}`,
@@ -3139,11 +3153,11 @@ const Media = (() => {
                 let width = 0
                 dbLines.push(chars.length === textString.length ? "TEXT OK!" : `TEXT LENGTH MISMATCH: ${chars.length} chars, ${textString.length} text length.<br>`)
                 if (!textString || textString === "" || textString.length === 0)
-                    return OFFSTACK(funcID) && 0
+                    return TRACEOFF(traceID, 0)
                 if (!fontRef || !charRef) {
                     dbLines.push(`No font/character reference for '${font}' at size '${size}': Returning default`, "getTextWidth")
                     DB(dbLines.join("<br>"), "getTextWidth")
-                    return OFFSTACK(funcID) && textString.length * (D.Int(textObj.get("width")) / textObj.get("text").length)
+                    return TRACEOFF(traceID, textString.length * (D.Int(textObj.get("width")) / textObj.get("text").length))
                 }
                 let textLines = []
                 if (maxWidth !== false && maxW)
@@ -3161,7 +3175,7 @@ const Media = (() => {
                     dbLines.push(`Max Line: ▐${maxLine}▌ ► Returning maxline width (${D.Round(getTextWidth(textObj, maxLine, false, true),2)})`)
                     if (!isSilent)
                         DB(dbLines.join("<br>"), "getTextWidth")
-                    return OFFSTACK(funcID) && getTextWidth(textObj, maxLine, false, true)
+                    return TRACEOFF(traceID, getTextWidth(textObj, maxLine, false, true))
                 }
                 let charString = ""
                 for (const char of chars) {
@@ -3176,46 +3190,46 @@ const Media = (() => {
                     DB(dbLines.join("<br>"), "getTextWidth")
                 /* if (maxWidth !== false)
                     D.Alert(`GetTextWidth called on ${text} with maxWidth ${D.JS(maxWidth)} and maxW ${D.JS(maxW)}`) */
-                return OFFSTACK(funcID) && width
+                return TRACEOFF(traceID, width)
             }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         getMaxWidth = (textRef) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("getMaxWidth", [textRef]),
                 textObj = getTextObj(textRef),
                 splitLines = textObj.get("text").split(/\n/gu)
             let max = 0
             for (const line of splitLines)
                 max = Math.max(max, getTextWidth(textObj, line, false))
-            return OFFSTACK(funcID) && max
+            return TRACEOFF(traceID, max)
         },
         getTextLines = (textRef, text, maxWidth) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("getTextLines", [textRef, text, maxWidth]),
                 textObj = getTextObj(textRef),
                 textData = getTextData(textRef),
                 textValue = text || textObj.get("text")            
             maxWidth = maxWidth || textData && textData.maxWidth
-            return OFFSTACK(funcID) && maxWidth ? splitTextLines(textObj, textValue, maxWidth, textData.justification).length : (textValue.match(/\n/gui) || []).length + 1
+            return TRACEOFF(traceID, maxWidth ? splitTextLines(textObj, textValue, maxWidth, textData.justification).length : (textValue.match(/\n/gui) || []).length + 1)
         },
         getTextHeight = (textRef, text, maxWidth) => (getTextData(textRef) || {lineHeight: "10"}).lineHeight * getTextLines(textRef, text, maxWidth),
         getBlankLeft = (textRef, justification, maxWidth = 0, useCurrent = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("getBlankLeft", [textRef, justification, maxWidth, useCurrent = false]),
                 textObj = getTextObj(textRef),
                 justify = justification || getTextData(textRef).justification || "center"
             if (VAL({textObj}, "getBlankLeft")) {  
                 // D.Alert(`GetBlankLeft(${D.JS(getTextKey(textRef))}, ${D.JS(justify)}, ${D.JS(maxWidth)}, ${D.JS(useCurrent)}) =<br>Left: ${D.JS(textObj.get("left"))}, Width: ${D.JS(useCurrent ? getTextWidth(textObj, textObj.get("text"), maxWidth) : getTextWidth(textObj))}, Final: ${D.JS(useCurrent && (textObj.get("left") + {left: -0.5, right: 0.5, center: 0}[justify] * getMaxWidth(textObj)) || (textObj.get("left") + {left: -0.5, right: 0.5, center: 0}[justify] * getTextWidth(textObj, textObj.get("text"), maxWidth)))}`) 
                 // if (useCurrent)
-                //    return OFFSTACK(funcID) && textObj.get("left") + (justify === "left" ? -0.5 : justify === "right" ? 0.5 : 0) * getMaxWidth(textObj)
+                //    return TRACEOFF(traceID, textObj.get("left") + (justify === "left" ? -0.5 : justify === "right" ? 0.5 : 0) * getMaxWidth(textObj))
                 // D.Alert(`getBlankLeft Called on ${textObj.get("text")} with maxWidth ${maxWidth} into getTextWidth -->`)
-                // return OFFSTACK(funcID) && textObj.get("left") + (justify === "left" ? -0.5 : justify === "right" ? 0.5 : 0) * getTextWidth(textObj, textObj.get("text"), maxWidth)
+                // return TRACEOFF(traceID, textObj.get("left") + (justify === "left" ? -0.5 : justify === "right" ? 0.5 : 0) * getTextWidth(textObj, textObj.get("text"), maxWidth))
                 if (useCurrent)
-                    return OFFSTACK(funcID) && textObj.get("left") + {left: -0.5, right: 0.5, center: 0}[justify] * getMaxWidth(textObj)
-                return OFFSTACK(funcID) && textObj.get("left") + {left: -0.5, right: 0.5, center: 0}[justify] * getTextWidth(textObj, textObj.get("text"), maxWidth)
+                    return TRACEOFF(traceID, textObj.get("left") + {left: -0.5, right: 0.5, center: 0}[justify] * getMaxWidth(textObj))
+                return TRACEOFF(traceID, textObj.get("left") + {left: -0.5, right: 0.5, center: 0}[justify] * getTextWidth(textObj, textObj.get("text"), maxWidth))
             }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         getRealLeft = (textRef, params = {}) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("getRealLeft", [textRef, params]),
                 textObj = getTextObj(textRef),
                 textData = getTextData(textRef)
             if (VAL({textObj}, "getRealLeft")) {
@@ -3223,16 +3237,16 @@ const Media = (() => {
                 params.text = params.text || textObj.get("text")
                 params.justification = params.justification || textData.justification || "center"
                 // D.Alert(`getRealLeft(${D.JS(textData.name)}, ${D.JS(params)}) =<br>Left: ${D.JS(textObj.get("left"))}, DataLeft: ${D.JS(textData.left)}, Final: ${params.left + {left: -0.5, right: 0.5, center: 0}[params.justification] * getTextWidth(textObj, params.text, params.maxWidth || 0)}`)
-                return OFFSTACK(funcID) && params.left + {left: 0.5, right: -0.5, center: 0}[params.justification] * getTextWidth(textObj, params.text, params.maxWidth || 0)
+                return TRACEOFF(traceID, params.left + {left: 0.5, right: -0.5, center: 0}[params.justification] * getTextWidth(textObj, params.text, params.maxWidth || 0))
             }
-            return OFFSTACK(funcID) && false            
+            return TRACEOFF(traceID, false )
         },      
     // #endregion
 
     // #region TEXT OBJECT MANIPULATORS: Buffering, Justifying, Splitting
         buffer = (textRef, width) => " ".repeat(Math.max(0, Math.round(width/getTextWidth(textRef, " ", false)))),
         splitTextLines = (textRef, text, maxWidth, justification = "left") => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("splitTextLines", [textRef, text, maxWidth, justification]),
                 textObj = getTextObj(textRef),
                 textLines = (text || " ").split(/\n/gu),
                 splitLines = [],
@@ -3338,12 +3352,12 @@ const Media = (() => {
                     splitLines.push(...splitLine)
                 }
         // D.Alert(`SplitTextLines Called.  Returning: ${D.JS(splitStrings)}`)
-                return OFFSTACK(funcID) && splitLines.map((mapperFuncs[justification] || mapperFuncs.left)(highWidth))
+                return TRACEOFF(traceID, splitLines.map((mapperFuncs[justification] || mapperFuncs.left)(highWidth)))
             }
-            return OFFSTACK(funcID) && [text]
+            return TRACEOFF(traceID, [text])
         },
         justifyText = (textRef, justification, maxWidth = 0) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("justifyText", [textRef, justification, maxWidth]),
                 textObj = getTextObj(textRef)
             // D.Alert(`Justifying ${D.JS(getTextKey(textObj))}.  Reference: ${D.JS(textRef)}, Object: ${D.JS(textObj)}`, "justifyText")
             if (VAL({textObj})) {
@@ -3352,18 +3366,18 @@ const Media = (() => {
                 REGISTRY.TEXT[getTextKey(textObj)].width = getTextWidth(textObj, textObj.get("text"), maxWidth)
                 // D.Alert(`${getTextKey(textRef)} Updated: ${D.JS(REGISTRY.TEXT[getTextKey(textObj)])}`, "justifyText")
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
     // #endregion
 
     // #region TEXT OBJECT SETTERS: Registering, Changing, Deleting
         regText = (textRef, hostName, activeLayer, hasShadow, justification = "center", options = {}, funcName = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("regText", [textRef, hostName, activeLayer, hasShadow, justification, options = {}, funcName = false]),
                 textObj = getTextObj(textRef)
             DB(`regText(textRef, ${D.JSL(hostName)}, ${D.JSL(activeLayer)}, ${D.JSL(hasShadow)}, ${D.JSL(options)}`, "regText")
             if (VAL({text: textObj})) {
                 if (!(hostName && activeLayer))
-                    return OFFSTACK(funcID) && THROW("Must supply host name and active layer for regText.", "RegText")
+                    return TRACEOFF(traceID, THROW("Must supply host name and active layer for regText.", "RegText"))
                 let name
                 if (options.name && !REGISTRY.TEXT[options.name])
                     name = options.name
@@ -3415,12 +3429,12 @@ const Media = (() => {
                     toFront(textObj)  
                 // D.Alert(`Host obj for '${D.JS(name)}' registered: ${D.JS(REGISTRY.TEXT[name])}`, "regText")
                 setZIndices()
-                return OFFSTACK(funcID) && getTextData(name)
+                return TRACEOFF(traceID, getTextData(name))
             }
-            return OFFSTACK(funcID) && VAL({string: funcName}) && THROW(`Invalid text reference '${D.JSL(textRef)}'`, `${D.JSL(funcName)} > regText`)
+            return TRACEOFF(traceID, VAL({string: funcName}) && THROW(`Invalid text reference '${D.JSL(textRef)}'`, `${D.JSL(funcName)} > regText`))
         },
         makeText = (hostName, activeLayer, hasShadow, justification, options = {}, funcName = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("makeText", [hostName, activeLayer, hasShadow, justification, options, funcName = false])
             DB(`makeText(${D.JSL(hostName)}, ${D.JSL(activeLayer)}, ${D.JSL(hasShadow)}, ${D.JSL(options)}`, "makeText")
             const actLayer = activeLayer || options.activeLayer || options.layer || "objects",
                 objParams = Object.assign({_pageid: D.THISPAGEID,
@@ -3437,10 +3451,10 @@ const Media = (() => {
             options.activeText = objParams.text             
             textObj.set("left", getRealLeft(textObj, {left: textObj.get("left"), justification: justification || options.justification || "center", maxWidth: options.maxWidth || 0}))
             regText(textObj, hostName, actLayer, hasShadow, justification, options, funcName)
-            return OFFSTACK(funcID) && textObj
+            return TRACEOFF(traceID, textObj)
         },
         makeTextShadow = (textRef, params) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("makeTextShadow", [textRef, params]),
                 textKey = getTextKey(textRef),
                 textData = getTextData(textKey),
                 shadowObj = createObj("text", Object.assign({
@@ -3450,10 +3464,10 @@ const Media = (() => {
                 }, params))
             REGISTRY.TEXT[textKey].shadowID = shadowObj.id
             updateTextShadow(textKey)
-            return OFFSTACK(funcID) && shadowObj
+            return TRACEOFF(traceID, shadowObj)
         },
         updateTextShadow = (textRef) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("updateTextShadow", [textRef]),
                 textData = getTextData(textRef)
             if (VAL({list: textData}, "updateTextShadow") && textData.shadowID) {
                 const textObj = getTextObj(textData.name),
@@ -3468,10 +3482,10 @@ const Media = (() => {
                     shadowObj.set(shadowParams)
                 }
             }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         linkText = (masterRef, slaveData, horizPad = 0, vertPad = 0) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("linkText", [masterRef, slaveData, horizPad, vertPad = 0]),
             // ON MASTER: list each slave object in terms of the edge it attaches to -- top, left, right or bottom
             // ON SLAVES: set "pushleft" and "pushtop" values in their registry data whenever master changes
             //      Register them with "horizPad" and "vertPad" to add extra distance.
@@ -3490,10 +3504,10 @@ const Media = (() => {
                 }
             }
             updateSlaveText(masterKey)
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         updateSlaveText = (masterRef) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("updateSlaveText", [masterRef]),
                 masterObj = getTextObj(masterRef),
                 masterKey = getTextKey(masterObj),
                 edgeDirs = REGISTRY.TEXT[masterKey].linkedText || {}
@@ -3518,19 +3532,19 @@ const Media = (() => {
                         setText(slaveKey, slaveData.curText)
                     }
                 }
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         setText = (textRef, text, isToggling, isForcing = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("setText", [textRef, text, isToggling, isForcing])
             // D.Alert(`setText(${D.JS(textRef, true)}, ${D.JS(text)}, ${D.JS(isToggling)}, ${D.JS(isForcing)})`)
             if (isToggling === false || isToggling === true) 
                 toggleText(textRef, isToggling, isForcing)
             if (!isForcing && (text === null || text === undefined))
-                return OFFSTACK(funcID) && null
+                return TRACEOFF(traceID, null)
             const textData = getTextData(textRef)
             if (VAL({list: textData}, "setText")) {                
                 if (!isForcing && textData.curText === text)
-                    return OFFSTACK(funcID) && null                
+                    return TRACEOFF(traceID, null )
                 const textKey = textData.name,
                     textObj = getTextObj(textRef),
                     textParams = {text} 
@@ -3579,13 +3593,13 @@ const Media = (() => {
                     if (textData.linkedText)
                         updateSlaveText(textKey)
                     REGISTRY.TEXT[textData.name].width = getTextWidth(textKey, textParams.text, textData.maxWidth)
-                    return OFFSTACK(funcID) && textObj
+                    return TRACEOFF(traceID, textObj)
                 }
             }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         setTextData = (textRef, params) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("setTextData", [textRef, params]),
                 textKey = getTextKey(textRef)           
             if (VAL({string: textKey}, "setTextData")) {
                 const textObj = getTextObj(textKey)
@@ -3602,16 +3616,16 @@ const Media = (() => {
                     textObj.set(objParams)
                     if (_.intersection(Object.keys(textParams), ["shiftTop", "top", "shiftLeft", "left", "pushtop", "pushleft"]).length)
                         setText(textKey, null, undefined, true)
-                    return OFFSTACK(funcID) && getTextData(textKey)
+                    return TRACEOFF(traceID, getTextData(textKey))
                 }
             }
-            return OFFSTACK(funcID) && false
+            return TRACEOFF(traceID, false)
         },
         toggleText = (textRef, isActive, isForcing = false) => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("toggleText", [textRef, isActive, isForcing])
             // NON-PERMANENT.  If turning off, set activeSrc to curSrc.
             // Also, verify img status is changing before doing anything.
-            if (isActive === null) return OFFSTACK(funcID) && null
+            if (isActive === null) return TRACEOFF(traceID, null)
             const textData = getTextData(textRef),
                 modeData = getModeData(textRef, Session.Mode)
             if (VAL({list: [textData, modeData]}, "toggleText", true)) {
@@ -3621,7 +3635,7 @@ const Media = (() => {
                 else if (isActive === false || isActive !== true && textData.isActive || modeData.isForcedOn === "NEVER" && textData.isActive)                    
                     activeCheck = false
                 if (activeCheck === null || !isForcing && textData.isActive === activeCheck)
-                    return OFFSTACK(funcID) && null                
+                    return TRACEOFF(traceID, null )
                 const textKey = textData.name,
                     textObj = getTextObj(textKey)             
                 if (activeCheck === false) {
@@ -3632,7 +3646,7 @@ const Media = (() => {
                     textObj.set("layer", "walls")
                     if (textData.shadowID)
                         (getObj("text", textData.shadowID) || {set: () => false}).set("layer", "walls")
-                    return OFFSTACK(funcID) && false                   
+                    return TRACEOFF(traceID, false )
                 } else if (activeCheck === true) {
                     // TURN ON: Set layer to active layer, toggle on associated drag pads, restore activeState value if it's different
                     REGISTRY.TEXT[textKey].isActive = true
@@ -3641,13 +3655,13 @@ const Media = (() => {
                     // setLayer(textObj, textData.activeLayer, isForcing)
                     if (textData.shadowID)
                         (getObj("text", textData.shadowID) || {set: () => false}).set("layer", textData.activeLayer)
-                    return OFFSTACK(funcID) && true                   
+                    return TRACEOFF(traceID, true )
                 }
             }
-            return OFFSTACK(funcID) && null
+            return TRACEOFF(traceID, null)
         },
         removeText = (textRef, isUnregOnly, isStillKillingShadow) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("removeText", [textRef, isUnregOnly, isStillKillingShadow]),
                 textObj = getTextObj(textRef),
                 textData = getTextData(textRef)
             if (textData.shadowID) {
@@ -3662,29 +3676,29 @@ const Media = (() => {
                     delete REGISTRY.ID[textData.id]
                 if (REGISTRY.TEXT[textData.name])
                     delete REGISTRY.TEXT[textData.name]
-                return OFFSTACK(funcID) && true
+                return TRACEOFF(traceID, true)
             }
-            return OFFSTACK(funcID) && THROW(`Invalid text reference ${D.JSL(textRef)}`, "removeText")
+            return TRACEOFF(traceID, THROW(`Invalid text reference ${D.JSL(textRef)}`, "removeText"))
         },
         removeTexts = (textString, isUnregOnly) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("removeTexts", [textString, isUnregOnly]),
                 textNames = _.filter(Object.keys(REGISTRY.TEXT), v => v.includes(textString))
             for (const textName of textNames)
                 removeText(textName, isUnregOnly)
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         clearMissingRegText = () => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("clearMissingRegText", []),
                 returnLines = []
             for (const textName of Object.keys(REGISTRY.TEXT))
                 if (!getTextObj(textName))
                     returnLines.push(`... ${textName} Missing Object, Removing: ${removeText(textName) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`)
             if (returnLines.length)
                 STATE.REF.fixAllCommands.push(...["<h3><u>Removing Unlinked Text Registry Entries</u></h3>", ...returnLines])
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         clearUnregText = (isKilling = false, isKillingPlayerText = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("clearUnregText", [isKilling, isKillingPlayerText = false]),
                 returnLines = [],
                 allTextObjs = findObjs({
                     _type: "text",
@@ -3697,16 +3711,16 @@ const Media = (() => {
             }
             if (returnLines.length)
                 STATE.REF.fixAllCommands.push(...["<h4><u>Clearing Orphan Texts</u></h4>", ...returnLines])
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         resetTextRegistry = () => {
-            const funcID = ONSTACK()
+            const traceID = TRACEON("resetTextRegistry", [])
             STATE.REF.textregistry = {}
             STATE.REF.idregistry = {}
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         },
         fixTextObjs = (isQueueing = false) => {
-            const funcID = ONSTACK(),
+            const traceID = TRACEON("fixTextObjs", [isQueueing]),
                 textKeys = Object.keys(REGISTRY.TEXT),
                 textPairs = _.zip(textKeys.map(x => REGISTRY.TEXT[x]), textKeys.map(x => getObj("text", REGISTRY.TEXT[x].id))),
                 reportLines = []
@@ -3749,7 +3763,7 @@ const Media = (() => {
                     STATE.REF.fixAllCommands.push(...["<h3><u>Final Text Object Pass</u></h3>", ...reportLines])
                 else                
                     D.Alert(["<h3><u>Fixing Text Objects</u></h3>", ...reportLines].join("<br>"), "fixTextObjs")
-            OFFSTACK(funcID)
+            TRACEOFF(traceID)
         }
     // #endregion
 

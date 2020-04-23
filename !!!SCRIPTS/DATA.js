@@ -24,6 +24,8 @@ const D = (() => {
     // #region LOCAL INITIALIZATION
         initialize = () => {
 
+            delete STATE.REF.TRACELOOKUP
+
             // delete STATE.REF.MissingTextChars
             STATE.REF.isFullDebug = false
             STATE.REF.isThrottlingStackLog = false
@@ -37,7 +39,13 @@ const D = (() => {
             STATE.REF.flexSpace = STATE.REF.flexSpace || 10.00
             STATE.REF.isReportingListener = STATE.REF.isReportingListener || false
             STATE.REF.FuncQueueName = STATE.REF.FuncQueueName || []
-            STATE.REF.MissingTextChars = STATE.REF.MissingTextChars || []
+            STATE.REF.MissingTextChars = STATE.REF.MissingTextChars || []        
+            STATE.REF.TRACELOG = []
+            STATE.REF.TRACENESTCOUNTER = 0
+            STATE.REF.TRACESTARTTIME = 0
+            STATE.REF.TRACELOGSTOPS = {}
+            STATE.REF.ISDEBUGGING = STATE.REF.ISDEBUGGING !== false
+            STATE.REF.TRACELASTTIME = 0
 
         // Initialize STATSDICT Fuzzy Dictionary
             try {
@@ -179,6 +187,16 @@ const D = (() => {
                         }
                         case "toggle": {
                             switch(D.LCase(call = args.shift())) {
+                                case "debug": {
+                                    STATE.REF.ISDEBUGGING = !STATE.REF.ISDEBUGGING
+                                    D.Flag(`Debugging is ${STATE.REF.ISDEBUGGING ? "ON" : "OFF"}`)
+                                    break
+                                }
+                                case "trace": {
+                                    toggleTracing()
+                                    D.Flag(`Tracing is ${ISTRACING ? "ON" : "OFF"}; Debugging is ${STATE.REF.ISDEBUGGING ? "ON" : "OFF"}`)
+                                    break
+                                }
                                 case "report": {
                                     switch(D.LCase(call = args.shift())) {
                                         case "listen": case "listener": {
@@ -211,7 +229,7 @@ const D = (() => {
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-    let PROMPTFUNC
+    let PROMPTFUNC, ISTRACING
     const STACKLOG = [],
         FUNCSONSTACK = [],
     // #region DECLARATIONS: Reference Variables, Temporary Storage Variables
@@ -1376,7 +1394,7 @@ const D = (() => {
         getBlackList = () => sendToGM(`${jStr(STATE.REF.BLACKLIST)}`, "DEBUG BLACKLIST"),
         logDebugAlert = (msg, funcName, scriptName, prefix = "DB") => {
             msg = formatMsgContents(msg, false)
-            if (_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive) {                
+            if (STATE.REF.ISDEBUGGING && (_.isUndefined(Session) || Session.IsTesting || !Session.IsSessionActive)) {                
                 if (funcName) {
                     STATE.REF.DEBUGLOG.push({
                         timeStamp: (new Date()).getTime(),
@@ -1450,6 +1468,61 @@ const D = (() => {
         getStackRecord = (title = "Stack Log") => {
             Handouts.Make(title, "stack", STACKLOG.join(""))
             STACKLOG.length = 0
+        },
+        toggleTracing = () => {
+            if (ISTRACING) {
+                const traceLogLines = []
+                ISTRACING = false
+                Handouts.RemoveAll("Trace Report")
+                for (const trace of STATE.REF.TRACELOG)
+                    if (!_.isNaN(STATE.REF.TRACELOGSTOPS[trace[0]]-trace[4]))
+                        traceLogLines.push(`${trace[4]-STATE.REF.TRACESTARTTIME},${trace[3]},${trace[1]},${trace[2]},${STATE.REF.TRACELOGSTOPS[trace[0]]-trace[4]}`)
+                Handouts.Make("Trace Report", false, traceLogLines.join("<br>"))
+                STATE.REF.ISDEBUGGING = true
+                TimeTracker.Fix()
+            } else {
+                ISTRACING = true
+                STATE.REF.ISDEBUGGING = false
+                TimeTracker.StopAllTimers()
+            }            
+            STATE.REF.TRACELOG = []
+            STATE.REF.TRACENESTCOUNTER = 0
+            STATE.REF.TRACESTARTTIME = 0
+            STATE.REF.TRACELOGSTOPS = {}
+            STATE.REF.TRACELASTTIME = 0
+        },
+        randomChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+        traceFuncStart = (funcName, funcParams, scriptName, message) => {
+            if (ISTRACING) {
+                funcParams = funcParams.length === 0 ? ["none"] : funcParams
+                if (STATE.REF.TRACESTARTTIME === 0)                    
+                    STATE.REF.TRACESTARTTIME = Date.now()
+                // if (Date.now() - STATE.REF.TRACELASTTIME <= 5) {
+                //    STATE.REF.TRACELASTTIME = Date.now()
+                //    return false
+                // }
+                const funcID = _.sample(randomChars.split(""), 10).join("")
+                STATE.REF.TRACELOG.push([
+                    funcID,
+                    `${scriptName.toUpperCase()}.${funcName}`,
+                    funcParams.map(x => `'${JSON.stringify(x)}'`).join("▐ ").replace(/,/gu, "¸"),
+                    STATE.REF.TRACENESTCOUNTER,
+                    Date.now()
+                ])
+                // STATE.REF.TRACELASTTIME = Date.now()
+                STATE.REF.TRACENESTCOUNTER++
+                // DB({time: Date.now(), traceFuncStart: STATE.REF.TRACELOG, traceStopLog: STATE.REF.TRACELOGSTOPS}, "traceFuncStart")
+                return funcID
+            }
+            return false        
+        },        
+        traceFuncStop = (funcID, returnVal) => {
+            if (ISTRACING && funcID) {
+                STATE.REF.TRACELOGSTOPS[funcID] = Date.now()
+                STATE.REF.TRACENESTCOUNTER--
+                // DB({time: Date.now(), traceFuncStop: STATE.REF.TRACELOG, traceStopLog: STATE.REF.TRACELOGSTOPS}, "traceFuncStop")
+            }
+            return returnVal 
         },
     // #endregion
 
@@ -2157,6 +2230,7 @@ const D = (() => {
         ThrowError: throwError,
         DBAlert: sendDebugAlert,
         GetDebugRecord: getDebugRecord,
+        TraceStart: traceFuncStart, TraceStop: traceFuncStop,
 
         GMID: getGMID,
         GetSelected: getSelected,

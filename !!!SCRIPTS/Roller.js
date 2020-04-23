@@ -9,7 +9,9 @@ const Roller = (() => {
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
-
+        TRACEON = (funcName, funcParams = [], msg = "") => D.TraceStart(funcName, funcParams, SCRIPTNAME, msg), // eslint-disable-line no-unused-vars  
+        TRACEOFF = (funcID, returnVal) => D.TraceStop(funcID, returnVal), // eslint-disable-line no-unused-vars
+            
         checkInstall = () => {
             C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
             initialize()
@@ -35,7 +37,10 @@ const Roller = (() => {
                 redMods: [],
                 goldMods: []
             }
-
+            STATE.REF.diceStatus = STATE.REF.diceStatus || _.each(SETTINGS.dice, (v,k) => {
+                STATE.REF.diceStatus = STATE.REF.diceStatus || {}
+                Object.assign(STATE.REF.diceStatus, {[k]: []})
+            })
     
             for (const dieCat of Object.keys(SETTINGS.dice)) {
                 delete STATE.REF[dieCat]
@@ -544,6 +549,7 @@ const Roller = (() => {
             ],
             shifts: { // Must set TEXT and TOGGLE STATE of all roller objects before applying shifts.
                 get modShiftData() {
+                    const traceID = TRACEON("modShiftData") /* eslint-disable-next-line one-var */
                     const lineShifts = {
                         // rollerName: Media.GetTextData("rollerName").left + Media.GetTextWidth("rollerName") - Media.GetTextData("outcome").left + 45,
                             mainRoll: Media.GetImg("RollerFrame_TopEnd").get("left") + 0.5 * Media.GetImgData("RollerFrame_TopEnd").width - Media.GetTextData("outcome").left + 10,
@@ -570,7 +576,7 @@ const Roller = (() => {
                     flagSpace.rollerNameLow = flagSpace.mainRollHigh - 1
                 if (Math.max(Media.GetTextWidth("goldMods"), Media.IsActive("redMods") && Media.GetTextWidth("redMods") || 0) < 1.5 * flagSpace.mainRollLow)
                     flagSpace.rollerNameLow = Math.min(flagSpace.rollerNameLow, flagSpace.mainRollLow - 1) */
-                    return shifts[_.findKey(flagSpace, v => v && v === Math.max(..._.values(flagSpace)))]
+                    return TRACEOFF(traceID, shifts[_.findKey(flagSpace, v => v && v === Math.max(..._.values(flagSpace)))])
                 },
                 rollerName: {top: 0, left: 0},
                 mainRoll: {
@@ -889,6 +895,7 @@ const Roller = (() => {
 
     // #region GRAPHICS: Creation, Removal, Registration, Setting Sources
         makeDie = (diceCat, dieNum) => {
+            const traceID = TRACEON("makeDie", [diceCat, dieNum]) // eslint-disable-next-line one-var
             const rootData = Media.GetImgData(`RollerDie_${diceCat}_1`),
                 dieKey = `RollerDie_${diceCat}_${dieNum}`,
                 padShift = -0.5 * rootData.width
@@ -908,9 +915,10 @@ const Roller = (() => {
             Media.AddImgSrc(null, dieKey, `ref:${rootData.name}`, true)
             Media.SetImg(dieKey, "Bf", true)
             DragPads.MakePad(dieKey, "selectDie", {deltaHeight: padShift, deltaWidth: padShift})
-            return true
+            return TRACEOFF(traceID, true)
         },
         clearDice = diceCat => {
+            const traceID = TRACEON("clearDice", [diceCat]) // eslint-disable-next-line one-var
             const returnLines = []
             DragPads.DelPad(`RollerDie_${diceCat}_1`)
             for (let i = 2; i <= SETTINGS.dice[diceCat].qty; i++) {
@@ -920,9 +928,10 @@ const Roller = (() => {
                     returnLines.push(`[${i}] ${Media.RemoveImg(imgKey) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`)
             }
             returnLines[0] = `<b>Removing <u>${diceCat}</u> Dice:</b> [1] <span style='color: green;'><b>OK!</b></span>, ${returnLines[0]}`
-            return returnLines
+            return TRACEOFF(traceID, returnLines)
         },
         makeAllDice = (diceCat) => {
+            const traceID = TRACEON("makeAllDice", [diceCat]) // eslint-disable-next-line one-var
             const returnLines = []
             if (Media.IsRegistered(`RollerDie_${diceCat}_2`))
                 clearDice(diceCat)
@@ -931,14 +940,16 @@ const Roller = (() => {
             for (let i = 2; i <= SETTINGS.dice[diceCat].qty; i++)
                 returnLines.push(`[${i}] ${makeDie(diceCat, i) ? "<span style='color: green;'><b>OK!</b></span>" : "<span style='color: red;'><b>ERROR!</b></span>"}`)
             returnLines[0] = `<b>Creating <u>${diceCat}</u> Dice:</b> [1] <span style='color: green;'><b>OK!</b></span>, ${returnLines[0]}`
-            return returnLines            
+            return TRACEOFF(traceID, returnLines)
         },
         getColor = (rollType, rollLine, colorRef) => {
+            const traceID = TRACEON("getColor", [rollType, rollLine, colorRef]) // eslint-disable-next-line one-var
             if (colorRef)
-                return VAL({string: COLORSCHEMES[rollType][rollLine][colorRef]}) && COLORSCHEMES[rollType][rollLine][colorRef] || COLORSCHEMES.base[rollLine]
-            return VAL({string: COLORSCHEMES[rollType][rollLine]}) && COLORSCHEMES[rollType][rollLine] || COLORSCHEMES.base[rollLine]          
+                return TRACEOFF(traceID, VAL({string: COLORSCHEMES[rollType][rollLine][colorRef]}) && COLORSCHEMES[rollType][rollLine][colorRef] || COLORSCHEMES.base[rollLine])
+            return TRACEOFF(traceID, VAL({string: COLORSCHEMES[rollType][rollLine]}) && COLORSCHEMES[rollType][rollLine] || COLORSCHEMES.base[rollLine])
         },
         clearRoller = () => {
+            const traceID = TRACEON("clearRoller", []) // eslint-disable-next-line one-var
             const topMidRefs = []
             for (const textKey of SETTINGS.textKeys)
                 Media.ToggleText(textKey, false, true)
@@ -959,9 +970,11 @@ const Roller = (() => {
             Media.ToggleImg("Roller_WPReroller_Base_1", false)
             Media.ToggleAnim("Roller_WPReroller_2", false)
             Media.ToggleImg("Roller_WPReroller_Base_2", false)
+            TRACEOFF(traceID)
             // Media.Fix()
         }, // "<h3><span style='color: green;'>Time, Weather & Horizon Data Updated!</span></h3>"
         killRoller = () => {
+            const traceID = TRACEON("killRoller", []) // eslint-disable-next-line one-var
             const returnLines = [ 
                 {header: "<h3>Clearing Dice Roller Frame...</h3>", entries: []},
                 {header: "<h3>Clearing Drag Pads...</h3>", entries: []},
@@ -981,11 +994,14 @@ const Roller = (() => {
             returnLines[1].entries.push("... Removing <b>Willpower Reroll</b> Drag Pad: <span style='color:green;'><b>OK!</b></span>")
             for (const diceCat of Object.keys(SETTINGS.dice))
                 returnLines[2].entries.push(clearDice(diceCat).join(", "))
+            TRACEOFF(traceID)
         },
         initFrame = (isQueuing = true) => {
+            const traceID = TRACEON("initFrame", [isQueuing]) // eslint-disable-next-line one-var
             const imgDataTop = Media.GetImgData("RollerFrame_TopMid_1"),
                 imgDataBottom = Media.GetImgData("RollerFrame_BottomMid_1"),
                 initFunc = () => {
+                    const innerTraceID = TRACEON("initFunc") // eslint-disable-next-line one-var
                     const returnLines = [ 
                         {header: "<h3>Creating Dice Roller Frame...</h3>", entries: []},
                         {header: "<h3>Creating Drag Pads...</h3>", entries: []},
@@ -1026,11 +1042,11 @@ const Roller = (() => {
                     for (const diceCat of Object.keys(SETTINGS.dice))
                         returnLines[2].entries.push(makeAllDice(diceCat).join(", "))
                     DragPads.MakePad("Roller_WPReroller_Base_1", "wpReroll")
-                    return [
+                    return TRACEOFF(innerTraceID, [
                         `${returnLines[0].header}${returnLines[0].entries.join("<br>")}`,
                         `${returnLines[1].header}${returnLines[1].entries.join("<br>")}`,
                         `${returnLines[2].header}${returnLines[2].entries.join("<br>")}`
-                    ]
+                    ])
                 }
             if (isQueuing)
                 if (D.IsFuncQueueClear("Roller")) {
@@ -1046,47 +1062,53 @@ const Roller = (() => {
                     THROW("Attempt to queue functions into busy queue!", "initFrame")
                 }
             else
-                initFunc()           
+                initFunc()   
+            TRACEOFF(traceID)         
         },
         setDie = (dieCat, dieNum, dieVal, rollType) => {
-            const dieKey = `RollerDie_${dieCat}_${dieNum}`
-            if (dieVal) {
-                if (dieVal.includes("selected") && STATE.REF.selected[dieCat].includes(dieNum)) {
-                    dieVal = STATE.REF.diceVals[dieCat][dieNum]
-                    rollType = rollType || "trait"
+            const traceID = TRACEON("setDie", [dieCat, dieNum, dieVal, rollType]) // eslint-disable-next-line one-var
+            if (STATE.REF.diceVals[dieCat][dieNum] !== dieVal) {
+                const dieKey = `RollerDie_${dieCat}_${dieNum}`
+                if (dieVal) {
+                    if (dieVal.includes("selected") && STATE.REF.selected[dieCat].includes(dieNum)) {
+                        dieVal = STATE.REF.diceVals[dieCat][dieNum]
+                        rollType = rollType || "trait"
+                    }
+                    Media.SetImg(dieKey, dieVal, true)
+                    if (!dieVal.includes("selected"))
+                        STATE.REF.diceVals[dieCat][dieNum] = dieVal
+                } else {
+                    Media.ToggleImg(dieKey, false)
+                    STATE.REF.diceVals[dieCat][dieNum] = false
                 }
-                Media.SetImg(dieKey, dieVal, true)
-                if (!dieVal.includes("selected"))
-                    STATE.REF.diceVals[dieCat][dieNum] = dieVal
-            } else {
-                Media.ToggleImg(dieKey, false)
-                delete STATE.REF.diceVals[dieCat][dieNum]
+                if (dieVal && dieVal.includes("selected"))
+                    STATE.REF.selected[dieCat] = _.uniq([...STATE.REF.selected[dieCat], dieNum])
+                else
+                    STATE.REF.selected[dieCat] = _.without(STATE.REF.selected[dieCat], dieNum)
+                
+                DB({dieVal, rollType, isHungerDie: dieVal && dieVal.includes("H"), isSelectedDie: dieVal && dieVal.includes("selected"), dragPadStatus: dieVal && !dieVal.includes("H") && (dieVal.includes("selected") || rollType === "trait")}, "setDie")
+                if (dieVal && !dieVal.includes("H") && (dieVal.includes("selected") || rollType === "trait"))
+                    DragPads.Toggle(dieKey, true)
+                else
+                    DragPads.Toggle(dieKey, false)
+                if (_.flatten(_.values(STATE.REF.selected)).length) {          
+                    DragPads.Toggle("wpReroll", true)
+                    Media.ToggleAnim("Roller_WPReroller_1", true)
+                    Media.ToggleImg("Roller_WPReroller_Base_1", true)
+                    Media.ToggleAnim("Roller_WPReroller_2", true)
+                    Media.ToggleImg("Roller_WPReroller_Base_2", true)
+                } else {
+                    DragPads.Toggle("wpReroll", false)
+                    Media.ToggleAnim("Roller_WPReroller_1", false)
+                    Media.ToggleImg("Roller_WPReroller_Base_1", false)
+                    Media.ToggleAnim("Roller_WPReroller_2", false)
+                    Media.ToggleImg("Roller_WPReroller_Base_2", false)
+                }
             }
-            if (dieVal && dieVal.includes("selected"))
-                STATE.REF.selected[dieCat] = _.uniq([...STATE.REF.selected[dieCat], dieNum])
-            else
-                STATE.REF.selected[dieCat] = _.without(STATE.REF.selected[dieCat], dieNum)
-            
-            DB({dieVal, rollType, isHungerDie: dieVal && dieVal.includes("H"), isSelectedDie: dieVal && dieVal.includes("selected"), dragPadStatus: dieVal && !dieVal.includes("H") && (dieVal.includes("selected") || rollType === "trait")}, "setDie")
-            if (dieVal && !dieVal.includes("H") && (dieVal.includes("selected") || rollType === "trait"))
-                DragPads.Toggle(dieKey, true)
-            else
-                DragPads.Toggle(dieKey, false)
-            if (_.flatten(_.values(STATE.REF.selected)).length) {          
-                DragPads.Toggle("wpReroll", true)
-                Media.ToggleAnim("Roller_WPReroller_1", true)
-                Media.ToggleImg("Roller_WPReroller_Base_1", true)
-                Media.ToggleAnim("Roller_WPReroller_2", true)
-                Media.ToggleImg("Roller_WPReroller_Base_2", true)
-            } else {
-                DragPads.Toggle("wpReroll", false)
-                Media.ToggleAnim("Roller_WPReroller_1", false)
-                Media.ToggleImg("Roller_WPReroller_Base_1", false)
-                Media.ToggleAnim("Roller_WPReroller_2", false)
-                Media.ToggleImg("Roller_WPReroller_Base_2", false)
-            }
+            TRACEOFF(traceID)
         },
         selectDie = (dieCat, dieNum) => {
+            const traceID = TRACEON("selectDie", [dieCat, dieNum]) // eslint-disable-next-line one-var
             const rollRecord = getCurrentRoll(false),
                 selectType = rollRecord.rollResults.wpCost === 0 && "selectedFree" ||
                              rollRecord.rollResults.wpCost === 1 && "selected" ||
@@ -1109,15 +1131,29 @@ const Roller = (() => {
                 Media.ToggleAnim("Roller_WPReroller_2", false)
                 Media.ToggleImg("Roller_WPReroller_Base_2", false)
             }
+            TRACEOFF(traceID)
         },
         setDieCat = (dieCat, dieVals = [], rollType) => {
-            for (let i = 1; i <= SETTINGS.dice[dieCat].qty; i++)
-                setDie(dieCat, i, dieVals[i-1] || false, rollType)
+            const traceID = TRACEON("setDieCat", [dieCat, dieVals, rollType]) // eslint-disable-next-line one-var
+            const deltaDice = STATE.REF.diceVals[dieCat].map((x,i) => {
+                if (i === 0)
+                    return null
+                if ((dieVals[i-1] || false) === x)
+                    return null
+                return dieVals[i-1]
+            })
+            for (const [dieNum, dieVal] of Object.entries(deltaDice)) {
+                if (dieVal === null)
+                    continue
+                setDie(dieCat, dieNum, dieVal, rollType)
+            }
+            TRACEOFF(traceID)
         },
     // #endregion
 
     // #region ROLL EFFECTS: Applying, Creating, Removing
         applyRollEffects = rollInput => {
+            const traceID = TRACEON("applyRollEffects", [rollInput]) // eslint-disable-next-line one-var
             const rollEffectString = D.GetStatVal(rollInput.charID, "rolleffects") || ""
             let isReapplying = false
             if (VAL({string: rollEffectString, list: rollInput}, "applyRollEffects")) {
@@ -1125,20 +1161,22 @@ const Roller = (() => {
                 const rollEffects = _.compact(_.without(_.uniq([...rollEffectString.split("|"), ...Object.keys(STATE.REF.rollEffects), ...rollInput.rollEffectsToReapply || []]), ...rollInput.appliedRollEffects)),
                     [rollData, rollResults] = rollInput.rolls ? [null, rollInput] : [rollInput, null],
                     checkInput = (input, rollMod, restriction) => {
+                        const innerTraceID = TRACEON("checkInput", [input, rollMod, restriction]) // eslint-disable-next-line one-var
                         DB({rollMod, restriction, "Boolean(input.rolls)": Boolean(input.rolls), "D.IsIn(restriction/rollMod, RREFFECTS.restriction/rollMod)": Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction, true) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod, true))}, "checkInput")
-                        return Boolean(input.rolls) === Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction, true) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod, true))
+                        return TRACEOFF(innerTraceID, Boolean(input.rolls) === Boolean(D.IsIn(restriction, ROLLRESULTEFFECTS.restriction, true) || D.IsIn(rollMod, ROLLRESULTEFFECTS.rollMod, true)))
                     },
                     checkRestriction = (input, traits, flags, rollMod, restriction) => {
+                        const innerTraceID = TRACEON("checkRestriction", [input, traits, flags, rollMod, restriction]) // eslint-disable-next-line one-var
                         DB({"Checking Restriction": restriction, traits, flags, rollMod}, "checkRestriction")
                         // FIRST, check whether this restriction applies to the given input (either rollData or rollResults):
                         if (!checkInput(input, rollMod, restriction)) {
                             DB("... checkInput returns FALSE: returning 'INAPPLICABLE'.", "checkRestriction")
-                            return "INAPPLICABLE"
+                            return TRACEOFF(innerTraceID, "INAPPLICABLE")
                         }
                         DB("CheckInput returns TRUE: continuing validation.", "checkRestriction")
                         if (restriction === "all") {
                             DB("... Restriction = ALL:  RETURNING TRUE", "checkRestriction")
-                            return true
+                            return TRACEOFF(innerTraceID, true)
                         }
                         if (rollResults) {
                         // Does rollMod specify a willpower cost, but it is superceded by a nowpreroll restriction somewhere in the effect?
@@ -1146,7 +1184,7 @@ const Roller = (() => {
                                 case "doublewpreroll": case "freewpreroll": case "restrictwpreroll1": case "restrictwpreroll2":
                                     if (_.any(rollEffects, v => v.includes("nowpreroll"))) {
                                         DB(`Willpower cost ${rollMod} SUPERCEDED by 'nowpreroll': ${D.JSL(rollEffects)}`, "checkRestriction")
-                                        return "INAPPLICABLE"
+                                        return TRACEOFF(innerTraceID, "INAPPLICABLE")
                                     }
                                     break
                             // no default
@@ -1156,28 +1194,28 @@ const Roller = (() => {
                             switch (restriction) {
                                 case "success":
                                     DB({rollResultsRestriction: restriction, test: "effectiveMargin >= 0", effectiveMargin, "passesRestriction?": effectiveMargin >= 0}, "checkRestriction")
-                                    return effectiveMargin >= 0
+                                    return TRACEOFF(innerTraceID, effectiveMargin >= 0)
                                 case "failure":
                                     DB({rollResultsRestriction: restriction, test: "effectiveMargin < 0", effectiveMargin, "passesRestriction?": effectiveMargin < 0}, "checkRestriction")
-                                    return effectiveMargin < 0
+                                    return TRACEOFF(innerTraceID, effectiveMargin < 0)
                                 case "basicfail":
                                     DB({rollResultsRestriction: restriction, test: "effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0", effectiveMargin, "input.H.botches": input.H.botches, "input.B.succs": input.B.succs, "input.H.succs": input.H.succs, "passesRestriction?": effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0}, "checkRestriction")
-                                    return effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0 // fail AND not bestial fail AND not total fail
+                                    return TRACEOFF(innerTraceID, effectiveMargin < 0 && input.H.botches === 0 && input.B.succs + input.H.succs > 0) // fail AND not bestial fail AND not total fail
                                 case "critical":
                                     DB({rollResultsRestriction: restriction, test: "effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0", effectiveMargin, "passesRestriction?": effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0}, "checkRestriction")
-                                    return effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0
+                                    return TRACEOFF(innerTraceID, effectiveMargin >= 0 && input.critPairs.bb + input.critPairs.hb + input.critPairs.hh > 0)
                                 case "basiccrit":
                                     DB({rollResultsRestriction: restriction, test: "effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0", effectiveMargin, "passesRestriction?": effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0}, "checkRestriction")
-                                    return effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0
+                                    return TRACEOFF(innerTraceID, effectiveMargin >= 0 && input.critPairs.bb > 0 && input.critPairs.hh + input.critPairs.hb === 0)
                                 case "messycrit":
                                     DB({rollResultsRestriction: restriction, test: "effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0", effectiveMargin, "passesRestriction?": effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0}, "checkRestriction")
-                                    return effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0
+                                    return TRACEOFF(innerTraceID, effectiveMargin >= 0 && input.critPairs.hh + input.critPairs.hb > 0)
                                 case "bestialfail":
                                     DB({rollResultsRestriction: restriction, test: "effectiveMargin < 0 && input.H.botches > 0", effectiveMargin, "passesRestriction?": effectiveMargin < 0 && input.H.botches > 0}, "checkRestriction")
-                                    return effectiveMargin < 0 && input.H.botches > 0
+                                    return TRACEOFF(innerTraceID, effectiveMargin < 0 && input.H.botches > 0)
                                 case "totalfail":
                                     DB({rollResultsRestriction: restriction, test: "input.B.succs + input.H.succs === 0", effectiveMargin, "passesRestriction?": input.B.succs + input.H.succs === 0}, "checkRestriction")
-                                    return input.B.succs + input.H.succs === 0
+                                    return TRACEOFF(innerTraceID, input.B.succs + input.H.succs === 0)
                             // no default
                             }
                         }
@@ -1187,14 +1225,14 @@ const Roller = (() => {
                             DB(`Restriction = CLAN.  Character Clan: ${D.GetStatVal(input.charID, "clan")}`, "checkRestriction")
                             if (!D.IsIn(D.GetStatVal(input.charID, "clan"), restriction, true)) {
                                 DB("... Check FAILED.  Returning FALSE", "checkRestriction")
-                                return false
+                                return TRACEOFF(innerTraceID, false)
                             }
                             DB("... Check PASSED. Moving on...", "checkRestriction")
                         } else if (D.IsIn(restriction, C.SECTS, true)) {
                             DB(`Restriction = SECT.  Character Sect: ${D.GetStatVal(input.charID, "sect")}`, "checkRestriction")
                             if (!D.IsIn(D.GetStatVal(input.charID, "sect"), restriction, true)) {
                                 DB("... Check FAILED.  Returning FALSE", "checkRestriction")
-                                return false
+                                return TRACEOFF(innerTraceID, false)
                             }
                             DB("... Check PASSED. Moving on...", "checkRestriction")
                         // TEST: If restriction is "physical", "social" or "mental", does an appropriate trait match?
@@ -1202,7 +1240,7 @@ const Roller = (() => {
                             DB(`Restriction = ARENA.  Trait Keys: ${D.JSL(Object.keys(traits))}`, "checkRestriction")
                             if (!_.intersection(_.map([...C.ATTRIBUTES[restriction], ...C.SKILLS[restriction]], v => v.toLowerCase()), Object.keys(traits)).length) {
                                 DB("... Check FAILED.  Returning FALSE", "checkRestriction")
-                                return false
+                                return TRACEOFF(innerTraceID, false)
                             }
                             DB("... Check PASSED. Moving on...", "checkRestriction")
                         // TEST: If restriction starts with "char:", is the named character rolling?
@@ -1210,7 +1248,7 @@ const Roller = (() => {
                             DB(`Restriction = CHARACTER.  ID: ${(D.GetChar(restriction.replace(/char:/gu, "")) || {id: false}).id}`, "checkRestriction")
                             if (input.charID !== (D.GetChar(restriction.replace(/char:/gu, "")) || {id: false}).id) {
                                 DB("... Check FAILED.  Returning FALSE", "checkRestriction")
-                                return false
+                                return TRACEOFF(innerTraceID, false)
                             }
                             DB("... Check PASSED. Moving on...", "checkRestriction")
                         } else if (restriction.startsWith("loc:")) {
@@ -1236,28 +1274,28 @@ const Roller = (() => {
                             if (locations.center.length) {
                                 if (!D.IsIn(loc, locations.center, true)) {
                                     DB("... CENTER LOCATION Check FAILED.  Returning FALSE", "checkRestriction")
-                                    return false
+                                    return TRACEOFF(innerTraceID, false)
                                 }
                                 DB("... Check PASSED. Moving on...", "checkRestriction")
                             } else if (Media.IsInside(Char.GetToken(input.charID), "sandboxLeft")) {
                                 if (!D.IsIn(loc, locations.left, true)) {
                                     DB("... LEFT LOCATION Check FAILED.  Returning FALSE", "checkRestriction")
-                                    return false
+                                    return TRACEOFF(innerTraceID, false)
                                 }
                                 DB("... Check PASSED. Moving on...", "checkRestriction")
                             } else if (!D.IsIn(loc, locations.right, true)) {
                                 DB("... RIGHT LOCATION Check FAILED.  Returning FALSE", "checkRestriction")
-                                return false
+                                return TRACEOFF(innerTraceID, false)
                             }
                             DB("... Check PASSED. Moving on...", "checkRestriction")
                         // TEST: If none of the above, does restriction match a trait or a flag?
                         } else if (!D.IsIn(restriction, [...Object.keys(traits), ...Object.keys(flags)], true)) {
                             DB(`TRAIT/FLAG check FAILED for: ${D.JSL(Object.keys(traits))} and ${D.JSL(Object.keys(flags))}, returning FALSE`, "checkRestriction")
-                            return false
+                            return TRACEOFF(innerTraceID, false)
                         }
                     // If effect passes all of the threshold tests, return true.
                         DB("All Threshold Checks Passed!  Returning TRUE", "checkRestriction")
-                        return true
+                        return TRACEOFF(innerTraceID, true)
                     }
                 DB({rollEffectString, "Parsed rollEffects": rollEffects, rollInput}, "applyRollEffects")
                 for (const effectString of rollEffects) {
@@ -1668,15 +1706,16 @@ const Roller = (() => {
                             replace(/<abs>/gu, v[0] === 0 ? "~" : Math.abs(v[0])).
                             replace(/<\+>/gu, v[0] < 0 ? "-" : "+"))
                     DB({"ROLL DATA AFTER EFFECTS": rollData}, "applyRollEffects")
-                    return rollData
+                    return TRACEOFF(traceID, rollData)
                 } else {
                     DB({"ROLL RESULTS AFTER EFFECTS": rollResults}, "applyRollEffects")
-                    return rollResults
+                    return TRACEOFF(traceID, rollResults)
                 }
             }
-            return THROW(`Bad Roll Input!${D.JSL(rollInput)}`, "applyRollEffects")
+            return TRACEOFF(traceID, THROW(`Bad Roll Input!${D.JSL(rollInput)}`, "applyRollEffects"))
         },
         addCharRollEffect = (charRef, effectString) => {
+            const traceID = TRACEON("addCharRollEffect", [charRef, effectString]) // eslint-disable-next-line one-var
             const charObj = D.GetChar(charRef)
             if (VAL({charObj, string: effectString}, "addCharRollEffects")) {
 
@@ -1723,8 +1762,10 @@ const Roller = (() => {
                     })
                 // D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "addCharRollEffects")
             }
+            TRACEOFF(traceID)
         },
         delCharRollEffect = (charRef, effectString) => {
+            const traceID = TRACEON("delCharRollEffect", [charRef, effectString]) // eslint-disable-next-line one-var
             const charObj = D.GetChar(charRef)
             let rollEffects = _.compact((D.GetStatVal(charObj.id, "rolleffects") || "").split("|"))    
             DB({charRef, effectString, rollEffects}, "delCharRollEffects")                                        
@@ -1734,14 +1775,15 @@ const Roller = (() => {
                 else if (rollEffects.includes(effectString))
                     rollEffects = _.without(rollEffects, effectString)
                 else
-                    return false
+                    return TRACEOFF(traceID, false)
                 setAttrs(charObj.id, {rolleffects: rollEffects.join("|")})
-                return true
+                return TRACEOFF(traceID, true)
                 // D.Alert(`Roll Effects on ${D.GetName(charObj)} revised to:<br><br>${rollEffects.join("<br>")}`, "delCharRollEffects")
             }
-            return false
+            return TRACEOFF(traceID, false)
         },
         addGlobalRollEffect = effectString => {
+            const traceID = TRACEON("addGlobalRollEffect", [effectString]) // eslint-disable-next-line one-var
             if (VAL({string: effectString}, "addGlobalRollEffects")) {
                 STATE.REF.rollEffects[effectString] = []
                 const rollStrings = []
@@ -1749,18 +1791,21 @@ const Roller = (() => {
                     rollStrings.push(`${i + 1}: ${Object.keys(STATE.REF.rollEffects)[i]}`)
                 D.Alert(`Global Roll Effects:<br><br>${rollStrings.join("<br>")}`, "addGlobalRollEffects")
             }
+            TRACEOFF(traceID)
         },
         delGlobalRollEffect = effectString => {
+            const traceID = TRACEON("delGlobalRollEffect", [effectString]) // eslint-disable-next-line one-var
             if (VAL({number: effectString}))
                 delete STATE.REF.rollEffects[Object.keys(STATE.REF.rollEffects)[Math.max(0, D.Int(effectString) - 1)]]
             else if (effectString in STATE.REF.rollEffects)
                 STATE.REF.rollEffects = _.omit(STATE.REF.rollEffects, effectString)
             else
-                return false
+                return TRACEOFF(traceID, false)
             D.Alert(`Global Roll Effects revised to:<br><br>${Object.keys(STATE.REF.rollEffects).join("<br>")}`, "delGlobalRollEffects")
-            return true
+            return TRACEOFF(traceID, true)
         },
         addGlobalExclusion = (charRef, effectString) => {
+            const traceID = TRACEON("addGlobalExclusion", [charRef, effectString]) // eslint-disable-next-line one-var
             const charObj = D.GetChar(charRef)
             if (VAL({charObj}, "addGlobalExclusion")) {
                 if (VAL({number: effectString}))
@@ -1772,8 +1817,10 @@ const Roller = (() => {
                     D.Alert(`No exclusion found for reference '${effectString}'`, "addGlobalExclusion")
                 }
             }
+            TRACEOFF(traceID)
         },
         delGlobalExclusion = (charRef, effectString) => {
+            const traceID = TRACEON("delGlobalExclusion", [charRef, effectString]) // eslint-disable-next-line one-var
             const charObj = D.GetChar(charRef)
             if (VAL({charObj}, "delGlobalExclusion")) {
                 if (VAL({number: effectString}))
@@ -1781,17 +1828,18 @@ const Roller = (() => {
                 if (VAL({string: effectString}) && effectString in STATE.REF.rollEffects) {
                     STATE.REF.rollEffects[effectString] = _.without(STATE.REF.rollEffects[effectString], charObj.id)
                     D.Alert(`Exclusions for effect <b>${D.JS(effectString)}</b>: ${D.JS(STATE.REF.rollEffects[effectString])}`, "delGlobalExclusion")
-                    return true
+                    return TRACEOFF(traceID, true)
                 } else {
                     D.Alert(`No exclusion found for reference '${effectString}'`, "delGlobalExclusion")
                 }
             }        
-            return false
+            return TRACEOFF(traceID, false)
         },     
     // #endregion
 
     // #region ROLL DATA: Getting, Parsing, Managing State Roll Record
         getRollChars = (charObjs) => {
+            const traceID = TRACEON("getRollChars", [charObjs]) // eslint-disable-next-line one-var
             charObjs = _.flatten([charObjs])
             const playerCharObjs = charObjs.filter(x => VAL({pc: x})),
                 npcCharObjs = charObjs.filter(x => VAL({npc: x})),
@@ -1809,9 +1857,10 @@ const Roller = (() => {
             rollCharObjs.push(...npcCharObjs)
             dbStrings.finalRollCharObjs = [...rollCharObjs]
             DB(dbStrings, "getRollChars")
-            return rollCharObjs
+            return TRACEOFF(traceID, rollCharObjs)
         },
         parseFlags = (charObj, playerCharID, rollType, params = {}, rollFlags) => {
+            const traceID = TRACEON("parseFlags", [charObj, playerCharID, rollType, params, rollFlags]) // eslint-disable-next-line one-var
             DB({charObj, playerCharID, rollType, params, rollFlags}, "parseFlags")
             params.args = params.args || []
             const flagData = {
@@ -1868,9 +1917,10 @@ const Roller = (() => {
                 flagData.flagDiceMod = reducedPos + reducedNeg
             }
 
-            return flagData
+            return TRACEOFF(traceID, flagData)
         },
         parseTraits = (charObj, playerCharID, rollType, params = {}) => {
+            const traceID = TRACEON("parseTraits", [charObj, playerCharID, rollType, params]) // eslint-disable-next-line one-var
             playerCharID = playerCharID || charObj.id
             let traits = _.compact((params && params.args && params.args[1] || _.isArray(params) && params[0] || _.isString(params) && params || "").split(","))
             DB(`Traits: ${D.JSL(traits)}`, "parseTraits")
@@ -1932,9 +1982,10 @@ const Roller = (() => {
             })
             // D.Alert(D.JS(tFull))
 
-            return tFull
+            return TRACEOFF(traceID, tFull)
         },
         getRollData = (charObj, rollType, params, rollFlags) => {
+            const traceID = TRACEON("getRollData", [charObj, rollType, params, rollFlags]) // eslint-disable-next-line one-var
             /* EXAMPLE RESULTS:
               {
                 charID: "-LN4P73XRfqCcI8U6c-t",
@@ -2026,26 +2077,34 @@ const Roller = (() => {
 
             DB({"INITIAL ROLL DATA": rollData}, "getRollData")
 
-            return rollData
+            return TRACEOFF(traceID, rollData)
         },
-        getCurrentRoll = (isNPCRoll = false) => (isNPCRoll ? STATE.REF.NPC : STATE.REF).rollRecord[(isNPCRoll ? STATE.REF.NPC : STATE.REF).rollIndex],
+        getCurrentRoll = (isNPCRoll = false) => {
+            const traceID = TRACEON("getCurrentRoll", [isNPCRoll]) // eslint-disable-next-line one-var
+            return TRACEOFF(traceID, (isNPCRoll ? STATE.REF.NPC : STATE.REF).rollRecord[(isNPCRoll ? STATE.REF.NPC : STATE.REF).rollIndex])
+        },
         setCurrentRoll = (rollIndex, isNPCRoll, isDisplayOnly = false) => {
+            const traceID = TRACEON("setCurrentRoll", [rollIndex, isNPCRoll, isDisplayOnly]) // eslint-disable-next-line one-var
             const rollRef = isNPCRoll ? STATE.REF.NPC : STATE.REF
             if (rollRef && rollRef.rollRecord && rollRef.rollRecord.length) {
                 rollRef.rollIndex = rollIndex
                 if (isDisplayOnly)
                     rollRef.rollRecord[rollIndex].rollData.notChangingStats = true
             }
+            TRACEOFF(traceID)
         },
         replaceRoll = (rollData, rollResults, rollIndex) => {
+            const traceID = TRACEON("replaceRoll", [rollData, rollResults, rollIndex]) // eslint-disable-next-line one-var
             const recordRef = rollResults.isNPCRoll ? STATE.REF.NPC : STATE.REF
             recordRef.rollIndex = rollIndex || recordRef.rollIndex
             recordRef.rollRecord[recordRef.rollIndex] = {
                 rollData: _.clone(rollData),
                 rollResults: _.clone(rollResults)
             }
+            TRACEOFF(traceID)
         },
         recordRoll = (rollData, rollResults) => {
+            const traceID = TRACEON("recordRoll", [rollData, rollResults]) // eslint-disable-next-line one-var
             const recordRef = rollResults.isNPCRoll ? STATE.REF.NPC : STATE.REF
             // Make sure appliedRollEffects in both rollData and rollResults contains all of the applied effects:
             rollData.appliedRollEffects = _.uniq([...rollData.appliedRollEffects, ...rollResults.appliedRollEffects])
@@ -2058,11 +2117,13 @@ const Roller = (() => {
             DB({"FINAL ROLL DATA": recordRef.rollRecord[0].rollData, "FINAL ROLL RESULTS": recordRef.rollRecord[0].rollResults}, "recordRoll")
             if (recordRef.rollRecord.length > 10)
                 recordRef.rollRecord.pop()
+            TRACEOFF(traceID)
         },
     // #endregion
 
     // #region ROLL CONTROL: Rolling Dice & Formatting Result
         buildDicePool = rollData => {
+            const traceID = TRACEON("buildDicePool", [rollData]) // eslint-disable-next-line one-var
         /* MUST SUPPLY:
 				  For Rouse & Checks:    rollData = { type }
 				  For All Others:        rollData = { type, mod, << traits: [],
@@ -2140,9 +2201,10 @@ const Roller = (() => {
             rollDataEffects.hungerPool = Math.min(rollDataEffects.hunger, rollDataEffects.dicePool)
             rollDataEffects.basePool = Math.max(0, rollDataEffects.dicePool - rollDataEffects.hungerPool)
 
-            return rollDataEffects
+            return TRACEOFF(traceID, rollDataEffects)
         },
         rollDice = (rollData, addVals) => {
+            const traceID = TRACEON("rollDice", [rollData, addVals]) // eslint-disable-next-line one-var
             /* MUST SUPPLY:
                 rollData = { type, diff, basePool, hungerPool, << diffmod >> }
                   OR
@@ -2400,7 +2462,7 @@ const Roller = (() => {
                     ...diceVals.filter(x => x === "HCb")
                 ]
             }
-            return rollResults
+            return TRACEOFF(traceID, rollResults)
         },
         formatDiceLine = (rollData = {}, rollResults, split = 15, rollFlags = {}, isSmall = false) => {
             /* MUST SUPPLY:
@@ -2416,6 +2478,7 @@ const Roller = (() => {
               <span style=\"display: inline-block; font-weight: normal; font-family: Verdana; text-shadow: none;
                   height: 24px; line-height: 24px; vertical-align: middle; width: 40px; text-align: left;
                   margin-left: 10px; font-size: 12px;\">", */
+            const traceID = TRACEON("formatDiceLine", [rollData, rollResults, split, rollFlags, isSmall]) // eslint-disable-next-line one-var
             const dims = {
                     widthSide: 0,
                     widthMid: 0,
@@ -2472,7 +2535,7 @@ const Roller = (() => {
 
             }
 
-            return logLine
+            return TRACEOFF(traceID, logLine)
         },
         displayRoll = (isLogging = true, isNPCRoll) => {
             /* MUST SUPPLY:
@@ -2484,6 +2547,7 @@ const Roller = (() => {
                 rollResults = { H: { botches }, critPairs: {hh, hb, bb}, << margin >> }
               [TRAIT ONLY]
                 rollData = { posFlagLines, negFlagLines } */
+            const traceID = TRACEON("displayRoll", [isLogging, isNPCRoll]) // eslint-disable-next-line one-var
             const {rollData, rollResults} = getCurrentRoll(isNPCRoll),
                 rollFlags = rollData.rollFlags || {},
                 deltaAttrs = {},
@@ -3181,9 +3245,10 @@ const Roller = (() => {
 
             lockRoller(false)
 
-            return deltaAttrs
+            return TRACEOFF(traceID, deltaAttrs)
         },
         makeNewRoll = (charObj, rollType, params = [], rollFlags = {}) => {
+            const traceID = TRACEON("makeNewRoll", [charObj, rollType, params, rollFlags]) // eslint-disable-next-line one-var
             DB(`BEGINNING ROLL:
                 CHAR: ${D.JS(charObj.get("name"))} 
 				ROLL TYPE: ${D.JS(rollType)}
@@ -3196,8 +3261,10 @@ const Roller = (() => {
             const rollData = buildDicePool(getRollData(charObj, rollType, params, rollFlags))
             recordRoll(rollData, rollDice(rollData, null, rollFlags))
             displayRoll(true, rollFlags.isNPCRoll)
+            TRACEOFF(traceID)
         },
         wpReroll = (dieCat, isNPCRoll) => {
+            const traceID = TRACEON("wpReroll", [dieCat, isNPCRoll]) // eslint-disable-next-line one-var
             const rollRecord = getCurrentRoll(isNPCRoll),
                 rollData = _.clone(rollRecord.rollData),
                 rolledDice = D.KeyMapObj(STATE.REF.diceVals[dieCat], null, (v, k) => { return !STATE.REF.selected[dieCat].includes(D.Int(k)) && v || false }),
@@ -3227,8 +3294,10 @@ const Roller = (() => {
             Media.ToggleImg("Roller_WPReroller_Base_1", false)
             Media.ToggleAnim("Roller_WPReroller_2", false)
             Media.ToggleImg("Roller_WPReroller_Base_2", false)
+            TRACEOFF(traceID)
         },
         rollCommandMenu = () => {
+            const traceID = TRACEON("rollCommandMenu", []) // eslint-disable-next-line one-var
             D.CommandMenu(
                 {
                     title: "Dice Roller Control",
@@ -3289,8 +3358,10 @@ const Roller = (() => {
                         changeRoll(params.change)
                 }
             )
+            TRACEOFF(traceID)
         },
         secrecyMenu = (reportMessage) => {
+            const traceID = TRACEON("secrecyMenu", [reportMessage]) // eslint-disable-next-line one-var
             const buttonLines = Object.values(_.groupBy(
                 Object.values(
                     D.KeyMapObj(STATE.REF.nextRollFlags, null,
@@ -3347,8 +3418,10 @@ const Roller = (() => {
                     }
                 }
             )
+            TRACEOFF(traceID)
         },
         changeRoll = (deltaDice, isNPCRoll) => {
+            const traceID = TRACEON("changeRoll", [deltaDice, isNPCRoll]) // eslint-disable-next-line one-var
             const rollRecord = getCurrentRoll(isNPCRoll),
                 rollData = _.clone(rollRecord.rollData)
             let rollResults = _.clone(rollRecord.rollResults)
@@ -3357,7 +3430,7 @@ const Roller = (() => {
                 for (let i = 0; i > deltaDice; i--) {
                     const cutIndex = rollResults.diceVals.findIndex(v => v.startsWith("B"))
                     if (cutIndex === -1)
-                        return THROW(`Not enough base dice to remove in: ${D.JSL(rollResults.diceVals)}`, "changeRoll()")
+                        return TRACEOFF(traceID, THROW(`Not enough base dice to remove in: ${D.JSL(rollResults.diceVals)}`, "changeRoll()"))
                     rollResults.diceVals.splice(cutIndex, 1)
                 }
             }
@@ -3370,24 +3443,35 @@ const Roller = (() => {
             rollData.basePool = Math.max(1, rollData.dicePool) - rollData.hungerPool
             replaceRoll(rollData, rollResults)
             displayRoll(true, isNPCRoll)
-            return true
+            return TRACEOFF(traceID, true)
         },
-        lockRoller = lockToggle => { isLocked = lockToggle === true },
+        lockRoller = lockToggle => {             
+            const traceID = TRACEON("lockRoller", [lockToggle]) // eslint-disable-next-line one-var
+            isLocked = lockToggle === true
+            TRACEOFF(traceID)
+        },
         loadRoll = (rollIndex, isNPCRoll) => {
+            const traceID = TRACEON("loadRoll", [rollIndex, isNPCRoll]) // eslint-disable-next-line one-var
             setCurrentRoll(rollIndex, isNPCRoll, true)
             displayRoll(false, isNPCRoll)
+            TRACEOFF(traceID)
         },
         loadPrevRoll = (isNPCRoll) => {
+            const traceID = TRACEON("loadPrevRoll", [isNPCRoll]) // eslint-disable-next-line one-var
             const recordRef = isNPCRoll ? STATE.REF.NPC : STATE.REF            
             if (recordRef && recordRef.rollRecord && recordRef.rollRecord.length)
                 loadRoll(Math.min(recordRef.rollIndex + 1, Math.max(recordRef.rollRecord.length - 1, 0)), isNPCRoll)
+            TRACEOFF(traceID)
         },
         loadNextRoll = (isNPCRoll) => {
+            const traceID = TRACEON("loadNextRoll", [isNPCRoll]) // eslint-disable-next-line one-var
             const recordRef = isNPCRoll ? STATE.REF.NPC : STATE.REF
             if (recordRef && recordRef.rollRecord && recordRef.rollRecord.length)
                 loadRoll(Math.max(recordRef.rollIndex - 1, 0), isNPCRoll)
+            TRACEOFF(traceID)
         },
         quickRouseCheck = (charRef, isDoubleRouse = false, isOblivionRouse = false, isPublic = false) => {
+            const traceID = TRACEON("quickRouseCheck", [charRef, isDoubleRouse, isOblivionRouse, isPublic]) // eslint-disable-next-line one-var
             const results = isDoubleRouse ? _.sortBy([randomInteger(10), randomInteger(10)]).reverse() : [randomInteger(10)],
                 deltaAttrs = {stain: undefined, hunger: false}
             let [header, body] = [
@@ -3423,11 +3507,13 @@ const Roller = (() => {
             D.Chat(isPublic && "all" || charRef, C.HTML.Block([
                 C.HTML.Header(header),
                 body].join("")))
+            TRACEOFF(traceID)
         },
     // #endregion
 
     // #region SECRET ROLLS
         makeSecretRoll = (chars, params, isSilent, isHidingTraits) => {
+            const traceID = TRACEON("makeSecretRoll", [chars, params, isSilent, isHidingTraits]) // eslint-disable-next-line one-var
         // D.Alert(`Received Parameters: ${params}`)
             chars = _.flatten([chars])
             let rollData = buildDicePool(getRollData(chars[0], "secret", params)),
@@ -3488,6 +3574,7 @@ const Roller = (() => {
                     D.Chat(rollData.playerID, `${CHATSTYLES.secret.startPlayerBlock}${CHATSTYLES.secret.playerTopLineStart}you are being tested ...</div>${CHATSTYLES.secret.playerBotLineStart}${playerLine}</div></div>`, null, D.RandomString(3))
             })
             D.Chat("Storyteller", `${CHATSTYLES.fullBox + CHATSTYLES.secret.topLineStart + (rollData.isSilent ? "Silently Rolling" : "Secretly Rolling") + (rollData.isHidingTraits ? " (Traits Hidden)" : " ...")}</div>${CHATSTYLES.secret.traitLineStart}${traitLine}${rollData.diff > 0 ? ` vs. ${rollData.diff}` : ""}</div>${blocks.join("")}</div></div>`, undefined, D.RandomString(3))
+            TRACEOFF(traceID)
         },
     // #endregion
 
@@ -3508,6 +3595,7 @@ const Roller = (() => {
 
     // #region RESONANCE: Getting Random Resonance Based On District/Site Parameters
         getResonance = (charRef, posRes = "", negRes = "", /* marginBonus = 0, */ isDoubleAcute, testCycles = 0) => {
+            const traceID = TRACEON("getResonance", [charRef, posRes, negRes, /* marginBonus, */isDoubleAcute, testCycles]) // eslint-disable-next-line one-var
             DB(`Resonance Args: ${D.JSL(charRef)}, ${D.JSL(posRes)}, ${D.JSL(negRes)}`, "getResonance")
             const charObj = D.GetChar(charRef),
                 resonances = {
@@ -3630,14 +3718,15 @@ const Roller = (() => {
                 setAttrs(charObj.id, {resonance: resChoice})
             else
                 setAttrs(charObj.id, {resonance: "None"})
-            return [
+            return TRACEOFF(traceID, [
                 intChoice,
                 resChoice,
                 discLines[resChoice]
-            ]
+            ])
             // Return ["Acute", "Choleric"];
         },
         displayResonance = (charRef, posRes, negRes, isDoubleAcute, testCycles = 0) => {
+            const traceID = TRACEON("displayResonance", [charRef, posRes, negRes, isDoubleAcute, testCycles]) // eslint-disable-next-line one-var
             const marginBonus = Number(STATE.REF.resMarginBonus)            
             STATE.REF.resMarginBonus = 0
             if (["l", "r", "c", "", undefined, null].includes(posRes)) {
@@ -3715,6 +3804,7 @@ const Roller = (() => {
                 C.HTML.Header(resDetails),
                 C.HTML.Body(resIntLine, {lineHeight: "20px"})
             ]))
+            TRACEOFF(traceID)
         }
     // #endregion
 

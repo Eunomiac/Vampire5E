@@ -2877,6 +2877,13 @@ const TimeTracker = (() => {
         get IsClockRunning() { return isTweeningClock || isFastTweeningClock || isTickingClock },
         get WeatherCode () { return getWeatherCode() },
         get IsRaining() { return getWeatherData().isRaining },
+        StopAllTimers: () => {
+            isCountdownFrozen = true
+            isCountdownRunning = false
+            isTweeningClock = false
+            isFastTweeningClock = false
+            isTickingClock = false
+        },
 
         GetRandomTimeline: getRandomEventTriggers,
 

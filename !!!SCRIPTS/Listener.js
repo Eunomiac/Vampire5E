@@ -11,6 +11,8 @@ const Listener = (() => {
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
+        TRACEON = (funcName, funcParams = [], msg = "") => D.TraceStart(funcName, funcParams, SCRIPTNAME, msg), // eslint-disable-line no-unused-vars  
+        TRACEOFF = (funcID, returnVal) => D.TraceStop(funcID, returnVal), // eslint-disable-line no-unused-vars
 
         checkInstall = () => {
             C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
@@ -25,6 +27,7 @@ const Listener = (() => {
                     const scriptData = SCRIPTCALLS.MESSAGE[call]
                     msg.who = msg.who || "API"
                     if (scriptData && scriptData.script && VAL({function: scriptData.script.OnChatCall}) && (!scriptData.gmOnly || playerIsGM(msg.playerid) || msg.playerid === "API") ) {
+                        const traceID = TRACEON("onChat:message", [msg]) /* eslint-disable-next-line one-var */
                         const [objects, returnArgs] = parseMessage(args, msg, SCRIPTCALLS.MESSAGE[call].needsObjects !== false)
                         DB({call, args, objects, returnArgs}, "regHandlers")
                         call = scriptData.singleCall && returnArgs.shift() || call
@@ -36,6 +39,7 @@ const Listener = (() => {
                                 `OBJECTS: ${D.JS(objects)}`
                             ].join("<br>"), "LISTENER RESULTS")
                         scriptData.script.OnChatCall(call, returnArgs, objects, msg)
+                        TRACEOFF(traceID)
                     }
                 }
                 return true
