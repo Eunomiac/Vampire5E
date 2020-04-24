@@ -2846,6 +2846,16 @@ const TimeTracker = (() => {
 
         fixTimeStatus = () => {
             const funcID = ONSTACK()
+            isCountdownFrozen = false
+            isTweeningClock = false
+            isFastTweeningClock = false
+            if (Session.IsSessionActive && (!Session.IsTesting || Session.IsFullTest)) {
+                isCountdownRunning = false
+                isTickingClock = true
+            } else {
+                isCountdownRunning = true
+                isTickingClock = false
+            }
             updateClockObj()
             setHorizon(setWeather())
             syncCountdown()

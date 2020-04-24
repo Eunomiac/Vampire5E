@@ -23,10 +23,6 @@ const D = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
-
-            delete STATE.REF.TRACELOOKUP
-
-            // delete STATE.REF.MissingTextChars
             STATE.REF.isFullDebug = false
             STATE.REF.isThrottlingStackLog = false
             STATE.REF.RULESREFERENCE = STATE.REF.RULESREFERENCE || {}
@@ -869,7 +865,12 @@ const D = (() => {
                 }
             }
         },
-        isMenuMemoed = memoID => Boolean(memoID && memoID in STATE.REF.COMMANDMENUS),
+        memoMenu = (menuData) => {
+            const menuString = _.escape(JSON.stringify(menuData))
+            if (!(menuString in STATE.REF.COMMANDMENUS))
+                STATE.REF.COMMANDMENUS[menuString] = getCommandMenuHTML(menuData)
+            return STATE.REF.COMMANDMENUS[menuString]
+        },
         getCommandMenuHTML = (menuData = {}) => {
             const htmlRows = [],
                 customStyles = {
@@ -948,11 +949,9 @@ const D = (() => {
                 // DB(dbData, "commandMenu")
             return C.HTML.Block(htmlRows.join(""), menuData.blockParams || {})
         },
-        commandMenu = (menuData = {}, replyFunc = null, memoID, isRebuilding = false) => { // "menu" snippet for detailed instructions
-            if (memoID && memoID in STATE.REF.COMMANDMENUS && !isRebuilding) 
-                promptGM(STATE.REF.COMMANDMENUS[memoID])
-            else                
-                promptGM(getCommandMenuHTML(menuData), replyFunc)            
+        commandMenu = (menuData = {}, replyFunc = null) => { // "menu" snippet for detailed instructions
+            const menuHTML = memoMenu(menuData)
+            promptGM(menuHTML, replyFunc)
         },
     // #endregion
 
@@ -2210,7 +2209,6 @@ const D = (() => {
         Flag: (msg) => sendToGM(msg, "none"),
         Poke: (msg, title = "[ALERT]") => { if (Session.IsTesting) sendToGM(msg, title) },
         Prompt: promptGM,
-        IsMenuStored: isMenuMemoed,
         CommandMenu: commandMenu, CommandMenuHTML: getCommandMenuHTML,
 
         RemoveFirst: removeFirst, PullIndex: pullIndex, PullOut: pullElement,

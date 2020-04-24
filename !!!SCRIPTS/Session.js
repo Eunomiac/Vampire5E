@@ -25,7 +25,7 @@ const Session = (() => {
             // delete STATE.REF.SceneAlarms
             // STATE.REF.SceneAlarms = []
 
-            delete STATE.REF.SessionScribes
+            // STATE.REF.SessionScribes = ["TeatimeRationale", "Thaumaterge", "PixelPuzzler", "banzai", "Hastur"]
 
             /*
             STATE.REF.customLocs = {
@@ -82,7 +82,7 @@ const Session = (() => {
             STATE.REF.tokenRecord = STATE.REF.tokenRecord || {Active: {}, Inactive: {}, Daylighter: {}, Downtime: {}, Complications: {}, Spotlight: {}}
             STATE.REF.sceneTokenRecord = STATE.REF.sceneTokenRecord || {Active: {}, Inactive: {}, Daylighter: {}, Downtime: {}, Complications: {}, Spotlight: {}}
             STATE.REF.ActiveTokens = STATE.REF.ActiveTokens || []
-            STATE.REF.SessionScribes = STATE.REF.SessionScribes || []
+            STATE.REF.SessionScribes = STATE.REF.SessionScribes || _.shuffle(Object.values(Char.REGISTRY).map(x => x.playerName))
             STATE.REF.SessionModes = STATE.REF.SessionModes || ["Active", "Inactive", "Daylighter", "Downtime", "Complications", "Spotlight"]
             STATE.REF.Mode = STATE.REF.Mode || "Inactive"
             STATE.REF.LastMode = STATE.REF.LastMode || "Inactive"
@@ -205,7 +205,7 @@ const Session = (() => {
                     switch(D.LCase(call = args.shift())) {
                         case "act": STATE.REF.curAct = D.Int(args[0]) || STATE.REF.curAct; break
                         case "pointer": {
-                            const pointerObj = Media.GetImg("MapIndicator"),
+                            const pointerObj = Media.GetImg("MapIndicator_Base"),
                                 [siteRef, siteName] = getActiveSite(true)
                             if (ISSETTINGPOINTER) {
                                 const pointerPos = {left: pointerObj.get("left"), top: pointerObj.get("top")}

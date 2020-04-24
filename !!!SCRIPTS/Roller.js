@@ -964,7 +964,7 @@ const Roller = (() => {
             Media.ToggleImg("RollerFrame_Left", true, true)
             Media.SetImg("RollerFrame_Left", "top")
             Media.ToggleImg("RollerFrame_BottomEnd", false, true)
-            Media.Spread("RollerFrame_Left", "RollerFrame_TopEnd", topMidRefs, 1, SETTINGS.frame.mids.minSpread, SETTINGS.frame.mids.maxSpread)
+            // Media.Spread("RollerFrame_Left", "RollerFrame_TopEnd", topMidRefs, 1, SETTINGS.frame.mids.minSpread, SETTINGS.frame.mids.maxSpread)
             DragPads.Toggle("wpReroll", false)
             Media.ToggleAnim("Roller_WPReroller_1", false)
             Media.ToggleImg("Roller_WPReroller_Base_1", false)
