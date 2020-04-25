@@ -7,6 +7,12 @@ state[GAMENAME] = state[GAMENAME] || {}
 for (const scriptName of SCRIPTS)
     state[GAMENAME][scriptName] = state[GAMENAME][scriptName] || {}
 
+_.templateSettings = {
+    interpolate: /\{\{(.+?)\}\}/g,
+    escape: /\{x\{(.+?)>\}\}/g,
+    evaluate: /\{j\{(.+?)\}\} /g
+}
+
 const C = (() => {
     const RO = {get OT() { return state[GAMENAME] }},
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
@@ -151,6 +157,7 @@ const C = (() => {
     // #endregion
 
     // #region HTML & CHAT STYLES
+        CHATWIDTH = 267,
         HTML = { // Block ==> Title, Header, ButtonLine ==> ButtonHeader, Button(label, API command, options = {})
             Block: (content, options = {}) => {
                 const params = {
@@ -160,7 +167,7 @@ const C = (() => {
                     bgImage: options.bgImage || BGIMAGES.blackMarble,
                     border: options.border || `4px outset ${options.color || COLORS.crimson}`,
                     margin: options.margin || "-26px 0px -7px -42px",
-                    width: options.width || "267px",
+                    width: options.width || `${CHATWIDTH}px`,
                     padding: options.padding || "0px",
                     textAlign: options.textAlign || "center"
                 }    
@@ -171,7 +178,7 @@ const C = (() => {
                     margin: ${params.margin};
                     height: auto;
                     min-height: 25px;
-                    min-width: 270px;
+                    min-width: ${CHATWIDTH}px;
                     width: ${params.width};
                     ${params.bgGradient && `background-image: linear-gradient(${params.bgGradient})` ||
                       params.bgColor && `background-color: ${params.bgColor}` ||
@@ -314,7 +321,7 @@ const C = (() => {
             },         
             Column: (content, options = {}) => {
                 const params = {
-                    width: options.width || "49%",
+                    width: options.width || `${Math.floor(CHATWIDTH / 2)}px`,
                     margin: options.margin || "0px"
                 }       
                 if (D.WatchList.includes("HTML-Column") && !options.isSilent)
@@ -346,12 +353,12 @@ const C = (() => {
             },
             ButtonSubheader: (content, options = {}) => {
                 const params = Object.assign({height: "12px",
-                                              width: "15%",
+                                              width: `${Math.floor(CHATWIDTH * 0.15)}px`,
                                               fontFamily: "Voltaire",
                                               fontSize: "10px",
                                               bgColor: "transparent",
                                               color: COLORS.white,
-                                              margin: "0px 1% 0px 0px",
+                                              margin: "0px 2px 0px 0px",
                                               textAlign: "left",
                                               textIndent: "3px",
                                               padding: "0px 0px 0px 0px",
@@ -376,32 +383,12 @@ const C = (() => {
                 ">${_.flatten([content]).join("")}</span>`)
             },            
             Button: (name, command, options = {}) => {
-            /*
-                const params = Object.assign({
-                    height: "18px",
-                    lineHeight: "16px",
-                    width: "22%",
-                    fontFamily: "Voltaire",
-                    margin: "0px 1% 0px 0px",
-                    padding: "0px 0px 0px 0px",
-                    fontSize: "12px",
-                    bgColor: COLORS.brightred,
-                    color: COLORS.white,
-                    border: `1px solid ${C.COLORS.white}`,
-                    fontWeight: "normal",
-                    textShadow: "none",
-                    buttonHeight: "16px",
-                    buttonWidth: "95%",
-                    buttonPadding: "0px",
-                    buttonTransform: "uppercase"
-                }, options)      
-            */
                 const params = Object.assign({
                     height: "100%",
                     lineHeight: "16px",
-                    width: "22%",
+                    width: `${Math.floor(CHATWIDTH * 0.25) - 2 - 2 - 6}px`,
                     fontFamily: "Voltaire",
-                    margin: "0px 1% 0px 0px",
+                    margin: "0px 2px 0px 0px",
                     padding: "0px 0px 0px 0px",
                     fontSize: "10px",
                     bgColor: COLORS.brightred,
@@ -445,7 +432,7 @@ const C = (() => {
                     sendChat("HTML", `/w Storyteller ${C.HTML.CodeBlock({header: "ButtonSpacer", content: {width}})}`)
                 return D.JSH(`<span style="   
                     height: 100%;
-                    width: ${width || "5%"};                 
+                    width: ${width || `${Math.floor(CHATWIDTH * 0.05)}px`};                 
                     display: inline-block;
                     margin: 0px;
                     padding: 0px;
@@ -2435,6 +2422,7 @@ const C = (() => {
         IMAGES, BGIMAGES,
         HANDOUTHTML,
         ROLLERHTML,
+        CHATWIDTH,
         HTML,
         STYLES,
 

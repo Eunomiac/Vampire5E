@@ -31,6 +31,7 @@ const Media = (() => {
             STATE.REF.idregistry = STATE.REF.idregistry || {}
             STATE.REF.areas = STATE.REF.areas || {}
             STATE.REF.tokenregistry = STATE.REF.tokenregistry || {}
+            STATE.REF.tokenregistry.GENERIC = STATE.REF.tokenregistry.GENERIC || {}
             STATE.REF.soundregistry = STATE.REF.soundregistry || {}
             STATE.REF.playlistregistry = STATE.REF.playlistregistry || {}
             STATE.REF.TokenSrcs = STATE.REF.TokenSrcs || {}
@@ -271,6 +272,13 @@ const Media = (() => {
                                     case "token": {
                                         if (VAL({imgObj}))
                                             regToken(imgObj)
+                                        break
+                                    }
+                                    case "generic": case "generictoken": case "gen": case "gentoken": {
+                                        if (VAL({imgObj})) {
+                                            const [tokenCat] = args
+                                            regGenericToken(imgObj, tokenCat)
+                                        }
                                         break
                                     }
                                     case "random": case "randomizertoken": case "randtoken": {
@@ -1048,6 +1056,8 @@ const Media = (() => {
             }
             if (isRandomizerToken(imgObj))
                 setRandomizerToken(imgObj)
+            if (isGenericToken(imgObj))
+                setGenericToken(imgObj)
             return TRACEOFF(traceID, true)
         }
     // #endregion
@@ -1657,6 +1667,7 @@ const Media = (() => {
         isCharToken = imgObj => VAL({imgObj}) && getObj("character", imgObj.get("represents")),
         isRegToken = imgObj => VAL({imgObj}) && Boolean(REGISTRY.TOKEN[D.GetName(imgObj.get("represents"))]),
         isRandomizerToken = tokenObj => isCharToken(tokenObj) && isRegToken(tokenObj) && (REGISTRY.TOKEN[D.GetName(tokenObj.get("represents"))].srcs.randomSrcs || []).length,
+        isGenericToken = imgObj => isCharToken(imgObj) && imgObj.get("imgsrc") in REGISTRY.TOKEN.GENERIC,
         isCyclingImg = imgObj => {
             const traceID = TRACEON("isCyclingImg", [imgObj]),
                 imgData = getImgData(imgObj)
@@ -1995,6 +2006,15 @@ const Media = (() => {
             }
             TRACEOFF(traceID)
         },
+        setGenericToken = (imgObj) => {
+            const traceID = TRACEON("setGenericToken", [imgObj])
+            if (VAL({imgObj})) {
+                const tokenCat = REGISTRY.TOKEN.GENERIC[imgObj.get("imgsrc")]
+                if (tokenCat)
+                    imgObj.set({imgsrc: _.sample(REGISTRY.TOKEN.GENERIC[D.LCase(tokenCat)])})                
+            }
+            TRACEOFF(traceID)
+        },
         toggleTokens = (tokenRef, isActive) => {
             const traceID = TRACEON("toggleTokens", [tokenRef, isActive])
             DB({tokenRef, isActive}, "toggleTokens")
@@ -2118,6 +2138,17 @@ const Media = (() => {
             }
             D.Alert(`No 'base' source found for ${tokenName}`, "regRandomizerToken")
             return TRACEOFF(traceID, false)
+        },
+        regGenericToken = (imgRef, tokenCat) => {
+            const traceID = TRACEON("regGenericToken", [imgRef, tokenCat])
+            const imgObj = getImgObj(imgRef)
+            if (VAL({imgObj})) {
+                const imgSrc = imgObj.get("imgsrc")
+                REGISTRY.TOKEN.GENERIC[imgSrc] = D.LCase(tokenCat)
+                REGISTRY.TOKEN.GENERIC[tokenCat] = REGISTRY.TOKEN.GENERIC[tokenCat] || []
+                REGISTRY.TOKEN.GENERIC[tokenCat].push(imgSrc)
+            }
+            TRACEOFF(traceID)
         },
         regArea = (imgRef, areaName) => {
             const traceID = TRACEON("regArea", [imgRef, areaName]),

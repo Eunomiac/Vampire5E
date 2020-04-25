@@ -154,10 +154,15 @@ const ConvertGlobalLineToLocal = (gline) => {
     };
     for(var i = 0; i < scriptRanges.length; i++) {
         let curRange = scriptRanges[i];
+        log(`[${i}] Converting Global Line ${gline} to Local: searching in '${prevRange.Name}' after line ${prevRange.StartLine}`)
         // Checking equals in both directions because of minification
         if (gline >= prevRange.StartLine && gline <= curRange.StartLine) {
             if (prevRange.StartLine === prevRange.StopLine) {
                 log(`Airbag has detected a minified file for ${prevRange.Name}.  Line estimation may be inaccurate.`);
+                return {
+                    Name: false,
+                    Line: false
+                }
                 return {
                     Name: JSON.stringify(prevRange),
                     Line: JSON.stringify(prevRange.StartLine)
@@ -244,7 +249,10 @@ on('chat:message', (msg) => {
 // Halt codebase()'s operations, cancel async tasks, and alert user
 const handleCrash = (obj) => {
     log('Handling Crash...');
-    const {src, stackLines, filteredStackLines} = processStack(obj)
+    const {src, stackLines, filteredStackLines} = processStack(obj) || {src: false, stackLines: false, filteredStackLines: false}
+    if (src === false)
+        return false
+    
 
     const rawErrorMsg = _.compact([
         "[AIRBAG",
@@ -281,11 +289,15 @@ const handleCrash = (obj) => {
     processStack = (obj) => { 
         let globalLine = GetScriptLine(obj, false);
         let src = ConvertGlobalLineToLocal(globalLine);
+        if (!src.Name)
+            return false
 
         let stackLines = _.map((obj && obj.stack || "").split(/\n|apiscript\.js/gu), v => {
             if (v.startsWith(":")) {
                 const globalLineNum = parseInt(v.match(/^:(\d+):/u)[1]) || 0,
                     localLine = ConvertGlobalLineToLocal(globalLineNum)
+                if (!localLine.Name)
+                    return false
                 return v.replace(/^:\d+:/gu, `@@${localLine.Name}:${localLine.Line}:`).trim()
             }
             return v.trim()
@@ -313,86 +325,6 @@ const handleCrash = (obj) => {
 
         return {globalLine, src, stackLines, filteredStackLines}
     }
-const OldhandleCrash = (e) => {
-    log('Handling Crash...');
-    codebaseRunning = false;
-    
-    // Kill all internal on() registrations
-    onRegistrations = [];
-
-    // Cancel all delayed operations
-    airDelays.forEach((delayRef) => {
-        airClearTimeout(delayRef);
-    });
-    airDelays = [];
-
-    // Flush gc
-    globalconfig = {};
-
-    let globalLine = GetScriptLine(e, false);
-    let src = ConvertGlobalLineToLocal(globalLine);
-
-    let stackLines = _.map((e && e.stack || "").split(/\n|apiscript\.js/gu), v => {
-		if (v.startsWith(":")) {
-			const globalLineNum = parseInt(v.match(/^:(\d+):/u)[1]) || 0,
-				  localLine = ConvertGlobalLineToLocal(globalLineNum)
-			return v.replace(/^:\d+:/gu, `@@${localLine.Name}:${localLine.Line}:`).trim()
-		}
-		return v.trim()
-    })
-
-    const rawErrorMsg = _.compact([
-        "[AIRBAG",
-        src.Line > 0 ? `at ${src.Name}:${src.Line}]` : "]",
-        `▌${e.message}▐`,
-        `STACK: ${stackLines.join(" ").replace(/\s@@/gu, " ").replace(/[^\s\(]+underscore\.js:/gu, "_:").replace(/\(\s+/gu, "(")}`
-    ]).join(" ").replace(/\n/gu, "")
-
-    const debugErrorMsg = _.compact([
-        `<b>[AIRBAG ${src.Line > 0 ? `at ${src.Name}:${src.Line}]` : "]"}</b>`,
-        `▌${e.message}▐`,
-        "<b>STACK:</b>",
-        stackLines.join("<br>").replace(/<br>@@/gu, "")
-    ]).join("<br>").replace(/\n/gu, "")
-    
-    const concatLines = stackLines.join("\n").replace(/\n/gu, "<br>").replace(/<br>@@/gu, "").split("<br>"),
-        filteredStackLines = []
-    
-    for (const line of concatLines) {
-        let lineCheck = false
-        if (!line.startsWith("at"))
-            lineCheck = true
-        else
-            for (const scriptName of scriptNames.filter(x => x !== "AirbagStop"))
-                if (line.toLowerCase().includes(scriptName.toLowerCase())) {
-                    lineCheck = true
-                    break
-                }   
-        if (lineCheck)
-            filteredStackLines.push(line)
-    }
-
-    filteredStackLines.shift()
-    filteredStackLines[0] = `<br>${filteredStackLines[0]}`
-
-    const styledErrorMsg = airbagHTML.ChatBox(_.compact([
-        airbagHTML.TitleBox(`AIRBAG DEPLOYED${src.Line > 0 ? ` at<br>${src.Name}: ${src.Line}` : ""}`),
-        airbagHTML.MessageBox(e.message),
-        airbagHTML.StackBox(filteredStackLines.join("\n")).
-            replace(/\n/gu, "<br>").
-            replace(/<br>@@/gu, "").
-            replace(/<br>at\b/gu, "<br><i><span style=\"color: rgb(150, 150, 150); display: inline-block; width: auto; \"> @ </span></i>").
-            replace(/[^\s\(]+underscore\.js:(\d*?):/gu, "<span style=\"color: rgb(0,0,255);\">_</span>@@<span style=\"color: rgb(0,0,255);\">$1</span>@@").
-            replace(/[^\s\(]+firebase-node\.js:(\d*?):/gu, "<span style=\"color: rgb(0,195,0);\">firebase</span>@@<span style=\"color: rgb(0,195,0);\">$1</span>@@").
-            replace(/\/home\/node\/d20-api-server\/api\.js/gu, "API").
-            replace(/(\(?)([^:\.\s]*?):(\d*?):/gu, "$1<b><span style=\"color: rgb(255,0,0)\">$2</span>:<span style=\"color: rgb(255,0,0)\">$3</span></b>:").
-            replace(/@@/gu, ":").
-            replace(/relative;">\s*?<br>/gu, "relative;\">"),
-        airbagHTML.TitleBox("[ REBOOT API ](!airbag)")
-    ]).join(""))
-
-    airLog(rawErrorMsg, styledErrorMsg, debugErrorMsg);
-}
 
 // ===========================================================================
 // Code Base

@@ -866,6 +866,8 @@ const D = (() => {
             }
         },
         memoMenu = (menuData) => {
+            if (VAL({string: menuData}))
+                return menuData
             const menuString = _.escape(JSON.stringify(menuData))
             if (!(menuString in STATE.REF.COMMANDMENUS))
                 STATE.REF.COMMANDMENUS[menuString] = getCommandMenuHTML(menuData)
@@ -909,16 +911,18 @@ const D = (() => {
                         } else if (rowData.type === "ButtonLine") {
                             try {
                                 const buttonsCode = [],
-                                    totalFlexEntities = rowData.contents.filter(x => VAL({list: x}) || VAL({number: x}) && x === 0).length,
-                                    entityWidthTax = STATE.REF.flexSpace/totalFlexEntities,
-                                    strictSpacerTotWidth = rowData.contents.map(x => VAL({list: x}) && "text" in x ? D.Int(Object.assign({width: "15%"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(/%/gu, "")) : x).filter(x => VAL({number: x})).reduce((tot, x) => tot + x, 0) || 0,
-                                    totFlexSpacing = 100 - strictSpacerTotWidth,
-                                    flexEntityWidth = D.Float(totFlexSpacing / totalFlexEntities - entityWidthTax, 2)
+                                    totalFlexEntities = rowData.contents.filter(x => VAL({list: x}) && (!x.styles || !x.styles.width) || VAL({number: x}) && x === 0).length,
+                                    strictSpacerTotWidth = rowData.contents.map(x => VAL({list: x}) && "text" in x ? D.Int(Object.assign({width: "40px"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(/%|(px)/gu, "")) : x).filter(x => VAL({number: x})).reduce((tot, x) => tot + x + 2, 0) || 0,
+                                    // strictSpacerTotWidth = Math.floor(C.CHATWIDTH * (strictSpacerTotPercentWidth / 100)),
+                                    totFlexSpacing = C.CHATWIDTH - strictSpacerTotWidth,
+                                    flexEntityWidth = Math.floor(totFlexSpacing / totalFlexEntities)
+                                DB({rowDataContents: D.JS(rowData.contents)}, "getCommandMenuHTML")
+                                DB({totalFlexEntities, strictSpacerTotWidth, totFlexSpacing, flexEntityWidth}, "getCommandMenuHTML")
                                 rowData.contents = rowData.contents.map(x => VAL({number: x}) && x === 0 && flexEntityWidth || x)
                                 dbData.rows.push({strictSpacerTotWidth, totFlexSpacing, flexEntityWidth, rowData, entities: []})
                                 for (const entity of rowData.contents)
                                     if (VAL({number: entity}))
-                                        buttonsCode.push(C.HTML.ButtonSpacer(`${D.Int(entity)}%`))
+                                        buttonsCode.push(C.HTML.ButtonSpacer(`${D.Int(entity)}px`))
                                     else if (VAL({list: entity}))
                                         if ("text" in entity) {
                                             buttonsCode.push(C.HTML.ButtonSubheader(entity.text, entity.styles))
@@ -926,16 +930,16 @@ const D = (() => {
                                             if (entity.name.length > 12)
                                                 entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
                                             entity.command = entity.command.replace(/:/gu, "_colon_")
-                                            const button = new Button(entity.name, entity.command, Object.assign({}, {width: `${flexEntityWidth}%`}, customStyles.Button || {}, rowData.buttonStyles || {}, entity.styles || {}))
+                                            const button = new Button(entity.name, entity.command, Object.assign({}, {width: `${flexEntityWidth - 4}px`}, customStyles.Button || {}, rowData.buttonStyles || {}, entity.styles || {}))
                                             buttonsCode.push(button.HTML)
                                         }
                                 sectionHTML.push(C.HTML.ButtonLine(buttonsCode, rowData.styles || {}))
                             } catch (errObj) {
-                                DB({["ERROR'ING ROWDATA"]: rowData, errObj}, "commandMenu")
+                                DB({["ERROR'ING ROWDATA"]: rowData, errObj}, "getCommandMenuHTML")
                             }
                         } else if (rowData.type === "Column") {
                             const numColumns = rowData.contents.length,
-                                colWidth = `${D.Int(100 / numColumns) - 1}%`,
+                                colWidth = `${Math.floor(C.CHATWIDTH / numColumns)}px`,
                                 colHTML = []
                             for (const colData of rowData.contents)
                                 colHTML.push(C.HTML.Column(parseSection(colData), Object.assign({width: colWidth}, rowData.style)))

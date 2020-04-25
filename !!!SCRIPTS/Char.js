@@ -1,6 +1,6 @@
 void MarkStart("Char")
 const Char = (() => {
-    // ************************************** CLEAN DISABLE (UNCOMMENT TO DISABLE SCRIPT) *******************************************
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~** CLEAN DISABLE (UNCOMMENT TO DISABLE SCRIPT) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*
     /* return {
         RegisterEventHandlers: () => false,
         CheckInstall:  () => false,
@@ -18,7 +18,7 @@ const Char = (() => {
         get SelectedChar() { return false },
         get SelectedTraits() { return false }
     } */
-    // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~** START BOILERPLATE INITIALIZATION & CONFIGURATION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~**
     // let PENDINGCHARCOMMAND
     const SCRIPTNAME = "Char",
 
@@ -49,6 +49,242 @@ const Char = (() => {
             STATE.REF.traitSelection = STATE.REF.traitSelection || []
             STATE.REF.tokenPowerData = STATE.REF.tokenPowerData || {all: {}}
             STATE.REF.charAlarms = STATE.REF.charAlarms || {}
+
+            MENUHTML.CharSelect = D.CommandMenuHTML(
+                {
+                    title: "Character Selection",
+                    rows: [
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                0,
+                                {name: "End Scene", command: "!sess scene", styles: {bgColor: C.COLORS.palegreen, color: C.COLORS.black}},
+                                0
+                            ]
+                        },
+                        {   
+                            type: "ButtonLine",
+                            contents: [
+                                {name: "All PCs", command: "!reply select@registered, title@All Player Characters"}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
+                                {name: "Scene PCs", command: "!reply select@scene|registered, title@Player Characters In Scene"},
+                                {name: "Scene NPCs", command: "!reply select@scene|npc, title@NPCs In Scene"},
+                                {name: "All Scene", command: "!reply select@scene, title@ALL In Scene"},
+                            ],
+                            buttonStyles: {
+                                bgColor: C.COLORS.blue, 
+                                color: C.COLORS.black
+                            }
+                        },                                                         
+                        ..._.chain(D.GetChars("registered")).
+                            map(x => {
+                                const charName = D.GetName(x, true)
+                                return {
+                                    name: charName,
+                                    command: `!reply selectchar@${x.id}, title@${charName}`,
+                                    styles: {
+                                        bgColor: `~~~bgColor:${charName}~~~`,
+                                        color: C.COLORS.white
+                                    }
+                                }
+                            }).
+                            groupBy((x, i) => Math.floor(i / 5)).
+                            map(x => ({
+                                type: "ButtonLine",
+                                contents: x.length <= 3 ? [0, ...x, 0] : x
+                            })).
+                            value(),                          
+                        ..._.chain(Session.SceneChars.filter(x => VAL({npc: x}))).
+                            map(x => {
+                                const charName = D.GetName(x, true)
+                                return {
+                                    name: charName,
+                                    command: `!reply selectchar@${x.id}, title@${charName}`,
+                                    styles: {
+                                        bgColor: C.COLORS.darkgrey,
+                                        color: C.COLORS.white
+                                    }
+                                }
+                            }).
+                            groupBy((x, i) => Math.floor(i / 5)).
+                            map(x => ({
+                                type: "ButtonLine",
+                                contents: x.length < 3 ? [0, ...x, 0] : x
+                            })).
+                            value()
+                    ]
+                }
+            )
+            MENUHTML.CharActionSingle = D.CommandMenuHTML(
+                {
+                    title: "~~~title~~~",
+                    rows: [
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {name: "Reset Token", command: "!char ~~~charIDString~~~ set token base", styles: {bgColor: C.COLORS.darkgrey, color: C.COLORS.white}},
+                                {name: "Pop Desire", command: "!char ~~~charIDString~~~ set desire", styles: {bgColor: C.COLORS.gold, color: C.COLORS.black}},
+                                {name: "Send Home", command: "!char ~~~charIDString~~~ send home", styles: {bgColor: C.COLORS.black, color: C.COLORS.gold}},
+                                {name: "Send Back", command: "!char ~~~charIDString~~~ send back", styles: {bgColor: C.COLORS.black, color: C.COLORS.gold}}                                    
+                            ]
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {name: "Dyscrasia", command: "!char ~~~charIDString~~~ set dyscrasias ?{Dyscrasia Title (blank to toggle off):}|?{Dyscrasia Text:}", styles: {bgColor: C.COLORS.darkdarkred, color: C.COLORS.gold}},
+                                {name: "Secret Roll", command: "!char ~~~charIDString~~~ select trait", styles: {bgColor: C.COLORS.purple, color: C.COLORS.white}},
+                                {name: "Get Trait", command: "!char ~~~charIDString~~~ get stat", styles: {bgColor: C.COLORS.grey, color: C.COLORS.black}},
+                                {name: "Compulsion", command: "!char ~~~charIDString~~~ set compulsion ?{Compulsion Title (blank to toggle off):}|?{Compulsion Text:}", styles: {bgColor: C.COLORS.darkdarkred, color: C.COLORS.brightred}},
+                            ]
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {name: "Resonance", command: "!roll ~~~charIDString~~~ resonance", styles: {bgColor: C.COLORS.black, color: C.COLORS.brightred}},
+                                {name: "Roll As", command: "!roll ~~~charIDString~~~ set pc", styles: {bgColor: C.COLORS.purple, color: C.COLORS.white}},
+                                {name: "Complic's", command: "!comp ~~~charIDString~~~ start ?{Shortfall?}", styles: {bgColor: C.COLORS.midgold, color: C.COLORS.black}},
+                                {name: "Spotlight", command: "!sess ~~~charIDString~~~ spotlight", styles: {bgColor: C.COLORS.brightred, color: C.COLORS.black}}
+                            ]
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {text: "Health:", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                {name: "S", command: "!char ~~~charIDString~~~ dmg health superficial", styles: {bgColor: C.COLORS.brightred}},
+                                {name: "S+", command: "!char ~~~charIDString~~~ dmg health superficial+", styles: {bgColor: C.COLORS.brightred}},
+                                {name: "A", command: "!char ~~~charIDString~~~ dmg health aggravated", styles: {bgColor: C.COLORS.red}},
+                                {text: "&nbsp;", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                0,
+                                0,
+                                0
+                            ],
+                            styles: {textAlign: "left"}
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {text: "Willpower:", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                {name: "S", command: "!char ~~~charIDString~~~ dmg willpower superficial", styles: {bgColor: C.COLORS.brightblue}},
+                                {name: "S+", command: "!char ~~~charIDString~~~ dmg willpower superficial+", styles: {bgColor: C.COLORS.blue}},
+                                {name: "A", command: "!char ~~~charIDString~~~ dmg willpower aggravated", styles: {bgColor: C.COLORS.darkblue}},
+                                {text: "&nbsp;", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                {name: "S", command: "!char ~~~charIDString~~~ dmg willpower social_superficial", styles: {bgColor: C.COLORS.brightpurple}},
+                                {name: "S+", command: "!char ~~~charIDString~~~ dmg willpower social_superficial+", styles: {bgColor: C.COLORS.purple}},
+                                {name: "A", command: "!char ~~~charIDString~~~ dmg willpower social_aggravated", styles: {bgColor: C.COLORS.darkpurple}}
+                            ],
+                            styles: {textAlign: "left"}
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {text: "Hunger:", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                {name: "+1", command: "!char ~~~charIDString~~~ change hunger 1", styles: {bgColor: C.COLORS.darkred}},
+                                {name: "-1", command: "!char ~~~charIDString~~~ change hunger -1", styles: {bgColor: C.COLORS.darkred}},
+                                {name: "Δ", command: "!char ~~~charIDString~~~ change hunger", styles: {bgColor: C.COLORS.red}},
+                                {text: "Kill Slake:", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                {name: "-1", command: "!char ~~~charIDString~~~ change hungerkill -1", styles: {bgColor: C.COLORS.brightred}},
+                                {name: "Δ", command: "!char ~~~charIDString~~~ change hungerkill", styles: {bgColor: C.COLORS.brightred}},
+                                0
+                            ],
+                            styles: {textAlign: "left"}
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {text: "XP:", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                {name: "1", command: "!char ~~~charIDString~~~ set xp 1 ?{Reason for Award?}", styles: {bgColor: C.COLORS.midgold}},
+                                {name: "2", command: "!char ~~~charIDString~~~ set xp 2 ?{Reason for Award?}", styles: {bgColor: C.COLORS.midgold}},
+                                {name: "Δ", command: "!char ~~~charIDString~~~ set xp ?{How Much XP?|3|4|5|6|7|8|9|10} ?{Reason for Award?}", styles: {bgColor: C.COLORS.midgold}},
+                                {text: "Humanity:", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                {name: "Stn", command: "!char ~~~charIDString~~~ dmg stains", styles: {bgColor: C.COLORS.black, color: C.COLORS.white}},
+                                {name: "Hum", command: "!char ~~~charIDString~~~ dmg humanity", styles: {bgColor: C.COLORS.black, color: C.COLORS.white}},
+                                0
+                            ],
+                            styles: {textAlign: "left"}
+                        }
+                    ]
+                }
+            )
+            MENUHTML.CharActionGroup = D.CommandMenuHTML(
+                {
+                    title: "~~~title~~~",
+                    rows: [
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {name: "Reset Token", command: "!char ~~~charIDString~~~ set token base", styles: {bgColor: C.COLORS.darkgrey, color: C.COLORS.white}},
+                                0,
+                                {name: "Send Home", command: "!char ~~~charIDString~~~ send home", styles: {bgColor: C.COLORS.black, color: C.COLORS.gold}},
+                                {name: "Send Back", command: "!char ~~~charIDString~~~ send back", styles: {bgColor: C.COLORS.black, color: C.COLORS.gold}}                                    
+                            ]
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                0,
+                                {name: "Secret Roll", command: "!char ~~~charIDString~~~ select trait", styles: {bgColor: C.COLORS.purple, color: C.COLORS.white}},
+                                {name: "Get Trait", command: "!char ~~~charIDString~~~ get stat", styles: {bgColor: C.COLORS.grey, color: C.COLORS.black}},
+                                0
+                            ]
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {text: "Health:", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                {name: "S", command: "!char ~~~charIDString~~~ dmg health superficial", styles: {bgColor: C.COLORS.brightred}},
+                                {name: "S+", command: "!char ~~~charIDString~~~ dmg health superficial+", styles: {bgColor: C.COLORS.brightred}},
+                                {name: "A", command: "!char ~~~charIDString~~~ dmg health aggravated", styles: {bgColor: C.COLORS.red}},
+                                {text: "&nbsp;", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                0,
+                                0,
+                                0
+                            ],
+                            styles: {textAlign: "left"}
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {text: "Willpower:", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                {name: "S", command: "!char ~~~charIDString~~~ dmg willpower superficial", styles: {bgColor: C.COLORS.brightblue}},
+                                {name: "S+", command: "!char ~~~charIDString~~~ dmg willpower superficial+", styles: {bgColor: C.COLORS.blue}},
+                                {name: "A", command: "!char ~~~charIDString~~~ dmg willpower aggravated", styles: {bgColor: C.COLORS.darkblue}},
+                                {text: "&nbsp;", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                {name: "S", command: "!char ~~~charIDString~~~ dmg willpower social_superficial", styles: {bgColor: C.COLORS.brightpurple}},
+                                {name: "S+", command: "!char ~~~charIDString~~~ dmg willpower social_superficial+", styles: {bgColor: C.COLORS.purple}},
+                                {name: "A", command: "!char ~~~charIDString~~~ dmg willpower social_aggravated", styles: {bgColor: C.COLORS.darkpurple}}
+                            ],
+                            styles: {textAlign: "left"}
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {text: "Hunger:", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                {name: "+1", command: "!char ~~~charIDString~~~ change hunger 1", styles: {bgColor: C.COLORS.darkred}},
+                                {name: "-1", command: "!char ~~~charIDString~~~ change hunger -1", styles: {bgColor: C.COLORS.darkred}},
+                                {name: "Δ", command: "!char ~~~charIDString~~~ change hunger", styles: {bgColor: C.COLORS.red}},
+                                {text: "Kill Slake:", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                {name: "-1", command: "!char ~~~charIDString~~~ change hungerkill -1", styles: {bgColor: C.COLORS.brightred}},
+                                {name: "Δ", command: "!char ~~~charIDString~~~ change hungerkill", styles: {bgColor: C.COLORS.brightred}},
+                                0
+                            ],
+                            styles: {textAlign: "left"}
+                        },
+                        {
+                            type: "ButtonLine",
+                            contents: [
+                                {text: "XP:", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                {name: "1", command: "!char ~~~charIDString~~~ set xp 1 ?{Reason for Award?}", styles: {bgColor: C.COLORS.midgold}},
+                                {name: "2", command: "!char ~~~charIDString~~~ set xp 2 ?{Reason for Award?}", styles: {bgColor: C.COLORS.midgold}},
+                                {name: "Δ", command: "!char ~~~charIDString~~~ set xp ?{How Much XP?|3|4|5|6|7|8|9|10} ?{Reason for Award?}", styles: {bgColor: C.COLORS.midgold}},
+                                {text: "Humanity:", styles: {width: `${Math.floor(C.CHATWIDTH * 0.16)}px`}},
+                                {name: "Stn", command: "!char ~~~charIDString~~~ dmg stains", styles: {bgColor: C.COLORS.black, color: C.COLORS.white}},
+                                {name: "Hum", command: "!char ~~~charIDString~~~ dmg humanity", styles: {bgColor: C.COLORS.black, color: C.COLORS.white}},
+                                0
+                            ],
+                            styles: {textAlign: "left"}
+                        }
+                    ]
+                }
+            )
 // awareness/intelligence+investigation/wits+investigation;postrait:Auspex;+ Heightened Senses (<.>)
 // 
 
@@ -615,8 +851,9 @@ const Char = (() => {
             }
         },
     // #endregion
-    // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ END BOILERPLATE INITIALIZATION & CONFIGURATION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         REGISTRY = STATE.REF.registry,
+        MENUHTML = {},
 
     // #region JSON Text Blocks
     /* eslint-disable-next-line quotes */
@@ -778,35 +1015,15 @@ const Char = (() => {
                 }
             )
         },
-        charSelectMenu = () => {             
+        charSelectMenu = () => {   
+            let menuCode = MENUHTML.CharSelect.replace(new RegExp("~~~bgColor:.*?~~~", "gui"), C.COLORS.black)
+            // for (const pc of D.GetChars("registered")) {
+            //     const pcName = D.GetName(pc, true),
+            //         isInScene = Session.IsInScene(pc)
+            //     menuCode = menuCode.replace(new RegExp(`~~~bgColor:${pcName}~~~`, "gui"), isInScene ? C.COLORS.red : C.COLORS.black)
+            // }
             D.CommandMenu(
-                {
-                    title: "Character Selection",
-                    rows: [
-                        {
-                            type: "ButtonLine",
-                            contents: [
-                                {name: "All PCs", command: "!reply select@registered, title@All Player Characters", styles: { }}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
-                                {name: "Active PCs", command: "!reply select@scene|registered, title@Player Characters In Scene", styles: { }},
-                                {name: "Active NPCs", command: "!reply select@scene|npc, title@NPCs In Scene", styles: { }},
-                                {name: "All Active", command: "!reply select@scene, title@ALL In Scene", styles: { }},
-                            ],
-                            buttonStyles: {bgColor: C.COLORS.blue, color: C.COLORS.black}, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
-                            styles: { } /* height, width, margin, textAlign */
-                        },                            
-                        ..._.chain(D.GetChars("registered")).
-                            map(x => ({name: D.GetName(x, true), command: `!reply selectchar@${x.id}, title@${D.GetName(x, true)}`, styles: {bgColor: Session.IsInScene(x) && C.COLORS.red || C.COLORS.black}})).
-                            groupBy((x, i) => Math.floor(i / 4)).
-                            map(x => ({type: "ButtonLine", contents: x.length < 3 ? [0, ...x, 0] : x, buttonStyles: { /* width: "23%", fontSize: "12px", bgColor: C.COLORS.midgold, buttonTransform: "none" */ }})).
-                            value(),                          
-                        ..._.chain(Session.SceneChars.filter(x => VAL({npc: x}))).
-                            map(x => ({name: D.GetName(x, true), command: `!reply selectchar@${x.id}, title@${D.GetName(x, true)}`, styles: {bgColor: C.COLORS.darkgrey, color: C.COLORS.white}})).
-                            groupBy((x, i) => Math.floor(i / 4)).
-                            map(x => ({type: "ButtonLine", contents: x.length < 3 ? [0, ...x, 0] : x, buttonStyles: { /* width: "23%", fontSize: "12px", bgColor: C.COLORS.midgold, buttonTransform: "none" */ }})).
-                            value()
-                    ],
-                    blockStyles: { } /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */
-                },
+                menuCode,
                 (commandString) => { // IMPORTANT: return 'true' if you want to hold this function open for more commands
                     const params = D.ParseToObj(commandString, ",", "@"), // key:value pairs must be in key@pairs for this to work. Multiple commands comma-delimited.
                         titleString = params.title
@@ -840,111 +1057,13 @@ const Char = (() => {
                         charActionMenu(charIDs, D.GetName(charIDs[0]))
                     }
                 }
-            )
+            )            
         },
         charActionMenu = (charIDs, titleString) => {
             const isSingleChar = charIDs.length === 1,
-                charIDString = charIDs.join(",")
-            DB({charIDs, titleString, charIDString}, "charActionMenu")
-            D.CommandMenu(
-                {
-                    title: titleString || "Action Menu (?)",
-                    rows: [
-                        {
-                            type: "ButtonLine",
-                            contents: [
-                                {name: "End Scene", command: "!sess scene", styles: {bgColor: C.COLORS.palegreen, color: C.COLORS.black}},
-                                {name: "Pop Desire", command: `!char ${charIDString} set desire`, styles: {bgColor: C.COLORS.gold, color: C.COLORS.black}},
-                                {name: "Home/Back", command: `!char ${charIDString} send toggle`, styles: {bgColor: C.COLORS.black, color: C.COLORS.gold}},
-                                {name: "Reset Token", command: `!char ${charIDString} set token base`, styles: {bgColor: C.COLORS.darkgrey, color: C.COLORS.white}}
-                            ],
-                            buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
-                            styles: { } /* height, width, margin, textAlign */
-                        },
-                        {
-                            type: "ButtonLine",
-                            contents: [
-                                isSingleChar && {name: "Dyscrasia", command: `!char ${charIDString} set dyscrasias ?{Dyscrasia Title (blank to toggle off):}|?{Dyscrasia Text:}`, styles: {bgColor: C.COLORS.darkdarkred, color: C.COLORS.gold}} || 0,
-                                {name: "Secret Roll", command: `!char ${charIDString} select trait`, styles: {bgColor: C.COLORS.purple, color: C.COLORS.white}},
-                                {name: "Get Trait", command: `!char ${charIDString} get stat`, styles: {bgColor: C.COLORS.grey, color: C.COLORS.black}},
-                                isSingleChar && {name: "Compulsion", command: `!char ${charIDString} set compulsion ?{Compulsion Title (blank to toggle off):}|?{Compulsion Text:}`, styles: {bgColor: C.COLORS.darkdarkred, color: C.COLORS.brightred}} || 0,
-                            ],
-                            buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
-                            styles: { } /* height, width, margin, textAlign */
-                        },
-                        {
-                            type: "ButtonLine",
-                            contents: [
-                                isSingleChar && {name: "Resonance", command: `!roll ${charIDString} resonance`, styles: {bgColor: C.COLORS.black, color: C.COLORS.brightred}} || 0,
-                                isSingleChar && {name: "Roll As", command: `!roll ${charIDString} set pc`, styles: {bgColor: C.COLORS.purple, color: C.COLORS.white}} || 0,
-                                isSingleChar && {name: "Complic's", command: `!comp ${charIDString} start ?{Shortfall?}`, styles: {bgColor: C.COLORS.midgold, color: C.COLORS.black}} || 0,
-                                isSingleChar && {name: "Spotlight", command: `!sess ${charIDString} spotlight`, styles: {bgColor: C.COLORS.brightred, color: C.COLORS.black}} || 0
-                            ],
-                            buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
-                            styles: { } /* height, width, margin, textAlign */
-                        },
-                        {
-                            type: "ButtonLine",
-                            contents: [
-                                {text: "Health:", styles: {width: "16%"}},
-                                {name: "S", command: `!char ${charIDString} dmg health superficial`, styles: {bgColor: C.COLORS.brightred}},
-                                {name: "S+", command: `!char ${charIDString} dmg health superficial+`, styles: {bgColor: C.COLORS.brightred}},
-                                {name: "A", command: `!char ${charIDString} dmg health aggravated`, styles: {bgColor: C.COLORS.red}},
-                                16,
-                                0,
-                                0,
-                                0
-                            ],
-                            buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
-                            styles: {textAlign: "left"} /* height, width, margin, textAlign */
-                        },
-                        {
-                            type: "ButtonLine",
-                            contents: [
-                                {text: "Willpower:", styles: {width: "16%"}},
-                                {name: "S", command: `!char ${charIDString} dmg willpower superficial`, styles: {bgColor: C.COLORS.brightblue}},
-                                {name: "S+", command: `!char ${charIDString} dmg willpower superficial+`, styles: {bgColor: C.COLORS.blue}},
-                                {name: "A", command: `!char ${charIDString} dmg willpower aggravated`, styles: {bgColor: C.COLORS.darkblue}},
-                                17,
-                                {name: "S", command: `!char ${charIDString} dmg willpower social_superficial`, styles: {bgColor: C.COLORS.brightpurple}},
-                                {name: "S+", command: `!char ${charIDString} dmg willpower social_superficial+`, styles: {bgColor: C.COLORS.purple}},
-                                {name: "A", command: `!char ${charIDString} dmg willpower social_aggravated`, styles: {bgColor: C.COLORS.darkpurple}}
-                            ],
-                            buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
-                            styles: {textAlign: "left"} /* height, width, margin, textAlign */
-                        },
-                        {
-                            type: "ButtonLine",
-                            contents: [
-                                {text: "Hunger:", styles: {width: "16%"}},
-                                {name: "+1", command: `!char ${charIDString} change hunger 1`, styles: {bgColor: C.COLORS.darkred}},
-                                {name: "-1", command: `!char ${charIDString} change hunger -1`, styles: {bgColor: C.COLORS.darkred}},
-                                {name: "Δ", command: `!char ${charIDString} change hunger`, styles: {bgColor: C.COLORS.red}},
-                                {text: "Kill Slake:", styles: {width: "16%"}},
-                                {name: "-1", command: `!char ${charIDString} change hungerkill -1`, styles: {bgColor: C.COLORS.brightred}},
-                                {name: "Δ", command: `!char ${charIDString} change hungerkill`, styles: {bgColor: C.COLORS.brightred}}
-                            ],
-                            buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
-                            styles: {textAlign: "left"} /* height, width, margin, textAlign */
-                        },
-                        {
-                            type: "ButtonLine",
-                            contents: [
-                                {text: "XP:", styles: {width: "16%"}},
-                                {name: "1", command: `!char ${charIDString} set xp 1 ?{Reason for Award?}`, styles: {bgColor: C.COLORS.midgold}},
-                                {name: "2", command: `!char ${charIDString} set xp 2 ?{Reason for Award?}`, styles: {bgColor: C.COLORS.midgold}},
-                                {name: "Δ", command: `!char ${charIDString} set xp ?{How Much XP?|3|4|5|6|7|8|9|10} ?{Reason for Award?}`, styles: {bgColor: C.COLORS.midgold}},
-                                {text: "Humanity:", styles: {width: "16%"}},
-                                {name: "Stn", command: `!char ${charIDString} dmg stains`, styles: {bgColor: C.COLORS.black, color: C.COLORS.white}},
-                                {name: "Hum", command: `!char ${charIDString} dmg humanity`, styles: {bgColor: C.COLORS.black, color: C.COLORS.white}}
-                            ],
-                            buttonStyles: { }, /* height, lineHeight, width, fontFamily, margin, padding, fontSize, bgColor, color, border, fontWeight, textShadow, buttonHeight, buttonWidth, buttonPadding, buttonTransform */
-                            styles: {textAlign: "left"} /* height, width, margin, textAlign */
-                        },
-                    ],
-                    blockStyles: { } /* color, bgGradient, bgColor, bgImage, border, margin, width, padding */
-                }
-            )
+                charIDString = charIDs.join(","),
+                menuCode = (isSingleChar ? MENUHTML.CharActionSingle : MENUHTML.CharActionGroup).replace(new RegExp("~~~title~~~", "gui"), titleString).replace(new RegExp("~~~charIDString~~~", "gui"), charIDString)
+            D.CommandMenu(menuCode)
         },
         promptNumber = (fullCommand) => {
             if (VAL({string: fullCommand}, "promptNumber") && fullCommand.includes("@@AMOUNT@@"))

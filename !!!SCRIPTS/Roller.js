@@ -51,10 +51,6 @@ const Roller = (() => {
             if (_.compact(_.flatten(_.values(STATE.REF.forcedMods))).length)
                 D.Alert("WARNING: Roll Mod Overrides Set for Roller<br><b>!roll force mods</b> to clear.")
 
-            // delCharRollEffect(D.GetChar("A"), "strength;6;+ Spectral Fury (<.>);scene")
-            // delCharRollEffect(D.GetChar("A"), "dexterity;6;+ Spectral Flow (<.>);scene")
-            // delCharRollEffect(D.GetChar("A"), "stamina;6;+ Spectral Form (<.>);scene")
-
         },
 
     // #endregion	
@@ -62,20 +58,6 @@ const Roller = (() => {
     // #region EVENT HANDLERS: (ONCHATCALL)
         onChatCall = (call, args, objects, msg) => {
             switch (call) {
-                case "avaeffects": {
-                    addCharRollEffect(D.GetChar("A"), "strength;6;+ Spectral Fury (<.>);scene")
-                    addCharRollEffect(D.GetChar("A"), "dexterity;6;+ Spectral Flow (<.>);scene")
-                    addCharRollEffect(D.GetChar("A"), "stamina;6;+ Spectral Fire (<.>);scene")
-                    addCharRollEffect(D.GetChar("A"), "strength+messycrit;nomessycrit;;scene")
-                    addCharRollEffect(D.GetChar("A"), "dexterity+messycrit;nomessycrit;;scene")
-                    addCharRollEffect(D.GetChar("A"), "stamina+messycrit;nomessycrit;;scene")
-                    addCharRollEffect(D.GetChar("A"), "strength+bestialfail;nobestialfail;;scene")
-                    addCharRollEffect(D.GetChar("A"), "dexterity+bestialfail;nobestialfail;;scene")
-                    addCharRollEffect(D.GetChar("A"), "stamina+bestialfail;nobestialfail;;scene")
-                    D.Call("!roll effects get")
-                    D.Flag("Effects Set!")
-                    break
-                }
                 case "dice": {  
                     if (!isLocked && (!playerIsGM(msg.playerid) || Session.IsTesting && !Session.IsFullTest))
                         D.Chat("all", "Rolling...", "none")                   
@@ -127,8 +109,8 @@ const Roller = (() => {
                                     D.Chat(msg.playerid, "Roll In Progress: Please Try Again Later", "none")
                                     break
                                 }
-                                if (!playerIsGM(msg.playerid) || Session.IsTesting && !Session.IsFullTest)
-                                    lockRoller(true)
+                                // if (!playerIsGM(msg.playerid) || Session.IsTesting && !Session.IsFullTest)
+                                //     lockRoller(true)
                                 const params = args.join(" ").split("|").map(x => x.trim()),
                                     [rollCharObj] = getRollChars(D.GetChars(STATE.REF.rollNextAs || params[0]))
                                 DB({"Received Roll": `${D.JSL(call)} ${D.JSL(params.join("|"))}`, params, rollCharObj}, "onChatCall")
