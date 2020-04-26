@@ -614,7 +614,7 @@
         ATTRDISPNAMES = _.flatten([_.values(ATTRIBUTES), _.values(SKILLS), DISCIPLINES, TRACKERS])
     // #endregion
 
-    const isDebugging = false
+    const isDebugging = true
 
     // #region UTILITY: Debugging Decorator, Logging, Checks & String Formatting
 
@@ -734,6 +734,61 @@
         }
     // #endregion
 
+    // #region UTILITY: Asynchronous Function Handling
+    const run$ = (tasks, cback) => {
+            let current = 0
+            const done = (empty, ...args) => {
+                    const end = () => {
+                        const newArgs = args ? [].concat(empty, args) : [empty]
+                        if (cback)
+                            cback(...newArgs)
+                    }
+                    end()
+                },
+                each = (empty, ...args) => {
+                    if (++current >= tasks.length || empty)
+                        done(empty, args)
+                    else
+                        tasks[current].apply(undefined, [].concat(args, each))
+                }
+
+            if (tasks.length)
+                tasks[0](each)
+            else
+                done(null)
+        },
+        $set = (attrList, cback) => {
+            setAttrs(attrList, {}, () => {
+                log(`>> ATTRS SET >> ${JSON.stringify(attrList)}`)
+                cback(null)
+            })
+        },
+        $getRepAttrs = (repInfo = {}) => cback => {
+            const [attrArray, $funcs] = [[], []]
+            if (_.isString(repInfo)) {
+                _.each(_.compact(repInfo.split(",")), v => {
+                    if (v.includes("repeating"))
+                        attrArray.push(v)
+                })
+                cback(null, attrArray)
+            } else {
+                _.each(_.keys(repInfo), sec => {
+                    $funcs.push(cbk => {
+                        getSectionIDs(sec, idArray => {
+                            _.each(idArray, repID => {
+                                _.each(repInfo[sec], stat => {
+                                    attrArray.push(`repeating_${sec}_${repID}_${stat}`)
+                                })
+                            })
+                            cbk(null)
+                        })
+                    })
+                })
+                run$($funcs, () => cback(null, attrArray))
+            }
+        }
+    // #endregion
+
     // #region UTILITY: Date & Time Handling
     const parseDString = str => {
             if (!str || !str.match)
@@ -781,112 +836,140 @@
     // #endregion
 
     // #region UPDATE: Clan, Discipline, Resonance, DOB/DOE, Marquee Rotating, Desires
-    const checkRituals = () => {
+    const $checkRituals = () => cback => {
             const attrList = {},
-                attrArray = []
-            getSectionIDs("discLeft", leftRepIDs => {
-                getSectionIDs("discMid", midRepIDs => {
-                    getSectionIDs("discRight", rightRepIDs => {
-                        attrArray.push(...[
-                            "disc1_name", "disc2_name", "disc3_name",
-                            ...leftRepIDs.map(x => `repeating_discLeft_${x}_disc_name`),
-                            ...midRepIDs.map(x => `repeating_discMid_${x}_disc_name`),
-                            ...rightRepIDs.map(x => `repeating_discRight_${x}_disc_name`)
-                        ])
-                        getAttrs(attrArray, ATTRS => {
+                $funcs = [
+                    $getRepAttrs({
+                        discLeft: ["disc_name"],
+                        discMid: ["disc_name"],
+                        discRight: ["disc_name"]
+                    }),
+                    (attrArray, cBack) => {
+                        getAttrs([...["disc1_name", "disc2_name", "disc3_name"], ...attrArray], ATTRS => {
                             attrList.ceremonies_toggle = _.values(ATTRS).includes("Oblivion") ? 1 : 0
                             attrList.rituals_toggle = _.values(ATTRS).includes("Blood Sorcery") ? 1 : 0
                             attrList.formulae_toggle = _.values(ATTRS).includes("Alchemy") ? 1 : 0
-                            setAttrs(attrList, {}, () => {
-                                log(`>> ATTRS SET >> ${JSON.stringify(attrList)}`)
-                            })
+                            cBack(null, attrList)
                         })
-                    })
-                })
-            })
+                    },
+                    $set
+                ]
+            run$($funcs, () => cback(null))
         },
         doClans = () => {
-            const attrList = {}
-            getAttrs(["clan", "bloodline", "blood_potency", "bloodline_toggle"], ATTRS => {
-                const bloodlineActive = typeof baneText[ATTRS.clan] !== "string",
-                    bText = bloodlineActive && baneText[ATTRS.clan] && (baneText[ATTRS.clan][ATTRS.bloodline] || baneText[ATTRS.clan].base) || baneText[ATTRS.clan],
-                    cDiscs = bloodlineActive && clanDiscs[ATTRS.clan] && (clanDiscs[ATTRS.clan][ATTRS.bloodline] || clanDiscs[ATTRS.clan].base) || clanDiscs[ATTRS.clan]
-                attrList.bloodline_toggle = bloodlineActive ? 1 : 0
-                if (bText) {
-                    attrList.bane_title = bloodlineActive && `${ATTRS.bloodline} Bloodline Bane` || `${ATTRS.clan} Clan Bane`
-                    attrList.bane_text = bText.replace("Bane Severity", `Bane Severity (${
-                        bpDependants[ATTRS.blood_potency].bp_baneseverity
-                    })`)
-                }
-                if (cDiscs)
-                    for (let i = 1; i <= 3; i++)
-                        if (cDiscs[i - 1] === "") {
-                            attrList[`disc${i}_toggle`] = 0
-                            attrList[`disc${i}_name`] = ""
-                        } else {
-                            attrList[`disc${i}_toggle`] = 1
-                            attrList[`disc${i}_name`] = cDiscs[i - 1]
-                        }
-                setAttrs(attrList, {}, () => {
-                    log(`>> ATTRS SET >> ${JSON.stringify(attrList)}`)
-                    checkRituals()
-                })
-            })
+            const attrList = {},
+                $funcs = [
+                    cBack => {
+                        getAttrs(["clan", "bloodline", "blood_potency", "bloodline_toggle"], ATTRS => {
+                            const bloodlineActive = typeof baneText[ATTRS.clan] !== "string"
+                            attrList.bloodline_toggle = bloodlineActive ? 1 : 0
+                            const bText = bloodlineActive && baneText[ATTRS.clan] && (baneText[ATTRS.clan][ATTRS.bloodline] || baneText[ATTRS.clan].base) || baneText[ATTRS.clan]
+                            if (bText) {
+                                attrList.bane_title = bloodlineActive && `${ATTRS.bloodline} Bloodline Bane` || `${ATTRS.clan} Clan Bane`
+                                attrList.bane_text = bText.replace("Bane Severity", `Bane Severity (${
+                                    bpDependants[ATTRS.blood_potency].bp_baneseverity
+                                })`)
+
+                            }
+                            const cDiscs = bloodlineActive && clanDiscs[ATTRS.clan] && (clanDiscs[ATTRS.clan][ATTRS.bloodline] || clanDiscs[ATTRS.clan].base) || clanDiscs[ATTRS.clan]
+                            if (cDiscs)
+                                for (let i = 1; i <= 3; i++)
+                                    if (cDiscs[i - 1] === "") {
+                                        attrList[`disc${i}_toggle`] = 0
+                                        attrList[`disc${i}_name`] = ""
+                                    } else {
+                                        attrList[`disc${i}_toggle`] = 1
+                                        attrList[`disc${i}_name`] = cDiscs[i - 1]
+                                    }
+                                
+
+                            cBack(null, attrList)
+                        })
+                    },
+                    $set,
+                    $checkRituals()
+                ]
+            run$($funcs)
         },
         doDiscPowers = (stat) => {
-            const attrList = {}
-            getAttrs([stat], ATTRS => {
-                log(`[DODISCS ATTRS = ${JSON.stringify(ATTRS)}]`)
-                if (stat.endsWith("disc") || stat.startsWith("disc"))
-                    attrList[`${stat}power_toggle`] = ATTRS[stat]
-                setAttrs(attrList, {}, () => {
-                    log(`>> ATTRS SET >> ${JSON.stringify(attrList)}`)
-                    checkRituals()
-                })
-            })
+            if (isBlacklisted(stat))
+                return
+            const attrList = {},
+                $funcs = [
+                    cback => {
+                        getAttrs([stat], ATTRS => {
+                            log(`[DODISCS ATTRS = ${JSON.stringify(ATTRS)}]`)
+                            if (stat.endsWith("disc") || stat.startsWith("disc"))
+                                attrList[`${stat}power_toggle`] = ATTRS[stat]
+                            cback(null, attrList)
+                        })
+                    },
+                    $set,
+                    $checkRituals()
+                ]
+            run$($funcs)
         },
         doResonance = () => {
-            getAttrs(["resonance"], ATTRS => {
-                setAttrs({
-                    res_discs: ATTRS.resonance === "None" ? " " : `(${_.compact(RESDISCS[ATTRS.resonance]).join(", ")})` 
-                })
-            })
+            const attrList = {},
+                $funcs = [
+                    cback => {
+                        getAttrs(["resonance"], ATTRS => {
+                            log(`Resonance Attrs: ${JSON.stringify(ATTRS)}`)
+                            attrList.res_discs = ATTRS.resonance === "None" ? " " : `(${_.compact(RESDISCS[ATTRS.resonance]).join(", ")})`
+                            cback(null, attrList)
+                        })
+                    },
+                    $set
+                ]
+            run$($funcs)
         },
         doDOBDOE = () => {
-            getAttrs(["char_dob", "char_doe"], ATTRS => {
-                setAttrs({
-                    char_dobdoe: `${ATTRS.char_dob} — ${ATTRS.char_doe}`
-                })
-            })
+            const attrList = {},
+                $funcs = [
+                    cback => {
+                        getAttrs(["char_dob", "char_doe"], ATTRS => {
+                            attrList.char_dobdoe = `${ATTRS.char_dob} — ${ATTRS.char_doe}`
+                            cback(null, attrList)
+                        })
+                    },
+                    $set
+                ]
+            run$($funcs)
         },
         doMarquee = () => {
-            const attrList = {}
-            getAttrs(["marquee_tracker"], ATTRS => {
-                let mTracker = (ATTRS.marquee_tracker || "").split(","),
-                    [thisMarquee, tIndex] = [
-                        [], null
-                    ]
-                if (mTracker.length < 10) {
-                    const newShuffle = _.shuffle(
-                        _.difference(
-                            _.keys(marqueeTips), mTracker
-                        )
-                    )
-                    mTracker = _.compact([
-                        ..._.shuffle(mTracker.concat(newShuffle.slice(0, 10))),
-                        ...mTracker.concat(newShuffle.slice(10))
-                    ])
-                }
-                do
-                    tIndex = parseInt(mTracker.shift())
-                while (tIndex === null)
-                thisMarquee = marqueeTips[tIndex]
-                attrList.marquee_tracker = mTracker.join(",")
-                attrList.marquee_lines_toggle = thisMarquee.length - 1;
-                [attrList.marquee_title] = thisMarquee
-                attrList.marquee = thisMarquee.slice(1).join("\n")
-                setAttrs(attrList)
-            })
+            const attrList = {},
+                $funcs = [
+                    cback => {
+                        getAttrs(["marquee_tracker"], ATTRS => {
+                            let mTracker = (ATTRS.marquee_tracker || "").split(","),
+                                [thisMarquee, tIndex] = [
+                                    [], null
+                                ]
+                            if (mTracker.length < 10) {
+                                const newShuffle = _.shuffle(
+                                    _.difference(
+                                        _.keys(marqueeTips), mTracker
+                                    )
+                                )
+                                mTracker = _.compact([
+                                    ..._.shuffle(mTracker.concat(newShuffle.slice(0, 10))),
+                                    ...mTracker.concat(newShuffle.slice(10))
+                                ])
+                            }
+                            do
+                                tIndex = parseInt(mTracker.shift())
+                            while (tIndex === null)
+                            thisMarquee = marqueeTips[tIndex]
+                            attrList.marquee_tracker = mTracker.join(",")
+                            attrList.marquee_lines_toggle = thisMarquee.length - 1;
+                            [attrList.marquee_title] = thisMarquee
+                            attrList.marquee = thisMarquee.slice(1).join("\n")
+                            cback(null, attrList)
+                        })
+                    },
+                    $set
+                ]
+            run$($funcs)
         }
 
     on("change:clan change:bloodline", doClans)
@@ -900,329 +983,359 @@
     // #endregion
 
     // #region UPDATE: Trackers (Health, Willpower, Blood Potency, Humanity)
-    const doTracker = (tracker, eInfo = {sourceAttribute: ""}) => {
-            const attrList = {},
-                dmgBins = [[], [], []],
-                p = v => `${tracker.toLowerCase()}_${v}`
-            let attrArray
+    const $binCheck = (tracker) => {
+            const p = v => `${tracker.toLowerCase()}_${v}`,
+                dmgBins = [
+                    [],
+                    [],
+                    []
+                ],
+                attrList = {}
+            let attrs = []
             switch (tracker.toLowerCase()) {
                 case "health":
-                    attrArray = [..._.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "max", "sdmg", "admg"], v => `health_${v}`), "incap"]
-                    // falls through
+                    attrs = [..._.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, "max", "sdmg", "admg"], v => `health_${v}`), "incap"]
+                    break
                 case "willpower":
-                    attrArray = attrArray || [..._.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "max", "sdmg", "admg", "sdmg_social", "admg_social", "sdmg_socialtotal", "admg_socialtotal"], v => `willpower_${v}`), "incap"]
-                    getAttrs(attrArray, ATTRS => {
-                        const pV = v => ATTRS[p(v)],
-                            pI = v => parseInt(pV(v)) || 0,
-                        // Activate Boxes Based on Max Stats
-                            boxList = _.pick(ATTRS, (v, k) => {
-                                const num = parseInt(k.split("_")[1])
-    
-                                return !_.isNaN(num) && num <= pI("max")
-                            })
-    
-                        // Sort Boxes According to Damage
-                        _.each(boxList, (dmg, box) => dmgBins[dmg].push(box))
-    
-                        // Apply New Damage & Healing
-                        if (pI("sdmg") + pI("sdmg_social") !== 0) {
-                            attrList[p("sdmg")] = pI("sdmg") + pI("sdmg_social")
+                    attrs = [..._.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "max", "sdmg", "admg", "sdmg_social", "admg_social", "sdmg_socialtotal", "admg_socialtotal"], v => `willpower_${v}`), "incap"]
+                    break
+                default:
+                    log(`ERROR: Invalid tracker sumbitted to binCheck: ${tracker}`)
+
+                    return false
+            }
+
+            return cback => {
+                getAttrs(attrs, ATTRS => {
+                    const pV = v => ATTRS[p(v)],
+                        pI = v => parseInt(pV(v)) || 0,
+                    // Activate Boxes Based on Max Stats
+                        boxList = _.pick(ATTRS, (v, k) => {
+                            const num = parseInt(k.split("_")[1])
+
+                            return !_.isNaN(num) && num <= pI("max")
+                        })
+
+                // Sort Boxes According to Damage
+                    _.each(boxList, (dmg, box) => dmgBins[dmg].push(box))
+
+                // Apply New Damage & Healing
+                    if (pI("sdmg") + pI("sdmg_social") !== 0) {
+                        attrList[p("sdmg")] = pI("sdmg") + pI("sdmg_social")
+                        log(`>>@@>> attrList[${p("sdmg")}] = ${attrList[p("sdmg")]}`)
+                        while (attrList[p("sdmg")] > 0)
+                            if (dmgBins[0].length) { // There's enough blank boxes for the superficial hit.
+                                dmgBins[1].push(dmgBins[0].shift())
+                                attrList[p("sdmg")]--
+                            } else if (dmgBins[1].length) { // Boxes are filled, try to upgrade to aggravated.
+                                dmgBins[2].push(dmgBins[1].shift())
+                                attrList[p("sdmg")]-- // All boxes are filled with Aggravated: Death.
+                            } else {
+                                break
+                            }
+
+                        while (attrList[p("sdmg")] < 0) {
                             log(`>>@@>> attrList[${p("sdmg")}] = ${attrList[p("sdmg")]}`)
-                            while (attrList[p("sdmg")] > 0)
-                                if (dmgBins[0].length) { // There's enough blank boxes for the superficial hit.
-                                    dmgBins[1].push(dmgBins[0].shift())
-                                    attrList[p("sdmg")]--
-                                } else if (dmgBins[1].length) { // Boxes are filled, try to upgrade to aggravated.
-                                    dmgBins[2].push(dmgBins[1].shift())
-                                    attrList[p("sdmg")]-- // All boxes are filled with Aggravated: Death.
-                                } else {
-                                    break
-                                }
-    
-                            while (attrList[p("sdmg")] < 0) {
-                                log(`>>@@>> attrList[${p("sdmg")}] = ${attrList[p("sdmg")]}`)
-                                if (dmgBins[1].length) { // Superficial damage present, so heal.
-                                    dmgBins[0].push(dmgBins[1].pop())
-                                    attrList[p("sdmg")]++
-                                } else {
-                                    break
-                                }
+                            if (dmgBins[1].length) { // Superficial damage present, so heal.
+                                dmgBins[0].push(dmgBins[1].pop())
+                                attrList[p("sdmg")]++
+                            } else {
+                                break
                             }
-    
                         }
-                        if (pI("admg") + pI("admg_social") !== 0) {
-                            attrList[p("admg")] = pI("admg") + pI("admg_social")
+
+                    }
+                    if (pI("admg") + pI("admg_social") !== 0) {
+                        attrList[p("admg")] = pI("admg") + pI("admg_social")
+                        log(`>>@@>> attrList[${p("admg")}] = ${attrList[p("admg")]}`)
+                        while (attrList[p("admg")] > 0)
+                            if (dmgBins[0].length) {
+                                dmgBins[2].push(dmgBins[0].shift())
+                                attrList[p("admg")]--
+                            } else if (dmgBins[1].length) {
+                                dmgBins[2].push(dmgBins[1].shift())
+                                attrList[p("admg")]--
+                            } else {
+                                break
+                            }
+
+                        while (attrList[p("admg")] < 0) {                            
                             log(`>>@@>> attrList[${p("admg")}] = ${attrList[p("admg")]}`)
-                            while (attrList[p("admg")] > 0)
-                                if (dmgBins[0].length) {
-                                    dmgBins[2].push(dmgBins[0].shift())
-                                    attrList[p("admg")]--
-                                } else if (dmgBins[1].length) {
-                                    dmgBins[2].push(dmgBins[1].shift())
-                                    attrList[p("admg")]--
-                                } else {
-                                    break
-                                }
-    
-                            while (attrList[p("admg")] < 0) {                            
-                                log(`>>@@>> attrList[${p("admg")}] = ${attrList[p("admg")]}`)
-                                if (dmgBins[2].length) {
-                                    dmgBins[1].push(dmgBins[2].pop())
-                                    attrList[p("admg")]++
-                                } else {
-                                    break
-                                }
+                            if (dmgBins[2].length) {
+                                dmgBins[1].push(dmgBins[2].pop())
+                                attrList[p("admg")]++
+                            } else {
+                                break
                             }
-    
                         }
-    
-                        // Check For Incapacitation
-                        if (dmgBins[0].length === 0) {
-                            attrList.incap = _.compact(_.uniq(_.union((ATTRS.incap || "").split(","), [tracker]))).join(",")
-                            attrList[`${tracker.toLowerCase()}_impair_toggle`] = 1
-                        } else {
-                            attrList.incap = _.compact(_.uniq(_.difference((ATTRS.incap || "").split(","), [tracker]))).join(",")
-                            attrList[`${tracker.toLowerCase()}_impair_toggle`] = 0
-                        }
-    
-                        // Apply Tracker Damage to Boxes
-                        let binNum = 0
-                        _.each(dmgBins, bin => {
-                            _.each(bin, box => {
-                                if (parseInt(ATTRS[box]) !== binNum)
-                                    attrList[box] = binNum
-                            })
-                            binNum++
+
+                    }
+
+                // Check For Incapacitation
+                    if (dmgBins[0].length === 0) {
+                        attrList.incap = _.compact(_.uniq(_.union((ATTRS.incap || "").split(","), [tracker]))).join(",")
+                        attrList[`${tracker.toLowerCase()}_impair_toggle`] = 1
+                    } else {
+                        attrList.incap = _.compact(_.uniq(_.difference((ATTRS.incap || "").split(","), [tracker]))).join(",")
+                        attrList[`${tracker.toLowerCase()}_impair_toggle`] = 0
+                    }
+
+                // Apply Tracker Damage to Boxes
+                    let binNum = 0
+                    _.each(dmgBins, bin => {
+                        _.each(bin, box => {
+                            if (parseInt(ATTRS[box]) !== binNum)
+                                attrList[box] = binNum
                         })
-                        attrList[`${tracker.toLowerCase()}`] = dmgBins[0].length
-                        attrList[`${tracker.toLowerCase()}_bashing`] = dmgBins[1].length
-                        attrList[`${tracker.toLowerCase()}_aggravated`] = dmgBins[2].length    
-                        
-                        // Set sdmg/admg scores to zero.
-                        attrList[p("sdmg")] = 0
-                        attrList[p("admg")] = 0
-    
-                        // IF Willpower, add/subtract social damage to totals, and set socials to zero:
-                        if (tracker.toLowerCase() === "willpower") {
-                            attrList[p("sdmg_socialtotal")] = pI("sdmg_socialtotal") + pI("sdmg_social")
-                            attrList[p("admg_socialtotal")] = pI("admg_socialtotal") + pI("admg_social")
-                            attrList[p("sdmg_social")] = 0
-                            attrList[p("admg_social")] = 0
-                        }                        
-                        
-                        setAttrs(attrList, {}, () => {
-                            log(`>> ATTRS SET >> ${JSON.stringify(attrList)}`)
-                            doRolls(eInfo.sourceAttribute)
-                        })
+                        binNum++
                     })
+                    attrList[`${tracker.toLowerCase()}`] = dmgBins[0].length
+                    attrList[`${tracker.toLowerCase()}_bashing`] = dmgBins[1].length
+                    attrList[`${tracker.toLowerCase()}_aggravated`] = dmgBins[2].length
+
+                    
+                    // Set sdmg/admg scores to zero.
+                    attrList[p("sdmg")] = 0
+                    attrList[p("admg")] = 0
+
+                    // IF Willpower, add/subtract social damage to totals, and set socials to zero:
+                    if (tracker.toLowerCase() === "willpower") {
+                        attrList[p("sdmg_socialtotal")] = pI("sdmg_socialtotal") + pI("sdmg_social")
+                        attrList[p("admg_socialtotal")] = pI("admg_socialtotal") + pI("admg_social")
+                        attrList[p("sdmg_social")] = 0
+                        attrList[p("admg_social")] = 0
+                    }
+                    
+                    log(JSON.stringify(attrList))
+
+                    cback(null, attrList)
+                })
+            }
+        },
+        doTracker = (tracker, eInfo = {sourceAttribute: ""}, cback) => {
+            const attrList = {},
+                $funcs = []
+            switch (tracker.toLowerCase()) {
+                case "health":
+                case "willpower":
+                    $funcs.push($binCheck(tracker))
                     break
                 case "blood potency full":
                 case "blood potency": {
-                    getAttrs(["clan", "blood_potency"], ATTRS => {
-                        _.each(bpDependants[ATTRS.blood_potency], (v, k) => {
-                            attrList[k] = v
-                        })
-                        attrList.bp_surgetext =
-                            attrList.bp_surge === 0 ?
-                                "None" :
-                                `+${attrList.bp_surge === 1 ?
-                                    `${attrList.bp_surge} Die` :
-                                    `${attrList.bp_surge} Dice`}`
-                        attrList.bp_mendtext =
-                            attrList.bp_mend === 0 ?
-                                "None" :
-                                `${
-                                    attrList.bp_mend
-                                } Superficial`
-                        attrList.bp_discbonustext =
-                            attrList.bp_discbonus === 0 ?
-                                "None" :
-                                `+${
-                                    attrList.bp_discbonus === 1 ?
-                                        `${
-                                            attrList.bp_discbonus
-                                        } Die` :
-                                        `${
-                                            attrList.bp_discbonus
-                                        } Dice`
-                                }${
-                                    [
-                                        ";  Never Rouse x2.",
-                                        ";  Rouse x2 for Level 1.",
-                                        ";  Rouse x2 for Levels 1 & 2.",
-                                        ";  Rouse x2 for Levels 1, 2, 3.",
-                                        ";  Rouse x2 for Levels 1 - 4.",
-                                        ";  Rouse x2 for All Levels."
-                                    ][
-                                        attrList.bp_rousereroll
-                                    ]
-                                }`
-                        attrList.bp_slakebag = attrList.bp_slakeanimal
-                        attrList.bp_slaketext = `Animals & bagged blood slake ${
-                            {0: "no", 0.5: "half", 1: "full"}[attrList.bp_slakeanimal]
-                        } Hunger.\n${
-                            attrList.bp_slakehuman === 0 ?
-                                "Humans slake full Hunger.\n" :
-                                `${attrList.bp_slakehuman} Hunger slaked from humans.\n`
-                        }Must kill to reduce Hunger below ${attrList.bp_slakekill}.`                        
-                        setAttrs(attrList, {}, () => {
-                            log(`>> ATTRS SET >> ${JSON.stringify(attrList)}`)                            
-                            doRolls(eInfo.sourceAttribute)
+                    $funcs.push(cbk => {
+                        getAttrs(["clan", "blood_potency"], ATTRS => {
+                            _.each(bpDependants[ATTRS.blood_potency], (v, k) => {
+                                attrList[k] = v
+                            })
+                            attrList.bp_surgetext =
+                                attrList.bp_surge === 0 ?
+                                    "None" :
+                                    `+${attrList.bp_surge === 1 ?
+                                        `${attrList.bp_surge} Die` :
+                                        `${attrList.bp_surge} Dice`}`
+                            attrList.bp_mendtext =
+                                attrList.bp_mend === 0 ?
+                                    "None" :
+                                    `${
+                                        attrList.bp_mend
+                                    } Superficial`
+                            attrList.bp_discbonustext =
+                                attrList.bp_discbonus === 0 ?
+                                    "None" :
+                                    `+${
+                                        attrList.bp_discbonus === 1 ?
+                                            `${
+                                                attrList.bp_discbonus
+                                            } Die` :
+                                            `${
+                                                attrList.bp_discbonus
+                                            } Dice`
+                                    }${
+                                        [
+                                            ";  Never Rouse x2.",
+                                            ";  Rouse x2 for Level 1.",
+                                            ";  Rouse x2 for Levels 1 & 2.",
+                                            ";  Rouse x2 for Levels 1, 2, 3.",
+                                            ";  Rouse x2 for Levels 1 - 4.",
+                                            ";  Rouse x2 for All Levels."
+                                        ][
+                                            attrList.bp_rousereroll
+                                        ]
+                                    }`
+                            attrList.bp_slakebag = attrList.bp_slakeanimal
+                            attrList.bp_slaketext = `Animals & bagged blood slake ${
+                                {0: "no", 0.5: "half", 1: "full"}[attrList.bp_slakeanimal]
+                            } Hunger.\n${
+                                attrList.bp_slakehuman === 0 ?
+                                    "Humans slake full Hunger.\n" :
+                                    `${attrList.bp_slakehuman} Hunger slaked from humans.\n`
+                            }Must kill to reduce Hunger below ${attrList.bp_slakekill}.`
+                            cbk(null, attrList)
                         })
                     })
                     break
                 }
                 case "humanity":
-                    if (eInfo.sourceType !== "sheetworker") {
-                        attrArray = _.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`)
-                        const humArray = new Array(10)
-                        getAttrs(["stains", "humanity", "incap"], ATTRS => {
-                            const humanity = Math.min(10, Math.max(0, parseInt(ATTRS.humanity))),
-                                stains = Math.min(10, Math.max(0, parseInt(ATTRS.stains)))
-                            attrList.humanity_impair_toggle = 0
-                            log(`... Humanity: ${JSON.stringify(humanity)}, Stains: ${JSON.stringify(stains)}, ATTRS: ${JSON.stringify(ATTRS)}`)
-                            humArray.fill(3, 10 - stains)
-                            humArray.fill(2, 0, Math.max(humanity, 0))
-                            humArray.fill(1, humanity, 10 - stains)
-                            log(`... humArray: ${JSON.stringify(humArray)}`)
-                            log(`... attrArray: ${JSON.stringify(attrArray)}`)
-                            log(`... attrArray[4]: ${JSON.stringify(attrArray[4])}`)
-                            for (let i = 0; i < humArray.length; i++)
-                                attrList[attrArray[i]] = humArray[i]
-                            
-                            attrList.stains = humArray.filter(v => v === 3).length
-                            log(`... attrList: ${JSON.stringify(attrList)}`)
-                            // humanity, hum_details, hum_posbullets_toggle, hum_posbullets, neutralbullets, negbullets
-                            log(`... humText: ${JSON.stringify(humanityText.mainText)}`)
-                            log(`... humDetails (humText[${JSON.stringify(humanity)}]): ${JSON.stringify(humanityText.mainText[humanity])}`)
-                            attrList.hum_details = humanityText.mainText[humanity]
-                            for (const bulletType of ["pos", "neutral", "neg"]) {
-                                log(`... ${bulletType}: : ${JSON.stringify(humanityText.bulletText[bulletType][humanity])}`)
-                                attrList[`hum_${bulletType}bullets`] = humanityText.bulletText[bulletType][humanity].join("\n")
-                                attrList[`hum_${bulletType}bullets_toggle`] = humanityText.bulletText[bulletType][humanity].length
-                            }
+                    $funcs.push(cbk => {
+                        if (eInfo.sourceType !== "sheetworker") {
+                            const attrArray = _.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`),
+                                humArray = new Array(10)
+                            getAttrs(["stains", "humanity", "incap"], ATTRS => {
+                                const humanity = Math.min(10, Math.max(0, parseInt(ATTRS.humanity))),
+                                    stains = Math.min(10, Math.max(0, parseInt(ATTRS.stains)))
+                                attrList.humanity_impair_toggle = 0
+                                log(`... Humanity: ${JSON.stringify(humanity)}, Stains: ${JSON.stringify(stains)}, ATTRS: ${JSON.stringify(ATTRS)}`)
+                                humArray.fill(3, 10 - stains)
+                                humArray.fill(2, 0, Math.max(humanity, 0))
+                                humArray.fill(1, humanity, 10 - stains)
+                                log(`... humArray: ${JSON.stringify(humArray)}`)
+                                log(`... attrArray: ${JSON.stringify(attrArray)}`)
+                                log(`... attrArray[4]: ${JSON.stringify(attrArray[4])}`)
+                                for (let i = 0; i < humArray.length; i++)
+                                    attrList[attrArray[i]] = humArray[i]
+                                
+                                attrList.stains = humArray.filter(v => v === 3).length
+                                log(`... attrList: ${JSON.stringify(attrList)}`)
+                                // humanity, hum_details, hum_posbullets_toggle, hum_posbullets, neutralbullets, negbullets
+                                log(`... humText: ${JSON.stringify(humanityText.mainText)}`)
+                                log(`... humDetails (humText[${JSON.stringify(humanity)}]): ${JSON.stringify(humanityText.mainText[humanity])}`)
+                                attrList.hum_details = humanityText.mainText[humanity]
+                                for (const bulletType of ["pos", "neutral", "neg"]) {
+                                    log(`... ${bulletType}: : ${JSON.stringify(humanityText.bulletText[bulletType][humanity])}`)
+                                    attrList[`hum_${bulletType}bullets`] = humanityText.bulletText[bulletType][humanity].join("\n")
+                                    attrList[`hum_${bulletType}bullets_toggle`] = humanityText.bulletText[bulletType][humanity].length
+                                }
 
-                            if (attrList.humanity_impair_toggle === 1)
-                                attrList.incap = _.compact(_.uniq(_.union((ATTRS.incap || "").split(","), ["Humanity"]))).join(",")
-                            else
-                                attrList.incap = _.compact(_.uniq(_.difference((ATTRS.incap || "").split(","), ["Humanity"]))).join(",")
+                                if (attrList.humanity_impair_toggle === 1)
+                                    attrList.incap = _.compact(_.uniq(_.union((ATTRS.incap || "").split(","), ["Humanity"]))).join(",")
+                                else
+                                    attrList.incap = _.compact(_.uniq(_.difference((ATTRS.incap || "").split(","), ["Humanity"]))).join(",")
 
-                            setAttrs(attrList, {}, () => {
-                                log(`>> ATTRS SET >> ${JSON.stringify(attrList)}`)                            
-                                doRolls(eInfo.sourceAttribute)
+
+                                log(`... attrList: ${JSON.stringify(attrList)}`)
+
+                                cbk(null, attrList)
                             })
-                        })
-                    }
+                        }
+                    })
                     break
                 case "stains":
-                    if (eInfo.sourceType !== "sheetworker") {
-                        attrArray = _.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`)
-                        const humArray = new Array(10)
-                        getAttrs(["humanity", "stains", "incap"], ATTRS => {
-                            const humanity = Math.min(10, Math.max(0, parseInt(ATTRS.humanity))),
-                                stains = Math.min(10, Math.max(0, parseInt(ATTRS.stains)))
-                            attrList.humanity_impair_toggle = 0
-                            log(`... Humanity: ${JSON.stringify(humanity)}, Stains: ${JSON.stringify(stains)}, ATTRS: ${JSON.stringify(ATTRS)}`)
-                            if (humanity + stains > 10) {
-                                attrList.humanity_impair_toggle = 1
-                                humArray.fill(4)
-                                humArray.fill(3, humanity)
-                                humArray.fill(2, 0, 10 - stains)
-                            } else {
-                                humArray.fill(1)
-                                humArray.fill(2, 0, humanity)
-                                humArray.fill(3, 10 - stains)
-                            }
-                            log(`... humArray: ${JSON.stringify(humArray)}`)
-                            for (let i = 0; i < humArray.length; i++)
-                                attrList[attrArray[i]] = humArray[i]
+                    $funcs.push(cbk => {
+                        if (eInfo.sourceType !== "sheetworker") {
+                            const attrArray = _.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], v => `humanity_${v}`),
+                                humArray = new Array(10)
+                            getAttrs(["humanity", "stains", "incap"], ATTRS => {
+                                const humanity = Math.min(10, Math.max(0, parseInt(ATTRS.humanity))),
+                                    stains = Math.min(10, Math.max(0, parseInt(ATTRS.stains)))
+                                attrList.humanity_impair_toggle = 0
+                                log(`... Humanity: ${JSON.stringify(humanity)}, Stains: ${JSON.stringify(stains)}, ATTRS: ${JSON.stringify(ATTRS)}`)
+                                if (humanity + stains > 10) {
+                                    attrList.humanity_impair_toggle = 1
+                                    humArray.fill(4)
+                                    humArray.fill(3, humanity)
+                                    humArray.fill(2, 0, 10 - stains)
+                                } else {
+                                    humArray.fill(1)
+                                    humArray.fill(2, 0, humanity)
+                                    humArray.fill(3, 10 - stains)
+                                }
+                                log(`... humArray: ${JSON.stringify(humArray)}`)
+                                for (let i = 0; i < humArray.length; i++)
+                                    attrList[attrArray[i]] = humArray[i]
 
-                            log(`... attrList: ${JSON.stringify(attrList)}`)
-                            if (attrList.humanity_impair_toggle === 1)
-                                attrList.incap = _.compact(_.uniq(_.union((ATTRS.incap || "").split(","), ["Humanity"]))).join(",")
-                            else
-                                attrList.incap = _.compact(_.uniq(_.difference((ATTRS.incap || "").split(","), ["Humanity"]))).join(",")
-
-                            setAttrs(attrList, {}, () => {
-                                log(`>> ATTRS SET >> ${JSON.stringify(attrList)}`)                            
-                                doRolls(eInfo.sourceAttribute)
+                                log(`... attrList: ${JSON.stringify(attrList)}`)
+                                if (attrList.humanity_impair_toggle === 1)
+                                    attrList.incap = _.compact(_.uniq(_.union((ATTRS.incap || "").split(","), ["Humanity"]))).join(",")
+                                else
+                                    attrList.incap = _.compact(_.uniq(_.difference((ATTRS.incap || "").split(","), ["Humanity"]))).join(",")
+                                cbk(null, attrList)
                             })
-                        })
-                    }
+                        }
+                    })
                     break
                 default:
                     log(`Error in doTracker(${tracker}, ): Unrecognized tracker.`)
+                    return
             }
+            $funcs.push($set)
+            $funcs.push($doRolls(eInfo.sourceAttribute))
+            run$($funcs, cback ? () => cback(null) : undefined)
         },
+        $doTracker = (tracker, eInfo) => cback => doTracker(tracker, eInfo, cback),
         doTrackerMax = (tracker, eInfo) => {
-            const attrList = {}
+            const attrList = {},
+                $funcs = []
             switch (tracker.toLowerCase()) {
                 case "health":
-                    getAttrs(["stamina", "bonus_health"], ATTRS => {
-                        attrList.health_max = Math.min(
-                            15,
-                            Math.max(
-                                1,
-                                _.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num)) + 3
+                    $funcs.push(cback => {
+                        getAttrs(["stamina", "bonus_health"], ATTRS => {
+                            attrList.health_max = Math.min(
+                                15,
+                                Math.max(
+                                    1,
+                                    _.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num)) + 3
+                                )
                             )
-                        )
-                                                
-                        setAttrs(attrList, {}, () => {
-                            log(`>> ATTRS SET >> ${JSON.stringify(attrList)}`)                            
-                            doTracker(tracker, eInfo)
+                            cback(null, attrList)
                         })
                     })
                     break
                 case "willpower":
-                    getAttrs(["composure", "resolve", "bonus_willpower"], ATTRS => {
-                        attrList.willpower_max =
+                    $funcs.push(cback => {
+                        getAttrs(["composure", "resolve", "bonus_willpower"], ATTRS => {
+                            attrList.willpower_max =
                                 Math.min(
                                     10,
                                     Math.max(
                                         1,
                                         _.reduce(_.values(ATTRS), (memo, num) => parseInt(memo) + parseInt(num))
                                     )
-                                )                                
-                                                
-                        setAttrs(attrList, {}, () => {
-                            log(`>> ATTRS SET >> ${JSON.stringify(attrList)}`)                            
-                            doTracker(tracker, eInfo)
+                                )
+                            cback(null, attrList)
                         })
                     })
-                    break
+                    break                        
                 case "blood potency full":
                 case "blood potency":
-                    getAttrs(["generation", "bonus_bp", "blood_potency"], ATTRS => {
-                        const genData = _.isNaN(parseInt(ATTRS.generation)) && {blood_potency_max: 0, blood_potency: 0} || genDepts[parseInt(ATTRS.generation)]
-                        attrList.blood_potency_max = Math.min(10, Math.max(0, genData.blood_potency_max + parseInt(ATTRS.bonus_bp)))
-                        const bp = parseInt(ATTRS.blood_potency)
-                        if (tracker === "Blood Potency Full" && (bp < genData.blood_potency || bp > genData.blood_potency_max))
-                            attrList.blood_potency = bp < genData.blood_potency && genData.blood_potency || genData.blood_potency_max                               
-                                                
-                        setAttrs(attrList, {}, () => {
-                            log(`>> ATTRS SET >> ${JSON.stringify(attrList)}`)                            
-                            doTracker(tracker, eInfo)
+                    $funcs.push(cback => {
+                        getAttrs(["generation", "bonus_bp", "blood_potency"], ATTRS => {
+                            const genData = _.isNaN(parseInt(ATTRS.generation)) && {blood_potency_max: 0, blood_potency: 0} || genDepts[parseInt(ATTRS.generation)]
+                            attrList.blood_potency_max = Math.min(10, Math.max(0, genData.blood_potency_max + parseInt(ATTRS.bonus_bp)))
+                            const bp = parseInt(ATTRS.blood_potency)
+                            if (tracker === "Blood Potency Full" && (bp < genData.blood_potency || bp > genData.blood_potency_max))
+                                attrList.blood_potency = bp < genData.blood_potency && genData.blood_potency || genData.blood_potency_max    
+                            cback(null, attrList)
                         })
                     })
                     break
                 default:
                     log(`ERROR: Unrecognized Tracker Type ${tracker}`)
+
+                    return
             }
+
+            $funcs.push($set)
+            $funcs.push($doTracker(tracker, eInfo))
+
+            run$($funcs)
         },
-        healSocialWP = () => {
-            const attrList = {}
-            getAttrs(["willpower_sdmg_socialtotal", "willpower_admg_socialtotal", "willpower_social_toggle"], ATTRS => {
-                attrList.willpower_sdmg = -1 * Math.floor(0.5 * parseInt(ATTRS.willpower_sdmg_socialtotal) || 0)
-                attrList.willpower_admg = -1 * Math.floor(0.5 * parseInt(ATTRS.willpower_admg_socialtotal) || 0)
-                attrList.willpower_sdmg_socialtotal = 0
-                attrList.willpower_admg_socialtotal = 0
-                attrList.willpower_social_toggle = "off"                                                            
-                                                
-                setAttrs(attrList, {}, () => {
-                    log(`>> ATTRS SET >> ${JSON.stringify(attrList)}`)                            
-                    doTracker("Willpower")
-                })
-            })
+        healSocialWP = (cback) => {
+            const attrList = {},
+                $funcs = [
+                    cbk => {
+                        getAttrs(["willpower_sdmg_socialtotal", "willpower_admg_socialtotal", "willpower_social_toggle"], ATTRS => {
+                            attrList.willpower_sdmg = -1 * Math.floor(0.5 * parseInt(ATTRS.willpower_sdmg_socialtotal) || 0)
+                            attrList.willpower_admg = -1 * Math.floor(0.5 * parseInt(ATTRS.willpower_admg_socialtotal) || 0)
+                            attrList.willpower_sdmg_socialtotal = 0
+                            attrList.willpower_admg_socialtotal = 0
+                            attrList.willpower_social_toggle = "off"                            
+                            cbk(null, attrList)
+                        })
+                    },
+                    $set,
+                    $doTracker("willpower")
+                ]
+            run$($funcs, cback ? () => cback(null) : undefined)            
         }
 
     on("change:stamina change:bonus_health", () => {
@@ -1262,7 +1375,7 @@
     // #region UPDATE: Projects
 
     // Updating project end date when date values are changed.
-    const doProjectDates = (nextFuncsArray) => {
+    const doProjectDates = callback => {
             const attrList = {},
                 attrArray = _.map([
                     "projectstartdate", "projectincnum", "projectincunit"
@@ -1307,15 +1420,13 @@
                     attrList[p("projectenddate")] = formatDString(getEndDate(startDate, pV("projectincunit"), pI("projectincnum")))
                 setAttrs(attrList, {}, () => {
                     log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
-                    if (nextFuncsArray.length) {
-                        const [nextFunc, ...funcArgs] = nextFuncsArray.shift()
-                        nextFunc(nextFuncsArray, ...funcArgs)
-                    }
+                    if (callback)
+                        callback(null)
                 })
             })
         },
         // Updating launch roll difficulty display upon change to scope or difficulty.
-        doProjectDiff = (nextFuncsArray) => {
+        doProjectDiff = callback => {
             const attrList = {},
                 attrArray = _.map([
                     "projectscope", "projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1, 2, 3], v => [`projectteamwork${v}`]))
@@ -1337,15 +1448,13 @@
                 attrList[p("projectlaunchdiff")] = pI("projectscope") + 2 + pI("projectlaunchdiffmod")
                 setAttrs(attrList, {}, () => {
                     log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
-                    if (nextFuncsArray.length) {
-                        const [nextFunc, ...funcArgs] = nextFuncsArray.shift()
-                        nextFunc(nextFuncsArray, ...funcArgs)
-                    }
+                    if (callback)
+                        callback(null)
                 })
             })
         },
         // Check whether to display Launch Project button.
-        doProjectLaunchCheck = (nextFuncsArray) => {
+        doProjectLaunchCheck = callback => {
             const attrList = {},
                 attrArray = _.map([
                     "projectlaunchmod", "projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2", "projectlaunchresults", "projectenddate"
@@ -1375,15 +1484,13 @@
                 }
                 setAttrs(attrList, {}, () => {
                     log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
-                    if (nextFuncsArray.length) {
-                        const [nextFunc, ...funcArgs] = nextFuncsArray.shift()
-                        nextFunc(nextFuncsArray, ...funcArgs)
-                    }
+                    if (callback)
+                        callback(null)
                 })
             })
         },
         // Updates the project counter when the time changes.
-        doProjectCounter = (nextFuncsArray) => {
+        doProjectCounter = callback => {
             const [attrList, attrArray] = [{}, []],
                 funcName = "DoProjectCounter"
             log("", `████ ${funcName.toUpperCase()} CALLED ████`)
@@ -1416,15 +1523,13 @@
                     })
                     setAttrs(attrList, {}, () => {
                         log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
-                        if (nextFuncsArray.length) {
-                            const [nextFunc, ...funcArgs] = nextFuncsArray.shift()
-                            nextFunc(nextFuncsArray, ...funcArgs)
-                        }
+                        if (_.isFunction(callback))
+                            callback(null)
                     })
                 })
             })
         },
-        doProjectStake = (nextFuncsArray) => {
+        doProjectStake = callback => {
             const attrList = {},
                 attrArray = _.map([
                     "projectlaunchresults", ..._.map([1, 2, 3, 4, 5, 6], v => `projectstake${v}`), "projecttotalstake"
@@ -1442,151 +1547,165 @@
                         attrList[p("projectlaunchresultsmargin")] = `Stake ${pV("projecttotalstake")} Dot${pI("projecttotalstake") > 1 ? "s" : ""} (${stakeRemaining} to go)`
                     else
                         attrList[p("projectlaunchresultsmargin")] = `${pV("projecttotalstake")} Dot${pI("projecttotalstake") > 1 ? "s" : ""} Staked`
-                }                
-                setAttrs(attrList, {}, () => {
-                    log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
-                    if (nextFuncsArray.length) {
-                        const [nextFunc, ...funcArgs] = nextFuncsArray.shift()
-                        nextFunc(nextFuncsArray, ...funcArgs)
-                    }
-                })
-            })
-        },
-        doProjectLaunchParams = (nextFuncsArray, eInfo) => {
-            const attrList = {},
-                attrArray = _.map([
-                    "projectlaunchdiff", "projectforcedstakemod", ..._.map([1, 2, 3], v => `projectteamwork${v}`), "projectlaunchmod", "projectlaunchdiffmod", "projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2"
-                ], v => `repeating_project_${v}`),
-                funcName = "DoProjectLaunchParams"
-            log("", `████ ${funcName.toUpperCase()} CALLED ████`)
-            log(`Attr Array: ${JSON.stringify(attrArray)}`, funcName)
-            getAttrs(attrArray, ATTRS => {
-                const [, p, pV, pI] = sFuncs("project", ATTRS),
-                    traits = _.map(["projectlaunchtrait1", "projectlaunchtrait2"], v => ({name: pV(`${v}_name`), value: pI(v)}))
-                let traitString = ""
-                log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
-                if (traits[0].name !== "" && traits[0].value > 0 ||
-                    traits[1].name !== "" && traits[1].value > 0) {
-                    traitString = [_.values(traits[0]).join(":"), _.values(traits[1]).join(":")].join(",")
-                    attrList[p("projectlaunchrollparams")] = `@{character_name}|${traitString}|${pI("projectlaunchdiff")}|${pI("projectlaunchmod") + pI("projectforcedstakemod")}|${pI("projectlaunchdiffmod")}|${getRowID(eInfo.sourceAttribute)}`
                 }
+                
                 setAttrs(attrList, {}, () => {
                     log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
-                    if (nextFuncsArray.length) {
-                        const [nextFunc, ...funcArgs] = nextFuncsArray.shift()
-                        nextFunc(nextFuncsArray, ...funcArgs)
+                    doProjectCounter(callback)
+                })
+            })
+        },
+        doProjectLaunchParams = eInfo => {
+            return callback => {
+                const attrList = {},
+                    attrArray = _.map([
+                        "projectlaunchdiff", "projectforcedstakemod", ..._.map([1, 2, 3], v => `projectteamwork${v}`), "projectlaunchmod", "projectlaunchdiffmod", "projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2"
+                    ], v => `repeating_project_${v}`),
+                    funcName = "DoProjectLaunchParams"
+                log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+                log(`Attr Array: ${JSON.stringify(attrArray)}`, funcName)
+                getAttrs(attrArray, ATTRS => {
+                    const [, p, pV, pI] = sFuncs("project", ATTRS),
+                        traits = _.map(["projectlaunchtrait1", "projectlaunchtrait2"], v => ({name: pV(`${v}_name`), value: pI(v)}))
+                    let traitString = ""
+                    log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+                    if (traits[0].name !== "" && traits[0].value > 0 ||
+                        traits[1].name !== "" && traits[1].value > 0) {
+                        traitString = [_.values(traits[0]).join(":"), _.values(traits[1]).join(":")].join(",")
+                        attrList[p("projectlaunchrollparams")] = `@{character_name}|${traitString}|${pI("projectlaunchdiff")}|${pI("projectlaunchmod") + pI("projectforcedstakemod")}|${pI("projectlaunchdiffmod")}|${getRowID(eInfo.sourceAttribute)}`
                     }
+                    setAttrs(attrList, {}, () => {
+                        log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+                        if (callback)
+                            callback(null)
+                    })
                 })
-            })
+            }
         },
-        doObjectiveRecord = (rowID) => {
-            const attrList = {},
-                attrArray = ["triggertimelinesort", ..._.map([
-                    "objectivedate", "projectgoal", "projectdetails", "projectscope_name"
-                ], v => `repeating_project_${rowID}_${v}`)],
-                newRowID = generateRowID(),
-                funcName = "doObjectiveRecord"
-            log("", `████ ${funcName.toUpperCase()} CALLED ████`)
-            getAttrs(attrArray, ATTRS => {
-                const [, p, pV] = pFuncs(_.keys(ATTRS)[1], ATTRS),
-                    [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`)
-                log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
-                log(`pV("objectivedate") = ${JSON.stringify(pV("objectivedate"))}`)
-                log(`p("objectivedate") = ${JSON.stringify(p("objectivedate"))}`)
-                log(`All Attrs: ${JSON.stringify(ATTRS)}`)
-                attrList[np("tlstartdate")] = pV("objectivedate")
-                attrList[np("tlenddate")] = ""
-                attrList[np("tldetails")] = pV("projectdetails")
-                attrList[np("tlcategory")] = "OBJECTIVE"
-                attrList[np("tldotdisplay")] = ""
-                attrList[np("tltitle")] = pV("projectscope_name")
-                attrList[np("tlsummary")] = pV("projectgoal")
-                attrList[np("tlsortby")] = parseDString(pV("objectivedate")).getTime()
-                attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes"
-                setAttrs(attrList, {}, () => {
-                    log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+        doObjectiveRecord = rowID => {
+            return callback => {
+                const attrList = {},
+                    attrArray = ["triggertimelinesort", ..._.map([
+                        "objectivedate", "projectgoal", "projectdetails", "projectscope_name"
+                    ], v => `repeating_project_${rowID}_${v}`)],
+                    newRowID = generateRowID(),
+                    funcName = "doObjectiveRecord"
+                log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+                getAttrs(attrArray, ATTRS => {
+                    const [, p, pV] = pFuncs(_.keys(ATTRS)[1], ATTRS),
+                        [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`)
+                    log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+                    log(`pV("objectivedate") = ${JSON.stringify(pV("objectivedate"))}`)
+                    log(`p("objectivedate") = ${JSON.stringify(p("objectivedate"))}`)
+                    log(`All Attrs: ${JSON.stringify(ATTRS)}`)
+                    attrList[np("tlstartdate")] = pV("objectivedate")
+                    attrList[np("tlenddate")] = ""
+                    attrList[np("tldetails")] = pV("projectdetails")
+                    attrList[np("tlcategory")] = "OBJECTIVE"
+                    attrList[np("tldotdisplay")] = ""
+                    attrList[np("tltitle")] = pV("projectscope_name")
+                    attrList[np("tlsummary")] = pV("projectgoal")
+                    attrList[np("tlsortby")] = parseDString(pV("objectivedate")).getTime()
+                    attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes"
+                    setAttrs(attrList, {}, () => {
+                        log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+                        if (callback)
+                            callback(null)
+                    })
                 })
-            })
+            }
         },
-        doProjectRecord = (rowID) => {
-            const attrList = {},
-                attrArray = ["triggertimelinesort", ..._.map([
-                    "projectstartdate", "projectenddate", "projectgoal", "projectscope", "projectdetails", "projectlaunchresults", "projectscope_name", "projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2"
-                ], v => `repeating_project_${rowID}_${v}`)],
-                newRowID = generateRowID(),
-                funcName = "doProjectRecord"
-            log("", `████ ${funcName.toUpperCase()} CALLED ████`)
-            getAttrs(attrArray, ATTRS => {
-                const [, , pV, pI] = pFuncs(_.keys(ATTRS)[1], ATTRS),
-                    [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`)
-                log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
-                attrList[np("tlstartdate")] = pV("projectstartdate")
-                attrList[np("tlenddate")] = `— ${pV("projectenddate")}`
-                attrList[np("tldetails")] = pV("projectdetails")
-                attrList[np("tlcategory")] = "PROJECT"
-                attrList[np("tldotdisplay")] = pI("projectscope") > 0 ? "●".repeat(pI("projectscope")) : "Ꝋ"
-                attrList[np("tltitle")] = pV("projectscope_name")
-                attrList[np("tlsummary")] = pV("projectgoal")
-                attrList[np("tlsortby")] = parseDString(pV("projectenddate")).getTime()
-                attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes"
-                setAttrs(attrList, {}, () => {
-                    log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+        doProjectRecord = rowID => {
+            return callback => {
+                const attrList = {},
+                    attrArray = ["triggertimelinesort", ..._.map([
+                        "projectstartdate", "projectenddate", "projectgoal", "projectscope", "projectdetails", "projectlaunchresults", "projectscope_name", "projectlaunchtrait1_name", "projectlaunchtrait1", "projectlaunchtrait2_name", "projectlaunchtrait2"
+                    ], v => `repeating_project_${rowID}_${v}`)],
+                    newRowID = generateRowID(),
+                    funcName = "doProjectRecord"
+                log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+                getAttrs(attrArray, ATTRS => {
+                    const [, , pV, pI] = pFuncs(_.keys(ATTRS)[1], ATTRS),
+                        [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`)
+                    log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+                    attrList[np("tlstartdate")] = pV("projectstartdate")
+                    attrList[np("tlenddate")] = `— ${pV("projectenddate")}`
+                    attrList[np("tldetails")] = pV("projectdetails")
+                    attrList[np("tlcategory")] = "PROJECT"
+                    attrList[np("tldotdisplay")] = pI("projectscope") > 0 ? "●".repeat(pI("projectscope")) : "Ꝋ"
+                    attrList[np("tltitle")] = pV("projectscope_name")
+                    attrList[np("tlsummary")] = pV("projectgoal")
+                    attrList[np("tlsortby")] = parseDString(pV("projectenddate")).getTime()
+                    attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes"
+                    setAttrs(attrList, {}, () => {
+                        log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+                        if (callback)
+                            callback(null)
+                    })
                 })
-            })
+            }
         },
-        doMemoriamRecord = (rowID) => {
-            const attrList = {},
-                attrArray = ["triggertimelinesort", ..._.map([
-                    "memoriamdate", "projectgoal", "projectdetails", "projectscope_name", "memoriamdiff", "memoriamresult"
-                ], v => `repeating_project_${rowID}_${v}`)],
-                newRowID = generateRowID(),
-                funcName = "doMemoriamRecord"
-            log("", `████ ${funcName.toUpperCase()} CALLED ████`)
-            getAttrs(attrArray, ATTRS => {
-                const [, , pV, pI] = pFuncs(_.keys(ATTRS)[1], ATTRS),
-                    [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`)
-                log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
-                attrList[np("tlstartdate")] = pV("memoriamdate")
-                attrList[np("tlenddate")] = ""
-                attrList[np("tldetails")] = pV("projectdetails")
-                attrList[np("tlcategory")] = "MEMORIAM"
-                attrList[np("tldotdisplay")] = pI("memoriamdiff") > 0 ? "●".repeat(pI("memoriamdiff")) : "Ꝋ"
-                attrList[np("tltitle")] = pV("projectscope_name")
-                attrList[np("tlsummary")] = pV("projectgoal")
-                attrList[np("tlsortby")] = parseDString(pV("memoriamdate")).getTime()
-                attrList[np("tlthirdline")] = pV("memoriamresult")
-                attrList[np("tlthirdline_toggle")] = 1
-                attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes"
-                setAttrs(attrList, {}, () => {
-                    log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+        doMemoriamRecord = rowID => {
+            return callback => {
+                const attrList = {},
+                    attrArray = ["triggertimelinesort", ..._.map([
+                        "memoriamdate", "projectgoal", "projectdetails", "projectscope_name", "memoriamdiff", "memoriamresult"
+                    ], v => `repeating_project_${rowID}_${v}`)],
+                    newRowID = generateRowID(),
+                    funcName = "doMemoriamRecord"
+                log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+                getAttrs(attrArray, ATTRS => {
+                    const [, , pV, pI] = pFuncs(_.keys(ATTRS)[1], ATTRS),
+                        [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`)
+                    log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+                    attrList[np("tlstartdate")] = pV("memoriamdate")
+                    attrList[np("tlenddate")] = ""
+                    attrList[np("tldetails")] = pV("projectdetails")
+                    attrList[np("tlcategory")] = "MEMORIAM"
+                    attrList[np("tldotdisplay")] = pI("memoriamdiff") > 0 ? "●".repeat(pI("memoriamdiff")) : "Ꝋ"
+                    attrList[np("tltitle")] = pV("projectscope_name")
+                    attrList[np("tlsummary")] = pV("projectgoal")
+                    attrList[np("tlsortby")] = parseDString(pV("memoriamdate")).getTime()
+                    attrList[np("tlthirdline")] = pV("memoriamresult")
+                    attrList[np("tlthirdline_toggle")] = 1
+                    attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes"
+                    setAttrs(attrList, {}, () => {
+                        log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+                        if (callback)
+                            callback(null)
+                    })
                 })
-            })
+            }
         },               
-        doEventRecord = (rowID) => {
-            const attrList = {},
-                attrArray = ["triggertimelinesort", ..._.map([
-                    "eventdate", "projectgoal", "projectdetails", "projectscope_name"
-                ], v => `repeating_project_${rowID}_${v}`)],
-                newRowID = generateRowID(),
-                funcName = "doEventRecord"
-            log("", `████ ${funcName.toUpperCase()} CALLED ████`)
-            getAttrs(attrArray, ATTRS => {
-                const [, , pV] = pFuncs(_.keys(ATTRS)[1], ATTRS),
-                    [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`)
-                log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
-                attrList[np("tlstartdate")] = pV("eventdate")
-                attrList[np("tlenddate")] = ""
-                attrList[np("tldetails")] = pV("projectdetails")
-                attrList[np("tlcategory")] = "EVENT"
-                attrList[np("tldotdisplay")] = ""
-                attrList[np("tltitle")] = pV("projectscope_name")
-                attrList[np("tlsummary")] = pV("projectgoal")
-                attrList[np("tlsortby")] = parseDString(pV("eventdate")).getTime()
-                attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes"
-                setAttrs(attrList, {}, () => {
-                    log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+        doEventRecord = rowID => {
+            return callback => {
+                const attrList = {},
+                    attrArray = ["triggertimelinesort", ..._.map([
+                        "eventdate", "projectgoal", "projectdetails", "projectscope_name"
+                    ], v => `repeating_project_${rowID}_${v}`)],
+                    newRowID = generateRowID(),
+                    funcName = "doEventRecord"
+                log("", `████ ${funcName.toUpperCase()} CALLED ████`)
+                getAttrs(attrArray, ATTRS => {
+                    const [, , pV] = pFuncs(_.keys(ATTRS)[1], ATTRS),
+                        [, np] = pFuncs(`repeating_timeline_${newRowID}_stat`)
+                    log(`Retrieved Attributes: ${JSON.stringify(simpleRepAttrs(ATTRS))}`, funcName)
+                    attrList[np("tlstartdate")] = pV("eventdate")
+                    attrList[np("tlenddate")] = ""
+                    attrList[np("tldetails")] = pV("projectdetails")
+                    attrList[np("tlcategory")] = "EVENT"
+                    attrList[np("tldotdisplay")] = ""
+                    attrList[np("tltitle")] = pV("projectscope_name")
+                    attrList[np("tlsummary")] = pV("projectgoal")
+                    attrList[np("tlsortby")] = parseDString(pV("eventdate")).getTime()
+                    attrList.triggertimelinesort = ATTRS.triggertimelinesort === "yes" ? "go" : "yes"
+                    setAttrs(attrList, {}, () => {
+                        log(`Setting Attributes: ${JSON.stringify(simpleRepAttrs(attrList))}`, funcName)
+                        if (callback)
+                            callback(null)
+                    })
                 })
-            })
+            }
         }
 
     on("change:date_today", doProjectCounter)
@@ -1594,64 +1713,45 @@
         if (eInfo.sourceType !== "sheetworker") {
             console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
             log(`(Dates, LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
-            doProjectDates([
-                [doProjectLaunchCheck],
-                [doProjectLaunchParams, eInfo],
-                [() => {
-                    console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
-                }]
-            ])
+            run$([doProjectDates, doProjectLaunchCheck, doProjectLaunchParams(eInfo)], () => {
+                console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
+            })
         }
     })
     on(getTriggers(null, "", {project: ["projectscope", "projectlaunchmod", "projectlaunchdiffmod", ..._.flatten(_.map([1, 2, 3], v => [`projectteamwork${v}`]))]}), eInfo => {
         if (eInfo.sourceType !== "sheetworker") {
             console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
             log(`(Diff, LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
-            doProjectDiff([
-                [doProjectLaunchCheck],
-                [doProjectLaunchParams, eInfo],
-                [() => {
-                    console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
-                }]
-            ])
+            run$([doProjectDiff, doProjectLaunchCheck, doProjectLaunchParams(eInfo)], () => {
+                console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
+            })
         }
     })
     on(getTriggers(null, "", {project: ["projectlaunchtrait1", "projectlaunchtrait1_name", "projectlaunchtrait2", "projectlaunchtrait2_name"]}), eInfo => {
         if (eInfo.sourceType !== "sheetworker") {
             console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
             log(`(LCheck, LParams) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
-            doProjectLaunchCheck([
-                [doProjectLaunchParams, eInfo],
-                [() => {
-                    console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
-                }]
-            ])
+            run$([doProjectLaunchCheck, doProjectLaunchParams(eInfo)], () => {
+                console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
+            })
         }
     })
     on(getTriggers(null, "", {project: ["projectlaunchresults"]}), eInfo => {
         if (eInfo.sourceType !== "sheetworker") {
             console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
             log(`(Diff, LCheck, LParams, Stake, Counter) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
-            doProjectDiff([
-                [doProjectLaunchCheck],
-                [doProjectLaunchParams, eInfo],
-                [doProjectStake],
-                [doProjectCounter],
-                [() => {
-                    console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
-                }]
-            ])
+            run$([doProjectDiff, doProjectLaunchCheck, doProjectLaunchParams(eInfo), doProjectStake, doProjectCounter], () => {
+                console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
+            })
         }
     })
     on(getTriggers(null, "", {project: _.flatten(_.map([1, 2, 3, 4, 5, 6], v => [`projectstake${v}`, `projectstake${v}_name`]))}), eInfo => {
         if (eInfo.sourceType !== "sheetworker") {
             console.log("[‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗‗]")
             log(`(Stake) ${parseEInfo(eInfo)}`, "DO PROJECT EVENT")
-            doProjectStake([
-                [() => {
-                    console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
-                }]
-            ])
+            run$([doProjectStake], () => {
+                console.log("[‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾]")
+            })
         }
     })
     on("change:repeating_project:schemetypeobj_toggle change:repeating_project:schemetypeproj_toggle change:repeating_project:schemetypemem_toggle change:repeating_project:schemetypeevent_toggle", (eInfo) =>{
@@ -1664,7 +1764,8 @@
             repeating_project_schemetypeevent_toggle: eInfo.newValue
         })
         // doSchemeSelection()
-    })    
+    })
+
     on("change:repeating_project:objectivedate", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker") {
             log("", `████ CHANGE DETECTED: OBJECTIVEDATE ████<br>${JSON.stringify(eInfo)}`)
@@ -1676,7 +1777,8 @@
                 setAttrs({"repeating_project_archiveobjective_toggle": 0})
             }
         }
-    })
+    }) 
+
     on("change:repeating_project:memoriamdate change:repeating_project:memoriamresult", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker") {
             log("", "████ CHANGE DETECTED: MEMORIAMDATE/RESULT ████")
@@ -1692,6 +1794,7 @@
             })
         }
     })
+
     on("change:repeating_project:memoriamdiff", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker") {
             log("", "████ CHANGE DETECTED: MEMORIAMDIFF ████")
@@ -1709,6 +1812,7 @@
             })
         }
     })
+
     on("change:repeating_project:eventdate", (eInfo) => {
         if (eInfo.sourceType !== "sheetworker") {
             log("", "████ CHANGE DETECTED: EVENTDATE ████")
@@ -1721,7 +1825,7 @@
             }
         }
     }) 
-    // #endregion
+// #endregion
 
     // #region UPDATE: Timeline
     
@@ -1756,7 +1860,7 @@
     // #endregion
 
     // #region UPDATE: Experience
-    const doEXP = () => {
+    const doEXP = callback => {
         const attrList = {},
             attrArray = {"earnedxp": [], "earnedxpright": [], "spentxp": []},
             funcName = "doEXP"
@@ -1839,6 +1943,8 @@
                         attrList.xp_summary = `${ATTRS.xp_earnedtotal} XP Earned${spentTotal > 0 ? ` - ${spentTotal} XP Spent =  ${parseInt(ATTRS.xp_earnedtotal) - spentTotal} XP Remaining` : ""}`
                         setAttrs(attrList, {}, () => {
                             log(`Setting Attributes: ${JSON.stringify(attrList)}`, funcName)
+                            if (_.isFunction(callback))
+                                callback(null)
                         })
                     })
                 })
@@ -1857,45 +1963,46 @@
 
     // #region UPDATE: Dice Roller
     const doRollRepRefs = () => {
-            const attrArray = [],
-                repStatData = Object.assign({}, DISCREPREFS, _.mapObject(ADVREPREFS, v => v.filter(x => !x.endsWith("_details")))),
-                repSecs = Object.keys(repStatData),
-                getRepAttrs = () => {
-                    if (repSecs.length) {
-                        const repSec = repSecs.shift()
-                        getSectionIDs(repSec, rowIDs => {
-                            for (const rowID of rowIDs)
-                                for (const statName of repStatData[repSec])
-                                    attrArray.push(`repeating_${repSec}_${rowID}_${statName}`)
-                            getRepAttrs()
-                        })
-                    } else {
-                        const newRepStats = attrArray.join(",")
+            const attrList = {},
+                $funcs = [
+                    $getRepAttrs(Object.assign(DISCREPREFS, ADVREPREFS)),
+                    (attrs, cBack) => {
                         getAttrs(["repstats"], ATTRS => {
-                            if (newRepStats !== ATTRS.repstats)
-                                setAttrs({repstats: newRepStats})
+                            if (!_.isEqual(
+                                _.compact(ATTRS.repstats.split(",")),
+                                _.reject(attrs, v => v.includes("_details"))
+                            ))
+                                attrList.repstats = _.reject(attrs, v => v.includes("_details")).join(",")
+                            cBack(null, attrList)
                         })
-                    }
-                }
-            getRepAttrs()
+                    },
+                    $set
+                ]
+            run$($funcs)
         },
+
+        $doRolls = (targetAttr, opts = {}) => cback => doRolls(targetAttr, opts, cback),
         doRolls = (targetAttr, opts = {}) => {
-            const [attrArray, attrList] = [[...ALLATTRS], {}],
-                repStatData = Object.assign({}, DISCREPREFS, _.mapObject(ADVREPREFS, v => v.filter(x => !x.endsWith("_details")))),
+            const [repAttrs, attrList] = [[], {}],
+                repStatData = Object.assign({}, DISCREPREFS, ADVREPREFS),
                 repSecs = Object.keys(repStatData),
-                getRepAttrs = () => {
-                    if (repSecs.length) {
-                        const repSec = repSecs.shift()
+                getRepAttrs = (repSec) => {
+                    if (repSec) 
                         getSectionIDs(repSec, rowIDs => {
-                            for (const rowID of rowIDs)
-                                for (const statName of repStatData[repSec])
-                                    attrArray.push(`repeating_${repSec}_${rowID}_${statName}`)
-                            getRepAttrs()
+                            repAttrs.push(...rowIDs.map(rowID => _.flatten(repStatData[repSec].filter(repStat => !repStat.endsWith("_details")).map(repStat => `repeating_${repSec}_${rowID}_${repStat}`))))
+                            log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
+                            
+                            ... mapped to: ${JSON.stringify(repAttrs)}`)
+                            getRepAttrs(repSecs.shift())
                         })
-                    } else { 
-                        getAttrs([attrArray], ATTRS => {
+                    else 
+                        getAttrs([...ALLATTRS, ..._.flatten(repAttrs)], ATTRS => {
                             log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true)
-                            const [rArray, prevRArray, clearAttrs] = [[], [], {}],
+                            const [rArray, prevRArray, clearAttrs] = [
+                                    [],
+                                    [],
+                                    {}
+                                ],
                                 stat = isIn(targetAttr, ROLLFLAGS.all) || trimAttr(isIn(targetAttr, ATTRS)),
                                 checkType = attr => {
                                     // Returns type of stat sent in as parameter.
@@ -2103,9 +2210,8 @@
 
                             setAttrs(attrList)
                         })
-                    }
                 }
-            getRepAttrs()
+            getRepAttrs(repSecs.shift())
         }
 
     on(`sheet:opened ${getTriggers(null, "", [..._.keys(DISCREPREFS), ..._.keys(ADVREPREFS)])}`, eInfo => {
