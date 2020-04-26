@@ -26,7 +26,8 @@ const Session = (() => {
             // STATE.REF.SceneAlarms = []
 
             // STATE.REF.SessionScribes = ["TeatimeRationale", "Thaumaterge", "PixelPuzzler", "banzai", "Hastur"]
-
+            // STATE.REF.customLocs["Queen's Landing Hallway"].district = "Cabbagetown"
+            // STATE.REF.customLocs["Queen's Landing Lobby"].district = "Cabbagetown"
             /*
             STATE.REF.customLocs = {
                 ["Site: Orchid"]: {
@@ -120,8 +121,8 @@ const Session = (() => {
                     STATE.REF.locationRecord[mode] = D.Clone(STATE.REF.curLocation)
             }
             setPlayerPage()
-            verifyStateIntegrity() 
-
+            verifyStateIntegrity()
+            buildLocationMenus()
         },
     // #endregion
 
@@ -203,7 +204,17 @@ const Session = (() => {
                 }
                 case "set": {
                     switch(D.LCase(call = args.shift())) {
+                        case "menu": case "menus": buildLocationMenus(); break
                         case "act": STATE.REF.curAct = D.Int(args[0]) || STATE.REF.curAct; break
+                        case "generic": {
+                            if (!args.length) {
+                                D.Alert("Syntax: <b>!sess set generic choleric+|When the Levee Breaks|Any length of aspect text as long as it doesn't contain a pipe.</b>")
+                            } else {
+                                const [siteRes, siteSong, siteAspect] = args.join(" ").split("|")
+                                setGenericSiteDetails(siteRes, siteSong, siteAspect)
+                            }
+                            break
+                        }
                         case "pointer": {
                             const pointerObj = Media.GetImg("MapIndicator_Base"),
                                 [siteRef, siteName] = getActiveSite(true)
@@ -498,6 +509,7 @@ const Session = (() => {
             
             STATE.REF.curLocation = _.omit(STATE.REF.curLocation, (v, k) => !posNames.includes(k))
         },
+        MENUHTML = {},
     // #endregion
 
     // #region Getting & Setting Session Data
@@ -725,6 +737,125 @@ const Session = (() => {
             Districts: [],
             Sites: []
         },
+        buildLocationMenus = () => {
+            const districtMenuData = {
+                    rows: [
+                        ..._.chain(["blank", "same", "reset"]).
+                            map(x => ({name: x, command: `!reply ${x}`})).
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: `${Math.floor(C.CHATWIDTH * 0.33)-3}px`, fontSize: "12px", bgColor: C.COLORS.midgold, buttonTransform: "none"}})).
+                            value(),
+                        ..._.chain(STATE.REF.FavoriteDistricts).
+                            map(x => ({name: x, command: `!reply ${x}`})).
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: `${Math.floor(C.CHATWIDTH * 0.33)-3}px`, fontSize: "12px", bgColor: C.COLORS.purple, buttonTransform: "none"}})).
+                            value(),
+                        ..._.chain(Object.keys(C.DISTRICTS)).
+                            map(x => ({name: x, command: `!reply ${x}`})).
+                            groupBy((x, i) => Math.floor(i / 3)).
+                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: `${Math.floor(C.CHATWIDTH * 0.33)-3}px`, fontSize: "12px", bgColor: C.COLORS.darkgreen, buttonTransform: "none"}})).
+                            value()
+                    ]
+                },
+                siteMenuFirstRows = _.compact([
+                    ..._.chain(["blank", "same"]).
+                        map(x => ({name: x, command: `!reply site@${x}`})).
+                        groupBy((x, i) => Math.floor(i / 3)).
+                        map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: `${Math.floor(C.CHATWIDTH * 0.33)-3}px`, fontSize: "12px", bgColor: C.COLORS.midgold, buttonTransform: "none"}})).
+                        value(),
+                    "~~~favsitescode~~~",
+                    "~~~namedsitescode~~~",
+                    "~~~distsitescode~~~",                        
+                    ..._.chain(Object.keys(C.SITES).filter(x => C.SITES[x].district === null)).
+                        map(x => ({name: x, command: `!reply site@${x}`})).
+                        groupBy((x, i) => Math.floor(i / 3)).
+                        map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: `${Math.floor(C.CHATWIDTH * 0.33)-3}px`, fontSize: "12px", bgColor: C.COLORS.blue, buttonTransform: "none"}})).
+                        value()
+                ]),
+                siteMenuFinalRows = [
+                    ..._.chain({
+                        ["RENAME"]: ["!reply name@?{Site Name}", {}],
+                    }).
+                        mapObject((v, k) => v ? {name: k, command: v[0], styles: v[1]} : 0).
+                        values().
+                        groupBy((x, i) => Math.floor(i / 3)).
+                        map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: `${Math.floor(C.CHATWIDTH * 0.66)-3}px`, fontSize: "12px", bgColor: C.COLORS.brightbrightgrey, color: C.COLORS.black, fontWeight: "bold"}})).
+                        value(),
+                    ..._.chain({
+                        ["FINISHED!"]: ["!reply done", {}],
+                        ["RESET"]: ["!reply reset", {bgColor: C.COLORS.brightred, color: C.COLORS.white}]
+                    }).
+                        mapObject((v, k) => v ? {name: k, command: v[0], styles: v[1]} : 0).
+                        values().
+                        groupBy((x, i) => Math.floor(i / 3)).
+                        map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: `${Math.floor(C.CHATWIDTH * 0.5)-10}px`, buttonHeight: "18px", fontSize: "14px", fontWeight: "bold", color: C.COLORS.black, bgColor: C.COLORS.puregreen}})).
+                        value()
+                ]
+            MENUHTML.DistrictMenuFirst = D.CommandMenuHTML(Object.assign({}, districtMenuData, {title: "District"}))
+            MENUHTML.DistrictMenuSecond = D.CommandMenuHTML(Object.assign({}, districtMenuData, {title: "District RIGHT"}))
+            MENUHTML.SiteMenuFirst = D.CommandMenuHTML({
+                title: "Site (~~~districtname~~~)",
+                rows: [
+                    ...siteMenuFirstRows,
+                    ..._.chain({
+                        ["<<< subLocs"]: ["!reply call@sublocs", {}],
+                        ["Loc #2 >>>"]: ["!reply call@district", {}]
+                    }).
+                        mapObject((v, k) => v ? {name: k, command: v[0], styles: v[1]} : 0).
+                        values().
+                        groupBy((x, i) => Math.floor(i / 3)).
+                        map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: `${Math.floor(C.CHATWIDTH * 0.4)-3}px`, fontSize: "12px", bgColor: C.COLORS.palepurple, color: C.COLORS.black, fontWeight: "bold"}})).
+                        value(),
+                    ...siteMenuFinalRows
+                ]
+            })
+            MENUHTML.SiteMenuSecond = D.CommandMenuHTML({
+                title: "Site RIGHT (~~~districtname~~~)",
+                rows: [
+                    ...siteMenuFirstRows,
+                    ..._.chain({
+                        ["<<< Left"]: ["!reply focus@left", {width: "30%", bgColor: STATE.REF.sceneFocus === "l" && C.COLORS.gold || C.COLORS.grey}],
+                        [">> Both <<"]: ["!reply focus@center", {width: "30%", bgColor: STATE.REF.sceneFocus === "c" && C.COLORS.gold || C.COLORS.grey}],
+                        ["Right >>>"]: ["!reply focus@right", {width: "30%", bgColor: STATE.REF.sceneFocus === "r" && C.COLORS.gold || C.COLORS.grey}]
+                    }).
+                        mapObject((v, k) => v ? {name: k, command: v[0], styles: v[1]} : 0).
+                        values().
+                        groupBy((x, i) => Math.floor(i / 3)).
+                        map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: `${Math.floor(C.CHATWIDTH * 0.4)-3}px`, fontSize: "12px", bgColor: C.COLORS.palepurple, color: C.COLORS.black, fontWeight: "bold"}})).
+                        value(),
+                    ...siteMenuFinalRows
+                ]
+            })
+        },
+        getSiteMenuCode = (districtName, isSecondSite = false) => {
+            districtName = VAL({array: districtName}) ? districtName[0] : districtName
+            DB({districtName}, "getSiteMenuCode")
+            const favSites = STATE.REF.FavoriteSites.filter(x => (C.SITES[x] || STATE.REF.customLocs[x]).district === null || (C.SITES[x] || STATE.REF.customLocs[x]).district.includes(districtName)),
+                distSites = Object.keys(C.SITES).filter(x => C.SITES[x].district && C.SITES[x].district.includes(districtName)),
+                namedSites = Object.keys(STATE.REF.customLocs).filter(x => !STATE.REF.customLocs[x].district || STATE.REF.customLocs[x].district === districtName)
+            DB({favSites, distSites, namedSites}, "getSiteMenuCode")
+            const favSitesCode = _.chain(favSites).
+                    map(x => ({name: x, command: `!reply site@${x}`})).
+                    groupBy((x, i) => Math.floor(i / 3)).
+                    map(x => D.CommandMenuHTML({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.purple, buttonTransform: "none"}})).
+                    value().join(""),
+                distSitesCode = _.chain(distSites).
+                    map(x => ({name: x, command: `!reply site@${x}`})).
+                    groupBy((x, i) => Math.floor(i / 3)).
+                    map(x => D.CommandMenuHTML({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", color: C.COLORS.black, bgColor: C.COLORS.brightblue, buttonTransform: "none"}})).
+                    value().join(""),
+                namedSitesCode = _.chain(namedSites).
+                    map(x => ({name: x, command: `!reply site@${x}`})).
+                    groupBy((x, i) => Math.floor(i / 2)).
+                    map(x => D.CommandMenuHTML({type: "ButtonLine", contents: x, buttonStyles: {width: "45%", fontSize: "12px", color: C.COLORS.black, bgColor: C.COLORS.brightgold, buttonTransform: "none"}})).
+                    value().join("")
+            // DB({distSitesCode: JSON.stringify(_.escape(distSitesCode))}, "getSiteMenuCode")
+            return (isSecondSite ? MENUHTML.SiteMenuSecond : MENUHTML.SiteMenuFirst).
+                replace(new RegExp("~~~districtname~~~", "gui"), districtName).
+                replace(new RegExp("~~~favsitescode~~~", "gui"), favSitesCode).
+                replace(new RegExp("~~~namedsitescode~~~", "gui"), namedSitesCode).
+                replace(new RegExp("~~~distsitescode~~~", "gui"), distSitesCode)
+        },
         isLocCentered = () => {
             const activeLocs = Object.keys(STATE.REF.curLocation).filter(x => x !== "subLocs" && STATE.REF.curLocation[x][0] !== "blank")
             if (activeLocs.includes("DistrictCenter") && !activeLocs.includes("SiteLeft") && !activeLocs.includes("SiteRight"))
@@ -787,10 +918,16 @@ const Session = (() => {
             const locKey = D.LCase(locRef).charAt(0),
                 locPos = {c: "SiteCenter", l: "SiteLeft", r: "SiteRight"}[locKey]
             DB({locRef, siteRef, siteName, locKey, locPos}, "setSiteImg")
+            Media.ToggleText(`SiteGeneric${locPos.replace(/Site/gu, "")}Song`, false)
+            Media.ToggleText(`SiteGeneric${locPos.replace(/Site/gu, "")}Res`, false)
+            Media.ToggleText(`SiteGeneric${locPos.replace(/Site/gu, "")}Aspect`, false)
             if (!siteRef || siteRef === "blank") {
                 Media.ToggleImg(locPos, false)
                 Media.ToggleImg(`SiteBar${locPos.replace(/Site/gu, "")}`, false)
                 Media.ToggleText(`SiteName${locPos.replace(/Site/gu, "")}`, false)
+                Media.ToggleText(`SiteGeneric${locPos.replace(/Site/gu, "")}Res`, false)
+                Media.ToggleText(`SiteGeneric${locPos.replace(/Site/gu, "")}Song`, false)
+                Media.ToggleText(`SiteGeneric${locPos.replace(/Site/gu, "")}Aspect`, false)
             } else {
                 Media.ToggleImg(locPos, true)
                 Media.SetImg(locPos, siteRef)
@@ -806,9 +943,53 @@ const Session = (() => {
                 Media.ToggleImg(`SiteBar${locPos}`, true)
                 Media.ToggleText(`SiteName${locPos}`, true)
                 Media.SetText(`SiteName${locPos}`, siteName)
+                if (siteRef === "GENERIC") {
+                    const siteData = STATE.REF.customLocs[siteName]
+                    if (siteData) {
+                        if (siteData.res) {                            
+                            Media.ToggleText(`SiteGeneric${locPos}Res`, true)
+                            Media.SetText(`SiteGeneric${locPos}Res`, siteData.res)
+                        } else {
+                            Media.ToggleText(`SiteGeneric${locPos}Res`, false)
+                        }                        
+                        if (siteData.song) {                            
+                            Media.ToggleText(`SiteGeneric${locPos}Song`, true)
+                            Media.SetText(`SiteGeneric${locPos}Song`, siteData.song)
+                        } else {
+                            Media.ToggleText(`SiteGeneric${locPos}Song`, false)
+                        }                        
+                        if (siteData.aspect) {                            
+                            Media.ToggleText(`SiteGeneric${locPos}Aspect`, true)
+                            Media.SetText(`SiteGeneric${locPos}Aspect`, siteData.aspect)
+                        } else {
+                            Media.ToggleText(`SiteGeneric${locPos}Aspect`, false)
+                        }
+                    }
+                } else {
+                    Media.ToggleText(`SiteGeneric${locPos}Res`, false)
+                    Media.ToggleText(`SiteGeneric${locPos}Song`, false)
+                    Media.ToggleText(`SiteGeneric${locPos}Aspect`, false)                    
+                }
             } else {
                 Media.ToggleImg(`SiteBar${locPos}`, false)
                 Media.ToggleText(`SiteName${locPos}`, false)
+                Media.ToggleText(`SiteGeneric${locPos}Res`, false)
+                Media.ToggleText(`SiteGeneric${locPos}Song`, false)
+                Media.ToggleText(`SiteGeneric${locPos}Aspect`, false)
+            }
+        },
+        setGenericSiteDetails = (siteRes, siteSong, siteAspect) => {
+            const [siteRef, siteName] = getActiveSite(true),
+                [locRef] = getActivePositions().filter(x => x.includes("Site")).map(x => x.replace(/Site/gu, "")),
+                siteData = STATE.REF.customLocs[siteName]
+            DB({siteData, activePositions: getActivePositions(), locRef, siteRef, siteName}, "setGenericSiteDetails")
+            if (!siteData || getActivePositions().length !== 2 || !locRef || !siteRef || !siteName || siteRef !== "GENERIC" || !["Left", "Right", "Center"].includes(locRef)) {
+                D.Alert("The ACTIVE Site must be GENERIC with a CUSTOM NAME set and STORED in STATE.REF.customLocs.", "setGenericSiteDetails")
+            } else {
+                STATE.REF.customLocs[siteName].res = siteRes ? D.Capitalize(siteRes).replace(/([+-])$/gu, " $1") : siteData.res
+                STATE.REF.customLocs[siteName].song = siteSong ? D.Capitalize(siteSong, true) : siteData.song
+                STATE.REF.customLocs[siteName].aspect = siteAspect || siteData.aspect
+                setSiteName(locRef, "GENERIC", siteName)
             }
         },
         setSubLocImg = (locRef, subLocRef) => {
@@ -918,30 +1099,8 @@ const Session = (() => {
         distCommandMenu = () => {
             DB({["Into District PENDINGLOCCOMMAND:"]: PENDINGLOCCOMMAND}, "distCommandMenu")
             PENDINGLOCCOMMAND.workingIndex = PENDINGLOCCOMMAND.Districts.length
-            const genericButtons = ["blank", "same", "reset"],
-                favDistricts = STATE.REF.FavoriteDistricts,
-                distNames = Object.keys(C.DISTRICTS)
             D.CommandMenu(
-                {  
-                    title: PENDINGLOCCOMMAND.workingIndex === 1 && "District RIGHT" || "District",
-                    rows: [
-                        ..._.chain(genericButtons).
-                            map(x => ({name: x, command: `!reply ${x}`})).
-                            groupBy((x, i) => Math.floor(i / 3)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.midgold, buttonTransform: "none"}})).
-                            value(),
-                        ..._.chain(favDistricts).
-                            map(x => ({name: x, command: `!reply ${x}`})).
-                            groupBy((x, i) => Math.floor(i / 3)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.purple, buttonTransform: "none"}})).
-                            value(),
-                        ..._.chain(distNames).
-                            map(x => ({name: x, command: `!reply ${x}`})).
-                            groupBy((x, i) => Math.floor(i / 3)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.darkgreen, buttonTransform: "none"}})).
-                            value()
-                    ]
-                },
+                PENDINGLOCCOMMAND.workingIndex === 1 && MENUHTML.DistrictMenuSecond || MENUHTML.DistrictMenuFirst,
                 (commandString) => {
                     const cmdIndex = PENDINGLOCCOMMAND.workingIndex
                     switch (commandString) {
@@ -968,73 +1127,10 @@ const Session = (() => {
         },
         siteCommandMenu = () => {
             DB({["Into Site PENDINGLOCCOMMAND"]: PENDINGLOCCOMMAND}, "siteCommandMenu")
-            const [distName] = PENDINGLOCCOMMAND.Districts[PENDINGLOCCOMMAND.workingIndex],
-                genericSites = ["blank", "same"],
-                favSites = STATE.REF.FavoriteSites.filter(x => (C.SITES[x] || STATE.REF.customLocs[x]).district === null || (C.SITES[x] || STATE.REF.customLocs[x]).district.includes(distName)),
-                distSites = Object.keys(C.SITES).filter(x => C.SITES[x].district && C.SITES[x].district.includes(distName)),
-                anySites = Object.keys(C.SITES).filter(x => C.SITES[x].district === null),
-                namedSites = Object.keys(STATE.REF.customLocs).filter(x => !STATE.REF.customLocs[x].district || STATE.REF.customLocs[x].district === distName)
+            const siteMenuCode = getSiteMenuCode(PENDINGLOCCOMMAND.Districts[PENDINGLOCCOMMAND.workingIndex], PENDINGLOCCOMMAND.workingIndex === 1)
+            DB({siteMenuCode: JSON.stringify(siteMenuCode)}, "siteCommandMenu")
             D.CommandMenu(
-                {
-                    title: PENDINGLOCCOMMAND.workingIndex === 1 && `Site RIGHT (${distName})` || `Site (${distName})`,
-                    rows: _.compact([
-                        ..._.chain(genericSites).
-                            map(x => ({name: x, command: `!reply site@${x}`})).
-                            groupBy((x, i) => Math.floor(i / 3)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.midgold, buttonTransform: "none"}})).
-                            value(),
-                        ..._.chain(favSites).
-                            map(x => ({name: x, command: `!reply site@${x}`})).
-                            groupBy((x, i) => Math.floor(i / 3)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.purple, buttonTransform: "none"}})).
-                            value(),
-                        ..._.chain(namedSites).
-                            map(x => ({name: x, command: `!reply site@${x}`})).
-                            groupBy((x, i) => Math.floor(i / 2)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "45%", fontSize: "12px", color: C.COLORS.black, bgColor: C.COLORS.brightgold, buttonTransform: "none"}})).
-                            value(),
-                        ..._.chain(distSites).
-                            map(x => ({name: x, command: `!reply site@${x}`})).
-                            groupBy((x, i) => Math.floor(i / 3)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", color: C.COLORS.black, bgColor: C.COLORS.brightblue, buttonTransform: "none"}})).
-                            value(),
-                        ..._.chain(anySites).
-                            map(x => ({name: x, command: `!reply site@${x}`})).
-                            groupBy((x, i) => Math.floor(i / 3)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "30%", fontSize: "12px", bgColor: C.COLORS.blue, buttonTransform: "none"}})).
-                            value(),
-                        ..._.chain(PENDINGLOCCOMMAND.workingIndex === 1 ? {
-                            ["<<< Left"]: ["!reply focus@left", {width: "30%", bgColor: STATE.REF.sceneFocus === "l" && C.COLORS.gold || C.COLORS.grey}],
-                            [">> Both <<"]: ["!reply focus@center", {width: "30%", bgColor: STATE.REF.sceneFocus === "c" && C.COLORS.gold || C.COLORS.grey}],
-                            ["Right >>>"]: ["!reply focus@right", {width: "30%", bgColor: STATE.REF.sceneFocus === "r" && C.COLORS.gold || C.COLORS.grey}]
-                        } : {
-                            ["<<< subLocs"]: ["!reply call@sublocs", {}],
-                            ["Loc #2 >>>"]: ["!reply call@district", {}]
-                        }).
-                            mapObject((v, k) => v ? {name: k, command: v[0], styles: v[1]} : 0).
-                            values().
-                            groupBy((x, i) => Math.floor(i / 3)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "40%", fontSize: "12px", bgColor: C.COLORS.palepurple, color: C.COLORS.black, fontWeight: "bold"}})).
-                            value(),
-                        ..._.chain({
-                            ["RENAME"]: ["!reply name@?{Site Name}", {}],
-                        }).
-                            mapObject((v, k) => v ? {name: k, command: v[0], styles: v[1]} : 0).
-                            values().
-                            groupBy((x, i) => Math.floor(i / 3)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "60%", fontSize: "12px", bgColor: C.COLORS.brightbrightgrey, color: C.COLORS.black, fontWeight: "bold"}})).
-                            value(),
-                        ..._.chain({
-                            ["FINISHED!"]: ["!reply done", {}],
-                            ["RESET"]: ["!reply reset", {bgColor: C.COLORS.brightred, color: C.COLORS.white}]
-                        }).
-                            mapObject((v, k) => v ? {name: k, command: v[0], styles: v[1]} : 0).
-                            values().
-                            groupBy((x, i) => Math.floor(i / 3)).
-                            map(x => ({type: "ButtonLine", contents: x, buttonStyles: {width: "47%", buttonHeight: "18px", fontSize: "14px", fontWeight: "bold", color: C.COLORS.black, bgColor: C.COLORS.puregreen}})).
-                            value()
-                    ])
-                },
+                siteMenuCode,
                 (commandString) => {
                     const params = D.ParseToObj(commandString, "|", "@"),
                         cmdIndex = PENDINGLOCCOMMAND.workingIndex

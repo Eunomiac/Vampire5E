@@ -461,9 +461,11 @@
 	}
 
 	.charsheet input.sheet-tab0:checked~div.sheet-settings {
-		margin-top: -18px;
-		margin-bottom: -175px;
 		display: block;
+	}
+
+	.charsheet input.sheet-tab0:checked~div.sheet-pagecontainer.sheet-marquee {
+		display: none;
 	}
 
 	.charsheet input.sheet-settingstab,
@@ -1379,6 +1381,12 @@
 	margin-top: 90px;
 	margin-bottom: -90px;
 }*/
+	.charsheet div.sheet-pagecontainer.sheet-settings {
+		position: relative;
+		top: 90px;
+		height: 300px;
+		margin: -18px 0px -320px 0px;
+	}
 
 	.charsheet div.sheet-typeline {
 		height: 25px;
@@ -1387,11 +1395,6 @@
 		display: inline-block;
 		position: relative;
 		top: 209px;
-	}
-
-	.charsheet div.sheet-settings div.sheet-topcol {
-		position: relative;
-		top: 140px;
 	}
 
 	.charsheet div.sheet-settings span.sheet-header3 {

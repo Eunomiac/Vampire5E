@@ -113,6 +113,10 @@ const D = (() => {
                         }
                         case "get": {
                             switch(D.LCase(call = args.shift())) {
+                                case "sites": {
+                                    sendToGM(jStr(C.SITES))
+                                    break
+                                }
                                 case "stacklog": {
                                     sendToGM(jStrH(STACKLOG.join("")), "STACKLOG")
                                     break
@@ -461,7 +465,7 @@ const D = (() => {
                         if (_.isString(returnVal))
                             returnVal = `${returnVal}`.
                                 replace(/[\n\r]/gu, "ϙNϙ").
-                                replace(/<(.*?)>/gu, x => x.replace(/"/gu, "ϙHϙ").replace(/ϙNϙ/gu, "").replace(/\s\s+/gu, " ")). // Hides HTML-code quotes so they aren't replaced AND strips line breaks from inside HTML tags.
+                                replace(/<(.*?)>/gu, x => x.replace(/"/gu, "ϙHϙ").replace(/ϙNϙ/gu, "\n").replace(/\s\s+/gu, " ")). // Hides HTML-code quotes so they aren't replaced AND strips line breaks from inside HTML tags.
                                 replace(/"/gu, ""). // Removes all double-quotes.
                                 // replace(/[\t\n\r]/gu, "").
                                 // replace(/\\/gu, ""). // Strips tabs and escape slashes.
@@ -901,54 +905,73 @@ const D = (() => {
                         margin: "7px 0px 7px 0px"
                     }
                 }
-            DB({menuData}, "getCommandMenuHTML")
+            if (VAL({string: menuData}))
+                DB({menuString: menuData}, "getCommandMenuHTML")
+            else
+                DB({menuTitle: D.JS(menuData.title)}, "getCommandMenuHTML")
+            // DB({menuData}, "getCommandMenuHTML")
             const dbData = {rows: []},
                 parseSection = (sectionData) => {
                     const sectionHTML = []
-                    for (const rowData of sectionData.rows)
-                        if (["Title", "Header", "Body", "ClearBody"].includes(rowData.type)) {
-                            sectionHTML.push(C.HTML[rowData.type](rowData.contents, Object.assign({}, customStyles[rowData.type] || {}, rowData.styles || {})))
-                        } else if (rowData.type === "ButtonLine") {
-                            try {
-                                const buttonsCode = [],
-                                    totalFlexEntities = rowData.contents.filter(x => VAL({list: x}) && (!x.styles || !x.styles.width) || VAL({number: x}) && x === 0).length,
-                                    strictSpacerTotWidth = rowData.contents.map(x => VAL({list: x}) && "text" in x ? D.Int(Object.assign({width: "40px"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(/%|(px)/gu, "")) : x).filter(x => VAL({number: x})).reduce((tot, x) => tot + x + 2, 0) || 0,
-                                    // strictSpacerTotWidth = Math.floor(C.CHATWIDTH * (strictSpacerTotPercentWidth / 100)),
-                                    totFlexSpacing = C.CHATWIDTH - strictSpacerTotWidth,
-                                    flexEntityWidth = Math.floor(totFlexSpacing / totalFlexEntities)
-                                DB({rowDataContents: D.JS(rowData.contents)}, "getCommandMenuHTML")
-                                DB({totalFlexEntities, strictSpacerTotWidth, totFlexSpacing, flexEntityWidth}, "getCommandMenuHTML")
-                                rowData.contents = rowData.contents.map(x => VAL({number: x}) && x === 0 && flexEntityWidth || x)
-                                dbData.rows.push({strictSpacerTotWidth, totFlexSpacing, flexEntityWidth, rowData, entities: []})
-                                for (const entity of rowData.contents)
-                                    if (VAL({number: entity}))
-                                        buttonsCode.push(C.HTML.ButtonSpacer(`${D.Int(entity)}px`))
-                                    else if (VAL({list: entity}))
-                                        if ("text" in entity) {
-                                            buttonsCode.push(C.HTML.ButtonSubheader(entity.text, entity.styles))
-                                        } else {
-                                            if (entity.name.length > 12)
-                                                entity.name = entity.name.replace(/([\w\d]{10})[\w\d]*?(\d?\d?)$/gu, "$1...$2")
-                                            entity.command = entity.command.replace(/:/gu, "_colon_")
-                                            const button = new Button(entity.name, entity.command, Object.assign({}, {width: `${flexEntityWidth - 4}px`}, customStyles.Button || {}, rowData.buttonStyles || {}, entity.styles || {}))
-                                            buttonsCode.push(button.HTML)
-                                        }
-                                sectionHTML.push(C.HTML.ButtonLine(buttonsCode, rowData.styles || {}))
-                            } catch (errObj) {
-                                DB({["ERROR'ING ROWDATA"]: rowData, errObj}, "getCommandMenuHTML")
+                    if (VAL({list: sectionData})) {
+                        const parseRow = (rowData) => {
+                            if (VAL({string: rowData})) {
+                                sectionHTML.push(rowData)
+                                DB({rowDataIsString: rowData, sectionHTML}, "getCommandMenuHTML")
+                            } else if (["Title", "Header", "Body", "ClearBody"].includes(rowData.type)) {
+                                sectionHTML.push(C.HTML[rowData.type](rowData.contents, Object.assign({}, customStyles[rowData.type] || {}, rowData.styles || {})))
+                            } else if (rowData.type === "ButtonLine") {
+                                try {
+                                    const buttonsCode = [],
+                                        totalFlexEntities = rowData.contents.filter(x => VAL({list: x}) && (!x.styles || !x.styles.width) || VAL({number: x}) && x === 0).length,
+                                        strictSpacerTotWidth = rowData.contents.map(x => VAL({list: x}) && "text" in x ? D.Int(Object.assign({width: "40px"}, customStyles.ButtonSubheader || {}, x.styles || {}).width.replace(/%|(px)/gu, "")) : x).filter(x => VAL({number: x})).reduce((tot, x) => tot + x + 2, 0) || 0,
+                                        // strictSpacerTotWidth = Math.floor(C.CHATWIDTH * (strictSpacerTotPercentWidth / 100)),
+                                        totFlexSpacing = C.CHATWIDTH - strictSpacerTotWidth,
+                                        flexEntityWidth = Math.floor(totFlexSpacing / totalFlexEntities)
+                                    DB({rowDataContents: D.JS(rowData.contents)}, "getCommandMenuHTML")
+                                    // DB({totalFlexEntities, strictSpacerTotWidth, totFlexSpacing, flexEntityWidth}, "getCommandMenuHTML")
+                                    rowData.contents = rowData.contents.map(x => VAL({number: x}) && x === 0 && flexEntityWidth || x)
+                                    dbData.rows.push({strictSpacerTotWidth, totFlexSpacing, flexEntityWidth, rowData, entities: []})
+                                    for (const entity of rowData.contents)
+                                        if (VAL({number: entity}))
+                                            buttonsCode.push(C.HTML.ButtonSpacer(`${D.Int(entity)}px`))
+                                        else if (VAL({list: entity}))
+                                            if ("text" in entity) {
+                                                buttonsCode.push(C.HTML.ButtonSubheader(entity.text, entity.styles))
+                                            } else {
+                                                if (entity.name.length > 12)
+                                                    entity.name = entity.name.replace(/([\w\d ]{10})[\w\d ]*?(\d?\d?)$/gu, "$1...$2")
+                                                entity.command = entity.command.replace(/:/gu, "_colon_")
+                                                const button = new Button(entity.name, entity.command, Object.assign({}, {width: `${flexEntityWidth - 4}px`}, customStyles.Button || {}, rowData.buttonStyles || {}, entity.styles || {}))
+                                                buttonsCode.push(button.HTML)
+                                            }
+                                    sectionHTML.push(C.HTML.ButtonLine(buttonsCode, rowData.styles || {}))
+                                } catch (errObj) {
+                                    DB({["ERROR'ING ROWDATA"]: rowData, errObj}, "getCommandMenuHTML")
+                                }
+                            } else if (rowData.type === "Column") {
+                                const numColumns = rowData.contents.length,
+                                    colWidth = `${Math.floor(C.CHATWIDTH / numColumns)}px`,
+                                    colHTML = []
+                                for (const colData of rowData.contents)
+                                    colHTML.push(C.HTML.Column(parseSection(colData), Object.assign({width: colWidth}, rowData.style)))
+                                sectionHTML.push(C.HTML.SubBlock(colHTML.join("")))
                             }
-                        } else if (rowData.type === "Column") {
-                            const numColumns = rowData.contents.length,
-                                colWidth = `${Math.floor(C.CHATWIDTH / numColumns)}px`,
-                                colHTML = []
-                            for (const colData of rowData.contents)
-                                colHTML.push(C.HTML.Column(parseSection(colData), Object.assign({width: colWidth}, rowData.style)))
-                            sectionHTML.push(C.HTML.SubBlock(colHTML.join("")))
                         }
+                        if ("rows" in sectionData)
+                            sectionData.rows.forEach(x => parseRow(x))
+                        else
+                            parseRow(sectionData)
+                    } else {
+                        sectionHTML.push(sectionData)
+                        DB({sectionDataIsString: sectionData, sectionHTML}, "getCommandMenuHTML")
+                    }
                     return sectionHTML.join("")
                 }
             htmlRows.push(parseSection(menuData))
-            if (menuData.title)
+            if (!("rows" in menuData))
+                return htmlRows.join("")
+            if ("title" in menuData)
                 htmlRows.unshift(C.HTML.Title(menuData.title, Object.assign({}, customStyles.Title)))
                 // DB(dbData, "commandMenu")
             return C.HTML.Block(htmlRows.join(""), menuData.blockParams || {})

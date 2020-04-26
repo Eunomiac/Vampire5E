@@ -92,25 +92,8 @@ const Char = (() => {
                                 type: "ButtonLine",
                                 contents: x.length <= 3 ? [0, ...x, 0] : x
                             })).
-                            value(),                          
-                        ..._.chain(Session.SceneChars.filter(x => VAL({npc: x}))).
-                            map(x => {
-                                const charName = D.GetName(x, true)
-                                return {
-                                    name: charName,
-                                    command: `!reply selectchar@${x.id}, title@${charName}`,
-                                    styles: {
-                                        bgColor: C.COLORS.darkgrey,
-                                        color: C.COLORS.white
-                                    }
-                                }
-                            }).
-                            groupBy((x, i) => Math.floor(i / 5)).
-                            map(x => ({
-                                type: "ButtonLine",
-                                contents: x.length < 3 ? [0, ...x, 0] : x
-                            })).
-                            value()
+                            value(),
+                        "~~~npcbuttonrows~~~"                        
                     ]
                 }
             )
@@ -288,6 +271,7 @@ const Char = (() => {
 // awareness/intelligence+investigation/wits+investigation;postrait:Auspex;+ Heightened Senses (<.>)
 // 
 
+            
 
             // Storyteller Override:
         // STATE.REF.registry.TopLeft.playerID = D.GetPlayerID("Storyteller")
@@ -850,6 +834,7 @@ const Char = (() => {
                 // no default
             }
         },
+        onCharAdd = (charObj) => validateCharAttributes([charObj], true),
     // #endregion
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ END BOILERPLATE INITIALIZATION & CONFIGURATION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         REGISTRY = STATE.REF.registry,
@@ -1015,8 +1000,30 @@ const Char = (() => {
                 }
             )
         },
-        charSelectMenu = () => {   
-            let menuCode = MENUHTML.CharSelect.replace(new RegExp("~~~bgColor:.*?~~~", "gui"), C.COLORS.black)
+        charSelectMenu = (isGettingNPCs = false) => {
+            const npcButtonCode = isGettingNPCs ?
+                    _.chain(Session.SceneChars.filter(x => VAL({npc: x}))).
+                        map(x => {
+                            const charName = D.GetName(x, true)
+                            return {
+                                name: charName,
+                                command: `!reply selectchar@${x.id}, title@${charName}`,
+                                styles: {
+                                    bgColor: C.COLORS.darkgrey,
+                                    color: C.COLORS.white
+                                }
+                            }
+                        }).
+                        groupBy((x, i) => Math.floor(i / 5)).
+                        map(x => D.CommandMenuHTML({
+                            type: "ButtonLine",
+                            contents: x.length < 3 ? [0, ...x, 0] : x
+                        })).
+                        value().join("") :
+                    "",
+                menuCode = MENUHTML.CharSelect.
+                    replace(new RegExp("~~~bgColor:.*?~~~", "gui"), C.COLORS.black).
+                    replace(new RegExp("~~~npcbuttonrows~~~", "gui"), npcButtonCode)
             // for (const pc of D.GetChars("registered")) {
             //     const pcName = D.GetName(pc, true),
             //         isInScene = Session.IsInScene(pc)
@@ -2186,89 +2193,93 @@ const Char = (() => {
         validateCharAttributes = (charRefs, isChangingSheet = false) => {
             const [reportLines, nameChanges] = [[], []]
             for (const charObj of D.GetChars(charRefs))
-                if (VAL({charObj})) {
-                    const allAttrObjs = findObjs({
-                            _type: "attribute",
-                            _characterid: charObj.id
-                        }),
-                        repOrderAttrObjs = allAttrObjs.filter(x => x.get("name").startsWith("_reporder")),
-                        repAttrObjs = allAttrObjs.filter(x => x.get("name").startsWith("repeating_")),
-                        nonRepAttrObjs = allAttrObjs.filter(x => !x.get("name").startsWith("repeating_") && !x.get("name").startsWith("_reporder")),
-                        nonRepAttrValPairs = nonRepAttrObjs.map(x => [x, x.get("name")]), // .map(x => [x, x.get("name").replace(/repeating_(.{1,3}).*?_(-.*?)_(.*?)$/gu, "$1_$3")])
-                        repAttrValTrips = repAttrObjs.map(x => [x, x.get("name").split("_").slice(1)]).map(x => {x[1].splice(1,1); return [x[0], x[1][0], x[1].slice(1).join("_")]}) // [object, section, attrName]
-                    for (const attrPair of nonRepAttrValPairs)
-                        if (attrPair[1].length > 1 && attrPair[1] !== D.LCase(attrPair[1])) {
-                            nameChanges.push(`${attrPair[1]} !== ${D.LCase(attrPair[1])}, setting name to <b>${D.LCase(attrPair[1])}</b>.`)
-                            attrPair[1] = D.LCase(attrPair[1])
-                            if (isChangingSheet)
-                                attrPair[0].set("name", D.LCase(attrPair[1]))
+                try {
+                    if (VAL({charObj})) {
+                        const allAttrObjs = findObjs({
+                                _type: "attribute",
+                                _characterid: charObj.id
+                            }),
+                            repOrderAttrObjs = allAttrObjs.filter(x => x.get("name").startsWith("_reporder")),
+                            repAttrObjs = allAttrObjs.filter(x => x.get("name").startsWith("repeating_")),
+                            nonRepAttrObjs = allAttrObjs.filter(x => !x.get("name").startsWith("repeating_") && !x.get("name").startsWith("_reporder")),
+                            nonRepAttrValPairs = nonRepAttrObjs.map(x => [x, x.get("name")]), // .map(x => [x, x.get("name").replace(/repeating_(.{1,3}).*?_(-.*?)_(.*?)$/gu, "$1_$3")])
+                            repAttrValTrips = repAttrObjs.map(x => [x, x.get("name").split("_").slice(1)]).map(x => {x[1].splice(1,1); return [x[0], x[1][0], x[1].slice(1).join("_")]}) // [object, section, attrName]
+                        for (const attrPair of nonRepAttrValPairs)
+                            if (attrPair[1].length > 1 && attrPair[1] !== D.LCase(attrPair[1])) {
+                                nameChanges.push(`${attrPair[1]} !== ${D.LCase(attrPair[1])}, setting name to <b>${D.LCase(attrPair[1])}</b>.`)
+                                attrPair[1] = D.LCase(attrPair[1])
+                                if (isChangingSheet)
+                                    attrPair[0].set("name", D.LCase(attrPair[1]))
+                            }
+                        for (const repAttrTrip of repAttrValTrips) {
+                            const [, section, id, ...splitName] = repAttrTrip[0].get("name").split("_"),
+                                name = splitName.join("_"),
+                                deltaRepAttr = {section: false, name: false}
+                            if (section.length > 1 && section !== D.LCase(section)) {
+                                deltaRepAttr.section = D.LCase(section)
+                                repAttrTrip[1] = D.LCase(section)
+                            }
+                            if (name.length > 1 && name !== D.LCase(name)) {
+                                deltaRepAttr.name = D.LCase(name)
+                                repAttrTrip[2] = D.LCase(name)
+                            }
+                            if (deltaRepAttr.section || deltaRepAttr.name) {
+                                const newName = `repeating_${deltaRepAttr.section || section}_${id}_${deltaRepAttr.name || name}`
+                                nameChanges.push(`${repAttrTrip[0].get("name")} !== <b>${newName}</b>, setting repAttr.'`)
+                                if (isChangingSheet)
+                                    repAttrTrip[0].set("name", newName)
+                            }
                         }
-                    for (const repAttrTrip of repAttrValTrips) {
-                        const [, section, id, ...splitName] = repAttrTrip[0].get("name").split("_"),
-                            name = splitName.join("_"),
-                            deltaRepAttr = {section: false, name: false}
-                        if (section.length > 1 && section !== D.LCase(section)) {
-                            deltaRepAttr.section = D.LCase(section)
-                            repAttrTrip[1] = D.LCase(section)
+
+                        const obsoleteAttrValPairs = nonRepAttrValPairs.filter(x => !Object.keys(C.SHEETATTRS).map(xx => D.LCase(xx)).includes(D.LCase(x[1]))),
+                            obsoleteRepAttrValTrips = repAttrValTrips.filter(x => !Object.keys(C.REPATTRS).map(xx => D.LCase(xx)).includes(D.LCase(x[1]))),
+                            nonRepAttrNames = nonRepAttrValPairs.map(x => D.LCase(x[1])),
+                            missingDefaultAttrTrips = _.omit(D.Clone(C.SHEETATTRS), (v, k) => nonRepAttrNames.includes(D.LCase(k).replace(/_max/gu, "")))
+
+                        missingDefaultAttrTrips.marquee_toggle = 1
+
+                        if (isChangingSheet) {
+                            setAttrs(charObj.id, missingDefaultAttrTrips)
+                            for (const [attrObj] of obsoleteAttrValPairs)
+                                if (VAL({object: attrObj}))
+                                    attrObj.remove()
+                            for (const [attrObj] of obsoleteRepAttrValTrips)
+                                if (VAL({object: attrObj}))
+                                    attrObj.remove()
                         }
-                        if (name.length > 1 && name !== D.LCase(name)) {
-                            deltaRepAttr.name = D.LCase(name)
-                            repAttrTrip[2] = D.LCase(name)
-                        }
-                        if (deltaRepAttr.section || deltaRepAttr.name) {
-                            const newName = `repeating_${deltaRepAttr.section || section}_${id}_${deltaRepAttr.name || name}`
-                            nameChanges.push(`${repAttrTrip[0].get("name")} !== <b>${newName}</b>, setting repAttr.'`)
-                            if (isChangingSheet)
-                                repAttrTrip[0].set("name", newName)
-                        }
+                        reportLines.push(...[
+                            `<h4>${D.GetName(charObj)}:</h4>`,
+                            `${allAttrObjs.length} Attributes Found:`,
+                            `... ${repOrderAttrObjs.length} '_reporder' Attributes,`,
+                            `... ${repAttrValTrips.length} Repeating Attributes,`,
+                            `... ${nonRepAttrObjs.length} Non-Repeating, Non-RepOrder Attributes`,
+                            `... ... ${nonRepAttrValPairs.length} Attribute Name/Value Pairs Compiled.`,
+                            "",
+                            "<b><u>NAMES CHANGED</u>:</b>",
+                            `${nameChanges.length} Attributes With Uppercase Names:`,
+                            D.JS(nameChanges),
+                            "",
+                            "<b><u>OBSOLETE ATTRIBUTES REMOVED</u>:</b>",
+                            `${obsoleteAttrValPairs.length} OBSOLETE Attributes found and removed:`,
+                            D.JS(obsoleteAttrValPairs.map(x => x[1])),
+                            "",
+                            "<b><u>OBSOLETE REP-ATTRIBUTES REMOVED</u>:</b>",
+                            `${obsoleteRepAttrValTrips.length} OBSOLETE Attributes found and removed:`,
+                            D.JS(obsoleteRepAttrValTrips.map(x => `<b>${x[1]}</b>: ${x[2]}`)),
+                            "",
+                            "<b><u>DEFAULT ATTRIBUTES APPLIED</u>:</b>",
+                            D.JS(missingDefaultAttrTrips),
+                            "",
+                        /* "<b><u>_RepOrder Attributes</u>:</b>",
+                            D.JS(repOrderAttrObjs.map(x => x.get("name").replace(/_reporder_(repeating_)?/gu, ""))),
+                            "<b><u>Repeating Attributes</u>:</b>",
+                            D.JS(repAttrGroupString),
+                            "", */
+                            isChangingSheet && "<h4 style=\"color: red;\">SHEET HAS BEEN CHANGED!</h4>" || "<i>(No Changes to Sheet)</i>"
+                        ])
                     }
-
-                    const obsoleteAttrValPairs = nonRepAttrValPairs.filter(x => !Object.keys(C.SHEETATTRS).map(xx => D.LCase(xx)).includes(D.LCase(x[1]))),
-                        obsoleteRepAttrValTrips = repAttrValTrips.filter(x => !Object.keys(C.REPATTRS).map(xx => D.LCase(xx)).includes(D.LCase(x[1]))),
-                        nonRepAttrNames = nonRepAttrValPairs.map(x => D.LCase(x[1])),
-                        missingDefaultAttrTrips = _.omit(D.Clone(C.SHEETATTRS), (v, k) => nonRepAttrNames.includes(D.LCase(k).replace(/_max/gu, "")))
-
-                    missingDefaultAttrTrips.marquee_toggle = 1
-
-                    if (isChangingSheet) {
-                        setAttrs(charObj.id, missingDefaultAttrTrips)
-                        for (const [attrObj] of obsoleteAttrValPairs)
-                            if (VAL({object: attrObj}))
-                                attrObj.remove()
-                        for (const [attrObj] of obsoleteRepAttrValTrips)
-                            if (VAL({object: attrObj}))
-                                attrObj.remove()
-                    }
-                    reportLines.push(...[
-                        `<h4>${D.GetName(charObj)}:</h4>`,
-                        `${allAttrObjs.length} Attributes Found:`,
-                        `... ${repOrderAttrObjs.length} '_reporder' Attributes,`,
-                        `... ${repAttrValTrips.length} Repeating Attributes,`,
-                        `... ${nonRepAttrObjs.length} Non-Repeating, Non-RepOrder Attributes`,
-                        `... ... ${nonRepAttrValPairs.length} Attribute Name/Value Pairs Compiled.`,
-                        "",
-                        "<b><u>NAMES CHANGED</u>:</b>",
-                        `${nameChanges.length} Attributes With Uppercase Names:`,
-                        D.JS(nameChanges),
-                        "",
-                        "<b><u>OBSOLETE ATTRIBUTES REMOVED</u>:</b>",
-                        `${obsoleteAttrValPairs.length} OBSOLETE Attributes found and removed:`,
-                        D.JS(obsoleteAttrValPairs.map(x => x[1])),
-                        "",
-                        "<b><u>OBSOLETE REP-ATTRIBUTES REMOVED</u>:</b>",
-                        `${obsoleteRepAttrValTrips.length} OBSOLETE Attributes found and removed:`,
-                        D.JS(obsoleteRepAttrValTrips.map(x => `<b>${x[1]}</b>: ${x[2]}`)),
-                        "",
-                        "<b><u>DEFAULT ATTRIBUTES APPLIED</u>:</b>",
-                        D.JS(missingDefaultAttrTrips),
-                        "",
-                       /* "<b><u>_RepOrder Attributes</u>:</b>",
-                        D.JS(repOrderAttrObjs.map(x => x.get("name").replace(/_reporder_(repeating_)?/gu, ""))),
-                        "<b><u>Repeating Attributes</u>:</b>",
-                        D.JS(repAttrGroupString),
-                        "", */
-                        isChangingSheet && "<h4 style=\"color: red;\">SHEET HAS BEEN CHANGED!</h4>" || "<i>(No Changes to Sheet)</i>"
-                    ])
+                } catch (errObj) {
+                    D.Alert(`ERROR: ${D.JS(errObj)}`, "validateCharAttributes")
                 }
             D.Alert(reportLines.join("<br>"), "Character Attribute Validation")
         },
@@ -2432,6 +2443,7 @@ const Char = (() => {
         OnAttrChange: onAttrChange,
         OnAttrAdd: onAttrAdd,        
         OnAttrDestroy: onAttrDestroy,
+        OnCharAdd: onCharAdd,
 
         REGISTRY,
         TogglePC: togglePlayerChar,

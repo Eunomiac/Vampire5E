@@ -18,14 +18,18 @@ const InitCommands = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
+            D.Flag("Initializing API...")
             Listener.Lock()
             setTimeout(() => {
+                D.Flag("... Fixing TimeTracker ...")
                 if (TimeTracker && TimeTracker.Fix)
                     TimeTracker.Fix()
                 setTimeout(() => {
+                    D.Flag("... Fixing Soundscape ...")
                     if (Soundscape && Soundscape.Sync)
                         Soundscape.Sync(true)
                     setTimeout(() => {
+                        D.Flag("... Fixing Character Displays ...")
                         if (Char && Char.RefreshDisplays)
                             Char.RefreshDisplays()
                         setTimeout(() => {

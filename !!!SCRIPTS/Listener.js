@@ -95,10 +95,18 @@ const Listener = (() => {
             })
             on("change:jukeboxtrack", (trackObj, prevData) => {
                 DB({trackObj, prevData}, "OnTrackChange")
+                /*
                 for (const scriptData of SCRIPTCALLS.TRACKCHANGE)
                     return scriptData.script.OnTrackChange(trackObj, prevData)
                 return false
+                */
             })
+            on("add:character", (charObj) => {
+                DB({charObj}, "OnCharAdd")
+                for (const scriptData of SCRIPTCALLS.CHARADD)
+                    return scriptData.script.OnCharAdd(charObj)
+                return false
+            })        
         },
     // #endregion
 
@@ -154,7 +162,10 @@ const Listener = (() => {
             ], v => v.script === {})             
             SCRIPTCALLS.TRACKCHANGE = _.reject([
                 {script: Soundscape}
-            ], v => v.script === {})             
+            ], v => v.script === {})               
+            SCRIPTCALLS.CHARADD = _.reject([
+                {script: Char}
+            ], v => v.script === {})            
             refreshObjects(true)
         },
     // #endregion

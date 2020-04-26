@@ -1193,11 +1193,11 @@
                 case "blood potency full":
                 case "blood potency":
                     getAttrs(["generation", "bonus_bp", "blood_potency"], ATTRS => {
-                        attrList.blood_potency_max = Math.min(10, Math.max(0, genDepts[parseInt(ATTRS.generation)].blood_potency_max + parseInt(ATTRS.bonus_bp)))
-                        const defaultVals = genDepts[parseInt(ATTRS.generation)],
-                            bp = parseInt(ATTRS.blood_potency)
-                        if (tracker === "Blood Potency Full" && (bp < defaultVals.blood_potency || bp > defaultVals.blood_potency_max))
-                            attrList.blood_potency = bp < defaultVals.blood_potency && defaultVals.blood_potency || defaultVals.blood_potency_max                               
+                        const genData = _.isNaN(parseInt(ATTRS.generation)) && {blood_potency_max: 0, blood_potency: 0} || genDepts[parseInt(ATTRS.generation)]
+                        attrList.blood_potency_max = Math.min(10, Math.max(0, genData.blood_potency_max + parseInt(ATTRS.bonus_bp)))
+                        const bp = parseInt(ATTRS.blood_potency)
+                        if (tracker === "Blood Potency Full" && (bp < genData.blood_potency || bp > genData.blood_potency_max))
+                            attrList.blood_potency = bp < genData.blood_potency && genData.blood_potency || genData.blood_potency_max                               
                                                 
                         setAttrs(attrList, {}, () => {
                             log(`>> ATTRS SET >> ${JSON.stringify(attrList)}`)                            
