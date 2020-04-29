@@ -1118,6 +1118,15 @@ const Media = (() => {
             get ALL() { return Object.assign({}, STATE.REF.animregistry, STATE.REF.soundregistry, STATE.REF.textregistry, STATE.REF.imgregistry)},
             get PANELS() { return STATE.REF.panelLog }
         },
+        LAST = {
+            Media: {},
+            Img: {},
+            Text: {},
+            Anim: {},
+            Area: {},
+            Tokens: [],
+            get Token() { return this.Tokens[0] || {} }
+        },
         BGIMGS = {
             top: C.SANDBOX.top,
             left: C.SANDBOX.left,
@@ -1178,8 +1187,14 @@ const Media = (() => {
     // #endregion
 
     // #region GENERAL MEDIA OBJECT GETTERS:
-        isRegistered = mediaRef => isRegText(mediaRef) || isRegImg(mediaRef) || isRegAnim(mediaRef),
+        isRegistered = mediaRef => {
+            if (mediaRef === null)
+                return Boolean(LAST.Media.key)
+            return isRegText(mediaRef) || isRegImg(mediaRef) || isRegAnim(mediaRef)
+        },
         getMediaObj = mediaRef => {
+            if (mediaRef === null)
+                return LAST.Media.obj || false
             const traceID = TRACEON("getMediaObj", [mediaRef])
             if (VAL({object: mediaRef}))
                 return TRACEOFF(traceID, mediaRef)
@@ -1198,18 +1213,32 @@ const Media = (() => {
             return TRACEOFF(traceID, mediaRef)
         },
         getMediaKey = (mediaRef, funcName = false) => {
+            if (mediaRef === null)
+                return LAST.Media.key || false
             const traceID = TRACEON("getMediaKey", [mediaRef, funcName])
+            if (mediaRef === null)
+                return LAST.Media.key
             if (isRegText(mediaRef))
                 return TRACEOFF(traceID, getTextKey(mediaRef, funcName))
             return TRACEOFF(traceID, getImgKey(mediaRef, funcName))
         },
         getMediaData = mediaRef => {
+            if (mediaRef === null)
+                return LAST.Media.data || false
             const traceID = TRACEON("getMediaData", [mediaRef])
             if (isRegText(mediaRef))
                 return TRACEOFF(traceID, getTextData(mediaRef))
             return TRACEOFF(traceID, getImgData(mediaRef))
         },
         getRegistryRef = mediaRef => {
+            if (mediaRef === null)
+                return {
+                    graphic: REGISTRY.GRAPHIC,
+                    text: REGISTRY.TEXT,
+                    image: REGISTRY.IMG,
+                    anim: REGISTRY.ANIM,
+                    token: REGISTRY.TOKEN
+                }[D.LCase(LAST.Media.type)] || {}
             const traceID = TRACEON("getRegistryRef", [mediaRef])
             if (isRegText(mediaRef))
                 return TRACEOFF(traceID, REGISTRY.TEXT)

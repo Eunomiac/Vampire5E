@@ -20,14 +20,16 @@ const Listener = (() => {
         },
         regHandlers = () => {
             on("chat:message", msg => {
-                if (STATE.REF.isLocked)
+                if (STATE.REF.isLocked || msg.type !== "api")
                     return false
-                let [call, args] = parseArgString(msg.content) //  msg.content.split(/\s+/u)
-                if (msg.type === "api") {
+                msg.who = msg.who || "API"
+                let [call, args] = parseArgString(msg.content) // Splits by space unless surrounded by quotes; removes whitespace and comma separators
+                if (call in SCRIPTCALLS.MESSAGE) {
                     const scriptData = SCRIPTCALLS.MESSAGE[call]
-                    msg.who = msg.who || "API"
                     if (scriptData && scriptData.script && VAL({function: scriptData.script.OnChatCall}) && (!scriptData.gmOnly || playerIsGM(msg.playerid) || msg.playerid === "API") ) {
                         const traceID = TRACEON("onChat:message", [msg]) /* eslint-disable-next-line one-var */
+                        if (scriptData.isAlertingOnCall && VAL({function: scriptData.script.OnChatCallAlert}))
+                            scriptData.script.OnChatCallAlert([call, ...args], msg.playerid)                    
                         const [objects, returnArgs] = parseMessage(args, msg, SCRIPTCALLS.MESSAGE[call].needsObjects !== false)
                         DB({call, args, objects, returnArgs}, "regHandlers")
                         call = scriptData.singleCall && returnArgs.shift() || call
@@ -36,13 +38,16 @@ const Listener = (() => {
                                 `<b>${msg.content}</b>`,
                                 `CALL: ${call}`,
                                 `ARGS: ${returnArgs.join(" ")}`,
-                                `OBJECTS: ${D.JS(objects)}`
+                                `OBJECTS: ${D.JS(objects)}`,
+                                " ",
+                                `FULL MESSAGE: ${D.JS(msg)}`
                             ].join("<br>"), "LISTENER RESULTS")
                         scriptData.script.OnChatCall(call, returnArgs, objects, msg)
                         TRACEOFF(traceID)
                     }
+                    return true
                 }
-                return true
+                return false
             })
             on("change:attribute:current", (attrObj, prevData) => {
                 /* DB({
@@ -113,7 +118,7 @@ const Listener = (() => {
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
             STATE.REF.isLocked = STATE.REF.isLocked || false
-            STATE.REF.objectLog = STATE.REF.objectLog || []            
+            STATE.REF.objectLog = STATE.REF.objectLog || []
             SCRIPTCALLS.MESSAGE = _.omit({
                 "!char": {script: Char, gmOnly: true, singleCall: true},
                 "!data": {script: D, gmOnly: true, singleCall: false},
@@ -137,7 +142,7 @@ const Listener = (() => {
                 "!mvc": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
                 "!token": {script: Player, gmOnly: false, singleCall: false},
                 "!links": {script: Player, gmOnly: false, singleCall: false, needsObjects: false},
-                "!roll": {script: Roller, gmOnly: false, singleCall: true},
+                "!roll": {script: Roller, isAlertingOnCall: true, gmOnly: false, singleCall: true},
                 "!sess": {script: Session, gmOnly: true, singleCall: true},
                 "!test": {script: Tester, gmOnly: true, singleCall: true},
                 "!time": {script: TimeTracker, gmOnly: true, singleCall: true, needsObjects: false}
@@ -170,8 +175,12 @@ const Listener = (() => {
         },
     // #endregion
 
-        parseArgString = (argString) => {
-            const [call, ...args] = _.compact((argString.match(/!\S*|\s@"[^"]*"|\s@[^\s]*|\s"[^"]*"|\s[^\s]*/gu) || []).map(x => x.trim().replace(/^"|"$/gu, "").replace(/^@"/gu, "@")))
+        parseArgString = (argString) => { 
+            // Splits argument string by space, unless spaces are contained within quotes.
+            // Strips quotes used to isolate arguments
+            // Removes leading/trailing whitespace
+            // Removes commas between arguments 
+            const [call, ...args] = _.compact((argString.match(/!\S*|\s@"[^"]*"|\s@[^\s]*|\s"[^"]*"|\s[^\s]*/gu) || []).map(x => x.replace(/^\s*(@)?"?|"?,?"?\s*$/gu, "$1")))
             return [call, args]
         },    
         parseMessage = (args, msg, needsObjects) => {

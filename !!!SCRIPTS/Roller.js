@@ -20,6 +20,8 @@ const Roller = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
+            // STATE.REF.selected = {Main: [], Big: []}
+            // STATE.REF.diceVals = {Main: new Array(31).fill(false), Big: new Array(3).fill(false)}
             STATE.REF.rollRecord = STATE.REF.rollRecord || []
             STATE.REF.rollIndex = STATE.REF.rollIndex || 0
             STATE.REF.NPC = STATE.REF.NPC || {}
@@ -41,13 +43,14 @@ const Roller = (() => {
                 STATE.REF.diceStatus = STATE.REF.diceStatus || {}
                 Object.assign(STATE.REF.diceStatus, {[k]: []})
             })
-    
-            for (const dieCat of Object.keys(SETTINGS.dice)) {
-                delete STATE.REF[dieCat]
-                STATE.REF.selected[dieCat] = STATE.REF.selected[dieCat] || []
-                STATE.REF.diceVals[dieCat] = STATE.REF.diceVals[dieCat] || []
-            }
 
+            for (const [dieCat, catData] of Object.entries(SETTINGS.dice)) {
+                STATE.REF.diceVals[dieCat] = STATE.REF.diceVals[dieCat] || []
+                STATE.REF.diceVals[dieCat][0] = null 
+                for (let i = 1; i <= catData.qty; i++)
+                    STATE.REF.diceVals[dieCat][i] = STATE.REF.diceVals[dieCat][i] || false
+            }
+    
             if (_.compact(_.flatten(_.values(STATE.REF.forcedMods))).length)
                 D.Alert("WARNING: Roll Mod Overrides Set for Roller<br><b>!roll force mods</b> to clear.")
 
@@ -56,11 +59,22 @@ const Roller = (() => {
     // #endregion	
 
     // #region EVENT HANDLERS: (ONCHATCALL)
+        onChatCallAlert = (callTerms, who) => {
+            if (callTerms[1] === "dice")
+                if (isLocked)
+                    D.Chat(who, "Roller Locked: Please Wait...", "none")
+                else
+                    switch (callTerms[2]) {
+                        case "frenzyinit": D.Chat(who, "Resist Frenzy: Waiting on Difficulty...", "none"); break
+                        case "frenzy": D.Chat(who, "Resist Frenzy: ROLLING...", "none"); break
+                        case "rouse": case "rouseobv": case "rouse2": case "rouse2obv": D.Chat(who, "Rouse Check: ROLLING...", "none"); break
+                        case "check": D.Chat(who, "Simple Check: ROLLING...", "none"); break
+                        default: D.Chat(who, "ROLLING...", "none"); break
+                    }            
+        },
         onChatCall = (call, args, objects, msg) => {
             switch (call) {
-                case "dice": {  
-                    if (!isLocked && (!playerIsGM(msg.playerid) || Session.IsTesting && !Session.IsFullTest))
-                        D.Chat("all", "Rolling...", "none")                   
+                case "dice": {                
                     const [charObj] = Listener.GetObjects(objects, "character")
                     let rollType
                     if (VAL({array: args}, "!roll dice"))
@@ -105,12 +119,8 @@ const Roller = (() => {
                             case "remorse": { rollType = rollType || "remorse" }
                             /* falls through */
                             case "project": { rollType = rollType || "project" /* all continue below */
-                                if (isLocked) {
-                                    D.Chat(msg.playerid, "Roll In Progress: Please Try Again Later", "none")
+                                if (isLocked)
                                     break
-                                }
-                                // if (!playerIsGM(msg.playerid) || Session.IsTesting && !Session.IsFullTest)
-                                //     lockRoller(true)
                                 const params = args.join(" ").split("|").map(x => x.trim()),
                                     [rollCharObj] = getRollChars(D.GetChars(STATE.REF.rollNextAs || params[0]))
                                 DB({"Received Roll": `${D.JSL(call)} ${D.JSL(params.join("|"))}`, params, rollCharObj}, "onChatCall")
@@ -126,6 +136,7 @@ const Roller = (() => {
                                     delete STATE.REF.frenzyRoll
                                     delete STATE.REF.oblivionRouse
                                     delete STATE.REF.isNextRollNPC
+                                    lockRoller(false)
                                 }
                                 break
                             }
@@ -325,7 +336,7 @@ const Roller = (() => {
                     }
                     break
                 }
-                case "clean": {
+                case "clean": case "clear": {
                     clearRoller()
                     break
                 }
@@ -1048,37 +1059,55 @@ const Roller = (() => {
             TRACEOFF(traceID)         
         },
         setDie = (dieCat, dieNum, dieVal, rollType) => {
-            const traceID = TRACEON("setDie", [dieCat, dieNum, dieVal, rollType]) // eslint-disable-next-line one-var
-            if (STATE.REF.diceVals[dieCat][dieNum] !== dieVal) {
+            const traceID = TRACEON("setDie", [dieCat, dieNum, dieVal, rollType])
+            dieNum = D.Int(dieNum)
+            // If the new die value is different from its current value OR selection is being toggled, proceed...
+            DB({dieCat, dieNum, dieVal}, "setDie")
+            if (dieVal === "selected" || STATE.REF.selected[dieCat].includes(dieNum) || STATE.REF.diceVals[dieCat][dieNum] !== dieVal) {
                 const dieKey = `RollerDie_${dieCat}_${dieNum}`
+                // If a dieVal is specified:
                 if (dieVal) {
+                    // If deselecting a die that is flagged as selected, restore its original value
                     if (dieVal.includes("selected") && STATE.REF.selected[dieCat].includes(dieNum)) {
                         dieVal = STATE.REF.diceVals[dieCat][dieNum]
                         rollType = rollType || "trait"
                     }
                     Media.SetImg(dieKey, dieVal, true)
+                    // Record die value, unless it's "selected" (in which case retain the die's actual value)
                     if (!dieVal.includes("selected"))
                         STATE.REF.diceVals[dieCat][dieNum] = dieVal
+                // If no value specified, blank the die:
                 } else {
                     Media.ToggleImg(dieKey, false)
                     STATE.REF.diceVals[dieCat][dieNum] = false
                 }
+                // If dieVal is "selected", add die to selected dice
                 if (dieVal && dieVal.includes("selected"))
                     STATE.REF.selected[dieCat] = _.uniq([...STATE.REF.selected[dieCat], dieNum])
+                // Otherwise, remove it from selected dice
                 else
-                    STATE.REF.selected[dieCat] = _.without(STATE.REF.selected[dieCat], dieNum)
-                
-                DB({dieVal, rollType, isHungerDie: dieVal && dieVal.includes("H"), isSelectedDie: dieVal && dieVal.includes("selected"), dragPadStatus: dieVal && !dieVal.includes("H") && (dieVal.includes("selected") || rollType === "trait")}, "setDie")
+                    STATE.REF.selected[dieCat] = _.without(STATE.REF.selected[dieCat], dieNum)                
+                DB({
+                    dieVal,
+                    rollType,
+                    isHungerDie: dieVal && dieVal.includes("H"),
+                    isSelectedDie: dieVal && dieVal.includes("selected"),
+                    dragPadStatus: dieVal && !dieVal.includes("H") && (dieVal.includes("selected") || rollType === "trait")
+                }, "setDie")
+                // Turn on selection drag pad for non-Hunger dice if it's a trait roll OR the die is currently selected
                 if (dieVal && !dieVal.includes("H") && (dieVal.includes("selected") || rollType === "trait"))
                     DragPads.Toggle(dieKey, true)
+                // Otherwise, turn off drag pad
                 else
                     DragPads.Toggle(dieKey, false)
+                // If there are any selected dice, activate the reroll animation and dragpad:
                 if (_.flatten(_.values(STATE.REF.selected)).length) {          
                     DragPads.Toggle("wpReroll", true)
                     Media.ToggleAnim("Roller_WPReroller_1", true)
                     Media.ToggleImg("Roller_WPReroller_Base_1", true)
                     Media.ToggleAnim("Roller_WPReroller_2", true)
                     Media.ToggleImg("Roller_WPReroller_Base_2", true)
+                // Otherwise, deactivate the reroll animation and dragpad:
                 } else {
                     DragPads.Toggle("wpReroll", false)
                     Media.ToggleAnim("Roller_WPReroller_1", false)
@@ -1120,15 +1149,21 @@ const Roller = (() => {
             const deltaDice = STATE.REF.diceVals[dieCat].map((x,i) => {
                 if (i === 0)
                     return null
+                if (dieCat in STATE.REF.selected && STATE.REF.selected[dieCat].includes(i)) {
+                    STATE.REF.diceVals[dieCat][i] = dieVals[i-1]
+                    return "selected"
+                }
                 if ((dieVals[i-1] || false) === x)
                     return null
                 return dieVals[i-1]
             })
+            DB({dieCat, dieVals, STATED: _.compact(STATE.REF.diceVals[dieCat]), dtaDice: _.compact(deltaDice.map((x, i) => i > 0 && i <= dieVals.length && (x === null ? "__" : x))), selected: STATE.REF.selected[dieCat], rollType}, "setDieCat")
             for (const [dieNum, dieVal] of Object.entries(deltaDice)) {
                 if (dieVal === null)
                     continue
                 setDie(dieCat, dieNum, dieVal, rollType)
             }
+            // STATE.REF.selected[dieCat] = []
             TRACEOFF(traceID)
         },
     // #endregion
@@ -3791,7 +3826,7 @@ const Roller = (() => {
     // #endregion
 
     return {
-        OnChatCall: onChatCall,        
+        OnChatCallAlert: onChatCallAlert, OnChatCall: onChatCall,     
         CheckInstall: checkInstall,
 
         get LastProjectPrefix() { return STATE.REF.lastProjectPrefix },
