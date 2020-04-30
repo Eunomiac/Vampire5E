@@ -68,7 +68,8 @@ const Assets = (() => {
             get area() { return STATE.REF.areas },
             get panel() { return STATE.REF.panelLog }
         },
-        PENDINGCHANGES = []
+        PENDINGCHANGES = [],
+        ASSETS = {}
     // #endregion
 
     // #region GETTERS: SIMPLE (FOR USE IN CLASS CONSTRUCTORS)
@@ -83,194 +84,234 @@ const Assets = (() => {
                 asset.Apply()
             PENDINGCHANGES.length = 0
         }
+        static Get(assetRef) { // Get an Asset instance by passing an object, an id, or a name.
+            let id = assetRef
+            if ("id" in assetRef)
+                id = assetRef.id
+            else if (!(id in LIBRARY))
+                id = Object.keys(ASSETS).find(x => ASSETS[x].name === assetRef)
+            return id in ASSETS ? ASSETS[id] : false
+        }
 
         // CONSTRUCTOR
-        constructor(assetObj) {
-            this._obj = assetObj
-            this._id = assetObj.id
-            this._objType = assetObj.get("_type")
-            if (this.objType === "image") {
-                if (assetObj.get("represents"))
-                    this._type = "token"
-                else if (assetObj.get("imgsrc").includes(".webm"))
-                    this._type = "anim"
-            } else {
-                this._type = this.objType in LIBRARY ? this.objType : undefined
+        constructor(assetID) {
+            try {
+                this._id = assetID
+                this._data = LIBRARY[assetID]
+                this._objectType = {image: "graphic", token: "graphic", anim: "graphic", text: "text"}[this._data.type]
+                this._object = getObj(this._objectType, this._id)
+                this._pendingChanges = {}
+                this.syncToLibrary() // Updating LIBRARY with current object data & calculating derivative stats.
+                ASSETS[assetID] = this                      
+            } catch (errObj) {
+                THROW(`Error Constructing Asset '${D.JS(assetID)}'`, "ASSET", errObj)
             }
-            this._lib = LIBRARY[this.type]
-            this._lib[this.id] = this.data || {}
-            this._pos = {
-                top: assetObj.get("top"),
-                left: assetObj.get("left"),
-                height: assetObj.get("height"),
-                width: assetObj.get("width")
-            }
-            this._pos.topEdge = this.top - 0.5 * this.height
-            this._pos.bottomEdge = this.top + 0.5 * this.height
-            this._pos.leftEdge = this.left - 0.5 * this.width
-            this._pos.rightEdge = this.left + 0.5 * this.width
-            this._name = assetObj.get("name")
-            this._layer = assetObj.get("layer")
-            this._activeLayer = this.layer === "walls" ? this.data.activeLayer || "objects" : this.layer
-            this._isActive = this.layer !== "walls"
-            const pageID = assetObj.get("_pageid")
-            this._page = _.findKey(C.PAGES, v => v === pageID)
-            this._pendingChanges = {}
+        }
 
-            Object.assign(this._lib[this.id], {
-                id: this.id,
-                type: this.type,
-                page: this.page,
-                name: this.name,                    
-                objType: this.objType,
-                position: {
-                    top: this.top,
-                    left: this.left,
-                    height: this.height,
-                    width: this.width,
-                    topEdge: this.topEdge,
-                    bottomEdge: this.bottomEdge,
-                    leftEdge: this.leftEdge,
-                    rightEdge: this.rightEdge
-                },
-                layer: this.layer,
-                activeLayer: this.activeLayer,
-                isActive: this.isActive
-            })
-        }        
-
-        // READ-ONLY GETTERS
-        get obj() { return this._obj }
+        // BASIC GETTERS & SETTERS
         get id() { return this._id }
-        get objType() { return this._objType }
-        get type() { return this._type }
-        get page() { return this._page }
+        get obj() { return this._object }
+        get objType() { return this._objectType }
 
-        // GETTERS & SETTERS
-        get data() { return this._lib[this.id] }
-        set data(x) { this._lib[this.id] = Object.assign({}, this._lib[this.id] || {}, x) }
-        get name() { return this._name }        
-        set name(x) {
-            if (x !== this.name) {
-                this._name = x
-                this.data = {name: this.name}
-                this.pendingChanges = {name: this.name}
-            }
-        }        
-        get top() { return this._pos.top }; set top(x) { if (x !== this.top) this.setNewPosition({top: x}) }
-        get left() { return this._pos.left }; set left(x) { if (x !== this.left) this.setNewPosition({left: x}) }
-        get height() { return this._pos.height }; set height(x) { if (x !== this.height) this.setNewPosition({height: x}) }
-        get width() { return this._pos.width }; set width(x) { if (x !== this.width) this.setNewPosition({width: x}) }
-        get topEdge() { return this._pos.topEdge }; set topEdge(x) { if (x !== this.topEdge) this.setNewPosition({topEdge: x}) }
-        get bottomEdge() { return this._pos.bottomEdge }; set bottomEdge(x) { if (x !== this.bottomEdge) this.setNewPosition({bottomEdge: x}) }
-        get leftEdge() { return this._pos.leftEdge }; set leftEdge(x) { if (x !== this.leftEdge) this.setNewPosition({leftEdge: x}) }
-        get rightEdge() { return this._pos.rightEdge }; set rightEdge(x) { if (x !== this.rightEdge) this.setNewPosition({rightEdge: x}) }
-        set position(x) { this.setNewPosition(x) }
-        get layer() { return this._layer }
-        set layer(x) {
-            if (x !== this.layer) {
-                this._layer = x
-                this.pendingChanges = {layer: x}
-                this.data = {layer: x}
+        // LIBRARY DATA GETTERS & SETTERS
+        get name() { return this._data.name };
+        set name(v) {
+            if (v !== this.name) {
+                this._data.name = v
+                this.pendingChanges = {name: v}
             }
         }
-        get activeLayer() { return this._activeLayer }
-        set activeLayer(x) {
-            if (x !== this.activeLayer) {
-                this._activeLayer = x
-                this.data = {activeLayer: x}
-                if (this.isActive && this.layer !== this.activeLayer)
-                    this.layer = this.activeLayer
+        get type() { return this._data.type }
+        get page() { return this._data.page }
+        get top() { return this._data.pos.top }; set top(v) { if (v !== this.top) this.setNewPosition({top: v}) }
+        get left() { return this._data.pos.left }; set left(v) { if (v !== this.left) this.setNewPosition({left: v}) }
+        get height() { return this._data.pos.height }; set height(v) { if (v !== this.height) this.setNewPosition({height: v}) }
+        get width() { return this._data.pos.width }; set width(v) { if (v !== this.width) this.setNewPosition({width: v}) }
+        get topEdge() { return this._pos.topEdge }; set topEdge(v) { if (v !== this.topEdge) this.setNewPosition({topEdge: v}) }
+        get bottomEdge() { return this._pos.bottomEdge }; set bottomEdge(v) { if (v !== this.bottomEdge) this.setNewPosition({bottomEdge: v}) }
+        get leftEdge() { return this._pos.leftEdge }; set leftEdge(v) { if (v !== this.leftEdge) this.setNewPosition({leftEdge: v}) }
+        get rightEdge() { return this._pos.rightEdge }; set rightEdge(v) { if (v !== this.rightEdge) this.setNewPosition({rightEdge: v}) }
+        set position(v) { this.setNewPosition(v) }
+        get layer() { return this._data.layer };
+        set layer(v) {
+            if (v !== this.layer) {
+                this._data.layer = v
+                this.pendingChanges = {layer: v}
             }
         }
-        get isActive() { return this._isActive }
-        set isActive(x) {
-            x = typeof x === "boolean" ? x : !this.isActive
-            if (x !== this.isActive) {
-                this._isActive = x
-                this.data = {isActive: x}
-                this.layer = x && this.activeLayer || "walls"
+        get zIndex() { return this._data.zIndex }
+        get activeLayer() { return this._data.activeLayer }
+        set activeLayer(v) {
+            if (v !== this.activeLayer) {
+                this._data.activeLayer = v
+                if (this.isActive)
+                    this.layer = v
             }
         }
+        get isActive() { return this._data.isActive }
+        set isActive(v) {
+            if (v !== this.isActive)
+                this.layer = v ? this.activeLayer : "walls"
+            this._data.isActive = Boolean(v)
+        }
+        get state() { return this._data.curState }; set state(v) { this.Set(v) }
+
+        // MODE DATA GETTERS
+        get wasModeUpdated() { return this._data.wasModeUpdated }; set wasModeUpdated(v) { this._data.wasModeUpdated = v }
+        get isForcedOn() { 
+            if (this._data.modes[Session.Mode].isForcedOn === "LAST")
+                return this._data.modes[Session.Mode].lastActive
+            return this._data.modes[Session.Mode].isForcedOn
+        }
+        get lastActive() { return this._data.modes[Session.Mode].lastActive }; set lastActive(v) { this._data.modes[Session.LastMode].lastActive = Boolean(v) }
+        get isForcedState() {
+            if (this._data.modes[Session.Mode].isForcedState === true)
+                return this._data.modes[Session.Mode].lastState
+            return this._data.modes[Session.Mode].isForcedState
+        }
+        get lastState() { return this._data.modes[Session.Mode].lastState }; set lastState(v) { this._data.modes[Session.LastMode].lastState = v }
+
+        // PENDING CHANGES GETTER & SETTER
         get pendingChanges() { return this._pendingChanges }
-        set pendingChanges(x) {
-            this._pendingChanges = Object.assign({}, this.pendingChanges, x)
+        set pendingChanges(v) {
+            Object.assign(this._pendingChanges, v)
             if (!PENDINGCHANGES.includes(this))
                 PENDINGCHANGES.push(this)
         }
 
         // PRIVATE METHODS
         setNewPosition(delta) {
-            const posData = Object.assign({}, this._pos, delta)
+            const posData = Object.assign({}, this._data.pos, _.pick(delta, "top", "left", "height", "width")),
+                edgeData = Object.assign({}, this._pos, _.pick(delta, "leftEdge", "rightEdge", "topEdge", "bottomEdge"))
             if ("topEdge" in delta && "bottomEdge" in delta) {
-                posData.height = posData.bottomEdge - posData.topEdge
-                posData.top = (posData.topEdge + posData.bottomEdge) / 2
+                posData.height = edgeData.bottomEdge - edgeData.topEdge
+                posData.top = (edgeData.topEdge + edgeData.bottomEdge) / 2
             } else if ("topEdge" in delta) {
-                posData.top = posData.topEdge + 0.5 * posData.height
+                posData.top = edgeData.topEdge + 0.5 * posData.height
             } else if ("bottomEdge" in delta) {
-                posData.top = posData.bottomEdge - 0.5 * posData.height
+                posData.top = edgeData.bottomEdge - 0.5 * posData.height
             }
             if ("leftEdge" in delta && "rightEdge" in delta) {
-                posData.width = posData.rightEdge - posData.leftEdge
-                posData.left = (posData.leftEdge + posData.rightEdge) / 2
+                posData.width = edgeData.rightEdge - edgeData.leftEdge
+                posData.left = (edgeData.leftEdge + edgeData.rightEdge) / 2
             } else if ("leftEdge" in delta) {
-                posData.left = posData.leftEdge + 0.5 * posData.width
+                posData.left = edgeData.leftEdge + 0.5 * posData.width
             } else if ("rightEdge" in delta) {
-                posData.left = posData.rightEdge - 0.5 * posData.width
+                posData.left = edgeData.rightEdge - 0.5 * posData.width
             }            
-            posData.topEdge = posData.top - 0.5 * posData.height
-            posData.bottomEdge = posData.top + 0.5 * posData.height
-            posData.leftEdge = posData.left - 0.5 * posData.width
-            posData.rightEdge = posData.left + 0.5 * posData.width
+            edgeData.topEdge = posData.top - 0.5 * posData.height
+            edgeData.bottomEdge = posData.top + 0.5 * posData.height
+            edgeData.leftEdge = posData.left - 0.5 * posData.width
+            edgeData.rightEdge = posData.left + 0.5 * posData.width
 
-            this.pendingChanges = _.omit(posData, (v,k) => ["topEdge", "bottomEdge", "leftEdge", "rightEdge"].includes(k) || this._pos[k] === v)
-            this._pos = posData
-            this.data = {position: posData}
+            this.pendingChanges = _.omit(posData, (v,k) => this[k] === v)
+            this._data.pos = posData
+            this._pos = edgeData
+        }
+        syncToLibrary() {            
+            this._data.pos.top = this._object.get("top")
+            this._data.pos.left = this._object.get("left")
+            this._data.pos.height = this._object.get("height")
+            this._data.pos.width = this._object.get("width")
+            this._data.page = _.findKey(C.PAGES, v => v === this._object.get("_pageid"))
+            this._data.layer = this._object.get("layer")
+            this._data.isActive = this._data.layer !== "walls"
+
+            // Calculating derivative stats
+            this._pos = {
+                leftEdge: this._data.pos.left - 0.5 * this._data.pos.width,
+                rightEdge: this._data.pos.left + 0.5 * this._data.pos.width,
+                topEdge: this._data.pos.top - 0.5 * this._data.pos.height,
+                bottomEdge: this._data.pos.top + 0.5 * this._data.pos.height
+            }        
+        }
+        syncToObject() {
+            const delta = {
+                left: this._data.pos.left,
+                top: this._data.pos.top,
+                height: this._data.pos.height,
+                width: this._data.pos.width,
+                layer: this._data.isActive ? this._data.activeLayer : "walls"
+            }
+            this.pendingChanges = _.omit(delta, (v, k) => this._object.get(k) === v)
         }
 
-        // METHODS
+        // PUBLIC METHODS
         Apply() {
             if (!_.isEmpty(this.pendingChanges)) {
                 this.obj.set(this.pendingChanges)
                 this._pendingChanges = {}
             }
         }
-
+        ChangeMode() {
+            this.lastActive = this.isActive
+            this.lastState = this.state
+            switch (this.isForcedOn) {
+                case true: case false: this.isActive = this.isForcedOn; break
+                case "LAST": this.isActive = this.lastActive; break
+                case null: break
+                // no default
+            }
+            if (this.isActive && this.isForcedState === true)
+                this.Set(this.lastState)
+        }
+        Set(state) { this.data.curState = state }
+        Toggle() { this.isActive = !this._data.isActive }
+        Fix() { }
+        Unregister() { }
+        Sync(isWritingToLIBRARY = true) { if (isWritingToLIBRARY) this.syncToLibrary(); else this.syncToObject() }
+        Remove() { }
     }
     class Image extends Asset {
-        constructor(imgObj, imgName, srcName) {
-            super(imgObj)
-            this.name = imgName
-            this.pendingChanges = {isDrawing: true} // won't take effect until Apply is called, but don't call it here because other classes might override
-            this._imgsrc = this.obj.get("imgsrc").replace(/[a-z]*\.(png|jpg|jpeg)/gu, "thumb.$1")
-            srcName = srcName || _.findKey(this.data.srcs, v => v === this._imgsrc) || "base"
-            this._srcs = Object.assign({}, this.data.srcs || {}, {[srcName]: this._imgsrc})
-            this._curSrc = srcName
-            this.data = {curSrc: this._curSrc, srcs: this._srcs}
+        static ParseSrcURL(url) { return url.replace(/[a-z]*\.(png|jpg|jpeg)/gu, "thumb.$1") }
+
+        // The constructor is used on initialization by passing an object ID to it.
+        constructor(imgID) {
+            super(imgID)
+            if (this.data.dragPadIDs) {
+                this._dragPads = this.data.dragPadIDs.map(x => getObj("graphic", x))
+                if (this._dragPads[1].get("layer") !== "walls")
+                    this._dragPads.reverse()
+            }
+            if (this.type === "image" && !this.obj.get("isDrawing"))
+                this.pendingChanges = {isDrawing: true}
         }
 
-        get srcs() { return this._srcs }
-        set srcs(srcData) {
-            for (const [srcName, srcRef] of Object.entries(srcData))
-                this._srcs[srcName] = srcRef.replace(/[a-z]*\.(png|jpg|jpeg)/gu, "thumb.$1")
-            this.data = {srcs: this._srcs}
+        get srcs() {
+            if (typeof this.data.srcs === "string")
+                return Asset.Get(this.data.srcs).srcs
+            return this.data.srcs
         }
+        get curState() { return this.data.curState }
 
-        addSrc(srcRef, srcName) {
-            if (srcRef instanceof Image)
-                srcRef = srcRef.imgsrc
-            else if (typeof srcRef === "object" && "get" in srcRef && "id" in srcRef)
-                srcRef = srcRef.get("imgsrc")
-            this.srcs = {[srcName]: srcRef}
+        Add(srcRef, srcName) {
+            const asset = Asset.Get(srcRef)
+            if (asset) {
+                this.data.srcs = asset.name
+            } else {                
+                if ("get" in srcRef && srcRef.get("imgsrc"))
+                    srcRef = srcRef.get("imgsrc")
+                this.data.srcs = typeof this.data.srcs === "string" ? {} : this.data.srcs
+                this.data.srcs[srcName] = Image.ParseSrcURL(srcRef)
+            }
         }
         
-        setSrc(srcName) { }
+        Set(srcName) {
+            if (this.state !== srcName) {
+                super.Set(srcName)
+                this.pendingChanges = {imgsrc: this.srcs[srcName]}
+            }
+        }
 
-        setSrcRef(image) { } // sets image to look to another asset for its srcs list
- 
-        setNextSrc() { }
+        Next() {
+            const index = Object.keys(this.srcs).indexOf(x => x === this.curState)
+            this.Set(Object.keys(this.srcs)[index >= this.srcs.length - 1 ? 0 : index + 1])
+        }
 
-        setRandomSrc(srcName, isAvoidingRepeats = true) { }
+        Random() {
+            this._shuffledSrcs = (this._shuffledSrcs || []).length ? this._shuffledSrcs : _.shuffle(Object.keys(this.srcs))
+            this.Set(this._shuffledSrcs.pop())
+        }
 
         // dragpad control
 

@@ -1275,8 +1275,8 @@ const Roller = (() => {
                             const loc = restriction.replace(/loc:/gu, ""),
                                 locations = {
                                     center: _.without([
-                                        Media.GetImgData("DistrictCenter").activeSrc,
-                                        Media.GetImgData("SiteCenter").activeSrc
+                                        Meia.GetImgData("DistrictCenter").activeSrc,
+                                        Meia.GetImgData("SiteCenter").activeSrc
                                     ], "blank"),
                                     left: _.without([
                                         Media.GetImgData("DistrictLeft").activeSrc,

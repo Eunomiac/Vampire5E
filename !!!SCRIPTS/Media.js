@@ -1517,7 +1517,7 @@ const Media = (() => {
                         const lastMode = textData.curMode
                         if (lastMode) {
                             REGISTRY.TEXT[textKey].modes[lastMode].lastActive = textData.isActive
-                            REGISTRY.TEXT[textKey].modes[lastMode].lastState = textData.isActive && (_.isString(textData.activeText) && textData.activeText || textData.curText) || REGISTRY.TEXT[textKey].modes[lastMode].lastState
+                            REGISTRY.TEXT[textKey].modes[lastMode].lastState = textData.isActive && textData.curText || REGISTRY.TEXT[textKey].modes[lastMode].lastState
                         }
                         REGISTRY.TEXT[textKey].curMode = Session.Mode
                         if (!_.isUndefined(modeStatus.isActive)) {
@@ -1540,7 +1540,7 @@ const Media = (() => {
 
                         if (lastMode) {
                             regRef[graphicKey].modes[lastMode].lastActive = graphicData.isActive
-                            regRef[graphicKey].modes[lastMode].lastState = graphicData.isActive && graphicData.activeSrc || regRef[graphicKey].modes[lastMode].lastState
+                            regRef[graphicKey].modes[lastMode].lastState = graphicData.isActive && graphicData.curSrc || regRef[graphicKey].modes[lastMode].lastState
                         }
                         regRef[graphicKey].curMode = Session.Mode
                         if (!_.isUndefined(modeStatus.isActive)) {
@@ -2258,8 +2258,8 @@ const Media = (() => {
                         srcURL = getURLFromSrc(srcRef, srcData)
                     if (VAL({string: srcURL}, "setImg")) {
                         if (VAL({imgObj}, ["setImg", `Key: ${D.JS(imgData.name)}`])) {
-                            if (isObjActive(imgData.name) && srcRef !== "blank")
-                                REGISTRY.IMG[imgData.name].activeSrc = srcRef
+                            // if (isObjActive(imgData.name) && srcRef !== "blank")
+                            //    REGISTRY.IMG[imgData.name].activeSrc = srcRef
                             REGISTRY.IMG[imgData.name].curSrc = srcRef
                             imgObj.set("imgsrc", srcURL)                
                         }
@@ -2353,8 +2353,6 @@ const Media = (() => {
         },
         toggleImg = (imgRef, isActive, isForcing = false) => {
             const traceID = TRACEON("toggleImg", [imgRef, isActive, isForcing])
-            // NON-PERMANENT.  If turning off, set activeSrc to curSrc.
-            // Also, verify img status is changing before doing anything.
             if (isActive === null) return TRACEOFF(traceID, null)
             const regRef = getRegistryRef(imgRef),
                 imgData = getImgData(imgRef) || VAL({object: imgRef}) && {isActive: imgRef.get("layer") === "walls"},
@@ -2370,9 +2368,9 @@ const Media = (() => {
                 const imgObj = getImgObj(imgData.name) || VAL({graphicObj: imgRef}) && imgRef
                 DragPads.Toggle(imgData.name, activeCheck, true)
                 if (activeCheck === false) {
-                    // TURN OFF: Set layer to walls, toggle off associated drag pads, update activeState value
-                    if (REGISTRY.IMG[imgData.name])
-                        regRef[imgData.name].activeSrc = imgData.curSrc === "blank" && imgData.activeSrc || imgData.curSrc
+                    // TURN OFF: Set layer to walls, toggle off associated drag pads
+                    // if (REGISTRY.IMG[imgData.name])
+                    //    regRef[imgData.name].activeSrc = imgData.curSrc === "blank" && imgData.activeSrc || imgData.curSrc
                     regRef[imgData.name].isActive = false
                     setLayer(imgObj, "walls", isForcing)
                     return TRACEOFF(traceID, false )
