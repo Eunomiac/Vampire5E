@@ -1,4 +1,10 @@
 /* eslint-disable */
+
+/*
+const MarkStart = () => true
+const MarkStop = () => true
+*/
+
 let airIndex = new Error();
 // ===============================================================================
 // AIRBAG - API Crash Handler
@@ -382,4 +388,5 @@ let codebase = (errorMsg) => {
 
     try {
         MarkStop('AirbagStart');
+        
 /* eslint-enable */

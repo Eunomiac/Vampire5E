@@ -1,7 +1,7 @@
 void MarkStart("C")
 const GAMENAME = "VAMPIRE",
     SCRIPTNAME = "C",
-    SCRIPTS = ["C", "D", "Listener", "Fuzzy", "Char", "Media", "Player", "Session", "TimeTracker", "DragPads", "Roller", "Soundscape", "Complications", "Handouts", "Chat", "Tester", "InitCommands", "GamePrep"]
+    SCRIPTS = ["C", "D", "Listener", "Fuzzy", "Char", "Media", "Assets", "Player", "Session", "TimeTracker", "DragPads", "Roller", "Soundscape", "Complications", "Handouts", "Chat", "Tester", "InitCommands", "GamePrep"]
 state = state || {}
 state[GAMENAME] = state[GAMENAME] || {}
 for (const scriptName of SCRIPTS)

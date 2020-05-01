@@ -145,7 +145,8 @@ const Listener = (() => {
                 "!roll": {script: Roller, isAlertingOnCall: true, gmOnly: false, singleCall: true},
                 "!sess": {script: Session, gmOnly: true, singleCall: true},
                 "!test": {script: Tester, gmOnly: true, singleCall: true},
-                "!time": {script: TimeTracker, gmOnly: true, singleCall: true, needsObjects: false}
+                "!time": {script: TimeTracker, gmOnly: true, singleCall: true, needsObjects: false},
+                "!asset": {script: Assets, gmOnly: true, singleCall: true}
             }, v => v.script === {})
             SCRIPTCALLS.ATTRCHANGE = _.reject([
                 [ ["hunger", "desire", "projectstake", "triggertimelinesort", "health_impair_toggle", "willpower_impair_toggle", "humanity_impair_toggle", "stains"], {script: Char} ]

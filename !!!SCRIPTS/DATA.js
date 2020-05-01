@@ -669,14 +669,7 @@ const D = (() => {
             THROW(`Attempt to capitalize non-string '${jStrL(str)}'`, "capitalize")
             return str
         },
-        clone = (obj) => {
-            if (_.isObject(obj) && Object.keys(obj).length) {
-                const objToString = JSON.stringify(obj)
-                if (_.isString(objToString))
-                    return JSON.parse(objToString)
-            }
-            return {}
-        },
+        clone = (obj) => JSON.parse(JSON.stringify(obj)),
         rbgToHex = (rgb = [0, 0, 0]) => `#${rgb.slice(0, 3).map(x => x.toString(16)).join("")}`,
         colorGradient = (startColor, endColor, step, totalSteps) => `rgba(${startColor.replace(/[^\d\s,]*/gu, "").split(",").map((x, i) => D[i === 3 ? "Round" : "Int"](x, 2)).map((x, i) => D[i === 3 ? "Round" : "Int"](x + (endColor.replace(/[^\d\s,]*/gu, "").split(",").map((xx, ii) => D[ii === 3 ? "Round" : "Int"](xx, 2))[i] - x) * step / totalSteps, 2)).join(", ")})`,
         parseStack = (stackObj) => {
