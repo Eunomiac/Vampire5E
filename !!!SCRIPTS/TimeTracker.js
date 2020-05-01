@@ -1549,7 +1549,7 @@ const TimeTracker = (() => {
         getDaysInMonth = (monthNum) => STATE.REF.weatherData[monthNum].length - 1,
         setNextSessionDate = (dateOverride = { }) => {
             const funcID = ONSTACK()
-            DB({dateOverride}, "setNextSessionDate")
+            DB({dateOverride}, "setNextSessionDate") // {day: 1, hour: 3, minute: 30}
             const curRealDateObj = new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"})),
                 sessDateObj = new Date(curRealDateObj),
                 daysOut = 7 - (curRealDateObj.getDay() === 0 ? 7 : curRealDateObj.getDay())
@@ -1582,12 +1582,10 @@ const TimeTracker = (() => {
                     }
                     // no default
                 }
-            // if (sessDateObj.getTime() <= curRealDateObj.getTime())
-            //    sessDateObj.setDate(sessDateObj.getDate() + 7)
+            if (sessDateObj.getTime() <= curRealDateObj.getTime())
+                sessDateObj.setDate(sessDateObj.getDate() + 7)
             STATE.REF.nextSessionDate = sessDateObj.getTime()
-            syncCountdown()            
-            // updateCountdownText()
-            OFFSTACK(funcID)
+            syncCountdown()
             return OFFSTACK(funcID) && (sessDateObj - curRealDateObj)/1000 - 60
         },        
         getRandomEventTriggers = (fullDuration, numTriggers, tickSpeed = 100) => {
