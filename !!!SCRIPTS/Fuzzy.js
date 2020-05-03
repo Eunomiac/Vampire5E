@@ -1,4 +1,4 @@
-void MarkStart("Fuzzy")
+void MarkStart("Fuzzy");
 /* eslint-disable no-prototype-builtins */
 /* eslint-disable consistent-return */
 const Fuzzy = (() => {
@@ -13,14 +13,14 @@ const Fuzzy = (() => {
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
         checkInstall = () => {
-            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
-            initialize()
+            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
+            initialize();
         },
     // #endregion
 
     // #region LOCAL INITIALIZATION
         initialize = () => { 
-            STATE.REF.minMatchScore = STATE.REF.minMatchScore || 0.33
+            STATE.REF.minMatchScore = STATE.REF.minMatchScore || 0.33;
         },
     // #endregion  
   
@@ -30,21 +30,21 @@ const Fuzzy = (() => {
                 case "set": {
                     switch (D.LCase(call = args.shift())) {
                         case "minmatch": default: {
-                            STATE.REF.minMatchScore = D.Float(args.shift()) || 0.33
-                            break
+                            STATE.REF.minMatchScore = D.Float(args.shift()) || 0.33;
+                            break;
                         }
                     }
-                    args.unshift(call)
+                    args.unshift(call);
                 }
-            // falls through
+            /* falls through */
                 case "get": {
                     switch (D.LCase(call = args.shift())) {
                         case "minmatch": default: {
-                            D.Alert(`Fuzzy Minimum Match Score is <b>${STATE.REF.minMatchScore}</b><br><br>Default = 0.33; <b>!fuzzy set minmatch &lt;#&gt;</b> to change.`, "!fuzzy set minmatch")
-                            break
+                            D.Alert(`Fuzzy Minimum Match Score is <b>${STATE.REF.minMatchScore}</b><br><br>Default = 0.33; <b>!fuzzy set minmatch &lt;#&gt;</b> to change.`, "!fuzzy set minmatch");
+                            break;
                         }
                     }
-                    break
+                    break;
                 }
             // no default
             }
@@ -335,11 +335,11 @@ const Fuzzy = (() => {
         OnChatCall: onChatCall,
 
         Fix
-    }
-} )()
+    };
+} )();
 
 on("ready", () => {
-    Fuzzy.CheckInstall()
-    D.Log("Fuzzy Ready!")
-} )
-void MarkStop("Fuzzy")
+    Fuzzy.CheckInstall();
+    D.Log("Fuzzy Ready!");
+} );
+void MarkStop("Fuzzy");

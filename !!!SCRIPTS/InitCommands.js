@@ -1,4 +1,4 @@
-void MarkStart("InitCommands")
+void MarkStart("InitCommands");
 const InitCommands = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "InitCommands",
@@ -11,34 +11,34 @@ const InitCommands = (() => {
         THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
 
         checkInstall = () => {
-            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
-            initialize()
+            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
+            initialize();
         },
     // #endregion
 
     // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function
-            D.Flag("Initializing API...")
-            Listener.Lock()
+            D.Flag("Initializing API...");
+            Listener.Lock();
             setTimeout(() => {
-                D.Flag("... Fixing TimeTracker ...")
+                D.Flag("... Fixing TimeTracker ...");
                 if (TimeTracker && TimeTracker.Fix)
-                    TimeTracker.Fix()
+                    TimeTracker.Fix();
                 setTimeout(() => {
-                    D.Flag("... Fixing Soundscape ...")
+                    D.Flag("... Fixing Soundscape ...");
                     if (Soundscape && Soundscape.Sync)
-                        Soundscape.Sync(true)
+                        Soundscape.Sync(true);
                     setTimeout(() => {
-                        D.Flag("... Fixing Character Displays ...")
+                        D.Flag("... Fixing Character Displays ...");
                         if (Char && Char.RefreshDisplays)
-                            Char.RefreshDisplays()
+                            Char.RefreshDisplays();
                         setTimeout(() => {
-                            D.Flag("Initialization Complete!")
-                            Listener.Unlock()
-                        }, Session.IsTesting ? 500 : 2000)
-                    }, Session.IsTesting ? 500 : 2000)
-                }, Session.IsTesting ? 500 : 2000)
-            }, Session.IsTesting ? 500 : 2000)
+                            D.Flag("Initialization Complete!");
+                            Listener.Unlock();
+                        }, Session.IsTesting ? 500 : 2000);
+                    }, Session.IsTesting ? 500 : 2000);
+                }, Session.IsTesting ? 500 : 2000);
+            }, Session.IsTesting ? 500 : 2000);
         },
     // #endregion	
 
@@ -46,7 +46,7 @@ const InitCommands = (() => {
         onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
             switch (call) {
                 case "":
-                    break
+                    break;
             // no default
             }
         },
@@ -54,18 +54,18 @@ const InitCommands = (() => {
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
         preInitialization = () => {
-            Handouts.PreInitialize()
-        }
+            Handouts.PreInitialize();
+        };
 
     return {
         PreInitialization: preInitialization,
         CheckInstall: checkInstall,
         OnChatCall: onChatCall
-    }
-})()
+    };
+})();
 
 on("ready", () => {
-    InitCommands.CheckInstall()
-    D.Log("InitCommands Ready!")
-} )
-void MarkStop("InitCommands")
+    InitCommands.CheckInstall();
+    D.Log("InitCommands Ready!");
+} );
+void MarkStop("InitCommands");

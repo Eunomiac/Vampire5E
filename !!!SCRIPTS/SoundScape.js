@@ -1,4 +1,4 @@
-void MarkStart("Soundscape")
+void MarkStart("Soundscape");
 const Soundscape = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Soundscape",
@@ -13,64 +13,64 @@ const Soundscape = (() => {
         OFFSTACK = (funcID) => D.OFFSTACK(funcID),
 
         checkInstall = () => {
-            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
-            initialize()
+            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
+            initialize();
         },
     // #endregion
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
-            STATE.REF.trackregistry = STATE.REF.trackregistry || {}
-            STATE.REF.playlistregistry = STATE.REF.playlistregistry || {}
-            STATE.REF.isSoundscapeActive = VAL({bool: STATE.REF.isSoundscapeActive}) ? STATE.REF.isSoundscapeActive : true
-            STATE.REF.activeSounds = STATE.REF.activeSounds || []
-            STATE.REF.VOLUME = STATE.REF.VOLUME || D.Clone(C.SOUNDVOLUME)
+            STATE.REF.trackregistry = STATE.REF.trackregistry || {};
+            STATE.REF.playlistregistry = STATE.REF.playlistregistry || {};
+            STATE.REF.isSoundscapeActive = VAL({bool: STATE.REF.isSoundscapeActive}) ? STATE.REF.isSoundscapeActive : true;
+            STATE.REF.activeSounds = STATE.REF.activeSounds || [];
+            STATE.REF.VOLUME = STATE.REF.VOLUME || D.Clone(C.SOUNDVOLUME);
 
-            syncSoundscape(true)
+            syncSoundscape(true);
         },
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
             switch (call) {
-                case "initialize": importFromJukebox(); break
-                case "sync": syncSoundscape(); break
-                case "start": startSoundscape(args[0] === "reset"); break
-                case "play": playSound(args[0]); break
-                case "stop": if (args[0]) stopSound(args[0]); else stopSoundscape(); break
+                case "initialize": importFromJukebox(); break;
+                case "sync": syncSoundscape(); break;
+                case "start": startSoundscape(args[0] === "reset"); break;
+                case "play": playSound(args[0]); break;
+                case "stop": if (args[0]) stopSound(args[0]); else stopSoundscape(); break;
                 case "inc": case "increase": {
                     if (args[0]) {
                         const baseVolume = STATE.REF.VOLUME[args[0]] || STATE.REF.VOLUME.base,
-                            newVolume = Math.min(baseVolume + 10, baseVolume * 2)
-                        setVolume(args[0], newVolume)
-                        D.Alert(`Volume of <b>${D.JS(args[0])}</b>: ${baseVolume} >>> ${newVolume}`, "Increase Volume")
+                            newVolume = Math.min(baseVolume + 10, baseVolume * 2);
+                        setVolume(args[0], newVolume);
+                        D.Alert(`Volume of <b>${D.JS(args[0])}</b>: ${baseVolume} >>> ${newVolume}`, "Increase Volume");
                     }
-                    break
+                    break;
                 }                
                 case "dec": case "decrease": {
                     if (args[0]) {
                         const baseVolume = STATE.REF.VOLUME[args[0]] || STATE.REF.VOLUME.base,
-                            newVolume = Math.max(baseVolume - 10, baseVolume / 2)
-                        setVolume(args[0], newVolume)
-                        D.Alert(`Volume of <b>${D.JS(args[0])}</b>: ${baseVolume} >>> ${newVolume}`, "Decrease Volume")
+                            newVolume = Math.max(baseVolume - 10, baseVolume / 2);
+                        setVolume(args[0], newVolume);
+                        D.Alert(`Volume of <b>${D.JS(args[0])}</b>: ${baseVolume} >>> ${newVolume}`, "Decrease Volume");
                     }
-                    break
+                    break;
                 }
                 case "get": {
                     switch (D.LCase(call = args.shift())) {
-                        case "volume": break
+                        case "volume": break;
                         // no default
                     }
                 }
-                // falls through
+                /* falls through */
                 case "set": {
                     switch (D.LCase(call = args.shift())) {
-                        case "volume": setVolume(...args); break
+                        case "volume": setVolume(...args); break;
                         case "mult": {
                             switch (D.LCase(call = args.shift())) {
-                                case "master": setMasterVolumeMult(args.shift()); break
-                                case "rain": setRainMult(...args); break
-                                case "indoor": case "inside": setInsideMult(...args); break
+                                case "master": setMasterVolumeMult(args.shift()); break;
+                                case "rain": setRainMult(...args); break;
+                                case "indoor": case "inside": setInsideMult(...args); break;
                                 // no default
                             }
                         }
@@ -81,17 +81,17 @@ const Soundscape = (() => {
                         D.JS(STATE.REF.VOLUME, true),
                         "<h3>PLAYING TRACKS</h3>",
                         getPlayingTrackObjs().map(x => `<b>${x.get("title")}:</b> ${x.get("volume")}`).join("<br>")
-                    ].join(""), "Current Volume")
-                    break
+                    ].join(""), "Current Volume");
+                    break;
                 }
                 case "reset": {
                     if (args[0]) {
-                        stopSound(args[0])
-                        playSound(args[0])
+                        stopSound(args[0]);
+                        playSound(args[0]);
                     } else {
-                        syncSoundscape(true)
+                        syncSoundscape(true);
                     }
-                    break
+                    break;
                 }
             // no default
             }
@@ -103,8 +103,8 @@ const Soundscape = (() => {
                     playing: `${prevData.playing} >> ${trackObj.get("playing")}<br>`,
                     looping: `${prevData.loop} >> ${trackObj.get("loop")}<br>`,
                     softstop: `${prevData.softstop} >> ${trackObj.get("softstop")}<br>`
-                }, "onTrackChange")
-                playNextSound(trackObj)   
+                }, "onTrackChange");
+                playNextSound(trackObj);   
             }         
         },
     // #endregion
@@ -121,31 +121,31 @@ const Soundscape = (() => {
 
     // #region INITIALIZATION: Importing Sounds
         importFromJukebox = () => {
-            REGISTRY.Tracks = []
-            REGISTRY.Playlists = []
-            const trackObjs = _.uniq(findObjs({_type: "jukeboxtrack"}))
+            REGISTRY.Tracks = [];
+            REGISTRY.Playlists = [];
+            const trackObjs = _.uniq(findObjs({_type: "jukeboxtrack"}));
             for (const trackObj of trackObjs)
-                regTrack(trackObj)
+                regTrack(trackObj);
             const jukeboxData = JSON.parse(Campaign().get("_jukeboxfolder")).map(x => {
                 const xData = D.KeyMapObj(x, k => {
                     switch (k) {
-                        case "i": return "trackKeys"
-                        case "n": return "name"
-                        case "s": return "playModes"
-                        default: return k
+                        case "i": return "trackKeys";
+                        case "n": return "name";
+                        case "s": return "playModes";
+                        default: return k;
                     }
                 }, (v, k) => {
                     switch (k) {
-                        case "i": return v.map(xx => parseKeyFromTitle(xx))
+                        case "i": return v.map(xx => parseKeyFromTitle(xx));
                         case "s": return {
                             isLooping: ["s", "b"].includes(v),
                             isRandom: ["s", "o"].includes(v),
                             isTogether: v === "a",
                             isPlayingAll: ["s", "b"].includes(v)
-                        }
-                        default: return v
+                        };
+                        default: return v;
                     }
-                })
+                });
                 switch ((xData.name.match(/\[([^\]]*)\]$/u) || []).pop()) {
                     case "LoopEach": {
                         xData.playModes = {
@@ -153,8 +153,8 @@ const Soundscape = (() => {
                             isRandom: false,
                             isTogether: false,
                             isPlayingAll: false
-                        }
-                        break
+                        };
+                        break;
                     }
                     case "Sequence": {
                         xData.playModes = {
@@ -162,8 +162,8 @@ const Soundscape = (() => {
                             isRandom: false,
                             isTogether: false,
                             isPlayingAll: true
-                        }
-                        break
+                        };
+                        break;
                     }
                     case "RandomOnce": {
                         xData.playModes = {
@@ -171,8 +171,8 @@ const Soundscape = (() => {
                             isRandom: true,
                             isTogether: false,
                             isPlayingAll: false
-                        }
-                        break
+                        };
+                        break;
                     }
                     case "ShuffleOnce": {
                         xData.playModes = {
@@ -180,14 +180,14 @@ const Soundscape = (() => {
                             isRandom: true,
                             isTogether: false,
                             isPlayingAll: true
-                        }
+                        };
                     }
                     // no default
                 }
-                return xData
-            })
+                return xData;
+            });
             for (const playlistData of jukeboxData)
-                regPlaylist(parseKeyFromTitle(playlistData.name), playlistData.trackKeys, playlistData.playModes)
+                regPlaylist(parseKeyFromTitle(playlistData.name), playlistData.trackKeys, playlistData.playModes);
         },
     // #endregion
 
@@ -196,56 +196,56 @@ const Soundscape = (() => {
             trackRef = D.IsID(trackRef) && (getObj("jukeboxtrack", trackRef) || {get: () => false}).get("title") ||
                        VAL({obj: trackRef}) && trackRef.get("title") ||
                        VAL({string: trackRef}) && trackRef ||
-                       false
-            return VAL({string: trackRef}) && trackRef.replace(/\s*[([{].*[)\]}]\s*/gu, "").replace(/[^A-Za-z0-9]*/gu, "")
+                       false;
+            return VAL({string: trackRef}) && trackRef.replace(/\s*[([{].*[)\]}]\s*/gu, "").replace(/[^A-Za-z0-9]*/gu, "");
         },
         getSoundKey = (soundRef) => {
-            const funcID = ONSTACK()
+            const funcID = ONSTACK();
             if (VAL({string: soundRef})) {
                 if (soundRef in REGISTRY.Tracks || soundRef in REGISTRY.Playlists)
-                    return OFFSTACK(funcID) && soundRef
+                    return OFFSTACK(funcID) && soundRef;
                 if (D.IsID(soundRef)) {
-                    const jukeObj = getObj("jukeboxtrack", soundRef)
+                    const jukeObj = getObj("jukeboxtrack", soundRef);
                     if (VAL({object: jukeObj}))
-                        return OFFSTACK(funcID) && parseKeyFromTitle(jukeObj.get("title"))
+                        return OFFSTACK(funcID) && parseKeyFromTitle(jukeObj.get("title"));
                 }
             } else if (VAL({object: soundRef})) {
-                return OFFSTACK(funcID) && parseKeyFromTitle(soundRef.get("title"))
+                return OFFSTACK(funcID) && parseKeyFromTitle(soundRef.get("title"));
             }
-            return OFFSTACK(funcID) && false
+            return OFFSTACK(funcID) && false;
         },     
         // getSoundKeys = (soundRefs) => _.flatten([soundRefs || []]).map(x => getSoundKey(x)),   
         getSoundData = (soundRef) => {
             const funcID = ONSTACK(),
-                soundKey = getSoundKey(soundRef)
-            return OFFSTACK(funcID) && REGISTRY.Tracks[soundKey] || REGISTRY.Playlists[soundKey]
+                soundKey = getSoundKey(soundRef);
+            return OFFSTACK(funcID) && REGISTRY.Tracks[soundKey] || REGISTRY.Playlists[soundKey];
         },
         isTrack = (soundRef) => getSoundKey(soundRef) in REGISTRY.Tracks,
         isPlaylist = (soundRef) => getSoundKey(soundRef) in REGISTRY.Playlists,
         getTrackKey = (soundRef, isGettingAllTracks = false) => {
-            const funcID = ONSTACK()
+            const funcID = ONSTACK();
             if (isTrack(soundRef))
-                return OFFSTACK(funcID) && getSoundKey(soundRef)
+                return OFFSTACK(funcID) && getSoundKey(soundRef);
             else if (isPlaylist(soundRef))
                 if (isGettingAllTracks)
-                    return OFFSTACK(funcID) && getSoundData(soundRef).trackKeys
+                    return OFFSTACK(funcID) && getSoundData(soundRef).trackKeys;
                 else
-                    return OFFSTACK(funcID) && getSoundData(soundRef).currentTracks[0]
-            return OFFSTACK(funcID) && false
+                    return OFFSTACK(funcID) && getSoundData(soundRef).currentTracks[0];
+            return OFFSTACK(funcID) && false;
         },
         getPlaylistKey = (soundRef) => {
-            const funcID = ONSTACK()
+            const funcID = ONSTACK();
             if (isTrack(soundRef)) {
-                const trackKey = getTrackKey(soundRef)
+                const trackKey = getTrackKey(soundRef);
                 return OFFSTACK(funcID) && (
                     (Object.values(REGISTRY.Playlists).find(x => x.currentTracks.includes(trackKey)) || {name: false}).name ||
                     getTrackData(trackKey).playlists[0] ||
                     false
-                )
+                );
             } else if (isPlaylist(soundRef)) {
-                return OFFSTACK(funcID) && getSoundKey(soundRef)
+                return OFFSTACK(funcID) && getSoundKey(soundRef);
             }
-            return OFFSTACK(funcID) && false
+            return OFFSTACK(funcID) && false;
         },
         getTrackData = (soundRef) => getSoundData(getTrackKey(soundRef)),
         getPlaylistData = (soundRef) => getSoundData(getPlaylistKey(soundRef)),
@@ -254,15 +254,15 @@ const Soundscape = (() => {
             const trackKey = getTrackKey(soundRef),
                 playlistKey = getPlaylistKey(soundRef),
                 volumeMults = [STATE.REF.VOLUME.MasterVolumeMult],
-                baseVolume = STATE.REF.VOLUME[trackKey] || STATE.REF.VOLUME[playlistKey] || STATE.REF.VOLUME.base
+                baseVolume = STATE.REF.VOLUME[trackKey] || STATE.REF.VOLUME[playlistKey] || STATE.REF.VOLUME.base;
             if (Session.Mode === "Inactive")
-                return D.Int(volumeMults.filter(x => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume))
+                return D.Int(volumeMults.filter(x => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume));
             if (!Session.IsOutside)
-                volumeMults.push(STATE.REF.VOLUME.MULTS.Inside[trackKey] || STATE.REF.VOLUME.MULTS.Inside[playlistKey] || STATE.REF.VOLUME.MULTS.Inside.base)
+                volumeMults.push(STATE.REF.VOLUME.MULTS.Inside[trackKey] || STATE.REF.VOLUME.MULTS.Inside[playlistKey] || STATE.REF.VOLUME.MULTS.Inside.base);
             else if (TimeTracker.IsRaining)
-                volumeMults.push(STATE.REF.VOLUME.MULTS.Raining[trackKey] || STATE.REF.VOLUME.MULTS.Raining[playlistKey] || STATE.REF.VOLUME.MULTS.Raining.base)
+                volumeMults.push(STATE.REF.VOLUME.MULTS.Raining[trackKey] || STATE.REF.VOLUME.MULTS.Raining[playlistKey] || STATE.REF.VOLUME.MULTS.Raining.base);
             // DB({trackKey, playlistKey, volumeMults, baseVolume, reduction: D.Int(volumeMults.reduce((tot, x) => tot * x, baseVolume))}, "getVolume")
-            return D.Int(volumeMults.filter(x => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume))
+            return D.Int(volumeMults.filter(x => VAL({number: x})).reduce((tot, x) => tot * x, baseVolume));
         },
         isTrackObjPlaying = (trackObj) => VAL({obj: trackObj}) && trackObj.get("playing") && !trackObj.get("softstop"),
         isTrackObjLooping = (trackObj) => isTrackObjPlaying(trackObj) && trackObj.get("looping"),
@@ -273,52 +273,52 @@ const Soundscape = (() => {
         getWeatherSounds = () => {
             const funcID = ONSTACK(),
                 weatherCode = TimeTracker.WeatherCode,
-                weatherSounds = []
+                weatherSounds = [];
             
             if (Session.Mode === "Inactive" || !Session.IsOutside)
-                return OFFSTACK(funcID) && []
+                return OFFSTACK(funcID) && [];
 
             // RAIN:
             switch (weatherCode.charAt(0)) {
-                case "w": weatherSounds.push("RainLight"); break
-                case "d": case "t": weatherSounds.push("RainHeavy"); break
+                case "w": weatherSounds.push("RainLight"); break;
+                case "d": case "t": weatherSounds.push("RainHeavy"); break;
                 // no default
             }
 
             // WIND:
-            const windPrefix = `Wind${TimeTracker.TempC <= 0 ? "Winter" : ""}`
+            const windPrefix = `Wind${TimeTracker.TempC <= 0 ? "Winter" : ""}`;
             switch (weatherCode.charAt(4)) {            
-                case "b": weatherSounds.push(`${windPrefix}Low`); break // Breezy / Biting Wind
-                case "w": case "g": weatherSounds.push(`${windPrefix}Med`); break // Blustery / High Winds, High Winds / Driving Winds
-                case "h": case "v": weatherSounds.push(`${windPrefix}Max`); break // Howling Winds, Roaring Winds
+                case "b": weatherSounds.push(`${windPrefix}Low`); break; // Breezy / Biting Wind
+                case "w": case "g": weatherSounds.push(`${windPrefix}Med`); break; // Blustery / High Winds, High Winds / Driving Winds
+                case "h": case "v": weatherSounds.push(`${windPrefix}Max`); break; // Howling Winds, Roaring Winds
                 // no default
             }
-            return OFFSTACK(funcID) && weatherSounds
+            return OFFSTACK(funcID) && weatherSounds;
         },
         getLocationSounds = () => {
             const funcID = ONSTACK(),
                 locSounds = {
                     District: Session.District && C.LOCATIONS[Session.District].soundScape[0],
                     Site: Session.Site && C.LOCATIONS[Session.Site].soundScape[0]
-                }
+                };
             if (Session.Mode === "Inactive")
-                return OFFSTACK(funcID) && false
+                return OFFSTACK(funcID) && false;
             if (Object.values(locSounds).includes("(TOTALSILENCE)"))
-                return OFFSTACK(funcID) && "TOTALSILENCE"
+                return OFFSTACK(funcID) && "TOTALSILENCE";
             if (locSounds.Site && locSounds.Site !== "(NONE)")
-                return OFFSTACK(funcID) && locSounds.Site
+                return OFFSTACK(funcID) && locSounds.Site;
             if (locSounds.District && locSounds.District !== "(NONE)" && Session.IsOutside)
-                return OFFSTACK(funcID) && locSounds.District
-            return OFFSTACK(funcID) && false
+                return OFFSTACK(funcID) && locSounds.District;
+            return OFFSTACK(funcID) && false;
         },
     // #endregion
 
     // #region SETTERS: Registration & Setting Parameters
         regTrack = (trackObj) => {
             if (VAL({obj: trackObj})) {
-                const trackKey = parseKeyFromTitle(trackObj)
+                const trackKey = parseKeyFromTitle(trackObj);
                 if (trackKey in REGISTRY.Tracks) {
-                    D.Alert(`Attempt to overwrite already-registered track: ${D.JS(trackKey)}<br><br>Track names must be unique in jukebox!`, "regTrack")
+                    D.Alert(`Attempt to overwrite already-registered track: ${D.JS(trackKey)}<br><br>Track names must be unique in jukebox!`, "regTrack");
                 } else {
                     REGISTRY.Tracks[trackKey] = {
                         id: trackObj.id,
@@ -327,8 +327,8 @@ const Soundscape = (() => {
                         playModes: {},
                         isPlaying: false,
                         masterPlaylist: false
-                    }
-                    setPlayModes(trackObj)
+                    };
+                    setPlayModes(trackObj);
                 }
             }
         },
@@ -340,10 +340,10 @@ const Soundscape = (() => {
                 currentTracks: [],
                 isPlaying: false,
                 trackSequence: []
-            }
+            };
             for (const trackKey of REGISTRY.Playlists[playlistKey].trackKeys)
-                REGISTRY.Tracks[trackKey].playlists.push(playlistKey)
-            setPlayModes(playlistKey)
+                REGISTRY.Tracks[trackKey].playlists.push(playlistKey);
+            setPlayModes(playlistKey);
         },
         setPlayModes = (soundRef, playModes = {}) => {
             // for TRACKS: {isLooping}
@@ -356,76 +356,76 @@ const Soundscape = (() => {
                         // isLooping + isPlayingAll:             Plays each track in sequence, then repeats. (= "Loop" in jukeboxData)
                         // isPlayingAll:                         Plays each track in sequence, then stops. (= Playlist Name ends with "[SequenceOnce]")
                         // isTogether:                           Plays all tracks simultaneously once. (= "Simulplay" in jukeboxData)
-            const soundKey = getSoundKey(soundRef)
+            const soundKey = getSoundKey(soundRef);
             if (isTrack(soundKey)) {
                 const trackData = getTrackData(soundKey),
-                    trackObj = getTrackObj(soundKey)
-                Object.assign(trackData.playModes, C.SOUNDMODES[soundKey] || C.SOUNDMODES.TrackDefault, trackData.playModes, playModes)
-                trackObj.set({loop: Boolean(trackData.playModes.isLooping), volume: getVolume(trackData.name)})
+                    trackObj = getTrackObj(soundKey);
+                Object.assign(trackData.playModes, C.SOUNDMODES[soundKey] || C.SOUNDMODES.TrackDefault, trackData.playModes, playModes);
+                trackObj.set({loop: Boolean(trackData.playModes.isLooping), volume: getVolume(trackData.name)});
             } else if (isPlaylist(soundKey)) {
-                const playlistData = getPlaylistData(soundKey)
-                playlistData.playModes = Object.assign({}, C.SOUNDMODES[soundKey] || C.SOUNDMODES.PlaylistDefault, playlistData.playModes, playModes)
+                const playlistData = getPlaylistData(soundKey);
+                playlistData.playModes = Object.assign({}, C.SOUNDMODES[soundKey] || C.SOUNDMODES.PlaylistDefault, playlistData.playModes, playModes);
                 if (playlistData.playModes.isLooping && !playlistData.playModes.isPlayingAll)
-                    playlistData.trackKeys.map(x => setPlayModes(x, {isLooping: true}))
+                    playlistData.trackKeys.map(x => setPlayModes(x, {isLooping: true}));
             }
         },
         setVolume = (soundRef, volume) => {
             if (soundRef === "base") {
-                STATE.REF.VOLUME.base = D.Int(volume)
+                STATE.REF.VOLUME.base = D.Int(volume);
             } else {
-                const soundKey = getSoundKey(soundRef)
+                const soundKey = getSoundKey(soundRef);
                 if (soundKey)
-                    STATE.REF.VOLUME[soundKey] = D.Int(volume)
+                    STATE.REF.VOLUME[soundKey] = D.Int(volume);
             }
-            syncSoundscape()
+            syncSoundscape();
         },
         setMasterVolumeMult = (volumeMult) => { 
-            STATE.REF.VOLUME.MasterVolumeMult = D.Float(volumeMult, 2)
-            syncSoundscape()
+            STATE.REF.VOLUME.MasterVolumeMult = D.Float(volumeMult, 2);
+            syncSoundscape();
         },
         setInsideMult = (soundRef, volumeMult) => {
             if (soundRef === "base") {
-                STATE.REF.VOLUME.MULTS.Inside.base = D.Float(volumeMult, 2)
+                STATE.REF.VOLUME.MULTS.Inside.base = D.Float(volumeMult, 2);
             } else {
-                const soundKey = getSoundKey(soundRef)
+                const soundKey = getSoundKey(soundRef);
                 if (soundKey)
-                    STATE.REF.VOLUME.MULTS.Inside[soundKey] = D.Float(volumeMult, 2)
+                    STATE.REF.VOLUME.MULTS.Inside[soundKey] = D.Float(volumeMult, 2);
             }
-            syncSoundscape()
+            syncSoundscape();
         },
         setRainMult = (soundRef, volumeMult) => {
             if (soundRef === "base") {
-                STATE.REF.VOLUME.MULTS.Raining.base = D.Float(volumeMult, 2)
+                STATE.REF.VOLUME.MULTS.Raining.base = D.Float(volumeMult, 2);
             } else {
-                const soundKey = getSoundKey(soundRef)
+                const soundKey = getSoundKey(soundRef);
                 if (soundKey)
-                    STATE.REF.VOLUME.MULTS.Raining[soundKey] = D.Float(volumeMult, 2)
+                    STATE.REF.VOLUME.MULTS.Raining[soundKey] = D.Float(volumeMult, 2);
             }
-            syncSoundscape()
+            syncSoundscape();
         },
     // #endregion
 
     // #region CONTROLLERS: Playing & Stopping Sounds, Playing Next Sound
         playSound = (soundRef, masterSound) => { // Initializes any playlist as if playing it for the first time. To preserve sequences, use playNextSound()
             if (STATE.REF.isSoundscapeActive) {
-                const soundKey = getSoundKey(soundRef)
-                DB({soundRef, masterSound, volume: getVolume(soundKey), realVolume: (getTrackObj(soundKey) || {get: () => false}).get("volume")}, "playSound")
+                const soundKey = getSoundKey(soundRef);
+                DB({soundRef, masterSound, volume: getVolume(soundKey), realVolume: (getTrackObj(soundKey) || {get: () => false}).get("volume")}, "playSound");
                 if (isPlaylist(soundKey)) {
                     const playlistData = getPlaylistData(soundKey),
-                        {trackKeys} = playlistData
+                        {trackKeys} = playlistData;
                     if (!playlistData.trackSequence.length) {
                         if (playlistData.playModes.isRandom)
-                            playlistData.trackSequence = _.shuffle(trackKeys).filter(x => !playlistData.currentTracks.includes(x))
+                            playlistData.trackSequence = _.shuffle(trackKeys).filter(x => !playlistData.currentTracks.includes(x));
                         else
-                            playlistData.trackSequence = D.Clone(trackKeys).filter(x => !playlistData.currentTracks.includes(x))
-                        return playSound(playlistData.name, masterSound)
+                            playlistData.trackSequence = D.Clone(trackKeys).filter(x => !playlistData.currentTracks.includes(x));
+                        return playSound(playlistData.name, masterSound);
                     }
                     if (playlistData.playModes.isTogether)
-                        playlistData.trackKeys.map(x => playSound(x, playlistData.name))
+                        playlistData.trackKeys.map(x => playSound(x, playlistData.name));
                     else
-                        playlistData.currentTracks.push(playSound(playlistData.trackSequence.shift(), playlistData.name))
-                    playlistData.isPlaying = true
-                    return true
+                        playlistData.currentTracks.push(playSound(playlistData.trackSequence.shift(), playlistData.name));
+                    playlistData.isPlaying = true;
+                    return true;
                 } else if (isTrack(soundKey)) {
                     // RE: PLAYING, LOOP, SOFTSTOP:
                     //      'softstop' MUST be false for track to play at all.
@@ -437,49 +437,49 @@ const Soundscape = (() => {
                     //  IF...
                     //    a playing track's softstop is set TRUE, it will stop immediately.
                     //    a playing track's playing is set FALSE, it will stop immediately.
-                    const trackData = getTrackData(soundKey)
-                    trackData.isPlaying = true
-                    trackData.masterPlaylist = masterSound || false
-                    getTrackObj(soundKey).set({playing: true, softstop: false, volume: getVolume(soundKey)})
-                    STATE.REF.activeSounds = _.uniq([...STATE.REF.activeSounds, masterSound || soundKey])
-                    return soundKey
+                    const trackData = getTrackData(soundKey);
+                    trackData.isPlaying = true;
+                    trackData.masterPlaylist = masterSound || false;
+                    getTrackObj(soundKey).set({playing: true, softstop: false, volume: getVolume(soundKey)});
+                    STATE.REF.activeSounds = _.uniq([...STATE.REF.activeSounds, masterSound || soundKey]);
+                    return soundKey;
                 }
             }
-            return false
+            return false;
         },
         stopSound = (soundRef, trackKey) => {
-            DB({soundRef}, "stopSound")
-            const soundKey = getSoundKey(soundRef)
-            STATE.REF.activeSounds = _.without(STATE.REF.activeSounds, soundKey)
+            DB({soundRef}, "stopSound");
+            const soundKey = getSoundKey(soundRef);
+            STATE.REF.activeSounds = _.without(STATE.REF.activeSounds, soundKey);
             if (isPlaylist(soundKey)) {
                 const playlistData = getPlaylistData(soundKey),
-                    curTracks = [...playlistData.currentTracks]
+                    curTracks = [...playlistData.currentTracks];
                 if (trackKey) {
-                    playlistData.currentTracks = _.without(playlistData.currentTracks, trackKey)
-                    playlistData.isPlaying = Boolean(playlistData.currentTracks.length)
-                    stopSound(trackKey)
+                    playlistData.currentTracks = _.without(playlistData.currentTracks, trackKey);
+                    playlistData.isPlaying = Boolean(playlistData.currentTracks.length);
+                    stopSound(trackKey);
                 } else {
-                    playlistData.currentTracks = []
-                    playlistData.isPlaying = false
-                    curTracks.map(x => stopSound(x))
+                    playlistData.currentTracks = [];
+                    playlistData.isPlaying = false;
+                    curTracks.map(x => stopSound(x));
                 }
             } else if (isTrack(soundKey)) {
-                const trackData = getTrackData(soundKey)
+                const trackData = getTrackData(soundKey);
                 if (trackData.masterPlaylist && REGISTRY.Playlists[trackData.masterPlaylist].currentTracks.includes(soundKey)) {
-                    stopSound(trackData.masterPlaylist, soundKey)
+                    stopSound(trackData.masterPlaylist, soundKey);
                 } else {
-                    trackData.isPlaying = false
-                    trackData.masterPlaylist = false
-                    getTrackObj(soundKey).set({playing: false, softstop: false})
+                    trackData.isPlaying = false;
+                    trackData.masterPlaylist = false;
+                    getTrackObj(soundKey).set({playing: false, softstop: false});
                 }
             }
         },
         syncSoundscape = (isResetting = false) => {
             if (Session.Mode === "Complications")
-                return
+                return;
             if (isResetting) {
-                [...Object.keys(REGISTRY.Playlists), ...Object.keys(REGISTRY.Tracks)].map(x => stopSound(x))
-                STATE.REF.activeSounds = []
+                [...Object.keys(REGISTRY.Playlists), ...Object.keys(REGISTRY.Tracks)].map(x => stopSound(x));
+                STATE.REF.activeSounds = [];
             }
             const activeSounds = _.compact([
                     getScore(),
@@ -488,44 +488,44 @@ const Soundscape = (() => {
                 ]),
                 soundsToStop = STATE.REF.activeSounds.filter(x => !activeSounds.includes(x)),
                 soundsToPlay = activeSounds.filter(x => !STATE.REF.activeSounds.includes(x)),
-                soundsToCheck = activeSounds.filter(x => STATE.REF.activeSounds.includes(x))
-            DB({activeSounds, soundsToStop, soundsToPlay, soundsToCheck}, "syncSoundscape")
-            soundsToStop.map(x => stopSound(x))
-            soundsToPlay.map(x => playSound(x))
+                soundsToCheck = activeSounds.filter(x => STATE.REF.activeSounds.includes(x));
+            DB({activeSounds, soundsToStop, soundsToPlay, soundsToCheck}, "syncSoundscape");
+            soundsToStop.map(x => stopSound(x));
+            soundsToPlay.map(x => playSound(x));
             for (const soundKey of soundsToCheck) {
                 const trackObj = getTrackObj(soundKey),
-                    trackVolume = getVolume(soundKey)
+                    trackVolume = getVolume(soundKey);
                 if (trackObj && D.Int(trackObj.get("volume")) !== trackVolume)
-                    trackObj.set({volume: trackVolume})
+                    trackObj.set({volume: trackVolume});
             }
         },
         startSoundscape = (isResetting = false) => {
-            STATE.REF.isSoundscapeActive = true
-            syncSoundscape(isResetting)
+            STATE.REF.isSoundscapeActive = true;
+            syncSoundscape(isResetting);
         },
         stopSoundscape = () => {
-            STATE.REF.isSoundscapeActive = false
+            STATE.REF.isSoundscapeActive = false;
             for (const soundKey of STATE.REF.activeSounds)
-                stopSound(soundKey)
+                stopSound(soundKey);
         },
         playNextSound = (trackRef) => { // Playlist must have been initialized for sequencing: First play should be with playSound()
             if (STATE.REF.isSoundscapeActive) {
-                const trackData = getSoundData(trackRef)
+                const trackData = getSoundData(trackRef);
                 if (trackData.playModes.isLooping && STATE.REF.activeSounds.includes(trackData.name)) {
-                    playSound(trackData.name)
+                    playSound(trackData.name);
                 } else {
-                    const playlistData = getPlaylistData(trackData.name)
+                    const playlistData = getPlaylistData(trackData.name);
                     if (playlistData && STATE.REF.activeSounds.includes(playlistData.name)) 
                         if (playlistData.playModes.isPlayingAll && playlistData.trackSequence.length || playlistData.playModes.isLooping) {
-                            playSound(playlistData.name)
+                            playSound(playlistData.name);
                         } else {
-                            stopSound(playlistData.name, trackData.name)
+                            stopSound(playlistData.name, trackData.name);
                         }
                     else 
-                        stopSound(trackData.name)                    
+                        stopSound(trackData.name);                    
                 }
             }          
-        }
+        };
     // #endregion
 
     return {
@@ -534,11 +534,11 @@ const Soundscape = (() => {
 
         Sync: syncSoundscape,
         Play: playSound, Stop: stopSound
-    }
-} )()
+    };
+} )();
 
 on("ready", () => {
-    Soundscape.CheckInstall()
-    D.Log("Soundscape Ready!")
-} )
-void MarkStop("Soundscape")
+    Soundscape.CheckInstall();
+    D.Log("Soundscape Ready!");
+} );
+void MarkStop("Soundscape");

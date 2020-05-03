@@ -97,6 +97,7 @@ module.exports = {
         "no-use-before-define": 0,
         "no-useless-computed-key": 0,
         "no-useless-constructor": "warn",
+        "no-useless-escape": 0,
         //"no-magic-numbers": ["warn", { "ignoreArrayIndexes": true, "ignore": [0, 1], "enforceConst": true } ],
         "no-void": 0,
         "one-var": ["error", "consecutive"],
@@ -109,8 +110,8 @@ module.exports = {
         "radix": 0,
         "semi": [
             "error",
-            "never",
-            { "beforeStatementContinuationChars": "never" }
+            "always",
+            { "omitLastInOneLineBlock": true }
         ]
     },
     "globals": {

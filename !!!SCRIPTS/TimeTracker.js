@@ -1,4 +1,4 @@
-void MarkStart("TimeTracker")
+void MarkStart("TimeTracker");
 const TimeTracker = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "TimeTracker",
@@ -27,42 +27,42 @@ const TimeTracker = (() => {
         }, */
 
         checkInstall = () => {
-            const funcID = ONSTACK()
-            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
-            initialize()
-            OFFSTACK(funcID)
+            const funcID = ONSTACK();
+            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
+            initialize();
+            OFFSTACK(funcID);
         },
     // #endregion
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
-            const funcID = ONSTACK()
+            const funcID = ONSTACK();
 
-            STATE.REF.TweenStart = 0
-            STATE.REF.TweenTarget = 0
-            STATE.REF.TweenAutoIgnoreAlarms = STATE.REF.TweenAutoIgnoreAlarms || []
-            STATE.REF.TweenAutoDeferAlarms = STATE.REF.TweenAutoDeferAlarms || []
-            STATE.REF.TweenDeferredAlarms = STATE.REF.TweenDeferredAlarms || []
+            STATE.REF.TweenStart = 0;
+            STATE.REF.TweenTarget = 0;
+            STATE.REF.TweenAutoIgnoreAlarms = STATE.REF.TweenAutoIgnoreAlarms || [];
+            STATE.REF.TweenAutoDeferAlarms = STATE.REF.TweenAutoDeferAlarms || [];
+            STATE.REF.TweenDeferredAlarms = STATE.REF.TweenDeferredAlarms || [];
 
-            STATE.REF.dateObj = STATE.REF.currentDate ? new Date(STATE.REF.currentDate) : null
-            STATE.REF.nextSessionDate = STATE.REF.nextSessionDate || (new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"}))).getTime()
-            STATE.REF.lastDate = STATE.REF.lastDate || 0
-            STATE.REF.weatherOverride = STATE.REF.weatherOverride || {}
-            STATE.REF.timeZoneOffset = D.Int((new Date()).toLocaleString("en-US", {hour: "2-digit", hour12: false, timeZone: "America/New_York"}))
-            STATE.REF.weatherData = STATE.REF.weatherData || RAWWEATHERDATA            
+            STATE.REF.dateObj = STATE.REF.currentDate ? new Date(STATE.REF.currentDate) : null;
+            STATE.REF.nextSessionDate = STATE.REF.nextSessionDate || (new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"}))).getTime();
+            STATE.REF.lastDate = STATE.REF.lastDate || 0;
+            STATE.REF.weatherOverride = STATE.REF.weatherOverride || {};
+            STATE.REF.timeZoneOffset = D.Int((new Date()).toLocaleString("en-US", {hour: "2-digit", hour12: false, timeZone: "America/New_York"}));
+            STATE.REF.weatherData = STATE.REF.weatherData || RAWWEATHERDATA;            
             // STATE.REF.weatherData = RAWWEATHERDATA
 
-            STATE.REF.Alarms = STATE.REF.Alarms || []
+            STATE.REF.Alarms = STATE.REF.Alarms || [];
 
         
             if (!STATE.REF.dateObj) {
-                D.Alert("Date Object Missing! Setting to default date.<br><br>Use !time set [year] [month] [day] [hour] [minute] to correct.", "TimeTracker")
-                STATE.REF.dateObj = new Date(2019, 11, 1, 18, 55)
-                STATE.REF.currentDate = STATE.REF.dateObj.getTime()
+                D.Alert("Date Object Missing! Setting to default date.<br><br>Use !time set [year] [month] [day] [hour] [minute] to correct.", "TimeTracker");
+                STATE.REF.dateObj = new Date(2019, 11, 1, 18, 55);
+                STATE.REF.currentDate = STATE.REF.dateObj.getTime();
             }
         
             if (Object.keys(STATE.REF.weatherOverride).length)
-                D.Alert(`Weather Override in effect: ${D.JS(STATE.REF.weatherOverride)}<br><b>!time set weather</b> to clear.`, "Alert: Weather Override")
+                D.Alert(`Weather Override in effect: ${D.JS(STATE.REF.weatherOverride)}<br><b>!time set weather</b> to clear.`, "Alert: Weather Override");
 
             // STATE.REF.weatherData[1][29] = ['xfCxxx', 'xfCxxx', 'xfCxsx', 'xfDxxx', 'xfExsx', 'cfExbx', 'tfFxww', 'tfFxgw', 'tfGxgw', 'tfGxww', 'pfGxww', 'wxFxbw', 'wxFxsw', 'wxFxbw', 'wxFxww', 'wxExbw', 'wxExbw', 'wxExbw', 'wxExww', 'wxDxww', 'wxDxbw', 'wxDxbw', 'wxDxgw', 'cxDxwx']
             // STATE.REF.weatherData[2][30] = ['wxDxww', 'wxDxbw', 'wxDxbw', 'wxDxgw', 'cxDxwx', 'cxBxhx', 'cxBxwx', 'cxBxwx', 'cxBxbx', 'cxCxwx', 'cxDxhx', 'cxDxwx', 'cxDxwx', 'cxExwx', 'wxExgw', 'pxDxhw', 'txDxvw', 'txDxhw', 'txCxhw', 'pxBxww', 'wxBxbw', 'cxAxsx', 'cx0xxf', 'cx0xsf']
@@ -74,89 +74,89 @@ const TimeTracker = (() => {
             // STATE.REF.weatherData[0][20] = ["cxHxg5", "cxHxg5", "wxGxg5", "pxGxw5", "txGxg5", "txGxg5", "txHxg4", "pxHxw4", "wxHxb4", "cxHxb4", "cxIxb4", "cxJxs4", "cxJxb4", "cxKxs4", "cxKxb4", "cxKxs3", "wxKxw3", "pxJxw3", "txJxg3", "txIxg2", "txHxg1", "txGxgw", "txGxww", "txGxbw"]
             // STATE.REF.weatherData[0][21] = ["txFxsw", "txFxxw", "txExxw", "txExxw", "xxExxf", "xxExxf", "xxExxf", "sxDxb1", "bxDxb2", "bxExw3", "wxGxb2", "cxIxb2", "xxJxs2", "cxJxs2", "cxIxs2", "cxJxs2", "cxJxs2", "cxHxs2", "xfGxs2", "xfGxx2", "xfGxs2", "xfGxx2", "pfGxs1", "pfGxb1"]
 
-            OFFSTACK(funcID)
+            OFFSTACK(funcID);
         },
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args) => { // eslint-disable-line no-unused-vars
-            const funcID = ONSTACK() 
-            let isForcing = false
+            const funcID = ONSTACK(); 
+            let isForcing = false;
             switch (call) {
                 case "alarmfunc": {
                     const funcName = args.shift(),
-                        funcParamString = args.join(" ")
-                    confirmAlarm(funcName, funcParamString)
-                    break
+                        funcParamString = args.join(" ");
+                    confirmAlarm(funcName, funcParamString);
+                    break;
                 }
                 case "weatherfind": {
-                    const [eventType, eventCode] = args.map(x => D.Int(x) || x)
-                    D.Alert(D.JS(getNextWeatherEvent(eventType, eventCode)))
-                    break
+                    const [eventType, eventCode] = args.map(x => D.Int(x) || x);
+                    D.Alert(D.JS(getNextWeatherEvent(eventType, eventCode)));
+                    break;
                 }
                 case "codecheck": {
-                    const [month, day, hour] = args.map(x => D.Int(x))
-                    convertWeatherDataToCode(getWeatherData(month, day, hour))
-                    break
+                    const [month, day, hour] = args.map(x => D.Int(x));
+                    convertWeatherDataToCode(getWeatherData(month, day, hour));
+                    break;
                 }
                 case "moon": {
                     if (!args.length) {
-                        syncCountdown(false, true)
+                        syncCountdown(false, true);
                     } else if (args[0] === "stop") {
-                        isCountdownFrozen = false
-                        syncCountdown()
+                        isCountdownFrozen = false;
+                        syncCountdown();
                     } else {
                         if (args[1])
-                            MOON.maxTop = VAL({number: args[1]}) ? D.Int(args[1]) : MOON.maxTop
+                            MOON.maxTop = VAL({number: args[1]}) ? D.Int(args[1]) : MOON.maxTop;
                         if (args[2])
-                            MOON.minTop = VAL({number: args[2]}) ? D.Int(args[2]) : MOON.minTop
+                            MOON.minTop = VAL({number: args[2]}) ? D.Int(args[2]) : MOON.minTop;
                         if (args[3])
-                            MOON.daysToWait = VAL({number: args[3]}) ? D.Int(args[3]) : MOON.daysToWait
-                        isCountdownFrozen = false
+                            MOON.daysToWait = VAL({number: args[3]}) ? D.Int(args[3]) : MOON.daysToWait;
+                        isCountdownFrozen = false;
                         if (VAL({number: args[0]}))
-                            syncCountdown({daysIn: D.Float(args[0])}, true)
+                            syncCountdown({daysIn: D.Float(args[0])}, true);
                         else
-                            syncCountdown({}, true)
-                        isCountdownFrozen = true
+                            syncCountdown({}, true);
+                        isCountdownFrozen = true;
                     }
-                    break                    
+                    break;                    
                 }
                 case "get": {
                     switch (D.LCase(call = args.shift())) {
                         case "alarms": {
-                            displayNextAlarms()
-                            displayPastAlarms()
-                            break
+                            displayNextAlarms();
+                            displayPastAlarms();
+                            break;
                         }
                         case "code": {
                             switch (D.LCase(call = args.shift())) {
                                 case "day": {
-                                    const [month, date] = args.map(x => D.Int(x))
+                                    const [month, date] = args.map(x => D.Int(x));
                                     if (date)
-                                        D.Alert(`STATE.REF.weatherData[${month}][${date}] = ['${STATE.REF.weatherData[month][date].join("', '")}']`, "Day's Weather Codes")
-                                    break
+                                        D.Alert(`STATE.REF.weatherData[${month}][${date}] = ['${STATE.REF.weatherData[month][date].join("', '")}']`, "Day's Weather Codes");
+                                    break;
                                 }
-                                default: D.Alert(`${STATE.REF.weatherData[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()]}`, "Weather Code"); break
+                                default: D.Alert(`${STATE.REF.weatherData[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()]}`, "Weather Code"); break;
                             }
-                            break
+                            break;
                         }
                         case "weather": {
-                            scanWeatherData(args[0] === "raw")
-                            break
+                            scanWeatherData(args[0] === "raw");
+                            break;
                         }
                         case "report": {
                             if (args[0] && D.Int(args[0]) >= 0 && D.Int(args[0]) <= 11)
-                                updateWeatherHandout(D.Int(args[0]))
-                            break
+                                updateWeatherHandout(D.Int(args[0]));
+                            break;
                         }
                     // no default
                     }
-                    break
+                    break;
                 }
                 case "set": {
                     switch (D.LCase(call = args.shift())) {
                         case "alarm": {
-                            const [dateRef, alarmName, alarmLabel, alarmFuncName, alarmFuncParams, alarmRecur] = args.join(" ").replace(/"/gu, "").split("|")
+                            const [dateRef, alarmName, alarmLabel, alarmFuncName, alarmFuncParams, alarmRecur] = args.join(" ").replace(/"/gu, "").split("|");
                             if (!(dateRef && alarmName && alarmLabel && alarmFuncName))
                                 D.Alert([
                                     "<h3>Alarm Syntax</h3>",
@@ -167,168 +167,168 @@ const TimeTracker = (() => {
                                     "  - funcName: The name of the function as defined in ALARMFUNCS",
                                     "  - funcParams: An '@'-delim'd list of args to pass to funcName",
                                     "  - recurring: date string for recurrance interval"
-                                ].join("<br>"), "!time set alarm")
+                                ].join("<br>"), "!time set alarm");
                             else
-                                D.Alert(`Alarm Set:<br><br>${D.JS(setAlarm(dateRef, alarmName, alarmLabel, alarmFuncName, alarmFuncParams.split("@").map(x => typeof x === "string" ? x.replace(/:\*:AT:\*:/gu, "@") : x), alarmRecur))}`, "!time set alarm")
-                            break
+                                D.Alert(`Alarm Set:<br><br>${D.JS(setAlarm(dateRef, alarmName, alarmLabel, alarmFuncName, alarmFuncParams.split("@").map(x => typeof x === "string" ? x.replace(/:\*:AT:\*:/gu, "@") : x), alarmRecur))}`, "!time set alarm");
+                            break;
                         }
                         case "weath": case "weather": {
-                            D.Alert("Weather Running!")
-                            setManualWeather(args[0] && args[0] + (args[0].length === 1 ? "x" : ""), args[1] && D.Int(args[1]), args[2], args[3])
-                            break
+                            D.Alert("Weather Running!");
+                            setManualWeather(args[0] && args[0] + (args[0].length === 1 ? "x" : ""), args[1] && D.Int(args[1]), args[2], args[3]);
+                            break;
                         }
                         case "session": {
-                            const params = Listener.ParseParams(args)
-                            setNextSessionDate(params)
-                            D.Alert(`Next Session Date: <b>${D.JS(formatDateString(new Date(STATE.REF.nextSessionDate), true))}</b><br>Last Session Date: <b>${D.JS(formatDateString(new Date(STATE.REF.lastSessionDate), true))}</b>`)
-                            break
+                            const params = D.ParseToObj(args);
+                            setNextSessionDate(params);
+                            D.Alert(`Next Session Date: <b>${D.JS(formatDateString(new Date(STATE.REF.nextSessionDate), true))}</b><br>Last Session Date: <b>${D.JS(formatDateString(new Date(STATE.REF.lastSessionDate), true))}</b>`);
+                            break;
                         }
                         case "lastsession": {
-                            const params = Listener.ParseParams(args),
-                                lastDateObj = new Date(STATE.REF.nextSessionDate)
+                            const params = D.ParseToObj(args),
+                                lastDateObj = new Date(STATE.REF.nextSessionDate);
                             if (VAL({dateObj: lastDateObj})) {
-                                lastDateObj.setMonth(D.Int(params.month))
-                                lastDateObj.setDate(D.Int(params.date || params.day))
-                                lastDateObj.setHours(D.Int(params.hour))
-                                lastDateObj.setMinutes(D.Int(params.minute || 0))
-                                STATE.REF.lastSessionDate = lastDateObj.getTime()
-                                D.Alert(`Next Session Date: <b>${D.JS(formatDateString(new Date(STATE.REF.nextSessionDate), true))}</b><br>Last Session Date: <b>${D.JS(formatDateString(new Date(STATE.REF.lastSessionDate), true))}</b>`)
+                                lastDateObj.setMonth(D.Int(params.month));
+                                lastDateObj.setDate(D.Int(params.date || params.day));
+                                lastDateObj.setHours(D.Int(params.hour));
+                                lastDateObj.setMinutes(D.Int(params.minute || 0));
+                                STATE.REF.lastSessionDate = lastDateObj.getTime();
+                                D.Alert(`Next Session Date: <b>${D.JS(formatDateString(new Date(STATE.REF.nextSessionDate), true))}</b><br>Last Session Date: <b>${D.JS(formatDateString(new Date(STATE.REF.lastSessionDate), true))}</b>`);
                             } else {
-                                D.Alert(`Not a date object: ${D.JS(lastDateObj)}`, "!time set lastsession")
+                                D.Alert(`Not a date object: ${D.JS(lastDateObj)}`, "!time set lastsession");
                             }
-                            break
+                            break;
                         }
                         case "force": {
-                            call = args.shift()
-                            isForcing = true
+                            call = args.shift();
+                            isForcing = true;
                         }
-                        // falls through
+                        /* falls through */
                         default: {
                             // D.Alert("Default Running!")
-                            args.unshift(call)
+                            args.unshift(call);
                             // D.Alert(`Args: ${D.JS(args)}<br>Date: ${new Date(Date.UTC(..._.map(args, v => D.Int(v))))}<br>Date: ${new Date(Date.UTC(..._.map(args, v => D.Int(v))))}`)
-                            const delta = Math.ceil(((new Date(Date.UTC(..._.map(args, v => D.Int(v))))).getTime() - STATE.REF.dateObj.getTime()) / (1000 * 60))
-                            tweenClock(addTime(STATE.REF.dateObj, delta, "m"))
+                            const delta = Math.ceil(((new Date(Date.UTC(..._.map(args, v => D.Int(v))))).getTime() - STATE.REF.dateObj.getTime()) / (1000 * 60));
+                            tweenClock(addTime(STATE.REF.dateObj, delta, "m"));
                             if (isForcing)
-                                state[C.GAMENAME].Session.dateRecord = null
-                            break
+                                state[C.GAMENAME].Session.dateRecord = null;
+                            break;
                         }
                     }
-                    break
+                    break;
                 }
                 case "add": {
                     switch (D.LCase(call = args.shift())) {
                         case "force": {
-                            call = args.shift()
-                            isForcing = true
+                            call = args.shift();
+                            isForcing = true;
                         }
-                        // falls through
+                        /* falls through */
                         default: {
-                            const [delta, unit] = parseToDeltaTime(call, ...args)
-                            tweenClock(addTime(STATE.REF.dateObj, D.Float(delta), D.LCase(unit)))
+                            const [delta, unit] = parseToDeltaTime(call, ...args);
+                            tweenClock(addTime(STATE.REF.dateObj, D.Float(delta), D.LCase(unit)));
                             if (isForcing)
-                                state[C.GAMENAME].Session.dateRecord = null
-                            break
+                                state[C.GAMENAME].Session.dateRecord = null;
+                            break;
                         }
                     }
-                    break
+                    break;
                 }
                 case "process": {
                     switch (D.LCase(call = args.shift())) {
                         case "ground": case "groundcover": {
-                            const params = D.KeyMapObj(Listener.ParseParams(args), null, v => D.Float(v, 2))
-                            D.Alert(`Mapping Args: ${D.JS(params)}`)
-                            parseCodesForGroundCover(params.meltMult, params)
-                            break
+                            const params = D.ParseToObj(args);
+                            D.Alert(`Mapping Args: ${D.JS(params)}`);
+                            parseCodesForGroundCover(params.meltMult, params);
+                            break;
                         }
                         case "stormscore": {
-                            parseCodesForStormScore()                            
-                            break
+                            parseCodesForStormScore();                            
+                            break;
                         }
                         case "upgradeweather": {
-                            upgradeAllWeather()
-                            break
+                            upgradeAllWeather();
+                            break;
                         }
                         // no default
                     }
-                    break                    
+                    break;                    
                 }
                 case "start": {
-                    toggleClock(true)
-                    break
+                    toggleClock(true);
+                    break;
                 }
                 case "stop": {
-                    toggleClock(false)
-                    break
+                    toggleClock(false);
+                    break;
                 }
-                case "fix": fixTimeStatus(); break
+                case "fix": fixTimeStatus(); break;
                 case "reset": {
                     switch (D.LCase(call = args.shift())) {
                         case "alarms": {
-                            STATE.REF.Alarms = []
-                            break
+                            STATE.REF.Alarms = [];
+                            break;
                         }
                         case "weatherdata": {
-                            STATE.REF.weatherData = D.Clone(RAWWEATHERDATA)
-                            break
+                            STATE.REF.weatherData = D.Clone(RAWWEATHERDATA);
+                            break;
                         }
                         // no default
                     }
-                    break
+                    break;
                 }
                 case "test": {
                     switch (D.LCase(call = args.shift())) {
                         case "datestring": {
                             const [dateStart, dateStrings] = args.join(" ").split("|"),
-                                dateObj = getDateObj(dateStart === "now" ? STATE.REF.dateObj : dateStart) || addTime(STATE.REF.dateObj, ...parseToDeltaTime(dateStart), false)
+                                dateObj = getDateObj(dateStart === "now" ? STATE.REF.dateObj : dateStart) || addTime(STATE.REF.dateObj, ...parseToDeltaTime(dateStart), false);
                             if (VAL({dateObj})) {
                                 const testCases = dateStrings === "all" ? ["nextfullweek", "nextfullnight", "dawn", "dusk", "midnight", "noon", "nextweek", "endofweek"] : dateStrings.split("@"),
-                                    reportLines = []
+                                    reportLines = [];
                                 for (const testCase of testCases)
-                                    reportLines.push(`<b>${D.JS(testCase)}:</b> ${formatDateString(getDateFromDateString(dateObj, testCase, false), true)}`)
-                                D.Alert(`<h3>Test Cases:</h3>${reportLines.join("<br>")}`, "!time test datestring")
+                                    reportLines.push(`<b>${D.JS(testCase)}:</b> ${formatDateString(getDateFromDateString(dateObj, testCase, false), true)}`);
+                                D.Alert(`<h3>Test Cases:</h3>${reportLines.join("<br>")}`, "!time test datestring");
                             } else {
-                                D.Alert(`Invalid dateStart (${D.JS(dateStart)}) OR dateStrings (${D.JS(dateStrings)})<br><br><b>Syntax:</b> !time test datestring &lt;dateRef&gt;|&lt;dateStrings (@-delim)&gt;`, "!time test datestrings")
+                                D.Alert(`Invalid dateStart (${D.JS(dateStart)}) OR dateStrings (${D.JS(dateStrings)})<br><br><b>Syntax:</b> !time test datestring &lt;dateRef&gt;|&lt;dateStrings (@-delim)&gt;`, "!time test datestrings");
                             }
-                            break
+                            break;
                         }
                         case "date": {
                             const curDateObj = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"})),
-                                sessDateObj = new Date(curDateObj)                        
-                            sessDateObj.setDate(curDateObj.getDate() - curDateObj.getDay() + 7)
-                            sessDateObj.setHours(19)
-                            sessDateObj.setMinutes(30)
-                            sessDateObj.setSeconds(0)
+                                sessDateObj = new Date(curDateObj);                        
+                            sessDateObj.setDate(curDateObj.getDate() - curDateObj.getDay() + 7);
+                            sessDateObj.setHours(19);
+                            sessDateObj.setMinutes(30);
+                            sessDateObj.setSeconds(0);
 
-                            let secsLeft = (sessDateObj - curDateObj)/1000 
+                            let secsLeft = (sessDateObj - curDateObj)/1000; 
                         
                             if (secsLeft >= 7*24*60*60)
-                                secsLeft -= 7*24*60*60
+                                secsLeft -= 7*24*60*60;
 
                             const secsProgress = [secsLeft],                    
-                                daysLeft = Math.floor(secsLeft / (24 * 60 * 60))
+                                daysLeft = Math.floor(secsLeft / (24 * 60 * 60));
 
-                            secsLeft -= daysLeft * 24 * 60 * 60
-                            secsProgress.push(secsLeft)
-                            const hoursLeft = Math.floor(secsLeft / (60 * 60))
-                            secsLeft -= hoursLeft * 60 * 60
-                            secsProgress.push(secsLeft)
-                            const minsLeft = Math.floor(secsLeft / 60)
-                            secsLeft -= minsLeft * 60
-                            secsProgress.push(secsLeft)
+                            secsLeft -= daysLeft * 24 * 60 * 60;
+                            secsProgress.push(secsLeft);
+                            const hoursLeft = Math.floor(secsLeft / (60 * 60));
+                            secsLeft -= hoursLeft * 60 * 60;
+                            secsProgress.push(secsLeft);
+                            const minsLeft = Math.floor(secsLeft / 60);
+                            secsLeft -= minsLeft * 60;
+                            secsProgress.push(secsLeft);
 
                             const returnLines = [
                                 `Current Date: ${curDateObj.toString()}`,
                                 `Session Date: ${sessDateObj.toString()}`,
                                 `Days: ${daysLeft}, Hours: ${hoursLeft}, Minutes: ${minsLeft}, Seconds: ${secsLeft}`,
                                 `Seconds Progress: [${secsProgress.join(", ")}]`
-                            ]
-                            D.Alert(returnLines.join("<br>"), "Date Test")
-                            break
+                            ];
+                            D.Alert(returnLines.join("<br>"), "Date Test");
+                            break;
                         }
                     // no default
                     }
-                    break
+                    break;
                 }
                 case "weatherreport": {
                     const transitionStrings = [
@@ -344,7 +344,7 @@ const TimeTracker = (() => {
                         `<tr><td style="text-align:right; text-align-last:right;">-> Predawn2</td><td style="text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATE.REF.dateObj.getMonth()][0], -10, true)}</td></tr>`,
                         `<tr><td style="text-align:right; text-align-last:right;">-> Predawn1</td><td style="text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATE.REF.dateObj.getMonth()][0], -5, true)}</td></tr>`,
                         `<tr><td style="text-align:right; text-align-last:right;">Predawn1 -> DAY</td><td style="text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATE.REF.dateObj.getMonth()][0], 0, true)}</td></tr>`
-                    ]
+                    ];
                     // const transitionStrings = ["Testing"]
                     D.Alert(D.JSH([
                         `<h3>WEATHER REPORT</h3>${displayWeatherReport()}`,
@@ -355,8 +355,8 @@ const TimeTracker = (() => {
                         "<b>!time set weather [event] [tC] [w] [humid]</b><table><tr><td style=\"width:18%;\">[EVENT]</td><td style=\"width:29%;\">x: Clear</td><td style=\"width:29%;\">b: Blizzard</td><td style=\"width:29%;\">c: Overcast</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\">f: Foggy</td><td style=\"width:29%;\">p: Downpour</td><td style=\"width:29%;\">s: Snowing</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\">t: Storm</td><td style=\"width:29%;\">w: Drizzle</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\"></td><td style=\"width:29%;\"><i>(+f for foggy)</i></td></tr>",
                         "<tr><td style=\"width:18%;\">[WIND]</td><td style=\"width:29%;\">x: Still</td><td style=\"width:29%;\">s: Soft</td><td style=\"width:29%;\">b: Breezy</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\">w: Blustery</td><td style=\"width:29%;\">g: Driving</td><td style=\"width:29%;\">h: Howling</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\"></td><td style=\"width:29%;\">v: Roaring</td></tr>",
                         "<tr><td style=\"width:18%;\">[HUMID]</td><td style=\"width:29%;\">x: null</td><td style=\"width:29%;\">d: Dry</td><td style=\"width:29%;\">h: Humid</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\"></td><td style=\"width:29%;\">m: Muggy</td><td style=\"width:29%;\">s: Swelter</td></tr></table>"
-                    ].join("<br>")), "TIMETRACKER")
-                    break
+                    ].join("<br>")), "TIMETRACKER");
+                    break;
                 }
                 default: {
                     D.Alert(D.JSH([
@@ -373,11 +373,11 @@ const TimeTracker = (() => {
                         "",
                         "",
                         "<tr><td style=\"width:18%;\">[HUMID]</td><td style=\"width:29%;\">x: null</td><td style=\"width:29%;\">d: Dry</td><td style=\"width:29%;\">h: Humid</td></tr><tr><td style=\"width:18%;\"></td><td style=\"width:29%;\"></td><td style=\"width:29%;\">m: Muggy</td><td style=\"width:29%;\">s: Swelter</td></tr></table>"
-                    ].join("<br>")), "TIMETRACKER")
-                    break
+                    ].join("<br>")), "TIMETRACKER");
+                    break;
                 }
             }
-            OFFSTACK(funcID)
+            OFFSTACK(funcID);
         },
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
@@ -391,54 +391,54 @@ const TimeTracker = (() => {
                         "and to heal aggravated Health damage.",
                         "You refresh your Willpower."
                     ].join("<br>"))
-                ].join("")))
+                ].join("")));
                 for (const charObj of D.GetChars("registered")) {
-                    Roller.QuickRouse(charObj, false, false)
-                    Char.RefreshWillpower(charObj)
+                    Roller.QuickRouse(charObj, false, false);
+                    Char.RefreshWillpower(charObj);
                 }
             },
             delrolleffect: (charRef, effectString) => { // eslint-disable-line no-unused-vars
-                const charObj = D.GetChar(charRef)
+                const charObj = D.GetChar(charRef);
                 if (VAL({charObj, string: effectString}))
                     if (!Roller.DelCharEffect(charObj.id, effectString))
-                        Roller.DelGlobalEffect(effectString)
+                        Roller.DelGlobalEffect(effectString);
             },
             delcharflag: (charRef, flagName, flagDisplayName, chatStyle) => {
-                const charObj = D.GetChar(charRef)
+                const charObj = D.GetChar(charRef);
                 if (VAL({charObj})) {
                     D.Chat(charObj.id, C.HTML.Block([
                         C.HTML.Header(`${flagDisplayName} cleared from your character.`, C.STYLES[chatStyle].header)
-                    ].join(""), C.STYLES[chatStyle].block))
-                    D.Call(`!char ${charObj.id} clear flag ${flagName}`)
+                    ].join(""), C.STYLES[chatStyle].block));
+                    D.Call(`!char ${charObj.id} clear flag ${flagName}`);
                 } else {
-                    THROW(`No Character Found for ${D.JS(charRef)}`, "delcharflag")
+                    THROW(`No Character Found for ${D.JS(charRef)}`, "delcharflag");
                 }
             },
             reminjury: (charRef, effectString, chatMsg) => {
-                const charObj = D.GetChar(charRef)
+                const charObj = D.GetChar(charRef);
                 if (VAL({charObj})) {
                     if (chatMsg)
-                        D.Chat(charObj.id, C.HTML.Block(C.HTML.Header(chatMsg, C.STYLES.whiteMarble.header), C.STYLES.whiteMarble.block))
-                    D.Call(`!roll effect del char ${charObj.id} ${effectString}`)
+                        D.Chat(charObj.id, C.HTML.Block(C.HTML.Header(chatMsg, C.STYLES.whiteMarble.header), C.STYLES.whiteMarble.block));
+                    D.Call(`!roll effect del char ${charObj.id} ${effectString}`);
                 } else {
-                    THROW(`No Character Found for ${D.JS(charRef)}`, "reminjury")
+                    THROW(`No Character Found for ${D.JS(charRef)}`, "reminjury");
                 }
             },
             remdyscrasia: (charRef) => {
-                const charObj = D.GetChar(charRef)
+                const charObj = D.GetChar(charRef);
                 if (VAL({charObj})) {
-                    D.Chat(charObj.id, C.HTML.Block(C.HTML.Header("Your dyscrasia fades.")))
-                    D.Call(`!char ${charObj.id} set stat dyscrasias_toggle:0`)
+                    D.Chat(charObj.id, C.HTML.Block(C.HTML.Header("Your dyscrasia fades.")));
+                    D.Call(`!char ${charObj.id} set stat dyscrasias_toggle:0`);
                 } else {
-                    THROW(`No Character Found for ${D.JS(charRef)}`, "remdyscrasia")
+                    THROW(`No Character Found for ${D.JS(charRef)}`, "remdyscrasia");
                 }
             }
-        }
+        };
     let [timeTimer, secTimer] = [null, null],
         [isTweeningClock, isFastTweeningClock, isTickingClock, isCountdownFrozen, weatherDataMemo] = [false, false, false, false, false],
         isCountdownRunning = true,
         [secondsLeft, numReturns] = [0, 0],
-        countdownRecord = []
+        countdownRecord = [];
 
     // #region CLASSES
     /* class Alarm {
@@ -1297,81 +1297,81 @@ const TimeTracker = (() => {
 
     // #region Date & Time Functions
         getDateObj = dateRef => {
-            const funcID = ONSTACK() // Takes almost any date format and converts it into a Date object.
-            let returnDate
-            const curDateString = formatDateString(new Date(STATE.REF.dateObj))
-            DB({dateRef, stateCurDate: STATE.REF.dateObj, curDate: new Date(STATE.REF.dateObj), curDateString: formatDateString(new Date(STATE.REF.dateObj))}, "parseToDateObj")
+            const funcID = ONSTACK(); // Takes almost any date format and converts it into a Date object.
+            let returnDate;
+            const curDateString = formatDateString(new Date(STATE.REF.dateObj));
+            DB({dateRef, stateCurDate: STATE.REF.dateObj, curDate: new Date(STATE.REF.dateObj), curDateString: formatDateString(new Date(STATE.REF.dateObj))}, "parseToDateObj");
             if (VAL({dateObj: dateRef})) {
-                DB({["DATE OBJECT!"]: dateRef, isItReally: dateRef instanceof Date}, "parseToDateObj")
-                return OFFSTACK(funcID) && dateRef
+                DB({["DATE OBJECT!"]: dateRef, isItReally: dateRef instanceof Date}, "parseToDateObj");
+                return OFFSTACK(funcID) && dateRef;
             } else if (VAL({string: dateRef})) {
                 if (!String(dateRef).match(/\D/gu)) {// if everything is a number, assume it's a seconds-past-1970 thing                
-                    DB({["SECS-PAST-1970 STRING!"]: dateRef}, "parseToDateObj")
-                    return OFFSTACK(funcID) && new Date(parseInt(dateRef))
+                    DB({["SECS-PAST-1970 STRING!"]: dateRef}, "parseToDateObj");
+                    return OFFSTACK(funcID) && new Date(parseInt(dateRef));
                 }
                 if (dateRef !== "") {
-                    DB({["OTHER STRING!"]: dateRef}, "parseToDateObj")
+                    DB({["OTHER STRING!"]: dateRef}, "parseToDateObj");
                     // first, see if it includes a time stamp and separate that out:
                     const [dateString, timeString] = Object.assign([curDateString, ""], dateRef.match(/([^:\n\r]+\d{2}?(?!:))?\s?(\S*:{1}.*)?/u).slice(1).map((x,i) => i === 0 && !x ? curDateString : x)),
-                        parsedDateString = _.compact(dateString.match(/^(?:([\d]*)-?(\d*)-?(\d*)|(?:([\d]+)?(?:[^\w\d])*?([\d]+)?[^\w\d]*?(?:([\d]+)|(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))?\w*?[^\w\d]*?([\d]+){1,2}\w*?[^\w\d]*?(\d+)))$/imuy)).slice(1)
-                    let month, day, year
+                        parsedDateString = _.compact(dateString.match(/^(?:([\d]*)-?(\d*)-?(\d*)|(?:([\d]+)?(?:[^\w\d])*?([\d]+)?[^\w\d]*?(?:([\d]+)|(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))?\w*?[^\w\d]*?([\d]+){1,2}\w*?[^\w\d]*?(\d+)))$/imuy)).slice(1);
+                    let month, day, year;
                     while (parsedDateString.length)
                         switch (parsedDateString.length) {
                             case 3: {
-                                year = D.PullOut(parsedDateString, v => v > 31)
-                                month = D.PullOut(parsedDateString, v => VAL({string: v}) || v <= 12 && parsedDateString.filter(x => x <= 12).length === 1)
+                                year = D.PullOut(parsedDateString, v => v > 31);
+                                month = D.PullOut(parsedDateString, v => VAL({string: v}) || v <= 12 && parsedDateString.filter(x => x <= 12).length === 1);
                                 if (parsedDateString.length === 3)
-                                    [month, day, year] = parsedDateString
-                                break
+                                    [month, day, year] = parsedDateString;
+                                break;
                             }
                             case 2: {
-                                year = year || D.PullOut(parsedDateString, v => v > 31)
-                                month = month || D.PullOut(parsedDateString, v => VAL({string: v}) || v <= 12 && parsedDateString.filter(x => x <= 12).length === 1)                                
+                                year = year || D.PullOut(parsedDateString, v => v > 31);
+                                month = month || D.PullOut(parsedDateString, v => VAL({string: v}) || v <= 12 && parsedDateString.filter(x => x <= 12).length === 1);                                
                                 if (VAL({number: year}))
-                                    day = day || D.PullOut(parsedDateString, v => v > 12)
+                                    day = day || D.PullOut(parsedDateString, v => v > 12);
                                 if (parsedDateString.length === 2) {
-                                    month = month || parsedDateString.shift()
-                                    day = day || parsedDateString.shift()
-                                    year = year || parsedDateString.length && parsedDateString.shift()
+                                    month = month || parsedDateString.shift();
+                                    day = day || parsedDateString.shift();
+                                    year = year || parsedDateString.length && parsedDateString.shift();
                                 }
-                                break
+                                break;
                             }
                             case 1: {
-                                year = year || parsedDateString.pop()
-                                month = month || parsedDateString.pop()
-                                day = day || parsedDateString.pop()
-                                break
+                                year = year || parsedDateString.pop();
+                                month = month || parsedDateString.pop();
+                                day = day || parsedDateString.pop();
+                                break;
                             }
                             // no default
                         }
                     if (!["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].includes(month.toLowerCase()))
-                        month = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"][month - 1]
+                        month = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"][month - 1];
                     if (`${year}`.length < 3)
-                        year = parseInt(year) + 2000
-                    day = parseInt(day)                  
-                    returnDate = new Date([year, ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(month.toLowerCase())+1, day])
+                        year = parseInt(year) + 2000;
+                    day = parseInt(day);                  
+                    returnDate = new Date([year, ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(month.toLowerCase())+1, day]);
 
                     // Now, the time component (if any)
                     if (VAL({dateObj: returnDate, string: timeString})) {
                         const [time, aMpM] = (timeString.match(/([^A-Z\s]+)(?:\s+)?(\S+)?/u) || [false, false, false]).slice(1),
                             [hour, min, sec] = `${D.JSL(time)}`.split(":").map(v => D.Int(v)),
-                            totalSeconds = (hour + (D.LCase(aMpM).includes("p") && 12))*60*60 + min*60 + sec
-                        returnDate.setUTCSeconds(returnDate.getUTCSeconds() + totalSeconds)
-                        DB({["OTHER STRING!"]: dateRef, dateString, timeString, parsedDateString, day, month, year, time, aMpM, hour, min, sec, totalSeconds, returnDate}, "parseToDateObj")  
+                            totalSeconds = (hour + (D.LCase(aMpM).includes("p") && 12))*60*60 + min*60 + sec;
+                        returnDate.setUTCSeconds(returnDate.getUTCSeconds() + totalSeconds);
+                        DB({["OTHER STRING!"]: dateRef, dateString, timeString, parsedDateString, day, month, year, time, aMpM, hour, min, sec, totalSeconds, returnDate}, "parseToDateObj");  
                     } else {
-                        DB({["OTHER STRING!"]: dateRef, dateString, timeString, parsedDateString, day, month, year, returnDate}, "parseToDateObj")  
+                        DB({["OTHER STRING!"]: dateRef, dateString, timeString, parsedDateString, day, month, year, returnDate}, "parseToDateObj");  
                     }
-                    return OFFSTACK(funcID) && returnDate
+                    return OFFSTACK(funcID) && returnDate;
                 }
             } else {
                 if (!_.isDate(dateRef))                    
-                    returnDate = new Date(dateRef)
+                    returnDate = new Date(dateRef);
                 if (!_.isDate(returnDate))
-                    returnDate = new Date(D.Int(dateRef))
+                    returnDate = new Date(D.Int(dateRef));
                 if (!_.isDate(returnDate) && VAL({string: returnDate}))
-                    return OFFSTACK(funcID) && getDateObj(returnDate)
+                    return OFFSTACK(funcID) && getDateObj(returnDate);
             }
-            return OFFSTACK(funcID) && false
+            return OFFSTACK(funcID) && false;
         },
         parseToDeltaTime = (...args) => {
             const funcID = ONSTACK(), // Takes a number and a unit of time and converts it to the standard [delta (digit), unit (y/mo/w/d/h/m)] format for adding time. 
@@ -1379,77 +1379,77 @@ const TimeTracker = (() => {
                     new RegExp("-?\\d+(\\.?\\d+)?", "gu"),
                     new RegExp("[A-Za-z]{1,2}", "u")
                 ],
-                [delta, unit] = matchPatterns.map(x => (_.flatten([args]).join("").replace(/\s/gu, "").match(x) || [false]).pop())
-            DB({args, delta, unit}, "parseToDeltaTime")
-            return OFFSTACK(funcID) && [D.Float(delta), D.LCase(unit)]
+                [delta, unit] = matchPatterns.map(x => (_.flatten([args]).join("").replace(/\s/gu, "").match(x) || [false]).pop());
+            DB({args, delta, unit}, "parseToDeltaTime");
+            return OFFSTACK(funcID) && [D.Float(delta), D.LCase(unit)];
         },
         getTime = (timeRef, deltaMins, isParsingString = false) => {
-            const funcID = ONSTACK() // Takes a time reference ad
-            deltaMins = deltaMins || 0
-            const timeNums = VAL({string: timeRef}) ? _.map(timeRef.split(":"), v => D.Int(v)) : timeRef
-            let totMins = timeNums[0] * 60 + timeNums[1] + deltaMins
+            const funcID = ONSTACK(); // Takes a time reference ad
+            deltaMins = deltaMins || 0;
+            const timeNums = VAL({string: timeRef}) ? _.map(timeRef.split(":"), v => D.Int(v)) : timeRef;
+            let totMins = timeNums[0] * 60 + timeNums[1] + deltaMins;
             if (totMins < 0)
-                totMins += 24 * 60 * Math.ceil(Math.abs(totMins) / (24 * 60))
-            const totHours = Math.floor(totMins / 60)
+                totMins += 24 * 60 * Math.ceil(Math.abs(totMins) / (24 * 60));
+            const totHours = Math.floor(totMins / 60);
             if (isParsingString)
-                return OFFSTACK(funcID) && `${totHours % 12 || 12}:${totMins - 60 * totHours < 10 ? "0" : ""}${totMins - 60 * totHours} ${totHours % 24 >= 12 ? "P.M." : "A.M."}`
-            return OFFSTACK(funcID) && [totHours % 24, totMins - 60 * totHours]
+                return OFFSTACK(funcID) && `${totHours % 12 || 12}:${totMins - 60 * totHours < 10 ? "0" : ""}${totMins - 60 * totHours} ${totHours % 24 >= 12 ? "P.M." : "A.M."}`;
+            return OFFSTACK(funcID) && [totHours % 24, totMins - 60 * totHours];
         },
         getTimeInMin = dateRef => Math.floor(getDateObj(dateRef).getTime() / (1000 * 60)),
         getDateFromDateString = (dateObj = new Date(STATE.REF.dateObj), dateString, isChangingDateObj = false) => {
-            const funcID = ONSTACK()
+            const funcID = ONSTACK();
             if (VAL({dateObj, string: dateString})) {
-                DB({dateObj, dateString}, "getDateFromDateString")
+                DB({dateObj, dateString}, "getDateFromDateString");
                 const [dateVal, dateFlag] = dateString.split(":"),
-                    workingDate = isChangingDateObj && dateObj || new Date(dateObj)
+                    workingDate = isChangingDateObj && dateObj || new Date(dateObj);
                 switch (dateVal) {
                     case "nextfullweek": {
-                        addTime(workingDate, 7, "d", true)
+                        addTime(workingDate, 7, "d", true);
                     }
-                    // falls through
+                    /* falls through */
                     case "nextfullnight": {
                         if (!isDateInDay(workingDate))
-                            addTime(workingDate, 1, "d", true)
+                            addTime(workingDate, 1, "d", true);
                     }
-                    // falls through
-                    case "dawn": setToFutureTime(workingDate, ...getTime(TWILIGHT[workingDate.getMonth()][0])); break
-                    case "dusk": setToFutureTime(workingDate, ...getTime(TWILIGHT[workingDate.getMonth()][1])); break
-                    case "midnight": setToFutureTime(workingDate, 0, 0); break
-                    case "noon": setToFutureTime(workingDate, 12, 0); break
-                    case "nextweek": addTime(workingDate, 7, "d", true); break
-                    case "endofweek": setToFutureWeekday(workingDate, 0); break
+                    /* falls through */
+                    case "dawn": setToFutureTime(workingDate, ...getTime(TWILIGHT[workingDate.getMonth()][0])); break;
+                    case "dusk": setToFutureTime(workingDate, ...getTime(TWILIGHT[workingDate.getMonth()][1])); break;
+                    case "midnight": setToFutureTime(workingDate, 0, 0); break;
+                    case "noon": setToFutureTime(workingDate, 12, 0); break;
+                    case "nextweek": addTime(workingDate, 7, "d", true); break;
+                    case "endofweek": setToFutureWeekday(workingDate, 0); break;
                     default: {
-                        const parsedDate = getDateObj(dateVal)
+                        const parsedDate = getDateObj(dateVal);
                         if (VAL({dateObj: parsedDate})) {
-                            workingDate.setTime(parsedDate.getTime())
+                            workingDate.setTime(parsedDate.getTime());
                         } else {
-                            const [delta, unit] = parseToDeltaTime(dateVal)
+                            const [delta, unit] = parseToDeltaTime(dateVal);
                             if (VAL({number: [delta, unit]}, undefined, true))
-                                addTime(workingDate, delta, unit, true)
+                                addTime(workingDate, delta, unit, true);
                         }
-                        break
+                        break;
                     }
                 }
                 if (VAL({string: dateFlag}))
-                    getDateFromDateString(workingDate, dateFlag, true)
-                return OFFSTACK(funcID) && workingDate
+                    getDateFromDateString(workingDate, dateFlag, true);
+                return OFFSTACK(funcID) && workingDate;
             } else {
-                D.Alert(`Invalid date object (${D.JS(dateObj)}) OR dateString (${D.JS(dateString)})`, "getDateFromDateString()")
+                D.Alert(`Invalid date object (${D.JS(dateObj)}) OR dateString (${D.JS(dateString)})`, "getDateFromDateString()");
             }
-            return OFFSTACK(funcID) && dateObj    
+            return OFFSTACK(funcID) && dateObj;    
         },
         formatTimeString = date => {
-            const funcID = ONSTACK()
+            const funcID = ONSTACK();
             if (date.getUTCHours() === 0 || date.getUTCHours() === 12)
-                return OFFSTACK(funcID) && `12:${date.getUTCMinutes()} ${date.getUTCHours() === 0 ? "A.M." : "P.M."}`
+                return OFFSTACK(funcID) && `12:${date.getUTCMinutes()} ${date.getUTCHours() === 0 ? "A.M." : "P.M."}`;
             else if (date.getUTCHours() > 12)
-                return OFFSTACK(funcID) && `${date.getUTCHours() - 12}:${date.getUTCMinutes()} P.M.`
+                return OFFSTACK(funcID) && `${date.getUTCHours() - 12}:${date.getUTCMinutes()} P.M.`;
             else
-                return OFFSTACK(funcID) && `${date.getUTCHours()}:${date.getUTCMinutes()} A.M.`
+                return OFFSTACK(funcID) && `${date.getUTCHours()}:${date.getUTCMinutes()} A.M.`;
         },       
         formatDateString = (date, isIncludingTime = false) => {
-            const funcID = ONSTACK()
-            date = VAL({dateObj: date}) && date || getDateObj(date)
+            const funcID = ONSTACK();
+            date = VAL({dateObj: date}) && date || getDateObj(date);
             return OFFSTACK(funcID) && `${
                 ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]
             } ${
@@ -1458,151 +1458,151 @@ const TimeTracker = (() => {
                 date.getUTCFullYear()
             }${
                 isIncludingTime ? `, ${formatTimeString(date).replace(/:(\d\s)/gu, ":0$1")}` : ""
-            }` },
+            }`; },
         addTime = (dateRef, delta, unit, isChangingOriginal = false) => {
             const funcID = ONSTACK(),
-                dateObj = getDateObj(dateRef)
-            DB({dateRef, dateRefType: typeof dateRef, isDate: _.isDate(dateRef), dateObj, delta, unit}, "addTime")
+                dateObj = getDateObj(dateRef);
+            DB({dateRef, dateRefType: typeof dateRef, isDate: _.isDate(dateRef), dateObj, delta, unit}, "addTime");
             if (VAL({date: dateRef}, "addTime")) {
                 const newDate = new Date(getDateObj(dateObj));
-                [delta, unit] = parseToDeltaTime(delta, unit)
+                [delta, unit] = parseToDeltaTime(delta, unit);
                 switch (unit) {
-                    case "y": newDate.setUTCFullYear(newDate.getUTCFullYear() + delta); break
-                    case "mo": newDate.setUTCMonth(newDate.getUTCMonth() + delta); break
-                    case "w": newDate.setUTCDate(newDate.getUTCDate() + 7 * delta); break
-                    case "d": newDate.setUTCDate(newDate.getUTCDate() + delta); break
-                    case "h": newDate.setUTCHours(newDate.getUTCHours() + delta); break
-                    case "m": newDate.setUTCMinutes(newDate.getUTCMinutes() + delta); break
+                    case "y": newDate.setUTCFullYear(newDate.getUTCFullYear() + delta); break;
+                    case "mo": newDate.setUTCMonth(newDate.getUTCMonth() + delta); break;
+                    case "w": newDate.setUTCDate(newDate.getUTCDate() + 7 * delta); break;
+                    case "d": newDate.setUTCDate(newDate.getUTCDate() + delta); break;
+                    case "h": newDate.setUTCHours(newDate.getUTCHours() + delta); break;
+                    case "m": newDate.setUTCMinutes(newDate.getUTCMinutes() + delta); break;
                     // no default
                 }
                 if (isChangingOriginal && dateRef instanceof Date)
-                    dateRef.setTime(newDate.getTime())
-                return OFFSTACK(funcID) && newDate
+                    dateRef.setTime(newDate.getTime());
+                return OFFSTACK(funcID) && newDate;
             }
-            return OFFSTACK(funcID) && false          
+            return OFFSTACK(funcID) && false;          
         },
         setToFutureTime = (dateRef, hours, mins) => {
             const funcID = ONSTACK(),
                 dateObj = getDateObj(dateRef || STATE.REF.dateObj),
-                targetDateObj = new Date(dateObj)
-            targetDateObj.setUTCHours(hours)
-            targetDateObj.setUTCMinutes(mins)   
-            targetDateObj.setUTCSeconds(0)
-            targetDateObj.setUTCMilliseconds(0)      
+                targetDateObj = new Date(dateObj);
+            targetDateObj.setUTCHours(hours);
+            targetDateObj.setUTCMinutes(mins);   
+            targetDateObj.setUTCSeconds(0);
+            targetDateObj.setUTCMilliseconds(0);      
             while (targetDateObj.getTime() <= dateObj.getTime())
-                addTime(targetDateObj, 1, "d", true)
+                addTime(targetDateObj, 1, "d", true);
             if (dateRef instanceof Date) {
-                dateRef.setTime(targetDateObj.getTime())
-                return OFFSTACK(funcID) && dateRef
+                dateRef.setTime(targetDateObj.getTime());
+                return OFFSTACK(funcID) && dateRef;
             } else {
-                return OFFSTACK(funcID) && targetDateObj
+                return OFFSTACK(funcID) && targetDateObj;
             }
         },
         setToFutureWeekday = (dateRef, weekday, hours = 0, mins = 1) => {
             const funcID = ONSTACK(),
                 curDateObj = getDateObj(dateRef || STATE.REF.dateObj),
-                targetDateObj = new Date(curDateObj)
-            targetDateObj.setUTCHours(hours)
-            targetDateObj.setUTCMinutes(mins)
-            targetDateObj.setUTCSeconds(0)
-            targetDateObj.setUTCMilliseconds(0)
-            addTime(targetDateObj, weekday - curDateObj.getUTCDay(), "d", true)
+                targetDateObj = new Date(curDateObj);
+            targetDateObj.setUTCHours(hours);
+            targetDateObj.setUTCMinutes(mins);
+            targetDateObj.setUTCSeconds(0);
+            targetDateObj.setUTCMilliseconds(0);
+            addTime(targetDateObj, weekday - curDateObj.getUTCDay(), "d", true);
             while (targetDateObj.getTime() <= curDateObj.getTime())
-                addTime(targetDateObj, 1, "w", true)
+                addTime(targetDateObj, 1, "w", true);
             if (dateRef instanceof Date) {
-                dateRef.setTime(targetDateObj.getTime())
-                return OFFSTACK(funcID) && dateRef
+                dateRef.setTime(targetDateObj.getTime());
+                return OFFSTACK(funcID) && dateRef;
             } else {
-                return OFFSTACK(funcID) && targetDateObj
+                return OFFSTACK(funcID) && targetDateObj;
             }
         },
         getHorizonTimeString = (dateRef) => {
-            const funcID = ONSTACK()
-            dateRef = getDateObj(dateRef || STATE.REF.dateObj)
+            const funcID = ONSTACK();
+            dateRef = getDateObj(dateRef || STATE.REF.dateObj);
             const [dawn, dusk] = TWILIGHTMINS[dateRef.getMonth()],
                 imgTimes = _.object(_.map(Object.keys(IMAGETIMES), k => {
-                    const fID = ONSTACK()
+                    const fID = ONSTACK();
                     if (k.includes(":"))
-                        return OFFSTACK(fID) && 60 * D.Int(k.split(":")[0]) + D.Int(k.split(":")[1])
+                        return OFFSTACK(fID) && 60 * D.Int(k.split(":")[0]) + D.Int(k.split(":")[1]);
                     else if (k === "dawn")
-                        return OFFSTACK(fID) && dawn
+                        return OFFSTACK(fID) && dawn;
                     else if (k === "dusk")
-                        return OFFSTACK(fID) && dusk
-                    return OFFSTACK(fID) && dawn + D.Int(k)
+                        return OFFSTACK(fID) && dusk;
+                    return OFFSTACK(fID) && dawn + D.Int(k);
                 }), _.values(IMAGETIMES)),
                 curTime = 60 * dateRef.getUTCHours() + dateRef.getUTCMinutes(),
-                curHoriz = imgTimes[_.find(Object.keys(imgTimes), v => curTime <= v)]
+                curHoriz = imgTimes[_.find(Object.keys(imgTimes), v => curTime <= v)];
             // DB(`WeatherData: ${D.JS(weatherData)}`, "getHorizon")
             // D.Alert(`Daylighter Check: ${C.RO.OT.Chars.isDaylighterSession} vs. ${C.RO.OT.Chars.isDaylighterSession}, imgSrc: ${curHoriz}`)
             if (Session.Mode === "Daylighter" && curHoriz === "day")
-                return OFFSTACK(funcID) && "daylighters"
-            return OFFSTACK(funcID) && curHoriz
+                return OFFSTACK(funcID) && "daylighters";
+            return OFFSTACK(funcID) && curHoriz;
         },
         isDateInDay = (dateRef) => getHorizonTimeString(dateRef).includes("day"),
         isTimeInDay = (monthNum, hourNum, minNum) => {
             const funcID = ONSTACK(),
                 twilightTimes = TWILIGHT[monthNum],
                 totalMins = hourNum * 60 + minNum,
-                [dawnMins, duskMins] = twilightTimes.map(x => D.Int(x.replace(/:\d+/gu, "")) * 60 + D.Int(x.replace(/\d+:/gu, "")))
-            return OFFSTACK(funcID) && totalMins >= dawnMins && totalMins < duskMins            
+                [dawnMins, duskMins] = twilightTimes.map(x => D.Int(x.replace(/:\d+/gu, "")) * 60 + D.Int(x.replace(/\d+:/gu, "")));
+            return OFFSTACK(funcID) && totalMins >= dawnMins && totalMins < duskMins;            
         },
         getDaysInMonth = (monthNum) => STATE.REF.weatherData[monthNum].length - 1,
         setNextSessionDate = (dateOverride = { }) => {
-            const funcID = ONSTACK()
-            DB({dateOverride}, "setNextSessionDate")
+            const funcID = ONSTACK();
+            DB({dateOverride}, "setNextSessionDate");
             const curRealDateObj = new Date(new Date().toLocaleString("en-US", {timezone: "America/New_York"})),
                 sessDateObj = new Date(curRealDateObj),
-                daysOut = 7 - (curRealDateObj.getDay() === 0 ? 7 : curRealDateObj.getDay())
-            sessDateObj.setDate(curRealDateObj.getDate() + daysOut)
-            sessDateObj.setHours(19)
-            sessDateObj.setMinutes(30)
-            sessDateObj.setSeconds(0)
-            sessDateObj.setMilliseconds(0)
+                daysOut = 7 - (curRealDateObj.getDay() === 0 ? 7 : curRealDateObj.getDay());
+            sessDateObj.setDate(curRealDateObj.getDate() + daysOut);
+            sessDateObj.setHours(19);
+            sessDateObj.setMinutes(30);
+            sessDateObj.setSeconds(0);
+            sessDateObj.setMilliseconds(0);
             for (const [k, v] of Object.entries(dateOverride))
                 switch (D.LCase(k)) {
                     case "year": {
-                        sessDateObj.setFullYear(v)
-                        break
+                        sessDateObj.setFullYear(v);
+                        break;
                     }
                     case "month": {
-                        sessDateObj.setMonth(v)
-                        break
+                        sessDateObj.setMonth(v);
+                        break;
                     }
                     case "day": case "date": {
-                        sessDateObj.setDate(v)
-                        break
+                        sessDateObj.setDate(v);
+                        break;
                     }
                     case "hour": {
-                        sessDateObj.setHours(v)
-                        break
+                        sessDateObj.setHours(v);
+                        break;
                     }
                     case "minute": {
-                        sessDateObj.setMinutes(v)
-                        break
+                        sessDateObj.setMinutes(v);
+                        break;
                     }
                     // no default
                 }
             // if (sessDateObj.getTime() <= curRealDateObj.getTime())
             //    sessDateObj.setDate(sessDateObj.getDate() + 7)
-            STATE.REF.nextSessionDate = sessDateObj.getTime()
-            syncCountdown()            
+            STATE.REF.nextSessionDate = sessDateObj.getTime();
+            syncCountdown();            
             // updateCountdownText()
-            OFFSTACK(funcID)
-            return OFFSTACK(funcID) && (sessDateObj - curRealDateObj)/1000 - 60
+            OFFSTACK(funcID);
+            return OFFSTACK(funcID) && (sessDateObj - curRealDateObj)/1000 - 60;
         },        
         getRandomEventTriggers = (fullDuration, numTriggers, tickSpeed = 100) => {
-            const funcID = ONSTACK()
-            fullDuration *= fullDuration < 1000 && 1000 || 1
-            fullDuration -= tickSpeed
+            const funcID = ONSTACK();
+            fullDuration *= fullDuration < 1000 && 1000 || 1;
+            fullDuration -= tickSpeed;
             const numTicks = D.Int(fullDuration / tickSpeed),
                 timeLine = (new Array(numTicks)).fill(0),
-                sampler = timeLine.map((x, i) => i)
-            numTriggers--
+                sampler = timeLine.map((x, i) => i);
+            numTriggers--;
             while (numTriggers) {
-                timeLine[D.PullIndex(sampler, randomInteger(sampler.length))] = 1
-                numTriggers--
+                timeLine[D.PullIndex(sampler, randomInteger(sampler.length))] = 1;
+                numTriggers--;
             }
-            return OFFSTACK(funcID) && timeLine.join("").split("1").map(x => (x.length + 1) * tickSpeed)
+            return OFFSTACK(funcID) && timeLine.join("").split("1").map(x => (x.length + 1) * tickSpeed);
         },
     // #endregion
     
@@ -1611,8 +1611,8 @@ const TimeTracker = (() => {
         getAlarmsBetween = (dateRef, deltaTimeInMin=0) => {
             const dateObj = getDateObj(dateRef),
                 timeInMin = getTimeInMin(dateObj),
-                [startTime, endTime] = [timeInMin, timeInMin + deltaTimeInMin].sort((a, b) => a - b)
-            return STATE.REF.Alarms.filter(x => x.time <= endTime && (startTime === endTime || x.time > startTime))
+                [startTime, endTime] = [timeInMin, timeInMin + deltaTimeInMin].sort((a, b) => a - b);
+            return STATE.REF.Alarms.filter(x => x.time <= endTime && (startTime === endTime || x.time > startTime));
         },
         isMatchingAlarm = (alarmA, alarmB) => D.JS(Object.values(_.omit(alarmA, "id"))) === D.JS(Object.values(_.omit(alarmB, "id"))),
         setAlarm = (dateRef, alarmName, alarmDesc, alarmFuncName, alarmFuncParams = [], recur = false) => {
@@ -1622,23 +1622,23 @@ const TimeTracker = (() => {
                 funcName: alarmFuncName,
                 funcParams: alarmFuncParams,
                 recur
-            }
+            };
             if (D.LCase(dateRef) === "scene")
-                return Session.AddSceneAlarm(thisAlarm)
-            const thisDateObj = VAL({string: dateRef}) ? getDateFromDateString(undefined, dateRef) : getDateObj(dateRef)  
+                return Session.AddSceneAlarm(thisAlarm);
+            const thisDateObj = VAL({string: dateRef}) ? getDateFromDateString(undefined, dateRef) : getDateObj(dateRef);  
             if (VAL({date: thisDateObj}, "setAlarm")) {
-                thisAlarm.time = getTimeInMin(thisDateObj)
+                thisAlarm.time = getTimeInMin(thisDateObj);
                 const curAlarms = getAlarmsBetween(dateRef),
-                    curAlarmIDs = Object.values(STATE.REF.Alarms).map(x => x.id)
+                    curAlarmIDs = Object.values(STATE.REF.Alarms).map(x => x.id);
                 if (curAlarms.filter(x => isMatchingAlarm(x, thisAlarm)).length)
-                    return false
+                    return false;
                 do
-                    thisAlarm.id = D.RandomString()
-                while (curAlarmIDs.includes(thisAlarm.id))
-                STATE.REF.Alarms = [...STATE.REF.Alarms, thisAlarm].sort((a,b) => a.time - b.time)
-                return thisAlarm
+                    thisAlarm.id = D.RandomString();
+                while (curAlarmIDs.includes(thisAlarm.id));
+                STATE.REF.Alarms = [...STATE.REF.Alarms, thisAlarm].sort((a,b) => a.time - b.time);
+                return thisAlarm;
             }   
-            return false      
+            return false;      
         },
         fireAlarm = (alarm) => {
             if ("name" in alarm && "desc" in alarm) 
@@ -1655,52 +1655,52 @@ const TimeTracker = (() => {
                             styles: { } /* height, width, margin, textAlign */
                         }
                     ]
-                }))
+                }));
             else 
-                confirmAlarm(alarm.funcName, alarm.funcParams)
+                confirmAlarm(alarm.funcName, alarm.funcParams);
             
             if (alarm.recur)
-                recurAlarm(alarm)
+                recurAlarm(alarm);
         },
         confirmAlarm = (funcName, funcParams) => {
             if (funcName in ALARMFUNCS) {
-                funcParams = VAL({string: funcParams}) ? funcParams.split(/\|@firealarm@\|/gui) : funcParams
-                ALARMFUNCS[funcName](...funcParams)
+                funcParams = VAL({string: funcParams}) ? funcParams.split(/\|@firealarm@\|/gui) : funcParams;
+                ALARMFUNCS[funcName](...funcParams);
             } else {
-                D.Alert(`'${D.LCase(funcName)}' Alarm Function Not Found.`, "TIMETRACKER: Confirm Alarm")
+                D.Alert(`'${D.LCase(funcName)}' Alarm Function Not Found.`, "TIMETRACKER: Confirm Alarm");
             }
         },
         recurAlarm = (alarm) => {},
 
     // #region CLOCK: Toggling, Ticking, Setting Clock Text    
         toggleClock = (activeState, secsPerMin = 60) => {
-            const funcID = ONSTACK()
-            isTickingClock = Boolean(activeState)
+            const funcID = ONSTACK();
+            isTickingClock = Boolean(activeState);
 
             if (activeState) {
                 if (STATE.REF.TweenTarget) {
-                    tweenClock(STATE.REF.TweenTarget)
+                    tweenClock(STATE.REF.TweenTarget);
                 } else {
-                    clearInterval(timeTimer)
-                    timeTimer = setInterval(tickClock, D.Int(secsPerMin) * 1000)
+                    clearInterval(timeTimer);
+                    timeTimer = setInterval(tickClock, D.Int(secsPerMin) * 1000);
                 }
             } else {
-                isTickingClock = false
-                isFastTweeningClock = false
+                isTickingClock = false;
+                isFastTweeningClock = false;
             }
-            OFFSTACK(funcID)
+            OFFSTACK(funcID);
         },
         updateClockObj = () => {
-            const funcID = ONSTACK()
+            const funcID = ONSTACK();
             // dateObj = dateObj || new Date(D.Int(STATE.REF.currentDate))
             // DB(`Setting Current Date; Checking Alarms.<br>LastDateStep: ${D.JSL(STATE.REF.lastDateStep)}`, "setCurrentDate")
-            if (Media.HasForcedState("TimeTracker")) return OFFSTACK(funcID) && false
+            if (Media.HasForcedState("TimeTracker")) return OFFSTACK(funcID) && false;
             if (Session.Mode === "Downtime")
                 Media.SetText("TimeTracker", `${
                     DAYSOFWEEK[STATE.REF.dateObj.getUTCDay()]}, ${
                     MONTHS[STATE.REF.dateObj.getUTCMonth()]} ${
                     D.Ordinal(STATE.REF.dateObj.getUTCDate())}, ${
-                    STATE.REF.dateObj.getUTCFullYear()}`)
+                    STATE.REF.dateObj.getUTCFullYear()}`);
             else            
                 Media.SetText("TimeTracker", `${
                     DAYSOFWEEK[STATE.REF.dateObj.getUTCDay()]}, ${
@@ -1709,44 +1709,44 @@ const TimeTracker = (() => {
                     STATE.REF.dateObj.getFullYear()}, ${
                     (STATE.REF.dateObj.getUTCHours() % 12).toString().replace(/^0/gu, "12")}:${
                     STATE.REF.dateObj.getUTCMinutes() < 10 ? "0" : ""}${STATE.REF.dateObj.getUTCMinutes().toString()} ${
-                    Math.floor(STATE.REF.dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`)
-            STATE.REF.lastDateStep = STATE.REF.dateObj.getTime()
-            STATE.REF.currentDate = STATE.REF.dateObj.getTime()
-            return OFFSTACK(funcID) && true
+                    Math.floor(STATE.REF.dateObj.getUTCHours() / 12) === 0 ? "AM" : "PM"}`);
+            STATE.REF.lastDateStep = STATE.REF.dateObj.getTime();
+            STATE.REF.currentDate = STATE.REF.dateObj.getTime();
+            return OFFSTACK(funcID) && true;
         },
         isUpdatingChars = () => {
-            const lastDate = new Date(STATE.REF.lastDate)
+            const lastDate = new Date(STATE.REF.lastDate);
             return STATE.REF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
                    STATE.REF.dateObj.getMonth() !== lastDate.getMonth() ||
-                   STATE.REF.dateObj.getUTCDate() !== lastDate.getUTCDate()
+                   STATE.REF.dateObj.getUTCDate() !== lastDate.getUTCDate();
         },
         isUpdatingWeather = () => {
-            const lastDate = new Date(STATE.REF.lastDate)            
+            const lastDate = new Date(STATE.REF.lastDate);            
             return STATE.REF.dateObj.getUTCFullYear() !== lastDate.getUTCFullYear() ||
                    STATE.REF.dateObj.getMonth() !== lastDate.getMonth() ||
                    STATE.REF.dateObj.getUTCDate() !== lastDate.getUTCDate() ||
-                   STATE.REF.dateObj.getUTCHours() !== lastDate.getUTCHours()
+                   STATE.REF.dateObj.getUTCHours() !== lastDate.getUTCHours();
         },
         continueClockTween = () => {
             const funcID = ONSTACK(),
                 easeFunction = () => {
-                    const fID = ONSTACK()
+                    const fID = ONSTACK();
                     if (!isTweeningClock)
-                        return OFFSTACK(fID) && pauseClockTween() && false
+                        return OFFSTACK(fID) && pauseClockTween() && false;
                     if (Math.abs(STATE.REF.TweenCurTime) >= Math.abs(STATE.REF.TweenDuration))
-                        return OFFSTACK(fID) && stopClockTween() && true
-                    const newDelta = -1 * STATE.REF.TweenDelta / 2 * (Math.cos(Math.PI * STATE.REF.TweenCurTime / STATE.REF.TweenDuration) - 1)
-                    isFastTweeningClock = Math.abs(newDelta - STATE.REF.TweenLastTime) > RUNNINGFASTAT
-                    STATE.REF.TweenLastTime = newDelta
-                    STATE.REF.dateObj.setTime(STATE.REF.TweenStart + newDelta)
-                    updateClockObj()
-                    STATE.REF.TweenCurTime += CLOCKSPEED
-                    return OFFSTACK(fID) && undefined
-                }
+                        return OFFSTACK(fID) && stopClockTween() && true;
+                    const newDelta = -1 * STATE.REF.TweenDelta / 2 * (Math.cos(Math.PI * STATE.REF.TweenCurTime / STATE.REF.TweenDuration) - 1);
+                    isFastTweeningClock = Math.abs(newDelta - STATE.REF.TweenLastTime) > RUNNINGFASTAT;
+                    STATE.REF.TweenLastTime = newDelta;
+                    STATE.REF.dateObj.setTime(STATE.REF.TweenStart + newDelta);
+                    updateClockObj();
+                    STATE.REF.TweenCurTime += CLOCKSPEED;
+                    return OFFSTACK(fID) && undefined;
+                };
             if (STATE.REF.TweenStart && STATE.REF.TweenTarget) {
-                isTweeningClock = true
-                clearInterval(timeTimer)
-                timeTimer = setInterval(easeFunction, CLOCKSPEED)
+                isTweeningClock = true;
+                clearInterval(timeTimer);
+                timeTimer = setInterval(easeFunction, CLOCKSPEED);
                 DB({
                     TweenStart: formatDateString(STATE.REF.TweenStart, true),
                     TweenTarget: formatDateString(STATE.REF.TweenTarget, true),
@@ -1756,68 +1756,68 @@ const TimeTracker = (() => {
                     TweenLastTime: `~ ${D.Round((STATE.REF.TweenLastTime || 0)/3600/1000, 2)} h`,
                     currentDate: formatDateString(STATE.REF.dateObj, true),
                     lastDate: formatDateString(STATE.REF.lastDate, true)
-                }, "continueClockTween")
+                }, "continueClockTween");
             }
-            OFFSTACK(funcID)
+            OFFSTACK(funcID);
         },
         startClockTween = (targetDateObj) => {
-            const funcID = ONSTACK()
-            isTickingClock = false
-            STATE.REF.TweenStart = STATE.REF.dateObj.getTime()
-            STATE.REF.TweenTarget = targetDateObj.getTime()
-            STATE.REF.TweenDelta = STATE.REF.TweenTarget - STATE.REF.TweenStart
-            STATE.REF.TweenDuration = (_.findIndex(TWEENDURS, v => STATE.REF.TweenDelta / 60000 <= v) + 1) * 1000
-            STATE.REF.TweenCurTime = 0
-            STATE.REF.TweenLastTime = 0
-            continueClockTween()
-            OFFSTACK(funcID)
+            const funcID = ONSTACK();
+            isTickingClock = false;
+            STATE.REF.TweenStart = STATE.REF.dateObj.getTime();
+            STATE.REF.TweenTarget = targetDateObj.getTime();
+            STATE.REF.TweenDelta = STATE.REF.TweenTarget - STATE.REF.TweenStart;
+            STATE.REF.TweenDuration = (_.findIndex(TWEENDURS, v => STATE.REF.TweenDelta / 60000 <= v) + 1) * 1000;
+            STATE.REF.TweenCurTime = 0;
+            STATE.REF.TweenLastTime = 0;
+            continueClockTween();
+            OFFSTACK(funcID);
         },
         pauseClockTween = () => {
-            isTweeningClock = false
-            clearInterval(timeTimer)
-            timeTimer = null
-            STATE.REF.currentDate = STATE.REF.dateObj.getTime()            
-            DB({currentDate: formatDateString(STATE.REF.currentDate, true), isUpdatingWeather: isUpdatingWeather()}, "pauseClockTween")
+            isTweeningClock = false;
+            clearInterval(timeTimer);
+            timeTimer = null;
+            STATE.REF.currentDate = STATE.REF.dateObj.getTime();            
+            DB({currentDate: formatDateString(STATE.REF.currentDate, true), isUpdatingWeather: isUpdatingWeather()}, "pauseClockTween");
             if (isUpdatingWeather())
-                setWeather()
-            setHorizon()
+                setWeather();
+            setHorizon();
         },
         stopClockTween = () => {
-            const funcID = ONSTACK()
-            pauseClockTween()
-            STATE.REF.dateObj.setTime(STATE.REF.TweenTarget)
-            isFastTweeningClock = false
+            const funcID = ONSTACK();
+            pauseClockTween();
+            STATE.REF.dateObj.setTime(STATE.REF.TweenTarget);
+            isFastTweeningClock = false;
             if (isUpdatingChars()) {
-                D.GetChars("allregistered").map(x => setAttrs(x.id, {date_today: STATE.REF.currentDate.toString()}))
-                Char.RefreshDisplays()
+                D.GetChars("allregistered").map(x => setAttrs(x.id, {date_today: STATE.REF.currentDate.toString()}));
+                Char.RefreshDisplays();
             }
-            DB({dateObj: formatDateString(STATE.REF.dateObj, true), lastDateBeforeSetting: formatDateString(STATE.REF.lastDate, true), isUpdatingChars: isUpdatingChars()}, "stopClockTween")
-            STATE.REF.lastDate = STATE.REF.dateObj.getTime()
-            setTimeout(fixTimeStatus, 1000)
-            delete STATE.REF.TweenTarget
-            delete STATE.REF.TweenStart
-            STATE.REF.TweenCurTime = 0
-            OFFSTACK(funcID)
+            DB({dateObj: formatDateString(STATE.REF.dateObj, true), lastDateBeforeSetting: formatDateString(STATE.REF.lastDate, true), isUpdatingChars: isUpdatingChars()}, "stopClockTween");
+            STATE.REF.lastDate = STATE.REF.dateObj.getTime();
+            setTimeout(fixTimeStatus, 1000);
+            delete STATE.REF.TweenTarget;
+            delete STATE.REF.TweenStart;
+            STATE.REF.TweenCurTime = 0;
+            OFFSTACK(funcID);
         },
         tweenClock = (finalDate) => {
-            const funcID = ONSTACK()
+            const funcID = ONSTACK();
             if (STATE.REF.TweenStart && STATE.REF.TweenTarget)
-                continueClockTween()
+                continueClockTween();
             else
-                startClockTween(getDateObj(finalDate))
-            OFFSTACK(funcID)
+                startClockTween(getDateObj(finalDate));
+            OFFSTACK(funcID);
         },
         tickClock = () => {
-            const funcID = ONSTACK()
+            const funcID = ONSTACK();
             if (isTickingClock) {
-                const lastHour = STATE.REF.dateObj.getUTCHours()
-                STATE.REF.dateObj.setUTCMinutes(STATE.REF.dateObj.getUTCMinutes() + 1)
-                updateClockObj()
+                const lastHour = STATE.REF.dateObj.getUTCHours();
+                STATE.REF.dateObj.setUTCMinutes(STATE.REF.dateObj.getUTCMinutes() + 1);
+                updateClockObj();
                 if (STATE.REF.dateObj.getUTCHours() !== lastHour)
-                    setWeather()
-                setHorizon()
+                    setWeather();
+                setHorizon();
             }
-            OFFSTACK(funcID)
+            OFFSTACK(funcID);
         },
     // #endregion
 
@@ -1837,63 +1837,63 @@ const TimeTracker = (() => {
                 moonUpPercent = Math.min(1, D.Float(Math.max(0, totalSecsIn - waitSecsMoon) / (maxSecs - waitSecsMoon))),
                 waterRedPercent = Math.min(1, D.Float(Math.max(0, totalSecsIn - waitSecsWater) / (maxSecs - waitSecsWater))),
                 moonTop = MOON.minTop + (MOON.maxTop - MOON.minTop)*moonUpPercent,
-                waterSource = `red${D.Int(6*waterRedPercent, true)}`
+                waterSource = `red${D.Int(6*waterRedPercent, true)}`;
             
-            let secsLeft = totalSecsLeft
+            let secsLeft = totalSecsLeft;
             
             if (secsLeft < 0) {
-                STATE.REF.lastSessionDate = nextSessDateObj.getTime()
-                secsLeft = setNextSessionDate()
+                STATE.REF.lastSessionDate = nextSessDateObj.getTime();
+                secsLeft = setNextSessionDate();
             }
             if (secsLeft < 60 && !isTesting)
-                Session.ToggleTesting(false)
+                Session.ToggleTesting(false);
                 
-            const daysLeft = Math.floor(secsLeft / (24 * 60 * 60))
-            secsLeft -= daysLeft * 24 * 60 * 60
-            const hoursLeft = Math.floor(secsLeft / (60 * 60))
-            secsLeft -= hoursLeft * 60 * 60
-            const minsLeft = Math.floor(secsLeft / 60)
-            secsLeft -= minsLeft * 60
+            const daysLeft = Math.floor(secsLeft / (24 * 60 * 60));
+            secsLeft -= daysLeft * 24 * 60 * 60;
+            const hoursLeft = Math.floor(secsLeft / (60 * 60));
+            secsLeft -= hoursLeft * 60 * 60;
+            const minsLeft = Math.floor(secsLeft / 60);
+            secsLeft -= minsLeft * 60;
 
             // D.Alert(D.JS({isCountdownFrozen, maxSecs, totalSecsLeft, totalSecsIn, ["daysToWait MOON"]: MOON.daysToWaitTill, waitSecsMoon, moonUpPercent, moonTop, ["daysToWait WATER"]: MOON.daysToWaitTillWater, waitSecsWater, waterRedPercent, waterSource}), "syncCountdown")
             if (VAL({list: isTesting})) {               
-                Media.SetImgData("SplashMoon_1", {top: moonTop}, true)
-                Media.SetImg("SplashWater", waterSource)
-                isCountdownRunning = false
+                Media.SetImgData("SplashMoon_1", {top: moonTop}, true);
+                Media.SetImg("SplashWater", waterSource);
+                isCountdownRunning = false;
             } else if (isCountdownRunning) {
-                countdownRecord = [daysLeft, hoursLeft, minsLeft, moonTop, waterSource]
+                countdownRecord = [daysLeft, hoursLeft, minsLeft, moonTop, waterSource];
 
-                Media.SetImgData("SplashMoon_1", {top: moonTop}, true)
-                Media.SetImg("SplashWater", waterSource)
+                Media.SetImgData("SplashMoon_1", {top: moonTop}, true);
+                Media.SetImg("SplashWater", waterSource);
                 // tickCountdown()
-                updateCountdownObj()
+                updateCountdownObj();
 
-                startCountdownTimer(secsLeft)
+                startCountdownTimer(secsLeft);
             }
-            OFFSTACK(funcID)
+            OFFSTACK(funcID);
         },
         startCountdownTimer = () => {
-            const funcID = ONSTACK()
+            const funcID = ONSTACK();
             if (isCountdownFrozen)
-                return OFFSTACK(funcID)
-            clearInterval(secTimer)
-            secondsLeft = (new Date()).getSeconds()
+                return OFFSTACK(funcID);
+            clearInterval(secTimer);
+            secondsLeft = (new Date()).getSeconds();
             secTimer = setInterval(function countdownTimer() {
-                const fID = ONSTACK()
+                const fID = ONSTACK();
                 if (isCountdownFrozen)
-                    return OFFSTACK(fID)
-                secondsLeft = 59 - (new Date()).getSeconds()
+                    return OFFSTACK(fID);
+                secondsLeft = 59 - (new Date()).getSeconds();
                 if (secondsLeft <= 0)
-                    syncCountdown()
+                    syncCountdown();
                 else
-                    updateCountdownObj()
-                return OFFSTACK(fID)
-            }, 1000) 
-            return OFFSTACK(funcID)           
+                    updateCountdownObj();
+                return OFFSTACK(fID);
+            }, 1000); 
+            return OFFSTACK(funcID);           
         },
         updateCountdownObj = () => {
-            const funcID = ONSTACK()
-            if (isCountdownFrozen || Media.HasForcedState("Countdown")) return OFFSTACK(funcID) && false
+            const funcID = ONSTACK();
+            if (isCountdownFrozen || Media.HasForcedState("Countdown")) return OFFSTACK(funcID) && false;
             const isInBlackout = (startBlackout = {days: 0, hours: 0, minutes: 2}, endBlock = {days: 0, hours: 2, minutes: 0}) => {
                 const fID = ONSTACK(),
                     nextSessionObj = new Date(STATE.REF.nextSessionDate), 
@@ -1901,23 +1901,23 @@ const TimeTracker = (() => {
                     maxMins = (nextSessionObj - lastSessionObj) / 60000,
                     startMinsBack = (startBlackout.days * 24 + startBlackout.hours) * 60 + startBlackout.minutes,
                     endMinsAfter = (endBlock.days * 24 + endBlock.hours) * 60 + endBlock.minutes,
-                    curMins = (countdownRecord[0] * 24 + countdownRecord[1]) * 60 + countdownRecord[2]
+                    curMins = (countdownRecord[0] * 24 + countdownRecord[1]) * 60 + countdownRecord[2];
                 // DB({countdownRecord, nextSessionObj, lastSessionObj, maxMins, startMinsBack, endMinsAfter, curMins}, "updateCountdownObj")
                 // if (curMins <= startMinsBack || curMins >= maxMins - endMinsAfter)
                 //    DB({countdownRecord, nextSessionObj, lastSessionObj, maxMins, startMinsBack, endMinsAfter, curMins}, "updateCountdownText")
-                return OFFSTACK(fID) && curMins <= startMinsBack || curMins >= maxMins - endMinsAfter
-            }
+                return OFFSTACK(fID) && curMins <= startMinsBack || curMins >= maxMins - endMinsAfter;
+            };
             if (isInBlackout({days: 0, hours: 0, minutes: 2}, {days: 0, hours: 2, minutes: 0})) {
-                Media.ToggleText("Countdown", false)
-                Media.SetTextData("NextSession", {shiftTop: -110})
+                Media.ToggleText("Countdown", false);
+                Media.SetTextData("NextSession", {shiftTop: -110});
             } else {
-                Media.ToggleText("Countdown", true)
-                Media.SetTextData("NextSession", {shiftTop: 0})
-                Media.SetImgData("SplashMoon_1", {top: countdownRecord[3]}, true)                
-                Media.SetImg("SplashWater", countdownRecord[4])
-                Media.SetText("Countdown", [...countdownRecord.slice(0, 3), secondsLeft].map(x => `${x.toString().length === 1 && "0" || ""}${x}`).join(":"))
+                Media.ToggleText("Countdown", true);
+                Media.SetTextData("NextSession", {shiftTop: 0});
+                Media.SetImgData("SplashMoon_1", {top: countdownRecord[3]}, true);                
+                Media.SetImg("SplashWater", countdownRecord[4]);
+                Media.SetText("Countdown", [...countdownRecord.slice(0, 3), secondsLeft].map(x => `${x.toString().length === 1 && "0" || ""}${x}`).join(":"));
             }
-            return OFFSTACK(funcID)
+            return OFFSTACK(funcID);
         },
     // #endregion
 
@@ -1933,21 +1933,21 @@ const TimeTracker = (() => {
                     wind: weatherData.wind,
                     humid: weatherData.humidity,
                     ground: weatherData.groundCover
-                }).join("")
-            D.Alert(`Converted data to '${weatherCodes}' = '${weatherData.weatherCode}'?<br><br>${D.JS(weatherData)}`, "BIG TEST")
-            OFFSTACK(funcID)
+                }).join("");
+            D.Alert(`Converted data to '${weatherCodes}' = '${weatherData.weatherCode}'?<br><br>${D.JS(weatherData)}`, "BIG TEST");
+            OFFSTACK(funcID);
         },
         getWeatherCode = (dateRefs) => {
             return dateRefs ?
                 STATE.REF.weatherData[dateRefs[0]][dateRefs[1]][dateRefs[2]] : 
-                STATE.REF.weatherData[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()]
+                STATE.REF.weatherData[STATE.REF.dateObj.getUTCMonth()][STATE.REF.dateObj.getUTCDate()][STATE.REF.dateObj.getUTCHours()];
         },
         getWeatherData = (monthNum, dateNum, hourNum, numUpgrades = 0, isGettingRawData = false) => {
             const funcID = ONSTACK(),
-                dateObj = new Date(STATE.REF.dateObj)
-            monthNum = VAL({number: monthNum}) ? monthNum : dateObj.getUTCMonth()
-            dateNum = VAL({number: dateNum}) ? dateNum : dateObj.getUTCDate()
-            hourNum = VAL({number: hourNum}) ? hourNum : dateObj.getUTCHours()
+                dateObj = new Date(STATE.REF.dateObj);
+            monthNum = VAL({number: monthNum}) ? monthNum : dateObj.getUTCMonth();
+            dateNum = VAL({number: dateNum}) ? dateNum : dateObj.getUTCDate();
+            hourNum = VAL({number: hourNum}) ? hourNum : dateObj.getUTCHours();
             try {
                 const weatherCode = (isGettingRawData && RAWWEATHERDATA || STATE.REF.weatherData)[monthNum][dateNum][hourNum],
                     weatherData = upgradeWeatherSeverity({
@@ -1963,175 +1963,175 @@ const TimeTracker = (() => {
                         groundCover: weatherCode.charAt(5),
                         isDay: isTimeInDay(monthNum, hourNum, 30),
                         isRaining: ["w", "p", "t"].includes(weatherCode.charAt(0))
-                    }, numUpgrades)               
-                return OFFSTACK(funcID) && weatherData
+                    }, numUpgrades);               
+                return OFFSTACK(funcID) && weatherData;
             } catch(errObj) {
-                return OFFSTACK(funcID) && false
+                return OFFSTACK(funcID) && false;
             }
         },  
         getNextWeatherEvent = (eventType, event) => {
             const funcID = ONSTACK(),
-                startMonth = STATE.REF.dateObj.getMonth()
+                startMonth = STATE.REF.dateObj.getMonth();
             let startYear = STATE.REF.dateObj.getFullYear(),
                 startDay = STATE.REF.dateObj.getDate(),
-                startHour = STATE.REF.dateObj.getHours()
+                startHour = STATE.REF.dateObj.getHours();
             const matchFunc = (fullCode, monthNum) => {
-                const fID = ONSTACK()
+                const fID = ONSTACK();
                 switch (D.LCase(eventType)) {
                     case "event":
-                        return OFFSTACK(fID) && event === fullCode.charAt(event === "f" ? 1 : 0)
+                        return OFFSTACK(fID) && event === fullCode.charAt(event === "f" ? 1 : 0);
                     case "temp": case "temperature": case "tempC":
-                        return OFFSTACK(fID) && fullCode.charAt(2) === convertTempToCode(event, monthNum)
+                        return OFFSTACK(fID) && fullCode.charAt(2) === convertTempToCode(event, monthNum);
                     case "humid":
-                        return OFFSTACK(fID) && fullCode.charAt(3) === event
+                        return OFFSTACK(fID) && fullCode.charAt(3) === event;
                     case "wind":
-                        return OFFSTACK(fID) && fullCode.charAt(4) === event
+                        return OFFSTACK(fID) && fullCode.charAt(4) === event;
                     default:
-                        return OFFSTACK(fID) && false
+                        return OFFSTACK(fID) && false;
                 }
-            }                 
+            };                 
             for (let mI = 0; mI < 12; mI++) {
-                const m = (mI + startMonth) % 12
+                const m = (mI + startMonth) % 12;
                 if (mI > 0 && m === 0)
-                    startYear++
+                    startYear++;
                 for (let d = startDay; d < STATE.REF.weatherData[m].length; d++)
                     try {
                         const hourMatch = _.findIndex(STATE.REF.weatherData[m][d], (v, k) => {
-                            const fID = ONSTACK() 
-                            return OFFSTACK(fID) && matchFunc(v, m) && (k <= 5 || k >= 20) })
+                            const fID = ONSTACK(); 
+                            return OFFSTACK(fID) && matchFunc(v, m) && (k <= 5 || k >= 20); });
                         if (hourMatch >= startHour)
-                            return OFFSTACK(funcID) && {year: startYear, month: m, day: d, hour: hourMatch, weatherCode: STATE.REF.weatherData[m][d][hourMatch]}
-                        startHour = 0
+                            return OFFSTACK(funcID) && {year: startYear, month: m, day: d, hour: hourMatch, weatherCode: STATE.REF.weatherData[m][d][hourMatch]};
+                        startHour = 0;
                     } catch (errObj) {
-                        D.Alert(`Error at ${mI} ${d}: ${D.JS(errObj)}`, "ERROR")
+                        D.Alert(`Error at ${mI} ${d}: ${D.JS(errObj)}`, "ERROR");
                     }
-                startDay = 1
+                startDay = 1;
             }
-            return OFFSTACK(funcID) && false
+            return OFFSTACK(funcID) && false;
         },
         getGroundCover = (code) => {
-            code = code || getWeatherCode()
+            code = code || getWeatherCode();
             if (VAL({string: code}) && code.length === 6) {
-                const groundChar = code.charAt(5)
+                const groundChar = code.charAt(5);
                 switch (groundChar) {
                     case "x":
-                        return "blank"
+                        return "blank";
                     case "f":
-                        return "frost"
+                        return "frost";
                     case "w":
-                        return "wet"
+                        return "wet";
                     default:
-                        return `snow${groundChar}`
+                        return `snow${groundChar}`;
                 }
             }
-            return "blank"
+            return "blank";
         },      
         setHorizon = (weatherData) => {
-            const funcID = ONSTACK()
-            DB({weatherData, hasForcedState: Media.HasForcedState("Horizon")}, "setHorizon")
-            if (Media.HasForcedState("Horizon")) return OFFSTACK(funcID) && false
-            weatherData = weatherData || weatherDataMemo || {event: "x"}
-            let horizWeather = ""
+            const funcID = ONSTACK();
+            DB({weatherData, hasForcedState: Media.HasForcedState("Horizon")}, "setHorizon");
+            if (Media.HasForcedState("Horizon")) return OFFSTACK(funcID) && false;
+            weatherData = weatherData || weatherDataMemo || {event: "x"};
+            let horizWeather = "";
             switch (weatherData.event.charAt(0)) {
                 case "x":
-                    horizWeather = "clear"
-                    break
+                    horizWeather = "clear";
+                    break;
                 case "b":
                 case "t":
                 case "p":
-                    horizWeather = "stormy"
-                    break
+                    horizWeather = "stormy";
+                    break;
                 default:
-                    horizWeather = "cloudy"
-                    break
+                    horizWeather = "cloudy";
+                    break;
             }
             const horizonSrc = `${getHorizonTimeString()}${horizWeather}`,
-                horizonData = Media.GetImgData("Horizon_1")
-            DB({horizonSrc}, "setHorizon")
+                horizonData = Media.GetImgData("Horizon_1");
+            DB({horizonSrc}, "setHorizon");
             if (isFastTweeningClock && (
                 !horizonSrc.includes("day") && horizonData.curSrc.includes("day") ||
                 horizonSrc.includes("day") && !horizonData.curSrc.includes("day")
             ) ||
                 !isFastTweeningClock) {
-                Media.SetImg("Horizon_1", horizonSrc)
-                Media.SetImg("Foreground", D.Int(horizonSrc.replace(/\D/gu, "")) > 3 ? "dark" : "bright")
+                Media.SetImg("Horizon_1", horizonSrc);
+                Media.SetImg("Foreground", D.Int(horizonSrc.replace(/\D/gu, "")) > 3 ? "dark" : "bright");
             }
-            return OFFSTACK(funcID) && true
+            return OFFSTACK(funcID) && true;
         },
         setWeather = (isReturningDataOnly = false) => {
             const funcID = ONSTACK(),
                 weatherData = Object.assign({}, getWeatherData(), STATE.REF.weatherOverride),
                 getFogSrc = () => {
-                    const fID = ONSTACK()
+                    const fID = ONSTACK();
                     switch (getHorizonTimeString()) {
                         case "night1":
                         case "night2":
                         case "night3":
-                            return OFFSTACK(fID) && "darkfog" // "brightfog"
+                            return OFFSTACK(fID) && "darkfog"; // "brightfog"
                         case "day":
-                            return OFFSTACK(fID) && "blank"
+                            return OFFSTACK(fID) && "blank";
                         default:
-                            return OFFSTACK(fID) && "darkfog"
+                            return OFFSTACK(fID) && "darkfog";
                     }
                 },
                 getSnowSrc = (degree) => {
-                    const fID = ONSTACK()
+                    const fID = ONSTACK();
                     switch (getHorizonTimeString()) {
                         case "night1":
                         case "night2":
                         case "night3":
-                            return OFFSTACK(fID) && `bright${degree.toLowerCase()}snow`
+                            return OFFSTACK(fID) && `bright${degree.toLowerCase()}snow`;
                         default:
-                            return OFFSTACK(fID) && `dark${degree.toLowerCase()}snow`
+                            return OFFSTACK(fID) && `dark${degree.toLowerCase()}snow`;
                     }
                 },
-                forecastLines = []
+                forecastLines = [];
                 // D.Alert(`Weather Code: ${D.JS(weatherCode)}<br>Month Temp: ${D.JS(getTemp(MONTHTEMP[dateObj.getUTCMonth()]))}<br><br>Delta Temp: ${D.JS(getTemp(weatherCode.charAt(2)))} (Code: ${weatherCode.charAt(2)})`)
-            DB({weatherData}, "setWeather")
+            DB({weatherData}, "setWeather");
             if (isReturningDataOnly)
-                return OFFSTACK(funcID) && weatherData
-            weatherDataMemo = D.Clone(weatherData)
+                return OFFSTACK(funcID) && weatherData;
+            weatherDataMemo = D.Clone(weatherData);
 
             if (!Media.HasForcedState("tempC")) {
-                Media.ToggleText("tempC", true)
-                Media.ToggleText("tempF", true)
-                Media.SetText("tempC", `${weatherData.tempC}°C`)
-                Media.SetText("tempF", `(${Math.round(Math.round(9 / 5 * weatherData.tempC + 32))}°F)`)
+                Media.ToggleText("tempC", true);
+                Media.ToggleText("tempF", true);
+                Media.SetText("tempC", `${weatherData.tempC}°C`);
+                Media.SetText("tempF", `(${Math.round(Math.round(9 / 5 * weatherData.tempC + 32))}°F)`);
             }
             for (const lightningAnim of ["WeatherLightning_1", "WeatherLightning_2"])
-                Media.Kill(lightningAnim)
+                Media.Kill(lightningAnim);
             
             // WEATHER MAIN
             switch (weatherData.event.charAt(0)) {
                     // x: "Clear", b: "Blizzard", c: "Overcast", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
                 case "b": {
                     if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", getSnowSrc("heavy"))}
-                    break
+                    break;
                 }
                 case "c": {
-                    if (!Media.HasForcedState("WeatherMain")) Media.ToggleImg("WeatherMain", false)
-                    break
+                    if (!Media.HasForcedState("WeatherMain")) Media.ToggleImg("WeatherMain", false);
+                    break;
                 }
                 case "p": {
                     if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", "heavyrain")}
-                    break
+                    break;
                 }
                 case "s": {
                     if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", getSnowSrc("light"))}
-                    break
+                    break;
                 }
                 case "t": {
                     if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", "heavyrain")}
-                    Media.Pulse(["WeatherLightning_1", "WeatherLightning_2"], 45, 75, 15)
-                    break
+                    Media.Pulse(["WeatherLightning_1", "WeatherLightning_2"], 45, 75, 15);
+                    break;
                 } 
                 case "w": {
                     if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", "lightrain")}
-                    break
+                    break;
                 } 
                 case "x": {
                     if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", "blank")}
-                    break
+                    break;
                 }
                     // no default
             }
@@ -2139,55 +2139,55 @@ const TimeTracker = (() => {
             // WEATHER GROUND
             if (!Media.HasForcedState("WeatherGround"))
                 if (getGroundCover(weatherData.weatherCode) === "blank") {
-                    Media.ToggleImg("WeatherGround", false)
+                    Media.ToggleImg("WeatherGround", false);
                 } else {
-                    Media.ToggleImg("WeatherGround", true)
-                    Media.SetImg("WeatherGround", getGroundCover(weatherData.weatherCode))
+                    Media.ToggleImg("WeatherGround", true);
+                    Media.SetImg("WeatherGround", getGroundCover(weatherData.weatherCode));
                 }
 
             // WEATHER FOG
             if (!Media.HasForcedState("WeatherFog"))
                 if (weatherData.isFoggy) {
-                    Media.ToggleImg("WeatherFog", true)
-                    Media.SetImg("WeatherFog", getFogSrc())
+                    Media.ToggleImg("WeatherFog", true);
+                    Media.SetImg("WeatherFog", getFogSrc());
                 } else {
-                    Media.ToggleImg("WeatherFog", false)
+                    Media.ToggleImg("WeatherFog", false);
                 }
-            forecastLines.push((weatherData.event === "x" || weatherData.event === "c") && weatherData.isFoggy ? WEATHERCODES[0].f : WEATHERCODES[0][weatherData.event])
+            forecastLines.push((weatherData.event === "x" || weatherData.event === "c") && weatherData.isFoggy ? WEATHERCODES[0].f : WEATHERCODES[0][weatherData.event]);
             if (weatherData.humidity !== "x")
-                forecastLines.push(WEATHERCODES[1][weatherData.humidity])
-            forecastLines.push(weatherData.tempC < WINTERTEMP ? WEATHERCODES[2][weatherData.wind][1] : WEATHERCODES[2][weatherData.wind][0])
+                forecastLines.push(WEATHERCODES[1][weatherData.humidity]);
+            forecastLines.push(weatherData.tempC < WINTERTEMP ? WEATHERCODES[2][weatherData.wind][1] : WEATHERCODES[2][weatherData.wind][0]);
             if (!Media.HasForcedState("weather")) {
-                Media.ToggleText("weather", true)
-                Media.SetText("weather", `${forecastLines.join(" ♦ ")}`)
+                Media.ToggleText("weather", true);
+                Media.SetText("weather", `${forecastLines.join(" ♦ ")}`);
             }
             if (!Media.HasForcedState("WeatherFrost"))
                 if (weatherData.tempC <= 0) {
-                    Media.ToggleImg("WeatherFrost", true)
-                    Media.SetImg("WeatherFrost", `frost${weatherData.tempC < -12 && "3" || weatherData.tempC < -6 && "2" || "1"}`) 
+                    Media.ToggleImg("WeatherFrost", true);
+                    Media.SetImg("WeatherFrost", `frost${weatherData.tempC < -12 && "3" || weatherData.tempC < -6 && "2" || "1"}`); 
                 } else {
-                    Media.ToggleImg("WeatherFrost", false)
+                    Media.ToggleImg("WeatherFrost", false);
                 }
-            Soundscape.Sync()
-            return OFFSTACK(funcID) && weatherData
+            Soundscape.Sync();
+            return OFFSTACK(funcID) && weatherData;
         },
         setManualWeather = (event, tempC, wind, humidity) => {
             const funcID = ONSTACK(),
-                weatherData = {}
+                weatherData = {};
             if (tempC || tempC === 0)
-                weatherData.tempC = tempC
+                weatherData.tempC = tempC;
             if (event) {
-                weatherData.event = event
+                weatherData.event = event;
                 if (weatherData.event.length === 1)
-                    weatherData.event += "x"
+                    weatherData.event += "x";
             }
             if (wind)
-                weatherData.wind = wind
+                weatherData.wind = wind;
             if (humidity)
-                weatherData.humidity = humidity
-            STATE.REF.weatherOverride = weatherData
-            setWeather()
-            OFFSTACK(funcID)
+                weatherData.humidity = humidity;
+            STATE.REF.weatherOverride = weatherData;
+            setWeather();
+            OFFSTACK(funcID);
         },
     // #endregion
 
@@ -2207,28 +2207,28 @@ const TimeTracker = (() => {
                     w: null
                 },
                 weatherStrings = {},
-                weatherCodes = {x: "CLR", b: "BLZ", c: "OCST", f: "FOG", p: "DPR", s: "SNW", t: "TST", w: "DRZ"}
+                weatherCodes = {x: "CLR", b: "BLZ", c: "OCST", f: "FOG", p: "DPR", s: "SNW", t: "TST", w: "DRZ"};
             for (const code of Object.keys(weatherMatches)) {
-                weatherMatches[code] = getNextWeatherEvent("event", code)
+                weatherMatches[code] = getNextWeatherEvent("event", code);
                 if (weatherMatches[code])
                     weatherStrings[code] = {
                         date: `<b>${MONTHS[weatherMatches[code].month].slice(0, 3)} ${weatherMatches[code].day}, ${weatherMatches[code].hour > 12 ? `${weatherMatches[code].hour - 12} PM` : `${weatherMatches[code].hour} AM`}</b>`,
                         command: `<span style="width: 40px; display: inline-block;"><a href="!time set ${weatherMatches[code].year} ${weatherMatches[code].month} ${weatherMatches[code].day} ${weatherMatches[code].hour}">${weatherCodes[code]}</a></span>`
-                    }
+                    };
                 else
                     weatherStrings[code] = {
                         date: "<Not Found>",
                         command: "<span style=\"width: 40px; display: inline-block; background-color: grey;\">"
-                    }
+                    };
             }
-            return OFFSTACK(funcID) && _.values(weatherStrings).map(x => `<div style="display: inline-block; width: 45%; margin: 2px 3% 0px 0px; height: auto;">${x.command} ${x.date}</div>`).join("")
+            return OFFSTACK(funcID) && _.values(weatherStrings).map(x => `<div style="display: inline-block; width: 45%; margin: 2px 3% 0px 0px; height: auto;">${x.command} ${x.date}</div>`).join("");
         },
         getDayScore = (monthNum, dateNum, hourNum) => STATE.REF.stormScores[monthNum][Math.max(dateNum || 0, 1)][hourNum],
         singleHourCell = (monthNum, dateNum, hourNum, isUpgrading = false, isRaw = false) => {
-            const funcID = ONSTACK()
+            const funcID = ONSTACK();
             if (dateNum < 1)
-                return OFFSTACK(funcID) && ""
-            let weatherData, colors, eventSymbol, groundCover, groundCoverPercent
+                return OFFSTACK(funcID) && "";
+            let weatherData, colors, eventSymbol, groundCover, groundCoverPercent;
             try {
                 const TEMPCOLORS = D.KeyMapObj({
                         [30]: "darkred",
@@ -2240,18 +2240,18 @@ const TimeTracker = (() => {
                         [-12]: "blue",
                         [-20]: "darkblue"
                     }, null, v => [C.COLORS[v], C.COLORS[v].replace(/1\)/gu, "0.1)")]),
-                    dayScore = getDayScore(monthNum, dateNum, hourNum)
-                weatherData = getWeatherData(monthNum, dateNum, hourNum, isUpgrading ? Math.floor(dayScore/100) : 0, isRaw)
+                    dayScore = getDayScore(monthNum, dateNum, hourNum);
+                weatherData = getWeatherData(monthNum, dateNum, hourNum, isUpgrading ? Math.floor(dayScore/100) : 0, isRaw);
                 if (!weatherData)
-                    return OFFSTACK(funcID) && ""    
+                    return OFFSTACK(funcID) && "";    
                 const tempKeys = Object.keys(TEMPCOLORS).sort(),
                     tempIndex = tempKeys.findIndex(x => x > weatherData.tempC),
                     tempKey = tempKeys[tempIndex === -1 ? tempKeys.length - 1 : tempIndex],
-                    colorData = weatherData.tempC <= -20 ? TEMPCOLORS[-20] : TEMPCOLORS[tempKey]
+                    colorData = weatherData.tempC <= -20 ? TEMPCOLORS[-20] : TEMPCOLORS[tempKey];
                 colors = {
                     strong: colorData[0],
                     weak: colorData[1]
-                }
+                };
                 eventSymbol = {
                     x: `${weatherData.isFoggy && `<span style="color: ${C.COLORS.grey};">` || "<span>"}${weatherData.isDay && "<span style=\"font-size: 12px;display: block;margin-bottom: -14px;\">◯</span>" || "☽"}</span>`, // †▲▼†‡
                     f: `${weatherData.isFoggy && `<span style="color: ${C.COLORS.grey};">` || "<span>"}${weatherData.isDay && "<span style=\"font-size: 12px;display: block;margin-bottom: -14px;\">◯</span>" || "☽"}</span>`,
@@ -2267,7 +2267,7 @@ const TimeTracker = (() => {
                     s: "❄", 
                     t: "<span style=\"display: block; background-color: #000055; margin-top: 2px; margin-bottom: -16px;\">⚡</span>", // ❂❍❄❆
                     w: "☂"
-                }[weatherData.event] // ꜛ��
+                }[weatherData.event]; // ꜛ��
                 groundCover = {
                     snow5: 50,
                     snow4: 40,
@@ -2277,8 +2277,8 @@ const TimeTracker = (() => {
                     blank: 0,
                     wet: 0,
                     frost: 0
-                }[getGroundCover(weatherData.weatherCode)]
-                groundCoverPercent = D.Int(groundCover * 2 - 10)
+                }[getGroundCover(weatherData.weatherCode)];
+                groundCoverPercent = D.Int(groundCover * 2 - 10);
                 return OFFSTACK(funcID) && `<div style="
                     display: inline-block;
                     height: 29px;
@@ -2321,9 +2321,9 @@ const TimeTracker = (() => {
                         color: ${C.COLORS.black};
                         margin: 0px;
                         padding: 0px;
-                    ">${eventSymbol}<br>${isUpgrading ? `<span style="font-size: 10px; display: block; ${dayScore >= 100 ? `font-family: 'Courier New'; font-size: 12px; font-weight: bold; color: ${C.COLORS.brightred};` : `color: ${C.COLORS.black};`}">${dayScore >= 100 ? "▲".repeat(Math.floor(dayScore/100)) : dayScore}</span>` : `<span style="font-size: 10px; display: block; color: ${C.COLORS.black};">${weatherData.tempC}</span>`}</div></div>`
+                    ">${eventSymbol}<br>${isUpgrading ? `<span style="font-size: 10px; display: block; ${dayScore >= 100 ? `font-family: 'Courier New'; font-size: 12px; font-weight: bold; color: ${C.COLORS.brightred};` : `color: ${C.COLORS.black};`}">${dayScore >= 100 ? "▲".repeat(Math.floor(dayScore/100)) : dayScore}</span>` : `<span style="font-size: 10px; display: block; color: ${C.COLORS.black};">${weatherData.tempC}</span>`}</div></div>`;
             } catch(errObj) {
-                DB({weatherData, groundCoverPercent, colors, eventSymbol}, "singleHourCell")
+                DB({weatherData, groundCoverPercent, colors, eventSymbol}, "singleHourCell");
                 return OFFSTACK(funcID) && `<div style="
                             display: inline-block;
                             height: 29px;
@@ -2349,14 +2349,14 @@ const TimeTracker = (() => {
                             margin: 0px;
                             padding: 0px;
                         ">E</div>
-                    </div>`
+                    </div>`;
             }
         },
         singleDayRow = (monthNum, dateNum, isUpgrading = false, isRaw = false) => {
-            const funcID = ONSTACK()
+            const funcID = ONSTACK();
             if (dateNum === 0)
-                return OFFSTACK(funcID) && ""
-            const hourCells = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23].map(x => singleHourCell(monthNum, dateNum, x, isUpgrading, isRaw))
+                return OFFSTACK(funcID) && "";
+            const hourCells = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23].map(x => singleHourCell(monthNum, dateNum, x, isUpgrading, isRaw));
             return OFFSTACK(funcID) && `<div style="
                     display: block;
                     height: 31px;
@@ -2378,7 +2378,7 @@ const TimeTracker = (() => {
             text-align-last: right;
             margin-right: 5px;
             margin-left: -5px;
-        ">${D.Ordinal(dateNum, false)}</div>${hourCells.join("")}</div>`
+        ">${D.Ordinal(dateNum, false)}</div>${hourCells.join("")}</div>`;
         },
         singleMonthBlock = (monthNum, isUpgrading = false, isRaw = false) => {
             const funcID = ONSTACK(),
@@ -2407,7 +2407,7 @@ const TimeTracker = (() => {
                     width: 900px;
                     margin-bottom: 7px;
                 ">${hourSpans.join("")}</div>`,
-                dayRows = (new Array(STATE.REF.weatherData[monthNum].length)).fill("").map((x, i) => singleDayRow(monthNum, i, isUpgrading, isRaw))
+                dayRows = (new Array(STATE.REF.weatherData[monthNum].length)).fill("").map((x, i) => singleDayRow(monthNum, i, isUpgrading, isRaw));
                 // dayRows = D.Clone(STATE.REF.weatherData[monthNum]).slice(1).map((x, i) => singleDayRow(monthNum, i))
             return OFFSTACK(funcID) && `<div style="
                     display: block;
@@ -2415,14 +2415,14 @@ const TimeTracker = (() => {
                     height: auto;
                     margin: 0px;
                     padding: 0px;
-            ">${headerRow}${dayRows.slice(1).join("")}</div>`
+            ">${headerRow}${dayRows.slice(1).join("")}</div>`;
         },
         upgradeWeatherSeverity = (weatherData, numUpgrades) => {
             if (!numUpgrades)
-                return weatherData
+                return weatherData;
             if (numReturns <= 5 && randomInteger(10) === 2) {
-                numReturns++
-                DB({weatherData, numUpgrades}, "upgradeWeatherSeverity")
+                numReturns++;
+                DB({weatherData, numUpgrades}, "upgradeWeatherSeverity");
             }
             const eventUpgrades = {
                     x: ["c", "c"],
@@ -2441,14 +2441,14 @@ const TimeTracker = (() => {
                     g: "h",
                     h: "v",
                     v: "v"
-                }
+                };
             while (numUpgrades > 0) {
-                weatherData.event = eventUpgrades[weatherData.event][weatherData.tempC > 0 ? 0 : 1]
-                weatherData.wind = windUpgrades[weatherData.wind]
-                weatherData.weatherCode = weatherData.weatherCode.replace(/.(...).(.?)/gu, `${weatherData.event}$1${weatherData.wind}$2`)
-                numUpgrades--
+                weatherData.event = eventUpgrades[weatherData.event][weatherData.tempC > 0 ? 0 : 1];
+                weatherData.wind = windUpgrades[weatherData.wind];
+                weatherData.weatherCode = weatherData.weatherCode.replace(/.(...).(.?)/gu, `${weatherData.event}$1${weatherData.wind}$2`);
+                numUpgrades--;
             }
-            return weatherData
+            return weatherData;
         },
         upgradeAllWeather = () => {
             for (let month = 0; month <= 11; month++)
@@ -2457,120 +2457,120 @@ const TimeTracker = (() => {
                         const weatherData = getWeatherData(month, day, hour),
                             dayScore = getDayScore(month, day, hour),
                             numUpgrades = Math.floor(dayScore/100),
-                            newWeatherData = upgradeWeatherSeverity(weatherData, numUpgrades)
-                        STATE.REF.weatherData[month][day][hour] = newWeatherData.weatherCode
-                        STATE.REF.stormScores[month][day][hour] = 0
+                            newWeatherData = upgradeWeatherSeverity(weatherData, numUpgrades);
+                        STATE.REF.weatherData[month][day][hour] = newWeatherData.weatherCode;
+                        STATE.REF.stormScores[month][day][hour] = 0;
                     }
         },
         updateWeatherHandout = (monthNum) => {
-            const funcID = ONSTACK()
+            const funcID = ONSTACK();
             // Handouts.RemoveAll(MONTHS[monthNum])
-            Handouts.Set(`${D.UCase(MONTHS[monthNum])} (Raw)`, undefined, `<h2>${MONTHS[monthNum]}</h2>${singleMonthBlock(monthNum, false, true)}`, true)
-            Handouts.Set(`${D.UCase(MONTHS[monthNum])} (Current)`, undefined, `<h2>${MONTHS[monthNum]}</h2>${singleMonthBlock(monthNum, false, false)}`, true)
-            OFFSTACK(funcID)
+            Handouts.Set(`${D.UCase(MONTHS[monthNum])} (Raw)`, undefined, `<h2>${MONTHS[monthNum]}</h2>${singleMonthBlock(monthNum, false, true)}`, true);
+            Handouts.Set(`${D.UCase(MONTHS[monthNum])} (Current)`, undefined, `<h2>${MONTHS[monthNum]}</h2>${singleMonthBlock(monthNum, false, false)}`, true);
+            OFFSTACK(funcID);
         },
         parseCodesForGroundCover = (meltRate = 0.3, upRates = {}, maxCover = 60) => {
             const funcID = ONSTACK(), 
-                defaultUpRates = {x: 0, c: 0, w: -0.3, p: -0.7, t: -1, s: 0.3, b: 1.2}
-            upRates = Object.assign({}, defaultUpRates, upRates)
-            D.Alert(`Processing Ground Cover for:<br>... meltRate: ${meltRate}<br>... upRates: ${D.JS(upRates)}`, "Parse Codes for Ground Cover")
-            let runningGroundCover = 0
+                defaultUpRates = {x: 0, c: 0, w: -0.3, p: -0.7, t: -1, s: 0.3, b: 1.2};
+            upRates = Object.assign({}, defaultUpRates, upRates);
+            D.Alert(`Processing Ground Cover for:<br>... meltRate: ${meltRate}<br>... upRates: ${D.JS(upRates)}`, "Parse Codes for Ground Cover");
+            let runningGroundCover = 0;
             for (const monthRange of [[6, 11], [0, 5]])
                 for (let month = monthRange[0]; month <= monthRange[1]; month++) 
                     for (let day = 1; day <= getDaysInMonth(month); day++) 
                         for (let hour = 0; hour <= 23; hour++) {
-                            const weatherData = getWeatherData(month, day, hour)
-                            let {weatherCode} = weatherData
-                            weatherCode = weatherCode.slice(0, 5)
-                            runningGroundCover += upRates[weatherData.event] - Math.sqrt(Math.max(0, weatherData.tempC) * meltRate)
-                            runningGroundCover = Math.min(Math.max(runningGroundCover, 0),maxCover)
-                            const groundCoverLevel = Math.min(5, Math.floor(runningGroundCover/10))
+                            const weatherData = getWeatherData(month, day, hour);
+                            let {weatherCode} = weatherData;
+                            weatherCode = weatherCode.slice(0, 5);
+                            runningGroundCover += upRates[weatherData.event] - Math.sqrt(Math.max(0, weatherData.tempC) * meltRate);
+                            runningGroundCover = Math.min(Math.max(runningGroundCover, 0),maxCover);
+                            const groundCoverLevel = Math.min(5, Math.floor(runningGroundCover/10));
                             if (groundCoverLevel === 0)
                                 if (["t","p","w"].includes(weatherData.event))
-                                    weatherCode += "w"
+                                    weatherCode += "w";
                                 else if (weatherData.tempC < 0)
-                                    weatherCode += "f"
+                                    weatherCode += "f";
                                 else
-                                    weatherCode += "x"
+                                    weatherCode += "x";
                             else
-                                weatherCode += groundCoverLevel
-                            STATE.REF.weatherData[month][day][hour] = weatherCode
+                                weatherCode += groundCoverLevel;
+                            STATE.REF.weatherData[month][day][hour] = weatherCode;
                         }
         
-            D.Alert(`${D.JS(STATE.REF.weatherData[0][1].join(", "))}<br><h4>Ground Codes Added!</h4>`, "Parse Codes for Ground Cover")
-            OFFSTACK(funcID)
+            D.Alert(`${D.JS(STATE.REF.weatherData[0][1].join(", "))}<br><h4>Ground Codes Added!</h4>`, "Parse Codes for Ground Cover");
+            OFFSTACK(funcID);
         },        
         parseCodesForStormScore = (eventPoints = {c: 2, p: 15, d: 20, t: 20}, seekHours = 10) => {
-            const funcID = ONSTACK()
-            delete STATE.REF.stormScores
-            const [stormScoreData, stormScoreReport] = [{}, {}]
+            const funcID = ONSTACK();
+            delete STATE.REF.stormScores;
+            const [stormScoreData, stormScoreReport] = [{}, {}];
             for (let month = 0; month <= 11; month++) {
-                stormScoreData[month] = {}
+                stormScoreData[month] = {};
                 // stormScoreReport[month] = {}
                 for (let day = 1; day <= getDaysInMonth(month); day++) {
-                    stormScoreData[month][day] = []
+                    stormScoreData[month][day] = [];
                     for (let hour = 0; hour <= 23; hour++) {
-                        let thisHourScore = 0
+                        let thisHourScore = 0;
                         for (let seekCount = -1*seekHours; seekCount <= seekHours; seekCount++) {
-                            let [seekHour, seekDay, seekMonth] = [hour + seekCount, day, month]
+                            let [seekHour, seekDay, seekMonth] = [hour + seekCount, day, month];
                             if (seekHour < 0) {
-                                seekHour += 24
-                                seekDay--
+                                seekHour += 24;
+                                seekDay--;
                             } else if (seekHour > 23) {
-                                seekHour -= 24
-                                seekDay++
+                                seekHour -= 24;
+                                seekDay++;
                             }
                             if (seekDay < 1) {
-                                seekMonth = seekMonth === 0 ? 11 : seekMonth - 1
-                                seekDay = getDaysInMonth(seekMonth)
+                                seekMonth = seekMonth === 0 ? 11 : seekMonth - 1;
+                                seekDay = getDaysInMonth(seekMonth);
                             } else if (seekDay > getDaysInMonth(seekMonth)) {
-                                seekMonth = seekMonth === 11 ? 0 : seekMonth + 1
-                                seekDay = 1
+                                seekMonth = seekMonth === 11 ? 0 : seekMonth + 1;
+                                seekDay = 1;
                             }
-                            const weatherData = getWeatherData(seekMonth, seekDay, seekHour)
-                            thisHourScore += eventPoints[weatherData.event] || 0
+                            const weatherData = getWeatherData(seekMonth, seekDay, seekHour);
+                            thisHourScore += eventPoints[weatherData.event] || 0;
                         }
-                        stormScoreData[month][day].push(thisHourScore)
+                        stormScoreData[month][day].push(thisHourScore);
                     }
                     // stormScoreReport[month][day] = stormScoreData[month][day].join(", ")
                 }
             }
             for (let multCount = 0; multCount < 3; multCount++) {
                 const theseSeekHours = [2, 1, 1][multCount],
-                    theseStormScores = D.Clone(stormScoreData)
+                    theseStormScores = D.Clone(stormScoreData);
                 for (let month = 0; month <= 11; month++) {
                     // maxSeekStormScoreData[month] = maxSeekStormScoreData[month] || {}
-                    stormScoreReport[month] = {}
+                    stormScoreReport[month] = {};
                     for (let day = 1; day <= getDaysInMonth(month); day++) {
                         // maxSeekStormScoreData[month][day] = maxSeekStormScoreData[month][day] || []
                         for (let hour = 0; hour <= 23; hour++) {
-                            let deltaScore = 100
-                            const thisHourScore = D.Int(theseStormScores[month][day][hour])
+                            let deltaScore = 100;
+                            const thisHourScore = D.Int(theseStormScores[month][day][hour]);
                             for (let seekCount = -1*theseSeekHours; seekCount <= theseSeekHours; seekCount++) {
-                                let [seekHour, seekDay, seekMonth] = [hour + seekCount, day, month]
+                                let [seekHour, seekDay, seekMonth] = [hour + seekCount, day, month];
                                 if (seekHour < 0) {
-                                    seekHour += 24
-                                    seekDay--
+                                    seekHour += 24;
+                                    seekDay--;
                                 } else if (seekHour > 23) {
-                                    seekHour -= 24
-                                    seekDay++
+                                    seekHour -= 24;
+                                    seekDay++;
                                 }
                                 if (seekDay < 1) {
-                                    seekMonth = seekMonth === 0 ? 11 : seekMonth - 1
-                                    seekDay = getDaysInMonth(seekMonth)
+                                    seekMonth = seekMonth === 0 ? 11 : seekMonth - 1;
+                                    seekDay = getDaysInMonth(seekMonth);
                                 } else if (seekDay > getDaysInMonth(seekMonth)) {
-                                    seekMonth = seekMonth === 11 ? 0 : seekMonth + 1
-                                    seekDay = 1
+                                    seekMonth = seekMonth === 11 ? 0 : seekMonth + 1;
+                                    seekDay = 1;
                                 }
                                 if (theseStormScores[seekMonth][seekDay][seekHour] < 100 * multCount ||
                                     multCount === 0 && theseStormScores[seekMonth][seekDay][seekHour] > thisHourScore) {
-                                    deltaScore = 0
-                                    break
+                                    deltaScore = 0;
+                                    break;
                                 }
                             }
-                            stormScoreData[month][day][hour] = thisHourScore + deltaScore
+                            stormScoreData[month][day][hour] = thisHourScore + deltaScore;
                         }
-                        stormScoreReport[month][day] = stormScoreData[month][day].join(", ")
+                        stormScoreReport[month][day] = stormScoreData[month][day].join(", ");
                     }
                 }
             }
@@ -2579,13 +2579,13 @@ const TimeTracker = (() => {
             //    Seek through again, with seekHours at 0.5-0.75 the previous one: Any hour with ALL >100 hours on both sides gets ANOTHER +100 added to its score
             //    Repeat with seekHours shrunk again, looking for an hour with ALL >200 hours on both sides --> A third +100 to their score
             //    Then, each hour gets upgraded one level for every 100 points it has.
-            STATE.REF.stormScores = D.Clone(stormScoreData)
-            D.Alert(D.JS(stormScoreReport), "Storm Scores")
-            OFFSTACK(funcID)
+            STATE.REF.stormScores = D.Clone(stormScoreData);
+            D.Alert(D.JS(stormScoreReport), "Storm Scores");
+            OFFSTACK(funcID);
         },
         scanWeatherData = () => { // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
         //  {x: ["Still", "Still"], s: ["Soft Breeze", "Cutting Breeze"], b: ["Breezy", "Biting Wind"], w: ["Blustery", "High Winds"], g: ["High Winds", "Driving Winds"], h: ["Howling Winds", "Howling Winds"], v: ["Roaring Winds", "Roaring Winds"]}
-            let totCodes = 0
+            let totCodes = 0;
             const rawTally = {
                     event: {
                         x: [0,0],
@@ -2625,19 +2625,19 @@ const TimeTracker = (() => {
                         h: [0,0],
                         v: [0,0]
                     }
-                }
+                };
             for (let month = 0; month <= 11; month++)
                 for (let day = 1; day <= getDaysInMonth(month); day++)
                     for (let hour = 0; hour <= 23; hour++) {
                         const rawWeatherData = getWeatherData(month, day, hour, 0, true),
-                            weatherData = getWeatherData(month, day, hour)
+                            weatherData = getWeatherData(month, day, hour);
                         if (weatherData.isDay)
-                            continue
-                        rawTally.event[rawWeatherData.event][rawWeatherData.isFoggy ? 1 : 0]++
-                        rawTally.wind[rawWeatherData.wind][rawWeatherData.tempC > 0 ? 0 : 1]++
-                        curTally.event[weatherData.event][weatherData.isFoggy ? 1 : 0]++
-                        curTally.wind[weatherData.wind][weatherData.tempC > 0 ? 0 : 1]++
-                        totCodes++
+                            continue;
+                        rawTally.event[rawWeatherData.event][rawWeatherData.isFoggy ? 1 : 0]++;
+                        rawTally.wind[rawWeatherData.wind][rawWeatherData.tempC > 0 ? 0 : 1]++;
+                        curTally.event[weatherData.event][weatherData.isFoggy ? 1 : 0]++;
+                        curTally.wind[weatherData.wind][weatherData.tempC > 0 ? 0 : 1]++;
+                        totCodes++;
                     }
             D.Alert([
                 "<h4>Weather Events (Night Only)</h4>",
@@ -2648,27 +2648,27 @@ const TimeTracker = (() => {
                 "<table style=\"width: 300px; border: 3px solid black;\"><tr style=\"background-color: black; color: white;\"><th style=\"width: 20%; padding-bottom: 4px;\">Winds</th><th style=\"width: 2%; padding-bottom: 4px; text-align: center;\" colspan=\"3\">%</th><th style=\"width: 2%; padding-bottom: 4px; text-align: center;\" colspan=\"3\">Qty</th><th style=\"width: 2%; padding-bottom: 4px; text-align: center;\" colspan=\"3\">Winter</th></tr>",
                 D.JS(Object.values(D.KeyMapObj(rawTally.wind, null, (v, k) => `<tr><td style="border-right: 1px solid black;">${WEATHERCODES[2][k][1]}</td><td style="text-align: right;">${D.Int(100*(v[0] + v[1])/totCodes, true)}%</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${D.Int(100*(curTally.wind[k][0] + curTally.wind[k][1])/totCodes, true)}%</td><td style="text-align: right; width: 25px;">${v[0] + v[1]}</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${curTally.wind[k][0] + curTally.wind[k][1]}</td><td style="text-align: right;">${v[1]}</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right;">${curTally.wind[k][1]}</td></tr>`)).join("")),
                 "</table>"
-            ].join(""), "ScanWeatherData")
+            ].join(""), "ScanWeatherData");
         },
         displayNextAlarms = () => {
-            const funcID = ONSTACK()
+            const funcID = ONSTACK();
             // D.Alert([
             //     "<h3>Next Alarms</h3>",
             //     D.JS(_.map(STATE.REF.Alarms.Ahead, v => `${D.JS(v.name)}: ${formatDateString(new Date(v.time), true)}<br>... to: ${D.JSL(v.displayTo)}`)),
             //     "<h3>Next Full Alarm</h3>",
             //     STATE.REF.Alarms.Ahead.length && D.JS(Object.assign(D.Clone(STATE.REF.Alarms.Ahead[0]), {message: D.SumHTML(STATE.REF.Alarms.Ahead[0].message)})) || "NONE"
             // ].join(""), "Upcoming Alarms")
-            OFFSTACK(funcID)
+            OFFSTACK(funcID);
         },
         displayPastAlarms = () => {
-            const funcID = ONSTACK()
+            const funcID = ONSTACK();
             // D.Alert([
             //     "<h3>Past Alarms</h3>",
             //     D.JS(_.map(STATE.REF.Alarms.Behind, v => `${D.JS(v.name)}: ${formatDateString(new Date(v.time), true)}<br>... to: ${D.JSL(v.displayTo)}`)),
             //     "<h3>Next Past Alarm</h3>",
             //     STATE.REF.Alarms.Behind.length && D.JS(Object.assign(D.Clone(STATE.REF.Alarms.Behind[0]), {message: D.SumHTML(STATE.REF.Alarms.Behind[0].message)})) || "NONE"
             // ].join(""), "Past Alarms")
-            OFFSTACK(funcID)
+            OFFSTACK(funcID);
         },
     // #endregion
 
@@ -2820,24 +2820,24 @@ const TimeTracker = (() => {
     // #endregion
 
         fixTimeStatus = () => {
-            const funcID = ONSTACK()
-            isCountdownFrozen = false
-            isTweeningClock = false
-            isFastTweeningClock = false
+            const funcID = ONSTACK();
+            isCountdownFrozen = false;
+            isTweeningClock = false;
+            isFastTweeningClock = false;
             if (Session.IsSessionActive && (!Session.IsTesting || Session.IsFullTest)) {
-                isCountdownRunning = false
-                isTickingClock = true
+                isCountdownRunning = false;
+                isTickingClock = true;
             } else {
-                isCountdownRunning = true
-                isTickingClock = false
+                isCountdownRunning = true;
+                isTickingClock = false;
             }
-            updateClockObj()
-            setHorizon(setWeather())
-            syncCountdown()
-            toggleClock(Session.IsSessionActive && (!Session.IsTesting || Session.IsFullTest))
-            Char.RefreshDisplays()
-            OFFSTACK(funcID)
-        }
+            updateClockObj();
+            setHorizon(setWeather());
+            syncCountdown();
+            toggleClock(Session.IsSessionActive && (!Session.IsTesting || Session.IsFullTest));
+            Char.RefreshDisplays();
+            OFFSTACK(funcID);
+        };
 
     return {
         CheckInstall: checkInstall,
@@ -2855,7 +2855,7 @@ const TimeTracker = (() => {
         get TempC () { return getTempFromCode(MONTHTEMP[STATE.REF.dateObj.getUTCMonth()]) + getTempFromCode(getWeatherCode().charAt(2)) },
         set CurrentDate(dateRef) {
             if (dateRef)
-                STATE.REF.dateObj = getDateObj(dateRef)
+                STATE.REF.dateObj = getDateObj(dateRef);
         },
         FormatDate: formatDateString,
         IsDay: isDateInDay,
@@ -2863,21 +2863,21 @@ const TimeTracker = (() => {
         get WeatherCode () { return getWeatherCode() },
         get IsRaining() { return getWeatherData().isRaining },
         StopAllTimers: () => {
-            isCountdownFrozen = true
-            isCountdownRunning = false
-            isTweeningClock = false
-            isFastTweeningClock = false
-            isTickingClock = false
+            isCountdownFrozen = true;
+            isCountdownRunning = false;
+            isTweeningClock = false;
+            isFastTweeningClock = false;
+            isTickingClock = false;
         },
 
         GetRandomTimeline: getRandomEventTriggers,
 
         SetAlarm: setAlarm
-    }
-})()
+    };
+})();
 
 on("ready", () => {
-    TimeTracker.CheckInstall()
-    D.Log("TimeTracker Ready!")
-})
-void MarkStop("TimeTracker")
+    TimeTracker.CheckInstall();
+    D.Log("TimeTracker Ready!");
+});
+void MarkStop("TimeTracker");

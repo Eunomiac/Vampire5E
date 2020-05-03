@@ -2050,6 +2050,10 @@
 		bottom: 70px;
 	}
 
+	.charsheet div.sheet-toptitleblock input.sheet-hoverpopup.sheet-bane+span+div {
+		height: 145px !important;
+	}
+
 	.charsheet div.sheet-toptitleblock select {
 		height: 20px !important;
 		width: calc(100% - 33% + 15px) !important;
