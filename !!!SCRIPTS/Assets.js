@@ -667,12 +667,12 @@ const Assets = (() => {
         initIMGAssets = () => {
             for (const assetID of Object.keys(STATE.REF.AssetLibrary).filter(x => STATE.REF.AssetLibrary[x].type === "image"))
                 new Image(assetID);
-            D.Flag("Image Assets Compiled");
+            D.Flag("... ... Image Assets Compiled!");
         },        
         initTEXTAssets = () => {
             for (const assetID of Object.keys(STATE.REF.AssetLibrary).filter(x => STATE.REF.AssetLibrary[x].type === "text"))
                 new Text(assetID);
-            D.Flag("Text Assets Compiled");
+            D.Flag("... ... Text Assets Compiled!");
         };
     // #endregion
 

@@ -25,15 +25,21 @@ const InitCommands = (() => {
                 if (Assets && Assets.Init)
                     Assets.Init();
                 setTimeout(() => {
-                    D.Flag("... Fixing TimeTracker ...");
+                    D.Flag("... Calibrating Time ...")
+                    D.Flag("... ... Synchronizing Clock ...");
+                    D.Flag("... ... Synchronizing Countdown ...");
+                    D.Flag("... ... Synchronizing Weather ...");
+                    D.Flag("... ... Generating Timeline ...");
                     if (TimeTracker && TimeTracker.Fix)
                         TimeTracker.Fix();
                     setTimeout(() => {
-                        D.Flag("... Fixing Soundscape ...");
+                        D.Flag("... Assembling Character Roster ...")
+                        D.Flag("... Deploying Soundscape ...");
                         if (Soundscape && Soundscape.Sync)
                             Soundscape.Sync(true);
                         setTimeout(() => {
-                            D.Flag("... Fixing Character Displays ...");
+                            D.Flag("... Processing Handout Updates ...");
+                            D.Flag("... Validating Data Displays ...");
                             if (Char && Char.RefreshDisplays)
                                 Char.RefreshDisplays();
                             setTimeout(() => {
