@@ -138,19 +138,6 @@ const Session = (() => {
                     break;
                 }
                 case "next": sessionMonologue(); break;
-                case "backup": {
-                    delete STATE.REF.backupData;
-                    const backupData = JSON.stringify(STATE.REF);
-                    STATE.REF.backupData = backupData;
-                    D.Alert(D.JS(JSON.parse(backupData)));
-                    break;
-                }
-                case "restore": {
-                    const {backupData} = STATE.REF;
-                    D.Alert(D.JS(JSON.parse(backupData)));
-                    state[C.GAMENAME][SCRIPTNAME] = JSON.parse(backupData);
-                    break;
-                }
                 case "add": {
                     switch (D.LCase(call = args.shift())) {
                         case "favsite": STATE.REF.FavoriteSites.push(args.join(" ")); break;

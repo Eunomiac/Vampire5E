@@ -17,40 +17,23 @@ const Tester = (() => {
     // #endregion
 
     // #region LOCAL INITIALIZATION
-        initialize = () => { // eslint-disable-line no-empty-function
-            const advNames = [
-                "Haven (Harbord Appt.)",
-                "Haven (Warding)",
-                "Haven (Surgery)",
-                "Domain (Portillion)",
-                "Status (Anarchs)",
-                "Mawla (Baroness)",
-                "Mawla (Scientists)",
-                "Dr. Netchurch",
-                "Dr. Netchurch",
-                "Dr Netchurch",
-                "Herd (Mobile Clinic)",
-                "Herd (Bookies)",
-                "Allies (Bookies)",
-                "Contacts (Ogden Stone)",
-                "Contacts (The Aristocrat)",
-                "Mask: John Pierce",
-                "Enemy (Underwood)",
-                "Addict (Painkillers)",
-                "Known Corpse",
-                "Adversary (Seneschal)"                
-            ];
-            for (const adv of advNames)
-                fuz.add(adv);
-        },
-    
-        fuz = Fuzzy.Fix(),
+        initialize = () => { }, // eslint-disable-line no-empty-function
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting;
             switch (call) {
+                case "statelength": {
+                    const lengthVals = {};
+                    for (const [key, value] of Object.entries(state.VAMPIRE)) {
+                        lengthVals[`*** ${D.UCase(key)} ***`] = JSON.stringify(value).length;
+                        for (const [kkey, vvalue] of Object.entries(value))
+                            lengthVals[`${key}.${kkey}`] = JSON.stringify(vvalue).length;
+                    }
+                    D.Alert(`${D.JS(lengthVals)}<br><br><b>TOTAL:${JSON.stringify(state.VAMPIRE).length}`, "State Variable Contents");
+                    break;
+                }
                 case "pause": TimeTracker.Pause(); break;
                 case "resume": TimeTracker.Resume(); break;
                 case "stoptracks": {

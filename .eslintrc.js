@@ -161,6 +161,7 @@ module.exports = {
         "clearInterval": "readonly",
         "getGMID": "readonly",
         "sendChatMessage": "readonly",
+        "processStack": "readonly",
         "arguments": "writable",
         "generateRowID": "readonly",
         "MarkStart": "readonly",

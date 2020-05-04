@@ -31,7 +31,6 @@ const D = (() => {
             STATE.REF.CHARWIDTH = STATE.REF.CHARWIDTH || {};
             STATE.REF.DEBUGLOG = STATE.REF.DEBUGLOG || [];
             STATE.REF.ALERTTHROTTLE = [];
-            STATE.REF.COMMANDMENUS = STATE.REF.COMMANDMENUS || {};
             STATE.REF.flexSpace = STATE.REF.flexSpace || 10.00;
             STATE.REF.isReportingListener = STATE.REF.isReportingListener || false;
             STATE.REF.FuncQueueName = STATE.REF.FuncQueueName || [];
@@ -516,7 +515,7 @@ const D = (() => {
                 return "<UNDEFINED>";
 
             return jStrH(data).
-                replace(/(\r\n|\n|\r|<br\/?>)/gu, " "). // Removes all line breaks
+                replace(/(\r\n|\n|\r|<br\/?>)/g, " "). // Removes all line breaks
                 replace(/(&nbsp;)+/gu, " "). // Converts &nbsp; back to whitespace
                 replace(/(&amp;nbsp;)+/gu, " "). // Converts escaped &nbsp; to whitespace
                 replace(/&quot;/gu, "'"). // Converts escaped double-quotes to single-quotes
@@ -751,7 +750,7 @@ const D = (() => {
                 msg = jStrL(msg);
 
             if (!isHTMLOk)
-                msg = msg.replace(/<[a-z/\s]*>/gu, " ").replace(/\s\s+/gu, " ");
+                msg = msg.replace(/<[\sa-z\/]*>/g, " ").replace(/\s\s+/gu, " ");
             
             return msg;
         },
@@ -861,9 +860,9 @@ const D = (() => {
             if (VAL({string: menuData}))
                 return menuData;
             const menuString = _.escape(JSON.stringify(menuData));
-            if (!(menuString in STATE.REF.COMMANDMENUS))
-                STATE.REF.COMMANDMENUS[menuString] = getCommandMenuHTML(menuData);
-            return STATE.REF.COMMANDMENUS[menuString];
+            // if (!(menuString in STATE.REF.COMMANDMENUS))
+            //     STATE.REF.COMMANDMENUS[menuString] = getCommandMenuHTML(menuData)
+            return getCommandMenuHTML(menuData);
         },
         getCommandMenuHTML = (menuData = {}) => {
             const htmlRows = [],
@@ -995,7 +994,7 @@ const D = (() => {
                 args.push(...val);
             else
                 return THROW(`Cannot parse value '${jStrC(val)}' to object.`, "parseToObj");
-            return _.object(args.filter(x => x.includes(keyValDelim)).map(x => x.trim().split(keyValDelim).map(xx => VAL({number: xx}) ? D.Float(xx,2) : xx)))
+            return _.object(args.filter(x => x.includes(keyValDelim)).map(x => x.trim().split(keyValDelim).map(xx => VAL({number: xx}) ? D.Float(xx,2) : xx)));
         },
     // #endregion
 

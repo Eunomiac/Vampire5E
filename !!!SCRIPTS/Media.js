@@ -23,6 +23,8 @@ const Media = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
+
+
             // const traceID = TRACEON("initialize", [])
             // delete STATE.REF.tokenregistry.GENERIC
             STATE.REF.imgregistry = STATE.REF.imgregistry || {};
@@ -3898,7 +3900,6 @@ const Media = (() => {
                 ].join(""));
             else
                 D.Flag("Image Conversion Successful!");
-            state[C.GAMENAME].AssetsBackup = JSON.stringify(state[C.GAMENAME].Assets.AssetLibrary);
         },
         parseTEXTRegistry = () => {            
             const LIBREF = state[C.GAMENAME].Assets.AssetLibrary,

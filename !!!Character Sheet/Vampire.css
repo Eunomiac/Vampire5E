@@ -120,6 +120,7 @@
 		line-height: 16px;
 		text-align: left;
 		text-align-last: left;
+		text-indent: 0px;
 
 		/*background: rgba(125, 125, 125, 0.25);*/
 
@@ -129,6 +130,9 @@
 		font-weight: normal !important;
 
 		text-shadow: none !important;
+
+		font-size: 12px !important;
+		font-family: 'Voltaire';
 
 		/*border: 2px #999 inset;
 	border-left: none;
@@ -2050,10 +2054,6 @@
 		bottom: 70px;
 	}
 
-	.charsheet div.sheet-toptitleblock input.sheet-hoverpopup.sheet-bane+span+div {
-		height: 145px !important;
-	}
-
 	.charsheet div.sheet-toptitleblock select {
 		height: 20px !important;
 		width: calc(100% - 33% + 15px) !important;
@@ -2508,6 +2508,88 @@
 	}
 
 	/*#endregion*/
+	/* #region SECTION: Domain Control */
+	.charsheet div.sheet-domain div.sheet-domain.sheet-domaincontrol.sheet-domainControlLine {
+		height: 60px;
+		padding: 4px 0px;
+
+		background: rgba(255, 255, 255, 0.15);
+		border-top: 3px black outset;
+		border-bottom: 3px black outset;
+		border-radius: 10px;
+
+		z-index: 1;
+	}
+
+	.charsheet div.sheet-domain div.sheet-domain.sheet-domaincontrol.sheet-domainControlLine div.sheet-col2:nth-of-type(1) {
+		width: calc(100% * (1/2) - (2 * 5px) - 7%);
+	}
+	.charsheet div.sheet-domain div.sheet-domain.sheet-domaincontrol.sheet-domainControlLine div.sheet-col2:nth-of-type(2) {
+		width: calc(100% * (1/2) - (2 * 5px) + 7%);
+		height: calc(100% - (2 * 5px));
+	}
+	
+	.charsheet div.sheet-domain div.sheet-domain.sheet-domaincontrol div span.sheet-header5 {
+		margin-bottom: 5px;
+		height: 20px;
+		line-height: 24px;
+		text-align: right;
+		text-align-last: right;
+		
+	}
+	.charsheet div.sheet-domain div.sheet-domain.sheet-domaincontrol div span.sheet-header5 + select {
+		height: 24px;
+		margin-left: 10px;
+		margin-bottom: 12px;
+		background-color: rgba(125, 125, 125, 0.25);
+		font-size: 16px !important;
+	}
+
+	.charsheet div.sheet-domain div.sheet-domain.sheet-domaincontrol div span.sheet-header5 + select:nth-of-type(2) {
+		background-color: transparent;
+	}
+
+	.charsheet div.sheet-domain div.sheet-domain.sheet-domaincontrol div span.sheet-header5:nth-of-type(1) {
+		width: 20%;
+	}
+	.charsheet div.sheet-domain div.sheet-domain.sheet-domaincontrol div span.sheet-header5:nth-of-type(1) + select {
+		width: calc(100% - 20% - 10px);
+		margin: 0px 0px 3px 10px;
+	}
+	.charsheet div.sheet-domain div.sheet-domain.sheet-domaincontrol div span.sheet-header5:nth-of-type(2) {
+		width: calc(100% - 20% - 10px);
+	}
+	.charsheet div.sheet-domain div.sheet-domain.sheet-domaincontrol div span.sheet-header5:nth-of-type(2) + select {
+		width: 20%;
+		line-height: 27px;
+	}
+
+	.charsheet div.sheet-domain div.sheet-domain.sheet-domaincontrol div textarea {
+		height: 100%;
+		width: calc(100% - 10px - 4px);
+		line-height: 13px;
+		padding: 5px 5px;
+		font-size: 14px;
+		pointer-events: auto;
+		text-indent: 0px;
+		overflow: hidden;
+	}
+	.charsheet div.sheet-domain div.sheet-domain.sheet-domaincontrol div textarea.sheet-summary {
+		display: block;
+		width: 100%;
+		height: 14px;
+		font-family: Voltaire; 
+		font-size: 10px; 
+		color: darkred;
+		margin-top: -20px;
+		font-variant: small-caps;
+		font-size: 14px;
+		text-shadow: none;
+		margin-top: -20px;
+		pointer-events: none;
+	}
+
+	/* #endregion */
 	/* #region SECTION: Assets */
 	.charsheet div.sheet-assets textarea {
 		pointer-events: auto;
@@ -3478,272 +3560,6 @@
 	}
 
 	/*#endregion*/
-
-	/* #region GROUP SECTION: GROUP PAGES */
-	.charsheet div.sheet-groupsheet div.sheet-leftbox {
-		width: 60px;
-		margin-top: 50px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-rightbox {
-		width: calc(100% - 60px);
-		margin-top: 50px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-header2 {
-		width: 75%;
-		margin: 0px 0px;
-		padding: 0px 0px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-topdotlinebox {
-		width: calc((100% - 20px - 7px - 15px - 10px - 5px)/4);
-	}
-
-	.charsheet div.sheet-groupsheet span.sheet-header2 {
-		height: 16px;
-		font-size: 12px !important;
-		text-shadow: none !important;
-		color: black;
-	}
-
-	.charsheet div.sheet-groupsheet input.sheet-number {
-		width: 15px;
-		padding: 0px 2px;
-		font-size: 12px !important;
-		font-weight: normal !important;
-		font-family: 'Bernard MT', Arial !important;
-	}
-
-	.charsheet div.sheet-groupsheet input.sheet-topname {
-		height: 50px;
-		width: 100%;
-		padding-top: 5px;
-
-		font-size: 30px;
-		font-family: 'Trajan Pro 3';
-		font-weight: normal;
-
-		overflow: hidden;
-
-		box-shadow: none;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock span.sheet-titleheader {
-		font-size: 16px;
-		line-height: 22px;
-		height: 20px;
-		width: auto;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock span.sheet-titleheader+select,
-	.charsheet div.sheet-groupsheet div.sheet-titleblock span.sheet-titleheader+input {
-		height: 16px !important;
-		width: 109px !important;
-		color: black;
-		text-align: left;
-		text-align-last: left;
-		margin-left: 10px;
-		margin-top: 2px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock span.sheet-titleheader+select.sheet-genbox {
-		width: 95px !important;
-		margin-right: -20px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock input.sheet-hoverpopup+span+div {
-		width: 300px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-toptitleblock input.sheet-hoverpopup+span+div {
-		width: 550px !important;
-		bottom: 35px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock input.sheet-number {
-		height: 20px !important;
-		width: 20px !important;
-		margin: 3px 0px 1px 0px;
-		padding: 0px 4px;
-		color: black;
-		text-shadow: none !important;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-trackerLine {
-		width: 50px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-iconBox {
-		height: 20px;
-		width: 20px;
-		margin: 2px 5px 5px 2px;
-		display: inline-block;
-
-		z-index: 1;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-iconBox.sheet-physical {
-		background: url('https://i.imgur.com/2vQeN3d.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-iconBox.sheet-social {
-		background: url('https://i.imgur.com/FqQFaTp.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-iconBox.sheet-mental {
-		background: url('https://i.imgur.com/1oUQhBI.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-iconBox.sheet-hunger {
-		background: url('https://i.imgur.com/0stLCUb.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-iconBox.sheet-health {
-		background: url('https://i.imgur.com/IwSyD7O.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-iconBox.sheet-wp {
-		background: url('https://i.imgur.com/1BuMlWv.png') no-repeat center;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-iconBox.sheet-blood_potency {
-		background: url('https://i.imgur.com/cMdFcaj.png') no-repeat center;
-		background-size: 100%;
-		margin: 0px -7px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-iconBox.sheet-humanity {
-		background: url('https://i.imgur.com/vzPrC6S.png') no-repeat center;
-		background-size: 100%;
-		margin-right: 0px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline {
-		height: 14px;
-		width: calc(100% - 60px);
-		margin: 5px 5px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline div.sheet-multidot {
-		width: 10px;
-		margin-right: 2px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline input {
-		height: 14px !important;
-		width: 10px !important;
-		/*margin: 0px 0px;*/
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline span,
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline div.sheet-multibox span {
-		height: 10px !important;
-		width: 10px !important;
-		margin: 2px 0px 2px -10px;
-		line-height: 10px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline input+span::before,
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline div.sheet-multidot input+span:not(.sheet-smalldot)::before {
-		height: 10px !important;
-		width: 10px !important;
-		margin: -1px 0px 2px 0px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline span.sheet-smalldot {
-		margin-right: 2px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline input+span.sheet-smalldot::before {
-		height: 12px !important;
-		width: 12px !important;
-		margin: -1px 0px 0px 0px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-titleblock div.sheet-dotline input.sheet-dot:checked~input.sheet-dot+span.sheet-smalldot::before {
-		height: 10px !important;
-		width: 10px !important;
-		margin: 0px 0px 0px 2px;
-	}
-
-	.charsheet div.sheet-groupsheet textarea.sheet-generalInput {
-		font-family: 'Bernard MT';
-		font-weight: normal;
-	}
-
-
-	.charsheet div.sheet-groupsheet div.sheet-linerow {
-		height: 16px;
-	}
-
-	.charsheet div.sheet-groupsheet .sheet-insetBox {
-		border-radius: 0px;
-	}
-
-	.charsheet div.sheet-groupsheet select,
-	.charsheet div.sheet-groupsheet input[type=text].sheet-wordy {
-		height: 16px;
-		font-size: 12px;
-		padding: 0px 0px 0px 5px;
-		font-variant: normal;
-		font-family: 'Effloresce';
-		font-weight: bold;
-
-		text-shadow: none !important;
-		border-radius: 0px;
-		line-height: 12px;
-	}
-
-	.charsheet div.sheet-groupsheet select {
-		width: calc(100% - 5px);
-	}
-
-	.charsheet div.sheet-groupsheet input.sheet-traitname {
-		width: calc(100% - 15px - 5px);
-		margin-right: 5px;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-colheader,
-	.charsheet div.sheet-groupsheet div.sheet-colheader span {
-		height: 14px;
-		font-weight: bold;
-		font-family: Effloresce !important;
-		font-variant: small-caps;
-		color: black !important;
-		font-size: 14px !important;
-		text-shadow: none;
-	}
-
-	.charsheet div.sheet-groupsheet span.sheet-plusminus {
-		font-family: 'Bernard MT', Arial !important;
-		font-weight: bold;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-buttonbox {
-		height: 32px;
-		width: 32px;
-		padding-left: 5px;
-		background: url('https://s3.amazonaws.com/files.d20.io/images/64173201/mYkpkP6l9WX9BKt5fjTrtw/thumb.png?1538710883') center no-repeat;
-		background-size: 100%;
-	}
-
-	.charsheet div.sheet-groupsheet div.sheet-button {
-		height: 32px;
-		width: 32px;
-	}
-
-	/*.charsheet div.sheet-groupsheet input[type=text].sheet-number {
-	font-family: 'Bodoni SvtyTwo ITC TT' !important;
-}*/
-
-	/* #endregion */
 
 	/* #region Fixing Roll20 Styles */
 	.charsheet div.itemcontrol>button,

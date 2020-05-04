@@ -21,9 +21,9 @@ const Assets = (() => {
         initialize = () => {
             STATE.REF.AssetLibrary = STATE.REF.AssetLibrary || {};
             // parseREGISTRY();
-            // initIMGAssets();
+            initIMGAssets();
             // initTEXTAssets();
-            // Asset.ApplyPendingChanges();
+            Asset.ApplyPendingChanges();
         },
         // #endregion
 
@@ -207,7 +207,6 @@ const Assets = (() => {
         set name(v) {
             if (v !== this.name) {
                 this._data.name = v;
-                /* writeToLIB(this.id, this.data); */
                 this.pendingChanges = {name: v};
             }
         }
@@ -223,14 +222,12 @@ const Assets = (() => {
         set layer(v) {
             if (v !== this.layer) {
                 this._data.layer = v;
-                /* writeToLIB(this.id, this.data); */
                 this.pendingChanges = {layer: v};
             }
         }
         set activeLayer(v) {
             if (v !== this.activeLayer) {
                 this._data.activeLayer = v;
-                /* writeToLIB(this.id, this.data); */
                 if (this.isActive)
                     this.layer = v;
             }
@@ -239,13 +236,12 @@ const Assets = (() => {
             if (v !== this.isActive)
                 this.layer = v ? this.activeLayer : "walls";
             this._data.isActive = Boolean(v);
-            /* writeToLIB(this.id, this.data); */
         }
 
         // MODE DATA
-        set wasModeUpdated(v) { this._data.wasModeUpdated = Boolean(v) /* writeToLIB(this.id, this.data) */ }
-        set lastActive(v) { this._data.modes[Session.LastMode].lastActive = Boolean(v) /* writeToLIB(this.id, this.data) */ }
-        set lastState(v) { this._data.modes[Session.LastMode].lastState = v /* writeToLIB(this.id, this.data) */ }
+        set wasModeUpdated(v) { this._data.wasModeUpdated = Boolean(v) }
+        set lastActive(v) { this._data.modes[Session.LastMode].lastActive = Boolean(v) }
+        set lastState(v) { this._data.modes[Session.LastMode].lastState = v }
 
         // PENDING CHANGES
         set pendingChanges(v) {
@@ -283,7 +279,6 @@ const Assets = (() => {
             this.pendingChanges = _.omit(posData, (v, k) => this[k] === v);
             this._data.pos = posData;
             this._pos = edgeData;
-            /* writeToLIB(this.id, this.data); */
         }
         syncLibrary() {
             this._data.pos.top = this.obj.get("top");
@@ -301,7 +296,6 @@ const Assets = (() => {
                 topEdge: this.top - 0.5 * this.height,
                 bottomEdge: this.top + 0.5 * this.height
             };
-            /* writeToLIB(this.id, this.data); */
         }
         syncObject() {
             const delta = {
@@ -341,7 +335,7 @@ const Assets = (() => {
                 this.isActive = isActive;
         }
         ForceToggle(isActive = null) { this.Toggle(isActive, true) }
-        Set(state) { this._data.state = state /* writeToLIB(this.id, this.data) */ }
+        Set(state) { this._data.state = state }
         Unregister() { delete Asset.LIB[this.id]; delete LI.B[this.id] }
         Remove() { this.obj.remove(); this.Unregister() }
         // #endregion
@@ -490,7 +484,6 @@ const Assets = (() => {
                 srcRef = "get" in srcRef && srcRef.get("imgsrc") || srcRef;
                 this._data.srcs[srcName] = Image.ParseSrcURL(srcRef);
             }
-            /* writeToLIB(this.id, this.data); */
         }
 
         Set(srcName) {
@@ -581,21 +574,18 @@ const Assets = (() => {
         set shadowShift(v) {
             if (v !== this.shadowShift) {
                 this._data.shadowShift = v;
-                /* writeToLIB(this.id, this.data); */
                 this.pendingShadowChanges = {top: this.top + v, left: this.left + v};
             }
         }
         set color(v) {
             if (v !== this.color) {
                 this._data.color = v;
-                /* writeToLIB(this.id, this.data); */
                 this.pendingChanges = {color: v};
             }
         }
         set font(v) {
             if (v !== this.font) {
                 this._data.font_family = v;
-                /* writeToLIB(this.id, this.data); */
                 this.pendingChanges = {font_family: v};
                 this.justifyText();
             }
@@ -603,7 +593,6 @@ const Assets = (() => {
         set size(v) {
             if (v !== this.size) {
                 this._data.font_size = v;
-                /* writeToLIB(this.id, this.data); */
                 this.pendingChanges = {font_size: v};
                 this.justifyText();
             }
@@ -668,14 +657,6 @@ const Assets = (() => {
             for (const assetID of Object.keys(STATE.REF.AssetLibrary).filter(x => STATE.REF.AssetLibrary[x].type === "text"))
                 ASSETS[assetID] = new Text(assetID);
             D.Flag("Text Assets Compiled");
-        },
-        writeToLIB = (assetID, key, value) => {
-            return true;
-            STATE.REF.AssetLibrary[assetID] = STATE.REF.AssetLibrary[assetID] || {};
-            if (typeof key === "object")
-                STATE.REF.AssetLibrary[assetID] = D.Clone(key);
-            else
-                STATE.REF.AssetLibrary[assetID][key] = D.Clone(value);
         };
     // #endregion
 

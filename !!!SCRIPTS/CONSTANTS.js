@@ -1,14 +1,11 @@
 void MarkStart("C");
 const GAMENAME = "VAMPIRE",
     SCRIPTNAME = "C",
-    SCRIPTS = ["C", "D", "Listener", "Fuzzy", "Char", "Media", "Assets", "Player", "Session", "TimeTracker", "DragPads", "Roller", "Soundscape", "Complications", "Handouts", "Chat", "Tester", "InitCommands", "GamePrep"];
+    SCRIPTS = ["C", "D", "Listener", "Fuzzy", "Char", "Media", "Assets", "Player", "Session", "TimeTracker", "DragPads", "Roller", "Soundscape", "Complications", "Handouts", "Chat", "Tester", "InitCommands"];
 state = state || {};
 state[GAMENAME] = state[GAMENAME] || {};
 for (const scriptName of SCRIPTS)
     state[GAMENAME][scriptName] = state[GAMENAME][scriptName] || {};
-
-// state.VAMPIRE.Media.imgregistry["SignalLightBotLeft_1"].padID = "-M6JvX73nFpFqfeBYOzh"
-sendChat("Signal Light Bot Left Data", JSON.stringify(state.VAMPIRE.Media.imgregistry.SignalLightBotLeft_1.padID));
 
 const C = (() => {
     const RO = {get OT() { return state[GAMENAME] }},

@@ -1312,7 +1312,7 @@ const TimeTracker = (() => {
                 if (dateRef !== "") {
                     DB({["OTHER STRING!"]: dateRef}, "parseToDateObj");
                     // first, see if it includes a time stamp and separate that out:
-                    const [dateString, timeString] = Object.assign([curDateString, ""], dateRef.match(/([^:\n\r]+\d{2}?(?!:))?\s?(\S*:{1}.*)?/u).slice(1).map((x,i) => i === 0 && !x ? curDateString : x)),
+                    const [dateString, timeString] = Object.assign([curDateString, ""], dateRef.match(/([^:\n\r]+\d{2}?(?!:))?\s?(\S*:{1}.*)?/).slice(1).map((x,i) => i === 0 && !x ? curDateString : x)),
                         parsedDateString = _.compact(dateString.match(/^(?:([\d]*)-?(\d*)-?(\d*)|(?:([\d]+)?(?:[^\w\d])*?([\d]+)?[^\w\d]*?(?:([\d]+)|(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))?\w*?[^\w\d]*?([\d]+){1,2}\w*?[^\w\d]*?(\d+)))$/imuy)).slice(1);
                     let month, day, year;
                     while (parsedDateString.length)

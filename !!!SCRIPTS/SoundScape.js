@@ -197,7 +197,7 @@ const Soundscape = (() => {
                        VAL({obj: trackRef}) && trackRef.get("title") ||
                        VAL({string: trackRef}) && trackRef ||
                        false;
-            return VAL({string: trackRef}) && trackRef.replace(/\s*[([{].*[)\]}]\s*/gu, "").replace(/[^A-Za-z0-9]*/gu, "");
+            return VAL({string: trackRef}) && trackRef.replace(/\s*[([{].*[)\]}]\s*/g, "").replace(/[^A-Za-z0-9]*/gu, "");
         },
         getSoundKey = (soundRef) => {
             const funcID = ONSTACK();
