@@ -21,24 +21,29 @@ const InitCommands = (() => {
             D.Flag("Initializing API...");
             Listener.Lock();
             setTimeout(() => {
-                D.Flag("... Fixing TimeTracker ...");
-                if (TimeTracker && TimeTracker.Fix)
-                    TimeTracker.Fix();
+                D.Flag("... Compiling Media Assets ...");
+                if (Assets && Assets.Init)
+                    Assets.Init();
                 setTimeout(() => {
-                    D.Flag("... Fixing Soundscape ...");
-                    if (Soundscape && Soundscape.Sync)
-                        Soundscape.Sync(true);
+                    D.Flag("... Fixing TimeTracker ...");
+                    if (TimeTracker && TimeTracker.Fix)
+                        TimeTracker.Fix();
                     setTimeout(() => {
-                        D.Flag("... Fixing Character Displays ...");
-                        if (Char && Char.RefreshDisplays)
-                            Char.RefreshDisplays();
+                        D.Flag("... Fixing Soundscape ...");
+                        if (Soundscape && Soundscape.Sync)
+                            Soundscape.Sync(true);
                         setTimeout(() => {
-                            D.Flag("Initialization Complete!");
-                            Listener.Unlock();
-                        }, Session.IsTesting ? 500 : 2000);
-                    }, Session.IsTesting ? 500 : 2000);
-                }, Session.IsTesting ? 500 : 2000);
-            }, Session.IsTesting ? 500 : 2000);
+                            D.Flag("... Fixing Character Displays ...");
+                            if (Char && Char.RefreshDisplays)
+                                Char.RefreshDisplays();
+                            setTimeout(() => {
+                                D.Flag("Initialization Complete!");
+                                Listener.Unlock();
+                            }, Session.IsTesting ? 200 : 1000);
+                        }, Session.IsTesting ? 200 : 1000);
+                    }, Session.IsTesting ? 200 : 1000);
+                }, Session.IsTesting ? 200 : 1000);
+            }, Session.IsTesting ? 200 : 1000);
         },
     // #endregion	
 

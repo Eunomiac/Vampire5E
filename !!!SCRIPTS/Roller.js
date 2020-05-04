@@ -20,8 +20,6 @@ const Roller = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
-            // STATE.REF.selected = {Main: [], Big: []}
-            // STATE.REF.diceVals = {Main: new Array(31).fill(false), Big: new Array(3).fill(false)}
             STATE.REF.rollRecord = STATE.REF.rollRecord || [];
             STATE.REF.rollIndex = STATE.REF.rollIndex || 0;
             STATE.REF.NPC = STATE.REF.NPC || {};

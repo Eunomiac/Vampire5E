@@ -23,10 +23,6 @@ const Media = (() => {
 
     // #region LOCAL INITIALIZATION
         initialize = () => {
-
-
-            // const traceID = TRACEON("initialize", [])
-            // delete STATE.REF.tokenregistry.GENERIC
             STATE.REF.imgregistry = STATE.REF.imgregistry || {};
             STATE.REF.textregistry = STATE.REF.textregistry || {};
             STATE.REF.animregistry = STATE.REF.animregistry || {};
@@ -45,8 +41,6 @@ const Media = (() => {
             STATE.REF.isRunningSilent = STATE.REF.isRunningSilent || false;
             STATE.REF.panelLog = STATE.REF.panelLog || {};
             STATE.REF.VOLUME = STATE.REF.VOLUME || D.Clone(C.SOUNDVOLUME);
-
-            // STATE.REF.textregistry.panel.maxWidth = 330
 
             for (const [, textData] of Object.entries(STATE.REF.textregistry)) {
                 const realText = VAL({string: textData.curText}) && textData.curText !== "LAST" && textData.curText ||
@@ -81,16 +75,6 @@ const Media = (() => {
             STATE.REF.AREADICT = Fuzzy.Fix();
             for (const areaKey of Object.keys(STATE.REF.areas))
                 STATE.REF.AREADICT.add(areaKey);
-            
-            /*
-            for (const cat of ["anarch", "camarilla", "independent", "si", "civilian", "medical", "media", "cop"]) {
-                STATE.REF.tokenregistry.GENERIC[cat] = [
-                    ...STATE.REF.tokenregistry.GENERIC[`${cat}f`],
-                    ...STATE.REF.tokenregistry.GENERIC[`${cat}m`]
-                ]
-            }
-            */
-            // TRACEOFF(traceID)
         },
     // #endregion
 
@@ -101,17 +85,6 @@ const Media = (() => {
                 case "!media": {
                     const mediaObjs = [...Listener.GetObjects(objects, "graphic"), ...Listener.GetObjects(objects, "text")];
                     switch (D.LCase(call = args.shift())) {
-                        case "backup": {
-                            STATE.REF.backup = {
-                                arearegistry: JSON.parse(JSON.stringify(REGISTRY.AREA)),
-                                imgregistry: JSON.parse(JSON.stringify(REGISTRY.IMG)),
-                                textregistry: JSON.parse(JSON.stringify(REGISTRY.TEXT)),
-                                animregistry: JSON.parse(JSON.stringify(REGISTRY.ANIM)),
-                                tokenregistry: JSON.parse(JSON.stringify(REGISTRY.TOKEN))
-                            };
-                            D.Alert("Media Registry Backup Updated.", "!img backup");
-                            break;
-                        }
                         case "set": {
                             switch (D.LCase(call = args.shift())) {
                                 case "anchor": {
@@ -119,7 +92,7 @@ const Media = (() => {
                                     break;
                                 }
                                 case "library": {
-                                    parseREGISTRY();
+                                    migrateToLIBRARY();
                                     break;
                                 }
                                 // no default
@@ -3846,105 +3819,106 @@ const Media = (() => {
     // #endregion
 
     // #region MIGRATION TO ASSETS
-        parseREGISTRY = () => {
-            // state[C.GAMENAME].Assets = state[C.GAMENAME].Assets || {AssetLibrary: {}};
+        migrateToLIBRARY = () => {
+            state[C.GAMENAME].Assets.AssetLibrary = {};
             parseIMGRegistry();
-            // parseTEXTRegistry();
+            parseTEXTRegistry();
             D.Flag("Registry Parsed to Library");
         },
         parseIMGRegistry = () => {
             const errorLines = [];
-            state[C.GAMENAME].Assets = state[C.GAMENAME].Assets || {AssetLibrary: {}};
-            state[C.GAMENAME].Assets.AssetLibrary = state[C.GAMENAME].Assets.AssetLibrary || {};
-            // state[C.GAMENAME].Assets = {AssetLibrary: {}}; // (A reset button I can uncomment to ensure I'm starting fresh.)
-            for (const itemData of Object.values(REGISTRY.IMG)) {
-                const mediaObj = getObj("graphic", itemData.id);
-                if (mediaObj) {
-                    const objID = JSON.stringify(mediaObj.id);
-                    state[C.GAMENAME].Assets.AssetLibrary[objID] = {};
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].name = JSON.stringify(itemData.name);
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].type = JSON.stringify("image");
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].page = JSON.stringify(_.findKey(C.PAGES, v => v === itemData.pageID));
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].layer = JSON.stringify(mediaObj.get("layer"));
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].zIndex = JSON.stringify(itemData.zIndex);
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].pos = {};
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].pos.top = JSON.stringify(itemData.top);
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].pos.left = JSON.stringify(itemData.left);
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].pos.height = JSON.stringify(itemData.height);
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].pos.width = JSON.stringify(itemData.width);
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].state = JSON.stringify(itemData.curSrc);
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].isActive = JSON.stringify(itemData.isActive);
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].activeLayer = JSON.stringify(itemData.activeLayer);
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].wasModeUpdated = JSON.stringify(Boolean(itemData.wasModeUpdated));
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].modes = JSON.stringify(itemData.modes);
-                    state[C.GAMENAME].Assets.AssetLibrary[objID].srcs = JSON.stringify(itemData.srcs);
-                    if (itemData.padID) {
-                        state[C.GAMENAME].Assets.AssetLibrary[objID].dragPads = {deltas: {}};
-                        state[C.GAMENAME].Assets.AssetLibrary[objID].dragPads.ids = JSON.stringify([itemData.padID, itemData.partnerID]);
-                        state[C.GAMENAME].Assets.AssetLibrary[objID].dragPads.funcName = JSON.stringify(DragPads.PadsByID[itemData.padID].funcName);
-                        state[C.GAMENAME].Assets.AssetLibrary[objID].dragPads.startActive = JSON.stringify(true);
-                        const pad = getObj("graphic", itemData.padID);
-                        state[C.GAMENAME].Assets.AssetLibrary[objID].dragPads.deltas.deltaTop = JSON.stringify(pad.get("top") - state[C.GAMENAME].Assets.AssetLibrary[objID].pos.top);
-                        state[C.GAMENAME].Assets.AssetLibrary[objID].dragPads.deltas.deltaLeft = JSON.stringify(pad.get("left") - state[C.GAMENAME].Assets.AssetLibrary[objID].pos.left);
-                        state[C.GAMENAME].Assets.AssetLibrary[objID].dragPads.deltas.deltaHeight = JSON.stringify(pad.get("height") - state[C.GAMENAME].Assets.AssetLibrary[objID].pos.height);
-                        state[C.GAMENAME].Assets.AssetLibrary[objID].dragPads.deltas.deltaWidth = JSON.stringify(pad.get("width") - state[C.GAMENAME].Assets.AssetLibrary[objID].pos.width);
+            for (const mediaData of Object.values(REGISTRY.IMG)) {
+                const assetObj = getObj("graphic", mediaData.id);
+                if (assetObj) {
+                    state[C.GAMENAME].Assets.AssetLibrary[assetObj.id] = {
+                        id: assetObj.id,
+                        name: mediaData.name,
+                        type: "image",
+                        page: C.PAGES.GAME === assetObj.get("_pageid") && "GAME" || C.PAGES.SplashPage === assetObj.get("_pageid") && "SplashPage" || assetObj.get("_pageid"),
+                        layer: assetObj.get("layer"),
+                        zIndex: D.Int(mediaData.zIndex),
+                        pos: {
+                            top: D.Int(assetObj.get("top")),
+                            left: D.Int(assetObj.get("left")),
+                            height: D.Int(assetObj.get("height")),
+                            width: D.Int(assetObj.get("width"))
+                        },
+                        state: mediaData.curSrc,
+                        isActive: assetObj.get("layer") !== "walls",
+                        activeLayer: mediaData.activeLayer,
+                        wasModeUpdated: Boolean(mediaData.wasModeUpdated),
+                        modes: mediaData.modes,
+                        srcs: typeof mediaData.srcs === "string" ? mediaData.srcs :
+                            D.KeyMapObj(mediaData.srcs, null, v => v.replace(/[a-z]*\.(png|jpg)/gu, "thumb.$1"))
+                    };
+                    if (mediaData.padID) {
+                        const pad = getObj("graphic", mediaData.padID);
+                        // DB({mediaData,pad,Library: Object.keys(state[C.GAMENAME].Assets.AssetLibrary)}, "parseIMGRegistry")
+                        state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].dragPads = {
+                            ids: [mediaData.padID, mediaData.partnerID],
+                            funcName: DragPads.PadsByID[mediaData.padID].funcName,
+                            startActive: true,                            
+                            deltas: {
+                                deltaTop: D.Int(pad.get("top") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].pos.top),
+                                deltaLeft: D.Int(pad.get("left") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].pos.left),
+                                deltaHeight: D.Int(pad.get("height") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].pos.height),
+                                deltaWidth: D.Int(pad.get("width") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].pos.width)
+                            }
+                        };
                     }   
                 } else {
-                    errorLines.push(`Error finding object with key ${D.JS(itemData.name)}`);
+                    errorLines.push(`Error finding registered object with key ${D.JS(mediaData.name)}`);
                 }
             }
             if (errorLines.length)
-                D.Alert([
-                    "<h4>Image Conversion Errors:</h4>",
-                    errorLines.join("<br>")
-                ].join(""));
+                D.Alert(errorLines.join("<br>"), "Image Conversion Errors");
             else
                 D.Flag("Image Conversion Successful!");
         },
-        parseTEXTRegistry = () => {            
-            const LIBREF = state[C.GAMENAME].Assets.AssetLibrary,
-                errorLines = [];
-            for (const itemData of Object.values(REGISTRY.TEXT)) {
-                const mediaObj = getObj("text", itemData.id);
-                if (mediaObj) {
-                    const libData = {
-                        name: itemData.name,
+        parseTEXTRegistry = () => {                
+            const errorLines = [];
+            for (const mediaData of Object.values(REGISTRY.TEXT)) {
+                if (mediaData.name === "Extended Roll")
+                    continue;
+                const assetObj = getObj("text", mediaData.id);
+                if (assetObj) {
+                    state[C.GAMENAME].Assets.AssetLibrary[assetObj.id] = {
+                        id: assetObj.id,
+                        name: mediaData.name,
                         type: "text",
-                        page: _.findKey(C.PAGES, v => v === itemData.pageID),
-                        layer: mediaObj.get("layer"),
-                        zIndex: itemData.zIndex,
+                        page: C.PAGES.GAME === assetObj.get("_pageid") && "GAME" || C.PAGES.SplashPage === assetObj.get("_pageid") && "SplashPage" || assetObj.get("_pageid"),
+                        layer: assetObj.get("layer"),
+                        zIndex: D.Int(mediaData.zIndex),
                         pos: {
-                            top: itemData.top,
-                            left: itemData.left,
-                            height: itemData.height,
-                            width: itemData.width
+                            top: D.Int(assetObj.get("top")),
+                            left: D.Int(assetObj.get("left")),
+                            height: D.Int(assetObj.get("height")),
+                            width: D.Int(assetObj.get("width"))
                         },
-                        state: mediaObj.get("text"),
-                        isActive: itemData.isActive,
-                        activeLayer: itemData.activeLayer,
-                        wasModeUpdated: Boolean(itemData.wasModeUpdated),
-                        modes: D.Clone(itemData.modes),
-                        color: itemData.color,
-                        font_family: itemData.font_family, // Class should correct to "Contrail One"
-                        font_size: itemData.font_size,
+                        state: assetObj.get("text"),
+                        isActive: assetObj.get("layer") !== "walls",
+                        activeLayer: mediaData.activeLayer,
+                        wasModeUpdated: Boolean(mediaData.wasModeUpdated),
+                        modes: mediaData.modes,
+                        color: D.RGB(mediaData.color),
+                        font_family: D.LCase(mediaData.font_family).includes("contrail") && "Contrail One" || 
+                                        D.LCase(mediaData.font_family).includes("shadow") && "Shadows Into Light" || 
+                                        mediaData.font_family,
+                        font_size: D.Int(mediaData.font_size),
                         align: {
-                            vert: itemData.vertAlign,
-                            horiz: itemData.justification
+                            vert: mediaData.vertAlign,
+                            horiz: mediaData.justification
                         },
-                        maxWidth: itemData.maxWidth
+                        maxWidth: D.Int(mediaData.maxWidth)
                     };
-                    if (itemData.shadowID)
-                        libData.shadowID = itemData.shadowID;
-                    LIBREF[itemData.id] = D.Clone(libData);
+                    if (mediaData.shadowID)
+                        state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].shadowID = mediaData.shadowID;
                 } else {
-                    errorLines.push(`Error finding text object with key ${D.JS(itemData.name)}`);
+                    errorLines.push(`Error finding text object with key ${D.JS(mediaData.name)}`);
                 }
             }
             if (errorLines.length)
-                D.Alert([
-                    "<h4>Text Conversion Errors:</h4>",
-                    errorLines.join("<br>")
-                ].join(""));
+                D.Alert(errorLines.join("<br>"), "Text Conversion Errors");
             else
                 D.Flag("Text Conversion Successful!");
         };

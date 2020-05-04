@@ -20,74 +20,6 @@ const DragPads = (() => {
         initialize = () => {
             STATE.REF.byPad = STATE.REF.byPad || {};
             STATE.REF.byGraphic = STATE.REF.byGraphic || {};
-
-            // -Lzpa4Z63XT_qEI2vsw4 -> -M6JvX73nFpFqfeBYOzh
-
-            // getObj("graphic", "-M6JvX73nFpFqfeBYOzh").set({name: "SignalLightBotLeft_1_signalLight_Pad"})
-
-            /*
-            for (const imgID of Object.keys(STATE.REF.byGraphic)) {
-                const imgObj = getObj("graphic", imgID),
-                    imgKey = Media.GetImgKey(imgObj)
-                if (VAL({string: imgKey}, "DP INIT")) {
-                    Media.IMAGES[imgKey].padID = STATE.REF.byGraphic[imgID].id
-                    Media.IMAGES[imgKey].partnerID = STATE.REF.byGraphic[imgID].pad.partnerID
-                    STATE.REF.byGraphic[imgID].pad.name = STATE.REF.byGraphic[imgID].pad.name.replace(/(^\w*?)_Pad_\d*$/gu, `${imgKey}_$1_Pad`)
-                    STATE.REF.byGraphic[imgID].partnerPad.name = STATE.REF.byGraphic[imgID].partnerPad.name.replace(/(^\w*?)_PartnerPad_\d*$/gu, `${imgKey}_$1_PartnerPad`)
-                    STATE.REF.byPad[Media.IMAGES[imgKey].padID].name = STATE.REF.byGraphic[imgID].pad.name
-                    STATE.REF.byPad[Media.IMAGES[imgKey].partnerID].name = STATE.REF.byGraphic[imgID].partnerPad.name
-                }
-            }
-
-selectDie:
-RollerDie_Main_1 - 30
-RollerDie_Big_1 - 2
-
-wpReroll:
-Roller_WPReroller_Base_1
-
-signalLight: {deltaHeight: -100, deltaWidth: -100}
-
-makePad(Media.GetImg("SignalLightTopLeft"), "signalLight", {deltaHeight: -100, deltaWidth: -100});
-makePad(Media.GetImg("SignalLightBotLeft"), "signalLight", {deltaHeight: -100, deltaWidth: -100});
-makePad(Media.GetImg("SignalLightTopRight"), "signalLight", {deltaHeight: -100, deltaWidth: -100});
-makePad(Media.GetImg("SignalLightMidRight"), "signalLight", {deltaHeight: -100, deltaWidth: -100});
-makePad(Media.GetImg("SignalLightBotRight"), "signalLight", {deltaHeight: -100, deltaWidth: -100});
-
-flipComp: {deltaHeight: -75, deltaWidth: -75}
-!dpad flipComp @CompSpot_1 deltaHeight:-75 deltaWidth:-75
-CompSpot_1 - 10
-
-
-
-toggleMapLayer: {deltaHeight: -20, deltaWidth: -20}
-MapButton_Roads_1
-MapButton_Parks_1
-MapButton_Rack_1
-MapButton_SitesCulture_1
-MapButton_SitesEducation_1
-MapButton_SitesHavens_1
-MapButton_SitesHealth_1
-MapButton_SitesLandmarks_1
-MapButton_SitesNightlife_1
-MapButton_SitesShopping_1
-MapButton_SitesTransportation_1
-
-toggleMapSlider: {deltaHeight: -50, deltaWidth: 0}
-MapButton_Domain_1
-MapButton_Districts_1
-
-toggleMapPanel:
-MapButton_Panel_1
-
-
-
-!dpad <funcName> <imgKey OR select img> [top:100 left:100 height:100 width:100 deltaHeight:-50 deltaWidth:-50 deltaTop:-50 deltaLeft:-50 startActive:true]
-            */
-
-            
-            
-            
         },
     // #endregion
 
@@ -347,11 +279,11 @@ MapButton_Panel_1
    Each will be passed an object of form:
    {  id: <id of graphic object beneath> } */
         FUNCTIONS = {
-            selectDie(args) {
+            selectDie: (args) => {
                 const [, dieCat, dieNum] = Media.GetImgKey(args.id).split("_");
                 Roller.Select(dieCat, D.Int(dieNum));
             },
-            wpReroll() {
+            wpReroll: () => {
                 const stateVar = C.RO.OT.Roller.selected,
                     diceCats = [...DICECATS];
                 let dieCat = "";
@@ -361,7 +293,7 @@ MapButton_Panel_1
                 } while (dieCat === 0);
                 Roller.Reroll(dieCat);
             },
-            signalLight(args) {
+            signalLight: (args) => {
                 const [light] = findObjs({
                     _type: "graphic",
                     _id: args.id
@@ -373,11 +305,11 @@ MapButton_Panel_1
                 else
                     Media.SetImg(light, "off");
             },
-            flipComp(card) {
+            flipComp: (card) => {
                 const slot = D.Int(Media.GetImgData(card.id).name.replace(/CompSpot_/gu, "")) - 1;
                 Complications.Flip(slot);
             },
-            toggleMapLayer(padData) {
+            toggleMapLayer: (padData) => {
                 const buttonKey = Media.GetImgKey(padData.id),
                     mapLayerKey = buttonKey.replace(/Button/gu, "Layer");
                 Media.SetImg(buttonKey, Media.ToggleImg(mapLayerKey) && "on" || "off");
@@ -386,7 +318,7 @@ MapButton_Panel_1
                     MAPPANELTIMER = setTimeout(FUNCTIONS.toggleMapPanel, 10000);
                 }
             },
-            toggleMapSlider(padData) {
+            toggleMapSlider: (padData) => {
                 const sliderData = Media.GetImgData(padData.id),
                     mapLayerData = Media.GetImgData(sliderData.name.replace(/Button/gu, "Layer")),
                     newSliderPos = Media.CycleImg(sliderData.id, false, padData.moveData.includes("left"));
@@ -429,7 +361,7 @@ MapButton_Panel_1
                     MAPPANELTIMER = setTimeout(FUNCTIONS.toggleMapPanel, 10000);
                 }
             },
-            toggleMapPanel(panelData) {
+            toggleMapPanel: (panelData) => {
                 const imgData = Media.GetImgData("MapButton_Panel_1");
                 if (imgData.curSrc === "open" || panelData === undefined) {
                     for (const buttonName of ["Domain", "Districts", "Roads", "Parks", "Rack", ...["Culture", "Education", "Havens", "Health", "Landmarks", "Nightlife", "Shopping", "Transportation"].map(x => `Sites${x}`)])

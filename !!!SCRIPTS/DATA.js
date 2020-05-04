@@ -664,6 +664,15 @@ const D = (() => {
             return str;
         },
         clone = (obj) => JSON.parse(JSON.stringify(obj)),
+        getRGB = (colorRef) => {
+            if (["string", "number"].includes(typeof colorRef)) {
+                colorRef = pLowerCase(colorRef)
+                return `rgb(${colorRef.startsWith("rgb") ? 
+                    colorRef.replace(/[rgb\(\)]/gu, "").split(/,/gu).slice(0,3).map(x => D.Int(x.trim())).join(", ") :
+                    /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(colorRef).slice(1).map(x => D.Int(`0x${x}`)).join(", ")})`;
+            }
+            return colorRef
+        },
         rbgToHex = (rgb = [0, 0, 0]) => `#${rgb.slice(0, 3).map(x => x.toString(16)).join("")}`,
         colorGradient = (startColor, endColor, step, totalSteps) => `rgba(${startColor.replace(/[^\d\s,]*/gu, "").split(",").map((x, i) => D[i === 3 ? "Round" : "Int"](x, 2)).map((x, i) => D[i === 3 ? "Round" : "Int"](x + (endColor.replace(/[^\d\s,]*/gu, "").split(",").map((xx, ii) => D[ii === 3 ? "Round" : "Int"](xx, 2))[i] - x) * step / totalSteps, 2)).join(", ")})`,
         parseStack = (stackObj) => {
@@ -2211,7 +2220,7 @@ const D = (() => {
         Ordinal: ordinal, Romanize: numToRomanNum,
         Capitalize: capitalize,
         Clone: clone,
-        Gradient: colorGradient, RGBtoHEX: rbgToHex,
+        Gradient: colorGradient, RGBtoHEX: rbgToHex, HEXtoRGB: getRGB, RGB: getRGB,
         ParseStack: parseStack, ONSTACK: putOnStack, OFFSTACK: pullOffStack,
 
         Call: sendAPICommand,
