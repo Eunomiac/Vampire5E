@@ -549,6 +549,45 @@
             advantage: ["advantage", "advantage_name", "advantage_flag", "advantage_type", "advantage_details"],
             negadvantage: ["negadvantage", "negadvantage_name", "negadvantage_flag", "negadvantage_type", "negadvantage_details"]
         },
+        DOMCONREPREFS = {
+            domaincontrol: ["district", "level", "summary", "details"]
+        },
+        DOMAINCONTROL = {
+            "Annex": ["+1 to Remorse Rolls", "+2 to Remorse Rolls", "+2 to Remorse Rolls & Free Reroll"],
+            "BayStFinancial": ["+1 Resources", "+2 Resources", "+4 Resources"],
+            "Bennington": ["+1 Willpower", "+2 Willpower", "+3 Willpower"],
+            "Cabbagetown": ["-1 Humanity", "-2 Humanity", "-3 Humanity"],
+            "CentreIsland": ["+2 Haven", "+4 Haven", "+6 Haven"],
+            "Chinatown": ["Language ●", "Language ●, ●", "Language ●, ●, ●, ●"],
+            "CityStreets": ["+1 to Travel Rolls", "+2 to Travel Rolls", "+2 to Travel Rolls & Free Reroll"],
+            "Corktown": ["+1 Influence (Crime)", "+2 Influence (Crime)", "+4 Influence (Crime)"],
+            "Danforth": ["+1 to Insight Rolls", "+2 to Insight Rolls", "+2 to Insight Rolls & Free Reroll"],
+            "DeerPark": ["Retainer (Animal) ●●", "Retainer (Animal) ●●, ●●", "Retainer (Animal) ●●, ●●, ●●●●"],
+            "Discovery": ["+1 to Research Rolls", "+2 to Research Rolls", "+4 to Research Rolls"],
+            "DistilleryDist": ["+1 to Acquisition Rolls", "+3 to Acquisition Rolls", "+5 to Acquisition Rolls"],
+            "DupontByTheCastle": ["+1 to Etiquette Rolls", "+3 to Etiquette Rolls", "+3 to Etiquette Rolls & Free Reroll"],
+            "GayVillage": ["+1 Herd", "+2 Herd", "+4 Herd"],
+            "HarbordVillage": ["+1 Lien", "+2 Lien", "+4 Lien"],
+            "Humewood": ["Phys. Attributes: -1 XP", "Phys. Attributes: -2 XP", "Phys. Attributes: -4 XP"],
+            "LakeOntario": ["+1 to Survival Rolls", "+2 to Survival Rolls", "+2 to Survival Rolls & Free Reroll"],
+            "LibertyVillage": ["+1 to Resolve Rolls", "+2 to Resolve Rolls", "+3 to Resolve Rolls"],
+            "LittleItaly": ["+1 to Hunting Rolls", "+2 to Hunting Rolls", "+1 Hunger Slaked"],
+            "LittlePortugal": ["+1 Blood Potency", "+2 Blood Potency", "+3 Blood Potency"],
+            "PATH": ["+1 to Streetwise Rolls", "+2 to Streetwise Rolls", "+4 to Streetwise Rolls"],
+            "RegentPark": ["Social Attributes: -1 XP", "Social Attributes: -2 XP", "Social Attributes: -4 XP"],
+            "Riverdale": ["Formula ●", "Formula ●, ●●", "Formula ●, ●●, ●●●"],
+            "Rosedale": ["+1 Portillion", "+2 Portillion", "+4 Portillion"],
+            "Sewers": ["+1 to Stealth Rolls", "+2 to Remorse Rolls", "+2 to Remorse Rolls & Free Reroll"],
+            "StJamesTown": ["+1 to Remorse Rolls", "+2 to Remorse Rolls", "+2 to Remorse Rolls & Free Reroll"],
+            "Summerhill": ["Contacts (Street) ●", "Contacts (Street) ●, ●", "Contacts (Street) ●, ●, ●●"],
+            "Waterfront": ["+1 Influence (Nightlife)", "+2 Influence (Nightlife)", "+4 Influence (Nightlife)"],
+            "WestQueenWest": ["+1 to Remorse Rolls", "+2 to Remorse Rolls", "+2 to Remorse Rolls & Free Reroll"],
+            "Wychwood": ["Ritual ●", "Ritual ●, ●●", "Ritual ●, ●●, ●●●"],
+            "YongeMuseum": ["Mental Attributes: -1 XP", "Mental Attributes: -2 XP", "Mental Attributes: -4 XP"],
+            "YongeHospital": ["+1 Health", "+2 Health", "+3 Health"],
+            "YongeStreet": ["+1 Status", "+2 Status", "+4 Status"],
+            "Yorkville": ["+1 to Remorse Rolls", "+2 to Remorse Rolls", "+2 to Remorse Rolls & Free Reroll"],
+        },
         XPREPREFS = {
             spentxp: ["xp_spent_toggle", "xp_category", "xp_trait", "xp_initial", "xp_new", "xp_trait_toggle", "xp_initial_toggle", "xp_arrow_toggle", "xp_new_toggle", "xp_cost"],
             earnedxp: ["xp_session", "xp_award", "xp_reason"],
@@ -669,6 +708,14 @@
         },
         // parseRepAttr: Given repeating attr, returns array: [sectionName, rowID, statName]
         parseRepAttr = repAttr => [repAttr.split("_")[1], repAttr.split("_")[2], repAttr.split("_").slice(3).join("_")],
+        // nFuncs(ATTRS): Provides lookup & conversion functions (pV, pI, pF) for standard ATTRS object.
+        nFuncs = (attrs) => {
+            return [
+                v => attrs[v],
+                v => parseInt(attrs[v]),
+                v => parseFloat(attrs[v])
+            ]
+        },
         // pFuncs(repStatName, ATTRS): Provides prefix and repeating row parsing functions (p, pV, pI).  RETURNS [prefix, p, pV, pI] OR [prefix, p] if no ATTRS value given.
         pFuncs = (repStat, attrs) => {
             const repRowSplit = repStat.split("_").slice(0, 3)
@@ -2228,6 +2275,159 @@
                 })
 
         }
+    })
+    // #endregion
+
+    // #region UPDATE: Temporary Stat Effects
+    const doDomainControl = () => {
+            const [repAttrs, attrList] = [[], {}],
+                repStatData = Object.assign({}, DOMCONREPREFS),
+                repSecs = Object.keys(repStatData),
+                getRepAttrs = (repSec) => {
+                    if (repSec) 
+                        getSectionIDs(repSec, rowIDs => {
+                            repAttrs.push(...rowIDs.map(rowID => _.flatten(repStatData[repSec].filter(repStat => !repStat.endsWith("_details")).map(repStat => `repeating_${repSec}_${rowID}_${repStat}`))))
+                            log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
+                    
+                    ... mapped to: ${JSON.stringify(repAttrs)}`)
+                            getRepAttrs(repSecs.shift())
+                        })
+                    else 
+                        getAttrs(_.flatten(repAttrs), ATTRS => {
+                            log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true)
+                            const filteredAttrs = _.pick(ATTRS, (v, k) => k.includes("level"))
+                            for (const levelTrait of Object.keys(filteredAttrs)) {
+                                const [, p, pV, pI] = pFuncs(levelTrait, ATTRS),
+                                    district = pV("district"),
+                                    level = pI("level") - 1
+                                if (district in DOMAINCONTROL)
+                                    attrList[p("summary")] = `${DOMAINCONTROL[district][level]}`
+                                else
+                                    attrList[p("summary")] = ""
+                            }
+                            setAttrs(attrList)
+                        })
+                }
+            getRepAttrs(repSecs.shift())
+        },
+        doStatEffects = () => {
+            const [repAttrs, attrList] = [[], {}],
+                repStatData = Object.assign({}, DISCREPREFS, ADVREPREFS, DOMCONREPREFS),
+                repSecs = Object.keys(repStatData),
+                getRepAttrs = (repSec) => {
+                    if (repSec) 
+                        getSectionIDs(repSec, rowIDs => {
+                            repAttrs.push(...rowIDs.map(rowID => _.flatten(repStatData[repSec].filter(repStat => !repStat.endsWith("_details")).map(repStat => `repeating_${repSec}_${rowID}_${repStat}`))))
+                            log(`... ${repSec} ROWIDs: ${JSON.stringify(rowIDs)}
+                            
+                            ... mapped to: ${JSON.stringify(repAttrs)}`)
+                            getRepAttrs(repSecs.shift())
+                        })
+                    else 
+                        getAttrs(["stateffects", "prevstateffects", ...ALLATTRS, ..._.flatten(repAttrs)], ATTRS => {
+                            log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true)
+                            if (ATTRS.stateffects === ATTRS.prevstateffects)
+                                return
+                            const [pV, pI, pF] = nFuncs(ATTRS),
+                                statEffects = pV("stateffects").split("|"),
+                                prevStatEffects = pV("prevstateffects").split("|"),
+                                newStatEffects = _.without(statEffects, prevStatEffects),
+                                clearedStatEffects = _.without(prevStatEffects, statEffects),
+                                traitMultipliers = [],
+                                traitAdditions = [],
+                                reportLines = [],
+                                messageLines = {
+                                    health_stateffect: [],
+                                    willpower_stateffect: [],
+                                    humanity_stateffect: [],
+                                    bloodpot_stateffect: [],
+                                    roller_stateffect: [],
+                                    attributes_stateffect: [],
+                                    skills_stateffect: [],
+                                    advantages_stateffect: [],
+                                    negadvantages_stateffect: [],
+                                    disciplines_stateffect: []
+                                }
+                            reportLines.push(" ")
+                            reportLines.push("-----------------------------------------")
+                            for (const effect of clearedStatEffects) {
+                                reportLines.push(`Stat Effect: '${effect}'`)
+                                const [trait, delta, msgLoc, message] = effect.split(":")
+                                reportLines.push(`... Split: ${[trait, delta, msgLoc, message].join(" --- ")}`)
+                                if (trait in ATTRS)
+                                    if (`${delta}`.startsWith("x")) {
+                                        traitMultipliers.push({[trait]: 1 / parseFloat(delta.replace(/x/gu, ""))})
+                                        reportLines.push(`... traitMultipliers: ${JSON.stringify(traitMultipliers)}`)
+                                    } else {
+                                        attrList[trait] = pI(trait) - parseInt(delta)
+                                        ATTRS[trait] = attrList[trait]
+                                        reportLines.push(`... Undid ${trait}: ${attrList[trait]}`)
+                                    }
+                                reportLines.push(" ")
+                            }
+                            reportLines.push("       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx       ")
+                            for (const multData of traitMultipliers) {
+                                const [trait, mult] = Object.entries(multData)
+                                attrList[trait] = pI(trait) * mult
+                                ATTRS[trait] = attrList[trait]
+                                reportLines.push(`... Multiplied ${trait}: ${attrList[trait]}`)
+                            }
+                            for (const [trait, newVal] of Object.entries(attrList)) {
+                                attrList[trait] = Math.round(newVal)
+                                ATTRS[trait] = attrList[trait]
+                                reportLines.push(`... Applied ${trait}: ${ATTRS[trait]}`)
+                            }
+                            reportLines.push(" ")
+                            reportLines.push("+++++++++++++++++++++++++++++++++++++++++")
+                            for (const effect of newStatEffects) {
+                                reportLines.push(`Stat Effect: '${effect}'`)
+                                const [trait, delta, msgLoc, message] = effect.split(":")
+                                reportLines.push(`... Split: ${[trait, delta, msgLoc, message].join(" --- ")}`)
+                                if (trait in ATTRS) {
+                                    if (`${delta}`.startsWith("x")) {
+                                        attrList[trait] = pI(trait) * parseFloat(delta.replace(/x/gu, ""))
+                                        ATTRS[trait] = attrList[trait]
+                                        reportLines.push(`... Multiplied ${trait}: ${ATTRS.trait}`)
+                                    } else {
+                                        traitAdditions.push({[trait]: parseInt(delta)})
+                                        reportLines.push(`... traitAdditions: ${JSON.stringify(traitAdditions)}`)
+                                    }
+                                    const msgLocKey = `${msgLoc}_stateffect`
+                                    if (msgLocKey in messageLines)
+                                        messageLines[msgLocKey].push(message)
+                                }
+                                reportLines.push(`... Message Lines: ${JSON.stringify(messageLines, null, 4)}`)
+                                reportLines.push(" ")
+                            }
+                            for (const [trait, newVal] of Object.entries(attrList)) {
+                                attrList[trait] = Math.round(newVal)
+                                ATTRS[trait] = attrList[trait]
+                                reportLines.push(`... Applied ${trait}: ${ATTRS[trait]}`)
+                            }
+                            reportLines.push("       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx       ")
+                            for (const addData of traitAdditions) {
+                                const [trait, delta] = Object.entries(addData)
+                                attrList[trait] = pI(trait) + delta
+                                ATTRS[trait] = attrList[trait]
+                                reportLines.push(`... Added ${trait}: ${attrList[trait]}`)
+                            }
+                            for (const [loc, lines] of Object.entries(messageLines))
+                                attrList[loc] = lines.join(", ")
+                            attrList.prevstateffects = ATTRS.stateffects
+                            reportLines.push(" ")
+                            reportLines.push("********** ALL DONE! ***************")
+                            reportLines.push(`DELTAATTRS: ${JSON.stringify(attrList, null, 4)}`)
+                            log(reportLines.join("\n"), "[DSE] ")
+                            setAttrs(attrList)
+                        })
+                }
+            getRepAttrs(repSecs.shift())
+        }
+    on("sheet:opened change:stateffects", eInfo => {
+        doStatEffects()
+    })
+    on(getTriggers(["stateffects"], "", [..._.keys(DOMCONREPREFS)]), eInfo => {
+        doDomainControl()
     })
     // #endregion
 

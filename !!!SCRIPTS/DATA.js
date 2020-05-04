@@ -31,7 +31,6 @@ const D = (() => {
             STATE.REF.CHARWIDTH = STATE.REF.CHARWIDTH || {}
             STATE.REF.DEBUGLOG = STATE.REF.DEBUGLOG || []
             STATE.REF.ALERTTHROTTLE = []
-            STATE.REF.COMMANDMENUS = STATE.REF.COMMANDMENUS || {}
             STATE.REF.flexSpace = STATE.REF.flexSpace || 10.00
             STATE.REF.isReportingListener = STATE.REF.isReportingListener || false
             STATE.REF.FuncQueueName = STATE.REF.FuncQueueName || []
@@ -873,9 +872,9 @@ const D = (() => {
             if (VAL({string: menuData}))
                 return menuData
             const menuString = _.escape(JSON.stringify(menuData))
-            if (!(menuString in STATE.REF.COMMANDMENUS))
-                STATE.REF.COMMANDMENUS[menuString] = getCommandMenuHTML(menuData)
-            return STATE.REF.COMMANDMENUS[menuString]
+            // if (!(menuString in STATE.REF.COMMANDMENUS))
+            //     STATE.REF.COMMANDMENUS[menuString] = getCommandMenuHTML(menuData)
+            return getCommandMenuHTML(menuData)
         },
         getCommandMenuHTML = (menuData = {}) => {
             const htmlRows = [],

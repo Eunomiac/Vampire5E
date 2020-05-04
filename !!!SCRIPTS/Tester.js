@@ -51,6 +51,16 @@ const Tester = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting
             switch (call) {
+                case "statelength": {
+                    const lengthVals = {}
+                    for (const [key, value] of Object.entries(state.VAMPIRE)) {
+                        lengthVals[`*** ${D.UCase(key)} ***`] = JSON.stringify(value).length
+                        for (const [kkey, vvalue] of Object.entries(value))
+                            lengthVals[`${key}.${kkey}`] = JSON.stringify(vvalue).length
+                    }
+                    D.Alert(`${D.JS(lengthVals)}<br><br><b>TOTAL:${JSON.stringify(state.VAMPIRE).length}`, "State Variable Contents")
+                    break
+                }
                 case "pause": TimeTracker.Pause(); break
                 case "resume": TimeTracker.Resume(); break
                 case "stoptracks": {

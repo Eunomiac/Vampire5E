@@ -297,9 +297,11 @@ const Soundscape = (() => {
         },
         getLocationSounds = () => {
             const funcID = ONSTACK(),
+                dist = Session.District && C.LOCATIONS[Session.District] || {soundScape: ["(NONE)"]},
+                site = Session.Site && C.LOCATIONS[Session.Site] || {soundScape: ["(NONE)"]},
                 locSounds = {
-                    District: Session.District && C.LOCATIONS[Session.District].soundScape[0],
-                    Site: Session.Site && C.LOCATIONS[Session.Site].soundScape[0]
+                    District: dist.soundScape[0],
+                    Site: site.soundScape[0]
                 }
             if (Session.Mode === "Inactive")
                 return OFFSTACK(funcID) && false

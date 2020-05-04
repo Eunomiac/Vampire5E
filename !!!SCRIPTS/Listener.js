@@ -180,7 +180,7 @@ const Listener = (() => {
             // Strips quotes used to isolate arguments
             // Removes leading/trailing whitespace
             // Removes commas between arguments 
-            const [call, ...args] = _.compact((argString.match(/!\S*|\s@"[^"]*"|\s@[^\s]*|\s"[^"]*"|\s[^\s]*/gu) || []).map(x => x.replace(/^\s*(@)?"?|"?,?"?\s*$/gu, "$1")))
+            const [call, ...args] = _.compact((argString.match(/!\S*|\s@"[^"]*"|\s@[^\s]*|\s"[^"]*"|\s[^\s]*/gu) || []).map(x => x.replace(/^\s*(@)?"?|"?"?\s*$/gu, "$1")))
             return [call, args]
         },    
         parseMessage = (args, msg, needsObjects) => {

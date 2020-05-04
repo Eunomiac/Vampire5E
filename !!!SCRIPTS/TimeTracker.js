@@ -254,7 +254,7 @@ const TimeTracker = (() => {
                     break                    
                 }
                 case "start": {
-                    toggleClock(true)
+                    toggleClock(true, parseInt(args[0]) || 60)
                     break
                 }
                 case "stop": {
@@ -1671,16 +1671,17 @@ const TimeTracker = (() => {
         recurAlarm = (alarm) => {},
 
     // #region CLOCK: Toggling, Ticking, Setting Clock Text    
-        toggleClock = (activeState, secsPerMin = 60) => {
+        toggleClock = (activeState, secsPerMin) => {
             const funcID = ONSTACK()
             isTickingClock = Boolean(activeState)
+            STATE.REF.secsPerMin = secsPerMin || STATE.REF.secsPerMin
 
             if (activeState) {
                 if (STATE.REF.TweenTarget) {
                     tweenClock(STATE.REF.TweenTarget)
                 } else {
                     clearInterval(timeTimer)
-                    timeTimer = setInterval(tickClock, D.Int(secsPerMin) * 1000)
+                    timeTimer = setInterval(tickClock, D.Int(STATE.REF.secsPerMin) * 1000)
                 }
             } else {
                 isTickingClock = false
@@ -2832,7 +2833,7 @@ const TimeTracker = (() => {
             updateClockObj()
             setHorizon(setWeather())
             syncCountdown()
-            toggleClock(Session.IsSessionActive && (!Session.IsTesting || Session.IsFullTest))
+            toggleClock(Session.IsSessionActive && (!Session.IsTesting || Session.IsFullTest), 60)
             Char.RefreshDisplays()
             OFFSTACK(funcID)
         }
@@ -2844,7 +2845,7 @@ const TimeTracker = (() => {
         Fix: fixTimeStatus,
         
         ALARMFUNCS,
-        ToggleClock: toggleClock,
+        ToggleClock: (v) => { toggleClock(v, 60) },
         Pause: pauseClockTween, Resume: continueClockTween,
         Fire: (alarm) => fireAlarm(alarm, false, false, false),
 
