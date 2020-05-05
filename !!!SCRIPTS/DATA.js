@@ -8,7 +8,7 @@ const D = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "D",
 
-    // #region COMMON INITIALIZATION
+        // #region COMMON INITIALIZATION
         STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }}, // eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
@@ -19,9 +19,9 @@ const D = (() => {
             C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
             initialize();            
         },
-    // #endregion
+        // #endregion
 
-    // #region LOCAL INITIALIZATION
+        // #region LOCAL INITIALIZATION
         initialize = () => {
             STATE.REF.isFullDebug = false;
             STATE.REF.isThrottlingStackLog = false;
@@ -42,7 +42,7 @@ const D = (() => {
             STATE.REF.ISDEBUGGING = STATE.REF.ISDEBUGGING !== false;
             STATE.REF.TRACELASTTIME = 0;
 
-        // Initialize STATSDICT Fuzzy Dictionary
+            // Initialize STATSDICT Fuzzy Dictionary
             try {
                 STATE.REF.STATSDICT = Fuzzy.Fix();
                 for (const str of [
@@ -54,7 +54,7 @@ const D = (() => {
                 ])
                     STATE.REF.STATSDICT.add(str);
 
-            // Initialize PCDICT Fuzzy Dictionary and PCLIST Strict Lookup
+                // Initialize PCDICT Fuzzy Dictionary and PCLIST Strict Lookup
                 STATE.REF.PCDICT = Fuzzy.Fix();
                 STATE.REF.PCLIST = [];
                 for (const name of _.values(Char.REGISTRY).map(x => x.name)) {
@@ -62,7 +62,7 @@ const D = (() => {
                     STATE.REF.PCLIST.push(name);
                 }
 
-            // Initialize NPCDICT Fuzzy Dictionary
+                // Initialize NPCDICT Fuzzy Dictionary
                 STATE.REF.NPCDICT = Fuzzy.Fix();
                 STATE.REF.NPCLIST = [];
                 for (const name of getChars("all").map(x => x.get("name")).filter(x => !_.values(Char.REGISTRY).map(xx => xx.name).includes(x))) {
@@ -77,9 +77,9 @@ const D = (() => {
                 D.Alert(`Missing Character Widths for: '<b>${D.JSL(STATE.REF.MissingTextChars.join(""))}</b>'`, "DATA: Text Widths");
 
         },
-    // #endregion	
+        // #endregion	
 
-    // #region EVENT HANDLERS: (HANDLEINPUT)
+        // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             switch (call) {
                 case "!data": {
@@ -231,7 +231,7 @@ const D = (() => {
     let PROMPTFUNC, ISTRACING;
     const STACKLOG = [],
         FUNCSONSTACK = [],
-    // #region DECLARATIONS: Reference Variables, Temporary Storage Variables
+        // #region DECLARATIONS: Reference Variables, Temporary Storage Variables
         VALS = {
             PAGEID: (pageRef) => {
                 // DB({pageRef}, "VALS")
@@ -257,9 +257,9 @@ const D = (() => {
         FunctionQueue = {},
         ISRUNNINGQUEUE = {},
         WAITINGQUEUES = [],
-    // #endregion
+        // #endregion
 
-    // #region DECLARATIONS: Dependent Variables
+        // #region DECLARATIONS: Dependent Variables
         ALLSTATS = [
             ..._.flatten(_.values(C.ATTRIBUTES)),
             ..._.flatten(_.values(C.SKILLS)),
@@ -388,9 +388,9 @@ const D = (() => {
                 return true;
             }
         },
-    // #endregion
+        // #endregion
 
-    // #region PARSING & STRING MANIPULATION: Converting data types to strings, formatting strings, converting strings into objects.
+        // #region PARSING & STRING MANIPULATION: Converting data types to strings, formatting strings, converting strings into objects.
         jStr = (data, isVerbose = false) => {
             /* Parses a value of any type via JSON.stringify, and then further styles it for display either
                 in Roll20 chat, in the API console log, or both. */
@@ -478,10 +478,10 @@ const D = (() => {
                 let finalString = JSON.stringify(data, replacer, 4).
                     replace(/ (?= )/gu, "&nbsp;"). // Replaces any length of whitespace with one '&nbsp;'
                     replace(/@T@/gu, "&nbsp;&nbsp;&nbsp;&nbsp;"). // Converts custom '@T@' tab character to four spaces
-                        // replace(/\\"/gu, "\""). // Escapes quote marks                
-                        // replace(/(^"*|"*$)/gu, ""). // Removes quote marks from the beginning and end of the string  
-                        // replace(/>&quot;/gu, ">").replace(/&quot;</gu, "<"). // Removes quotes from within entire HTML tags.
-                        // replace(/&amp;quot;/gu, "\"").
+                // replace(/\\"/gu, "\""). // Escapes quote marks                
+                // replace(/(^"*|"*$)/gu, ""). // Removes quote marks from the beginning and end of the string  
+                // replace(/>&quot;/gu, ">").replace(/&quot;</gu, "<"). // Removes quotes from within entire HTML tags.
+                // replace(/&amp;quot;/gu, "\"").
                     replace(/ϙ[A-Z]ϙ\/w/gu, "/w"). // Fix whisper.
                     replace(/@@NAMESTART(.*?)@@/gu, "<span style=\"background-color: $1;\"><b>&lt;</b>").
                     replace(/@@NAMEEND@@/gu, "<b>&gt;</b></span>").
@@ -526,7 +526,7 @@ const D = (() => {
                 replace(/"/gu, ""); // Removes all remaining double-quotes
         },
         jStrC = (data, isShortForm = false, properties = []) => {
-			/* Parses data to show all HTML code raw, rather than parsing it for formatting.
+            /* Parses data to show all HTML code raw, rather than parsing it for formatting.
 				Can override this for specific tags by double-bracketing them (e.g. "<<b>>") */
             if (_.isUndefined(data))
                 return _.escape("<UNDEFINED>");
@@ -664,14 +664,30 @@ const D = (() => {
             return str;
         },
         clone = (obj) => JSON.parse(JSON.stringify(obj)),
+        merge = (target, ...sources) => {
+            const thisTarget = Array.isArray(target) ? [...target] : Object.assign({}, target);
+            while (sources.length) {
+                const thisSource = sources.shift();
+                for (const key of Object.keys(thisSource))
+                    if (_.isObject(thisSource[key])) 
+                        if (!(key in thisTarget))
+                            Object.assign(thisTarget, {[key]: thisSource[key]});
+                        else
+                            thisTarget[key] = merge(thisTarget[key], thisSource[key]);
+                    else 
+                        Object.assign(thisTarget, {[key]: thisSource[key]});
+                
+            }
+            return thisTarget;
+        },
         getRGB = (colorRef) => {
             if (["string", "number"].includes(typeof colorRef)) {
-                colorRef = pLowerCase(colorRef)
+                colorRef = pLowerCase(colorRef);
                 return `rgb(${colorRef.startsWith("rgb") ? 
                     colorRef.replace(/[rgb\(\)]/gu, "").split(/,/gu).slice(0,3).map(x => D.Int(x.trim())).join(", ") :
                     /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(colorRef).slice(1).map(x => D.Int(`0x${x}`)).join(", ")})`;
             }
-            return colorRef
+            return colorRef;
         },
         rbgToHex = (rgb = [0, 0, 0]) => `#${rgb.slice(0, 3).map(x => x.toString(16)).join("")}`,
         colorGradient = (startColor, endColor, step, totalSteps) => `rgba(${startColor.replace(/[^\d\s,]*/gu, "").split(",").map((x, i) => D[i === 3 ? "Round" : "Int"](x, 2)).map((x, i) => D[i === 3 ? "Round" : "Int"](x + (endColor.replace(/[^\d\s,]*/gu, "").split(",").map((xx, ii) => D[ii === 3 ? "Round" : "Int"](xx, 2))[i] - x) * step / totalSteps, 2)).join(", ")})`,
@@ -729,9 +745,9 @@ const D = (() => {
                     STACKLOG[STACKLOG.length - 1] = `${STACKLOG[STACKLOG.length - 1].replace(/<\/span>$/gu, " ◄</span>")}`;
             return true;
         },
-    // #endregion
+        // #endregion
 
-    // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
+        // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
         formatTitle = (funcName, scriptName, prefix = "") => `[${prefix}${VAL({string: funcName}) || VAL({string: scriptName}) ? " " : ""}${VAL({string: scriptName}) ? `${scriptName.toUpperCase()}` : ""}${VAL({string: [scriptName, funcName]}, null, true) ? ": " : ""}${funcName || ""}]`,
         formatLogLine = (msg, funcName, scriptName, prefix = "") => `${formatTitle(funcName, scriptName, prefix)} ${formatMsgContents(msg, false)}`,
         formatMsgContents = (msg, isHTMLOk = true, isStrippingHTML = false) => {
@@ -834,9 +850,9 @@ const D = (() => {
             }
             sendChatMessage(getGMID(), msg, title);
         },
-    // #endregion
+        // #endregion
 
-    // #region COMMAND MENU: Prompting GM, Sending Command Menu
+        // #region COMMAND MENU: Prompting GM, Sending Command Menu
         promptGM = (menuHTML, replyFunc) => {
             if (VAL({string: menuHTML}, "promptGM")) {
                 if (VAL({func: replyFunc})) {
@@ -976,13 +992,13 @@ const D = (() => {
             const menuHTML = memoMenu(menuData);
             promptGM(menuHTML, replyFunc);
         },
-    // #endregion
+        // #endregion
 
-    // #region CHAT DISPLAYS: Displaying reference images in chat.
+        // #region CHAT DISPLAYS: Displaying reference images in chat.
 
-    // #endregion
+        // #endregion
 
-    // #region OBJECT MANIPULATION: Manipulating arrays, mapping objects
+        // #region OBJECT MANIPULATION: Manipulating arrays, mapping objects
         kvpMap = (obj, kFunc, vFunc) => {
             const newObj = {};
             _.each(obj, (v, k) => { newObj[kFunc ? kFunc(k, v) : k] = vFunc ? vFunc(v, k) : v });
@@ -1005,9 +1021,9 @@ const D = (() => {
                 return THROW(`Cannot parse value '${jStrC(val)}' to object.`, "parseToObj");
             return _.object(args.filter(x => x.includes(keyValDelim)).map(x => x.trim().split(keyValDelim).map(xx => VAL({number: xx}) ? D.Float(xx,2) : xx)));
         },
-    // #endregion
+        // #endregion
 
-    // #region SEARCH & VALIDATION: Match checking, Set membership checking, type validation. 
+        // #region SEARCH & VALIDATION: Match checking, Set membership checking, type validation. 
         looseMatch = (first, second) => {
             if (VAL({string: [first, second]}, "looseMatch", true))
                 return first.toLowerCase() === second.toLowerCase();
@@ -1024,13 +1040,13 @@ const D = (() => {
             // Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. 
             try {
                 // STEP ZERO: VALIDATE NEEDLE & HAYSTACK
-                      // NEEDLE --> Must be STRING
-                      // HAYSTACK --> Can be ARRAY, LIST or STRING 
+                // NEEDLE --> Must be STRING
+                // HAYSTACK --> Can be ARRAY, LIST or STRING 
                 if (VAL({string: needle}) || VAL({number: needle})) {
                     // STEP ONE: BUILD HAYSTACK.
-                        // HAYSTACK = ARRAY? --> HAY = ARRAY
-                        // HAYSTACK = LIST? ---> HAY = ARRAY (Object.keys(H))
-                        // HAYSTACK = STRING? -> HAY = H
+                    // HAYSTACK = ARRAY? --> HAY = ARRAY
+                    // HAYSTACK = LIST? ---> HAY = ARRAY (Object.keys(H))
+                    // HAYSTACK = STRING? -> HAY = H
                     
                     if (haystack && haystack.gramSizeLower)
                         return isIn(needle, haystack);
@@ -1053,13 +1069,13 @@ const D = (() => {
                             return THROW(`Haystack must be a string, a list or an array (${typeof haystack}): ${JSON.stringify(haystack)}`, "IsIn");
                     }
                     // STEP TWO: SEARCH HAY FOR NEEDLE USING PROGRESSIVELY MORE FUZZY MATCHING. SKIP "*" STEPS IF ISFUZZYMATCHING IS FALSE.
-                            // STRICT: Search for exact match, case sensitive.
-                            // LOOSE: Search for exact match, case insensitive.
-                            // *START: Search for match with start of haystack strings, case insensitive.
-                            // *END: Search for match with end of haystack strings, case insensitive.
-                            // *INCLUDE: Search for match of needle anywhere in haystack strings, case insensitive.
-                            // *REVERSE INCLUDE: Search for match of HAYSTACK strings inside needle, case insensitive.
-                            // FUZZY: Start again after stripping all non-word characters. 
+                    // STRICT: Search for exact match, case sensitive.
+                    // LOOSE: Search for exact match, case insensitive.
+                    // *START: Search for match with start of haystack strings, case insensitive.
+                    // *END: Search for match with end of haystack strings, case insensitive.
+                    // *INCLUDE: Search for match of needle anywhere in haystack strings, case insensitive.
+                    // *REVERSE INCLUDE: Search for match of HAYSTACK strings inside needle, case insensitive.
+                    // FUZZY: Start again after stripping all non-word characters. 
                     if (hayType === "array" || hayType === "list") {
                         for (let i = 0; i <= 1; i++) {
                             let thisNeedle = ndl,
@@ -1379,9 +1395,9 @@ const D = (() => {
             }
             return true;
         },        
-    // #endregion
+        // #endregion
 
-    // #region DEBUGGING & ERROR MANAGEMENT
+        // #region DEBUGGING & ERROR MANAGEMENT
         setWatchList = keywords => {
             if (keywords === "clear") {
                 STATE.REF.WATCHLIST = [];
@@ -1544,9 +1560,9 @@ const D = (() => {
             }
             return returnVal; 
         },
-    // #endregion
+        // #endregion
 
-    // #region GETTERS: Object, Character and Player Data
+        // #region GETTERS: Object, Character and Player Data
         getGMID = () => {
         /* Finds the first player who is GM. */
             const gmObj = _.find(findObjs({_type: "player"}), v => playerIsGM(v.id));
@@ -1599,7 +1615,7 @@ const D = (() => {
             return "(UNNAMED)";
         },
         getChars = (charRef, funcName = false, isFuzzyMatching = false) => {
-			/* Returns an ARRAY OF CHARACTERS given: "all", "registered", a character ID, a character Name,
+            /* Returns an ARRAY OF CHARACTERS given: "all", "registered", a character ID, a character Name,
 				a token object, a message with selected tokens, OR an array of such parameters. */
             const charObjs = new Set();
             let [searchParams, dbstring] = [[], ""];
@@ -1650,7 +1666,7 @@ const D = (() => {
                     charObjs.add(getObj("character", v.get("represents")));
                     dbstring += " ... Token: ";                    
                 } else if (VAL({string: v})) {
-                        // If parameter is "all":
+                    // If parameter is "all":
                     if (v.toLowerCase() === "all") {
                         _.each(findObjs({_type: "character"}), char => charObjs.add(char));
                         dbstring += ` ... "${jStrL(v)}": `;
@@ -1779,7 +1795,7 @@ const D = (() => {
                 dbstring = "";
             if (VAL({char: charObj, string: section}, "getRepIDs")) {
                 const attrObjs = _.filter(findObjs({_type: "attribute", _characterid: charObj.id}), v => v.get("name").toLowerCase().startsWith(section === "*" ? "repeating_" : `repeating_${section.toLowerCase()}_`)),
-                // D.Alert(`attrObjs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
+                    // D.Alert(`attrObjs: ${D.JS(_.map(attrObjs, v => v.get("name")))}`)
                     rowIDs = getUniqIDs(attrObjs);
                 DB(`attrObjsInSection: ${jStrL(_.map(attrObjs, v => parseRepStat(v.get("name"))[2]))}<br><br>rowIDsInSection: ${jStrL(rowIDs)}`, "getRepIDs");
                 if (VAL({string: rowFilter})) {
@@ -2011,9 +2027,9 @@ const D = (() => {
             
             return VAL({string: funcName}) && THROW(`Unable to find a player object for reference '${jStrL(playerRef)}`, `${D.JSL(funcName)} > getPlayer`);
         },
-    // #endregion
+        // #endregion
 
-    // #region SETTERS: Attributes
+        // #region SETTERS: Attributes
         setStats = (charRef, statList) => {
             const charObj = getChar(charRef);
             if (VAL({charObj, list: statList}, "setStats"))
@@ -2029,9 +2045,9 @@ const D = (() => {
                 setAttrs(charObj.id, attrList);
             }
         }, setRepStat = (charRef, section, rowID, statName, statValue, funcName = false) => setRepStats(charRef, section, rowID, {[statName]: statValue}, funcName),
-    // #endregion
+        // #endregion
 
-    // #region Repeating Section Manipulation
+        // #region Repeating Section Manipulation
         parseRepStat = (repRef) => {
             const repStatName = VAL({object: repRef}) ? repRef.get("name") : repRef;
             if (VAL({repname: repStatName})) {
@@ -2172,9 +2188,9 @@ const D = (() => {
             }
             
         },
-    // #endregion
+        // #endregion
 
-    // #region SPECIAL FX
+        // #region SPECIAL FX
         runFX = (name, pos) => {
         // Runs one of the special effects defined above.
             spawnFxWithDefinition(pos.left, pos.top, C.FX[name]);
@@ -2219,7 +2235,7 @@ const D = (() => {
         NumToText: numToText, TextToNum: textToNum,
         Ordinal: ordinal, Romanize: numToRomanNum,
         Capitalize: capitalize,
-        Clone: clone,
+        Clone: clone, Merge: merge,
         Gradient: colorGradient, RGBtoHEX: rbgToHex, HEXtoRGB: getRGB, RGB: getRGB,
         ParseStack: parseStack, ONSTACK: putOnStack, OFFSTACK: pullOffStack,
 

@@ -4,7 +4,7 @@ const Media = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Media",
 
-    // #region COMMON INITIALIZATION
+        // #region COMMON INITIALIZATION
         STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
@@ -19,10 +19,11 @@ const Media = (() => {
             initialize();
             // TRACEOFF(traceID)
         },
-    // #endregion
+        // #endregion
 
-    // #region LOCAL INITIALIZATION
+        // #region LOCAL INITIALIZATION
         initialize = () => {
+
             STATE.REF.imgregistry = STATE.REF.imgregistry || {};
             STATE.REF.textregistry = STATE.REF.textregistry || {};
             STATE.REF.animregistry = STATE.REF.animregistry || {};
@@ -76,9 +77,9 @@ const Media = (() => {
             for (const areaKey of Object.keys(STATE.REF.areas))
                 STATE.REF.AREADICT.add(areaKey);
         },
-    // #endregion
+        // #endregion
 
-    // #region EVENT HANDLERS: (HANDLEINPUT)
+        // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args, objects, msg) => {
             const traceID = TRACEON("onChatCall", [call, args, objects, msg]); // eslint-disable-line no-unused-vars
             switch (call) {
@@ -1151,9 +1152,9 @@ const Media = (() => {
             isActive: true,
             activeSrc: "base"
         },
-    // #endregion
+        // #endregion
 
-    // #region GENERAL MEDIA OBJECT GETTERS:
+        // #region GENERAL MEDIA OBJECT GETTERS:
         isRegistered = mediaRef => {
             if (mediaRef === null)
                 return Boolean(LAST.Media.key);
@@ -1270,7 +1271,7 @@ const Media = (() => {
         },
         // #endregion
 
-    // #region GENERAL MEDIA OBJECT SETTERS:
+        // #region GENERAL MEDIA OBJECT SETTERS:
         fixAll = (isKilling = false) => {
             const traceID = TRACEON("fixAll", [isKilling]),
                 [isTesting, currentMode] = [Session.IsTesting, Session.Mode];
@@ -1535,7 +1536,7 @@ const Media = (() => {
         },
         setZIndices = () => {
             const traceID = TRACEON("setZIndices", []),
-            // D.Alert(D.JS(findObjs({_id: "-Lua29PqPseZeUuUN0cv"}), true), "Mystery Object")
+                // D.Alert(D.JS(findObjs({_id: "-Lua29PqPseZeUuUN0cv"}), true), "Mystery Object")
                 [allImgDatas, allAnimDatas, allTextDatas] = [Object.values(REGISTRY.IMG), Object.values(REGISTRY.ANIM), Object.values(REGISTRY.TEXT)],
                 allMediaRefs = _.compact([
                     ..._.flatten(allImgDatas.map(x => _.compact([
@@ -1681,9 +1682,9 @@ const Media = (() => {
                     ]).join("<br>"), "resetModeData");
             TRACEOFF(traceID);
         },
-    // #endregion
+        // #endregion
     
-    // #region IMG OBJECT & AREA GETTERS: Img Object & Data Retrieval
+        // #region IMG OBJECT & AREA GETTERS: Img Object & Data Retrieval
         isRegImg = imgRef => Boolean(getImgKey(imgRef, true)),        
         isCharToken = imgObj => VAL({imgObj}) && getObj("character", imgObj.get("represents")),
         isRegToken = imgObj => VAL({imgObj}) && Boolean(REGISTRY.TOKEN[D.GetName(imgObj.get("represents"))]),
@@ -1825,10 +1826,10 @@ const Media = (() => {
                     }
                 })();
             if (VAL({list: imgData}, VAL({string: funcName}) ? `${D.JSL(funcName)} > getImgData` : null)) {
-                imgData.leftEdge = imgData.left - 0.5*imgData.width;
-                imgData.rightEdge = imgData.left + 0.5*imgData.width;
-                imgData.topEdge = imgData.top - 0.5*imgData.height;
-                imgData.bottomEdge = imgData.top + 0.5*imgData.height;
+                imgData.leftEdge = imgData.left - 0.5 * imgData.width;
+                imgData.rightEdge = imgData.left + 0.5 * imgData.width;
+                imgData.topEdge = imgData.top - 0.5 * imgData.height;
+                imgData.bottomEdge = imgData.top + 0.5 * imgData.height;
             }
             return TRACEOFF(traceID, imgData);
         },
@@ -1932,7 +1933,7 @@ const Media = (() => {
             const traceID = TRACEON("getContainedImgObjs", [containerRef, options, filter]),
                 containerObj = getImgObj(containerRef),
                 containerData = getImgData(containerObj.id),
-            /*  allImgObjs = findObjs({
+                /*  allImgObjs = findObjs({
                     _pageid: D.GetPageID(containerObj),
                     _type: "graphic"
                 }),
@@ -1962,9 +1963,9 @@ const Media = (() => {
             return TRACEOFF(traceID, containedImgObjs);
         },
         getContainedChars = (containerRef, options, filter = {}) => getContainedImgObjs(containerRef, options, Object.assign(filter, {_subtype: "token", _layer: "objects"})).map(x => D.GetChar(x)),
-    // #endregion
+        // #endregion
 
-    // #region IMG OBJECT & AREA SETTERS: Registering & Manipulating Img Objects
+        // #region IMG OBJECT & AREA SETTERS: Registering & Manipulating Img Objects
         addImgSrc = (imgSrcRef, imgName, srcName, isSilent = false) => {
             const traceID = TRACEON("addImgSrc", [imgSrcRef, imgName, srcName, isSilent]);
             try {
@@ -2568,7 +2569,7 @@ const Media = (() => {
         },
         fixImgObjs = (isQueueing = false) => {
             const traceID = TRACEON("fixImgObjs", [isQueueing]),
-            // D.Alert(`Starting FixImgObjects: ${D.JS(REGISTRY.ANIM.MapIndicator.isActive)}`)
+                // D.Alert(`Starting FixImgObjects: ${D.JS(REGISTRY.ANIM.MapIndicator.isActive)}`)
                 imgKeys = [...Object.keys(REGISTRY.IMG), ...Object.keys(REGISTRY.ANIM)],
                 imgPairs = _.zip(imgKeys.map(x => REGISTRY.IMG[x] || REGISTRY.ANIM[x]), imgKeys.map(x => getObj("graphic", (REGISTRY.IMG[x] || REGISTRY.ANIM[x]).id))),
                 reportLines = [];
@@ -2688,7 +2689,7 @@ const Media = (() => {
             DB({leftImgRef, rightImgRef, midImgRefOrRefs, width, minOverlap, maxOverlap}, "spreadImgs");
             midImgRefOrRefs = _.flatten([midImgRefOrRefs]);
             const [leftObj, rightObj, ...midObjs] = [getImgObj(leftImgRef), getImgObj(rightImgRef), ...midImgRefOrRefs.map(x => getImgObj(x))],
-                [leftData, rightData, ...midData] = [leftObj, rightObj, ...midObjs].map(x => isRegImg(x) && getImgData(x) || {id: x.id, name: x.get("name"), left: x.get("left"), width: x.get("width"), leftEdge: x.get("left") - 0.5*x.get("width"), rightEdge: x.get("left") + 0.5*x.get("width")});
+                [leftData, rightData, ...midData] = [leftObj, rightObj, ...midObjs].map(x => isRegImg(x) && getImgData(x) || {id: x.id, name: x.get("name"), left: x.get("left"), width: x.get("width"), leftEdge: x.get("left") - 0.5 * x.get("width"), rightEdge: x.get("left") + 0.5 * x.get("width")});
             if (!VAL({number: width})) {
                 const [startPos, endPos] = [leftData.left, rightData.left],
                     buffer = (endPos - startPos) / (midObjs.length + 1);
@@ -2706,23 +2707,23 @@ const Media = (() => {
                 dbString += `Setting Left to {left: ${D.Int(leftData.left)}}<br>`;
                 // If the spread is smaller than the combined width of the bookends, then set the minimum possible spread and blank all mid imgs.
                 if (spread <= leftData.width + rightData.width - maxOverlap) {
-                    dbString += `Spread ${D.Int(spread)} less than ${D.Int(leftData.width + rightData.width - 2*maxOverlap)} (${D.Int(leftData.width)} + ${D.Int(rightData.width)} - ${2*D.Int(maxOverlap)})<br>`;
+                    dbString += `Spread ${D.Int(spread)} less than ${D.Int(leftData.width + rightData.width - 2 * maxOverlap)} (${D.Int(leftData.width)} + ${D.Int(rightData.width)} - ${2 * D.Int(maxOverlap)})<br>`;
                     for (const imgData of midData)
                         toggleImg(imgData.id, false);
-                    DB(`${dbString }Setting Right to {left: ${D.Int(leftData.rightEdge)} + 0.5x${D.Int(rightData.width)} - ${D.Int(maxOverlap)} = ${D.Int(leftData.rightEdge + 0.5*rightData.width) - D.Int(maxOverlap)}`, "spreadImgs");
+                    DB(`${dbString }Setting Right to {left: ${D.Int(leftData.rightEdge)} + 0.5x${D.Int(rightData.width)} - ${D.Int(maxOverlap)} = ${D.Int(leftData.rightEdge + 0.5 * rightData.width) - D.Int(maxOverlap)}`, "spreadImgs");
                     return TRACEOFF(traceID, setImgTemp(rightData.id, {
-                        left: leftData.rightEdge + 0.5*rightData.width - maxOverlap
+                        left: leftData.rightEdge + 0.5 * rightData.width - maxOverlap
                     }));
                 }
                 // Otherwise, determine how much space will be in the middle.  Does NOT count overlap of left and right sides.
-                let totalMidWidth = spread - leftData.width - rightData.width + 2*minOverlap;
+                let totalMidWidth = spread - leftData.width - rightData.width + 2 * minOverlap;
                 dbString += `Total Mid Width = ${D.Int(totalMidWidth)} (spr:${D.Int(spread)} - L.w:${D.Int(leftData.width)} - R.w:${D.Int(rightData.width)})<br>`;
                 /* if (midData.length === 1) {
                     // If only one middle img, stretch it out... BUT have to stretch the minOverlap by the same ratio.
                     // So: need to determine percentage of width that is taken up by minOverlap
                     // Then, need to set overall width such that the remaining percentage is enough to cover the spread.
                     // HOWEVER: if the resulting stretchOverlap EXCEEDS maxOverlap, cap it there.
-                    const overlapPercent = 2*minOverlap / midData[0].width,
+                    const overlapPercent = 2 * minOverlap / midData[0].width,
                         coveragePercent = 1 - overlapPercent,
                         stretchFactor = Math.min(totalMidWidth / (coveragePercent * midData[0].width), maxOverlap / minOverlap),
                         stretchOverlap = minOverlap * stretchFactor,
@@ -2733,17 +2734,17 @@ const Media = (() => {
                     dbString += `stretchOverlap = ${D.Int(stretchOverlap)} = (mO:${D.Int(minOverlap)} × SF:${D.Int(stretchFactor * 100)/100})<br>`
                     dbString += `stretchWidth = ${D.Int(stretchWidth)}<br>`
                     // Now, set the left side of the mid img to account for the stretched overlap, and the stretched width
-                    dbString += `Setting Mid Img to: {left: ${D.Int(leftData.rightEdge - stretchOverlap + 0.5*stretchWidth)} (L.re:${D.Int(leftData.rightEdge)} - sO:${D.Int(stretchOverlap)} + 0.5×sW:${D.Int(stretchWidth)})}<br>`
+                    dbString += `Setting Mid Img to: {left: ${D.Int(leftData.rightEdge - stretchOverlap + 0.5 * stretchWidth)} (L.re:${D.Int(leftData.rightEdge)} - sO:${D.Int(stretchOverlap)} + 0.5×sW:${D.Int(stretchWidth)})}<br>`
                     setImg(midData[0].id, "base")
                     setImgTemp(midData[0].id, {
                         top: leftData.top + 20,
-                        left: leftData.rightEdge - stretchOverlap + 0.5*stretchWidth,
+                        left: leftData.rightEdge - stretchOverlap + 0.5 * stretchWidth,
                         width: stretchWidth
                     })
-                    dbString += `Setting Right Img to: {left: ${D.Int(leftData.rightEdge - 2*stretchOverlap + stretchWidth + 0.5*rightData.width)} (L.re:${D.Int(leftData.rightEdge)} - 2×sO:${D.Int(stretchOverlap)} + sW:${D.Int(stretchWidth)} + 0.5×R.w:${D.Int(rightData.width)})}<br>`
+                    dbString += `Setting Right Img to: {left: ${D.Int(leftData.rightEdge - 2 * stretchOverlap + stretchWidth + 0.5 * rightData.width)} (L.re:${D.Int(leftData.rightEdge)} - 2×sO:${D.Int(stretchOverlap)} + sW:${D.Int(stretchWidth)} + 0.5×R.w:${D.Int(rightData.width)})}<br>`
                     setImgTemp(rightData.id, {
                         top: leftData.top + 40,
-                        left: leftData.rightEdge - 2*stretchOverlap + stretchWidth + 0.5*rightData.width
+                        left: leftData.rightEdge - 2 * stretchOverlap + stretchWidth + 0.5 * rightData.width
                     })
                     DB(dbString, "spreadImg")
                     return TRACEOFF(traceID, true)
@@ -2753,8 +2754,8 @@ const Media = (() => {
                 // The "real" minOverlap is twice the given value, since offsetting an image by one minOverlap width will result in a minOverlap covering another minOverlap.
                 const midImgWidth = midData[0].width,
                     [minCover, maxCover] = [
-                        Math.max(0, midImgWidth - 2*maxOverlap),
-                        Math.max(0, midImgWidth - 1.5*minOverlap)
+                        Math.max(0, midImgWidth - 2 * maxOverlap),
+                        Math.max(0, midImgWidth - 1.5 * minOverlap)
                     ],
                     midImgIDs = [];
                 dbString += `midWidth: ${D.Int(midData[0].width)}, maxCover: ${D.Int(maxCover)}, minCover: ${D.Int(minCover)}<br>`;
@@ -2788,8 +2789,8 @@ const Media = (() => {
                     THROW(`Unable to spread given images over spread ${spread}: per-img spread of ${spreadPerImg} outside bounds of ${minCover} - ${maxCover}`, "spreadImgs");
                 // Get the actual overlap between imgs, dividing by two to get the value for one side,
                 // and use this number to get the left position for the first middle img.
-                const sideOverlap = 0.5*(midImgWidth - spreadPerImg),
-                    firstMidLeft = leftData.rightEdge - 2*sideOverlap + 0.5*midImgWidth;
+                const sideOverlap = 0.5 * (midImgWidth - spreadPerImg),
+                    firstMidLeft = leftData.rightEdge - 2 * sideOverlap + 0.5 * midImgWidth;
                 dbString += `Side Overlap: ${D.Int(sideOverlap)} = 0.5x(M.w:${D.Int(midImgWidth)} - SPI:${D.Int(spreadPerImg)})<br>`;
                 dbString += `L.l: ${D.Int(leftData.left)}, L.re: ${D.Int(leftData.rightEdge)}, firstMidLeft: ${D.Int(firstMidLeft)} (L.re - sO:${D.Int(sideOverlap)} + 0.5xM.w:${D.Int(midImgWidth)})<br><br>`;
                 dbString += `LEFT: ${D.Int(leftData.left - 0.5 * leftData.width)} - ${D.Int(leftData.rightEdge)}<br>`;
@@ -2808,9 +2809,9 @@ const Media = (() => {
                 
                 // Finally, set the position of the rightmost img to the far side of the total width:
                 setImgTemp(rightData.id, {
-                    left: leftData.leftEdge + totalMidWidth + leftData.width + rightData.width - 2*minOverlap - 0.5*rightData.width
+                    left: leftData.leftEdge + totalMidWidth + leftData.width + rightData.width - 2 * minOverlap - 0.5 * rightData.width
                 });
-                dbString += `RIGHT: ${D.Int(leftData.leftEdge + totalMidWidth + leftData.width + rightData.width - 2*minOverlap - 0.5*rightData.width - 0.5 * rightData.width)} - ${D.Int(leftData.leftEdge + totalMidWidth + leftData.width + rightData.width - 2*minOverlap - 0.5*rightData.width + 0.5 * rightData.width)} (${lastRightEdge - D.Int(leftData.leftEdge + totalMidWidth + leftData.width + rightData.width - 2*minOverlap - 0.5*rightData.width - 0.5 * rightData.width)})`;
+                dbString += `RIGHT: ${D.Int(leftData.leftEdge + totalMidWidth + leftData.width + rightData.width - 2 * minOverlap - 0.5 * rightData.width - 0.5 * rightData.width)} - ${D.Int(leftData.leftEdge + totalMidWidth + leftData.width + rightData.width - 2 * minOverlap - 0.5 * rightData.width + 0.5 * rightData.width)} (${lastRightEdge - D.Int(leftData.leftEdge + totalMidWidth + leftData.width + rightData.width - 2 * minOverlap - 0.5 * rightData.width - 0.5 * rightData.width)})`;
                 DB(dbString, "spreadImgs");
                 // for (const imgData of midData)
                 //    setImg(imgData.id, "blank")
@@ -2819,9 +2820,9 @@ const Media = (() => {
             }
             return TRACEOFF(traceID, false);
         },
-    // #endregion
+        // #endregion
 
-    // #region ANIMATIONS: Creating, Timeouts, Controlling WEBM Animations
+        // #region ANIMATIONS: Creating, Timeouts, Controlling WEBM Animations
         isRegAnim = animRef => {
             const traceID = TRACEON("isRegAnim", [animRef]),
                 imgObj = getImgObj(animRef);
@@ -2979,9 +2980,9 @@ const Media = (() => {
                 (getObj("graphic", animData.id) || {set: () => false}).set("layer", "walls");
             TRACEOFF(traceID);
         },
-    // #endregion
+        // #endregion
 
-    // #region PANEL CONTROL: Displaying temporary text messages
+        // #region PANEL CONTROL: Displaying temporary text messages
         PANELLEFT = 1250,
         PANELTOP = 170,
         PANELPOS = {
@@ -3081,9 +3082,9 @@ const Media = (() => {
             }, 1000);
             return TRACEOFF(traceID);
         },
-    // #endregion
+        // #endregion
 
-    // #region TEXT OBJECT GETTERS: Text Object, Width Measurements, Data Retrieval    
+        // #region TEXT OBJECT GETTERS: Text Object, Width Measurements, Data Retrieval    
         isRegText = textRef => Boolean(getTextKey(textRef, true)) || VAL({object: textRef}) && _.findKey(REGISTRY.TEXT, v => v.shadowID === textRef.id), 
         getTextKey = (textRef, funcName = false) => {
             const traceID = TRACEON("getTextKey", [textRef, funcName]);
@@ -3292,9 +3293,9 @@ const Media = (() => {
             }
             return TRACEOFF(traceID, false );
         },      
-    // #endregion
+        // #endregion
 
-    // #region TEXT OBJECT MANIPULATORS: Buffering, Justifying, Splitting
+        // #region TEXT OBJECT MANIPULATORS: Buffering, Justifying, Splitting
         buffer = (textRef, width) => " ".repeat(Math.max(0, Math.round(width/getTextWidth(textRef, " ", false)))),
         splitTextLines = (textRef, text, maxWidth, justification = "left") => {
             const traceID = TRACEON("splitTextLines", [textRef, text, maxWidth, justification]),
@@ -3402,7 +3403,7 @@ const Media = (() => {
                     // D.Alert(`spaceWidth: ${spaceWidth}, repeating ${D.JS(Math.round((highWidth - getTextWidth(textObj, splitStrings[0], false))/spaceWidth))} Times.`)
                     splitLines.push(...splitLine);
                 }
-        // D.Alert(`SplitTextLines Called.  Returning: ${D.JS(splitStrings)}`)
+                // D.Alert(`SplitTextLines Called.  Returning: ${D.JS(splitStrings)}`)
                 return TRACEOFF(traceID, splitLines.map((mapperFuncs[justification] || mapperFuncs.left)(highWidth)));
             }
             return TRACEOFF(traceID, [text]);
@@ -3419,9 +3420,9 @@ const Media = (() => {
             }
             TRACEOFF(traceID);
         },
-    // #endregion
+        // #endregion
 
-    // #region TEXT OBJECT SETTERS: Registering, Changing, Deleting
+        // #region TEXT OBJECT SETTERS: Registering, Changing, Deleting
         regText = (textRef, hostName, activeLayer, hasShadow, justification = "center", options = {}, funcName = false) => {
             const traceID = TRACEON("regText", [textRef, hostName, activeLayer, hasShadow, justification, options, funcName]),
                 textObj = getTextObj(textRef);
@@ -3537,10 +3538,10 @@ const Media = (() => {
         },
         linkText = (masterRef, slaveData, horizPad = 0, vertPad = 0) => {
             const traceID = TRACEON("linkText", [masterRef, slaveData, horizPad, vertPad]),
-            // ON MASTER: list each slave object in terms of the edge it attaches to -- top, left, right or bottom
-            // ON SLAVES: set "pushleft" and "pushtop" values in their registry data whenever master changes
-            //      Register them with "horizPad" and "vertPad" to add extra distance.
-            //      Slaves must be set to the exact same position as the master to shift properly.
+                // ON MASTER: list each slave object in terms of the edge it attaches to -- top, left, right or bottom
+                // ON SLAVES: set "pushleft" and "pushtop" values in their registry data whenever master changes
+                //      Register them with "horizPad" and "vertPad" to add extra distance.
+                //      Slaves must be set to the exact same position as the master to shift properly.
                 masterObj = getTextObj(masterRef),
                 masterKey = getTextKey(masterObj);
             D.Alert(`Slave Data: ${D.JS(slaveData)}`);
@@ -3610,13 +3611,13 @@ const Media = (() => {
                     if (textParams.text.split("\n").length > 1)
                         switch (textData.vertAlign) {
                             case "top":
-                                totalTopShift += 0.5*(textParams.text.split("\n").length - 1)*(
+                                totalTopShift += 0.5 * (textParams.text.split("\n").length - 1)*(
                                     textData.lineHeight || 
                                     D.CHARWIDTH[textObj.get("font_family")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight ||
                                     0);
                                 break;
                             case "bottom":
-                                totalTopShift += 0.5*(textParams.text.split("\n").length - 1)*(
+                                totalTopShift += 0.5 * (textParams.text.split("\n").length - 1)*(
                                     textData.lineHeight || 
                                     D.CHARWIDTH[textObj.get("font_family")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")] && D.CHARWIDTH[textObj.get("font_family")][textObj.get("font_size")].lineHeight ||
                                     0);
@@ -3816,61 +3817,55 @@ const Media = (() => {
                     D.Alert(["<h3><u>Fixing Text Objects</u></h3>", ...reportLines].join("<br>"), "fixTextObjs");
             TRACEOFF(traceID);
         },
-    // #endregion
+        // #endregion
 
-    // #region MIGRATION TO ASSETS
+        // #region MIGRATION TO ASSETS
         migrateToLIBRARY = () => {
             state[C.GAMENAME].Assets.AssetLibrary = {};
             parseIMGRegistry();
             parseTEXTRegistry();
+            parseANIMRegistry();
+            // parseTOKENRegistry();
+            // parseAREARegistry();
             D.Flag("Registry Parsed to Library");
         },
         parseIMGRegistry = () => {
-            const errorLines = [];
+            const errorLines = [],
+                ASSETREF = state[C.GAMENAME].Assets.AssetLibrary;
             for (const mediaData of Object.values(REGISTRY.IMG)) {
                 const assetObj = getObj("graphic", mediaData.id);
                 if (assetObj) {
                     const assetName = mediaData.name.replace(/_1$/g, mediaData.name.replace(/_1$/g, "_2") in REGISTRY.IMG ? "_1" : "");
-                    state[C.GAMENAME].Assets.AssetLibrary[assetObj.id] = {
+                    ASSETREF[assetObj.id] = {
                         id: assetObj.id,
                         name: assetName,
                         type: "image",
                         page: C.PAGES.GAME === assetObj.get("_pageid") && "GAME" || C.PAGES.SplashPage === assetObj.get("_pageid") && "SplashPage" || assetObj.get("_pageid"),
                         layer: assetObj.get("layer"),
                         zIndex: D.Int(mediaData.zIndex),
-                        homePos: {
-                            top: D.Int(mediaData.top),
-                            left: D.Int(mediaData.left),
-                            height: D.Int(mediaData.height),
-                            width: D.Int(mediaData.width)
-                        },
-                        curPos: {
-                            top: D.Int(assetObj.get("top")),
-                            left: D.Int(assetObj.get("left")),
-                            height: D.Int(assetObj.get("height")),
-                            width: D.Int(assetObj.get("width"))
-                        },
+                        top: D.Int(assetObj.get("top")),
+                        left: D.Int(assetObj.get("left")),
+                        height: D.Int(assetObj.get("height")),
+                        width: D.Int(assetObj.get("width")),
                         state: mediaData.curSrc,
                         isActive: assetObj.get("layer") !== "walls",
                         activeLayer: mediaData.activeLayer,
                         wasModeUpdated: Boolean(mediaData.wasModeUpdated),
                         modes: mediaData.modes,
                         srcs: typeof mediaData.srcs === "string" ? mediaData.srcs :
-                            D.KeyMapObj(mediaData.srcs, null, v => v.replace(/[a-z]*\.(png|jpg)/gu, "thumb.$1"))
+                        D.KeyMapObj(mediaData.srcs, null, v => v.replace(/[a-z]*\.(png|jpg)/gu, "thumb.$1"))
                     };
                     if (mediaData.padID) {
                         const pad = getObj("graphic", mediaData.padID);
-                        // DB({mediaData,pad,Library: Object.keys(state[C.GAMENAME].Assets.AssetLibrary)}, "parseIMGRegistry")
-                        state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].dragPads = {
+                        // DB({mediaData,pad,Library: Object.keys(ASSETREF)}, "parseIMGRegistry")
+                        ASSETREF[assetObj.id].dragPads = {
                             ids: [mediaData.padID, mediaData.partnerID],
                             funcName: DragPads.PadsByID[mediaData.padID].funcName,
                             startActive: true,                            
-                            deltas: {
-                                deltaTop: D.Int(pad.get("top") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].homePos.top),
-                                deltaLeft: D.Int(pad.get("left") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].homePos.left),
-                                deltaHeight: D.Int(pad.get("height") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].honePos.height),
-                                deltaWidth: D.Int(pad.get("width") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].homePos.width)
-                            }
+                            deltaTop: D.Int(pad.get("top") - ASSETREF[assetObj.id].top),
+                            deltaLeft: D.Int(pad.get("left") - ASSETREF[assetObj.id].left),
+                            deltaHeight: D.Int(pad.get("height") - ASSETREF[assetObj.id].height),
+                            deltaWidth: D.Int(pad.get("width") - ASSETREF[assetObj.id].width)
                         };
                     }   
                 } else {
@@ -3883,32 +3878,23 @@ const Media = (() => {
                 D.Flag("Image Conversion Successful!");
         },
         parseTEXTRegistry = () => {                
-            const errorLines = [];
+            const errorLines = [],
+                ASSETREF = state[C.GAMENAME].Assets.AssetLibrary;
             for (const mediaData of Object.values(REGISTRY.TEXT)) {
-                if (mediaData.name === "Extended Roll")
-                    continue;
                 const assetObj = getObj("text", mediaData.id);
                 if (assetObj) {
-                    state[C.GAMENAME].Assets.AssetLibrary[assetObj.id] = {
+                    ASSETREF[assetObj.id] = {
                         id: assetObj.id,
                         name: mediaData.name,
                         type: "text",
                         page: C.PAGES.GAME === assetObj.get("_pageid") && "GAME" || C.PAGES.SplashPage === assetObj.get("_pageid") && "SplashPage" || assetObj.get("_pageid"),
                         layer: assetObj.get("layer"),
                         zIndex: D.Int(mediaData.zIndex),
-                        homePos: {
-                            top: D.Int(mediaData.top),
-                            left: D.Int(mediaData.left),
-                            height: D.Int(mediaData.height),
-                            width: D.Int(mediaData.width)
-                        },
-                        tempPos: {
-                            top: D.Int(assetObj.get("top")),
-                            left: D.Int(assetObj.get("left")),
-                            height: D.Int(assetObj.get("height")),
-                            width: D.Int(assetObj.get("width"))
-                        },
-                        state: assetObj.get("text"),
+                        top: D.Int(assetObj.get("top")),
+                        left: D.Int(assetObj.get("left")),
+                        height: D.Int(assetObj.get("height")),
+                        width: D.Int(assetObj.get("width")),
+                        state: mediaData.curText,
                         isActive: assetObj.get("layer") !== "walls",
                         activeLayer: mediaData.activeLayer,
                         wasModeUpdated: Boolean(mediaData.wasModeUpdated),
@@ -3918,14 +3904,18 @@ const Media = (() => {
                                         D.LCase(mediaData.font_family).includes("shadow") && "Shadows Into Light" || 
                                         mediaData.font_family,
                         font_size: D.Int(mediaData.font_size),
-                        align: {
-                            vert: mediaData.vertAlign,
-                            horiz: mediaData.justification
-                        },
-                        maxWidth: D.Int(mediaData.maxWidth)
+                        alignVert: mediaData.vertAlign,
+                        alignHoriz: mediaData.justification,
+                        maxWidth: D.Int(mediaData.maxWidth),
+                        lineHeight: mediaData.lineHeight
                     };
+                    try {
+                        ASSETREF[assetObj.id].lineHeight = D.CHARWIDTH[ASSETREF[assetObj.id].font_family][ASSETREF[assetObj.id].font_size].lineHeight;
+                    } catch (errObj) {
+                        D.Flag(`No Line Height Data Found for ${ASSETREF[assetObj.id].name}`);
+                    }
                     if (mediaData.shadowID)
-                        state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].shadowID = mediaData.shadowID;
+                        ASSETREF[assetObj.id].shadowID = mediaData.shadowID;
                 } else {
                     errorLines.push(`Error finding text object with key ${D.JS(mediaData.name)}`);
                 }
@@ -3934,6 +3924,41 @@ const Media = (() => {
                 D.Alert(errorLines.join("<br>"), "Text Conversion Errors");
             else
                 D.Flag("Text Conversion Successful!");
+        },        
+        parseANIMRegistry = () => {                
+            const errorLines = [],
+                ASSETREF = state[C.GAMENAME].Assets.AssetLibrary;
+            for (const mediaData of Object.values(REGISTRY.ANIM)) {
+                const assetObj = getObj("graphic", mediaData.id);
+                if (assetObj) {
+                    ASSETREF[assetObj.id] = {
+                        id: assetObj.id,
+                        name: mediaData.name,
+                        type: "anim",
+                        page: C.PAGES.GAME === assetObj.get("_pageid") && "GAME" || C.PAGES.SplashPage === assetObj.get("_pageid") && "SplashPage" || assetObj.get("_pageid"),
+                        layer: assetObj.get("layer"),
+                        zIndex: D.Int(mediaData.zIndex),
+                        top: D.Int(assetObj.get("top")),
+                        left: D.Int(assetObj.get("left")),
+                        height: D.Int(assetObj.get("height")),
+                        width: D.Int(assetObj.get("width")),
+                        isActive: assetObj.get("layer") !== "walls",
+                        activeLayer: mediaData.activeLayer,
+                        wasModeUpdated: Boolean(mediaData.wasModeUpdated),
+                        modes: mediaData.modes,
+                        timeOut: D.Int(mediaData.timeOut),
+                        minTimeBetween: D.Int(mediaData.minTimeBetween),
+                        maxTimeBetween: D.Int(mediaData.maxTimeBetween),
+                        soundEffect: mediaData.soundEffect
+                    };
+                } else {
+                    errorLines.push(`Error finding animation object with key ${D.JS(mediaData.name)}`);
+                }
+            }
+            if (errorLines.length)
+                D.Alert(errorLines.join("<br>"), "Animation Conversion Errors");
+            else
+                D.Flag("Animation Conversion Successful!");
         };
     // #endregion
     return {

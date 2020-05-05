@@ -3,7 +3,7 @@ const Roller = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Roller",
     
-    // #region COMMON INITIALIZATION
+        // #region COMMON INITIALIZATION
         STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
@@ -16,9 +16,9 @@ const Roller = (() => {
             C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
             initialize();
         },    
-    // #endregion
+        // #endregion
 
-    // #region LOCAL INITIALIZATION
+        // #region LOCAL INITIALIZATION
         initialize = () => {
             STATE.REF.rollRecord = STATE.REF.rollRecord || [];
             STATE.REF.rollIndex = STATE.REF.rollIndex || 0;
@@ -54,9 +54,9 @@ const Roller = (() => {
 
         },
 
-    // #endregion	
+        // #endregion	
 
-    // #region EVENT HANDLERS: (ONCHATCALL)
+        // #region EVENT HANDLERS: (ONCHATCALL)
         onChatCallAlert = (callTerms, who) => {
             if (callTerms[1] === "dice")
                 if (isLocked)
@@ -552,7 +552,7 @@ const Roller = (() => {
                             outcome: Media.GetTextWidth("outcome") + 45
                         },
                         shifts = { // rollerNameLow, mainRollHigh, mainRollLow, diceLineHigh, diceLineLow, outcomeHigh
-                        // rollerNameLow: {top: -1 * Media.GetImgData("RollerFrame_TopEnd").height + 4, left: lineShifts.rollerName, extendDir: -1},
+                        // rollerNameLow: {top: -Media.GetImgData("RollerFrame_TopEnd").height + 4, left: lineShifts.rollerName, extendDir: -1},
                         // mainRollHigh: {top: -30, left: lineShifts.mainRoll, extendDir: 0},
                             mainRollLow: {top: 0, left: lineShifts.mainRoll, extending: "goldMods"},
                             diceLineHigh: {top: 25, left: lineShifts.diceLine, extending: "redMods"},
@@ -567,7 +567,7 @@ const Roller = (() => {
                             diceLineLow: (Media.IsActive("RollerFrame_BottomEnd") ? lineShifts.outcome - lineShifts.diceLine : 0) * 0.75,
                             outcomeHigh: (Media.IsActive("RollerFrame_BottomEnd") ? lineShifts.diceLine : lineShifts.mainRoll) - lineShifts.outcome,
                         };
-                /* if (Math.max(Media.GetTextWidth("goldMods"), Media.IsActive("redMods") && Media.GetTextWidth("redMods") || 0) < 1.5 * flagSpace.mainRollHigh)
+                    /* if (Math.max(Media.GetTextWidth("goldMods"), Media.IsActive("redMods") && Media.GetTextWidth("redMods") || 0) < 1.5 * flagSpace.mainRollHigh)
                     flagSpace.rollerNameLow = flagSpace.mainRollHigh - 1
                 if (Math.max(Media.GetTextWidth("goldMods"), Media.IsActive("redMods") && Media.GetTextWidth("redMods") || 0) < 1.5 * flagSpace.mainRollLow)
                     flagSpace.rollerNameLow = Math.min(flagSpace.rollerNameLow, flagSpace.mainRollLow - 1) */
@@ -580,7 +580,7 @@ const Roller = (() => {
                 },
                 dicePool: {top: 0, left: 0},
                 resultCount: {
-                    get top() { return Media.IsActive("RollerFrame_BottomEnd") ? 0 : -1 * Media.GetImgData("RollerFrame_BottomEnd").height },
+                    get top() { return Media.IsActive("RollerFrame_BottomEnd") ? 0 : -Media.GetImgData("RollerFrame_BottomEnd").height },
                     get left() { return 0 }
                 },
                 difficulty: {
@@ -592,7 +592,7 @@ const Roller = (() => {
                     get left() { return Media.GetImgData("RollerFrame_Diff").left }
                 },
                 margin: {
-                    get top() { return Session.Mode === "Spotlight" && -1 * Media.GetImgData("RollerFrame_BottomEnd").height - 40 || SETTINGS.shifts.resultCount.top },
+                    get top() { return Session.Mode === "Spotlight" && -Media.GetImgData("RollerFrame_BottomEnd").height - 40 || SETTINGS.shifts.resultCount.top },
                     get left() { return Session.Mode === "Spotlight" && C.SANDBOX.width - Media.GetTextWidth("outcome") - SETTINGS.frame.flagBuffer - Media.GetTextData("margin").left - Media.GetTextWidth("margin") - 40 || SETTINGS.shifts.resultCount.left; /*
                                 Media.GetImgData(Media.IsActive("RollerFrame_BottomEnd") ? "RollerFrame_BottomEnd" : "RollerFrame_TopEnd").rightEdge ||
                 SETTINGS.shifts.resultCount.left */ }
@@ -886,9 +886,9 @@ const Roller = (() => {
             restriction: ["success", "failure", "basicfail", "critical", "basiccrit", "messycrit", "bestialfail", "totalfail"],
             rollMod: ["restrictwpreroll1", "restrictwpreroll2", "nowpreroll", "doublewpreroll", "freewpreroll", "bestialcancelcrit", "bestialcancelsucc", "bestialcancelall", "totalfailure", "nomessycrit", "nobestialfail"]
         },
-    // #endregion
+        // #endregion
 
-    // #region GRAPHICS: Creation, Removal, Registration, Setting Sources
+        // #region GRAPHICS: Creation, Removal, Registration, Setting Sources
         makeDie = (diceCat, dieNum) => {
             const traceID = TRACEON("makeDie", [diceCat, dieNum]); // eslint-disable-next-line one-var
             const rootData = Media.GetImgData(`RollerDie_${diceCat}_1`),
@@ -1167,9 +1167,9 @@ const Roller = (() => {
             // STATE.REF.selected[dieCat] = []
             TRACEOFF(traceID);
         },
-    // #endregion
+        // #endregion
 
-    // #region ROLL EFFECTS: Applying, Creating, Removing
+        // #region ROLL EFFECTS: Applying, Creating, Removing
         applyRollEffects = rollInput => {
             const traceID = TRACEON("applyRollEffects", [rollInput]); // eslint-disable-next-line one-var
             const rollEffectString = D.GetStatVal(rollInput.charID, "rolleffects") || "";
@@ -1311,7 +1311,7 @@ const Roller = (() => {
                             DB(`TRAIT/FLAG check FAILED for: ${D.JSL(Object.keys(traits))} and ${D.JSL(Object.keys(flags))}, returning FALSE`, "checkRestriction");
                             return TRACEOFF(innerTraceID, false);
                         }
-                    // If effect passes all of the threshold tests, return true.
+                        // If effect passes all of the threshold tests, return true.
                         DB("All Threshold Checks Passed!  Returning TRUE", "checkRestriction");
                         return TRACEOFF(innerTraceID, true);
                     };
@@ -1320,7 +1320,7 @@ const Roller = (() => {
                 // First, check if the global effect state variable holds an exclusion for this character ID AND effect isn't in rollEffectsToReapply.
                     if (STATE.REF.rollEffects[effectString] && STATE.REF.rollEffects[effectString].includes(rollInput.charID))
                         continue;
-                // Parse the effectString for all of the relevant parameters
+                    // Parse the effectString for all of the relevant parameters
                     let [rollRestrictions, rollMod, rollLabel, removeWhen, /* sheetMessage, gmNote */] = effectString.split(";"),
                         [rollTarget, rollTraits, rollFlags] = ["", {}, {}];
                     [rollMod, rollTarget] = _.map(rollMod.split(":"), v => D.Int(v) || v.toLowerCase());
@@ -1330,7 +1330,7 @@ const Roller = (() => {
                         _.map(_.values(rollInput.traitData), v => D.Int(v.value))
                     );
                     DB({effectString, rollRestrictions, rollMod, rollLabel, removeWhen, rollTarget, rollTraits, rollFlags}, "applyRollEffects");
-                // Before parsing rollFlags, filter out the ones that have already been converted into strings:
+                    // Before parsing rollFlags, filter out the ones that have already been converted into strings:
                     DB(`Checking Filtered Flag Error: ${D.JSL([...rollInput.posFlagLines, ...rollInput.negFlagLines, ...rollInput.redFlagLines, ...rollInput.goldFlagLines])}`, "applyRollEffects");
                     const filteredFlags = _.reject([...rollInput.posFlagLines, ...rollInput.negFlagLines, ...rollInput.redFlagLines, ...rollInput.goldFlagLines], v => _.isString(v));
                     rollFlags = _.object(
@@ -1339,13 +1339,13 @@ const Roller = (() => {
                     );
                     DB(`Roll Traits: ${D.JSL(rollTraits)}<br>Roll Flags: ${D.JSH(rollFlags)}`, "applyRollEffects");
 
-                // THRESHOLD TEST OF ROLLTARGET: IF TARGET SPECIFIED BUT DOES NOT EXIST, SKIP PROCESSING THIS ROLL EFFECT.
+                    // THRESHOLD TEST OF ROLLTARGET: IF TARGET SPECIFIED BUT DOES NOT EXIST, SKIP PROCESSING THIS ROLL EFFECT.
                     if (VAL({string: rollTarget}) && !D.IsIn(rollTarget, Object.keys(rollTraits), true) && !D.IsIn(rollTarget, Object.keys(rollFlags), true)) {
                         DB(`Roll Target ${rollTarget} NOT present, SKIPPING EFFECT.`, "applyRollEffects");
                         continue;
                     }
 
-                // THRESHOLD TESTS OF RESTRICTION: Parse each "OR" roll restriction (/) into "AND" restrictions (+), and finally the "NOT" restriction (!)
+                    // THRESHOLD TESTS OF RESTRICTION: Parse each "OR" roll restriction (/) into "AND" restrictions (+), and finally the "NOT" restriction (!)
                     let isORSatisfied = false;
                     DB(`BEGINNING TESTS OF RESTRICTION: "<b><u>${D.JSL(effectString)}</u></b><br>... --- ${rollRestrictions.length} OR-RESTRICTIONS: ${D.JSL(rollRestrictions)}`, "applyRollEffects");
                     for (const orRestrict of rollRestrictions) {
@@ -1374,8 +1374,8 @@ const Roller = (() => {
                         continue;
 
                     DB("Threshold Tests Passed!", "applyRollEffects");
-                // THRESHOLD TESTS PASSED.  CHECK FOR 'ISONCEONLY' AND FIRE IT ACCORDINGLY
-                // If "isOnceOnly" set, add an exclusion to the global state variable OR remove this effect from the character-specific attribute.
+                    // THRESHOLD TESTS PASSED.  CHECK FOR 'ISONCEONLY' AND FIRE IT ACCORDINGLY
+                    // If "isOnceOnly" set, add an exclusion to the global state variable OR remove this effect from the character-specific attribute.
                     switch (removeWhen || "never") {
                         case "never":
                             break;
@@ -1395,31 +1395,31 @@ const Roller = (() => {
                                 false);
                             break;
                     }
-                // FIRST ROLLMOD PASS: CONVERT TO NUMBER.
-                // Check whether parsing RollData or RollResults
+                    // FIRST ROLLMOD PASS: CONVERT TO NUMBER.
+                    // Check whether parsing RollData or RollResults
                     let isEffectMoot = false;
                     if (VAL({list: rollData})) {
                         DB(`Validated RollData: ${D.JSL(rollData)}`, "applyRollEffects");
-                    // Is rollMod a number?
+                        // Is rollMod a number?
                         if (VAL({number: rollMod})) {
                         // If rollMod is a number, Is there a rollTarget?
                             if (VAL({string: rollTarget}))
                             // If so, is the rollTarget present in traits?
                                 if (D.IsIn(rollTarget, Object.keys(rollTraits), true))
                                 // If so, cap any negative modifier to the value of the target trait (i.e. no negative traits)
-                                    rollMod = rollMod < 0 ? Math.max(-1 * rollTraits[rollTarget], rollMod) : rollMod;
-                            // If not in traits, rollTarget must be in flags (validation happened above)
+                                    rollMod = rollMod < 0 ? Math.max(-rollTraits[rollTarget], rollMod) : rollMod;
+                                // If not in traits, rollTarget must be in flags (validation happened above)
                                 else
                                 // Cap any negative modifier to the value of the flag (i.e. no negative flags)
-                                    rollMod = rollMod < 0 ? Math.max(-1 * _.find(rollFlags, (v, k) => k.includes(rollTarget)), rollMod) : rollMod;
+                                    rollMod = rollMod < 0 ? Math.max(-_.find(rollFlags, (v, k) => k.includes(rollTarget)), rollMod) : rollMod;
                         // (If no rollTarget, apply mod as a straight modifier --- i.e. unchanged until capping, below.)
                         } else {
                         // If rollMod isn't a number, is it adding or subtracting a trait value?
                             if (rollMod.includes("postrait"))
                                 rollMod = D.Int(D.GetStatVal(rollData.charID, rollMod.replace(/postrait/gu, "")));
                             else if (rollMod.includes("negtrait"))
-                                rollMod = -1 * D.Int(D.GetStatVal(rollData.charID, rollMod.replace(/negtrait/gu, "")));
-                        // If not postrait/negtrait, is it a multiplier?
+                                rollMod = -D.Int(D.GetStatVal(rollData.charID, rollMod.replace(/negtrait/gu, "")));
+                            // If not postrait/negtrait, is it a multiplier?
                             else if (rollMod.startsWith("x") && VAL({number: rollMod.replace(/x/gu, "")}))
                             // If so, is there a rollTarget?
                                 if (VAL({string: rollTarget})) {
@@ -1427,7 +1427,7 @@ const Roller = (() => {
                                     if (D.IsIn(rollTarget, Object.keys(rollTraits), true))
                                     // If so, multiply trait accordingly (rounding DOWN to a minimum of one) and set rollMod to the difference.
                                         rollMod = Math.max(1, Math.floor(rollTraits[rollTarget] * parseFloat(rollMod.replace(/x/gu, "")))) - rollTraits[rollTarget];
-                                // If not in traits, rollTarget must be in flags (validation happened above)
+                                    // If not in traits, rollTarget must be in flags (validation happened above)
                                     else
                                     // If so, multiply the flag accordingly (rounding DOWN to a minimum of one) and set rollMod to the difference.
                                         rollMod = Math.max(1, Math.floor(_.find(rollFlags, (v, k) => k.includes(rollTarget)) * parseFloat(rollMod.replace(/x/gu, "")))) - _.find(rollFlags, (v, k) => k.includes(rollTarget));
@@ -1437,7 +1437,7 @@ const Roller = (() => {
                                 }
                         }
 
-                    // FIRST ROLLMOD PASS COMPLETE: ROLLMOD SHOULD BE AN INTEGER BY THIS POINT.
+                        // FIRST ROLLMOD PASS COMPLETE: ROLLMOD SHOULD BE AN INTEGER BY THIS POINT.
                         if (!isEffectMoot)
                             if (VAL({number: rollMod}, "applyRollEffects")) {
                             // Adjust dice pool by rollMod.
@@ -1453,13 +1453,13 @@ const Roller = (() => {
                                     rollData.basePool += rollMod;
                                 }
 
-                            // Check to see if rollLabel is calling for a RegEx replacement, and perform the calculations.
+                                // Check to see if rollLabel is calling for a RegEx replacement, and perform the calculations.
                                 if (rollLabel.charAt(0) === "*") {
                                     const regexData = _.object(["traitString", "regexString", "replaceString"], rollLabel.split("~"));
                                     DB(`RegExData: ${D.JSL(regexData)}`, "applyRollEffects");
                                     let isContinuing = true;
-                                // Identify the target: either a trait or a flag. Start with traits (since flags will sometimes reference them,
-                                // and if they do, you want to apply the effect to the trait).
+                                    // Identify the target: either a trait or a flag. Start with traits (since flags will sometimes reference them,
+                                    // and if they do, you want to apply the effect to the trait).
                                     for (const trait of Object.keys(rollData.traitData))
                                         if (D.FuzzyMatch(rollData.traitData[trait].display, regexData.traitString)) {
                                             DB(`... Trait Found: ${D.JSL(rollData.traitData[trait])}`, "applyRollEffects");
@@ -1469,7 +1469,7 @@ const Roller = (() => {
                                             isContinuing = false;
                                             break;
                                         }
-                                // If none found, check the flags:
+                                    // If none found, check the flags:
                                     for (const flagType of ["posFlagLines", "negFlagLines", "redFlagLines", "goldFlagLines"]) {
                                         if (!isContinuing) break;
                                         for (let i = 0; i < rollData[flagType].length; i++)
@@ -1498,7 +1498,7 @@ const Roller = (() => {
                                 }
                             }
 
-                    // FINISHED!  ADD EFFECT TO APPLIED ROLL EFFECTS UNLESS EFFECT SAYS NOT TO.
+                        // FINISHED!  ADD EFFECT TO APPLIED ROLL EFFECTS UNLESS EFFECT SAYS NOT TO.
                         if (!isReapplying)
                             rollData.appliedRollEffects = _.union(rollData.appliedRollEffects, [effectString]);
                     } else if (VAL({list: rollResults}, "applyRollEffects")) {
@@ -1691,7 +1691,7 @@ const Roller = (() => {
 
                         DB(`INTERIM Roll Results: ${D.JSL(rollResults)}`, "applyRollEffects");
 
-                    // Roll flags are PRE-PARSED for rollResults (they get parsed in between rollData and rollResults creation, in other functions)
+                        // Roll flags are PRE-PARSED for rollResults (they get parsed in between rollData and rollResults creation, in other functions)
                         if (!isEffectMoot) {
                             rollLabel = rollLabel.
                                 replace(/<\.>/gu, "●".repeat(Math.abs(rollMod))).
@@ -1708,14 +1708,14 @@ const Roller = (() => {
                                 rollResults.goldFlagLines.push(rollLabel.trim());
                         }
 
-                    // FINISHED!  ADD EFFECT TO APPLIED ROLL EFFECTS.
+                        // FINISHED!  ADD EFFECT TO APPLIED ROLL EFFECTS.
                         if (!isReapplying)
                             rollResults.appliedRollEffects = _.union(rollResults.appliedRollEffects, [effectString]);
                     }
                 }
 
-            // FINISHED!  Return either rollData or rollResults, whichever you have.
-            // Make sure to map the flagLines to Strings before returning.
+                // FINISHED!  Return either rollData or rollResults, whichever you have.
+                // Make sure to map the flagLines to Strings before returning.
                 if (rollData) {
                     for (const flagType of ["posFlagLines", "negFlagLines", "redFlagLines", "goldFlagLines"])
                         rollData[flagType] = _.map(rollData[flagType], v => v[1].
@@ -1738,37 +1738,37 @@ const Roller = (() => {
             if (VAL({charObj, string: effectString}, "addCharRollEffects")) {
 
                 // Must extract three elements from the roll effect:
-                    // RemoveWhen (to see if we need to set an alarm or tie it to an existing one)
-                    // SheetMessage (to see if we need to show the player when it applies via a character sheet incapacitation note)
-                    // GMNote (to include whenever the effect is displayed to the GM, as a reminder of what put it there)
+                // RemoveWhen (to see if we need to set an alarm or tie it to an existing one)
+                // SheetMessage (to see if we need to show the player when it applies via a character sheet incapacitation note)
+                // GMNote (to include whenever the effect is displayed to the GM, as a reminder of what put it there)
                 // Then, we have to create a simple label that can be used to remove it.
-            //      const [,,, removeWhen, /* sheetMessage, GMNote */] = effectString.split(";")
-            //      switch (D.LCase(removeWhen.replace(/:.*/gu, ""))) {
-            //          case "nextfullnight": {
-            //              
-            //              break
-            //          }
-            //          case "scene": {
-            //  
-            //              break
-            //          }
-            //          case "fullweek": {
-            //  
-            //              break
-            //          }
-            //          case "endofweek": {
-            //  
-            //              break
-            //          }
-            //          case "projectresolves": {
-            //  
-            //              break
-            //          }
-            //          default: {
-            //  
-            //              break
-            //          }
-            //    }
+                //      const [,,, removeWhen, /* sheetMessage, GMNote */] = effectString.split(";")
+                //      switch (D.LCase(removeWhen.replace(/:.*/gu, ""))) {
+                //          case "nextfullnight": {
+                //              
+                //              break
+                //          }
+                //          case "scene": {
+                //  
+                //              break
+                //          }
+                //          case "fullweek": {
+                //  
+                //              break
+                //          }
+                //          case "endofweek": {
+                //  
+                //              break
+                //          }
+                //          case "projectresolves": {
+                //  
+                //              break
+                //          }
+                //          default: {
+                //  
+                //              break
+                //          }
+                //    }
                 const rollEffects = _.compact((D.GetStatVal(charObj.id, "rolleffects") || "").split("|"));
                 rollEffects.push(effectString);
                 DB({charRef, effectString, rollEffects}, "addCharRollEffects");
@@ -1853,9 +1853,9 @@ const Roller = (() => {
             }        
             return TRACEOFF(traceID, false);
         },     
-    // #endregion
+        // #endregion
 
-    // #region ROLL DATA: Getting, Parsing, Managing State Roll Record
+        // #region ROLL DATA: Getting, Parsing, Managing State Roll Record
         getRollChars = (charObjs) => {
             const traceID = TRACEON("getRollChars", [charObjs]); // eslint-disable-next-line one-var
             charObjs = _.flatten([charObjs]);
@@ -2137,16 +2137,16 @@ const Roller = (() => {
                 recordRef.rollRecord.pop();
             TRACEOFF(traceID);
         },
-    // #endregion
+        // #endregion
 
-    // #region ROLL CONTROL: Rolling Dice & Formatting Result
+        // #region ROLL CONTROL: Rolling Dice & Formatting Result
         buildDicePool = rollData => {
             const traceID = TRACEON("buildDicePool", [rollData]); // eslint-disable-next-line one-var
-        /* MUST SUPPLY:
+            /* MUST SUPPLY:
 				  For Rouse & Checks:    rollData = { type }
 				  For All Others:        rollData = { type, mod, << traits: [],
 																traitData: { value, display }, hunger >> } */
-        /* EXAMPLE RESULTS:
+            /* EXAMPLE RESULTS:
 				{
 				  charID: "-LN4P73XRfqCcI8U6c-t",
 				  type: "project",
@@ -2181,11 +2181,11 @@ const Roller = (() => {
                 case "rouse2":
                     rollData.dicePool++;
                     rollData.hungerPool++;
-            /* falls through */
+                    /* falls through */
                 case "rouse":
                     rollData.hungerPool++;
                     rollData.basePool--;
-            /* falls through */
+                    /* falls through */
                 case "check":
                     rollData.dicePool++;
                     rollData.basePool++;
@@ -2839,8 +2839,8 @@ const Roller = (() => {
                                     }
                                 }
                                 if (rollFlags.isHidingTraits) {
-                                    rollLines.mainRoll.text = rollFlags.isHidingDicePool ? "Some Dice" : `${Math.max(1, rollData.dicePool + -1 * (rollData.negFlagMod || 0))} Dice`;
-                                    logLines.mainRoll = CHATSTYLES.mainRoll + (rollFlags.isHidingDicePool ? "Some Dice" : `${Math.max(1, rollData.dicePool + -1 * (rollData.negFlagMod || 0))} Dice`);
+                                    rollLines.mainRoll.text = rollFlags.isHidingDicePool ? "Some Dice" : `${Math.max(1, rollData.dicePool + -(rollData.negFlagMod || 0))} Dice`;
+                                    logLines.mainRoll = CHATSTYLES.mainRoll + (rollFlags.isHidingDicePool ? "Some Dice" : `${Math.max(1, rollData.dicePool + -(rollData.negFlagMod || 0))} Dice`);
                                 } else {
                                     rollLines.mainRoll.text = mainRollParts.join(" + ");
                                     logLines.mainRoll = CHATSTYLES.mainRoll + mainRollLog.join(" + ");
@@ -3044,7 +3044,7 @@ const Roller = (() => {
                                 break;
                             }
                             case "remorse": {
-                                deltaAttrs.stains = -1 * D.Int(D.GetStatVal(rollData.charID, "stains"));
+                                deltaAttrs.stains = -D.Int(D.GetStatVal(rollData.charID, "stains"));
                                 if (rollResults.total === 0) {
                                     stLines.outcome = `${CHATSTYLES.outcomeRed}DEGENERATION</span></div>`;
                                     rollLines.outcome.text = "YOUR HUMANITY FADES...";
@@ -3527,12 +3527,12 @@ const Roller = (() => {
                 body].join("")));
             TRACEOFF(traceID);
         },
-    // #endregion
+        // #endregion
 
-    // #region SECRET ROLLS
+        // #region SECRET ROLLS
         makeSecretRoll = (chars, params, isSilent, isHidingTraits) => {
             const traceID = TRACEON("makeSecretRoll", [chars, params, isSilent, isHidingTraits]); // eslint-disable-next-line one-var
-        // D.Alert(`Received Parameters: ${params}`)
+            // D.Alert(`Received Parameters: ${params}`)
             chars = _.flatten([chars]);
             let rollData = buildDicePool(getRollData(chars[0], "secret", params)),
                 [traitLine, playerLine] = ["", ""];
@@ -3594,10 +3594,10 @@ const Roller = (() => {
             D.Chat("Storyteller", `${CHATSTYLES.fullBox + CHATSTYLES.secret.topLineStart + (rollData.isSilent ? "Silently Rolling" : "Secretly Rolling") + (rollData.isHidingTraits ? " (Traits Hidden)" : " ...")}</div>${CHATSTYLES.secret.traitLineStart}${traitLine}${rollData.diff > 0 ? ` vs. ${rollData.diff}` : ""}</div>${blocks.join("")}</div></div>`, undefined, D.RandomString(3));
             TRACEOFF(traceID);
         },
-    // #endregion
+        // #endregion
 
-    // #region DISCIPLINE ROLLS
-    /*
+        // #region DISCIPLINE ROLLS
+        /*
         checkPrerequisites = (charObj) => {
             // Scans character sheet for discipline powers missing prerequisites.
         },
@@ -3609,9 +3609,9 @@ const Roller = (() => {
         },
     */
 
-    // #endregion
+        // #endregion
 
-    // #region RESONANCE: Getting Random Resonance Based On District/Site Parameters
+        // #region RESONANCE: Getting Random Resonance Based On District/Site Parameters
         getResonance = (charRef, posRes = "", negRes = "", /* marginBonus = 0, */ isDoubleAcute, testCycles = 0) => {
             const traceID = TRACEON("getResonance", [charRef, posRes, negRes, /* marginBonus, */isDoubleAcute, testCycles]); // eslint-disable-next-line one-var
             DB(`Resonance Args: ${D.JSL(charRef)}, ${D.JSL(posRes)}, ${D.JSL(negRes)}`, "getResonance");
@@ -3715,9 +3715,9 @@ const Roller = (() => {
                     flaTot += record[flavor].TOT;
                 }
                 for (const intensity of Object.keys(record).slice(0,4))
-                    record[intensity].PER = `${Math.round(10000*record[intensity].TOT/intTot)/100}%`;
+                    record[intensity].PER = `${Math.round(10000 * record[intensity].TOT/intTot)/100}%`;
                 for (const flavor of Object.keys(record).slice(4))
-                    record[flavor].PER = `${Math.round(10000*record[flavor].TOT/flaTot)/100}%`;
+                    record[flavor].PER = `${Math.round(10000 * record[flavor].TOT/flaTot)/100}%`;
                     
                 const returnRows = [];
                 for (const k of Object.keys(record)) {

@@ -19,7 +19,7 @@
 		"scope": "javascript,typescript",
 		"prefix": "match",
 		"body": [
-			"match(/${0}/u).pop() // ... for just your capture groups: 'matchfull<TAB>' for multiple whole matches"
+			"match(/${0}/u).slice(1) // ... returns array of capture groups only ('matchfull<TAB>' to ignore capture groups if regexp matches more than once)"
 		],
 		"description": "Basically just a reminder whether or not to use the 'g' flag."
 	},
@@ -27,7 +27,7 @@
 		"scope": "javascript,typescript",
 		"prefix": "matchfull",
 		"body": [
-			"match(/${0}/gu) // ... for every matching substring: capture groups are ignored"
+			"match(/${0}/gu) // ... returns array of every matching substring: capture groups are ignored"
 		],
 		"description": "Basically just a reminder whether or not to use the 'g' flag."
 	},

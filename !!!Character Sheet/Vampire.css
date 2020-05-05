@@ -2841,7 +2841,7 @@
 	}
 	.charsheet div.sheet-scheme input.sheet-hook {
 		line-height: 20px;
-		width: calc(100% - 40px - 10px - 2*(5px) - 22px);
+		width: calc(100% - 40px - 10px - 2 * (5px) - 22px);
 		margin-right: 5px;
 	}
 
@@ -2910,7 +2910,7 @@
 	/* OBJECTIVE/EVENT */
 	.charsheet div.sheet-scheme.sheet-objective div.sheet-mainleft div.sheet-topline input.sheet-goal,
 	.charsheet div.sheet-scheme.sheet-event div.sheet-mainleft div.sheet-topline input.sheet-goal {
-		width: calc(100% - 20px - 2*(5px));
+		width: calc(100% - 20px - 2 * (5px));
 	}
 
 
@@ -3129,11 +3129,11 @@
 	}
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary textarea.sheet-projectlaunchresults {
-		width: calc(0.65*(100% - 55px - 5px));
+		width: calc(0.65 * (100% - 55px - 5px));
 	}
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary textarea.sheet-projectlaunchresultsmargin {
-		width: calc(0.35*(100% - 55px - 5px));
+		width: calc(0.35 * (100% - 55px - 5px));
 	}
 
 	.charsheet div.sheet-scheme.sheet-project div.sheet-projectsummary div.sheet-projectdate {
@@ -3233,7 +3233,7 @@
 
 	/* EVENTS */	
 	.charsheet div.sheet-scheme.sheet-event input.sheet-hook {
-		width: calc(100% - 2*(5px) - 22px);
+		width: calc(100% - 2 * (5px) - 22px);
 		margin-left: 5px;
 	}
 

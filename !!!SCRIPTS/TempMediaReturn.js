@@ -423,7 +423,7 @@ const Assets = (() => {
         // #endregion
 
         // #region (hide) DRAGPADS
-            // #region DRAGPAD GETTERS & SETTERS
+        // #region DRAGPAD GETTERS & SETTERS
         get hasDragPads() { return Boolean(this._dragPads) }
         get areDragPadsOnline() { return this._dragPads.areOnline }
         get areDragPadsActive() { return this.isActive && this._dragPads.areOnline } // Getting areOnline ONLY returns 'true' if both areOnline and isActive are true.
@@ -443,9 +443,9 @@ const Assets = (() => {
                     PENDINGCHANGES.push(this);
             }
         }
-            // #endregion
+        // #endregion
 
-            /*
+        /*
                     ["layer", "layer"], ["objects", "walls"]
                     [["layer", "objects"], ["layer", "walls"]]
                     --->  ["layer", "objects"] --> _.object([x]) --> {layer: "objects"}
@@ -453,7 +453,7 @@ const Assets = (() => {
 
             */
 
-            // #region DRAGPAD PRIVATE METHODS
+        // #region DRAGPAD PRIVATE METHODS
         syncDragPads(isLayerOnly = false) {
             const padLayerData = _.zip(["layer", "layer"], this.newDragPadLayers).map(x => _.object([x]));
             this.pendingDragPadChanges = padLayerData.map((x, i) => x.layer === this._dragPads.layers[i] ? {} : x);
@@ -469,9 +469,9 @@ const Assets = (() => {
                 this.pendingDragPadChanges = [padPosData, padPosData];
             }
         }
-            // #endregion
+        // #endregion
 
-            // #region DRAGPAD PUBLIC METHODS
+        // #region DRAGPAD PUBLIC METHODS
         MakeDragPads(funcName, deltaHeight = 0, deltaWidth = 0, deltaTop = 0, deltaLeft = 0, startActive = true) {
             const padsData = {
                     top: this.top + deltaHeight,
@@ -514,7 +514,7 @@ const Assets = (() => {
             this.syncDragPads(true);
         }
         ToggleDragPads(padsActive) { this.areDragPadsActive = typeof padsActive === "boolean" ? padsActive : !this.areDragPadsOnline }
-            // #endregion
+        // #endregion
         // #endregion
 
         // #region (hide) PUBLIC METHODS
@@ -556,7 +556,7 @@ const Assets = (() => {
         }
         Remove() {
             super.Remove();
-                // if ()
+            // if ()
         }
 
         Apply(isDragPadsOnly = false) {
@@ -734,11 +734,11 @@ const Assets = (() => {
         // XXX GetModeData: getModeData,                        <asset>.isForcedOn, <asset>.forcedState 
         IsRegistered: (ref) => Boolean(Asset.Get(ref)),
         // XXX HasForcedState: hasForcedState,                 <asset>.hasForcedState
-/*?*/ ModeUpdate: modeUpdate,
+        /* ? */ ModeUpdate: modeUpdate,
         // XXX IsActive: isObjActive,                              <asset>.isActive
-/*?*/ IsCyclingImg: isCyclingImg,
+        /* ? */ IsCyclingImg: isCyclingImg,
         // XXX Toggle: toggle,                                    <asset>.Toggle()
-/*?*/ Adjust: adjustObj,
+        /* ? */ Adjust: adjustObj,
         
         // GETTERS
         // XXX GetImg: getImgObj,
@@ -750,7 +750,7 @@ const Assets = (() => {
         // XXX GetImgData: getImgData,
         // XXX GetTextData: getTextData,
         // XXX GetImgSrc: getImgSrc,                                   <asset>.state
-/*?*/ GetTokens: getTokenObjs,
+        /* ? */ GetTokens: getTokenObjs,
         // XXX GetTokenData: getTokenData,
         GetLineHeight: getLineHeight,
         GetSimpleTextWidth: getSimpleTextWidth,
@@ -784,7 +784,7 @@ const Assets = (() => {
         // SetImgData: setImgData,                                              <asset>.<prop> = <whatever>
         // SetTextData: setTextData,                                            <asset>.<prop> = <whatever>
         SetImgTemp: setImgTemp,
-        Spread: spreadImgs,                     // Will have to be a static method on Image accepting an array of image instances.
+        Spread: spreadImgs, // Will have to be a static method on Image accepting an array of image instances.
        
         ToggleLoadingScreen: toggleLoadingScreen,
         SetLoadingMessage: setLoadingText,

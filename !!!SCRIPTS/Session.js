@@ -4,7 +4,7 @@ const Session = (() => {
     let PENDINGLOCCOMMAND;
     const SCRIPTNAME = "Session",
 
-    // #region COMMON INITIALIZATION
+        // #region COMMON INITIALIZATION
         STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
@@ -15,9 +15,9 @@ const Session = (() => {
             C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
             initialize();
         },
-    // #endregion
+        // #endregion
 
-    // #region LOCAL INITIALIZATION
+        // #region LOCAL INITIALIZATION
         initialize = () => { // eslint-disable-line no-empty-function            
             PENDINGLOCCOMMAND = D.Clone(BLANKPENDINGLOCCOMMAND);
             STATE.REF.isTestingActive = STATE.REF.isTestingActive || false;
@@ -67,9 +67,9 @@ const Session = (() => {
             verifyStateIntegrity();
             buildLocationMenus();
         },
-    // #endregion
+        // #endregion
 
-    // #region EVENT HANDLERS: (HANDLEINPUT)
+        // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             const charObjs = Listener.GetObjects(objects, "character");
             switch (call) {
@@ -101,17 +101,6 @@ const Session = (() => {
                         case "locations": case "location": case "loc": D.Alert(D.JS(getAllLocations()), "Current Location Data"); break;
                         case "activelocs": D.Alert(D.JS(getActivePositions()), "All Active Locations"); break;
                         case "scenelocs": D.Alert(D.JS(getActivePositions()), "Active Scene Locations"); break;
-                        case "pointer": {
-                            const pointerObj = Media.GetImg("MapIndicator");
-                            if (pointerObj.get("layer") === "objects") {
-                                pointerObj.set("layer", "map");
-                                Media.GetImg("MapIndicator_Base_1").set("layer", "map");
-                            } else if (pointerObj.get("layer") === "map") {                                
-                                pointerObj.set("layer", "objects");
-                                Media.GetImg("MapIndicator_Base_1").set("layer", "objects");
-                            }
-                            break;
-                        }
                         // no default
                     }
                     break;
@@ -146,24 +135,23 @@ const Session = (() => {
                             break;
                         }
                         case "pointer": {
-                            const pointerObj = Media.GetImg("MapIndicator_Base"),
+                            const pointer = Assets.Get("MapIndicator_Base"),
                                 [siteRef, siteName] = getActiveSite(true);
-                            if (ISSETTINGPOINTER) {
-                                const pointerPos = {left: pointerObj.get("left"), top: pointerObj.get("top")};
+                            pointer.layer = pointer.layer === "objects" ? "map" : "objects";
+                            if (pointer.layer === "map") {                                
+                                const pointerPos = {left: pointer.left, top: pointer.top};
                                 if (siteName in STATE.REF.customLocs) {
                                     STATE.REF.customLocs[siteName].pointerPos = pointerPos;
                                 } else {
                                     STATE.REF.locationPointer[siteRef] = STATE.REF.locationPointer[siteRef] || {};
                                     STATE.REF.locationPointer[siteRef].pointerPos = pointerPos;
                                 }
-                                pointerObj.set({layer: "map"});
                                 D.Alert(`Map Position for site "${siteName || siteRef}" set to: ${D.JSL(pointerPos)}`, "!sess set pointer");
-                                ISSETTINGPOINTER = false;
                                 setSceneFocus();
                             } else {
-                                pointerObj.set({layer: "objects"});
-                                ISSETTINGPOINTER = true;
-                                D.Alert(`Setting pointer position for <b>"${siteName || siteRef}"</b><br><br>Move the map indicator to the desired position, then type "!sess set pointer" again.`, "!sess set pointer");
+                                D.Alert(`Setting pointer position for <b>"${siteName || siteRef}"</b>
+                                
+                                Move the map indicator to the desired position, then type "!sess set pointer" again.`, "!sess set pointer");
                             }
                             break;
                         }
@@ -224,6 +212,7 @@ const Session = (() => {
                 case "daylighters": {
                     STATE.REF.Mode = STATE.REF.Mode === "Daylighter" ? "Active" : "Daylighter";
                     D.Alert(`Session Mode Set To: ${STATE.REF.Mode}`, "Session Set Mode");
+                    
                     DragPads.Toggle("signalLight", STATE.REF.Mode !== "Daylighter");
                     TimeTracker.Fix();
                     for (const charData of _.values(Char.REGISTRY).slice(0, 4)) {
@@ -234,6 +223,7 @@ const Session = (() => {
                             represents: charData.id
                         });
                         if (STATE.REF.Mode === "Daylighter") {
+
                             Media.SetImgData(token, {isDaylighter: true, unObfSrc: "base"});
                             Media.SetImg(token, "baseDL");
                             if (charData.famulusTokenID) {
@@ -284,13 +274,13 @@ const Session = (() => {
                 Media.ToggleText("playerPageAlertMessage", true);
             else
                 Media.ToggleText("playerPageAlertMessage", false);
-        };
-    // #endregion
-    // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
+        },
+        // #endregion
+        // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
     
-    // #region Configuration
-    let ISSETTINGPOINTER = false;
-    const MODEFUNCTIONS = {            
+        // #region Configuration
+        ISSETTINGPOINTER = false,
+        MODEFUNCTIONS = {            
             outroMode: {
                 Active: () => {},
                 Inactive: () => {},
@@ -440,9 +430,9 @@ const Session = (() => {
             STATE.REF.curLocation = _.omit(STATE.REF.curLocation, (v, k) => !posNames.includes(k));
         },
         MENUHTML = {},
-    // #endregion
+        // #endregion
 
-    // #region Getting & Setting Session Data
+        // #region Getting & Setting Session Data
         isSessionActive = () => STATE.REF.Mode !== "Inactive",
         setSessionNum = sNum => {
             sNum = sNum || ++STATE.REF.SessionNum;
@@ -450,9 +440,9 @@ const Session = (() => {
             Media.SetText("NextSession", D.Romanize(STATE.REF.SessionNum, false).split("").join("   "));     
             D.Flag(`Session Set to ${D.UCase(D.NumToText(STATE.REF.SessionNum))}`);
         },
-    // #endregion
+        // #endregion
 
-    // #region Starting/Ending Sessions
+        // #region Starting/Ending Sessions
         startSession = () => {
             const sessionScribe = STATE.REF.isTestingActive && !STATE.REF.isFullTest ? STATE.REF.SessionScribes[0] : STATE.REF.SessionScribes.shift();
             if (STATE.REF.isTestingActive && !STATE.REF.isFullTest)
@@ -543,9 +533,9 @@ const Session = (() => {
                 Media.SetImgTemp(tokenID, _.omit(tokenData, "src"));
             }
         },
-    // #endregion
+        // #endregion
 
-    // #region Toggling Session Modes
+        // #region Toggling Session Modes
         changeMode = (mode, args, endFuncs = []) => {
             args = _.flatten([args]);
             DB({mode, args}, "changeMode");
@@ -659,9 +649,9 @@ const Session = (() => {
                 Media.ToggleText("playerPageAlertMessage", false);            
             Campaign().set({playerpageid: D.GetPageID(pageRef)});
         },
-    // #endregion
+        // #endregion
 
-    // #region Location Handling
+        // #region Location Handling
         BLANKPENDINGLOCCOMMAND = {
             workingIndex: 0,
             Districts: [],
@@ -1298,9 +1288,9 @@ const Session = (() => {
         },
 
         // subLocList = ["blank", ..._.uniq(Object.keys(Media.IMAGES.SubLocTopLeft_1.srcs)).map(x => `${`(${(x.match(/^[^_]*?([A-Z])[^_]*?([A-Z])[^_]*?_/u) || ["", ""]).slice(1).join("")}) `.replace("() ", "")}${x.replace(/.*?_/gu, "")}`)],
-    // #endregion
+        // #endregion
 
-    // #region Macros
+        // #region Macros
         setMacro = (playerRef, macroName, macroAction, isActivating = false) => {
             const playerID = D.GetPlayerID(playerRef);
             if (playerID) {
@@ -1318,13 +1308,13 @@ const Session = (() => {
                 D.Alert(`Invalid played ID (${D.JS(playerID)}) from playerRef '${D.JS(playerRef)}'`);
             }
         },
-    // #endregion
+        // #endregion
 
-    // #region Waking Up 
+        // #region Waking Up 
 
-    // #endregion
+        // #endregion
 
-    // #region Automatic Remorse Rolls
+        // #region Automatic Remorse Rolls
         remorseCheck = () => promptRemorseCheck(D.GetChars("registered").filter(x => D.GetStatVal(x, "stains"))),
         promptRemorseCheck = (charObjs) => {
             if (!charObjs || !charObjs.length)
@@ -1338,9 +1328,9 @@ const Session = (() => {
             });
             return false;
         },
-    // #endregion
+        // #endregion
 
-    // #region Starting & Ending Scenes, Logging Characters to Scene
+        // #region Starting & Ending Scenes, Logging Characters to Scene
         setSceneFocus = (locPos) => {
             locPos = isLocCentered() === true && "c" ||
                 VAL({string: locPos}) && D.LCase(locPos).charAt(0) ||

@@ -3,7 +3,7 @@ const Complications = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Complications",
 
-    // #region COMMON INITIALIZATION
+        // #region COMMON INITIALIZATION
         STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
@@ -14,9 +14,9 @@ const Complications = (() => {
             C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
             initialize();
         },
-    // #endregion
+        // #endregion
 
-    // #region LOCAL INITIALIZATION
+        // #region LOCAL INITIALIZATION
         initialize = () => {
             STATE.REF.deckID = STATE.REF.deckID || "";
             STATE.REF.targetVal = STATE.REF.targetVal || 0;
@@ -46,9 +46,9 @@ const Complications = (() => {
 
             setCardFuncs.length = 0;
         },
-    // #endregion
+        // #endregion
 
-    // #region EVENT HANDLERS: (HANDLEINPUT)
+        // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args, objects, msg) => { // eslint-disable-line no-unused-vars
             const charObjs = Listener.GetObjects(objects, "character");
             switch (call) {
@@ -270,10 +270,10 @@ const Complications = (() => {
         // no default
             }
         },
-    // #endregion
-    // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
+        // #endregion
+        // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
-    // #region CONFIGURATION: Card Definitions
+        // #region CONFIGURATION: Card Definitions
 
         /* eslint-disable no-unused-vars */    
         ONNEXT = {
@@ -713,7 +713,7 @@ const Complications = (() => {
              }},
             {name: "TheBeastPerilous", displayName: "The Beast Perilous", category: "beast", value: 2, rarity: "U",
              afterAction: (charRef, spot, isEnhanced) => {
-                  // Roller.AddCharEffect(charRef, "all;bestialcancelsucc;!The Beast Ascendant")
+                 // Roller.AddCharEffect(charRef, "all;bestialcancelsucc;!The Beast Ascendant")
                  STATE.REF.endMessageQueue.push(`Must kill to reduce Hunger below ${isEnhanced ? 3 : 2}`);
              }},              
             {name: "TheBeastDespotic", displayName: "The Beast Despotic", category: "beast", value: 2, rarity: "R",
@@ -727,7 +727,7 @@ const Complications = (() => {
              }},
             {name: "TheBeastInsensate", displayName: "The Beast Insensate", category: "beast", value: 2, rarity: "R",
              afterAction: (charRef, spot, isEnhanced) => {
-                  // Roller.AddCharEffect(charRef, "all;bestialcancelsucc;!The Beast Ascendant")
+                 // Roller.AddCharEffect(charRef, "all;bestialcancelsucc;!The Beast Ascendant")
                  STATE.REF.endMessageQueue.push("You do not benefit from resonance or dyscrasias.");                 
              }},
             {name: "TheBeastRampant", displayName: "The Beast Rampant", category: "beast", value: 2, rarity: "C",
@@ -774,7 +774,7 @@ const Complications = (() => {
                      });
                  }
 
-                    /* ONNEXT.activate.push((keepSpot) => {
+                 /* ONNEXT.activate.push((keepSpot) => {
                         setCard(spot, "discard")
                     }) */
                 
@@ -938,9 +938,9 @@ const Complications = (() => {
                 D.JS(cardData)
             ].join("<br>"), "Complications Data");
         },
-    // #endregion
+        // #endregion
 
-    // #region CARD ACTIVATION: Turning Over & Activating Cards, Deactivating Cards
+        // #region CARD ACTIVATION: Turning Over & Activating Cards, Deactivating Cards
         flipCard = spot => {
             if (STATE.REF.isRunning) {
                 const card = STATE.REF.MAT[spot];
@@ -953,9 +953,9 @@ const Complications = (() => {
                 refreshDraws();
             }
         },
-    // #endregion
+        // #endregion
 
-    // #region CARD CONTROL: Deck construction, sandbox manipulation
+        // #region CARD CONTROL: Deck construction, sandbox manipulation
         setCardFuncs = [],
         dealRandomCard = (spot, isShowingFX = true) => {
             if (isShowingFX)
@@ -1029,7 +1029,7 @@ const Complications = (() => {
             switch (mode) {
                 case "discard": {
                     if (card.isActivated) {
-                        setCompVals("add", -1 * card.value);
+                        setCompVals("add", -card.value);
                         if (card.isEnhanced && card.offEnhance && card.enhanceTriggered) {
                             card.offEnhance(STATE.REF.charRef, spot);
                             card.enhanceTriggered = false;
@@ -1056,7 +1056,7 @@ const Complications = (() => {
                     DragPads.Toggle(Media.GetImgData(`CompSpot_${spot+1}`).id, true);
                     Media.SetImg(`CompCard_Base_${spot+1}`, "cardBack");  
                     if (card.isFaceUp) {
-                        setCompVals("add", -1 * card.value);
+                        setCompVals("add", -card.value);
                         if (card.isEnhanced && card.offEnhance && card.enhanceTriggered) {
                             card.offEnhance(STATE.REF.charRef, spot);
                             card.enhanceTriggered = false;
@@ -1312,8 +1312,8 @@ const Complications = (() => {
             }
         },
 
-    // #endregion
-    // #region SETTERS: Setting card values, target numbers, activating Complication system
+        // #endregion
+        // #region SETTERS: Setting card values, target numbers, activating Complication system
         setCompVals = (mode, value) => {
             switch (mode) {
                 case "target": {

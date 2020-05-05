@@ -3,7 +3,7 @@ const TimeTracker = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "TimeTracker",
 
-    // #region COMMON INITIALIZATION
+        // #region COMMON INITIALIZATION
         STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
@@ -32,9 +32,9 @@ const TimeTracker = (() => {
             initialize();
             OFFSTACK(funcID);
         },
-    // #endregion
+        // #endregion
 
-    // #region LOCAL INITIALIZATION
+        // #region LOCAL INITIALIZATION
         initialize = () => {
             const funcID = ONSTACK();
 
@@ -76,9 +76,9 @@ const TimeTracker = (() => {
 
             OFFSTACK(funcID);
         },
-    // #endregion	
+        // #endregion	
 
-    // #region EVENT HANDLERS: (HANDLEINPUT)
+        // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args) => { // eslint-disable-line no-unused-vars
             const funcID = ONSTACK(); 
             let isForcing = false;
@@ -302,8 +302,8 @@ const TimeTracker = (() => {
 
                             let secsLeft = (sessDateObj - curDateObj)/1000; 
                         
-                            if (secsLeft >= 7*24*60*60)
-                                secsLeft -= 7*24*60*60;
+                            if (secsLeft >= 7 * 24 * 60 * 60)
+                                secsLeft -= 7 * 24 * 60 * 60;
 
                             const secsProgress = [secsLeft],                    
                                 daysLeft = Math.floor(secsLeft / (24 * 60 * 60));
@@ -379,8 +379,8 @@ const TimeTracker = (() => {
             }
             OFFSTACK(funcID);
         },
-    // #endregion
-    // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
+        // #endregion
+        // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
         ALARMFUNCS = {
             daysleep: () => {
@@ -1289,13 +1289,13 @@ const TimeTracker = (() => {
             daysToWaitTill: 5,
             daysToWaitTillWater: 4.25
         },
-    // #endregion
+        // #endregion
 
-    // #region Derivative Stats
+        // #region Derivative Stats
         TWILIGHTMINS = _.map(TWILIGHT, v => _.map(v, v2 => 60 * D.Int(v2.split(":")[0]) + D.Int(v2.split(":")[1]))),
-    // #endregion
+        // #endregion
 
-    // #region Date & Time Functions
+        // #region Date & Time Functions
         getDateObj = dateRef => {
             const funcID = ONSTACK(); // Takes almost any date format and converts it into a Date object.
             let returnDate;
@@ -1355,7 +1355,7 @@ const TimeTracker = (() => {
                     if (VAL({dateObj: returnDate, string: timeString})) {
                         const [time, aMpM] = (timeString.match(/([^A-Z\s]+)(?:\s+)?(\S+)?/u) || [false, false, false]).slice(1),
                             [hour, min, sec] = `${D.JSL(time)}`.split(":").map(v => D.Int(v)),
-                            totalSeconds = (hour + (D.LCase(aMpM).includes("p") && 12))*60*60 + min*60 + sec;
+                            totalSeconds = (hour + (D.LCase(aMpM).includes("p") && 12))*60 * 60 + min*60 + sec;
                         returnDate.setUTCSeconds(returnDate.getUTCSeconds() + totalSeconds);
                         DB({["OTHER STRING!"]: dateRef, dateString, timeString, parsedDateString, day, month, year, time, aMpM, hour, min, sec, totalSeconds, returnDate}, "parseToDateObj");  
                     } else {
@@ -1604,7 +1604,7 @@ const TimeTracker = (() => {
             }
             return OFFSTACK(funcID) && timeLine.join("").split("1").map(x => (x.length + 1) * tickSpeed);
         },
-    // #endregion
+        // #endregion
     
     
         
@@ -1672,7 +1672,7 @@ const TimeTracker = (() => {
         },
         recurAlarm = (alarm) => {},
 
-    // #region CLOCK: Toggling, Ticking, Setting Clock Text    
+        // #region CLOCK: Toggling, Ticking, Setting Clock Text    
         toggleClock = (activeState, secsPerMin = 60) => {
             const funcID = ONSTACK();
             isTickingClock = Boolean(activeState);
@@ -1735,7 +1735,7 @@ const TimeTracker = (() => {
                         return OFFSTACK(fID) && pauseClockTween() && false;
                     if (Math.abs(STATE.REF.TweenCurTime) >= Math.abs(STATE.REF.TweenDuration))
                         return OFFSTACK(fID) && stopClockTween() && true;
-                    const newDelta = -1 * STATE.REF.TweenDelta / 2 * (Math.cos(Math.PI * STATE.REF.TweenCurTime / STATE.REF.TweenDuration) - 1);
+                    const newDelta = -STATE.REF.TweenDelta / 2 * (Math.cos(Math.PI * STATE.REF.TweenCurTime / STATE.REF.TweenDuration) - 1);
                     isFastTweeningClock = Math.abs(newDelta - STATE.REF.TweenLastTime) > RUNNINGFASTAT;
                     STATE.REF.TweenLastTime = newDelta;
                     STATE.REF.dateObj.setTime(STATE.REF.TweenStart + newDelta);
@@ -1819,25 +1819,25 @@ const TimeTracker = (() => {
             }
             OFFSTACK(funcID);
         },
-    // #endregion
+        // #endregion
 
-    // #region COUNTDOWN: Toggling, Ticking, Setting Coundown Text        
+        // #region COUNTDOWN: Toggling, Ticking, Setting Coundown Text        
         syncCountdown = (isTesting = false) => {
             const funcID = ONSTACK(),
-            // if (isCountdownFrozen)
-            //   return OFFSTACK(funcID) &&         
+                // if (isCountdownFrozen)
+                //   return OFFSTACK(funcID) &&         
                 realDateObj = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"})),
                 nextSessDateObj = new Date(STATE.REF.nextSessionDate || realDateObj),
                 lastSessDateObj = new Date(STATE.REF.lastSessionDate || realDateObj),
-                maxSecs = Math.max((nextSessDateObj - lastSessDateObj)/1000, 7*24*60*60, (nextSessDateObj - realDateObj)/1000),
-                waitSecsMoon = maxSecs - MOON.daysToWaitTill * 24*60*60,
-                waitSecsWater = maxSecs - MOON.daysToWaitTillWater * 24*60*60,
-                totalSecsLeft = VAL({list: isTesting, number: isTesting.daysIn}) ? maxSecs - isTesting.daysIn*24*60*60 : (nextSessDateObj - realDateObj)/1000 - 60,
+                maxSecs = Math.max((nextSessDateObj - lastSessDateObj)/1000, 7 * 24 * 60 * 60, (nextSessDateObj - realDateObj)/1000),
+                waitSecsMoon = maxSecs - MOON.daysToWaitTill * 24 * 60 * 60,
+                waitSecsWater = maxSecs - MOON.daysToWaitTillWater * 24 * 60 * 60,
+                totalSecsLeft = VAL({list: isTesting, number: isTesting.daysIn}) ? maxSecs - isTesting.daysIn*24 * 60 * 60 : (nextSessDateObj - realDateObj)/1000 - 60,
                 totalSecsIn = maxSecs - totalSecsLeft,
                 moonUpPercent = Math.min(1, D.Float(Math.max(0, totalSecsIn - waitSecsMoon) / (maxSecs - waitSecsMoon))),
                 waterRedPercent = Math.min(1, D.Float(Math.max(0, totalSecsIn - waitSecsWater) / (maxSecs - waitSecsWater))),
                 moonTop = MOON.minTop + (MOON.maxTop - MOON.minTop)*moonUpPercent,
-                waterSource = `red${D.Int(6*waterRedPercent, true)}`;
+                waterSource = `red${D.Int(6 * waterRedPercent, true)}`;
             
             let secsLeft = totalSecsLeft;
             
@@ -1919,9 +1919,9 @@ const TimeTracker = (() => {
             }
             return OFFSTACK(funcID);
         },
-    // #endregion
+        // #endregion
 
-    // #region HORIZON & WEATHER: Getting Weather Events & Horizon Image, Setting Img Objects 
+        // #region HORIZON & WEATHER: Getting Weather Events & Horizon Image, Setting Img Objects 
         getTempFromCode = code => WEATHERTEMP.indexOf(code) - 26,
         convertTempToCode = (tempC, monthNum) => WEATHERTEMP[tempC - getTempFromCode(MONTHTEMP[monthNum]) + 26],
         convertWeatherDataToCode = (weatherData) => {
@@ -2103,7 +2103,7 @@ const TimeTracker = (() => {
             
             // WEATHER MAIN
             switch (weatherData.event.charAt(0)) {
-                    // x: "Clear", b: "Blizzard", c: "Overcast", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
+                // x: "Clear", b: "Blizzard", c: "Overcast", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
                 case "b": {
                     if (!Media.HasForcedState("WeatherMain")) {Media.ToggleImg("WeatherMain", true); Media.SetImg("WeatherMain", getSnowSrc("heavy"))}
                     break;
@@ -2189,13 +2189,13 @@ const TimeTracker = (() => {
             setWeather();
             OFFSTACK(funcID);
         },
-    // #endregion
+        // #endregion
 
-    // #region DATA ANALYSIS, PROCESSING & DISPLAY: Various Functions to Manipulate or Display Weather, Time & Alarm Data
+        // #region DATA ANALYSIS, PROCESSING & DISPLAY: Various Functions to Manipulate or Display Weather, Time & Alarm Data
         displayWeatherReport = () => {
             const funcID = ONSTACK(),
-            // const weatherCode = STATE.REF.weatherData[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()],switch(weatherCode.charAt(0)) {
-            // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
+                // const weatherCode = STATE.REF.weatherData[dateObj.getUTCMonth()][dateObj.getUTCDate()][dateObj.getUTCHours()],switch(weatherCode.charAt(0)) {
+                // x: "Clear", b: "Blizzard", c: "Overcast", f: "Foggy", p: "Downpour", s: "Snowing", t: "Thunderstorm", w: "Drizzle"
                 weatherMatches = {
                     x: null,
                     b: null,
@@ -2382,7 +2382,7 @@ const TimeTracker = (() => {
         },
         singleMonthBlock = (monthNum, isUpgrading = false, isRaw = false) => {
             const funcID = ONSTACK(),
-            // D.Alert(D.JS(D.Clone(STATE.REF.weatherData[monthNum]).slice(1)))            
+                // D.Alert(D.JS(D.Clone(STATE.REF.weatherData[monthNum]).slice(1)))            
                 hourSpans = [
                     " ",
                     ...["12", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"].map(x => `${x} AM`),
@@ -2511,7 +2511,7 @@ const TimeTracker = (() => {
                     stormScoreData[month][day] = [];
                     for (let hour = 0; hour <= 23; hour++) {
                         let thisHourScore = 0;
-                        for (let seekCount = -1*seekHours; seekCount <= seekHours; seekCount++) {
+                        for (let seekCount = -seekHours; seekCount <= seekHours; seekCount++) {
                             let [seekHour, seekDay, seekMonth] = [hour + seekCount, day, month];
                             if (seekHour < 0) {
                                 seekHour += 24;
@@ -2546,7 +2546,7 @@ const TimeTracker = (() => {
                         for (let hour = 0; hour <= 23; hour++) {
                             let deltaScore = 100;
                             const thisHourScore = D.Int(theseStormScores[month][day][hour]);
-                            for (let seekCount = -1*theseSeekHours; seekCount <= theseSeekHours; seekCount++) {
+                            for (let seekCount = -theseSeekHours; seekCount <= theseSeekHours; seekCount++) {
                                 let [seekHour, seekDay, seekMonth] = [hour + seekCount, day, month];
                                 if (seekHour < 0) {
                                     seekHour += 24;
@@ -2642,11 +2642,11 @@ const TimeTracker = (() => {
             D.Alert([
                 "<h4>Weather Events (Night Only)</h4>",
                 "<table style=\"width: 300px; border: 3px solid black;\"><tr style=\"background-color: black; color: white;\"><th style=\"width: 20%; padding-bottom: 4px;\">Event</th><th style=\"width: 2%; padding-bottom: 4px; text-align: center;\" colspan=\"3\">%</th><th style=\"width: 2%; padding-bottom: 4px; text-align: center;\" colspan=\"3\">Qty</th><th style=\"width: 2%; padding-bottom: 4px; text-align: center;\" colspan=\"3\">w/Fog</th></tr>",
-                D.JS(Object.values(D.KeyMapObj(rawTally.event, null, (v, k) => `<tr><td style="border-right: 1px solid black;">${WEATHERCODES[0][k]}</td><td style="text-align: right;">${D.Int(100*(v[0] + v[1])/totCodes, true)}%</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${D.Int(100*(curTally.event[k][0] + curTally.event[k][1])/totCodes, true)}%</td><td style="text-align: right; width: 25px;">${v[0] + v[1]}</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${curTally.event[k][0] + curTally.event[k][1]}</td><td style="text-align: right;">${v[1]}</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right;">${curTally.event[k][1]}</td></tr>`)).join("")),
+                D.JS(Object.values(D.KeyMapObj(rawTally.event, null, (v, k) => `<tr><td style="border-right: 1px solid black;">${WEATHERCODES[0][k]}</td><td style="text-align: right;">${D.Int(100 * (v[0] + v[1])/totCodes, true)}%</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${D.Int(100 * (curTally.event[k][0] + curTally.event[k][1])/totCodes, true)}%</td><td style="text-align: right; width: 25px;">${v[0] + v[1]}</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${curTally.event[k][0] + curTally.event[k][1]}</td><td style="text-align: right;">${v[1]}</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right;">${curTally.event[k][1]}</td></tr>`)).join("")),
                 "</table><br>",
                 "<h4>Wind Speeds (Night Only)</h4>",
                 "<table style=\"width: 300px; border: 3px solid black;\"><tr style=\"background-color: black; color: white;\"><th style=\"width: 20%; padding-bottom: 4px;\">Winds</th><th style=\"width: 2%; padding-bottom: 4px; text-align: center;\" colspan=\"3\">%</th><th style=\"width: 2%; padding-bottom: 4px; text-align: center;\" colspan=\"3\">Qty</th><th style=\"width: 2%; padding-bottom: 4px; text-align: center;\" colspan=\"3\">Winter</th></tr>",
-                D.JS(Object.values(D.KeyMapObj(rawTally.wind, null, (v, k) => `<tr><td style="border-right: 1px solid black;">${WEATHERCODES[2][k][1]}</td><td style="text-align: right;">${D.Int(100*(v[0] + v[1])/totCodes, true)}%</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${D.Int(100*(curTally.wind[k][0] + curTally.wind[k][1])/totCodes, true)}%</td><td style="text-align: right; width: 25px;">${v[0] + v[1]}</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${curTally.wind[k][0] + curTally.wind[k][1]}</td><td style="text-align: right;">${v[1]}</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right;">${curTally.wind[k][1]}</td></tr>`)).join("")),
+                D.JS(Object.values(D.KeyMapObj(rawTally.wind, null, (v, k) => `<tr><td style="border-right: 1px solid black;">${WEATHERCODES[2][k][1]}</td><td style="text-align: right;">${D.Int(100 * (v[0] + v[1])/totCodes, true)}%</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${D.Int(100 * (curTally.wind[k][0] + curTally.wind[k][1])/totCodes, true)}%</td><td style="text-align: right; width: 25px;">${v[0] + v[1]}</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right; border-right: 1px solid black;">${curTally.wind[k][0] + curTally.wind[k][1]}</td><td style="text-align: right;">${v[1]}</td><td style="text-align: center;">►</td><td style="width: 25px; text-align: right;">${curTally.wind[k][1]}</td></tr>`)).join("")),
                 "</table>"
             ].join(""), "ScanWeatherData");
         },
@@ -2670,9 +2670,9 @@ const TimeTracker = (() => {
             // ].join(""), "Past Alarms")
             OFFSTACK(funcID);
         },
-    // #endregion
+        // #endregion
 
-    // #region Alarms
+        // #region Alarms
         // dateRef: "dawn"/"dusk"/"nextfullnight"/"noon"/"[#] [unit]"   can include multiple with "+"  (use "|" delimiting for chat arg, then set helper macro)
         // name: Name of the alarm
         // message: fully HTML coded message sent when alarm fires (and unfires)
@@ -2817,7 +2817,7 @@ const TimeTracker = (() => {
         //         unfireAlarm(thisAlarm)
         //     OFFSTACK(funcID)
         // },
-    // #endregion
+        // #endregion
 
         fixTimeStatus = () => {
             const funcID = ONSTACK();

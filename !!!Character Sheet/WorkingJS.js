@@ -30,7 +30,7 @@
         },
         THREEROLLTRAITS = ["Auspex", "Fortitude", "Celerity", "Potence", "Presence"],
         FLAGACTIONS = {
-			/* If key is flagged, action to take depending on type of stat it would be paired with.
+            /* If key is flagged, action to take depending on type of stat it would be paired with.
 				"append": Add the stat to the end of the list, bumping the oldest stat if necessary.
 				"replace": Replace the would-be pair with this stat, keeping the older stat.
 				"pass": Delete the stat and repeat comparison with the next-newest. */
@@ -1057,17 +1057,17 @@
                 getAttrs(attrs, ATTRS => {
                     const pV = v => ATTRS[p(v)],
                         pI = v => parseInt(pV(v)) || 0,
-                    // Activate Boxes Based on Max Stats
+                        // Activate Boxes Based on Max Stats
                         boxList = _.pick(ATTRS, (v, k) => {
                             const num = parseInt(k.split("_")[1]);
 
                             return !_.isNaN(num) && num <= pI("max");
                         });
 
-                // Sort Boxes According to Damage
+                    // Sort Boxes According to Damage
                     _.each(boxList, (dmg, box) => dmgBins[dmg].push(box));
 
-                // Apply New Damage & Healing
+                    // Apply New Damage & Healing
                     if (pI("sdmg") + pI("sdmg_social") !== 0) {
                         attrList[p("sdmg")] = pI("sdmg") + pI("sdmg_social");
                         log(`>>@@>> attrList[${p("sdmg")}] = ${attrList[p("sdmg")]}`);
@@ -1119,7 +1119,7 @@
 
                     }
 
-                // Check For Incapacitation
+                    // Check For Incapacitation
                     if (dmgBins[0].length === 0) {
                         attrList.incap = _.compact(_.uniq(_.union((ATTRS.incap || "").split(","), [tracker]))).join(",");
                         attrList[`${tracker.toLowerCase()}_impair_toggle`] = 1;
@@ -1128,7 +1128,7 @@
                         attrList[`${tracker.toLowerCase()}_impair_toggle`] = 0;
                     }
 
-                // Apply Tracker Damage to Boxes
+                    // Apply Tracker Damage to Boxes
                     let binNum = 0;
                     _.each(dmgBins, bin => {
                         _.each(bin, box => {
@@ -1372,8 +1372,8 @@
                 $funcs = [
                     cbk => {
                         getAttrs(["willpower_sdmg_socialtotal", "willpower_admg_socialtotal", "willpower_social_toggle"], ATTRS => {
-                            attrList.willpower_sdmg = -1 * Math.floor(0.5 * parseInt(ATTRS.willpower_sdmg_socialtotal) || 0);
-                            attrList.willpower_admg = -1 * Math.floor(0.5 * parseInt(ATTRS.willpower_admg_socialtotal) || 0);
+                            attrList.willpower_sdmg = -Math.floor(0.5 * parseInt(ATTRS.willpower_sdmg_socialtotal) || 0);
+                            attrList.willpower_admg = -Math.floor(0.5 * parseInt(ATTRS.willpower_admg_socialtotal) || 0);
                             attrList.willpower_sdmg_socialtotal = 0;
                             attrList.willpower_admg_socialtotal = 0;
                             attrList.willpower_social_toggle = "off";                            
@@ -1431,7 +1431,7 @@
                 funcName = "doProjectDates",
                 getEndDate = (start, incUnit, incNum) => {
                     const end = new Date(start);
-                // log(`EndDate: ${JSON.stringify(end)}`, "DoProjectDates >>> GetEndDate")
+                    // log(`EndDate: ${JSON.stringify(end)}`, "DoProjectDates >>> GetEndDate")
                     switch (incUnit) {
                         case "hours":
                             return new Date(end.setUTCHours(start.getUTCHours() + 10 * incNum));
@@ -1873,7 +1873,7 @@
             }
         }
     }); 
-// #endregion
+    // #endregion
 
     // #region UPDATE: Timeline
     
@@ -2173,7 +2173,7 @@
 
                             // IF RESETTING, clear all selected flags and other related parameters:
                             if (opts.reset) {
-								/* If this function was triggered when a flag was turned on, add it to
+                                /* If this function was triggered when a flag was turned on, add it to
 										prevRArray so it can be turned off, too: */
                                 if (targetAttr.includes("_flag") && checkFlag(stat) === 1)
                                     prevRArray.push(stat);
@@ -2182,7 +2182,7 @@
                                 attrList.rollpooldisplay = "Simple Roll or Check";
                                 attrList.rollparams = "@{character_name}|";
                             } else if (targetAttr && targetAttr.includes("_flag")) {
-								/* If this function was triggered when a flagged trait changed, create a new rArray
+                                /* If this function was triggered when a flagged trait changed, create a new rArray
 										by incorporating this change.
 										First, remove the selected stat from prevRArray to avoid duplicates: */
                                 rArray.push(..._.without(prevRArray, stat));
@@ -2327,7 +2327,7 @@
                             log(`FULL ATTRS: ${JSON.stringify(ATTRS)}`, true);
                             if (ATTRS.stateffects === ATTRS.prevstateffects)
                                 return;
-                            const [pV, pI, pF] = nFuncs(ATTRS),
+                            const [pV, pI] = nFuncs(ATTRS),
                                 statEffects = pV("stateffects").split("|"),
                                 prevStatEffects = pV("prevstateffects").split("|"),
                                 newStatEffects = _.without(statEffects, prevStatEffects),
@@ -2422,10 +2422,10 @@
                 };
             getRepAttrs(repSecs.shift());
         };
-    on("sheet:opened change:stateffects", eInfo => {
+    on("sheet:opened change:stateffects", () => {
         doStatEffects();
     });
-    on(getTriggers(["stateffects"], "", [..._.keys(DOMCONREPREFS)]), eInfo => {
+    on(getTriggers(["stateffects"], "", [..._.keys(DOMCONREPREFS)]), () => {
         doDomainControl();
     });
     // #endregion

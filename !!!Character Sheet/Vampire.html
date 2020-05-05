@@ -4770,8 +4770,8 @@
                 $funcs = [
                     cbk => {
                         getAttrs(["willpower_sdmg_socialtotal", "willpower_admg_socialtotal", "willpower_social_toggle"], ATTRS => {
-                            attrList.willpower_sdmg = -1 * Math.floor(0.5 * parseInt(ATTRS.willpower_sdmg_socialtotal) || 0);
-                            attrList.willpower_admg = -1 * Math.floor(0.5 * parseInt(ATTRS.willpower_admg_socialtotal) || 0);
+                            attrList.willpower_sdmg = -Math.floor(0.5 * parseInt(ATTRS.willpower_sdmg_socialtotal) || 0);
+                            attrList.willpower_admg = -Math.floor(0.5 * parseInt(ATTRS.willpower_admg_socialtotal) || 0);
                             attrList.willpower_sdmg_socialtotal = 0;
                             attrList.willpower_admg_socialtotal = 0;
                             attrList.willpower_social_toggle = "off";                            

@@ -43,15 +43,25 @@ module.exports = {
             4,
             { 
                 "SwitchCase": 1,
-                "VariableDeclarator": 1,
-                "outerIIFEBody": 1,
-                "MemberExpression": 1,
-                "ObjectExpression": "first",
-                "FunctionDeclaration": { parameters: "first", body: 1 },
-                "CallExpression": { arguments: "first" },
+                // "VariableDeclarator": 1,
+                // "outerIIFEBody": 1,
+                // "MemberExpression": 1,
+                "FunctionDeclaration": {
+                                            parameters: "first", 
+                                            // body: 1
+                                        },
+                "FunctionExpression": {
+                                            parameters: "first", 
+                                            // body: 1
+                                        },
+                "CallExpression": { 
+                                        arguments: "first" 
+                                    },
                 "ArrayExpression": "first",
-                "ignoreComments": true/*,
-                "flatTernaryExpression": false*/
+                "ObjectExpression": "first",
+                "ImportDeclaration": "first",
+                "flatTernaryExpressions": true,
+                // "ignoreComments": false
             }
         ],
         "linebreak-style": [
