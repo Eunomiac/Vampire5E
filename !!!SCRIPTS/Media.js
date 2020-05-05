@@ -3830,14 +3830,21 @@ const Media = (() => {
             for (const mediaData of Object.values(REGISTRY.IMG)) {
                 const assetObj = getObj("graphic", mediaData.id);
                 if (assetObj) {
+                    const assetName = mediaData.name.replace(/_1$/g, mediaData.name.replace(/_1$/g, "_2") in REGISTRY.IMG ? "_1" : "");
                     state[C.GAMENAME].Assets.AssetLibrary[assetObj.id] = {
                         id: assetObj.id,
-                        name: mediaData.name,
+                        name: assetName,
                         type: "image",
                         page: C.PAGES.GAME === assetObj.get("_pageid") && "GAME" || C.PAGES.SplashPage === assetObj.get("_pageid") && "SplashPage" || assetObj.get("_pageid"),
                         layer: assetObj.get("layer"),
                         zIndex: D.Int(mediaData.zIndex),
-                        pos: {
+                        homePos: {
+                            top: D.Int(mediaData.top),
+                            left: D.Int(mediaData.left),
+                            height: D.Int(mediaData.height),
+                            width: D.Int(mediaData.width)
+                        },
+                        curPos: {
                             top: D.Int(assetObj.get("top")),
                             left: D.Int(assetObj.get("left")),
                             height: D.Int(assetObj.get("height")),
@@ -3859,10 +3866,10 @@ const Media = (() => {
                             funcName: DragPads.PadsByID[mediaData.padID].funcName,
                             startActive: true,                            
                             deltas: {
-                                deltaTop: D.Int(pad.get("top") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].pos.top),
-                                deltaLeft: D.Int(pad.get("left") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].pos.left),
-                                deltaHeight: D.Int(pad.get("height") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].pos.height),
-                                deltaWidth: D.Int(pad.get("width") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].pos.width)
+                                deltaTop: D.Int(pad.get("top") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].homePos.top),
+                                deltaLeft: D.Int(pad.get("left") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].homePos.left),
+                                deltaHeight: D.Int(pad.get("height") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].honePos.height),
+                                deltaWidth: D.Int(pad.get("width") - state[C.GAMENAME].Assets.AssetLibrary[assetObj.id].homePos.width)
                             }
                         };
                     }   
@@ -3889,7 +3896,13 @@ const Media = (() => {
                         page: C.PAGES.GAME === assetObj.get("_pageid") && "GAME" || C.PAGES.SplashPage === assetObj.get("_pageid") && "SplashPage" || assetObj.get("_pageid"),
                         layer: assetObj.get("layer"),
                         zIndex: D.Int(mediaData.zIndex),
-                        pos: {
+                        homePos: {
+                            top: D.Int(mediaData.top),
+                            left: D.Int(mediaData.left),
+                            height: D.Int(mediaData.height),
+                            width: D.Int(mediaData.width)
+                        },
+                        tempPos: {
                             top: D.Int(assetObj.get("top")),
                             left: D.Int(assetObj.get("left")),
                             height: D.Int(assetObj.get("height")),

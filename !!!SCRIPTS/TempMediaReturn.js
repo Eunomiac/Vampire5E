@@ -135,24 +135,15 @@ const Assets = (() => {
                 asset.Apply();
             PENDINGCHANGES.length = 0;
         }
-        static Get(assetRef, type = null) { // Get an Asset instance by passing an asset, object, an id, or a name.
-            let classRef;
-            switch (D.LCase(type)) {
-                case "image": case "graphic": classRef = Image; break;
-                case "text": classRef = Text; break;
-                // case "anim": classRef = Anim; break;
-                // case "token": classRef = Token; break;
-                // case "area": classRef = Area; break;
-                default: classRef = Asset; break;
-            }
-            if (assetRef instanceof classRef)
+        static Get(assetRef) { // Get an Asset instance by passing an asset, object, an id, or a name.
+            if (assetRef instanceof Asset)
                 return assetRef;
-            if (typeof assetRef === "object" && "id" in assetRef && assetRef.id in classRef.LIB)
-                return classRef.LIB[assetRef.id];
+            if (typeof assetRef === "object" && "id" in assetRef && assetRef.id in Asset.LIB)
+                return Asset.LIB[assetRef.id];
             if (typeof assetRef === "string") {
-                if (assetRef in classRef.LIB)
-                    return classRef.LIB[assetRef];
-                return classRef.LIB[Object.keys(classRef.LIB).find(x => classRef.LIB[x].name.startsWith(assetRef)) || ""] || false;
+                if (assetRef in Asset.LIB)
+                    return Asset.LIB[assetRef];
+                return Asset.LIB[Object.keys(Asset.LIB).find(x => Asset.LIB[x].name.startsWith(assetRef)) || ""] || false;
             }
             return false;
         }
@@ -194,34 +185,23 @@ const Assets = (() => {
                 return this._data.modes[Session.Mode].lastActive;
             return this._data.modes[Session.Mode].isForcedOn;
         }
-        get hasForcedState() { return typeof this._data.modes[Session.Mode].isForcedState === "string" }
-        get forcedState() { // isForcedState = true, null, or string representing state value -- this getter will return the state value it should be in all three cases.
-            switch (this._data.modes[Session.Mode].isForcedState) {
-                case true: return this._data.modes[Session.Mode].lastState;
-                case null: return this.state;
-                default: return this._data.modes[Session.Mode].isForcedState;
-            }
+        get isForcedState() {
+            if (this._data.modes[Session.Mode].isForcedState === true)
+                return this._data.modes[Session.Mode].lastState;
+            return this._data.modes[Session.Mode].isForcedState;
         }
 
         // GENERAL
         get name() { return this._data.name }
-        get top() { return this._data.curPos.top }
-        get left() { return this._data.curPos.left }
-        get height() { return this._data.curPos.height }
-        get width() { return this._data.curPos.width }
+        get top() { return this._data.pos.top }
+        get left() { return this._data.pos.left }
+        get height() { return this._data.pos.height }
+        get width() { return this._data.pos.width }
         get topEdge() { return this._pos.topEdge }
         get bottomEdge() { return this._pos.bottomEdge }
         get leftEdge() { return this._pos.leftEdge }
         get rightEdge() { return this._pos.rightEdge }
-        get position() { return _.pick(this, ["top", "left", "height", "width", "topEdge", "bottomEdge", "leftEdge", "rightEdge"]) }
-        get homePosition() {
-            const posData = Object.assign({}, this._data.homePos);
-            posData.topEdge = D.Int(posData.top - posData.height / 2);
-            posData.bottomEdge = D.Int(posData.top + posData.height / 2);
-            posData.leftEdge = D.Int(posData.left - posData.width / 2);
-            posData.rightEdge = D.Int(posData.left + posData.width / 2);
-            return posData;
-        }
+        get position() { return this.setNewPosition }
         get layer() { return this._data.layer }
         get activeLayer() { return this._data.activeLayer }
         get isActive() { return this._data.isActive }
@@ -251,7 +231,6 @@ const Assets = (() => {
         set leftEdge(v) { if (v !== this.leftEdge) this.setNewPosition({leftEdge: v}); }
         set rightEdge(v) { if (v !== this.rightEdge) this.setNewPosition({rightEdge: v}); }
         set position(v) { this.setNewPosition(v) }
-        set homePosition(v) { this.setNewPosition(v, true) }
         set layer(v) {
             if (v !== this.layer) {
                 this._data.layer = v;
@@ -285,8 +264,8 @@ const Assets = (() => {
         // #endregion
 
         // #region (hide) PRIVATE METHODS
-        setNewPosition(delta, isNewHomePos = false) {
-            const posData = Object.assign({}, this._data.curPos, _.pick(delta, "top", "left", "height", "width")),
+        setNewPosition(delta) {
+            const posData = Object.assign({}, this._data.pos, _.pick(delta, "top", "left", "height", "width")),
                 edgeData = Object.assign({}, this._pos, _.pick(delta, "leftEdge", "rightEdge", "topEdge", "bottomEdge"));
             if ("topEdge" in delta && "bottomEdge" in delta) {
                 posData.height = D.Int(edgeData.bottomEdge - edgeData.topEdge);
@@ -310,16 +289,14 @@ const Assets = (() => {
             edgeData.rightEdge = D.Int(posData.left + 0.5 * posData.width);
 
             this.pendingChanges = _.omit(posData, (v, k) => this[k] === v);
-            this._data.curPos = posData;
-            if (isNewHomePos)
-                this._data.homePos = posData;
+            this._data.pos = posData;
             this._pos = edgeData;
         }
         syncLibrary() {
-            this._data.curPos.top = D.Int(this.obj.get("top"));
-            this._data.curPos.left = D.Int(this.obj.get("left"));
-            this._data.curPos.height = D.Int(this.obj.get("height"));
-            this._data.curPos.width = D.Int(this.obj.get("width"));
+            this._data.pos.top = D.Int(this.obj.get("top"));
+            this._data.pos.left = D.Int(this.obj.get("left"));
+            this._data.pos.height = D.Int(this.obj.get("height"));
+            this._data.pos.width = D.Int(this.obj.get("width"));
             this._data.page = _.findKey(C.PAGES, v => v === this.obj.get("_pageid"));
             this._data.layer = this.obj.get("layer");
             this._data.isActive = this.layer !== "walls";
@@ -351,7 +328,6 @@ const Assets = (() => {
                 this._pendingChanges = {};
             }
         }
-        SendHome() { this.position = this.homePosition }
         ChangeMode() {
             this.lastActive = this.isActive;
             this.lastState = this.state;
@@ -361,7 +337,7 @@ const Assets = (() => {
                 case null: break;
                 // no default
             }
-            if (this.isActive && this.forcedState === true)
+            if (this.isActive && this.isForcedState === true)
                 this.Set(this.lastState);
         }
         Toggle(isActive = null, isForcing = false) {
@@ -735,13 +711,112 @@ const Assets = (() => {
     return {
         CheckInstall: checkInstall,
         OnChatCall: onChatCall,
-        // OnGraphicAdd: onGraphicAdd,
+        OnGraphicAdd: onGraphicAdd,
+        OnGraphicChange: onGraphicChange,
 
         Init: initAssets,
+        Apply: Asset.ApplyPendingChanges,
+    
+        // CLASS-BASED OBJECT LIBRARIES
+        get ALL() { return Asset.LIB },
+        get IMAGE() { return Image.LIB },
+        get TEXT() { return Text.LIB },
+        get ANIM() { return Anim.LIB },
+        get TOKEN() { return Token.LIB },
+        get AREA() { return Area.LIB },
 
+        // GENERAL MEDIA FUNCTIONS
         Get: Asset.Get,
+        GetImg: (assetRef) => Asset.Get(assetRef, "image"),
+        GetText: (assetRef) => Asset.Get(assetRef, "text"), //                                        NOTE: Returns instance, not object. (<asset>.obj for object)                                
+        // XXX GetKey: getMediaKey,                             <asset>.name
+        // XXX GetData: getMediaData,                           <asset>.<access getters and setters as needed>
+        // XXX GetModeData: getModeData,                        <asset>.isForcedOn, <asset>.forcedState 
+        IsRegistered: (ref) => Boolean(Asset.Get(ref)),
+        // XXX HasForcedState: hasForcedState,                 <asset>.hasForcedState
+/*?*/ ModeUpdate: modeUpdate,
+        // XXX IsActive: isObjActive,                              <asset>.isActive
+/*?*/ IsCyclingImg: isCyclingImg,
+        // XXX Toggle: toggle,                                    <asset>.Toggle()
+/*?*/ Adjust: adjustObj,
+        
+        // GETTERS
+        // XXX GetImg: getImgObj,
+        // XXX GetText: getTextObj,
+        // XXX GetImgs: getImgObjs,
+        // XXX GetTexts: getTextObjs,
+        // XXX GetImgKey: getImgKey,
+        // XXX GetTextKey: getTextKey,
+        // XXX GetImgData: getImgData,
+        // XXX GetTextData: getTextData,
+        // XXX GetImgSrc: getImgSrc,                                   <asset>.state
+/*?*/ GetTokens: getTokenObjs,
+        // XXX GetTokenData: getTokenData,
+        GetLineHeight: getLineHeight,
+        GetSimpleTextWidth: getSimpleTextWidth,
+        GetTextWidth: getTextWidth,
+        GetTextHeight: getTextHeight,
+        GetTextLines: getTextLines,
+        Buffer: buffer,
 
-        Apply: Asset.ApplyPendingChanges
+        // CONSTRUCTORS, REGISTERS & DESTROYERS
+        MakeImg: makeImg,
+        MakeText: makeText,
+        RegImg: regImg,
+        RegToken: regToken,
+        RegText: regText,
+        RemoveImg: removeImg,
+        RemoveAllImgs: removeImgs,
+        RemoveText: removeText,
+        RemoveAllText: removeTexts,
+        // XXX AddImgSrc: addImgSrc,                                   <image>.Add(srcRef, srcName)
+
+        // SETTERS
+        // XXX SetImg: setImg,                                                   <image>.Set(src)
+        // XXX SetText: setText,                                                    <text>.Set(text)
+        SetToken: setTokenSrc,
+        CombineTokenSrc: combineTokenSrc,
+        // XXX ToggleImg: toggleImg,                                            <image>.Toggle() OR <image>.isActive = true/false
+        // XXX ToggleText: toggleText,                                            <text>.Toggle() OR <text>.isActive = true/false
+        ToggleToken: toggleTokens,
+        ToggleTokens: toggleTokens,
+        // CycleImg: cycleImg,                                                        <image>.Cycle()
+        // SetImgData: setImgData,                                              <asset>.<prop> = <whatever>
+        // SetTextData: setTextData,                                            <asset>.<prop> = <whatever>
+        SetImgTemp: setImgTemp,
+        Spread: spreadImgs,                     // Will have to be a static method on Image accepting an array of image instances.
+       
+        ToggleLoadingScreen: toggleLoadingScreen,
+        SetLoadingMessage: setLoadingText,
+        StartProgressBar: startProgressBar,
+        StopProgressBar: stopProgressBar,
+        Notify: addPanelText,
+
+        // AREA FUNCTIONS
+        GetBounds: getBounds,
+        GetContents: getContainedImgObjs,
+        IsInside: isInside,
+        GetContainedChars: getContainedChars,
+        SetArea: setImgArea,
+        
+        // ANIMATION FUNCTIONS
+        GetAnim: getImgObj,
+        GetAnimData: getImgData,
+        GetAnimKey: getImgKey,
+        ToggleAnim: toggleAnimation,
+        Flash: flashAnimation,
+        Pulse: activateAnimation,
+        Kill: deactivateAnimation,
+        SetAnimData: setAnimData,
+
+        // REINITIALIZE MEDIA OBJECTS (i.e. on MODE CHANGE)
+        Fix: (isZIndicesOnly = false) => {
+            if (!isZIndicesOnly) {
+                fixImgObjs();
+                fixTextObjs();
+            }
+            setZIndices();
+        }
 
     };
 
@@ -752,3 +827,4 @@ on("ready", () => {
     D.Log("Assets Ready!");
 });
 void MarkStop("Assets");
+
