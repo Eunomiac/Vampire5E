@@ -110,7 +110,8 @@ module.exports = {
         "no-useless-escape": 0,
         //"no-magic-numbers": ["warn", { "ignoreArrayIndexes": true, "ignore": [0, 1], "enforceConst": true } ],
         "no-void": 0,
-        "one-var": ["error", "consecutive"],
+        // "one-var": ["error", "consecutive"],
+        "one-var": ["error", { var: "always", let: "consecutive", const: "never" }],
         "prefer-const": ["error", {"destructuring": "all"}],
         "prefer-object-spread": 0,
         "quotes": [
@@ -124,6 +125,7 @@ module.exports = {
             { "omitLastInOneLineBlock": true }
         ]
     },
+    "reportUnusedDisableDirectives": true,
     "globals": {
         "START": "readonly",
         "SCRIPTS": "readonly",

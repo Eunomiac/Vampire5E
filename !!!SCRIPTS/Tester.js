@@ -3,7 +3,7 @@ const Tester = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
     const SCRIPTNAME = "Tester",
 
-    // #region COMMON INITIALIZATION
+        // #region COMMON INITIALIZATION
         STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
         VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
         DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
@@ -14,16 +14,27 @@ const Tester = (() => {
             C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
             initialize();
         },
-    // #endregion
+        // #endregion
 
-    // #region LOCAL INITIALIZATION
+        // #region LOCAL INITIALIZATION
         initialize = () => { }, // eslint-disable-line no-empty-function
-    // #endregion	
+        // #endregion	
 
-    // #region EVENT HANDLERS: (HANDLEINPUT)
+        // #region EVENT HANDLERS: (HANDLEINPUT)
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             let isKilling, isWriting;
             switch (call) {
+                case "defaulttoken": {
+                    const [charObj] = findObjs({"_type": "character", "name": args.join(" ")});
+                    if (charObj) 
+                        charObj.get("_defaulttoken", (tokenData) => D.Alert(`Token Data for ${D.JS(charObj)}:
+                        
+                        ${D.JS(JSON.parse(tokenData))}`, "Token Data"));
+                    else 
+                        D.Alert(`No character object recovered for '${args.join(" ")}'`, "!test defaulttoken");
+                    
+                    break;
+                }
                 case "statelength": {
                     const lengthVals = {};
                     for (const [key, value] of Object.entries(state.VAMPIRE)) {
@@ -521,7 +532,7 @@ const Tester = (() => {
                         `${Object.keys(state[C.GAMENAME].Media.textregistry).length} registered text objects.`,
                         ""
                     );
-                // First, verify that all registered objects are present.
+                    // First, verify that all registered objects are present.
                     for (const textData of regData)
                         if (!allTextObjs.map(x => x.id).includes(textData.id))
                             missingTextData.push(textData);
@@ -531,7 +542,7 @@ const Tester = (() => {
                             ...missingTextData.map(x => ` ...     ${x.name} (${x.id}) "${x.text}"`),
                             ""
                         );
-                // Next, find text objects that aren't registered:
+                    // Next, find text objects that aren't registered:
                     for (const textObj of allTextObjs)
                         if (!regData.map(x => x.id).includes(textObj.id))
                             unregTextObjs.push(textObj);
