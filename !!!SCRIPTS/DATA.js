@@ -646,21 +646,41 @@ const D = (() => {
         return str;
     };
     const clone = (obj) => JSON.parse(JSON.stringify(obj));
-    const merge = (target, ...sources) => {
-        const thisTarget = Array.isArray(target) ? [...target] : Object.assign({}, target);
-        while (sources.length) {
-            const thisSource = sources.shift();
-            if (Array.isArray(thisSource) || _.isObject(thisSource))
-                for (const key of Object.keys(thisSource))
-                    if (_.isObject(thisSource[key])) 
-                        if (!(key in thisTarget))
-                            Object.assign(thisTarget, {[key]: thisSource[key]});
-                        else
-                            thisTarget[key] = merge(thisTarget[key], thisSource[key]);
-                    else 
-                        Object.assign(thisTarget, {[key]: thisSource[key]});
+    const merge = (target, source, areNewPropsOK = true, isWritingToTarget = false) => {
+        if (_.isUndefined(source))
+            return target;
+        if (typeof target !== "function" && _.isObject(target)) {
+            const thisTarget = Array.isArray(target) ? [...target] : Object.assign({}, target);
+            if (typeof source !== "function" && _.isObject(source)) {
+                for (const [key, val] of Object.entries(areNewPropsOK ? source : _.pick(source, Object.keys(thisTarget))))
+                    thisTarget[key] = merge(thisTarget[key], val, areNewPropsOK, isWritingToTarget);
+                if (isWritingToTarget)
+                    Object.assign(target, thisTarget);                
+                return thisTarget;
+            }
         }
-        return thisTarget;
+        return source;
+    };
+    const filterForObjAttrs = (obj, deltas) => _.pick(deltas, (deltaVal, deltaKey) => deltaKey in obj.attributes);
+    const filterForChanges = (target, source) => {
+        if (_.isUndefined(source))
+            return undefined;
+        if (typeof source !== "function" && _.isObject(source)) {
+            const thisSource = Array.isArray(source) ? [] : {};
+            if (typeof target !== "function" && _.isObject(target)) {
+                for (const [key, val] of Object.entries(source)) {
+                    const changes = filterForChanges(target[key], val);
+                    if (changes !== undefined)
+                        thisSource[key] = changes;
+                }
+                return thisSource;
+            }
+            return source;
+        } else if (source === target) {
+            return undefined;
+        } else {
+            return source;
+        }
     };
     const getRGB = (colorRef) => {
         if (["string", "number"].includes(typeof colorRef)) {
@@ -2115,6 +2135,7 @@ const D = (() => {
         Ordinal: ordinal, Romanize: numToRomanNum,
         Capitalize: capitalize,
         Clone: clone, Merge: merge,
+        FilterForObjectAttributes: filterForObjAttrs, FilterForChanges: filterForChanges,
         Gradient: colorGradient, RGBtoHEX: rbgToHex, HEXtoRGB: getRGB, RGB: getRGB,
         ParseStack: parseStack, ONSTACK: putOnStack, OFFSTACK: pullOffStack,
 

@@ -3854,7 +3854,7 @@ const Media = (() => {
                     wasModeUpdated: Boolean(mediaData.wasModeUpdated),
                     modes: D.Clone(mediaData.modes),
                     srcs: typeof mediaData.srcs === "string" ? 
-                        mediaData.srcs :
+                        mediaData.srcs.replace(/_1$/g, mediaData.srcs.replace(/_1$/g, "_2") in REGISTRY.IMG ? "_1" : "") :
                         D.Clone(D.KeyMapObj(mediaData.srcs, null, v => v.
                             replace(/[a-z]*\.(png|jpg|gif)/gu, "thumb.$1").
                             replace(new RegExp(C.IMGPREFIX.replace("/", "\/"), "g"), "")))
@@ -4024,7 +4024,7 @@ const Media = (() => {
                             replace(/[a-z]*\.(png|jpg|gif)/gu, "thumb.$1").
                             replace(new RegExp(C.IMGPREFIX.replace("/", "\/"), "g"), "")));
                     if (!("base" in mediaData.srcs))
-                        errorLines.push(`No base source found for character '${mediaData.name}'`)
+                        errorLines.push(`No base source found for character '${mediaData.name}'`);
                     else
                         ASSETREF[charObj.id].state = "base";
                 } else {

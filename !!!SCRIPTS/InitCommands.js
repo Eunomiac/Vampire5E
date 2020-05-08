@@ -45,11 +45,11 @@ const InitCommands = (() => {
                         setTimeout(() => {
                             D.Flag("Initialization Complete!");
                             Listener.Unlock();
-                        }, Session.IsTesting ? 200 : 1000);
-                    }, Session.IsTesting ? 200 : 1000);
-                }, Session.IsTesting ? 200 : 1000);
-            }, Session.IsTesting ? 200 : 1000);
-        }, Session.IsTesting ? 200 : 1000);
+                        }, Session.IsTesting ? 20 : 1000);
+                    }, Session.IsTesting ? 20 : 1000);
+                }, Session.IsTesting ? 20 : 1000);
+            }, Session.IsTesting ? 20 : 1000);
+        }, Session.IsTesting ? 20 : 1000);
     };
     // #endregion	
 
