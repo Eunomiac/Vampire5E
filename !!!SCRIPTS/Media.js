@@ -3979,6 +3979,8 @@ const Media = (() => {
         const errorLines = [];
         const ASSETREF = state[C.GAMENAME].Assets.AssetLibrary;
         for (const mediaData of Object.values(REGISTRY.TOKEN)) {
+            if (typeof mediaData.srcs === "object" && "base" in mediaData.srcs && Object.values(mediaData.srcs).length === 1)
+                continue;
             const charObj = getObj("character", mediaData.charID);
             if (charObj) {
                 ASSETREF[charObj.id] = {

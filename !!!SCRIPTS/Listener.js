@@ -93,6 +93,11 @@ const Listener = (() => {
                 return scriptData.script.OnGraphicChange(imgObj, prevData);
             return false;
         });
+        on("destroy:graphic", imgObj => {
+            for (const scriptData of SCRIPTCALLS.IMGDESTROY)
+                return scriptData.script.OnGraphicDestroy(imgObj);
+            return false;
+        });
         on("change:campaign:playerpageid", () => {
             for (const scriptData of SCRIPTCALLS.PAGECHANGE)
                 return scriptData.script.OnPageChange();
@@ -165,7 +170,10 @@ const Listener = (() => {
         SCRIPTCALLS.IMGADD = _.reject([
             {script: Assets},
             {script: Media}
-        ], v => v.script === {});            
+        ], v => v.script === {}); 
+        SCRIPTCALLS.IMGDESTROY = _.reject([
+            {script: Assets},
+        ], v => v.script === {});           
         SCRIPTCALLS.PAGECHANGE = _.reject([
             {script: Session}
         ], v => v.script === {});             

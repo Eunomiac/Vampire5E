@@ -1,10 +1,8 @@
 void MarkStart("Assets");
 const Assets = (() => {
-    // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
+    // #region ~ ************* COMMON INITIALIZATION *************
     /* eslint-disable no-unused-vars */
     const SCRIPTNAME = "Assets";
-
-    // #region ~ COMMON INITIALIZATION
     const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};
     const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray);
     const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
@@ -16,15 +14,13 @@ const Assets = (() => {
         initialize();
     };    
     // #endregion
-
-    // #region LOCAL INITIALIZATION
+    // #region ~ ************* LOCAL INITIALIZATION **************
     const initialize = () => {
         STATE.REF.AssetLibrary = STATE.REF.AssetLibrary || {};
         STATE.REF.GenericTokenImages = STATE.REF.GenericTokenImages || {};
     };
-        // #endregion
-
-    // #region ~ EVENT HANDLERS: (HANDLEINPUT)
+    // #endregion
+    // #region ~ ************* EVENT HANDLERS ********************
     const onChatCall = (call, args, objects, msg) => {
         const assets = [call, ...args].filter(x => x.startsWith("+")).map(x => Asset.Get(x.replace(/^\+/gu, "")));
         // assets.push(...Listener.GetObjects(objects, "graphic").map(x => MediaAsset.Get(x)))
@@ -58,10 +54,34 @@ const Assets = (() => {
             case "apply": Asset.ApplyPendingChanges(args[0] !== "confirm"); break;
             case "get": {
                 switch (D.LCase(call = args.shift())) {
-                    case "all": case "full": {
+                    case "full": {
                         switch (D.LCase(call = args.shift())) {
                             case "library": D.Alert(D.JS(LI.B), "ASSET LIBRARY"); break;
                             case "assets": D.Alert(`${D.JS(Asset.LIB)} (${Object.keys(Asset.LIB).length})`, "ASSETS"); break;
+                            case "img": D.Alert(D.JS(Image.LIB), "IMAGE ASSETS"); break;
+                            case "anim": D.Alert(D.JS(Anim.LIB), "ANIMATION ASSETS"); break;
+                            case "token": D.Alert(D.JS(Token.LIB), "TOKEN ASSETS"); break;
+                            case "text": D.Alert(D.JS(Text.LIB), "TEXT ASSETS"); break;
+                            case "pads": case "dragpads": {
+                                const alertLines = [];
+                                for (const [, image] of Object.entries(Image.DragPads)) 
+                                    if (image.areDragPadsActive)
+                                        alertLines.push(`<span style="color: green; font-weight: bold;">${image.name}</span>: ${image.dragPads.map(x => D.JS(x)).join(", ")}`);
+                                    else
+                                        alertLines.push(`${image.name}: ${image.dragPads.map(x => D.JS(x)).join(", ")}`);                                    
+                                alertLines.push(" ");
+                                alertLines.push(D.JS(Object.values(Image.DragPads)[0]));
+                                D.Alert(alertLines.join("<br>"), "Drag Pads");
+                                break;
+                            }
+                            // no default
+                        }
+                        break;
+                    }
+                    case "all": {
+                        switch (D.LCase(call = args.shift())) {
+                            case "library": D.Alert(D.JS(Object.values(LI.B).map(x => `${x.id}: <b>${x.name}</b> (${x.type})`)), "ASSET LIBRARY"); break;
+                            case "assets": D.Alert(`${D.JS(Object.values(Asset.LIB).map(x => x.obj))} (${Object.keys(Asset.LIB).length})`, "ASSETS"); break;
                             case "img": D.Alert(D.JS(Object.values(Image.LIB).map(x => x.name)), "IMAGE ASSETS"); break;
                             case "anim": D.Alert(D.JS(Object.values(Anim.LIB).map(x => x.name)), "ANIMATION ASSETS"); break;
                             case "token": D.Alert(D.JS(Object.values(Token.LIB).map(x => x.name)), "TOKEN ASSETS"); break;
@@ -153,7 +173,13 @@ const Assets = (() => {
                 // no default
         }
     };
-    /* const onGraphicAdd = imgObj => {
+    const onGraphicAdd = imgObj => {
+        if (imgObj.get("represents")) {
+            const tokenAsset = Token.Initialize(imgObj);    
+            if (tokenAsset.isGenericToken) { }
+            else if (tokenAsset.isRandomToken) { }
+        }
+        /*
         const traceID = TRACEON("onGraphicAdd", [imgObj]);
         if (imgRecord)
             LOG(imgObj.get("imgsrc"));
@@ -217,17 +243,24 @@ const Assets = (() => {
         if (isCharToken(imgObj))
             setGenericToken(imgObj);
         return TRACEOFF(traceID, true);
-    }; */
+        */
+    };
+    const onGraphicDestroy = imgObj => {
+        const tokenAsset = Token.Get(imgObj);
+        if (tokenAsset)
+            tokenAsset.Unregister();
+    };
     const onGraphicChange = (imgObj) => {
         if (imgObj.id in Image.DragPads)
             Image.DragPads[imgObj.id].fireDragPad();
     };
+    
     // #endregion
-    // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
-
-    // #region ~ TOP SCOPE VARIABLE DECLARATIONS
+    
+    // #region ~ VARIABLE DECLARATIONS
     let MAPPANELTIMER;
-    const FUNCTIONS = { // Function will get an Image asset and moveData: ["left", "up", isDiagonal]
+    const FUNCTIONS = { 
+        // Function will get an Image asset and moveData: ["left", "up", isDiagonal]
         selectDie: (imgAsset) => {
             const [, dieCat, dieNum] = imgAsset.name.split("_");
             Roller.Select(dieCat, D.Int(dieNum));
@@ -347,16 +380,22 @@ const Assets = (() => {
         // #endregion
 
         // #region ~ CONSTRUCTOR
-        constructor(assetID) {
+        constructor(assetRef) {
             try {
-                this._id = assetID;
-                this._objType = {image: "graphic", token: "graphic", anim: "graphic", text: "text"}[LI.B[assetID].type];
-                this._obj = getObj(this._objType, this._id);
+                if (typeof assetRef === "object") {
+                    this._id = assetRef.id;
+                    this._objType = assetRef.get("_type");
+                    this._obj = assetRef;
+                } else {
+                    this._id = assetRef;
+                    this._objType = {image: "graphic", token: "graphic", anim: "graphic", text: "text"}[this.libData.type];
+                    this._obj = getObj(this._objType, this._id);
+                }
                 this._pendingChanges = {};
                 this._pendingData = {};
                 this.syncLibrary(); // Updating LIBRARY with current object data & calculating derivative stats.
             } catch (errObj) {
-                THROW(`Error Constructing Asset '${D.JS(assetID)}'`, "ASSET", errObj);
+                THROW(`Error Constructing Asset '${D.JS(assetRef)}'`, "ASSET", errObj);
             }
         }
         // #endregion
@@ -379,6 +418,7 @@ const Assets = (() => {
 
         // GENERAL
         get name() { return this.data.name }
+
         get top() { return this.data.top }
         get left() { return this.data.left }
         get height() { return this.data.height }
@@ -387,21 +427,28 @@ const Assets = (() => {
         get bottomEdge() { return D.Int(this.top + 0.5 * this.height) }
         get leftEdge() { return D.Int(this.left - 0.5 * this.width) }
         get rightEdge() { return D.Int(this.left + 0.5 * this.width) }
-        get position() { return Object.assign({}, this.data, {topEdge: this.topEdge, bottomEdge: this.bottomEdge, leftEdge: this.leftEdge, rightEdge: this.rightEdge}) }
+        get position() { return {top: this.top,
+                                 left: this.left,
+                                 height: this.height,
+                                 width: this.width,
+                                 topEdge: this.topEdge,
+                                 bottomEdge: this.bottomEdge,
+                                 leftEdge: this.leftEdge,
+                                 rightEdge: this.rightEdge}; }
+
         get layer() { return this.data.layer }
         get activeLayer() { return this.data.activeLayer }
+
         get isActive() { return this.data.isActive }
 
-        // MODE DATA
         get wasModeUpdated() { return this.data.wasModeUpdated }
         get wasActive() { return this.mode.wasActive }
         get wasState() { return this.mode.wasState }
-
-        // PENDING CHANGES
         // #endregion
 
         // #region ~ SETTERS
-        set name(v) { this.Submit({name: v}) }
+        set name(v) { this.submit({name: v}) }
+
         set top(v) { if (v !== this.top) this.setNewPosition({top: v}); }
         set left(v) { if (v !== this.left) this.setNewPosition({left: v}); }
         set height(v) { if (v !== this.height) this.setNewPosition({height: v}); }
@@ -411,20 +458,29 @@ const Assets = (() => {
         set leftEdge(v) { if (v !== this.leftEdge) this.setNewPosition({leftEdge: v}); }
         set rightEdge(v) { if (v !== this.rightEdge) this.setNewPosition({rightEdge: v}); }
         set position(v) { this.setNewPosition(v) }
-        set layer(v) { this.Submit({layer: v}) }
-        set activeLayer(v) { this.Submit({activeLayer: v, layer: this.isActive ? v : this.layer}) }
-        set isActive(v) { this.Submit({isActive: Boolean(v), layer: v ? this.activeLayer : "walls"}) }
 
-        // MODE DATA
-        set wasModeUpdated(v) { this.Submit({wasModeUpdated: Boolean(v)}) }
-        set wasActive(v) { this.Submit({modes: {[Session.LastMode]: {wasActive: Boolean(v)}}}) }
-        set wasState(v) { this.Submit({modes: {[Session.LastMode]: {wasState: v}}}) }
+        set layer(v) { this.submit({layer: v}) }
+        set activeLayer(v) { this.submit({activeLayer: v, layer: this.isActive ? v : this.layer}) }
+
+        set isActive(v) { this.submit({isActive: Boolean(v), layer: v ? this.activeLayer : "walls"}) }
+
+        set wasModeUpdated(v) { this.submit({wasModeUpdated: Boolean(v)}) }
+        set wasActive(v) { this.submit({modes: {[Session.LastMode]: {wasActive: Boolean(v)}}}) }
+        set wasState(v) { this.submit({modes: {[Session.LastMode]: {wasState: v}}}) }
         // #endregion
 
         // #region ~ PRIVATE METHODS
+        submit(deltas) {
+            this.pendingData = D.Merge(this.pendingData, deltas);
+            this.pendingChanges = D.FilterForChanges(this.libData,
+                                                     D.FilterForObjectAttributes(this.obj, 
+                                                                                 D.Merge(this.pendingChanges, deltas)));
+            if (!(_.isEmpty(this.pendingChanges) && _.isEmpty(this.pendingData)) && !PENDINGCHANGES.includes(this))
+                PENDINGCHANGES.push(this);
+        }
         setNewPosition(delta) {
-            const posData = Object.assign({}, _.pick(this.data, "top", "left", "height", "width"), _.pick(delta, "top", "left", "height", "width"));
-            const edgeData = Object.assign({}, {topEdge: this.topEdge, bottomEdge: this.bottomEdge, leftEdge: this.leftEdge, rightEdge: this.rightEdge}, _.pick(delta, "leftEdge", "rightEdge", "topEdge", "bottomEdge"));
+            const posData = Object.assign({}, _.pick(this.position, "top", "left", "height", "width"), _.pick(delta, "top", "left", "height", "width"));
+            const edgeData = Object.assign({}, _.pick(this.position, "leftEdge", "rightEdge", "topEdge", "bottomEdge"), _.pick(delta, "leftEdge", "rightEdge", "topEdge", "bottomEdge"));
             if ("topEdge" in delta && "bottomEdge" in delta) {
                 posData.height = D.Int(edgeData.bottomEdge - edgeData.topEdge);
                 posData.top = D.Int((edgeData.topEdge + edgeData.bottomEdge) / 2);
@@ -441,10 +497,10 @@ const Assets = (() => {
             } else if ("rightEdge" in delta) {
                 posData.left = D.Int(edgeData.rightEdge - 0.5 * posData.width);
             }
-            this.Submit(posData);
+            this.submit(posData);
         }
         syncLibrary() {
-            this.Submit({
+            this.submit({
                 page: _.findKey(C.PAGES, v => v === this.obj.get("_pageid")),
                 layer: this.obj.get("layer"),
                 isActive: this.layer !== "walls",
@@ -455,7 +511,7 @@ const Assets = (() => {
             });
         }
         syncObject() {
-            this.Submit({
+            this.submit({
                 name: this.name,
                 left: this.left,
                 top: this.top,
@@ -466,22 +522,7 @@ const Assets = (() => {
         }
         // #endregion
 
-        // #region ~ PUBLIC METHODS
-        Submit(deltas) {
-            this.pendingData = D.Merge(this.pendingData, deltas);
-            this.pendingChanges = D.FilterForChanges(this.libData,
-                                                     D.FilterForObjectAttributes(this.obj, 
-                                                                                 D.Merge(this.pendingChanges, deltas)));
-            if (!_.isEmpty(this.pendingChanges) && !PENDINGCHANGES.includes(this))
-                PENDINGCHANGES.push(this);
-        }
-        Fix() {
-            this.obj.set(D.FilterForObjectAttributes(this.obj,
-                                                     D.Merge(this.data, this.pendingChanges)));
-            this.libData = D.Merge(this.libData, this.pendingData, false);
-            this.pendingChanges = {};
-            this.pendingData = {};
-        }
+        // #region ~ PUBLIC METHODS         
         Apply(isTesting = false) {
             if (!_.isEmpty(this.pendingChanges))
                 if (isTesting) {
@@ -516,9 +557,16 @@ const Assets = (() => {
         }
         ForceToggle(isActive = null) { this.Toggle(isActive, true) }
         Set(state, isActivating = true) { 
-            this.Submit({state});
+            this.submit({state});
             if (isActivating)
                 this.Toggle(true);
+        }        
+        Fix() {
+            this.obj.set(D.FilterForObjectAttributes(this.obj,
+                                                     D.Merge(this.data, this.pendingChanges)));
+            this.libData = D.Merge(this.libData, this.pendingData, false);
+            this.pendingChanges = {};
+            this.pendingData = {};
         }
         Unregister() { delete Asset.LIB[this.id]; delete LI.B[this.id] }
         Remove() { this.obj.remove(); this.Unregister() }
@@ -535,30 +583,30 @@ const Assets = (() => {
                                                                    {[v._dragPads._data[0].id]: v},
                                                                    {[v._dragPads._data[1].id]: v}); }
         static get DragPadFunctions() { return FUNCTIONS }
-        // #endregion
+        // #endregion        
+        static Get(imgRef) { return Asset.Get(imgRef, "image") }
         static Initialize(imgID) {
             const imgAsset = new Image(imgID);
             Asset.LIB = imgAsset;
             Image.LIB = imgAsset;
             if (imgAsset.hasDragPads)
                 Image.DragPads = imgAsset;
+            return imgAsset;
         }
         static ParseSrcURL(url) { return url.replace(/[a-z]*\.(png|jpg|jpeg)/gu, "thumb.$1") }
         // #endregion
 
         // #region ~ BASIC GETTERS & SETTERS
         get dragPadLibData() { return this.data.dragPads }
+        get pendingDragPadChanges() { return this.hasDragPads && this._dragPads._data.map(x => x._pendingChanges) }
+        set pendingDragPadChanges(v) { if (this.hasDragPads) this._dragPads._data.forEach((x, i) => { x._pendingChanges = v[i] }); }
         // #endregion        
 
         // #region ~ CONSTRUCTOR
-        constructor(imgID) {
-            super(imgID);
+        constructor(imgID) { super(imgID);
+            imgID = typeof imgID === "object" ? imgID.id : imgID;
             try {
-                if (this.dragPadLibData) {
-                    if (this.name === "MapButton_Panel") {
-                        this.libData.dragPads.deltaTop = -300;
-                        this.libData.dragPads.deltaLeft = 0;
-                    }
+                if (!_.isEmpty(this.dragPadLibData)) {
                     this._dragPads = {
                         _areOnline: this.dragPadLibData.startActive,
                         _func: Image.DragPadFunctions[this.dragPadLibData.funcName],
@@ -581,7 +629,7 @@ const Assets = (() => {
                     // this._dragPads.objs.forEach(x => x.set({name: x.get("name").replace(/_Pad(\d)$/g, x.get("name").includes("Pad0") ? "_Pad" : "_PartnerPad")}));
                     this.syncDragPads();
                 }
-                this.Submit({isDrawing: true});    
+                this.submit({isdrawing: true});    
             } catch (errObj) {                
                 THROW(`Error Constructing Asset '${D.JS(Media.GetImgData(imgID) ? Media.GetImgData(imgID).name : imgID)}' --> `, "Image", errObj);
             }
@@ -590,45 +638,55 @@ const Assets = (() => {
 
         // #region ~ GETTERS
         // READ-ONLY
-        get srcs() {
-            if (typeof this.data.srcs === "string")
-                return Asset.Get(this.data.srcs).srcs;
-            return this.data.srcs;
-        }
+        get srcs() { return typeof this.data.srcs === "string" ? Asset.Get(this.data.srcs).srcs : this.data.srcs }
         get srcNames() { return Object.keys(this.srcs) }
-        // #endregion
 
-        // #region ~ DRAGPADS
-        // #region DRAGPAD GETTERS & SETTERS
         get hasDragPads() { return Boolean(this._dragPads) }
         get dragPads() { return this.hasDragPads && this._dragPads._data.map(x => x.obj) }
         get dragPadData() { return this.hasDragPads && this._dragPads._data.map(x => D.Merge(_.omit(x, "_pendingChanges"), x._pendingChanges, false)) }
+        get dragPadFunc() { return this.hasDragPads && this._dragPads._func }
+
         get dragPadsTop() { return this.hasDragPads && this.dragPadData[0].top }
         get dragPadsLeft() { return this.hasDragPads && this.dragPadData[0].left }
         get dragPadsHeight() { return this.hasDragPads && this.dragPadData[0].height }
         get dragPadsWidth() { return this.hasDragPads && this.dragPadData[0].width }
-        get dragPadFunc() { return this.hasDragPads && this._dragPads._func }
+        
         get areDragPadsOnline() { return this.hasDragPads && this._dragPads._areOnline }
-        get areDragPadsActive() { return this.areDragPadsOnline && this.isActive } // Getting areOnline ONLY returns 'true' if both areOnline and isActive are true.
-        set areDragPadsActive(v) {
-            // Setting dragPadsActivation ONLY activates dragPads if image object is active too (see dragPadsActive getter)
+        
+        // GENERAL
+        get areDragPadsActive() { return this.areDragPadsOnline && this.isActive } // Getting areOnline ONLY returns 'true' if both areOnline and isActive are true
+        // #endregion
+
+        // #region ~ SETTERS
+        set areDragPadsActive(v) { // Setting dragPadsActivation ONLY activates dragPads if image object is active too (see dragPadsActive getter)
             if (this.hasDragPads && v !== this.areDragPadsOnline) {
                 this._dragPads._areOnline = v;
                 this.syncDragPads(true);
             }
-        }
-        get pendingDragPadChanges() { return this.hasDragPads && 
-            this._dragPads._data.map(x => x._pendingChanges); }
-        set pendingDragPadChanges(v) { if (this.hasDragPads) this._dragPads._data.forEach((x, i) => { x._pendingChanges = v[i] }); }
+        }        
         // #endregion
-
-        // #region DRAGPAD PRIVATE METHODS
+        
+        // #region ~ PRIVATE METHODS
+        // #region Overrides (Asset)
+        submit(deltas) { super.submit(deltas);
+            if (this.hasDragPads)
+                this.syncDragPads();
+        }   
+        // #endregion       
+        submitDragPads(deltas) {
+            deltas = Array.isArray(deltas) && deltas || [deltas, deltas];
+            this.pendingDragPadChanges = this.pendingDragPadChanges.
+                map((x, i) => D.FilterForObjectAttributes(this.dragPadData[i].obj, 
+                                                          D.Merge(x, deltas[i])));
+            if (!_.all(this.pendingDragPadChanges, x => _.isEmpty(x)) && !PENDINGCHANGES.includes(this))
+                PENDINGCHANGES.push(this);
+        }
         syncDragPads(isLayerOnly = false) {
             if (this.hasDragPads) {
-                this.SubmitDragPads([{layer: this.areDragPadsActive && "objects" || "walls"},
+                this.submitDragPads([{layer: this.areDragPadsActive && "objects" || "walls"},
                                      {layer: "walls"}]);
                 if (!isLayerOnly)
-                    this.SubmitDragPads({
+                    this.submitDragPads({
                         top: this.dragPadsTop,
                         left: this.dragPadsLeft,
                         height: this.dragPadsHeight,
@@ -669,10 +727,65 @@ const Assets = (() => {
                 this.flipDragPads();
                 this.dragPadFunc(this, moveData);
             }
-        }
+        }  
         // #endregion
 
-        // #region DRAGPAD PUBLIC METHODS
+        // #region ~ PUBLIC METHODS
+        // #region Overrides (Asset)
+        Apply(isTesting = false) { super.Apply(isTesting);
+            if (this.hasDragPads)
+                if (isTesting) {
+                    D.Alert(D.JS(this.pendingDragPadChanges), `IMAGE - DRAGPADS: ${this.name}`);
+                } else {
+                    this.pendingDragPadChanges.forEach((x, i) => {
+                        if (!_.isEmpty(x)) { 
+                            this.dragPadData[i].obj.set(x);
+                            this._dragPads._data[i] = D.Merge(this._dragPads._data[i], x, false);
+                        } 
+                    });
+                    this.pendingDragPadChanges = [{}, {}];
+                }
+        }
+        Toggle(isActive = null, isForcing = false) { super.Toggle(isActive, isForcing);
+            if (this.hasDragPads)
+                this.syncDragPads(true);
+        }
+        Set(state, isActivating = true) { super.Set(state, isActivating);
+            this.submit({imgsrc: `${C.IMGPREFIX}${this.srcs[state]}`});
+        }
+        Fix() { super.Fix();
+            if (this.hasDragPads)
+                this.dragPadData.forEach((x, i) => this.dragPads[i].set(D.FilterForObjectAttributes(this.dragPads[i], x)));
+        }
+        Unregister() { super.Unregister();
+            delete Image.LIB[this.id];
+            if (this.hasDragPads)
+                this.dragPadData.forEach(x => delete Image.DragPads[x.id]);
+        }
+        Remove() { super.Remove();
+            if (this.hasDragPads)
+                this.dragPadData.forEach(x => x.obj.remove());
+        }
+        // #endregion
+        GetSrcFromURL(url) { return _.findKey(this.srcs, v => v === Image.ParseSrcURL(url)) };
+        Add(srcRef, srcName) {
+            const asset = Asset.Get(srcRef);
+            if (asset) {
+                this.libData = {srcs: asset.name};
+            } else {
+                srcRef = typeof srcRef === "object" && "get" in srcRef && srcRef.get("imgsrc") || srcRef;
+                this.libData = {srcs: {[srcName]: Image.ParseSrcURL(srcRef)}};
+            }
+        }
+        Cycle(isReversing = false) { this.Set(this.srcNames[D.Cycle(this.srcNames.indexOf(this.state) + (isReversing ? -1 : 1), 0, this.srcNames.length - 1)]) }
+        Random() {
+            this._shuffledSrcs = (this._shuffledSrcs || []).length ? this._shuffledSrcs : _.shuffle(Object.keys(this.srcs));
+            this.Set(this._shuffledSrcs.pop());
+        }        
+        ToggleDragPads(padsActive) { 
+            if (this.hasDragPads)
+                this.areDragPadsActive = typeof padsActive === "boolean" ? padsActive : !this.areDragPadsOnline;
+        }
         MakeDragPads(funcName, deltaHeight = 0, deltaWidth = 0, deltaTop = 0, deltaLeft = 0, startActive = true) {
             const padsData = {
                 top: this.top + deltaHeight,
@@ -681,7 +794,8 @@ const Assets = (() => {
                 width: this.width + deltaWidth
             };
             const padParams = [startActive && this.isActive ? "objects" : "walls", "walls"].map(x => Object.assign({}, padsData, {layer: x}));
-            const padObjs = padParams.map((x,i) => createObj("graphic", Object.assign({}, x,
+            const padObjs = padParams.map((x,i) => createObj("graphic", Object.assign({},
+                                                                                      x,
                                                                                       {
                                                                                           name: `${this.name}_Pad${i}`,
                                                                                           imgsrc: C.IMAGES.blank,
@@ -712,98 +826,7 @@ const Assets = (() => {
                 this.dragPadData.forEach(x => { delete Image.DragPads[x.id]; x.remove() });
                 delete this._dragPads;
             }
-        }
-        ToggleDragPads(padsActive) { 
-            if (this.hasDragPads)
-                this.areDragPadsActive = typeof padsActive === "boolean" ? padsActive : !this.areDragPadsOnline;
-        }
-        // #endregion
-        // #endregion
-
-        // #region ~ PUBLIC METHODS
-        // #region New Public Methods
-        GetSrcFromURL(url) { return _.findKey(this.srcs, v => v === Image.ParseSrcURL(url)) };
-        Add(srcRef, srcName) {
-            const asset = Asset.Get(srcRef);
-            if (asset) {
-                this.libData = {srcs: asset.name};
-            } else {
-                srcRef = typeof srcRef === "object" && "get" in srcRef && srcRef.get("imgsrc") || srcRef;
-                this.libData = {srcs: {[srcName]: Image.ParseSrcURL(srcRef)}};
-            }
-        }
-        Cycle(isReversing = false) {
-            DB({
-                state: this.state,
-                srcs: this.srcNames,
-                index: this.srcNames.indexOf(this.state),
-                nextIndex: D.Cycle(this.srcNames.indexOf(this.state) + (isReversing ? -1 : 1), 0, this.srcNames.length - 1),
-                nextState: this.srcNames[D.Cycle(this.srcNames.indexOf(this.state) + (isReversing ? -1 : 1), 0, this.srcNames.length - 1)]
-            }, "Cycle");
-            this.Set(this.srcNames[D.Cycle(this.srcNames.indexOf(this.state) + (isReversing ? -1 : 1), 0, this.srcNames.length - 1)]);
-        }
-        Random() {
-            this._shuffledSrcs = (this._shuffledSrcs || []).length ? this._shuffledSrcs : _.shuffle(Object.keys(this.srcs));
-            this.Set(this._shuffledSrcs.pop());
-        }
-        // #endregion
-
-        // #region Overrides (Asset)
-        Fix() {
-            super.Fix();
-            if (this.hasDragPads)
-                this.dragPadData.forEach((x, i) => this.dragPads[i].set(D.FilterForObjectAttributes(this.dragPads[i], x)));
-        }
-        Set(state, isActivating = true) {
-            super.Set(state, isActivating);
-            this.Submit({imgsrc: `${C.IMGPREFIX}${this.srcs[state]}`});
-        }
-        Toggle(isActive = null, isForcing = false) {
-            super.Toggle(isActive, isForcing);
-            if (this.hasDragPads)
-                this.syncDragPads(true);
-        }
-        Unregister() { 
-            super.Unregister();
-            delete Image.LIB[this.id];
-            if (this.hasDragPads)
-                this.dragPadData.forEach(x => delete Image.DragPads[x.id]);
-        }
-        Remove() {
-            super.Remove();
-            if (this.hasDragPads)
-                this.dragPadData.forEach(x => x.obj.remove());
-        }
-        Submit(deltas) {
-            // D.Alert(`Submitting: ${D.JS(deltas)}`);
-            super.Submit(deltas);
-            if (this.hasDragPads)
-                this.syncDragPads();
-        }
-        SubmitDragPads(deltas) {
-            deltas = Array.isArray(deltas) && deltas || [deltas, deltas];
-            this.pendingDragPadChanges = this.pendingDragPadChanges.
-                map((x, i) => D.FilterForObjectAttributes(this.dragPadData[i].obj, 
-                                                          D.Merge(x, deltas[i])));
-            if (!_.all(this.pendingDragPadChanges, x => _.isEmpty(x)) && !PENDINGCHANGES.includes(this))
-                PENDINGCHANGES.push(this);
-        }
-        Apply(isTesting = false) {
-            super.Apply(isTesting);
-            if (this.hasDragPads)
-                if (isTesting) {
-                    D.Alert(D.JS(this.pendingDragPadChanges), `IMAGE - DRAGPADS: ${this.name}`);
-                } else {
-                    this.pendingDragPadChanges.forEach((x, i) => {
-                        if (!_.isEmpty(x)) { 
-                            this.dragPadData[i].obj.set(x);
-                            this._dragPads._data[i] = D.Merge(this._dragPads._data[i], x, false);
-                        } 
-                    });
-                    this.pendingDragPadChanges = [{}, {}];
-                }
-        }
-        // #endregion
+        }   
         // #endregion
     }
     class Anim extends Image {  
@@ -812,6 +835,7 @@ const Assets = (() => {
         static get LIB() { return this._AnimLIB }
         static set LIB(v) { this._AnimLIB = Object.assign(this._AnimLIB || {}, {[v.id]: v}) }
         // #endregion
+        static Get(animRef) { return Asset.Get(animRef, "anim") }
         static Initialize(animID) {
             const animAsset = new Anim(animID);
             Asset.LIB = animAsset;
@@ -819,6 +843,7 @@ const Assets = (() => {
             Anim.LIB = animAsset;
             if (animAsset.hasDragPads)
                 Image.DragPads = animAsset;
+            return animAsset;
         }
         static Make() { D.Alert("Cannot dynamically create Animation assets!", "ERROR: Anim.Make") }
         // #endregion
@@ -829,7 +854,9 @@ const Assets = (() => {
         // #endregion
 
         // #region ~ CONSTRUCTOR
-        constructor(animID) { super(animID) }
+        constructor(animID) { super(animID);
+            this.submit({isdrawing: true});
+        }
         /* AssetConstructor(assetID) {
                     this._id = assetID;
                     this._objType = {image: "graphic", token: "graphic", anim: "graphic", text: "text"}[LI.B[assetID].type];
@@ -856,7 +883,7 @@ const Assets = (() => {
                         this._pendingDragPadChanges = [{}, {}];
                         this.syncDragPads();
                     }
-                    this.pendingChanges = {isDrawing: true};  
+                    this.pendingChanges = {isdrawing: true};  
             } */
         /* "ANIM" LIBRARY EXAMPLE:
                 [animID]: {
@@ -912,6 +939,7 @@ const Assets = (() => {
         // #endregion
 
         // #region ~ PUBLIC METHODS
+        // #region Overrides (Image)
         ChangeMode() {
             this.wasActive = this.isActive;
             switch (this.isForcedOn) {
@@ -920,6 +948,7 @@ const Assets = (() => {
                 case null: break;
                 // no default
             }
+            // No setting lastState for animation objects.
         }
         Unregister() { super.Unregister(); delete Anim.LIB[this.id] }
         // #endregion
@@ -928,19 +957,38 @@ const Assets = (() => {
         // #region ~ STATIC METHODS, GETTERS & SETTERS
         // #region Instance Storage Libraries (Asset.LIB)
         static get LIB() { return this._TokenLIB }
-        static set LIB(v) { this._TokenLIB = Object.assign(this._TokenLIB || {}, {[v.charID]: v}) }
+        static set LIB(v) { this._TokenLIB = Object.assign(this._TokenLIB || {}, {[v.id]: v}) }
         // #endregion
-        static Initialize(charID) {
-            return;
-            const tokenAsset = new Token(charID);
+        static Get(tokenRef) { return Asset.Get(tokenRef, "token") }
+        static Initialize(tokenObj) {
+            const tokenAsset = new Token(tokenObj);
+            tokenAsset.pendingChanges = {};
+            tokenAsset.pendingData = {};
             Asset.LIB = tokenAsset;
-            super.LIB = tokenAsset;
-            this.LIB = tokenAsset;
+            Image.LIB = tokenAsset;
+            Token.LIB = tokenAsset;
+            tokenAsset.submit({isdrawing: false});
+            tokenAsset.Apply();
+            return tokenAsset;
+        }
+        static InitializeAll() {
+            for (const tokenObj of findObjs({_type: "graphic", _subtype: "token"}).filter(x => x.get("represents")))
+                Token.Initialize(tokenObj);
         }
         // #endregion
 
+        // #region ~ BASIC GETTERS & SETTERS
+        get libData() { return LI.B[this.id] || LI.B[this.charID || this.obj.get("represents")] || {type: "token",
+                                                                                                    zIndex: 1000,
+                                                                                                    height: 100,
+                                                                                                    width: 90,
+                                                                                                    modes: { }
+        }; }
+        set libData(v) { }
+        // #endregion
+
         // #region ~ CONSTRUCTOR
-        constructor(charID) {            
+        constructor(imgObj) {          
             /* AssetConstructor(assetID) {
                 try {
                     this._id = assetID;
@@ -977,7 +1025,7 @@ const Assets = (() => {
                         this.syncDragPads();
                     }
                     if (this._type === "image")
-                        this.pendingChanges = {isDrawing: true};     
+                        this.pendingChanges = {isdrawing: true};     
                 } catch (errObj) {                
                     THROW(`Error Constructing Asset '${D.JS(Media.GetImgData(imgID) ? Media.GetImgData(imgID).name : imgID)}' --> `, "Image", errObj);
                 }
@@ -1034,351 +1082,155 @@ const Assets = (() => {
                     }
                 }
             */
-            super(charID);
-            try {
-                const [tokenObj] = findObjs({
-                    _type: "graphic",
-                    _subtype: "token",
-                    represents: charID
-                });
-                if (tokenObj) {
-                    this._id = tokenObj.id;
-                    this._obj = tokenObj;
-                    // this._libData.layer = tokenObj.get("layer");
-                    // this._libData.isActive = this._libData.layer !== walls;
-                    /* if (this._libData.isGenericToken) {
-
-                    } else if (this._libData.isRandomToken) {
-                        const curImgURL = tokenObj.get("imgsrc");
-                        this._libData.state = _.findIndex(this._libData.srcs, x => curImgURL.includes(x));
-                    } else {
-
-                    } */
-                    // this._libData.state =  
-                    // this._libData. = 
-                    // this._libData. = 
-                    // this._libData. = 
-                } else {
-                    delete this._id;
-                    delete this._obj;
-                }
-                this._charID = charID;
-                this._charObj = getObj("character", charID);
-                this.pendingChanges = {isDrawing: false};
+            super(imgObj);
+            try { // *** OR: Instantiate this object only when a token is added to the board
+                this._charID = imgObj.get("represents");
+                this._charObj = getObj("character", this._charID);
+                this._name = this._charObj.get("name");
             } catch(errObj) {              
-                THROW(`Error Constructing Token for '${LI.B[charID].name}'`, "Token", errObj);
+                THROW(`Error Constructing Token for '${D.JSL(imgObj)}'`, "Token", errObj);
             }
         }
         // #endregion
 
         // #region ~ GETTERS 
         // READ-ONLY
-        get id() { return this._id }
-        get objType() { return this._objType }
-        get obj() { return this._obj }
-        get type() { return this.data.type }
-        get page() { return this.data.page }
-        get state() { return this.data.state }
-        get zIndex() { return this.data.zIndex }
-        get isForcedOn() { return this.mode.isForcedOn === "LAST" ? this.mode.wasActive : this.mode.isForcedOn }
-        get hasForcedState() { return typeof this.mode.isForcedState === "string" }
-        get forcedState() { return this.mode.isForcedState === true && this.mode.wasState ||
-                                   this.mode.isForcedState === null && this.state ||
-                                   this.mode.isForcedState; }
+        get charID() { return this._charID }
+        get charObj() { return this._charObj }
 
         // GENERAL
-        get name() { return this.data.name }
-        get top() { return this.data.top }
-        get left() { return this.data.left }
-        get height() { return this.data.height }
-        get width() { return this.data.width }
-        get topEdge() { return D.Int(this.top - 0.5 * this.height) }
-        get bottomEdge() { return D.Int(this.top + 0.5 * this.height) }
-        get leftEdge() { return D.Int(this.left - 0.5 * this.width) }
-        get rightEdge() { return D.Int(this.left + 0.5 * this.width) }
-        get position() { return Object.assign({}, this.data, {topEdge: this.topEdge, bottomEdge: this.bottomEdge, leftEdge: this.leftEdge, rightEdge: this.rightEdge}) }
-        get layer() { return this.data.layer }
-        get activeLayer() { return this.data.activeLayer }
-        get isActive() { return this.data.isActive }
-
-        // MODE DATA
-        get wasModeUpdated() { return this.data.wasModeUpdated }
-        get wasActive() { return this.mode.wasActive }
-        get wasState() { return this.mode.wasState }
-
-        // PENDING CHANGES
-        get pendingChanges() { return this._pendingChanges }
+        get top() { return D.Int(this.obj.get("top")) }
+        get left() { return D.Int(this.obj.get("left")) }
         // #endregion
 
         // #region ~ SETTERS
-        set name(v) {
-            this.pendingChanges = {name: v};
-        }
-        set top(v) { if (v !== this.top) this.setNewPosition({top: v}); }
-        set left(v) { if (v !== this.left) this.setNewPosition({left: v}); }
-        set height(v) { if (v !== this.height) this.setNewPosition({height: v}); }
-        set width(v) { if (v !== this.width) this.setNewPosition({width: v}); }
-        set topEdge(v) { if (v !== this.topEdge) this.setNewPosition({topEdge: v}); }
-        set bottomEdge(v) { if (v !== this.bottomEdge) this.setNewPosition({bottomEdge: v}); }
-        set leftEdge(v) { if (v !== this.leftEdge) this.setNewPosition({leftEdge: v}); }
-        set rightEdge(v) { if (v !== this.rightEdge) this.setNewPosition({rightEdge: v}); }
-        set position(v) { this.setNewPosition(v) }
-        set layer(v) {
-            this.pendingChanges = {layer: v};
-        }
-        set activeLayer(v) {
-            this.pendingData = {activeLayer: v};
-            if (this.isActive)
-                this.layer = v;
-        }
-        set isActive(v) {
-            this.pendingData = {isActive: Boolean(v)};
-            this.layer = v ? this.activeLayer : "walls";
-        }
-
-        // MODE DATA
-        set wasModeUpdated(v) { this.pendingData = {wasModeUpdated: Boolean(v)} }
-        set wasActive(v) { this.pendingData = {modes: {[Session.LastMode]: {wasActive: Boolean(v)}}} }
-        set wasState(v) { this.pendingData = {modes: {[Session.LastMode]: {wasState: v}}} }
-
-        // PENDING CHANGES
-        set pendingChanges(v) {
-            this.pendingData = v;
-            this._pendingChanges = _.pick(D.Merge(this.pendingChanges, v), (val, key) => {
-                const isChanged = (libRef) => {
-                    if (Array.isArray(libRef)) {
-                        if (Number.isInteger(Number(key)) && Number(key) < libRef.length)
-                            return libRef[Number(key)] !== val;       
-                        else
-                            return _.any(libRef, (libVal) => _.isObject(libVal) && isChanged(libVal));
-                    } else if (_.isObject(libRef)) {        
-                        if (key in libRef)
-                            return libRef[key] !== val;
-                        return _.any(libRef, (libVal) => _.isObject(libVal) && isChanged(libVal));
-                    } else {
-                        return false;
-                    }
-                };
-                return isChanged(this.libData);
-            });
-            if (!_.isEmpty(this.pendingChanges) && !PENDINGCHANGES.includes(this))
-                PENDINGCHANGES.push(this);
-        }
+        
         // #endregion
 
         // #region ~ PRIVATE METHODS
-        setNewPosition(delta) {
-            const posData = Object.assign({}, _.pick(this.data, "top", "left", "height", "width"), _.pick(delta, "top", "left", "height", "width"));
-            const edgeData = Object.assign({}, {topEdge: this.topEdge, bottomEdge: this.bottomEdge, leftEdge: this.leftEdge, rightEdge: this.rightEdge}, _.pick(delta, "leftEdge", "rightEdge", "topEdge", "bottomEdge"));
-            if ("topEdge" in delta && "bottomEdge" in delta) {
-                posData.height = D.Int(edgeData.bottomEdge - edgeData.topEdge);
-                posData.top = D.Int((edgeData.topEdge + edgeData.bottomEdge) / 2);
-            } else if ("topEdge" in delta) {
-                posData.top = D.Int(edgeData.topEdge + 0.5 * posData.height);
-            } else if ("bottomEdge" in delta) {
-                posData.top = D.Int(edgeData.bottomEdge - 0.5 * posData.height);
-            }
-            if ("leftEdge" in delta && "rightEdge" in delta) {
-                posData.width = D.Int(edgeData.rightEdge - edgeData.leftEdge);
-                posData.left = D.Int((edgeData.leftEdge + edgeData.rightEdge) / 2);
-            } else if ("leftEdge" in delta) {
-                posData.left = D.Int(edgeData.leftEdge + 0.5 * posData.width);
-            } else if ("rightEdge" in delta) {
-                posData.left = D.Int(edgeData.rightEdge - 0.5 * posData.width);
-            }
-            this.pendingChanges = posData;
-        }
-        syncLibrary() {
-            this.libData = {
-                page: _.findKey(C.PAGES, v => v === this.obj.get("_pageid")),
-                layer: this.obj.get("layer"),
-                isActive: this.layer !== "walls",
-                top: D.Int(this.obj.get("top")),
-                left: D.Int(this.obj.get("left")),
-                height: D.Int(this.obj.get("height")),
-                width: D.Int(this.obj.get("width"))
-            };
-        }
-        syncObject() {
-            this.pendingChanges = {
-                name: this.name,
-                left: this.left,
-                top: this.top,
-                height: this.height,
-                width: this.width,
-                layer: this.isActive ? this.activeLayer : "walls"
-            };
-        }
+
         // #endregion
 
         // #region ~ PUBLIC METHODS
-        Apply(isTesting = false) {
-            if (!_.isEmpty(this.pendingChanges))
-                if (isTesting) {
-                    D.Alert([
-                        D.JS(this.pendingChanges),
-                        D.JS(this.pendingData)
-                    ].join("<br><br>"), `APPLY: ${this.name}`);
-                } else {
-                    this.obj.set(this.pendingChanges);
-                    this._pendingChanges = {};
-                }
-            this.libData = this.pendingData;
-            this._pendingData = {};
-        }
-        ChangeMode() {
-            this.wasActive = this.isActive;
-            this.wasState = this.state;
-            switch (this.isForcedOn) {
-                case true: case false: this.isActive = this.isForcedOn; break;
-                case "LAST": this.isActive = this.wasActive; break;
-                case null: break;
-                // no default
-            }
-            if (this.isActive && this.forcedState)
-                this.Set(this.forcedState);
-        }
-        Toggle(isActive = null, isForcing = false) {
-            isActive = typeof isActive === "boolean" ? isActive : !this.isActive;
-            if (isActive !== this.isActive && (!isActive ||
-                                               this.isForcedOn !== "NEVER" || isForcing))
-                this.isActive = isActive;
-        }
-        ForceToggle(isActive = null) { this.Toggle(isActive, true) }
-        Set(state) { this.pendingData = {state} }
-        Unregister() { delete Asset.LIB[this.id]; delete LI.B[this.id] }
-        Remove() { this.obj.remove(); this.Unregister() }
+        // #region Overrides (Image)
+        Unregister() { super.Unregister(); delete Token.LIB[this.id] }
         // #endregion
     }
     class Text extends Asset {
-        // #region ~ STATIC METHODS        
+        // #region ~ STATIC METHODS, GETTERS & SETTERS
+        // #region Instance Storage Libraries (Text.LIB)     
         static get LIB() { return this._TextLIB }
-        static set LIB(v) { 
-            this._TextLIB = this._TextLIB || {};
-            this._TextLIB[v.id] = v;
-        }
+        static set LIB(v) { this._TextLIB = Object.assign(this._TextLIB || {}, 
+                                                          {[v.id]: v}); }
+        // #endregion
+        static Get(textRef) { return Asset.Get(textRef, "text") }
         static Initialize(textID) {
             const textAsset = new Text(textID);
             Asset.LIB = textAsset;
-            this.LIB = textAsset;
+            Text.LIB = textAsset;
+            return textAsset;
         }
         // #endregion
 
+        // #region ~ BASIC GETTERS & SETTERS
+        get pendingShadowChanges() { return this.hasShadow && this._pendingShadowChanges }
+        set pendingShadowChanges(v) { if (this.hasShadow) this._pendingShadowChanges = v; }
+        // #endregion
+
         // #region ~ CONSTRUCTOR
-        constructor(textID) {
-            super(textID);
+        constructor(textID) { super(textID);
             try {
-                if (this.data.shadowID)
+                if (this.data.shadowID) {
                     this._shadowObj = getObj("text", this.data.shadowID);
-                this._pendingShadowChanges = {};
-                Text.LIB = this;
+                    this._pendingShadowChanges = {};
+                }
             } catch (errObj) {
                 THROW(`Error Constructing Asset '${D.JS(Media.GetTextData(textID) ? Media.GetTextData(textID).name : textID)}'`, "TEXT", errObj);
-                D.Alert(`Attempt to get CHARWIDTH for:
-                font_family: ${D.JS(this.data.font_family)}
-                font_size: ${D.JS(this.data.font_size)}`, "ERROR ALERT");
             }
         }
         // #endregion
 
         // #region ~ GETTERS
         // READ-ONLY
-        get shadow() { return this._shadowObj || false }
+        get lineHeight() { return this.data.lineHeight }        
+        get hasShadow() { return Boolean(this._shadowObj) }
+        get shadowObj() { return this.hasShadow && this._shadowObj }
 
         // GENERAL
-        get shadowShift() { return this.data.shadowShift || C.SHADOWOFFSETS[this.data.font_size] || 0 }
         get color() { return this.data.color }
         get font() { return this.data.font_family }
         get size() { return this.data.font_size }
-        get lineHeight() { return this._lineHeight }
-        // color, font, size
-        // shadow image
+
+        get shadowShift() { return this.hasShadow && this.data.shadowShift }
         // "real pos" overrides
         // justification & line splitting
-        // PENDING CHANGES (Shadow Object)
-        get pendingChanges() { return super.pendingChanges }
-        get pendingShadowChanges() { return this._pendingShadowChanges }
         // #endregion
 
         // #region ~ SETTERS
-        set shadowShift(v) {
-            if (v !== this.shadowShift) {
-                this.data.shadowShift = v;
-                this.pendingShadowChanges = {top: this.top + v, left: this.left + v};
-            }
-        }
-        set color(v) {
-            if (v !== this.color) {
-                this.data.color = v;
-                this.pendingChanges = {color: v};
-            }
-        }
-        set font(v) {
-            if (v !== this.font) {
-                this.data.font_family = v;
-                this.pendingChanges = {font_family: v};
-                this.justifyText();
-            }
-        }
-        set size(v) {
-            if (v !== this.size) {
-                this.data.font_size = v;
-                this.pendingChanges = {font_size: v};
-                this.justifyText();
-            }
-        }
-        set lineHeight(v) {
-            if (v !== this.lineHeight) {
-                this._lineHeight = v;
-                this.justifyText();
-            }
-        }
-        // PENDING CHANGES (Shadow Object)
-        set pendingShadowChanges(v) { Object.assign(this._pendingShadowChanges, v) }
-        set pendingChanges(v) {
-            Object.assign(this._pendingChanges, v);
-            const pendingShadowChanges = _.pick(this.pendingChanges, "text", "layer", "font_family", "font_size", "top", "left");
-            if ("top" in pendingShadowChanges)
-                pendingShadowChanges.top += this.shadowShift;
-            if ("left" in pendingShadowChanges)
-                pendingShadowChanges.left += this.shadowShift;
-            this.pendingShadowChanges = pendingShadowChanges;
-            if (!PENDINGCHANGES.includes(this))
-                PENDINGCHANGES.push(this);
-        }
-        // #endregion
+        set color(v) { if (v !== this.color) this.submit({color: v}); }
+        set font(v) { if (v !== this.font) this.submit({font_family: v}); }
+        set size(v) { if (v !== this.size) this.submit({font_size: v}); }
         
+        set shadowShift(v) { if (this.hasShadow && v !== this.shadowShift) this.submit({shadowShift: v}); }
+        // #endregion
+       
         // #region ~ PRIVATE METHODS
+        // #region Overrides (Asset)
+        submit(deltas) { super.submit(deltas);
+            this.justifyText();
+            if (this.hasShadow)
+                this.syncShadow();
+        }
+        // #endregion      
+        submitShadow(deltas) {
+            if (this.hasShadow) {
+                this.pendingShadowChanges = D.FilterForObjectAttributes(this.shadowObj,
+                                                                        D.Merge(this.pendingShadowChanges, deltas));
+                if (!PENDINGCHANGES.includes(this) && !_.isEmpty(this.pendingShadowChanges))
+                    PENDINGCHANGES.push(this);
+            }
+        }
+        syncShadow() {
+            if (this.hasShadow)
+                this.submitShadow({
+                    layer: this.layer,
+                    top: this.top += this.shadowShift,
+                    left: this.left += this.shadowShift,
+                    text: this.state
+                });
+        }
         justifyText() { }
         // #endregion
 
         // #region ~ PUBLIC METHODS
-        Apply(isTesting = false) {
-            super.Apply(isTesting);
-            if (this.shadow && !_.isEmpty(this.pendingShadowChanges))
+        // #region Overrides (Asset)
+        Apply(isTesting = false) { super.Apply(isTesting);
+            if (this.hasShadow && !_.isEmpty(this.pendingShadowChanges))
                 if (isTesting) {
                     D.Alert(D.JS(this.pendingShadowChanges), `TEXT - SHADOW: ${this.name}`);
                 } else {
-                    this.shadow.set(this.pendingShadowChanges);
+                    this.shadowObj.set(this.pendingShadowChanges);
                     this._pendingShadowChanges = {};
                 }
         }
+        Set(state, isActivating = true) { super.Set(state, isActivating);
+            this.submit({text: this.state});
+        }
+        Remove() { super.Remove();
+            if (this.hasShadow)
+                this.shadowObj.remove();        
+        }
         // #endregion
-
+        // #endregion
     }
     // #endregion
 
-    // #region CONFIGURATION
-
-
-    // #endregion
-
-    // #region UTILITY   
+    // #region ~ INSTANTIATION   
     const initAssets = (isTesting = false) => {
         initIMGAssets();
         initTEXTAssets();
         initANIMAssets();
-        initTOKENAssets();
+        Token.InitializeAll();
         Asset.ApplyPendingChanges(isTesting);
     };
     const initIMGAssets = () => {
@@ -1395,17 +1247,13 @@ const Assets = (() => {
         for (const assetID of Object.keys(STATE.REF.AssetLibrary).filter(x => STATE.REF.AssetLibrary[x].type === "anim"))
             Anim.Initialize(assetID);
         D.Flag("... ... Animation Assets Compiled!");
-    };       
-    const initTOKENAssets = () => {
-        for (const assetID of Object.keys(STATE.REF.AssetLibrary).filter(x => STATE.REF.AssetLibrary[x].type === "token"))
-            Token.Initialize(assetID);
-        D.Flag("... ... Token Assets Compiled!");
     };
     // #endregion
 
+    // #region ~ ************* RETURN ****************************
     return {
         CheckInstall: checkInstall,
-        OnChatCall: onChatCall, /* OnGraphicAdd: onGraphicAdd, */ OnGraphicChange: onGraphicChange,
+        OnChatCall: onChatCall, OnGraphicAdd: onGraphicAdd, OnGraphicDestroy: onGraphicDestroy, OnGraphicChange: onGraphicChange,
 
         Init: initAssets,
 
@@ -1414,7 +1262,7 @@ const Assets = (() => {
         Apply: Asset.ApplyPendingChanges
 
     };
-
+    // #endregion
 })();
 
 on("ready", () => {
