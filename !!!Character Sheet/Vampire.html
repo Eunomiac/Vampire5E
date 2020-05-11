@@ -4060,7 +4060,7 @@
             if (isDebugging && !LOGOPTIONS.isMuted) {
                 const logTitle = LOGOPTIONS.silent ? `  ([${_.compact([titles]).join(":")}])` : `[${_.compact([titles]).join(":")}]`;
                 if (isDebug && (isLoud || !LOGOPTIONS.silent))
-                    console[isWarn ? "warn" : "log"]([logTitle, msg].join(" ")); // eslint-disable-line no-console
+                    console[isWarn ? "warn" : "log"]([logTitle, msg].join(" "));
             }
         },
         isBlacklisted = (attr = "") => _.filter(ATTRBLACKLIST, bannedAttr => attr.toLowerCase().includes(bannedAttr.toLowerCase())) > 0,

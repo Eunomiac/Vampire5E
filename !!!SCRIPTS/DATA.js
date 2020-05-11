@@ -72,7 +72,7 @@ const D = (() => {
     };
     // #endregion	
     // #region ~ ************* EVENT HANDLERS ********************
-    const onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
+    const onChatCall = (call, args, objects, msg) => {
         switch (call) {
             case "!data": {
                 switch (D.LCase(call = args.shift())) {

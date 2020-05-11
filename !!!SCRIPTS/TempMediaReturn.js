@@ -5,11 +5,11 @@ const Assets = (() => {
     const SCRIPTNAME = "Assets",
 
         // #region (hide) COMMON INITIALIZATION
-        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
-        VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
-        DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-        LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
+        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},
+        VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray),
+        DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME),
+        LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME),
+        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj),
 
         checkInstall = () => {
             C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};

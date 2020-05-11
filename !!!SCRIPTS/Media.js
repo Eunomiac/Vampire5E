@@ -3323,7 +3323,7 @@ const Media = (() => {
                         wordsInLine[i-1] = `${wordsInLine[i-1] }-`;
                         wordsInLine = [...[...wordsInLine].splice(0,i), ...[...wordsInLine].splice(i+1)];
                     }
-                for (let i = 0; true; i++) { // eslint-disable-line no-constant-condition
+                for (let i = 0; true; i++) {
                     if (getTextWidth(textObj, wordsInLine[i] || "", false) > maxWidth) {
                         let [prevLine, curLine, nextLine] = [
                             i > 0 ? wordsInLine[i-1] : false,

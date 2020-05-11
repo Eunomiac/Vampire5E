@@ -22,7 +22,7 @@ const Handouts = (() => {
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
-    const onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
+    const onChatCall = (call, args, objects, msg) => {
         switch (call) {
             case "kill": {
                 switch (D.LCase(call = args.shift())) {
