@@ -1,59 +1,59 @@
-void MarkStart("Fuzzy")
+void MarkStart("Fuzzy");
 /* eslint-disable no-prototype-builtins */
 /* eslint-disable consistent-return */
 const Fuzzy = (() => {
     // ************************************** START BOILERPLATE INITIALIZATION & CONFIGURATION **************************************
-    const SCRIPTNAME = "Fuzzy",
+    const SCRIPTNAME = "Fuzzy";
 
     // #region COMMON INITIALIZATION
-        STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }},	// eslint-disable-line no-unused-vars
-        VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray), // eslint-disable-line no-unused-vars
-        DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-        LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME), // eslint-disable-line no-unused-vars
-        THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj), // eslint-disable-line no-unused-vars
+    const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};	// eslint-disable-line no-unused-vars
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray); // eslint-disable-line no-unused-vars
+    const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME); // eslint-disable-line no-unused-vars
+    const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME); // eslint-disable-line no-unused-vars
+    const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj); // eslint-disable-line no-unused-vars
 
-        checkInstall = () => {
-            C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {}
-            initialize()
-        },
+    const checkInstall = () => {
+        C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
+        initialize();
+    };
     // #endregion
 
     // #region LOCAL INITIALIZATION
-        initialize = () => { 
-            STATE.REF.minMatchScore = STATE.REF.minMatchScore || 0.33
-        },
+    const initialize = () => { 
+        STATE.REF.minMatchScore = STATE.REF.minMatchScore || 0.33;
+    };
     // #endregion  
   
     // #region EVENT HANDLERS: (HANDLEINPUT)
-        onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
-            switch (call) {
-                case "set": {
-                    switch (D.LCase(call = args.shift())) {
-                        case "minmatch": default: {
-                            STATE.REF.minMatchScore = D.Float(args.shift()) || 0.33
-                            break
-                        }
+    const onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
+        switch (call) {
+            case "set": {
+                switch (D.LCase(call = args.shift())) {
+                    case "minmatch": default: {
+                        STATE.REF.minMatchScore = D.Float(args.shift()) || 0.33;
+                        break;
                     }
-                    args.unshift(call)
                 }
-            // falls through
-                case "get": {
-                    switch (D.LCase(call = args.shift())) {
-                        case "minmatch": default: {
-                            D.Alert(`Fuzzy Minimum Match Score is <b>${STATE.REF.minMatchScore}</b><br><br>Default = 0.33; <b>!fuzzy set minmatch &lt;#&gt;</b> to change.`, "!fuzzy set minmatch")
-                            break
-                        }
-                    }
-                    break
-                }
-            // no default
+                args.unshift(call);
             }
-        },
+            // falls through
+            case "get": {
+                switch (D.LCase(call = args.shift())) {
+                    case "minmatch": default: {
+                        D.Alert(`Fuzzy Minimum Match Score is <b>${STATE.REF.minMatchScore}</b><br><br>Default = 0.33; <b>!fuzzy set minmatch &lt;#&gt;</b> to change.`, "!fuzzy set minmatch");
+                        break;
+                    }
+                }
+                break;
+            }
+            // no default
+        }
+    };
     // #endregion
     // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     /* eslint-disable */
-        Fix = function(dict) {
+        const Fix = function(dict) {
             dict = dict || []
             const fuzzyset = {
                     gramSizeLower: 2,
@@ -335,11 +335,11 @@ const Fuzzy = (() => {
         OnChatCall: onChatCall,
 
         Fix
-    }
-} )()
+    };
+} )();
 
 on("ready", () => {
-    Fuzzy.CheckInstall()
-    D.Log("Fuzzy Ready!")
-} )
-void MarkStop("Fuzzy")
+    Fuzzy.CheckInstall();
+    D.Log("Fuzzy Ready!");
+} );
+void MarkStop("Fuzzy");

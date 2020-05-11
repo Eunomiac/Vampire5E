@@ -32,7 +32,7 @@ module.exports = {
         "babel/object-curly-spacing": 1,
         "babel/quotes": 1,
         "block-scoped-var": "error",
-        "class-methods-use-this": "error",
+        "class-methods-use-this": "warn",
         "consistent-return": "error",
         "curly": ["error", "multi", "consistent"],
         "default-case": "error",
@@ -43,21 +43,33 @@ module.exports = {
             4,
             { 
                 "SwitchCase": 1,
-                "VariableDeclarator": 1,
-                "outerIIFEBody": 1,
-                "MemberExpression": 1,
-                "ObjectExpression": "first",
-                "FunctionDeclaration": { parameters: "first", body: 1 },
-                "CallExpression": { arguments: "first" },
+                // "VariableDeclarator": 1,
+                // "outerIIFEBody": 1,
+                // "MemberExpression": 1,
+                "FunctionDeclaration": {
+                                            parameters: "first", 
+                                            // body: 1
+                                        },
+                "FunctionExpression": {
+                                            parameters: "first", 
+                                            // body: 1
+                                        },
+                "CallExpression": { 
+                                        arguments: "first" 
+                                    },
                 "ArrayExpression": "first",
-                "ignoreComments": true/*,
-                "flatTernaryExpression": false*/
+                "ObjectExpression": "first",
+                "ImportDeclaration": "first",
+                "flatTernaryExpressions": true,
+                // "ignoreComments": false
             }
         ],
         "linebreak-style": [
             "error",
             "windows"
         ],
+        "lines-between-class-members": 0,
+        "max-classes-per-file": 0,
         "no-console": 0,
         "no-continue": 0,
         "no-debugger": "warn",
@@ -94,9 +106,12 @@ module.exports = {
         "no-unused-vars": "warn",
         "no-use-before-define": 0,
         "no-useless-computed-key": 0,
+        "no-useless-constructor": "warn",
+        "no-useless-escape": 0,
         //"no-magic-numbers": ["warn", { "ignoreArrayIndexes": true, "ignore": [0, 1], "enforceConst": true } ],
         "no-void": 0,
-        "one-var": ["error", "consecutive"],
+        // "one-var": ["error", "consecutive"],
+        "one-var": ["error", { var: "always", let: "consecutive", const: "never" }],
         "prefer-const": ["error", {"destructuring": "all"}],
         "prefer-object-spread": 0,
         "quotes": [
@@ -106,31 +121,32 @@ module.exports = {
         "radix": 0,
         "semi": [
             "error",
-            "never",
-            { "beforeStatementContinuationChars": "never" }
+            "always",
+            { "omitLastInOneLineBlock": true }
         ]
     },
+    "reportUnusedDisableDirectives": true,
     "globals": {
-        "START": "writable",
-        "SCRIPTS": "writable",
-        "C": "writable",
-        "D": "writable",
-        "Listener": "writable",
-        "Char": "writable",
-        "Chat": "writable",
-        "Media": "writable",
-        "DragPads": "writable",
-        "Handouts": "writable",
-        "Roller": "writable",
-        "Complications": "writable",
-        "Session": "writable",
-        "Player": "writable",
-        "Fuzzy": "writable",
-        "Tester": "writable",
-        "TimeTracker": "writable",
-        "Roll20AM": "writable",
-        "Soundscape": "writable",
-        "InitCommands": "writable",
+        "START": "readonly",
+        "SCRIPTS": "readonly",
+        "C": "readonly",
+        "D": "readonly",
+        "Listener": "readonly",
+        "Char": "readonly",
+        "Chat": "readonly",
+        "Assets": "readonly",
+        "Media": "readonly",
+        "DragPads": "readonly",
+        "Handouts": "readonly",
+        "Roller": "readonly",
+        "Complications": "readonly",
+        "Session": "readonly",
+        "Player": "readonly",
+        "Fuzzy": "readonly",
+        "Tester": "readonly",
+        "TimeTracker": "readonly",
+        "Soundscape": "readonly",
+        "InitCommands": "readonly",
         "_": "readonly",
         "state": "writable",
         "getAttrs": "readonly",
@@ -157,11 +173,11 @@ module.exports = {
         "clearInterval": "readonly",
         "getGMID": "readonly",
         "sendChatMessage": "readonly",
+        "processStack": "readonly",
         "arguments": "writable",
         "generateRowID": "readonly",
-        "MarkStart": "writable",
-        "MarkStop": "writable",
-        "processStack": "writable"
+        "MarkStart": "readonly",
+        "MarkStop": "readonly"
     },
     "plugins": [
         "babel"
