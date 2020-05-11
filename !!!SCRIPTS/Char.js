@@ -268,6 +268,8 @@ const Char = (() => {
                     ]
                 }
             )
+
+
 // awareness/intelligence+investigation/wits+investigation;postrait:Auspex;+ Heightened Senses (<.>)
 // 
 
@@ -729,6 +731,10 @@ const Char = (() => {
                     switch(D.LCase(call = args.shift())) {
                         case "char": {
                             charSelectMenu()
+                            break
+                        }
+                        case "charnpc": {
+                            charSelectMenu(true)
                             break
                         }
                         case "player": {

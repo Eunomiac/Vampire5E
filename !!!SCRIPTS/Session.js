@@ -130,9 +130,24 @@ const Session = (() => {
         onChatCall = (call, args, objects, msg) => { 	// eslint-disable-line no-unused-vars
             const charObjs = Listener.GetObjects(objects, "character")
             switch (call) {
+                case "lock": {
+                    switch (D.LCase(call = args.shift())) {
+                        case "date": STATE.REF.dateRecord = null; break
+                        case "loc": case "location": {
+                            switch (D.LCase(call = args.shift())) {
+                                case "blank": STATE.REF.locationRecord.Active = D.Clone(BLANKLOCRECORD); break
+                                default: STATE.REF.locationRecord.Active = D.Clone(STATE.REF.curLocation); break
+                            }
+                            break
+                        }
+                        case "tokens": logTokens("Active"); break
+                        // no default
+                    }
+                    break
+                }
                 case "start": case "end": case "toggle": {
                     if (isSessionActive())
-                        endSession()
+                        endSession(args[0] !== "skip")
                     else
                         startSession()
                     break
@@ -238,7 +253,6 @@ const Session = (() => {
                             break
                         }
                         case "scene": setSceneFocus(args.shift()); break
-                        case "date": STATE.REF.dateRecord = null; break
                         case "customsitedist": {
                             const [siteRef, siteName] = getActiveSite(true),
                                 customLocRef = siteName in STATE.REF.customLocs && STATE.REF.customLocs[siteName] ||
@@ -550,8 +564,10 @@ const Session = (() => {
                 ])]]
             ])
         },
-        endSession = () => {
-            if (STATE.REF.isTestingActive && !STATE.REF.isFullTest || sessionMonologue() && remorseCheck()) {
+        endSession = (isDoingMonologues = true) => {
+            if (STATE.REF.isTestingActive && !STATE.REF.isFullTest ||
+                isDoingMonologues && sessionMonologue() && remorseCheck() ||
+                remorseCheck()) {
                 changeMode("Inactive", true, [
                     [D.Chat, ["all", C.HTML.Block([
                         C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
@@ -626,23 +642,45 @@ const Session = (() => {
                     `${STATE.REF.Mode}`,
                     D.Capitalize(mode.toLowerCase())
                 ]
-                D.Queue(MODEFUNCTIONS.outroMode[lastMode], args, "ModeSwitch", 0.1)
-                D.Queue(Media.ToggleLoadingScreen, [curMode === "Inactive" && "concluding" || "loading", `Changing Modes: ${D.UCase(lastMode)} ► ${D.UCase(curMode)}`, {duration: 15, numTicks: 30, callback: () => { MODEFUNCTIONS.introMode[curMode](args)}}], "ModeSwitch", 3)
-                D.Queue(Media.SetLoadingMessage, ["Logging Game State..."], "ModeSwitch", 0.1)
-                D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1)
-                D.Queue(MODEFUNCTIONS.leaveMode[lastMode], args, "ModeSwitch", 1)
-                D.Queue(() => { STATE.REF.Mode = curMode; STATE.REF.LastMode = lastMode }, [], "ModeSwitch", 0.1)
-                D.Queue(Media.SetLoadingMessage, [`Clearing ${D.UCase(lastMode)} Assets...`], "ModeSwitch", 0.1)
-                D.Queue(Roller.Clean, [], "ModeSwitch", 1)
-                D.Queue(Media.ModeUpdate, [], "ModeSwitch", 2)
-                D.Queue(setModeLocations, [curMode], "ModeSwitch", 1)
-                if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds))
-                    D.Queue(Soundscape.Sync, [true], "ModeSwitch", 1)
-                D.Queue(Media.SetLoadingMessage, [`Deploying ${D.UCase(curMode)} Assets ...`], "ModeSwitch", 0.1)
-                D.Queue(MODEFUNCTIONS.enterMode[curMode], args, "ModeSwitch", 1)
-                D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1)
-                D.Queue(TimeTracker.Fix, [], "ModeSwitch", 0.1)
-                D.Queue(Media.SetLoadingMessage, ["Cleaning Up ..."], "ModeSwitch", 1)
+                if (lastMode === "Inactive" && curMode === "Active") {
+                    D.Queue(MODEFUNCTIONS.outroMode[lastMode], args, "ModeSwitch", 0.1)
+                    D.Queue(Media.ToggleLoadingScreen, ["initializing",
+                                                        `Initializing Session ${D.NumToText(STATE.REF.SessionNum)}`,
+                                                        {duration: 15, numTicks: 30, callback: () => { MODEFUNCTIONS.introMode[curMode](args)}}], "ModeSwitch", 3)
+                    D.Queue(Media.SetLoadingMessage, ["Preparing Sandbox..."], "ModeSwitch", 0.1)
+                    D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1)
+                    D.Queue(MODEFUNCTIONS.leaveMode[lastMode], args, "ModeSwitch", 1)
+                    D.Queue(() => { STATE.REF.Mode = curMode; STATE.REF.LastMode = lastMode }, [], "ModeSwitch", 0.1)
+                    D.Queue(Media.SetLoadingMessage, ["Adding Characters..."], "ModeSwitch", 0.1)
+                    D.Queue(Roller.Clean, [], "ModeSwitch", 1)
+                    D.Queue(Media.ModeUpdate, [], "ModeSwitch", 2)
+                    D.Queue(setModeLocations, [curMode], "ModeSwitch", 1)
+                    if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds))
+                        D.Queue(Soundscape.Sync, [true], "ModeSwitch", 1)
+                    D.Queue(Media.SetLoadingMessage, ["Setting Time, Location & Weather..."], "ModeSwitch", 0.1)
+                    D.Queue(MODEFUNCTIONS.enterMode[curMode], args, "ModeSwitch", 1)
+                    D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1)
+                    D.Queue(TimeTracker.Fix, [], "ModeSwitch", 0.1)
+                    D.Queue(Media.SetLoadingMessage, ["Synchronizing Display Data..."], "ModeSwitch", 1)
+                } else {
+                    D.Queue(MODEFUNCTIONS.outroMode[lastMode], args, "ModeSwitch", 0.1)
+                    D.Queue(Media.ToggleLoadingScreen, [curMode === "Inactive" && "concluding" || "loading", `Changing Modes: ${D.UCase(lastMode)} ► ${D.UCase(curMode)}`, {duration: 15, numTicks: 30, callback: () => { MODEFUNCTIONS.introMode[curMode](args)}}], "ModeSwitch", 3)
+                    D.Queue(Media.SetLoadingMessage, ["Logging Game State..."], "ModeSwitch", 0.1)
+                    D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1)
+                    D.Queue(MODEFUNCTIONS.leaveMode[lastMode], args, "ModeSwitch", 1)
+                    D.Queue(() => { STATE.REF.Mode = curMode; STATE.REF.LastMode = lastMode }, [], "ModeSwitch", 0.1)
+                    D.Queue(Media.SetLoadingMessage, [`Clearing ${D.UCase(lastMode)} Assets...`], "ModeSwitch", 0.1)
+                    D.Queue(Roller.Clean, [], "ModeSwitch", 1)
+                    D.Queue(Media.ModeUpdate, [], "ModeSwitch", 2)
+                    D.Queue(setModeLocations, [curMode], "ModeSwitch", 1)
+                    if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds))
+                        D.Queue(Soundscape.Sync, [true], "ModeSwitch", 1)
+                    D.Queue(Media.SetLoadingMessage, [`Deploying ${D.UCase(curMode)} Assets ...`], "ModeSwitch", 0.1)
+                    D.Queue(MODEFUNCTIONS.enterMode[curMode], args, "ModeSwitch", 1)
+                    D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1)
+                    D.Queue(TimeTracker.Fix, [], "ModeSwitch", 0.1)
+                    D.Queue(Media.SetLoadingMessage, ["Cleaning Up ..."], "ModeSwitch", 1)
+                }
                 // D.Queue(Media.ToggleLoadingScreen, [false], "ModeSwitch", 0.1)
                 D.Queue(MODEFUNCTIONS.introMode[curMode], args, "ModeSwitch", 0.1)
                 for (const endFunc of endFuncs)
