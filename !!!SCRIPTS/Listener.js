@@ -296,6 +296,17 @@ const Listener = (() => {
         }
         return STATE.REF.objectLog[type] && STATE.REF.objectLog[type].split(",").map(x => getObj(type, x)) || [];            
     };
+    const parseParams = (args, delim = " ") => {
+        args = VAL({array: args}) ? args.join(" ") : args;
+        if (VAL({string: args}))
+            return _.object(args.
+                split(new RegExp(`,?${delim.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}+`, "gu")).
+                filter(x => x.includes(":")).
+                map(x => x.trim().split(":").
+                    map(xx => VAL({number: xx}) ? D.Float(xx,2) : xx))
+            );
+        return {};
+    };
     const lockListener = () => { STATE.REF.isLocked = true };
     const unlockListener = () => { STATE.REF.isLocked = false };
 
@@ -303,6 +314,7 @@ const Listener = (() => {
         RegisterEventHandlers: regHandlers,
         CheckInstall: checkInstall,
 
+        ParseParams: parseParams,
         GetObjects: getAllObjs,
         Lock: lockListener,
         Unlock: unlockListener,

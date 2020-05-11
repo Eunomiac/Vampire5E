@@ -15,7 +15,7 @@ const Session = (() => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
         initialize();
     };
-        // #endregion
+    // #endregion
 
     // #region LOCAL INITIALIZATION
     const initialize = () => {            
@@ -67,20 +67,48 @@ const Session = (() => {
         verifyStateIntegrity();
         buildLocationMenus();
     };
-        // #endregion
+    // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const onChatCall = (call, args, objects, msg) => {
         const charObjs = Listener.GetObjects(objects, "character");
         switch (call) {
+            case "lock": {
+                switch (D.LCase(call = args.shift())) {
+                    case "date": STATE.REF.dateRecord = null; break;
+                    case "loc": case "location": {
+                        switch (D.LCase(call = args.shift())) {
+                            case "blank": STATE.REF.locationRecord.Active = D.Clone(BLANKLOCRECORD); break;
+                            default: STATE.REF.locationRecord.Active = D.Clone(STATE.REF.curLocation); break;
+                        }
+                        break;
+                    }
+                    case "tokens": logTokens("Active"); break;
+                        // no default
+                }
+                break;
+            }
             case "start": case "end": case "toggle": {
                 if (isSessionActive())
-                    endSession();
+                    endSession(args[0] !== "skip");
                 else
                     startSession();
                 break;
             }
             case "next": sessionMonologue(); break;
+            case "backup": {
+                delete STATE.REF.backupData;
+                const backupData = JSON.stringify(STATE.REF);
+                STATE.REF.backupData = backupData;
+                D.Alert(D.JS(JSON.parse(backupData)));
+                break;
+            }
+            case "restore": {
+                const {backupData} = STATE.REF;
+                D.Alert(D.JS(JSON.parse(backupData)));
+                state[C.GAMENAME][SCRIPTNAME] = JSON.parse(backupData);
+                break;
+            }
             case "add": {
                 switch (D.LCase(call = args.shift())) {
                     case "favsite": STATE.REF.FavoriteSites.push(args.join(" ")); break;
@@ -101,6 +129,17 @@ const Session = (() => {
                     case "locations": case "location": case "loc": D.Alert(D.JS(getAllLocations()), "Current Location Data"); break;
                     case "activelocs": D.Alert(D.JS(getActivePositions()), "All Active Locations"); break;
                     case "scenelocs": D.Alert(D.JS(getActivePositions()), "Active Scene Locations"); break;
+                    case "pointer": {
+                        const pointerObj = Media.GetImg("MapIndicator");
+                        if (pointerObj.get("layer") === "objects") {
+                            pointerObj.set("layer", "map");
+                            Media.GetImg("MapIndicator_Base_1").set("layer", "map");
+                        } else if (pointerObj.get("layer") === "map") {                                
+                            pointerObj.set("layer", "objects");
+                            Media.GetImg("MapIndicator_Base_1").set("layer", "objects");
+                        }
+                        break;
+                    }
                         // no default
                 }
                 break;
@@ -146,7 +185,9 @@ const Session = (() => {
                                 STATE.REF.locationPointer[siteRef] = STATE.REF.locationPointer[siteRef] || {};
                                 STATE.REF.locationPointer[siteRef].pointerPos = pointerPos;
                             }
+                            pointerObj.set({layer: "map"});
                             D.Alert(`Map Position for site "${siteName || siteRef}" set to: ${D.JSL(pointerPos)}`, "!sess set pointer");
+                            ISSETTINGPOINTER = false;
                             setSceneFocus();
                         } else {
                             D.Alert(`Setting pointer position for <b>"${siteName || siteRef}"</b>
@@ -275,11 +316,11 @@ const Session = (() => {
         else
             Media.ToggleText("playerPageAlertMessage", false);
     };
-        // #endregion
-        // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
+    // #endregion
+    // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
     
     // #region Configuration
-    const ISSETTINGPOINTER = false;
+    let ISSETTINGPOINTER = false;
     const MODEFUNCTIONS = {            
         outroMode: {
             Active: () => {},
@@ -440,7 +481,7 @@ const Session = (() => {
         Media.SetText("NextSession", D.Romanize(STATE.REF.SessionNum, false).split("").join("   "));     
         D.Flag(`Session Set to ${D.UCase(D.NumToText(STATE.REF.SessionNum))}`);
     };
-        // #endregion
+    // #endregion
 
     // #region Starting/Ending Sessions
     const startSession = () => {
@@ -470,8 +511,10 @@ const Session = (() => {
             ])]]
         ]);
     };
-    const endSession = () => {
-        if (STATE.REF.isTestingActive && !STATE.REF.isFullTest || sessionMonologue() && remorseCheck()) {
+    const endSession = (isDoingMonologues = true) => {
+        if (STATE.REF.isTestingActive && !STATE.REF.isFullTest ||
+                isDoingMonologues && sessionMonologue() && remorseCheck() ||
+                remorseCheck()) {
             changeMode("Inactive", true, [
                 [D.Chat, ["all", C.HTML.Block([
                     C.HTML.Title("VAMPIRE: TORONTO by NIGHT", {fontSize: "28px"}),
@@ -533,7 +576,7 @@ const Session = (() => {
             Media.SetImgTemp(tokenID, _.omit(tokenData, "src"));
         }
     };
-        // #endregion
+    // #endregion
 
     // #region Toggling Session Modes
     const changeMode = (mode, args, endFuncs = []) => {
@@ -546,23 +589,45 @@ const Session = (() => {
                 `${STATE.REF.Mode}`,
                 D.Capitalize(mode.toLowerCase())
             ];
-            D.Queue(MODEFUNCTIONS.outroMode[lastMode], args, "ModeSwitch", 0.1);
-            D.Queue(Media.ToggleLoadingScreen, [curMode === "Inactive" && "concluding" || "loading", `Changing Modes: ${D.UCase(lastMode)} ► ${D.UCase(curMode)}`, {duration: 15, numTicks: 30, callback: () => { MODEFUNCTIONS.introMode[curMode](args)}}], "ModeSwitch", 3);
-            D.Queue(Media.SetLoadingMessage, ["Logging Game State..."], "ModeSwitch", 0.1);
-            D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1);
-            D.Queue(MODEFUNCTIONS.leaveMode[lastMode], args, "ModeSwitch", 1);
-            D.Queue(() => { STATE.REF.Mode = curMode; STATE.REF.LastMode = lastMode }, [], "ModeSwitch", 0.1);
-            D.Queue(Media.SetLoadingMessage, [`Clearing ${D.UCase(lastMode)} Assets...`], "ModeSwitch", 0.1);
-            D.Queue(Roller.Clean, [], "ModeSwitch", 1);
-            D.Queue(Media.ModeUpdate, [], "ModeSwitch", 2);
-            D.Queue(setModeLocations, [curMode], "ModeSwitch", 1);
-            if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds))
-                D.Queue(Soundscape.Sync, [true], "ModeSwitch", 1);
-            D.Queue(Media.SetLoadingMessage, [`Deploying ${D.UCase(curMode)} Assets ...`], "ModeSwitch", 0.1);
-            D.Queue(MODEFUNCTIONS.enterMode[curMode], args, "ModeSwitch", 1);
-            D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1);
-            D.Queue(TimeTracker.Fix, [], "ModeSwitch", 0.1);
-            D.Queue(Media.SetLoadingMessage, ["Cleaning Up ..."], "ModeSwitch", 1);
+            if (lastMode === "Inactive" && curMode === "Active") {
+                D.Queue(MODEFUNCTIONS.outroMode[lastMode], args, "ModeSwitch", 0.1);
+                D.Queue(Media.ToggleLoadingScreen, ["initializing",
+                                                    `Initializing Session ${D.NumToText(STATE.REF.SessionNum)}`,
+                                                    {duration: 15, numTicks: 30, callback: () => { MODEFUNCTIONS.introMode[curMode](args)}}], "ModeSwitch", 3);
+                D.Queue(Media.SetLoadingMessage, ["Preparing Sandbox..."], "ModeSwitch", 0.1);
+                D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1);
+                D.Queue(MODEFUNCTIONS.leaveMode[lastMode], args, "ModeSwitch", 1);
+                D.Queue(() => { STATE.REF.Mode = curMode; STATE.REF.LastMode = lastMode }, [], "ModeSwitch", 0.1);
+                D.Queue(Media.SetLoadingMessage, ["Adding Characters..."], "ModeSwitch", 0.1);
+                D.Queue(Roller.Clean, [], "ModeSwitch", 1);
+                D.Queue(Media.ModeUpdate, [], "ModeSwitch", 2);
+                D.Queue(setModeLocations, [curMode], "ModeSwitch", 1);
+                if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds))
+                    D.Queue(Soundscape.Sync, [true], "ModeSwitch", 1);
+                D.Queue(Media.SetLoadingMessage, ["Setting Time, Location & Weather..."], "ModeSwitch", 0.1);
+                D.Queue(MODEFUNCTIONS.enterMode[curMode], args, "ModeSwitch", 1);
+                D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1);
+                D.Queue(TimeTracker.Fix, [], "ModeSwitch", 0.1);
+                D.Queue(Media.SetLoadingMessage, ["Synchronizing Display Data..."], "ModeSwitch", 1);
+            } else {
+                D.Queue(MODEFUNCTIONS.outroMode[lastMode], args, "ModeSwitch", 0.1);
+                D.Queue(Media.ToggleLoadingScreen, [curMode === "Inactive" && "concluding" || "loading", `Changing Modes: ${D.UCase(lastMode)} ► ${D.UCase(curMode)}`, {duration: 15, numTicks: 30, callback: () => { MODEFUNCTIONS.introMode[curMode](args)}}], "ModeSwitch", 3);
+                D.Queue(Media.SetLoadingMessage, ["Logging Game State..."], "ModeSwitch", 0.1);
+                D.Queue(logTokens, [lastMode], "ModeSwitch", 0.1);
+                D.Queue(MODEFUNCTIONS.leaveMode[lastMode], args, "ModeSwitch", 1);
+                D.Queue(() => { STATE.REF.Mode = curMode; STATE.REF.LastMode = lastMode }, [], "ModeSwitch", 0.1);
+                D.Queue(Media.SetLoadingMessage, [`Clearing ${D.UCase(lastMode)} Assets...`], "ModeSwitch", 0.1);
+                D.Queue(Roller.Clean, [], "ModeSwitch", 1);
+                D.Queue(Media.ModeUpdate, [], "ModeSwitch", 2);
+                D.Queue(setModeLocations, [curMode], "ModeSwitch", 1);
+                if (!(MODEDATA[curMode].isIgnoringSounds || MODEDATA[lastMode].isIgnoringSounds))
+                    D.Queue(Soundscape.Sync, [true], "ModeSwitch", 1);
+                D.Queue(Media.SetLoadingMessage, [`Deploying ${D.UCase(curMode)} Assets ...`], "ModeSwitch", 0.1);
+                D.Queue(MODEFUNCTIONS.enterMode[curMode], args, "ModeSwitch", 1);
+                D.Queue(restoreTokens, [curMode], "ModeSwitch", 0.1);
+                D.Queue(TimeTracker.Fix, [], "ModeSwitch", 0.1);
+                D.Queue(Media.SetLoadingMessage, ["Cleaning Up ..."], "ModeSwitch", 1);
+            }
             // D.Queue(Media.ToggleLoadingScreen, [false], "ModeSwitch", 0.1)
             D.Queue(MODEFUNCTIONS.introMode[curMode], args, "ModeSwitch", 0.1);
             for (const endFunc of endFuncs)
@@ -649,7 +714,7 @@ const Session = (() => {
             Media.ToggleText("playerPageAlertMessage", false);            
         Campaign().set({playerpageid: D.GetPageID(pageRef)});
     };
-        // #endregion
+    // #endregion
 
     // #region Location Handling
     const BLANKPENDINGLOCCOMMAND = {
@@ -769,7 +834,7 @@ const Session = (() => {
             groupBy((x, i) => Math.floor(i / 2)).
             map(x => D.CommandMenuHTML({type: "ButtonLine", contents: x, buttonStyles: {width: "45%", fontSize: "12px", color: C.COLORS.black, bgColor: C.COLORS.brightgold, buttonTransform: "none"}})).
             value().join("");
-            // DB({distSitesCode: JSON.stringify(_.escape(distSitesCode))}, "getSiteMenuCode")
+        // DB({distSitesCode: JSON.stringify(_.escape(distSitesCode))}, "getSiteMenuCode")
         return (isSecondSite ? MENUHTML.SiteMenuSecond : MENUHTML.SiteMenuFirst).
             replace(new RegExp("~~~districtname~~~", "gui"), districtName).
             replace(new RegExp("~~~favsitescode~~~", "gui"), favSitesCode).
@@ -1308,7 +1373,7 @@ const Session = (() => {
             D.Alert(`Invalid played ID (${D.JS(playerID)}) from playerRef '${D.JS(playerRef)}'`);
         }
     };
-        // #endregion
+    // #endregion
 
     // #region Waking Up 
 
@@ -1328,7 +1393,7 @@ const Session = (() => {
         });
         return false;
     };
-        // #endregion
+    // #endregion
 
     // #region Starting & Ending Scenes, Logging Characters to Scene
     const setSceneFocus = (locPos) => {

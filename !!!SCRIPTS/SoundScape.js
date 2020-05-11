@@ -25,6 +25,8 @@ const Soundscape = (() => {
         STATE.REF.isSoundscapeActive = VAL({bool: STATE.REF.isSoundscapeActive}) ? STATE.REF.isSoundscapeActive : true;
         STATE.REF.activeSounds = STATE.REF.activeSounds || [];
         STATE.REF.VOLUME = STATE.REF.VOLUME || D.Clone(C.SOUNDVOLUME);
+
+        syncSoundscape(true);
     };
     // #endregion	
 

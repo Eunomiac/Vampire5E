@@ -64,7 +64,7 @@
         "Banu Haqim": "Your Assamite Blood drives you to feed from those deserving of punishment: especially the Kindred.  Upon slaking Hunger with Cainite Blood, you must roll to resist Hunger Frenzy against a Difficulty of 2 plus your Bane Severity.",
         "Hecata": {
             Giovanni: "Steeped in death, the fangs of the Giovanni bring not bliss, but agony. You cause additional Superficial Health damage equal to your Bane Severity for each level of Hunger slaked. Unwilling mortals not restrained will try to escape, and even the willing or coerced must succeed at a test of Stamina + Resolve vs. 3 to submit voluntarily. Vampires bitten by Giovanni fangs face a Frenzy test vs. 3 to avoid a terror frenzy.",
-            Samedi: "Your return to unlife came with little regard for preserving your body against the ravages of the grave. Your skin has a ghastly pallor, and your flesh continues to rot, if slowly. You count as having the Repulsive Flaw (-2) and cannot increase your rating in the Looks Merit. In addition, any attempt to disguise yourself as human incurs a penalty to your dice pool equal to your Bane Severity (this includes the Obfuscate powers Mask of a Thousand Faces and Impostor’s Guise).",
+            Samedi: "Your return to unlife came with little regard for preserving your body against the ravages of the grave. Your skin has a ghastly pallor, and your flesh continues to rot, if slowly. You count as having the Repulsive Flaw (-2) and cannot increase your rating in the Looks Merit. In addition, any attempt to disguise yourself as human incurs a penalty to your dice pool equal to your Bane Severity (including the Obfuscate powers Mask of a Thousand Faces and Impostor’s Guise).",
             Nagaraja: "The storied hunger of the Nagaraja cannot be denied for long. You can consume raw flesh and slake Hunger from it as if it were blood, but you subtract your Bane Severity from the amount of Hunger slaked by drinking blood alone.",
             Lamiae: "Steeped in death, the fangs of the Lamiae spread disease. A mortal victim must succeed at a Stamina roll against a difficulty equal to your Bane Severity. Upon failure, the mortal is afflicted with a disease chosen by the Storyteller. On a total failure, this disease is terminal within one week.",
             Harbinger: "Your time in the Shadowlands (or, more likely, your tutelage under a sire who was among those who escaped across the Shroud) has bound your identity and sense of self into masks you feel compelled to wear. Whenever you are not wearing one of your masks, you suffer penalties to all Resolve and Composure rolls equal to your Bane Severity.",
@@ -107,7 +107,120 @@
         "Wraith": ["Auspex", "Dominate", "Obfuscate"],
         "Spectre": ["Auspex", "Dominate", "Obfuscate"],
         "Other": ["", "", ""]
-
+    };
+    const compulsions = {
+        "Hunger": {
+            title: "Hunger",
+            text: "",
+            rollEffect: "",
+            endsWithScene: null
+        },
+        "Dominance": {
+            title: "Dominance",
+            text: "",
+            rollEffect: "",
+            endsWithScene: null
+        },
+        "Harm": {
+            title: "Harm",
+            text: "",
+            rollEffect: "",
+            endsWithScene: null
+        },
+        "Paranoia": {
+            title: "Paranoia",
+            text: "",
+            rollEffect: "",
+            endsWithScene: null
+        },
+        clanCompulsions: {
+            "Banu Haqim": {
+                title: "Judgment",
+                text: "",
+                rollEffect: "",
+                endsWithScene: null
+            },
+            "Brujah": {
+                title: "Rebellion",
+                text: "",
+                rollEffect: "",
+                endsWithScene: null
+            },
+            "Gangrel": {
+                title: "Feral Impulses",
+                text: "",
+                rollEffect: "",
+                endsWithScene: null
+            },
+            "Hecata": {
+                title: "Morbidity",
+                text: "",
+                rollEffect: "",
+                endsWithScene: null
+            },
+            "Lasombra": {
+                title: "Ruthlessness",
+                text: "",
+                rollEffect: "",
+                endsWithScene: null
+            },
+            "Malkavian": {
+                title: "Delusion",
+                text: "",
+                rollEffect: "",
+                endsWithScene: null
+            },
+            "Ministry": {
+                title: "Transgression",
+                text: "",
+                rollEffect: "",
+                endsWithScene: null
+            },
+            "Nosferatu": {
+                title: "Cryptophilia",
+                text: "",
+                rollEffect: "",
+                endsWithScene: null
+            },
+            "Toreador": {
+                title: "Fixation",
+                text: "",
+                rollEffect: "",
+                endsWithScene: null
+            },
+            "Tremere": {
+                title: "Perfectionism",
+                text: "",
+                rollEffect: "",
+                endsWithScene: null
+            },
+            "Ventrue": {
+                title: "Arrogance",
+                text: "",
+                rollEffect: "",
+                endsWithScene: null
+            },
+        }
+    };
+    const frenzyEffects = {
+        fury: {
+            title: "Frenzy",
+            text: "",
+            rollEffect: ""
+        },
+        hunger: {
+            title: "Wassail",
+            text: "",
+            rollEffect: ""
+        },
+        terror: {
+            title: "Rötschreck",
+            text: "",
+            rollEffect: ""
+        },
+        ridingTheWave: {
+            text: ""
+        }
     };
     const genDepts = [
         null,
@@ -247,7 +360,20 @@
                  "●  You heal naturally as if you were mortal.",
                  "●  You can remain awake during the day as if you were mortal."]
             ]
-        }
+        },
+        torporText: [
+            [],
+            ["Minimum Torpor Length: Five Hundred Years"],
+            ["Minimum Torpor Length: One Hundred Years"],
+            ["Minimum Torpor Length: Fifty Years"],
+            ["Minimum Torpor Length: Ten Years"],
+            ["Minimum Torpor Length: One Year"],
+            ["Minimum Torpor Length: One Month"],
+            ["Minimum Torpor Length: Two Weeks"],
+            ["Minimum Torpor Length: One Week"],
+            ["Minimum Torpor Length: Three Days"],
+            []
+        ]
     };
     const marqueeTips = [
         ["Caine the First",
@@ -1250,6 +1376,8 @@
                                 attrList[`hum_${bulletType}bullets`] = humanityText.bulletText[bulletType][humanity].join("\n");
                                 attrList[`hum_${bulletType}bullets_toggle`] = humanityText.bulletText[bulletType][humanity].length;
                             }
+                            attrList.hum_torportext = humanityText.torporText[humanity].join("\n");
+                            attrList.hum_torportext_toggle = humanityText.torporText[humanity].length;
 
                             if (attrList.humanity_impair_toggle === 1)
                                 attrList.incap = _.compact(_.uniq(_.union((ATTRS.incap || "").split(","), ["Humanity"]))).join(",");
@@ -1370,7 +1498,7 @@
             cbk => {
                 getAttrs(["willpower_sdmg_socialtotal", "willpower_admg_socialtotal", "willpower_social_toggle"], ATTRS => {
                     attrList.willpower_sdmg = -Math.floor(0.5 * parseInt(ATTRS.willpower_sdmg_socialtotal) || 0);
-                    attrList.willpower_admg = -Math.floor(0.5 * parseInt(ATTRS.willpower_admg_socialtotal) || 0);
+                    attrList.willpower_admg = -1 * Math.floor(0.5 * parseInt(ATTRS.willpower_admg_socialtotal) || 0);
                     attrList.willpower_sdmg_socialtotal = 0;
                     attrList.willpower_admg_socialtotal = 0;
                     attrList.willpower_social_toggle = "off";                            
@@ -1402,6 +1530,7 @@
     });
     on("change:blood_potency", eInfo => {
         doTracker("Blood Potency", eInfo);
+        doClans();
     });
     on("change:humanity", eInfo => {
         if (!ISOFFLINE && eInfo.sourceType !== "sheetworker")

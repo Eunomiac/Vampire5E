@@ -23,6 +23,11 @@ let airIndex = new Error();
 // Whether or not the code is operational
 let codebaseRunning = false;
 
+// System States
+
+const rezMsg = "<div style=\"display: block ; margin: -26px 0px -7px -42px ; height: auto ; min-height: 25px ; min-width: 270px ; width: auto ; text-align: center ; border: 2px solid rgba( 0 , 0 , 0 , 1 ) ; padding: 0px ; position: relative\"><span style=\"display: block;height: auto;line-height: 25px;width: auto;margin: 0px;padding: 0px 5px;text-align: left;color: rgba( 255 , 255 , 255 , 1 );font-family: Voltaire;font-weight: normal;font-variant: small-caps;font-size: 16px;background-color: rgba( 80 , 80 , 80 , 1 );border: none;text-shadow: none;box-shadow: none;\">Initializing API...</span></div>";
+const runMsg = "<div style=\"display: block ; margin: -26px 0px -7px -42px ; height: auto ; min-height: 25px ; min-width: 270px ; width: auto ; text-align: center ; border: 2px solid rgba( 0 , 0 , 0 , 1 ) ; padding: 0px ; position: relative\"><span style=\"display: block;height: auto;line-height: 25px;width: auto;margin: 0px;padding: 0px 5px;text-align: left;color: rgba( 255 , 255 , 255 , 1 );font-family: Voltaire;font-weight: normal;font-variant: small-caps;font-size: 16px;background-color: rgba( 80 , 80 , 80 , 1 );border: none;text-shadow: none;box-shadow: none;\">... API Operational</span></div>";
+
 // Log for Airbag
 const airLog = (logMsg, chatMsg, dbMsg) => {
         log(logMsg);

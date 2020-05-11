@@ -16,6 +16,7 @@ const Chat = (() => {
     const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
     const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
     const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
+
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
         initialize();
@@ -25,7 +26,7 @@ const Chat = (() => {
         STATE.REF.FontTypes = STATE.REF.FontTypes || [...FONTDATA.types];
         STATE.REF.FontSizes = STATE.REF.FontSizes || [...FONTDATA.sizes]; 
     };
-        // #endregion
+    // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const onChatCall = (call, args, objects, msg) => {
@@ -294,9 +295,9 @@ const Chat = (() => {
             // no default
         }
     };
-        // #endregion
-        // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
-        // #region DECLARATIONS	
+    // #endregion
+    // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
+    // #region DECLARATIONS	
     const FONTDATA = {
         types: ["Candal", "Contrail One", "Arial", "Patrick Hand", "Shadows Into Light"],
         sizes: [12, 14, 16, 18, 20, 22, 26, 32, 40, 56, 72, 100]
@@ -490,7 +491,7 @@ const Chat = (() => {
 
         return true;
     };
-        // #endregion
+    // #endregion
 
     // #region Text Length Testing
     const prepText = (fonts) => {

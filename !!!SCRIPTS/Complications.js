@@ -14,7 +14,7 @@ const Complications = (() => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
         initialize();
     };
-        // #endregion
+    // #endregion
 
     // #region LOCAL INITIALIZATION
     const initialize = () => {
@@ -46,7 +46,7 @@ const Complications = (() => {
 
         setCardFuncs.length = 0;
     };
-        // #endregion
+    // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const onChatCall = (call, args, objects, msg) => {
@@ -270,8 +270,8 @@ const Complications = (() => {
         // no default
         }
     };
-        // #endregion
-        // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
+    // #endregion
+    // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     // #region CONFIGURATION: Card Definitions
 
@@ -938,7 +938,7 @@ const Complications = (() => {
             D.JS(cardData)
         ].join("<br>"), "Complications Data");
     };
-        // #endregion
+    // #endregion
 
     // #region CARD ACTIVATION: Turning Over & Activating Cards, Deactivating Cards
     const flipCard = spot => {
@@ -953,7 +953,7 @@ const Complications = (() => {
             refreshDraws();
         }
     };
-        // #endregion
+    // #endregion
 
     // #region CARD CONTROL: Deck construction, sandbox manipulation
     const setCardFuncs = [];

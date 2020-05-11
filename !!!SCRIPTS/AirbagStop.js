@@ -1,5 +1,5 @@
 MarkStart('AirbagStop');
-// airLog(runMsg);
+airLog(runMsg);
 } catch (e) {
 codebaseRunning = false;
 codeBase(e);

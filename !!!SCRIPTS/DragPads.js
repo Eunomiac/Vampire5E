@@ -445,6 +445,18 @@ const DragPads = (() => {
         return false;
     };
     const getGraphic = pad => Media.GetImg((PADREGISTRY[(VAL({object: pad}) && pad || {id: ""}).id] || {id: ""}).id);
+
+    /*
+        mapButtonSitesCulture_1",
+        "mapButtonSitesEducation_1",
+        "mapButtonSitesHavens_1",
+        "mapButtonSitesHealth_1",
+        "mapButtonSitesLandmarks_1",
+        "mapButtonSitesNightlife_1",
+        "mapButtonSitesShopping_1",
+        "mapButtonSitesTransportation_1",
+*/
+        
     const makePad = (imgRef, funcName, params = {deltaTop: 0, deltaLeft: 0, deltaHeight: 0, deltaWidth: 0}) => {
         // THROW(`Making Pad: ${graphicObj.get("name")}, ${funcName}, ${D.JSL(params)}`, "makePad")
         const imgData = Media.GetImgData(imgRef);
@@ -597,7 +609,7 @@ const DragPads = (() => {
         OnChatCall: onChatCall,
         OnGraphicChange: onGraphicChange,
 
-        get PadsByGraphic() { return STATE.REF.byGraphic },
+        get PadsByGraphic() { return STATE.REF.byGraphic }, get PadsByID() { return STATE.REF.byPad },
         get PadsByID() { return STATE.REF.byPad },
         get Functions() { return FUNCTIONS },
 

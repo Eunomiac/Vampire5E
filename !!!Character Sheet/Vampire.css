@@ -1956,10 +1956,12 @@
 		height: 40px;
 		width: calc(100% - (105px - 13px));
 		margin-top: -3px;
-		line-height: 20px;
+		line-height: 13px;
 		margin-right: -10px;
 		text-shadow: none;
 		color: white;
+		font-family: Voltaire;
+		overflow: hidden;
 	}
 
 	/* #endregion */
@@ -2052,6 +2054,7 @@
 		width: 184%;
 		left: -40%;
 		bottom: 70px;
+		height: 127px !important;
 	}
 
 	.charsheet div.sheet-toptitleblock select {
@@ -2252,6 +2255,10 @@
 		margin-bottom: -17px;
 	}
 
+	.charsheet div.sheet-humanitybox div.sheet-humanitybullets.sheet-torportext {
+		margin-top: 0px;
+	}
+
 	.charsheet div.sheet-humanitybox div.sheet-humanitybullets textarea {
 		height: 100%;
 		line-height: 17px;
@@ -2269,6 +2276,17 @@
 	.charsheet div.sheet-humanitybox div.sheet-humanitybullets.sheet-negbullets textarea {
 		color: #FF3333 !important;
 		font-weight: bold;
+	}	
+	.charsheet div.sheet-humanitybox div.sheet-humanitybullets.sheet-torportext textarea {
+		color: #AAA !important;
+		font-weight: bold;
+		font-family: Voltaire;
+		margin-top: 3px;
+		margin-left: -20px;
+		font-size: 18px;
+		text-align: center;
+		text-align-last: center;
+		font-variant: small-caps;
 	}	
 
 	/* #endregion */

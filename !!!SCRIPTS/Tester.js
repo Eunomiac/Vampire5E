@@ -16,10 +16,37 @@ const Tester = (() => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
         initialize();
     };
-        // #endregion
+    // #endregion
 
     // #region LOCAL INITIALIZATION
-    const initialize = () => { };
+    const initialize = () => {
+        const advNames = [
+            "Haven (Harbord Appt.)",
+            "Haven (Warding)",
+            "Haven (Surgery)",
+            "Domain (Portillion)",
+            "Status (Anarchs)",
+            "Mawla (Baroness)",
+            "Mawla (Scientists)",
+            "Dr. Netchurch",
+            "Dr. Netchurch",
+            "Dr Netchurch",
+            "Herd (Mobile Clinic)",
+            "Herd (Bookies)",
+            "Allies (Bookies)",
+            "Contacts (Ogden Stone)",
+            "Contacts (The Aristocrat)",
+            "Mask: John Pierce",
+            "Enemy (Underwood)",
+            "Addict (Painkillers)",
+            "Known Corpse",
+            "Adversary (Seneschal)"                
+        ];
+        for (const adv of advNames)
+            fuz.add(adv);
+    };
+    
+    const fuz = Fuzzy.Fix();
     // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)

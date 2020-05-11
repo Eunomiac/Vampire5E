@@ -22,8 +22,8 @@ const C = (() => {
     const checkInstall = () => {
         RO.OT[SCRIPTNAME] = RO.OT[SCRIPTNAME] || {};
     };
-        // #endregion
-        // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
+    // #endregion
+    // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     // #region CORE CONFIGURATION & BASIC REFERENCES
     const PAGES = {
@@ -56,71 +56,90 @@ const C = (() => {
         ninety: "ninetieth"
     };
     const COLORS = {
-        white: "rgba(255, 255, 255, 1)", 
-        brightbrightgrey: "rgba(200, 200, 200, 1)", 
-        brightgrey: "rgba(175, 175, 175, 1)", 
-        grey: "rgba(130, 130, 130, 1)", 
-        darkgrey: "rgba(80, 80, 80, 1)", 
-        darkdarkgrey: "rgba(40, 40, 40, 1)", 
-        black: "rgba(0, 0, 0, 1)", 
+        white: "rgba(255, 255, 255, 1)",
+        brightbrightgrey: "rgba(200, 200, 200, 1)",
+        brightgrey: "rgba(175, 175, 175, 1)",
+        grey: "rgba(130, 130, 130, 1)",
+        darkgrey: "rgba(80, 80, 80, 1)",
+        darkdarkgrey: "rgba(40, 40, 40, 1)",
+        black: "rgba(0, 0, 0, 1)",
             
-        halfwhite: "rgba(255, 255, 255, 0.5)", 
-        fadedblack: "rgba(0, 0, 0, 0.2)", 
-        fadedgrey: "rgba(0, 0, 0, 0.1)", 
-        transparent: "rgba(0, 0, 0, 0)", 
+        halfwhite: "rgba(255,255,255,0.5)",
+        fadedblack: "rgba(0, 0, 0, 0.2)",
+        fadedgrey: "rgba(0, 0, 0, 0.1)",
+        transparent: "rgba(0,0,0,0)",
             
-        purered: "rgba(255, 0, 0, 1)", 
-        palered: "rgba(255, 175, 175, 1)", 
-        brightred: "rgba(255, 31, 34, 1)", 
-        lightred: "rgba(255, 60, 60, 1)", 
-        red: "rgba(209, 0, 3, 1)", 
-        darkred: "rgba(132, 0, 2, 1)", 
-        darkdarkred: "rgba(55, 0, 1, 1)", 
-        brightcrimson: "rgba(234, 9, 67, 1)", 
-        crimson: "rgba(160, 6, 46, 1)", 
-        darkcrimson: "rgba(86, 3, 25, 1)", 
-
-        palegold: "rgba(255, 220, 180, 1)", 
-        brightgold: "rgba(255, 223, 0, 1)", 
-        gold: "rgba(255, 190, 0, 1)", 
-        midgold: "rgba(255, 165, 0, 1)", 
-        darkgold: "rgba(167, 97, 0, 1)", 
-
-        orange: "rgba(255, 140, 0, 1)", 
-        orangered: "rgba(255, 69, 0, 1)", 
-        lightorange: "rgba(255, 165, 0, 1)", 
-
-        yellow: "rgba(255, 255, 0, 1)", 
-        khaki: "rgba(240, 230, 140, 1)", 
-        tan: "rgba(255, 216, 164, 1)", 
+        /*
+            palered: "rgba(255, 175, 175, 1)",
+            brightred: "rgba(255, 0, 0, 1)",
+            brightred: "rgba(225, 0, 0, 1)",
+            red: "rgba(200, 0, 0, 1)",
+            darkred: "rgba(175, 0, 0, 1)",
+            darkred: "rgba(150, 0, 0, 1)",
+            darkdarkred: "rgba(50, 0, 0, 1)",
+            crimson: "rgba(220, 20, 60, 1)",
             
-        puregreen: "rgba(0, 255, 0, 1)", 
-        palegreen: "rgba(175, 255, 175, 1)", 
-        green: "rgba(0, 200, 0, 1)", 		
-        darkgreen: "rgba(0, 125, 0, 1)", 
-
-        cyan: "rgba(0, 255, 255, 1)", 
-        darkcyan: "rgba(0, 150, 150, 1)", 
             
-        pureblue: "rgba(0, 0, 255, 1)", 
-        paleblue: "rgba(175, 175, 255, 1)", 
-        brightblue: "rgba(150, 150, 255, 1)", 
-        blue: "rgba(100, 100, 255, 1)", 
+            midgold: "rgba(200, 100, 0, 1)",
+            
+            yellow: "rgba(200, 200, 0, 1)",
+            gold: "#ffd700",
+            tan: "rgba(228, 192, 144, 1)",
+            */
+        // palered: "rgba
+
+        purered: "rgba(255, 0, 0, 1)",
+        palered: "rgba(255, 175, 175, 1)",
+        brightred: "rgba(255, 31, 34, 1)",
+        lightred: "rgba(255, 60, 60, 1)",
+        red: "rgba(209,0,3,1)",
+        darkred: "rgba(132, 0, 2,1)",
+        darkdarkred: "rgba(55, 0, 1, 1)",
+        brightcrimson: "rgba(234, 9, 67, 1)",
+        crimson: "rgba(160, 6, 46, 1)",
+        darkcrimson: "rgba(86, 3, 25, 1)",
+
+        palegold: "rgba( 255 , 220 , 180 , 1 )",
+        brightgold: "rgba(255,223,0,1)",
+        gold: "rgba(255,190,0,1)",
+        midgold: "rgba(255,165,0,1)",
+        darkgold: "rgba(167,97,0,1)",
+
+        orange: "rgba(255,140,0,1)",
+        orangered: "rgba(255,69,0,1)",
+        lightorange: "rgba(255,165,0,1)",
+
+        yellow: "rgba(255,255,0,1)",
+        khaki: "rgba(240,230,140,1)",
+        tan: "rgba(255,216,164,1)",
+            
+        puregreen: "rgba(0, 255, 0, 1)",
+        palegreen: "rgba(175, 255, 175, 1)",
+        green: "rgba(0, 200, 0, 1)",		
+        darkgreen: "rgba(0, 125, 0, 1)",
+
+        cyan: "rgba(0, 255, 255, 1)",
+        darkcyan: "rgba(0,150,150,1)",
+            
+        pureblue: "rgba(0,0,255,1)",
+        paleblue: "rgba(175, 175, 255, 1)",
+        brightblue: "rgba(150, 150, 255, 1)",
+        blue: "rgba(100, 100, 255, 1)",
         darkblue: "rgba(50, 50, 150, 1)",            
             
-        palepurple: "rgba(255, 175, 255, 1)", 
-        brightpurple: "rgba(200, 100, 200, 1)", 
-        purple: "rgba(150, 0, 150, 1)", 
+        palepurple: "rgba(255, 175, 255, 1)",
+        brightpurple: "rgba(200, 100, 200, 1)",
+        purple: "rgba(150, 0, 150, 1)",
         darkpurple: "rgba(100, 0, 100, 1)"
     };
-        // #endregion
+    // #endregion
 
     // #region ENUMERATORS
     const REPLY = { // For D.CommandMenu "!reply" Function
         KEEPOPEN: "keepOpen",
 
     };
-        // #endregion
+    // #endregion
 
     // #region IMAGE DEFAULTS BACKGROUND IMAGES    
     const IMGPREFIX = "https://s3.amazonaws.com/files.d20.io/images/";
@@ -132,7 +151,7 @@ const C = (() => {
         blackMarble: "https://i.imgur.com/kBl8aTO.jpg",
         redMarble: "https://i.imgur.com/Dne2haq.jpg"
     };
-        // #endregion
+    // #endregion
 
     // #region HTML & CHAT STYLES
     const CHATWIDTH = 267;
@@ -936,7 +955,7 @@ const C = (() => {
             }
         }
     };
-        // #endregion
+    // #endregion
 
     // #region SOUND EFFECT CONSTANTS
     const SOUNDVOLUME = {
@@ -990,7 +1009,7 @@ const C = (() => {
         Spotlight: ["ScoreMain", "ScoreIntense", "ScoreCombat"],
         Complication: ["ScoreMain", "ScoreIntense", "ScoreCombat"]
     };
-        // #endregion
+    // #endregion
 
     // #region SANDBOX CONFIGURATION & DEFINITIONS
     const PIXELSPERSQUARE = 10;
@@ -1041,10 +1060,10 @@ const C = (() => {
         "Will Ss": "!char dmg willpower social_superficial ?{Damage done (negative numbers heal)?}",
         "Will As": "!char dmg willpower social_aggravated ?{Damage done (negative numbers heal)?}"
     }, v => v.replace(/\(/gu, "&#40;").replace(/\)/gu, "&#41;"));
-        // #endregion
+    // #endregion
 
     // #region ROLL20 OBJECT PROPERTIES
-    const SHEETATTRSJSON = `{"academics": 0,"academics_flag": 0,"academics_spec": "","ambition": "","animal_ken": 0,"animal_ken_flag": 0,"animal_ken_spec": "","applybloodsurge": 0,"applyresonance": 0,"applyspecialty": 0,"assets_carried": "","assets_other": "","assets_stashed": "","assets_vehicles": "","athletics": 0,"athletics_flag": 0,"athletics_spec": "","awareness": 0,"awareness_flag": 0,"awareness_spec": "","bane_text": "","bane_title": "","blood_potency": 0,"blood_potency_max": 0,"bloodline": "","bloodline_toggle": 0,"bonus_bp": 0,"bonus_health": 0,"bonus_willpower": 0,"bottomdisplay": "","bp_baneseverity": 0,"bp_discbonus": 0,"bp_discbonustext": "","bp_mend": 0,"bp_mendtext": "","bp_rousereroll": 0,"bp_slakeanimal": 0,"bp_slakebag": 0,"bp_slakehuman": 0,"bp_slakekill": 0,"bp_slaketext": "","bp_surge": 0,"bp_surgetext": "","brawl": 0,"brawl_flag": 0,"brawl_spec": "","ceremonies_toggle": 0,"char_dob": "","char_dobdoe": "","char_doe": "","charflags": "","character_name": "","charisma": 1,"charisma_flag": 0,"clan": "","composure": 1,"composure_flag": 0,"compulsion": "","compulsion_toggle": 0,"craft": 0,"craft_flag": 0,"craft_spec": "","date_today": 1578628740000,"dexterity": 1,"dexterity_flag": 0,"disc1": 0,"disc1_1": "","disc1_2": "","disc1_3": "","disc1_4": "","disc1_5": "","disc1_flag": 0,"disc1_name": "","disc1_toggle": 0,"disc1power_toggle": 0,"disc2": 0,"disc2_1": "","disc2_2": "","disc2_3": "","disc2_4": "","disc2_5": "","disc2_flag": 0,"disc2_name": "","disc2_toggle": 0,"disc2power_toggle": 0,"disc3": 0,"disc3_1": "","disc3_2": "","disc3_3": "","disc3_4": "","disc3_5": "","disc3_flag": 0,"disc3_name": "","disc3_toggle": 0,"disc3power_toggle": 0,"distillation": "","domain_coterie": "","domain_haven": "","domain_hunt": "","domain_personal": "","drive": 0,"drive_flag": 0,"drive_spec": "","dyscrasias": "","dyscrasias_toggle": 0,"effectchecks": "","etiquette": 0,"etiquette_flag": 0,"etiquette_spec": "","faction": "","finance": 0,"finance_flag": 0,"finance_spec": "","firearms": 0,"firearms_flag": 0,"firearms_spec": "","formulae_toggle": 0,"generation": "","health": 3,"health_1": 0,"health_10": 0,"health_11": 0,"health_12": 0,"health_13": 0,"health_14": 0,"health_15": 0,"health_2": 0,"health_3": 0,"health_4": 0,"health_5": 0,"health_6": 0,"health_7": 0,"health_8": 0,"health_9": 0,"health_admg": 0,"health_aggravated": 0,"health_bashing": 0,"health_impair_toggle": 0,"health_max": 3,"health_sdmg": 0,"hum_details": "","hum_negbullets": "","hum_negbullets_toggle": 0,"hum_neutralbullets": "","hum_neutralbullets_toggle": 0,"hum_posbullets": "","hum_posbullets_toggle": 0,"humanity": 7,"humanity_1": 2,"humanity_10": 2,"humanity_2": 2,"humanity_3": 2,"humanity_4": 2,"humanity_5": 2,"humanity_6": 2,"humanity_7": 2,"humanity_8": 2,"humanity_9": 2,"humanity_impair_toggle": 0,"humanity_max": 10,"hunger": 1,"incap": "","insight": 0,"insight_flag": 0,"insight_spec": "","intelligence": 1,"intelligence_flag": 0,"intimidation": 0,"intimidation_flag": 0,"intimidation_spec": "","investigation": 0,"investigation_flag": 0,"investigation_spec": "","larceny": 0,"larceny_flag": 0,"larceny_spec": "","leadership": 0,"leadership_flag": 0,"leadership_spec": "","manipulation": 1,"manipulation_flag": 0,"marquee": "When the Sabbat assault a city, no strategy is more threatening to the Masquerade than their penchant formass-Embracing mortals, knocking them unconscious with a shovel before they frenzy, and throwing them intoan open grave from which they must dig themselves out — a process that invariably drives them insane.","marquee_lines_toggle": 3,"marquee_title": "Shovelheads","marquee_toggle": 1,"marquee_tracker": "10,63,47,50,28,8,3,24,1,12,51,20,19,65,30,4,40,54,71,45,70,73,23,43,15,53,2,25,16,72,37,36,62,38,14,57,60,55,35,21,64,32,33,9,22,42,48,34,58,59,31,46,67,6,27,17,29,61,0,13,66,44,69,7,5,11,18","mask": "","maskname": "","medicine": 0,"medicine_flag": 0,"medicine_spec": "","melee": 0,"melee_flag": 0,"melee_spec": "","mortal_ambition": "","mortal_history": "","npcbox_title": "","npcbox_toggle": 0,"npctoggle": 0,"occult": 0,"occult_flag": 0,"occult_spec": "","performance": 0,"performance_flag": 0,"performance_spec": "","persuasion": 0,"persuasion_flag": 0,"persuasion_spec": "","politics": 0,"politics_flag": 0,"politics_spec": "","predator": "","repstats": "","res_discs": "","resolve": 1,"resolve_flag": 0,"resonance": "None","rituals_toggle": 0,"rollarray": "","rolldiff": 0,"rolleffects": "","rollflagdisplay": "","rollmod": 0,"rollparams": "","rollpooldisplay": "","science": 0,"science_flag": 0,"science_spec": "","sheetworkertoggle": 0,"stains": 0,"stamina": 1,"stamina_flag": 0,"stealth": 0,"stealth_flag": 0,"stealth_spec": "","streetwise": 0,"streetwise_flag": 0,"streetwise_spec": "","strength": 1,"strength_flag": 0,"subterfuge": 0,"subterfuge_flag": 0,"subterfuge_spec": "","survival": 0,"survival_flag": 0,"survival_spec": "","tab_core": 1,"technology": 0,"technology_flag": 0,"technology_spec": "","topdisplay": "","triggertimelinesort": 0,"willpower": 3,"willpower_1": 0,"willpower_10": 0,"willpower_2": 0,"willpower_3": 0,"willpower_4": 0,"willpower_5": 0,"willpower_6": 0,"willpower_7": 0,"willpower_8": 0,"willpower_9": 0,"willpower_admg": 0,"willpower_admg_social": 0,"willpower_admg_socialtotal": 0,"willpower_aggravated": 0,"willpower_bashing": 0,"willpower_impair_toggle": 0,"willpower_max": 3,"willpower_sdmg": 0,"willpower_sdmg_social": 0,"willpower_sdmg_socialtotal": 0,"willpower_social_toggle": 0,"wits": 1,"wits_flag": 0,"xp_earnedtotal": 0,"xp_summary": ""}`; /* eslint-disable-line babel/quotes, quotes */ const REPATTRSJSON = `{"discleft": ["disc", "disc_flag", "disc_name", "discpower_1", "discpower_2", "discpower_3", "discpower_4", "discpower_5", "discpower_toggle"],"discmid": ["disc", "disc_flag", "disc_name", "discpower_1", "discpower_2", "discpower_3", "discpower_4", "discpower_5", "discpower_toggle"],"discright": ["disc", "disc_flag", "disc_name", "discpower_1", "discpower_2", "discpower_3", "discpower_4", "discpower_5", "discpower_toggle"],"ceremonyleft": ["ceremony", "ceremony_name", "ceremony_type"],"ceremonymid": ["ceremony", "ceremony_name", "ceremony_type"],"ceremonyright": ["ceremony", "ceremony_name", "ceremony_type"],"ritualleft": ["ritual", "ritual_name", "ritual_type"],"ritualmid": ["ritual", "ritual_name", "ritual_type"],"ritualright": ["ritual", "ritual_name", "ritual_type"],"formulaleft": ["formula", "formula_type"],"formulamid": ["formula", "formula_type"],"formularight": ["formula", "formula_type"],"advantage": ["advantage", "advantage_details", "advantage_flag", "advantage_name", "advantage_type"],"negadvantage": ["negadvantage", "negadvantage_details", "negadvantage_flag", "negadvantage_name", "negadvantage_type"],"boonsOwed": ["boonowed_details", "boonowed_to", "boonowed_type"],"boonsOwing": ["boonowing_details", "boonowing_from", "boonowing_type"],"tenet": ["tenet", "tenetid"],"beliefs": ["conviction", "convictionid", "touchstone_details", "touchstone_name", "touchstoneid"],"project": ["archiveevent", "archiveevent_toggle", "archivememoriam", "archivememoriam_toggle", "archiveobjective", "archiveobjective_toggle", "archiveproject", "eventdate", "memoriamdate", "memoriamdiff", "memoriamresult", "memoriamrewards", "objectivedate", "projectdetails", "projectenddate", "projectforcedstakemod", "projectforcedstakemodline", "projectgoal", "projectinccounter", "projectincnum", "projectincunit", "projectlaunchdiff", "projectlaunchdiffmod", "projectlaunchmod", "projectlaunchresults", "projectlaunchresultsmargin", "projectlaunchroll_toggle", "projectlaunchrollparams", "projectlaunchtrait1", "projectlaunchtrait1_name", "projectlaunchtrait2", "projectlaunchtrait2_name", "projectrushpool", "projectrushstakelost", "projectrushstakelosttogo", "projectscope", "projectscope_name", "projectsrowid", "projectstake1", "projectstake1_name", "projectstake2", "projectstake2_name", "projectstake3", "projectstake3_name", "projectstakes_toggle", "projectstakesatrush", "projectstartdate", "projectteamwork1", "projectteamwork2", "projectteamwork3", "projecttotalstake", "projectwasrushed", "schemetype", "schemetypeevent_toggle", "schemetypemem_toggle", "schemetypeobj_toggle", "schemetypeproj_toggle"],"timeline": ["timelinerowid", "tlcategory", "tldetails", "tldotdisplay", "tlenddate", "tlsortby", "tlstartdate", "tlsummary", "tlthirdline", "tlthirdline_toggle", "tltitle"],"desire": ["desire", "desireid"],"spentxp": ["xp_arrow_toggle", "xp_category", "xp_cost", "xp_initial", "xp_initial_toggle", "xp_new", "xp_new_toggle", "xp_spent_toggle", "xp_trait", "xp_trait_toggle"],"earnedxp": ["xp_award", "xp_reason", "xp_session"],"earnedxpright": ["xp_award", "xp_reason", "xp_session"]}`;				    
+    const SHEETATTRSJSON = `{"academics": 0,"academics_flag": 0,"academics_spec": "","ambition": "","animal_ken": 0,"animal_ken_flag": 0,"animal_ken_spec": "","applybloodsurge": 0,"applyresonance": 0,"applyspecialty": 0,"assets_carried": "","assets_other": "","assets_stashed": "","assets_vehicles": "","athletics": 0,"athletics_flag": 0,"athletics_spec": "","awareness": 0,"awareness_flag": 0,"awareness_spec": "","bane_text": "","bane_title": "","blood_potency": 0,"blood_potency_max": 0,"bloodline": "","bloodline_toggle": 0,"bonus_bp": 0,"bonus_health": 0,"bonus_willpower": 0,"bottomdisplay": "","bp_baneseverity": 0,"bp_discbonus": 0,"bp_discbonustext": "","bp_mend": 0,"bp_mendtext": "","bp_rousereroll": 0,"bp_slakeanimal": 0,"bp_slakebag": 0,"bp_slakehuman": 0,"bp_slakekill": 0,"bp_slaketext": "","bp_surge": 0,"bp_surgetext": "","brawl": 0,"brawl_flag": 0,"brawl_spec": "","ceremonies_toggle": 0,"char_dob": "","char_dobdoe": "","char_doe": "","charflags": "","character_name": "","charisma": 1,"charisma_flag": 0,"clan": "","composure": 1,"composure_flag": 0,"compulsion": "","compulsion_toggle": 0,"craft": 0,"craft_flag": 0,"craft_spec": "","date_today": 1578628740000,"dexterity": 1,"dexterity_flag": 0,"disc1": 0,"disc1_1": "","disc1_2": "","disc1_3": "","disc1_4": "","disc1_5": "","disc1_flag": 0,"disc1_name": "","disc1_toggle": 0,"disc1power_toggle": 0,"disc2": 0,"disc2_1": "","disc2_2": "","disc2_3": "","disc2_4": "","disc2_5": "","disc2_flag": 0,"disc2_name": "","disc2_toggle": 0,"disc2power_toggle": 0,"disc3": 0,"disc3_1": "","disc3_2": "","disc3_3": "","disc3_4": "","disc3_5": "","disc3_flag": 0,"disc3_name": "","disc3_toggle": 0,"disc3power_toggle": 0,"distillation": "","domain_coterie": "","domain_haven": "","domain_hunt": "","domain_personal": "","drive": 0,"drive_flag": 0,"drive_spec": "","dyscrasias": "","dyscrasias_toggle": 0,"effectchecks": "","etiquette": 0,"etiquette_flag": 0,"etiquette_spec": "","faction": "","finance": 0,"finance_flag": 0,"finance_spec": "","firearms": 0,"firearms_flag": 0,"firearms_spec": "","formulae_toggle": 0,"generation": "","health": 3,"health_1": 0,"health_10": 0,"health_11": 0,"health_12": 0,"health_13": 0,"health_14": 0,"health_15": 0,"health_2": 0,"health_3": 0,"health_4": 0,"health_5": 0,"health_6": 0,"health_7": 0,"health_8": 0,"health_9": 0,"health_admg": 0,"health_aggravated": 0,"health_bashing": 0,"health_impair_toggle": 0,"health_max": 3,"health_sdmg": 0,"hum_details": "","hum_negbullets": "","hum_negbullets_toggle": 0,"hum_neutralbullets": "","hum_neutralbullets_toggle": 0,"hum_posbullets": "","hum_posbullets_toggle": 0,"humanity": 7,"humanity_1": 2,"humanity_10": 2,"humanity_2": 2,"humanity_3": 2,"humanity_4": 2,"humanity_5": 2,"humanity_6": 2,"humanity_7": 2,"humanity_8": 2,"humanity_9": 2,"humanity_impair_toggle": 0,"humanity_max": 10,"hunger": 1,"incap": "","insight": 0,"insight_flag": 0,"insight_spec": "","intelligence": 1,"intelligence_flag": 0,"intimidation": 0,"intimidation_flag": 0,"intimidation_spec": "","investigation": 0,"investigation_flag": 0,"investigation_spec": "","larceny": 0,"larceny_flag": 0,"larceny_spec": "","leadership": 0,"leadership_flag": 0,"leadership_spec": "","manipulation": 1,"manipulation_flag": 0,"marquee": "When the Sabbat assault a city, no strategy is more threatening to the Masquerade than their penchant formass-Embracing mortals, knocking them unconscious with a shovel before they frenzy, and throwing them intoan open grave from which they must dig themselves out — a process that invariably drives them insane.","marquee_lines_toggle": 3,"marquee_title": "Shovelheads","marquee_toggle": 1,"marquee_tracker": "10,63,47,50,28,8,3,24,1,12,51,20,19,65,30,4,40,54,71,45,70,73,23,43,15,53,2,25,16,72,37,36,62,38,14,57,60,55,35,21,64,32,33,9,22,42,48,34,58,59,31,46,67,6,27,17,29,61,0,13,66,44,69,7,5,11,18","mask": "","maskname": "","medicine": 0,"medicine_flag": 0,"medicine_spec": "","melee": 0,"melee_flag": 0,"melee_spec": "","mortal_ambition": "","mortal_history": "","npcbox_title": "","npcbox_toggle": 0,"npctoggle": 0,"occult": 0,"occult_flag": 0,"occult_spec": "","performance": 0,"performance_flag": 0,"performance_spec": "","persuasion": 0,"persuasion_flag": 0,"persuasion_spec": "","politics": 0,"politics_flag": 0,"politics_spec": "","predator": "","repstats": "","res_discs": "","resolve": 1,"resolve_flag": 0,"resonance": "None","rituals_toggle": 0,"rollarray": "","rolldiff": 0,"rolleffects": "","rollflagdisplay": "","rollmod": 0,"rollparams": "","rollpooldisplay": "","science": 0,"science_flag": 0,"science_spec": "","sheetworkertoggle": 0,"stains": 0,"stamina": 1,"stamina_flag": 0,"stealth": 0,"stealth_flag": 0,"stealth_spec": "","streetwise": 0,"streetwise_flag": 0,"streetwise_spec": "","strength": 1,"strength_flag": 0,"subterfuge": 0,"subterfuge_flag": 0,"subterfuge_spec": "","survival": 0,"survival_flag": 0,"survival_spec": "","tab_core": 1,"technology": 0,"technology_flag": 0,"technology_spec": "","topdisplay": "","triggertimelinesort": 0,"willpower": 3,"willpower_1": 0,"willpower_10": 0,"willpower_2": 0,"willpower_3": 0,"willpower_4": 0,"willpower_5": 0,"willpower_6": 0,"willpower_7": 0,"willpower_8": 0,"willpower_9": 0,"willpower_admg": 0,"willpower_admg_social": 0,"willpower_admg_socialtotal": 0,"willpower_aggravated": 0,"willpower_bashing": 0,"willpower_impair_toggle": 0,"willpower_max": 3,"willpower_sdmg": 0,"willpower_sdmg_social": 0,"willpower_sdmg_socialtotal": 0,"willpower_social_toggle": 0,"wits": 1,"wits_flag": 0,"xp_earnedtotal": 0,"xp_summary": ""}`; const REPATTRSJSON = `{"discleft": ["disc", "disc_flag", "disc_name", "discpower_1", "discpower_2", "discpower_3", "discpower_4", "discpower_5", "discpower_toggle"],"discmid": ["disc", "disc_flag", "disc_name", "discpower_1", "discpower_2", "discpower_3", "discpower_4", "discpower_5", "discpower_toggle"],"discright": ["disc", "disc_flag", "disc_name", "discpower_1", "discpower_2", "discpower_3", "discpower_4", "discpower_5", "discpower_toggle"],"ceremonyleft": ["ceremony", "ceremony_name", "ceremony_type"],"ceremonymid": ["ceremony", "ceremony_name", "ceremony_type"],"ceremonyright": ["ceremony", "ceremony_name", "ceremony_type"],"ritualleft": ["ritual", "ritual_name", "ritual_type"],"ritualmid": ["ritual", "ritual_name", "ritual_type"],"ritualright": ["ritual", "ritual_name", "ritual_type"],"formulaleft": ["formula", "formula_type"],"formulamid": ["formula", "formula_type"],"formularight": ["formula", "formula_type"],"advantage": ["advantage", "advantage_details", "advantage_flag", "advantage_name", "advantage_type"],"negadvantage": ["negadvantage", "negadvantage_details", "negadvantage_flag", "negadvantage_name", "negadvantage_type"],"boonsOwed": ["boonowed_details", "boonowed_to", "boonowed_type"],"boonsOwing": ["boonowing_details", "boonowing_from", "boonowing_type"],"tenet": ["tenet", "tenetid"],"beliefs": ["conviction", "convictionid", "touchstone_details", "touchstone_name", "touchstoneid"],"project": ["archiveevent", "archiveevent_toggle", "archivememoriam", "archivememoriam_toggle", "archiveobjective", "archiveobjective_toggle", "archiveproject", "eventdate", "memoriamdate", "memoriamdiff", "memoriamresult", "memoriamrewards", "objectivedate", "projectdetails", "projectenddate", "projectforcedstakemod", "projectforcedstakemodline", "projectgoal", "projectinccounter", "projectincnum", "projectincunit", "projectlaunchdiff", "projectlaunchdiffmod", "projectlaunchmod", "projectlaunchresults", "projectlaunchresultsmargin", "projectlaunchroll_toggle", "projectlaunchrollparams", "projectlaunchtrait1", "projectlaunchtrait1_name", "projectlaunchtrait2", "projectlaunchtrait2_name", "projectrushpool", "projectrushstakelost", "projectrushstakelosttogo", "projectscope", "projectscope_name", "projectsrowid", "projectstake1", "projectstake1_name", "projectstake2", "projectstake2_name", "projectstake3", "projectstake3_name", "projectstakes_toggle", "projectstakesatrush", "projectstartdate", "projectteamwork1", "projectteamwork2", "projectteamwork3", "projecttotalstake", "projectwasrushed", "schemetype", "schemetypeevent_toggle", "schemetypemem_toggle", "schemetypeobj_toggle", "schemetypeproj_toggle"],"timeline": ["timelinerowid", "tlcategory", "tldetails", "tldotdisplay", "tlenddate", "tlsortby", "tlstartdate", "tlsummary", "tlthirdline", "tlthirdline_toggle", "tltitle"],"desire": ["desire", "desireid"],"spentxp": ["xp_arrow_toggle", "xp_category", "xp_cost", "xp_initial", "xp_initial_toggle", "xp_new", "xp_new_toggle", "xp_spent_toggle", "xp_trait", "xp_trait_toggle"],"earnedxp": ["xp_award", "xp_reason", "xp_session"],"earnedxpright": ["xp_award", "xp_reason", "xp_session"]}`; /* eslint-disable-line babel/quotes, quotes */				    
     const SHEETATTRS = JSON.parse(SHEETATTRSJSON);
     const REPATTRS = JSON.parse(REPATTRSJSON);
     const TRAITREPSECS = ["advantage", "negadvantage", "discleft", "discmid", "discright"];
@@ -1117,7 +1136,7 @@ const C = (() => {
             }
         });
     };
-        // #endregion
+    // #endregion
     
     // #region VAMPIRE ATTRIBUTES, STATS & TRAITS
     const ATTRIBUTES = {
@@ -2145,7 +2164,7 @@ const C = (() => {
         "Scourges": ["A scourge is directly subordinate to the prince, and is responsible for the destruction of the thin-blooded as well", "as any other vampires who have been Embraced in violation of the Third Tradition. Unlike the sheriff, a scourge operates", "under no pretense of due process or investigation: those they hunt are already guilty by their very nature."],
         "Antitribu": ["An antitribu is a vampire who is aligned with a sect that opposes the one their clan traditionally associates with. Most antitribu", "are defectors to the Sabbat, but there do exist Lasombra antitribu in the Camarilla. Tzimisce antitribu are virtually unheard of, both", "because the Tremere hunt them mercilessly, and because of the ease with which the Clan of Shapers can disguise their heritage."],
     };
-        // #endregion
+    // #endregion
 
     // #region CITY DETAILS
     const DISTRICTSJSON = `{"Annex": {"fullName": "the Annex", "resonance": ["p", "m"], "huntDiff": 3, "homestead": [4, 2, 2, 1], "rollEffects": [], "soundScape": ["CityRevelers"], "outside": true}, "BayStFinancial": {"fullName": "the Bay St. Financial District", "resonance": ["p", "s"], "huntDiff": 4, "homestead": [5, 4, 6, 5], "rollEffects": [], "soundScape": ["CityTraffic"], "outside": true}, "Bennington": {"fullName": "Bennington Heights", "resonance": ["p", "s"], "huntDiff": 6, "homestead": [5, 1, 5, 1], "rollEffects": ["loc:Bennington+blood surge;nobloodsurge;[-1]Total Eclipse of the Heart;District Quirk: No Blood Surge"], "soundScape": ["CitySuburb"], "outside": true}, "Cabbagetown": {"fullName": "Cabbagetown", "resonance": ["i", "s"], "huntDiff": 2, "homestead": [2, 1, 1, 1], "rollEffects": [], "soundScape": ["CityTraffic"], "outside": true}, "CentreIsland": {"fullName": "Centre Island", "resonance": ["s", "p"], "huntDiff": 6, "homestead": [2, 3, 0, 2], "rollEffects": [], "soundScape": ["CityPark"], "outside": true}, "Chinatown": {"fullName": "Chinatown", "resonance": ["s", "m"], "huntDiff": 2, "homestead": [2, 4, 4, 2], "rollEffects": ["loc:Chinatown+brawl;2;[+1]<#> Kung-Fu Fighting|loc;Chinatown+firearms/melee;-2;[-1]<#> Kung-Fu Fighting"], "soundScape": ["CityTraffic"], "outside": true}, "CityStreets": {"fullName": "City Streets", "resonance": ["c", "m"], "huntDiff": 6, "homestead": [2, 2, 2, 4], "rollEffects": [], "soundScape": ["CityTraffic"], "outside": true}, "Corktown": {"fullName": "Corktown", "resonance": ["c", "p"], "huntDiff": 2, "homestead": [2, 3, 1, 0], "rollEffects": [], "soundScape": ["CityTraffic"], "outside": true}, "Danforth": {"fullName": "the Danforth", "resonance": ["s", "p"], "huntDiff": 3, "homestead": [4, 2, 4, 2], "rollEffects": [], "soundScape": ["CityWalking"], "outside": true}, "DeerPark": {"fullName": "Deer Park", "resonance": ["r", "s"], "huntDiff": 5, "homestead": [2, 1, 2, 3], "rollEffects": ["loc:DeerPark;bestialcancel;[!1]Bad Moon Rising"], "soundScape": ["CitySuburb"], "outside": true}, "Discovery": {"fullName": "the Discovery District", "resonance": ["m", "c"], "huntDiff": 4, "homestead": [5, 2, 3, 3], "rollEffects": [], "soundScape": ["CityChatter"], "outside": true}, "DistilleryDist": {"fullName": "the Distillery District", "resonance": ["c", "s"], "huntDiff": 5, "homestead": [1, 2, 4, 4], "rollEffects": ["loc:DistilleryDist+firearms;2;[+1]<#> Janie's Got a Gun|loc:DistilleryDist+brawl/melee;-2;[-1]<#> Janie's Got a Gun"], "soundScape": ["CityTraffic"], "outside": true}, "DupontByTheCastle": {"fullName": "Dupont by the Castle", "resonance": ["m", "c"], "huntDiff": 4, "homestead": [5, 3, 5, 2], "rollEffects": ["loc:DupontByTheCastle+messycrit;;[!1]Can't Stop the Feeling"], "soundScape": ["CityWalking"], "outside": true}, "GayVillage": {"fullName": "the Gay Village", "resonance": ["s", "m"], "huntDiff": 2, "homestead": [4, 3, 2, 3], "rollEffects": [], "soundScape": ["CityTraffic"], "outside": true}, "HarbordVillage": {"fullName": "Harbord Village", "resonance": ["c", "p"], "huntDiff": 4, "homestead": [3, 5, 3, 4], "rollEffects": [], "soundScape": ["CityTraffic"], "outside": true}, "Humewood": {"fullName": "Humewood", "resonance": ["r", "s"], "huntDiff": 3, "homestead": [2, 1, 4, 2], "rollEffects": [], "soundScape": ["CitySuburb"], "outside": true}, "LakeOntario": {"fullName": "Lake Ontario", "resonance": ["p", "s"], "huntDiff": "~", "homestead": [2, 1, 4, 4], "rollEffects": [], "soundScape": ["Waterside"], "outside": true}, "LibertyVillage": {"fullName": "Liberty Village", "resonance": ["c", "m"], "huntDiff": 3, "homestead": [3, 3, 2, 1], "rollEffects": [], "soundScape": ["CityRevelers"], "outside": true}, "LittleItaly": {"fullName": "Little Italy", "resonance": ["c", "p"], "huntDiff": 2, "homestead": [3, 3, 3, 3], "rollEffects": ["loc:LittleItaly+melee;2;[+1]<#> Beat It|loc:LittleItaly+firearms/melee;-2;[-1]<#> Beat It"], "soundScape": ["CityTraffic"], "outside": true}, "LittlePortugal": {"fullName": "Little Portugal", "resonance": ["m", "p"], "huntDiff": 2, "homestead": [1, 4, 3, 3], "rollEffects": [], "soundScape": ["(TOTALSILENCE)"], "outside": true}, "PATH": {"fullName": "P.A.T.H.", "resonance": ["p", "c"], "huntDiff": 4, "homestead": [3, 6, 4, 5], "rollEffects": [], "soundScape": ["IndoorMarket"], "outside": false}, "RegentPark": {"fullName": "Regent Park", "resonance": ["p", "c"], "huntDiff": 3, "homestead": [4, 4, 3, 4], "rollEffects": [], "soundScape": ["CitySuburb"], "outside": true}, "Riverdale": {"fullName": "Riverdale", "resonance": ["q", "m"], "huntDiff": 3, "homestead": [3, 5, 4, 3], "rollEffects": ["loc:Riverdale+messycrit;nomessycrit;[LOC]Steady As She Goes"], "soundScape": ["CitySuburb"], "outside": true}, "Rosedale": {"fullName": "Rosedale", "resonance": ["p", "m"], "huntDiff": 6, "homestead": [5, 1, 5, 4], "rollEffects": [], "soundScape": ["CitySuburb"], "outside": true}, "Sewers": {"fullName": "the Sewers", "resonance": ["m", "s"], "huntDiff": "~", "homestead": [0, 1, 4, 5], "rollEffects": ["loc:Sewers+Nosferatu+physical/discipline;2;[+1]<#> Demons"], "soundScape": ["Sewers"], "outside": false}, "StJamesTown": {"fullName": "St. James Town", "resonance": ["i", "p"], "huntDiff": 2, "homestead": [1, 1, 4, 1], "rollEffects": ["loc:StJamesTown+Lasombra+Dominate;2;[+1]<#> Music of the Night"], "soundScape": ["CityTraffic"], "outside": true}, "Summerhill": {"fullName": "Summerhill", "resonance": ["m", "s"], "huntDiff": 2, "homestead": [1, 3, 3, 2], "rollEffects": [], "soundScape": ["CitySuburb"], "outside": true}, "Waterfront": {"fullName": "the Waterfront", "resonance": ["s", "c"], "huntDiff": 4, "homestead": [6, 5, 4, 5], "rollEffects": [], "soundScape": ["CityTraffic"], "outside": true}, "WestQueenWest": {"fullName": "West Queen West", "resonance": ["s", "p"], "huntDiff": 3, "homestead": [4, 4, 3, 4], "rollEffects": ["loc:WestQueenWest+success+rouse;reroll;[!1]Hungry Like the Wolf"], "soundScape": ["CityTraffic"], "outside": true}, "Wychwood": {"fullName": "Wychwood", "resonance": ["s", "c"], "huntDiff": 5, "homestead": [2, 0, 5, 1], "rollEffects": [], "soundScape": ["CitySuburb"], "outside": true}, "YongeMuseum": {"fullName": "the Yonge & Bloor Museum District", "resonance": ["m", "c"], "huntDiff": 4, "homestead": [5, 4, 4, 3], "rollEffects": [], "soundScape": ["CityChatter"], "outside": true}, "YongeHospital": {"fullName": "the Yonge & College Hospital District", "resonance": ["p", "c"], "huntDiff": 4, "homestead": [4, 4, 4, 5], "rollEffects": [], "soundScape": ["CityTraffic"], "outside": true}, "YongeStreet": {"fullName": "Yonge Street", "resonance": ["q", "m"], "huntDiff": 3, "homestead": [4, 5, 4, 6], "rollEffects": [], "soundScape": ["CityTraffic"], "outside": true}, "Yorkville": {"fullName": "Yorkville", "resonance": ["c", "m"], "huntDiff": 6, "homestead": [5, 2, 4, 5], "rollEffects": [], "soundScape": ["CitySuburb"], "outside": true}}`; /* eslint-disable-line quotes */ /* eslint-disable-line babel/quotes */
@@ -2284,7 +2303,7 @@ const C = (() => {
              "you react with <b>Zeal</b> (or) <b>Boredom:</b> You're reminded of what is good in the world, or you grow impatient to find something more interesting."],
         ],
     ];
-        // #endregion
+    // #endregion
 
     // #region SPECIAL EFFECTS DEFINITIONS
     const FX = {

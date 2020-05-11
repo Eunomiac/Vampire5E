@@ -18,10 +18,12 @@ const Roller = (() => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
         initialize();
     };    
-        // #endregion
+    // #endregion
 
     // #region LOCAL INITIALIZATION
     const initialize = () => {
+        // STATE.REF.selected = {Main: [], Big: []}
+        // STATE.REF.diceVals = {Main: new Array(31).fill(false), Big: new Array(3).fill(false)}
         STATE.REF.rollRecord = STATE.REF.rollRecord || [];
         STATE.REF.rollIndex = STATE.REF.rollIndex || 0;
         STATE.REF.NPC = STATE.REF.NPC || {};
@@ -888,7 +890,7 @@ const Roller = (() => {
         restriction: ["success", "failure", "basicfail", "critical", "basiccrit", "messycrit", "bestialfail", "totalfail"],
         rollMod: ["restrictwpreroll1", "restrictwpreroll2", "nowpreroll", "doublewpreroll", "freewpreroll", "bestialcancelcrit", "bestialcancelsucc", "bestialcancelall", "totalfailure", "nomessycrit", "nobestialfail"]
     };
-        // #endregion
+    // #endregion
 
     // #region GRAPHICS: Creation, Removal, Registration, Setting Sources
     const makeDie = (diceCat, dieNum) => {
@@ -961,7 +963,7 @@ const Roller = (() => {
         Media.ToggleImg("RollerFrame_Left", true, true);
         Media.SetImg("RollerFrame_Left", "top");
         Media.ToggleImg("RollerFrame_BottomEnd", false, true);
-        // Media.Spread("RollerFrame_Left", "RollerFrame_TopEnd", topMidRefs, 1, SETTINGS.frame.mids.minSpread, SETTINGS.frame.mids.maxSpread)
+        Media.Spread("RollerFrame_Left", "RollerFrame_TopEnd", topMidRefs, 1, SETTINGS.frame.mids.minSpread, SETTINGS.frame.mids.maxSpread);
         DragPads.Toggle("wpReroll", false);
         Media.ToggleAnim("Roller_WPReroller_1", false);
         Media.ToggleImg("Roller_WPReroller_Base_1", false);
@@ -1050,6 +1052,7 @@ const Roller = (() => {
                 D.Queue(clearRoller, [], "Roller");
                 D.Queue(killRoller, [], "Roller");
                 D.Queue(initFunc, [], "Roller", 5);
+                // D.Queue(DragPads.MakePad, ["RollerFrame_WPRerollPlaceholder_1", "wpReroll"], "Roller")
                 D.Queue(clearRoller, [], "Roller");
                 D.Queue(Media.Fix, [], "Roller");
                 D.Queue(D.Alert, ["Roller Rebuilt!", "Initialize Roller Frame"], "Roller");
@@ -1169,7 +1172,7 @@ const Roller = (() => {
         // STATE.REF.selected[dieCat] = []
         TRACEOFF(traceID);
     };
-        // #endregion
+    // #endregion
 
     // #region ROLL EFFECTS: Applying, Creating, Removing
     const applyRollEffects = rollInput => {
@@ -1322,7 +1325,7 @@ const Roller = (() => {
                 // First, check if the global effect state variable holds an exclusion for this character ID AND effect isn't in rollEffectsToReapply.
                 if (STATE.REF.rollEffects[effectString] && STATE.REF.rollEffects[effectString].includes(rollInput.charID))
                     continue;
-                    // Parse the effectString for all of the relevant parameters
+                // Parse the effectString for all of the relevant parameters
                 let [rollRestrictions, rollMod, rollLabel, removeWhen, /* sheetMessage, gmNote */] = effectString.split(";"),
                     [rollTarget, rollTraits, rollFlags] = ["", {}, {}];
                 [rollMod, rollTarget] = _.map(rollMod.split(":"), v => D.Int(v) || v.toLowerCase());
@@ -1429,7 +1432,7 @@ const Roller = (() => {
                                 if (D.IsIn(rollTarget, Object.keys(rollTraits), true))
                                     // If so, multiply trait accordingly (rounding DOWN to a minimum of one) and set rollMod to the difference.
                                     rollMod = Math.max(1, Math.floor(rollTraits[rollTarget] * parseFloat(rollMod.replace(/x/gu, "")))) - rollTraits[rollTarget];
-                                    // If not in traits, rollTarget must be in flags (validation happened above)
+                                // If not in traits, rollTarget must be in flags (validation happened above)
                                 else
                                     // If so, multiply the flag accordingly (rounding DOWN to a minimum of one) and set rollMod to the difference.
                                     rollMod = Math.max(1, Math.floor(_.find(rollFlags, (v, k) => k.includes(rollTarget)) * parseFloat(rollMod.replace(/x/gu, "")))) - _.find(rollFlags, (v, k) => k.includes(rollTarget));
@@ -1471,7 +1474,7 @@ const Roller = (() => {
                                         isContinuing = false;
                                         break;
                                     }
-                                    // If none found, check the flags:
+                                // If none found, check the flags:
                                 for (const flagType of ["posFlagLines", "negFlagLines", "redFlagLines", "goldFlagLines"]) {
                                     if (!isContinuing) break;
                                     for (let i = 0; i < rollData[flagType].length; i++)
@@ -1855,7 +1858,7 @@ const Roller = (() => {
         }        
         return TRACEOFF(traceID, false);
     };     
-        // #endregion
+    // #endregion
 
     // #region ROLL DATA: Getting, Parsing, Managing State Roll Record
     const getRollChars = (charObjs) => {
@@ -2139,7 +2142,7 @@ const Roller = (() => {
             recordRef.rollRecord.pop();
         TRACEOFF(traceID);
     };
-        // #endregion
+    // #endregion
 
     // #region ROLL CONTROL: Rolling Dice & Formatting Result
     const buildDicePool = rollData => {
@@ -2183,11 +2186,11 @@ const Roller = (() => {
             case "rouse2":
                 rollData.dicePool++;
                 rollData.hungerPool++;
-                /* falls through */
+            /* falls through */
             case "rouse":
                 rollData.hungerPool++;
                 rollData.basePool--;
-                /* falls through */
+            /* falls through */
             case "check":
                 rollData.dicePool++;
                 rollData.basePool++;
@@ -3528,7 +3531,7 @@ const Roller = (() => {
             body].join("")));
         TRACEOFF(traceID);
     };
-        // #endregion
+    // #endregion
 
     // #region SECRET ROLLS
     const makeSecretRoll = (chars, params, isSilent, isHidingTraits) => {
@@ -3595,7 +3598,7 @@ const Roller = (() => {
         D.Chat("Storyteller", `${CHATSTYLES.fullBox + CHATSTYLES.secret.topLineStart + (rollData.isSilent ? "Silently Rolling" : "Secretly Rolling") + (rollData.isHidingTraits ? " (Traits Hidden)" : " ...")}</div>${CHATSTYLES.secret.traitLineStart}${traitLine}${rollData.diff > 0 ? ` vs. ${rollData.diff}` : ""}</div>${blocks.join("")}</div></div>`, undefined, D.RandomString(3));
         TRACEOFF(traceID);
     };
-        // #endregion
+    // #endregion
 
     // #region DISCIPLINE ROLLS
     /*

@@ -24,17 +24,17 @@ const Char = (() => {
     const SCRIPTNAME = "Char";
 
     // #region COMMON INITIALIZATION
-    const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }}; 
-    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray); 
-    const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME); 
-    const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME); 
-    const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj); 
-    
+    const STATE = {get REF() { return C.RO.OT[SCRIPTNAME] }};
+    const VAL = (varList, funcName, isArray = false) => D.Validate(varList, funcName, SCRIPTNAME, isArray);
+    const DB = (msg, funcName) => D.DBAlert(msg, funcName, SCRIPTNAME);
+    const LOG = (msg, funcName) => D.Log(msg, funcName, SCRIPTNAME);
+    const THROW = (msg, funcName, errObj) => D.ThrowError(msg, funcName, SCRIPTNAME, errObj);
+
     const checkInstall = () => {
         C.RO.OT[SCRIPTNAME] = C.RO.OT[SCRIPTNAME] || {};
         initialize();
     };
-        // #endregion
+    // #endregion
 
     // #region LOCAL INITIALIZATION
     const initialize = () => {
@@ -269,6 +269,8 @@ const Char = (() => {
                 ]
             }
         );
+
+
         // awareness/intelligence+investigation/wits+investigation;postrait:Auspex;+ Heightened Senses (<.>)
         // 
 
@@ -283,7 +285,7 @@ const Char = (() => {
         // STATE.REF.registry.TopRight.playerID = "-LN7lNnjuWmFuvVPW76H"
         // STATE.REF.registry.BotRight.playerID = "-LMGDbZCKw4bZk8ztfNf"
     };
-        // #endregion
+    // #endregion
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const onChatCall = (call, args, objects, msg) => {
@@ -732,6 +734,10 @@ const Char = (() => {
                         charSelectMenu();
                         break;
                     }
+                    case "charnpc": {
+                        charSelectMenu(true);
+                        break;
+                    }
                     case "player": {
                         playerSelectMenu();
                         break;
@@ -884,7 +890,7 @@ const Char = (() => {
                 delete REGISTRY[regKey];
         }
     };
-        // #endregion
+    // #endregion
 
     // #region SETTERS: Moving Tokens, Toggling Characters
     const sendCharsHome = (charRef = "sandbox") => {
@@ -954,7 +960,7 @@ const Char = (() => {
         const charFlags = (D.GetStatVal(charRef, "charflags") || "").split("|");
         D.SetStat(charRef, _.without(charFlags, flagName).join("|"));
     };
-        // #endregion
+    // #endregion
 
     // #region GETTERS: Checking Character Status, Character Chat Prompt
     const isPlayerCharActive = (charRef) => (D.GetCharData(charRef) || {isActive: null}).isActive;    
@@ -1244,7 +1250,7 @@ const Char = (() => {
         const allCharFlags = (D.GetStatVal(charRef, "charflags") || "").split("|");
         return allCharFlags.includes(flagName);
     };
-        // #endregion
+    // #endregion
 
     // #region Character-As-NPC Control
     const setCharNPC = (charRef, npcRef) => {
@@ -1274,7 +1280,7 @@ const Char = (() => {
             }
         }
     };
-        // #endregion
+    // #endregion
     
     // #region Awarding XP
     const awardXP = (charRef, award, reason) => {
@@ -1308,7 +1314,7 @@ const Char = (() => {
         }
         return false;
     };
-        // #endregion
+    // #endregion
 
     // #region Sandbox Displays: Desires, Advantages, Hunger & Weekly Resources
     const displayDesires = (addAttrData) => {     
@@ -1593,7 +1599,7 @@ const Char = (() => {
             }
         }
     };
-        // #endregion
+    // #endregion
     
     // #region Manipulating Stats on Sheet, Alarms
     const parseDmgTypes = (max, bashing = 0, aggravated = 0, deltaBash = 0, deltaAgg = 0) => {
@@ -2142,7 +2148,7 @@ const Char = (() => {
                 }
             }
     };
-        // #endregion
+    // #endregion
 
     // #region Daysleep & Waking Up,
     const setDaysleepAlarm = () => {
@@ -2175,7 +2181,7 @@ const Char = (() => {
             adjustDamage(char, "willpower", "superficial+", -healWP);
         }
     };
-        // #endregion
+    // #endregion
 
     // #region Populating Character Attributes & Validating Abilities
     /* ATTRIBUTES = {

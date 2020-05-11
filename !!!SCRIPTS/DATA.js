@@ -209,7 +209,7 @@ const D = (() => {
             }
             case "!reply": {
                 if (args.length) 
-                    receivePrompt(args.join(" ").replace(/,,/gu, ","), objects);
+                    receivePrompt(args.join(" "), objects);
                 else
                     receivePrompt("", objects);
                 break;
@@ -225,6 +225,7 @@ const D = (() => {
     const [FunctionQueue, ISRUNNINGQUEUE] = [{}, {}];
     const VALS = {
         PAGEID: (pageRef) => {
+            // DB({pageRef}, "VALS")
             if (pageRef) {
                 if (isID(pageRef)) 
                     return (getObj("page", pageRef) || {id: false}).id;
@@ -235,6 +236,7 @@ const D = (() => {
                     if (pageObj && pageObj.id)
                         return pageObj.id;
                 }
+                // const object = getChar(pageRef) || Media.GetImg(pageRef) || Media.GetTokens(pageRef).pop() || Media.GetAnim(pageRef) || Media.GetText(pageRef)
                 if (VAL({object: pageRef}))
                     return pageRef.get("_pageid");
             }                
@@ -242,6 +244,12 @@ const D = (() => {
         },
         CELLSIZE: (pageRef) => C.PIXELSPERSQUARE * (getObj("page", VALS.PAGEID(pageRef)) || {get: () => 70}).get("snapping_increment")
     };
+    const FunctionQueue = {};
+    const ISRUNNINGQUEUE = {};
+    const WAITINGQUEUES = [];
+    // #endregion
+
+    // #region DECLARATIONS: Dependent Variables
     const ALLSTATS = [
         ..._.flatten(_.values(C.ATTRIBUTES)),
         ..._.flatten(_.values(C.SKILLS)),
@@ -370,9 +378,9 @@ const D = (() => {
             return true;
         }
     };
-        // #endregion
+    // #endregion
 
-    // #region ~ PARSING & STRING MANIPULATION: Converting data types to strings, formatting strings, converting strings into objects.
+    // #region PARSING & STRING MANIPULATION: Converting data types to strings, formatting strings, converting strings into objects.
     const jStr = (data, isVerbose = false) => {
         /* Parses a value of any type via JSON.stringify, and then further styles it for display either
                 in Roll20 chat, in the API console log, or both. */
@@ -516,6 +524,11 @@ const D = (() => {
         return `<pre>${_.escape(jStr(data, isShortForm, properties)).
             replace(/&gt;&gt;/gu, ">"). // Restores doubled right brackets to code.
             replace(/&lt;&lt;/gu, "<")}</pre>`; // Restores doubled left brackets to code.
+    };
+    const parseParams = (args, delim = " ") => {
+        const returnVal = _.object((VAL({array: args}) ? args.join(" ") : args).split(new RegExp(`,?${delim}+`, "gu")).filter(x => x.includes(":")).map(x => x.trim().split(":")));
+        D.Alert(`Args: ${D.JS(args)}<br>Delim: '${D.JS(delim)}'<br>Return: ${D.JS(returnVal)}`);
+        return returnVal;
     };
     const parseCharSelect = (call, args) => {                
         let charObjs, charIDString;
@@ -747,9 +760,9 @@ const D = (() => {
                 STACKLOG[STACKLOG.length - 1] = `${STACKLOG[STACKLOG.length - 1].replace(/<\/span>$/gu, " ◄</span>")}`;
         return true;
     };
-        // #endregion
+    // #endregion
 
-    // #region ~ CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
+    // #region CHAT MESSAGES: Formatting and sending chat messages to players & Storyteller
     const formatTitle = (funcName, scriptName, prefix = "") => `[${prefix}${VAL({string: funcName}) || VAL({string: scriptName}) ? " " : ""}${VAL({string: scriptName}) ? `${scriptName.toUpperCase()}` : ""}${VAL({string: [scriptName, funcName]}, null, true) ? ": " : ""}${funcName || ""}]`;
     const formatLogLine = (msg, funcName, scriptName, prefix = "") => `${formatTitle(funcName, scriptName, prefix)} ${formatMsgContents(msg, false)}`;
     const formatMsgContents = (msg, isHTMLOk = true, isStrippingHTML = false) => {
@@ -834,7 +847,7 @@ const D = (() => {
                         border:  `2px solid ${C.COLORS.black}`
                     })) ||
                     message;
-            // sendChat(from, `/direct <pre>${JSON.stringify(html)}</pre>`)
+        // sendChat(from, `/direct <pre>${JSON.stringify(html)}</pre>`)
         if (who === "all" || player === "all" || !player) {
             sendChat(randomString(3), html);
         } else {
@@ -852,9 +865,9 @@ const D = (() => {
         }
         sendChatMessage(getGMID(), msg, title);
     };
-        // #endregion
+    // #endregion
 
-    // #region ~ COMMAND MENU: Prompting GM, Sending Command Menu
+    // #region COMMAND MENU: Prompting GM, Sending Command Menu
     const promptGM = (menuHTML, replyFunc) => {
         if (VAL({string: menuHTML}, "promptGM")) {
             if (VAL({func: replyFunc})) {
@@ -994,9 +1007,9 @@ const D = (() => {
         const menuHTML = memoMenu(menuData);
         promptGM(menuHTML, replyFunc);
     };
-        // #endregion
+    // #endregion
 
-    // #region ~ CHAT DISPLAYS: Displaying reference images in chat.
+    // #region CHAT DISPLAYS: Displaying reference images in chat.
 
     // #endregion
 
@@ -1012,8 +1025,8 @@ const D = (() => {
         return index !== -1 && array.splice(index, 1).pop();
     };
     const pullIndex = (array, index) => pullElement(array, (v, i) => i === index);
-    const parseToObj = (val, delim = " ", keyValDelim = ":") => {
-        /* Converts an array or delimited string of parameters ("key:val, key:val, key:val") into an object. */
+    const parseToObj = (val, delim = ",", keyValDelim = ":") => {
+        /* Converts an array or comma-delimited string of parameters ("key:val, key:val, key:val") into an object. */
         const [obj, args] = [{}, []];
         if (VAL({string: val}))
             args.push(...val.split(new RegExp(`,?${delim.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}+`, "gu")));
@@ -1129,6 +1142,109 @@ const D = (() => {
         return result && result[0][1];
     };
     const isID = (testStr) => typeof testStr === "string" && testStr.length === 20 && testStr.charAt(0) === "-";
+    /* isntIn = (needle, haystack = ALLSTATS, isFuzzyMatching = true) => {
+            // Looks for needle in haystack using fuzzy matching, then returns value as it appears in haystack. 
+            try {
+                // STEP ZERO: VALIDATE NEEDLE & HAYSTACK
+                      // NEEDLE --> Must be STRING
+                      // HAYSTACK --> Can be ARRAY, LIST or STRING 
+                if (VAL({string: needle}) || VAL({number: needle})) {
+                    // STEP ONE: BUILD HAYSTACK.
+                        // HAYSTACK = ARRAY? --> HAY = ARRAY
+                        // HAYSTACK = LIST? ---> HAY = ARRAY (Object.keys(H))
+                        // HAYSTACK = STRING? -> HAY = H
+                    const hayType = VAL({array: haystack}) && "array" ||
+                                    VAL({list: haystack}) && "list" ||
+                                    VAL({string: haystack}) && "string"                                    
+                    let ndl = needle.toString(),
+                        hay, match
+                    switch (hayType) {
+                        case "array":
+                            hay = [...haystack]
+                            break
+                        case "list":
+                            hay = Object.keys(haystack)
+                            break
+                        case "string":
+                            hay = haystack
+                            break
+                        default:
+                            return THROW(`Haystack must be a string, a list or an array: ${D.JSL(haystack)}`, "IsIn")
+                    }
+                    // STEP TWO: SEARCH HAY FOR NEEDLE USING PROGRESSIVELY MORE FUZZY MATCHING. SKIP "*" STEPS IF ISFUZZYMATCHING IS FALSE.
+                            // STRICT: Search for exact match, case sensitive.
+                            // LOOSE: Search for exact match, case insensitive.
+                            // *START: Search for match with start of haystack strings, case insensitive.
+                            // *END: Search for match with end of haystack strings, case insensitive.
+                            // *INCLUDE: Search for match of needle anywhere in haystack strings, case insensitive.
+                            // *REVERSE INCLUDE: Search for match of HAYSTACK strings inside needle, case insensitive.
+                            // FUZZY: Start again after stripping all non-word characters. 
+                    if (hayType === "array" || hayType === "list") {
+                        for (let i = 0; i <= 1; i++) {
+                            let thisNeedle = ndl,
+                                thisHay = hay
+                            match = _.findIndex(thisHay, v => thisNeedle === v) + 1 // Adding 1 means "!match" passes on failure return of -1.
+                            if (match) break                            
+                            thisHay = _.map(thisHay, v => (v || v === 0) && (VAL({string: v}) || VAL({number: v}) ? v.toString().toLowerCase() : v) || "§¥£")
+                            thisNeedle = thisNeedle.toString().toLowerCase()
+                            match = _.findIndex(thisHay, v => thisNeedle === v) + 1
+                            if (match) break
+                            if (isFuzzyMatching)
+                                match = _.findIndex(thisHay, v => v.startsWith(thisNeedle)) + 1
+                            if (match) break
+                            if (isFuzzyMatching)
+                                match = _.findIndex(thisHay, v => v.endsWith(thisNeedle)) + 1
+                            if (match) break
+                            if (isFuzzyMatching)
+                                match = _.findIndex(thisHay, v => v.includes(thisNeedle)) + 1
+                            if (match) break
+                            if (isFuzzyMatching)
+                                match = _.findIndex(thisHay, v => thisNeedle.includes(v)) + 1
+                            if (match) break
+                            // Now strip all non-word characters and try again from the top.
+                            ndl = ndl.replace(/\W+/gu, "")
+                            hay = _.map(hay, v => VAL({string: v}) || VAL({number: v}) ? v.toString().replace(/\W+/gu, "") : v)
+                        }
+                        return match && hayType === "array" ? haystack[match - 1] : haystack[Object.keys(haystack)[match - 1]]
+                    } else {
+                        for (let i = 0; i <= 1; i++) {
+                            match = hay === ndl && ["", hay]
+                            if (match) break
+                            let thisNeedleRegExp = new RegExp(`^(${ndl})$`, "iu")
+                            match = hay.match(thisNeedleRegExp)
+                            if (match) break
+                            if (isFuzzyMatching) {
+                                thisNeedleRegExp = new RegExp(`^(${ndl})`, "iu")
+                                match = hay.match(thisNeedleRegExp) 
+                            }
+                            if (match) break                            
+                            if (isFuzzyMatching) {
+                                thisNeedleRegExp = new RegExp(`(${ndl})$`, "iu")
+                                match = hay.match(thisNeedleRegExp) 
+                            }
+                            if (match) break                           
+                            if (isFuzzyMatching) {
+                                thisNeedleRegExp = new RegExp(`(${ndl})`, "iu")
+                                match = hay.match(thisNeedleRegExp) 
+                            }
+                            if (match) break                           
+                            if (isFuzzyMatching) {
+                                let thisHayRegExp = new RegExp(`(${hay})`, "iu")
+                                match = ndl.match(thisHayRegExp) 
+                            }
+                            if (match) break
+                            // Now strip all non-word characters and try again from the top.
+                            ndl = ndl.replace(/\W+/gu, "")
+                            hay = hay.replace(/\W+/gu, "")
+                        }
+                        return match && match[1]
+                    }
+                }
+                return THROW(`Needle must be a string: ${D.JSL(needle)}`, "isIn")
+            } catch (errObj) {
+                return THROW(`Error locating '${D.JSL(needle)}' in ${D.JSL(haystack)}'`, "isIn", errObj)
+            }
+        }, */
     const validate = (varList, funcName, scriptName, isArray = false) => {
         // NOTE: To avoid accidental recursion, DO NOT use validate to confirm a type within the getter of that type.
         //		(E.g do not use VAL{char} inside any of the getChar() functions.)
@@ -1293,9 +1409,9 @@ const D = (() => {
         }
         return true;
     };        
-        // #endregion
+    // #endregion
 
-    // #region ~ DEBUGGING & ERROR MANAGEMENT
+    // #region DEBUGGING & ERROR MANAGEMENT
     const setWatchList = keywords => {
         if (keywords === "clear") {
             STATE.REF.WATCHLIST = [];
@@ -1458,9 +1574,9 @@ const D = (() => {
         }
         return returnVal; 
     };
-        // #endregion
+    // #endregion
 
-    // #region ~ GETTERS: Object, Character and Player Data
+    // #region GETTERS: Object, Character and Player Data
     const getGMID = () => {
         /* Finds the first player who is GM. */
         const gmObj = _.find(findObjs({_type: "player"}), v => playerIsGM(v.id));
@@ -1925,9 +2041,9 @@ const D = (() => {
             
         return VAL({string: funcName}) && THROW(`Unable to find a player object for reference '${jStrL(playerRef)}`, `${D.JSL(funcName)} > getPlayer`);
     };
-        // #endregion
+    // #endregion
 
-    // #region ~ SETTERS: Attributes
+    // #region SETTERS: Attributes
     const setStats = (charRef, statList) => {
         const charObj = getChar(charRef);
         if (VAL({charObj, list: statList}, "setStats"))
@@ -2086,9 +2202,9 @@ const D = (() => {
         }
             
     };
-        // #endregion
+    // #endregion
 
-    // #region ~ SPECIAL FX
+    // #region SPECIAL FX
     const runFX = (name, pos) => {
         // Runs one of the special effects defined above.
         spawnFxWithDefinition(pos.left, pos.top, C.FX[name]);
@@ -2126,6 +2242,7 @@ const D = (() => {
 
         Queue: queueFunc, Run: runFuncQueue, IsFuncQueueClear: isFuncQueueClear,
         JS: jStr, JSL: jStrL, JSH: jStrH, JSC: jStrC,
+        ParseParams: parseParams,
         ParseCharSelection: parseCharSelect,
         RandomString: randomString,
         SumHTML: summarizeHTML,

@@ -32,7 +32,7 @@ const TimeTracker = (() => {
         initialize();
         OFFSTACK(funcID);
     };
-        // #endregion
+    // #endregion
 
     // #region LOCAL INITIALIZATION
     const initialize = () => {
@@ -78,7 +78,7 @@ const TimeTracker = (() => {
 
         OFFSTACK(funcID);
     };
-        // #endregion	
+    // #endregion	
 
     // #region EVENT HANDLERS: (HANDLEINPUT)
     const onChatCall = (call, args) => {
@@ -256,7 +256,7 @@ const TimeTracker = (() => {
                 break;                    
             }
             case "start": {
-                toggleClock(true);
+                toggleClock(true, parseInt(args[0]) || 60);
                 break;
             }
             case "stop": {
@@ -347,7 +347,7 @@ const TimeTracker = (() => {
                     `<tr><td style="text-align:right; text-align-last:right;">-> Predawn1</td><td style="text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATE.REF.dateObj.getMonth()][0], -5, true)}</td></tr>`,
                     `<tr><td style="text-align:right; text-align-last:right;">Predawn1 -> DAY</td><td style="text-align:right; text-align-last:right;">${getTime(TWILIGHT[STATE.REF.dateObj.getMonth()][0], 0, true)}</td></tr>`
                 ];
-                    // const transitionStrings = ["Testing"]
+                // const transitionStrings = ["Testing"]
                 D.Alert(D.JSH([
                     `<h3>WEATHER REPORT</h3>${displayWeatherReport()}`,
                     `<h3>HORIZON TRANSITIONS</h3><table>${transitionStrings.join("")}</table>`,
@@ -381,8 +381,8 @@ const TimeTracker = (() => {
         }
         OFFSTACK(funcID);
     };
-        // #endregion
-        // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
+    // #endregion
+    // *************************************** END BOILERPLATE INITIALIZATION & CONFIGURATION ***************************************
 
     const ALARMFUNCS = {
         daysleep: () => {
@@ -1291,7 +1291,7 @@ const TimeTracker = (() => {
         daysToWaitTill: 5,
         daysToWaitTillWater: 4.25
     };
-        // #endregion
+    // #endregion
 
     // #region Derivative Stats
     const TWILIGHTMINS = _.map(TWILIGHT, v => _.map(v, v2 => 60 * D.Int(v2.split(":")[0]) + D.Int(v2.split(":")[1])));
@@ -1584,10 +1584,10 @@ const TimeTracker = (() => {
                 }
                     // no default
             }
-            // if (sessDateObj.getTime() <= curRealDateObj.getTime())
-            //    sessDateObj.setDate(sessDateObj.getDate() + 7)
+        if (sessDateObj.getTime() <= curRealDateObj.getTime())
+            sessDateObj.setDate(sessDateObj.getDate() + 7);
         STATE.REF.nextSessionDate = sessDateObj.getTime();
-        syncCountdown();            
+        syncCountdown();
         // updateCountdownText()
         OFFSTACK(funcID);
         return OFFSTACK(funcID) && (sessDateObj - curRealDateObj)/1000 - 60;
@@ -1606,7 +1606,7 @@ const TimeTracker = (() => {
         }
         return OFFSTACK(funcID) && timeLine.join("").split("1").map(x => (x.length + 1) * tickSpeed);
     };
-        // #endregion
+    // #endregion
     
     
         
@@ -1678,6 +1678,7 @@ const TimeTracker = (() => {
     const toggleClock = (activeState, secsPerMin = 60) => {
         const funcID = ONSTACK();
         isTickingClock = Boolean(activeState);
+        STATE.REF.secsPerMin = secsPerMin || STATE.REF.secsPerMin;
 
         if (activeState) {
             if (STATE.REF.TweenTarget) {
@@ -1821,7 +1822,7 @@ const TimeTracker = (() => {
         }
         OFFSTACK(funcID);
     };
-        // #endregion
+    // #endregion
 
     // #region COUNTDOWN: Toggling, Ticking, Setting Coundown Text        
     const syncCountdown = (isTesting = false) => {
@@ -1921,7 +1922,7 @@ const TimeTracker = (() => {
         }
         return OFFSTACK(funcID);
     };
-        // #endregion
+    // #endregion
 
     // #region HORIZON & WEATHER: Getting Weather Events & Horizon Image, Setting Img Objects 
     const getTempFromCode = code => WEATHERTEMP.indexOf(code) - 26;
@@ -2191,7 +2192,7 @@ const TimeTracker = (() => {
         setWeather();
         OFFSTACK(funcID);
     };
-        // #endregion
+    // #endregion
 
     // #region DATA ANALYSIS, PROCESSING & DISPLAY: Various Functions to Manipulate or Display Weather, Time & Alarm Data
     const displayWeatherReport = () => {
@@ -2673,7 +2674,7 @@ const TimeTracker = (() => {
         // ].join(""), "Past Alarms")
         OFFSTACK(funcID);
     };
-        // #endregion
+    // #endregion
 
     // #region Alarms
     // dateRef: "dawn"/"dusk"/"nextfullnight"/"noon"/"[#] [unit]"   can include multiple with "+"  (use "|" delimiting for chat arg, then set helper macro)
@@ -2837,7 +2838,7 @@ const TimeTracker = (() => {
         updateClockObj();
         setHorizon(setWeather());
         syncCountdown();
-        toggleClock(Session.IsSessionActive && (!Session.IsTesting || Session.IsFullTest));
+        toggleClock(Session.IsSessionActive && (!Session.IsTesting || Session.IsFullTest), 60);
         Char.RefreshDisplays();
         OFFSTACK(funcID);
     };
@@ -2849,7 +2850,7 @@ const TimeTracker = (() => {
         Fix: fixTimeStatus,
         
         ALARMFUNCS,
-        ToggleClock: toggleClock,
+        ToggleClock: (v) => { toggleClock(v, 60) },
         Pause: pauseClockTween, Resume: continueClockTween,
         Fire: (alarm) => fireAlarm(alarm, false, false, false),
 
